@@ -23,7 +23,7 @@ if(networkEnabled){
         document.getElementById("TransactionNumber").innerHTML = data['txApperances'];
         if(data['txApperances'] > 0){
           var dataTransactions = JSON.stringify(data['transactions']).replace("[","").replace("]","").replace(/"/g,"");
-          const splits = dataTransactions.split(',')
+          const splits = dataTransactions.split(',');
           var transactionLinks;
           for (i = 0; i < splits.length; i++) {
             if(i == 0){
@@ -35,32 +35,32 @@ if(networkEnabled){
           document.getElementById("Transactions").innerHTML = transactionLinks;
         }
         document.getElementById("NetworkingJson").innerHTML = this.response;
-        console.log(data)
-        console.log()
+        console.log(data);
+        console.log();
       }
       // Send request
-      request.send()
+      request.send();
     }
   }
   var getScriptData = function(txid,index){
     var request = new XMLHttpRequest()
     if(explorerType == 'blockbook'){
       if(amountOfTransactions <= 1000){
-        request.open('GET', url + '/api/v2/tx/' + txid, true)//Simple queuing fix
+        request.open('GET', url + '/api/v2/tx/' + txid, true);//Simple queuing fix
       }else{
-        request.open('GET', url + '/api/v2/tx/' + txid, false)
+        request.open('GET', url + '/api/v2/tx/' + txid, false);
       }
       request.onload = function(e) {
         if(request.readyState === 4){
           if(request.status === 200){
             datar = JSON.parse(this.response)
             var script = datar['vout'][index]['hex']
-            trx.addinput(txid,index,script)
+            trx.addinput(txid,index,script);
             console.log(trx);
           }
         }
       }
-      request.send()
+      request.send();
     }
   }
   var getUnspentTransactions = function(){
@@ -84,17 +84,16 @@ if(networkEnabled){
                 }
                 var txid = JSON.stringify(data[i]['txid']).replace(/"/g,"");
                 var index = JSON.stringify(data[i]['vout']);
-                getScriptData(txid,index)
+                getScriptData(txid,index);
               }
             }else{
-              //Temporary message for when there are alot of inputs
-              //Probably use change all of this to using websockets will work better
+              //Temporary message for when there are a lot of inputs
               document.getElementById("errorNotice").innerHTML = '<h4>Error:</h4><h5>We are sorry but this address has over 1k inputs. In this version we do not support this. Please import your private key to a desktop wallet or wait for an update</h5>';
             }
           }
           console.log('Total Balance:' + balance);
         }
-      request.send()
+      request.send();
     }
   }
   var sendTransaction = function(hex){
@@ -121,7 +120,7 @@ if(networkEnabled){
           }
         }
 
-        request.send()
+        request.send();
       }
     }else{
       console.log("hex undefined");
@@ -137,7 +136,7 @@ if(networkEnabled){
         console.log('current fee rate' + data['result']);
         fee = data['result'];
       }
-      request.send()
+      request.send();
     }
   }
   var versionCheck = function(){
@@ -152,7 +151,7 @@ if(networkEnabled){
           document.getElementById("outdated").style.display='block';
         }
       }
-      request.send()
+      request.send();
     }
   }
   //Call a version check if network is enabled:

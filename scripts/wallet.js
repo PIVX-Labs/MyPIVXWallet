@@ -1,4 +1,4 @@
-//ByteToHexString Convertions
+//ByteToHexString Conversions
 function byteToHexString(uint8arr) {
   if (!uint8arr) {
     return '';
@@ -21,7 +21,6 @@ function hexStringToByte(str) {
   }
   return new Uint8Array(a);
 }
-
 var MAP = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";//B58 Encoding Map
 //B58 Encoding
 var to_b58 = function(
@@ -83,7 +82,8 @@ var randArr = new Uint8Array(32) //create a typed array of 32 bytes (256 bits)
 if(debug){
     document.getElementById('Debug').innerHTML = "<b> DEBUG MODE </b>";
 }
-document.getElementById('dcfooter').innerHTML = '© 2020 DogeCash - All rights reserved. <br><a href="https://github.com/Luke-Larsen/DogeCashWebWallet">DogeCash webwallet version : '+dogecashversion +'</a>';
+//Footer
+document.getElementById('dcfooter').innerHTML = '© 2020 DogeCash - All rights reserved. <br><a href="https://github.com/dogecash/dogecash-web-wallet">DogeCash webwallet version : '+dogecashversion +'</a>';
 //Wallet Import
 importWallet= function(){
   if(walletAlreadyMade != 0){

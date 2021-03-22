@@ -13,7 +13,7 @@ var fee;
 var privateKeyForTransactions;
 var walletAlreadyMade = 0;
 var dogecashversion = '1.02';
-var closeTheAlert = '<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>'
+var closeTheAlert = '<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>';
 function setExplorer(){
   let explorerURL = document.getElementById("explorer").value
   if(explorerURL == 'custom'){
