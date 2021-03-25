@@ -26,7 +26,7 @@ To run a simple transaction go to the Create Transaction tab, then click load tr
 Advanced transactions do not require network access you can create the whole transaction then send the signed transaction on any node/wallet/explorer. It takes a little knowledge of how transactions work in bitcoin to understand how to use the Create Transaction page. I will briefly go over what needs to be done, if you are unsure I recommend doing more research and testing with small amounts in order to not lose funds. How this works is it takes the inputs from the previous transaction (the one that funded the wallet) and it make a new transaction that funds other wallets instead. Here is how you do this. We are going to be using one of my transaction in order to understand how this works. You can follow along here: https://explorer.dogec.io/tx/f52fad9c89a5a71532632679dc6cef84e6f7be949925d9190d054457052a61ef 
 ###### Inputs
 _for right now you can only manually create a transaction with one input_
-Under the raw transactions section you to put the top Transaction ID (txid) where it says Trx Hash, In our example it would be "f52fad9c89a5a71532632679dc6cef84e6f7be949925d9190d054457052a61ef". The next step would be to figure out which part of the transaction funded your public key, this is put into the index field. you can find this based on the vout under the vin section. In this example it would be 1. For the script field you need to put in the hex scriptPubKey of that VOUT with the same value under the VOUT section in Raw Transaction. In our example that would be 76a9142a8248f72e7ca9250f837b6cec46aedd6cf1edb288ac. 
+Under the raw transactions section you to put the top Transaction ID (TXID) where it says Trx Hash, In our example it would be "f52fad9c89a5a71532632679dc6cef84e6f7be949925d9190d054457052a61ef". The next step would be to figure out which part of the transaction funded your public key, this is put into the index field. you can find this based on the VOUT under the vin section. In this example it would be 1. For the script field you need to put in the hex scriptPubKey of that VOUT with the same value under the VOUT section in Raw Transaction. In our example that would be 76a9142a8248f72e7ca9250f837b6cec46aedd6cf1edb288ac. 
 ###### Outputs
 Now the easy part under outputs you need to put in the address you want to send coins to and a change address. The change address is used for any extra coins currently associated with the account that you don't want to go to fees in most cases this would be your public key. In our example I have 1 DOGEC in my public address I wish to send 0.99 DOGEC to my friend at the address of DQJ24v6oFsobif8MQ6JFuFk6vefGAUQ6f2 . Then I set the change address( which is just my public address) D91rzgEmTyUcPEMPBLLPHVoKjSzwUreeoy with the amount 0.009 (Any money in this transaction not allocated will be used as fees and lost!) which means that the fee for this transaction is 0.001. 
 ###### WIF KEY
@@ -41,8 +41,8 @@ This show users what the explorer see in association with the public key
 ##### Explorer
 _Note for devs if you want this to connect to your explorer you must set the CORS header to all, otherwise local users won't be able to connect to your explorer_
 
-This is where you can change the explorer this currently is only set up for explorer.dogec.io which is the main current explorer. The custom setting does work but 
-if you are using the custom setting please make sure that you input the website without https://,http://, or www. It should look something like explorer.dogec.io
+This is where you can change the explorer this currently is only set up for explorer.dogec.io which is the main explorer for DogeCash. The custom setting do work but 
+if you are using the custom setting please make sure that you input the website without https://,http://, or www. It should look something like `explorer.dogec.io`
 
 ##### Toggles
 ###### Debug Mode
