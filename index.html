@@ -29,7 +29,7 @@
   <meta property="og:image" content="assets/logo.png">
 
   <link rel="preconnect" href="https://fonts.gstatic.com">
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" type="text/css" href="assets/bootstrap-4.5.0/css/bootstrap.min.css">
   <link href="assets/fontawesome/css/all.min.css" rel="stylesheet">
@@ -37,6 +37,7 @@
   <script type="text/javascript" src="assets/bootstrap-4.5.0/js/jquery.js"></script>
   <script type="text/javascript" src="assets/bootstrap-4.5.0/js/bootstrap.js"></script>
   <script type="text/javascript" src="scripts/libs/jdenticon.min.js"></script>
+  <script type="text/javascript" src="scripts/libs/luxon.min.js"></script>
 
   <!--- IMPORTANT: CHAIN PARAMS BELOW, DO NOT EDIT UNLESS YOU'RE ABSOLUTELY CERTAIN YOU KNOW WHAT YOU'RE DOING  --->
   <script>
@@ -76,6 +77,7 @@
               <li class="nav-item"><a id="txTab" class="nav-link tablinks" onclick="openTab(event, 'Transaction')">Create Transaction</a></li>
               <li style="display: none;" class="nav-item"><a class="nav-link tablinks" onclick="startNetworkTest();openTab(event, 'WalletData');">Network Data</a></li>
               <li class="nav-item"><a class="nav-link tablinks" onclick="openTab(event, 'Settings');">Settings</a></li>
+              <li class="nav-item"><a class="nav-link tablinks" onclick="openTab(event, 'Exchange');">Exchange</a></li>
             </ul>
 
             <!-- SIDE NAVBAR -->
@@ -528,6 +530,83 @@
               </button>
 
             </div>
+            <div id="Exchange" class="tabcontent">
+              
+              <div id='errorNotice' class="col-md-12 float-left" style="margin-top:10px;"></div>
+
+              <div class='pullDown' style='clear:both;'>
+                <div id="simpleTransactionsDropdown" onclick='toggleDropDown("pivxToBitcoinSwap")'>Swap PIVX for BTC<span
+                    style='float:right;'>▼</span></div>
+                <div id='pivxToBitcoinSwap' style='display:block'>
+                  <br>
+                  <center>
+                    <div style="width: 100%;">
+                      <div style="display:inline-block; width: 48%;">
+                        <label>Send PIVX Amount</label><br>
+                        <input style="text-align: center;" type="number" min="0" id="pivxToBitcoin_pivxAmount">
+                      </div>
+                      <div style="display:inline-block; width: 48%;">
+                        <label>Receive BTC Amount</label><br>
+                        <input style="text-align: center;" type="number" min="0" id="pivxToBitcoin_btcAmount">
+                      </div>
+                    </div>
+                  </center>
+
+                  <br>   
+
+                  <center>
+                    <label>Destination BTC Address</label><br>
+                    <input style="font-family: monospace; text-align: center;" type="text" id="pivxToBitcoin_bitcoinAddress">
+                  </center>
+
+                  <center id="pivxToBitcoin_quoteIdWrapper" style="display: none;">
+                    <label>Quote Id</label><br>
+                    <input style="font-family: monospace; text-align: center;" type="text" id="pivxToBitcoin_quoteId" disabled>
+                  </center>
+                  
+                  <br>                                
+                  <div id='HumanReadable'></div>
+                  <br>
+                  
+                  <div class="container">
+                    <div class="row justify-content-center">
+                      <div class="col-md-3">
+                        <button id="pivxToBitcoin_getQuoteBtn" class="pivx-button-big w-100" style="display:block !important;" onclick="getPivxToBitcoinQuote()">
+                          <span class="buttoni-text">Get Quote</span>
+                          <span class="buttoni-arrow"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M23.328 16.707L13.121 26.914a.5.5 0 01-.707 0l-2.828-2.828a.5.5 0 010-.707L16.964 16 9.586 8.621a.5.5 0 010-.707l2.828-2.828a.5.5 0 01.707 0l10.207 10.207a1 1 0 010 1.414z"></path></svg></span>
+                        </button>
+
+                        <button id="pivxToBitcoin_cancelQuoteBtn" class="pivx-button-big w-100" style="display:none !important;" onclick="cancelPivxToBitcoinQuote()">
+                          <span class="buttoni-text">Cancel</span>
+                          <span class="buttoni-arrow"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M23.328 16.707L13.121 26.914a.5.5 0 01-.707 0l-2.828-2.828a.5.5 0 010-.707L16.964 16 9.586 8.621a.5.5 0 010-.707l2.828-2.828a.5.5 0 01.707 0l10.207 10.207a1 1 0 010 1.414z"></path></svg></span>
+                        </button>
+                      </div>
+
+                      <div class="col-md-3 mt-3 mt-md-0 align-self-center">
+                        <div id="exchange_statusWrapper" style="height: 55px; display: none;">
+                          <span class="badge badge-warning w-100" style="line-height: 45px; font-size: 0.9em;" id="exchange_statusDisplay">Quote Status Placeholder</span><br>
+                        </div>
+                      </div>
+
+                      <div class="col-md-3 mt-3 mt-md-0 align-self-center">
+                        <div id="exchange_countdownWrapper" style="height: 55px; display: none;">
+                          <span class="badge badge-warning w-100 " style="line-height: 45px; font-size: 0.9em;" id="exchange_countdownDisplay">00:00</span>
+                        </div>
+                      </div>
+
+                      <div class="col-md-3 mt-3 mt-md-0">
+                        <button id="pivxToBitcoin_sendBtn" class="pivx-button-big w-100" style="display:block !important;" onclick="sendPivxForActivePivxToBitcoinQuote()" disabled>
+                          <span class="buttoni-text">Send</span>
+                          <span class="buttoni-icon"><i class="fas fa-paper-plane" style="margin-top:4px;"></i></span>
+                        </button> 
+                      </div>
+                    </div>
+                  </div>                                   
+                </div>
+                <div id='transactionFinal'></div>
+              </div>
+              <br>
+            </div>            
             <div id="WalletData" class="tabcontent">
               <div id='networkingNotices'></div>
               <div id='readout' style='display:none'>
@@ -592,6 +671,10 @@
     // WALLET STATE DATA
     let cachedUTXOs = [];
     let cachedBlockCount = 0;
+    let activeQuote = null;
+    let DateTime = luxon.DateTime;
+    let exchangeQuoteDetailsTickInterval = null;
+    let exchangeQuoteCountdownTickInterval = null;
 
     function getBalance(updateGUI = false) {
       let nBalance = 0;
@@ -824,7 +907,311 @@
         alert("You need a wallet to transact with! Please import a wallet via the 'Dashboard --> Access my wallet' menu");
       }
     }
-    function createSimpleTransation() {
+
+    function cancelPivxToBitcoinQuote() {
+      clearInterval(exchangeQuoteCountdownTickInterval);
+      clearInterval(exchangeQuoteDetailsTickInterval);
+
+      // hide cancel quote button
+      document.getElementById("pivxToBitcoin_cancelQuoteBtn").setAttribute("style", "display: none !important;");
+
+      // hide quoteid input
+      document.getElementById("pivxToBitcoin_quoteIdWrapper").setAttribute("style", "display: none !important;");
+
+      // show get quote button
+      document.getElementById("pivxToBitcoin_getQuoteBtn").setAttribute("style", "display: block !important;");
+      document.getElementById("pivxToBitcoin_getQuoteBtn").disabled = false;
+
+      // disable send button
+      document.getElementById("pivxToBitcoin_sendBtn").disabled = true;
+
+      // remove active quote
+      activeQuote = null;
+
+      // enable inputs
+      document.getElementById("pivxToBitcoin_bitcoinAddress").disabled = false;
+      document.getElementById("pivxToBitcoin_pivxAmount").disabled = false;
+          document.getElementById("pivxToBitcoin_btcAmount").disabled = false; 
+
+      // hide the status boxes
+      document.getElementById("exchange_statusWrapper").style.display = "none";
+      document.getElementById("exchange_countdownWrapper").style.display = "none";
+    }
+
+    function getPivxToBitcoinQuote() {
+
+      // if the user selects both pivx and btc amount,
+      // pivx wins.
+      let pivxAmount = document.getElementById("pivxToBitcoin_pivxAmount").value;
+      let btcAmount = document.getElementById("pivxToBitcoin_btcAmount").value;
+      let useSourceAmount = true;
+
+      if (!isNaN(pivxAmount) && !isNaN(btcAmount)){
+        if (pivxAmount > 0){
+          if (btcAmount > 0){
+            // pivxAmount wins
+            useSourceAmount = true;
+          }
+        }
+        else if (btcAmount > 0){
+          useSourceAmount = false;
+        }
+        else {
+          // they're both negative numbers
+          return alert("You must enter a number greater than zero for either PIVX amount or BTC amount.");
+        }
+      }
+      else if (!isNan(pivxAmount) && isNan(btcAmount)){
+        if (pivxAmount > 0){
+          useSourceAmount = true;
+        }
+        else {
+          return alert("You must enter a number greater than zero for either PIVX amount or BTC amount.");
+        }
+      }
+      else if (isNan(pivxAmount) && !isNan(btcAmount)){
+        if (btcAmount > 0){
+          useSourceAmount = false;
+        }
+        else {
+          return alert("You must enter a number greater than zero for either PIVX amount or BTC amount.");
+        }
+      }
+      else {
+        return alert("You must enter a number greater than zero for either PIVX amount or BTC amount.");
+      }
+
+      // make sure they entered a btc address. we aren't going to validate it here
+      // the api will validate. validating here is a nice-to-have
+      let btcAddress = document.getElementById("pivxToBitcoin_bitcoinAddress").value;
+
+      if (typeof btcAddress !== 'string'){
+        return alert("You must enter a valid destination BTC address.");
+      }
+
+      let createRequestPayload = {};
+      if (useSourceAmount){
+        createRequestPayload = {
+          "sourceAsset": "PIVX",
+          "targetAsset": "BTC",
+          "targetAssetReceiveAddress": btcAddress,
+          "sourceAmount": pivxAmount,
+          "useShieldPivxAddress": false
+        }
+      } else {
+        createRequestPayload = {
+          "sourceAsset": "PIVX",
+          "targetAsset": "BTC",
+          "targetAssetReceiveAddress": btcAddress,
+          "targetAmount": btcAmount,
+          "useShieldPivxAddress": false
+        }
+      }
+
+      let request = new XMLHttpRequest()
+
+      request.open('POST', 'https://pivx2bitcoin.com/api/quote/create', true);
+      request.setRequestHeader('Content-Type', 'application/json');
+      request.setRequestHeader('X-App-Id', 'C70C3855-707C-47A0-A015-29452729FD85');
+
+      request.onload = function () {
+        data = JSON.parse(request.response);
+
+        if (request.status === 201){
+          // set the quote to the global activeQuote
+          let result = data.result;
+          activeQuote = JSON.parse(JSON.stringify(result));
+          activeQuote.computedCountdownTarget = DateTime.now().plus({minutes: activeQuote.quoteCountdownMinutes, seconds: activeQuote.quoteCountdownSeconds});
+          activeQuote.status = 'WaitingForBroadcast'; // the api doesn't return this on create
+
+          // update the amount values, disable the inputs
+          document.getElementById("pivxToBitcoin_pivxAmount").value = result.sourceAmount
+          document.getElementById("pivxToBitcoin_btcAmount").value = result.targetAmount;
+          document.getElementById("pivxToBitcoin_pivxAmount").disabled = true;
+          document.getElementById("pivxToBitcoin_btcAmount").disabled = true; 
+
+          document.getElementById("pivxToBitcoin_quoteId").value = result.quoteId;
+          document.getElementById("pivxToBitcoin_quoteIdWrapper").setAttribute("style", "display: block;");
+          
+          // disable btc address input
+          document.getElementById("pivxToBitcoin_bitcoinAddress").disabled = true;
+
+          // enable the send button
+          document.getElementById("pivxToBitcoin_sendBtn").disabled = false;
+
+          // hide the get quote button
+          document.getElementById("pivxToBitcoin_getQuoteBtn").setAttribute("style", "display: none !important;");
+
+          // show the cancel button
+          document.getElementById("pivxToBitcoin_cancelQuoteBtn").setAttribute("style", "display: block !important;");
+
+          updateQuoteStatusDisplay();
+          exchangeQuoteCountdownTickInterval = setInterval(exchangeQuoteCountdownTick, 1000);
+          exchangeQuoteDetailsTickInterval = setInterval(exchangeQuoteDetailsTick, 30000);
+        }
+        else if (request.status === 400) { 
+          // TODO: display the error inline instead of an alert
+          document.getElementById("pivxToBitcoin_getQuoteBtn").disabled = false;
+          alert(data.validationErrors[0].reason);
+        } else { 
+          // TODO: display the error inline instead of an alert
+          document.getElementById("pivxToBitcoin_getQuoteBtn").disabled = false;
+          alert(data.validationErrors[0].reason);
+        }
+      }
+
+      document.getElementById("pivxToBitcoin_getQuoteBtn").disabled = true;
+      request.send(JSON.stringify(createRequestPayload));
+    }
+
+    function sendPivxForActivePivxToBitcoinQuote() {
+      createSimpleTransation(activeQuote.sourceAssetDepositAddress, "pivxToBitcoin_pivxAmount");
+    }
+
+    function exchangeQuoteCountdownTick() {
+      if (hasActiveQuote() && quoteIsCountingDown()){
+        // Ensure the div is visible
+        document.getElementById("exchange_countdownWrapper").style.display = "block";
+
+        // update the countdown timer
+        updateQuoteDurationDisplay();
+      }
+    }
+
+    function quoteIsComplete(){
+      return activeQuote.status === "Complete";
+    }
+
+    function processCompletedQuote(){
+      clearInterval(exchangeQuoteCountdownTickInterval);
+      clearInterval(exchangeQuoteDetailsTickInterval);
+      document.getElementById("pivxToBitcoin_sendBtn").disabled  = true;
+      document.getElementById("pivxToBitcoin_cancelQuoteBtn").style.display = "none";
+      document.getElementById("pivxToBitcoin_getQuoteBtn").style.display = "block";
+    }
+
+    function exchangeQuoteDetailsTick() {
+      if (hasActiveQuote()){
+
+        if (quoteHasExpired()) return;
+
+        let request = new XMLHttpRequest()
+
+        request.open('GET', `https://pivx2bitcoin.com/api/quote/details/${activeQuote.quoteId}`, true);
+        request.setRequestHeader('Content-Type', 'application/json');
+        request.setRequestHeader('X-App-Id', 'C70C3855-707C-47A0-A015-29452729FD85');
+
+        request.onload = function () {
+          data = JSON.parse(request.response);
+
+          if (request.status === 200){
+            clearInterval(exchangeQuoteCountdownTickInterval);
+
+            let result = data.result;
+            activeQuote = JSON.parse(JSON.stringify(result));
+            activeQuote.computedCountdownTarget = DateTime.now().plus({minutes: activeQuote.quoteCountdownMinutes, seconds: activeQuote.quoteCountdownSeconds});
+
+            exchangeQuoteCountdownTickInterval = setInterval(exchangeQuoteCountdownTick, 1000);
+
+            updateQuoteStatusDisplay();
+
+            if (quoteIsComplete()){
+              processCompletedQuote();
+            }            
+          }
+          else if (request.status === 400) { 
+            alert(data.validationErrors[0].reason);
+          } 
+          else if (request.status === 404) { 
+            alert(`Quote with quoteId ${activeQuote.quoteId} was not found.`);
+          } else { 
+            alert(data.validationErrors[0].reason);
+          }
+        }
+
+        request.send();
+      }
+    }
+
+    function hasActiveQuote(){
+      return activeQuote !== 'undefined' 
+        && activeQuote !== null;
+    }
+
+    function quoteHasExpired(){
+      return activeQuote.status === "Expired" || (activeQuote.quoteCountdownMinutes <= 0 && activeQuote.quoteCountdownSeconds <= 0);
+    }
+
+    function quoteIsCountingDown() {
+      if (!hasActiveQuote()) return false;
+
+      if (quoteHasExpired()) {
+        clearInterval(exchangeQuoteCountdownTickInterval);
+        document.getElementById("pivxToBitcoin_sendBtn").disabled  = true;
+        return false;
+      }
+
+      return true;
+    }
+
+    function updateQuoteStatusDisplay(){
+      
+      const friendlyStatusMessage = getFriendlyStatusMessage(activeQuote.status);
+
+      document.getElementById("exchange_statusWrapper").style.display = "block";
+      document.getElementById("exchange_statusDisplay").innerText = friendlyStatusMessage;
+    }
+
+    function getFriendlyStatusMessage(status){
+      switch(status){
+        case "WaitingForBroadcast":
+          return "Waiting for Payment";
+        case "WaitingForConfirmations":
+          return "Awaiting Confirmations";
+        case "ProcessingPayment":
+          return "Processing Payment";          
+        case "Complete":
+          return "Complete";
+        case "Expired":
+          return "Expired";
+        case "Error":
+          return "Error";                                     
+        default:
+          return "Unknown Error";
+      }
+    }
+
+    function updateQuoteDurationDisplay(){
+      let minutes = 0;
+      let seconds = 0;
+
+      const now = DateTime.now();
+      const diff = activeQuote.computedCountdownTarget.diff(now, ["minutes", "seconds"]);
+
+      if (activeQuote.quoteCountdownMinutes <= 0 || diff.minutes <= 0){
+        minutes = 0;
+      } else {
+        minutes = diff.minutes;
+      }
+
+      if (activeQuote.quoteCountdownSeconds <= 0 || diff.seconds <= 0){
+        seconds = 0;
+      } else {
+        seconds = diff.seconds;
+      }
+
+      // manually set it to expired because we're still like that.
+      if ((activeQuote.quoteCountdownMinutes <= 0 && activeQuote.quoteCountdownSeconds <= 0) || (diff.minutes <= 0 && diff.seconds <= 0)){
+        activeQuote.status = "Expired";
+        updateQuoteStatusDisplay();
+        clearInterval(exchangeQuoteCountdownTickInterval);
+      }
+
+      const formattedCountdownValue = `${minutes.toString().padStart(2, '0')}:${Math.trunc(seconds).toString().padStart(2, '0')}`;
+      document.getElementById("exchange_countdownDisplay").innerText = `${formattedCountdownValue}`;
+    }
+
+    function createSimpleTransation(destinationAddress, valueAddressId = "value1s") {
       if (!networkEnabled) return alert("Cannot create Simple Transactions in offline mode; this requires an explorer to sync your balance (UTXOs), please enable Networking to use this feature! Otherwise, use 'Advanced Transactions'");
       if (!publicKeyForNetwork) {
         if (hasEncryptedWallet())
@@ -833,10 +1220,22 @@
           alert("Please import/create your wallet before sending transactions!");
         return;
       }
-      let address = document.getElementById("address1s").value;
-      let value = Number(document.getElementById("value1s").value);
+
+      let address = "";
+      if (destinationAddress !== 'undefined' && destinationAddress !== null){
+        address = destinationAddress;
+      } else {
+        address = document.getElementById("address1s").value;
+      }
+
+      if (address === 'undefined' || destinationAddress === null){
+        alert("Unable to determine destination address.");
+        return;
+      }
+
+      let value = Number(document.getElementById(valueAddressId).value);
       let genIt = document.getElementById("genIt");
-      if (genIt.innerHTML === 'Continue') {
+      if (genIt !== 'undefined' && genIt !== null && genIt.innerHTML === 'Continue') {
         genIt.innerHTML = 'Send Transaction';
         document.getElementById("HumanReadable").innerHTML = "";
         document.getElementById("value1s").value = "";

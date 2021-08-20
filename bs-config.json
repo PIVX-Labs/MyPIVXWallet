@@ -1,0 +1,9 @@
+{
+    "port": 9009,
+    "files": ["./**/*.{html,htm,css,js}"],
+    "server": { "baseDir": "./" },
+    "ui": {
+        "port": 9010
+    },
+    "open": false
+  }

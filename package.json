@@ -1,0 +1,23 @@
+{
+  "name": "mypivxwallet",
+  "version": "1.0.0",
+  "description": "To use this web wallet locally click the clone or download button, then choose download as a zip. Unzip the file. Once it is unzipped, open the index.html file in your favorite **_MODERN_** browser. In order to generate new address you must change the debug setting to false, This will generate secure keys by way of window.crypto. There are some cases where this may not work properly make sure you are using a modern browser and that window.crypto works with your browser. Otherwise the generation may not be secure.\r ### USE",
+  "main": "index.js",
+  "scripts": {
+    "dev": "lite-server"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PIVX-Labs/MyPIVXWallet.git"
+  },
+  "keywords": [],
+  "author": "JSKitty",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/PIVX-Labs/MyPIVXWallet/issues"
+  },
+  "homepage": "https://github.com/PIVX-Labs/MyPIVXWallet#readme",
+  "devDependencies": {
+    "lite-server": "^2.6.1"
+  }
+}
