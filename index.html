@@ -1046,7 +1046,7 @@
           return alert("You must enter a number greater than zero for either PIVX amount or BTC amount.");
         }
       }
-      else if (!isNan(pivxAmount) && isNan(btcAmount)){
+      else if (!isNaN(pivxAmount) && isNaN(btcAmount)){
         if (pivxAmount > 0){
           useSourceAmount = true;
         }
@@ -1054,7 +1054,7 @@
           return alert("You must enter a number greater than zero for either PIVX amount or BTC amount.");
         }
       }
-      else if (isNan(pivxAmount) && !isNan(btcAmount)){
+      else if (isNaN(pivxAmount) && !isNaN(btcAmount)){
         if (btcAmount > 0){
           useSourceAmount = false;
         }
