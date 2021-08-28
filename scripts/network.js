@@ -1,45 +1,6 @@
 if (networkEnabled) {
   var url = 'https://' + explorer
   var githubRepo = 'https://api.github.com/repos/dogecash/dogecash-web-wallet/releases';
-  var checkPubKey = function () {
-    // Create a request variable and assign a new XMLHttpRequest object to it.
-    var request = new XMLHttpRequest()
-    // Open a new connection, using the GET request on the URL endpoint
-    request.open('GET', url + '/api/v1/address/' + publicKeyForNetwork, true)
-    request.onload = function () {
-      var data = JSON.parse(this.response)
-      document.getElementById("balance").innerHTML = data['balance'];
-      document.getElementById("totalReceived").innerHTML = data['totalReceived'];
-      document.getElementById("totalSent").innerHTML = data['totalSent'];
-      var typeNumber = 4;
-      var errorCorrectionLevel = 'L';
-      var qr = qrcode(typeNumber, errorCorrectionLevel);
-      qr.addData('pivx:' + data['addrStr']);
-      qr.make();
-      document.getElementById("addrStrQR").innerHTML = qr.createImgTag();
-      document.getElementById("addrStr").innerHTML = data['addrStr'];
-      //Transactions
-      document.getElementById("TransactionNumber").innerHTML = data['txApperances'];
-      if (data['txApperances'] > 0) {
-        var dataTransactions = JSON.stringify(data['transactions']).replace("[", "").replace("]", "").replace(/"/g, "");
-        const splits = dataTransactions.split(',')
-        var transactionLinks;
-        for (i = 0; i < splits.length; i++) {
-          if (i == 0) {
-            transactionLinks = '<a href="' + url + '/api/v1/tx/' + splits[i] + '">' + splits[i] + '</a><br>';
-          } else {
-            transactionLinks += '<a href="' + url + '/api/v1/tx/' + splits[i] + '">' + splits[i] + '</a><br>';
-          }
-        }
-        document.getElementById("Transactions").innerHTML = transactionLinks;
-      }
-      document.getElementById("NetworkingJson").innerHTML = this.response;
-      console.log(data)
-      console.log()
-    }
-    // Send request
-    request.send()
-  }
   var getBlockCount = function() {
     var request = new XMLHttpRequest();
     request.open('GET', "https://stakecubecoin.net/pivx/blocks", true);
@@ -52,6 +13,7 @@ if (networkEnabled) {
         console.log("New block detected! " + cachedBlockCount + " --> " + data);
         if (publicKeyForNetwork)
           getUnspentTransactions();
+          getDelegatedUTXOs();
       }
       cachedBlockCount = data;
     }
@@ -73,19 +35,59 @@ if (networkEnabled) {
           document.getElementById("errorNotice").innerHTML = '';
         if (amountOfTransactions <= 1000) {
           for (i = 0; i < amountOfTransactions; i++) {
-            cachedUTXOs.push(data.unspent_outputs[i]);
+            cachedUTXOs.push({
+              'id': data.unspent_outputs[i].tx_hash,
+              'vout': data.unspent_outputs[i].tx_ouput_n,
+              'sats': data.unspent_outputs[i].value,
+              'script': data.unspent_outputs[i].script
+            });
           }
           // Update the GUI with the newly cached UTXO set
-          balance = getBalance(true);
+          getBalance(true);
         } else {
           //Temporary message for when there are alot of inputs
           //Probably use change all of this to using websockets will work better
           document.getElementById("errorNotice").innerHTML = '<div class="alert alert-danger" role="alert"><h4>Note:</h4><h5>This address has over 1000 UTXOs, which may be problematic for the wallet to handle, transact with caution!</h5></div>';
         }
       }
-      console.log('Total Balance:' + balance);
     }
     request.send()
+  }
+  var arrUTXOsToSearch = [];
+  var searchUTXO = function () {
+    if (!arrUTXOsToSearch.length) return;
+    var request = new XMLHttpRequest()
+    request.open('GET', "https://stakecubecoin.net/pivx/api/tx-specific/" + arrUTXOsToSearch[0].txid, true);
+    request.onload = function () {
+      data = JSON.parse(this.response);
+      // Check the specified UTXO
+      const cVout = data.vout[arrUTXOsToSearch[0].vout];
+      if (cVout.scriptPubKey.type === 'coldstake' && cVout.scriptPubKey.addresses.includes(publicKeyForNetwork)) {
+        if (!arrDelegatedUTXOs.find(a => a.id === arrUTXOsToSearch[0].txid && a.vout === arrUTXOsToSearch[0].vout)) {
+          arrDelegatedUTXOs.push({
+            'id': arrUTXOsToSearch[0].txid,
+            'vout': arrUTXOsToSearch[0].vout,
+            'sats': Number(arrUTXOsToSearch[0].value),
+            'script': cVout.scriptPubKey.hex
+          });
+          console.log('Found new Cold Staking UTXO!');
+        }
+      }
+      arrUTXOsToSearch.shift();
+      if (arrUTXOsToSearch.length) searchUTXO();
+    }
+    request.send();
+  }
+  var getDelegatedUTXOs = function () {
+    if (arrUTXOsToSearch.length) return;
+    var request = new XMLHttpRequest()
+    request.open('GET', "https://stakecubecoin.net/pivx/api/utxo/" + publicKeyForNetwork, true);
+    request.onload = function () {
+      data = JSON.parse(this.response);
+      arrUTXOsToSearch = data;
+      searchUTXO();
+    }
+    request.send();
   }
   var sendTransaction = function (hex) {
     if (typeof hex !== 'undefined') {
@@ -95,14 +97,13 @@ if (networkEnabled) {
         data = this.response;
         if (data.length === 64) {
           console.log('Transaction sent! ' + data);
-          let addr = document.getElementById("address1s");
-          if (addr.value !== donationAddress)
+          if (domAddress1s.value !== donationAddress)
             document.getElementById("transactionFinal").innerHTML = ('<h4 style="color:green">Transaction sent! ' + data + '</h4>');
           else
             document.getElementById("transactionFinal").innerHTML = ('<h4 style="color:green">Thank you for supporting MyPIVXWallet! 💜💜💜<br>' + data + '</h4>');
-          document.getElementById("simpleTransactions").style.display = 'none';
-          addr.value = '';
-          document.getElementById("value1s").innerHTML = '';
+          domSimpleTXs.style.display = 'none';
+          domAddress1s.value = '';
+          domValue1s.innerHTML = '';
         } else {
           console.log('Error sending transaction: ' + data);
           document.getElementById("transactionFinal").innerHTML = ('<h4 style="color:red">Error sending transaction: ' + data + "</h4>");
@@ -116,7 +117,7 @@ if (networkEnabled) {
   }
   var calculatefee = function (bytes) {
     // TEMPORARY: Hardcoded fee per-byte
-    fee = Number(((bytes * 250) / 100000000).toFixed(8)); // 250 sat/byte
+    fee = Number(((bytes * 250) / COIN).toFixed(8)); // 250 sat/byte
 
     /*var request = new XMLHttpRequest()
     request.open('GET', url + '/api/v1/estimatefee/10', false)

@@ -111,7 +111,30 @@
 			buf = buf.concat(addrDecoded); // address in bytes
 			buf.push(136); // OP_EQUALVERIFY
 			buf.push(172); // OP_CHECKSIG
-			o.script =   buf;
+			o.script = buf;
+			return this.outputs.push(o);
+		}
+
+		btrx.addcoldstakingoutput = function(addr, addrColdStake, value) {
+			const o = {};
+			let buf = [];
+			const addrDecoded = btrx.addressDecode(addr);
+			const addrCSDecoded = btrx.addressDecode(addrColdStake);
+			o.value = new BigInteger('' + Math.round((value * 1) * 1e8), 10);
+			buf.push(118);  // OP_DUP
+			buf.push(169);  // OP_HASH160
+			buf.push(123);  // OP_ROT
+			buf.push(99);   // OP_IF
+			buf.push(209);  // OP_CHECKCOLDSTAKEVERIFY
+			buf.push(addrCSDecoded.length);
+			buf = buf.concat(addrCSDecoded); // staking key in bytes
+			buf.push(103);  // OP_ELSE
+			buf.push(addrDecoded.length);
+			buf = buf.concat(addrDecoded); // spending key in bytes
+			buf.push(104)   // OP_ENDIF
+			buf.push(136);  // OP_EQUALVERIFY
+			buf.push(172);  // OP_CHECKSIG
+			o.script = buf;
 			return this.outputs.push(o);
 		}
 
@@ -320,7 +343,7 @@
 		};
 
     	/* sign a "standard" input */
-		btrx.signinput = function(index, wif, sigHashType) {
+		btrx.signinput = function(index, wif, sigHashType, txType = 'pubkey') {
 			const key = bitjs.wif2pubkey(wif);
 			const shType = sigHashType || 1;
 			const signature = this.transactionSig(index, wif, shType);
@@ -328,6 +351,10 @@
 			const sigBytes = Crypto.util.hexToBytes(signature);
 			buf.push(sigBytes.length);
 			buf = buf.concat(sigBytes);
+			if (txType === 'coldstake') {
+				// OP_FALSE to flag the redeeming of the delegation back to the Owner Address
+				buf.push(0);
+			}
 	        const pubkeyBytes = Crypto.util.hexToBytes(key['pubkey']);
 			buf.push(pubkeyBytes.length);
 			buf = buf.concat(pubkeyBytes);
@@ -336,12 +363,12 @@
 		}
 
 		/* sign inputs */
-		btrx.sign = function(wif, sigHashType) {
+		btrx.sign = function(wif, sigHashType, txType) {
 			const shType = sigHashType || 1;
 			let i;
 			const len = this.inputs.length;
 			for (i = 0; i < len; i++) {
-				this.signinput(i, wif, shType);
+				this.signinput(i, wif, shType, txType);
 			}
 			return this.serialize();
 		}

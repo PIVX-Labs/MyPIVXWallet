@@ -45,13 +45,14 @@
       // These below params share the same names as the CPP params, so finding and editing these is easy-peasy!
 
       /* chainparams */
+      const PUBKEY_PREFIX  = "D";
       const PUBKEY_ADDRESS = 30;
       const SECRET_KEY     = 212;
 
-
+      const COIN = 1e8;
 
       // Cool stuff
-      const donationAddress = "DBs22sfKRHtuWLxPPtXNyjYMcSQ6scihco";
+      const donationAddress = "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb";
   </script>
 </head>
 
@@ -74,8 +75,7 @@
             <ul class="navbar-nav mr-auto" style="cursor: pointer;">
               <li class="nav-item"><a id='start' class="nav-link tablinks" onclick="openTab(event, 'home')">Intro</a></li>
               <li class="nav-item"><a class="nav-link tablinks" onclick="openTab(event, 'keypair')">Dashboard</a></li>
-              <li class="nav-item"><a id="txTab" class="nav-link tablinks" onclick="openTab(event, 'Transaction')">Create Transaction</a></li>
-              <li style="display: none;" class="nav-item"><a class="nav-link tablinks" onclick="startNetworkTest();openTab(event, 'WalletData');">Network Data</a></li>
+              <li class="nav-item"><a id="txTab" class="nav-link tablinks" onclick="openTab(event, 'Transaction')">Send</a></li>
               <li class="nav-item"><a class="nav-link tablinks" onclick="openTab(event, 'Settings');">Settings</a></li>
               <li class="nav-item"><a class="nav-link tablinks" onclick="openTab(event, 'Exchange');">Exchange</a></li>
             </ul>
@@ -303,7 +303,7 @@
                     <br>
                     <div>
                       <canvas id="identicon" class="innerShadow" width="65" height="65" data-jdenticon-value="" style="background-color: white; border-color: white; border-width: 3px; border-style: solid; border-radius: 1000px; position: relative; top: -30px; left: 15px;"></canvas>
-                      <b id="guiAddress" style="line-break: anywhere; width: 60%; display: inline-block; right: -30px; position: relative; font-size: smaller; bottom: 50px; word-break: break-all; font-family: monospace; font-weight: 300;">---</b>
+                      <b id="guiAddress" style="line-break: anywhere; width: 60%; display: inline-block; right: -30px; position: relative; font-size: smaller; bottom: 50px; word-break: break-all; font-family: monospace; font-weight: 300;">~</b>
                       <b id="guiQRButton" style=" width: 60%; display: inline-block; right: -105px; position: relative; font-size: large; bottom: 40px;">
                         <i data-toggle="modal" data-target="#qrModal" style="cursor: pointer; margin-right: 15px;" class="fas fa-qrcode"></i>
                         <i onclick="toClipboard('guiAddress', 'guiAddressCopy')" id="guiAddressCopy" style="cursor: pointer; margin-right: 15px;" class="fas fa-clipboard" ></i>
@@ -316,8 +316,8 @@
                   <div class="large-box col-md-4">
                     <h3 class="noselect" style="margin: 10px; position: relative; left: 135px; cursor: default;">Balance &nbsp;&nbsp;<span id="balanceReload" class="reload noselect" onclick="refreshChainData()">&#x21bb;</span></h3>
                     <div>
-                      <div style="display: inline-block; position: relative; width: 65px; height: 65px; left: 30px; bottom: 5px; border-style: solid; border-radius: 1000px; border-width: 3px; background-size: cover; background-image: url(assets/logo-circle.png);"></div>
-                      <p id="guiBalanceBox" style="display: inline-block; width: 50%; position: relative; right: -70px; bottom: 25px; font-size: x-large;"><b id="guiBalance">---</b> PIV</p>
+                      <div style="display: inline-block; position: relative; width: 65px; height: 65px; left: 30px; bottom: 5px; border-style: solid; border-radius: 1000px; border-width: 3px; background-size: cover; background-image: url(assets/logo-circle.svg);"></div>
+                      <p id="guiBalanceBox" style="display: inline-block; width: 50%; position: relative; right: -70px; bottom: 25px; font-size: x-large;"><b id="guiBalance">~</b> PIV</p>
                     </div>
                   </div>
                 </div>
@@ -350,11 +350,11 @@
                   <div class="col-md-12 dashboard-title">
                     <h3 class="pivx-bold-title" style="font-size:38px;"><span>Create a new</span>Vanity Wallet</h3>
                     <span class="badge badge-warning">Experimental</span></h1>
-                    <p>This will create a PIVX wallet with a customized prefix of your choosing, requiring more processing power to generate such addresses, it is recommended to generate a prefix of less than 4 characters, for example: "DAD" is a possible address prefix.</p>
+                    <p>This will create a PIVX wallet with a customized prefix of your choosing, requiring more processing power to generate such addresses, it is recommended to generate a prefix of less than 6 characters, for example: "DAD" is a possible address prefix.</p>
                   </div>
 
 
-                  <input style="display:none;" type="text" id='prefix' placeholder="Address Prefix">
+                  <input style="display:none;" type="text" id='prefix' placeholder="Address Prefix" onkeyup="checkVanity()">
 
                   <button class="pivx-button-big" onclick="generateVanityWallet()">
                               <span class="buttoni-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 70"><path d="M3.497 25.717C1.401 25.588 0 23.847 0 21.753v-2.535c0-.775.149-1.593.925-1.593h22.719c2.173 0 3.941 1.861 3.941 4.034 0 2.174-1.769 3.988-3.941 3.988l-20.207.048c-.02 0 .08.023.06.022z"></path><path d="M5.229 69.625C4.455 69.625 4 68.494 4 67.719V38.661c0-1.911 1.447-3.731 3.258-3.989.175-.029.285-.047.483-.047h21.525c7.137 0 12.751-5.86 12.751-13.027 0-7.096-5.528-12.841-12.586-13.177-.002 0-.671.016-1.41.016l-20.335.066C5.529 8.373 4 6.652 4 4.558V2.023C4 1.247 4.407.625 5.183.625h24.059c11.57 0 20.654 9.546 20.706 21.104 0 9.378-6.307 17.727-15.337 20.311-1.622.445-3.122.705-4.735.778L12 42.842v22.485c0 2.156-2.141 4.298-4.235 4.298H5.229z"></path></svg></span>
@@ -606,43 +606,7 @@
                 <div id='transactionFinal'></div>
               </div>
               <br>
-            </div>            
-            <div id="WalletData" class="tabcontent">
-              <div id='networkingNotices'></div>
-              <div id='readout' style='display:none'>
-                <div style='float:left;'>
-                  Wallet Details
-                  <hr>
-                  Balance: <span id='balance'></span> | Total Received: <span id='totalReceived'></span> | Total Sent:
-                  <span id='totalSent'></span>
-                  <br>
-                  <div class='pullDown' style='clear:both;'>
-                    <div onclick='toggleDropDown("Transactions")'>Transactions:<span
-                        id='TransactionNumber'>▼</span><span style='float:right;'>▼</span></div>
-                    <div style='background-color:#D0D0D0; width:100%'><span style='display:none;'
-                        id='Transactions'></span></div>
-                    <br>
-                    <br>
-                  </div>
-                </div>
-                <!--Right -->
-                <div id='NetworkDataAddrs'>
-                  <span style='margin-left:1px;'>Address Response</span>
-                  <hr>
-                  <span id='addrStr' style='margin-left:1px;'></span><br>
-                  <span id='addrStrQR' style='margin-left:1px;'></span>
-                </div>
-                <div class='pullDown' style='clear:both;'>
-                  <div onclick='toggleDropDown("NetworkingJson")'>Pure json:<span style='float:right;'>▼</span></div>
-                  <div style='background-color:#D0D0D0; width:100%'>
-                    <textarea rows="15" cols="50" id="NetworkingJson"
-                      style='display:none;font-size:4vw;width:99%;overflow:hidden;background-color:#D0D0D0;'></textarea>
-                  </div>
-                </div>
-              </div>
             </div>
-          </div>
-          <div class='col-md-1'>
           </div>
         </div>
       </div>
@@ -661,6 +625,9 @@
   <script type="text/javascript" src="scripts/libs/script.js"></script>
   <script type="text/javascript" src="scripts/libs/qrcode.js"></script>
   <script type="text/javascript" src="scripts/libs/sha256.js"></script>
+  <script type="text/javascript" src="scripts/libs/bn.js"></script>
+  <script type="text/javascript" src="scripts/libs/secp256k1.js"></script>
+  <script type="text/javascript" src="scripts/libs/noble-secp256k1.js"></script>
 
   <script type="text/javascript" src="scripts/settings.js"></script>
   <script type="text/javascript" src="scripts/wallet.js"></script>
@@ -670,28 +637,64 @@
   <script>
     // WALLET STATE DATA
     let cachedUTXOs = [];
+    let arrDelegatedUTXOs = [];
     let cachedBlockCount = 0;
     let activeQuote = null;
     let DateTime = luxon.DateTime;
     let exchangeQuoteDetailsTickInterval = null;
     let exchangeQuoteCountdownTickInterval = null;
 
+    const nSecp256k1 = nobleSecp256k1.default;
+
+    // Cached DOM elements
+    const domStart = document.getElementById("start");
+    const domNavbarToggler = document.getElementById("navbarToggler");
+    const domGuiWallet = document.getElementById('guiWallet');
+    const domGuiBalance = document.getElementById("guiBalance");
+    const domGuiBalanceBox = document.getElementById("guiBalanceBox");
+    const domBalanceReload = document.getElementById("balanceReload");
+    const domTxTab = document.getElementById("txTab");
+    const domSimpleTXs = document.getElementById("simpleTransactions");
+    const domSimpleTXsDropdown = document.getElementById("simpleTransactionsDropdown");
+    const domAddress1s = document.getElementById("address1s");
+    const domValue1s = document.getElementById("value1s");
+    const domGuiViewKey = document.getElementById('guiViewKey');
+    const domPrivateTxt = document.getElementById('PrivateTxt');
+    const domPrivateQr = document.getElementById('PrivateQR');
+    const domPublicQr = document.getElementById('PublicQR');
+    const domModalQR = document.getElementById('ModalQR');
+    const domModalQrLabel = document.getElementById('ModalQRLabel');
+    const domPrefix = document.getElementById('prefix');
+    const domWalletToggle = document.getElementById("wToggle");
+    const domGenerateWallet = document.getElementById('generateWallet');
+    const domImportWallet = document.getElementById('importWallet');
+    const domGenVanityWallet = document.getElementById('generateVanityWallet');
+    const domAccessWallet = document.getElementById('accessWallet');
+    const domVanityUiButtonTxt = document.getElementById("vanButtonText");
+    const domGenKeyWarning = document.getElementById('genKeyWarning');
+    const domGuiAddress = document.getElementById('guiAddress');
+    const domGenIt = document.getElementById("genIt");
+    const domHumanReadable = document.getElementById("HumanReadable");
+    const domReqDesc = document.getElementById('reqDesc');
+    const domReqDisplay = document.getElementById('reqDescDisplay');
+    const domIdenticon = document.getElementById("identicon");
+    const domPrivKey = document.getElementById("privateKey");
+
     function getBalance(updateGUI = false) {
-      let nBalance = 0;
-      for (const nUTXO of cachedUTXOs) {
-        // Calculate the balance from our UTXO cache
-        console.log(nUTXO.value / 100000000);
-        nBalance += Number((nUTXO.value / 100000000).toFixed(8));
-      }
+      let nBalance = cachedUTXOs.reduce((a, b) => { return a + b.sats }, 0);
 
       // Update the GUI too, if chosen
       if (updateGUI) {
         // Set the balance, and adjust font-size for large balance strings
-        document.getElementById("guiBalance").innerHTML = nBalance;
-        document.getElementById("guiBalanceBox").style.fontSize = nBalance.toString().length > 8 ? "large" : "x-large";
+        domGuiBalance.innerText = nBalance / COIN;
+        domGuiBalanceBox.style.fontSize = (nBalance / COIN).toString().length > 8 ? "large" : "x-large";
       }
 
-      return Number(nBalance.toFixed(8));
+      return nBalance;
+    }
+
+    function getStakingBalance() {
+      return arrDelegatedUTXOs.reduce((a, b) => { return a + b.sats }, 0);
     }
 
     // URL-Query request processing
@@ -743,74 +746,81 @@
     }
 
     function openDonatePage() {
-      document.getElementById("txTab").click();
-      if (document.getElementById("simpleTransactions").style.display === 'none')
-        document.getElementById("simpleTransactionsDropdown").click();
-      document.getElementById("address1s").value = donationAddress;
-      document.getElementById("value1s").focus();
+      domTxTab.click();
+      if (domSimpleTXs.style.display === 'none')
+        domSimpleTXsDropdown.click();
+      domAddress1s.value = donationAddress;
+      domValue1s.focus();
     }
 
     let viewPrivKey = false;
     function toggleKeyView() {
       viewPrivKey = !viewPrivKey;
-      document.getElementById('guiViewKey').innerHTML     = viewPrivKey  ? 'Privkey QR' : 'Pubkey QR';
-      document.getElementById('PrivateTxt').style.display = viewPrivKey  ? 'block' : 'none';
-      document.getElementById('PrivateQR').style.display  = viewPrivKey  ? 'block' : 'none';
-      document.getElementById('PublicQR').style.display   = !viewPrivKey ? 'block' : 'none';
+      domGuiViewKey.innerHTML     = viewPrivKey  ? 'Privkey QR' : 'Pubkey QR';
+      domPrivateTxt.style.display = viewPrivKey  ? 'block' : 'none';
+      domPrivateQr.style.display  = viewPrivKey  ? 'block' : 'none';
+      domPublicQr.style.display   = !viewPrivKey ? 'block' : 'none';
     }
 
     function hideAllWalletOptions() {
       // Hide and Reset the Vanity address input
-      document.getElementById('prefix').value = "";
-      document.getElementById('prefix').style.display = 'none';
+      domPrefix.value = "";
+      domPrefix.style.display = 'none';
       // Hide 'generate wallet'
-      document.getElementById('generateWallet').style.display = 'none';
+      domGenerateWallet.style.display = 'none';
       // Hide 'import wallet'
-      document.getElementById('importWallet').style.display = 'none';
+      domImportWallet.style.display = 'none';
       // Hide 'vanity wallet'
-      document.getElementById('generateVanityWallet').style.display = 'none';
+      domGenVanityWallet.style.display = 'none';
       // Hide 'access wallet'
-      document.getElementById('accessWallet').style.display = 'none';
+      domAccessWallet.style.display = 'none';
     }
 
     function toggleWallet() {
-      var toggle = document.getElementById("wToggle").innerHTML;
+      var toggle = domWalletToggle.innerHTML;
       // Hide and Reset the Vanity address input
-      document.getElementById('prefix').value = "";
-      document.getElementById('prefix').style.display = 'none';
+      domPrefix.value = "";
+      domPrefix.style.display = 'none';
       if (toggle === "Access My Wallet") {
         if (!hasEncryptedWallet()) {
           // No local wallet found
-            document.getElementById("generateWallet").style.display = 'none';
-            document.getElementById("importWallet").style.display = 'block';
-            document.getElementById("wToggle").innerHTML = "Create A New Wallet";
+            domGenerateWallet.style.display = 'none';
+            domImportWallet.style.display = 'block';
+            domWalletToggle.innerHTML = "Create A New Wallet";
             return;
         }
         // We have a local wallet! Display the decryption prompt
         decryptWallet().then(hasWallet => {
           if (hasWallet) {
-            document.getElementById("generateWallet").style.display = 'none';
-            document.getElementById("importWallet").style.display = 'block';
-            document.getElementById("wToggle").innerHTML = "Create A New Wallet";
+            hideAllWalletOptions();
           } else {
-            document.getElementById("generateWallet").style.display = 'block';
-            document.getElementById("importWallet").style.display = 'none';
-            document.getElementById("wToggle").innerHTML = "Access My Wallet";
+            domGenerateWallet.style.display = 'block';
+            domImportWallet.style.display = 'none';
+            domWalletToggle.innerHTML = "Access My Wallet";
           }
         }).catch(e => {
-          document.getElementById("generateWallet").style.display = 'none';
-          document.getElementById("importWallet").style.display = 'block';
-          document.getElementById("wToggle").innerHTML = "Create A New Wallet";
+          domGenerateWallet.style.display = 'none';
+          domImportWallet.style.display = 'block';
+          domWalletToggle.innerHTML = "Create A New Wallet";
         });
       } else {
-        document.getElementById("generateWallet").style.display = 'block';
-        document.getElementById("importWallet").style.display = 'none';
-        document.getElementById("wToggle").innerHTML = "Access My Wallet";
+        domGenerateWallet.style.display = 'block';
+        domImportWallet.style.display = 'none';
+        domWalletToggle.innerHTML = "Access My Wallet";
       }
     }
+
+    function checkVanity() {
+      // Loosely check if the vanity address is valid
+      if (!domPrefix.value.length) return domPrefix.value = PUBKEY_PREFIX;
+      if (!domPrefix.value.startsWith(PUBKEY_PREFIX)) {
+        // Prefix doesnt match, splice it into the string
+        domPrefix.value = PUBKEY_PREFIX + domPrefix.value.substr(1);
+      }
+    }
+
     let isVanityGenerating = false;
     const arrWorkers = [];
-    const vanUiButtonTxt = document.getElementById("vanButtonText");
     let vanUiUpdater;
 
     function stopSearch() {
@@ -819,8 +829,8 @@
         thread.terminate();
       }
       while (arrWorkers.length) arrWorkers.pop();
-      document.getElementById('prefix').disabled = false;
-      vanUiButtonTxt.innerText = 'Create A Vanity Wallet';
+      domPrefix.disabled = false;
+      domVanityUiButtonTxt.innerText = 'Create A Vanity Wallet';
       clearInterval(vanUiUpdater);
     }
 
@@ -828,29 +838,29 @@
       if (isVanityGenerating) return stopSearch();
       if (typeof(Worker) === "undefined") return alert('This browser doesn\'t support Web Workers (multi-threaded JS), unfortunately you cannot generate Vanity wallets!');
       // Generate a vanity address with the given prefix
-      let strPrefix = document.getElementById('prefix');
-      if (strPrefix.value.length === 0 || strPrefix.style.display === 'none') {
+      if (domPrefix.value.length === 0 || domPrefix.style.display === 'none') {
         // No prefix, display the intro!
-        strPrefix.style.display = 'block';
-        document.getElementById('genKeyWarning').style.display = 'none';
-        document.getElementById('PrivateTxt').innerHTML = "---";
-        document.getElementById('guiAddress').innerHTML = "---";
+        domPrefix.placeholder = 'Custom Prefix (' + PUBKEY_PREFIX + ' ...)';
+        domPrefix.style.display = 'block';
+        domGenKeyWarning.style.display = 'none';
+        domPrivateTxt.innerHTML = "~";
+        domGuiAddress.innerHTML = "~";
       } else {
         // Ensure the input is base58 compatible
-        for (const char of strPrefix.value) {
+        for (const char of domPrefix.value) {
           if (!MAP.includes(char)) return alert("The character '" + char + "' is unsupported in addresses! (Not Base58 compatible)");
         }
         // We also don't want users to be mining addresses for years... so cap the letters to four until the generator is more optimized
-        if (strPrefix.value.length > 4) return alert("This is a long name! This would take a LONG time to find, please choose a shorter name!");
+        if (domPrefix.value.length > 6) return alert("This is a long name! This would take a LONG time to find, please choose a shorter name!");
         isVanityGenerating = true;
-        document.getElementById('prefix').disabled = true;
+        domPrefix.disabled = true;
         // Cache a lowercase equivilent for lower-entropy comparisons (a case-insensitive search is ALOT faster!) and strip accidental spaces
-        const nInsensitivePrefix = strPrefix.value.toLowerCase().replace(/ /g, "");
+        const nInsensitivePrefix = domPrefix.value.toLowerCase().replace(/ /g, "");
         const nPrefixLen = nInsensitivePrefix.length;
         let attempts = 0;
 
         // Setup workers
-        const nThreads = Math.max(Math.round(window.navigator.hardwareConcurrency / 2), 1);
+        const nThreads = Math.max(Math.floor(window.navigator.hardwareConcurrency * 0.75), 1);
         console.log('Spawning ' + nThreads + ' vanity search threads!');
         while (arrWorkers.length < nThreads) {
           arrWorkers.push(new Worker("scripts/vanitygen_worker.js"));
@@ -859,19 +869,21 @@
 
         // GUI Updater
         let lastAttempts = 0;
-        vanUiButtonTxt.innerText = 'Stop (Searched ' + attempts.toLocaleString('en-GB') + ' keys)';
+        domVanityUiButtonTxt.innerText = 'Stop (Searched ' + attempts.toLocaleString('en-GB') + ' keys)';
         vanUiUpdater = setInterval(() => {
           if (attempts > lastAttempts) {
             lastAttempts = attempts;
-            vanUiButtonTxt.innerText = 'Stop (Searched ' + attempts.toLocaleString('en-GB') + ' keys)';
+            domVanityUiButtonTxt.innerText = 'Stop (Searched ' + attempts.toLocaleString('en-GB') + ' keys)';
           }
         }, 200);
 
         function checkResult(data) {
           attempts++;
           if (data.pub.substr(0, nPrefixLen).toLowerCase() == nInsensitivePrefix) {
-            importWallet(data.priv);
+            importWallet(data.priv, true);
             stopSearch();
+            domGuiBalance.innerHTML = "0";
+            domGuiBalanceBox.style.fontSize = "x-large";
             return console.log("VANITY: Found an address after " + attempts + " attempts!");
           }
         }
@@ -885,26 +897,99 @@
         document.getElementById(id).style.display = 'block';
       }
     }
-    function startNetworkTest() {
-      if (networkEnabled) {
-        if (typeof publicKeyForNetwork !== 'undefined') {
-          checkPubKey(); //readout
-          document.getElementById("readout").style.display = 'block';
-          document.getElementById("networkingNotices").innerHTML = '';
-        } else {
-          document.getElementById("networkingNotices").innerHTML = 'No public key';
-        }
-      } else {
-        document.getElementById("networkingNotices").innerHTML = 'Network disabled';
-      }
-    }
     function loadUnspendInputs() {
       if (publicKeyForNetwork) {
         getUnspentTransactions();
-        document.getElementById("simpleTransactions").style.display = 'block';
-        document.getElementById("genIt").style.display = 'block';
+        domSimpleTXs.style.display = 'block';
+        domGenIt.style.display = 'block';
       } else {
         alert("You need a wallet to transact with! Please import a wallet via the 'Dashboard --> Access my wallet' menu");
+      }
+    }
+    function undelegate(value) {
+      if (!publicKeyForNetwork) {
+        if (hasEncryptedWallet())
+          alert("Please unlock your wallet before sending transactions!");
+        else
+          alert("Please import/create your wallet before sending transactions!");
+        return;
+      }
+      let nBalance = getStakingBalance() / COIN;
+      if (value > nBalance) return alert("Balance is too small! (" + nBalance + " - " + value + " = " + (nBalance - value).toFixed(8) + ")");
+      console.log("Constructing TX of value: " + value + " PIV");
+      // Loop our cached UTXOs and construct a TX
+      trx = bitjs.transaction();
+      let txValue = 0;
+      for (const UTXO of arrDelegatedUTXOs) {
+        if (txValue > value) {
+          // Required Coin Control value met, yahoo!
+          console.log("Coin Control: TX Constructed! Selected " + trx.inputs.length + " input(s) (" + txValue + " PIV)");
+          break;
+        }
+        trx.addinput(UTXO.id, UTXO.vout, UTXO.script);
+        txValue += UTXO.sats / COIN;
+        console.log("Coin Control: Selected CS input " + UTXO.id.substr(0, 6) + "(" + UTXO.vout + ")... (Added " + (UTXO.sats / COIN).toFixed(8) + " PIV - Total: " + txValue + ")");
+      }
+      calculatefee(trx.serialize().length);
+      trx.addoutput(publicKeyForNetwork, value);
+      addresschange = publicKeyForNetwork;
+      totalSent = (parseFloat(fee) + parseFloat(value)).toFixed(8);
+      valuechange = (parseFloat(txValue) - parseFloat(totalSent)).toFixed(8);
+      if (totalSent <= nBalance) {
+        domHumanReadable.innerHTML = "Balance: " + nBalance.toFixed(8) + "<br>Fee: " + fee + "<br>To: " + publicKeyForNetwork + "<br>Sent: " + value + "<br>Change Address: " + addresschange + "<br>Change: " + valuechange;
+        trx.addoutput(addresschange, valuechange); //Change Address
+        if (typeof privateKeyForTransactions !== 'undefined') {
+          sendTransaction(trx.sign(privateKeyForTransactions, 1, 'coldstake'));
+          domGenIt.innerHTML = "Continue";
+        } else {
+          console.log("No private key");
+        }
+      } else {
+        console.warn("Amount: " + value + "\nFee: " + fee + "\nChange: " + valuechange + "\nTOTAL: " + totalSent);
+        domHumanReadable.innerHTML = "You are trying to send more than you have!";
+      }
+    }
+    function delegate(value, coldAddr) {
+      if (!publicKeyForNetwork) {
+        if (hasEncryptedWallet())
+          alert("Please unlock your wallet before sending transactions!");
+        else
+          alert("Please import/create your wallet before sending transactions!");
+        return;
+      }
+      let nBalance = getBalance() / COIN;
+      if (value > nBalance) return alert("Balance is too small! (" + nBalance + " - " + value + " = " + (nBalance - value).toFixed(8) + ")");
+      console.log("Constructing TX of value: " + value + " PIV");
+      // Loop our cached UTXOs and construct a TX
+      trx = bitjs.transaction();
+      let txValue = 0;
+      for (const UTXO of cachedUTXOs) {
+        if (txValue > value) {
+          // Required Coin Control value met, yahoo!
+          console.log("Coin Control: TX Constructed! Selected " + trx.inputs.length + " input(s) (" + txValue + " PIV)");
+          break;
+        }
+        trx.addinput(UTXO.id, UTXO.vout, UTXO.script);
+        txValue += UTXO.sats / COIN;
+        console.log("Coin Control: Selected input " + UTXO.id.substr(0, 6) + "(" + UTXO.vout + ")... (Added " + (UTXO.sats / COIN).toFixed(8) + " PIV - Total: " + txValue + ")");
+      }
+      calculatefee(trx.serialize().length);
+      trx.addcoldstakingoutput(publicKeyForNetwork, coldAddr, value);
+      addresschange = publicKeyForNetwork;
+      totalSent = (parseFloat(fee) + parseFloat(value)).toFixed(8);
+      valuechange = (parseFloat(txValue) - parseFloat(totalSent)).toFixed(8);
+      if (totalSent <= nBalance) {
+        domHumanReadable.innerHTML = "Balance: " + nBalance.toFixed(8) + "<br>Fee: " + fee + "<br>To: " + publicKeyForNetwork + "<br>Sent: " + value + "<br>Change Address: " + addresschange + "<br>Change: " + valuechange;
+        trx.addoutput(addresschange, valuechange); //Change Address
+        if (typeof privateKeyForTransactions !== 'undefined') {
+          sendTransaction(trx.sign(privateKeyForTransactions, 1));
+          domGenIt.innerHTML = "Continue";
+        } else {
+          console.log("No private key");
+        }
+      } else {
+        console.warn("Amount: " + value + "\nFee: " + fee + "\nChange: " + valuechange + "\nTOTAL: " + totalSent);
+        domHumanReadable.innerHTML = "You are trying to send more than you have!";
       }
     }
 
@@ -1225,7 +1310,7 @@
       if (destinationAddress !== 'undefined' && destinationAddress !== null){
         address = destinationAddress;
       } else {
-        address = document.getElementById("address1s").value;
+        address = domAddress1s.value;
       }
 
       if (address === 'undefined' || destinationAddress === null){
@@ -1233,18 +1318,17 @@
         return;
       }
 
-      let value = Number(document.getElementById(valueAddressId).value);
-      let genIt = document.getElementById("genIt");
-      if (genIt !== 'undefined' && genIt !== null && genIt.innerHTML === 'Continue') {
-        genIt.innerHTML = 'Send Transaction';
-        document.getElementById("HumanReadable").innerHTML = "";
-        document.getElementById("value1s").value = "";
-        document.getElementById("address1s").value = "";
-        document.getElementById('reqDesc').value = '';
-        document.getElementById('reqDescDisplay').style.display = 'none';
+      let value = Number(domValue1s.value);
+      if (domGenIt !== 'undefined' && domGenIt !== null && domGenIt.innerHTML === 'Continue') {
+        domGenIt.innerHTML = 'Send Transaction';
+        domHumanReadable.innerHTML = "";
+        domValue1s.value = "";
+        domAddress1s.value = "";
+        domReqDesc.value = '';
+        domReqDisplay.style.display = 'none';
         return;
       }
-      let nBalance = getBalance();
+      let nBalance = getBalance() / COIN;
       if (value > nBalance) return alert("Balance is too small! (" + nBalance + " - " + value + " = " + (nBalance - value).toFixed(8) + ")");
       console.log("Constructing TX of value: " + value + " PIV");
       // Loop our cached UTXOs and construct a TX
@@ -1256,31 +1340,29 @@
           console.log("Coin Control: TX Constructed! Selected " + trx.inputs.length + " input(s) (" + txValue + " PIV)");
           break;
         }
-        trx.addinput(UTXO.tx_hash, UTXO.tx_ouput_n, UTXO.script);
-        txValue += Number((UTXO.value / 100000000).toFixed(8));
-        txValue = Number(txValue.toFixed(8));
-        console.log("Coin Control: Selected input " + UTXO.tx_hash.substr(0, 6) + "(" + UTXO.tx_ouput_n + ")... (Added " + (UTXO.value / 100000000).toFixed(8) + " PIV - Total: " + txValue + ")");
+        trx.addinput(UTXO.id, UTXO.vout, UTXO.script);
+        txValue += UTXO.sats / COIN;
+        console.log("Coin Control: Selected input " + UTXO.id.substr(0, 6) + "(" + UTXO.vout + ")... (Added " + (UTXO.sats / COIN).toFixed(8) + " PIV - Total: " + txValue + ")");
       }
 
       if (address != '' && value != '') {
         calculatefee(trx.serialize().length);
-        trx.addoutput(address, value);//Sending to this address
+        trx.addoutput(address, value); //Sending to this address
         addresschange = publicKeyForNetwork;
         totalSent = (parseFloat(fee) + parseFloat(value)).toFixed(8);
         valuechange = (parseFloat(txValue) - parseFloat(totalSent)).toFixed(8);
-        if (totalSent <= balance) {
-          document.getElementById("HumanReadable").innerHTML = "Balance: " + balance.toFixed(8) + "<br>Fee: " + fee + "<br>To: " + address + "<br>Sent: " + value.toFixed(8) + "<br>Change Address: " + addresschange + "<br>Change: " + valuechange;
-          trx.addoutput(addresschange, valuechange);//Change Address
+        if (totalSent <= nBalance) {
+          domHumanReadable.innerHTML = "Balance: " + nBalance.toFixed(8) + "<br>Fee: " + fee + "<br>To: " + address + "<br>Sent: " + value + "<br>Change Address: " + addresschange + "<br>Change: " + valuechange;
+          trx.addoutput(addresschange, valuechange); //Change Address
           if (typeof privateKeyForTransactions !== 'undefined') {
-            var wif = privateKeyForTransactions;
-            sendTransaction(trx.sign(wif, 1));
-            genIt.innerHTML = "Continue";
+            sendTransaction(trx.sign(privateKeyForTransactions, 1));
+            domGenIt.innerHTML = "Continue";
           } else {
             console.log("No private key");
           }
         } else {
           console.warn("Amount: " + value + "\nFee: " + fee + "\nChange: " + valuechange + "\nTOTAL: " + totalSent);
-          document.getElementById("HumanReadable").innerHTML = "You are trying to send more than you have!";
+          domHumanReadable.innerHTML = "You are trying to send more than you have!";
         }
       } else {
         console.log("No address or value");
@@ -1318,20 +1400,20 @@
         evt.currentTarget.className += " active";
 
       // Close the navbar if it's not already closed
-      if (!document.getElementById("navbarToggler").className.includes("collapsed"))
-        document.getElementById("navbarToggler").click();
+      if (!domNavbarToggler.className.includes("collapsed"))
+        domNavbarToggler.click();
     }
-    document.getElementById("start").click();
+    domStart.click();
 
     function refreshChainData() {
       // If in offline mode: don't sync ANY data or connect to the internet
       if (!networkEnabled) return console.warn("Offline mode: For your security, the wallet will avoid ALL internet requests in offline mode.");
 
       // Update identicon
-      document.getElementById("identicon").dataset.jdenticonValue = publicKeyForNetwork;
+      domIdenticon.dataset.jdenticonValue = publicKeyForNetwork;
       jdenticon();
       // Play reload anim
-      document.getElementById("balanceReload").className += " playAnim";
+      domBalanceReload.className += " playAnim";
       // Fetch block count + UTXOs
       getBlockCount();
     }
@@ -1346,19 +1428,19 @@
       // Configure payment processor
       if (requestTo && requestAmount) {
         // Open 'Create Transaction' menu
-        document.getElementById('txTab').click();
-        if (document.getElementById("simpleTransactions").style.display === 'none')
-          document.getElementById("simpleTransactionsDropdown").click();
+        domTxTab.click();
+        if (domSimpleTXs.style.display === 'none')
+          domSimpleTXsDropdown.click();
         // Pre-fill inputs
-        document.getElementById('address1s').value = requestTo;
-        document.getElementById('value1s').value  = requestAmount;
+        domAddress1s.value = requestTo;
+        domValue1s.value   = requestAmount;
         // Payment request 'desc' is optional
         if (urlParams.has('desc')) {
-          document.getElementById('reqDescDisplay').style.display = 'block';
-          document.getElementById('reqDesc').value = urlParams.get('desc');
+          domReqDisplay.style.display = 'block';
+          domReqDesc.value = urlParams.get('desc');
         } else {
-          document.getElementById('reqDesc').value = '';
-          document.getElementById('reqDescDisplay').style.display = 'none';
+          domReqDesc.value = '';
+          domReqDisplay.style.display = 'none';
         }
       }
     });

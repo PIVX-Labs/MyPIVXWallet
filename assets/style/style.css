@@ -324,13 +324,6 @@ input::-moz-focus-inner {
 /*Breakpoints */
 
 @media screen and (min-width: 1025px) {
-  /* Network Data Settings */
-  #addrStr {
-    font-size: 20px;
-  }
-  #NetworkDataAddrs{
-    float:right;
-  }
   /*Main Wallet page */
   #PrivateTxt{
     font-size: 25px;
@@ -340,13 +333,6 @@ input::-moz-focus-inner {
   }
 }
 @media screen and (max-width: 1024px) {
-  /* Network Data Settings */
-  #addrStr {
-    font-size: 20px;
-  }
-  #NetworkDataAddrs{
-    float:left;
-  }
   /*Main Wallet page */
   #PrivateTxt{
     font-size: 18px;
@@ -356,13 +342,6 @@ input::-moz-focus-inner {
   }
 }
 @media screen and (max-width: 768px) {
-  /* Network Data Settings */
-  #addrStr {
-    font-size: 20px;
-  }
-  #NetworkDataAddrs{
-    float:left;
-  }
   /*Main Wallet page */
   #PrivateTxt{
     font-size: 17px;
@@ -377,14 +356,6 @@ input::-moz-focus-inner {
 /* Buttons - Hide icons or it will be deformed*/
   .buttoni-arrow, .buttoni-icon{ display:none; }
 
-
-  /* Network Data Settings */
-  #addrStr {
-    font-size: 13px;
-  }
-  #NetworkDataAddrs{
-    float:left;
-  }
   /*Main Wallet page */
   #PrivateTxt{
     font-size: 13px;
@@ -395,13 +366,6 @@ input::-moz-focus-inner {
 
 }
 @media screen and (max-width: 480px) {
-  /* Network Data Settings */
-  #addrStr {
-    font-size: 13px;
-  }
-  #NetworkDataAddrs{
-    float:left;
-  }
   /*Main Wallet page */
   #PrivateTxt{
     font-size: 8px;

@@ -2,7 +2,9 @@
 const PUBKEY_ADDRESS = 30;
 const SECRET_KEY     = 212;
 
-importScripts('libs/crypto-min.js', 'libs/crypto-sha256-hmac.js', 'libs/crypto-sha256.js', 'libs/ellipticcurve.js', 'libs/jsbn.js', 'libs/ripemd160.js', 'libs/sha256.js');
+importScripts('libs/noble-secp256k1.js', 'libs/bn.js', 'libs/secp256k1.js', 'libs/crypto-min.js', 'libs/crypto-sha256-hmac.js', 'libs/crypto-sha256.js', 'libs/jsbn.js', 'libs/ripemd160.js', 'libs/sha256.js');
+
+const nSecp256k1 = nobleSecp256k1.default;
 
 // B58 Encoding Map
 const MAP = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
@@ -69,44 +71,49 @@ function getSafeRand() {
   return r;
 }
 
-while (true) {
-    const privkeyBytes = getSafeRand();
-    // Private Key Generation
-    const privkeyHex = Crypto.util.bytesToHex(privkeyBytes).toUpperCase();
-    const privkeyVer = SECRET_KEY.toString(16) + privkeyHex + "01";
-    const shaObj = new jsSHA("SHA-256", "HEX", { "numRounds": 2 });
-    shaObj.update(privkeyVer);
-    const hash = shaObj.getHash("HEX");
-    const checksum = String(hash).substr(0, 8).toUpperCase();
-    const keyWithChecksum = privkeyVer + checksum;
-    const strPrivkey = to_b58(Crypto.util.hexToBytes(keyWithChecksum));
-    // Public Key Derivation
-    const privkeyBigInt = BigInteger.fromByteArrayUnsigned(Crypto.util.hexToBytes(privkeyHex));
-    const curve = EllipticCurve.getSECCurveByName("secp256k1");
-    const curvePt = curve.getG().multiply(privkeyBigInt);
-    const x = curvePt.getX().toBigInteger();
-    const y = curvePt.getY().toBigInteger();
-    let pubkeyBytes = EllipticCurve.integerToBytes(x, 32);
-    pubkeyBytes = pubkeyBytes.concat(EllipticCurve.integerToBytes(y, 32));
-    pubkeyBytes.unshift(0x04);
-    const publicKeyBytesCompressed = EllipticCurve.integerToBytes(x, 32);
-    if (y.isEven()) {
-        publicKeyBytesCompressed.unshift(0x02);
-    } else {
-        publicKeyBytesCompressed.unshift(0x03);
-    }
-    const publicKeyHex = Crypto.util.bytesToHex(publicKeyBytesCompressed).toUpperCase();
-    const pubKeyHashing = new jsSHA("SHA-256", "HEX", { "numRounds": 1 });
-    pubKeyHashing.update(publicKeyHex);
-    const pubKeyHash = pubKeyHashing.getHash("HEX");
-    const pubKeyHashRipemd160 = Crypto.util.bytesToHex(ripemd160(Crypto.util.hexToBytes(pubKeyHash))).toUpperCase();
-    const pubKeyHashNetwork = PUBKEY_ADDRESS.toString(16) + pubKeyHashRipemd160
-    const pubKeyHashingS = new jsSHA("SHA-256", "HEX", { "numRounds": 2 });
-    pubKeyHashingS.update(pubKeyHashNetwork);
-    const pubKeyHashingSF = pubKeyHashingS.getHash("HEX").toUpperCase();
-    const checksumPubKey = String(pubKeyHashingSF).substr(0, 8).toUpperCase();
-    const pubKeyPreBase = pubKeyHashNetwork + checksumPubKey;
-    const strPubkey = to_b58(Crypto.util.hexToBytes(pubKeyPreBase));
+// Writes a sequence of Array-like bytes into a location within a Uint8Array
+function writeToUint8(arr, bytes, pos) {
+  const len = arr.length;
+  let i = 0;
+  for (pos; pos<len; pos++) {
+    arr[pos] = bytes[i];
+    if (!Number.isSafeInteger(bytes[i++])) break;
+  }
+}
 
-    postMessage({'pub': strPubkey, 'priv': strPrivkey});
+while (true) {
+    const pkBytes = getSafeRand();
+
+    // Public Key Derivation
+    let nPubkey = Crypto.util.bytesToHex(nSecp256k1.getPublicKey(pkBytes)).substr(2);
+    const pubY = Secp256k1.uint256(nPubkey.substr(64), 16);
+    nPubkey = nPubkey.substr(0, 64);
+    const publicKeyBytesCompressed = Crypto.util.hexToBytes(nPubkey);
+    if (pubY.isEven()) {
+      publicKeyBytesCompressed.unshift(0x02);
+    } else {
+      publicKeyBytesCompressed.unshift(0x03);
+    }
+    // First pubkey SHA-256 hash
+    const pubKeyHashing = new jsSHA(0, 0, { "numRounds": 1 });
+    pubKeyHashing.update(publicKeyBytesCompressed);
+    // RIPEMD160 hash
+    const pubKeyHashRipemd160 = ripemd160(pubKeyHashing.getHash(0));
+    // Network Encoding
+    const pubKeyHashNetworkLen = pubKeyHashRipemd160.length + 1;
+    const pubKeyHashNetwork = new Uint8Array(pubKeyHashNetworkLen);
+    pubKeyHashNetwork[0] = PUBKEY_ADDRESS;
+    writeToUint8(pubKeyHashNetwork, pubKeyHashRipemd160, 1);
+    // Double SHA-256 hash
+    const pubKeyHashingS = new jsSHA(0, 0, { "numRounds": 2 });
+    pubKeyHashingS.update(pubKeyHashNetwork);
+    const pubKeyHashingSF = pubKeyHashingS.getHash(0);
+    // Checksum
+    const checksumPubKey = pubKeyHashingSF.slice(0, 4);
+    // Public key pre-base58
+    const pubKeyPreBase = new Uint8Array(pubKeyHashNetworkLen + checksumPubKey.length);
+    writeToUint8(pubKeyPreBase, pubKeyHashNetwork, 0);
+    writeToUint8(pubKeyPreBase, checksumPubKey, pubKeyHashNetworkLen);
+
+    postMessage({'pub': to_b58(pubKeyPreBase), 'priv': pkBytes});
 }
