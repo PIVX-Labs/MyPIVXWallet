@@ -1,7 +1,7 @@
 if (networkEnabled) {
   var getBlockCount = function() {
     var request = new XMLHttpRequest();
-    request.open('GET', "https://stakecubecoi.net/pivx/blocks", true);
+    request.open('GET', "https://stakecubecoin.net/pivx/blocks", true);
     request.onerror = function () {
       createAlert("warning", "stakecube api is down");
       networkEnabled = false;
