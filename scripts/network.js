@@ -1,7 +1,12 @@
 if (networkEnabled) {
   var getBlockCount = function() {
     var request = new XMLHttpRequest();
-    request.open('GET', "https://stakecubecoin.net/pivx/blocks", true);
+    request.open('GET', "https://stakecubecoi.net/pivx/blocks", true);
+    request.onerror = function () {
+      createAlert("warning", "stakecube api is down");
+      networkEnabled = false;
+      document.getElementById('Network').innerHTML = "";
+    }
     request.onload = function () {
       const data = Number(this.response);
       // If the block count has changed, refresh all of our data!
@@ -49,6 +54,11 @@ if (networkEnabled) {
     if (!arrUTXOsToSearch.length) return;
     var request = new XMLHttpRequest()
     request.open('GET', "https://stakecubecoin.net/pivx/api/tx-specific/" + arrUTXOsToSearch[0].txid, true);
+    request.onerror = function () {
+      createAlert("warning", "stakecube api is down");
+      networkEnabled = false;
+      document.getElementById('Network').innerHTML = "";
+    }
     request.onload = function () {
       const data = JSON.parse(this.response);
       // Check the UTXOs
@@ -76,6 +86,11 @@ if (networkEnabled) {
     if (arrUTXOsToSearch.length) return;
     var request = new XMLHttpRequest()
     request.open('GET', "https://stakecubecoin.net/pivx/api/utxo/" + publicKeyForNetwork, true);
+    request.onerror = function () {
+      createAlert("warning", "stakecube api is down");
+      networkEnabled = false;
+      document.getElementById('Network').innerHTML = "";
+    }
     request.onload = function () {
       arrUTXOsToSearch = JSON.parse(this.response);
       arrDelegatedUTXOs = [];
@@ -87,6 +102,11 @@ if (networkEnabled) {
   var sendTransaction = function (hex, msg = '') {
     var request = new XMLHttpRequest();
     request.open('GET', 'https://stakecubecoin.net/pivx/submittx?tx=' + hex, true)
+    request.onerror = function () {
+      createAlert("warning", "stakecube api is down");
+      networkEnabled = false;
+      document.getElementById('Network').innerHTML = "";
+    }
     request.onload = function () {
       const data = this.response;
       if (data.length === 64) {
