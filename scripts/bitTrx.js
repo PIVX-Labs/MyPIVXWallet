@@ -6,7 +6,6 @@
 	bitjs.pub  = PUBKEY_ADDRESS.toString(16);
 	bitjs.priv = SECRET_KEY.toString(16);
 	bitjs.compressed = true;
-
 	/* provide a privkey and return an WIF  */
 	bitjs.privkey2wif = function(h) {
 		const r = Crypto.util.hexToBytes(h);
@@ -19,7 +18,6 @@
 
 		return B58.encode(r.concat(checksum));
 	}
-
 	/* convert a wif key back to a private key */
 	bitjs.wif2privkey = function(wif) {
 		let compressed = false;
@@ -32,7 +30,6 @@
 		}
 		return {'privkey': Crypto.util.bytesToHex(key), 'compressed':compressed};
 	}
-
 	/* convert a wif to a pubkey */
 	bitjs.wif2pubkey = function(wif) {
 		const compressed = bitjs.compressed;
@@ -42,13 +39,11 @@
 		bitjs.compressed = compressed;
 		return {'pubkey':pubkey,'compressed':r['compressed']};
 	}
-
 	/* convert a wif to a address */
 	bitjs.wif2address = function(wif) {
 		const r = bitjs.wif2pubkey(wif);
 		return {'address':bitjs.pubkey2address(r['pubkey']), 'compressed':r['compressed']};
 	}
-
 	/* generate a public key from a private key */
 	bitjs.newPubkey = function(hash) {
 		const privkeyBigInt = BigInteger.fromByteArrayUnsigned(Crypto.util.hexToBytes(hash));
@@ -74,7 +69,6 @@
 			return Crypto.util.bytesToHex(pubkeyBytes);
 		}
 	}
-
 	/* provide a public key and return address */
 	bitjs.pubkey2address = function(h, byte) {
 		const r = ripemd160(Crypto.SHA256(Crypto.util.hexToBytes(h), {asBytes: true}));
@@ -83,14 +77,12 @@
 		const checksum = hash.slice(0, 4);
 		return B58.encode(r.concat(checksum));
 	}
-
 	bitjs.transaction = function() {
 		var btrx = {};
 		btrx.version = 1;
 		btrx.inputs = [];
 		btrx.outputs = [];
 		btrx.locktime = 0;
-
 		btrx.addinput = function(txid, index, script, sequence) {
 			const o = {};
 			o.outpoint = {'hash': txid, 'index': index};
@@ -98,7 +90,6 @@
 			o.sequence = sequence || ((btrx.locktime==0) ? 4294967295 : 0);
 			return this.inputs.push(o);
 		}
-
 		btrx.addoutput = function(address, value) {
 			const o = {};
 			let buf = [];
@@ -160,7 +151,6 @@
 				return front.slice(1);
 			}
 		}
-
 		/* generate the transaction hash to sign from a transaction input */
 		btrx.transactionHash = function(index, sigHashType) {
 			let clone = bitjs.clone(this);
@@ -234,7 +224,6 @@
 				return false;
 			}
 		}
-
 		/* generate a signature from a transaction hash */
 		btrx.transactionSig = function(index, wif, sigHashType, txhash) {
 
@@ -246,14 +235,11 @@
 				sequence.push(0x02); // INTEGER
 				sequence.push(rBa.length);
 				sequence = sequence.concat(rBa);
-
 				sequence.push(0x02); // INTEGER
 				sequence.push(sBa.length);
 				sequence = sequence.concat(sBa);
-
 				sequence.unshift(sequence.length);
 				sequence.unshift(0x30); // SEQUENCE
-
 				return sequence;
 			}
 
@@ -276,7 +262,6 @@
 					s = k.modInverse(n).multiply(e.add(priv.multiply(r))).mod(n);
 					badrs++
 				} while (r.compareTo(BigInteger.ZERO) <= 0 || s.compareTo(BigInteger.ZERO) <= 0);
-
 				// Force lower s values per BIP62
 				const halfn = n.shiftRight(1);
 				if (s.compareTo(halfn) > 0) {
@@ -285,23 +270,19 @@
 
 				const sig = serializeSig(r, s);
 				sig.push(parseInt(shType, 10));
-
 				return Crypto.util.bytesToHex(sig);
 			} else {
 				return false;
 			}
 		}
-
 		// https://tools.ietf.org/html/rfc6979#section-3.2
 		btrx.deterministicK = function(wif, hash, badrs) {
 			// if r or s were invalid when this function was used in signing,
 			// we do not want to actually compute r, s here for efficiency, so,
 			// we can increment badrs. explained at end of RFC 6979 section 3.2
-
 			// wif is b58check encoded wif privkey.
 			// hash is byte array of transaction digest.
 			// badrs is used only if the k resulted in bad r or s.
-
 			// some necessary things out of the way for clarity.
 			badrs = badrs || 0;
 			const key = bitjs.wif2privkey(wif);
@@ -311,7 +292,6 @@
 
 			// Step: a
 			// hash is a byteArray of the message digest. so h1 == hash in our case
-
 			// Step: b
 			let v = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1];
 
@@ -320,23 +300,18 @@
 
 			// Step: d
 			k = Crypto.HMAC(Crypto.SHA256, v.concat([0]).concat(x).concat(hash), k, { asBytes: true });
-
 			// Step: e
 			v = Crypto.HMAC(Crypto.SHA256, v, k, { asBytes: true });
-
 			// Step: f
 			k = Crypto.HMAC(Crypto.SHA256, v.concat([1]).concat(x).concat(hash), k, { asBytes: true });
-
 			// Step: g
 			v = Crypto.HMAC(Crypto.SHA256, v, k, { asBytes: true });
-
 			// Step: h1
 			let T = [];
 
 			// Step: h2 (since we know tlen = qlen, just copy v to T.)
 			v = Crypto.HMAC(Crypto.SHA256, v, k, { asBytes: true });
 			T = v;
-
 			// Step: h3
 			let KBigInt = BigInteger.fromByteArrayUnsigned(T);
 
@@ -350,10 +325,8 @@
 				KBigInt = BigInteger.fromByteArrayUnsigned(T);
 				i++
 			};
-
 			return KBigInt;
 		};
-
     	/* sign a "standard" input */
 		btrx.signinput = function(index, wif, sigHashType, txType = 'pubkey') {
 			const key = bitjs.wif2pubkey(wif);
@@ -379,7 +352,6 @@
 			this.inputs[index].script = buf;
 			return true;
 		}
-
 		/* sign inputs */
 		btrx.sign = function(wif, sigHashType, txType) {
 			const shType = sigHashType || 1;
@@ -390,8 +362,6 @@
 			}
 			return this.serialize();
 		}
-
-
 		/* serialize a transaction */
 		btrx.serialize = function() {
 			let buffer = [];
@@ -427,7 +397,6 @@
 			return [num % 256].concat(bitjs.numToBytes(Math.floor(num / 256), bytes - 1));
 		}
 	}
-
 	bitjs.numToByteArray = function(num) {
 		if (num <= 256) {
 			return [num];
@@ -435,7 +404,6 @@
 			return [num % 256].concat(bitjs.numToByteArray(Math.floor(num / 256)));
 		}
 	}
-
 	bitjs.numToVarInt = function(num) {
 		if (num < 253) {
 			return [num];
@@ -447,12 +415,10 @@
 			return [255].concat(bitjs.numToBytes(num, 8));
 		}
 	}
-
 	bitjs.bytesToNum = function(bytes) {
 		if (bytes.length == 0) return 0;
 		else return bytes[0] + 256 * bitjs.bytesToNum(bytes.slice(1));
 	}
-
 	/* clone an object */
 	bitjs.clone = function(obj) {
 		if (obj == null || typeof(obj) != 'object') return obj;
@@ -465,12 +431,10 @@
 		}
 		return temp;
 	}
-
 		var B58 = bitjs.Base58 = {
 		alphabet: "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz",
 		validRegex: /^[1-9A-HJ-NP-Za-km-z]+$/,
 		base: BigInteger.valueOf(58),
-
 		/**
 		* Convert a byte array to a base58-encoded string.
 		*
@@ -489,17 +453,14 @@
 				bi = bi.subtract(mod).divide(B58.base);
 			}
 			chars.unshift(B58.alphabet[bi.intValue()]);
-
 			// Convert leading zeros too.
 			for (const byteIn of input) {
 				if (byteIn == 0x00) {
 					chars.unshift(B58.alphabet[0]);
 				} else break;
 			}
-
 			return chars.join('');
 		},
-
 		/**
 		* Convert a base58-encoded string to a byte array.
 		*
@@ -516,9 +477,7 @@
 				if (alphaIndex < 0) {
 					throw "Invalid character";
 				}
-				bi = bi.add(BigInteger.valueOf(alphaIndex)
-								.multiply(B58.base.pow(input.length - 1 - i)));
-
+				bi = bi.add(BigInteger.valueOf(alphaIndex).multiply(B58.base.pow(input.length - 1 - i)));
 				// This counts leading zero bytes
 				if (input[i] == "1") leadingZerosNum++;
 				else leadingZerosNum = 0;
@@ -527,10 +486,8 @@
 
 			// Add leading zeros
 			while (leadingZerosNum-- > 0) bytes.unshift(0);
-
 			return bytes;
 		}
 	}
 	return bitjs;
-
 })();
