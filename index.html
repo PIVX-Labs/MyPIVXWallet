@@ -80,12 +80,16 @@
 
             <!-- MAIN NAVBAR -->
             <ul class="navbar-nav mr-auto ptr">
-              <li class="nav-item"><a id='start' class="nav-link tablinks" onclick="openTab(event, 'home')">Intro</a></li>
-              <li class="nav-item"><a class="nav-link tablinks" onclick="openTab(event, 'keypair')">Dashboard</a></li>
-              <li class="nav-item"><a id="txTab" class="nav-link tablinks" onclick="openTab(event, 'Transaction')">Send</a></li>
-              <li class="nav-item"><a id="txTab" class="nav-link tablinks" onclick="openTab(event, 'StakingTab')">Stake</a></li>
-              <li class="nav-item"><a class="nav-link tablinks" onclick="openTab(event, 'Settings');">Settings</a></li>
+              <li class="nav-item"><a id='start' class="nav-link tablinks" onclick="openTab(event, 'home')" data-i18n-key="Intro">Intro</a></li>
+              <li class="nav-item"><a class="nav-link tablinks" onclick="openTab(event, 'keypair')" data-i18n-key="Dashboard">Dashboard</a></li>
+              <li class="nav-item"><a id="txTab" class="nav-link tablinks" onclick="openTab(event, 'Transaction')" data-i18n-key="Send">Send</a></li>
+              <li class="nav-item"><a id="txTab" class="nav-link tablinks" onclick="openTab(event, 'StakingTab')" data-i18n-key="Stake">Stake</a></li>
+              <li class="nav-item"><a class="nav-link tablinks" onclick="openTab(event, 'Settings');" data-i18n-key="Settings">Settings</a></li>
             </ul>
+            <select data-i18n-switcher class="locale-switcher">
+              <option value="en">English</option>
+              <option value="de">German</option>
+            </select>
 
             <!-- SIDE NAVBAR -->
             <div class="form-inline my-2 my-lg-0">
@@ -117,7 +121,7 @@
         <div class="modal-dialog" role="document">
           <div class="modal-content">
             <div class="modal-header">
-              <h5 class="modal-title" id="qrModalLabel">Address QR</h5>
+              <h5 class="modal-title" id="qrModalLabel" data-i18n-key="Address_QR">Address QR</h5>
               <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
               </button>
@@ -139,7 +143,7 @@
 
               <!-- PIVX TITLE SECTION -->
               <div class="col-md-12 title-section float-left rm-pd">
-                  <h1 class="pivx-bold-title center-text"><span>Welcome to</span> My PIVX Wallet!</h1>
+                  <h1 class="pivx-bold-title center-text "><span data-i18n-key="Welcome to">Welcome to</span><span data-i18n-key="My PIVX Wallet"> My PIVX Wallet!</span></h1>
               </div>
               <!-- // PIVX TITLE SECTION -->
 
@@ -153,17 +157,19 @@
                     <div class="col-md-12 feature-icon">
                       <img src="https://pivx.org/build/images/content/img_governance.png" alt="PIVX Governance">
                     </div>
-
-                    <h4>Be your own Bank!</h4>
-                    <h5>
+                    
+                    <h4 data-i18n-key="Be your own Bank">Be your own Bank!</h4>
+                    <h5 data-i18n-key="no custody">
                       MyPIVXWallet has <b>no custody</b> over your funds. You are in full ownership of your keys and your PIV.
                     </h5>
-                    <span onclick="window.location.href='https://forum.pivx.org/threads/mypivxwallet-an-easy-open-source-self-sovereign-pivx-wallet.873/'" class="purple-icon-link ptr">
+                    <span onclick="window.location.href='https://forum.pivx.org/threads/mypivxwallet-an-easy-open-source-self-sovereign-pivx-wallet.873/'" class="purple-icon-link ptr" data-i18n-key="KNOW MORE">
                       Know more<span class="link-icon link-icon-suffix"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M23.328 16.707L13.121 26.914a.5.5 0 01-.707 0l-2.828-2.828a.5.5 0 010-.707L16.964 16 9.586 8.621a.5.5 0 010-.707l2.828-2.828a.5.5 0 01.707 0l10.207 10.207a1 1 0 010 1.414z"></path></svg></span>
                     </span>
                   </div>
                 </div>
                 <!-- // PIVX FEATURE -->
+                
+                        
 
                 <!-- PIVX FEATURE -->
                 <div class="col-md-6 float-left pivx-feature-father">
@@ -173,11 +179,11 @@
                       <img src="https://pivx.org/build/images/content/img_pos.png" alt="PIVX Proof of Stake (PoS)">
                     </div>
 
-                    <h4>Universal and Portable</h4>
-                    <h5>
+                    <h4 data-i18n-key="Universal and Portable">Universal and Portable</h4>
+                    <h5 data-i18n-key="secure address">
                       You can generate cryptographically-secure addresses with your browser and hardware.
                     </h5>
-                    <span onclick="window.location.href='https://forum.pivx.org/threads/mypivxwallet-an-easy-open-source-self-sovereign-pivx-wallet.873/'" class="purple-icon-link ptr">
+                    <span onclick="window.location.href='https://forum.pivx.org/threads/mypivxwallet-an-easy-open-source-self-sovereign-pivx-wallet.873/'" class="purple-icon-link ptr"data-i18n-key="KNOW MORE">
                       Know more<span class="link-icon link-icon-suffix"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M23.328 16.707L13.121 26.914a.5.5 0 01-.707 0l-2.828-2.828a.5.5 0 010-.707L16.964 16 9.586 8.621a.5.5 0 010-.707l2.828-2.828a.5.5 0 01.707 0l10.207 10.207a1 1 0 010 1.414z"></path></svg></span>
                     </span>
                   </div>
@@ -192,11 +198,11 @@
                       <img src="https://pivx.org/build/images/content/img_privacy.png" alt="PIVX Privacy" class="smaller-feature">
                     </div>
 
-                    <h4>Don't trust, verify!</h4>
-                    <h5>
+                    <h4 data-i18n-key="Don't trust, verify!">Don't trust, verify!</h4>
+                    <h5 data-i18n-key="open-source">
                       MyPIVXWallet is completely open-source, available on the PIVX Labs github.
                     </h5>
-                    <span onclick="window.location.href='https://forum.pivx.org/threads/mypivxwallet-an-easy-open-source-self-sovereign-pivx-wallet.873/'" class="purple-icon-link ptr">
+                    <span onclick="window.location.href='https://forum.pivx.org/threads/mypivxwallet-an-easy-open-source-self-sovereign-pivx-wallet.873/'" class="purple-icon-link ptr"data-i18n-key="KNOW MORE">
                       Know more<span class="link-icon link-icon-suffix"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M23.328 16.707L13.121 26.914a.5.5 0 01-.707 0l-2.828-2.828a.5.5 0 010-.707L16.964 16 9.586 8.621a.5.5 0 010-.707l2.828-2.828a.5.5 0 01.707 0l10.207 10.207a1 1 0 010 1.414z"></path></svg></span>
                     </span>
                   </div>
@@ -211,11 +217,11 @@
                       <img src="https://pivx.org/build/images/content/img_slider_bars.png" alt="PIVX Bar Chart" class="smaller-feature">
                     </div>
 
-                    <h4>For the community</h4>
-                    <h5>
+                    <h4 data-i18n-key="For the community">For the community</h4>
+                    <h5 data-i18n-key="built with love">
                       MyPIVXWallet is built with love without any fees, privacy intrusions or advertising.
                     </h5>
-                    <span onclick="window.location.href='https://forum.pivx.org/threads/mypivxwallet-an-easy-open-source-self-sovereign-pivx-wallet.873/'" class="purple-icon-link ptr">
+                    <span onclick="window.location.href='https://forum.pivx.org/threads/mypivxwallet-an-easy-open-source-self-sovereign-pivx-wallet.873/'" class="purple-icon-link ptr"data-i18n-key="KNOW MORE">
                       Know more<span class="link-icon link-icon-suffix"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M23.328 16.707L13.121 26.914a.5.5 0 01-.707 0l-2.828-2.828a.5.5 0 010-.707L16.964 16 9.586 8.621a.5.5 0 010-.707l2.828-2.828a.5.5 0 01.707 0l10.207 10.207a1 1 0 010 1.414z"></path></svg></span>
                     </span>
                   </div>
@@ -229,7 +235,7 @@
               <div class="col-md-12 donation-section float-left rm-pd text-center">
                   <button class="pivx-button-big" onclick="openDonatePage()">
                             <span class="buttoni-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 70"><path d="M3.497 25.717C1.401 25.588 0 23.847 0 21.753v-2.535c0-.775.149-1.593.925-1.593h22.719c2.173 0 3.941 1.861 3.941 4.034 0 2.174-1.769 3.988-3.941 3.988l-20.207.048c-.02 0 .08.023.06.022z"></path><path d="M5.229 69.625C4.455 69.625 4 68.494 4 67.719V38.661c0-1.911 1.447-3.731 3.258-3.989.175-.029.285-.047.483-.047h21.525c7.137 0 12.751-5.86 12.751-13.027 0-7.096-5.528-12.841-12.586-13.177-.002 0-.671.016-1.41.016l-20.335.066C5.529 8.373 4 6.652 4 4.558V2.023C4 1.247 4.407.625 5.183.625h24.059c11.57 0 20.654 9.546 20.706 21.104 0 9.378-6.307 17.727-15.337 20.311-1.622.445-3.122.705-4.735.778L12 42.842v22.485c0 2.156-2.141 4.298-4.235 4.298H5.229z"></path></svg></span>
-                            <span class="buttoni-text">Donate - Pay with MyPIVXWallet</span>
+                            <span class="buttoni-text" data-i18n-key="Donate">Donate - Pay with MyPIVXWallet</span>
                             <span class="buttoni-arrow"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M23.328 16.707L13.121 26.914a.5.5 0 01-.707 0l-2.828-2.828a.5.5 0 010-.707L16.964 16 9.586 8.621a.5.5 0 010-.707l2.828-2.828a.5.5 0 01.707 0l10.207 10.207a1 1 0 010 1.414z"></path></svg></span>
                   </button>
 
@@ -244,7 +250,7 @@
 
               <!-- PIVX TITLE SECTION -->
               <div class="col-md-12 title-section rm-pd">
-                  <h3 class="pivx-bold-title center-text">Dashboard</h3>
+                  <h3 class="pivx-bold-title center-text" data-i18n-key="Dashboard">Dashboard</h3>
               </div>
               <!-- // PIVX TITLE SECTION -->
 
@@ -259,14 +265,14 @@
                   </div>
 
                   <div class="col-md-12 dashboard-title">
-                    <h3 class="pivx-bold-title-smaller"><span>Create a</span>New Wallet</h3>
-                    <p>This will create a new, random PIVX wallet that will contain no initial funds, you may transfer to-and-from this wallet with ease.</p>
+                    <h3 class="pivx-bold-title-smaller"><span data-i18n-key="Create">Create a</span><span data-i18n-key="New Wallet">New wallet</span></h3>
+                    <p data-i18n-key="create new wallet">This will create a new, random PIVX wallet that will contain no initial funds, you may transfer to-and-from this wallet with ease.</p>
                   </div>
 
 
                   <button class="pivx-button-big" onclick="generateWallet()">
                               <span class="buttoni-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 70"><path d="M3.497 25.717C1.401 25.588 0 23.847 0 21.753v-2.535c0-.775.149-1.593.925-1.593h22.719c2.173 0 3.941 1.861 3.941 4.034 0 2.174-1.769 3.988-3.941 3.988l-20.207.048c-.02 0 .08.023.06.022z"></path><path d="M5.229 69.625C4.455 69.625 4 68.494 4 67.719V38.661c0-1.911 1.447-3.731 3.258-3.989.175-.029.285-.047.483-.047h21.525c7.137 0 12.751-5.86 12.751-13.027 0-7.096-5.528-12.841-12.586-13.177-.002 0-.671.016-1.41.016l-20.335.066C5.529 8.373 4 6.652 4 4.558V2.023C4 1.247 4.407.625 5.183.625h24.059c11.57 0 20.654 9.546 20.706 21.104 0 9.378-6.307 17.727-15.337 20.311-1.622.445-3.122.705-4.735.778L12 42.842v22.485c0 2.156-2.141 4.298-4.235 4.298H5.229z"></path></svg></span>
-                              <span class="buttoni-text">Create A New Wallet</span>
+                              <span class="buttoni-text" data-i18n-key="create a new wallet">Create A New Wallet</span>
                               <span class="buttoni-arrow"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M23.328 16.707L13.121 26.914a.5.5 0 01-.707 0l-2.828-2.828a.5.5 0 010-.707L16.964 16 9.586 8.621a.5.5 0 010-.707l2.828-2.828a.5.5 0 01.707 0l10.207 10.207a1 1 0 010 1.414z"></path></svg></span>
                     </button>
                 </div>
@@ -279,13 +285,13 @@
               <!-- WARNING -->
              <div id='genKeyWarning' style='display: none;' class="alert alert-danger col-md-12" role="alert">
                 <div>
-                     <p><b>WARNING:</b> if you don't save your private key you will lose access to your funds!<br>
-                  Would you like to encrypt & save your wallet in your browser?<br></p>
+                     <p><b><span data-i18n-key="WARNING">WARNING:</span></b><span data-i18n-key="save you keys">if you don't save your private key you will lose access to your funds!</span><br>
+                  <span data-i18n-key="encrypt">Would you like to encrypt & save your wallet in your browser?</span><br></p>
                 </div>
                   <button class="pivx-button-big" onclick="encryptWallet()">
                               <span class="buttoni-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M85.967 10.65l-32.15-9.481a13.466 13.466 0 00-7.632 0l-32.15 9.48C11.661 11.351 10 13.567 10 16.042v26.623c0 12.321 3.67 24.186 10.609 34.31 6.774 9.885 16.204 17.49 27.264 21.99a5.612 5.612 0 004.251 0c11.061-4.5 20.491-12.104 27.266-21.99C86.329 66.85 90 54.985 90 42.664V16.042a5.656 5.656 0 00-4.033-5.392zM69 68.522C69 70.907 67.03 72 64.584 72H34.092C31.646 72 30 70.907 30 68.522v-23.49C30 42.647 31.646 41 34.092 41H37v-9.828C37 24.524 41.354 18.5 49.406 18.5 57.37 18.5 62 24.066 62 31.172V41h2.584C67.03 41 69 42.647 69 45.032v23.49zM58 41v-9.828c0-4.671-3.708-8.472-8.5-8.472-4.791 0-8.5 3.8-8.5 8.472V41h17z"></path></svg></span>
 
-                              <span class="buttoni-text">Encrypt Wallet</span>
+                              <span class="buttoni-text" data-i18n-key="Encrypt Wallet">Encrypt Wallet</span>
 
                               <span class="buttoni-arrow"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M23.328 16.707L13.121 26.914a.5.5 0 01-.707 0l-2.828-2.828a.5.5 0 010-.707L16.964 16 9.586 8.621a.5.5 0 010-.707l2.828-2.828a.5.5 0 01.707 0l10.207 10.207a1 1 0 010 1.414z"></path></svg></span>
                     </button>
@@ -306,7 +312,7 @@
                                 </div>
                             </div>
                             <div id="bal-title">
-                                <h3 class="noselect balance-title">Balance &nbsp;&nbsp;<span id="balanceReload" class="reload noselect" onclick="refreshChainData()">&#x21bb;</span></h3>
+                                <h3 class="noselect balance-title" data-i18n-key="balance">Balance &nbsp;&nbsp;<span id="balanceReload" class="reload noselect" onclick="refreshChainData()">&#x21bb;</span></h3>
                             </div>
                         </div>
                     </div>
@@ -314,7 +320,7 @@
                     <div id="big-frame-address">
                         <div id="address-box" class="large-box">
                             <div id="title-address-box">
-                                <h3 class="noselect addr-title">Address</h3>
+                                <h3 class="noselect addr-title" data-i18n-key="address">Address</h3>
                             </div>
                             <div id="box-info-address">
                                 <div id="ring">
@@ -335,7 +341,7 @@
                                   <textarea id="PrivateTxt" style="display: none;" disabled="" class="form-control private-key-area"></textarea>
                                   <button class="pivx-button-big" onclick="toggleKeyView()">
                                       <span class="buttoni-icon"><i class="far fa-eye fa-tiny-margin"></i></span>
-                                      <span class="buttoni-text" id="guiViewKey">Pubkey QR</span>
+                                      <span class="buttoni-text" id="guiViewKey" data-i18n-key="QR">Pubkey QR</span>
                                       <span class="buttoni-arrow"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M23.328 16.707L13.121 26.914a.5.5 0 01-.707 0l-2.828-2.828a.5.5 0 010-.707L16.964 16 9.586 8.621a.5.5 0 010-.707l2.828-2.828a.5.5 0 01.707 0l10.207 10.207a1 1 0 010 1.414z"></path></svg></span>
                                   </button>
                                 </div>
@@ -357,9 +363,9 @@
                   </div>
 
                   <div class="col-md-12 dashboard-title">
-                    <h3 class="pivx-bold-title" style="font-size:38px;"><span>Create a new</span>Vanity Wallet</h3>
-                    <span class="badge badge-warning">Experimental</span>
-                    <p>This will create a PIVX wallet with a customized prefix of your choosing, requiring more processing power to generate such addresses, it is recommended to generate a prefix of less than 6 characters, for example: "DAD" is a possible address prefix.</p>
+                    <h3 class="pivx-bold-title" style="font-size:38px;"><span data-i18n-key="Create a new">Create a new</span><span data-i18n-key="Vanity Wallet">Vanity Wallet</span></h3>
+                    <span class="badge badge-warning" data-i18n-key="Experimental">Experimental</span>
+                    <p><span data-i18n-key="customized prefix">This will create a PIVX wallet with a customized prefix of your choosing, requiring more processing power to generate such addresses, it is recommended to generate a prefix of less than 6 characters, for example: "DAD" is a possible address prefix.</span></p>
                   </div>
 
 
@@ -368,7 +374,7 @@
                   <button class="pivx-button-big" onclick="generateVanityWallet()">
                               <span class="buttoni-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 70"><path d="M3.497 25.717C1.401 25.588 0 23.847 0 21.753v-2.535c0-.775.149-1.593.925-1.593h22.719c2.173 0 3.941 1.861 3.941 4.034 0 2.174-1.769 3.988-3.941 3.988l-20.207.048c-.02 0 .08.023.06.022z"></path><path d="M5.229 69.625C4.455 69.625 4 68.494 4 67.719V38.661c0-1.911 1.447-3.731 3.258-3.989.175-.029.285-.047.483-.047h21.525c7.137 0 12.751-5.86 12.751-13.027 0-7.096-5.528-12.841-12.586-13.177-.002 0-.671.016-1.41.016l-20.335.066C5.529 8.373 4 6.652 4 4.558V2.023C4 1.247 4.407.625 5.183.625h24.059c11.57 0 20.654 9.546 20.706 21.104 0 9.378-6.307 17.727-15.337 20.311-1.622.445-3.122.705-4.735.778L12 42.842v22.485c0 2.156-2.141 4.298-4.235 4.298H5.229z"></path></svg></span>
 
-                              <span class="buttoni-text" id="vanButtonText">Create A Vanity Wallet</span>
+                              <span class="buttoni-text" id="vanButtonText" data-i18n-key="Create A Vanity Wallet">Create A Vanity Wallet</span>
 
                               <span class="buttoni-arrow"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M23.328 16.707L13.121 26.914a.5.5 0 01-.707 0l-2.828-2.828a.5.5 0 010-.707L16.964 16 9.586 8.621a.5.5 0 010-.707l2.828-2.828a.5.5 0 01.707 0l10.207 10.207a1 1 0 010 1.414z"></path></svg></span>
                     </button>
@@ -386,10 +392,10 @@
                   </div>
 
                   <div class="col-md-12 dashboard-title">
-                    <h3 class="pivx-bold-title-smaller"><span>Go to</span>My Wallet</h3>
-                    <p>This will import a PIVX wallet that you hold via it's private key, loading the address and pulling your existing balance, if any, from an explorer node.
-                      <br>
-                      <span style="opacity: 0.75; font-size: small;">*Note: MPW developers can NOT access your wallet, this wallet runs purely in YOUR browser using JavaScript.</span>
+                    <h3 class="pivx-bold-title-smaller"><span data-i18n-key="Go to">Go to</span><span data-i18n-key="My Wallet">My Wallet</span></h3>
+                    <p><span data-i18n-key="private key">This will import a PIVX wallet that you hold via it's private key, loading the address and pulling your existing balance, if any, from an explorer node.
+                    </span><br>
+                      <span style="opacity: 0.75; font-size: small;" data-i18n-key="MPW developers">*Note: MPW developers can NOT access your wallet, this wallet runs purely in YOUR browser using JavaScript.</span>
                     </p>
                   </div>
 
@@ -399,7 +405,7 @@
                     <input type="text" id='privateKey' placeholder="Private Key">
                     <button class="pivx-button-big" onclick="importWallet()">
                                   <span class="buttoni-icon"><i class="fas fa-file-upload fa-tiny-margin"></i></span>
-                                  <span class="buttoni-text">Import Wallet</span>
+                                  <span class="buttoni-text" data-i18n-key="Import Wallet">Import Wallet</span>
                                   <span class="buttoni-arrow"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M23.328 16.707L13.121 26.914a.5.5 0 01-.707 0l-2.828-2.828a.5.5 0 010-.707L16.964 16 9.586 8.621a.5.5 0 010-.707l2.828-2.828a.5.5 0 01.707 0l10.207 10.207a1 1 0 010 1.414z"></path></svg></span>
                         </button>
                   </div>
@@ -408,7 +414,7 @@
                   <button class="pivx-button-big" onclick="toggleWallet()">
                               <span class="buttoni-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 70"><path d="M3.497 25.717C1.401 25.588 0 23.847 0 21.753v-2.535c0-.775.149-1.593.925-1.593h22.719c2.173 0 3.941 1.861 3.941 4.034 0 2.174-1.769 3.988-3.941 3.988l-20.207.048c-.02 0 .08.023.06.022z"></path><path d="M5.229 69.625C4.455 69.625 4 68.494 4 67.719V38.661c0-1.911 1.447-3.731 3.258-3.989.175-.029.285-.047.483-.047h21.525c7.137 0 12.751-5.86 12.751-13.027 0-7.096-5.528-12.841-12.586-13.177-.002 0-.671.016-1.41.016l-20.335.066C5.529 8.373 4 6.652 4 4.558V2.023C4 1.247 4.407.625 5.183.625h24.059c11.57 0 20.654 9.546 20.706 21.104 0 9.378-6.307 17.727-15.337 20.311-1.622.445-3.122.705-4.735.778L12 42.842v22.485c0 2.156-2.141 4.298-4.235 4.298H5.229z"></path></svg></span>
 
-                              <span class="buttoni-text" id='wToggle'>Access My Wallet</span>
+                              <span class="buttoni-text" id='wToggle' data-i18n-key="Access My Wallet">Access My Wallet</span>
 
                               <span class="buttoni-arrow"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M23.328 16.707L13.121 26.914a.5.5 0 01-.707 0l-2.828-2.828a.5.5 0 010-.707L16.964 16 9.586 8.621a.5.5 0 010-.707l2.828-2.828a.5.5 0 01.707 0l10.207 10.207a1 1 0 010 1.414z"></path></svg></span>
                     </button>
@@ -425,7 +431,7 @@
 
             <div id="StakingTab" class="tabcontent">
               <!-- STAKING FEATURES -->
-              <p id="info" class="minor-notif-subtext"><b>New Feature!</b><br>Please be aware MPW Cold Staking is a new, slightly experimental feature, it may be unstable, and is currently slow. Please have patience when using this feature, and wait for block confirmations before actions and balances are shown on-screen.</p>
+              <p id="info" class="minor-notif-subtext"><b><span data-i18n-key="New Feature">New Feature!</span></p></b><br><span data-i18n-key="MPW cold staking">Please be aware MPW Cold Staking is a new, slightly experimental feature, it may be unstable, and is currently slow. Please have patience when using this feature, and wait for block confirmations before actions and balances are shown on-screen.</span></p>
               <div class="add-frame">
               <div class="staking-banner-top">
                 <div id="staking-rectangle" class="col-md-4">
@@ -438,30 +444,30 @@
                         </div>
                     </div>
                     <div id="staking-box">
-                      <h3 id="stake-title" class="noselect">Staking &nbsp;&nbsp;<span id="balanceReloadStaking" class="reload noselect" onclick="refreshChainData()">&#x21bb;</span></h3>
+                      <h3 id="stake-title" class="noselect" data-i18n-key="Staking">Staking &nbsp;&nbsp;<span id="balanceReloadStaking" class="reload noselect" onclick="refreshChainData()">&#x21bb;</span></h3>
                     </div>
                 </div>
             </div>
               <br>
               <div class="staking-banner-bottom">
                 <div class="stake-box large-box col-md-4">
-                  <h5 id="availToDelegate" class="stake-balances">Available: 0 PIV</h5>
+                  <h5 id="availToDelegate" class="stake-balances" data-i18n-key="Available 0">Available: 0 PIV</h5></p>
                   <textarea id="delegateAmount" class="stake-input form-control private-key-area"></textarea>
                   <div class="button-padd">
                       <button class="pivx-button-big" onclick="delegateGUI()">
                                   <span class="buttoni-icon"><i class="far fa-eye fa-tiny-margin"></i></span>
-                                  <span class="buttoni-text">Delegate</span>
+                                  <span class="buttoni-text" data-i18n-key="Delegate">Delegate</span>
                                   <span class="buttoni-arrow"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M23.328 16.707L13.121 26.914a.5.5 0 01-.707 0l-2.828-2.828a.5.5 0 010-.707L16.964 16 9.586 8.621a.5.5 0 010-.707l2.828-2.828a.5.5 0 01.707 0l10.207 10.207a1 1 0 010 1.414z"></path></svg></span>
                         </button>
                  </div>
                 </div>
                 <div class="stake-box large-box col-md-4">
-                  <h5 id="availToUndelegate" class="stake-balances">Staking: 0 PIV</h5>
+                  <h5 id="availToUndelegate" class="stake-balances" data-i18n-key="Staking 0">Staking: 0 PIV</h5>
                   <textarea id="undelegateAmount" class="stake-input form-control private-key-area"></textarea>
                   <div class="button-padd">
                       <button class="pivx-button-big" onclick="undelegateGUI()">
                                   <span class="buttoni-icon"><i class="far fa-eye fa-tiny-margin"></i></span>
-                                  <span class="buttoni-text">Undelegate</span>
+                                  <span class="buttoni-text" data-i18n-key="Undelegate">Undelegate</span>
                                   <span class="buttoni-arrow"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M23.328 16.707L13.121 26.914a.5.5 0 01-.707 0l-2.828-2.828a.5.5 0 010-.707L16.964 16 9.586 8.621a.5.5 0 010-.707l2.828-2.828a.5.5 0 01.707 0l10.207 10.207a1 1 0 010 1.414z"></path></svg></span>
                         </button>
                  </div>
@@ -477,24 +483,24 @@
 
               <!-- PIVX TITLE SECTION -->
               <div class="col-md-12 title-section float-left rm-pd">
-                  <h3 class="pivx-bold-title center-text"><span>Create a</span> Transaction</h3>
+                  <h3 class="pivx-bold-title center-text"><span data-i18n-key="Create">Create a</span><span data-i18n-key="Transaction"> Transaction</span></h3>
               </div>
               <br>
               <!-- // PIVX TITLE SECTION -->
 
               <div id='errorNotice' class="col-md-12 float-left"></div>
               <div class="col-md-12">
-                <p id="comunication" class="center-text">Please <b>AVOID</b> sending to Shielded or Cold Staking addresses using this wallet - this functionality is currently unsupported.</p>
+                <p id="comunication" class="center-text" data-i18n-key="no shielded">Please AVOID sending to Shielded or Cold Staking addresses using this wallet - this functionality is currently unsupported.</p>
               </div>
               <div class='max-width' style='clear:both;'>
-                <div id="simpleTransactionsDropdown" class="bold-trans" onclick='toggleDropDown("simpleTransactions")'>Create Simple Transactions<span
+                <div id="simpleTransactionsDropdown" class="bold-trans" onclick='toggleDropDown("simpleTransactions")' data-i18n-key="Create Simple Transactions">Create Simple Transactions<span
                     style='float:right;'>▼</span></div>
                 <div id='simpleTransactions' style='display: block'>
                   <br>
-                  <label>Address</label><br>
+                  <label data-i18n-key="address">Address</label><br>
                   <input class="center-text" style="width: 100%; font-family: monospace;" type="text" id="address1s">
                   <br>
-                  <label>Amount</label><br>
+                  <label data-i18n-key="Amount">Amount</label><br>
                   <input class="center-text" type="number" min="0" id="value1s">
                   <div id="reqDescDisplay" style="display: none;">
                     <label>Description (from the merchant)</label><br>
@@ -505,7 +511,7 @@
                   <br>
                   <button class="pivx-button-big" onclick="createSimpleTransation()">
                               <span class="buttoni-icon"><i class="fas fa-paper-plane fa-tiny-margin"></i></span>
-                              <span class="buttoni-text" id="genIt">Send Transaction</span>
+                              <span class="buttoni-text" id="genIt" data-i18n-key="Send Transaction">Send Transaction</span>
                               <span class="buttoni-arrow"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M23.328 16.707L13.121 26.914a.5.5 0 01-.707 0l-2.828-2.828a.5.5 0 010-.707L16.964 16 9.586 8.621a.5.5 0 010-.707l2.828-2.828a.5.5 0 01.707 0l10.207 10.207a1 1 0 010 1.414z"></path></svg></span>
                     </button>
                 </div>
@@ -513,7 +519,7 @@
               </div>
               <br>
               <div class='max-width' style='clear:both;'>
-                <div onclick='toggleDropDown("advTransactions")' class="bold-trans">Create Manual Transactions<span
+                <div onclick='toggleDropDown("advTransactions")' class="bold-trans" data-i18n-key="Create Manual Transactions">Create Manual Transactions<span>
                     style='float:right;'>▼</span></div>
                 <div id='advTransactions' style='display:none'>
                   <br>
@@ -556,7 +562,7 @@
             </div>
             <div id="Settings" class="tabcontent">
               <form action="javascript:setExplorer()">
-                <label for="explorer">Choose an explorer:</label><br>
+                <label for="explorer" data-i18n-key="Choose an explorer">Choose an explorer:</label><br>
                 <select id="explorer" class="form-control" name="explorer">
                   <option value="cryptoid">https://chainz.cryptoid.info/pivx</option>
                   <option value="custom">custom (In Development)</option>
@@ -564,7 +570,7 @@
                 <br>
                 <button id="submit-button" class="pivx-button-big" type="submit">
                               <span class="buttoni-icon"><i class="fas fa-paper-plane fa-tiny-margin"></i></span>
-                              <span class="buttoni-text">Submit</span>
+                              <span class="buttoni-text" data-i18n-key="Submit">Submit</span>
                               <span class="buttoni-arrow"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M23.328 16.707L13.121 26.914a.5.5 0 01-.707 0l-2.828-2.828a.5.5 0 010-.707L16.964 16 9.586 8.621a.5.5 0 010-.707l2.828-2.828a.5.5 0 01.707 0l10.207 10.207a1 1 0 010 1.414z"></path></svg></span>
               </button>
               </form>
@@ -572,12 +578,12 @@
 
               <button class="pivx-button-big" onclick="toggleDebug()">
                               <span class="buttoni-icon"><i class="fas fa-bug fa-tiny-margin"></i></span>
-                              <span class="buttoni-text">Toggle Debug Mode</span>
+                              <span class="buttoni-text" data-i18n-key="Toggle Debug Mode">Toggle Debug Mode</span>
                               <span class="buttoni-arrow"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M23.328 16.707L13.121 26.914a.5.5 0 01-.707 0l-2.828-2.828a.5.5 0 010-.707L16.964 16 9.586 8.621a.5.5 0 010-.707l2.828-2.828a.5.5 0 01.707 0l10.207 10.207a1 1 0 010 1.414z"></path></svg></span>
               </button>
               <button class="pivx-button-big" onclick="toggleNetwork()">
                               <span class="buttoni-icon"><i class="fas fa-network-wired fa-tiny-margin"></i></span>
-                              <span class="buttoni-text">Toggle Networking Mode</span>
+                              <span class="buttoni-text" data-i18n-key="Toggle Networking Mode">Toggle Networking Mode</span>
                               <span class="buttoni-arrow"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M23.328 16.707L13.121 26.914a.5.5 0 01-.707 0l-2.828-2.828a.5.5 0 010-.707L16.964 16 9.586 8.621a.5.5 0 010-.707l2.828-2.828a.5.5 0 01.707 0l10.207 10.207a1 1 0 010 1.414z"></path></svg></span>
               </button>
 
@@ -616,6 +622,7 @@
   <script type="text/javascript" src="scripts/wallet.js"></script>
   <script type="text/javascript" src="scripts/network.js"></script>
   <script type="text/javascript" src="scripts/bitTrx.js"></script>
+  <script type="text/javascript" src="scripts/i18n.js"></script>
 
   <script>
     // WALLET STATE DATA

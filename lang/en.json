@@ -1,0 +1,98 @@
+{
+    "_comments": "Section: This is for the header of the website", 
+         "Intro": "Intro",
+         "Dashboard": "Dashboard",
+         "Send": "Send",
+         "Stake": "Stake",
+         "Settings": "Settings",
+         "Network": "Network",
+         "Enabled": "Enabled",
+         "Disabled": "Disabled",
+
+    
+    "_comments": "Section: This is for the main body on INTRO page",
+		"Welcome to": "Welcome to",
+		"My PIVX Wallet": "My PIVX Wallet!",
+		"Be your own Bank": "Be your own Bank!",
+		"no custody": "MyPIVXWallet has NO CUSTODY over your funds. You are in full ownership of your keys and your PIV.",
+		"KNOW MORE": "KNOW MORE",
+		"Universal and Portable": "Universal and Portable",
+		"secure address": "You can generate cryptographically-secure addresses with your browser and hardware.",
+		"Don't trust, verify!": "Don't trust, verify!",
+		"open source": "MyPIVXWallet is completely open-source, available on the PIVX Labs github.",
+		"For the community": "For the community",
+		"built with love": "MyPIVXWallet is built with love without any fees, privacy intrusions or advertising.",
+		"Donate": "Donate - Pay with MyPIVXWallet",		
+		
+		
+	"_comments": "Section: This is for the main body on DASHBOARD page",
+		"Address_QR":"Address QR",
+		"Create": "Create a",
+		"New Wallet": "New Wallet",
+		"create new wallet": "This will create a new, random PIVX wallet that will contain no initial funds, you may transfer to-and-from this wallet with ease.",
+		"create a new wallet": "Create A New Wallet",
+		"WARNING": "WARNING: ",
+		"save you keys": "if you don't save your private key you will lose access to your funds!",
+		"encrypt": "Would you like to encrypt & save your wallet in your browser?",
+		"Encrypt Wallet": "Encrypt Wallet",
+		
+	"_comments": "Section: This is for the WALLET",
+		"balance": "Balance",
+		"address": "Address",
+		"QR": "Pubkey QR",
+		"Create a new": "Create a new",
+		"Vanity Wallet": "Vanity Wallet",
+		"Experimental": "Experimental",
+		"customized prefix": "This will create a PIVX wallet with a customized prefix of your choosing, requiring more processing power to generate such addresses, it is recommended to generate a prefix of less than 6 characters, for example: 'DAD' is a possible address prefix.",
+		"Create A Vanity Wallet": "Create A Vanity Wallet",
+		"Go to": "Go to",
+		"My Wallet": "My Wallet",
+		"private key": "This will import a PIVX wallet that you hold via it's private key, loading the address and pulling your existing balance, if any, from an explorer node.",
+		"MPW developers": "*Note: MPW developers can NOT access your wallet, this wallet runs purely in YOUR browser using JavaScript.",
+		"Import Wallet": "Import Wallet",
+		"Access My Wallet": "Access My Wallet",
+		
+	"_comments": "Section: This is for the SEND section",
+		"Transaction": " Transaction",
+		"no shielded": "Please AVOID sending to Shielded or Cold Staking addresses using this wallet - this functionality is currently unsupported.",
+		"Create Simple Transactions": "Create Simple Transactions",
+		"Amount": "Amount",
+		"Send Transaction": "Send Transaction",
+		"Create Manual Transactions": "Create Manual Transactions",	
+	
+	"_comments": "Section: This is for the STAKE section",
+		"New Feature": "New Feature!",
+		"MPW cold staking": "Please be aware MPW Cold Staking is a new, slightly experimental feature, it may be unstable, and is currently slow. Please have patience when using this feature, and wait for block confirmations before actions and balances are shown on-screen.",
+		"Staking": "Staking",
+		"Delegate": "Delegate",
+		"Undelegate": "Undelegate",
+		"Staking 0": "Staking: 0 PIV",
+		"Available 0": "Available: 0 PIV",
+		
+	"_comments": "Section: This is for the SETTINGS section",	
+		"Choose an explorer": "Choose an explorer",
+		"Submit": "Submit",
+		"Toggle Debug Mode": "Toggle Debug Mode",
+		"Toggle Networking Mode": "Toggle Networking Mode"
+		
+		
+		
+		
+		
+		
+		
+		
+         
+		
+		
+		
+		
+	
+		
+		
+		
+		
+		
+		
+	
+  }
