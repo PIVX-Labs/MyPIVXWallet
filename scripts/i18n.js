@@ -176,7 +176,7 @@ function supportedOrDefault(locales) {
 }
 
 function dir(locale) {
-  return locale === "de" ? "rtl" : "ltr";
+  return locale === "ar" ? "rtl" : "ltr";
 }
 
 function bindLocaleSwitcher(initialValue) {
