@@ -10,11 +10,13 @@
          "Disabled": "Disabled",
 
     
-    "_comments": "Section: This is for the main body on INTRO page",
+    "_comments1": "Section: This is for the main body on INTRO page",
 		"Welcome to": "Welcome to",
 		"My PIVX Wallet": "My PIVX Wallet!",
 		"Be your own Bank": "Be your own Bank!",
-		"no custody": "MyPIVXWallet has NO CUSTODY over your funds. You are in full ownership of your keys and your PIV.",
+		"no custody1": "MyPIVXWallet has ",
+		"no custody2": "no custody ", 
+		"no custody3": "over your funds. You are in full ownership of your keys and your PIV.",
 		"KNOW MORE": "KNOW MORE",
 		"Universal and Portable": "Universal and Portable",
 		"secure address": "You can generate cryptographically-secure addresses with your browser and hardware.",
@@ -25,7 +27,7 @@
 		"Donate": "Donate - Pay with MyPIVXWallet",		
 		
 		
-	"_comments": "Section: This is for the main body on DASHBOARD page",
+	"_comments2": "Section: This is for the main body on DASHBOARD page",
 		"Address_QR":"Address QR",
 		"Create": "Create a",
 		"New Wallet": "New Wallet",
@@ -35,8 +37,10 @@
 		"save you keys": "if you don't save your private key you will lose access to your funds!",
 		"encrypt": "Would you like to encrypt & save your wallet in your browser?",
 		"Encrypt Wallet": "Encrypt Wallet",
+		"Don't trust": "Don't trust, verify!",
+		"open-source": "MyPIVXWallet is completely open-source, available on the PIVX Labs github.",
 		
-	"_comments": "Section: This is for the WALLET",
+	"_comments3": "Section: This is for the WALLET",
 		"balance": "Balance",
 		"address": "Address",
 		"QR": "Pubkey QR",
@@ -52,15 +56,34 @@
 		"Import Wallet": "Import Wallet",
 		"Access My Wallet": "Access My Wallet",
 		
-	"_comments": "Section: This is for the SEND section",
+	"_comments4": "Section: This is for the SEND section",
 		"Transaction": " Transaction",
 		"no shielded": "Please AVOID sending to Shielded or Cold Staking addresses using this wallet - this functionality is currently unsupported.",
 		"Create Simple Transactions": "Create Simple Transactions",
 		"Amount": "Amount",
 		"Send Transaction": "Send Transaction",
 		"Create Manual Transactions": "Create Manual Transactions",	
-	
-	"_comments": "Section: This is for the STAKE section",
+		
+	"_comments5": "Section: This is for the MANUAL TRANSACTIONS section",
+		"Inputs": "Inputs",
+		"Trx Hash": "Trx Hash",
+		"Index": "Index",
+		"Script": "Script",
+		"Outputs": "Outputs",
+		"Output address 1": "Output address 1",
+		"Output address 2": "Output address 2",
+		"WIF Key": "WIF Key",
+		"key": "key",
+		"Warning2": "WARNING: ANY FUNDS NOT ALLOCATED WILL BE USED AS FEES",
+		"Create Raw Signed Transction": "Create Raw Signed Transction",
+		"Signed Raw Transaction": "Signed Raw Transaction",
+		"Don't understand": "Don't understand how this works?",
+		"Tutorial Here": "English Tutorial Here",
+		"Advanced Details": "Advanced Details: ",
+		"locktime": "locktime is set to 0, sequence is set to max. SIGHASH_ALL option is chosen for signing raw Transaction.",	
+		"English Tutorial here": "English Tutorial here",
+		
+	"_comments6": "Section: This is for the STAKE section",
 		"New Feature": "New Feature!",
 		"MPW cold staking": "Please be aware MPW Cold Staking is a new, slightly experimental feature, it may be unstable, and is currently slow. Please have patience when using this feature, and wait for block confirmations before actions and balances are shown on-screen.",
 		"Staking": "Staking",
@@ -69,28 +92,11 @@
 		"Staking 0": "Staking: 0 PIV",
 		"Available 0": "Available: 0 PIV",
 		
-	"_comments": "Section: This is for the SETTINGS section",	
+	"_comments7": "Section: This is for the SETTINGS section",	
 		"Choose an explorer": "Choose an explorer",
 		"Submit": "Submit",
 		"Toggle Debug Mode": "Toggle Debug Mode",
-		"Toggle Networking Mode": "Toggle Networking Mode"
-		
-		
-		
-		
-		
-		
-		
-		
-         
-		
-		
-		
-		
-	
-		
-		
-		
+		"Toggle Networking Mode": "Toggle Networking Mode"		
 		
 		
 		

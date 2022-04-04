@@ -49,6 +49,8 @@
 
   <!--- IMPORTANT: CHAIN PARAMS BELOW, DO NOT EDIT UNLESS YOU'RE ABSOLUTELY CERTAIN YOU KNOW WHAT YOU'RE DOING  --->
   <script>
+
+    
       // In most BTC-derived coins, the below parameters can be found in the 'src/chainparams.cpp' Mainnet configuration.
       // These below params share the same names as the CPP params, so finding and editing these is easy-peasy!
 
@@ -86,11 +88,16 @@
               <li class="nav-item"><a id="txTab" class="nav-link tablinks" onclick="openTab(event, 'StakingTab')" data-i18n-key="Stake">Stake</a></li>
               <li class="nav-item"><a class="nav-link tablinks" onclick="openTab(event, 'Settings');" data-i18n-key="Settings">Settings</a></li>
             </ul>
-            <select data-i18n-switcher class="locale-switcher">
+            <!-- Language drop down -->
+            <div id="language"></div>
+                     
+            
+            <!--
+              <select data-i18n-switcher class="locale-switcher">
               <option value="en">English</option>
               <option value="de">German</option>
             </select>
-
+            -->
             <!-- SIDE NAVBAR -->
             <div class="form-inline my-2 my-lg-0">
               <ul class="navbar-nav mr-auto ptr">
@@ -143,7 +150,7 @@
 
               <!-- PIVX TITLE SECTION -->
               <div class="col-md-12 title-section float-left rm-pd">
-                  <h1 class="pivx-bold-title center-text "><span data-i18n-key="Welcome to">Welcome to</span><span data-i18n-key="My PIVX Wallet"> My PIVX Wallet!</span></h1>
+                  <h1 class="pivx-bold-title center-text "><span data-i18n-key="Welcome to">Welcome to</span><h1 class="pivx-bold-title center-text ><span  data-i18n-key="My PIVX Wallet"> My PIVX Wallet!</span></h1>
               </div>
               <!-- // PIVX TITLE SECTION -->
 
@@ -159,8 +166,7 @@
                     </div>
                     
                     <h4 data-i18n-key="Be your own Bank">Be your own Bank!</h4>
-                    <h5 data-i18n-key="no custody">
-                      MyPIVXWallet has <b>no custody</b> over your funds. You are in full ownership of your keys and your PIV.
+                    <h5><span data-i18n-key="no custody1">MyPIVXWallet has</span><b><span data-i18n-key="no custody2">no custody</span></b><span data-i18n-key="no custody3">over your funds. You are in full ownership of your keys and your PIV.</span>
                     </h5>
                     <span onclick="window.location.href='https://forum.pivx.org/threads/mypivxwallet-an-easy-open-source-self-sovereign-pivx-wallet.873/'" class="purple-icon-link ptr" data-i18n-key="KNOW MORE">
                       Know more<span class="link-icon link-icon-suffix"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M23.328 16.707L13.121 26.914a.5.5 0 01-.707 0l-2.828-2.828a.5.5 0 010-.707L16.964 16 9.586 8.621a.5.5 0 010-.707l2.828-2.828a.5.5 0 01.707 0l10.207 10.207a1 1 0 010 1.414z"></path></svg></span>
@@ -198,7 +204,7 @@
                       <img src="https://pivx.org/build/images/content/img_privacy.png" alt="PIVX Privacy" class="smaller-feature">
                     </div>
 
-                    <h4 data-i18n-key="Don't trust, verify!">Don't trust, verify!</h4>
+                    <h4 data-i18n-key="Don't trust">Don't trust, verify!</h4>
                     <h5 data-i18n-key="open-source">
                       MyPIVXWallet is completely open-source, available on the PIVX Labs github.
                     </h5>
@@ -265,7 +271,7 @@
                   </div>
 
                   <div class="col-md-12 dashboard-title">
-                    <h3 class="pivx-bold-title-smaller"><span data-i18n-key="Create">Create a</span><span data-i18n-key="New Wallet">New wallet</span></h3>
+                    <h3 class="pivx-bold-title-smaller"><span data-i18n-key="Create">Create a</span><h3 class="pivx-bold-title-smaller" data-i18n-key="New Wallet">New wallet</h3>
                     <p data-i18n-key="create new wallet">This will create a new, random PIVX wallet that will contain no initial funds, you may transfer to-and-from this wallet with ease.</p>
                   </div>
 
@@ -363,7 +369,7 @@
                   </div>
 
                   <div class="col-md-12 dashboard-title">
-                    <h3 class="pivx-bold-title" style="font-size:38px;"><span data-i18n-key="Create a new">Create a new</span><span data-i18n-key="Vanity Wallet">Vanity Wallet</span></h3>
+                    <h3 class="pivx-bold-title-smaller"><span data-i18n-key="Create a new">Create a new</span></h3><h3 class="pivx-bold-title-smaller" data-i18n-key="Vanity Wallet">Vanity Wallet</span></h3>
                     <span class="badge badge-warning" data-i18n-key="Experimental">Experimental</span>
                     <p><span data-i18n-key="customized prefix">This will create a PIVX wallet with a customized prefix of your choosing, requiring more processing power to generate such addresses, it is recommended to generate a prefix of less than 6 characters, for example: "DAD" is a possible address prefix.</span></p>
                   </div>
@@ -392,7 +398,7 @@
                   </div>
 
                   <div class="col-md-12 dashboard-title">
-                    <h3 class="pivx-bold-title-smaller"><span data-i18n-key="Go to">Go to</span><span data-i18n-key="My Wallet">My Wallet</span></h3>
+                    <h3 class="pivx-bold-title-smaller"><span data-i18n-key="Go to">Go to</span></h3><h3 class="pivx-bold-title-smaller" data-i18n-key="My Wallet">My Wallet</h3>
                     <p><span data-i18n-key="private key">This will import a PIVX wallet that you hold via it's private key, loading the address and pulling your existing balance, if any, from an explorer node.
                     </span><br>
                       <span style="opacity: 0.75; font-size: small;" data-i18n-key="MPW developers">*Note: MPW developers can NOT access your wallet, this wallet runs purely in YOUR browser using JavaScript.</span>
@@ -431,7 +437,7 @@
 
             <div id="StakingTab" class="tabcontent">
               <!-- STAKING FEATURES -->
-              <p id="info" class="minor-notif-subtext"><b><span data-i18n-key="New Feature">New Feature!</span></p></b><br><span data-i18n-key="MPW cold staking">Please be aware MPW Cold Staking is a new, slightly experimental feature, it may be unstable, and is currently slow. Please have patience when using this feature, and wait for block confirmations before actions and balances are shown on-screen.</span></p>
+              <p id="info" class="minor-notif-subtext"><b><span data-i18n-key="New Feature">New Feature!</span></b><br><span class="minor-notif-subtext" style="opacity: 0.9;" data-i18n-key="MPW cold staking">Please be aware MPW Cold Staking is a new, slightly experimental feature, it may be unstable, and is currently slow. Please have patience when using this feature, and wait for block confirmations before actions and balances are shown on-screen.</span></p>
               <div class="add-frame">
               <div class="staking-banner-top">
                 <div id="staking-rectangle" class="col-md-4">
@@ -444,7 +450,7 @@
                         </div>
                     </div>
                     <div id="staking-box">
-                      <h3 id="stake-title" class="noselect" data-i18n-key="Staking">Staking &nbsp;&nbsp;<span id="balanceReloadStaking" class="reload noselect" onclick="refreshChainData()">&#x21bb;</span></h3>
+                      <h3 id="stake-title" class="noselect" ><span data-i18n-key="Staking">Staking </span>&nbsp;&nbsp;<span id="balanceReloadStaking" class="reload noselect" onclick="refreshChainData()">&#x21bb;</span></h3>
                     </div>
                 </div>
             </div>
@@ -483,7 +489,7 @@
 
               <!-- PIVX TITLE SECTION -->
               <div class="col-md-12 title-section float-left rm-pd">
-                  <h3 class="pivx-bold-title center-text"><span data-i18n-key="Create">Create a</span><span data-i18n-key="Transaction"> Transaction</span></h3>
+                  <h3 class=" center-text" data-i18n-key="Create">Create a</h3><h3 class="pivx-bold-title center-text" data-i18n-key="Transaction"> Transaction</h3>
               </div>
               <br>
               <!-- // PIVX TITLE SECTION -->
@@ -523,40 +529,39 @@
                     style='float:right;'>▼</span></div>
                 <div id='advTransactions' style='display:none'>
                   <br>
-                  <h3>Inputs</h3>
-                  <label>Trx Hash</label><br>
+                  <h3 data-i18n-key="Inputs">Inputs</h3>
+                  <label data-i18n-key="Trx Hash">Trx Hash</label><br>
                   <input type="text" id="prevTrxHash">
-                  <label>Index</label><br>
+                  <label data-i18n-key="Index">Index</label><br>
                   <input type="text" id="index">
-                  <label>Script</label><br>
+                  <label data-i18n-key="Script">Script</label><br>
                   <input type="text" id="script"><br><br>
-                  <h3>Outputs</h3>
-                  <label>Output Address 1</label><br>
+                  <h3 data-i18n-key="Outputs">Outputs</h3>
+                  <label data-i18n-key="Output address 1">Output address 1</label><br>
                   <input type="text" id="address1">
-                  <label>Amount</label><br>
+                  <label data-i18n-key="Amount">Amount</label><br>
                   <input type="text" id="value1">
                   <br />
-                  <label>Output address 2</label><br>
+                  <label data-i18n-key="Output address 2">Output address 2</label><br>
                   <input type="text" id="address2">
-                  <label>Amount</label><br>
+                  <label data-i18n-key="Amount">Amount</label><br>
                   <input type="text" id="value2"><br><br>
-                  <h3>WIF Key</h3>
-                  <label>key</label><br>
+                  <h3 data-i18n-key="WIF Key">WIF Key</h3>
+                  <label data-i18n-key="key">key</label><br>
                   <input type="text" id="wif">
                   <br /><br />
-                  <p style="padding: 5px 0 15px;"><b>WARNING:</b> ANY FUNDS NOT ALLOCATED WILL BE USED AS FEES</p>
+                  <p style="padding: 5px 0 15px;" data-i18n-key="Warning2">WARNING: ANY FUNDS NOT ALLOCATED WILL BE USED AS FEES</p>
                   <button class="pivx-button-big" onclick="createRawTransaction()">
                               <span class="buttoni-icon"><i class="fas fa-paper-plane fa-tiny-margin"></i></span>
-                              <span class="buttoni-text">Create Raw Signed Transction</span>
+                              <span class="buttoni-text" data-i18n-key="Create Raw Signed Transction">Create Raw Signed Transction</span>
                               <span class="buttoni-arrow"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M23.328 16.707L13.121 26.914a.5.5 0 01-.707 0l-2.828-2.828a.5.5 0 010-.707L16.964 16 9.586 8.621a.5.5 0 010-.707l2.828-2.828a.5.5 0 01.707 0l10.207 10.207a1 1 0 010 1.414z"></path></svg></span>
                     </button>
                   <br /><br /><br />
-                  <h4 id="signed-raw">Signed Raw Transaction</h4>
+                  <h4 id="signed-raw" data-i18n-key="Signed Raw Transaction">Signed Raw Transaction</h4>
                   <textarea rows="15" cols="70" id="rawTrx"></textarea>
-                  <p>Don't understand how this works? <a target='_blank'
-                      href='https://github.com/PIVX-Labs/MyPIVXWallet#transaction'>Tutorial Here</a></p>
-                  <p>Advanced Details: <br>locktime is set to 0, sequence is set to max. SIGHASH_ALL option is chosen
-                      for signing raw Transaction.</p>
+                  <p data-i18n-key="Don't understand">Don't understand how this works?</p>
+                    <p><a target='_blank' href='https://github.com/PIVX-Labs/MyPIVXWallet#transaction' data-i18n-key="English Tutorial here">English Tutorial Here</a></p>
+                  <p data-i18n-key="Advanced Details">Advanced Details:</p><p data-i18n-key="locktime">locktime is set to 0, sequence is set to max. SIGHASH_ALL option is chosen for signing raw Transaction.</p>
                 </div>
               </div>
             </div>
@@ -622,7 +627,7 @@
   <script type="text/javascript" src="scripts/wallet.js"></script>
   <script type="text/javascript" src="scripts/network.js"></script>
   <script type="text/javascript" src="scripts/bitTrx.js"></script>
-  <script type="text/javascript" src="scripts/i18n.js"></script>
+  <!---script type="text/javascript" src="scripts/i18n.js"></script>--->
 
   <script>
     // WALLET STATE DATA
@@ -1237,6 +1242,16 @@
     setInterval(refreshChainData, 15000);
     domPrefix.value = PUBKEY_PREFIX;
   </script>
+  <script> // load langauge bar 
+ $(document).ready(function() {
+  $("#language").load("lang.html", function() {
+    $.getScript('scripts/i18n.js', function(data, textStatus, jqxhr) {
+      // nothing here
+    }
+  }); 
+});
+
+ </script>
 
 </body>
 
