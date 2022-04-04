@@ -15,7 +15,8 @@ let locale;
 let translations = {};
 
 // When the page content is ready...
-document.addEventListener("DOMContentLoaded", () => {
+//document.addEventListener("DOMContentLoaded", () => {     // ** NOTE: This event won't fire on dynamically loaded file; switched to jQuery hook // Ky
+$(document).ready(function() {
   const initialLocale = supportedOrDefault(
     browserLocales(true),
   );
@@ -46,6 +47,7 @@ async function setLocale(newLocale) {
 // locale over the network
 async function fetchTranslationsFor(newLocale) {
   const response = await fetch(`/lang/${newLocale}.json`);
+
   return await response.json();
 }
 

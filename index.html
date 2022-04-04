@@ -150,7 +150,7 @@
 
               <!-- PIVX TITLE SECTION -->
               <div class="col-md-12 title-section float-left rm-pd">
-                  <h1 class="pivx-bold-title center-text "><span data-i18n-key="Welcome to">Welcome to</span><h1 class="pivx-bold-title center-text ><span  data-i18n-key="My PIVX Wallet"> My PIVX Wallet!</span></h1>
+                  <h1 class="pivx-bold-title center-text "><span data-i18n-key="Welcome to">Welcome to</span><h1 class="pivx-bold-title center-text"><span data-i18n-key="My PIVX Wallet"> My PIVX Wallet!</span></h1>
               </div>
               <!-- // PIVX TITLE SECTION -->
 
@@ -525,8 +525,8 @@
               </div>
               <br>
               <div class='max-width' style='clear:both;'>
-                <div onclick='toggleDropDown("advTransactions")' class="bold-trans" data-i18n-key="Create Manual Transactions">Create Manual Transactions
-                  <span style='float:right;'>▼</span></div>
+                <div onclick='toggleDropDown("advTransactions")' class="bold-trans" data-i18n-key="Create Manual Transactions">Create Manual Transactions<span>
+                    style='float:right;'>▼</span></div>
                 <div id='advTransactions' style='display:none'>
                   <br>
                   <h3 data-i18n-key="Inputs">Inputs</h3>
@@ -1242,17 +1242,15 @@
     setInterval(refreshChainData, 15000);
     domPrefix.value = PUBKEY_PREFIX;
   </script>
-  <script> // load langauge bar 
- $(document).ready(function() {
-  $("#language").load("lang.html", function() {
-    $.getScript('scripts/i18n.js', function(data, textStatus, jqxhr) {
-      // nothing here
-    }
-  }); 
-});
 
+  <script> // load langauge bar 
+     $(document).ready(function() {
+      $('#language').load('lang.html', function() {
+        $.getScript('scripts/i18n.js', function(data, textStatus, jqxhr) {
+          // silence is the rest // shakespeare
+        });
+      }); 
+    });
  </script>
 
-</body>
-
-</html>
+</body></html>
