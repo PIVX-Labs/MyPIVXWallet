@@ -94,5 +94,9 @@
 		"Choose an explorer": "Wähle einen Blockchain-Explorer",
 		"Submit": "Senden",
 		"Toggle Debug Mode": "Umschalten - Debug Modus",
-		"Toggle Networking Mode": "Umschalten - Netzwerk Modus"		
+		"Toggle Networking Mode": "Umschalten - Netzwerk Modus"	,
+		
+		"Balance is too small!": "german gobbly gook!",
+		"Please unlock your wallet before sending transactions!": "german gobbly gook!",
+		"Minimum_amount": "german gobbly gook!"
 }

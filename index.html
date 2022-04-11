@@ -158,7 +158,7 @@
               <div class="col-md-12 features-section float-left rm-pd intro-page">
 
                 <!-- PIVX FEATURE -->
-                <div class="col-md-12 float-left pivx-feature-father">
+                <div class="col-md-8 float-right pivx-feature-father">
                   <div class="col-md-11 pivx-feature-interior ">
 
                     <div class="col-md-12 feature-icon">
@@ -178,7 +178,7 @@
                         
 
                 <!-- PIVX FEATURE -->
-                <div class="col-md-12 float-left pivx-feature-father">
+                <div class="col-md-8 float-left pivx-feature-father">
                   <div class="col-md-11 pivx-feature-interior">
 
                     <div class="col-md-12 feature-icon">
@@ -197,7 +197,7 @@
                 <!-- // PIVX FEATURE -->
 
                 <!-- PIVX FEATURE -->
-                <div class="col-md-12 float-left pivx-feature-father">
+                <div class="col-md-8 float-right pivx-feature-father">
                   <div class="col-md-11 pivx-feature-interior">
 
                     <div class="col-md-12 feature-icon">
@@ -216,7 +216,7 @@
                 <!-- // PIVX FEATURE -->
 
                 <!-- PIVX FEATURE -->
-                <div class="col-md-12 float-left pivx-feature-father">
+                <div class="col-md-8 float-left pivx-feature-father">
                   <div class="col-md-11 pivx-feature-interior">
 
                     <div class="col-md-12 feature-icon">
@@ -930,13 +930,13 @@
     function undelegateGUI() {
       // Verify the amount
       const nAmount = Number(document.getElementById('undelegateAmount').value);
-      if (nAmount < 0.01) return alert('Minimum amount is 0.01 PIV!');
+      if (nAmount < 0.01) return alert(i18n.t('Minimum_amount'));
       undelegate(nAmount);
     }
     function undelegate(value) {
       if (!publicKeyForNetwork) {
         if (hasEncryptedWallet())
-          alert("Please unlock your wallet before sending transactions!");
+          alert("Please unlock your wallet before sending transactions!"));
         else
           alert("Please import/create your wallet before sending transactions!");
         return;

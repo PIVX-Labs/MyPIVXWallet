@@ -96,9 +96,11 @@
 		"Choose an explorer": "Choose an explorer",
 		"Submit": "Submit",
 		"Toggle Debug Mode": "Toggle Debug Mode",
-		"Toggle Networking Mode": "Toggle Networking Mode"		
+		"Toggle Networking Mode": "Toggle Networking Mode",		
 		
 		
-		
+		"Balance is too small!": "Balance is too small!",
+		"Please unlock your wallet before sending transactions!": "Please unlock your wallet before sending transactions!",
+		"Minimum_amount": "Minimum amount is 0.01 PIV!"
 	
   }
