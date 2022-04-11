@@ -5,7 +5,7 @@ const supportedLocales = ["en", "de"];
 
 const fullyQualifiedLocaleDefaults = {
   en: "en-US",
-  ar: "de",
+  de: "de-AT",
 };
 
 // The active locale
