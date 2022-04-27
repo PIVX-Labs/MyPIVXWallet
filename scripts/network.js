@@ -113,10 +113,10 @@ var sendTransaction = function (hex, msg = '') {
             domSimpleTXs.style.display = 'none';
             domAddress1s.value = '';
             domValue1s.innerHTML = '';
-            createAlert('success', msg || 'Transaction sent!');
+            createAlert('success', msg || 'Transaction sent!', msg ? (1250 + (msg.length * 50)) : 1500);
         } else {
             console.log('Error sending transaction: ' + data);
-            createAlert('warning', 'Transaction Failed!');
+            createAlert('warning', 'Transaction Failed!', 1250);
             // Attempt to parse and prettify JSON (if any), otherwise, display the raw output.
             let strError = data;
             try {

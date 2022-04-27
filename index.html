@@ -58,8 +58,11 @@
       const PUBKEY_PREFIX  = "D";
       const PUBKEY_ADDRESS = 30;
       const SECRET_KEY     = 212;
-
       const COIN = 1e8;
+
+      /* Internal tweaking parameters */
+      // A new encryption password must be 'at least' this long.
+      const MIN_PASS_LENGTH = 6;
 
       // Cool stuff
       const donationAddress = "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb";
@@ -290,6 +293,7 @@
 
               <!-- WARNING -->
              <div id='genKeyWarning' style='display: none;' class="alert alert-danger col-md-12" role="alert">
+<<<<<<< HEAD
                 <div>
                      <p><b><span data-i18n-key="WARNING">WARNING:</span></b><span data-i18n-key="save you keys">if you don't save your private key you will lose access to your funds!</span><br>
                   <span data-i18n-key="encrypt">Would you like to encrypt & save your wallet in your browser?</span><br></p>
@@ -302,6 +306,24 @@
                               <span class="buttoni-arrow"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M23.328 16.707L13.121 26.914a.5.5 0 01-.707 0l-2.828-2.828a.5.5 0 010-.707L16.964 16 9.586 8.621a.5.5 0 010-.707l2.828-2.828a.5.5 0 01.707 0l10.207 10.207a1 1 0 010 1.414z"></path></svg></span>
                     </button>
 
+=======
+                <div style="max-width: 100% !important;">
+                  <p id="encryptWarningText" class="center-text">
+                    <b>WARNING</b><br>
+                    If you don't save your private key you will lose access to your funds!<br>
+                    Would you like to encrypt & save your wallet in your browser?
+                  </p>
+                </div>
+                <div id="encryptPassword" style="display: none !important; max-width: 100% !important; max-width: 100% !important;">
+                  <input class="center-text" style="width: 100%; font-family: monospace;" type="password" id="newPassword" placeholder="Enter Password">
+                  <input class="center-text" style="width: 100%; font-family: monospace;" type="password" id="newPasswordRetype" placeholder="Re-type Password">
+                </div>
+                  <button class="pivx-button-big" onclick="guiEncryptWallet()" style="float: none;margin: 0 auto;display: block;">
+                    <span class="buttoni-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M85.967 10.65l-32.15-9.481a13.466 13.466 0 00-7.632 0l-32.15 9.48C11.661 11.351 10 13.567 10 16.042v26.623c0 12.321 3.67 24.186 10.609 34.31 6.774 9.885 16.204 17.49 27.264 21.99a5.612 5.612 0 004.251 0c11.061-4.5 20.491-12.104 27.266-21.99C86.329 66.85 90 54.985 90 42.664V16.042a5.656 5.656 0 00-4.033-5.392zM69 68.522C69 70.907 67.03 72 64.584 72H34.092C31.646 72 30 70.907 30 68.522v-23.49C30 42.647 31.646 41 34.092 41H37v-9.828C37 24.524 41.354 18.5 49.406 18.5 57.37 18.5 62 24.066 62 31.172V41h2.584C67.03 41 69 42.647 69 45.032v23.49zM58 41v-9.828c0-4.671-3.708-8.472-8.5-8.472-4.791 0-8.5 3.8-8.5 8.472V41h17z"></path></svg></span>
+                    <span class="buttoni-text" id="encryptButton">Set Password</span>
+                    <span class="buttoni-arrow"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M23.328 16.707L13.121 26.914a.5.5 0 01-.707 0l-2.828-2.828a.5.5 0 010-.707L16.964 16 9.586 8.621a.5.5 0 010-.707l2.828-2.828a.5.5 0 01.707 0l10.207 10.207a1 1 0 010 1.414z"></path></svg></span>
+                  </button>
+>>>>>>> df2d543e39ba309c363aab7ec126482e8ad9fb50
               </div>
               <!-- // WARNING -->
               <br>
@@ -408,16 +430,20 @@
                   <!-- IMPORT WALLET -->
                   <input class="hide-element" type="text" id="clipboard">
                   <div id='importWallet' style='display: none;'>
-                    <input type="text" id='privateKey' placeholder="Private Key">
-                    <button class="pivx-button-big" onclick="importWallet()">
+                    <input type="password" id='privateKey' placeholder="Private Key">
+                    <button class="pivx-button-big" onclick="guiImportWallet()">
                                   <span class="buttoni-icon"><i class="fas fa-file-upload fa-tiny-margin"></i></span>
+<<<<<<< HEAD
                                   <span class="buttoni-text" data-i18n-key="Import Wallet">Import Wallet</span>
+=======
+                                  <span class="buttoni-text" id="importWalletText">Import Wallet</span>
+>>>>>>> df2d543e39ba309c363aab7ec126482e8ad9fb50
                                   <span class="buttoni-arrow"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M23.328 16.707L13.121 26.914a.5.5 0 01-.707 0l-2.828-2.828a.5.5 0 010-.707L16.964 16 9.586 8.621a.5.5 0 010-.707l2.828-2.828a.5.5 0 01.707 0l10.207 10.207a1 1 0 010 1.414z"></path></svg></span>
                         </button>
                   </div>
                   <!-- // IMPORT WALLET -->
 
-                  <button class="pivx-button-big" onclick="toggleWallet()">
+                  <button class="pivx-button-big" id="accessWalletBtn" onclick="toggleWallet()">
                               <span class="buttoni-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 70"><path d="M3.497 25.717C1.401 25.588 0 23.847 0 21.753v-2.535c0-.775.149-1.593.925-1.593h22.719c2.173 0 3.941 1.861 3.941 4.034 0 2.174-1.769 3.988-3.941 3.988l-20.207.048c-.02 0 .08.023.06.022z"></path><path d="M5.229 69.625C4.455 69.625 4 68.494 4 67.719V38.661c0-1.911 1.447-3.731 3.258-3.989.175-.029.285-.047.483-.047h21.525c7.137 0 12.751-5.86 12.751-13.027 0-7.096-5.528-12.841-12.586-13.177-.002 0-.671.016-1.41.016l-20.335.066C5.529 8.373 4 6.652 4 4.558V2.023C4 1.247 4.407.625 5.183.625h24.059c11.57 0 20.654 9.546 20.706 21.104 0 9.378-6.307 17.727-15.337 20.311-1.622.445-3.122.705-4.735.778L12 42.842v22.485c0 2.156-2.141 4.298-4.235 4.298H5.229z"></path></svg></span>
 
                               <span class="buttoni-text" id='wToggle' data-i18n-key="Access My Wallet">Access My Wallet</span>
@@ -496,7 +522,11 @@
 
               <div id='errorNotice' class="col-md-12 float-left"></div>
               <div class="col-md-12">
+<<<<<<< HEAD
                 <p id="comunication" class="center-text" data-i18n-key="no shielded">Please AVOID sending to Shielded or Cold Staking addresses using this wallet - this functionality is currently unsupported.</p>
+=======
+                <p id="communication" class="center-text">Please <b>AVOID</b> sending to Shielded addresses using this wallet - this functionality is currently unsupported.</p>
+>>>>>>> df2d543e39ba309c363aab7ec126482e8ad9fb50
               </div>
               <div class='max-width' style='clear:both;'>
                 <div id="simpleTransactionsDropdown" class="bold-trans" onclick='toggleDropDown("simpleTransactions")' data-i18n-key="Create Simple Transactions">Create Simple Transactions<span
@@ -663,11 +693,18 @@
     const domPrefix = document.getElementById('prefix');
     const domWalletToggle = document.getElementById("wToggle");
     const domGenerateWallet = document.getElementById('generateWallet');
-    const domImportWallet = document.getElementById('importWallet');
     const domGenVanityWallet = document.getElementById('generateVanityWallet');
     const domAccessWallet = document.getElementById('accessWallet');
+    const domImportWallet = document.getElementById('importWallet');
+    const domImportWalletText = document.getElementById('importWalletText');
+    const domAccessWalletBtn = document.getElementById('accessWalletBtn');
     const domVanityUiButtonTxt = document.getElementById("vanButtonText");
     const domGenKeyWarning = document.getElementById('genKeyWarning');
+    const domEncryptWarningTxt = document.getElementById('encryptWarningText');
+    const domEncryptBtnTxt = document.getElementById('encryptButton');
+    const domEncryptPasswordBox = document.getElementById('encryptPassword');
+    const domEncryptPasswordFirst = document.getElementById('newPassword');
+    const domEncryptPasswordSecond = document.getElementById('newPasswordRetype');
     const domGuiAddress = document.getElementById('guiAddress');
     const domGenIt = document.getElementById("genIt");
     const domHumanReadable = document.getElementById("HumanReadable");
@@ -678,6 +715,9 @@
     const domPrivKey = document.getElementById("privateKey");
     const domAvailToDelegate = document.getElementById('availToDelegate');
     const domAvailToUndelegate = document.getElementById('availToUndelegate');
+
+    // Alert DOM element
+    const domAlertPos = document.getElementsByClassName("alertPositioning")[0];
 
     function getBalance(updateGUI = false) {
       const nBalance = cachedUTXOs.reduce((a, b) => a + b.sats, 0);
@@ -721,31 +761,24 @@
 
     let audio = null;
     function playMusic() {
-      if (audio === null) {
-        audio = new Audio('assets/music.mp3');
-        audio.play();
-        startDisco();
-      } else
-      if (audio.paused) {
-        audio.play();
-        startDisco();
-      } else
-      if (audio.ended) {
-        audio.play();
+      if (audio === null)
+          audio = new Audio('assets/music.mp3');
+      if (audio.paused || audio.ended) {
         startDisco();
       } else {
-        audio.pause();
         stopDisco();
       }
     }
 
     function startDisco() {
+      audio.play();
       for (const domImg of document.getElementsByTagName('img')) {
         domImg.classList.add("discoFilter");
       }
     }
 
     function stopDisco() {
+      audio.pause();
       for (const domImg of document.getElementsByTagName('img')) {
           domImg.classList.remove("discoFilter");
         }
@@ -811,31 +844,49 @@
       domPrefix.value = PUBKEY_PREFIX;
       domPrefix.style.display = 'none';
       if (toggle === "Access My Wallet") {
-        if (!hasEncryptedWallet()) {
-          // No local wallet found
-            domGenerateWallet.style.display = 'none';
-            domImportWallet.style.display = 'block';
-            domWalletToggle.innerHTML = "Create A New Wallet";
-            return;
-        }
+        domImportWallet.style.display = 'block';
+        domAccessWalletBtn.style.display = 'none';
         // We have a local wallet! Display the decryption prompt
-        decryptWallet().then(hasWallet => {
+        if (hasEncryptedWallet()) {
+          domPrivKey.placeholder = 'Enter your wallet password';
+          domImportWalletText.innerText = 'Unlock Wallet';
+        }
+      } else {
+        domGenerateWallet.style.display = 'block';
+      }
+    }
+
+    function guiImportWallet() {
+      if (hasEncryptedWallet()) {
+        decryptWallet(domPrivKey.value).then(hasWallet => {
           if (hasWallet) {
             hideAllWalletOptions();
           } else {
             domGenerateWallet.style.display = 'block';
-            domImportWallet.style.display = 'none';
-            domWalletToggle.innerHTML = "Access My Wallet";
           }
         }).catch(e => {
-          domGenerateWallet.style.display = 'none';
           domImportWallet.style.display = 'block';
-          domWalletToggle.innerHTML = "Create A New Wallet";
         });
       } else {
-        domGenerateWallet.style.display = 'block';
-        domImportWallet.style.display = 'none';
-        domWalletToggle.innerHTML = "Access My Wallet";
+        importWallet();
+      }
+    }
+
+    function guiEncryptWallet() {
+      // Show our inputs if we haven't already
+      if (domEncryptPasswordBox.style.display === 'none') {
+        // Return the display to it's class form
+        domEncryptPasswordBox.style.display = '';
+        domEncryptBtnTxt.innerText = 'Finish Encryption';
+      } else {
+        // Fetch our inputs, ensure they're of decent entropy + match eachother
+        const strPass = domEncryptPasswordFirst.value,
+              strPassRetype = domEncryptPasswordSecond.value;
+        if (strPass.length < MIN_PASS_LENGTH) return createAlert('warning', 'That password is a little short!<br>' +
+                                                                            'Use at least <b>' + MIN_PASS_LENGTH + ' characters.</b>', 4000);
+        if (strPass !== strPassRetype) return createAlert('warning', 'Your passwords don\'t match!', 2250);
+        encryptWallet(strPass);
+        createAlert('success', '<b>You\'re Secured! 🔐</b><br>Nice stuff, Armoured PIVian!', 5500);
       }
     }
 
@@ -877,7 +928,7 @@
       } else {
         // Ensure the input is base58 compatible
         for (const char of domPrefix.value) {
-          if (!MAP.includes(char)) return alert("The character '" + char + "' is unsupported in addresses! (Not Base58 compatible)");
+          if (!MAP_B58.includes(char)) return alert("The character '" + char + "' is unsupported in addresses! (Not Base58 compatible)");
         }
         // We also don't want users to be mining addresses for years... so cap the letters to four until the generator is more optimized
         if (domPrefix.value.length > 6) return alert("This is a long name! This would take a LONG time to find, please choose a shorter name!");
@@ -930,15 +981,19 @@
     function undelegateGUI() {
       // Verify the amount
       const nAmount = Number(document.getElementById('undelegateAmount').value);
+<<<<<<< HEAD
       if (nAmount < 0.01) return alert(i18n.t('Minimum_amount'));
+=======
+      if (nAmount < 0.01) return createAlert('warning', 'Minimum amount is 0.01 PIV!', 2000);
+>>>>>>> df2d543e39ba309c363aab7ec126482e8ad9fb50
       undelegate(nAmount);
     }
     function undelegate(value) {
       if (!publicKeyForNetwork) {
         if (hasEncryptedWallet())
-          alert("Please unlock your wallet before sending transactions!");
+          createAlert('warning', "Please unlock your wallet before sending transactions!", 3000);
         else
-          alert("Please import/create your wallet before sending transactions!");
+          createAlert('warning', "Please import/create your wallet before sending transactions!", 3250);
         return;
       }
 
@@ -973,7 +1028,7 @@
           // Sanity
           if (cachedColdStakeAddr.length !== 34 || !cachedColdStakeAddr.startsWith('S')) {
             askForCSAddr(true);
-            return alert('Now that you\'ve set a Cold Staking address, please re-try your undelegation!');
+            return createAlert('success', '<b>Staking Address set!</b><br>Now go ahead and unstake!');
           }
           cTx.addcoldstakingoutput(publicKeyForNetwork, cachedColdStakeAddr, valuechange);
           console.log('Re-delegated delegation spend change!');
@@ -1000,17 +1055,17 @@
       return false;
     }
     function delegateGUI() {
-      // Ensure the user has an address set - if not, request one!
-      if (!askForCSAddr()) return;
-
       // Verify the amount
       const nAmount = Number(document.getElementById('delegateAmount').value);
-      if (nAmount < 1) return alert('Minimum Staking amount is 1 PIV!');
+      if (nAmount < 1) return createAlert('warning', 'Minimum Staking amount is 1 PIV!', 2000);
+
+      // Ensure the user has an address set - if not, request one!
+      if (!askForCSAddr()) return;      
 
       // Sanity
       if (cachedColdStakeAddr.length !== 34 || !cachedColdStakeAddr.startsWith('S')) {
         askForCSAddr(true);
-        return alert('Now that you\'ve set a Cold Staking address, please re-try your delegation!');
+        return createAlert('success', '<b>Staking Address set!</b><br>Now go ahead and stake!');
       }
       delegate(nAmount, cachedColdStakeAddr);
     }
@@ -1092,7 +1147,7 @@
         domGenIt.innerHTML = "Continue";
       } else {
         console.warn("Amount: " + value + "\nFee: " + nFee + "\nChange: " + valuechange + "\nTOTAL: " + totalSent);
-        createAlert('warning', 'You are trying to send more than you have!');
+        createAlert('warning', 'You are trying to send more than you have!', 2500);
       }
     }
 
@@ -1100,9 +1155,9 @@
       if (!networkEnabled) return alert("Cannot create Simple Transactions in offline mode; this requires an explorer to sync your balance (UTXOs), please enable Networking to use this feature! Otherwise, use 'Advanced Transactions'");
       if (!publicKeyForNetwork) {
         if (hasEncryptedWallet())
-          createAlert('warning', "Please unlock your wallet before sending transactions!");
+          createAlert('warning', "Please unlock your wallet before sending transactions!", 2500);
         else
-          createAlert('warning', "Please import/create your wallet before sending transactions!");
+          createAlert('warning', "Please import/create your wallet before sending transactions!", 2500);
         return;
       }
       const address = domAddress1s.value;
@@ -1156,7 +1211,7 @@
           domGenIt.innerHTML = "Continue";
         } else {
           console.warn("Amount: " + value + "\nFee: " + nFee + (fNoChange ? "" : "\nChange: " + valuechange) + "\nTOTAL: " + totalSent);
-          createAlert('warning', "You're trying to send more than you have!");
+          createAlert('warning', "You're trying to send more than you have!", 2500);
         }
       } else {
         console.log("No address or value");
