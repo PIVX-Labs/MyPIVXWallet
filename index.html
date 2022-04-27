@@ -92,15 +92,12 @@
               <li class="nav-item"><a class="nav-link tablinks" onclick="openTab(event, 'Settings');" data-i18n-key="Settings">Settings</a></li>
             </ul>
             <!-- Language drop down -->
-            <div id="language"></div>
-                     
-            
-            <!--
-              <select data-i18n-switcher class="locale-switcher">
+          
+            <select data-i18n-switcher class="locale-switcher">
               <option value="en">English</option>
               <option value="de">German</option>
             </select>
-            -->
+            
             <!-- SIDE NAVBAR -->
             <div class="form-inline my-2 my-lg-0">
               <ul class="navbar-nav mr-auto ptr">
@@ -293,20 +290,6 @@
 
               <!-- WARNING -->
              <div id='genKeyWarning' style='display: none;' class="alert alert-danger col-md-12" role="alert">
-<<<<<<< HEAD
-                <div>
-                     <p><b><span data-i18n-key="WARNING">WARNING:</span></b><span data-i18n-key="save you keys">if you don't save your private key you will lose access to your funds!</span><br>
-                  <span data-i18n-key="encrypt">Would you like to encrypt & save your wallet in your browser?</span><br></p>
-                </div>
-                  <button class="pivx-button-big" onclick="encryptWallet()">
-                              <span class="buttoni-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M85.967 10.65l-32.15-9.481a13.466 13.466 0 00-7.632 0l-32.15 9.48C11.661 11.351 10 13.567 10 16.042v26.623c0 12.321 3.67 24.186 10.609 34.31 6.774 9.885 16.204 17.49 27.264 21.99a5.612 5.612 0 004.251 0c11.061-4.5 20.491-12.104 27.266-21.99C86.329 66.85 90 54.985 90 42.664V16.042a5.656 5.656 0 00-4.033-5.392zM69 68.522C69 70.907 67.03 72 64.584 72H34.092C31.646 72 30 70.907 30 68.522v-23.49C30 42.647 31.646 41 34.092 41H37v-9.828C37 24.524 41.354 18.5 49.406 18.5 57.37 18.5 62 24.066 62 31.172V41h2.584C67.03 41 69 42.647 69 45.032v23.49zM58 41v-9.828c0-4.671-3.708-8.472-8.5-8.472-4.791 0-8.5 3.8-8.5 8.472V41h17z"></path></svg></span>
-
-                              <span class="buttoni-text" data-i18n-key="Encrypt Wallet">Encrypt Wallet</span>
-
-                              <span class="buttoni-arrow"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M23.328 16.707L13.121 26.914a.5.5 0 01-.707 0l-2.828-2.828a.5.5 0 010-.707L16.964 16 9.586 8.621a.5.5 0 010-.707l2.828-2.828a.5.5 0 01.707 0l10.207 10.207a1 1 0 010 1.414z"></path></svg></span>
-                    </button>
-
-=======
                 <div style="max-width: 100% !important;">
                   <p id="encryptWarningText" class="center-text">
                     <b>WARNING</b><br>
@@ -323,7 +306,6 @@
                     <span class="buttoni-text" id="encryptButton">Set Password</span>
                     <span class="buttoni-arrow"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M23.328 16.707L13.121 26.914a.5.5 0 01-.707 0l-2.828-2.828a.5.5 0 010-.707L16.964 16 9.586 8.621a.5.5 0 010-.707l2.828-2.828a.5.5 0 01.707 0l10.207 10.207a1 1 0 010 1.414z"></path></svg></span>
                   </button>
->>>>>>> df2d543e39ba309c363aab7ec126482e8ad9fb50
               </div>
               <!-- // WARNING -->
               <br>
@@ -433,11 +415,7 @@
                     <input type="password" id='privateKey' placeholder="Private Key">
                     <button class="pivx-button-big" onclick="guiImportWallet()">
                                   <span class="buttoni-icon"><i class="fas fa-file-upload fa-tiny-margin"></i></span>
-<<<<<<< HEAD
-                                  <span class="buttoni-text" data-i18n-key="Import Wallet">Import Wallet</span>
-=======
                                   <span class="buttoni-text" id="importWalletText">Import Wallet</span>
->>>>>>> df2d543e39ba309c363aab7ec126482e8ad9fb50
                                   <span class="buttoni-arrow"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M23.328 16.707L13.121 26.914a.5.5 0 01-.707 0l-2.828-2.828a.5.5 0 010-.707L16.964 16 9.586 8.621a.5.5 0 010-.707l2.828-2.828a.5.5 0 01.707 0l10.207 10.207a1 1 0 010 1.414z"></path></svg></span>
                         </button>
                   </div>
@@ -522,11 +500,7 @@
 
               <div id='errorNotice' class="col-md-12 float-left"></div>
               <div class="col-md-12">
-<<<<<<< HEAD
-                <p id="comunication" class="center-text" data-i18n-key="no shielded">Please AVOID sending to Shielded or Cold Staking addresses using this wallet - this functionality is currently unsupported.</p>
-=======
                 <p id="communication" class="center-text">Please <b>AVOID</b> sending to Shielded addresses using this wallet - this functionality is currently unsupported.</p>
->>>>>>> df2d543e39ba309c363aab7ec126482e8ad9fb50
               </div>
               <div class='max-width' style='clear:both;'>
                 <div id="simpleTransactionsDropdown" class="bold-trans" onclick='toggleDropDown("simpleTransactions")' data-i18n-key="Create Simple Transactions">Create Simple Transactions<span
@@ -657,7 +631,7 @@
   <script type="text/javascript" src="scripts/wallet.js"></script>
   <script type="text/javascript" src="scripts/network.js"></script>
   <script type="text/javascript" src="scripts/bitTrx.js"></script>
-  <!---script type="text/javascript" src="scripts/i18n.js"></script>--->
+  <script type="text/javascript" src="scripts/i18n.js"></script>
 
   <script>
     // WALLET STATE DATA
@@ -981,11 +955,7 @@
     function undelegateGUI() {
       // Verify the amount
       const nAmount = Number(document.getElementById('undelegateAmount').value);
-<<<<<<< HEAD
-      if (nAmount < 0.01) return alert(i18n.t('Minimum_amount'));
-=======
       if (nAmount < 0.01) return createAlert('warning', 'Minimum amount is 0.01 PIV!', 2000);
->>>>>>> df2d543e39ba309c363aab7ec126482e8ad9fb50
       undelegate(nAmount);
     }
     function undelegate(value) {
@@ -1298,14 +1268,4 @@
     domPrefix.value = PUBKEY_PREFIX;
   </script>
 
-  <script> // load langauge bar 
-     $(document).ready(function() {
-      $('#language').load('lang.html', function() {
-        $.getScript('scripts/i18n.js', function(data, textStatus, jqxhr) {
-          // silence is the rest // shakespeare
-        });
-      }); 
-    });
- </script>
-
-</body></html>
+  </body></html>
