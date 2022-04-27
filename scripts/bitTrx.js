@@ -7,19 +7,6 @@
 	bitjs.priv = SECRET_KEY.toString(16);
 	bitjs.compressed = true;
 
-	/* provide a privkey and return an WIF  */
-	bitjs.privkey2wif = function(h) {
-		const r = Crypto.util.hexToBytes(h);
-		if (bitjs.compressed==true) {
-			r.push(0x01);
-		}
-		r.unshift(bitjs.priv);
-		const hash = Crypto.SHA256(Crypto.SHA256(r, {asBytes: true}), {asBytes: true});
-		const checksum = hash.slice(0, 4);
-
-		return B58.encode(r.concat(checksum));
-	}
-
 	/* convert a wif key back to a private key */
 	bitjs.wif2privkey = function(wif) {
 		let compressed = false;
@@ -41,12 +28,6 @@
 		const pubkey = bitjs.newPubkey(r['privkey']);
 		bitjs.compressed = compressed;
 		return {'pubkey':pubkey,'compressed':r['compressed']};
-	}
-
-	/* convert a wif to a address */
-	bitjs.wif2address = function(wif) {
-		const r = bitjs.wif2pubkey(wif);
-		return {'address':bitjs.pubkey2address(r['pubkey']), 'compressed':r['compressed']};
 	}
 
 	/* generate a public key from a private key */
@@ -73,15 +54,6 @@
 		} else {
 			return Crypto.util.bytesToHex(pubkeyBytes);
 		}
-	}
-
-	/* provide a public key and return address */
-	bitjs.pubkey2address = function(h, byte) {
-		const r = ripemd160(Crypto.SHA256(Crypto.util.hexToBytes(h), {asBytes: true}));
-		r.unshift(byte || bitjs.pub);
-		const hash = Crypto.SHA256(Crypto.SHA256(r, {asBytes: true}), {asBytes: true});
-		const checksum = hash.slice(0, 4);
-		return B58.encode(r.concat(checksum));
 	}
 
 	bitjs.transaction = function() {
