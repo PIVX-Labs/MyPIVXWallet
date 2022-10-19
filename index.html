@@ -934,7 +934,7 @@
           return createAlert('warning', '<b>Failed to import!</b> Invalid password',6000);
         } else {
           localStorage.setItem("encwif", privateKey);
-          return importWallet(strDecWIF);
+          return importWallet({newWif: strDecWIF});
         }
       }
       // Prompt for decryption of the existing wallet
@@ -1033,7 +1033,7 @@
         function checkResult(data) {
           attempts++;
           if (data.pub.substr(0, nPrefixLen).toLowerCase() == nInsensitivePrefix) {
-            importWallet(data.priv, true);
+            importWallet({newWif: data.priv, fRaw: true});
             stopSearch();
             domGuiBalance.innerHTML = "0";
             domGuiBalanceBox.style.fontSize = "x-large";
@@ -1127,7 +1127,7 @@
       delegate(nAmount, cachedColdStakeAddr);
     }
 
-    function delegate(nValue, coldAddr) {
+    async function delegate(nValue, coldAddr) {
       if (!hasWalletUnlocked(true)) return;
 
       // Construct a TX and fetch Standard inputs
@@ -1154,7 +1154,26 @@
       if (debug) domHumanReadable.innerHTML = "Balance: " + (nBalance / COIN) + "<br>Fee: " + (nFee / COIN) + "<br>To: " + address + "<br>Sent: " + (nValue / COIN) + (nChange > 0 ? "<br>Change Address: " + publicKeyForNetwork + "<br>Change: " + (nChange / COIN) : "");
 
       // Sign and broadcast!
-      sendTransaction(cTx.sign(privateKeyForTransactions, 1), "<b>Delegation successful!</b><br>Please wait for confirmations, enjoy your staking!");
+      if(privateKeyForTransactions == null) {
+	console.log(cTx.serialize());
+	// If privatekey is null, then it must be a hardware wallet! (hopefully)
+	const tx = await appBtc.splitTransaction(cTx.serialize());
+	const outputScriptHex = await appBtc
+	      .serializeTransactionOutputs(tx)
+	      .toString("hex");
+	console.log(tx);
+	console.log(outputScriptHex);
+	const sign = await appBtc.createPaymentTransactionNew({
+	  inputs: [[tx, 0]],
+	  associatedKeysets: ["0'/0/0"],
+	  outputScriptHex
+	});
+	console.log(sign);
+	sendTransaction(sign);
+	
+      } else {
+	sendTransaction(cTx.sign(privateKeyForTransactions, 1), "<b>Delegation successful!</b><br>Please wait for confirmations, enjoy your staking!");
+      }
       domGenIt.innerHTML = "Continue";
     }
 
@@ -1195,7 +1214,7 @@
       return ccSuccess(cCoinControl);
     }
 
-    function createTxGUI() {
+    async function createTxGUI() {
       if (!hasWalletUnlocked(true)) return;
 
       // Clear the inputs on 'Continue'
@@ -1251,7 +1270,36 @@
       if (debug) domHumanReadable.innerHTML = "Balance: " + (nBalance / COIN) + "<br>Fee: " + (nFee / COIN) + "<br>To: " + address + "<br>Sent: " + (nValue / COIN) + (nChange > 0 ? "<br>Change Address: " + publicKeyForNetwork + "<br>Change: " + (nChange / COIN) : "");
       
       // Sign and broadcast!
-      sendTransaction(cTx.sign(privateKeyForTransactions, 1));
+	//	if(privateKeyForTransactions != null) {
+	if (false) {
+	    const sign = cTx.sign(privateKeyForTransactions, 1); 
+	    sendTransaction(sign);
+	    console.log(sign)
+      } else {
+	  console.log(cTx.serialize());
+	// If privatekey is null, then it must be a hardware wallet! (hopefully)
+	const tx = await appBtc.splitTransaction(cTx.serialize());
+	const outputScriptHex = await appBtc
+	      .serializeTransactionOutputs(tx)
+	      .toString("hex");
+	console.log(tx);
+	console.log(outputScriptHex);
+	const sign = await appBtc.createPaymentTransactionNew({
+	    inputs: [[tx, 0], [tx, 1]],
+	    associatedKeysets: ["44'/119'/0'/0/0", "44'/119'/0'/0/0"],
+	    changePath: "119'/0'/0/0",
+	    outputScriptHex,
+	});
+	  	const sign2 = await appBtc.createPaymentTransactionNew({
+	    inputs: [[tx, 0], [tx, 1]],
+	    associatedKeysets: ["44'/119'/0'/0/0", "44'/119'/0'/0/0"],
+	    changePath: "119'/0'/0/0",
+	    outputScriptHex,
+	});
+
+	  console.log(sign, sign2, sign == sign2);
+	sendTransaction(sign);
+      }
       domGenIt.innerHTML = "Continue";
     }
 
@@ -1366,6 +1414,7 @@
 <script type="text/javascript" src="scripts/libs/secp256k1.js"></script>
 <script type="text/javascript" src="scripts/libs/noble-secp256k1.js"></script>
 <script type="text/javascript" src="scripts/bitTrx.js"></script>
+<script type="text/javascript" src="scripts/libs/ledger.js"></script>
 
 <script>
   // Throw the Secp256k1 lib as a global after import
