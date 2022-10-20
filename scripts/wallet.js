@@ -286,7 +286,7 @@ let appBtc = null;
 getHardwareWalletPublicKey = async function () {
   try {
     if (appBtc == null) {
-      appBtc = new AppBtc(await window.transport.open("http://127.0.0.1:3000"));
+	appBtc = new AppBtc(await window.transport.create());
     }
     const a = await appBtc.getWalletPublicKey("44'/119'/0'/0/0", {verify: true, format: "legacy"});
     return a.publicKey;
