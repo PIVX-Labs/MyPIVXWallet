@@ -269,7 +269,7 @@ hasEncryptedWallet = function () {
 }
 //If the privateKey is null then the user connected a hardware wallet
 hasHardwareWallet = function(){
-  return domPrivateTxt.value == null;
+  return privateKeyForTransactions == null;
 }
 
 hasWalletUnlocked = function (fIncludeNetwork = false) {

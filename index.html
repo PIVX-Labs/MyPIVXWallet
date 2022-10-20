@@ -1186,22 +1186,27 @@
       if (debug) domHumanReadable.innerHTML = "Balance: " + (nBalance / COIN) + "<br>Fee: " + (nFee / COIN) + "<br>To: " + address + "<br>Sent: " + (nValue / COIN) + (nChange > 0 ? "<br>Change Address: " + publicKeyForNetwork + "<br>Change: " + (nChange / COIN) : "");
 
       // Sign and broadcast!
-      if(hasHardwareWallet()) {
-	      console.log(cTx.serialize());
-	      // If privatekey is null, then it must be a hardware wallet! (hopefully)
-	      const tx = await appBtc.splitTransaction(cTx.serialize());
-	      const outputScriptHex = await appBtc
+	if(hasHardwareWallet()) {
+	    	  console.log(cTx);
+	  const inputs = [];
+	  for(const input of cTx.inputs) {
+	      const result = await (await fetch(`${cExplorer.url}/api/v2/tx/${input.outpoint.hash}`)).json()
+	      console.log(result);
+	      inputs.push([await appBtc.splitTransaction(result.hex), input.outpoint.index])
+	  }
+	  
+	  // If privatekey is null, then it must be a hardware wallet! (hopefully)
+	const tx = await appBtc.splitTransaction(cTx.serialize());
+	const outputScriptHex = await appBtc
 	      .serializeTransactionOutputs(tx)
 	      .toString("hex");
-	      console.log(tx);
-	      console.log(outputScriptHex);
-	      const sign = await appBtc.createPaymentTransactionNew({
-	      inputs: [[tx, 0]],
-	      associatedKeysets: ["0'/0/0"],
-	      outputScriptHex
-	      });
-	      console.log(sign);
-	      sendTransaction(sign);
+	const sign = await appBtc.createPaymentTransactionNew({
+	    inputs,
+	    associatedKeysets: ["44'/119'/0'/0/0"],
+	    outputScriptHex,
+	});
+
+	sendTransaction(sign);
 	
       } else {
 	      sendTransaction(cTx.sign(privateKeyForTransactions, 1), "<b>Delegation successful!</b><br>Please wait for confirmations, enjoy your staking!");
@@ -1302,35 +1307,30 @@
       if (debug) domHumanReadable.innerHTML = "Balance: " + (nBalance / COIN) + "<br>Fee: " + (nFee / COIN) + "<br>To: " + address + "<br>Sent: " + (nValue / COIN) + (nChange > 0 ? "<br>Change Address: " + publicKeyForNetwork + "<br>Change: " + (nChange / COIN) : "");
       
       // Sign and broadcast!
-      console.log(outputScriptHex);
-	//	if(!hasHardwareWallet()) {
-	if (false) {
+	if(!hasHardwareWallet()) {
 	    const sign = cTx.sign(privateKeyForTransactions, 1); 
 	    sendTransaction(sign);
 	    console.log(sign)
-      } else {
-	  console.log(cTx.serialize());
-	// If privatekey is null, then it must be a hardware wallet! (hopefully)
+	} else {
+	  console.log(cTx);
+	  const inputs = [];
+	  for(const input of cTx.inputs) {
+	      const result = await (await fetch(`${cExplorer.url}/api/v2/tx/${input.outpoint.hash}`)).json()
+	      console.log(result);
+	      inputs.push([await appBtc.splitTransaction(result.hex), input.outpoint.index])
+	  }
+	  
+	  // If privatekey is null, then it must be a hardware wallet! (hopefully)
 	const tx = await appBtc.splitTransaction(cTx.serialize());
 	const outputScriptHex = await appBtc
 	      .serializeTransactionOutputs(tx)
 	      .toString("hex");
-	console.log(tx);
-	console.log(outputScriptHex);
 	const sign = await appBtc.createPaymentTransactionNew({
-	    inputs: [[tx, 0], [tx, 1]],
-	    associatedKeysets: ["44'/119'/0'/0/0", "44'/119'/0'/0/0"],
-	    changePath: "119'/0'/0/0",
-	    outputScriptHex,
-	});
-	  	const sign2 = await appBtc.createPaymentTransactionNew({
-	    inputs: [[tx, 0], [tx, 1]],
-	    associatedKeysets: ["44'/119'/0'/0/0", "44'/119'/0'/0/0"],
-	    changePath: "119'/0'/0/0",
+	    inputs,
+	    associatedKeysets: ["44'/119'/0'/0/0"],
 	    outputScriptHex,
 	});
 
-	  console.log(sign, sign2, sign == sign2);
 	sendTransaction(sign);
       }
       domGenIt.innerHTML = "Continue";
