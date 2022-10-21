@@ -1211,7 +1211,6 @@
 
       // Sign and broadcast!
       if (hasHardwareWallet()) {
-        console.log(cTx);
         const inputs = [];
         const associatedKeysets = [];
         for (const input of cTx.inputs) {
@@ -1336,7 +1335,6 @@
       if (!hasHardwareWallet()) {
         const sign = cTx.sign(privateKeyForTransactions, 1);
         sendTransaction(sign);
-        console.log(sign)
       } else {
         const inputs = [];
         const associatedKeysets = [];
