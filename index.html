@@ -1203,9 +1203,11 @@
       if (hasHardwareWallet()) {
         console.log(cTx);
         const inputs = [];
+        const associatedKeysets = [];
         for (const input of cTx.inputs) {
           const result = await (await fetch(`${cExplorer.url}/api/v2/tx/${input.outpoint.hash}`)).json()
-          inputs.push([await appBtc.splitTransaction(result.hex), input.outpoint.index])
+          inputs.push([await appBtc.splitTransaction(result.hex), input.outpoint.index]);
+          associatedKeysets.push("44'/119'/0'/0/0");
         }
 
         // If privatekey is null, then it must be a hardware wallet! (hopefully)
@@ -1215,7 +1217,7 @@
           .toString("hex");
         const sign = await appBtc.createPaymentTransactionNew({
           inputs,
-          associatedKeysets: ["44'/119'/0'/0/0"],
+          associatedKeysets,
           outputScriptHex,
         });
 
@@ -1325,13 +1327,14 @@
         sendTransaction(sign);
         console.log(sign)
       } else {
-        console.log(cTx);
         const inputs = [];
+        const associatedKeysets = [];
         for (const input of cTx.inputs) {
           const result = await (await fetch(`${cExplorer.url}/api/v2/tx/${input.outpoint.hash}`)).json()
-          console.log(result);
-          inputs.push([await appBtc.splitTransaction(result.hex), input.outpoint.index])
+          inputs.push([await appBtc.splitTransaction(result.hex), input.outpoint.index]);
+          associatedKeysets.push("44'/119'/0'/0/0");
         }
+
 
         // If privatekey is null, then it must be a hardware wallet! (hopefully)
         const tx = await appBtc.splitTransaction(cTx.serialize());
@@ -1340,7 +1343,7 @@
           .toString("hex");
         const sign = await appBtc.createPaymentTransactionNew({
           inputs,
-          associatedKeysets: ["44'/119'/0'/0/0"],
+          associatedKeysets,
           outputScriptHex,
         });
 
