@@ -25,7 +25,10 @@ generateOrEncodePrivkey = function (pkBytesToEncode) {
 }
 
 // Derive a Secp256k1 network-encoded public key (coin address) from raw private or public key bytes
-deriveAddress = function ({pkBytes, publicKey}) {
+deriveAddress = function({
+  pkBytes,
+  publicKey
+}) {
   // Public Key Derivation
   let nPubkey = (publicKey || Crypto.util.bytesToHex(nSecp256k1.getPublicKey(pkBytes))).substring(2)
   const pubY = Secp256k1.uint256(nPubkey.substr(64), 16);
@@ -63,65 +66,75 @@ deriveAddress = function ({pkBytes, publicKey}) {
 }
 
 // Wallet Import
-importWallet = async function ({newWif = false, fRaw = false, isHardwareWallet = false} = {}) {
+importWallet = async function({
+  newWif = false,
+  fRaw = false,
+  isHardwareWallet = false
+} = {}) {
   const strImportConfirm = "Do you really want to import a new address? If you haven't saved the last private key, the wallet will be LOST forever.";
   const walletConfirm = fWalletLoaded ? window.confirm(strImportConfirm) : true;
-  
+
   if (walletConfirm) {
     if (isHardwareWallet) {
       const publicKey = await getHardwareWalletPublicKey();
       console.log(publicKey);
       if (publicKey) {
-	      publicKeyForNetwork = deriveAddress({publicKey});
+        publicKeyForNetwork = deriveAddress({
+          publicKey
+        });
         //If hardware wallet we don't need the private key
-        privateKeyForTransactions=null;
+        privateKeyForTransactions = null;
       } else {
-	return; 
+        return;
       }
     } else {
       // If raw bytes: purely encode the given bytes rather than generating our own bytes
       if (fRaw) {
-	newWif = generateOrEncodePrivkey(newWif).strWIF;
-	
-	// A raw import likely means non-user owned key (i.e: created via VanityGen), thus, we assume safety first and add an exit blocking listener
-	addEventListener("beforeunload", beforeUnloadListener, {capture: true});
+        newWif = generateOrEncodePrivkey(newWif).strWIF;
+
+        // A raw import likely means non-user owned key (i.e: created via VanityGen), thus, we assume safety first and add an exit blocking listener
+        addEventListener("beforeunload", beforeUnloadListener, {
+          capture: true
+        });
       }
-      
+
       // Select WIF from internal source OR user input
       privateKeyForTransactions = newWif || domPrivKey.value;
       domPrivKey.value = "";
-      
+
       // Public Key Derivation
       try {
-	// Incase of an invalid/malformed/incompatible private key: catch and display a nice error!
-	const bArrConvert = from_b58(privateKeyForTransactions);
-	const bArrDropFour = bArrConvert.slice(0, bArrConvert.length - 4);
-	const bKey = bArrDropFour.slice(1, bArrDropFour.length);
-	
-	// Extract raw bytes and derive the key from them
-	const pkBytes = bKey.slice(0, bKey.length - 1);
-	publicKeyForNetwork = deriveAddress({pkBytes});
+        // Incase of an invalid/malformed/incompatible private key: catch and display a nice error!
+        const bArrConvert = from_b58(privateKeyForTransactions);
+        const bArrDropFour = bArrConvert.slice(0, bArrConvert.length - 4);
+        const bKey = bArrDropFour.slice(1, bArrDropFour.length);
+
+        // Extract raw bytes and derive the key from them
+        const pkBytes = bKey.slice(0, bKey.length - 1);
+        publicKeyForNetwork = deriveAddress({
+          pkBytes
+        });
       } catch (e) {
-	return createAlert('warning', '<b>Failed to import!</b> Invalid private key.' +
-                           '<br>Double-check where your key came from!',
-                           6000);
+        return createAlert('warning', '<b>Failed to import!</b> Invalid private key.' +
+          '<br>Double-check where your key came from!',
+          6000);
       }
     }
     
     // Reaching here: the deserialisation was a full cryptographic success, so a wallet is now imported!
     fWalletLoaded = true;
-    
+
     // Display Text
     domGuiAddress.innerHTML = publicKeyForNetwork;
     domGuiWallet.style.display = 'block';
     domPrivateTxt.value = privateKeyForTransactions;
     domGuiAddress.innerHTML = publicKeyForNetwork;
-    domPrivateCipheredTxt.value="Set a password first";
-    if(hasEncryptedWallet()) domPrivateCipheredTxt.value= localStorage.getItem("encwif");
-    
+    domPrivateCipheredTxt.value = "Set a password first";
+    if (hasEncryptedWallet()) domPrivateCipheredTxt.value = localStorage.getItem("encwif");
+
     // Private Key QR (with HW you don't have access to the private key)
-    if(!isHardwareWallet) createQR(privateKeyForTransactions, domPrivateQr);
-    
+    if (!isHardwareWallet) createQR(privateKeyForTransactions, domPrivateQr);
+
     // Ciphered Private Key  QR 
     if(hasEncryptedWallet()) createQR(localStorage.getItem("encwif"), domPrivateCipheredQr,12);
     
@@ -169,7 +182,9 @@ generateWallet = async function (noUI = false) {
     privateKeyForTransactions = cPriv.strWIF;
 
     // Public Key Derivation
-    publicKeyForNetwork = deriveAddress({pkBytes: cPriv.pkBytes});
+    publicKeyForNetwork = deriveAddress({
+      pkBytes: cPriv.pkBytes
+    });
     fWalletLoaded = true;
 
     if (!noUI) {
@@ -242,11 +257,9 @@ encryptWallet = async function (strPassword = '') {
   removeEventListener("beforeunload", beforeUnloadListener, {capture: true});
 
   //Add the new ciphered text QR
-  domPrivateCipheredTxt.value= localStorage.getItem("encwif");
-  
-  createQR(localStorage.getItem("encwif"), domPrivateCipheredQr,12);
-  
-  
+  domPrivateCipheredTxt.value = localStorage.getItem("encwif");
+
+  createQR(localStorage.getItem("encwif"), domPrivateCipheredQr, 12);
 }
 
 decryptWallet = async function (strPassword = '') {
@@ -259,7 +272,9 @@ decryptWallet = async function (strPassword = '') {
   if (!strDecWIF || strDecWIF === "decryption failed!") {
     if (strDecWIF) return alert("Incorrect password!");
   } else {
-    importWallet({newWif: strDecWIF});
+    importWallet({
+      newWif: strDecWIF
+    });
     return true;
   }
 }
@@ -268,7 +283,7 @@ hasEncryptedWallet = function () {
   return localStorage.getItem("encwif") ? true : false;
 }
 //If the privateKey is null then the user connected a hardware wallet
-hasHardwareWallet = function(){
+hasHardwareWallet = function() {
   return privateKeyForTransactions == null;
 }
 
@@ -283,15 +298,17 @@ hasWalletUnlocked = function (fIncludeNetwork = false) {
 }
 
 let appBtc = null;
-getHardwareWalletPublicKey = async function () {
+getHardwareWalletPublicKey = async function() {
   try {
     if (appBtc == null) {
-	appBtc = new AppBtc(await window.transport.create());
+      appBtc = new AppBtc(await window.transport.create());
     }
-    const a = await appBtc.getWalletPublicKey("44'/119'/0'/0/0", {verify: true, format: "legacy"});
+    const a = await appBtc.getWalletPublicKey("44'/119'/0'/0/0", {
+      verify: true,
+      format: "legacy"
+    });
     return a.publicKey;
-  } catch(e) {
+  } catch (e) {
     return false;
   }
 }
-
