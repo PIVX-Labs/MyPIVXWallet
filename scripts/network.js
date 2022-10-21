@@ -175,6 +175,10 @@ var sendTransaction = function(hex, msg = '') {
     }
     request.send();
   }
+    var getTxInfo  = async function(txHash) {
+	const req = await fetch(`${cExplorer.url}/api/v2/tx/${txHash}`);
+	return await req.json();
+  }
 }
 
 // EXPERIMENTAL: a very heavy synchronisation method which can be used to find missing UTXOs in the event of a Blockbook UTXO API failure

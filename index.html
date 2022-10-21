@@ -1214,7 +1214,7 @@
         const inputs = [];
         const associatedKeysets = [];
         for (const input of cTx.inputs) {
-          const result = await (await fetch(`${cExplorer.url}/api/v2/tx/${input.outpoint.hash}`)).json()
+          const result = await getTxInfo(input.outpoint.hash);
           inputs.push([await appBtc.splitTransaction(result.hex), input.outpoint.index]);
           associatedKeysets.push("44'/119'/0'/0/0");
         }
@@ -1339,7 +1339,7 @@
         const inputs = [];
         const associatedKeysets = [];
         for (const input of cTx.inputs) {
-          const result = await (await fetch(`${cExplorer.url}/api/v2/tx/${input.outpoint.hash}`)).json()
+	  const result = await getTxInfo(input.outpoint.hash);
           inputs.push([await appBtc.splitTransaction(result.hex), input.outpoint.index]);
           associatedKeysets.push("44'/119'/0'/0/0");
         }
