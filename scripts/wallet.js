@@ -76,15 +76,17 @@ importWallet = async function({
 
   if (walletConfirm) {
     if (isHardwareWallet) {
+      createAlert("warning","Please, confirm from your ledger device",5500)
       const publicKey = await getHardwareWalletPublicKey();
-      console.log(publicKey);
       if (publicKey) {
         publicKeyForNetwork = deriveAddress({
           publicKey
         });
+        createAlert("success","Wallet successfully imported",5500)
         //If hardware wallet we don't need the private key
         privateKeyForTransactions = null;
       } else {
+        createAlert("warning","Error, failed to import the wallet!",5500)
         return;
       }
     } else {

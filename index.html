@@ -1095,6 +1095,11 @@
     }
 
     function undelegateGUI() {
+      //COLD STAKING IS STILL NOT SUPPORTED FOR LEDGER
+      if(hasHardwareWallet()){
+        createAlert("warning","Sorry, Staking with ledger is not supported yet",5500);
+        return;
+      }
       // Verify the amount
       const nAmount = Math.round(Number(document.getElementById('undelegateAmount').value.trim()) * COIN);
       if (nAmount < 0.01 * COIN || isNaN(nAmount)) return createAlert('warning', '<b>Invalid amount!</b><br>Minimum amount is 0.01 ' + cChainParams.current.TICKER + '!', 2500);
@@ -1157,6 +1162,11 @@
     }
 
     function delegateGUI() {
+      //AT THE MOMENT STAKING IS NOT SUPPORTED FOR HARDWARE WALLET!
+      if(hasHardwareWallet()){
+        createAlert("warning","Sorry, Staking with ledger is not supported yet",5500);
+        return;
+      }
       // Verify the amount
       const nAmount = Math.round(Number(document.getElementById('delegateAmount').value.trim()) * COIN);
       if (nAmount < COIN || isNaN(nAmount)) return createAlert('warning', '<b>Invalid amount!</b><br>Minimum amount is 1 ' + cChainParams.current.TICKER + '!', 2500);
@@ -1215,6 +1225,7 @@
         const outputScriptHex = await appBtc
           .serializeTransactionOutputs(tx)
           .toString("hex");
+        createAlert("warning","Please, confirm from your ledger device",5500)
         const sign = await appBtc.createPaymentTransactionNew({
           inputs,
           associatedKeysets,
@@ -1341,6 +1352,7 @@
         const outputScriptHex = await appBtc
           .serializeTransactionOutputs(tx)
           .toString("hex");
+        createAlert("warning","Please, confirm from your ledger device",5500)
         const sign = await appBtc.createPaymentTransactionNew({
           inputs,
           associatedKeysets,
