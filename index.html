@@ -1171,7 +1171,7 @@
 
         console.log(Crypto.util.hexToBytes(sign).toString())
         //put public key bytes instead of [3,195,174...]
-        var pub_key= await(Crypto.util.hexToBytes(getHardwareWalletPublicKey()));
+        var pub_key= findCompressedPubKey(Crypto.util.hexToBytes(sign));
         console.log(pub_key.toString(),"public key bytes")
         
         var sign2=addScriptLength(Crypto.util.hexToBytes(sign),pub_key,input_length);
@@ -1438,6 +1438,21 @@
               }
             }
           }
+      }
+    }
+    function findCompressedPubKey(transaction_bytes){
+      let toFind=[1,33];
+      for(let i=0;i<transaction_bytes.length;i++){
+        if( transaction_bytes[i]===toFind[0]){
+          if(transaction_bytes[i+1]===toFind[1]){
+             let compressedPubKey=[];
+             for(let j=0;j<33;j++){
+              compressedPubKey.push(transaction_bytes[i+2+j])
+             }
+             return compressedPubKey;
+          }
+        }
+      
       }
     }
     function addExtraBytes(transaction_bytes,pub_key,input_length){
