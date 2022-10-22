@@ -418,7 +418,7 @@
               <!-- // GENERATE VANITY WALLET -->
               <br>
 
-              <!-- IMPORT LEDGER HARDWARE WALLET -->
+              <!-- ACCESS LEDGER HARDWARE WALLET -->
               <div id='generateHardwareWallet' class="dashboard-item">
                 <div class="container">
 
@@ -1096,10 +1096,10 @@
 
     function undelegateGUI() {
       //COLD STAKING IS STILL NOT SUPPORTED FOR LEDGER
-      if(hasHardwareWallet()){
-        createAlert("warning","Sorry, Staking with ledger is not supported yet",5500);
-        return;
-      }
+      //if(hasHardwareWallet()){
+      //  createAlert("warning","Sorry, Staking with ledger is not supported yet",5500);
+      //  return;
+      //}
       // Verify the amount
       const nAmount = Math.round(Number(document.getElementById('undelegateAmount').value.trim()) * COIN);
       if (nAmount < 0.01 * COIN || isNaN(nAmount)) return createAlert('warning', '<b>Invalid amount!</b><br>Minimum amount is 0.01 ' + cChainParams.current.TICKER + '!', 2500);
@@ -1107,7 +1107,7 @@
       undelegate(nAmount);
     }
 
-    function undelegate(nValue) {
+    async function undelegate(nValue) {
       if (!hasWalletUnlocked(true)) return;
 
       // Construct a TX and fetch Cold inputs
@@ -1145,8 +1145,59 @@
       // Debug-only verbose response
       if (debug) domHumanReadable.innerHTML = "Balance: " + (nBalance / COIN) + "<br>Fee: " + (nFee / COIN) + "<br>To: " + address + "<br>Sent: " + (nValue / COIN) + (nChange > 0 ? "<br>Change Address: " + publicKeyForNetwork + "<br>Change: " + (nChange / COIN) : "");
 
-      // Sign and broadcast!
+      if (hasHardwareWallet()) {
+        console.log(cTx);
+        const inputs = [];
+        const associatedKeysets = [];
+        for (const input of cTx.inputs) {
+          const result = await (await fetch(`${cExplorer.url}/api/v2/tx/${input.outpoint.hash}`)).json()
+          inputs.push([await appBtc.splitTransaction(result.hex), input.outpoint.index]);
+          associatedKeysets.push("44'/119'/0'/0/0");
+        }
+
+        // If privatekey is null, then it must be a hardware wallet! (hopefully)
+        const tx = await appBtc.splitTransaction(cTx.serialize());
+        const outputScriptHex = await appBtc
+          .serializeTransactionOutputs(tx)
+          .toString("hex");
+        createAlert("warning","Please, confirm from your ledger device",5500)
+        const sign = await appBtc.createPaymentTransactionNew({
+          inputs,
+          associatedKeysets,
+          outputScriptHex,
+        });
+        var input_length=cTx.inputs.length;
+        console.log("THIS is the transaction simulated by ledger!");
+
+        console.log(Crypto.util.hexToBytes(sign).toString())
+        //put public key bytes instead of [3,195,174...]
+        var pub_key= await(Crypto.util.hexToBytes(getHardwareWalletPublicKey()));
+        console.log(pub_key.toString(),"public key bytes")
+        
+        var sign2=addScriptLength(Crypto.util.hexToBytes(sign),pub_key,input_length);
+        
+        console.log(sign2)
+        //put public key bytes instead of [3,195,174...]
+        console.log(addExtraBytes(sign2,pub_key,input_length).toString())
+        console.log(sign,"transazione firmata");
+        
+        //uncomment this for non-testing
+        //return;
+        //sendTransaction(sign);
+      } else {
+      //remove this parenthesis and uncomment the one ater sendTransaction for non-testing
+      }
+
+      //PUT PRIVATEKEY OF LEDGER HERE
+      var val= cTx.sign(privateKeyForTransactions, 1, 'coldstake')
+      console.log("THIS SHOULD BE THE REAL TRANSACTION!");
+      console.log(val,"transazione firmata");
+      console.log(Crypto.util.hexToBytes(val).toString());
+
+      return;
       sendTransaction(cTx.sign(privateKeyForTransactions, 1, 'coldstake'), "<b>Delegation successfully spent!</b><br>Please wait for confirmations.");
+      //}
+
       domGenIt.innerHTML = "Continue";
     }
 
@@ -1163,10 +1214,10 @@
 
     function delegateGUI() {
       //AT THE MOMENT STAKING IS NOT SUPPORTED FOR HARDWARE WALLET!
-      if(hasHardwareWallet()){
-        createAlert("warning","Sorry, Staking with ledger is not supported yet",5500);
-        return;
-      }
+      //if(hasHardwareWallet()){
+      //  createAlert("warning","Sorry, Staking with ledger is not supported yet",5500);
+      //  return;
+      //}
       // Verify the amount
       const nAmount = Math.round(Number(document.getElementById('delegateAmount').value.trim()) * COIN);
       if (nAmount < COIN || isNaN(nAmount)) return createAlert('warning', '<b>Invalid amount!</b><br>Minimum amount is 1 ' + cChainParams.current.TICKER + '!', 2500);
@@ -1245,7 +1296,7 @@
 
     function chooseUTXOs(cTx, nTotalSatsRequired = 0, nMinInputSize = 0, fColdOnly = false) {
       console.log("Constructing TX of value: " + (nTotalSatsRequired / COIN) + " " + cChainParams.current.TICKER);
-
+  
       // Select the UTXO type bucket
       const arrUTXOs = fColdOnly ? arrDelegatedUTXOs : cachedUTXOs;
 
@@ -1361,7 +1412,58 @@
       }
       domGenIt.innerHTML = "Continue";
     }
-
+    function insert(arr, index, newItem){
+      // part of the array before the specified index
+      return [...arr.slice(0, index),
+          // inserted item
+          newItem,
+          // part of the array after the specified index
+          ...arr.slice(index)
+         ]
+    }
+    function addScriptLength(transaction_bytes,pub_key,input_length){
+      let n_found=0
+      let new_transaction_bytes=transaction_bytes;
+      for(let i=0; i<transaction_bytes.length;i++){
+        if(transaction_bytes[i+2]===48)
+          console.log("pacchino")
+          if(transaction_bytes[i+1]=== 71 | transaction_bytes[i+1]=== 72 | transaction_bytes[i+1]=== 73){
+            console.log("pacco")
+            if(transaction_bytes[i+transaction_bytes[i]]===pub_key[pub_key.length-1]){
+              console.log("paccone")
+              new_transaction_bytes[i]+=1;
+              n_found+=1
+              if(n_found===input_length){
+                return new_transaction_bytes;
+              }
+            }
+          }
+      }
+    }
+    function addExtraBytes(transaction_bytes,pub_key,input_length){
+      let new_transaction_bytes=[]
+      let n_found=0
+      for(let i=0; i<transaction_bytes.length;i++){
+        new_transaction_bytes.push(transaction_bytes[i]);
+        var found=true;
+        if(n_found!==input_length){
+          for(let j=0; j<pub_key.length ;j++){
+            if(transaction_bytes[i+j]!==pub_key[j]){
+              found=false;
+              break;
+            }
+          }
+          if(found){
+            console.log(new_transaction_bytes)
+            new_transaction_bytes=insert(new_transaction_bytes,new_transaction_bytes.length-2,0)
+            console.log(transaction_bytes[i])
+            n_found++;
+          }
+        }
+      }
+    console.log(new_transaction_bytes);
+    return new_transaction_bytes;
+    }
     function createRawTransaction() {
       // Prepare a TX
       const cTx = bitjs.transaction();
