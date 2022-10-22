@@ -1167,36 +1167,19 @@
           outputScriptHex,
         });
         var input_length=cTx.inputs.length;
-        console.log("THIS is the transaction simulated by ledger!");
 
-        console.log(Crypto.util.hexToBytes(sign).toString())
         //put public key bytes instead of [3,195,174...]
         var pub_key= findCompressedPubKey(Crypto.util.hexToBytes(sign));
-        console.log(pub_key.toString(),"public key bytes")
-        
         var sign2=addScriptLength(Crypto.util.hexToBytes(sign),pub_key,input_length);
         
-        console.log(sign2)
         //put public key bytes instead of [3,195,174...]
-        console.log(addExtraBytes(sign2,pub_key,input_length).toString())
-        console.log(sign,"transazione firmata");
-        
-        //uncomment this for non-testing
-        //return;
-        //sendTransaction(sign);
+        sendTransaction(Crypto.util.bytesToHex(addExtraBytes(sign2, pub_key, input_length)));
       } else {
-      //remove this parenthesis and uncomment the one ater sendTransaction for non-testing
-      }
-
+      
       //PUT PRIVATEKEY OF LEDGER HERE
       var val= cTx.sign(privateKeyForTransactions, 1, 'coldstake')
-      console.log("THIS SHOULD BE THE REAL TRANSACTION!");
-      console.log(val,"transazione firmata");
-      console.log(Crypto.util.hexToBytes(val).toString());
-
-      return;
       sendTransaction(cTx.sign(privateKeyForTransactions, 1, 'coldstake'), "<b>Delegation successfully spent!</b><br>Please wait for confirmations.");
-      //}
+      }
 
       domGenIt.innerHTML = "Continue";
     }
@@ -1213,11 +1196,6 @@
     }
 
     function delegateGUI() {
-      //AT THE MOMENT STAKING IS NOT SUPPORTED FOR HARDWARE WALLET!
-      //if(hasHardwareWallet()){
-      //  createAlert("warning","Sorry, Staking with ledger is not supported yet",5500);
-      //  return;
-      //}
       // Verify the amount
       const nAmount = Math.round(Number(document.getElementById('delegateAmount').value.trim()) * COIN);
       if (nAmount < COIN || isNaN(nAmount)) return createAlert('warning', '<b>Invalid amount!</b><br>Minimum amount is 1 ' + cChainParams.current.TICKER + '!', 2500);
