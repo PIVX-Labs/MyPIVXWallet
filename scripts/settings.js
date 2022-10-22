@@ -1,18 +1,18 @@
 'use strict';
 
 // --- Default Settings
-var debug = false;            // A mode that emits verbose console info for internal MPW operations
-var networkEnabled = true;    // A lock which blocks ALL network requests in totality
-var fAlternativeSync = true;  // A more resource-intensive but deep UTXO set sync mode
+var debug = false; // A mode that emits verbose console info for internal MPW operations
+var networkEnabled = true; // A lock which blocks ALL network requests in totality
+var fAlternativeSync = true; // A more resource-intensive but deep UTXO set sync mode
 
 var cExplorer = cChainParams.current.Explorers[0];
 
 // A list of statistic keys and their descriptions
 const STATS = {
     // Stat key   // Description of the stat, it's data, and it's purpose
-    hit:          "A ping indicating an app load, no unique data is sent.",
+    hit: "A ping indicating an app load, no unique data is sent.",
     time_to_sync: "The time in seconds it took for MPW to last synchronise.",
-    transaction:  "A ping indicating a Tx, no unique data is sent, but may be inferred from on-chain time."
+    transaction: "A ping indicating a Tx, no unique data is sent, but may be inferred from on-chain time."
 }
 Object.freeze(STATS);
 
@@ -21,9 +21,18 @@ const cStatKeys = Object.keys(STATS);
 // A list of Analytics 'levels' at which the user may set depending on their privacy preferences
 const arrAnalytics = [
     // Statistic level  // Allowed statistics
-    { name: "Disabled", stats: [] },
-    { name: "Minimal",  stats: [STATS.hit, STATS.time_to_sync] },
-    { name: "Balanced", stats: [STATS.hit, STATS.time_to_sync, STATS.transaction] }
+    {
+        name: "Disabled",
+        stats: []
+    },
+    {
+        name: "Minimal",
+        stats: [STATS.hit, STATS.time_to_sync]
+    },
+    {
+        name: "Balanced",
+        stats: [STATS.hit, STATS.time_to_sync, STATS.transaction]
+    }
 ]
 
 var cAnalyticsLevel = arrAnalytics[2];
@@ -44,9 +53,9 @@ const domExplorerSelect = document.getElementById('explorer');
 
 // Display the default settings directly in the UI
 domNetwork.innerHTML = '<b> Network:</b> ' + (networkEnabled ? 'Enabled' : 'Disabled');
-domDebug.innerHTML = debug                            ? '<b>DEBUG MODE ON</b>'            : '';
-domSyncMode.innerHTML = fAlternativeSync              ? '<b>Experimental Sync Active</b>' : '';
-domTestnet.innerHTML = cChainParams.current.isTestnet ? '<b>Testnet Mode On</b>'          : '';
+domDebug.innerHTML = debug ? '<b>DEBUG MODE ON</b>' : '';
+domSyncMode.innerHTML = fAlternativeSync ? '<b>Experimental Sync Active</b>' : '';
+domTestnet.innerHTML = cChainParams.current.isTestnet ? '<b>Testnet Mode On</b>' : '';
 
 // --- Settings Functions
 function setExplorer(explorer, fSilent = false) {
@@ -66,7 +75,8 @@ function setAnalytics(level, fSilent = false) {
     cAnalyticsLevel = level;
     localStorage.setItem('analytics', level.name);
     // For total transparency, we'll 'describe' the various analytic keys of this chosen level
-    let strDesc = '<center>--- Transparency Report ---</center><br>', i = 0;
+    let strDesc = '<center>--- Transparency Report ---</center><br>',
+        i = 0;
     const nLongestKeyLen = cStatKeys.reduce((prev, e) => prev.length >= e.length ? prev : e).length;
     for (i; i < cAnalyticsLevel.stats.length; i++) {
         const cStat = cAnalyticsLevel.stats[i];
@@ -91,7 +101,7 @@ function toggleTestnet() {
 
     // Update UI and static tickers
     domTestnet.innerHTML = (cChainParams.current.isTestnet ? '<b>Testnet Mode On</b>' : '');
-    domGuiBalanceTicker.innerText        = cChainParams.current.TICKER;
+    domGuiBalanceTicker.innerText = cChainParams.current.TICKER;
     domGuiBalanceStakingTicker.innerText = cChainParams.current.TICKER;
     domPrefix.value = cChainParams.current.PUBKEY_PREFIX + domPrefix.value.substr(1);
     fillExplorerSelect();
@@ -132,7 +142,7 @@ function disableNetwork() {
 function fillExplorerSelect() {
     cExplorer = cChainParams.current.Explorers[0];
 
-    while (domExplorerSelect.options.length>0) {
+    while (domExplorerSelect.options.length > 0) {
         domExplorerSelect.remove(0);
     }
 
