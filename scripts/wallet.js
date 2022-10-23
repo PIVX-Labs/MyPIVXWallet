@@ -7,6 +7,13 @@ const LEDGER_ERRS = new Map([
   [27904, "Wrong app! Open the PIVX app on your device"]
 ]);
 
+// Construct a full BIP44 pubkey derivation path from it's parts
+function getDerivationPath(fLedger = false, nAccount = 0, nReceiving = 0, nIndex = 0) {
+  // Coin-Type is different on Ledger, as such, we modify it if we're using a Ledger to derive a key
+  const strCoinType = fLedger ? cChainParams.current.BIP44_TYPE_LEDGER : cChainParams.current.BIP44_TYPE;
+  return `44'/${strCoinType}'/${nAccount}'/${nReceiving}/${nIndex}`;
+}
+
 // Generate a new private key OR encode an existing private key from raw bytes
 generateOrEncodePrivkey = function (pkBytesToEncode) {
   // Private Key Generation
@@ -322,7 +329,7 @@ getHardwareWalletPublicKey = async function() {
     // Prompt the user in both UIs
     createAlert("info", "Confirm the import on your Ledger", 3500);
 
-    const cPubkey = await cHardwareWallet.getWalletPublicKey("44'/77'/0'/0/0", {
+    const cPubkey = await cHardwareWallet.getWalletPublicKey(getDerivationPath(true, 0, 0, 0), {
       verify: true,
       format: "legacy"
     });

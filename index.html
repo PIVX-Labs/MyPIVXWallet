@@ -56,28 +56,32 @@
       const cChainParams = {
           current: null,
           main: {
-              isTestnet      : false,
-              TICKER         : "PIV",
-              PUBKEY_PREFIX  : "D",
-              STAKING_PREFIX : "S",
-              PUBKEY_ADDRESS : 30,
-              SECRET_KEY     : 212,
+              isTestnet         : false,
+              TICKER            : "PIV",
+              PUBKEY_PREFIX     : "D",
+              STAKING_PREFIX    : "S",
+              PUBKEY_ADDRESS    : 30,
+              SECRET_KEY        : 212,
+              BIP44_TYPE        : 119,
+              BIP44_TYPE_LEDGER : 77,
               // A list of Labs-trusted explorers
-              Explorers      : [
+              Explorers         : [
                   // Display name      Blockbook-compatible API base
                   { name: "rockdev",   url: "https://explorer.rockdev.org" },
                   { name: "zkBitcoin", url: "https://zkbitcoin.com" }
               ]
           },
           testnet: {
-              isTestnet      : true,
-              TICKER         : "tPIV",
-              PUBKEY_PREFIX  : "y",  //FIXME: x is also valid
-              STAKING_PREFIX : "W",
-              PUBKEY_ADDRESS : 139,
-              SECRET_KEY     : 239,
+              isTestnet         : true,
+              TICKER            : "tPIV",
+              PUBKEY_PREFIX     : "y",  //FIXME: x is also valid
+              STAKING_PREFIX    : "W",
+              PUBKEY_ADDRESS    : 139,
+              SECRET_KEY        : 239,
+              BIP44_TYPE        : 1,
+              BIP44_TYPE_LEDGER : 1,
               // A list of Labs-trusted explorers
-              Explorers      : [
+              Explorers         : [
                   // Display name      Blockbook-compatible API base
                   { name: "rockdev",   url: "https://testnet.rockdev.org" }
               ]
@@ -1152,7 +1156,7 @@
         for (const input of cTx.inputs) {
           const result = await (await fetch(`${cExplorer.url}/api/v2/tx/${input.outpoint.hash}`)).json()
           inputs.push([await cHardwareWallet.splitTransaction(result.hex), input.outpoint.index]);
-          associatedKeysets.push("44'/77'/0'/0/0");
+          associatedKeysets.push(getDerivationPath(true, 0, 0, 0));
         }
 
         // If privatekey is null, then it must be a hardware wallet! (hopefully)
@@ -1245,7 +1249,7 @@
         for (const input of cTx.inputs) {
           const result = await getTxInfo(input.outpoint.hash);
           inputs.push([await cHardwareWallet.splitTransaction(result.hex), input.outpoint.index]);
-          associatedKeysets.push("44'/77'/0'/0/0");
+          associatedKeysets.push(getDerivationPath(true, 0, 0, 0));
         }
 
         // If privatekey is null, then it must be a hardware wallet! (hopefully)
@@ -1370,7 +1374,7 @@
         for (const input of cTx.inputs) {
 	  const result = await getTxInfo(input.outpoint.hash);
           inputs.push([await cHardwareWallet.splitTransaction(result.hex), input.outpoint.index]);
-          associatedKeysets.push("44'/77'/0'/0/0");
+          associatedKeysets.push(getDerivationPath(true, 0, 0, 0));
         }
 
 
