@@ -322,7 +322,7 @@ getHardwareWalletPublicKey = async function() {
     // Prompt the user in both UIs
     createAlert("info", "Confirm the import on your Ledger", 3500);
 
-    const cPubkey = await cHardwareWallet.getWalletPublicKey("44'/119'/0'/0/0", {
+    const cPubkey = await cHardwareWallet.getWalletPublicKey("44'/77'/0'/0/0", {
       verify: true,
       format: "legacy"
     });
