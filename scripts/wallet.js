@@ -1,3 +1,12 @@
+// Ledger Hardware wallet constants
+const LEDGER_ERRS = new Map([
+  // Ledger error code <--> User-friendly string
+  [25870, "Open the PIVX app on your device"],
+  [57408, "Navigate to the PIVX app on your device"],
+  [27266, "Wrong app! Open the PIVX app on your device"],
+  [27904, "Wrong app! Open the PIVX app on your device"]
+]);
+
 // Generate a new private key OR encode an existing private key from raw bytes
 generateOrEncodePrivkey = function (pkBytesToEncode) {
   // Private Key Generation
@@ -76,19 +85,13 @@ importWallet = async function({
 
   if (walletConfirm) {
     if (isHardwareWallet) {
-      createAlert("warning","Please, confirm from your ledger device",5500)
       const publicKey = await getHardwareWalletPublicKey();
-      if (publicKey) {
-        publicKeyForNetwork = deriveAddress({
-          publicKey
-        });
-        createAlert("success","Wallet successfully imported",5500)
-        //If hardware wallet we don't need the private key
-        privateKeyForTransactions = null;
-      } else {
-        createAlert("warning","Error, failed to import the wallet!",5500)
-        return;
-      }
+      // Errors are handled within the above function, so there's no need for an 'else' here, just silent ignore.
+      if (!publicKey) return;
+
+      // Derive our hardware address and import!
+      publicKeyForNetwork = deriveAddress({publicKey});
+      createAlert("info", "<b>Hardware wallet ready!</b><br>Please keep your " + strHardwareName + " plugged in, unlocked, and in the PIVX app", 12500);
     } else {
       // If raw bytes: purely encode the given bytes rather than generating our own bytes
       if (fRaw) {
@@ -299,18 +302,48 @@ hasWalletUnlocked = function (fIncludeNetwork = false) {
   }
 }
 
-let appBtc = null;
+let cHardwareWallet = null;
+let strHardwareName = "";
 getHardwareWalletPublicKey = async function() {
   try {
-    if (appBtc == null) {
-      appBtc = new AppBtc(await window.transport.create());
+    // Check if we haven't setup a connection yet OR the previous connection disconnected
+    if (!cHardwareWallet || cHardwareWallet.transport._disconnectEmitted) {
+      cHardwareWallet = new AppBtc(await window.transport.create());
     }
-    const a = await appBtc.getWalletPublicKey("44'/119'/0'/0/0", {
+
+    // Update device info and fetch the pubkey
+    strHardwareName = cHardwareWallet.transport.device.manufacturerName + " " + cHardwareWallet.transport.device.productName;
+
+    // Prompt the user in both UIs
+    createAlert("info", "Confirm the import on your Ledger", 3500);
+
+    const cPubkey = await cHardwareWallet.getWalletPublicKey("44'/119'/0'/0/0", {
       verify: true,
       format: "legacy"
     });
-    return a.publicKey;
+
+    return cPubkey.publicKey;
   } catch (e) {
+    // If there's no device, nudge the user to plug it in.
+    if (e.message.toLowerCase().includes('no device selected')) {
+      createAlert("info", "<b>No device available</b><br>Couldn't find a hardware wallet; please plug it in and unlock!", 10000);
+      return false;
+    }
+
+    // If the ledger is busy, just nudge the user.
+    if (e.message.includes('is busy')) {
+      createAlert("info", "<b>" + strHardwareName + " is waiting</b><br>Please unlock your device or finish it's current prompt", 7500);
+      return false;
+    }
+
+    // Check if this is an expected error
+    if (!e.statusCode || !LEDGER_ERRS.has(e.statusCode)) {
+      console.error("MISSING LEDGER ERROR-CODE TRANSLATION! - Please report this below error on our GitHub so we can handle it more nicely!");
+      console.error(e);
+    }
+
+    // Translate the error to a user-friendly string (if possible)
+    createAlert("warning", "<b>" + strHardwareName + "</b><br>" + (LEDGER_ERRS.get(e.statusCode) || e.message), 5500);
     return false;
   }
 }
