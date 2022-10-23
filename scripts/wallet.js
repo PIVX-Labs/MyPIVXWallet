@@ -343,9 +343,15 @@ getHardwareWalletPublicKey = async function() {
       return false;
     }
 
+    // If the device is unplugged, or connection lost through other means (such as spontanious device explosion)
+    if (e.message.includes("Failed to execute 'transferIn'")) {
+      createAlert("info", "<b>Lost connection to " + strHardwareName + "</b><br>It seems the " + cHardwareWallet.transport.device.productName + " was unplugged mid-operation, oops!", 10000);
+      return false;
+    }
+
     // If the ledger is busy, just nudge the user.
     if (e.message.includes('is busy')) {
-      createAlert("info", "<b>" + strHardwareName + " is waiting</b><br>Please unlock your device or finish it's current prompt", 7500);
+      createAlert("info", "<b>" + strHardwareName + " is waiting</b><br>Please unlock your " + cHardwareWallet.transport.device.productName + " or finish it's current prompt", 7500);
       return false;
     }
 
