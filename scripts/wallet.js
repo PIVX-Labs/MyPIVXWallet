@@ -4,7 +4,8 @@ const LEDGER_ERRS = new Map([
   [25870, "Open the PIVX app on your device"],
   [57408, "Navigate to the PIVX app on your device"],
   [27266, "Wrong app! Open the PIVX app on your device"],
-  [27904, "Wrong app! Open the PIVX app on your device"]
+  [27904, "Wrong app! Open the PIVX app on your device"],
+  [27010, "Unlock your Ledger, then try again!"]
 ]);
 
 // Construct a full BIP44 pubkey derivation path from it's parts
