@@ -1165,9 +1165,9 @@
         // Sign the transaction via Ledger
         createAlert("info", "<b>Confirm your Unstake</b><br>Confirm the TX on your " + strHardwareName + "!", 7500);
         const cLedgerSignedTx = await cHardwareWallet.createPaymentTransactionNew({
-          arrInputs,
-          arrAssociatedKeysets,
-          strOutputScriptHex,
+          inputs: arrInputs,
+          associatedKeysets: arrAssociatedKeysets,
+          outputScriptHex: strOutputScriptHex,
         });
         const nInputLen = cTx.inputs.length;
 
@@ -1264,9 +1264,9 @@
         // Sign the transaction via Ledger
         createAlert("info", "<b>Confirm your Stake</b><br>Confirm the TX on your " + strHardwareName + "!", 7500);
         const strSerialisedTx = await cHardwareWallet.createPaymentTransactionNew({
-          arrInputs,
-          arrAssociatedKeysets,
-          strOutputScriptHex,
+          inputs: arrInputs,
+          associatedKeysets: arrAssociatedKeysets,
+          outputScriptHex: strOutputScriptHex,
         });
 
         // Broadcast the Hardware (Ledger) tx
@@ -1394,9 +1394,9 @@
         // Sign the transaction via Ledger
         createAlert("info", "<b>Confirm your transaction</b><br>Confirm the TX on your " + strHardwareName + "!", 7500);
         const strSerialisedTx = await cHardwareWallet.createPaymentTransactionNew({
-          arrInputs,
-          arrAssociatedKeysets,
-          strOutputScriptHex,
+          inputs: arrInputs,
+          associatedKeysets: arrAssociatedKeysets,
+          outputScriptHex: strOutputScriptHex,
         });
 
         // Broadcast the Hardware (Ledger) TX
