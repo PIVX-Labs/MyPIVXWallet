@@ -323,11 +323,10 @@
 			buf.push(sigBytes.length);
 			buf = buf.concat(sigBytes);
 			if (txType === 'coldstake') {
-				//OP_FALSE to flag the redeeming of the delegation back to the Owner Address
+				// OP_FALSE to flag the redeeming of the delegation back to the Owner Address
 				buf.push(OP['FALSE']);
 			}
 			const pubkeyBytes = Crypto.util.hexToBytes(key['pubkey']);
-			console.log(pubkeyBytes.toString(),"pubkeyBytes generated from private key")
 			buf.push(pubkeyBytes.length);
 			buf = buf.concat(pubkeyBytes);
 			this.inputs[index].script = buf;
