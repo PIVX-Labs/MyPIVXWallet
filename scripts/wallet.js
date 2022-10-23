@@ -85,6 +85,11 @@ importWallet = async function({
 
   if (walletConfirm) {
     if (isHardwareWallet) {
+      // Firefox does NOT support WebUSB, thus cannot work with Hardware wallets out-of-the-box
+      if (navigator.userAgent.includes("Firefox")) {
+        return createAlert("warning", "<b>Firefox doesn't support this!</b><br>Unfortunately, Firefox does not support hardware wallets", 7500);
+      }
+
       const publicKey = await getHardwareWalletPublicKey();
       // Errors are handled within the above function, so there's no need for an 'else' here, just silent ignore.
       if (!publicKey) return;
