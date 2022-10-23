@@ -175,9 +175,10 @@ var sendTransaction = function(hex, msg = '') {
     }
     request.send();
   }
-    var getTxInfo  = async function(txHash) {
-	const req = await fetch(`${cExplorer.url}/api/v2/tx/${txHash}`);
-	return await req.json();
+
+  var getTxInfo = async function(txHash) {
+    const req = await fetch(`${cExplorer.url}/api/v2/tx/${txHash}`);
+    return await req.json();
   }
 }
 

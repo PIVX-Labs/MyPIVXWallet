@@ -893,9 +893,10 @@
 
     let viewPrivKey = 0;
     function toggleKeyView() {
-      viewPrivKey = (viewPrivKey + 1 ) % 3
-      //if we are in HW mode show only the pubkey QR
-      if(hasHardwareWallet()) viewPrivKey=0;
+      viewPrivKey = (viewPrivKey + 1) % 3
+
+      // Hardware wallets can only show the pubkey QR
+      if (hasHardwareWallet()) viewPrivKey = 0;
 
       switch(viewPrivKey){
         case 0:
@@ -957,13 +958,13 @@
       }
     }
     function onPrivateKeyChanged(){
-      if(hasEncryptedWallet()) return;
-      //Check whether the length of the string is 128 bytes (that's the length of ciphered plain texts)
-      domPrivKeyPassword.hidden= domPrivKey.value.length!==128;
+      if (hasEncryptedWallet()) return;
+      // Check whether the length of the string is 128 bytes (that's the length of ciphered plain texts)
+      domPrivKeyPassword.hidden = domPrivKey.value.length !== 128;
     }
 
     async function guiImportWallet() {
-      const isEncrypted=domPrivKey.value.length===128;
+      const isEncrypted = domPrivKey.value.length === 128;
       // If we are in testnet: prompt an import
       if (cChainParams.current.isTestnet) return importWallet();
 
@@ -972,8 +973,8 @@
 
       // If we don't have a DB wallet and the input is ciphered: 
       const privateKey = domPrivKey.value
-      const strPassword= domPrivKeyPassword.value;
-      if(!hasEncryptedWallet() && isEncrypted){
+      const strPassword = domPrivKeyPassword.value;
+      if (!hasEncryptedWallet() && isEncrypted) {
         const strDecWIF = await decrypt(privateKey, strPassword);
         if (!strDecWIF || strDecWIF === "decryption failed!") {
           return createAlert('warning', '<b>Failed to import!</b> Invalid password',6000);
@@ -1099,11 +1100,6 @@
     }
 
     function undelegateGUI() {
-      //COLD STAKING IS STILL NOT SUPPORTED FOR LEDGER
-      //if(hasHardwareWallet()){
-      //  createAlert("warning","Sorry, Staking with ledger is not supported yet",5500);
-      //  return;
-      //}
       // Verify the amount
       const nAmount = Math.round(Number(document.getElementById('undelegateAmount').value.trim()) * COIN);
       if (nAmount < 0.01 * COIN || isNaN(nAmount)) return createAlert('warning', '<b>Invalid amount!</b><br>Minimum amount is 0.01 ' + cChainParams.current.TICKER + '!', 2500);
@@ -1150,39 +1146,44 @@
       if (debug) domHumanReadable.innerHTML = "Balance: " + (nBalance / COIN) + "<br>Fee: " + (nFee / COIN) + "<br>To: " + address + "<br>Sent: " + (nValue / COIN) + (nChange > 0 ? "<br>Change Address: " + publicKeyForNetwork + "<br>Change: " + (nChange / COIN) : "");
 
       if (hasHardwareWallet()) {
-        console.log(cTx);
-        const inputs = [];
-        const associatedKeysets = [];
-        for (const input of cTx.inputs) {
-          const result = await (await fetch(`${cExplorer.url}/api/v2/tx/${input.outpoint.hash}`)).json()
-          inputs.push([await cHardwareWallet.splitTransaction(result.hex), input.outpoint.index]);
-          associatedKeysets.push(getDerivationPath(true, 0, 0, 0));
+        // Format the inputs how the Ledger SDK prefers
+        const arrInputs = [];
+        const arrAssociatedKeysets = [];
+        const strDerivPath = getDerivationPath(true, 0, 0, 0);
+        for (const cInput of cTx.inputs) {
+          const cInputFull = await getTxInfo(cInput.outpoint.hash);
+          arrInputs.push([await cHardwareWallet.splitTransaction(cInputFull.hex), cInput.outpoint.index]);
+          arrAssociatedKeysets.push(strDerivPath);
         }
 
-        // If privatekey is null, then it must be a hardware wallet! (hopefully)
-        const tx = await cHardwareWallet.splitTransaction(cTx.serialize());
-        const outputScriptHex = await cHardwareWallet
-          .serializeTransactionOutputs(tx)
+        // Construct the Ledger transaction
+        const cLedgerTx = await cHardwareWallet.splitTransaction(cTx.serialize());
+        const strOutputScriptHex = await cHardwareWallet
+          .serializeTransactionOutputs(cLedgerTx)
           .toString("hex");
-        createAlert("warning","Please, confirm from your ledger device",5500)
-        const sign = await cHardwareWallet.createPaymentTransactionNew({
-          inputs,
-          associatedKeysets,
-          outputScriptHex,
-        });
-        var input_length=cTx.inputs.length;
 
-        //put public key bytes instead of [3,195,174...]
-        var pub_key= findCompressedPubKey(Crypto.util.hexToBytes(sign));
-        var sign2=addScriptLength(Crypto.util.hexToBytes(sign),pub_key,input_length);
-        
-        //put public key bytes instead of [3,195,174...]
-        sendTransaction(Crypto.util.bytesToHex(addExtraBytes(sign2, pub_key, input_length)));
+        // Sign the transaction via Ledger
+        createAlert("info", "<b>Confirm your Unstake</b><br>Confirm the TX on your " + strHardwareName + "!", 7500);
+        const cLedgerSignedTx = await cHardwareWallet.createPaymentTransactionNew({
+          arrInputs,
+          arrAssociatedKeysets,
+          strOutputScriptHex,
+        });
+        const nInputLen = cTx.inputs.length;
+
+        // Put public key bytes instead of [3,195,174...]
+        const arrSignedTxBytes = Crypto.util.hexToBytes(cLedgerSignedTx);
+        const arrPubkey = findCompressedPubKey(arrSignedTxBytes);
+        const arrPubkeyWithScriptLen = addScriptLength(arrSignedTxBytes, arrPubkey, nInputLen);
+        const arrPubkeyWithScript = addExtraBytes(arrPubkeyWithScriptLen, arrPubkey, nInputLen);
+
+        const strSerialisedTx = Crypto.util.bytesToHex(arrPubkeyWithScript);
+
+        // Broadcast the Hardware (Ledger) TX
+        sendTransaction(strSerialisedTx, "<b>Delegation successfully spent!</b><br>Please wait for confirmations.");
       } else {
-      
-      //PUT PRIVATEKEY OF LEDGER HERE
-      var val= cTx.sign(privateKeyForTransactions, 1, 'coldstake')
-      sendTransaction(cTx.sign(privateKeyForTransactions, 1, 'coldstake'), "<b>Delegation successfully spent!</b><br>Please wait for confirmations.");
+        // Broadcast the software TX
+        sendTransaction(cTx.sign(privateKeyForTransactions, 1, 'coldstake'), "<b>Delegation successfully spent!</b><br>Please wait for confirmations.");
       }
 
       domGenIt.innerHTML = "Continue";
@@ -1244,29 +1245,34 @@
 
       // Sign and broadcast!
       if (hasHardwareWallet()) {
-        const inputs = [];
-        const associatedKeysets = [];
-        for (const input of cTx.inputs) {
-          const result = await getTxInfo(input.outpoint.hash);
-          inputs.push([await cHardwareWallet.splitTransaction(result.hex), input.outpoint.index]);
-          associatedKeysets.push(getDerivationPath(true, 0, 0, 0));
+        // Format the inputs how the Ledger SDK prefers
+        const arrInputs = [];
+        const arrAssociatedKeysets = [];
+        const strDerivPath = getDerivationPath(true, 0, 0, 0);
+        for (const cInput of cTx.inputs) {
+          const cInputFull = await getTxInfo(cInput.outpoint.hash);
+          arrInputs.push([await cHardwareWallet.splitTransaction(cInputFull.hex), cInput.outpoint.index]);
+          arrAssociatedKeysets.push(strDerivPath);
         }
 
-        // If privatekey is null, then it must be a hardware wallet! (hopefully)
-        const tx = await cHardwareWallet.splitTransaction(cTx.serialize());
-        const outputScriptHex = await cHardwareWallet
-          .serializeTransactionOutputs(tx)
+        // Construct the Ledger transaction
+        const cLedgerTx = await cHardwareWallet.splitTransaction(cTx.serialize());
+        const strOutputScriptHex = await cHardwareWallet
+          .serializeTransactionOutputs(cLedgerTx)
           .toString("hex");
-        createAlert("warning","Please, confirm from your ledger device",5500)
-        const sign = await cHardwareWallet.createPaymentTransactionNew({
-          inputs,
-          associatedKeysets,
-          outputScriptHex,
+
+        // Sign the transaction via Ledger
+        createAlert("info", "<b>Confirm your Stake</b><br>Confirm the TX on your " + strHardwareName + "!", 7500);
+        const strSerialisedTx = await cHardwareWallet.createPaymentTransactionNew({
+          arrInputs,
+          arrAssociatedKeysets,
+          strOutputScriptHex,
         });
 
-        sendTransaction(sign);
-
+        // Broadcast the Hardware (Ledger) tx
+        sendTransaction(strSerialisedTx, "<b>Delegation successful!</b><br>Please wait for confirmations, enjoy your staking!");
       } else {
+        // Broadcast the software TX
         sendTransaction(cTx.sign(privateKeyForTransactions, 1), "<b>Delegation successful!</b><br>Please wait for confirmations, enjoy your staking!");
       }
       domGenIt.innerHTML = "Continue";
@@ -1369,32 +1375,37 @@
         const sign = cTx.sign(privateKeyForTransactions, 1);
         sendTransaction(sign);
       } else {
-        const inputs = [];
-        const associatedKeysets = [];
-        for (const input of cTx.inputs) {
-	  const result = await getTxInfo(input.outpoint.hash);
-          inputs.push([await cHardwareWallet.splitTransaction(result.hex), input.outpoint.index]);
-          associatedKeysets.push(getDerivationPath(true, 0, 0, 0));
+        // Format the inputs how the Ledger SDK prefers
+        const arrInputs = [];
+        const arrAssociatedKeysets = [];
+        const strDerivPath = getDerivationPath(true, 0, 0, 0);
+        for (const cInput of cTx.inputs) {
+          const cInputFull = await getTxInfo(cInput.outpoint.hash);
+          arrInputs.push([await cHardwareWallet.splitTransaction(cInputFull.hex), cInput.outpoint.index]);
+          arrAssociatedKeysets.push(strDerivPath);
         }
 
-
-        // If privatekey is null, then it must be a hardware wallet! (hopefully)
-        const tx = await cHardwareWallet.splitTransaction(cTx.serialize());
-        const outputScriptHex = await cHardwareWallet
-          .serializeTransactionOutputs(tx)
+        // Construct the Ledger transaction
+        const cLedgerTx = await cHardwareWallet.splitTransaction(cTx.serialize());
+        const strOutputScriptHex = await cHardwareWallet
+          .serializeTransactionOutputs(cLedgerTx)
           .toString("hex");
-        createAlert("warning","Please, confirm from your ledger device",5500)
-        const sign = await cHardwareWallet.createPaymentTransactionNew({
-          inputs,
-          associatedKeysets,
-          outputScriptHex,
+
+        // Sign the transaction via Ledger
+        createAlert("info", "<b>Confirm your transaction</b><br>Confirm the TX on your " + strHardwareName + "!", 7500);
+        const strSerialisedTx = await cHardwareWallet.createPaymentTransactionNew({
+          arrInputs,
+          arrAssociatedKeysets,
+          strOutputScriptHex,
         });
 
-        sendTransaction(sign);
+        // Broadcast the Hardware (Ledger) TX
+        sendTransaction(strSerialisedTx);
       }
       domGenIt.innerHTML = "Continue";
     }
-    function insert(arr, index, newItem){
+
+    function insert(arr, index, newItem) {
       // part of the array before the specified index
       return [...arr.slice(0, index),
           // inserted item
@@ -1403,64 +1414,62 @@
           ...arr.slice(index)
          ]
     }
-    function addScriptLength(transaction_bytes,pub_key,input_length){
-      let n_found=0
-      let new_transaction_bytes=transaction_bytes;
-      for(let i=0; i<transaction_bytes.length;i++){
-        if(transaction_bytes[i+2]===48)
-          console.log("pacchino")
-          if(transaction_bytes[i+1]=== 71 | transaction_bytes[i+1]=== 72 | transaction_bytes[i+1]=== 73){
-            console.log("pacco")
-            if(transaction_bytes[i+transaction_bytes[i]]===pub_key[pub_key.length-1]){
-              console.log("paccone")
-              new_transaction_bytes[i]+=1;
-              n_found+=1
-              if(n_found===input_length){
-                return new_transaction_bytes;
-              }
+
+    function addScriptLength(arrTxBytes, arrTxBytes, nInputLen) {
+      let n_found = 0;
+      const new_transaction_bytes = arrTxBytes;
+      for (let i = 0; i < arrTxBytes.length; i++) {
+        if (arrTxBytes[i + 1] === 71 || arrTxBytes[i + 1] === 72 || arrTxBytes[i + 1] === 73) {
+          if (arrTxBytes[i + arrTxBytes[i]] === arrTxBytes[arrTxBytes.length - 1]){
+            new_transaction_bytes[i]++;
+            n_found++;
+            if (n_found === nInputLen) {
+              return new_transaction_bytes;
             }
           }
+        }
       }
     }
-    function findCompressedPubKey(transaction_bytes){
-      let toFind=[1,33];
-      for(let i=0;i<transaction_bytes.length;i++){
-        if( transaction_bytes[i]===toFind[0]){
-          if(transaction_bytes[i+1]===toFind[1]){
-             let compressedPubKey=[];
-             for(let j=0;j<33;j++){
-              compressedPubKey.push(transaction_bytes[i+2+j])
+
+    function findCompressedPubKey(arrTxBytes) {
+      const arrToFind = [1, 33];
+      for (let i = 0; i < arrTxBytes.length; i++) {
+        if (arrTxBytes[i] === arrToFind[0]) {
+          if (arrTxBytes[i + 1] === arrToFind[1]) {
+             const compressedPubKey = [];
+             for (let j = 0; j < 33; j++) {
+              compressedPubKey.push(arrTxBytes[i + 2 + j]);
              }
              return compressedPubKey;
           }
         }
-      
       }
     }
-    function addExtraBytes(transaction_bytes,pub_key,input_length){
-      let new_transaction_bytes=[]
-      let n_found=0
-      for(let i=0; i<transaction_bytes.length;i++){
-        new_transaction_bytes.push(transaction_bytes[i]);
-        var found=true;
-        if(n_found!==input_length){
-          for(let j=0; j<pub_key.length ;j++){
-            if(transaction_bytes[i+j]!==pub_key[j]){
-              found=false;
+
+    function addExtraBytes(arrTxBytes, arrPubkeyBytes, nLen) {
+      let arrNewTxBytes = [];
+      let nFound = 0;
+      for (let i = 0; i < arrTxBytes.length; i++) {
+        arrNewTxBytes.push(arrTxBytes[i]);
+        let fFound = true;
+
+        if (nFound !== nLen) {
+          for (let j = 0; j < arrPubkeyBytes.length; j++) {
+            if (arrTxBytes[i + j] !== arrPubkeyBytes[j]) {
+              fFound = false;
               break;
             }
           }
-          if(found){
-            console.log(new_transaction_bytes)
-            new_transaction_bytes=insert(new_transaction_bytes,new_transaction_bytes.length-2,0)
-            console.log(transaction_bytes[i])
-            n_found++;
+
+          if (fFound) {
+            arrNewTxBytes = insert(arrNewTxBytes, arrNewTxBytes.length - 2, 0);
+            nFound++;
           }
         }
       }
-    console.log(new_transaction_bytes);
-    return new_transaction_bytes;
+      return arrNewTxBytes;
     }
+
     function createRawTransaction() {
       // Prepare a TX
       const cTx = bitjs.transaction();
