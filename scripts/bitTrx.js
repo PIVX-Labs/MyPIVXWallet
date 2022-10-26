@@ -63,11 +63,12 @@
 		btrx.outputs = [];
 		btrx.locktime = 0;
 
-		btrx.addinput = function(txid, index, script, sequence) {
+	    btrx.addinput = function({txid, index, script, sequence, path = getDerivationPath()}) {
 			const o = {};
 			o.outpoint = {'hash': txid, 'index': index};
 			o.script = Crypto.util.hexToBytes(script); //push previous output pubkey script
-			o.sequence = sequence || ((btrx.locktime==0) ? 4294967295 : 0);
+		o.sequence = sequence || ((btrx.locktime==0) ? 4294967295 : 0);
+		o.path = path;
 			return this.inputs.push(o);
 		}
 
@@ -314,32 +315,40 @@
 		};
 
     	/* sign a "standard" input */
-		btrx.signinput = function(index, wif, sigHashType, txType = 'pubkey') {
-			const key = bitjs.wif2pubkey(wif);
-			const shType = sigHashType || 1;
-			var buf = [];
-			const signature = this.transactionSig(index, wif, shType);
-			const sigBytes = Crypto.util.hexToBytes(signature);
-			buf.push(sigBytes.length);
-			buf = buf.concat(sigBytes);
-			if (txType === 'coldstake') {
-				// OP_FALSE to flag the redeeming of the delegation back to the Owner Address
-				buf.push(OP['FALSE']);
-			}
-			const pubkeyBytes = Crypto.util.hexToBytes(key['pubkey']);
-			buf.push(pubkeyBytes.length);
-			buf = buf.concat(pubkeyBytes);
-			this.inputs[index].script = buf;
-			return true;
+	    btrx.signinput = function(index, masterKey, sigHashType, txType = 'pubkey') {
+
+		const wif = masterKey.getPrivateKey(this.inputs[index].path);
+		console.log(masterKey.getAddress(this.inputs[index].path));
+		console.log(wif, this.inputs[index].path);
+		const key = bitjs.wif2pubkey(wif);
+		console.log(key);
+		const shType = sigHashType || 1;
+		var buf = [];
+
+		const signature = this.transactionSig(index, wif, shType);
+
+		const sigBytes = Crypto.util.hexToBytes(signature);
+		buf.push(sigBytes.length);
+		buf = buf.concat(sigBytes);
+
+		if (txType === 'coldstake') {
+		    // OP_FALSE to flag the redeeming of the delegation back to the Owner Address
+		    buf.push(OP['FALSE']);
 		}
+		const pubkeyBytes = Crypto.util.hexToBytes(key['pubkey']);
+		buf.push(pubkeyBytes.length);
+		buf = buf.concat(pubkeyBytes);
+		this.inputs[index].script = buf;
+		return true;
+	    }
 
 		/* sign inputs */
-		btrx.sign = function(wif, sigHashType, txType) {
+		btrx.sign = function(masterKey, sigHashType, txType) {
 			const shType = sigHashType || 1;
 			let i;
 			const len = this.inputs.length;
-			for (i = 0; i < len; i++) {
-				this.signinput(i, wif, shType, txType);
+		        for (i = 0; i < len; i++) {
+			    this.signinput(i, masterKey, shType, txType);
 			}
 			return this.serialize();
 		}

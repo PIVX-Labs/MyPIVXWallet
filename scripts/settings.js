@@ -31,8 +31,7 @@ var cAnalyticsLevel = arrAnalytics[2];
 // Users need not look below here.
 // ------------------------------
 // Global Keystore / Wallet Information
-var publicKeyForNetwork;
-var privateKeyForTransactions;
+var masterKey;
 var fWalletLoaded = false;
 
 // --- DOM Cache

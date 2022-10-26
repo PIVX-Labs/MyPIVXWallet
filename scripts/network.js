@@ -73,29 +73,30 @@ if (networkEnabled) {
     request.send();
   }
 
-  var getUTXOs = () => {
+var getUTXOs = () => {
     // Don't fetch UTXOs if we're already scanning for them!
     if (arrUTXOsToValidate.length) return;
-
+    
     // Heavy Sync: if enabled, we cancel the regular UTXO call for a full TX history and a manual UTXO search
     if (fAlternativeSync) {
-      return getUTXOsHeavy();
+	return getUTXOsHeavy();
     }
-
-    const request = new XMLHttpRequest()
-    request.open('GET', cExplorer.url + "/api/v2/utxo/" + publicKeyForNetwork, true);
-    request.onerror = networkError;
-    request.onload = function() {
-      arrUTXOsToValidate = JSON.parse(this.response);
-      // Clear our UTXOs and begin accepting refreshed ones (TODO: build an efficient 'set merge' algo)
-      cachedUTXOs = []; arrDelegatedUTXOs = [];
-      if (arrUTXOsToValidate.length) {
-        nTimeSyncStart = Date.now() / 1000;
-        acceptUTXO();
-      }
+    for(let emptyWallets = 0; emptyWallets < 10; ) { // TODO: don't leave liek this
+	const request = new XMLHttpRequest()
+	request.open('GET', cExplorer.url + "/api/v2/utxo/" + publicKeyForNetwork, true);
+	request.onerror = networkError;
+	request.onload = function() {
+	    arrUTXOsToValidate = JSON.parse(this.response);
+	    // Clear our UTXOs and begin accepting refreshed ones (TODO: build an efficient 'set merge' algo)
+	    cachedUTXOs = []; arrDelegatedUTXOs = [];
+	    if (arrUTXOsToValidate.length) {
+		nTimeSyncStart = Date.now() / 1000;
+		acceptUTXO();
+	    }
+	}
+	request.send();
     }
-    request.send();
-  }
+}
 
 var sendTransaction = function(hex, msg = '') {
     const request = new XMLHttpRequest();
@@ -139,41 +140,37 @@ var sendTransaction = function(hex, msg = '') {
   }
 
   var getStakingRewards = async function() {
-    if (!networkEnabled || publicKeyForNetwork == undefined) return;
-    domGuiStakingLoadMoreIcon.style.opacity = 0.5;
-    const stopAnim = () => domGuiStakingLoadMoreIcon.style.opacity = 1;
-    const nHeight = arrRewards.length ? arrRewards[arrRewards.length - 1].blockHeight : 0;
-    const request = new XMLHttpRequest();
-    const txSum = v => v.reduce((t, s) => t + (s.addresses.includes(publicKeyForNetwork) && s.addresses.length === 2 ? parseInt(s.value) : 0), 0);
-    request.open('GET', `${cExplorer.url}/api/v2/address/${publicKeyForNetwork}?pageSize=500&details=txs&to=${nHeight ? nHeight - 1 : 0}`, true);
-    request.onerror = networkError;
-    request.onreadystatechange = async function () {
-      if (!this.response || (!this.status === 200 && !this.status === 400)) return stopAnim();
-      if (this.readyState !== 4) return stopAnim();
-      const data = JSON.parse(this.response);
-      if (data && data.transactions) {
-        // Update rewards
-        arrRewards = arrRewards.concat(
-          data.transactions.filter(tx => tx.vout[0].addresses[0] === "CoinStake TX").map(tx =>{
-            return {
-              id: tx.txid,
-              time: tx.blockTime,
-              blockHeight: tx.blockHeight,
-              amount: (txSum(tx.vout) - txSum(tx.vin)) / COIN,
-            };
-          }).filter(tx => tx.amount != 0)
-        );
+      if (!networkEnabled || lastWallet == undefined) return;
+      domGuiStakingLoadMoreIcon.style.opacity = 0.5;
+      const stopAnim = () => domGuiStakingLoadMoreIcon.style.opacity = 1;
+      const nHeight = arrRewards.length ? arrRewards[arrRewards.length - 1].blockHeight : 0;
+      const txSum = (v, addr) => v.reduce((t, s) => t + (s.addresses.includes(addr) && s.addresses.length === 2 ? parseInt(s.value) : 0), 0);
 
-        // If the results don't match the full 'max/requested results', then we know there's nothing more to load, hide the button!
-        if (data.transactions.length !== data.itemsOnPage)
-          domGuiStakingLoadMore.style.display = "none";
-
-        // Update GUI
-        stopAnim();
-        updateStakingRewardsGUI(true);
+      for(let i=0; i<lastWallet; i++) {
+	  const address = await masterKey.getAddress(getDerivationPath(false, 0, 0, addressIndex));
+	  const data = await (await fetch(`${cExplorer.url}/api/v2/address/${address}?pageSize=500&details=txs&to=${nHeight ? nHeight - 1 : 0}`)).json()
+	  if (data && data.transactions) {
+	      // Update rewards
+	      arrRewards = arrRewards.concat(
+		  data.transactions.filter(tx => tx.vout[0].addresses[0] === "CoinStake TX").map(tx =>{
+		      return {
+			  id: tx.txid,
+			  time: tx.blockTime,
+			  blockHeight: tx.blockHeight,
+			  amount: (txSum(tx.vout, address) - txSum(tx.vin, address)) / COIN,
+		      };
+		  }).filter(tx => tx.amount != 0)
+	      );
+	      
+	      // If the results don't match the full 'max/requested results', then we know there's nothing more to load, hide the button!
+	      if (data.transactions.length !== data.itemsOnPage)
+		  domGuiStakingLoadMore.style.display = "none";
+	      
+	      // Update GUI
+	      stopAnim();
+	      updateStakingRewardsGUI(true);
+	  }
       }
-    }
-    request.send();
   }
 
   var getTxInfo = async function(txHash) {
@@ -184,53 +181,63 @@ var sendTransaction = function(hex, msg = '') {
 
 // EXPERIMENTAL: a very heavy synchronisation method which can be used to find missing UTXOs in the event of a Blockbook UTXO API failure
 var fHeavySyncing = false;
-var getUTXOsHeavy = function() {
-  if (fHeavySyncing || !networkEnabled || publicKeyForNetwork == undefined) return;
-  fHeavySyncing = true;
-
-  const request = new XMLHttpRequest()
-  request.open('GET', cExplorer.url + "/api/v2/address/" + publicKeyForNetwork + "?details=txs&pageSize=1000", true);
-  request.onerror = function() {
-    fHeavySyncing = false;
-    networkError();
-  };
-  request.onload = function() {
-    const data = JSON.parse(this.response);
-    if (data && data.transactions) {
-      cachedUTXOs = []; arrDelegatedUTXOs = [];
-      for (const cTx of data.transactions) {
-        for (const cOut of cTx.vout) {
-          if (cOut.spent) continue; // We don't care about spent outputs
-
-          // If an absence of any address, or a Cold Staking address is detected, we mark this as a delegated UTXO
-          if (cOut.addresses.length === 0 || cOut.addresses.some(strAddr => strAddr.startsWith(cChainParams.current.STAKING_PREFIX))) {
-            arrDelegatedUTXOs.push({
-              'id': cTx.txid,
-              'vout': cOut.n,
-              'sats': parseInt(cOut.value),
-              'script': cOut.hex
-            });
-          }
-          // Otherwise, check for our pubkey
-          else if (cOut.addresses.some(strAddr => strAddr === publicKeyForNetwork)) {
-            cachedUTXOs.push({
-              'id': cTx.txid,
-              'vout': cOut.n,
-              'sats': parseInt(cOut.value),
-              'script': cOut.hex
-            });
-          }
-        }
-      }
-      // Finished heavy sync!
-      fHeavySyncing = false;
-
-      // Update UI
-      getBalance(true);
-      getStakingBalance(true);
+var lastWallet;
+var getUTXOsHeavy = async function() {
+    if (fHeavySyncing || !networkEnabled || masterKey == undefined) return;
+    fHeavySyncing = true;
+    cachedUTXOs = []; arrDelegatedUTXOs = [];
+    try {
+	let emptyWallets = 0;
+	let i = 0;
+	while(emptyWallets < 10) {
+	    const path = getDerivationPath(false, 0, 0, i);
+	    const address = await masterKey.getAddress(path);
+	    const data = await (await fetch(`${cExplorer.url}/api/v2/address/${address}?details=txs&pageSize=1000`)).json();
+	    if(data && data.transactions) {
+		emptyWallets = 0;
+		for (const cTx of data.transactions) {
+		    for (const cOut of cTx.vout) {
+			if (cOut.spent) continue; // We don't care about spent outputs
+			// If an absence of any address, or a Cold Staking address is detected, we mark this as a delegated UTXO
+			if (cOut.addresses.length === 0 || cOut.addresses.some(strAddr => strAddr.startsWith(cChainParams.current.STAKING_PREFIX))) {
+			    arrDelegatedUTXOs.push({
+				'id': cTx.txid,
+				'vout': cOut.n,
+				'sats': parseInt(cOut.value),
+				'script': cOut.hex,
+				path,
+			    });
+			}
+			// Otherwise, check for our pubkey
+			else if (cOut.addresses.some(strAddr => strAddr === address)) {
+			    cachedUTXOs.push({
+				'id': cTx.txid,
+				'vout': cOut.n,
+				'sats': parseInt(cOut.value),
+				'script': cOut.hex,
+				path,
+			    });
+			}
+		    }
+		}
+		lastWallet = i;
+	    } else {
+		emptyWallets++;
+	    }
+	    if(!masterKey.isHD) {
+		break;
+	    }
+	    i++;
+	}
+	// Update UI
+	getBalance(true);
+	getStakingBalance(true);
+    } catch(e) {
+	networkError();
+	throw e;
+    } finally {
+	fHeavySyncing = false;
     }
-  }
-  request.send();
 }
 
 
