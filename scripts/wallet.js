@@ -303,6 +303,7 @@ hasEncryptedWallet = function () {
 }
 //If the privateKey is null then the user connected a hardware wallet
 hasHardwareWallet = function() {
+    if(!masterKey) return false;
     return masterKey.isHardwareWallet == true;
 }
 

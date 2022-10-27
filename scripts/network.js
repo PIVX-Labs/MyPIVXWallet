@@ -28,28 +28,33 @@ if (networkEnabled) {
     request.send();
   }
 
-  var arrUTXOsToValidate = [], nTimeSyncStart = 0;
-  var acceptUTXO = () => {
+  var arrUTXOsToValidate = new Map(), nTimeSyncStart = 0;
+  var acceptUTXO = (path) => {
     // Cancel if the queue is empty: no wasting precious bandwidth & CPU cycles!
-    if (!arrUTXOsToValidate.length) {
-      // If allowed by settings: submit a sync performance measurement to Labs Analytics
-      return submitAnalytics('time_to_sync', { time: (Date.now() / 1000) - nTimeSyncStart, explorer: cExplorer.name });
+      if (!arrUTXOsToValidate.get(path) || arrUTXOsToValidate.get(path).length == 0) {
+	arrUTXOsToValidate.delete(path);
+      arrUTXOsToValidate[path] = undefined;
+    }
+    if(arrUTXOsToValidate.size == 0) {
+	// If allowed by settings: submit a sync performance measurement to Labs Analytics
+	return submitAnalytics('time_to_sync', { time: (Date.now() / 1000) - nTimeSyncStart, explorer: cExplorer.name });
     }
 
     const request = new XMLHttpRequest();
-    request.open('GET', cExplorer.url + "/api/v2/tx-specific/" + arrUTXOsToValidate[0].txid, true);
+      request.open('GET', cExplorer.url + "/api/v2/tx-specific/" + arrUTXOsToValidate.get(path)[0].txid, true);
     request.onerror = networkError;
 
     request.onload = function() {
       // Fetch the single output of the UTXO
-      const cVout = JSON.parse(this.response).vout[arrUTXOsToValidate[0].vout];
+	const cVout = JSON.parse(this.response).vout[arrUTXOsToValidate.get(path)[0].vout];
 
       // Convert to MPW format
       const cUTXO = {
-        'id': arrUTXOsToValidate[0].txid,
+          'id': arrUTXOsToValidate.get(path)[0].txid,
         'vout': cVout.n,
         'sats': Math.round(cVout.value * COIN),
-        'script': cVout.scriptPubKey.hex
+        'script': cVout.scriptPubKey.hex,
+	path,
       }
 
       // Determine the UTXO type, and use it accordingly
@@ -67,34 +72,39 @@ if (networkEnabled) {
       getStakingBalance(true);
       
       // Loop validation until queue is empty
-      arrUTXOsToValidate.shift();
-      acceptUTXO();
+	arrUTXOsToValidate.get(path).shift();
+      acceptUTXO(path);
     }
     request.send();
   }
 
-var getUTXOs = () => {
+var getUTXOs = async  () => {
     // Don't fetch UTXOs if we're already scanning for them!
     if (arrUTXOsToValidate.length) return;
     
     // Heavy Sync: if enabled, we cancel the regular UTXO call for a full TX history and a manual UTXO search
     if (fAlternativeSync) {
-	return getUTXOsHeavy();
+	return await getUTXOsHeavy();
     }
-    for(let emptyWallets = 0; emptyWallets < 10; ) { // TODO: don't leave liek this
-	const request = new XMLHttpRequest()
-	request.open('GET', cExplorer.url + "/api/v2/utxo/" + publicKeyForNetwork, true);
-	request.onerror = networkError;
-	request.onload = function() {
-	    arrUTXOsToValidate = JSON.parse(this.response);
-	    // Clear our UTXOs and begin accepting refreshed ones (TODO: build an efficient 'set merge' algo)
-	    cachedUTXOs = []; arrDelegatedUTXOs = [];
-	    if (arrUTXOsToValidate.length) {
-		nTimeSyncStart = Date.now() / 1000;
-		acceptUTXO();
-	    }
+    let emptyWallets = 0;
+    let i = 0;
+    cachedUTXOs = []; arrDelegatedUTXOs = [];
+    while(emptyWallets < 10) {
+	const path = getDerivationPath(hasHardwareWallet(), 0, 0, i);
+	const address = await masterKey.getAddress(path);
+	const data = await (await fetch(`${cExplorer.url}/api/v2/utxo/${address}`)).json();
+	arrUTXOsToValidate.set(path, data);
+	// Clear our UTXOs and begin accepting refreshed ones (TODO: build an efficient 'set merge' algo)
+
+	if (arrUTXOsToValidate.get(path).length) {
+	    emptyWallets = 0;
+	    nTimeSyncStart = Date.now() / 1000; // will fix later
+	    acceptUTXO(path);
+	} else {
+	    arrUTXOsToValidate.delete(path);
+	    emtpyWallets++;
 	}
-	request.send();
+	if(!masterKey.isHD) break;
     }
 }
 
@@ -190,7 +200,7 @@ var getUTXOsHeavy = async function() {
 	let emptyWallets = 0;
 	let i = 0;
 	while(emptyWallets < 10) {
-	    const path = getDerivationPath(false, 0, 0, i);
+	    const path = getDerivationPath(hasHardwareWallet(), 0, 0, i);
 	    const address = await masterKey.getAddress(path);
 	    const data = await (await fetch(`${cExplorer.url}/api/v2/address/${address}?details=txs&pageSize=1000`)).json();
 	    if(data && data.transactions) {
