@@ -15,6 +15,10 @@ class MasterKey {
 	return deriveAddress({pkBytes: await this.getPrivateKeyBytes(path)});
     }
 
+    async getxpub(path) {
+	throw new Error("Not implemented");
+    }
+
     get keyToBackup() {
 	throw new Error("Not implemented");
     }
@@ -45,6 +49,10 @@ class HdMasterKey extends MasterKey {
     get keyToBackup() {
 	return this._hdKey.privateExtendedKey;
     }
+    async getxpub(path) {
+	return this._hdKey.derive(path).publicExtendedKey;
+    }
+
 }
 
 class HardwareWalletMasterKey extends MasterKey {
@@ -64,6 +72,10 @@ class HardwareWalletMasterKey extends MasterKey {
     get keyToBackup() {
 	throw new Error("Hardware wallets don't have keys to backup");
     }
+
+    async getxpub(path) {
+	throw new Error("Not implemented");
+    }
 }
 
 class LegacyMasterKey extends MasterKey {
@@ -80,6 +92,10 @@ class LegacyMasterKey extends MasterKey {
 
     get keyToBackup() {
 	return this.getPrivateKey();
+    }
+
+    async getxpub(path) {
+	throw new Error("Trying to get an extended public key from a legacy address");
     }
 }
 
