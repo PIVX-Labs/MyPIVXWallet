@@ -1,3 +1,88 @@
+class MasterKey {
+
+    constructor() {
+    }
+    
+    async getPrivateKeyBytes(path) {
+	throw new Error("Not implemented");
+    }
+    
+    async getPrivateKey(path) {
+	return generateOrEncodePrivkey(await this.getPrivateKeyBytes(path)).strWIF;
+    }
+
+    async getAddress(path) {
+	return deriveAddress({pkBytes: await this.getPrivateKeyBytes(path)});
+    }
+
+    get keyToBackup() {
+	throw new Error("Not implemented");
+    }
+    
+    get isHD() {
+	return this._isHD;
+    }
+    get isHardwareWallet() {
+	return this._isHardwareWallet;
+    }
+}
+
+class HdMasterKey extends MasterKey {
+    constructor({seed, xpriv}) {
+	super();
+	// Generate the HDKey
+	if(seed) this._hdKey = HDKey.fromMasterSeed(seed);
+	if(xpriv) this._hdKey = HDKey.fromExtendedKey(xpriv);
+	if (!this._hdKey) throw new Error("Both seed and xpriv are undefined");
+	this._isHD = true;
+	this._isHardwareWallet = false;
+    }
+    
+    async getPrivateKeyBytes(path) {
+	return this._hdKey.derive(path).privateKey;
+    }
+
+    get keyToBackup() {
+	return this._hdKey.privateExtendedKey;
+    }
+}
+
+class HardwareWalletMasterKey extends MasterKey {
+    constructor() {
+	super();
+	this._isHD = true;
+	this._isHardwareWallet = true;
+    }
+    async getPrivateKeyBytes(path) {
+	throw new Error("Hardware wallets cannot export private keys");
+    }
+
+    async getAddress(path) {
+	return deriveAddress({publicKey: await getHardwareWalletPublicKey(path)});
+    }
+
+    get keyToBackup() {
+	throw new Error("Hardware wallets don't have keys to backup");
+    }
+}
+
+class LegacyMasterKey extends MasterKey {
+    constructor (pkBytes) {
+	super();
+	this._isHD = false;
+	this._isHardwareWallet = false;
+	this._pkBytes = pkBytes;
+    }
+    
+    async getPrivateKeyBytes(_path) {
+	return pkBytes;
+    }
+
+    get keyToBackup() {
+	return this.getPrivateKey();
+    }
+}
+
 // Ledger Hardware wallet constants
 const LEDGER_ERRS = new Map([
   // Ledger error code <--> User-friendly string
@@ -104,11 +189,7 @@ importWallet = async function({
       if (!publicKey) return;
 
       // Derive our hardware address and import!
-      masterKey = {
-          getAddress: async path => deriveAddress({publicKey: await getHardwareWalletPublicKey(path)}),
-          isHD: true,
-          isHardwareWallet: true,
-      };
+      masterKey = new HardwareWalletMasterKey();
 
       createAlert("info", "<b>Hardware wallet ready!</b><br>Please keep your " + strHardwareName + " plugged in, unlocked, and in the PIVX app", 12500);
     } else {
@@ -137,12 +218,12 @@ importWallet = async function({
 
         // Generate our masterkey via Mnemonic Phrase
         const seed = await bip39.mnemonicToSeed(privateImportValue);
-        masterKey = makeMasterkey({seed});
+        masterKey = new HdMasterKey({seed});
       } else {
         // Public Key Derivation
         try {
           if (privateImportValue.startsWith("xprv")) {
-            masterKey = makeMasterkey({xpriv: privateImportValue})
+            masterKey = new HdMasterKey({xpriv: privateImportValue})
           } else {
             // Incase of an invalid/malformed/incompatible private key: catch and display a nice error!
             const bArrConvert = from_b58(privateImportValue);
@@ -154,13 +235,7 @@ importWallet = async function({
             const publicKeyForNetwork = deriveAddress({pkBytes});
 
             // Import the raw private key
-            masterKey = {
-              getPrivateKeyBytes: async _path => pkBytes,
-              getPrivateKey: async _path => privateImportValue,
-              getAddress: async _path => publicKeyForNetwork,
-              getKeyToBackup: async path => privateImportValue,
-              isHD: false,
-            }
+            masterKey = new LegacyMasterKey(pkBytes);
           }
         } catch (e) {
           return createAlert('warning', '<b>Failed to import!</b> Invalid private key.' +
@@ -203,7 +278,7 @@ generateWallet = async function (noUI = false) {
       const seed = await bip39.mnemonicToSeed(mnemonic);
 
       // Prompt the user to encrypt the seed
-      masterKey = makeMasterkey({seed});
+      masterKey = new HdMasterKey({seed});
       fWalletLoaded = true;
 
       if(!cChainParams.current.isTestnet) domGenKeyWarning.style.display = 'block';
@@ -235,24 +310,6 @@ informUserOfMnemonic = function (mnemonic) {
   });
 }
 
-makeMasterkey = function({seed, xpriv}) {
-    // Generate the HDKey
-    let hdKey;
-    if(seed) hdKey = HDKey.fromMasterSeed(seed);
-    if(xpriv) hdKey = HDKey.fromExtendedKey(xpriv);
-    if (!hdKey) return null;
-
-    // Create the master key object
-    const masterKey = {
-      _data: hdKey,
-      getPrivateKeyBytes: async path => masterKey._data.derive(path).privateKey,
-      getPrivateKey: async path => generateOrEncodePrivkey(await masterKey.getPrivateKeyBytes(path)).strWIF,
-      getAddress: async path => deriveAddress({pkBytes: await masterKey.getPrivateKeyBytes(path)}),
-      getKeyToBackup: async path => masterKey._data.privateExtendedKey,
-      isHD: true,
-    };
-    return masterKey;
-}
 
 async function benchmark(quantity) {
   let i = 0;
@@ -267,7 +324,7 @@ async function benchmark(quantity) {
 
 encryptWallet = async function (strPassword = '') {
   // Encrypt the wallet WIF with AES-GCM and a user-chosen password - suitable for browser storage
-  let strEncWIF = await encrypt(await masterKey.getKeyToBackup(), strPassword);
+  let strEncWIF = await encrypt(masterKey.keyToBackup, strPassword);
   if (!strEncWIF) return false;
 
   // Set the encrypted wallet in localStorage

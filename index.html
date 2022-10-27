@@ -1011,7 +1011,7 @@
     async function toggleExportUI() {
 	domExportDiv.hidden = !domExportDiv.hidden;
 	if(!domExportDiv.hidden) {
-	    domExportKey.innerText = hasEncryptedWallet() ? localStorage.getItem("encwif") : await masterKey.getKeyToBackup();
+	    domExportKey.innerText = hasEncryptedWallet() ? localStorage.getItem("encwif") : masterKey.keyToBackup;
 	} else {
 	    domExportKey.innerText = "";
 	}
