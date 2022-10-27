@@ -28,29 +28,29 @@ if (networkEnabled) {
     request.send();
   }
 
-  var arrUTXOsToValidate = new Map(), nTimeSyncStart = 0;
+  var mapUTXOsToValidate = new Map(), nTimeSyncStart = 0;
   var acceptUTXO = (path) => {
     // Cancel if the queue is empty: no wasting precious bandwidth & CPU cycles!
-      if (!arrUTXOsToValidate.get(path) || arrUTXOsToValidate.get(path).length == 0) {
-	arrUTXOsToValidate.delete(path);
-      arrUTXOsToValidate[path] = undefined;
+      if (!mapUTXOsToValidate.get(path) || mapUTXOsToValidate.get(path).length == 0) {
+	mapUTXOsToValidate.delete(path);
+      mapUTXOsToValidate[path] = undefined;
     }
-    if(arrUTXOsToValidate.size == 0) {
+    if(mapUTXOsToValidate.size == 0) {
 	// If allowed by settings: submit a sync performance measurement to Labs Analytics
 	return submitAnalytics('time_to_sync', { time: (Date.now() / 1000) - nTimeSyncStart, explorer: cExplorer.name });
     }
 
     const request = new XMLHttpRequest();
-      request.open('GET', cExplorer.url + "/api/v2/tx-specific/" + arrUTXOsToValidate.get(path)[0].txid, true);
+      request.open('GET', cExplorer.url + "/api/v2/tx-specific/" + mapUTXOsToValidate.get(path)[0].txid, true);
     request.onerror = networkError;
 
     request.onload = function() {
       // Fetch the single output of the UTXO
-	const cVout = JSON.parse(this.response).vout[arrUTXOsToValidate.get(path)[0].vout];
+	const cVout = JSON.parse(this.response).vout[mapUTXOsToValidate.get(path)[0].vout];
 
       // Convert to MPW format
       const cUTXO = {
-          'id': arrUTXOsToValidate.get(path)[0].txid,
+          'id': mapUTXOsToValidate.get(path)[0].txid,
         'vout': cVout.n,
         'sats': Math.round(cVout.value * COIN),
         'script': cVout.scriptPubKey.hex,
@@ -72,7 +72,7 @@ if (networkEnabled) {
       getStakingBalance(true);
       
       // Loop validation until queue is empty
-	arrUTXOsToValidate.get(path).shift();
+	mapUTXOsToValidate.get(path).shift();
       acceptUTXO(path);
     }
     request.send();
@@ -80,7 +80,7 @@ if (networkEnabled) {
 
 var getUTXOs = async  () => {
     // Don't fetch UTXOs if we're already scanning for them!
-    if (arrUTXOsToValidate.length) return;
+    if (mapUTXOsToValidate.length) return;
     
     // Heavy Sync: if enabled, we cancel the regular UTXO call for a full TX history and a manual UTXO search
     if (fAlternativeSync) {
@@ -93,15 +93,15 @@ var getUTXOs = async  () => {
 	const path = getDerivationPath(hasHardwareWallet(), 0, 0, i);
 	const address = await masterKey.getAddress(path);
 	const data = await (await fetch(`${cExplorer.url}/api/v2/utxo/${address}`)).json();
-	arrUTXOsToValidate.set(path, data);
+	mapUTXOsToValidate.set(path, data);
 	// Clear our UTXOs and begin accepting refreshed ones (TODO: build an efficient 'set merge' algo)
 
-	if (arrUTXOsToValidate.get(path).length) {
+	if (mapUTXOsToValidate.get(path).length) {
 	    emptyWallets = 0;
 	    nTimeSyncStart = Date.now() / 1000; // will fix later
 	    acceptUTXO(path);
 	} else {
-	    arrUTXOsToValidate.delete(path);
+	    mapUTXOsToValidate.delete(path);
 	    emtpyWallets++;
 	}
 	if(!masterKey.isHD) break;
