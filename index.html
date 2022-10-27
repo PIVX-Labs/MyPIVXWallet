@@ -395,11 +395,16 @@
                                     <b id="guiAddress">~</b>
                                     <b id="guiQRButton">
                                       <i data-toggle="modal" data-target="#qrModal" class="fas fa-qrcode fa-stacked-ptr"></i>
-				      <i onclick="getNewAddress(true)" id="guiAddressCopy" class="fas fa-sync fa-stacked-ptr"></i>
-                                        <i onclick="toClipboard('guiAddress', this)" id="guiAddressCopy" class="fas fa-clipboard fa-stacked-ptr"></i>
+				      <i onclick="getNewAddress(true)" class="fas fa-sync fa-stacked-ptr"></i>
+                                      <i onclick="toClipboard('guiAddress', this)" id="guiAddressCopy" class="fas fa-clipboard fa-stacked-ptr"></i>
+				      <i onclick="toggleExportUI()"  class="fas fa-share fa-stacked-ptr"></i>
                                     </b>
                                 </div>
                             </div>
+			    <div id="exportKeyDiv" hidden="true">
+			      Your private key:
+			      <div class="export-key private-key-area" id="exportKeyText"> </div>
+			    </div>
                         </div>
                     </div>
                 </div>
@@ -788,6 +793,9 @@
     const domStakingRewardsTitle = document.getElementById('staking-rewards-title');
     const domMnemonicModalContent = document.getElementById("ModalMnemonicContent");
     const domMnemonicModalButton = document.getElementById("modalMnemonicConfirmButton");
+    const domExportDiv = document.getElementById("exportKeyDiv");
+    const domExportKey = document.getElementById("exportKeyText");
+	  
 
     // Aggregate menu screens and links for faster switching
     const arrDomScreens = document.getElementsByClassName("tabcontent");
@@ -994,6 +1002,15 @@
         encryptWallet(strPass);
         createAlert('success', '<b>You\'re Secured! 🔐</b><br>Nice stuff, Armoured PIVian!', 5500);
       }
+    }
+
+    async function toggleExportUI() {
+	domExportDiv.hidden = !domExportDiv.hidden;
+	if(!domExportDiv.hidden) {
+	    domExportKey.innerText = hasEncryptedWallet() ? localStorage.getItem("encwif") : await masterKey.getKeyToBackup();
+	} else {
+	    domExportKey.innerText = "";
+	}
     }
     
     let addressIndex = 0;

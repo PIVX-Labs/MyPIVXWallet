@@ -1046,6 +1046,12 @@ a {
     color: white;
 }
 
+.export-key {
+    width: 700px;
+    overflow-x: scroll;
+    white-space: nowrap;
+}
+
 /* SEND */
 
 #sendNotice {
