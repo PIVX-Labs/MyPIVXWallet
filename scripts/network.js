@@ -33,7 +33,6 @@ if (networkEnabled) {
     // Cancel if the queue is empty: no wasting precious bandwidth & CPU cycles!
       if (!mapUTXOsToValidate.get(path) || mapUTXOsToValidate.get(path).length == 0) {
 	mapUTXOsToValidate.delete(path);
-      mapUTXOsToValidate[path] = undefined;
     }
     if(mapUTXOsToValidate.size == 0) {
 	// If allowed by settings: submit a sync performance measurement to Labs Analytics
