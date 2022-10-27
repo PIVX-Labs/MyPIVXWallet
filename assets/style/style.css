@@ -1048,7 +1048,9 @@ a {
 
 .export-key {
     width: 700px;
+    padding-bottom: 36px;
     overflow-x: scroll;
+    overflow-y: hidden;
     white-space: nowrap;
 }
 
