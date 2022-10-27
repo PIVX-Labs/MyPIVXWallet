@@ -318,10 +318,7 @@
 	    btrx.signinput = async function(index, masterKey, sigHashType, txType = 'pubkey') {
 
 		const wif = await masterKey.getPrivateKey(this.inputs[index].path);
-		console.log(masterKey.getAddress(this.inputs[index].path));
-		console.log(wif, this.inputs[index].path);
 		const key = bitjs.wif2pubkey(wif);
-		console.log(key);
 		const shType = sigHashType || 1;
 		var buf = [];
 
