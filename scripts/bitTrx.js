@@ -315,9 +315,9 @@
 		};
 
     	/* sign a "standard" input */
-	    btrx.signinput = function(index, masterKey, sigHashType, txType = 'pubkey') {
+	    btrx.signinput = async function(index, masterKey, sigHashType, txType = 'pubkey') {
 
-		const wif = masterKey.getPrivateKey(this.inputs[index].path);
+		const wif = await masterKey.getPrivateKey(this.inputs[index].path);
 		console.log(masterKey.getAddress(this.inputs[index].path));
 		console.log(wif, this.inputs[index].path);
 		const key = bitjs.wif2pubkey(wif);
@@ -343,12 +343,12 @@
 	    }
 
 		/* sign inputs */
-		btrx.sign = function(masterKey, sigHashType, txType) {
+		btrx.sign = async function(masterKey, sigHashType, txType) {
 			const shType = sigHashType || 1;
 			let i;
 			const len = this.inputs.length;
 		        for (i = 0; i < len; i++) {
-			    this.signinput(i, masterKey, shType, txType);
+			    await this.signinput(i, masterKey, shType, txType);
 			}
 			return this.serialize();
 		}
