@@ -197,8 +197,9 @@ generateWallet = async function (noUI = false) {
     const walletConfirm = fWalletLoaded && !noUI ? window.confirm(strImportConfirm) : true;
     if (walletConfirm) {
 	const mnemonic = await bip39.generateMnemonic();
-	if(!noUI)
-	    alert(`This is your mnemonic don't forget ok? ${mnemonic}`);
+	if(!noUI) {
+	    await informUserOfMnemonic(mnemonic);
+	}
 	const seed = await bip39.mnemonicToSeed(mnemonic);
 	// Prompt the user to encrypt the seed
 	masterKey = makeMasterkey({seed});
@@ -220,6 +221,18 @@ generateWallet = async function (noUI = false) {
     }
 
     return masterKey;
+}
+
+informUserOfMnemonic = function (mnemonic) {
+    return new Promise((res, rej) => {
+	$('#mnemonicModal').modal({keyboard: false})
+	domMnemonicModalContent.innerText = mnemonic;
+	domMnemonicModalButton.onclick = () => {
+	    res();
+	    $('#mnemonicModal').modal("hide")
+	};
+	$('#mnemonicModal').modal("show")
+    });
 }
 
 makeMasterkey = function({seed, xpriv}) {

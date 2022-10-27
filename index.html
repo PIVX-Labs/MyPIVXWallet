@@ -170,7 +170,34 @@
         </div>
       </div>
       <br>
-      <!-- // QR MODAL -->
+      <!-- // MNEMONIC MODAL -->
+      <div class="modal fade" id="mnemonicModal" tabindex="-1" role="dialog" aria-labelledby="qrModalLabel" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Your seed phrase</h5>
+            </div>
+            <div class="modal-body center-text">
+              <p id="ModalMnemonicLabel" class="modal-label"></p>
+              <div id="ModalMnemonic" class="auto-fit">
+		This is your seed phrase:
+		<b>
+		<div id="ModalMnemonicContent">
+		  Test1 Test2 Test1 Test2 Test1 Test2 Test1 Test2 Test1 Test2Test1 Test2
+		</div>
+		</b>
+		Keep it safe somewhere. MPW does not keep a copy of it. If you lose it, your funds might be at risk.
+		Everyone with a copy of it, can access all of your funds. <b>Do not share with anybody</b>. MPW or My Pivx Labs will never ask you a copy of it.
+	      </div>
+	      <div class="modal-footer">
+		<button type="button" id="modalMnemonicConfirmButton" class="pivx-button-big">I have backed up my seed phrase</button>
+	      </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <br>
+
 
       <div class="container">
         <div class="row no-gutters">
@@ -759,6 +786,8 @@
     const domAnalyticsDescriptor = document.getElementById('analyticsDescriptor');
     const domStakingRewardsList = document.getElementById('staking-rewards-content');
     const domStakingRewardsTitle = document.getElementById('staking-rewards-title');
+    const domMnemonicModalContent = document.getElementById("ModalMnemonicContent");
+    const domMnemonicModalButton = document.getElementById("modalMnemonicConfirmButton");
 
     // Aggregate menu screens and links for faster switching
     const arrDomScreens = document.getElementsByClassName("tabcontent");
