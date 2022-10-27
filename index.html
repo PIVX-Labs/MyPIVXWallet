@@ -821,6 +821,10 @@
       return nBalance;
     }
 
+    function sleep(ms) {
+	return new Promise((res, _) => setTimeout(res, ms));
+    }
+
     function getStakingBalance(updateGUI = false) {
       const nBalance = arrDelegatedUTXOs.reduce((a, b) => a + b.sats, 0);
 

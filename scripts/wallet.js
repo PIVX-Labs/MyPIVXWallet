@@ -319,7 +319,7 @@ hasWalletUnlocked = function (fIncludeNetwork = false) {
 
 let cHardwareWallet = null;
 let strHardwareName = "";
-getHardwareWalletPublicKey = async function(path, verify = false) {
+getHardwareWalletPublicKey = async function(path, verify = false, _attempts = 0) {
   try {
     // Check if we haven't setup a connection yet OR the previous connection disconnected
     if (!cHardwareWallet || cHardwareWallet.transport._disconnectEmitted) {
@@ -339,6 +339,12 @@ getHardwareWalletPublicKey = async function(path, verify = false) {
 
     return cPubkey.publicKey;
   } catch (e) {
+    if(_attempts < 10) { // This is an ugly hack :(
+      // in the event where multiple parts of the code decide to ask for an address, just
+      // Retry at most 10 times waiting 100ms each time
+      await sleep(100);
+      return getHardwareWalletPublicKey(path, verify, _attempts+1);
+    }
     // If there's no device, nudge the user to plug it in.
     if (e.message.toLowerCase().includes('no device selected')) {
       createAlert("info", "<b>No device available</b><br>Couldn't find a hardware wallet; please plug it in and unlock!", 10000);
