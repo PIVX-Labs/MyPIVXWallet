@@ -239,7 +239,10 @@ var getUTXOsHeavy = async function() {
               'id': cTx.txid,
               'vout': cOut.n,
               'sats': parseInt(cOut.value),
-              'script': cOut.hex
+              'script': cOut.hex,
+	      // Until we can get blockbook to tell us which address are involved in cold staking
+	      // We will only use the first key
+	      'path': getDerivationPath(masterKey.isHardwareWallet),
             });
           }
           // Otherwise, an address matches one of ours
