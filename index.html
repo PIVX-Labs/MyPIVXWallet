@@ -953,7 +953,7 @@
     function onPrivateKeyChanged(){
       if (hasEncryptedWallet()) return;
       // Check whether the length of the string is 128 bytes (that's the length of ciphered plain texts)
-	// and it doesn't have any spaces (would be a mnemonic seed)
+      // and it doesn't have any spaces (would be a mnemonic seed)
       domPrivKeyPassword.hidden = domPrivKey.value.length !== 128 || domPrivKey.value.includes(" ");
     }
 
@@ -1009,34 +1009,34 @@
     }
 
     async function toggleExportUI() {
-	domExportDiv.hidden = !domExportDiv.hidden;
-	if(!domExportDiv.hidden) {
-	    domExportKey.innerText = hasEncryptedWallet() ? localStorage.getItem("encwif") : masterKey.keyToBackup;
-	} else {
-	    domExportKey.innerText = "";
-	}
+      domExportDiv.hidden = !domExportDiv.hidden;
+      if (!domExportDiv.hidden) {
+        domExportKey.innerText = hasEncryptedWallet() ? localStorage.getItem("encwif") : masterKey.keyToBackup;
+      } else {
+        domExportKey.innerText = "";
+      }
     }
     
     let addressIndex = 0;
     async function getNewAddress(updateGUI = false) {
-	const last = lastWallet || 0;
-	addressIndex = addressIndex > last ? addressIndex : last + 1;
-	if (addressIndex - last > 10) {
-	    // If the user creates more than 10 empty wallets we will not be able to sync them!
-	    addressIndex = last;
-	}
-	const address = await masterKey.getAddress(getDerivationPath(false, 0, 0, addressIndex));
-	if(updateGUI) {
-	    domGuiAddress.innerText = address;
-	    createQR('pivx:' + address, domModalQR);
-	    domModalQrLabel.innerHTML = 'pivx:' + address;
-	    domModalQR.firstChild.style.width = "100%";
-	    domModalQR.firstChild.style.height = "auto";
-	    domModalQR.firstChild.style.imageRendering = "crisp-edges";
-	    document.getElementById('clipboard').value = address;
-	}
-	addressIndex++;
-	return address;
+      const last = lastWallet || 0;
+      addressIndex = addressIndex > last ? addressIndex : last + 1;
+      if (addressIndex - last > 10) {
+        // If the user creates more than 10 empty wallets we will not be able to sync them!
+        addressIndex = last;
+      }
+      const address = await masterKey.getAddress(getDerivationPath(false, 0, 0, addressIndex));
+      if (updateGUI) {
+        domGuiAddress.innerText = address;
+        createQR('pivx:' + address, domModalQR);
+        domModalQrLabel.innerHTML = 'pivx:' + address;
+        domModalQR.firstChild.style.width = "100%";
+        domModalQR.firstChild.style.height = "auto";
+        domModalQR.firstChild.style.imageRendering = "crisp-edges";
+        document.getElementById('clipboard').value = address;
+      }
+      addressIndex++;
+      return address;
     }
 
     function checkVanity() {
@@ -1145,8 +1145,7 @@
     function undelegateGUI() {
       // Verify the amount
       const nAmount = Math.round(Number(domGuiUndelegateAmount.value.trim()) * COIN);
-      if (nAmount < 0.01 * COIN || isNaN(nAmount)) return createAlert('warning', '<b>Invalid amount!</b><br>Minimum amount is 0.01 ' + cChainParams.current.TICKER + '!', 2500);
-      if (!Number.isSafeInteger(nAmount))   return createAlert('warning', '<b>Invalid amount!</b><br>8 decimal limit exceeded', 2500);
+      if(!validateAmount(nAmount)) return;
       undelegate(nAmount);
     }
 
@@ -1340,6 +1339,7 @@
           console.log("Coin Control: TX Constructed! Selected " + cCoinControl.arrSelectedUTXOs.length + " input(s) (" + (cCoinControl.nValue / COIN) + " " + cChainParams.current.TICKER + ")");
           break;
         }
+
         // Does the UTXO meet size requirements?
         if (cUTXO.sats < nMinInputSize) continue;
         
@@ -1348,102 +1348,113 @@
         cCoinControl.nValue += cUTXO.sats;
         console.log("Coin Control: Selected input " + cUTXO.id.substr(0, 6) + "(" + cUTXO.vout + ")... (Added " + (cUTXO.sats / COIN) + " " + cChainParams.current.TICKER + " - Total: " + (cCoinControl.nValue / COIN) + ")");
       }
-	// if we don't have enough value: leave the cTx alone and return false
+
+      // if we don't have enough value: leave the cTx alone and return false
       if (cCoinControl.nValue < nTotalSatsRequired) return ccError("Balance is too small! (Missing " + (cCoinControl.nValue - nTotalSatsRequired).toLocaleString('en-gb') + " sats)");
+
       // Reaching here: we have sufficient UTXOs, stuff them into the TX, calc final misc data and return!
-	for (const cUTXO of cCoinControl.arrSelectedUTXOs)
-	{
-	    cTx.addinput({
-		txid: cUTXO.id,
-		index: cUTXO.vout,
-		script: cUTXO.script,
-		path: cUTXO.path
-	    });
-	}
-	cCoinControl.nChange = nTotalSatsRequired - cCoinControl.nValue;
-	return ccSuccess(cCoinControl);
+      for (const cUTXO of cCoinControl.arrSelectedUTXOs) {
+        cTx.addinput({
+          txid: cUTXO.id,
+          index: cUTXO.vout,
+          script: cUTXO.script,
+          path: cUTXO.path
+        });
+      }
+      cCoinControl.nChange = nTotalSatsRequired - cCoinControl.nValue;
+      return ccSuccess(cCoinControl);
     }
 
+async function createTxGUI() {
+  if (!hasWalletUnlocked(true)) return;
 
-    async function createTxGUI() {
-      if (!hasWalletUnlocked(true)) return;
-      
-      // Clear the inputs on 'Continue'
-      if (domGenIt.innerHTML === 'Continue') {
-        domGenIt.innerHTML = 'Send Transaction';
-        domTxOutput.innerHTML = '';
-        domHumanReadable.innerHTML = "";
-        domValue1s.value = "";
-        domAddress1s.value = "";
-        domReqDesc.value = '';
-        domReqDisplay.style.display = 'none';
-        return;
-      }
-      
-      // Sanity check the address
-      const address = domAddress1s.value.trim();
-      // If Staking address: redirect to staking page
-      if (address.startsWith(cChainParams.current.STAKING_PREFIX)) {
-        createAlert('warning', 'Here, use the <b>Stake</b> screen, not the Send screen!', 7500);
-        return domStakeTab.click();
-      }
-      if (address.length !== 34) return createAlert('warning', '<b>Invalid PIVX address!<b><br>Bad length (' + address.length + ')', 2500);
-      if (!address.startsWith(cChainParams.current.PUBKEY_PREFIX)) return createAlert('warning', '<b>Invalid PIVX address!<b><br>Bad prefix ' + address[0] + ' (Should start with ' + cChainParams.current.PUBKEY_PREFIX + ')', 3500);
-      
-      // Sanity check the amount
-      let nValue = Math.round(Number(domValue1s.value.trim()) * COIN);
-      if(!validateAmount(nValue)) return;
-      
-      // Construct a TX and fetch Standard inputs
-      const nBalance = getBalance();
-      const cTx = bitjs.transaction();
-      const cCoinControl = chooseUTXOs(cTx, nValue, 0, false);
-      if (!cCoinControl.success) return alert(cCoinControl.msg);
-      
-      // Compute fee
-      const nFee = getFee(cTx.serialize().length);
-      
-      // Compute change (or lack thereof)
-      const nChange = cCoinControl.nValue - (nFee + nValue);
-      if (nChange > 0) {
-        // Change output
-        cTx.addoutput(await getNewAddress(), nChange / COIN);
-      } else {
-        // We're sending alot! So we deduct the fee from the send amount. There's not enough change to pay it with!
-        nValue -= nFee;
-      }
-      
-      // Primary output (receiver)
-      cTx.addoutput(address, nValue / COIN);
-      
-      // Debug-only verbose response
-      if (debug) domHumanReadable.innerHTML = "Balance: " + (nBalance / COIN) + "<br>Fee: " + (nFee / COIN) + "<br>To: " + address + "<br>Sent: " + (nValue / COIN) + (nChange > 0 ? "<br>Change Address: " + publicKeyForNetwork + "<br>Change: " + (nChange / COIN) : "");
-      
-      // Sign and broadcast!
-      if (!masterKey.isHardwareWallet) {
-	const sign = await cTx.sign(masterKey, 1);
-	console.log(sign)
-	sendTransaction(sign);
-      } else {
-        // Format the inputs how the Ledger SDK prefers
-        const arrInputs = [];
-        const arrAssociatedKeysets = [];
-        const strDerivPath = getDerivationPath(true, 0, 0, 0);
-        for (const cInput of cTx.inputs) {
-	  const cInputFull = await getTxInfo(cInput.outpoint.hash);
-	  arrInputs.push([await cHardwareWallet.splitTransaction(cInputFull.hex), cInput.outpoint.index]);
-	  arrAssociatedKeysets.push(strDerivPath);
-        }
+  // Clear the inputs on 'Continue'
+  if (domGenIt.innerHTML === 'Continue') {
+    domGenIt.innerHTML = 'Send Transaction';
+    domTxOutput.innerHTML = '';
+    domHumanReadable.innerHTML = "";
+    domValue1s.value = "";
+    domAddress1s.value = "";
+    domReqDesc.value = '';
+    domReqDisplay.style.display = 'none';
+    return;
+  }
 	
-        // Construct the Ledger transaction
-        const cLedgerTx = await cHardwareWallet.splitTransaction(cTx.serialize());
-        const strOutputScriptHex = await cHardwareWallet
-	      .serializeTransactionOutputs(cLedgerTx)
-	      .toString("hex");
-	
-        // Sign the transaction via Ledger
-        createAlert("info", "<b>Confirm your transaction</b><br>Confirm the TX on your " + strHardwareName + "!", 7500);
+  // Sanity check the address
+  const address = domAddress1s.value.trim();
+  // If Staking address: redirect to staking page
+  if (address.startsWith(cChainParams.current.STAKING_PREFIX)) {
+    createAlert('warning', 'Here, use the <b>Stake</b> screen, not the Send screen!', 7500);
+    return domStakeTab.click();
+  }
+
+  if (address.length !== 34) return createAlert('warning', '<b>Invalid PIVX address!<b><br>Bad length (' + address.length + ')', 2500);
+  if (!address.startsWith(cChainParams.current.PUBKEY_PREFIX)) return createAlert('warning', '<b>Invalid PIVX address!<b><br>Bad prefix ' + address[0] + ' (Should start with ' + cChainParams.current.PUBKEY_PREFIX + ')', 3500);
+
+  // Sanity check the amount
+  let nValue = Math.round(Number(domValue1s.value.trim()) * COIN);
+  if (!validateAmount(nValue, 0.01 * COIN)) return;
+  
+  // Construct a TX and fetch Standard inputs
+  const nBalance = getBalance();
+  const cTx = bitjs.transaction();
+  const cCoinControl = chooseUTXOs(cTx, nValue, 0, false);
+  if (!cCoinControl.success) return alert(cCoinControl.msg);
+
+  // Compute fee
+  const nFee = getFee(cTx.serialize().length);
+
+  // Compute change (or lack thereof)
+  const nChange = cCoinControl.nValue - (nFee + nValue);
+  if (nChange > 0) {
+    // Change output
+    cTx.addoutput(await getNewAddress(), nChange / COIN);
+  } else {
+    // We're sending alot! So we deduct the fee from the send amount. There's not enough change to pay it with!
+    nValue -= nFee;
+  }
+
+  // Primary output (receiver)
+  cTx.addoutput(address, nValue / COIN);
+
+  // Debug-only verbose response
+  if (debug) domHumanReadable.innerHTML = "Balance: " + (nBalance / COIN) + "<br>Fee: " + (nFee / COIN) + "<br>To: " + address + "<br>Sent: " + (nValue / COIN) + (nChange > 0 ? "<br>Change Address: " + publicKeyForNetwork + "<br>Change: " + (nChange / COIN) : "");
+
+  // Sign and broadcast!
+  if (!masterKey.isHardwareWallet) {
+    const sign = await cTx.sign(masterKey, 1);
+    console.log(sign)
+    sendTransaction(sign);
+  } else {
+    // Format the inputs how the Ledger SDK prefers
+    const arrInputs = [];
+    const arrAssociatedKeysets = [];
+    const strDerivPath = getDerivationPath(true, 0, 0, 0);
+    for (const cInput of cTx.inputs) {
+      const cInputFull = await getTxInfo(cInput.outpoint.hash);
+      arrInputs.push([await cHardwareWallet.splitTransaction(cInputFull.hex), cInput.outpoint.index]);
+      arrAssociatedKeysets.push(strDerivPath);
     }
+
+    // Construct the Ledger transactio
+    const cLedgerTx = await cHardwareWallet.splitTransaction(cTx.serialize());
+    const strOutputScriptHex = await cHardwareWallet
+      .serializeTransactionOutputs(cLedgerTx)
+      .toString("hex");
+
+    // Sign the transaction via Ledger
+    createAlert("info", "<b>Confirm your transaction</b><br>Confirm the TX on your " + strHardwareName + "!", 7500);
+    const strSerialisedTx = await cHardwareWallet.createPaymentTransactionNew({
+      inputs: arrInputs,
+      associatedKeysets: arrAssociatedKeysets,
+      outputScriptHex: strOutputScriptHex,
+    });
+
+    // Broadcast the Hardware (Ledger) TX
+    sendTransaction(strSerialisedTx);
+  }
+  domGenIt.innerHTML = "Continue";
+}
 
     function insert(arr, index, newItem) {
       // part of the array before the specified index
@@ -1518,7 +1529,7 @@
       const script = document.getElementById("script").value;
 
       // Primary input
-	cTx.addinput({txid, index, script});
+      cTx.addinput({txid, index, script});
 
       // Primary output
       const strAddress = document.getElementById("address1").value;
