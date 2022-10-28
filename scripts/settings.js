@@ -46,9 +46,6 @@ const domExplorerSelect = document.getElementById('explorer');
 
 //TRANSLATIONS
 //to make translations work we need to change it so that we just enable or disable the visiblity of the text
-//domSyncMode.innerHTML = fAlternativeSync              ? '<b>Experimental Sync Active</b>' : '';
-//domTestnet.innerHTML = cChainParams.current.isTestnet ? '<b>Testnet Mode On</b>'          : '';
-//domDebug.innerHTML = debug ? '<b>DEBUG MODE ON</b>' : '';
 domNetworkE.style.display = (networkEnabled ? '' : 'none');
 domNetworkD.style.display = (networkEnabled ? 'none' : '');
 domSyncMode.style.display = fAlternativeSync ? '' : 'none';
