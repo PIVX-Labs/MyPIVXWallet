@@ -427,8 +427,8 @@ getHardwareWalletKeys = async function(path, xpub = false, verify = false, _atte
   } catch (e) {
     if(_attempts < 10) { // This is an ugly hack :(
       // in the event where multiple parts of the code decide to ask for an address, just
-      // Retry at most 10 times waiting 100ms each time
-      await sleep(100);
+      // Retry at most 10 times waiting 200ms each time
+      await sleep(200);
       return getHardwareWalletKeys(path, xpub, false, _attempts+1);
     }
     // If there's no device, nudge the user to plug it in.
