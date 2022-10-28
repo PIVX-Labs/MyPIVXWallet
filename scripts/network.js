@@ -45,9 +45,13 @@ if (networkEnabled) {
       // Fetch the single output of the UTXO
       const cVout = JSON.parse(this.response).vout[arrUTXOsToValidate[0].vout];
       console.log(arrUTXOsToValidate[0]);
-      let path = arrUTXOsToValidate[0].path.split("/")
-      path[2] = (masterKey.isHardwareWallet ? cChainParams.current.BIP44_TYPE_LEDGER : cChainParams.current.BIP44_TYPE) + "'";
-      lastWallet = Math.max(parseInt(path[5]), lastWallet);
+      let path;
+      if(arrUTXOsToValidate[0].path) {
+	path = arrUTXOsToValidate[0].path.split("/")
+	path[2] = (masterKey.isHardwareWallet ? cChainParams.current.BIP44_TYPE_LEDGER : cChainParams.current.BIP44_TYPE) + "'";
+	lastWallet = Math.max(parseInt(path[5]), lastWallet);
+	path = path.join("/");
+      }
 
       // Convert to MPW format
       const cUTXO = {
@@ -55,7 +59,7 @@ if (networkEnabled) {
         'vout': cVout.n,
         'sats': Math.round(cVout.value * COIN),
         'script': cVout.scriptPubKey.hex,
-        'path': path.join("/"),
+	path,
       }
 
       // Determine the UTXO type, and use it accordingly
@@ -225,7 +229,7 @@ var getUTXOsHeavy = async function() {
       // Fetch our single address and state, map address to an empty derivation path
       const address = await masterKey.getAddress();
       cData = await (await fetch(`${cExplorer.url}/api/v2/address/${address}?details=txs&pageSize=1000`)).json();
-      mapPaths.set(address, "");
+      mapPaths.set(address, ":)");
     }
     if (cData && cData.transactions) {
       cachedUTXOs = []; arrDelegatedUTXOs = [];
