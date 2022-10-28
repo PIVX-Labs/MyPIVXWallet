@@ -68,7 +68,7 @@ function setAnalytics(level, fSilent = false) {
     cAnalyticsLevel = level;
     localStorage.setItem('analytics', level.name);
     // For total transparency, we'll 'describe' the various analytic keys of this chosen level
-    let strDesc = transparencyReport, i = 0;
+    let strDesc = "<center>--- "+transparencyReport+ " ---</center><br>", i = 0;
     const nLongestKeyLen = cStatKeys.reduce((prev, e) => prev.length >= e.length ? prev : e).length;
     for (i; i < cAnalyticsLevel.stats.length; i++) {
         const cStat = cAnalyticsLevel.stats[i];
