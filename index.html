@@ -69,7 +69,11 @@
                   // Display name      Blockbook-compatible API base
                   { name: "rockdev",   url: "https://explorer.rockdev.org" },
                   { name: "zkBitcoin", url: "https://zkbitcoin.com" }
-              ]
+              ],
+              Consensus         : {
+                  // Network upgrades
+                  UPGRADE_V6_0  : undefined
+              }
           },
           testnet: {
               isTestnet         : true,
@@ -84,7 +88,11 @@
               Explorers         : [
                   // Display name      Blockbook-compatible API base
                   { name: "rockdev",   url: "https://testnet.rockdev.org" }
-              ]
+              ],
+              Consensus         : {
+                  // Network upgrades
+                  UPGRADE_V6_0  : undefined
+              }
           }
       }
       // Set default chain
