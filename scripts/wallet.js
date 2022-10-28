@@ -88,7 +88,7 @@ class LegacyMasterKey extends MasterKey {
   }
   
   async getPrivateKeyBytes(_path) {
-    return pkBytes;
+    return this._pkBytes;
   }
   
   get keyToBackup() {
