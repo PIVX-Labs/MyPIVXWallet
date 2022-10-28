@@ -411,24 +411,24 @@ getHardwareWalletKeys = async function(path, xpub = false, verify = false, _atte
     strHardwareName = cHardwareWallet.transport.device.manufacturerName + " " + cHardwareWallet.transport.device.productName;
 
     // Prompt the user in both UIs
-    if(verify) createAlert("info", "Confirm the import on your Ledger", 3500);
+    if (verify) createAlert("info", "Confirm the import on your Ledger", 3500);
     const cPubKey = await cHardwareWallet.getWalletPublicKey(path, {
       verify,
       format: "legacy",
     });
-    
-    if(xpub) {
+
+    if (xpub) {
       return createXpub({
-	depth: 3,
-	childNumber: 2147483648,
-	chainCode: cPubKey.chainCode,
-	publicKey: cPubKey.publicKey,
+        depth: 3,
+        childNumber: 2147483648,
+        chainCode: cPubKey.chainCode,
+        publicKey: cPubKey.publicKey,
       });
     } else {
       return cPubKey.publicKey;
     }
   } catch (e) {
-    if(_attempts < 10) { // This is an ugly hack :(
+    if (_attempts < 10) { // This is an ugly hack :(
       // in the event where multiple parts of the code decide to ask for an address, just
       // Retry at most 10 times waiting 200ms each time
       await sleep(200);
