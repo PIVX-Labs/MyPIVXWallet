@@ -72,7 +72,10 @@ class HardwareWalletMasterKey extends MasterKey {
   }
   
   async getxpub(path) {
-    return await getHardwareWalletKeys(path, true);
+    if(!this.xpub) {
+      this.xpub = await getHardwareWalletKeys(path, true);
+    }
+    return this.xpub;
   }
 }
 
