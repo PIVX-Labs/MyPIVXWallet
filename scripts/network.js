@@ -32,6 +32,7 @@ if (networkEnabled) {
   var acceptUTXO = () => {
     // Cancel if the queue is empty: no wasting precious bandwidth & CPU cycles!
     if (!arrUTXOsToValidate.length) {
+      getNewAddress(true);
       // If allowed by settings: submit a sync performance measurement to Labs Analytics
       return submitAnalytics('time_to_sync', { time: (Date.now() / 1000) - nTimeSyncStart, explorer: cExplorer.name });
     }
@@ -45,7 +46,8 @@ if (networkEnabled) {
       const cVout = JSON.parse(this.response).vout[arrUTXOsToValidate[0].vout];
       console.log(arrUTXOsToValidate[0]);
       let path = arrUTXOsToValidate[0].path.split("/")
-      path[2] = masterKey.isHardwareWallet ? cChainParams.current.BIP44_TYPE_LEDGER : cChainParams.current.BIP44_TYPE + "'";
+      path[2] = (masterKey.isHardwareWallet ? cChainParams.current.BIP44_TYPE_LEDGER : cChainParams.current.BIP44_TYPE) + "'";
+      lastWallet = Math.max(parseInt(path[5]), lastWallet);
 
       // Convert to MPW format
       const cUTXO = {
@@ -242,9 +244,9 @@ var getUTXOsHeavy = async function() {
           }
           // Otherwise, an address matches one of ours
           else if (paths.length > 0) {
-            // Blockbook still returns 119' as the coinType, even in testnet
-            let path = paths[0].split("/");
-            path[2] = masterKey.isHardwareWallet ? cChainParams.current.BIP44_TYPE_LEDGER : cChainParams.current.BIP44_TYPE + "'";
+	    // Blockbook still returns 119' as the coinType, even in testnet
+	    let path = paths[0].split("/");
+	    path[2] = (masterKey.isHardwareWallet ? cChainParams.current.BIP44_TYPE_LEDGER : cChainParams.current.BIP44_TYPE) + "'";
             cachedUTXOs.push({
               'id': cTx.txid,
               'vout': cOut.n,
@@ -256,6 +258,7 @@ var getUTXOsHeavy = async function() {
         }
       }
       // Update UI
+      getNewAddress(true);
       getBalance(true);
       getStakingBalance(true);
     }

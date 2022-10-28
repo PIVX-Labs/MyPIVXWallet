@@ -1,103 +1,100 @@
 class MasterKey {
-
-    constructor() {
-    }
-    
-    async getPrivateKeyBytes(path) {
-	throw new Error("Not implemented");
-    }
-    
-    async getPrivateKey(path) {
-	return generateOrEncodePrivkey(await this.getPrivateKeyBytes(path)).strWIF;
-    }
-
-    async getAddress(path) {
-	return deriveAddress({pkBytes: await this.getPrivateKeyBytes(path)});
-    }
-
-    async getxpub(path) {
-	throw new Error("Not implemented");
-    }
-
-    get keyToBackup() {
-	throw new Error("Not implemented");
-    }
-    
-    get isHD() {
-	return this._isHD;
-    }
-    get isHardwareWallet() {
-	return this._isHardwareWallet;
-    }
+  
+  constructor() { }
+  
+  async getPrivateKeyBytes(path) {
+    throw new Error("Not implemented");
+  }
+  
+  async getPrivateKey(path) {
+    return generateOrEncodePrivkey(await this.getPrivateKeyBytes(path)).strWIF;
+  }
+  
+  async getAddress(path) {
+    return deriveAddress({pkBytes: await this.getPrivateKeyBytes(path)});
+  }
+  
+  async getxpub(path) {
+    throw new Error("Not implemented");
+  }
+  
+  get keyToBackup() {
+    throw new Error("Not implemented");
+  }
+  
+  get isHD() {
+    return this._isHD;
+  }
+  get isHardwareWallet() {
+    return this._isHardwareWallet;
+  }
 }
 
 class HdMasterKey extends MasterKey {
-    constructor({seed, xpriv}) {
-	super();
-	// Generate the HDKey
-	if(seed) this._hdKey = HDKey.fromMasterSeed(seed);
-	if(xpriv) this._hdKey = HDKey.fromExtendedKey(xpriv);
-	if (!this._hdKey) throw new Error("Both seed and xpriv are undefined");
-	this._isHD = true;
-	this._isHardwareWallet = false;
-    }
-    
+  constructor({seed, xpriv}) {
+    super();
+    // Generate the HDKey
+    if(seed) this._hdKey = HDKey.fromMasterSeed(seed);
+    if(xpriv) this._hdKey = HDKey.fromExtendedKey(xpriv);
+    if (!this._hdKey) throw new Error("Both seed and xpriv are undefined");
+    this._isHD = true;
+    this._isHardwareWallet = false;
+  }
+  
   async getPrivateKeyBytes(path) {
-    console.log(path);
-	return this._hdKey.derive(path).privateKey;
-    }
-
-    get keyToBackup() {
-	return this._hdKey.privateExtendedKey;
-    }
-    async getxpub(path) {
-	return this._hdKey.derive(path).publicExtendedKey;
-    }
-
+    return this._hdKey.derive(path).privateKey;
+  }
+  
+  get keyToBackup() {
+    return this._hdKey.privateExtendedKey;
+  }
+  async getxpub(path) {
+    return this._hdKey.derive(path).publicExtendedKey;
+  }
 }
 
 class HardwareWalletMasterKey extends MasterKey {
-    constructor() {
-	super();
-	this._isHD = true;
-	this._isHardwareWallet = true;
+  constructor() {
+    super();
+    this._isHD = true;
+    this._isHardwareWallet = true;
+  }
+  async getPrivateKeyBytes(path) {
+    throw new Error("Hardware wallets cannot export private keys");
+  }
+  
+  async getAddress(path) {
+    return deriveAddress({publicKey: await getHardwareWalletKeys(path)});
     }
-    async getPrivateKeyBytes(path) {
-	throw new Error("Hardware wallets cannot export private keys");
-    }
-
-    async getAddress(path) {
-	return deriveAddress({publicKey: await getHardwareWalletPublicKey(path)});
-    }
-
-    get keyToBackup() {
-	throw new Error("Hardware wallets don't have keys to backup");
-    }
-
-    async getxpub(path) {
-	throw new Error("Not implemented");
-    }
+  
+  get keyToBackup() {
+    throw new Error("Hardware wallets don't have keys to backup");
+  }
+  
+  async getxpub(path) {
+    return await getHardwareWalletKeys(path, true);
+  }
 }
 
 class LegacyMasterKey extends MasterKey {
-    constructor (pkBytes) {
-	super();
-	this._isHD = false;
-	this._isHardwareWallet = false;
-	this._pkBytes = pkBytes;
-    }
-    
-    async getPrivateKeyBytes(_path) {
-	return pkBytes;
-    }
-
-    get keyToBackup() {
-	return this.getPrivateKey();
-    }
-
-    async getxpub(path) {
-	throw new Error("Trying to get an extended public key from a legacy address");
-    }
+  constructor (pkBytes) {
+    super();
+    this._isHD = false;
+    this._isHardwareWallet = false;
+    this._pkBytes = pkBytes;
+  }
+  
+  async getPrivateKeyBytes(_path) {
+    return pkBytes;
+  }
+  
+  get keyToBackup() {
+    return this.getPrivateKey();
+  }
+  
+  async getxpub(path) {
+    throw new Error("Trying to get an extended public key from a legacy address");
+  }
 }
 
 // Ledger Hardware wallet constants
@@ -201,7 +198,7 @@ importWallet = async function({
         return createAlert("warning", "<b>Firefox doesn't support this!</b><br>Unfortunately, Firefox does not support hardware wallets", 7500);
       }
 
-      const publicKey = await getHardwareWalletPublicKey();
+      const publicKey = await getHardwareWalletKeys(getDerivationPath(true));
       // Errors are handled within the above function, so there's no need for an 'else' here, just silent ignore.
       if (!publicKey) return;
 
@@ -265,6 +262,7 @@ importWallet = async function({
     // Reaching here: the deserialisation was a full cryptographic success, so a wallet is now imported!
     fWalletLoaded = true;
 
+    getNewAddress(true);
     // Display Text
     domGuiWallet.style.display = 'block';
 
@@ -306,6 +304,12 @@ generateWallet = async function (noUI = false) {
       domGuiWallet.style.display = 'block';
       viewPrivKey = false;
       hideAllWalletOptions();
+
+      // Update identicon
+      domIdenticon.dataset.jdenticonValue = masterKey.getAddress(getDerivationPath());
+      jdenticon();
+
+      getNewAddress(true);
 
       // Refresh the balance UI (why? because it'll also display any 'get some funds!' alerts)
       getBalance(true);
@@ -393,7 +397,7 @@ hasWalletUnlocked = function (fIncludeNetwork = false) {
 
 let cHardwareWallet = null;
 let strHardwareName = "";
-getHardwareWalletPublicKey = async function(path, verify = false, _attempts = 0) {
+getHardwareWalletKeys = async function(path, xpub = false, verify = false, _attempts = 0) {
   try {
     // Check if we haven't setup a connection yet OR the previous connection disconnected
     if (!cHardwareWallet || cHardwareWallet.transport._disconnectEmitted) {
@@ -405,19 +409,27 @@ getHardwareWalletPublicKey = async function(path, verify = false, _attempts = 0)
 
     // Prompt the user in both UIs
     if(verify) createAlert("info", "Confirm the import on your Ledger", 3500);
-
-    const cPubkey = await cHardwareWallet.getWalletPublicKey(path, {
+    const cPubKey = await cHardwareWallet.getWalletPublicKey(path, {
       verify,
-      format: "legacy"
+      format: "legacy",
     });
-
-    return cPubkey.publicKey;
+    
+    if(xpub) {
+      return createXpub({
+	depth: 3,
+	childNumber: 2147483648,
+	chainCode: cPubKey.chainCode,
+	publicKey: cPubKey.publicKey,
+      });
+    } else {
+      return cPubKey.publicKey;
+    }
   } catch (e) {
     if(_attempts < 10) { // This is an ugly hack :(
       // in the event where multiple parts of the code decide to ask for an address, just
       // Retry at most 10 times waiting 100ms each time
       await sleep(100);
-      return getHardwareWalletPublicKey(path, verify, _attempts+1);
+      return getHardwareWalletKeys(path, xpub, false, _attempts+1);
     }
     // If there's no device, nudge the user to plug it in.
     if (e.message.toLowerCase().includes('no device selected')) {
