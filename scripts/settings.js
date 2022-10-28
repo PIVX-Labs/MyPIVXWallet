@@ -4,22 +4,21 @@
 var debug = false;            // A mode that emits verbose console info for internal MPW operations
 var networkEnabled = true;    // A lock which blocks ALL network requests in totality
 var fAlternativeSync = true;  // A more resource-intensive but deep UTXO set sync mode
-
 var cExplorer = cChainParams.current.Explorers[0];
 
+let transparencyReport
 // A list of statistic keys and their descriptions
-const STATS = {
+let STATS = {
     // Stat key   // Description of the stat, it's data, and it's purpose
     hit:          "A ping indicating an app load, no unique data is sent.",
     time_to_sync: "The time in seconds it took for MPW to last synchronise.",
     transaction:  "A ping indicating a Tx, no unique data is sent, but may be inferred from on-chain time."
 }
-Object.freeze(STATS);
 
 const cStatKeys = Object.keys(STATS);
 
 // A list of Analytics 'levels' at which the user may set depending on their privacy preferences
-const arrAnalytics = [
+let arrAnalytics = [
     // Statistic level  // Allowed statistics
     { name: "Disabled", stats: [] },
     { name: "Minimal",  stats: [STATS.hit, STATS.time_to_sync] },
@@ -70,7 +69,7 @@ function setAnalytics(level, fSilent = false) {
     cAnalyticsLevel = level;
     localStorage.setItem('analytics', level.name);
     // For total transparency, we'll 'describe' the various analytic keys of this chosen level
-    let strDesc = '<center>--- Transparency Report ---</center><br>', i = 0;
+    let strDesc = transparencyReport, i = 0;
     const nLongestKeyLen = cStatKeys.reduce((prev, e) => prev.length >= e.length ? prev : e).length;
     for (i; i < cAnalyticsLevel.stats.length; i++) {
         const cStat = cAnalyticsLevel.stats[i];
@@ -183,7 +182,21 @@ addEventListener('DOMContentLoaded', () => {
 
     // Fetch settings from LocalStorage
     const strSettingAnalytics = localStorage.getItem('analytics');
-
+    //TRANSLATION
+    STATS = {
+        // Stat key   // Description of the stat, it's data, and it's purpose
+        hit:          translation.hit,
+        time_to_sync: translation.time_to_sync,
+        transaction:  translation.transaction
+    }
+    transparencyReport = translation.transparencyReport
+    arrAnalytics = [
+        // Statistic level  // Allowed statistics
+        { name: "Disabled", stats: [] },
+        { name: "Minimal",  stats: [STATS.hit, STATS.time_to_sync] },
+        { name: "Balanced", stats: [STATS.hit, STATS.time_to_sync, STATS.transaction] }
+    ]
+    
     // Honour the "Do Not Track" header by default
     if (!strSettingAnalytics && navigator.doNotTrack === "1") {
         // Disabled
