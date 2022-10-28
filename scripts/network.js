@@ -53,7 +53,7 @@ if (networkEnabled) {
         'vout': cVout.n,
         'sats': Math.round(cVout.value * COIN),
         'script': cVout.scriptPubKey.hex,
-	'path': path.join("/"),
+        'path': path.join("/"),
       }
 
       // Determine the UTXO type, and use it accordingly
@@ -158,7 +158,7 @@ var sendTransaction = function(hex, msg = '') {
     const request = new XMLHttpRequest();
     const txSum = v => v.reduce((t, s) => t + (s.addresses.includes(publicKeyForNetwork) && s.addresses.length === 2 ? parseInt(s.value) : 0), 0);
     let data;
-    if(masterKey.isHD) {
+    if (masterKey.isHD) {
       const derivationPath = getDerivationPath(masterKey.isHardwareWallet).split("/").slice(0, 4).join("/");
       const xpub = await masterKey.getxpub(derivationPath);
       data = await (await fetch(`${cExplorer.url}/api/v2/xpub/${xpub}?details=txs&pageSize=500&to=${nHeight ? nHeight - 1 : 0}`)).json();
@@ -205,48 +205,52 @@ var getUTXOsHeavy = async function() {
   fHeavySyncing = true;
 
   try {
-    let data;
+    let cData;
     let mapPaths = new Map();
-    if(masterKey.isHD) {
+    if (masterKey.isHD) {
+      // Fetch our xpub
       const derivationPath = getDerivationPath(masterKey.isHardwareWallet).split("/").slice(0, 4).join("/");
       const xpub = await masterKey.getxpub(derivationPath);
-      data = await (await fetch(`${cExplorer.url}/api/v2/xpub/${xpub}?details=txs&pageSize=1000`)).json();
-      if(!data.tokens) return; // If data.tokens is undefined, the user has never received PIVs
-      for(const addrPath of data.tokens) {
-	mapPaths.set(addrPath.name, addrPath.path);
-      }
-      lastWallet = parseInt(data.tokens[data.tokens.length - 1].path.split("/")[5]);
+
+      // Run an xpub balance synchronisation
+      cData = await (await fetch(`${cExplorer.url}/api/v2/xpub/${xpub}?details=txs&pageSize=1000`)).json();
+      if (!cData.tokens) return; // If data.tokens is undefined, the user has never received PIVs
+
+      // Map all address <--> derivation paths
+      cData.tokens.forEach(cAddrPath => mapPaths.set(cAddrPath.name, cAddrPath.path));
+      lastWallet = parseInt(cData.tokens[cData.tokens.length - 1].path.split("/")[5]);
     } else {
+      // Fetch our single address and state, map address to an empty derivation path
       const address = await masterKey.getAddress();
-      data = await (await fetch(`${cExplorer.url}/api/v2/address/${address}?details=txs&pageSize=1000`)).json();
+      cData = await (await fetch(`${cExplorer.url}/api/v2/address/${address}?details=txs&pageSize=1000`)).json();
       mapPaths.set(address, "");
     }
-    if (data && data.transactions) {
+    if (cData && cData.transactions) {
       cachedUTXOs = []; arrDelegatedUTXOs = [];
-      for (const cTx of data.transactions) {
+      for (const cTx of cData.transactions) {
         for (const cOut of cTx.vout) {
           if (cOut.spent) continue; // We don't care about spent outputs
-	  const paths = cOut.addresses.map(strAddr => mapPaths.get(strAddr)).filter(v=>v);
+          const paths = cOut.addresses.map(strAddr => mapPaths.get(strAddr)).filter(v => v);
           // If an absence of any address, or a Cold Staking address is detected, we mark this as a delegated UTXO
           if (cOut.addresses.length === 0 || cOut.addresses.some(strAddr => strAddr.startsWith(cChainParams.current.STAKING_PREFIX))) {
             arrDelegatedUTXOs.push({
-	      'id': cTx.txid,
-	      'vout': cOut.n,
-	      'sats': parseInt(cOut.value),
-	      'script': cOut.hex
+              'id': cTx.txid,
+              'vout': cOut.n,
+              'sats': parseInt(cOut.value),
+              'script': cOut.hex
             });
           }
           // Otherwise, an address matches one of ours
           else if (paths.length > 0) {
-	    // Blockbook still returns 119' as the coinType, even in testnet
-	    let path = paths[0].split("/")
-	    path[2] = masterKey.isHardwareWallet ? cChainParams.current.BIP44_TYPE_LEDGER : cChainParams.current.BIP44_TYPE + "'";
+            // Blockbook still returns 119' as the coinType, even in testnet
+            let path = paths[0].split("/");
+            path[2] = masterKey.isHardwareWallet ? cChainParams.current.BIP44_TYPE_LEDGER : cChainParams.current.BIP44_TYPE + "'";
             cachedUTXOs.push({
-	      'id': cTx.txid,
-	      'vout': cOut.n,
-	      'sats': parseInt(cOut.value),
-	      'script': cOut.hex,
-	      'path': path.join("/"),
+              'id': cTx.txid,
+              'vout': cOut.n,
+              'sats': parseInt(cOut.value),
+              'script': cOut.hex,
+              'path': path.join("/"),
             });
           }
         }
