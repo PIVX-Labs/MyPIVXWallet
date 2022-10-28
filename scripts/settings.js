@@ -37,16 +37,23 @@ var fWalletLoaded = false;
 
 // --- DOM Cache
 const domNetwork = document.getElementById('Network');
+const domNetworkE= document.getElementById('NetworkE')
+const domNetworkD= document.getElementById('NetworkD')
 const domDebug = document.getElementById('Debug');
 const domSyncMode = document.getElementById('SyncMode');
 const domTestnet = document.getElementById('Testnet');
 const domExplorerSelect = document.getElementById('explorer');
 
-// Display the default settings directly in the UI
-domNetwork.innerHTML = '<b> Network:</b> ' + (networkEnabled ? 'Enabled' : 'Disabled');
-domDebug.innerHTML = debug                            ? '<b>DEBUG MODE ON</b>'            : '';
-domSyncMode.innerHTML = fAlternativeSync              ? '<b>Experimental Sync Active</b>' : '';
-domTestnet.innerHTML = cChainParams.current.isTestnet ? '<b>Testnet Mode On</b>'          : '';
+//TRANSLATIONS
+//to make translations work we need to change it so that we just enable or disable the visiblity of the text
+//domSyncMode.innerHTML = fAlternativeSync              ? '<b>Experimental Sync Active</b>' : '';
+//domTestnet.innerHTML = cChainParams.current.isTestnet ? '<b>Testnet Mode On</b>'          : '';
+//domDebug.innerHTML = debug ? '<b>DEBUG MODE ON</b>' : '';
+domNetworkE.style.display = (networkEnabled ? '' : 'none');
+domNetworkD.style.display = (networkEnabled ? 'none' : '');
+domSyncMode.style.display = fAlternativeSync ? '' : 'none';
+domTestnet.style.display = cChainParams.current.isTestnet ? '': 'none';
+domDebug.style.display = debug ? '' : 'none';
 
 // --- Settings Functions
 function setExplorer(explorer, fSilent = false) {
@@ -90,7 +97,9 @@ function toggleTestnet() {
     cChainParams.current = cChainParams.current.isTestnet ? cChainParams.main : cChainParams.testnet;
 
     // Update UI and static tickers
-    domTestnet.innerHTML = (cChainParams.current.isTestnet ? '<b>Testnet Mode On</b>' : '');
+    //TRANSLATIONS CHANGE
+    //domTestnet.innerHTML = (cChainParams.current.isTestnet ? '<b>Testnet Mode On</b>' : '');
+    domTestnet.style.display = (cChainParams.current.isTestnet ? '' : 'none');
     domGuiBalanceTicker.innerText        = cChainParams.current.TICKER;
     domGuiBalanceStakingTicker.innerText = cChainParams.current.TICKER;
     domPrefix.value = cChainParams.current.PUBKEY_PREFIX + domPrefix.value.substr(1);
@@ -102,18 +111,26 @@ function toggleTestnet() {
 
 function toggleSyncMode() {
     fAlternativeSync = !fAlternativeSync;
-    domSyncMode.innerHTML = fAlternativeSync ? '<b>Experimental Sync Active</b>' : '';
+    //TRANSLATION CHANGE
+    //domSyncMode.innerHTML = fAlternativeSync ? '<b>Experimental Sync Active</b>' : '';
+    domSyncMode.style.display = (fAlternativeSync ? '' : 'none');
     createAlert('success', '<b>Switched sync mode!</b><br>Now using ' + (fAlternativeSync ? 'experimental' : 'stable') + ' sync', 3000);
 }
 
 function toggleDebug() {
     debug = !debug;
-    domDebug.innerHTML = debug ? '<b>DEBUG MODE ON</b>' : '';
+    //TRANSLATION CHANGES
+    //domDebug.innerHTML = debug ? '<b>DEBUG MODE ON</b>' : '';
+    domDebug.style.display = debug ? '' : 'none';
+
 }
 
 function toggleNetwork() {
     networkEnabled = !networkEnabled;
-    domNetwork.innerHTML = '<b>Network:</b> ' + (networkEnabled ? 'Enabled' : 'Disabled');
+    //TRANSLATION CHANGE
+    //domNetwork.innerHTML = '<b>Network:</b> ' + (networkEnabled ? 'Enabled' : 'Disabled');
+    domNetworkE.style.display = (networkEnabled ? '' : 'none');
+    domNetworkD.style.display = (networkEnabled ? 'none' : '');
     return networkEnabled;
 }
 
