@@ -43,13 +43,17 @@ if (networkEnabled) {
     request.onload = function() {
       // Fetch the single output of the UTXO
       const cVout = JSON.parse(this.response).vout[arrUTXOsToValidate[0].vout];
+      console.log(arrUTXOsToValidate[0]);
+      let path = arrUTXOsToValidate[0].path.split("/")
+      path[2] = masterKey.isHardwareWallet ? cChainParams.current.BIP44_TYPE_LEDGER : cChainParams.current.BIP44_TYPE + "'";
 
       // Convert to MPW format
       const cUTXO = {
         'id': arrUTXOsToValidate[0].txid,
         'vout': cVout.n,
         'sats': Math.round(cVout.value * COIN),
-        'script': cVout.scriptPubKey.hex
+        'script': cVout.scriptPubKey.hex,
+	'path': path.join("/"),
       }
 
       // Determine the UTXO type, and use it accordingly
@@ -83,20 +87,23 @@ if (networkEnabled) {
     }
 
     const request = new XMLHttpRequest()
+    let publicKey;
     if(masterKey.isHD) {
-      // Implement
+      const derivationPath = getDerivationPath(masterKey.isHardwareWallet).split("/").slice(0, 4).join("/");
+      publicKey = await masterKey.getxpub(derivationPath);
     } else {
-      const publicKeyForNetwork = await masterKey.getAddress();
-      request.open('GET', cExplorer.url + "/api/v2/utxo/" + publicKeyForNetwork, true);
-      request.onerror = networkError;
-      request.onload = function() {
-	arrUTXOsToValidate = JSON.parse(this.response);
-	// Clear our UTXOs and begin accepting refreshed ones (TODO: build an efficient 'set merge' algo)
-	cachedUTXOs = []; arrDelegatedUTXOs = [];
-	if (arrUTXOsToValidate.length) {
-          nTimeSyncStart = Date.now() / 1000;
-          acceptUTXO();
-	}
+      publicKey = await masterKey.getAddress();
+    }
+
+    request.open('GET', cExplorer.url + "/api/v2/utxo/" + publicKey, true);
+    request.onerror = networkError;
+    request.onload = function() {
+      arrUTXOsToValidate = JSON.parse(this.response);
+      // Clear our UTXOs and begin accepting refreshed ones (TODO: build an efficient 'set merge' algo)
+      cachedUTXOs = []; arrDelegatedUTXOs = [];
+      if (arrUTXOsToValidate.length) {
+        nTimeSyncStart = Date.now() / 1000;
+        acceptUTXO();
       }
     }
     request.send();
@@ -204,7 +211,6 @@ var getUTXOsHeavy = async function() {
       const derivationPath = getDerivationPath(masterKey.isHardwareWallet).split("/").slice(0, 4).join("/");
       const xpub = await masterKey.getxpub(derivationPath);
       data = await (await fetch(`${cExplorer.url}/api/v2/xpub/${xpub}?details=txs&pageSize=1000`)).json();
-      console.log(data);
       if(!data.tokens) return; // If data.tokens is undefined, the user has never received PIVs
       for(const addrPath of data.tokens) {
 	mapPaths.set(addrPath.name, addrPath.path);

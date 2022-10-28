@@ -42,7 +42,8 @@ class HdMasterKey extends MasterKey {
 	this._isHardwareWallet = false;
     }
     
-    async getPrivateKeyBytes(path) {
+  async getPrivateKeyBytes(path) {
+    console.log(path);
 	return this._hdKey.derive(path).privateKey;
     }
 
