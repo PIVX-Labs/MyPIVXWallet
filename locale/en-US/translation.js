@@ -117,7 +117,7 @@ const translation = {
     settingsToggleTestnet:"",       //Toggle Testnet Mode
 
     //Transparency Report
-    hit:"Hit in the face",
+    hit:"A ping indicating an app load, no unique data is sent.",
     time_to_sync:"The time in seconds it took for MPW to last synchronise.",
     transaction:"A ping indicating a Tx, no unique data is sent, but may be inferred from on-chain time."
     
