@@ -1025,7 +1025,7 @@
         // If the user creates more than 10 empty wallets we will not be able to sync them!
         addressIndex = last;
       }
-      const address = await masterKey.getAddress(getDerivationPath(false, 0, 0, addressIndex));
+      const address = await masterKey.getAddress(getDerivationPath(masterKey.isHardwareWallet, 0, 0, addressIndex));
       if (updateGUI) {
         domGuiAddress.innerText = address;
         createQR('pivx:' + address, domModalQR);
@@ -1174,7 +1174,7 @@
         }
 
         // The re-delegated change output
-        cTx.addcoldstakingoutput(publicKeyForNetwork, cachedColdStakeAddr, nChange / COIN);
+        cTx.addcoldstakingoutput(await getNewAddress(), cachedColdStakeAddr, nChange / COIN);
         console.log('Re-delegated delegation spend change!');
       } else {
         // Not enough change to cold stake, so we'll just unstake everything (and deduct the fee from the value)
@@ -1182,11 +1182,12 @@
         console.log('Spent all CS dust into redeem address!');
       }
 
+      const outputKey = await getNewAddress();
       // The primary Cold-to-Public output
-      cTx.addoutput(publicKeyForNetwork, nValue / COIN);
+      cTx.addoutput(outputKey, nValue / COIN);
 
       // Debug-only verbose response
-      if (debug) domHumanReadable.innerHTML = "Balance: " + (nBalance / COIN) + "<br>Fee: " + (nFee / COIN) + "<br>To: " + publicKeyForNetwork + "<br>Sent: " + (nValue / COIN) + (nChange > 0 ? "<br>Change Address: " + (fReDelegateChange ? cachedColdStakeAddr : publicKeyForNetwork) + "<br>Change: " + (nChange / COIN) : "");
+      if (debug) domHumanReadable.innerHTML = "Balance: " + (nBalance / COIN) + "<br>Fee: " + (nFee / COIN) + "<br>To: " + outputKey + "<br>Sent: " + (nValue / COIN) + (nChange > 0 ? "<br>Change Address: " + (fReDelegateChange ? cachedColdStakeAddr : outputKey) + "<br>Change: " + (nChange / COIN) : "");
 
       if (hasHardwareWallet()) {
         // Format the inputs how the Ledger SDK prefers
@@ -1270,19 +1271,20 @@
       // Compute fee and change (or lack thereof)
       const nFee = getFee(cTx.serialize().length);
       const nChange = cCoinControl.nValue - (nFee + nValue);
+      const changeAddress = await getNewAddress();
       if (nChange > 0) {
         // Change output
-        cTx.addoutput(publicKeyForNetwork, nChange / COIN);
+        cTx.addoutput(changeAddress, nChange / COIN);
       } else {
         // We're sending alot! So we deduct the fee from the send amount. There's not enough change to pay it with!
         nValue -= nFee;
       }
 
       // The primary Standard-to-Cold output
-      cTx.addcoldstakingoutput(publicKeyForNetwork, coldAddr, nValue / COIN);
+      cTx.addcoldstakingoutput(changeAddress, coldAddr, nValue / COIN);
 
       // Debug-only verbose response
-      if (debug) domHumanReadable.innerHTML = "Balance: " + (nBalance / COIN) + "<br>Fee: " + (nFee / COIN) + "<br>To: " + coldAddr + "<br>Sent: " + (nValue / COIN) + (nChange > 0 ? "<br>Change Address: " + publicKeyForNetwork + "<br>Change: " + (nChange / COIN) : "");
+      if (debug) domHumanReadable.innerHTML = "Balance: " + (nBalance / COIN) + "<br>Fee: " + (nFee / COIN) + "<br>To: " + coldAddr + "<br>Sent: " + (nValue / COIN) + (nChange > 0 ? "<br>Change Address: " + changeAddress + "<br>Change: " + (nChange / COIN) : "");
 
       // Sign and broadcast!
       if (hasHardwareWallet()) {
@@ -1402,9 +1404,10 @@
       
       // Compute change (or lack thereof)
       const nChange = cCoinControl.nValue - (nFee + nValue);
+      const changeAddress = await getNewAddress();
       if (nChange > 0) {
-	// Change output
-	cTx.addoutput(await getNewAddress(), nChange / COIN);
+        // Change output
+        cTx.addoutput(changeAddress, nChange / COIN);
       } else {
 	// We're sending alot! So we deduct the fee from the send amount. There's not enough change to pay it with!
 	nValue -= nFee;
@@ -1414,7 +1417,7 @@
       cTx.addoutput(address, nValue / COIN);
       
       // Debug-only verbose response
-      if (debug) domHumanReadable.innerHTML = "Balance: " + (nBalance / COIN) + "<br>Fee: " + (nFee / COIN) + "<br>To: " + address + "<br>Sent: " + (nValue / COIN) + (nChange > 0 ? "<br>Change Address: " + publicKeyForNetwork + "<br>Change: " + (nChange / COIN) : "");
+      if (debug) domHumanReadable.innerHTML = "Balance: " + (nBalance / COIN) + "<br>Fee: " + (nFee / COIN) + "<br>To: " + address + "<br>Sent: " + (nValue / COIN) + (nChange > 0 ? "<br>Change Address: " + changeAddress + "<br>Change: " + (nChange / COIN) : "");
       
       // Sign and broadcast!
       if (!masterKey.isHardwareWallet) {
