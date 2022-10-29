@@ -25,7 +25,6 @@ const translation = {
     navExperimentalSync:"",         //<b>Experimental Sync Active</b>
 
     //Footer
-    footerCopyright: "",            //© MIT 2022
     footerDonateLink: "",           //Donate!
     footerBuiltWithPivxLabs: "",    //Built with 💜 by PIVX Labs
     footerGithubLink: "",           //MyPIVXWallet
