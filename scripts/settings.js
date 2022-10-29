@@ -181,7 +181,8 @@ addEventListener('DOMContentLoaded', () => {
 
     // Fetch settings from LocalStorage
     const strSettingAnalytics = localStorage.getItem('analytics');
-    //TRANSLATION
+
+    // Apply translations to the transparency report
     STATS = {
         // Stat key   // Description of the stat, it's data, and it's purpose
         hit:          translation.hit,
