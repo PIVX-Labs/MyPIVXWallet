@@ -170,7 +170,7 @@ var sendTransaction = function(hex, msg = '') {
       const xpub = await masterKey.getxpub(derivationPath);
       cData = await (await fetch(`${cExplorer.url}/api/v2/xpub/${xpub}?details=txs&pageSize=500&to=${nHeight ? nHeight - 1 : 0}`)).json();
       // Map all address <--> derivation paths
-      cData.tokens.forEach(cAddrPath => mapPaths.set(cAddrPath.name, cAddrPath.path));
+      if (cData.tokens) cData.tokens.forEach(cAddrPath => mapPaths.set(cAddrPath.name, cAddrPath.path));
     } else {
       const address = await masterKey.getAddress();
       cData = await (await fetch(`${cExplorer.url}/api/v2/address/${address}?details=txs&pageSize=500&to=${nHeight ? nHeight - 1 : 0}`)).json();
@@ -196,6 +196,12 @@ var sendTransaction = function(hex, msg = '') {
       // Update GUI
       stopAnim();
       updateStakingRewardsGUI(true);
+    } else {
+      // No balance history!
+      domGuiStakingLoadMore.style.display = "none";
+
+      // Update GUI
+      stopAnim();
     }
   }
 
