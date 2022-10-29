@@ -47,14 +47,28 @@
   <script type="text/javascript" src="assets/bootstrap-4.5.0/js/bootstrap.js"></script>
   <script type="text/javascript" src="scripts/libs/jdenticon.min.js"></script>
   <script>
-    //TRANSLATION
-    let lang = window.navigator.userLanguage || window.navigator.language;
-    let activeLangs = ['en-US', 'en']
-    if(activeLangs.includes(lang)){
-      document.write('\x3Cscript src="locale/' + lang + '/' + 'translation.js">\x3C/script>')
-    }else{
+    // TRANSLATION
+
+    // We use this function to parse the UA lang in a safer way: for example, there's multiple `en` definitions
+    // ... but we shouldn't duplicate the language files, we can instead cut the affix (US, GB) and simply use 'en'.
+    // ... This logic may apply to other languages with such subsets as well, so take care of them here!
+    const arrLangsWithSubset = ['en'];
+    function parseUserAgentLang(strUA) {
+      if (arrLangsWithSubset.some(strLang => strUA.includes(strLang))) {
+        // Split the lang in to 'primary' and 'subset', only use the primary lang
+        return strUA.substring(0, 2);
+      }
+      // Otherwise, just use the full language spec
+      return strUA;
+    }
+
+    const strLang = parseUserAgentLang(window.navigator.userLanguage || window.navigator.language);
+    const arrActiveLangs = ['en'];
+    if (arrActiveLangs.includes(strLang)) {
+      document.write('\x3Cscript src="locale/' + strLang + '/translation.js">\x3C/script>')
+    } else {
       console.log("Your language is not supported yet, if you would like to help visit the github or discord")
-      document.write('\x3Cscript src="locale/' + 'en-US' + '/' + 'translation.js">\x3C/script>')
+      document.write('\x3Cscript src="locale/' + arrActiveLangs[0] + '/translation.js">\x3C/script>')
     }
   </script>
 
@@ -741,8 +755,9 @@
   <script type="text/javascript" src="scripts/network.js"></script>
   <script type="text/javascript" src="scripts/i18n.js"></script>
   <script>
-    //TRANSLATION
-    translate(translation)
+    // TRANSLATION
+    translate(translation);
+
     // WALLET STATE DATA
     let cachedUTXOs = [];
     let arrDelegatedUTXOs = [];
