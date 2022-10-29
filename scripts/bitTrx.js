@@ -474,7 +474,7 @@
 			for (let i = input.length - 1; i >= 0; i--) {
 				const alphaIndex = B58.alphabet.indexOf(input[i]);
 				if (alphaIndex < 0) {
-					throw "Invalid character";
+				  throw new Error("Invalid character");
 				}
 				bi = bi.add(BigInteger.valueOf(alphaIndex)
 								.multiply(B58.base.pow(input.length - 1 - i)));
