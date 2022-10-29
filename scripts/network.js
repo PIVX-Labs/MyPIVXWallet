@@ -230,11 +230,12 @@ var getUTXOsHeavy = async function() {
 
       // Run an xpub balance synchronisation
       cData = await (await fetch(`${cExplorer.url}/api/v2/xpub/${xpub}?details=txs&pageSize=1000`)).json();
-      if (!cData.tokens) return; // If data.tokens is undefined, the user has never received PIVs
 
       // Map all address <--> derivation paths
-      cData.tokens.forEach(cAddrPath => mapPaths.set(cAddrPath.name, cAddrPath.path));
-      lastWallet = parseInt(cData.tokens[cData.tokens.length - 1].path.split("/")[5]);
+      if (cData.tokens) {
+        cData.tokens.forEach(cAddrPath => mapPaths.set(cAddrPath.name, cAddrPath.path));
+        lastWallet = parseInt(cData.tokens[cData.tokens.length - 1].path.split("/")[5]);
+      }
     } else {
       // Fetch our single address and state, map address to an empty derivation path
       const address = await masterKey.getAddress();
