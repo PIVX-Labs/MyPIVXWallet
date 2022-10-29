@@ -224,7 +224,9 @@ importWallet = async function({
       const privateImportValue = newWif || domPrivKey.value;
       domPrivKey.value = "";
 
-      if (privateImportValue.split(" ").length > 10) {
+      const wordCount = privateImportValue.trim().split(/\s+/g).length;
+
+      if (wordCount >= 12 && wordCount <= 24) {
         if (!bip39.validateMnemonic(privateImportValue)) {
           // The reason we want to ask the user for confirmation is that the mnemonic
           // Could have been generated with another app that has a different dictionary
