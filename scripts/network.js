@@ -162,20 +162,24 @@ var sendTransaction = function(hex, msg = '') {
     const stopAnim = () => domGuiStakingLoadMoreIcon.style.opacity = 1;
     const nHeight = arrRewards.length ? arrRewards[arrRewards.length - 1].blockHeight : 0;
     const request = new XMLHttpRequest();
-    const txSum = v => v.reduce((t, s) => t + (s.addresses.includes(publicKeyForNetwork) && s.addresses.length === 2 ? parseInt(s.value) : 0), 0);
-    let data;
+    let mapPaths = new Map();
+    const txSum = v => v.reduce((t, s) => t + (s.addresses.map(strAddr=>mapPaths.get(strAddr)).filter(v => v).length && s.addresses.length === 2 ? parseInt(s.value) : 0), 0);
+    let cData;
     if (masterKey.isHD) {
       const derivationPath = getDerivationPath(masterKey.isHardwareWallet).split("/").slice(0, 4).join("/");
       const xpub = await masterKey.getxpub(derivationPath);
-      data = await (await fetch(`${cExplorer.url}/api/v2/xpub/${xpub}?details=txs&pageSize=500&to=${nHeight ? nHeight - 1 : 0}`)).json();
+      cData = await (await fetch(`${cExplorer.url}/api/v2/xpub/${xpub}?details=txs&pageSize=500&to=${nHeight ? nHeight - 1 : 0}`)).json();
+      // Map all address <--> derivation paths
+      cData.tokens.forEach(cAddrPath => mapPaths.set(cAddrPath.name, cAddrPath.path));
     } else {
       const address = await masterKey.getAddress();
-      data = await (await fetch(`${cExplorer.url}/api/v2/address/${address}?details=txs&pageSize=500&to=${nHeight ? nHeight - 1 : 0}`)).json();
+      cData = await (await fetch(`${cExplorer.url}/api/v2/address/${address}?details=txs&pageSize=500&to=${nHeight ? nHeight - 1 : 0}`)).json();
+      mapPaths.set(address, ":)");
     }
-    if (data && data.transactions) {
+    if (cData && cData.transactions) {
       // Update rewards
       arrRewards = arrRewards.concat(
-        data.transactions.filter(tx => tx.vout[0].addresses[0] === "CoinStake TX").map(tx =>{
+        cData.transactions.filter(tx => tx.vout[0].addresses[0] === "CoinStake TX").map(tx =>{
           return {
             id: tx.txid,
             time: tx.blockTime,
@@ -186,7 +190,7 @@ var sendTransaction = function(hex, msg = '') {
       );
       
       // If the results don't match the full 'max/requested results', then we know there's nothing more to load, hide the button!
-      if (data.transactions.length !== data.itemsOnPage)
+      if (cData.transactions.length !== cData.itemsOnPage)
         domGuiStakingLoadMore.style.display = "none";
       
       // Update GUI

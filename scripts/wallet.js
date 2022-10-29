@@ -65,7 +65,7 @@ class HardwareWalletMasterKey extends MasterKey {
   
   async getAddress(path) {
     return deriveAddress({publicKey: await getHardwareWalletKeys(path)});
-    }
+  }
   
   get keyToBackup() {
     throw new Error("Hardware wallets don't have keys to backup");
