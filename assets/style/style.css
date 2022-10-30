@@ -258,6 +258,11 @@ input::-moz-focus-inner {
     border-radius: 8px;
 }
 
+/* a bootstrap override */
+.modal-footer {
+    display: block !important;
+}
+
 #page-container {
     position: relative;
     min-height: calc(100vh - 75px);
