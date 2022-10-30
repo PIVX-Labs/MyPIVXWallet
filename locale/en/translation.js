@@ -52,7 +52,7 @@ var en_translation = {
     buttonDonate: "",               //Donate - Pay with MyPIVXWallet
 
     //Dashboard
-    dashboardTitle: "",                  //Dashboard
+    dashboardTitle: "",             //Dashboard
     dCardOneTitle: "",              //Create a
     dCardOneSubTitle: "",           //New Wallet
     dCardOneDesc: "",               //This will create a new, random PIVX wallet that will contain no initial funds, you may transfer to-and-from this wallet with ease.
