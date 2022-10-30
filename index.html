@@ -63,7 +63,7 @@
     }
 
     const strLang = parseUserAgentLang(window.navigator.userLanguage || window.navigator.language);
-    const arrActiveLangs = ['en', 'cat'];
+    const arrActiveLangs = ['en', 'uwu'];
 
 
     //Due to the need to switch language we need to load all the languages and then set the active one to the translation variable
@@ -584,7 +584,7 @@
               <br>
               <div class="staking-banner-bottom">
                 <div class="stake-box large-box col-md-4">
-                  <h5 id="availToDelegate" onclick="selectMaxBalance(domGuiDelegateAmount)" class="stake-balances ptr"><span data-i18n="avaliable">Available</span>: 0 PIV</h5>
+                  <h5 id="availToDelegate" onclick="selectMaxBalance(domGuiDelegateAmount)" class="stake-balances ptr"><span data-i18n="available">Available</span>: 0 PIV</h5>
                   <textarea id="delegateAmount" class="stake-input form-control private-key-area"></textarea>
                   <div class="button-padd">
                       <button class="pivx-button-big" onclick="delegateGUI()">
@@ -610,7 +610,7 @@
               <div class="staking-banner-bottom">
                 <div class="stake-box large-box col-md-4">
                   <div id="staking-rewards-title" class="staking-rewards-header">
-                    <h5> <span data-i18n="staking">Staking</span> Rewards </h5>
+                    <h5> <span data-i18n="staking">Staking</span> <span data-i18n="rewards">Rewards</span> </h5>
                   </div>
                   <div class="staking-rewards-list">
                 <div id="staking-rewards-content">
@@ -713,6 +713,12 @@
               <select id="explorer" class="form-control" name="explorer">
                 <!-- Populated via JS at DOM load (settings.js) -->
               </select>
+              <br>              
+              <label for="translation" data-i18n="settingsLanguage">Choose an Language:</label>
+              <br>
+              <select id="translation" class="form-control" name="translation">
+                <!-- Populated via JS at DOM load (settings.js) -->
+              </select>
               <br>
 
               <label for="analytics" data-i18n="settingsAnalytics">Choose your analytics contribution level:</label>
@@ -766,13 +772,15 @@
     //Create an object of objects filled with all the translations
     var translatableLanguages = {
       "en": en_translation,
-      "cat": cat_translation
+      "uwu": uwu_translation
     }
 
+    
     var switchTranslation = function(langName){
       if(arrActiveLangs.includes(langName)){
         translation = translatableLanguages[langName]
         translate(translation);
+        console.log(translation)
 
         //analytics changes
         // Apply translations to the transparency report
@@ -791,6 +799,9 @@
         ]
         let SettingAnalytics = localStorage.getItem('analytics');
         setAnalytics(cAnalyticsLevel = arrAnalytics.find(a => a.name === SettingAnalytics) || cAnalyticsLevel, true);
+
+        //Updating the rest of the settings page
+
       }else{
         console.log("That language does not exist")
       }

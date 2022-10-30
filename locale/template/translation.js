@@ -1,4 +1,4 @@
-var cat_translation = {
+var en_translation = {
     //This document is to be used as a template as all the base code is in English
     //Basic HTML tags are allowed such as <b><i> etc. All data is sanitized https://developer.mozilla.org/en-US/docs/Web/API/Element/innerHTML
 
@@ -10,7 +10,8 @@ var cat_translation = {
     experimental:"",                //Experimental
     amount:"",                      //Amount
     staking:"",                     //Staking
-    avaliable:"",                   //Avaliable
+    rewards:"",                     //rewards
+    available:"",                   //Available
 
     //NAV BAR
     navIntro: "",                   //Intro
@@ -30,7 +31,7 @@ var cat_translation = {
     footerGithubLink: "",           //MyPIVXWallet
 
     //Intro
-    title: "UwU",                      //Welcome to
+    title: "",                      //Welcome to
     titleName: "",                  //My PIVX Wallet!
 
     cardOneTitle: "",               //Be your own Bank!
@@ -52,7 +53,7 @@ var cat_translation = {
     buttonDonate: "",               //Donate - Pay with MyPIVXWallet
 
     //Dashboard
-    dashboardTitle: "",                  //Dashboard
+    dashboardTitle: "",             //Dashboard
     dCardOneTitle: "",              //Create a
     dCardOneSubTitle: "",           //New Wallet
     dCardOneDesc: "",               //This will create a new, random PIVX wallet that will contain no initial funds, you may transfer to-and-from this wallet with ease.
@@ -110,6 +111,7 @@ var cat_translation = {
 
     //Settings
     settingsExplorer:"",            //Choose an explorer
+    settingsLanguage:"",            //Choose an Language:
     settingsAnalytics:"",           //Choose your analytics contribution level:
     settingsToggleDebug:"",         //Toggle Debug Mode
     settingsToggleSync:"",          //Toggle Sync Mode
@@ -117,7 +119,7 @@ var cat_translation = {
 
     //Transparency Report
     transparencyReport: "Transparency Report",
-    hit:"booo",
+    hit:"A ping indicating an app load, no unique data is sent.",
     time_to_sync:"The time in seconds it took for MPW to last synchronise.",
     transaction:"A ping indicating a Tx, no unique data is sent, but may be inferred from on-chain time."
     

@@ -41,6 +41,7 @@ const domDebug = document.getElementById('Debug');
 const domSyncMode = document.getElementById('SyncMode');
 const domTestnet = document.getElementById('Testnet');
 const domExplorerSelect = document.getElementById('explorer');
+const domTranslationSelect = document.getElementById('translation');
 
 //TRANSLATIONS
 //to make translations work we need to change it so that we just enable or disable the visiblity of the text
@@ -63,6 +64,36 @@ function setExplorer(explorer, fSilent = false) {
 document.getElementById('explorer').onchange = function(evt) {
     setExplorer(cChainParams.current.Explorers.find(a => a.url === evt.target.value));
 }
+
+// --- Translation changing Functions
+function setTranslation(lang, fSilent = false) {
+    switchTranslation(lang)
+    localStorage.setItem('translation', lang);
+}
+// Hook up the 'lang' select UI
+document.getElementById('translation').onchange = function(evt) {
+    console.log(evt.target.value)
+    setTranslation(evt.target.value);
+}
+function fillTranslationSelect() {
+
+    while (domTranslationSelect.options.length>0) {
+        domTranslationSelect.remove(0);
+    }
+
+    // Add each trusted explorer into the UI selector
+    for (const lang of arrActiveLangs) {
+        const opt = document.createElement('option');
+        opt.value = lang;
+        opt.innerHTML = lang;
+        domTranslationSelect.appendChild(opt);
+    }
+
+    // And update the UI to reflect them
+    domTranslationSelect.value = cExplorer.url;
+}
+
+
 
 function setAnalytics(level, fSilent = false) {
     cAnalyticsLevel = level;
@@ -171,6 +202,7 @@ addEventListener('DOMContentLoaded', () => {
     const domAnalyticsSelect = document.getElementById('analytics');
 
     fillExplorerSelect();
+    fillTranslationSelect();
 
     // Add each analytics level into the UI selector
     for (const analLevel of arrAnalytics) {
