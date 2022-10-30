@@ -1,4 +1,4 @@
-var en_translation = {
+var cat_translation = {
     //This document is to be used as a template as all the base code is in English
     //Basic HTML tags are allowed such as <b><i> etc. All data is sanitized https://developer.mozilla.org/en-US/docs/Web/API/Element/innerHTML
 
@@ -30,7 +30,7 @@ var en_translation = {
     footerGithubLink: "",           //MyPIVXWallet
 
     //Intro
-    title: "",                      //Welcome to
+    title: "UwU",                      //Welcome to
     titleName: "",                  //My PIVX Wallet!
 
     cardOneTitle: "",               //Be your own Bank!
@@ -117,7 +117,7 @@ var en_translation = {
 
     //Transparency Report
     transparencyReport: "Transparency Report",
-    hit:"A ping indicating an app load, no unique data is sent.",
+    hit:"booo",
     time_to_sync:"The time in seconds it took for MPW to last synchronise.",
     transaction:"A ping indicating a Tx, no unique data is sent, but may be inferred from on-chain time."
     
