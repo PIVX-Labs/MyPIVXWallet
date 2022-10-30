@@ -399,16 +399,16 @@
                                     <b id="guiAddress">~</b>
                                     <b id="guiQRButton">
                                       <i data-toggle="modal" data-target="#qrModal" class="fas fa-qrcode fa-stacked-ptr"></i>
-				      <i onclick="getNewAddress(true)" class="fas fa-sync fa-stacked-ptr"></i>
+                                      <i id="guiNewAddress" onclick="getNewAddress(true)" class="fas fa-sync fa-stacked-ptr"></i>
                                       <i onclick="toClipboard('guiAddress', this)" id="guiAddressCopy" class="fas fa-clipboard fa-stacked-ptr"></i>
-				      <i onclick="toggleExportUI()"  class="fas fa-share fa-stacked-ptr"></i>
+                                      <i id="guiExportWallet" onclick="toggleExportUI()" class="fas fa-share fa-stacked-ptr"></i>
                                     </b>
                                 </div>
                             </div>
-			    <div id="exportKeyDiv" hidden="true">
-			      Your private key:
-			      <div class="export-key private-key-area" id="exportKeyText"> </div>
-			    </div>
+                          <div id="exportKeyDiv" hidden="true">
+                            Your private key:
+                            <div class="export-key private-key-area" id="exportKeyText"> </div>
+                          </div>
                         </div>
                     </div>
                 </div>
@@ -799,6 +799,8 @@
     const domMnemonicModalButton = document.getElementById("modalMnemonicConfirmButton");
     const domExportDiv = document.getElementById("exportKeyDiv");
     const domExportKey = document.getElementById("exportKeyText");
+    const domExportWallet = document.getElementById("guiExportWallet");
+    const domNewAddress = document.getElementById("guiNewAddress");
 	  
 
     // Aggregate menu screens and links for faster switching

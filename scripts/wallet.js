@@ -211,6 +211,9 @@ importWallet = async function({
       // Derive our hardware address and import!
       masterKey = new HardwareWalletMasterKey();
 
+      // Hide the 'export wallet' button, it's not relevant to hardware wallets
+      domExportWallet.style.display = "none";
+
       createAlert("info", "<b>Hardware wallet ready!</b><br>Please keep your " + strHardwareName + " plugged in, unlocked, and in the PIVX app", 12500);
     } else {
       // If raw bytes: purely encode the given bytes rather than generating our own bytes
@@ -254,7 +257,9 @@ importWallet = async function({
 
             // Extract raw bytes and derive the key from them
             const pkBytes = bKey.slice(0, bKey.length - 1);
-            const publicKeyForNetwork = deriveAddress({pkBytes});
+
+            // Hide the 'new address' button, since non-HD wallets are essentially single-address MPW wallets
+            domNewAddress.style.display = "none";
 
             // Import the raw private key
             masterKey = new LegacyMasterKey(pkBytes);
