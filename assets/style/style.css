@@ -1056,7 +1056,7 @@ a {
 }
 
 .export-key {
-    width: 700px;
+    width: 100%;
     padding-bottom: 36px;
     overflow-x: scroll;
     overflow-y: hidden;
