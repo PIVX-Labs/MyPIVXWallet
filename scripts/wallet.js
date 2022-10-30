@@ -92,7 +92,7 @@ class LegacyMasterKey extends MasterKey {
   }
   
   get keyToBackup() {
-    return this.getPrivateKey();
+    return generateOrEncodePrivkey(this._pkBytes).strWIF;
   }
   
   async getxpub(path) {
