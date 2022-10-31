@@ -5,6 +5,15 @@ const pubKeyHashNetworkLen = 21;
 const pubChksum = 4;
 const pubPrebaseLen = pubKeyHashNetworkLen + pubChksum;
 
+// Notifications map
+let ALERTS = {
+    FAILED_TO_IMPORT: '<b>Failed to import!</b> Invalid password',
+    TESTNET_ENCRYPTION_DISABLED: "<b>Testnet Mode is ON!</b><br>Wallet encryption disabled",
+    PASSWORD_TOO_SMALL: "That password is a little short!<br>Use at least <b>" + MIN_PASS_LENGTH + " characters.</b>",
+    PASSWORD_DOESNT_MATCH: 'Your passwords don\'t match!',
+    NEW_PASSWORD_SUCCESS: '<b>You\'re Secured! 🔐</b><br>Nice stuff, Armoured PIVian!'
+}
+
 // Base58 Encoding Map
 const MAP_B58 = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
 

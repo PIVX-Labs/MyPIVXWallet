@@ -1039,7 +1039,7 @@
       if (!hasEncryptedWallet() && isEncrypted) {
         const strDecWIF = await decrypt(privateKey, strPassword);
         if (!strDecWIF || strDecWIF === "decryption failed!") {
-          return createAlert('warning', '<b>Failed to import!</b> Invalid password',6000);
+          return createAlert('warning', ALERTS.FAILED_TO_IMPORT, 6000);
         } else {
           localStorage.setItem("encwif", privateKey);
           return importWallet({
@@ -1056,7 +1056,7 @@
 
     function guiEncryptWallet() {
       // Disable wallet encryption in testnet mode
-      if (cChainParams.current.isTestnet) return createAlert('warning', "<b>Testnet Mode is ON!</b><br>Wallet encryption disabled", 2500);
+      if (cChainParams.current.isTestnet) return createAlert('warning', ALERTS.TESTNET_ENCRYPTION_DISABLED, 2500);
 
       // Show our inputs if we haven't already
       if (domEncryptPasswordBox.style.display === 'none') {
@@ -1067,11 +1067,10 @@
         // Fetch our inputs, ensure they're of decent entropy + match eachother
         const strPass = domEncryptPasswordFirst.value,
               strPassRetype = domEncryptPasswordSecond.value;
-        if (strPass.length < MIN_PASS_LENGTH) return createAlert('warning', 'That password is a little short!<br>' +
-                                                                            'Use at least <b>' + MIN_PASS_LENGTH + ' characters.</b>', 4000);
-        if (strPass !== strPassRetype) return createAlert('warning', 'Your passwords don\'t match!', 2250);
+        if (strPass.length < MIN_PASS_LENGTH) return createAlert('warning', ALERTS.PASSWORD_TOO_SMALL, 4000);
+        if (strPass !== strPassRetype) return createAlert('warning', ALERTS.PASSWORD_DOESNT_MATCH, 2250);
         encryptWallet(strPass);
-        createAlert('success', '<b>You\'re Secured! 🔐</b><br>Nice stuff, Armoured PIVian!', 5500);
+        createAlert('success', ALERTS.NEW_PASSWORD_SUCCESS, 5500);
       }
     }
 
