@@ -66,6 +66,7 @@ document.getElementById('explorer').onchange = function(evt) {
     setExplorer(cChainParams.current.Explorers.find(a => a.url === evt.target.value));
 }
 
+//TRANSLATION
 // --- Translation changing Functions
 function setTranslation(lang, fSilent = false) {
     switchTranslation(lang)
@@ -91,10 +92,8 @@ function fillTranslationSelect() {
     }
 
     // And update the UI to reflect them
-    domTranslationSelect.value = cExplorer.url;
+    domTranslationSelect.value = localStorage.getItem('translation');
 }
-
-
 
 function setAnalytics(level, fSilent = false) {
     cAnalyticsLevel = level;
@@ -124,8 +123,7 @@ function toggleTestnet() {
     cChainParams.current = cChainParams.current.isTestnet ? cChainParams.main : cChainParams.testnet;
 
     // Update UI and static tickers
-    //TRANSLATIONS CHANGE
-    //domTestnet.innerHTML = (cChainParams.current.isTestnet ? '<b>Testnet Mode On</b>' : '');
+    //TRANSLATIONS
     domTestnet.style.display = (cChainParams.current.isTestnet ? '' : 'none');
     domGuiBalanceTicker.innerText        = cChainParams.current.TICKER;
     domGuiBalanceStakingTicker.innerText = cChainParams.current.TICKER;
