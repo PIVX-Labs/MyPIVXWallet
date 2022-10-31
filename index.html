@@ -63,20 +63,15 @@
     }
 
     const strLang = parseUserAgentLang(window.navigator.userLanguage || window.navigator.language);
-    const arrActiveLangs = ['en', 'uwu'];
 
+    //When adding a lang remember to add it to the object translatableLanguages as well as here.
+    //When removing you do not have to remove from translatableLanguages
+    const arrActiveLangs = ['en', 'uwu'];
 
     //Due to the need to switch language we need to load all the languages and then set the active one to the translation variable
     for(i=0; i<arrActiveLangs.length; i++){
       document.write('\x3Cscript src="locale/' + arrActiveLangs[i] + '/translation.js">\x3C/script>')
     }
-
-    // if (arrActiveLangs.includes(strLang)) {
-    //   document.write('\x3Cscript src="locale/' + strLang + '/translation.js">\x3C/script>')
-    // } else {
-    //   console.log("Your language is not supported yet, if you would like to help visit the github or discord")
-    //   document.write('\x3Cscript src="locale/' + arrActiveLangs[0] + '/translation.js">\x3C/script>')
-    // }
   </script>
 
 
@@ -768,54 +763,27 @@
   <script type="text/javascript" src="scripts/network.js"></script>
   <script type="text/javascript" src="scripts/i18n.js"></script>
   <script>
+
     // TRANSLATION
     //Create an object of objects filled with all the translations
     var translatableLanguages = {
       "en": en_translation,
       "uwu": uwu_translation
     }
-
-    
-    var switchTranslation = function(langName){
-      if(arrActiveLangs.includes(langName)){
-        translation = translatableLanguages[langName]
-        translate(translation);
-        console.log(translation)
-
-        //analytics changes
-        // Apply translations to the transparency report
-        STATS = {
-            // Stat key   // Description of the stat, it's data, and it's purpose
-            hit:          translation.hit,
-            time_to_sync: translation.time_to_sync,
-            transaction:  translation.transaction
-        }
-        transparencyReport = translation.transparencyReport
-        arrAnalytics = [
-            // Statistic level  // Allowed statistics
-            { name: "Disabled", stats: [] },
-            { name: "Minimal",  stats: [STATS.hit, STATS.time_to_sync] },
-            { name: "Balanced", stats: [STATS.hit, STATS.time_to_sync, STATS.transaction] }
-        ]
-        let SettingAnalytics = localStorage.getItem('analytics');
-        setAnalytics(cAnalyticsLevel = arrAnalytics.find(a => a.name === SettingAnalytics) || cAnalyticsLevel, true);
-
-        //Updating the rest of the settings page
-
+    localTranslation = localStorage.getItem('translation')
+    //Check if set in local storage
+    if(localTranslation){
+      translation = translatableLanguages[localTranslation]
+    }else{
+      //Check what is the browsers default lang
+      if (arrActiveLangs.includes(strLang)) {
+        translation = translatableLanguages[strLang]
       }else{
-        console.log("That language does not exist")
+        //Defaults to en if the lang doesn't exist yet
+        console.log("Your language is not supported yet, if you would like to help visit the github or discord")
+        translation = en_translation
       }
     }
-
-    //Check what is the browsers default lang
-    if (arrActiveLangs.includes(strLang)) {
-      translation = translatableLanguages[strLang]
-    }else{
-      //Defaults to en if the lang doesn't exist yet
-      console.log("Your language is not supported yet, if you would like to help visit the github or discord")
-      translation = en_translation
-    }
-
     translate(translation);
 
     // WALLET STATE DATA

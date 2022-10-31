@@ -1,6 +1,24 @@
-var en_translation = {
+var translation = {
     //This document is to be used as a template as all the base code is in English
     //Basic HTML tags are allowed such as <b><i> etc. All data is sanitized https://developer.mozilla.org/en-US/docs/Web/API/Element/innerHTML
+
+    //When updating the template you must also update the en version. If you don't and a new language with a new setting is used, it 
+    //  will NOT translate back after switching back to en
+
+    //How to create a new language:
+    //  1) Create a new folder in locale and copy the template, add the locale prefix (en, uwu, etc) to the start of the variable
+    //          (var translation -> var en_translation) then edit the template with your new languages words.
+    //  2) Go into the index.html and find arrActiveLangs and add the prefix to that array. ['en'] -> ['en', 'uwu']
+    //  3) Go into the index.html page and find translatableLanguages add your prefix and variable name
+    //              var translatableLanguages = {
+    //                  "en": en_translation
+    //              }
+    //        Turns into:
+    //              var translatableLanguages = {
+    //                  "en": en_translation,
+    //                  "uwu": uwu_translation
+    //              }
+    //  4) Submit a push request to the github
 
     //General words
     enabled: "",                    //enabled
