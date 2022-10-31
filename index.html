@@ -1372,7 +1372,7 @@
       cCoinControl.nChange = nTotalSatsRequired - cCoinControl.nValue;
       return ccSuccess(cCoinControl);
     }
-
+  
     async function createTxGUI() {
       if (!hasWalletUnlocked(true)) return;
       
@@ -1440,82 +1440,25 @@
 	  arrInputs.push([await cHardwareWallet.splitTransaction(cInputFull.hex), cInput.outpoint.index]);
 	  arrAssociatedKeysets.push(cInput.path);
 	}
+	const cLedgerTx = await cHardwareWallet.splitTransaction(cTx.serialize());
+        const strOutputScriptHex = await cHardwareWallet
+	  .serializeTransactionOutputs(cLedgerTx)
+	  .toString("hex");
 	
-	// Sanity check the address
-	const address = domAddress1s.value.trim();
-	// If Staking address: redirect to staking page
-	if (address.startsWith(cChainParams.current.STAKING_PREFIX)) {
-	  createAlert('warning', 'Here, use the <b>Stake</b> screen, not the Send screen!', 7500);
-	  return domStakeTab.click();
-	}
+	// Sign the transaction via Ledger
+	createAlert("info", "<b>Confirm your transaction</b><br>Confirm the TX on your " + strHardwareName + "!", 7500);
+	const strSerialisedTx = await cHardwareWallet.createPaymentTransactionNew({
+	  inputs: arrInputs,
+	  associatedKeysets: arrAssociatedKeysets,
+	  outputScriptHex: strOutputScriptHex,
+	});
 	
-	if (address.length !== 34) return createAlert('warning', '<b>Invalid PIVX address!<b><br>Bad length (' + address.length + ')', 2500);
-	if (!address.startsWith(cChainParams.current.PUBKEY_PREFIX)) return createAlert('warning', '<b>Invalid PIVX address!<b><br>Bad prefix ' + address[0] + ' (Should start with ' + cChainParams.current.PUBKEY_PREFIX + ')', 3500);
-	
-	// Sanity check the amount
-	let nValue = Math.round(Number(domValue1s.value.trim()) * COIN);
-	if (!validateAmount(nValue, 0.01 * COIN)) return;
-	
-	// Construct a TX and fetch Standard inputs
-	const nBalance = getBalance();
-	const cTx = bitjs.transaction();
-	const cCoinControl = chooseUTXOs(cTx, nValue, 0, false);
-	if (!cCoinControl.success) return alert(cCoinControl.msg);
-	
-	// Compute fee
-	const nFee = getFee(cTx.serialize().length);
-	
-	// Compute change (or lack thereof)
-	const nChange = cCoinControl.nValue - (nFee + nValue);
-	if (nChange > 0) {
-	  // Change output
-	  cTx.addoutput(await getNewAddress(), nChange / COIN);
-	} else {
-	  // We're sending alot! So we deduct the fee from the send amount. There's not enough change to pay it with!
-	  nValue -= nFee;
-	}
-	
-	// Primary output (receiver)
-	cTx.addoutput(address, nValue / COIN);
-	
-	// Debug-only verbose response
-	if (debug) domHumanReadable.innerHTML = "Balance: " + (nBalance / COIN) + "<br>Fee: " + (nFee / COIN) + "<br>To: " + address + "<br>Sent: " + (nValue / COIN) + (nChange > 0 ? "<br>Change Address: " + publicKeyForNetwork + "<br>Change: " + (nChange / COIN) : "");
-	
-	// Sign and broadcast!
-	if (!masterKey.isHardwareWallet) {
-	  const sign = await cTx.sign(masterKey, 1);
-	  console.log(sign)
-	  sendTransaction(sign);
-	} else {
-	  // Format the inputs how the Ledger SDK prefers
-	  const arrInputs = [];
-	  const arrAssociatedKeysets = [];
-	  const strDerivPath = getDerivationPath(true, 0, 0, 0);
-	  for (const cInput of cTx.inputs) {
-	    const cInputFull = await getTxInfo(cInput.outpoint.hash);
-      arrInputs.push([await cHardwareWallet.splitTransaction(cInputFull.hex), cInput.outpoint.index]);
-	    arrAssociatedKeysets.push(strDerivPath);
-            // Construct the Ledger transaction
-            const cLedgerTx = await cHardwareWallet.splitTransaction(cTx.serialize());
-            const strOutputScriptHex = await cHardwareWallet
-		  .serializeTransactionOutputs(cLedgerTx)
-		  .toString("hex");
-	    
-	    // Sign the transaction via Ledger
-	    createAlert("info", "<b>Confirm your transaction</b><br>Confirm the TX on your " + strHardwareName + "!", 7500);
-	    const strSerialisedTx = await cHardwareWallet.createPaymentTransactionNew({
-	      inputs: arrInputs,
-	      associatedKeysets: arrAssociatedKeysets,
-	      outputScriptHex: strOutputScriptHex,
-	    });
-	    
-	    // Broadcast the Hardware (Ledger) TX
-	    sendTransaction(strSerialisedTx);
-	  }
-      domGenIt.innerHTML = "Continue";
-	}
+	// Broadcast the Hardware (Ledger) TX
+	sendTransaction(strSerialisedTx);
       }
+      domGenIt.innerHTML = "Continue";
     }
+
     
     function insert(arr, index, newItem) {
       // part of the array before the specified index
