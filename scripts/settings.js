@@ -92,7 +92,7 @@ function toggleTestnet() {
     domTestnet.innerHTML = (cChainParams.current.isTestnet ? '<b>Testnet Mode On</b>' : '');
     domGuiBalanceTicker.innerText        = cChainParams.current.TICKER;
     domGuiBalanceStakingTicker.innerText = cChainParams.current.TICKER;
-    domPrefixNetwork.innerText = cChainParams.current.PUBKEY_PREFIX;
+    domPrefixNetwork.innerText = cChainParams.current.PUBKEY_PREFIX.join(' or ');
     fillExplorerSelect();
     getBalance(true);
     getStakingBalance(true);

@@ -58,7 +58,7 @@
           main: {
               isTestnet         : false,
               TICKER            : "PIV",
-              PUBKEY_PREFIX     : "D",
+              PUBKEY_PREFIX     : ["D"],
               STAKING_PREFIX    : "S",
               PUBKEY_ADDRESS    : 30,
               SECRET_KEY        : 212,
@@ -74,7 +74,7 @@
           testnet: {
               isTestnet         : true,
               TICKER            : "tPIV",
-              PUBKEY_PREFIX     : "y",  //FIXME: x is also valid
+              PUBKEY_PREFIX     : ["x","y"],
               STAKING_PREFIX    : "W",
               PUBKEY_ADDRESS    : 139,
               SECRET_KEY        : 239,
@@ -463,8 +463,6 @@
                     <h3 class="pivx-bold-title" style="font-size:38px;"><span>Access your</span>Hardware Wallet</h3>
                     <p>This will help managing the PIVX wallet on your ledger. Notice that the private key will remain safe in your hardware device</p>
                   </div>
-
-                  <input style="display:none;" type="text" placeholder="Address Prefix" onkeyup="checkVanity()">
 
                   <button class="pivx-button-big" onclick="importWallet({isHardwareWallet: true})">
                     <span class="buttoni-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 70">
@@ -1410,7 +1408,7 @@
 	return domStakeTab.click();
       }
       if (address.length !== 34) return createAlert('warning', '<b>Invalid PIVX address!<b><br>Bad length (' + address.length + ')', 2500);
-      if (!address.startsWith(cChainParams.current.PUBKEY_PREFIX)) return createAlert('warning', '<b>Invalid PIVX address!<b><br>Bad prefix ' + address[0] + ' (Should start with ' + cChainParams.current.PUBKEY_PREFIX + ')', 3500);
+      if (!cChainParams.current.PUBKEY_PREFIX.includes(address[0])) return createAlert('warning', '<b>Invalid PIVX address!<b><br>Bad prefix ' + address[0] + ' (Should start with ' + cChainParams.current.PUBKEY_PREFIX.join(' or ') + ')', 3500);
       if (!bitjs.isValidDestination(address,cChainParams.current.PUBKEY_ADDRESS)) return createAlert('warning', '<b>Invalid PIVX address!<b><br>' + address, 3500);
       
       // Sanity check the amount
@@ -1643,7 +1641,7 @@
 
     setInterval(refreshChainData, 15000);
     domPrefix.value = ""
-    domPrefixNetwork.innerText = cChainParams.current.PUBKEY_PREFIX;
+    domPrefixNetwork.innerText = cChainParams.current.PUBKEY_PREFIX.join(' or ');
   </script>
 
 </body>
