@@ -109,6 +109,27 @@ function createAlert(type, message, timeout = 0) {
     domAlertPos.appendChild(domAlert);
 }
 
+// Shows the confirm modal with the provided html.
+// If resolvePromise has a value, the popup won't have
+// Confirm/Cancel buttons and will wait for the promise to resolve
+// Returns the awaited value of resolvePromise
+// or true/false if the user confirmed or not the modal
+async function confirmPopup({ html, resolvePromise }) {
+    domConfirmModalButtons.style.setProperty("display", resolvePromise ? "none" : "block", resolvePromise ? "important" : undefined);
+    $("#confirmModal").modal(resolvePromise ? "show" : { keyboard: false });
+    domConfirmModalContent.innerHTML = html;
+    resolvePromise = resolvePromise || new Promise((res, _) => {
+        domConfirmModalConfirmButton.onclick = () => { res(true); }
+        domConfirmModalCancelButton.onclick = () => { res(false); }
+    });
+    try {
+        const result = await resolvePromise;
+        return result;
+    } finally { // We want to hide the modal even if an exception occours
+        $("#confirmModal").modal("hide");
+    }
+}
+
 // Generates and sets a QRCode image from a string and dom element
 function createQR(strData = '', domImg,size=4) {
     // QRCode class consists of 'typeNumber' & 'errorCorrectionLevel'

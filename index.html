@@ -1041,39 +1041,16 @@
     }
 
     function createAddressConfirmation(address) {
-      return `Please confirm that this is the address that you see on your ledger.
-      <div class="seed-phrase">${address}</div>`;
+      return `Please confirm this is the address you see on your ${strHardwareName}.
+              <div class="seed-phrase">${address}</div>`;
     }
 
     function createTxConfirmation(outputs) {
-      let strHtml = "Confirm that this transaction matches the one in your ledger.";
-      for(const output of outputs) {
-	strHtml += `<br> <br> You will send <b>${output[1].toFixed(2)} ${cChainParams.current.TICKER}</b> to <div class="inline-address">${output[0]}</div>`
+      let strHtml = "Confirm this transaction matches the one on your " + strHardwareName +  ".";
+      for (const output of outputs) {
+        strHtml += `<br> <br> You will send <b>${output[1].toFixed(2)} ${cChainParams.current.TICKER}</b> to <div class="inline-address">${output[0]}</div>`
       }
       return strHtml;
-    }
-
-    // Shows the confirm modal with the provided html.
-    // If resolvePromise has a value, the popup won't have
-    // Confirm/Cancel buttons and will wait for the promise to resolve
-    // Returns the awaited value of resolvePromise
-    // or true/false if the user confirmed or not the modal
-    async function confirmPopup({html, resolvePromise}) {
-      domConfirmModalButtons
-	.style.setProperty("display", resolvePromise ? "none" : "block", resolvePromise ? "important" : undefined);
-      $("#confirmModal").modal(resolvePromise ? "show" : {keyboard: false});
-      domConfirmModalContent.innerHTML = html;
-      resolvePromise = resolvePromise || new Promise(
-	(res, _) => {
-	  domConfirmModalConfirmButton.onclick = () => { res(true); }
-	  domConfirmModalCancelButton.onclick = () => { res(false); }
-      });
-      try {
-	const result = await resolvePromise;
-	return result;
-      } finally { // We want to hide the modal even if an exception occours
-	$("#confirmModal").modal("hide");
-      }
     }
 
     async function toggleExportUI() {
@@ -1096,14 +1073,15 @@
       const path = getDerivationPath(masterKey.isHardwareWallet, 0, 0, addressIndex);
       // Use Xpub?
       const address = await masterKey.getAddress(path);
-      if(verify && masterKey.isHardwareWallet) {
-	// Generate address to present to the user without asking to verify
-	const conf_address = await confirmPopup({
-	  html: createAddressConfirmation(address),
-	  resolvePromise: masterKey.getAddress(path, { verify })});
-	if(address !== conf_address) {
-	  throw new Error("User did not verify address");
-	}
+      if (verify && masterKey.isHardwareWallet) {
+        // Generate address to present to the user without asking to verify
+        const conf_address = await confirmPopup({
+          html: createAddressConfirmation(address),
+          resolvePromise: masterKey.getAddress(path, { verify })
+        });
+        if (address !== conf_address) {
+          throw new Error("User did not verify address");
+        }
       }
 
       if (updateGUI) {
@@ -1501,8 +1479,8 @@
         // Change output
         outputs.push([changeAddress, nChange / COIN]);
       } else {
-	// We're sending alot! So we deduct the fee from the send amount. There's not enough change to pay it with!
-	nValue -= nFee;
+        // We're sending alot! So we deduct the fee from the send amount. There's not enough change to pay it with!
+        nValue -= nFee;
       }
       
       // Primary output (receiver)
@@ -1511,41 +1489,44 @@
       // Debug-only verbose response
       if (debug) domHumanReadable.innerHTML = "Balance: " + (nBalance / COIN) + "<br>Fee: " + (nFee / COIN) + "<br>To: " + address + "<br>Sent: " + (nValue / COIN) + (nChange > 0 ? "<br>Change Address: " + changeAddress + "<br>Change: " + (nChange / COIN) : "");
 
-      for(const output of outputs) {
-	cTx.addoutput(output[0], output[1]);
+      // Add outputs to the Tx
+      for (const output of outputs) {
+        cTx.addoutput(output[0], output[1]);
       }
+
       // Sign and broadcast!
       if (!masterKey.isHardwareWallet) {
-	const sign = await cTx.sign(masterKey, 1);
-	sendTransaction(sign);
+        const sign = await cTx.sign(masterKey, 1);
+        sendTransaction(sign);
       } else {
-	// Format the inputs how the Ledger SDK prefers
-	const arrInputs = [];
-	const arrAssociatedKeysets = [];
-	for (const cInput of cTx.inputs) {
-	  const cInputFull = await getTxInfo(cInput.outpoint.hash);
-	  arrInputs.push([await cHardwareWallet.splitTransaction(cInputFull.hex), cInput.outpoint.index]);
-	  arrAssociatedKeysets.push(cInput.path);
-	}
-	const cLedgerTx = await cHardwareWallet.splitTransaction(cTx.serialize());
-        const strOutputScriptHex = await cHardwareWallet
-	  .serializeTransactionOutputs(cLedgerTx)
-	  .toString("hex");
-	
-	// Sign the transaction via Ledger
-	createAlert("info", "<b>Confirm your transaction</b><br>Confirm the TX on your " + strHardwareName + "!", 7500);
-	const strSerialisedTx = await confirmPopup(
-	  {
-	    html: createTxConfirmation(outputs),
-	    resolvePromise: cHardwareWallet.createPaymentTransactionNew({
-	      inputs: arrInputs,
-	      associatedKeysets: arrAssociatedKeysets,
-	      outputScriptHex: strOutputScriptHex,
-	    }),
-	});
-	
-	// Broadcast the Hardware (Ledger) TX
-	sendTransaction(strSerialisedTx);
+        // Format the inputs how the Ledger SDK prefers
+        const arrInputs = [];
+        const arrAssociatedKeysets = [];
+        for (const cInput of cTx.inputs) {
+          const cInputFull = await getTxInfo(cInput.outpoint.hash);
+          arrInputs.push([await cHardwareWallet.splitTransaction(cInputFull.hex), cInput.outpoint.index]);
+          arrAssociatedKeysets.push(cInput.path);
+        }
+        const cLedgerTx = await cHardwareWallet.splitTransaction(cTx.serialize());
+              const strOutputScriptHex = await cHardwareWallet
+          .serializeTransactionOutputs(cLedgerTx)
+          .toString("hex");
+
+        // Sign the transaction via Ledger
+        createAlert("info", "<b>Confirm your transaction</b><br>Confirm the TX on your " + strHardwareName + "!", 7500);
+        const strSerialisedTx = await confirmPopup(
+          {
+            html: createTxConfirmation(outputs),
+            resolvePromise: cHardwareWallet.createPaymentTransactionNew({
+              inputs: arrInputs,
+              associatedKeysets: arrAssociatedKeysets,
+              outputScriptHex: strOutputScriptHex,
+            }),
+          }
+        );
+
+        // Broadcast the Hardware (Ledger) TX
+        sendTransaction(strSerialisedTx);
       }
       domGenIt.innerHTML = "Continue";
     }
