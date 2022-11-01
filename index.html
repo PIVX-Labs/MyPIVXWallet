@@ -1339,7 +1339,7 @@
 
     function chooseUTXOs(cTx, nTotalSatsRequired = 0, nMinInputSize = 0, fColdOnly = false) {
       console.log("Constructing TX of value: " + (nTotalSatsRequired / COIN) + " " + cChainParams.current.TICKER);
-  
+
       // Select the UTXO type bucket
       const arrUTXOs = fColdOnly ? arrDelegatedUTXOs : cachedUTXOs;
 
@@ -1347,7 +1347,7 @@
       const cCoinControl = { nValue: 0, nChange: 0, arrSelectedUTXOs: [] }
       for (const cUTXO of arrUTXOs) {
         // Have we met the required sats threshold?
-        if (cCoinControl.nValue >= nTotalSatsRequired) {
+        if (cCoinControl.nValue >= nTotalSatsRequired + getFee(cTx.serialize().length)) {
           // Required Coin Control value met, yahoo!
           console.log("Coin Control: TX Constructed! Selected " + cCoinControl.arrSelectedUTXOs.length + " input(s) (" + (cCoinControl.nValue / COIN) + " " + cChainParams.current.TICKER + ")");
           break;
@@ -1360,13 +1360,8 @@
         cCoinControl.arrSelectedUTXOs.push(cUTXO);
         cCoinControl.nValue += cUTXO.sats;
         console.log("Coin Control: Selected input " + cUTXO.id.substr(0, 6) + "(" + cUTXO.vout + ")... (Added " + (cUTXO.sats / COIN) + " " + cChainParams.current.TICKER + " - Total: " + (cCoinControl.nValue / COIN) + ")");
-      }
 
-      // if we don't have enough value: leave the cTx alone and return false
-      if (cCoinControl.nValue < nTotalSatsRequired) return ccError("Balance is too small! (Missing " + (cCoinControl.nValue - nTotalSatsRequired).toLocaleString('en-gb') + " sats)");
-
-      // Reaching here: we have sufficient UTXOs, stuff them into the TX, calc final misc data and return!
-      for (const cUTXO of cCoinControl.arrSelectedUTXOs) {
+        // Stuff UTXO into the TX
         cTx.addinput({
           txid: cUTXO.id,
           index: cUTXO.vout,
@@ -1374,6 +1369,11 @@
           path: cUTXO.path
         });
       }
+
+      // if we don't have enough value: return false
+      if (cCoinControl.nValue < nTotalSatsRequired) return ccError("Balance is too small! (Missing " + (cCoinControl.nValue - nTotalSatsRequired).toLocaleString('en-gb') + " sats)");
+
+      // Reaching here: we have sufficient UTXOs, calc final misc data and return!
       cCoinControl.nChange = nTotalSatsRequired - cCoinControl.nValue;
       return ccSuccess(cCoinControl);
     }
