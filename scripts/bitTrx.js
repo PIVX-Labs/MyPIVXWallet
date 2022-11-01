@@ -426,6 +426,20 @@
 		return temp;
 	}
 
+	bitjs.isValidDestination = function (address, base58Prefix) {
+		const bytes = B58.decode(address);
+		if (bytes[0] != base58Prefix) {
+			return false;
+		}
+		const front = bytes.slice(0, bytes.length-4);
+		const back  = bytes.slice(bytes.length-4);
+		const checksum = Crypto.SHA256(Crypto.SHA256(front, {asBytes: true}), {asBytes: true}).slice(0, 4);
+		if (checksum + "" == back + "") {
+			return true;
+		}
+		return false;
+	}
+
 		var B58 = bitjs.Base58 = {
 		alphabet: "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz",
 		validRegex: /^[1-9A-HJ-NP-Za-km-z]+$/,

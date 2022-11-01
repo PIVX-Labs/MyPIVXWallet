@@ -1401,6 +1401,7 @@
       }
       if (address.length !== 34) return createAlert('warning', '<b>Invalid PIVX address!<b><br>Bad length (' + address.length + ')', 2500);
       if (!address.startsWith(cChainParams.current.PUBKEY_PREFIX)) return createAlert('warning', '<b>Invalid PIVX address!<b><br>Bad prefix ' + address[0] + ' (Should start with ' + cChainParams.current.PUBKEY_PREFIX + ')', 3500);
+      if (!bitjs.isValidDestination(address,cChainParams.current.PUBKEY_ADDRESS)) return createAlert('warning', '<b>Invalid PIVX address!<b><br>' + address, 3500);
       
       // Sanity check the amount
       let nValue = Math.round(Number(domValue1s.value.trim()) * COIN);
