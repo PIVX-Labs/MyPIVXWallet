@@ -205,15 +205,19 @@
       </div>
     <br>
       <!-- // CONFIRM MODAL -->
-    <div class="modal" id="confirmModal" tabindex="-1" role="dialog" aria-labelledby="qrModalLabel" aria-hidden="true" data-backdrop="static" data-keyboard="false">
-        <div class="modal-dialog" role="document" style="max-width: 600px">
+    <div class="modal" id="confirmModal" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered" role="document" style="max-width: 600px">
           <div class="modal-content">
-            <div id="confirmModalContent" class="modal-body center-text">
+            <div class="modal-header" id="confirmModalHeader">
+              <h3 class="modal-title" id="confirmModalTitle" style="text-align: center;width: 100%;color: #8e21ff;">Insert cool popup title</h3>
             </div>
-	    <div class="modal-footer" hidden="true" id="confirmModalButtons"">
-		<button type="button" id="confirmModalConfirmButton" class="pivx-button-big">Confirm</button>
-		<button type="button" id="confirmModalCancelButton" class="pivx-button-big">Cancel</button>
-	    </div>
+            <div id="confirmModalContent" class="modal-body center-text">
+              <!-- JS populated modal content -->
+            </div>
+            <div class="modal-footer" hidden="true" id="confirmModalButtons">
+              <button type="button" id="confirmModalConfirmButton" class="pivx-button-big" style="float: right">Confirm</button>
+              <button type="button" id="confirmModalCancelButton" class="pivx-button-big" style="float: right; opacity: 0.7;">Cancel</button>
+            </div>
           </div>
         </div>
       </div>
@@ -817,6 +821,8 @@
     const domExportKey = document.getElementById("exportKeyText");
     const domExportWallet = document.getElementById("guiExportWallet");
     const domNewAddress = document.getElementById("guiNewAddress");
+    const domConfirmModalHeader = document.getElementById("confirmModalHeader");
+    const domConfirmModalTitle = document.getElementById("confirmModalTitle");
     const domConfirmModalContent = document.getElementById("confirmModalContent");
     const domConfirmModalButtons = document.getElementById("confirmModalButtons");
     const domConfirmModalConfirmButton = document.getElementById("confirmModalConfirmButton");
@@ -1076,6 +1082,7 @@
       if (verify && masterKey.isHardwareWallet) {
         // Generate address to present to the user without asking to verify
         const conf_address = await confirmPopup({
+          title: "Verify your address",
           html: createAddressConfirmation(address),
           resolvePromise: masterKey.getAddress(path, { verify })
         });
@@ -1513,9 +1520,9 @@
           .toString("hex");
 
         // Sign the transaction via Ledger
-        createAlert("info", "<b>Confirm your transaction</b><br>Confirm the TX on your " + strHardwareName + "!", 7500);
         const strSerialisedTx = await confirmPopup(
           {
+            title: "Confirm your transaction",
             html: createTxConfirmation(outputs),
             resolvePromise: cHardwareWallet.createPaymentTransactionNew({
               inputs: arrInputs,

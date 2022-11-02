@@ -114,18 +114,26 @@ function createAlert(type, message, timeout = 0) {
 // Confirm/Cancel buttons and will wait for the promise to resolve
 // Returns the awaited value of resolvePromise
 // or true/false if the user confirmed or not the modal
-async function confirmPopup({ html, resolvePromise }) {
+async function confirmPopup({ title, html, resolvePromise }) {
+    // If there's a title provided: display the header and text
+    domConfirmModalHeader.style.display = title ? "block" : "none";
+    domConfirmModalTitle.innerHTML = title || "";
+
+    // If there's a promise to resolve, don't display buttons; the modal visibility will be controlled by the promise (f.e: a 'pls wait' screen)
     domConfirmModalButtons.style.setProperty("display", resolvePromise ? "none" : "block", resolvePromise ? "important" : undefined);
     $("#confirmModal").modal(resolvePromise ? "show" : { keyboard: false });
+
+    // Set content display
     domConfirmModalContent.innerHTML = html;
+
+    // Wait for the promise to resolve OR create a new one which resolves upon a modal button click
     resolvePromise = resolvePromise || new Promise((res, _) => {
         domConfirmModalConfirmButton.onclick = () => { res(true); }
         domConfirmModalCancelButton.onclick = () => { res(false); }
     });
     try {
-        const result = await resolvePromise;
-        return result;
-    } finally { // We want to hide the modal even if an exception occours
+        return await resolvePromise;
+    } finally { // We want to hide the modal even if an exception occurs
         $("#confirmModal").modal("hide");
     }
 }
