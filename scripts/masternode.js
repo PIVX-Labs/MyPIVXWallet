@@ -1,11 +1,11 @@
 class Masternode {
-    constructor({walletPrivateKey, mnPrivateKey, collateralTxId, outidx, ip, port} = {}) {
+    static protocolVersion = 70926;
+    constructor({walletPrivateKey, mnPrivateKey, collateralTxId, outidx, addr} = {}) {
 	this.walletPrivateKey = walletPrivateKey;
 	this.mnPrivateKey = mnPrivateKey;
 	this.collateralTxId = collateralTxId;
 	this.outidx = outidx;
-	this.ip = ip;
-	this.port = port;
+	this.addr = addr;
     }
 
     async getMasternodeStatus() {
@@ -40,14 +40,15 @@ class Masternode {
     }
 
     // Get message to be signed with mn private key.
-    static async getPingSignature(msg) {
+    static getPingSignature(msg) {
+	console.log(msg);
 	const ping = [
 	    ...Crypto.util.hexToBytes(msg.vin.txid).reverse(),
 	    ...Masternode.numToBytes(msg.vin.idx, 4, true),
 	    ...[0, 255, 255, 255, 255],
-	    ...Crypto.util.hexToBytes(msg.blockhash).reverse(),
-	    ...Masternode.numToBytes(msg.sigtime, 4, true),
-	    ...[0,0,0,0]
+	    ...Crypto.util.hexToBytes(msg.blockHash).reverse(),
+	    ...Masternode.numToBytes(msg.sigTime, 4, true),
+	    ...[0,0,0,0],
 	];
 	const hash = new jsSHA(0, 0, {numRounds: 2});
 	hash.update(ping);
@@ -59,10 +60,8 @@ class Masternode {
     // Then hashed two times with SHA256
     static getToSign(msg) {
 	const [ ip, port ] = msg.addr.split(":");
-	const pk = "cQcvZYKoosUYNJMAcv8Gst2jghW2byQcMMV5opr7xNKoD5p1Tz8N";
-	const publicKey = Crypto.util.hexToBytes(bitjs.wif2pubkey(pk).pubkey);
-	const mnPk = "939nxGhAaqFx2eWqdufZwSWLuAt34mS4CpGV2ZriPw85cQPkkyW";
-	const mnPublicKey = Crypto.util.hexToBytes(bitjs.wif2pubkey(mnPk).pubkey);
+	const publicKey = Crypto.util.hexToBytes(bitjs.wif2pubkey(msg.walletPrivateKey).pubkey);
+	const mnPublicKey = Crypto.util.hexToBytes(bitjs.wif2pubkey(msg.mnPrivateKey).pubkey);
 
 	const pkt = [
 	    ...Masternode.numToBytes(1, 4, true), // Message version
@@ -73,12 +72,51 @@ class Masternode {
 	    ...publicKey,
 	    ...Masternode.numToBytes(mnPublicKey.length, 1, true), // Masternode public key length
 	    ...mnPublicKey,
-	    ...Masternode.numToBytes(70926, 4, true), // Protocol version
+	    ...Masternode.numToBytes(Masternode.protocolVersion, 4, true), // Protocol version
 	];
 	const hash = new jsSHA(0, 0, {numRounds: 2});
 	hash.update(pkt);
 	// It's important to note that the thing to be signed is the hex representation of the hash, not the bytes
 	return Crypto.util.bytesToHex(hash.getHash(0).reverse());
+    }
+
+    static async getLastBlockHash() {
+	const status = await (await fetch(`${cExplorer.url}/api/`)).json();
+	return status.backend.bestBlockHash;
+    }
+
+    async getSignedMessage(sigTime) {
+	const padding = "\x18DarkNet Signed Message:\n"
+	      .split("").map(c=>c.charCodeAt(0));
+	const toSign = Masternode.getToSign({
+	    addr: this.addr,
+	    walletPrivateKey: this.walletPrivateKey,
+	    mnPrivateKey: this.mnPrivateKey,
+	    sigTime,
+	}).split("").map(c=>c.charCodeAt(0));
+	const hash = new jsSHA(0, 0, { numRounds: 2 });
+	hash.update(padding
+		    .concat(toSign.length)
+		    .concat(toSign));
+	const { r, s, v } = bitjs.signRaw([...hash.getHash(0)], this.walletPrivateKey);
+	return [
+	    v+4, ...r.toByteArrayUnsigned(), ...s.toByteArrayUnsigned()
+	];
+    }
+
+    getSignedPingMessage(sigTime, blockHash) {
+	const toSign = Masternode.getPingSignature({
+	    vin: {
+		txid: this.collateralTxId,
+		idx: this.outidx,
+	    },
+	    blockHash,
+	    sigTime,
+	});
+	const { r, s, v } = bitjs.signRaw([...toSign], this.mnPrivateKey);
+	return [
+	    v, ...r.toByteArrayUnsigned(), ...s.toByteArrayUnsigned()
+	];
     }
 
 
@@ -108,42 +146,42 @@ class Masternode {
     // It needs to have two signatures: `getPingSignature()` which is signed
     // With the masternode private key, and `getToSign()` which is signed with
     // The collateral private key
-    broadcastMessageToHex(msg) {
-	const [ ip, port ] = msg.addr.split(":");
-	const pk = "cQcvZYKoosUYNJMAcv8Gst2jghW2byQcMMV5opr7xNKoD5p1Tz8N";
-	const publicKey = Crypto.util.hexToBytes(bitjs.wif2pubkey(pk).pubkey);
-	const mnPk = "939nxGhAaqFx2eWqdufZwSWLuAt34mS4CpGV2ZriPw85cQPkkyW";
-	const mnPublicKey = Crypto.util.hexToBytes(bitjs.wif2pubkey(mnPk).pubkey);
-	const sig_bytes = base64_to_buf(msg.vchsig);
-	const sigping_bytes = base64_to_buf(msg.vchsigPing);
-	console.log(port);
-	console.log(Masternode.decodeIpAddress(ip, port));
-	return[
-	    ...Crypto.util.hexToBytes(msg.vin.txid).reverse(),
-	    ...Masternode.numToBytes(msg.vin.idx, 4, true),
+    async broadcastMessageToHex() {
+	const sigTime = Math.round(Date.now() / 1000);
+	const blockHash = await Masternode.getLastBlockHash();
+	const [ ip, port ] = this.addr.split(':');
+	const walletPublicKey = Crypto.util.hexToBytes(bitjs.wif2pubkey(this.walletPrivateKey).pubkey);
+	const mnPublicKey = Crypto.util.hexToBytes(bitjs.wif2pubkey(this.mnPrivateKey).pubkey);
+	const sigBytes = await this.getSignedMessage(sigTime);
+	const sigPingBytes = await this.getSignedPingMessage(sigTime, blockHash);
+
+	const message = [
+	    ...Crypto.util.hexToBytes(this.collateralTxId).reverse(),
+	    ...Masternode.numToBytes(this.outidx, 4, true),
 	    ...Masternode.numToBytes(0, 1, true),
 	    ...Masternode.numToBytes(0xffffffff, 4, true),
 	    ...Crypto.util.hexToBytes(Masternode.decodeIpAddress(ip, port)),
-	    ...Masternode.numToBytes(publicKey.length, 1, true),
-	    ...publicKey,
+	    ...Masternode.numToBytes(walletPublicKey.length, 1, true),
+	    ...walletPublicKey,
 	    ...Masternode.numToBytes(mnPublicKey.length, 1, true),
 	    ...mnPublicKey,
-	    ...Masternode.numToBytes(sig_bytes.length, 1, true),
-	    ...sig_bytes,
-	    ...Masternode.numToBytes(msg.sigtime, 4, true),
+	    ...Masternode.numToBytes(sigBytes.length, 1, true),
+	    ...sigBytes,
+	    ...Masternode.numToBytes(sigTime, 4, true),
 	    ...Masternode.numToBytes(0, 4, true),
-	    ...Masternode.numToBytes(70926, 4, true),
-	    ...Crypto.util.hexToBytes(msg.vin.txid).reverse(),
-	    ...Masternode.numToBytes(msg.vin.idx, 4, true),
+	    ...Masternode.numToBytes(Masternode.protocolVersion, 4, true),
+	    ...Crypto.util.hexToBytes(this.collateralTxId).reverse(),
+	    ...Masternode.numToBytes(this.outidx, 4, true),
 	    ...Masternode.numToBytes(0, 1, true),
 	    ...Masternode.numToBytes(0xffffffff, 4, true),
-	    ...Crypto.util.hexToBytes(msg.blockhash).reverse(),
-	    ...Masternode.numToBytes(msg.sigtime, 4, true),
+	    ...Crypto.util.hexToBytes(blockHash).reverse(),
+	    ...Masternode.numToBytes(sigTime, 4, true),
 	    ...Masternode.numToBytes(0, 4, true),
-	    ...Masternode.numToBytes(sigping_bytes.length, 1, true),
-	    ...sigping_bytes,
+	    ...Masternode.numToBytes(sigPingBytes.length, 1, true),
+	    ...sigPingBytes,
 	    ...Masternode.numToBytes(1, 4, true),
 	    ...Masternode.numToBytes(1, 4, true),
 	];
+	return Crypto.util.bytesToHex(message);
     }
 }
