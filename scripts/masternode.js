@@ -69,7 +69,7 @@ class Masternode {
 	const pkt = [
 	    ...Masternode.numToBytes(1, 4, true),
 	    ...Crypto.util.hexToBytes(Masternode.decodeIpAddress(ip, port)),
-	    ...Masternode.numToBytes(msg.sigtime, 4, true),
+	    ...Masternode.numToBytes(msg.sigTime, 4, true),
 	    ...[0,0,0,0],
 	    ...Masternode.numToBytes(publicKey.length, 1, true),
 	    ...publicKey,
@@ -79,7 +79,7 @@ class Masternode {
 	];
 	const hash = new jsSHA(0, 0, {numRounds: 2});
 	hash.update(pkt);
-	return hash.getHash(0);
+	return Crypto.util.bytesToHex(hash.getHash(0).reverse());
     }
 
     async getStartMessage() {
