@@ -41,7 +41,6 @@ class Masternode {
 
     // Get message to be signed with mn private key.
     static getPingSignature(msg) {
-	console.log(msg);
 	const ping = [
 	    ...Crypto.util.hexToBytes(msg.vin.txid).reverse(),
 	    ...Masternode.numToBytes(msg.vin.idx, 4, true),
@@ -119,29 +118,6 @@ class Masternode {
 	];
     }
 
-
-    /*
-      {
-      "vin": "COutPoint(84f9c4c5e5, 1)",
-      "addr": "194.195.87.248:51474",
-      "pubkeycollateral": "y7SDy2Kz1uNXUNvd7Qv46AUwRDygLXFTUS",
-      "pubkeymasternode": "y2yFoc5h3cELCRd9utBdPA76fTTafgHxrE",
-      "vchsig": "H1DsyMVNzSFdR4w1ohi4B70+Pz8PhWKSA5gkeIIavyfDTUq5m8u3lSCbGdzvGx4nwvCJvm9tGQLe00Fjdvf4Fz8=",
-      "sigtime": 1667745528,
-      "sigvalid": "true",
-      "protocolversion": 70926,
-      "nMessVersion": 1,
-      "lastping": {
-          "vin": "COutPoint(84f9c4c5e5, 1)",
-	  "blockhash": "58a26d334bf6f79a45d79285f869979edd6bc9ae7cd27455f4a52304a81399fe",
-	  "sigtime": 1667745528,
-	  "sigvalid": "true",
-	  "vchsig": "HGU1myelMvqp+CSbJ/6zrGeqNN451McXF+JqrWCg9Hu6QjUSSNzmdGjY4By18VT22rtv1nT/ll4QG/psC84n4hA=",
-	  "nMessVersion": 1
-	  }
-	  }
-    */
-
     // Get the message to start a masternode.
     // It needs to have two signatures: `getPingSignature()` which is signed
     // With the masternode private key, and `getToSign()` which is signed with
@@ -158,7 +134,7 @@ class Masternode {
 	const message = [
 	    ...Crypto.util.hexToBytes(this.collateralTxId).reverse(),
 	    ...Masternode.numToBytes(this.outidx, 4, true),
-	    ...Masternode.numToBytes(0, 1, true),
+	    ...Masternode.numToBytes(0, 1, true), // Message version
 	    ...Masternode.numToBytes(0xffffffff, 4, true),
 	    ...Crypto.util.hexToBytes(Masternode.decodeIpAddress(ip, port)),
 	    ...Masternode.numToBytes(walletPublicKey.length, 1, true),
@@ -167,8 +143,8 @@ class Masternode {
 	    ...mnPublicKey,
 	    ...Masternode.numToBytes(sigBytes.length, 1, true),
 	    ...sigBytes,
-	    ...Masternode.numToBytes(sigTime, 4, true),
-	    ...Masternode.numToBytes(0, 4, true),
+	    ...Masternode.numToBytes(sigTime, 4, true), // Sigtime, should be 8 bytes but the function doesn't work properly
+	    ...Masternode.numToBytes(0, 4, true), // still sigtime
 	    ...Masternode.numToBytes(Masternode.protocolVersion, 4, true),
 	    ...Crypto.util.hexToBytes(this.collateralTxId).reverse(),
 	    ...Masternode.numToBytes(this.outidx, 4, true),
