@@ -8,7 +8,7 @@ class Masternode {
 	this.addr = addr;
     }
 
-    async getMasternodeStatus() {
+    async getStatus() {
 	const url = `http://contabo-vps:8080/listmasternodes?params=${this.collateralTxId}`;
 	const masternodes = (await (await fetch(url)).json()).filter(m=>m.outidx === this.outidx);
 	if(masternodes.length > 0) {
