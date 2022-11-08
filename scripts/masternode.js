@@ -184,4 +184,11 @@ class Masternode {
 	];
 	return Crypto.util.bytesToHex(message);
     }
+
+    async start() {
+	const message = await this.broadcastMessageToHex();
+	const url = `http://contabo-vps:8080/relaymasternodebroadcast?params=${message}`;
+	const response = await (await fetch(url)).text();
+	return response.includes("Masternode broadcast sent");
+    }
 }
