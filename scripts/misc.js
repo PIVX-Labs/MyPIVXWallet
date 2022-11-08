@@ -7,6 +7,7 @@ const pubPrebaseLen = pubKeyHashNetworkLen + pubChksum;
 
 // Base58 Encoding Map
 const MAP_B58 = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+const LEN_B58= MAP_B58.length;
 
 /* --- UTILS --- */
 // Cryptographic Random-Gen
@@ -152,3 +153,66 @@ function createQR(strData = '', domImg,size=4) {
     domImg.innerHTML = cQR.createImgTag();
     domImg.firstChild.style.borderRadius = '8px';
 }
+
+
+//generate private key for masternodes
+async function generateMnPrivkey(isTestnet=false){
+    // maximum value for a decoded private key
+    let max_decoded_value=115792089237316195423570985008687907852837564279074904382605163141518161494337n;
+    let valid=false;
+    let priv_key=0;
+    while(!valid){
+        
+        priv_key=Crypto.util.bytesToHex(Crypto.util.randomBytes(32));
+        console.log(priv_key);
+        let decoded_priv_key = BigInt("0x"+priv_key); 
+        
+        if(0<decoded_priv_key && decoded_priv_key<max_decoded_value){
+            valid=true;
+        }
+    }
+    return await convertMnPrivKeyFromHex(priv_key,isTestnet);
+}
+
+async function convertMnPrivKeyFromHex(hexStr,isTestnet){
+    //prefixes
+    let WIF_PREFIX = 212;  
+    let TESTNET_WIF_PREFIX = 239; 
+    let base58_secret = isTestnet ? TESTNET_WIF_PREFIX : WIF_PREFIX;
+
+    //convert the hexStr+ initial prefix to byte array
+    let data=fromHexToByteArray(hexStr);
+    data.unshift(base58_secret); 
+ 
+    //generate the checksum with double sha256 hashing
+    let checksum= fromHexToByteArray((await hash(fromHexToByteArray( await hash(data))))).slice(0,4);
+
+    //concatenate data and checksum
+    let i=0;
+    for(i in checksum){
+        data.push(checksum[i])
+    }
+    
+    return to_b58(data);
+
+}
+//convert a hexstring to a byte array
+function fromHexToByteArray(hexStr){
+    let data=[];
+    for(var c = 0; c < hexStr.length; c += 2){
+        data.push(parseInt(hexStr.substr(c, 2), 16));
+    }
+    return data;
+}
+
+
+//sha256 a bytearray and return the hash in hexadecimal
+async function hash(byteArray) {
+    const utf8 = new Uint8Array(byteArray);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', utf8);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hashHex = hashArray
+      .map((bytes) => bytes.toString(16).padStart(2, '0'))
+      .join('');
+    return hashHex;
+  }
