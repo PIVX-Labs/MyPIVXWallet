@@ -9,7 +9,9 @@ class Masternode {
     }
 
     async getStatus() {
-	const url = `http://contabo-vps:8080/listmasternodes?params=${this.collateralTxId}`;
+	const url= `http://194.195.87.248:8080/listmasternodes?params=${this.collateralTxId}`;
+	console.log(url)
+	//	const url = `http://contabo-vps:8080/listmasternodes?params=${this.collateralTxId}`;
 	const masternodes = (await (await fetch(url)).json()).filter(m=>m.outidx === this.outidx);
 	if(masternodes.length > 0) {
 	    return masternodes[0].status;

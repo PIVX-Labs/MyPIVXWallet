@@ -315,7 +315,6 @@ async function importWallet({
     if(!masterKey.isHD){
 
     }
-    console.log(masterKey.isHD,"asdadas")
 
     // Hide the encryption warning if the user pasted the private key
     // Or in Testnet mode or is using a hardware wallet
