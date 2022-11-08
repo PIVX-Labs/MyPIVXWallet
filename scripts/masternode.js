@@ -28,6 +28,8 @@ class Masternode {
 	return start;
     }
 
+
+    // TODO: it doesn't really work that well...
     static numToBytes(number, numBytes=8, littleEndian = true) {
 	const bytes = [];
 	for(let i=0; i<numBytes; i++) {
@@ -37,15 +39,8 @@ class Masternode {
 	return littleEndian ? bytes : bytes.reverse();
     }
 
+    // Get message to be signed with mn private key.
     static async getPingSignature(msg) {
-	/*
-	ss = bytes.fromhex(self.collateral["txid"])[::-1]
-        ss += (self.collateral["txidn"]).to_bytes(4, byteorder='little')
-        ss += bytes([0, 255, 255, 255, 255])
-        ss += bytes.fromhex(block_hash)[::-1]
-        ss += (self.sig_time).to_bytes(8, byteorder='little')
-        return bitcoin.bin_dbl_sha256(ss)
-	*/
 	const ping = [
 	    ...Crypto.util.hexToBytes(msg.vin.txid).reverse(),
 	    ...Masternode.numToBytes(msg.vin.idx, 4, true),
@@ -59,7 +54,10 @@ class Masternode {
 	return hash.getHash(0);
     }
 
-    static async getToSign(msg) {
+    // Get message to be signed with collateral private key.
+    // Needs to be padded with "\x18DarkNet Signed Message:\n" + Message length + Message
+    // Then hashed two times with SHA256
+    static getToSign(msg) {
 	const [ ip, port ] = msg.addr.split(":");
 	const pk = "cQcvZYKoosUYNJMAcv8Gst2jghW2byQcMMV5opr7xNKoD5p1Tz8N";
 	const publicKey = Crypto.util.hexToBytes(bitjs.wif2pubkey(pk).pubkey);
@@ -67,48 +65,20 @@ class Masternode {
 	const mnPublicKey = Crypto.util.hexToBytes(bitjs.wif2pubkey(mnPk).pubkey);
 
 	const pkt = [
-	    ...Masternode.numToBytes(1, 4, true),
-	    ...Crypto.util.hexToBytes(Masternode.decodeIpAddress(ip, port)),
-	    ...Masternode.numToBytes(msg.sigTime, 4, true),
-	    ...[0,0,0,0],
-	    ...Masternode.numToBytes(publicKey.length, 1, true),
+	    ...Masternode.numToBytes(1, 4, true), // Message version
+	    ...Crypto.util.hexToBytes(Masternode.decodeIpAddress(ip, port)), // Encoded ip + port
+	    ...Masternode.numToBytes(msg.sigTime, 4, true), // Sig time (Should be 8 bytes, but numToBytes is bugged at the moment)
+	    ...[0,0,0,0], // Still Sig time
+	    ...Masternode.numToBytes(publicKey.length, 1, true), // Collateral public key length
 	    ...publicKey,
-	    ...Masternode.numToBytes(mnPublicKey.length, 1, true),
+	    ...Masternode.numToBytes(mnPublicKey.length, 1, true), // Masternode public key length
 	    ...mnPublicKey,
-	    ...Masternode.numToBytes(70926, 4, true),
+	    ...Masternode.numToBytes(70926, 4, true), // Protocol version
 	];
 	const hash = new jsSHA(0, 0, {numRounds: 2});
 	hash.update(pkt);
+	// It's important to note that the thing to be signed is the hex representation of the hash, not the bytes
 	return Crypto.util.bytesToHex(hash.getHash(0).reverse());
-    }
-
-    async getStartMessage() {
-	const time = Math.round(Date.now() / 1000);
-	/*
-	  Message = [{collateral TXID, TXIDn, Scriptsig?, scriptseq? = 0xffffffff?}, ipv6map, collateral_in, delegate_in, len signature + signature, sigtime + version, {1*}, last_ping_block_hash, work_sig_time, len sig2 + sig2, 1, 1]
-	*/
-	let msg = [
-	    ...Crypto.util.hexToBytes(this.collateralTxId),
-	    ...Masternode.numToBytes(this.outidx, 4, true),
-	    0, // check
-	    ...Crypto.util.hexToBytes(Masternode.decodeIpAddress("127.0.0.1", 8080)),
-	    0, // Pubkey
-	    0, // Mn Pubkey
-	    0, // Signature
-	    ...Masternode.numToBytes(time, 8, true), // Time
-	    ...Masternode.numToBytes(70915, 4, true), // Protocol version
-
-	    ...Crypto.util.hexToBytes(this.collateralTxId),
-	    ...Masternode.numToBytes(this.outidx, 4, true),
-	    0, // check
-
-	    ...Crypto.util.hexToBytes(this.collateralTxId), // Last ping block hash
-	    ...Masternode.numToBytes(time, 8, true), // Time
-	    0, // check
-	    ...Masternode.numToBytes(1, 4, true), // Time
-	    ...Masternode.numToBytes(1, 4, true), // Time
-	];
-	return msg;
     }
 
 
@@ -133,7 +103,12 @@ class Masternode {
 	  }
 	  }
     */
-    static broadcastMessageToHex(msg) {
+
+    // Get the message to start a masternode.
+    // It needs to have two signatures: `getPingSignature()` which is signed
+    // With the masternode private key, and `getToSign()` which is signed with
+    // The collateral private key
+    broadcastMessageToHex(msg) {
 	const [ ip, port ] = msg.addr.split(":");
 	const pk = "cQcvZYKoosUYNJMAcv8Gst2jghW2byQcMMV5opr7xNKoD5p1Tz8N";
 	const publicKey = Crypto.util.hexToBytes(bitjs.wif2pubkey(pk).pubkey);
@@ -170,10 +145,5 @@ class Masternode {
 	    ...Masternode.numToBytes(1, 4, true),
 	    ...Masternode.numToBytes(1, 4, true),
 	];
-    }
-    
-    async startMasternode() {
-
-	
     }
 }
