@@ -11,7 +11,6 @@ class Masternode {
     async getStatus() {
 	const url= `http://194.195.87.248:8080/listmasternodes?params=${this.collateralTxId}`;
 	console.log(url)
-	//	const url = `http://contabo-vps:8080/listmasternodes?params=${this.collateralTxId}`;
 	const masternodes = (await (await fetch(url)).json()).filter(m=>m.outidx === this.outidx);
 	if(masternodes.length > 0) {
 	    return masternodes[0].status;
@@ -165,8 +164,39 @@ class Masternode {
 
     async start() {
 	const message = await this.broadcastMessageToHex();
-	const url = `http://contabo-vps:8080/relaymasternodebroadcast?params=${message}`;
+	const url = `http://194.195.87.248:8080/relaymasternodebroadcast?params=${message}`;
 	const response = await (await fetch(url)).text();
 	return response.includes("Masternode broadcast sent");
+    }
+
+    async getProposals() {
+	const url = `http://194.195.87.248:8080/getbudgetprojection`;
+	return await (await fetch(url)).json();
+    }
+
+    async getSignedVoteMessage(hash, voteCode, sigTime) {
+	const msg = [
+	    ...Crypto.util.hexToBytes(this.collateralTxId).reverse(),
+	    ...Masternode.numToBytes(this.outidx, 4, true),
+	    ...[0, 255, 255, 255, 255],
+	    ...Crypto.util.hexToBytes(hash).reverse(),
+	    ...Masternode.numToBytes(voteCode, 4, true),
+	    ...Masternode.numToBytes(sigTime, 4, true),
+	    ...[0, 0, 0, 0],
+	];
+	const sha = new jsSHA(0, 0, {numRounds: 2});
+	sha.update(msg);
+	const { r, s, v } = bitjs.signRaw([...sha.getHash(0)], this.mnPrivateKey);
+	return Crypto.util.bytesToBase64([
+	    v, ...r.toByteArrayUnsigned(), ...s.toByteArrayUnsigned(),
+	]);
+    }
+
+    async vote(hash, voteCode) {
+	const sigTime = Math.round(Date.now() / 1000);
+	const signature = await getSignedMessage(hash, voteCode, sigTime);
+	const url = `http://194.195.87.248:8080/relaymasternodebroadcast?params=${this.collateralTxId},${this.outidx},${hash},${voteCode},${sigTime},${signature}`;
+	const text = await (await fetch(url)).text();
+	return text;
     }
 }
