@@ -11,14 +11,18 @@ class Masternode {
     async getStatus() {
 	const url= `http://194.195.87.248:8080/listmasternodes?params=${this.collateralTxId}`;
 	console.log(url)
-	const masternodes = (await (await fetch(url)).json()).filter(m=>m.outidx === this.outidx);
-	if(masternodes.length > 0) {
-	    return masternodes[0].status;
-	} else {
-	    return "NOT_FOUND";
+	try{
+	    const masternodes = (await (await fetch(url)).json()).filter(m=>m.outidx === this.outidx);
+	    if(masternodes.length > 0) {
+		return masternodes[0].status;
+	    } else {
+		return "NOT_FOUND";
+	    }
+	}catch(error){ //this is the unfortunate state in which the node is not reachable
+	    return "COULD NOT CONNECT TO THE EXPLORER";
 	}
     }
-
+    
     static decodeIpAddress(ip, port) {
 	// Only ipv4 for now
 	let start = '00000000000000000000ffff';

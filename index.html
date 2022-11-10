@@ -623,8 +623,8 @@
               <p id="communication" class="center-text">Please access your <b>COLLATERAL WALLET </b> first.</p>
             </div>
 
-            <!-- ACCESS MASTERNODE -->
-            <div id='accessMasternode' class="dashboard-item">
+            <!-- IMPORT MASTERNODE -->
+            <div id='accessMasternode' class="dashboard-item" style='display:none;'>
               <div class="container">
 
                 <div class="coinstat-icon">
@@ -635,9 +635,9 @@
                   </svg>
                 </div>
 
-                <!-- IMPORT MASTERNODE -->
+          
                 <input class="hide-element" type="text">
-                <div id="mnImportMasternode" style='display: none;'>
+                <div id="mnImportMasternode" style='display: block;'>
                   <input type="password" id='mnPrivateKey' placeholder="Masternode Private Key">
                   <input type="text" id='mnIP' placeholder="Masternode ip address">
                   <button class="pivx-button-big" onclick="importMasternode()">
@@ -646,11 +646,11 @@
                                 <span class="buttoni-arrow"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M23.328 16.707L13.121 26.914a.5.5 0 01-.707 0l-2.828-2.828a.5.5 0 010-.707L16.964 16 9.586 8.621a.5.5 0 010-.707l2.828-2.828a.5.5 0 01.707 0l10.207 10.207a1 1 0 010 1.414z"></path></svg></span>
                       </button>
                 </div>
-                <!-- // IMPORT MASTERNODE -->
+               
 
               </div>
             </div>
-            <!-- // ACCESS MASTERNODE -->
+            <!-- // IMPORT MASTERNODE -->
             <br>
 
             
@@ -834,7 +834,9 @@
     const domGenVanityWallet = document.getElementById('generateVanityWallet');
     const domGenHardwareWallet = document.getElementById('generateHardwareWallet');
 
-  
+    
+
+    const domAccessMasternode = document.getElementById('accessMasternode');
     const domMnTextErrors=document.getElementById('mnTextErrors');
     const domMnIP=document.getElementById('mnIP');
     const domMnImportMasternode=document.getElementById('mnImportMasternode');
@@ -1040,8 +1042,23 @@
                       outidx: outidx,
                       addr: address,
                       });
-      
-      console.log(await masternode_test.getStatus())
+      let result= await masternode_test.getStatus();
+      if(result=== "NOT_FOUND"){
+        domMnTextErrors.children[1].innerHTML="Masternode is currently  <b> OFFLINE </b>";
+        createAlert('warning', 'Unable to find your masternode',6000);
+      }else if(result==="ENABLED"){
+        domMnTextErrors.children[1].innerHTML="Your masternode is:  <b> ENABLED </b>! ";
+        createAlert('success', 'Your masternode status is <b> ENABLED </b>',6000);
+      }else if(result==="PRE_ENABLED"){ 
+        domMnTextErrors.children[1].innerHTML="Your masternode status is:  <b> PRE ENABLED</b>, wait for a few hours and it will get enabled.";
+        createAlert('success', 'Your masternode status is <b> PRE ENABLED </b>',6000);
+      }else if(result === "REMOVED"){
+        domMnTextErrors.children[1].innerHTML="Masternode is currently  <b> REMOVED </b>";
+        createAlert('warning', 'Your masternode is in <b> REMOVED </b> state',6000);
+      }else{ //connection problem
+        domMnTextErrors.children[1].innerHTML="Unable to connect to our servers!";
+        createAlert('warning', 'Unable to connect to our servers!',6000);
+      }
     }
     function accessOrImportWallet() {
       // Hide and Reset the Vanity address input
@@ -1735,7 +1752,7 @@
               let collateraInSats=1000000000000;
               if(collateraInSats===firstUTXO.sats){
                 domMnTextErrors.children[1].innerHTML="Good! now handle your masternode :D";
-                domMnImportMasternode.style.display="block";
+                domAccessMasternode.style.display="block";
 
 
               }else{
