@@ -216,3 +216,13 @@ class Masternode {
 	return text;
     }
 }
+
+/*
+var masternode = new Masternode({
+  walletPrivateKey: "cPFgnXiHDXDX1E2AiakYkKMVQKCZDJUXaueBUDyGKm6YkNfT3iYy",
+  mnPrivateKey: "91qUpg6GVuEamvSQXtZKVbcWGMXCx7GhZfMHsGu3vARWN5xydsU",
+  collateralTxId: "0778b7e415435e7242515ba7207a0a6716b60833ec06eaa0219a9ac47819d503",
+  outidx: 1,
+  addr: "194.195.87.248:51474",
+});
+*/
