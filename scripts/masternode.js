@@ -104,7 +104,7 @@ class Masternode {
 	hash.update(padding
 		    .concat(toSign.length)
 		    .concat(toSign));
-	const [ signature, v ] = await nobleSecp256k1.sign(hash.getHash(0), this.walletPrivateKey, { der: false, recovered: true});
+	const [ signature, v ] = await nobleSecp256k1.sign(hash.getHash(0), parseWIF(this.walletPrivateKey, true), { der: false, recovered: true});
 	return [
 	    v + 31, ...signature
 	];
@@ -119,7 +119,7 @@ class Masternode {
 	    blockHash,
 	    sigTime,
 	});
-	const [ signature, v ] = await nobleSecp256k1.sign(toSign, this.mnPrivateKey, { der: false, recovered: true});
+	const [ signature, v ] = await nobleSecp256k1.sign(toSign, parseWIF(this.mnPrivateKey, true), { der: false, recovered: true});
 	return [
 	    v + 27, ...signature,
 	];
@@ -198,7 +198,7 @@ class Masternode {
 	];
 	const sha = new jsSHA(0, 0, {numRounds: 2});
 	sha.update(msg);
-	const [ signature, v ] = await nobleSecp256k1.sign(sha.getHash(0), this.mnPrivateKey, { der: false, recovered: true});
+	const [ signature, v ] = await nobleSecp256k1.sign(sha.getHash(0), parseWIF(this.mnPrivateKey), { der: false, recovered: true});
 	return Crypto.util.bytesToBase64([
 	    v + 27, ...signature,
 	]);

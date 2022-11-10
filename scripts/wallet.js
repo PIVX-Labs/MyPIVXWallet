@@ -153,7 +153,7 @@ function verifyWIF(strWIF = "", fParseBytes = false, skipVerification = false) {
     }
   }
   
-  return fParseBytes ? Uint8Array.from(bWIF.slice(1)) : true;
+  return fParseBytes ? Uint8Array.from(bWIF.slice(1, 33)) : true;
 }
 
 // A convenient alias to verifyWIF that returns the raw byte payload
