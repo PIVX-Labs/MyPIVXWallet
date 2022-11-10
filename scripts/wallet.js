@@ -123,40 +123,42 @@ function getDerivationPath(fLedger = false, nAccount = 0, nReceiving = 0, nIndex
 }
 
 // Verify the integrity of a WIF private key, optionally parsing and returning the key payload
-function verifyWIF(strWIF = "", fParseBytes = false) {
+function verifyWIF(strWIF = "", fParseBytes = false, skipVerification = false) {
   // Convert from Base58
   const bWIF = from_b58(strWIF);
-
-  // Verify the byte length
-  if (bWIF.byteLength !== PRIVKEY_BYTE_LENGTH) {
-    throw Error("Private key length (" + bWIF.byteLength + ") is invalid, should be " + PRIVKEY_BYTE_LENGTH + "!");
+    
+  if(!skipVerification) {
+    // Verify the byte length
+    if (bWIF.byteLength !== PRIVKEY_BYTE_LENGTH) {
+      throw Error("Private key length (" + bWIF.byteLength + ") is invalid, should be " + PRIVKEY_BYTE_LENGTH + "!");
+    }
+    
+    // Verify the network byte
+    if (bWIF[0] !== cChainParams.current.SECRET_KEY) {
+      // Find the network it's trying to use, if any
+      const cNetwork = Object.keys(cChainParams).filter(strNet => strNet !== 'current').map(strNet => cChainParams[strNet]).find(cNet => cNet.SECRET_KEY === bWIF[0]);
+      // Give a specific alert based on the byte properties
+      throw Error(cNetwork ? "This private key is for " + (cNetwork.isTestnet ? "Testnet" : "Mainnet") + ", wrong network!" : "This private key belongs to another coin, or is corrupted.");
+    }
+    
+    // Perform SHA256d hash of the WIF bytes
+    const shaHash = new jsSHA(0, 0, { "numRounds": 2 });
+    shaHash.update(bWIF.slice(0, 34));
+    
+    // Verify checksum (comparison by String since JS hates comparing object-like primitives)
+    const bChecksumWIF = bWIF.slice(bWIF.byteLength - 4);
+    const bChecksum = shaHash.getHash(0).slice(0, 4);
+    if (bChecksumWIF.join('') !== bChecksum.join('')) {
+      throw Error("Private key checksum is invalid, key may be modified, mis-typed, or corrupt.");
+    }
   }
-
-  // Verify the network byte
-  if (bWIF[0] !== cChainParams.current.SECRET_KEY) {
-    // Find the network it's trying to use, if any
-    const cNetwork = Object.keys(cChainParams).filter(strNet => strNet !== 'current').map(strNet => cChainParams[strNet]).find(cNet => cNet.SECRET_KEY === bWIF[0]);
-    // Give a specific alert based on the byte properties
-    throw Error(cNetwork ? "This private key is for " + (cNetwork.isTestnet ? "Testnet" : "Mainnet") + ", wrong network!" : "This private key belongs to another coin, or is corrupted.");
-  }
-
-  // Perform SHA256d hash of the WIF bytes
-  const shaHash = new jsSHA(0, 0, { "numRounds": 2 });
-  shaHash.update(bWIF.slice(0, 34));
-
-  // Verify checksum (comparison by String since JS hates comparing object-like primitives)
-  const bChecksumWIF = bWIF.slice(bWIF.byteLength - 4);
-  const bChecksum = shaHash.getHash(0).slice(0, 4);
-  if (bChecksumWIF.join('') !== bChecksum.join('')) {
-    throw Error("Private key checksum is invalid, key may be modified, mis-typed, or corrupt.");
-  }
-
-  return fParseBytes ? Uint8Array.from(bWIF.slice(1, 33)) : true;
+  
+  return fParseBytes ? Uint8Array.from(bWIF.slice(1)) : true;
 }
 
 // A convenient alias to verifyWIF that returns the raw byte payload
-function parseWIF(strWIF) {
-  return verifyWIF(strWIF, true);
+function parseWIF(strWIF, skipVerification = false) {
+  return verifyWIF(strWIF, true, skipVerification);
 }
 
 // Generate a new private key OR encode an existing private key from raw bytes
@@ -189,11 +191,18 @@ function generateOrEncodePrivkey(pkBytesToEncode) {
 function deriveAddress({
   pkBytes,
   publicKey,
-  fNoEncoding
+  fNoEncoding,
+  output="ENCODED", // "ENCODED", "HEX" or "RAW_BYTES"
 }) {
   if(!pkBytes && !publicKey) return null;
   // Public Key Derivation
-  let nPubkey = (publicKey || Crypto.util.bytesToHex(nobleSecp256k1.getPublicKey(pkBytes))).substring(2)
+    let nPubkey = (publicKey || Crypto.util.bytesToHex(nobleSecp256k1.getPublicKey(pkBytes, true)));
+  if (output === "HEX") {
+    return nPubkey;
+  } else if (output === "RAW_BYTES") {
+    return Crypto.util.hexToBytes(nPubkey);
+  }
+  nPubKey = nPubkey.substring(2);
   const pubY = uint256(nPubkey.substr(64), 16);
   nPubkey = nPubkey.substr(0, 64);
   const publicKeyBytesCompressed = Crypto.util.hexToBytes(nPubkey);

@@ -60,8 +60,14 @@ class Masternode {
     // Then hashed two times with SHA256
     static getToSign(msg) {
 	const [ ip, port ] = msg.addr.split(":");
-	const publicKey = Crypto.util.hexToBytes(bitjs.wif2pubkey(msg.walletPrivateKey).pubkey);
-	const mnPublicKey = Crypto.util.hexToBytes(bitjs.wif2pubkey(msg.mnPrivateKey).pubkey);
+	const publicKey = deriveAddress({
+	    pkBytes: parseWIF(msg.walletPrivateKey, true),
+	    output: "RAW_BYTES",
+	});
+	const mnPublicKey = deriveAddress({
+	    pkBytes: parseWIF(msg.mnPrivateKey, true),
+	    output: "RAW_BYTES",
+	});
 
 	const pkt = [
 	    ...Masternode.numToBytes(1, 4, true), // Message version
@@ -98,13 +104,13 @@ class Masternode {
 	hash.update(padding
 		    .concat(toSign.length)
 		    .concat(toSign));
-	const { r, s, v } = bitjs.signRaw([...hash.getHash(0)], this.walletPrivateKey);
+	const [ signature, v ] = await nobleSecp256k1.sign(hash.getHash(0), this.walletPrivateKey, { der: false, recovered: true});
 	return [
-	    v+4, ...r.toByteArrayUnsigned(), ...s.toByteArrayUnsigned()
+	    v + 31, ...signature
 	];
     }
 
-    getSignedPingMessage(sigTime, blockHash) {
+    async getSignedPingMessage(sigTime, blockHash) {
 	const toSign = Masternode.getPingSignature({
 	    vin: {
 		txid: this.collateralTxId,
@@ -113,9 +119,9 @@ class Masternode {
 	    blockHash,
 	    sigTime,
 	});
-	const { r, s, v } = bitjs.signRaw([...toSign], this.mnPrivateKey);
+	const [ signature, v ] = await nobleSecp256k1.sign(toSign, this.mnPrivateKey, { der: false, recovered: true});
 	return [
-	    v, ...r.toByteArrayUnsigned(), ...s.toByteArrayUnsigned()
+	    v + 27, ...signature,
 	];
     }
 
@@ -127,8 +133,14 @@ class Masternode {
 	const sigTime = Math.round(Date.now() / 1000);
 	const blockHash = await Masternode.getLastBlockHash();
 	const [ ip, port ] = this.addr.split(':');
-	const walletPublicKey = Crypto.util.hexToBytes(bitjs.wif2pubkey(this.walletPrivateKey).pubkey);
-	const mnPublicKey = Crypto.util.hexToBytes(bitjs.wif2pubkey(this.mnPrivateKey).pubkey);
+	const walletPublicKey = deriveAddress({
+	    pkBytes: parseWIF(this.walletPrivateKey, true),
+	    output: "RAW_BYTES",
+	});
+	const mnPublicKey = deriveAddress({
+	    pkBytes: parseWIF(this.mnPrivateKey, true),
+	    output: "RAW_BYTES",
+	});
 	const sigBytes = await this.getSignedMessage(sigTime);
 	const sigPingBytes = await this.getSignedPingMessage(sigTime, blockHash);
 
@@ -186,9 +198,9 @@ class Masternode {
 	];
 	const sha = new jsSHA(0, 0, {numRounds: 2});
 	sha.update(msg);
-	const { r, s, v } = bitjs.signRaw([...sha.getHash(0)], this.mnPrivateKey);
+	const [ signature, v ] = await nobleSecp256k1.sign(sha.getHash(0), this.mnPrivateKey, { der: false, recovered: true});
 	return Crypto.util.bytesToBase64([
-	    v, ...r.toByteArrayUnsigned(), ...s.toByteArrayUnsigned(),
+	    v + 27, ...signature,
 	]);
     }
 
