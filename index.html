@@ -126,6 +126,7 @@
               <li class="nav-item"><a id="txTab" class="nav-link tablinks" onclick="openTab(event, 'Transaction')">Send</a></li>
               <li class="nav-item"><a id="stakeTab" class="nav-link tablinks" onclick="openTab(event, 'StakingTab')">Stake</a></li>
               <li class="nav-item"><a id="masternodeTab" class="nav-link tablinks" onclick="openTab(event, 'Masternode')">Masternode</a></li>
+              <li class="nav-item"><a id="governanceTab" class="nav-link tablinks" onclick="openTab(event, 'Governance')">Governance</a></li>
               <li class="nav-item"><a class="nav-link tablinks" onclick="openTab(event, 'Settings');">Settings</a></li>
             </ul>
 
@@ -611,7 +612,14 @@
 	      </div>
 	    </div>
     </div>
-	    
+          <div id="Governance" class="tabcontent">
+              <div class="col-md-12 title-section float-left rm-pd">
+                <h3 class="pivx-bold-title center-text"> Governance</h3>
+                <p class="center-text">From this tab you can check the proposals and, if you have a masternode, be a part of the <b>DAO</b> and vote!</p>
+              </div>
+              <table id="proposalsTable" style="width:100%">
+              </table>
+          </div>
           <div id="Masternode" class="tabcontent">
             <div class="col-md-12 title-section float-left rm-pd">
               <h3 class="pivx-bold-title center-text"><span>Control your</span> Masternode</h3>
@@ -824,9 +832,9 @@
     const domGenerateWallet = document.getElementById('generateWallet');
     const domGenVanityWallet = document.getElementById('generateVanityWallet');
     const domGenHardwareWallet = document.getElementById('generateHardwareWallet');
-
-    
-
+    //GOVERNANCE ELEMENTS
+    const domGovProposalsTable=document.getElementById('proposalsTable')
+    //MASTERNODE ELEMENTS
     const domAccessMasternode = document.getElementById('accessMasternode');
     const domMnTextErrors=document.getElementById('mnTextErrors');
     const domMnIP=document.getElementById('mnIP');
@@ -1009,6 +1017,18 @@
       domGenHardwareWallet.style.display = 'none';
     }
 
+    async function govVote(hash,voteCode){
+      console.log(hash)
+      if(localStorage.getItem("masternode")){
+  
+        let c_masternode= new Masternode(JSON.parse(localStorage.getItem("masternode")))
+        let result= await c_masternode.vote(hash.toString(),voteCode); //1 yes 2 no
+        console.log(result);
+      }else{
+        createAlert('warning', 'Access a masternode before voting!',6000);
+      }
+    }
+    
     //path is the address path which is non-trivial only if you are using HD/ledger wallet
     async function importMasternode(path=""){ 
       //the first UTXO should have the 10k pivx 
@@ -1725,7 +1745,11 @@
       const wif = document.getElementById("wif").value;
       document.getElementById("rawTrx").value = await cTx.sign(wif, 1); //SIGHASH_ALL DEFAULT 1
     }
-
+    function addCellToTable(row,data){
+      let td=row.insertCell();
+      td.appendChild(document.createTextNode(data));
+      td.style.border = '1px solid black';
+    }
     async function openTab(evt, tabName) {
       // Hide all screens and deactivate link highlights
       for (const domScreen of arrDomScreens) domScreen.style.display = "none";
@@ -1739,7 +1763,37 @@
       if (!domNavbarToggler.className.includes("collapsed"))
         domNavbarToggler.click();
       if(tabName==="Governance"){
+        let proposals= await Masternode.getProposals();
+        let tr=domGovProposalsTable.insertRow();
+        addCellToTable(tr,"Name");
+        addCellToTable(tr,"Payment");
+        addCellToTable(tr,"Votes");
+        addCellToTable(tr,"Vote");
+        for (let i=0;i<proposals.length;i++){
+          const tr = domGovProposalsTable.insertRow();
+          const td1=tr.insertCell();
+          td1.innerHTML='<a href="'+proposals[i]["URL"]+'">'+proposals[i]["Name"]+'</a>'
+          const td2=tr.insertCell();
+          td2.innerHTML='<p>'+proposals[i]["MonthlyPayment"]+' PIV, '+proposals[i]['RemainingPaymentCount']+' payments remaining of '+proposals[i]['TotalPayment']+' PIV total</p>'
+          const td3=tr.insertCell();
+          td3.innerHTML='<p>'+proposals[i]["Yeas"]+'/'+proposals[i]['Nays']+'</p>'
+          const td4=tr.insertCell();
+          
+          //append vote buttons
+          const buttonYes = document.createElement('button');
+          buttonYes.innerText="Yes";
+          buttonYes.onclick = function() { govVote(proposals[i]['Hash'],1); };
+          
+          const buttonNo = document.createElement('button');
+          buttonNo.innerText="No";
+          buttonNo.onclick = function() { govVote(proposals[i]['Hash'],2); };
+          
 
+          td4.appendChild(buttonYes)
+          td4.appendChild(buttonNo)
+        }
+        
+        console.log(proposals);
       }
       if(tabName==="Masternode"){
         //TODO: IN A FUTURE ADD MULTI-MASTERNODE SUPPORT BY SAVING MNs with which you logged in the past.

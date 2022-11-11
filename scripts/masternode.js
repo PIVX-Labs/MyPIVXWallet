@@ -185,8 +185,8 @@ class Masternode {
 	return response.includes("Masternode broadcast sent");
     }
 
-    async getProposals() {
-	const url = `http://194.195.87.248:8080/getbudgetprojection`;
+    static async getProposals() {
+	const url = `http://194.195.87.248:8080/getbudgetinfo`;
 	return await (await fetch(url)).json();
     }
 
@@ -202,7 +202,7 @@ class Masternode {
 	];
 	const sha = new jsSHA(0, 0, {numRounds: 2});
 	sha.update(msg);
-	const [ signature, v ] = await nobleSecp256k1.sign(sha.getHash(0), parseWIF(this.mnPrivateKey), { der: false, recovered: true});
+	const [ signature, v ] = await nobleSecp256k1.sign(sha.getHash(0), parseWIF(this.mnPrivateKey,true), { der: false, recovered: true});
 	return Crypto.util.bytesToBase64([
 	    v + 27, ...signature,
 	]);
@@ -210,8 +210,9 @@ class Masternode {
 
     async vote(hash, voteCode) {
 	const sigTime = Math.round(Date.now() / 1000);
-	const signature = await getSignedMessage(hash, voteCode, sigTime);
-	const url = `http://194.195.87.248:8080/relaymasternodebroadcast?params=${this.collateralTxId},${this.outidx},${hash},${voteCode},${sigTime},${signature}`;
+	const signature = await this.getSignedVoteMessage(hash, voteCode, sigTime);
+	voteCode= (voteCode==1)?"yes":"no"
+	const url = `http://194.195.87.248:8080/mnbudgetrawvote?params=${this.collateralTxId},${this.outidx},${hash},${voteCode},${sigTime},${signature}`;
 	const text = await (await fetch(url)).text();
 	return text;
     }
