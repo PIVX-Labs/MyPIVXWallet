@@ -211,7 +211,7 @@ class Masternode {
     }
 
     async vote(hash, voteCode) {
-	const sigTime = 0;
+	const sigTime = Math.round(Date.now() / 1000);
 	const signature = await this.getSignedVoteMessage(hash, voteCode, sigTime);
 	const url = `http://194.195.87.248:8080/mnbudgetrawvote?params=${this.collateralTxId},${this.outidx},${hash},${voteCode === 1 ? "yes" : "no"},${sigTime},${encodeURI(signature).replaceAll("+", "%2b")}`;
 	const text = await (await fetch(url)).text();
