@@ -1018,14 +1018,23 @@
     }
 
     async function govVote(hash,voteCode){
-      console.log(hash)
-      if(localStorage.getItem("masternode")){
-  
-        let c_masternode= new Masternode(JSON.parse(localStorage.getItem("masternode")))
-        let result= await c_masternode.vote(hash.toString(),voteCode); //1 yes 2 no
-        console.log(result);
-      }else{
-        createAlert('warning', 'Access a masternode before voting!',6000);
+      if (confirm("Are you sure you want to vote? You will have to wait 1 hour before changing!") == true) {
+        if(localStorage.getItem("masternode")){
+          let c_masternode= new Masternode(JSON.parse(localStorage.getItem("masternode")))
+          let result= await c_masternode.vote(hash.toString(),voteCode); //1 yes 2 no
+          console.log(result);
+          if(result.includes("Voted successfully")){ //good vote
+            createAlert('success', 'Voted successfully',6000);
+          }else if(result.includes("Error voting :")){ //If you already voted return an alert
+            createAlert('warning', 'You already voted this proposal! Please wait 1 hour',6000);
+          }else if(result.includes("Failure to verify signature.")){ //wrong masternode private key
+            createAlert('warning', 'Failed to verify signature, please recheck the masternode private key',6000);
+          }else{ //this could be everything
+            createAlert('warning', 'Internal error, please try again later',6000);
+          }
+        }else{
+          createAlert('warning', 'Access a masternode before voting!',6000);
+        }
       }
     }
     
@@ -1764,6 +1773,7 @@
         domNavbarToggler.click();
       if(tabName==="Governance"){
         let proposals= await Masternode.getProposals();
+        domGovProposalsTable.innerHTML="";
         let tr=domGovProposalsTable.insertRow();
         addCellToTable(tr,"Name");
         addCellToTable(tr,"Payment");
