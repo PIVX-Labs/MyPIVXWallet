@@ -69,10 +69,12 @@ class Masternode {
 	const publicKey = deriveAddress({
 	    pkBytes: parseWIF(msg.walletPrivateKey, true),
 	    output: "RAW_BYTES",
+	    compress: true,
 	});
 	const mnPublicKey = deriveAddress({
 	    pkBytes: parseWIF(msg.mnPrivateKey, true),
 	    output: "RAW_BYTES",
+	    compress: true,
 	});
 
 	const pkt = [
@@ -142,10 +144,12 @@ class Masternode {
 	const walletPublicKey = deriveAddress({
 	    pkBytes: parseWIF(this.walletPrivateKey, true),
 	    output: "RAW_BYTES",
+	    compress: true,
 	});
 	const mnPublicKey = deriveAddress({
 	    pkBytes: parseWIF(this.mnPrivateKey, true),
 	    output: "RAW_BYTES",
+	    compress: true,
 	});
 	const sigBytes = await this.getSignedMessage(sigTime);
 	const sigPingBytes = await this.getSignedPingMessage(sigTime, blockHash);

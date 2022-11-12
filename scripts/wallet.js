@@ -192,11 +192,12 @@ function deriveAddress({
   pkBytes,
   publicKey,
   fNoEncoding,
+  compress = false,
   output="ENCODED", // "ENCODED", "HEX" or "RAW_BYTES"
 }) {
   if(!pkBytes && !publicKey) return null;
   // Public Key Derivation
-    let nPubkey = (publicKey || Crypto.util.bytesToHex(nobleSecp256k1.getPublicKey(pkBytes)));
+  let nPubkey = (publicKey || Crypto.util.bytesToHex(nobleSecp256k1.getPublicKey(pkBytes, compress)));
   if (output === "HEX") {
     return nPubkey;
   } else if (output === "RAW_BYTES") {
