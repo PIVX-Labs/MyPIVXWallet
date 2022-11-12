@@ -617,7 +617,15 @@
                 <h3 class="pivx-bold-title center-text"> Governance</h3>
                 <p class="center-text">From this tab you can check the proposals and, if you have a masternode, be a part of the <b>DAO</b> and vote!</p>
               </div>
-              <table id="proposalsTable" style="width:100%">
+              <table id="proposalsTable" class="table table-hover table-dark bg-transparent" style="width:100%">
+		  <thead>
+		      <td class="text-center"> Name </td>
+		      <td class="text-center"> Payment </td>
+		      <td class="text-center"> Votes </td>
+		      <td class="text-center"> Vote </td>
+		  </thead>
+		  <tbody id="proposalsTableBody" style="text-align: center; vertical-align: middle;">
+		  </tbody>
               </table>
           </div>
           <div id="Masternode" class="tabcontent">
@@ -834,7 +842,8 @@
     const domGenVanityWallet = document.getElementById('generateVanityWallet');
     const domGenHardwareWallet = document.getElementById('generateHardwareWallet');
     //GOVERNANCE ELEMENTS
-    const domGovProposalsTable=document.getElementById('proposalsTable')
+    const domGovProposalsTable = document.getElementById('proposalsTable');
+    const domGovProposalsTableBody = document.getElementById('proposalsTableBody');
     //MASTERNODE ELEMENTS
     const domAccessMasternode = document.getElementById('accessMasternode');
     const domMnTextErrors=document.getElementById('mnTextErrors');
@@ -1779,36 +1788,44 @@
       // Close the navbar if it's not already closed
       if (!domNavbarToggler.className.includes("collapsed"))
         domNavbarToggler.click();
-      if(tabName==="Governance"){
-        let proposals= await Masternode.getProposals();
-        domGovProposalsTable.innerHTML="";
-        let tr=domGovProposalsTable.insertRow();
-        addCellToTable(tr,"Name");
-        addCellToTable(tr,"Payment");
-        addCellToTable(tr,"Votes");
-        addCellToTable(tr,"Vote");
-        for (let i=0;i<proposals.length;i++){
-          const tr = domGovProposalsTable.insertRow();
-          const td1=tr.insertCell();
-          td1.innerHTML='<a href="'+proposals[i]["URL"]+'">'+proposals[i]["Name"]+'</a>'
-          const td2=tr.insertCell();
-          td2.innerHTML='<p>'+proposals[i]["MonthlyPayment"]+' PIV, '+proposals[i]['RemainingPaymentCount']+' payments remaining of '+proposals[i]['TotalPayment']+' PIV total</p>'
-          const td3=tr.insertCell();
-          td3.innerHTML='<p>'+proposals[i]["Yeas"]+'/'+proposals[i]['Nays']+'</p>'
-          const td4=tr.insertCell();
-          
-          //append vote buttons
-          const buttonYes = document.createElement('button');
-          buttonYes.innerText="Yes";
-          buttonYes.onclick = function() { govVote(proposals[i]['Hash'],1); };
-          
+      
+      if (tabName === "Governance") {
+        const proposals= await Masternode.getProposals();
+        domGovProposalsTableBody.innerHTML="";
+	proposals.push(proposals[0])
+	proposals.push(proposals[0])
+	proposals.push(proposals[0])
+	for (const proposal of proposals){
+          const tr = domGovProposalsTableBody.insertRow();
+          const td1 = tr.insertCell();
+	  // IMPORTANT: We must sanite all of our HTML or a rogue server or malicious proposal could perform a cross side scripting attack
+          td1.innerHTML=`<a class="active" href="${sanitizeHTML(proposal.URL)}"><b>${sanitizeHTML(proposal.Name)}</b></a>`
+          const td2 = tr.insertCell();
+	  td2.innerHTML=`<b>${sanitizeHTML(proposal.MonthlyPayment)}</b> ${cChainParams.current.TICKER} <br>
+	  <small> ${sanitizeHTML(proposal['RemainingPaymentCount'])} payments remaining of <b>${sanitizeHTML(proposal.TotalPayment)}</b> ${cChainParams.current.TICKER} total</small>`
+          const td3 = tr.insertCell();
+	  let {Yeas, Nays} = proposal;
+	  Yeas = parseInt(Yeas);
+	  Nays = parseInt(Nays);
+	  const percentage = (Yeas / (Yeas + Nays)) * 100;
+          td3.innerHTML=`<b>${percentage.toFixed(2)}%</b> <br>
+	  <small> <b><div class="text-success" style="display:inline;"> ${Yeas} </div></b> /
+	      <b><div class="text-danger" style="display:inline;"> ${Nays} </div></b>
+	  `;
+          const td4 = tr.insertCell();
+          //append vote buttons	  
           const buttonNo = document.createElement('button');
+	  buttonNo.className = "pivx-button-big";
           buttonNo.innerText="No";
-          buttonNo.onclick = function() { govVote(proposals[i]['Hash'],2); };
-          
+          buttonNo.onclick = () => govVote(proposal.Hash, 2);
 
-          td4.appendChild(buttonYes)
+          const buttonYes = document.createElement('button');
+	  buttonYes.className = "pivx-button-big";
+          buttonYes.innerText="Yes";
+          buttonYes.onclick = () => govVote(proposal.Hash, 1);
+          
           td4.appendChild(buttonNo)
+	  td4.appendChild(buttonYes)
         }
         
         console.log(proposals);
