@@ -1900,7 +1900,8 @@
 	  let {Yeas, Nays} = proposal;
 	  Yeas = parseInt(Yeas);
 	  Nays = parseInt(Nays);
-	  const percentage = (Yeas / (Yeas + Nays)) * 100;
+	  const percentage = Yeas + Nays !== 0 ? (Yeas / (Yeas + Nays)) * 100 : 0;
+	  
           td3.innerHTML=`<b>${percentage.toFixed(2)}%</b> <br>
 	  <small> <b><div class="text-success" style="display:inline;"> ${Yeas} </div></b> /
 	      <b><div class="text-danger" style="display:inline;"> ${Nays} </div></b>
