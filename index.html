@@ -640,7 +640,7 @@
             </div>
 
             <!-- IMPORT MASTERNODE -->
-            <div id='accessMasternode' class="dashboard-item" style='display:none;'>
+            <div id='accessMasternode' class="dashboard-item" style='display:block;'>
               <div class="container">
 
                 <p>Access the masternode linked to this address</p>
@@ -651,7 +651,10 @@
                 <div id="mnImportMasternode" style='display: block;'>
                   <input type="password" id='mnPrivateKey' placeholder="Masternode Private Key">
                   <input type="text" id='mnIP' placeholder="Masternode ip address">
-                  <input type="text" id='mnTxId' placeholder="Masternode collateral tx" style="display: block;">
+                  <input list="mnTxList" id='mnTxId' style="display: block;" placeholder="Masternode collateral tx">
+                    <datalist id="mnTxList">
+
+                    </datalist>
                   <button class="pivx-button-big" onclick="importMasternode()">
                                 <span class="buttoni-icon"><i class="fas fa-file-upload fa-tiny-margin"></i></span>
                                 <span class="buttoni-text" id="importMnText">Access Masternode</span>
@@ -866,6 +869,7 @@
     const domAccessMasternode = document.getElementById('accessMasternode');
     const domMnTextErrors=document.getElementById('mnTextErrors');
     const domMnIP=document.getElementById('mnIP');
+    const domMnTxList=document.getElementById('mnTxList')
     const domMnTxId=document.getElementById('mnTxId');
     const domMnCreateMasternode=document.getElementById('mnCreateMasternode')
     const domMnImportMasternode=document.getElementById('mnImportMasternode');
@@ -1149,24 +1153,61 @@
         });
         createAlert("success","Your masternode has been created! Wait 15 confirmations before accessing it") 
     }
-    async function importMasternode(path=""){ 
-      //the first UTXO should have the 10k pivx 
-      let firstUTXO=cachedUTXOs[cachedUTXOs.length-1];
+    async function importMasternode(){ 
+      let mnPrivKey;
       
-      //masternode data
-      let mnPrivKey=domMnPrivateKey.value;
-      domMnPrivateKey.value="";
-      let ip=domMnIP.value;
-      domMnIP.value=""
-      let tx= domMnTxId.value; //this is only used for HD wallets because user could have more than 1 MN
-      domMnTxId.value=""
+      let ip;
+      let port;
+      let address;
+      let collateralTxId;
+      let outidx;
+      let collateralPrivKey;
+      if(domMnTxId.style.display==="none"){
+        //the first UTXO should have the 10k pivx 
+        let firstUTXO=cachedUTXOs[cachedUTXOs.length-1];
+        
+        //masternode data
+        mnPrivKey=domMnPrivateKey.value;
+        domMnPrivateKey.value="";
+        ip=domMnIP.value;
+        domMnIP.value=""
       
-      let port="51474"; //default masternode port
-      let address=ip+":"+port
-      let collateralTxId=firstUTXO.id;
-      console.log(firstUTXO,collateralTxId)
-      let outidx=firstUTXO.vout;
-      let collateralPrivKey=await masterKey.getPrivateKey();
+        port="51474"; //default masternode port
+        address=ip+":"+port
+        collateralTxId=firstUTXO.id;
+        console.log(firstUTXO,collateralTxId)
+        outidx=firstUTXO.vout;
+        collateralPrivKey=await masterKey.getPrivateKey();
+      }else{
+        mnPrivKey=domMnPrivateKey.value;
+        domMnPrivateKey.value="";
+        ip=domMnIP.value;
+        domMnIP.value="";
+
+        let path= domMnTxId.value;
+        domMnTxId.value="";
+        
+        port="51474"; //default masternode port
+        address=ip+":"+port
+        let collateraInSats=10000*COIN; //collateral in satoshi units
+        let masterUtxo; //first UTXO for each address in HD
+        for(let i in cachedUTXOs){
+          if(cachedUTXOs[i].path===path){
+           masterUtxo=cachedUTXOs[i] 
+          }
+        }
+        //sanity check:
+        if(masterUtxo.sats!==10000*COIN){
+          createAlert("warning","The UTXO doesn't match");
+          return;
+        }
+        outidx=masterUtxo.vout;
+        collateralTxId=masterUtxo.id;
+        collateralPrivKey=await masterKey.getPrivateKey(path);
+        console.log(path);
+        console.log(masterUtxo)        
+      }
+
       
       var masternode_test = new Masternode({
                       walletPrivateKey: collateralPrivKey,
@@ -1175,6 +1216,7 @@
                       outidx: outidx,
                       addr: address,
                       });
+      console.log(masternode_test)
       let result= await masternode_test.getStatus();
       if(result=== "NOT_FOUND"){
         domMnTextErrors.children[1].innerHTML="Masternode is currently  <b> OFFLINE </b>";
@@ -1957,6 +1999,7 @@
             
             domCreateMasternode.style.display="block";
             domMnTxId.style.display="none";
+            domMnTxList.innerHTML="";
             if(cachedUTXOs.length==0){
               domMnTextErrors.children[1].innerHTML="This HD wallet is empty or UTXOs are not loaded yet, reopen the tab in a few seconds."
             }else{
@@ -1978,8 +2021,14 @@
                 domAccessMasternode.style.display="block";
                 domMnTxId.style.display="block";
                 domMnTextErrors.children[1].innerHTML="There could be one or more masternodes in this wallet";
+                for(const [key, value] of wallets_map){
+                    const option = document.createElement('option');
+                    option.value = key;
+                    option.innerText= await masterKey.getAddress(key);
+                    domMnTxList.appendChild(option)
+                }
+                
                 console.log(wallets_map)
-                //TODO LET THE USER SELECT WHICH MASTERNODE HE WANTS TO USE
               }
               
             //console.log(cachedUTXOs) cover liquid stool young garage test rib atom private sleep entire music
