@@ -1888,9 +1888,6 @@
       if (tabName === "Governance") {
         const proposals= await Masternode.getProposals();
         domGovProposalsTableBody.innerHTML="";
-	proposals.push(proposals[0])
-	proposals.push(proposals[0])
-	proposals.push(proposals[0])
 	for (const proposal of proposals){
           const tr = domGovProposalsTableBody.insertRow();
           const td1 = tr.insertCell();
