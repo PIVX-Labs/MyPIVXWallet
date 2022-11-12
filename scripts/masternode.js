@@ -35,13 +35,10 @@ class Masternode {
 	return start;
     }
 
-
-    // TODO: it doesn't really work that well...
     static numToBytes(number, numBytes=8, littleEndian = true) {
 	const bytes = [];
 	for(let i=0; i<numBytes; i++) {
-	    const n = (number & (0xff << (8*i))) >> (8*i);
-	    bytes.push(n < 0 ? n + 256 : n);
+	    bytes.push((number / 2**(8*i)) & 0xFF);
 	}
 	return littleEndian ? bytes : bytes.reverse();
     }
@@ -53,8 +50,7 @@ class Masternode {
 	    ...Masternode.numToBytes(msg.vin.idx, 4, true),
 	    ...[0, 255, 255, 255, 255],
 	    ...Crypto.util.hexToBytes(msg.blockHash).reverse(),
-	    ...Masternode.numToBytes(msg.sigTime, 4, true),
-	    ...[0,0,0,0],
+	    ...Masternode.numToBytes(msg.sigTime, 8, true),
 	];
 	const hash = new jsSHA(0, 0, {numRounds: 2});
 	hash.update(ping);
@@ -80,8 +76,7 @@ class Masternode {
 	const pkt = [
 	    ...Masternode.numToBytes(1, 4, true), // Message version
 	    ...Crypto.util.hexToBytes(Masternode.decodeIpAddress(ip, port)), // Encoded ip + port
-	    ...Masternode.numToBytes(msg.sigTime, 4, true), // Sig time (Should be 8 bytes, but numToBytes is bugged at the moment)
-	    ...[0,0,0,0], // Still Sig time
+	    ...Masternode.numToBytes(msg.sigTime, 8, true),
 	    ...Masternode.numToBytes(publicKey.length, 1, true), // Collateral public key length
 	    ...publicKey,
 	    ...Masternode.numToBytes(mnPublicKey.length, 1, true), // Masternode public key length
@@ -166,16 +161,14 @@ class Masternode {
 	    ...mnPublicKey,
 	    ...Masternode.numToBytes(sigBytes.length, 1, true),
 	    ...sigBytes,
-	    ...Masternode.numToBytes(sigTime, 4, true), // Sigtime, should be 8 bytes but the function doesn't work properly
-	    ...Masternode.numToBytes(0, 4, true), // still sigtime
+	    ...Masternode.numToBytes(sigTime, 8, true),
 	    ...Masternode.numToBytes(Masternode.protocolVersion, 4, true),
 	    ...Crypto.util.hexToBytes(this.collateralTxId).reverse(),
 	    ...Masternode.numToBytes(this.outidx, 4, true),
 	    ...Masternode.numToBytes(0, 1, true),
 	    ...Masternode.numToBytes(0xffffffff, 4, true),
 	    ...Crypto.util.hexToBytes(blockHash).reverse(),
-	    ...Masternode.numToBytes(sigTime, 4, true),
-	    ...Masternode.numToBytes(0, 4, true),
+	    ...Masternode.numToBytes(sigTime, 8, true),
 	    ...Masternode.numToBytes(sigPingBytes.length, 1, true),
 	    ...sigPingBytes,
 	    ...Masternode.numToBytes(1, 4, true),
@@ -203,8 +196,7 @@ class Masternode {
 	    ...[0, 255, 255, 255, 255],
 	    ...Crypto.util.hexToBytes(hash).reverse(),
 	    ...Masternode.numToBytes(voteCode, 4, true),
-	    ...Masternode.numToBytes(sigTime, 4, true),
-	    ...[0, 0, 0, 0],
+	    ...Masternode.numToBytes(sigTime, 8, true),
 	];
 	const sha = new jsSHA(0, 0, {numRounds: 2});
 	sha.update(msg);
