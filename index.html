@@ -1948,7 +1948,10 @@
       if (tabName === "Governance") {
         const proposals= await Masternode.getProposals();
         domGovProposalsTableBody.innerHTML="";
-	for (const proposal of proposals){
+	      for (const proposal of proposals){
+          if(proposal.RemainingPaymentCount===0){
+            continue;
+          }
           const tr = domGovProposalsTableBody.insertRow();
           const td1 = tr.insertCell();
 	  // IMPORTANT: We must sanite all of our HTML or a rogue server or malicious proposal could perform a cross side scripting attack
