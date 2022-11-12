@@ -631,7 +631,7 @@
           <div id="Masternode" class="tabcontent">
             <div class="col-md-12 title-section float-left rm-pd">
               <h3 class="pivx-bold-title center-text"><span>Control your</span> Masternode</h3>
-              <p class="center-text">This will help managing your masternode: check your rewards, see the proposals and vote without the need of a core wallet. </p>
+              <p class="center-text">From this tab you can create and access one or more masternodes</p>
             </div>
          
             <div id='mnTextErrors' style='display: block;'>
@@ -662,6 +662,23 @@
             </div>
             <!-- // IMPORT MASTERNODE -->
             <br>            
+
+            <div id='createMasternode' class="dashboard-item" style='display:none; width:100%;'>
+              <div class="container" >
+
+                <p>Create your masternode (note: you need 10k <b> PIVs </b> ).</p> 
+                <br>
+                <input class="hide-element" type="text">
+                <div id="mnCreateMasternode" style='display: block;'>
+                  <button class="pivx-button-big" onclick="createMasternode()">
+                                <span class="buttoni-icon"><i class="fas fa-file-upload fa-tiny-margin"></i></span>
+                                <span class="buttoni-text" id="importMnText">Create Masternode</span>
+                                <span class="buttoni-arrow"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M23.328 16.707L13.121 26.914a.5.5 0 01-.707 0l-2.828-2.828a.5.5 0 010-.707L16.964 16 9.586 8.621a.5.5 0 010-.707l2.828-2.828a.5.5 0 01.707 0l10.207 10.207a1 1 0 010 1.414z"></path></svg></span>
+                      </button>
+                </div>
+              </div>
+            </div>
+
           </div>
 
             <div id="Transaction" class="tabcontent">
@@ -845,10 +862,12 @@
     const domGovProposalsTable = document.getElementById('proposalsTable');
     const domGovProposalsTableBody = document.getElementById('proposalsTableBody');
     //MASTERNODE ELEMENTS
+    const domCreateMasternode = document.getElementById('createMasternode');
     const domAccessMasternode = document.getElementById('accessMasternode');
     const domMnTextErrors=document.getElementById('mnTextErrors');
     const domMnIP=document.getElementById('mnIP');
     const domMnTxId=document.getElementById('mnTxId');
+    const domMnCreateMasternode=document.getElementById('mnCreateMasternode')
     const domMnImportMasternode=document.getElementById('mnImportMasternode');
     const domMnPrivateKey=document.getElementById('mnPrivateKey');
 
@@ -1053,6 +1072,83 @@
     }
     
     //path is the address path which is non-trivial only if you are using HD/ledger wallet
+    async function createMasternode() {
+      
+      const address = await getNewAddress();
+      let nValue = 10000 * COIN;
+    
+      const nBalance = getBalance();
+      const cTx = bitjs.transaction();
+      const cCoinControl = chooseUTXOs(cTx, nValue, 0, false);
+      if (!cCoinControl.success) return alert(cCoinControl.msg);
+      // Compute fee
+      const nFee = getFee(cTx.serialize().length);
+      
+      // Compute change (or lack thereof)
+      const nChange = cCoinControl.nValue - (nFee + nValue);
+      const changeAddress = await getNewAddress({verify: masterKey.isHardwareWallet});
+      const outputs = [];
+      if (nChange > 0) {
+        // Change output
+        outputs.push([changeAddress, nChange / COIN]);
+      } else {
+       createAlert("warning","You don't have enough PIVs to create a masternode") 
+       return;
+      }
+      
+      // Primary output (receiver)
+      outputs.push([address, nValue / COIN]);
+      
+      // Debug-only verbose response
+      if (debug) domHumanReadable.innerHTML = "Balance: " + (nBalance / COIN) + "<br>Fee: " + (nFee / COIN) + "<br>To: " + address + "<br>Sent: " + (nValue / COIN) + (nChange > 0 ? "<br>Change Address: " + changeAddress + "<br>Change: " + (nChange / COIN) : "");
+
+      // Add outputs to the Tx
+      for (const output of outputs) {
+        cTx.addoutput(output[0], output[1]);
+      }
+
+      // Sign and broadcast!
+      if (!masterKey.isHardwareWallet) {
+        const sign = await cTx.sign(masterKey, 1);
+        sendTransaction(sign);
+      } else {
+        // Format the inputs how the Ledger SDK prefers
+        const arrInputs = [];
+        const arrAssociatedKeysets = [];
+        for (const cInput of cTx.inputs) {
+          const cInputFull = await getTxInfo(cInput.outpoint.hash);
+          arrInputs.push([await cHardwareWallet.splitTransaction(cInputFull.hex), cInput.outpoint.index]);
+          arrAssociatedKeysets.push(cInput.path);
+        }
+        const cLedgerTx = await cHardwareWallet.splitTransaction(cTx.serialize());
+              const strOutputScriptHex = await cHardwareWallet
+          .serializeTransactionOutputs(cLedgerTx)
+          .toString("hex");
+
+        // Sign the transaction via Ledger
+        const strSerialisedTx = await confirmPopup(
+          {
+            title: "Confirm your transaction",
+            html: createTxConfirmation(outputs),
+            resolvePromise: cHardwareWallet.createPaymentTransactionNew({
+              inputs: arrInputs,
+              associatedKeysets: arrAssociatedKeysets,
+              outputScriptHex: strOutputScriptHex,
+            }),
+          }
+        );
+
+        // Broadcast the Hardware (Ledger) TX
+        sendTransaction(strSerialisedTx);
+        
+      }
+      let masternode_privateKey= await generateMnPrivkey();
+       await confirmPopup({
+          title: "Your Masternode Private Key",
+          html: `${masternode_privateKey} <br> Save this private key and copy it on your VPS`, 
+        });
+        createAlert("success","Your masternode has been created! Wait 15 confirmations before accessing it") 
+    }
     async function importMasternode(path=""){ 
       //the first UTXO should have the 10k pivx 
       let firstUTXO=cachedUTXOs[cachedUTXOs.length-1];
@@ -1784,7 +1880,7 @@
       // Show and activate the given screen
       document.getElementById(tabName).style.display = "block";
       evt.currentTarget.classList.add("active");
-
+      
       // Close the navbar if it's not already closed
       if (!domNavbarToggler.className.includes("collapsed"))
         domNavbarToggler.click();
@@ -1846,7 +1942,7 @@
               let firstUTXO=cachedUTXOs[cachedUTXOs.length-1];
 
               //collateral in satoshi units
-              let collateraInSats=1000000000000;
+              let collateraInSats=10000*COIN;
               if(collateraInSats===firstUTXO.sats){
                 domAccessMasternode.style.display="block";
                 domMnTextErrors.children[1].innerHTML="Good! now handle your masternode :D";
@@ -1860,17 +1956,36 @@
               }
             }
           }else if(masterKey._isHD){
+            
+            domCreateMasternode.style.display="block";
+            domMnTxId.style.display="none";
             if(cachedUTXOs.length==0){
               domMnTextErrors.children[1].innerHTML="This HD wallet is empty or UTXOs are not loaded yet, reopen the tab in a few seconds."
             }else{
-            const wallets_map = new Map();
-            for(let i in cachedUTXOs){
-              wallets_map.set(cachedUTXOs[i].path,cachedUTXOs[i]);
-            }
-            domAccessMasternode.style.display="block";
-            domMnTxId.style.display="block";
-            console.log(cachedUTXOs)
-            console.log(wallets_map)
+              
+              let collateraInSats=10000*COIN; //collateral in satoshi units
+              let wallets_map = new Map(); //first UTXO for each address in HD
+              for(let i in cachedUTXOs){
+                wallets_map.set(cachedUTXOs[i].path,cachedUTXOs[i]);
+              }
+              
+              for(let [key, value] of wallets_map){
+                if(value.sats!==collateraInSats){
+                  wallets_map.delete(key);
+                }
+              }
+              if(wallets_map.size===0){
+                domMnTextErrors.children[1].innerHTML="There are no accessible masternodes, you should create one first";
+              }else{
+                domAccessMasternode.style.display="block";
+                domMnTxId.style.display="block";
+                domMnTextErrors.children[1].innerHTML="There could be one or more masternodes in this wallet";
+                console.log(wallets_map)
+                //TODO LET THE USER SELECT WHICH MASTERNODE HE WANTS TO USE
+              }
+              
+            //console.log(cachedUTXOs) cover liquid stool young garage test rib atom private sleep entire music
+            //console.log(wallets_map)
             }
           } 
         }else{
