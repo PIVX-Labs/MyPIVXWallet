@@ -1977,7 +1977,7 @@
         if(masterKey){
 
           //first case: the wallet is not HD and it is not hardware, so in case the wallet has collateral the user can check its status and do simple stuff like voting
-          if(!masterKey._isHD && !masterKey._isHardwareWallet ){
+          if(!masterKey.isHD && !masterKey.isHardwareWallet ){
             domMnAccessMasternodeText.innerHTML=masternodeLegacyAccessText;
             domMnTxId.style.display="none";
             if(cachedUTXOs.length==0){
@@ -2000,7 +2000,7 @@
                 domMnTextErrors.children[1].innerHTML="This is not a <b>collateral</b> wallet!";
               }
             }
-          }else if(masterKey._isHD){
+          }else if(masterKey.isHD){
             
             domCreateMasternode.style.display="block";
             domMnTxId.style.display="none";
@@ -2041,7 +2041,7 @@
                 }
               }
             }
-          }else if(masterKey._isHardwareWallet){
+          }else if(masterKey.isHardwareWallet){
             domCreateMasternode.style.display="none";
             domAccessMasternode.style.display="none";
             domMnTxId.style.display="none";
