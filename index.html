@@ -658,10 +658,8 @@
                 <div id="mnImportMasternode" style='display: block;'>
                   <input type="password" id='mnPrivateKey' placeholder="Masternode Private Key">
                   <input type="text" id='mnIP' placeholder="Masternode ip address">
-                  <input list="mnTxList" id='mnTxId' style="display: block;" placeholder="Masternode collateral tx">
-                    <datalist id="mnTxList">
-
-                    </datalist>
+                  <select id='mnTxId' style="display: block;" placeholder="Masternode collateral tx" class="form-control">
+		  </select>
                   <button class="pivx-button-big" onclick="importMasternode()">
                                 <span class="buttoni-icon"><i class="fas fa-file-upload fa-tiny-margin"></i></span>
                                 <span class="buttoni-text" id="importMnText">Access Masternode</span>
@@ -883,12 +881,11 @@
     const domAccessMasternode = document.getElementById('accessMasternode');
     const domMnAccessMasternodeText = document.getElementById('accessMasternodeText');
     const domMnTextErrors=document.getElementById('mnTextErrors');
-    const domMnIP=document.getElementById('mnIP');
-    const domMnTxList=document.getElementById('mnTxList')
-    const domMnTxId=document.getElementById('mnTxId');
-    const domMnCreateMasternode=document.getElementById('mnCreateMasternode')
-    const domMnImportMasternode=document.getElementById('mnImportMasternode');
-    const domMnPrivateKey=document.getElementById('mnPrivateKey');
+    const domMnIP = document.getElementById('mnIP');
+    const domMnTxId = document.getElementById('mnTxId');
+    const domMnCreateMasternode = document.getElementById('mnCreateMasternode')
+    const domMnImportMasternode = document.getElementById('mnImportMasternode');
+    const domMnPrivateKey = document.getElementById('mnPrivateKey');
 
     const domAccessWallet = document.getElementById('accessWallet');
     const domImportWallet = document.getElementById('importWallet');
@@ -2007,7 +2004,7 @@
             
             domCreateMasternode.style.display="block";
             domMnTxId.style.display="none";
-            domMnTxList.innerHTML="";
+            domMnTxId.innerHTML=""; // TODO: here
             domMnAccessMasternodeText.innerHTML=masternodeHDAccessText;
             if(cachedUTXOs.length==0){
               domMnTextErrors.children[1].innerHTML="This HD wallet is empty or UTXOs are not loaded yet, reopen the tab in a few seconds."
@@ -2037,10 +2034,10 @@
                 } 
                 
                 for(const [key, value] of wallets_map){
-                    const option = document.createElement('option');
-                    option.value = key;
-                    option.innerText= await masterKey.getAddress(key);
-                    domMnTxList.appendChild(option)
+                  const option = document.createElement('option');
+                  option.value = key;
+                  option.innerText = await masterKey.getAddress(key);
+                  domMnTxId.appendChild(option)
                 }
               }
             }
