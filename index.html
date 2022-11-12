@@ -643,6 +643,7 @@
                 <div id="mnImportMasternode" style='display: block;'>
                   <input type="password" id='mnPrivateKey' placeholder="Masternode Private Key">
                   <input type="text" id='mnIP' placeholder="Masternode ip address">
+                  <input type="text" id='mnTxId' placeholder="Masternode collateral tx" style="display: block;">
                   <button class="pivx-button-big" onclick="importMasternode()">
                                 <span class="buttoni-icon"><i class="fas fa-file-upload fa-tiny-margin"></i></span>
                                 <span class="buttoni-text" id="importMnText">Access Masternode</span>
@@ -838,6 +839,7 @@
     const domAccessMasternode = document.getElementById('accessMasternode');
     const domMnTextErrors=document.getElementById('mnTextErrors');
     const domMnIP=document.getElementById('mnIP');
+    const domMnTxId=document.getElementById('mnTxId');
     const domMnImportMasternode=document.getElementById('mnImportMasternode');
     const domMnPrivateKey=document.getElementById('mnPrivateKey');
 
@@ -1018,7 +1020,10 @@
     }
 
     async function govVote(hash,voteCode){
-      if (confirm("Are you sure you want to vote? You will have to wait 1 hour before changing!") == true) {
+      if ( await confirmPopup({
+          title: "Confirm Vote",
+          html: "Are you sure? It takes 60 minutes to change vote",
+        }) == true) {
         if(localStorage.getItem("masternode")){
           let c_masternode= new Masternode(JSON.parse(localStorage.getItem("masternode")))
           let result= await c_masternode.vote(hash.toString(),voteCode); //1 yes 2 no
@@ -1048,6 +1053,9 @@
       domMnPrivateKey.value="";
       let ip=domMnIP.value;
       domMnIP.value=""
+      let tx= domMnTxId.value; //this is only used for HD wallets because user could have more than 1 MN
+      domMnTxId.value=""
+      
       let port="51474"; //default masternode port
       let address=ip+":"+port
       let collateralTxId=firstUTXO.id;
@@ -1813,6 +1821,7 @@
 
           //first case: the wallet is not HD and it is not hardware, so in case the wallet has collateral the user can check its status and do simple stuff like voting
           if(!masterKey._isHD && !masterKey._isHardwareWallet ){
+            domMnTxId.style.display="none";
             if(cachedUTXOs.length==0){
               domMnTextErrors.children[1].innerHTML="This wallet is empty or UTXOs are not loaded yet, reopen the tab in a few seconds."
             }else{
@@ -1825,18 +1834,28 @@
                 domAccessMasternode.style.display="block";
                 domMnTextErrors.children[1].innerHTML="Good! now handle your masternode :D";
                 if(localStorage.getItem("masternode")){
-                let c_masternode= new Masternode(JSON.parse(localStorage.getItem("masternode")))
-                let status= await c_masternode.getStatus();  
-                domMnTextErrors.children[1].innerHTML="A masternode is already loaded, current status:<b> "+status+ "</b>.";
-
+                  let c_masternode= new Masternode(JSON.parse(localStorage.getItem("masternode")))
+                  let status= await c_masternode.getStatus();  
+                  domMnTextErrors.children[1].innerHTML="A masternode is already loaded, current status:<b> "+status+ "</b>.";
                 } 
               }else{
                 domMnTextErrors.children[1].innerHTML="This is not a <b>collateral</b> wallet!";
               }
             }
           }else if(masterKey._isHD){
-            domMnTextErrors.children[1].innerHTML="This case needs to be handled >.<";
-          }
+            if(cachedUTXOs.length==0){
+              domMnTextErrors.children[1].innerHTML="This HD wallet is empty or UTXOs are not loaded yet, reopen the tab in a few seconds."
+            }else{
+            const wallets_map = new Map();
+            for(let i in cachedUTXOs){
+              wallets_map.set(cachedUTXOs[i].path,cachedUTXOs[i]);
+            }
+            domAccessMasternode.style.display="block";
+            domMnTxId.style.display="block";
+            console.log(cachedUTXOs)
+            console.log(wallets_map)
+            }
+          } 
         }else{
           domMnTextErrors.children[1].innerHTML="Please access your <b>COLLATERAL WALLET </b> first.";
         }
