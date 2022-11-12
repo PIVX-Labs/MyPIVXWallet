@@ -640,12 +640,10 @@
             </div>
 
             <!-- IMPORT MASTERNODE -->
-            <div id='accessMasternode' class="dashboard-item" style='display:block;'>
+            <div id='accessMasternode' class="dashboard-item" style='display:none;'>
               <div class="container">
 
-                <p>Access the masternode linked to this address</p>
-                <p>Note: the masternode MUST have been already created (however it can be online or offline)</p>  
-                <p>If you want to create a new masternode access with a HD wallet</p> 
+                <div id="accessMasternodeText"></div> 
                 <br>
                 <input class="hide-element" type="text">
                 <div id="mnImportMasternode" style='display: block;'>
@@ -867,6 +865,7 @@
     //MASTERNODE ELEMENTS
     const domCreateMasternode = document.getElementById('createMasternode');
     const domAccessMasternode = document.getElementById('accessMasternode');
+    const domMnAccessMasternodeText = document.getElementById('accessMasternodeText');
     const domMnTextErrors=document.getElementById('mnTextErrors');
     const domMnIP=document.getElementById('mnIP');
     const domMnTxList=document.getElementById('mnTxList')
@@ -913,7 +912,8 @@
     const domConfirmModalConfirmButton = document.getElementById("confirmModalConfirmButton");
     const domConfirmModalCancelButton = document.getElementById("confirmModalCancelButton");
 	  
-
+    const masternodeLegacyAccessText='Access the masternode linked to this address<br> Note: the masternode MUST have been already created (however it can be online or offline)<br>  If you want to create a new masternode access with a HD wallet'
+    const masternodeHDAccessText="Access your masternodes if you have any! If you don't you can create one"
     // Aggregate menu screens and links for faster switching
     const arrDomScreens = document.getElementsByClassName("tabcontent");
     const arrDomScreenLinks = document.getElementsByClassName("tablinks");
@@ -1058,6 +1058,10 @@
         }) == true) {
         if(localStorage.getItem("masternode")){
           let c_masternode= new Masternode(JSON.parse(localStorage.getItem("masternode")))
+          if(await c_masternode.getStatus()!=="ENABLED"){
+            createAlert("warning","Your masternode is not enabled!",6000);
+            return;
+          }
           let result= await c_masternode.vote(hash.toString(),voteCode); //1 yes 2 no
           console.log(result);
           if(result.includes("Voted successfully")){ //good vote
@@ -1974,6 +1978,7 @@
 
           //first case: the wallet is not HD and it is not hardware, so in case the wallet has collateral the user can check its status and do simple stuff like voting
           if(!masterKey._isHD && !masterKey._isHardwareWallet ){
+            domMnAccessMasternodeText.innerHTML=masternodeLegacyAccessText;
             domMnTxId.style.display="none";
             if(cachedUTXOs.length==0){
               domMnTextErrors.children[1].innerHTML="This wallet is empty or UTXOs are not loaded yet, reopen the tab in a few seconds."
@@ -2000,6 +2005,7 @@
             domCreateMasternode.style.display="block";
             domMnTxId.style.display="none";
             domMnTxList.innerHTML="";
+            domMnAccessMasternodeText.innerHTML=masternodeHDAccessText;
             if(cachedUTXOs.length==0){
               domMnTextErrors.children[1].innerHTML="This HD wallet is empty or UTXOs are not loaded yet, reopen the tab in a few seconds."
             }else{
@@ -2021,6 +2027,12 @@
                 domAccessMasternode.style.display="block";
                 domMnTxId.style.display="block";
                 domMnTextErrors.children[1].innerHTML="There could be one or more masternodes in this wallet";
+                if(localStorage.getItem("masternode")){
+                  let c_masternode= new Masternode(JSON.parse(localStorage.getItem("masternode")))
+                  let status= await c_masternode.getStatus();  
+                  domMnTextErrors.children[1].innerHTML="A masternode is already loaded, current status:<b> "+status+ "</b>.";
+                } 
+                
                 for(const [key, value] of wallets_map){
                     const option = document.createElement('option');
                     option.value = key;
@@ -2030,12 +2042,15 @@
                 
                 console.log(wallets_map)
               }
-              
-            //console.log(cachedUTXOs) cover liquid stool young garage test rib atom private sleep entire music
-            //console.log(wallets_map)
             }
-          } 
+          }else if(masterKey._isHardwareWallet){
+            domCreateMasternode.style.display="none";
+            domAccessMasternode.style.display="none";
+            domMnTxId.style.display="none";
+            domMnTextErrors.children[1].innerHTML="Sorry, ledger is not yet supported "+status+ "</b>.";
+          }
         }else{
+          
           domMnTextErrors.children[1].innerHTML="Please access your <b>COLLATERAL WALLET </b> first.";
         }
       }  

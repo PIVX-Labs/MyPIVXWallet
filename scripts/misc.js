@@ -156,7 +156,7 @@ function createQR(strData = '', domImg,size=4) {
 
 
 //generate private key for masternodes
-async function generateMnPrivkey(isTestnet=false){
+async function generateMnPrivkey(){
     // maximum value for a decoded private key
     let max_decoded_value=115792089237316195423570985008687907852837564279074904382605163141518161494337n;
     let valid=false;
@@ -171,7 +171,7 @@ async function generateMnPrivkey(isTestnet=false){
             valid=true;
         }
     }
-    return await convertMnPrivKeyFromHex(priv_key,isTestnet);
+    return await convertMnPrivKeyFromHex(priv_key,cChainParams.current.isTestnet);
 }
 
 async function convertMnPrivKeyFromHex(hexStr,isTestnet){
