@@ -6,6 +6,7 @@ var networkEnabled = true;    // A lock which blocks ALL network requests in tot
 var fAlternativeSync = true;  // A more resource-intensive but deep UTXO set sync mode
 
 var cExplorer = cChainParams.current.Explorers[0];
+let cNode = cChainParams.current.Nodes[0];
 
 // A list of statistic keys and their descriptions
 const STATS = {
@@ -40,6 +41,7 @@ const domDebug = document.getElementById('Debug');
 const domSyncMode = document.getElementById('SyncMode');
 const domTestnet = document.getElementById('Testnet');
 const domExplorerSelect = document.getElementById('explorer');
+const domNodeSelect = document.getElementById('node');
 
 // Display the default settings directly in the UI
 domNetwork.innerHTML = '<b> Network:</b> ' + (networkEnabled ? 'Enabled' : 'Disabled');
@@ -56,6 +58,16 @@ function setExplorer(explorer, fSilent = false) {
     enableNetwork();
     if (!fSilent) createAlert('success', '<b>Switched explorer!</b><br>Now using ' + cExplorer.name, 2250);
 }
+
+function setNode(node, fSilent = false) {
+    cNode = node;
+    localStorage.setItem('node' + (cChainParams.current.isTestnet ? '-testnet' : ''), node.url);
+
+    // Enable networking + notify if allowed
+    enableNetwork();
+    if (!fSilent) createAlert('success', '<b>Switched node!</b><br>Now using ' + cNode.name, 2250);
+}
+
 // Hook up the 'explorer' select UI
 document.getElementById('explorer').onchange = function(evt) {
     setExplorer(cChainParams.current.Explorers.find(a => a.url === evt.target.value));
@@ -94,6 +106,7 @@ function toggleTestnet() {
     domGuiBalanceStakingTicker.innerText = cChainParams.current.TICKER;
     domPrefixNetwork.innerText = cChainParams.current.PUBKEY_PREFIX.join(' or ');
     fillExplorerSelect();
+    fillNodeSelect();
     getBalance(true);
     getStakingBalance(true);
     updateStakingRewardsGUI();
@@ -153,11 +166,38 @@ function fillExplorerSelect() {
     domExplorerSelect.value = cExplorer.url;
 }
 
+function fillNodeSelect() {
+    cNode = cChainParams.current.Nodes[0];
+    
+    while (domNodeSelect.options.length>0) {
+        domNodeSelect.remove(0);
+    }
+
+    // Add each trusted node into the UI selector
+    for (const node of cChainParams.current.Nodes) {
+        const opt = document.createElement('option');
+        opt.value = node.url;
+        opt.innerHTML = node.name + ' (' + node.url.replace('https://', '') + ')';
+        domNodeSelect.appendChild(opt);
+    }
+
+    // Fetch settings from LocalStorage
+    const strSettingNode = localStorage.getItem('node' + (cChainParams.current.isTestnet ? '-testnet' : ''));
+
+    // For any that exist: load them, or use the defaults
+    setNode(cChainParams.current.Nodes.find(a => a.url === strSettingNode) || cNode, true);
+
+    // And update the UI to reflect them
+    domNodeSelect.value = cNode.url;
+
+}
+
 // Once the DOM is ready; plug-in any settings to the UI
 addEventListener('DOMContentLoaded', () => {
     const domAnalyticsSelect = document.getElementById('analytics');
 
     fillExplorerSelect();
+    fillNodeSelect();
 
     // Add each analytics level into the UI selector
     for (const analLevel of arrAnalytics) {

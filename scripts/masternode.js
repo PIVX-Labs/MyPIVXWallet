@@ -11,7 +11,7 @@ class Masternode {
     }
 
     async getStatus() {
-	const url= `http://194.195.87.248:8080/listmasternodes?params=${this.collateralTxId}`;
+	const url= `${cNode.url}/listmasternodes?params=${this.collateralTxId}`;
 	console.log(url)
 	try{
 	    const masternodes = (await (await fetch(url)).json()).filter(m=>m.outidx === this.outidx);
@@ -186,13 +186,13 @@ class Masternode {
 
     async start() {
 	const message = await this.broadcastMessageToHex();
-	const url = `http://194.195.87.248:8080/relaymasternodebroadcast?params=${message}`;
+	const url = `${cNode.url}/relaymasternodebroadcast?params=${message}`;
 	const response = await (await fetch(url)).text();
 	return response.includes("Masternode broadcast sent");
     }
 
     static async getProposals() {
-	const url = `http://194.195.87.248:8080/getbudgetinfo`;
+	const url = `${cNode.url}/getbudgetinfo`;
 	return await (await fetch(url)).json();
     }
 
@@ -217,18 +217,9 @@ class Masternode {
     async vote(hash, voteCode) {
 	const sigTime = Math.round(Date.now() / 1000);
 	const signature = await this.getSignedVoteMessage(hash, voteCode, sigTime);
-	const url = `http://194.195.87.248:8080/mnbudgetrawvote?params=${this.collateralTxId},${this.outidx},${hash},${voteCode === 1 ? "yes" : "no"},${sigTime},${encodeURI(signature).replaceAll("+", "%2b")}`;
+	const url = `${cNode.url}/mnbudgetrawvote?params=${this.collateralTxId},${this.outidx},${hash},${voteCode === 1 ? "yes" : "no"},${sigTime},${encodeURI(signature).replaceAll("+", "%2b")}`;
 	const text = await (await fetch(url)).text();
 	return text;
     }
 }
 
-/*
-var masternode = new Masternode({
-  walletPrivateKey: "cPFgnXiHDXDX1E2AiakYkKMVQKCZDJUXaueBUDyGKm6YkNfT3iYy",
-  mnPrivateKey: "91qUpg6GVuEamvSQXtZKVbcWGMXCx7GhZfMHsGu3vARWN5xydsU",
-  collateralTxId: "0778b7e415435e7242515ba7207a0a6716b60833ec06eaa0219a9ac47819d503",
-  outidx: 1,
-  addr: "194.195.87.248:51474",
-});
-*/

@@ -69,7 +69,11 @@
                   // Display name      Blockbook-compatible API base
                   { name: "rockdev",   url: "https://explorer.rockdev.org" },
                   { name: "zkBitcoin", url: "https://zkbitcoin.com" }
-              ]
+              ],
+	      Nodes: [
+		  { name: "duddino", url: "http://194.195.87.248:8080/mainnet"}
+	      ]
+
           },
           testnet: {
               isTestnet         : true,
@@ -84,7 +88,10 @@
               Explorers         : [
                   // Display name      Blockbook-compatible API base
                   { name: "rockdev",   url: "https://testnet.rockdev.org" }
-              ]
+              ],
+	      Nodes: [
+		  { name: "duddino", url: "http://194.195.87.248:8080/testnet"}
+	      ]
           }
       }
       // Set default chain
@@ -767,6 +774,13 @@
               <label for="explorer">Choose an explorer:</label>
               <br>
               <select id="explorer" class="form-control" name="explorer">
+                <!-- Populated via JS at DOM load (settings.js) -->
+              </select>
+              <br>
+	      
+              <label for="node">Choose a PIVX node:</label>
+              <br>
+              <select id="node" class="form-control" name="explorer">
                 <!-- Populated via JS at DOM load (settings.js) -->
               </select>
               <br>
@@ -2050,7 +2064,6 @@
             domMnTextErrors.children[1].innerHTML="Sorry, ledger is not yet supported "+status+ "</b>.";
           }
         }else{
-          
           domMnTextErrors.children[1].innerHTML="Please access your <b>COLLATERAL WALLET </b> first.";
         }
       }  
