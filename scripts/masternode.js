@@ -12,7 +12,6 @@ class Masternode {
 
     async getStatus() {
 	const url= `${cNode.url}/listmasternodes?params=${this.collateralTxId}`;
-	console.log(url)
 	try{
 	    const masternodes = (await (await fetch(url)).json()).filter(m=>m.outidx === this.outidx);
 	    if(masternodes.length > 0) {
@@ -20,7 +19,8 @@ class Masternode {
 	    } else {
 		return "NOT_FOUND";
 	    }
-	}catch(error){ //this is the unfortunate state in which the node is not reachable
+	} catch(e) { //this is the unfortunate state in which the node is not reachable
+	    console.error(e);
 	    return "COULD NOT CONNECT TO THE EXPLORER";
 	}
     }

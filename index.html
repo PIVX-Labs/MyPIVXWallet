@@ -64,6 +64,7 @@
               SECRET_KEY        : 212,
               BIP44_TYPE        : 119,
               BIP44_TYPE_LEDGER : 77,
+	      MASTERNODE_PORT   : 51472,
               // A list of Labs-trusted explorers
               Explorers         : [
                   // Display name      Blockbook-compatible API base
@@ -84,6 +85,7 @@
               SECRET_KEY        : 239,
               BIP44_TYPE        : 1,
               BIP44_TYPE_LEDGER : 1,
+	      MASTERNODE_PORT   : 51474,
               // A list of Labs-trusted explorers
               Explorers         : [
                   // Display name      Blockbook-compatible API base
@@ -1077,7 +1079,6 @@
             return;
           }
           let result= await c_masternode.vote(hash.toString(),voteCode); //1 yes 2 no
-          console.log(result);
           if(result.includes("Voted successfully")){ //good vote
             createAlert('success', 'Voted successfully',6000);
           }else if(result.includes("Error voting :")){ //If you already voted return an alert
@@ -1172,79 +1173,66 @@
         createAlert("success","Your masternode has been created! Wait 15 confirmations before accessing it") 
     }
     async function importMasternode(){ 
-      let mnPrivKey;
+      const mnPrivKey = domMnPrivateKey.value;
       
-      let ip;
-      let port;
+      const ip = domMnIP.value;
       let address;
       let collateralTxId;
       let outidx;
       let collateralPrivKey;
-      if(domMnTxId.style.display==="none"){
-        //the first UTXO should have the 10k pivx 
-        let firstUTXO=cachedUTXOs[cachedUTXOs.length-1];
-        
-        //masternode data
-        mnPrivKey=domMnPrivateKey.value;
-        domMnPrivateKey.value="";
-        ip=domMnIP.value;
-        domMnIP.value=""
-      
-        port="51474"; //default masternode port
-        address=ip+":"+port
-        collateralTxId=firstUTXO.id;
-        console.log(firstUTXO,collateralTxId)
-        outidx=firstUTXO.vout;
-        collateralPrivKey=await masterKey.getPrivateKey();
-      }else{
-        mnPrivKey=domMnPrivateKey.value;
-        domMnPrivateKey.value="";
-        ip=domMnIP.value;
-        domMnIP.value="";
+      domMnIP.value = "";
+      domMnPrivateKey.value = "";
 
-        let path= domMnTxId.value;
-        domMnTxId.value="";
-        
-        port="51474"; //default masternode port
-        address=ip+":"+port
+      if (!ip.includes(":")) {
+	address = `${ip}:${cChainParams.MASTERNODE_PORT}`;
+      } else {
+	address = ip;
+      }
+
+      if (!masterKey.isHD) {
+        //the first UTXO should have 10k PIV
+        let firstUTXO=cachedUTXOs[cachedUTXOs.length-1];
+
+        collateralTxId = firstUTXO.id;
+        outidx = firstUTXO.vout;
+        collateralPrivKey = await masterKey.getPrivateKey();
+      } else {
+        let path = domMnTxId.value;
         let collateraInSats=10000*COIN; //collateral in satoshi units
-        let masterUtxo; //first UTXO for each address in HD
-        for(let i in cachedUTXOs){
-          if(cachedUTXOs[i].path===path){
-           masterUtxo=cachedUTXOs[i] 
-          }
-        }
+	console.log(path);
+        const masterUtxo = cachedUTXOs.findLast(u=>u.path === path); // first UTXO for each address in HD
+	console.log(masterUtxo);
         //sanity check:
         if(masterUtxo.sats!==10000*COIN){
-          createAlert("warning","The UTXO doesn't match");
+          createAlert("warning", "The UTXO doesn't match", 10000);
           return;
         }
-        outidx=masterUtxo.vout;
-        collateralTxId=masterUtxo.id;
-        collateralPrivKey=await masterKey.getPrivateKey(path);
+        outidx = masterUtxo.vout;
+        collateralTxId = masterUtxo.id;
+        collateralPrivKey = await masterKey.getPrivateKey(path);
         console.log(path);
         console.log(masterUtxo)        
       }
+      domMnTxId.value = "";
 
       
-      var masternode_test = new Masternode({
+      const masternode = new Masternode({
                       walletPrivateKey: collateralPrivKey,
                       mnPrivateKey: mnPrivKey,
                       collateralTxId: collateralTxId,
                       outidx: outidx,
                       addr: address,
                       });
-      console.log(masternode_test)
-      let result= await masternode_test.getStatus();
-      if(result=== "NOT_FOUND"){
+      const result = await masternode.getStatus();
+      if(result === "NOT_FOUND"){
         domMnTextErrors.children[1].innerHTML="Masternode is currently  <b> OFFLINE </b>";
-        createAlert('warning', 'Your masternode is offline, we will try to start it',6000);
+        createAlert('warning', 'Your masternode is offline, we will try to start it', 6000);
         //try to start the masternode
-        let started= await masternode_test.start();
+        let started= await masternode.start();
         if(started){
           domMnTextErrors.children[1].innerHTML="Masternode successfully started!";
           createAlert('success', 'Masternode successfully started!, it will be soon online',6000);
-          localStorage.setItem("masternode", JSON.stringify(masternode_test));
+          localStorage.setItem("masternode", JSON.stringify(masternode));
         }else{
           domMnTextErrors.children[1].innerHTML="We couldn't start your masternode";
           createAlert('warning', 'We could not start your masternode',6000);
@@ -1252,11 +1240,11 @@
       }else if(result==="ENABLED"){
         domMnTextErrors.children[1].innerHTML="Your masternode is:  <b> ENABLED </b>! ";
         createAlert('success', 'Your masternode status is <b> ENABLED </b>',6000);
-        localStorage.setItem("masternode", JSON.stringify(masternode_test));
+        localStorage.setItem("masternode", JSON.stringify(masternode));
       }else if(result==="PRE_ENABLED"){ 
         domMnTextErrors.children[1].innerHTML="Your masternode status is:  <b> PRE ENABLED</b>, wait for a few hours and it will get enabled.";
         createAlert('success', 'Your masternode status is <b> PRE ENABLED </b>',6000);
-        localStorage.setItem("masternode", JSON.stringify(masternode_test));
+        localStorage.setItem("masternode", JSON.stringify(masternode));
       }else if(result === "REMOVED"){
         domMnTextErrors.children[1].innerHTML="Masternode is currently  <b> REMOVED </b>";
         createAlert('warning', 'Your masternode is in <b> REMOVED </b> state',6000);
@@ -1984,8 +1972,6 @@
           td4.appendChild(buttonNo)
 	  td4.appendChild(buttonYes)
         }
-        
-        console.log(proposals);
       }
       if(tabName==="Masternode"){
         //TODO: IN A FUTURE ADD MULTI-MASTERNODE SUPPORT BY SAVING MNs with which you logged in the past.
@@ -2056,8 +2042,6 @@
                     option.innerText= await masterKey.getAddress(key);
                     domMnTxList.appendChild(option)
                 }
-                
-                console.log(wallets_map)
               }
             }
           }else if(masterKey._isHardwareWallet){
