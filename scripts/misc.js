@@ -97,15 +97,7 @@ function createAlert(type, message, alertVariables, timeout = 0) {
     domAlert.classList.add(type);
 
     //TRANSLATION
-    //translate Alert
-    //String made:
-    //message = this is {number} times you've tried
-    //passes to createAlert(warning, message, 5000)
-    //AlertVariables is an object containing the translationVariable({number}) and the value (5)
-    //create Alert passes to TranslateAlert(message, alertVariables)
     let translatedMessage = translateAlerts(message, alertVariables)
-    //returns message in language that is required
-
 
     // Message
     domAlert.innerHTML = translatedMessage;
