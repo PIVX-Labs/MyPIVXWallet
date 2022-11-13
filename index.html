@@ -1169,7 +1169,7 @@
         if (!MAP_B58.toLowerCase().includes(char.toLowerCase())) {
           if (e.preventDefault) e.preventDefault();
           e.returnValue = false;
-          return createAlert('warning',"The character '" + char + "' is unsupported in addresses! (Not Base58 compatible)", 3500);
+          return createAlert('warning',ALERTS.UNSUPPORTED_CHARACTER, [{"char" : char}], 3500);
         }
     }
 
@@ -1190,7 +1190,7 @@
 
     async function generateVanityWallet() {
       if (isVanityGenerating) return stopSearch();
-      if (typeof(Worker) === "undefined") return createAlert('error', 'This browser doesn\'t support Web Workers (multi-threaded JS), unfortunately you cannot generate Vanity wallets!', 7500);
+      if (typeof(Worker) === "undefined") return createAlert('error', ALERTS.UNSUPPORTED_WEBWORKERS, [], 7500);
       // Generate a vanity address with the given prefix
       if (domPrefix.value.length === 0 || domPrefix.style.display === 'none') {
         // No prefix, display the intro!
@@ -1208,10 +1208,10 @@
 
         // Ensure the input is base58 compatible
         for (const char of domPrefix.value) {
-          if (!MAP_B58.toLowerCase().includes(char.toLowerCase())) return createAlert('warning',"The character '" + char + "' is unsupported in addresses! (Not Base58 compatible)", 3500);
+          if (!MAP_B58.toLowerCase().includes(char.toLowerCase())) return createAlert('warning',ALERTS.UNSUPPORTED_CHARACTER, [{"char" : char}], 3500);
         }
         // We also don't want users to be mining addresses for years... so cap the letters to four until the generator is more optimized
-        if (domPrefix.value.length > 5) return createAlert('warning', "This is a long name! This would take a LONG time to find, please choose a shorter name!", 3500);
+        if (domPrefix.value.length > 5) return createAlert('warning', ALERTS.UNSUPPORTED_CHARACTER, [{"char" : char}], 3500);
         isVanityGenerating = true;
         domPrefix.disabled = true;
         let attempts = 0;
@@ -1260,11 +1260,11 @@
     function validateAmount(nAmountSats, nMinSats = 10000) {
       // Validate the amount is a valid number, and meets the minimum (if any)
       if (nAmountSats < nMinSats || isNaN(nAmountSats))
-        return createAlertWithFalse('warning', INVALID_AMOUNT + VALIDATE_AMOUNT_LOW, [{"minimumAmount" : (nMinSats / COIN)}, {"coinTicker" : cChainParams.current.TICKER}], 2500);
+        return createAlertWithFalse('warning', ALERTS.INVALID_AMOUNT + ALERTS.VALIDATE_AMOUNT_LOW, [{"minimumAmount" : (nMinSats / COIN)}, {"coinTicker" : cChainParams.current.TICKER}], 2500);
 
       // Validate the amount in Satoshi terms meets the coin's native decimal depth
       if (!Number.isSafeInteger(nAmountSats))
-        return createAlertWithFalse('warning', INVALID_AMOUNT + '<br>' + VALIDATE_AMOUNT_DECIMAL,[{"coinDecimal" : COIN_DECIMALS}], 2500);
+        return createAlertWithFalse('warning', ALERTS.INVALID_AMOUNT + '<br>' + ALERTS.VALIDATE_AMOUNT_DECIMAL,[{"coinDecimal" : COIN_DECIMALS}], 2500);
 
       // Amount looks valid!
       return true;
@@ -1298,7 +1298,7 @@
         // Sanity
         if (cachedColdStakeAddr.length !== 34 || !cachedColdStakeAddr.startsWith(cChainParams.current.STAKING_PREFIX)) {
           askForCSAddr(true);
-          return createAlert('success', SUCCESS_STAKING_ADDR ,[]);
+          return createAlert('success', ALERTS.SUCCESS_STAKING_ADDR ,[]);
         }
 
         // The re-delegated change output
@@ -1382,7 +1382,7 @@
       // Sanity
       if (cachedColdStakeAddr.length !== 34 || !cachedColdStakeAddr.startsWith(cChainParams.current.STAKING_PREFIX)) {
         askForCSAddr(true);
-        return createAlert('success', SUCCESS_STAKING_ADDR_SET, []);
+        return createAlert('success', ALERTS.SUCCESS_STAKING_ADDR_SET, []);
       }
       delegate(nAmount, cachedColdStakeAddr);
     }
@@ -1513,17 +1513,17 @@
       const address = domAddress1s.value.trim();
       // If Staking address: redirect to staking page
       if (address.startsWith(cChainParams.current.STAKING_PREFIX)) {
-	createAlert('warning', STAKE_NOT_SEND, [], 7500);
+	createAlert('warning', ALERTS.STAKE_NOT_SEND, [], 7500);
 	return domStakeTab.click();
       }
-      if (address.length !== 34) return createAlert('warning', '<b>Invalid PIVX address!<b><br>Bad length (' + address.length + ')', 2500);
-      if (!cChainParams.current.PUBKEY_PREFIX.includes(address[0])) return createAlert('warning', '<b>Invalid PIVX address!<b><br>Bad prefix ' + address[0] + ' (Should start with ' + cChainParams.current.PUBKEY_PREFIX.join(' or ') + ')', 3500);
-      if (!bitjs.isValidDestination(address,cChainParams.current.PUBKEY_ADDRESS)) return createAlert('warning', '<b>Invalid PIVX address!<b><br>' + address, 3500);
+      if (address.length !== 34) return createAlert('warning', ALERTS.BAD_ADDR_LENGTH,[{"addressLength" : address.length}], 2500);
+      if (!cChainParams.current.PUBKEY_PREFIX.includes(address[0])) return createAlert('warning', ALERTS.BAD_ADDR_PREFIX, [{"address" : address[0]},{"addressPrefix" : cChainParams.current.PUBKEY_PREFIX.join(' or ')}], 3500);
+      if (!bitjs.isValidDestination(address,cChainParams.current.PUBKEY_ADDRESS)) return createAlert('warning', ALERTS.INVALID_ADDRESS, [{"address" :address}], 3500);
       
       // Sanity check the amount
       let nValue = Math.round(Number(domValue1s.value.trim()) * COIN);
-      if (nValue <= 0 || isNaN(nValue))  return createAlert('warning', INVALID_AMOUNT +SENT_NOTHING, [], 2500);
-      if (!Number.isSafeInteger(nValue)) return createAlert('warning', INVALID_AMOUNT +MORE_THEN_8_DECIMALS, [], 2500);
+      if (nValue <= 0 || isNaN(nValue))  return createAlert('warning', ALERTS.INVALID_AMOUNT +ALERTS.SENT_NOTHING, [], 2500);
+      if (!Number.isSafeInteger(nValue)) return createAlert('warning', ALERTS.INVALID_AMOUNT +ALERTS.MORE_THEN_8_DECIMALS, [], 2500);
       
       // Construct a TX and fetch Standard inputs
       const nBalance = getBalance();
@@ -1716,7 +1716,7 @@
     const beforeUnloadListener = (evt) => {
       evt.preventDefault();
       // Disable Save your wallet warning on unload
-      if( !cChainParams.current.isTestnet ) createAlert("warning", SAVE_WALLET_PLEASE, [], 10000);
+      if( !cChainParams.current.isTestnet ) createAlert("warning", ALERTS.SAVE_WALLET_PLEASE, [], 10000);
       // Most browsers ignore this nowadays, but still, keep it 'just incase'
       return evt.returnValue = BACKUP_OR_ENCRYPT_WALLET;
     };

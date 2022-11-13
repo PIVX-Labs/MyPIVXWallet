@@ -142,6 +142,12 @@ var translation = {
     transaction:"",                  //"A ping indicating a Tx, no unique data is sent, but may be inferred from on-chain time.",
     
     FAILED_TO_IMPORT: "",            //<b>Failed to import!</b> Invalid password,
+
+    UNSUPPORTED_CHARACTER:  "",        //"The character '{char}' is unsupported in addresses! (Not Base58 compatible)"
+    UNSUPPORTED_WEBWORKERS: "",      //This browser doesn\'t support Web Workers (multi-threaded JS), unfortunately you cannot generate Vanity wallets!
+    INVALID_ADDRESS: "",            //<b>Invalid PIVX address!<b><br> {address}
+
+
     TESTNET_ENCRYPTION_DISABLED: "", //"<b>Testnet Mode is ON!</b><br>Wallet encryption disabled",
     PASSWORD_TOO_SMALL: "",          //"That password is a little short!<br>Use at least <b>{MIN_PASS_LENGTH} characters.</b>",
     PASSWORD_DOESNT_MATCH: "",       //'Your passwords don\'t match!',
