@@ -51,12 +51,24 @@
   <script>
       // In most BTC-derived coins, the below parameters can be found in the 'src/chainparams.cpp' Mainnet configuration.
       // These below params share the same names as the CPP params, so finding and editing these is easy-peasy!
+      // <[network_byte] [32_byte_payload] [0x01] [4_byte_checksum]>
+      const PRIVKEY_BYTE_LENGTH = 38;
+
+      const COIN_DECIMALS = 8;
+      const COIN = 10**8;
+
+      /* Internal tweaking parameters */
+      // A new encryption password must be 'at least' this long.
+      const MIN_PASS_LENGTH = 6;
+
+      // Cool stuff
+      const donationAddress = "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb";
 
       /* chainparams */
       const cChainParams = {
           current: null,
           main: {
-              collateralInSats   : 10000 * 10**8,
+              collateralInSats   : 10000 * COIN,
               isTestnet         : false,
               TICKER            : "PIV",
               PUBKEY_PREFIX     : ["D"],
@@ -78,7 +90,7 @@
 
           },
           testnet: {
-	      collateralInSats   : 10000 * 10**8,
+	      collateralInSats   : 10000 * COIN,
               isTestnet         : true,
               TICKER            : "tPIV",
               PUBKEY_PREFIX     : ["x","y"],
@@ -101,18 +113,6 @@
       // Set default chain
       cChainParams.current = cChainParams.main;
 
-      // <[network_byte] [32_byte_payload] [0x01] [4_byte_checksum]>
-      const PRIVKEY_BYTE_LENGTH = 38;
-
-      const COIN_DECIMALS = 8;
-      const COIN = 10**8;
-
-      /* Internal tweaking parameters */
-      // A new encryption password must be 'at least' this long.
-      const MIN_PASS_LENGTH = 6;
-
-      // Cool stuff
-      const donationAddress = "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb";
   </script>
 </head>
 
