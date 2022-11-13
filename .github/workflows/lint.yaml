@@ -6,12 +6,16 @@ on:
   push:
     branches:
       - master
+    paths-ignore:
+    - "*.md"
+    - LICENCE
   pull_request:
     branches:
       - master
-  paths-ignore:
+    paths-ignore:
     - "*.md"
     - LICENCE
+
 
 jobs:
   run-linters:
