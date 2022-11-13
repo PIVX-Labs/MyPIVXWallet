@@ -91,7 +91,7 @@ function fillTranslationSelect() {
     }
 
     // And update the UI to reflect them
-    domTranslationSelect.value = localStorage.getItem('translation');
+    domTranslationSelect.value = (localStorage.getItem('translation') || 'en');
 }
 
 function setAnalytics(level, fSilent = false) {

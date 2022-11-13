@@ -136,10 +136,32 @@ var translation = {
     settingsToggleTestnet:"",       //Toggle Testnet Mode
 
     //Transparency Report
-    transparencyReport: "Transparency Report",
-    hit:"A ping indicating an app load, no unique data is sent.",
-    time_to_sync:"The time in seconds it took for MPW to last synchronise.",
-    transaction:"A ping indicating a Tx, no unique data is sent, but may be inferred from on-chain time."
+    transparencyReport:"",           //"Transparency Report",
+    hit:"",                          //"A ping indicating an app load, no unique data is sent.",
+    time_to_sync:"",                 //"The time in seconds it took for MPW to last synchronise.",
+    transaction:"",                  //"A ping indicating a Tx, no unique data is sent, but may be inferred from on-chain time.",
     
+    //ALERTS
+    FAILED_TO_IMPORT:"",             //'<b>Failed to import!</b> Invalid password',
+    TESTNET_ENCRYPTION_DISABLED:"",  //"<b>Testnet Mode is ON!</b><br>Wallet encryption disabled",
+    PASSWORD_TOO_SMALL:"",           //"That password is a little short!<br>Use at least <b>" + MIN_PASS_LENGTH + " characters.</b>",
+    PASSWORD_DOESNT_MATCH:"",        //'Your passwords don\'t match!',
+    NEW_PASSWORD_SUCCESS:"",         //'<b>You\'re Secured! 🔐</b><br>Nice stuff, Armoured PIVian!',
+    INVALID_AMOUNT:"",               //'<b>Invalid amount!</b><br>',
+    VALIDATE_AMOUNT_LOW:"",          //'<br>Minimum amount is ',
+    VALIDATE_AMOUNT_DECIMAL:"",      //' decimal limit exceeded',
+    SUCCESS_STAKING_ADDR:"",         //'<b>Staking Address set!</b><br>Now go ahead and unstake!',
+    CONFIRM_UNSTAKE_H_WALLET:"",     //"<b>Confirm your Unstake</b><br>Confirm the TX on your {strHardwareName}",
+    CONFIRM_TRANSACTION_H_WALLET:"", //"<b>Confirm your transaction</b><br>Confirm the TX on your ",
+    SUCCESS_STAKING_ADDR_SET:"",     //'<b>Staking Address set!</b><br>Now go ahead and stake!',
+    STAKE_NOT_SEND:"",               //'Here, use the <b>Stake</b> screen, not the Send screen!',
+    BAD_ADDR_LENGTH:"",              //'<b>Invalid PIVX address!<b><br>Bad length (',
+    BAD_ADDR_PREFIX:"",              //'<b>Invalid PIVX address!<b><br>Bad prefix ',
+    BAD_ADDR_PREFIX_2:"",            //' (Should start with ',
+    SENT_NOTHING:"",                 //'You can\'t send \'nothing\'!',
+    MORE_THEN_8_DECIMALS:"",         //'8 decimal limit exceeded',
+    SAVE_WALLET_PLEASE:"",           // "<b>Save your wallet!</b><br>Dashboard ➜ Set Password",
+    BACKUP_OR_ENCRYPT_WALLET:"",     // "Please ENCRYPT and/or BACKUP your keys before leaving, or you may lose them!"
+
 
 }

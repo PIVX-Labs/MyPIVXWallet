@@ -763,7 +763,6 @@
   <script type="text/javascript" src="scripts/network.js"></script>
   <script type="text/javascript" src="scripts/i18n.js"></script>
   <script>
-
     // TRANSLATION
     //Create an object of objects filled with all the translations
     var translatableLanguages = {
@@ -772,11 +771,13 @@
     }
     localTranslation = localStorage.getItem('translation')
     //Check if set in local storage
-    if(localTranslation){
+    console.log(localTranslation)
+    if(localTranslation != null){
       translation = translatableLanguages[localTranslation]
     }else{
       //Check what is the browsers default lang
       if (arrActiveLangs.includes(strLang)) {
+        console.log('ran')
         translation = translatableLanguages[strLang]
       }else{
         //Defaults to en if the lang doesn't exist yet
@@ -1061,7 +1062,7 @@
         // Fetch our inputs, ensure they're of decent entropy + match eachother
         const strPass = domEncryptPasswordFirst.value,
               strPassRetype = domEncryptPasswordSecond.value;
-        if (strPass.length < MIN_PASS_LENGTH) return createAlert('warning', ALERTS.PASSWORD_TOO_SMALL, 4000);
+        if (strPass.length < MIN_PASS_LENGTH) return createAlert('warning', ALERTS.PASSWORD_TOO_SMALL, [{"MIN_PASS_LENGTH" : MIN_PASS_LENGTH}], 4000);
         if (strPass !== strPassRetype) return createAlert('warning', ALERTS.PASSWORD_DOESNT_MATCH, 2250);
         encryptWallet(strPass);
         createAlert('success', ALERTS.NEW_PASSWORD_SUCCESS, 5500);
@@ -1192,11 +1193,11 @@
     function validateAmount(nAmountSats, nMinSats = 10000) {
       // Validate the amount is a valid number, and meets the minimum (if any)
       if (nAmountSats < nMinSats || isNaN(nAmountSats))
-        return createAlertWithFalse('warning', '<b>Invalid amount!</b><br>Minimum amount is ' + (nMinSats / COIN) + ' ' + cChainParams.current.TICKER + '!', 2500);
+        return createAlertWithFalse('warning', INVALID_AMOUNT + VALIDATE_AMOUNT_LOW + (nMinSats / COIN) + ' ' + cChainParams.current.TICKER + '!', 2500);
 
       // Validate the amount in Satoshi terms meets the coin's native decimal depth
       if (!Number.isSafeInteger(nAmountSats))
-        return createAlertWithFalse('warning', '<b>Invalid amount!</b><br>' + COIN_DECIMALS + ' decimal limit exceeded', 2500);
+        return createAlertWithFalse('warning', INVALID_AMOUNT + '<br>' + COIN_DECIMALS + VALIDATE_AMOUNT_DECIMAL, 2500);
 
       // Amount looks valid!
       return true;
@@ -1230,7 +1231,7 @@
         // Sanity
         if (cachedColdStakeAddr.length !== 34 || !cachedColdStakeAddr.startsWith(cChainParams.current.STAKING_PREFIX)) {
           askForCSAddr(true);
-          return createAlert('success', '<b>Staking Address set!</b><br>Now go ahead and unstake!');
+          return createAlert('success', SUCCESS_STAKING_ADDR);
         }
 
         // The re-delegated change output
@@ -1266,7 +1267,7 @@
           .toString("hex");
 
         // Sign the transaction via Ledger
-        createAlert("info", "<b>Confirm your Unstake</b><br>Confirm the TX on your " + strHardwareName + "!", 7500);
+        createAlert("info", ALERTS.CONFIRM_UNSTAKE_H_WALLET, [{"strHardwareName" : strHardwareName}], 7500);
         const cLedgerSignedTx = await cHardwareWallet.createPaymentTransactionNew({
           inputs: arrInputs,
           associatedKeysets: arrAssociatedKeysets,
@@ -1314,7 +1315,7 @@
       // Sanity
       if (cachedColdStakeAddr.length !== 34 || !cachedColdStakeAddr.startsWith(cChainParams.current.STAKING_PREFIX)) {
         askForCSAddr(true);
-        return createAlert('success', '<b>Staking Address set!</b><br>Now go ahead and stake!');
+        return createAlert('success', SUCCESS_STAKING_ADDR_SET);
       }
       delegate(nAmount, cachedColdStakeAddr);
     }
@@ -1366,7 +1367,7 @@
           .toString("hex");
 
         // Sign the transaction via Ledger
-        createAlert("info", "<b>Confirm your Stake</b><br>Confirm the TX on your " + strHardwareName + "!", 7500);
+        createAlert("info", ALERTS.CONFIRM_UNSTAKE_H_WALLET, [{"strHardwareName" : strHardwareName}], 7500);
         const strSerialisedTx = await cHardwareWallet.createPaymentTransactionNew({
           inputs: arrInputs,
           associatedKeysets: arrAssociatedKeysets,
@@ -1445,16 +1446,16 @@
       const address = domAddress1s.value.trim();
       // If Staking address: redirect to staking page
       if (address.startsWith(cChainParams.current.STAKING_PREFIX)) {
-	createAlert('warning', 'Here, use the <b>Stake</b> screen, not the Send screen!', 7500);
+	createAlert('warning', STAKE_NOT_SEND, 7500);
 	return domStakeTab.click();
       }
-      if (address.length !== 34) return createAlert('warning', '<b>Invalid PIVX address!<b><br>Bad length (' + address.length + ')', 2500);
-      if (!address.startsWith(cChainParams.current.PUBKEY_PREFIX)) return createAlert('warning', '<b>Invalid PIVX address!<b><br>Bad prefix ' + address[0] + ' (Should start with ' + cChainParams.current.PUBKEY_PREFIX + ')', 3500);
+      if (address.length !== 34) return createAlert('warning', BAD_ADDR_LENGTH + address.length + ')', 2500);
+      if (!address.startsWith(cChainParams.current.PUBKEY_PREFIX)) return createAlert('warning', BAD_ADDR_PREFIX + address[0] + BAD_ADDR_PREFIX_2 + cChainParams.current.PUBKEY_PREFIX + ')', 3500);
       
       // Sanity check the amount
       let nValue = Math.round(Number(domValue1s.value.trim()) * COIN);
-      if (nValue <= 0 || isNaN(nValue))  return createAlert('warning', '<b>Invalid amount!</b><br>You can\'t send \'nothing\'!', 2500);
-      if (!Number.isSafeInteger(nValue)) return createAlert('warning', '<b>Invalid amount!</b><br>8 decimal limit exceeded', 2500);
+      if (nValue <= 0 || isNaN(nValue))  return createAlert('warning', INVALID_AMOUNT +SENT_NOTHING, 2500);
+      if (!Number.isSafeInteger(nValue)) return createAlert('warning', INVALID_AMOUNT +MORE_THEN_8_DECIMALS, 2500);
       
       // Construct a TX and fetch Standard inputs
       const nBalance = getBalance();
@@ -1499,12 +1500,12 @@
 	const address = domAddress1s.value.trim();
 	// If Staking address: redirect to staking page
 	if (address.startsWith(cChainParams.current.STAKING_PREFIX)) {
-	  createAlert('warning', 'Here, use the <b>Stake</b> screen, not the Send screen!', 7500);
+	  createAlert('warning', STAKE_NOT_SEND, 7500);
 	  return domStakeTab.click();
 	}
 	
-	if (address.length !== 34) return createAlert('warning', '<b>Invalid PIVX address!<b><br>Bad length (' + address.length + ')', 2500);
-	if (!address.startsWith(cChainParams.current.PUBKEY_PREFIX)) return createAlert('warning', '<b>Invalid PIVX address!<b><br>Bad prefix ' + address[0] + ' (Should start with ' + cChainParams.current.PUBKEY_PREFIX + ')', 3500);
+	if (address.length !== 34) return createAlert('warning', BAD_ADDR_LENGTH + address.length + ')', 2500);
+	if (!address.startsWith(cChainParams.current.PUBKEY_PREFIX)) return createAlert('warning', BAD_ADDR_PREFIX + address[0] +  BAD_ADDR_PREFIX_2 + cChainParams.current.PUBKEY_PREFIX + ')', 3500);
 	
 	// Sanity check the amount
 	let nValue = Math.round(Number(domValue1s.value.trim()) * COIN);
@@ -1556,7 +1557,7 @@
 		  .toString("hex");
 	    
 	    // Sign the transaction via Ledger
-	    createAlert("info", "<b>Confirm your transaction</b><br>Confirm the TX on your " + strHardwareName + "!", 7500);
+	    createAlert("info", CONFIRM_TRANSACTION_H_WALLET + strHardwareName, 7500);
 	    const strSerialisedTx = await cHardwareWallet.createPaymentTransactionNew({
 	      inputs: arrInputs,
 	      associatedKeysets: arrAssociatedKeysets,
@@ -1693,9 +1694,9 @@
     const beforeUnloadListener = (evt) => {
       evt.preventDefault();
       // Disable Save your wallet warning on unload
-      if( !cChainParams.current.isTestnet ) createAlert("warning", "<b>Save your wallet!</b><br>Dashboard ➜ Set Password", 10000);
+      if( !cChainParams.current.isTestnet ) createAlert("warning", SAVE_WALLET_PLEASE, 10000);
       // Most browsers ignore this nowadays, but still, keep it 'just incase'
-      return evt.returnValue = "Please ENCRYPT and/or BACKUP your keys before leaving, or you may lose them!";
+      return evt.returnValue = BACKUP_OR_ENCRYPT_WALLET;
     };
 
     window.onload = (() => {

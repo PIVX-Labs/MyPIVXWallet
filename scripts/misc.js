@@ -6,13 +6,7 @@ const pubChksum = 4;
 const pubPrebaseLen = pubKeyHashNetworkLen + pubChksum;
 
 // Notifications map
-let ALERTS = {
-    FAILED_TO_IMPORT: '<b>Failed to import!</b> Invalid password',
-    TESTNET_ENCRYPTION_DISABLED: "<b>Testnet Mode is ON!</b><br>Wallet encryption disabled",
-    PASSWORD_TOO_SMALL: "That password is a little short!<br>Use at least <b>" + MIN_PASS_LENGTH + " characters.</b>",
-    PASSWORD_DOESNT_MATCH: 'Your passwords don\'t match!',
-    NEW_PASSWORD_SUCCESS: '<b>You\'re Secured! 🔐</b><br>Nice stuff, Armoured PIVian!'
-}
+let ALERTS = {}
 
 // Base58 Encoding Map
 const MAP_B58 = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
@@ -97,12 +91,24 @@ const from_b58 = function (S) {
 /* --- NOTIFICATIONS --- */
 // Alert - Do NOT display arbitrary / external errors, the use of `.innerHTML` allows for input styling at this cost.
 // Supported types: success, info, warning
-function createAlert(type, message, timeout = 0) {
+function createAlert(type, message, alertVariables, timeout = 0) {
     const domAlert = document.createElement("div");
     domAlert.classList.add("alertpop");
     domAlert.classList.add(type);
+
+    //TRANSLATION
+    //translate Alert
+    //String made:
+    //message = this is {number} times you've tried
+    //passes to createAlert(warning, message, 5000)
+    //AlertVariables is an object containing the translationVariable({number}) and the value (5)
+    //create Alert passes to TranslateAlert(message, alertVariables)
+    let translatedMessage = translateAlerts(message, alertVariables)
+    //returns message in language that is required
+
+
     // Message
-    domAlert.innerHTML = message;
+    domAlert.innerHTML = translatedMessage;
     domAlert.destroy = () => {
         // Fully destroy timers + DOM elements, no memory leaks!
         clearTimeout(domAlert.timer);
