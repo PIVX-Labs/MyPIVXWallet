@@ -130,6 +130,9 @@ var uwu_translation = {
     PASSWORD_DOESNT_MATCH:"Yowour passwords dun match!! baka!!",        //'Your passwords don\'t match!',
     NEW_PASSWORD_SUCCESS:"<b>Yowou\'re Secuwed!</b><br>Good Job, PIVX Pogchamp!",         //'<b>You\'re Secured! 🔐</b><br>Nice stuff, Armoured PIVian!',
     INVALID_AMOUNT:"<b>Invawed a<i>meow</i>nt</b><br>",               //'<b>Invalid amount!</b><br>',
+    UNSUPPORTED_CHARACTER:  "The chawacter '{char}' is unsupurrted in addwesses! (Not Base58 compatible)",        //"The character '{char}' is unsupported in addresses! (Not Base58 compatible)"
+    UNSUPPORTED_WEBWORKERS: "Dis bwowser doesn't suppurrt web workers",      //This browser doesn\'t support Web Workers (multi-threaded JS), unfortunately you cannot generate Vanity wallets!
+    INVALID_ADDRESS: "<b>Invawed PIVX addwess baka</b><br> {address} ",            //<b>Invalid PIVX address!<b><br> {address}
     VALIDATE_AMOUNT_LOW:"<br>Minimum ameownt is {minimumAmount} {coinTicker}!",          //'<br>Minimum amount is ',
     VALIDATE_AMOUNT_DECIMAL:" decimal wimit exceeded. Yowouve gone too fawr!",      //' decimal limit exceeded',
     SUCCESS_STAKING_ADDR:"<b>Staking Addwess set!</b><br>Now go ahead and unstake senpai❣",         //'<b>Staking Address set!</b><br>Now go ahead and unstake!',
