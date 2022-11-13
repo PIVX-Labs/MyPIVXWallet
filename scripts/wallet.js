@@ -321,11 +321,6 @@ async function importWallet({
     domIdenticon.dataset.jdenticonValue = masterKey.getAddress(getDerivationPath());
     jdenticon();
 
-    //if you are using a legacy wallet then we can easily check if it is/was a masternode address
-    if(!masterKey.isHD){
-
-    }
-
     // Hide the encryption warning if the user pasted the private key
     // Or in Testnet mode or is using a hardware wallet
     if (!(newWif || cChainParams.current.isTestnet || isHardwareWallet)) domGenKeyWarning.style.display = 'block';
@@ -372,10 +367,6 @@ async function generateWallet(noUI = false) {
     }
 
     return masterKey;
-}
-//this function will check wheter the first transaction is a 10000PIVs and also see if it is unspent (in the latter case the address will likely be a collateral)
-async function isValidCollateral(address){
-  
 }
 
 async function verifyMnemonic(strMnemonic = "", fPopupConfirm = true) {

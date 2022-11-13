@@ -56,6 +56,7 @@
       const cChainParams = {
           current: null,
           main: {
+              collateralInSats   : 10000*COIN,
               isTestnet         : false,
               TICKER            : "PIV",
               PUBKEY_PREFIX     : ["D"],
@@ -1056,7 +1057,7 @@
       domPrefix.value = "";
       domPrefix.style.display = 'none';
 
-      // Hide all "*Wallet" buttonscessMnBtn
+      // Hide all "*Wallet" buttons
       domGenerateWallet.style.display = 'none';
       domImportWallet.style.display = 'none';
       domGenVanityWallet.style.display = 'none';
@@ -1181,9 +1182,9 @@
       domMnPrivateKey.value = "";
 
       if (!ip.includes(":")) {
-	address = `${ip}:${cChainParams.MASTERNODE_PORT}`;
+	      address = `${ip}:${cChainParams.MASTERNODE_PORT}`;
       } else {
-	address = ip;
+	      address = ip;
       }
 
       if (!masterKey.isHD) {
@@ -1195,20 +1196,15 @@
         collateralPrivKey = await masterKey.getPrivateKey();
       } else {
         let path = domMnTxId.value;
-        let collateraInSats=10000*COIN; //collateral in satoshi units
-	console.log(path);
         const masterUtxo = cachedUTXOs.findLast(u=>u.path === path); // first UTXO for each address in HD
-	console.log(masterUtxo);
         //sanity check:
-        if(masterUtxo.sats!==10000*COIN){
-          createAlert("warning", "The UTXO doesn't match", 10000);
+        if(masterUtxo.sats!==cChainParams.collateralInSats){
+          createAlert("warning", "This is not a suitable UTXO for a Masternode", 10000);
           return;
         }
         outidx = masterUtxo.vout;
         collateralTxId = masterUtxo.id;
-        collateralPrivKey = await masterKey.getPrivateKey(path);
-        console.log(path);
-        console.log(masterUtxo)        
+        collateralPrivKey = await masterKey.getPrivateKey(path);     
       }
       domMnTxId.value = "";
 
@@ -1986,9 +1982,8 @@
               //the first UTXO should have the 10k pivx 
               let firstUTXO=cachedUTXOs[cachedUTXOs.length-1];
 
-              //collateral in satoshi units
-              let collateraInSats=10000*COIN;
-              if(collateraInSats===firstUTXO.sats){
+
+              if(cChainParams.collateralInSats===firstUTXO.sats){
                 domAccessMasternode.style.display="block";
                 domMnTextErrors.children[1].innerHTML="Good! now handle your masternode :D";
                 if(localStorage.getItem("masternode")){
@@ -2010,14 +2005,13 @@
               domMnTextErrors.children[1].innerHTML="This HD wallet is empty or UTXOs are not loaded yet, reopen the tab in a few seconds."
             }else{
               
-              let collateraInSats=10000*COIN; //collateral in satoshi units
               let wallets_map = new Map(); //first UTXO for each address in HD
               for(let i in cachedUTXOs){
                 wallets_map.set(cachedUTXOs[i].path,cachedUTXOs[i]);
               }
               
               for(let [key, value] of wallets_map){
-                if(value.sats!==collateraInSats){
+                if(value.sats!==cChainParams.collateralInSats){
                   wallets_map.delete(key);
                 }
               }

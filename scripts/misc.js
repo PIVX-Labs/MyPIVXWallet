@@ -164,28 +164,27 @@ async function generateMnPrivkey(){
     while(!valid){
         
         priv_key=Crypto.util.bytesToHex(Crypto.util.randomBytes(32));
-        console.log(priv_key);
         let decoded_priv_key = BigInt("0x"+priv_key); 
         
         if(0<decoded_priv_key && decoded_priv_key<max_decoded_value){
             valid=true;
         }
     }
-    return await convertMnPrivKeyFromHex(priv_key,cChainParams.current.isTestnet);
+    return await convertMnPrivKeyFromHex(priv_key);
 }
 
-async function convertMnPrivKeyFromHex(hexStr,isTestnet){
+async function convertMnPrivKeyFromHex(hexStr){
     //prefixes
     let WIF_PREFIX = 212;  
     let TESTNET_WIF_PREFIX = 239; 
-    let base58_secret = isTestnet ? TESTNET_WIF_PREFIX : WIF_PREFIX;
+    let base58_secret = cChainParams.current.isTestnet ? TESTNET_WIF_PREFIX : WIF_PREFIX;
 
-    //convert the hexStr+ initial prefix to byte array
-    let data=fromHexToByteArray(hexStr);
+    //convert the hexStr+ initial prefix to byte array Crypto.util.hexToBytes(string)
+    let data=Crypto.util.hexToBytes(hexStr);
     data.unshift(base58_secret); 
  
     //generate the checksum with double sha256 hashing
-    let checksum= fromHexToByteArray((await hash(fromHexToByteArray( await hash(data))))).slice(0,4);
+    let checksum= Crypto.util.hexToBytes((await hash(Crypto.util.hexToBytes( await hash(data))))).slice(0,4);
 
     //concatenate data and checksum
     let i=0;
@@ -196,15 +195,6 @@ async function convertMnPrivKeyFromHex(hexStr,isTestnet){
     return to_b58(data);
 
 }
-//convert a hexstring to a byte array
-function fromHexToByteArray(hexStr){
-    let data=[];
-    for(var c = 0; c < hexStr.length; c += 2){
-        data.push(parseInt(hexStr.substr(c, 2), 16));
-    }
-    return data;
-}
-
 
 //sha256 a bytearray and return the hash in hexadecimal
 async function hash(byteArray) {
