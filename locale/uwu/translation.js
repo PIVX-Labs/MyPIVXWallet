@@ -143,7 +143,7 @@ var uwu_translation = {
     BAD_ADDR_LENGTH:"<b>Invawed PIVX addwess!</b><br>Bad wength ({addressLength})",              //'<b>Invalid PIVX address!<b><br>Bad length ({addressLength})',
     BAD_ADDR_PREFIX:"<b>Invawed PIVX addwess! Baka!</b><br>Bad pwefix {address} (Should start with {addressPrefix})",              //'<b>Invalid PIVX address!<b><br>Bad prefix {address} (Should start with {addressPrefix})',
     SENT_NOTHING:"You can\'t send nothing!! Baka!",                 //'You can\'t send \'nothing\'!',
-    MORE_THEN_8_DECIMALS:"8 decimal wimit exceeded. Too many numbers!!",         //'8 decimal limit exceeded',
+    MORE_THEN_8_DECIMALS:"8 decimal wimit exceeded. Too many nyumbers!!",         //'8 decimal limit exceeded',
     SAVE_WALLET_PLEASE:"<b>Save yowour wawwet!</b><br>Dashbowed ➜ Set Password",           // "<b>Save your wallet!</b><br>Dashboard ➜ Set Password",
     BACKUP_OR_ENCRYPT_WALLET:"Pwease ENCWYPT and/or BACKUP yowour keys befowe weaving, or you may lose dem! Oh noes!",     // "Please ENCRYPT and/or BACKUP your keys before leaving, or you may lose them!"
 
