@@ -12,10 +12,10 @@ class Masternode {
 
     async getStatus() {
 	const url= `${cNode.url}/listmasternodes?params=${this.collateralTxId}`;
-	try{
+	try {
 	    const masternodes = (await (await fetch(url)).json()).filter(m=>m.outidx === this.outidx);
 	    if(masternodes.length > 0) {
-		return masternodes[0].status;
+		return sanitizeHTML(masternodes[0].status);
 	    } else {
 		return "NOT_FOUND";
 	    }
