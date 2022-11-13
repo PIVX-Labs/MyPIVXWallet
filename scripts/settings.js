@@ -126,7 +126,7 @@ function toggleTestnet() {
     domTestnet.style.display = (cChainParams.current.isTestnet ? '' : 'none');
     domGuiBalanceTicker.innerText        = cChainParams.current.TICKER;
     domGuiBalanceStakingTicker.innerText = cChainParams.current.TICKER;
-    domPrefix.value = cChainParams.current.PUBKEY_PREFIX + domPrefix.value.substr(1);
+    domPrefixNetwork.innerText = cChainParams.current.PUBKEY_PREFIX.join(' or ');
     fillExplorerSelect();
     getBalance(true);
     getStakingBalance(true);

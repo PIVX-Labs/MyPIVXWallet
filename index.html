@@ -86,7 +86,7 @@
           main: {
               isTestnet         : false,
               TICKER            : "PIV",
-              PUBKEY_PREFIX     : "D",
+              PUBKEY_PREFIX     : ["D"],
               STAKING_PREFIX    : "S",
               PUBKEY_ADDRESS    : 30,
               SECRET_KEY        : 212,
@@ -102,7 +102,7 @@
           testnet: {
               isTestnet         : true,
               TICKER            : "tPIV",
-              PUBKEY_PREFIX     : "y",  //FIXME: x is also valid
+              PUBKEY_PREFIX     : ["x","y"],
               STAKING_PREFIX    : "W",
               PUBKEY_ADDRESS    : 139,
               SECRET_KEY        : 239,
@@ -117,6 +117,9 @@
       }
       // Set default chain
       cChainParams.current = cChainParams.main;
+
+      // <[network_byte] [32_byte_payload] [0x01] [4_byte_checksum]>
+      const PRIVKEY_BYTE_LENGTH = 38;
 
       const COIN_DECIMALS = 8;
       const COIN = 10**8;
@@ -221,14 +224,31 @@
                 <a href="https://www.ledger.com/blog/how-to-protect-your-seed-phrase" target="_blank"><i>It is <b>NOT</b> advised to store this digitally.</i></a>
                 <br><br>
               </div>
-	            <div class="modal-footer">
-                <button type="button" id="modalMnemonicConfirmButton" class="pivx-button-big">I have written down my seed phrase</button>
-	            </div>
+	      <div class="modal-footer">
+		  <button type="button" id="modalMnemonicConfirmButton" class="pivx-button-big">I have written down my seed phrase</button>
+	      </div>
             </div>
           </div>
         </div>
       </div>
     <br>
+      <!-- // CONFIRM MODAL -->
+    <div class="modal" id="confirmModal" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered" role="document" style="max-width: 600px">
+          <div class="modal-content">
+            <div class="modal-header" id="confirmModalHeader">
+              <h3 class="modal-title" id="confirmModalTitle" style="text-align: center;width: 100%;color: #8e21ff;">Insert cool popup title</h3>
+            </div>
+            <div id="confirmModalContent" class="modal-body center-text">
+              <!-- JS populated modal content -->
+            </div>
+            <div class="modal-footer" hidden="true" id="confirmModalButtons">
+              <button type="button" id="confirmModalConfirmButton" class="pivx-button-big" style="float: right">Confirm</button>
+              <button type="button" id="confirmModalCancelButton" class="pivx-button-big" style="float: right; opacity: 0.7;">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </div>
 
 
       <div class="container">
@@ -427,7 +447,7 @@
                                     <b id="guiAddress">~</b>
                                     <b id="guiQRButton">
                                       <i data-toggle="modal" data-target="#qrModal" class="fas fa-qrcode fa-stacked-ptr"></i>
-                                      <i id="guiNewAddress" onclick="getNewAddress(true)" class="fas fa-sync fa-stacked-ptr"></i>
+                                      <i id="guiNewAddress" onclick="getNewAddress({updateGUI: true, verify: true})" class="fas fa-sync fa-stacked-ptr"></i>
                                       <i onclick="toClipboard('guiAddress', this)" id="guiAddressCopy" class="fas fa-clipboard fa-stacked-ptr"></i>
                                       <i id="guiExportWallet" onclick="toggleExportUI()" class="fas fa-share fa-stacked-ptr"></i>
                                     </b>
@@ -454,13 +474,14 @@
                   </div>
 
                   <div class="col-md-12 dashboard-title">
-                    <h3 class="pivx-bold-title" style="font-size:38px;"><span data-i18n="dCardTwoTitle" >Create a new</span> <div data-i18n="dCardTwoSubTitle">Vanity Wallet</div></h3>
-                    <span class="badge badge-warning" data-i18n="experimental" >Experimental</span>
-                    <p data-i18n="dCardTwoDesc">This will create a PIVX wallet with a customized prefix of your choosing, requiring more processing power to generate such addresses, it is recommended to generate a prefix of less than 6 characters, for example: "DAD" is a possible address prefix.</p>
+                    <h3 class="pivx-bold-title" style="font-size:38px;"><span>Create a new</span>Vanity Wallet</h3>
+                    <span class="badge badge-warning">Experimental</span>
+                    <p>This will create a PIVX wallet with a customized prefix of your choosing, requiring more processing power to generate such addresses, it is recommended to generate a prefix of less than 6 characters, for example: "DAD" is a possible address prefix.<br>
+                    <span style="opacity: 0.75; font-size: small;">*Note: Generated addresses will automatically be preceded by the network prefix: <b id='prefixNetwork'></b></span></p>
                   </div>
 
 
-                  <input style="display:none;" type="text" id='prefix' placeholder="Address Prefix" onkeyup="checkVanity()">
+                  <input class="center-text" style="display:none;" type="text" id='prefix' placeholder="Address Prefix" onkeypress="checkVanity()">
 
                   <button class="pivx-button-big" onclick="generateVanityWallet()">
                               <span class="buttoni-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 70"><path d="M3.497 25.717C1.401 25.588 0 23.847 0 21.753v-2.535c0-.775.149-1.593.925-1.593h22.719c2.173 0 3.941 1.861 3.941 4.034 0 2.174-1.769 3.988-3.941 3.988l-20.207.048c-.02 0 .08.023.06.022z"></path><path d="M5.229 69.625C4.455 69.625 4 68.494 4 67.719V38.661c0-1.911 1.447-3.731 3.258-3.989.175-.029.285-.047.483-.047h21.525c7.137 0 12.751-5.86 12.751-13.027 0-7.096-5.528-12.841-12.586-13.177-.002 0-.671.016-1.41.016l-20.335.066C5.529 8.373 4 6.652 4 4.558V2.023C4 1.247 4.407.625 5.183.625h24.059c11.57 0 20.654 9.546 20.706 21.104 0 9.378-6.307 17.727-15.337 20.311-1.622.445-3.122.705-4.735.778L12 42.842v22.485c0 2.156-2.141 4.298-4.235 4.298H5.229z"></path></svg></span>
@@ -490,8 +511,6 @@
                     <h3 class="pivx-bold-title" style="font-size:38px;"><span data-i18n="dCardThreeTitle">Access your</span><div data-i18n="dCardThreeSubTitle">Hardware Wallet</div></h3>
                     <p data-i18n="dCardThreeDesc">This will help managing the PIVX wallet on your ledger. Notice that the private key will remain safe in your hardware device</p>
                   </div>
-
-                  <input style="display:none;" type="text" placeholder="Address Prefix" onkeyup="checkVanity()">
 
                   <button class="pivx-button-big" onclick="importWallet({isHardwareWallet: true})">
                     <span class="buttoni-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 70">
@@ -529,8 +548,8 @@
                   <!-- IMPORT WALLET -->
                   <input class="hide-element" type="text" id="clipboard">
                   <div id='importWallet' style='display: none;'>
-                    <input type="password" id='privateKey' placeholder="Private Key or Seed Phrase" oninput="onPrivateKeyChanged()">
-                    <input hidden type="password" id='privateKeyPassword' placeholder="Password"> <!-- I added this --> 
+                    <input type="password" id='privateKey' placeholder="Seed Phrase, XPriv or WIF Private Key" oninput="onPrivateKeyChanged()">
+                    <input hidden type="password" id='privateKeyPassword' placeholder="Password">
                     <button class="pivx-button-big" onclick="guiImportWallet()">
                                   <span class="buttoni-icon"><i class="fas fa-file-upload fa-tiny-margin"></i></span>
                                   <span class="buttoni-text" id="importWalletText" data-i18n="dCardFourButtonI" >Import Wallet</span>
@@ -823,6 +842,7 @@
     const domModalQR = document.getElementById('ModalQR');
     const domModalQrLabel = document.getElementById('ModalQRLabel');
     const domPrefix = document.getElementById('prefix');
+    const domPrefixNetwork = document.getElementById('prefixNetwork');
     const domWalletToggle = document.getElementById("wToggle");
     const domGenerateWallet = document.getElementById('generateWallet');
     const domGenVanityWallet = document.getElementById('generateVanityWallet');
@@ -858,6 +878,12 @@
     const domExportKey = document.getElementById("exportKeyText");
     const domExportWallet = document.getElementById("guiExportWallet");
     const domNewAddress = document.getElementById("guiNewAddress");
+    const domConfirmModalHeader = document.getElementById("confirmModalHeader");
+    const domConfirmModalTitle = document.getElementById("confirmModalTitle");
+    const domConfirmModalContent = document.getElementById("confirmModalContent");
+    const domConfirmModalButtons = document.getElementById("confirmModalButtons");
+    const domConfirmModalConfirmButton = document.getElementById("confirmModalConfirmButton");
+    const domConfirmModalCancelButton = document.getElementById("confirmModalCancelButton");
 	  
 
     // Aggregate menu screens and links for faster switching
@@ -986,7 +1012,7 @@
 
     function hideAllWalletOptions() {
       // Hide and Reset the Vanity address input
-      domPrefix.value = cChainParams.current.PUBKEY_PREFIX;
+      domPrefix.value = "";
       domPrefix.style.display = 'none';
 
       // Hide all "*Wallet" buttons
@@ -999,7 +1025,7 @@
 
     function accessOrImportWallet() {
       // Hide and Reset the Vanity address input
-      domPrefix.value = cChainParams.current.PUBKEY_PREFIX;
+      domPrefix.value = "";
       domPrefix.style.display = 'none';
 
       // Show Import button, hide access button
@@ -1013,30 +1039,36 @@
         domPrivKey.focus();
       }
     }
-    function onPrivateKeyChanged(){
+
+    function onPrivateKeyChanged() {
       if (hasEncryptedWallet()) return;
       // Check whether the length of the string is 128 bytes (that's the length of ciphered plain texts)
       // and it doesn't have any spaces (would be a mnemonic seed)
-      domPrivKeyPassword.hidden = domPrivKey.value.length !== 128 || domPrivKey.value.includes(" ");
+      const fContainsSpaces = domPrivKey.value.includes(" ");
+      domPrivKeyPassword.hidden = domPrivKey.value.length !== 128 || fContainsSpaces;
+
+      // Uncloak the private input IF spaces are detected, to make Seed Phrases easier to input and verify
+      domPrivKey.setAttribute('type', fContainsSpaces ? 'text' : 'password');
     }
 
     async function guiImportWallet() {
-      const isEncrypted = domPrivKey.value.length === 128;
+      const fEncrypted = domPrivKey.value.length === 128;
+
       // If we are in testnet: prompt an import
       if (cChainParams.current.isTestnet) return importWallet();
 
       // If we don't have a DB wallet and the input is plain: prompt an import
-      if (!hasEncryptedWallet() && !isEncrypted) return importWallet();
+      if (!hasEncryptedWallet() && !fEncrypted) return importWallet();
 
       // If we don't have a DB wallet and the input is ciphered: 
-      const privateKey = domPrivKey.value
+      const strPrivKey = domPrivKey.value
       const strPassword = domPrivKeyPassword.value;
-      if (!hasEncryptedWallet() && isEncrypted) {
-        const strDecWIF = await decrypt(privateKey, strPassword);
+      if (!hasEncryptedWallet() && fEncrypted) {
+        const strDecWIF = await decrypt(strPrivKey, strPassword);
         if (!strDecWIF || strDecWIF === "decryption failed!") {
           return createAlert('warning', ALERTS.FAILED_TO_IMPORT, [], 6000);
         } else {
-          localStorage.setItem("encwif", privateKey);
+          localStorage.setItem("encwif", strPrivKey);
           return importWallet({
             newWif: strDecWIF
           });
@@ -1069,6 +1101,19 @@
       }
     }
 
+    function createAddressConfirmation(address) {
+      return `Please confirm this is the address you see on your ${strHardwareName}.
+              <div class="seed-phrase">${address}</div>`;
+    }
+
+    function createTxConfirmation(outputs) {
+      let strHtml = "Confirm this transaction matches the one on your " + strHardwareName +  ".";
+      for (const output of outputs) {
+        strHtml += `<br> <br> You will send <b>${output[1].toFixed(2)} ${cChainParams.current.TICKER}</b> to <div class="inline-address">${output[0]}</div>`
+      }
+      return strHtml;
+    }
+
     async function toggleExportUI() {
       domExportDiv.hidden = !domExportDiv.hidden;
       if (!domExportDiv.hidden) {
@@ -1079,14 +1124,28 @@
     }
     
     let addressIndex = 0;
-    async function getNewAddress(updateGUI = false) {
+    async function getNewAddress({updateGUI = false, verify = false} = {}) {
       const last = lastWallet || 0;
       addressIndex = addressIndex > last ? addressIndex : last + 1;
       if (addressIndex - last > 10) {
         // If the user creates more than 10 empty wallets we will not be able to sync them!
         addressIndex = last;
       }
-      const address = await masterKey.getAddress(getDerivationPath(masterKey.isHardwareWallet, 0, 0, addressIndex));
+      const path = getDerivationPath(masterKey.isHardwareWallet, 0, 0, addressIndex);
+      // Use Xpub?
+      const address = await masterKey.getAddress(path);
+      if (verify && masterKey.isHardwareWallet) {
+        // Generate address to present to the user without asking to verify
+        const conf_address = await confirmPopup({
+          title: "Verify your address",
+          html: createAddressConfirmation(address),
+          resolvePromise: masterKey.getAddress(path, { verify })
+        });
+        if (address !== conf_address) {
+          throw new Error("User did not verify address");
+        }
+      }
+
       if (updateGUI) {
         domGuiAddress.innerText = address;
         createQR('pivx:' + address, domModalQR);
@@ -1101,12 +1160,17 @@
     }
 
     function checkVanity() {
-      // Loosely check if the vanity address is valid
-      if (!domPrefix.value.length) return domPrefix.value = cChainParams.current.PUBKEY_PREFIX;
-      if (!domPrefix.value.startsWith(cChainParams.current.PUBKEY_PREFIX)) {
-        // Prefix doesnt match, splice it into the string
-        domPrefix.value = cChainParams.current.PUBKEY_PREFIX + domPrefix.value.substr(1);
-      }
+        var e = event || window.event;  // get event object
+        var key = e.keyCode || e.which; // get key cross-browser
+        var char = String.fromCharCode(key).trim(); // convert key to char
+        if(char.length == 0) return;
+
+        // Ensure the input is base58 compatible
+        if (!MAP_B58.toLowerCase().includes(char.toLowerCase())) {
+          if (e.preventDefault) e.preventDefault();
+          e.returnValue = false;
+          return createAlert('warning',"The character '" + char + "' is unsupported in addresses! (Not Base58 compatible)", 3500);
+        }
     }
 
     let isVanityGenerating = false;
@@ -1126,27 +1190,30 @@
 
     async function generateVanityWallet() {
       if (isVanityGenerating) return stopSearch();
-      if (typeof(Worker) === "undefined") return alert('This browser doesn\'t support Web Workers (multi-threaded JS), unfortunately you cannot generate Vanity wallets!');
+      if (typeof(Worker) === "undefined") return createAlert('error', 'This browser doesn\'t support Web Workers (multi-threaded JS), unfortunately you cannot generate Vanity wallets!', 7500);
       // Generate a vanity address with the given prefix
       if (domPrefix.value.length === 0 || domPrefix.style.display === 'none') {
         // No prefix, display the intro!
-        domPrefix.placeholder = 'Custom Prefix (' + cChainParams.current.PUBKEY_PREFIX + ' ...)';
         domPrefix.style.display = 'block';
         domGenKeyWarning.style.display = 'none';
         domGuiAddress.innerHTML = "~";
         domPrefix.focus();
       } else {
+        // Remove spaces from prefix
+        domPrefix.value = domPrefix.value.replace(/ /g, "");
+
+        // Cache a lowercase equivilent for lower-entropy comparisons (a case-insensitive search is ALOT faster!) and strip accidental spaces
+        const nInsensitivePrefix = domPrefix.value.toLowerCase();
+        const nPrefixLen = nInsensitivePrefix.length;
+
         // Ensure the input is base58 compatible
         for (const char of domPrefix.value) {
-          if (!MAP_B58.includes(char)) return alert("The character '" + char + "' is unsupported in addresses! (Not Base58 compatible)");
+          if (!MAP_B58.toLowerCase().includes(char.toLowerCase())) return createAlert('warning',"The character '" + char + "' is unsupported in addresses! (Not Base58 compatible)", 3500);
         }
         // We also don't want users to be mining addresses for years... so cap the letters to four until the generator is more optimized
-        if (domPrefix.value.length > 6) return alert("This is a long name! This would take a LONG time to find, please choose a shorter name!");
+        if (domPrefix.value.length > 5) return createAlert('warning', "This is a long name! This would take a LONG time to find, please choose a shorter name!", 3500);
         isVanityGenerating = true;
         domPrefix.disabled = true;
-        // Cache a lowercase equivilent for lower-entropy comparisons (a case-insensitive search is ALOT faster!) and strip accidental spaces
-        const nInsensitivePrefix = domPrefix.value.toLowerCase().replace(/ /g, "");
-        const nPrefixLen = nInsensitivePrefix.length;
         let attempts = 0;
 
         // Setup workers
@@ -1166,7 +1233,7 @@
 
         function checkResult(data) {
           attempts++;
-          if (data.pub.substr(0, nPrefixLen).toLowerCase() == nInsensitivePrefix) {
+          if (data.pub.substr(1, nPrefixLen).toLowerCase() == nInsensitivePrefix) {
             importWallet({
               newWif: data.priv,
               fRaw: true
@@ -1389,7 +1456,7 @@
 
     function chooseUTXOs(cTx, nTotalSatsRequired = 0, nMinInputSize = 0, fColdOnly = false) {
       console.log("Constructing TX of value: " + (nTotalSatsRequired / COIN) + " " + cChainParams.current.TICKER);
-  
+
       // Select the UTXO type bucket
       const arrUTXOs = fColdOnly ? arrDelegatedUTXOs : cachedUTXOs;
 
@@ -1397,7 +1464,7 @@
       const cCoinControl = { nValue: 0, nChange: 0, arrSelectedUTXOs: [] }
       for (const cUTXO of arrUTXOs) {
         // Have we met the required sats threshold?
-        if (cCoinControl.nValue >= nTotalSatsRequired) {
+        if (cCoinControl.nValue >= nTotalSatsRequired + getFee(cTx.serialize().length)) {
           // Required Coin Control value met, yahoo!
           console.log("Coin Control: TX Constructed! Selected " + cCoinControl.arrSelectedUTXOs.length + " input(s) (" + (cCoinControl.nValue / COIN) + " " + cChainParams.current.TICKER + ")");
           break;
@@ -1410,13 +1477,8 @@
         cCoinControl.arrSelectedUTXOs.push(cUTXO);
         cCoinControl.nValue += cUTXO.sats;
         console.log("Coin Control: Selected input " + cUTXO.id.substr(0, 6) + "(" + cUTXO.vout + ")... (Added " + (cUTXO.sats / COIN) + " " + cChainParams.current.TICKER + " - Total: " + (cCoinControl.nValue / COIN) + ")");
-      }
 
-      // if we don't have enough value: leave the cTx alone and return false
-      if (cCoinControl.nValue < nTotalSatsRequired) return ccError("Balance is too small! (Missing " + (cCoinControl.nValue - nTotalSatsRequired).toLocaleString('en-gb') + " sats)");
-
-      // Reaching here: we have sufficient UTXOs, stuff them into the TX, calc final misc data and return!
-      for (const cUTXO of cCoinControl.arrSelectedUTXOs) {
+        // Stuff UTXO into the TX
         cTx.addinput({
           txid: cUTXO.id,
           index: cUTXO.vout,
@@ -1424,10 +1486,15 @@
           path: cUTXO.path
         });
       }
+
+      // if we don't have enough value: return false
+      if (cCoinControl.nValue < nTotalSatsRequired) return ccError("Balance is too small! (Missing " + (cCoinControl.nValue - nTotalSatsRequired).toLocaleString('en-gb') + " sats)");
+
+      // Reaching here: we have sufficient UTXOs, calc final misc data and return!
       cCoinControl.nChange = nTotalSatsRequired - cCoinControl.nValue;
       return ccSuccess(cCoinControl);
     }
-
+  
     async function createTxGUI() {
       if (!hasWalletUnlocked(true)) return;
       
@@ -1449,8 +1516,9 @@
 	createAlert('warning', STAKE_NOT_SEND, [], 7500);
 	return domStakeTab.click();
       }
-      if (address.length !== 34) return createAlert('warning', BAD_ADDR_LENGTH, [{"addressLength" : address.length}], 2500);
-      if (!address.startsWith(cChainParams.current.PUBKEY_PREFIX)) return createAlert('warning', BAD_ADDR_PREFIX, [{"address" : address[0]}, {"addressPrefix" : cChainParams.current.PUBKEY_PREFIX}], 3500);
+      if (address.length !== 34) return createAlert('warning', '<b>Invalid PIVX address!<b><br>Bad length (' + address.length + ')', 2500);
+      if (!cChainParams.current.PUBKEY_PREFIX.includes(address[0])) return createAlert('warning', '<b>Invalid PIVX address!<b><br>Bad prefix ' + address[0] + ' (Should start with ' + cChainParams.current.PUBKEY_PREFIX.join(' or ') + ')', 3500);
+      if (!bitjs.isValidDestination(address,cChainParams.current.PUBKEY_ADDRESS)) return createAlert('warning', '<b>Invalid PIVX address!<b><br>' + address, 3500);
       
       // Sanity check the amount
       let nValue = Math.round(Number(domValue1s.value.trim()) * COIN);
@@ -1467,110 +1535,64 @@
       
       // Compute change (or lack thereof)
       const nChange = cCoinControl.nValue - (nFee + nValue);
-      const changeAddress = await getNewAddress();
+      const changeAddress = await getNewAddress({verify: masterKey.isHardwareWallet});
+      const outputs = [];
       if (nChange > 0) {
         // Change output
-        cTx.addoutput(changeAddress, nChange / COIN);
+        outputs.push([changeAddress, nChange / COIN]);
       } else {
-	// We're sending alot! So we deduct the fee from the send amount. There's not enough change to pay it with!
-	nValue -= nFee;
+        // We're sending alot! So we deduct the fee from the send amount. There's not enough change to pay it with!
+        nValue -= nFee;
       }
       
       // Primary output (receiver)
-      cTx.addoutput(address, nValue / COIN);
+      outputs.push([address, nValue / COIN]);
       
       // Debug-only verbose response
       if (debug) domHumanReadable.innerHTML = "Balance: " + (nBalance / COIN) + "<br>Fee: " + (nFee / COIN) + "<br>To: " + address + "<br>Sent: " + (nValue / COIN) + (nChange > 0 ? "<br>Change Address: " + changeAddress + "<br>Change: " + (nChange / COIN) : "");
-      
+
+      // Add outputs to the Tx
+      for (const output of outputs) {
+        cTx.addoutput(output[0], output[1]);
+      }
+
       // Sign and broadcast!
       if (!masterKey.isHardwareWallet) {
-	const sign = await cTx.sign(masterKey, 1);
-	sendTransaction(sign);
+        const sign = await cTx.sign(masterKey, 1);
+        sendTransaction(sign);
       } else {
-	// Format the inputs how the Ledger SDK prefers
-	const arrInputs = [];
-	const arrAssociatedKeysets = [];
-	for (const cInput of cTx.inputs) {
-	  const cInputFull = await getTxInfo(cInput.outpoint.hash);
-	  arrInputs.push([await cHardwareWallet.splitTransaction(cInputFull.hex), cInput.outpoint.index]);
-	  arrAssociatedKeysets.push(cInput.path);
-	}
-	
-	// Sanity check the address
-	const address = domAddress1s.value.trim();
-	// If Staking address: redirect to staking page
-	if (address.startsWith(cChainParams.current.STAKING_PREFIX)) {
-	  createAlert('warning', STAKE_NOT_SEND, [], 7500);
-	  return domStakeTab.click();
-	}
-	
-	if (address.length !== 34) return createAlert('warning', BAD_ADDR_LENGTH, [{"addressLength" : address.length}], 2500);
-	if (!address.startsWith(cChainParams.current.PUBKEY_PREFIX)) return createAlert('warning', BAD_ADDR_PREFIX, [{"address" : address[0]}, {"addressPrefix" : cChainParams.current.PUBKEY_PREFIX}], 3500);
-	
-	// Sanity check the amount
-	let nValue = Math.round(Number(domValue1s.value.trim()) * COIN);
-	if (!validateAmount(nValue, 0.01 * COIN)) return;
-	
-	// Construct a TX and fetch Standard inputs
-	const nBalance = getBalance();
-	const cTx = bitjs.transaction();
-	const cCoinControl = chooseUTXOs(cTx, nValue, 0, false);
-	if (!cCoinControl.success) return alert(cCoinControl.msg);
-	
-	// Compute fee
-	const nFee = getFee(cTx.serialize().length);
-	
-	// Compute change (or lack thereof)
-	const nChange = cCoinControl.nValue - (nFee + nValue);
-	if (nChange > 0) {
-	  // Change output
-	  cTx.addoutput(await getNewAddress(), nChange / COIN);
-	} else {
-	  // We're sending alot! So we deduct the fee from the send amount. There's not enough change to pay it with!
-	  nValue -= nFee;
-	}
-	
-	// Primary output (receiver)
-	cTx.addoutput(address, nValue / COIN);
-	
-	// Debug-only verbose response
-	if (debug) domHumanReadable.innerHTML = "Balance: " + (nBalance / COIN) + "<br>Fee: " + (nFee / COIN) + "<br>To: " + address + "<br>Sent: " + (nValue / COIN) + (nChange > 0 ? "<br>Change Address: " + publicKeyForNetwork + "<br>Change: " + (nChange / COIN) : "");
-	
-	// Sign and broadcast!
-	if (!masterKey.isHardwareWallet) {
-	  const sign = await cTx.sign(masterKey, 1);
-	  console.log(sign)
-	  sendTransaction(sign);
-	} else {
-	  // Format the inputs how the Ledger SDK prefers
-	  const arrInputs = [];
-	  const arrAssociatedKeysets = [];
-	  const strDerivPath = getDerivationPath(true, 0, 0, 0);
-	  for (const cInput of cTx.inputs) {
-	    const cInputFull = await getTxInfo(cInput.outpoint.hash);
-      arrInputs.push([await cHardwareWallet.splitTransaction(cInputFull.hex), cInput.outpoint.index]);
-	    arrAssociatedKeysets.push(strDerivPath);
-            // Construct the Ledger transaction
-            const cLedgerTx = await cHardwareWallet.splitTransaction(cTx.serialize());
-            const strOutputScriptHex = await cHardwareWallet
-		  .serializeTransactionOutputs(cLedgerTx)
-		  .toString("hex");
-	    
-	    // Sign the transaction via Ledger
-	    createAlert("info", CONFIRM_TRANSACTION_H_WALLET, [{"strHardwareName" : strHardwareName}], 7500);
-	    const strSerialisedTx = await cHardwareWallet.createPaymentTransactionNew({
-	      inputs: arrInputs,
-	      associatedKeysets: arrAssociatedKeysets,
-	      outputScriptHex: strOutputScriptHex,
-	    });
-	    
-	    // Broadcast the Hardware (Ledger) TX
-	    sendTransaction(strSerialisedTx);
-	  }
-      domGenIt.innerHTML = "Continue";
-	}
+        // Format the inputs how the Ledger SDK prefers
+        const arrInputs = [];
+        const arrAssociatedKeysets = [];
+        for (const cInput of cTx.inputs) {
+          const cInputFull = await getTxInfo(cInput.outpoint.hash);
+          arrInputs.push([await cHardwareWallet.splitTransaction(cInputFull.hex), cInput.outpoint.index]);
+          arrAssociatedKeysets.push(cInput.path);
+        }
+        const cLedgerTx = await cHardwareWallet.splitTransaction(cTx.serialize());
+              const strOutputScriptHex = await cHardwareWallet
+          .serializeTransactionOutputs(cLedgerTx)
+          .toString("hex");
+
+        // Sign the transaction via Ledger
+        const strSerialisedTx = await confirmPopup(
+          {
+            title: "Confirm your transaction",
+            html: createTxConfirmation(outputs),
+            resolvePromise: cHardwareWallet.createPaymentTransactionNew({
+              inputs: arrInputs,
+              associatedKeysets: arrAssociatedKeysets,
+              outputScriptHex: strOutputScriptHex,
+            }),
+          }
+        );
+
+        // Broadcast the Hardware (Ledger) TX
+        sendTransaction(strSerialisedTx);
       }
+      domGenIt.innerHTML = "Continue";
     }
+
     
     function insert(arr, index, newItem) {
       // part of the array before the specified index
@@ -1738,7 +1760,8 @@
     });
 
     setInterval(refreshChainData, 15000);
-    domPrefix.value = cChainParams.current.PUBKEY_PREFIX;
+    domPrefix.value = ""
+    domPrefixNetwork.innerText = cChainParams.current.PUBKEY_PREFIX.join(' or ');
   </script>
 
 </body>
@@ -1750,20 +1773,13 @@
 <script type="text/javascript" src="scripts/libs/crypto-sha256-hmac.js"></script>
 <script type="text/javascript" src="scripts/libs/ripemd160.js"></script>
 <script type="text/javascript" src="scripts/libs/jsbn.js"></script>
-<script type="text/javascript" src="scripts/libs/ellipticcurve.js"></script>
 <script type="text/javascript" src="scripts/libs/script.js"></script>
 <script type="text/javascript" src="scripts/libs/qrcode.js"></script>
 <script type="text/javascript" src="scripts/libs/sha256.js"></script>
 <script type="text/javascript" src="scripts/libs/bn.js"></script>
-<script type="text/javascript" src="scripts/libs/secp256k1.js"></script>
 <script type="text/javascript" src="scripts/libs/noble-secp256k1.js"></script>
 <script type="text/javascript" src="scripts/bitTrx.js"></script>
 <script type="text/javascript" src="scripts/libs/ledger.js"></script>
 <script type="text/javascript" src="scripts/libs/bip39.js"></script>
-
-<script>
-  // Throw the Secp256k1 lib as a global after import
-  const nSecp256k1 = nobleSecp256k1.default;
-</script>
 
 </html>

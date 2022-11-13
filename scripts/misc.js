@@ -31,11 +31,16 @@ function writeToUint8(arr, bytes, pos) {
         arr[pos++] = bytes[i++];
 }
 
+// bn.js alias
+function uint256(x, base) {
+    return new BN(x, base)
+}
+
 
 
 /* --- BASE58 (EN/DE)CODING */
 // ByteArray to Base58 String
-const to_b58 = function (B) {
+function to_b58(B) {
     var d = [],    //the array for storing the stream of base58 digits
         s = "",    //the result string variable that will be returned
         i,         //the iterator variable for the byte input
@@ -60,7 +65,7 @@ const to_b58 = function (B) {
 }
 
 // Base58 String to ByteArray
-const from_b58 = function (S) {
+function from_b58(S) {
     var d = [], //the array for storing the stream of decoded bytes
         b = [], //the result byte array that will be returned
         i,      //the iterator variable for the base58 string
@@ -122,6 +127,35 @@ function createAlert(type, message, alertVariables, timeout = 0) {
     // On Timeout: Delete alert from DOM after a period of inactive time.
     if (timeout > 0) domAlert.timer = setTimeout(domAlert.destroy, timeout);
     domAlertPos.appendChild(domAlert);
+}
+
+// Shows the confirm modal with the provided html.
+// If resolvePromise has a value, the popup won't have
+// Confirm/Cancel buttons and will wait for the promise to resolve
+// Returns the awaited value of resolvePromise
+// or true/false if the user confirmed or not the modal
+async function confirmPopup({ title, html, resolvePromise }) {
+    // If there's a title provided: display the header and text
+    domConfirmModalHeader.style.display = title ? "block" : "none";
+    domConfirmModalTitle.innerHTML = title || "";
+
+    // If there's a promise to resolve, don't display buttons; the modal visibility will be controlled by the promise (f.e: a 'pls wait' screen)
+    domConfirmModalButtons.style.setProperty("display", resolvePromise ? "none" : "block", resolvePromise ? "important" : undefined);
+    $("#confirmModal").modal(resolvePromise ? "show" : { keyboard: false });
+
+    // Set content display
+    domConfirmModalContent.innerHTML = html;
+
+    // Wait for the promise to resolve OR create a new one which resolves upon a modal button click
+    resolvePromise = resolvePromise || new Promise((res, _) => {
+        domConfirmModalConfirmButton.onclick = () => { res(true); }
+        domConfirmModalCancelButton.onclick = () => { res(false); }
+    });
+    try {
+        return await resolvePromise;
+    } finally { // We want to hide the modal even if an exception occurs
+        $("#confirmModal").modal("hide");
+    }
 }
 
 // Generates and sets a QRCode image from a string and dom element

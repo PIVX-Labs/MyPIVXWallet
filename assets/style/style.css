@@ -38,6 +38,7 @@ pre {
 
 textarea,
 input {
+    font-family: monospace !important;
     background-color: #fff;
     border-style: dashed;
     border-width: 2px;
@@ -46,6 +47,10 @@ input {
     width: 100%;
     height: 43px;
     margin-bottom: 14px;
+}
+
+#privateKey {
+    text-align: center;
 }
 
 button {
@@ -262,6 +267,17 @@ input::-moz-focus-inner {
 .modal-footer {
     display: block !important;
 }
+
+.inline-address {
+    font-family: mono;
+    background-color: #00000014;
+    color: #8e21ff;
+    margin: 10px;
+    padding: 3px;
+    border-radius: 8px;
+    display: inline;
+}
+
 
 #page-container {
     position: relative;

@@ -161,7 +161,6 @@ var sendTransaction = function(hex, msg = '') {
     domGuiStakingLoadMoreIcon.style.opacity = 0.5;
     const stopAnim = () => domGuiStakingLoadMoreIcon.style.opacity = 1;
     const nHeight = arrRewards.length ? arrRewards[arrRewards.length - 1].blockHeight : 0;
-    const request = new XMLHttpRequest();
     let mapPaths = new Map();
     const txSum = v => v.reduce((t, s) => t + (s.addresses.map(strAddr=>mapPaths.get(strAddr)).filter(v => v).length && s.addresses.length === 2 ? parseInt(s.value) : 0), 0);
     let cData;
