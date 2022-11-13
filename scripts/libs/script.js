@@ -1,3 +1,5 @@
+'use strict';
+
 const OP = {
   // push value
   '0': 0x00,
