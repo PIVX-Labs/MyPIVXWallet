@@ -56,7 +56,7 @@
       const cChainParams = {
           current: null,
           main: {
-              collateralInSats   : 10000*COIN,
+              collateralInSats   : 10000 * 10**8,
               isTestnet         : false,
               TICKER            : "PIV",
               PUBKEY_PREFIX     : ["D"],
@@ -78,6 +78,7 @@
 
           },
           testnet: {
+	      collateralInSats   : 10000 * 10**8,
               isTestnet         : true,
               TICKER            : "tPIV",
               PUBKEY_PREFIX     : ["x","y"],
@@ -1196,9 +1197,9 @@
         collateralPrivKey = await masterKey.getPrivateKey();
       } else {
         let path = domMnTxId.value;
-        const masterUtxo = cachedUTXOs.findLast(u=>u.path === path); // first UTXO for each address in HD
+          const masterUtxo = cachedUTXOs.findLast(u=>u.path === path); // first UTXO for each address in HD
         //sanity check:
-        if(masterUtxo.sats!==cChainParams.collateralInSats){
+        if(masterUtxo.sats!==cChainParams.current.collateralInSats){
           createAlert("warning", "This is not a suitable UTXO for a Masternode", 10000);
           return;
         }
@@ -1980,10 +1981,8 @@
               domMnTextErrors.children[1].innerHTML="This wallet is empty or UTXOs are not loaded yet, reopen the tab in a few seconds."
             }else{
               //the first UTXO should have the 10k pivx 
-              let firstUTXO=cachedUTXOs[cachedUTXOs.length-1];
-
-
-              if(cChainParams.collateralInSats===firstUTXO.sats){
+	      let firstUTXO=cachedUTXOs[cachedUTXOs.length-1];
+	      if(cChainParams.current.collateralInSats===firstUTXO.sats){
                 domAccessMasternode.style.display="block";
                 domMnTextErrors.children[1].innerHTML="Good! now handle your masternode :D";
                 if(localStorage.getItem("masternode")){
@@ -2011,7 +2010,7 @@
               }
               
               for(let [key, value] of wallets_map){
-                if(value.sats!==cChainParams.collateralInSats){
+                if(value.sats!==cChainParams.current.collateralInSats){
                   wallets_map.delete(key);
                 }
               }
