@@ -48,6 +48,7 @@ class Masternode {
 	const ping = [
 	    ...Crypto.util.hexToBytes(msg.vin.txid).reverse(),
 	    ...Masternode.numToBytes(msg.vin.idx, 4, true),
+	    // Should be tx sequence, but 0xffffff is fine
 	    ...[0, 255, 255, 255, 255],
 	    ...Crypto.util.hexToBytes(msg.blockHash).reverse(),
 	    ...Masternode.numToBytes(msg.sigTime, 8, true),
@@ -193,6 +194,7 @@ class Masternode {
 	const msg = [
 	    ...Crypto.util.hexToBytes(this.collateralTxId).reverse(),
 	    ...Masternode.numToBytes(this.outidx, 4, true),
+	    // Should be tx sequence, but 0xffffff is fine
 	    ...[0, 255, 255, 255, 255],
 	    ...Crypto.util.hexToBytes(hash).reverse(),
 	    ...Masternode.numToBytes(voteCode, 4, true),
