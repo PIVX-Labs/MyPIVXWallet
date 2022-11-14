@@ -52,7 +52,7 @@ class HdMasterKey extends MasterKey {
     // Generate the HDKey
     if(seed) this._hdKey = HDKey.fromMasterSeed(seed);
     if(xpriv) this._hdKey = HDKey.fromExtendedKey(xpriv);
-    if(xpub) this._hdKey = HDKey.HDKey.fromExtendedKey(xpub);
+    if(xpub) this._hdKey = HDKey.fromExtendedKey(xpub);
     this._isViewOnly = !!xpub;
     if (!this._hdKey) throw new Error("All of seed, xpriv and xpub are undefined");
     this._isHD = true;
@@ -326,7 +326,7 @@ function deriveAddress({
 async function importWallet({
   newWif = false,
   fRaw = false,
-  isHardwareWallet = false
+  isHardwareWallet = false,
 } = {}) {
   const strImportConfirm = "Do you really want to import a new address? If you haven't saved the last private key, the wallet will be LOST forever.";
   const walletConfirm = fWalletLoaded ? await confirmPopup({html: strImportConfirm}) : true;
@@ -371,9 +371,13 @@ async function importWallet({
       } else {
         // Public Key Derivation
         try {
-          if (privateImportValue.startsWith("xprv")) {
-            masterKey = new HdMasterKey({xpriv: privateImportValue})
-          } else {
+	  if (privateImportValue.startsWith("xpub")) {
+	    masterKey = new HdMasterKey({xpub: privateImportValue});
+	  } else if (privateImportValue.startsWith("xprv")) {
+            masterKey = new HdMasterKey({xpriv: privateImportValue});
+          } else if (privateImportValue.length === 34 && cChainParams.current.PUBKEY_PREFIX.includes(privateImportValue[0])) {
+	    masterKey = new LegacyMasterKey({address: privateImportValue});
+	  } else {
             // Lastly, attempt to parse as a WIF private key
             const pkBytes = parseWIF(privateImportValue);
 
@@ -381,7 +385,7 @@ async function importWallet({
             domNewAddress.style.display = "none";
 
             // Import the raw private key
-            masterKey = new LegacyMasterKey(pkBytes);
+            masterKey = new LegacyMasterKey({pkBytes});
           }
         } catch (e) {
           return createAlert('warning', '<b>Failed to import!</b>' +
@@ -403,8 +407,8 @@ async function importWallet({
     jdenticon();
 
     // Hide the encryption warning if the user pasted the private key
-    // Or in Testnet mode or is using a hardware wallet
-    if (!(newWif || cChainParams.current.isTestnet || isHardwareWallet)) domGenKeyWarning.style.display = 'block';
+    // Or in Testnet mode or is using a hardware wallet or is view-only mode
+    if (!(newWif || cChainParams.current.isTestnet || isHardwareWallet || masterKey.isViewOnly)) domGenKeyWarning.style.display = 'block';
 
     // Fetch state from explorer
     if (networkEnabled) refreshChainData();
@@ -541,8 +545,8 @@ function hasHardwareWallet() {
 function hasWalletUnlocked(fIncludeNetwork = false) {
   if (fIncludeNetwork && !networkEnabled)
     return createAlert('warning', "<b>Offline Mode is active!</b><br>Please disable Offline Mode for automatic transactions", 5500);
-    if (!masterKey) {
-      return createAlert('warning', "Please " + (hasEncryptedWallet() ? "unlock " : "import/create") + " your wallet before sending transactions!", 3500);
+  if (!masterKey) {
+    return createAlert('warning', "Please " + (hasEncryptedWallet() ? "unlock " : "import/create") + " your wallet before sending transactions!", 3500);
   } else {
     return true;
   }
