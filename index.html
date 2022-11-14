@@ -427,7 +427,9 @@
                             </div>
                           <div id="exportKeyDiv" hidden="true">
                             Your private key:
-                            <div class="export-key private-key-area" id="exportKeyText"> </div>
+                            <div class="export-key private-key-area" id="exportPrivateKeyText"> </div>
+			    Your public key:
+                            <div class="export-key private-key-area" id="exportPublicKeyText"> </div>
                           </div>
                         </div>
                     </div>
@@ -818,7 +820,8 @@
     const domMnemonicModalContent = document.getElementById("ModalMnemonicContent");
     const domMnemonicModalButton = document.getElementById("modalMnemonicConfirmButton");
     const domExportDiv = document.getElementById("exportKeyDiv");
-    const domExportKey = document.getElementById("exportKeyText");
+    const domExportPublicKey = document.getElementById("exportPublicKeyText");
+    const domExportPrivateKey = document.getElementById("exportPrivateKeyText");
     const domExportWallet = document.getElementById("guiExportWallet");
     const domNewAddress = document.getElementById("guiNewAddress");
     const domConfirmModalHeader = document.getElementById("confirmModalHeader");
@@ -1062,9 +1065,19 @@
     async function toggleExportUI() {
       domExportDiv.hidden = !domExportDiv.hidden;
       if (!domExportDiv.hidden) {
-        domExportKey.innerText = hasEncryptedWallet() ? localStorage.getItem("encwif") : masterKey.keyToBackup;
+	if (hasEncryptedWallet()) {
+	  domExportPrivateKey.innerText = localStorage.getItem("encwif");
+	  domExportPrivateKey.hidden = false;
+	} else {
+	  if(masterKey.isViewOnly) {
+	    domExportPrivateKey.hidden = true;
+	  } else {
+	    domExportPrivateKey.innerText = masterKey.keyToBackup;
+	    domExportPrivateKey.hidden = false;
+	  }
+	}
       } else {
-        domExportKey.innerText = "";
+        domExportPrivateKey.innerText = "";
       }
     }
     
@@ -1216,9 +1229,13 @@
     }
 
     function undelegateGUI() {
+      if (masterKey.isViewOnly) {
+	return createAlert("warning", "Attempting to undelegate in view only mode.", 6000);
+      }
       // Verify the amount
       const nAmount = Math.round(Number(domGuiUndelegateAmount.value.trim()) * COIN);
       if(!validateAmount(nAmount)) return;
+
       undelegate(nAmount);
     }
 
@@ -1317,6 +1334,9 @@
     }
 
     function delegateGUI() {
+      if(masterKey.isViewOnly) {
+	return createAlert("warning", "Attempting to delegate in view only mode.", 6000);
+      }
       // Verify the amount; Delegations must be a minimum of 1 PIV, enforced by the network
       const nAmount = Number(domGuiDelegateAmount.value.trim()) * COIN;
       if (!validateAmount(nAmount, COIN)) return;
@@ -1442,6 +1462,10 @@
   
     async function createTxGUI() {
       if (!hasWalletUnlocked(true)) return;
+      
+      if(masterKey.isViewOnly) {
+	return createAlert("warning", "Attempting to send funds in view only mode.", 6000);
+      }
       
       // Clear the inputs on 'Continue'
       if (domGenIt.innerHTML === 'Continue') {

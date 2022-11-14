@@ -19,39 +19,91 @@ class MasterKey {
   async getxpub(path) {
     throw new Error("Not implemented");
   }
+
+  wipePrivateData() {
+    throw new Error("Not implemented");
+  }
   
   get keyToBackup() {
+    throw new Error("Not implemented");
+  }
+
+  // Public key
+  get keyToExport() {
     throw new Error("Not implemented");
   }
   
   get isHD() {
     return this._isHD;
   }
+  
   get isHardwareWallet() {
     return this._isHardwareWallet;
+  }
+
+  get isViewOnly() {
+    return this._isViewOnly;
   }
 }
 
 class HdMasterKey extends MasterKey {
-  constructor({seed, xpriv}) {
+  constructor({seed, xpriv, xpub}) {
     super();
     // Generate the HDKey
     if(seed) this._hdKey = HDKey.fromMasterSeed(seed);
     if(xpriv) this._hdKey = HDKey.fromExtendedKey(xpriv);
-    if (!this._hdKey) throw new Error("Both seed and xpriv are undefined");
+    if(xpub) this._hdKey = HDKey.HDKey.fromExtendedKey(xpub);
+    this._isViewOnly = !!xpub;
+    if (!this._hdKey) throw new Error("All of seed, xpriv and xpub are undefined");
     this._isHD = true;
     this._isHardwareWallet = false;
   }
   
   async getPrivateKeyBytes(path) {
+    if(this.isViewOnly) {
+      throw new Error("Trying to get private key bytes from a view only key");
+    }
     return this._hdKey.derive(path).privateKey;
   }
   
   get keyToBackup() {
+    if (this.isViewOnly) {
+      throw new Error("Trying to get private key from a view only key");
+    }
     return this._hdKey.privateExtendedKey;
   }
+  
   async getxpub(path) {
+    if(this.isViewOnly) return this._hdKey.publicExtendedKey;
     return this._hdKey.derive(path).publicExtendedKey;
+  }
+
+  getAddress(path) {
+    let child;
+    if (this.isViewOnly) {
+      // If we're view only we can't derive hardened keys, so we'll assume
+      // That the xpub has already been derived
+      child = this._hdKey.derive(path.split("/").filter(n=>!n.includes("'")).join("/"))
+    } else {
+      child = this._hdKey.derive(path);
+    }
+    return deriveAddress({publicKey: Crypto.util.bytesToHex(child.publicKey)});
+  }
+
+  wipePrivateData() {
+    if(this._isViewOnly) return;
+
+    this._hdKey = HDKey.fromExtendedKey(this.keyToExport);
+    this._isViewOnly = true;
+  }
+
+  get keyToExport() {
+    if (this._isViewOnly) return this._hdKey.publicExtendedKey;
+    // We need the xpub to point at the account level
+    return this._hdKey.derive(getDerivationPath(false)
+				     .split("/")
+				     .slice(0, 4)
+				     .join("/")).publicExtendedKey;
   }
 }
 
@@ -79,17 +131,39 @@ class HardwareWalletMasterKey extends MasterKey {
     }
     return this.xpub;
   }
+
+  // Hardware Wallets don't have exposed private data
+  wipePrivateData() { }
+  
+  get isViewOnly() {
+    return false;
+  }
+  get keyToExport() {
+    return this.getxpub(getDerivationPath(true)
+			.split("/")
+			.filter(v=>!v.includes("'"))
+			.join("/"));
+  }
 }
 
 class LegacyMasterKey extends MasterKey {
-  constructor (pkBytes) {
+  constructor ({pkBytes, address}) {
     super();
     this._isHD = false;
     this._isHardwareWallet = false;
     this._pkBytes = pkBytes;
+    this._address = address || super.getAddress();
+    this._isViewOnly = !!address;
+  }
+
+  getAddress() {
+    return this._address;
   }
   
   async getPrivateKeyBytes(_path) {
+    if (this.isViewOnly) {
+      throw new Error("Trying to get private key bytes from a view only key");
+    }
     return this._pkBytes;
   }
   
@@ -99,6 +173,11 @@ class LegacyMasterKey extends MasterKey {
   
   async getxpub(path) {
     throw new Error("Trying to get an extended public key from a legacy address");
+  }
+  
+  wipePrivateData() {
+    this._pkBytes = null;
+    this._isViewOnly = true;
   }
 }
 
@@ -185,6 +264,15 @@ function generateOrEncodePrivkey(pkBytesToEncode) {
   return { pkBytes, strWIF: to_b58(keyWithChecksum) };
 }
 
+function compressPublicKey(pubKeyBytes) {
+  if(pubKeyBytes.length != 65) throw new Error("Attempting to compress an invalid uncompressed key");
+  const x = pubKeyBytes.slice(1, 33);
+  const y = pubKeyBytes.slice(33);
+
+  // Compressed key is [key_parity + 2, x]
+  return [ y[31] % 2 === 0 ? 2 : 3, ...x ];
+}
+
 // Derive a Secp256k1 network-encoded public key (coin address) from raw private or public key bytes
 function deriveAddress({
   pkBytes,
@@ -193,18 +281,21 @@ function deriveAddress({
 }) {
   if(!pkBytes && !publicKey) return null;
   // Public Key Derivation
-  let nPubkey = (publicKey || Crypto.util.bytesToHex(nobleSecp256k1.getPublicKey(pkBytes))).substring(2)
-  const pubY = uint256(nPubkey.substr(64), 16);
-  nPubkey = nPubkey.substr(0, 64);
-  const publicKeyBytesCompressed = Crypto.util.hexToBytes(nPubkey);
-  publicKeyBytesCompressed.unshift(pubY.isEven() ? 2 : 3);
+  let pubKeyBytes = (publicKey ? Crypto.util.hexToBytes(publicKey) : (nobleSecp256k1.getPublicKey(pkBytes, true)));
+  if(pubKeyBytes.length === 65) {
+    pubKeyBytes = compressPublicKey(pubKeyBytes);
+  }
+
+  if (pubKeyBytes.length != 33) {
+    throw new Error("Invalid public key");
+  }
 
   // If we're only trying to derive a Secp256k1 pubkey (not an encoded address), return early
-  if (fNoEncoding) return publicKeyBytesCompressed;
+  if (fNoEncoding) return pubKeyBytes;
 
   // First pubkey SHA-256 hash
   const pubKeyHashing = new jsSHA(0, 0, { "numRounds": 1 });
-  pubKeyHashing.update(publicKeyBytesCompressed);
+  pubKeyHashing.update(pubKeyBytes);
 
   // RIPEMD160 hash
   const pubKeyHashRipemd160 = ripemd160(pubKeyHashing.getHash(0));
