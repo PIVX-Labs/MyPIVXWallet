@@ -404,7 +404,7 @@ async function importWallet({
     fWalletLoaded = true;
 
     // Hide wipe wallet button if there is no private key
-    if (masterKey.isViewOnly) {
+    if (masterKey.isViewOnly || masterKey.isHardwareWallet) {
       domWipeWallet.hidden = true;
       if (hasEncryptedWallet()) {
 	domRestoreWallet.hidden = false;
