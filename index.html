@@ -1575,10 +1575,16 @@
       domGenIt.innerHTML = "Continue";
     }
 
-    async function wipePrivateData() {
+  async function wipePrivateData() {
+      const title = hasEncryptedWallet() ?
+		    "Do you want to lock your wallet?" :
+		    "Do you want to wipe your wallet private data?";
+      const html = hasEncryptedWallet() ?
+		   "You will need to enter your password to access your funds" :
+		   "You will lose access to your funds if you haven't backed up your private key or seed phrase";
       if (await confirmPopup({
-	title: "Do you want to wipe your wallet private data?",
-	html: "You will lose access to your funds if you haven't backed up your private key",
+	title,
+	html,
       })) {
 	masterKey.wipePrivateData();
 	domWipeWallet.hidden = true;
@@ -1590,7 +1596,7 @@
 
     async function restoreWallet() {
       if(await confirmPopup({
-	title: "Decrypt wallet",
+	title: "Unlock your wallet",
 	html: 'Insert your wallet password <br> <input id="restoreWalletPassword">',
       })) {
 	const password = document.getElementById("restoreWalletPassword").value;
