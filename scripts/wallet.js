@@ -159,6 +159,10 @@ class LegacyMasterKey extends MasterKey {
   getAddress() {
     return this._address;
   }
+
+  get keyToExport() {
+    return this._address;
+  }
   
   async getPrivateKeyBytes(_path) {
     if (this.isViewOnly) {
