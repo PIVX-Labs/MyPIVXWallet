@@ -986,6 +986,10 @@
       domAccessWalletBtn.style.display = 'none';
 
       // If we have a local wallet, display the decryption prompt
+      // This is no longer being used, as the user will be put in view-only
+      // mode when logging in, however if the user locked the wallet before
+      // #52 there would be no way to recover the public key without getting
+      // The password from the user
       if (hasEncryptedWallet()) {
         domPrivKey.placeholder = 'Enter your wallet password';
         domImportWalletText.innerText = 'Unlock Wallet';
@@ -1735,8 +1739,14 @@
         domGenerateWallet.style.display = "none";
         domGenVanityWallet.style.display = "none";
 
-        // Display the password unlock upfront
-        accessOrImportWallet();
+	const publicKey = localStorage.getItem("publicKey");
+
+	if (publicKey) {
+	  importWallet({newWif: publicKey});
+	} else {
+          // Display the password unlock upfront
+          accessOrImportWallet();
+	}
       }
 
       // Configure payment processor
@@ -1765,7 +1775,7 @@
 
     setInterval(refreshChainData, 15000);
     domPrefix.value = ""
-    domPrefixNetwork.innerText = cChainParams.current.PUBKEY_PREFIX.join(' or ');
+      domPrefixNetwork.innerText = cChainParams.current.PUBKEY_PREFIX.join(' or ');
   </script>
 
 </body>

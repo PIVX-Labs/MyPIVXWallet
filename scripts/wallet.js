@@ -516,6 +516,7 @@ async function encryptWallet(strPassword = '') {
 
   // Set the encrypted wallet in localStorage
   localStorage.setItem("encwif", strEncWIF);
+  localStorage.setItem("publicKey", masterKey.keyToExport);
 
   // Hide the encryption warning
   domGenKeyWarning.style.display = 'none';
@@ -534,10 +535,12 @@ async function decryptWallet(strPassword = '') {
   if (!strDecWIF || strDecWIF === "decryption failed!") {
     if (strDecWIF) return createAlert("warning", "Incorrect password!", 6000);
   } else {
-    importWallet({
+    await importWallet({
       newWif: strDecWIF,
       skipConfirmation: true,
     });
+    // Ensure publicKey is set
+    localStorage.setItem("publicKey", masterKey.keyToExport);
     return true;
   }
 }
