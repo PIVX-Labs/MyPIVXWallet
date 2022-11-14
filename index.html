@@ -423,6 +423,7 @@
                                       <i onclick="toClipboard('guiAddress', this)" id="guiAddressCopy" class="fas fa-clipboard fa-stacked-ptr"></i>
                                       <i id="guiExportWallet" onclick="toggleExportUI()" class="fas fa-share fa-stacked-ptr"></i>
 				      <i id="guiWipeWallet" onclick="wipePrivateData()" class="fas fa-minus fa-stacked-ptr"></i>
+				      <i id="guiRestoreWallet" onclick="restoreWallet()" class="fas fa-plus fa-stacked-ptr" hidden></i>
 				      
                                     </b>
                                 </div>
@@ -828,6 +829,7 @@
     const domExportPrivateKey = document.getElementById("exportPrivateKeyText");
     const domExportWallet = document.getElementById("guiExportWallet");
     const domWipeWallet = document.getElementById("guiWipeWallet");
+    const domRestoreWallet = document.getElementById("guiRestoreWallet");
     const domNewAddress = document.getElementById("guiNewAddress");
     const domConfirmModalHeader = document.getElementById("confirmModalHeader");
     const domConfirmModalTitle = document.getElementById("confirmModalTitle");
@@ -1576,6 +1578,22 @@
       })) {
 	masterKey.wipePrivateData();
 	domWipeWallet.hidden = true;
+	if (hasEncryptedWallet()) {
+	  domRestoreWallet.hidden = false;
+	}
+      }
+    }
+
+    async function restoreWallet() {
+      if(await confirmPopup({
+	title: "Decrypt wallet",
+	html: 'Insert your wallet password <br> <input id="restoreWalletPassword">',
+      })) {
+	const password = document.getElementById("restoreWalletPassword").value;
+	if(await decryptWallet(password)) {
+	  domRestoreWallet.hidden = true;
+	  domWipeWallet.hidden = false;
+	}
       }
     }
 

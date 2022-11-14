@@ -327,9 +327,10 @@ async function importWallet({
   newWif = false,
   fRaw = false,
   isHardwareWallet = false,
+  skipConfirmation = false,
 } = {}) {
   const strImportConfirm = "Do you really want to import a new address? If you haven't saved the last private key, the wallet will be LOST forever.";
-  const walletConfirm = fWalletLoaded ? await confirmPopup({html: strImportConfirm}) : true;
+  const walletConfirm = (fWalletLoaded && !skipConfirmation) ? await confirmPopup({html: strImportConfirm}) : true;
 
   if (walletConfirm) {
     if (isHardwareWallet) {
@@ -401,6 +402,9 @@ async function importWallet({
     // Hide wipe wallet button if there is no private key
     if (masterKey.isViewOnly) {
       domWipeWallet.hidden = true;
+      if (hasEncryptedWallet()) {
+	domRestoreWallet.hidden = false;
+      }
     }
 
     getNewAddress({updateGUI: true});
@@ -528,10 +532,11 @@ async function decryptWallet(strPassword = '') {
   // Prompt to decrypt it via password
   const strDecWIF = await decrypt(strEncWIF, strPassword);
   if (!strDecWIF || strDecWIF === "decryption failed!") {
-    if (strDecWIF) return alert("Incorrect password!");
+    if (strDecWIF) return createAlert("warning", "Incorrect password!", 6000);
   } else {
     importWallet({
-      newWif: strDecWIF
+      newWif: strDecWIF,
+      skipConfirmation: true,
     });
     return true;
   }
