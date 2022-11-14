@@ -1597,7 +1597,7 @@
     async function restoreWallet() {
       if(await confirmPopup({
 	title: "Unlock your wallet",
-	html: 'Insert your wallet password <br> <input id="restoreWalletPassword">',
+	html: '<input type="password" id="restoreWalletPassword" placeholder="Wallet password">',
       })) {
 	const password = document.getElementById("restoreWalletPassword").value;
 	if(await decryptWallet(password)) {
