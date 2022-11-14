@@ -398,6 +398,11 @@ async function importWallet({
     // Reaching here: the deserialisation was a full cryptographic success, so a wallet is now imported!
     fWalletLoaded = true;
 
+    // Hide wipe wallet button if there is no private key
+    if (masterKey.isViewOnly) {
+      domWipeWallet.hidden = true;
+    }
+
     getNewAddress({updateGUI: true});
     // Display Text
     domGuiWallet.style.display = 'block';

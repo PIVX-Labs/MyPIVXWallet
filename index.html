@@ -422,12 +422,15 @@
                                       <i id="guiNewAddress" onclick="getNewAddress({updateGUI: true, verify: true})" class="fas fa-sync fa-stacked-ptr"></i>
                                       <i onclick="toClipboard('guiAddress', this)" id="guiAddressCopy" class="fas fa-clipboard fa-stacked-ptr"></i>
                                       <i id="guiExportWallet" onclick="toggleExportUI()" class="fas fa-share fa-stacked-ptr"></i>
+				      <i id="guiWipeWallet" onclick="wipePrivateData()" class="fas fa-minus fa-stacked-ptr"></i>
+				      
                                     </b>
                                 </div>
                             </div>
                           <div id="exportKeyDiv" hidden="true">
-                            Your private key:
-                            <div class="export-key private-key-area" id="exportPrivateKeyText"> </div>
+                            <div id="exportPrivateKey">Your private key:
+				<div class="export-key private-key-area" id="exportPrivateKeyText"> </div>
+			    </div>
 			    Your public key:
                             <div class="export-key private-key-area" id="exportPublicKeyText"> </div>
                           </div>
@@ -821,8 +824,10 @@
     const domMnemonicModalButton = document.getElementById("modalMnemonicConfirmButton");
     const domExportDiv = document.getElementById("exportKeyDiv");
     const domExportPublicKey = document.getElementById("exportPublicKeyText");
+    const domExportPrivateKeyHold = document.getElementById("exportPrivateKey");
     const domExportPrivateKey = document.getElementById("exportPrivateKeyText");
     const domExportWallet = document.getElementById("guiExportWallet");
+    const domWipeWallet = document.getElementById("guiWipeWallet");
     const domNewAddress = document.getElementById("guiNewAddress");
     const domConfirmModalHeader = document.getElementById("confirmModalHeader");
     const domConfirmModalTitle = document.getElementById("confirmModalTitle");
@@ -1067,15 +1072,17 @@
       if (!domExportDiv.hidden) {
 	if (hasEncryptedWallet()) {
 	  domExportPrivateKey.innerText = localStorage.getItem("encwif");
-	  domExportPrivateKey.hidden = false;
+	  domExportPrivateKeyHold.hidden = false;
 	} else {
 	  if(masterKey.isViewOnly) {
-	    domExportPrivateKey.hidden = true;
+	    domExportPrivateKeyHold.hidden = true;
 	  } else {
 	    domExportPrivateKey.innerText = masterKey.keyToBackup;
-	    domExportPrivateKey.hidden = false;
+	    domExportPrivateKeyHold.hidden = false;
 	  }
 	}
+
+	domExportPublicKey.innerText = await masterKey.keyToExport;
       } else {
         domExportPrivateKey.innerText = "";
       }
@@ -1560,6 +1567,16 @@
         sendTransaction(strSerialisedTx);
       }
       domGenIt.innerHTML = "Continue";
+    }
+
+    async function wipePrivateData() {
+      if (await confirmPopup({
+	title: "Do you want to wipe your wallet private data?",
+	html: "You will lose access to your funds if you haven't backed up your private key",
+      })) {
+	masterKey.wipePrivateData();
+	domWipeWallet.hidden = true;
+      }
     }
 
     
