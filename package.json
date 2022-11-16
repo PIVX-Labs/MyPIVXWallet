@@ -1,21 +1,28 @@
 {
-    "name": "mypivxwallet",
-    "version": "1.0.0",
-    "description": "<h2 align=\"center\"> Send, Stake and Receive with PIVX's most universal wallet. </h2>",
-    "repository": {
-      "type": "git",
-      "url": "git+https://github.com/PIVX-Labs/MyPIVXWallet.git"
-    },
-    "keywords": [],
-    "author": "",
-    "license": "MIT",
-    "bugs": {
-      "url": "https://github.com/PIVX-Labs/MyPIVXWallet/issues"
-    },
-    "homepage": "https://github.com/PIVX-Labs/MyPIVXWallet#readme",
-    "devDependencies": {
-      "eslint": "^8.27.0",
-      "prettier": "^2.7.1"
-    }
+  "name": "mypivxwallet",
+  "version": "1.0.0",
+  "description": "<h2 align=\"center\">   Send, Stake and Receive with PIVX's most universal wallet. </h2>",
+  "private": true,
+  "scripts": {
+    "build": "webpack"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PIVX-Labs/MyPIVXWallet.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/PIVX-Labs/MyPIVXWallet/issues"
+  },
+  "homepage": "https://github.com/PIVX-Labs/MyPIVXWallet#readme",
+  "devDependencies": {
+    "eslint": "^8.27.0",
+    "eslint-config-standard": "^17.0.0",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-n": "^15.5.1",
+    "eslint-plugin-promise": "^6.1.1",
+    "prettier": "^2.7.1"
   }
-  
+}
