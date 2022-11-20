@@ -1183,7 +1183,7 @@
       domMnPrivateKey.value = "";
 
       if (!ip.includes(":")) {
-	      address = `${ip}:${cChainParams.MASTERNODE_PORT}`;
+	      address = `${ip}:${cChainParams.current.MASTERNODE_PORT}`;
       } else {
 	      address = ip;
       }
@@ -1362,12 +1362,12 @@
       const address = await masterKey.getAddress(path);
       if (verify && masterKey.isHardwareWallet) {
         // Generate address to present to the user without asking to verify
-        const conf_address = await confirmPopup({
+        const confAddress = await confirmPopup({
           title: "Verify your address",
           html: createAddressConfirmation(address),
           resolvePromise: masterKey.getAddress(path, { verify })
         });
-        if (address !== conf_address) {
+        if (address !== confAddress) {
           throw new Error("User did not verify address");
         }
       }
