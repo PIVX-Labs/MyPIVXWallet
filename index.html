@@ -1073,7 +1073,7 @@
         }) == true) {
         if(localStorage.getItem("masternode")){
           let cMasternode= new Masternode(JSON.parse(localStorage.getItem("masternode")))
-          if(await cMasternode.sgetStatus()!=="ENABLED"){
+          if(await cMasternode.getStatus()!=="ENABLED"){
             createAlert("warning","Your masternode is not enabled!",6000);
             return;
           }
