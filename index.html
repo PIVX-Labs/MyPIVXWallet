@@ -1079,14 +1079,15 @@
             createAlert("warning","Your masternode is not enabled yet!",6000);
             return;
           }
-          let result= await cMasternode.vote(hash.toString(),voteCode); //1 yes 2 no
-          if(result.includes("Voted successfully")){ //good vote
+          const result = await cMasternode.vote(hash.toString(),voteCode); //1 yes 2 no
+          if (result.includes("Voted successfully")) { //good vote
             createAlert('success', 'Voted successfully',6000);
-          }else if(result.includes("Error voting :")){ //If you already voted return an alert
+          } else if(result.includes("Error voting :")) { //If you already voted return an alert
             createAlert('warning', 'You already voted this proposal! Please wait 1 hour',6000);
-          }else if(result.includes("Failure to verify signature.")){ //wrong masternode private key
+          } else if(result.includes("Failure to verify signature.")) { //wrong masternode private key
             createAlert('warning', 'Failed to verify signature, please recheck the masternode private key',6000);
-          }else{ //this could be everything
+          } else { //this could be everything
+	    console.error(result);
             createAlert('warning', 'Internal error, please try again later',6000);
           }
         } else {
