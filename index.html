@@ -1072,12 +1072,12 @@
           html: "Are you sure? It takes 60 minutes to change vote",
         }) == true) {
         if(localStorage.getItem("masternode")){
-          let c_masternode= new Masternode(JSON.parse(localStorage.getItem("masternode")))
-          if(await c_masternode.getStatus()!=="ENABLED"){
+          let cMasternode= new Masternode(JSON.parse(localStorage.getItem("masternode")))
+          if(await cMasternode.sgetStatus()!=="ENABLED"){
             createAlert("warning","Your masternode is not enabled!",6000);
             return;
           }
-          let result= await c_masternode.vote(hash.toString(),voteCode); //1 yes 2 no
+          let result= await cMasternode.vote(hash.toString(),voteCode); //1 yes 2 no
           if(result.includes("Voted successfully")){ //good vote
             createAlert('success', 'Voted successfully',6000);
           }else if(result.includes("Error voting :")){ //If you already voted return an alert
@@ -1164,12 +1164,12 @@
         sendTransaction(strSerialisedTx);
         
       }
-      let masternode_privateKey= await generateMnPrivkey();
-       await confirmPopup({
-          title: "Your Masternode Private Key",
-          html: `${masternode_privateKey} <br> Save this private key and copy it on your VPS`, 
-        });
-        createAlert("success","Your masternode has been created! Wait 15 confirmations before accessing it") 
+      let masternodePrivateKey= await generateMnPrivkey();
+      await confirmPopup({
+        title: "Your Masternode Private Key",
+        html: `${masternodePrivateKey} <br> Save this private key and copy it on your VPS`, 
+      });
+      createAlert("success","Your masternode has been created! Wait 15 confirmations before accessing it") 
     }
     async function importMasternode(){ 
       const mnPrivKey = domMnPrivateKey.value;
