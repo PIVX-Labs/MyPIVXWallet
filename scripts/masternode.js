@@ -71,7 +71,7 @@ class Masternode {
 	const mnPublicKey = deriveAddress({
 	    pkBytes: parseWIF(msg.mnPrivateKey, true),
 	    output: "RAW_BYTES",
-	    compress: true,
+	    compress: false,
 	});
 
 	const pkt = [
@@ -145,7 +145,7 @@ class Masternode {
 	const mnPublicKey = deriveAddress({
 	    pkBytes: parseWIF(this.mnPrivateKey, true),
 	    output: "RAW_BYTES",
-	    compress: true,
+	    compress: false,
 	});
 	const sigBytes = await this.getSignedMessage(sigTime);
 	const sigPingBytes = await this.getSignedPingMessage(sigTime, blockHash);
