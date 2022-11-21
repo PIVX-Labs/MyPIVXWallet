@@ -17,7 +17,7 @@ class Masternode {
 	    if(masternodes.length > 0) {
 		return sanitizeHTML(masternodes[0].status);
 	    } else {
-		return "NOT_FOUND";
+		return "MISSING";
 	    }
 	} catch(e) { //this is the unfortunate state in which the node is not reachable
 	    console.error(e);

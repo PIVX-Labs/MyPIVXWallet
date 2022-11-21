@@ -2045,7 +2045,7 @@
 
     async function refreshMasternodeData(cMasternode, fAlert = false) {
       const strStatus = await cMasternode.getStatus();
-      if (strStatus === "NOT_FOUND") {
+      if (strStatus === "MISSING") {
         domMnTextErrors.children[1].innerHTML = "Masternode is currently <b>OFFLINE</b>";
         createAlert('warning', 'Your masternode is offline, we will try to start it', 6000);
         // try to start the masternode
