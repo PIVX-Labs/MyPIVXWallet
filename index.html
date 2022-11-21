@@ -331,7 +331,7 @@
 
               <!-- PIVX DONATION SECTION -->
               <div class="col-md-12 donation-section float-left rm-pd text-center">
-                  <button class="pivx-button-big" onclick="openDonatePage()">
+                  <button class="pivx-button-big" onclick="guiPreparePayment(donationAddress)">
                             <span class="buttoni-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 70"><path d="M3.497 25.717C1.401 25.588 0 23.847 0 21.753v-2.535c0-.775.149-1.593.925-1.593h22.719c2.173 0 3.941 1.861 3.941 4.034 0 2.174-1.769 3.988-3.941 3.988l-20.207.048c-.02 0 .08.023.06.022z"></path><path d="M5.229 69.625C4.455 69.625 4 68.494 4 67.719V38.661c0-1.911 1.447-3.731 3.258-3.989.175-.029.285-.047.483-.047h21.525c7.137 0 12.751-5.86 12.751-13.027 0-7.096-5.528-12.841-12.586-13.177-.002 0-.671.016-1.41.016l-20.335.066C5.529 8.373 4 6.652 4 4.558V2.023C4 1.247 4.407.625 5.183.625h24.059c11.57 0 20.654 9.546 20.706 21.104 0 9.378-6.307 17.727-15.337 20.311-1.622.445-3.122.705-4.735.778L12 42.842v22.485c0 2.156-2.141 4.298-4.235 4.298H5.229z"></path></svg></span>
                             <span class="buttoni-text">Donate - Pay with MyPIVXWallet</span>
                             <span class="buttoni-arrow"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M23.328 16.707L13.121 26.914a.5.5 0 01-.707 0l-2.828-2.828a.5.5 0 010-.707L16.964 16 9.586 8.621a.5.5 0 010-.707l2.828-2.828a.5.5 0 01.707 0l10.207 10.207a1 1 0 010 1.414z"></path></svg></span>
@@ -647,7 +647,7 @@
          
             <div id='mnTextErrors' style='display: block;'>
               <br>
-              <p id="communication" class="center-text">Please access your <b>COLLATERAL WALLET </b> first.</p>
+              <p class="center-text">Please access your <b>COLLATERAL WALLET </b> first.</p>
             </div>
 
             <!-- IMPORT MASTERNODE -->
@@ -657,7 +657,7 @@
                 <div id="accessMasternodeText"></div> 
                 <br>
                 <input class="hide-element" type="text">
-                <div id="mnImportMasternode" style='display: block;'>
+                <div style='display: block;'>
                   <input type="password" id='mnPrivateKey' placeholder="Masternode Private Key">
                   <input type="text" id='mnIP' placeholder="Masternode ip address">
                   <select id='mnTxId' style="display: block;" placeholder="Masternode collateral tx" class="form-control">
@@ -676,10 +676,10 @@
             <div id='createMasternode' class="dashboard-item" style='display:none; width:100%;'>
               <div class="container" >
 
-                <p>Create your masternode (note: you need 10k <b> PIVs </b> ).</p> 
+                <p>Create your masternode (note: you need 10k <b> PIV </b> ).</p> 
                 <br>
                 <input class="hide-element" type="text">
-                <div id="mnCreateMasternode" style='display: block;'>
+                <div style='display: block;'>
                   <button class="pivx-button-big" onclick="createMasternode()">
                                 <span class="buttoni-icon"><i class="fas fa-file-upload fa-tiny-margin"></i></span>
                                 <span class="buttoni-text" id="importMnText">Create Masternode</span>
@@ -702,7 +702,7 @@
 
               <div id='sendNotice' class="col-md-12 float-left"></div>
               <div class="col-md-12">
-                <p id="communication" class="center-text">Please <b>AVOID</b> sending to Shielded addresses using this wallet - this functionality is currently unsupported.</p>
+                <p class="center-text">Please <b>AVOID</b> sending to Shielded addresses using this wallet - this functionality is currently unsupported.</p>
               </div>
               <div class='max-width' style='clear:both;'>
                 <div id="simpleTransactionsDropdown" class="bold-trans" onclick='toggleDropDown("simpleTransactions")'>Create Simple Transactions<span
@@ -822,7 +822,7 @@
     <div class="alertPositioning"></div>
     <footer id="foot">
         <div class="footer">
-          <div id='dcfooter'>© MIT 2022 - Built with 💜 by PIVX Labs - <b style='cursor:pointer' onclick='openDonatePage()'>Donate!</b><br><a href="https://github.com/PIVX-Labs/MyPIVXWallet">MyPIVXWallet</a></div>
+          <div id='dcfooter'>© MIT 2022 - Built with 💜 by PIVX Labs - <b style='cursor:pointer' onclick='guiPreparePayment(donationAddress)'>Donate!</b><br><a href="https://github.com/PIVX-Labs/MyPIVXWallet">MyPIVXWallet</a></div>
         </div>
     </footer>
   </div>
@@ -882,11 +882,9 @@
     const domCreateMasternode = document.getElementById('createMasternode');
     const domAccessMasternode = document.getElementById('accessMasternode');
     const domMnAccessMasternodeText = document.getElementById('accessMasternodeText');
-    const domMnTextErrors=document.getElementById('mnTextErrors');
+    const domMnTextErrors = document.getElementById('mnTextErrors');
     const domMnIP = document.getElementById('mnIP');
     const domMnTxId = document.getElementById('mnTxId');
-    const domMnCreateMasternode = document.getElementById('mnCreateMasternode')
-    const domMnImportMasternode = document.getElementById('mnImportMasternode');
     const domMnPrivateKey = document.getElementById('mnPrivateKey');
 
     const domAccessWallet = document.getElementById('accessWallet');
@@ -1045,11 +1043,15 @@
       }, 1000);
     }
 
-    function openDonatePage() {
+    function guiPreparePayment(strTo = "", strAmount = 0, strDesc = "") {
       domTxTab.click();
       if (domSimpleTXs.style.display === 'none')
         domSimpleTXsDropdown.click();
-      domAddress1s.value = donationAddress;
+      // Apply values
+      domAddress1s.value = strTo;
+      domValue1s.value = strAmount;
+      domReqDesc.value = strDesc;
+	    domReqDisplay.style.display = strDesc ? 'block' : 'none';
       domValue1s.focus();
     }
 
@@ -1067,29 +1069,28 @@
     }
 
     async function govVote(hash,voteCode){
-      if ( await confirmPopup({
+      if (await confirmPopup({
           title: "Confirm Vote",
           html: "Are you sure? It takes 60 minutes to change vote",
         }) == true) {
         if(localStorage.getItem("masternode")){
           let cMasternode= new Masternode(JSON.parse(localStorage.getItem("masternode")))
           if(await cMasternode.getStatus()!=="ENABLED"){
-            createAlert("warning","Your masternode is not enabled!",6000);
+            createAlert("warning","Your masternode is not enabled yet!",6000);
             return;
           }
-          const result = await cMasternode.vote(hash.toString(),voteCode); //1 yes 2 no
-          if (result.includes("Voted successfully")) { //good vote
+          let result= await cMasternode.vote(hash.toString(),voteCode); //1 yes 2 no
+          if(result.includes("Voted successfully")){ //good vote
             createAlert('success', 'Voted successfully',6000);
-          } else if(result.includes("Error voting :")) { //If you already voted return an alert
+          }else if(result.includes("Error voting :")){ //If you already voted return an alert
             createAlert('warning', 'You already voted this proposal! Please wait 1 hour',6000);
-          } else if(result.includes("Failure to verify signature.")) { //wrong masternode private key
+          }else if(result.includes("Failure to verify signature.")){ //wrong masternode private key
             createAlert('warning', 'Failed to verify signature, please recheck the masternode private key',6000);
-          } else { //this could be everything
-	    console.error(result);
+          }else{ //this could be everything
             createAlert('warning', 'Internal error, please try again later',6000);
           }
-        }else{
-          createAlert('warning', 'Access a masternode before voting!',6000);
+        } else {
+          createAlert('warning', 'Access a masternode before voting!', 6000);
         }
       }
     }
@@ -1168,9 +1169,9 @@
       let masternodePrivateKey= await generateMnPrivkey();
       await confirmPopup({
         title: "Your Masternode Private Key",
-        html: `${masternodePrivateKey} <br> Save this private key and copy it on your VPS`, 
+        html: `${masternodePrivateKey} <br> Save this private key and copy it to your VPS config`, 
       });
-      createAlert("success","Your masternode has been created! Wait 15 confirmations before accessing it") 
+      createAlert("success", "Your masternode has been created! Wait 15 confirmations to proceed further") 
     }
     async function importMasternode(){ 
       const mnPrivKey = domMnPrivateKey.value;
@@ -1190,64 +1191,49 @@
       }
 
       if (!masterKey.isHD) {
-        //the first UTXO should have 10k PIV
-        let firstUTXO=cachedUTXOs[cachedUTXOs.length-1];
+        // Find the first UTXO matching the expected collateral size
+	      const cCollaUTXO = cachedUTXOs.find(cUTXO => cUTXO.sats === cChainParams.current.collateralInSats);
 
-        collateralTxId = firstUTXO.id;
-        outidx = firstUTXO.vout;
+        // If there's no valid UTXO, exit with a contextual message
+        if (!cCollaUTXO) {
+          if (getBalance(false) < cChainParams.current.collateralInSats) {
+            // Not enough balance to create an MN UTXO
+            createAlert("warning", "You need <b>" + ((cChainParams.current.collateralInSats - getBalance(false)) / COIN) + " more " + cChainParams.current.TICKER + "</b> to create a Masternode!", 10000);
+          } else {
+            // Balance is capable of a masternode, just needs to be created
+            // TODO: this UX flow is weird, is it even possible? perhaps we can re-design this entire function accordingly
+            createAlert("warning", "You have enough balance for a Masternode, but no valid collateral UTXO of " + (cChainParams.current.collateralInSats / COIN) + " " + cChainParams.current.TICKER);
+          }
+          return;
+        }
+
+        collateralTxId = cCollaUTXO.id;
+        outidx = cCollaUTXO.vout;
         collateralPrivKey = await masterKey.getPrivateKey();
       } else {
         let path = domMnTxId.value;
-          const masterUtxo = cachedUTXOs.findLast(u=>u.path === path); // first UTXO for each address in HD
-        //sanity check:
-        if(masterUtxo.sats!==cChainParams.current.collateralInSats){
-          createAlert("warning", "This is not a suitable UTXO for a Masternode", 10000);
-          return;
+        const masterUtxo = cachedUTXOs.findLast(u=>u.path === path); // first UTXO for each address in HD
+        // sanity check:
+        if (masterUtxo.sats !== cChainParams.current.collateralInSats) {
+          return createAlert("warning", "This is not a suitable UTXO for a Masternode", 10000);
         }
-        outidx = masterUtxo.vout;
         collateralTxId = masterUtxo.id;
+        outidx = masterUtxo.vout;
         collateralPrivKey = await masterKey.getPrivateKey(path);     
       }
       domMnTxId.value = "";
 
       
       const masternode = new Masternode({
-                      walletPrivateKey: collateralPrivKey,
-                      mnPrivateKey: mnPrivKey,
-                      collateralTxId: collateralTxId,
-                      outidx: outidx,
-                      addr: address,
-                      });
-      const result = await masternode.getStatus();
-      if(result === "NOT_FOUND"){
-        domMnTextErrors.children[1].innerHTML="Masternode is currently  <b> OFFLINE </b>";
-        createAlert('warning', 'Your masternode is offline, we will try to start it', 6000);
-        //try to start the masternode
-        let started= await masternode.start();
-        if(started){
-          domMnTextErrors.children[1].innerHTML="Masternode successfully started!";
-          createAlert('success', 'Masternode successfully started!, it will be soon online',6000);
-          localStorage.setItem("masternode", JSON.stringify(masternode));
-        }else{
-          domMnTextErrors.children[1].innerHTML="We couldn't start your masternode";
-          createAlert('warning', 'We could not start your masternode',6000);
-        }
-      }else if(result==="ENABLED"){
-        domMnTextErrors.children[1].innerHTML="Your masternode is:  <b> ENABLED </b>! ";
-        createAlert('success', 'Your masternode status is <b> ENABLED </b>',6000);
-        localStorage.setItem("masternode", JSON.stringify(masternode));
-      }else if(result==="PRE_ENABLED"){ 
-        domMnTextErrors.children[1].innerHTML="Your masternode status is:  <b> PRE ENABLED</b>, wait for a few hours and it will get enabled.";
-        createAlert('success', 'Your masternode status is <b> PRE ENABLED </b>',6000);
-        localStorage.setItem("masternode", JSON.stringify(masternode));
-      }else if(result === "REMOVED"){
-        domMnTextErrors.children[1].innerHTML="Masternode is currently  <b> REMOVED </b>";
-        createAlert('warning', 'Your masternode is in <b> REMOVED </b> state',6000);
-      }else{ //connection problem
-        domMnTextErrors.children[1].innerHTML="Unable to connect to our servers!";
-        createAlert('warning', 'Unable to connect to our servers!',6000);
-      }
+        walletPrivateKey: collateralPrivKey,
+        mnPrivateKey: mnPrivKey,
+        collateralTxId: collateralTxId,
+        outidx: outidx,
+        addr: address
+      });
+      refreshMasternodeData(masternode, true);
     }
+
     function accessOrImportWallet() {
       // Hide and Reset the Vanity address input
       domPrefix.value = "";
@@ -1968,86 +1954,125 @@
 	  td4.appendChild(buttonYes)
         }
       }
-      if(tabName==="Masternode"){
+      if (tabName==="Masternode") {
         //TODO: IN A FUTURE ADD MULTI-MASTERNODE SUPPORT BY SAVING MNs with which you logged in the past.
 
-        //did you load a wallet?
-        if(masterKey){
-
-          //first case: the wallet is not HD and it is not hardware, so in case the wallet has collateral the user can check its status and do simple stuff like voting
-          if(!masterKey.isHD && !masterKey.isHardwareWallet ){
-            domMnAccessMasternodeText.innerHTML=masternodeLegacyAccessText;
-            domMnTxId.style.display="none";
-            if(cachedUTXOs.length==0){
-              domMnTextErrors.children[1].innerHTML="This wallet is empty or UTXOs are not loaded yet, reopen the tab in a few seconds."
-            }else{
-              //the first UTXO should have the 10k pivx 
-	      let firstUTXO=cachedUTXOs[cachedUTXOs.length-1];
-	      if(cChainParams.current.collateralInSats===firstUTXO.sats){
-                domAccessMasternode.style.display="block";
-                domMnTextErrors.children[1].innerHTML="Good! now handle your masternode :D";
-                if(localStorage.getItem("masternode")){
-                  let c_masternode= new Masternode(JSON.parse(localStorage.getItem("masternode")))
-                  let status= await c_masternode.getStatus();  
-                  domMnTextErrors.children[1].innerHTML="A masternode is already loaded, current status:<b> "+status+ "</b>.";
-                } 
-              }else{
-                domMnTextErrors.children[1].innerHTML="This is not a <b>collateral</b> wallet!";
+        // Ensure a wallet is loaded
+        const domErrText = domMnTextErrors.children[1];
+        if (masterKey) {
+          // first case: the wallet is not HD and it is not hardware, so in case the wallet has collateral the user can check its status and do simple stuff like voting
+          if (!masterKey.isHD && !masterKey.isHardwareWallet) {
+            domMnAccessMasternodeText.innerHTML = masternodeLegacyAccessText;
+            domMnTxId.style.display = "none";
+            if (!cachedUTXOs.length) {
+              domErrText.innerHTML = "Your wallet is empty or still loading, re-open the tab in a few seconds!"
+            } else {
+              // Find the first UTXO matching the expected collateral size
+	            const cCollaUTXO = cachedUTXOs.find(cUTXO => cUTXO.sats === cChainParams.current.collateralInSats);
+	            if (cCollaUTXO) {
+                domAccessMasternode.style.display = "none";
+                domCreateMasternode.style.display = "none";
+                domErrText.innerHTML = "";
+                if (localStorage.getItem("masternode")) {
+                  const cMasternode = new Masternode(JSON.parse(localStorage.getItem("masternode")));
+                  refreshMasternodeData(cMasternode);
+                } else {
+                  domAccessMasternode.style.display = "block";
+                }
+              } else if (getBalance(false) < cChainParams.current.collateralInSats) {
+                // The user needs more funds
+                domErrText.innerHTML = "You need <b>" + ((cChainParams.current.collateralInSats - getBalance(false)) / COIN) + " more " + cChainParams.current.TICKER + "</b> to create a Masternode!";
+              } else {
+                // The user has the funds, but not an exact collateral, prompt for them to create one
+                domCreateMasternode.style.display = "block";
+                domMnTxId.style.display = "none";
+                domMnTxId.innerHTML = "";
               }
             }
-          }else if(masterKey.isHD){
-            
-            domCreateMasternode.style.display="block";
-            domMnTxId.style.display="none";
-            domMnTxId.innerHTML="";
-            domMnAccessMasternodeText.innerHTML=masternodeHDAccessText;
-            if(cachedUTXOs.length==0){
-              domMnTextErrors.children[1].innerHTML="This HD wallet is empty or UTXOs are not loaded yet, reopen the tab in a few seconds."
-            }else{
-              
+          } else if (masterKey.isHD) {
+            domCreateMasternode.style.display = "block";
+            domMnTxId.style.display = "none";
+            domMnTxId.innerHTML = "";
+            domMnAccessMasternodeText.innerHTML = masternodeHDAccessText;
+
+            if (!cachedUTXOs.length) {
+              domErrText.innerHTML = "This HD wallet is empty or still loading, re-open the tab in a few seconds!";
+            } else {
               let wallets_map = new Map(); //first UTXO for each address in HD
-              for(let i in cachedUTXOs){
+              for (let i in cachedUTXOs) {
                 wallets_map.set(cachedUTXOs[i].path,cachedUTXOs[i]);
               }
               
-              for(let [key, value] of wallets_map){
-                if(value.sats!==cChainParams.current.collateralInSats){
+              for (let [key, value] of wallets_map) {
+                if (value.sats!==cChainParams.current.collateralInSats) {
                   wallets_map.delete(key);
                 }
               }
-              if(wallets_map.size===0){
-                domMnTextErrors.children[1].innerHTML="There are no accessible masternodes, you should create one first";
-              }else{
-                domAccessMasternode.style.display="block";
-                domMnTxId.style.display="block";
-                domMnTextErrors.children[1].innerHTML="There could be one or more masternodes in this wallet";
-                if(localStorage.getItem("masternode")){
-                  let c_masternode= new Masternode(JSON.parse(localStorage.getItem("masternode")))
-                  let status= await c_masternode.getStatus();  
-                  domMnTextErrors.children[1].innerHTML="A masternode is already loaded, current status:<b> "+status+ "</b>.";
+
+              if (!wallets_map.size) {
+                domErrText.innerHTML = "There are no accessible masternodes, you should create one first";
+              } else {
+                domAccessMasternode.style.display = "block";
+                domMnTxId.style.display = "block";
+                domErrText.innerHTML = "There could be one or more masternodes in this wallet";
+                if (localStorage.getItem("masternode")) {
+                  const cMasternode= new Masternode(JSON.parse(localStorage.getItem("masternode")));
+                  refreshMasternodeData(cMasternode);
                 } 
-                
-                for(const [key, value] of wallets_map){
+
+                for (const [key, value] of wallets_map) {
                   const option = document.createElement('option');
                   option.value = key;
                   option.innerText = await masterKey.getAddress(key);
-                  domMnTxId.appendChild(option)
+                  domMnTxId.appendChild(option);
                 }
               }
             }
-          }else if(masterKey.isHardwareWallet){
-            domCreateMasternode.style.display="none";
-            domAccessMasternode.style.display="none";
-            domMnTxId.style.display="none";
-            domMnTextErrors.children[1].innerHTML="Sorry, ledger is not yet supported "+status+ "</b>.";
+          } else if (masterKey.isHardwareWallet) {
+            domCreateMasternode.style.display = "none";
+            domAccessMasternode.style.display = "none";
+            domMnTxId.style.display = "none";
+            domErrText.innerHTML = "Ledger is not yet supported";
           }
-        }else{
-          domMnTextErrors.children[1].innerHTML="Please access your <b>COLLATERAL WALLET </b> first.";
+        } else {
+          domErrText.innerHTML = "Please " + (hasEncryptedWallet() ? "unlock" : "import") + " your <b>COLLATERAL WALLET</b> first.";
         }
       }  
       
     }
     domStart.click();
+
+    async function refreshMasternodeData(cMasternode, fAlert = false) {
+      const strStatus = await cMasternode.getStatus();
+      if (strStatus === "NOT_FOUND") {
+        domMnTextErrors.children[1].innerHTML = "Masternode is currently <b>OFFLINE</b>";
+        createAlert('warning', 'Your masternode is offline, we will try to start it', 6000);
+        // try to start the masternode
+        const started = await cMasternode.start();
+        if (started) {
+          domMnTextErrors.children[1].innerHTML = "Masternode successfully started!";
+          createAlert('success', 'Masternode successfully started!, it will be soon online', 6000);
+          localStorage.setItem("masternode", JSON.stringify(cMasternode));
+        } else {
+          domMnTextErrors.children[1].innerHTML = "We couldn't start your masternode";
+          createAlert('warning', 'We could not start your masternode', 6000);
+        }
+      } else if (strStatus === "ENABLED") {
+        domMnTextErrors.children[1].innerHTML = "Your masternode is: <b>ENABLED</b>! ";
+        if (fAlert) createAlert('success', 'Your masternode status is <b> ENABLED </b>', 6000);
+        localStorage.setItem("masternode", JSON.stringify(cMasternode));
+      } else if (strStatus === "PRE_ENABLED") { 
+        domMnTextErrors.children[1].innerHTML = "Your masternode status is: <b>PRE ENABLED</b>, wait for a few hours and it will get enabled.";
+        if (fAlert) createAlert('success', 'Your masternode status is <b> PRE ENABLED </b>', 6000);
+        localStorage.setItem("masternode", JSON.stringify(cMasternode));
+      } else if (strStatus === "REMOVED") {
+        domMnTextErrors.children[1].innerHTML = "Masternode is currently <b>REMOVED</b>";
+        if (fAlert) createAlert('warning', 'Your masternode is in <b>REMOVED</b> state', 6000);
+      } else { // connection problem
+        domMnTextErrors.children[1].innerHTML = "Unable to connect!";
+        if (fAlert) createAlert('warning', 'Unable to connect!', 6000);
+      }
+    }
 
     function refreshChainData() {
       // If in offline mode: don't sync ANY data or connect to the internet
@@ -2085,24 +2110,9 @@
         accessOrImportWallet();
       }
 
-      // Configure payment processor
+      // Payment processor redirect
       if (requestTo && requestAmount) {
-        // Open 'Create Transaction' menu
-        domTxTab.click();
-        if (domSimpleTXs.style.display === 'none')
-          domSimpleTXsDropdown.click();
-
-        // Pre-fill inputs
-        domAddress1s.value = requestTo;
-        domValue1s.value   = requestAmount;
-
-        // Payment request 'desc' is optional
-        if (urlParams.has('desc')) {
-          domReqDisplay.style.display = 'block';
-          domReqDesc.value = urlParams.get('desc');
-        } else {
-          domReqDisplay.style.display = 'none';
-        }
+        guiPreparePayment(requestTo, requestAmount, urlParams.has('desc') ? urlParams.get('desc') : "");
       }
 
       // If allowed by settings: submit a simple 'hit' (app load) to Labs Analytics
