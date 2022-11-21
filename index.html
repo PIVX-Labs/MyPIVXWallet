@@ -1172,9 +1172,12 @@
         title: "Your Masternode Private Key",
         html: `${masternodePrivateKey} <br> Save this private key and copy it to your VPS config`, 
       });
-      createAlert("success", "Your masternode has been created! Wait 15 confirmations to proceed further") 
+      createAlert("success", "Your masternode has been created! Wait 15 confirmations to proceed further");
+
+      // Remove any previous Masternode data, if there were any
+      localStorage.removeItem("masternode");
     }
-    async function importMasternode(){ 
+    async function importMasternode(){
       const mnPrivKey = domMnPrivateKey.value;
       
       const ip = domMnIP.value;
@@ -1225,14 +1228,14 @@
       domMnTxId.value = "";
 
       
-      const masternode = new Masternode({
+      const cMasternode = new Masternode({
         walletPrivateKey: collateralPrivKey,
         mnPrivateKey: mnPrivKey,
         collateralTxId: collateralTxId,
         outidx: outidx,
         addr: address
       });
-      refreshMasternodeData(masternode, true);
+      refreshMasternodeData(cMasternode, true);
     }
 
     function accessOrImportWallet() {
