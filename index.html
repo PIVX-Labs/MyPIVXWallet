@@ -1184,7 +1184,7 @@
       let address;
       let collateralTxId;
       let outidx;
-      let collateralPrivKey;
+      let collateralPrivKeyPath;
       domMnIP.value = "";
       domMnPrivateKey.value = "";
 
@@ -1213,7 +1213,7 @@
 
         collateralTxId = cCollaUTXO.id;
         outidx = cCollaUTXO.vout;
-        collateralPrivKey = await masterKey.getPrivateKey();
+        collateralPrivKeyPath = "legacy";
       } else {
         let path = domMnTxId.value;
         const masterUtxo = cachedUTXOs.findLast(u=>u.path === path); // first UTXO for each address in HD
@@ -1223,13 +1223,13 @@
         }
         collateralTxId = masterUtxo.id;
         outidx = masterUtxo.vout;
-        collateralPrivKey = await masterKey.getPrivateKey(path);     
+        collateralPrivKeyPath = path;     
       }
       domMnTxId.value = "";
 
       
       const cMasternode = new Masternode({
-        walletPrivateKey: collateralPrivKey,
+        walletPrivateKeyPath: collateralPrivKeyPath,
         mnPrivateKey: mnPrivKey,
         collateralTxId: collateralTxId,
         outidx: outidx,

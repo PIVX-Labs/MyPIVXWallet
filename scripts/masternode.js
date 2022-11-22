@@ -2,13 +2,19 @@
 
 class Masternode {
     static protocolVersion = 70926;
-    constructor({walletPrivateKey, mnPrivateKey, collateralTxId, outidx, addr} = {}) {
-	this.walletPrivateKey = walletPrivateKey;
+    constructor({walletPrivateKeyPath, mnPrivateKey, collateralTxId, outidx, addr} = {}) {
+	//this.walletPrivateKey = walletPrivateKey;
+	this.walletPrivateKeyPath = walletPrivateKeyPath;
 	this.mnPrivateKey = mnPrivateKey;
 	this.collateralTxId = collateralTxId;
 	this.outidx = outidx;
 	this.addr = addr;
     }
+	async getWalletPrivateKey(){
+		let result= ((!masterKey.isHD) ? (await masterKey.getPrivateKey()) : (await masterKey.getPrivateKey(this.walletPrivateKeyPath)))
+		console.log(result)
+		return result
+	}
 
     async getStatus() {
 	const url= `${cNode.url}/listmasternodes?params=${this.collateralTxId}`;
@@ -98,9 +104,10 @@ class Masternode {
     async getSignedMessage(sigTime) {
 	const padding = "\x18DarkNet Signed Message:\n"
 	      .split("").map(c=>c.charCodeAt(0));
+	const walletPrivateKey= await this.getWalletPrivateKey();
 	const toSign = Masternode.getToSign({
 	    addr: this.addr,
-	    walletPrivateKey: this.walletPrivateKey,
+	    walletPrivateKey: walletPrivateKey,
 	    mnPrivateKey: this.mnPrivateKey,
 	    sigTime,
 	}).split("").map(c=>c.charCodeAt(0));
@@ -108,7 +115,7 @@ class Masternode {
 	hash.update(padding
 		    .concat(toSign.length)
 		    .concat(toSign));
-	const [ signature, v ] = await nobleSecp256k1.sign(hash.getHash(0), parseWIF(this.walletPrivateKey, true), { der: false, recovered: true});
+	const [ signature, v ] = await nobleSecp256k1.sign(hash.getHash(0), parseWIF(walletPrivateKey, true), { der: false, recovered: true});
 	return [
 	    v + 31, ...signature
 	];
@@ -137,8 +144,9 @@ class Masternode {
 	const sigTime = Math.round(Date.now() / 1000);
 	const blockHash = await Masternode.getLastBlockHash();
 	const [ ip, port ] = this.addr.split(':');
+	const walletPrivateKey=await this.getWalletPrivateKey()
 	const walletPublicKey = deriveAddress({
-	    pkBytes: parseWIF(this.walletPrivateKey, true),
+	    pkBytes: parseWIF(walletPrivateKey, true),
 	    output: "RAW_BYTES",
 	    compress: true,
 	});
