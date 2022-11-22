@@ -9,41 +9,29 @@ class Masternode {
 	this.addr = addr;
     }
 	static getProtocolVersion(){
-		return (cChainParams.current.isTestnet ? 70926 : 70924);
+		return cChainParams.current.isTestnet ? 70926 : 70924;
 	}
 	async getWalletPrivateKey(){
-		let result= await masterKey.getPrivateKey(this.walletPrivateKeyPath)
-		return result
+		return await masterKey.getPrivateKey(this.walletPrivateKeyPath);
 	}
 	async getFullData(){
-		const url= `${cNode.url}/listmasternodes?params=${this.collateralTxId}`;
+		const strURL = `${cNode.url}/listmasternodes?params=${this.collateralTxId}`;
 		try {
-	    	const masternodes = (await (await fetch(url)).json()).filter(m=>m.outidx === this.outidx);
-	    	if(masternodes.length > 0) {
-				console.log(masternodes[0])
-				return masternodes[0];
+	    	const cMasternodes = (await (await fetch(strURL)).json()).filter(m => m.outidx === this.outidx);
+	    	if(cMasternodes.length > 0) {
+				return cMasternodes[0];
 	   		} else {
 				return "MISSING";
 	    	}
 		} catch(e) { //this is the unfortunate state in which the node is not reachable
 	    	console.error(e);
-	    	return "COULD NOT CONNECT TO THE EXPLORER";
+	    	return "EXPLORER_DOWN";
 		}
 	}
+
     async getStatus() {
-	const url= `${cNode.url}/listmasternodes?params=${this.collateralTxId}`;
-	try {
-	    const masternodes = (await (await fetch(url)).json()).filter(m=>m.outidx === this.outidx);
-	    if(masternodes.length > 0) {
-			console.log(masternodes[0])
-			return sanitizeHTML(masternodes[0].status);
-	    } else {
-			return "MISSING";
-	    }
-	} catch(e) { //this is the unfortunate state in which the node is not reachable
-	    console.error(e);
-	    return "COULD NOT CONNECT TO THE EXPLORER";
-	}
+		const cMasternode = await this.getFullData();
+	    return cMasternode ? cMasternode.status : "MISSING";
     }
     
     static decodeIpAddress(ip, port) {

@@ -2085,10 +2085,9 @@
     domStart.click();
 
     async function refreshMasternodeData(cMasternode, fAlert = false) {
-      const fullData= await cMasternode.getFullData();
-      const strStatus= await cMasternode.getStatus();
+      const cMasternodeData = await cMasternode.getFullData();
 
-      if (strStatus === "MISSING") {
+      if (cMasternodeData.status === "MISSING") {
         domMnTextErrors.children[1].innerHTML = "Masternode is currently <b>OFFLINE</b>";
         createAlert('warning', 'Your masternode is offline, we will try to start it', 6000);
         // try to start the masternode
@@ -2101,11 +2100,11 @@
           domMnTextErrors.children[1].innerHTML = "We couldn't start your masternode";
           createAlert('warning', 'We could not start your masternode', 6000);
         }
-      } else if (strStatus === "ENABLED" || strStatus === "PRE_ENABLED") {
-        domMnTextErrors.children[1].innerHTML = `Your masternode is: <b>${strStatus}</b>! <br>IP: <b>${cMasternode.addr}</b> (<b>${fullData.network}</b>) <br> Masternode Version: <b>${fullData.version} </b> <br> Last Seen: <b>${(new Date(fullData.lastseen*1000)).toString().split(" GMT")[0]} </b>`;
-        if (fAlert) createAlert('success', `Your masternode status is <b> ${strStatus} </b>`, 6000);
+      } else if (cMasternodeData.status === "ENABLED" || cMasternodeData.status === "PRE_ENABLED") {
+        domMnTextErrors.children[1].innerHTML = `Your masternode is: <b>${cMasternodeData.status}</b>! <br>IP: <b>${cMasternode.addr}</b> (<b>${cMasternodeData.network}</b>) <br> Masternode Version: <b>${cMasternodeData.version} </b> <br> Last Seen: <b>${(new Date(cMasternodeData.lastseen*1000)).toString().split(" GMT")[0]} </b>`;
+        if (fAlert) createAlert('success', `Your masternode status is <b> ${cMasternodeData.status} </b>`, 6000);
         localStorage.setItem("masternode", JSON.stringify(cMasternode));
-      } else if (strStatus === "REMOVED") {
+      } else if (cMasternodeData.status === "REMOVED") {
         domMnTextErrors.children[1].innerHTML = "Masternode is currently <b>REMOVED</b>";
         if (fAlert) createAlert('warning', 'Your masternode is in <b>REMOVED</b> state', 6000);
       } else { // connection problem
