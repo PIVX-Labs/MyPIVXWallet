@@ -1,7 +1,7 @@
 "use strict";
 
 class Masternode {
-    static protocolVersion = 70926;
+    static protocolVersion = cChainParams.current.isTestnet ? 70926 : 70924;
     constructor({walletPrivateKeyPath, mnPrivateKey, collateralTxId, outidx, addr} = {}) {
 	//this.walletPrivateKey = walletPrivateKey;
 	this.walletPrivateKeyPath = walletPrivateKeyPath;
