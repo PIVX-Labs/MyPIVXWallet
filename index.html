@@ -2101,8 +2101,11 @@
           createAlert('warning', 'We could not start your masternode', 6000);
         }
       } else if (cMasternodeData.status === "ENABLED" || cMasternodeData.status === "PRE_ENABLED") {
-        domMnTextErrors.children[1].innerHTML = `Your masternode is: <b>${cMasternodeData.status}</b>! <br>IP: <b>${cMasternode.addr}</b> (<b>${cMasternodeData.network}</b>) <br> Masternode Version: <b>${cMasternodeData.version} </b> <br> Last Seen: <b>${(new Date(cMasternodeData.lastseen*1000)).toString().split(" GMT")[0]} </b>`;
-        if (fAlert) createAlert('success', `Your masternode status is <b> ${cMasternodeData.status} </b>`, 6000);
+        domMnTextErrors.children[1].innerHTML = `Your masternode is: <b>${sanitizeHTML(cMasternodeData.status)}</b>!
+                                                <br>IP: <b>${sanitizeHTML(cMasternode.addr)}</b> (<b>${sanitizeHTML(cMasternodeData.network)}</b>)
+                                                <br>Masternode Version: <b>${sanitizeHTML(cMasternodeData.version)}</b>
+                                                <br>Last Seen: <b>${(new Date(cMasternodeData.lastseen*1000)).toString().split(" GMT")[0]}</b>`;
+        if (fAlert) createAlert('success', `Your masternode status is <b> ${sanitizeHTML(cMasternodeData.status)} </b>`, 6000);
         localStorage.setItem("masternode", JSON.stringify(cMasternode));
       } else if (cMasternodeData.status === "REMOVED") {
         domMnTextErrors.children[1].innerHTML = "Masternode is currently <b>REMOVED</b>";
