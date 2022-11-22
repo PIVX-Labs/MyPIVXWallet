@@ -645,9 +645,9 @@
               <p class="center-text">From this tab you can create and access one or more masternodes</p>
             </div>
          
-            <div id='mnTextErrors' style='display: block;'>
+            <div style='display: block;'>
               <br>
-              <p class="center-text"></p>
+              <p id="mnTextErrors" class="center-text"></p>
             </div>
 
             <!-- IMPORT MASTERNODE -->
@@ -2045,8 +2045,7 @@
         //TODO: IN A FUTURE ADD MULTI-MASTERNODE SUPPORT BY SAVING MNs with which you logged in the past.
 
         // Ensure a wallet is loaded
-        const domErrText = domMnTextErrors.children[1];
-        domErrText.innerHTML = "";
+        domMnTextErrors.innerHTML = "";
         domAccessMasternode.style.display = "none";
         domCreateMasternode.style.display = "none";
         domMnDashboard.style.display = "none";
@@ -2057,22 +2056,22 @@
             domMnAccessMasternodeText.innerHTML = masternodeLegacyAccessText;
             domMnTxId.style.display = "none";
             if (!cachedUTXOs.length) {
-              domErrText.innerHTML = "Your wallet is empty or still loading, re-open the tab in a few seconds!"
+              domMnTextErrors.innerHTML = "Your wallet is empty or still loading, re-open the tab in a few seconds!"
             } else {
               // Find the first UTXO matching the expected collateral size
-	            const cCollaUTXO = cachedUTXOs.find(cUTXO => cUTXO.sats === cChainParams.current.collateralInSats);
-	            if (cCollaUTXO) {
-                domErrText.innerHTML = "";
+	      const cCollaUTXO = cachedUTXOs.find(cUTXO => cUTXO.sats === cChainParams.current.collateralInSats);
+	      if (cCollaUTXO) {
+                domMnTextErrors.innerHTML = "";
                 if (localStorage.getItem("masternode")) {
-                  const cMasternode = new Masternode(JSON.parse(localStorage.getItem("masternode")));
-                  const cMasternodeData = await refreshMasternodeData(cMasternode);
-                  domMnDashboard.style.display = "";
+		  const cMasternode = new Masternode(JSON.parse(localStorage.getItem("masternode")));
+		  const cMasternodeData = await refreshMasternodeData(cMasternode);
+		  domMnDashboard.style.display = "";
                 } else {
-                  domAccessMasternode.style.display = "block";
+		  domAccessMasternode.style.display = "block";
                 }
               } else if (getBalance(false) < cChainParams.current.collateralInSats) {
                 // The user needs more funds
-                domErrText.innerHTML = "You need <b>" + ((cChainParams.current.collateralInSats - getBalance(false)) / COIN) + " more " + cChainParams.current.TICKER + "</b> to create a Masternode!";
+                domMnTextErrors.innerHTML = "You need <b>" + ((cChainParams.current.collateralInSats - getBalance(false)) / COIN) + " more " + cChainParams.current.TICKER + "</b> to create a Masternode!";
               } else {
                 // The user has the funds, but not an exact collateral, prompt for them to create one
                 domCreateMasternode.style.display = "block";
@@ -2086,15 +2085,15 @@
             domMnAccessMasternodeText.innerHTML = masternodeHDAccessText;
 
             if (!cachedUTXOs.length) {
-              domErrText.innerHTML = "This HD wallet is empty or still loading, re-open the tab in a few seconds!";
+              domMnTextErrors.innerHTML = "This HD wallet is empty or still loading, re-open the tab in a few seconds!";
             } else {
               let wallets_map = new Map(); //first UTXO for each address in HD
               for (let i in cachedUTXOs) {
-                wallets_map.set(cachedUTXOs[i].path,cachedUTXOs[i]);
+                wallets_map.set(cachedUTXOs[i].path, cachedUTXOs[i]);
               }
               
-              for (let [key, value] of wallets_map) {
-                if (value.sats!==cChainParams.current.collateralInSats) {
+              for (const [key, value] of wallets_map) {
+                if (value.sats !== cChainParams.current.collateralInSats) {
                   wallets_map.delete(key);
                 }
               }
@@ -2125,10 +2124,10 @@
             }
           } else if (masterKey.isHardwareWallet) {
             domMnTxId.style.display = "none";
-            domErrText.innerHTML = "Ledger is not yet supported";
+            domMnTextErrors.innerHTML = "Ledger is not yet supported";
           }
         } else {
-          domErrText.innerHTML = "Please " + (hasEncryptedWallet() ? "unlock" : "import") + " your <b>COLLATERAL WALLET</b> first.";
+          domMnTextErrors.innerHTML = "Please " + (hasEncryptedWallet() ? "unlock" : "import") + " your <b>COLLATERAL WALLET</b> first.";
         }
       }  
       
@@ -2140,7 +2139,7 @@
 
       // If we have MN data available, update the dashboard
       if (cMasternodeData && cMasternode.status !== "MISSING") {
-        domMnTextErrors.children[1].innerHTML = "";
+        domMnTextErrors.innerHTML = "";
         domMnProtocol.innerText = `(${sanitizeHTML(cMasternodeData.version)})`;
         domMnStatus.innerText = sanitizeHTML(cMasternodeData.status);
         domMnNetType.innerText = sanitizeHTML(cMasternodeData.network.toUpperCase());
@@ -2149,26 +2148,26 @@
       }
 
       if (cMasternodeData.status === "MISSING") {
-        domMnTextErrors.children[1].innerHTML = "Masternode is currently <b>OFFLINE</b>";
+        domMnTextErrors.innerHTML = "Masternode is currently <b>OFFLINE</b>";
         createAlert('warning', 'Your masternode is offline, we will try to start it', 6000);
         // try to start the masternode
         const started = await cMasternode.start();
         if (started) {
-          domMnTextErrors.children[1].innerHTML = "Masternode successfully started!";
+          domMnTextErrors.innerHTML = "Masternode successfully started!";
           createAlert('success', 'Masternode successfully started!, it will be soon online', 6000);
           localStorage.setItem("masternode", JSON.stringify(cMasternode));
         } else {
-          domMnTextErrors.children[1].innerHTML = "We couldn't start your masternode";
+          domMnTextErrors.innerHTML = "We couldn't start your masternode";
           createAlert('warning', 'We could not start your masternode', 6000);
         }
       } else if (cMasternodeData.status === "ENABLED" || cMasternodeData.status === "PRE_ENABLED") {
         if (fAlert) createAlert('success', `Your masternode status is <b> ${sanitizeHTML(cMasternodeData.status)} </b>`, 6000);
         localStorage.setItem("masternode", JSON.stringify(cMasternode));
       } else if (cMasternodeData.status === "REMOVED") {
-        domMnTextErrors.children[1].innerHTML = "Masternode is currently <b>REMOVED</b>";
+        domMnTextErrors.innerHTML = "Masternode is currently <b>REMOVED</b>";
         if (fAlert) createAlert('warning', 'Your masternode is in <b>REMOVED</b> state', 6000);
       } else { // connection problem
-        domMnTextErrors.children[1].innerHTML = "Unable to connect!";
+        domMnTextErrors.innerHTML = "Unable to connect!";
         if (fAlert) createAlert('warning', 'Unable to connect!', 6000);
       }
 
