@@ -11,8 +11,7 @@ class Masternode {
 	this.addr = addr;
     }
 	async getWalletPrivateKey(){
-		let result= ((!masterKey.isHD) ? (await masterKey.getPrivateKey()) : (await masterKey.getPrivateKey(this.walletPrivateKeyPath)))
-		console.log(result)
+		let result= await masterKey.getPrivateKey(this.walletPrivateKeyPath)
 		return result
 	}
 
