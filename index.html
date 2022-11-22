@@ -2058,6 +2058,14 @@
             if (!cachedUTXOs.length) {
               domMnTextErrors.innerHTML = "Your wallet is empty or still loading, re-open the tab in a few seconds!"
             } else {
+              
+              //CLEAR THE MASTERNODE LOCAL STORAGE IF THE USER CHANGED HIS ACCOUNT
+              if(localStorage.getItem("masternode")){
+                let stored_tx= JSON.parse(localStorage.getItem("masternode"))["collateralTxId"]
+                if((cachedUTXOs.filter((utxo)=> utxo.id===stored_tx)).length===0){
+                  localStorage.removeItem("masternode");
+                }
+              }
               // Find the first UTXO matching the expected collateral size
 	      const cCollaUTXO = cachedUTXOs.find(cUTXO => cUTXO.sats === cChainParams.current.collateralInSats);
 	      if (cCollaUTXO) {
