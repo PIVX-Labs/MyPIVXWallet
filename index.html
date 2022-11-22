@@ -1680,6 +1680,13 @@
       // Select and return UTXO pointers (filters applied)
       const cCoinControl = { nValue: 0, nChange: 0, arrSelectedUTXOs: [] }
       for (const cUTXO of arrUTXOs) {
+
+        //we dont want the MN collateral to be spent
+        if(localStorage.getItem("masternode")){
+          if(JSON.parse(localStorage.getItem("masternode")).collateralTxId === cUTXO.id){
+            continue
+          }
+        }
         // Have we met the required sats threshold?
         if (cCoinControl.nValue >= nTotalSatsRequired + getFee(cTx.serialize().length)) {
           // Required Coin Control value met, yahoo!
