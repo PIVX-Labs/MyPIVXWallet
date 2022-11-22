@@ -15,15 +15,30 @@ class Masternode {
 		let result= await masterKey.getPrivateKey(this.walletPrivateKeyPath)
 		return result
 	}
-
+	async getFullData(){
+		const url= `${cNode.url}/listmasternodes?params=${this.collateralTxId}`;
+		try {
+	    	const masternodes = (await (await fetch(url)).json()).filter(m=>m.outidx === this.outidx);
+	    	if(masternodes.length > 0) {
+				console.log(masternodes[0])
+				return masternodes[0];
+	   		} else {
+				return "MISSING";
+	    	}
+		} catch(e) { //this is the unfortunate state in which the node is not reachable
+	    	console.error(e);
+	    	return "COULD NOT CONNECT TO THE EXPLORER";
+		}
+	}
     async getStatus() {
 	const url= `${cNode.url}/listmasternodes?params=${this.collateralTxId}`;
 	try {
 	    const masternodes = (await (await fetch(url)).json()).filter(m=>m.outidx === this.outidx);
 	    if(masternodes.length > 0) {
-		return sanitizeHTML(masternodes[0].status);
+			console.log(masternodes[0])
+			return sanitizeHTML(masternodes[0].status);
 	    } else {
-		return "MISSING";
+			return "MISSING";
 	    }
 	} catch(e) { //this is the unfortunate state in which the node is not reachable
 	    console.error(e);

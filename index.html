@@ -2085,7 +2085,9 @@
     domStart.click();
 
     async function refreshMasternodeData(cMasternode, fAlert = false) {
-      const strStatus = await cMasternode.getStatus();
+      const fullData= await cMasternode.getFullData();
+      const strStatus= await cMasternode.getStatus();
+
       if (strStatus === "MISSING") {
         domMnTextErrors.children[1].innerHTML = "Masternode is currently <b>OFFLINE</b>";
         createAlert('warning', 'Your masternode is offline, we will try to start it', 6000);
@@ -2099,13 +2101,9 @@
           domMnTextErrors.children[1].innerHTML = "We couldn't start your masternode";
           createAlert('warning', 'We could not start your masternode', 6000);
         }
-      } else if (strStatus === "ENABLED") {
-        domMnTextErrors.children[1].innerHTML = "Your masternode is: <b>ENABLED</b>! ";
-        if (fAlert) createAlert('success', 'Your masternode status is <b> ENABLED </b>', 6000);
-        localStorage.setItem("masternode", JSON.stringify(cMasternode));
-      } else if (strStatus === "PRE_ENABLED") { 
-        domMnTextErrors.children[1].innerHTML = "Your masternode status is: <b>PRE ENABLED</b>, wait for a few hours and it will get enabled.";
-        if (fAlert) createAlert('success', 'Your masternode status is <b> PRE ENABLED </b>', 6000);
+      } else if (strStatus === "ENABLED" || strStatus === "PRE_ENABLED") {
+        domMnTextErrors.children[1].innerHTML = `Your masternode is: <b>${strStatus}</b>! <br>IP: <b>${cMasternode.addr}</b> (<b>${fullData.network}</b>) <br> Masternode Version: <b>${fullData.version} </b> <br> Last Seen: <b>${(new Date(fullData.lastseen*1000)).toString().split(" GMT")[0]} </b>`;
+        if (fAlert) createAlert('success', `Your masternode status is <b> ${strStatus} </b>`, 6000);
         localStorage.setItem("masternode", JSON.stringify(cMasternode));
       } else if (strStatus === "REMOVED") {
         domMnTextErrors.children[1].innerHTML = "Masternode is currently <b>REMOVED</b>";
