@@ -2097,23 +2097,21 @@
                   wallets_map.delete(key);
                 }
               }
-
-              if (!wallets_map.size) {
+	      console.log(wallets_map);
+              if (!wallets_map.size || !localStorage.getItem("masternode")) {
                 domCreateMasternode.style.display = "block";
               } else {
                 domMnTxId.style.display = "block";
-                if (localStorage.getItem("masternode")) {
-                  const cMasternode = new Masternode(JSON.parse(localStorage.getItem("masternode")));
-                  // Refresh the display, and also keep the data for further use
-                  const cMasternodeData = await refreshMasternodeData(cMasternode);
-                  domMnDashboard.style.display = "";
-
-                  // If the MN is not enabled, display our configuration screen
-                  if (!cMasternodeData.status.includes("ENABLED")) {
-                    domAccessMasternode.style.display = "block";
-                  }
+                const cMasternode = new Masternode(JSON.parse(localStorage.getItem("masternode")));
+                // Refresh the display, and also keep the data for further use
+                const cMasternodeData = await refreshMasternodeData(cMasternode);
+                domMnDashboard.style.display = "";
+		
+                // If the MN is not enabled, display our configuration screen
+                if (!cMasternodeData.status.includes("ENABLED")) {
+                  domAccessMasternode.style.display = "block";
                 }
-
+		
                 for (const [key, value] of wallets_map) {
                   const option = document.createElement('option');
                   option.value = key;
