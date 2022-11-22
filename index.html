@@ -647,7 +647,7 @@
          
             <div id='mnTextErrors' style='display: block;'>
               <br>
-              <p class="center-text">Please access your <b>COLLATERAL WALLET </b> first.</p>
+              <p class="center-text"></p>
             </div>
 
             <!-- IMPORT MASTERNODE -->
@@ -676,14 +676,16 @@
             <div id='createMasternode' class="dashboard-item" style='display:none; width:100%;'>
               <div class="container" >
 
-                <p>Create your masternode (note: you need 10k <b> PIV </b> ).</p> 
+                <h4>Create a masternode <small style="opacity: 0.75;">(10k PIV)</small></h4> 
                 <input class="hide-element" type="text">
                 <div style='display: block;'>
-                  <p>Select VPS if you also need to generate the masternode private key</p>
-                  <select id='mnCreateType' style="display: block;" placeholder="Masternode collateral tx" class="form-control">
-		              <option value="VPS"> VPS </option>
-                  <option value="Third Party"> Third Party </option>
+                  <p>Choose your Masternode type</p>
+                  <select id='mnCreateType' style="display: block; text-align: center;" placeholder="Masternode collateral tx" class="form-control">
+		                <option value="VPS"> Self-hosted (a masternode server ran by you)</option>
+                    <option value="Third Party"> Third Party (a masternode server ran by someone else)</option>
                   </select>
+                  <br>
+                  <br>
                   <button class="pivx-button-big" onclick="createMasternode()">
                                 <span class="buttoni-icon"><i class="fas fa-file-upload fa-tiny-margin"></i></span>
                                 <span class="buttoni-text" id="importMnText">Create Masternode</span>
@@ -693,21 +695,46 @@
               </div>
             </div>
 
-            <div id='destroyMasternode' class="dashboard-item" style='display:none; width:100%;'>
-              <div class="container" >
-
-                <p>Destroy your loaded masternode (this will allow you to spend the collateral UTXO).</p> 
-                <br>
-                <input class="hide-element" type="text">
-                <div style='display: block;'>
-                  <button class="pivx-button-big" onclick="destroyMasternode()">
-                                <span class="buttoni-icon"><i class="fas fa-file-upload fa-tiny-margin"></i></span>
-                                <span class="buttoni-text" id="importMnText">Destroy Masternode</span>
-                                <span class="buttoni-arrow"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M23.328 16.707L13.121 26.914a.5.5 0 01-.707 0l-2.828-2.828a.5.5 0 010-.707L16.964 16 9.586 8.621a.5.5 0 010-.707l2.828-2.828a.5.5 0 01.707 0l10.207 10.207a1 1 0 010 1.414z"></path></svg></span>
-                      </button>
-                </div>
+            <div id="mnDashboard" class="staking-banner-bottom">
+              <div class="stake-box large-box col-md-4">
+                <h4 class="stake-balances" style="background-color: #2c0044;border-radius: 10px;">
+                  Status <small id="mnProtocol" style="opacity: 0.5;"></small>
+                </h4>
+                <h2 id="mnStatus" class="stake-balances" style="overflow-wrap: anywhere;top: 50%;left: 50%;transform: translate(-50%, -50%);position: absolute;width: 100%;padding: 10px;" id="mnStatus">
+                  
+                </h2>
+              </div>
+              <div class="stake-box large-box col-md-4">
+                <h4 id="mnNetType" class="stake-balances" style="background-color: #2c0044;border-radius: 10px;">
+                  
+                </h4>
+                <h2 id="mnNetIP" class="stake-balances" style="overflow-wrap: anywhere;top: 50%;left: 50%;transform: translate(-50%, -50%);position: absolute;width: 100%;padding: 10px;font-family: mono !important;font-size: x-large;" id="mnStatus">
+                  
+                </h2>
+              </div>
+              <div class="stake-box large-box col-md-4">
+                <h4 class="stake-balances" style="background-color: #2c0044;border-radius: 10px;">
+                  Last Seen
+                </h4>
+                <h2 id="mnLastSeen" class="stake-balances" style="overflow-wrap: anywhere;top: 50%;left: 50%;transform: translate(-50%, -50%);position: absolute;width: 100%;padding: 10px;font-size: xx-large;" id="mnStatus">
+                  
+                </h2>
               </div>
             </div>
+
+            <br>
+
+            <center id='controlMasternode' style='display:none; width:100%;'>
+                <button class="pivx-button-big" onclick="destroyMasternode()" style="margin: 20px; font-weight: 550 !important;">
+                  <span class="buttoni-icon"><i class="fas fa-burn fa-tiny-margin"></i></span>
+                  <span class="buttoni-text" id="importMnText">Destroy Masternode</span>
+                </button>
+
+                <button class="pivx-button-big" onclick="startMasternode(true)" style="margin: 20px; font-weight: 550 !important;">
+                  <span class="buttoni-icon"><i class="fas fa-redo-alt fa-tiny-margin"></i></span>
+                  <span class="buttoni-text" id="importMnText">Restart Masternode</span>
+                </button>
+            </center>
 
           </div>
 
@@ -900,7 +927,7 @@
     const domGovProposalsTableBody = document.getElementById('proposalsTableBody');
     //MASTERNODE ELEMENTS
     const domCreateMasternode = document.getElementById('createMasternode');
-    const domDestroyMasternode= document.getElementById('destroyMasternode')
+    const domControlMasternode = document.getElementById('controlMasternode')
     const domAccessMasternode = document.getElementById('accessMasternode');
     const domMnAccessMasternodeText = document.getElementById('accessMasternodeText');
     const domMnCreateType = document.getElementById('mnCreateType');
@@ -908,6 +935,12 @@
     const domMnIP = document.getElementById('mnIP');
     const domMnTxId = document.getElementById('mnTxId');
     const domMnPrivateKey = document.getElementById('mnPrivateKey');
+    const domMnDashboard = document.getElementById('mnDashboard');
+    const domMnProtocol = document.getElementById('mnProtocol');
+    const domMnStatus = document.getElementById('mnStatus');
+    const domMnNetType = document.getElementById('mnNetType');
+    const domMnNetIP = document.getElementById('mnNetIP');
+    const domMnLastSeen = document.getElementById('mnLastSeen');
 
     const domAccessWallet = document.getElementById('accessWallet');
     const domImportWallet = document.getElementById('importWallet');
@@ -957,7 +990,7 @@
     const domAlertPos = document.getElementsByClassName("alertPositioning")[0];
 
     function getBalance(updateGUI = false) {
-      const nBalance = cachedUTXOs.reduce((a, b) => a + b.sats, 0);
+      const nBalance = cachedUTXOs.filter(a => !isMasternodeUTXO(a)).reduce((a, b) => a + b.sats, 0);
 
       // Update the GUI too, if chosen
       if (updateGUI) {
@@ -1090,44 +1123,56 @@
       domGenHardwareWallet.style.display = 'none';
     }
 
-    async function govVote(hash,voteCode){
+    async function govVote(hash, voteCode){
       if (await confirmPopup({
           title: "Confirm Vote",
           html: "Are you sure? It takes 60 minutes to change vote",
         }) == true) {
         if(localStorage.getItem("masternode")){
-          let cMasternode= new Masternode(JSON.parse(localStorage.getItem("masternode")))
-          if(await cMasternode.getStatus()!=="ENABLED"){
-            createAlert("warning","Your masternode is not enabled yet!",6000);
+          const cMasternode = new Masternode(JSON.parse(localStorage.getItem("masternode")));
+          if (await cMasternode.getStatus() !== "ENABLED") {
+            createAlert("warning","Your masternode is not enabled yet!", 6000);
             return;
           }
-          const result = await cMasternode.vote(hash.toString(),voteCode); //1 yes 2 no
+          const result = await cMasternode.vote(hash.toString(), voteCode); //1 yes 2 no
           if (result.includes("Voted successfully")) { //good vote
-            createAlert('success', 'Voted successfully',6000);
+            createAlert('success', 'Vote submitted!', 6000);
           } else if(result.includes("Error voting :")) { //If you already voted return an alert
-            createAlert('warning', 'You already voted this proposal! Please wait 1 hour',6000);
+            createAlert('warning', 'You already voted for this proposal! Please wait 1 hour', 6000);
           } else if(result.includes("Failure to verify signature.")) { //wrong masternode private key
-            createAlert('warning', 'Failed to verify signature, please recheck the masternode private key',6000);
+            createAlert('warning', 'Failed to verify signature, please check your masternode\'s private key', 6000);
           } else { //this could be everything
-	    console.error(result);
-            createAlert('warning', 'Internal error, please try again later',6000);
+	          console.error(result);
+            createAlert('warning', 'Internal error, please try again later', 6000);
           }
         } else {
           createAlert('warning', 'Access a masternode before voting!', 6000);
         }
       }
     }
-    function destroyMasternode(){
-      if(localStorage.getItem("masternode")){
-      localStorage.removeItem("masternode");
-      createAlert('success', 'Masternode successfully destroied, now you can spend the collateral!', 6000);
+
+    async function startMasternode(fRestart = false) {
+      if (localStorage.getItem("masternode")) {
+        const cMasternode = new Masternode(JSON.parse(localStorage.getItem("masternode")));
+        if (await cMasternode.start()) {
+          createAlert('success', '<b>Masternode ' + (fRestart ? 're' : '') + 'started!</b>', 4000);
+        } else {
+          createAlert('warning', '<b>Failed to ' + (fRestart ? 're' : '') + 'start masternode!</b>', 4000);
+        }
       }
     }
-  
+
+    function destroyMasternode() {
+      if (localStorage.getItem("masternode")) {
+        localStorage.removeItem("masternode");
+        createAlert('success', '<b>Masternode destroyed!</b><br>Your coins are now spendable.', 5000);
+      }
+    }
+
     async function createMasternode() {
-      const needMnPrivKey = (domMnCreateType.value==="VPS");
-      const address = await getNewAddress();
-      let nValue = 10000 * COIN;
+      const fGeneratePrivkey = domMnCreateType.value === "VPS";
+      const strAddress = await getNewAddress();
+      const nValue = cChainParams.current.collateralInSats;
     
       const nBalance = getBalance();
       const cTx = bitjs.transaction();
@@ -1145,15 +1190,14 @@
         // Change output
         outputs.push([changeAddress, nChange / COIN]);
       } else {
-       createAlert("warning","You don't have enough PIVs to create a masternode") 
-       return;
+       return createAlert("warning", "You don't have enough " + cChainParams.current.TICKER + " to create a masternode", 5000);
       }
       
       // Primary output (receiver)
-      outputs.push([address, nValue / COIN]);
+      outputs.push([strAddress, nValue / COIN]);
       
       // Debug-only verbose response
-      if (debug) domHumanReadable.innerHTML = "Balance: " + (nBalance / COIN) + "<br>Fee: " + (nFee / COIN) + "<br>To: " + address + "<br>Sent: " + (nValue / COIN) + (nChange > 0 ? "<br>Change Address: " + changeAddress + "<br>Change: " + (nChange / COIN) : "");
+      if (debug) domHumanReadable.innerHTML = "Balance: " + (nBalance / COIN) + "<br>Fee: " + (nFee / COIN) + "<br>To: " + strAddress + "<br>Sent: " + (nValue / COIN) + (nChange > 0 ? "<br>Change Address: " + changeAddress + "<br>Change: " + (nChange / COIN) : "");
 
       // Add outputs to the Tx
       for (const output of outputs) {
@@ -1195,14 +1239,14 @@
         sendTransaction(strSerialisedTx);
         
       }
-      if(needMnPrivKey){
+      if(fGeneratePrivkey){
         let masternodePrivateKey= await generateMnPrivkey();
         await confirmPopup({
           title: "Your Masternode Private Key",
           html: `${masternodePrivateKey} <br> Save this private key and copy it to your VPS config <br>`, 
         });
       }
-      createAlert("success", "Your masternode has been created! Wait 15 confirmations to proceed further");
+      createAlert("success", "<b>Masternode Created!<b><br>Wait 15 confirmations to proceed further");
       // Remove any previous Masternode data, if there were any
       localStorage.removeItem("masternode");
     }
@@ -1235,7 +1279,7 @@
           } else {
             // Balance is capable of a masternode, just needs to be created
             // TODO: this UX flow is weird, is it even possible? perhaps we can re-design this entire function accordingly
-            createAlert("warning", "You have enough balance for a Masternode, but no valid collateral UTXO of " + (cChainParams.current.collateralInSats / COIN) + " " + cChainParams.current.TICKER);
+            createAlert("warning", "You have enough balance for a Masternode, but no valid collateral UTXO of " + (cChainParams.current.collateralInSats / COIN) + " " + cChainParams.current.TICKER, 10000);
           }
           return;
         }
@@ -1264,7 +1308,7 @@
         outidx: outidx,
         addr: address
       });
-      refreshMasternodeData(cMasternode, true);
+      await refreshMasternodeData(cMasternode, true);
     }
 
     function accessOrImportWallet() {
@@ -1710,12 +1754,9 @@
       const cCoinControl = { nValue: 0, nChange: 0, arrSelectedUTXOs: [] }
       for (const cUTXO of arrUTXOs) {
 
-        //we dont want the MN collateral to be spent
-        if(localStorage.getItem("masternode")){
-          if(JSON.parse(localStorage.getItem("masternode")).collateralTxId === cUTXO.id){
-            continue
-          }
-        }
+        // Don't spend locked Masternode collaterals
+        if (isMasternodeUTXO(cUTXO)) continue;
+
         // Have we met the required sats threshold?
         if (cCoinControl.nValue >= nTotalSatsRequired + getFee(cTx.serialize().length)) {
           // Required Coin Control value met, yahoo!
@@ -1747,7 +1788,12 @@
       cCoinControl.nChange = nTotalSatsRequired - cCoinControl.nValue;
       return ccSuccess(cCoinControl);
     }
-  
+
+    function isMasternodeUTXO(cUTXO) {
+        return localStorage.getItem("masternode") && JSON.parse(localStorage.getItem("masternode")).collateralTxId === cUTXO.id;
+    }
+
+
     async function createTxGUI() {
       if (!hasWalletUnlocked(true)) return;
       
@@ -2000,8 +2046,12 @@
 
         // Ensure a wallet is loaded
         const domErrText = domMnTextErrors.children[1];
+        domErrText.innerHTML = "";
+        domAccessMasternode.style.display = "none";
+        domCreateMasternode.style.display = "none";
+        domMnDashboard.style.display = "none";
         if (masterKey) {
-          domDestroyMasternode.style.display = (localStorage.getItem("masternode")? "block" : "none");
+          domControlMasternode.style.display = (localStorage.getItem("masternode")? "block" : "none");
           // first case: the wallet is not HD and it is not hardware, so in case the wallet has collateral the user can check its status and do simple stuff like voting
           if (!masterKey.isHD && !masterKey.isHardwareWallet) {
             domMnAccessMasternodeText.innerHTML = masternodeLegacyAccessText;
@@ -2012,12 +2062,11 @@
               // Find the first UTXO matching the expected collateral size
 	            const cCollaUTXO = cachedUTXOs.find(cUTXO => cUTXO.sats === cChainParams.current.collateralInSats);
 	            if (cCollaUTXO) {
-                domAccessMasternode.style.display = "none";
-                domCreateMasternode.style.display = "none";
                 domErrText.innerHTML = "";
                 if (localStorage.getItem("masternode")) {
                   const cMasternode = new Masternode(JSON.parse(localStorage.getItem("masternode")));
-                  refreshMasternodeData(cMasternode);
+                  const cMasternodeData = await refreshMasternodeData(cMasternode);
+                  domMnDashboard.style.display = "";
                 } else {
                   domAccessMasternode.style.display = "block";
                 }
@@ -2032,7 +2081,6 @@
               }
             }
           } else if (masterKey.isHD) {
-            domCreateMasternode.style.display = "block";
             domMnTxId.style.display = "none";
             domMnTxId.innerHTML = "";
             domMnAccessMasternodeText.innerHTML = masternodeHDAccessText;
@@ -2052,15 +2100,20 @@
               }
 
               if (!wallets_map.size) {
-                domErrText.innerHTML = "There are no accessible masternodes, you should create one first";
+                domCreateMasternode.style.display = "block";
               } else {
-                domAccessMasternode.style.display = "block";
                 domMnTxId.style.display = "block";
-                domErrText.innerHTML = "There could be one or more masternodes in this wallet";
                 if (localStorage.getItem("masternode")) {
-                  const cMasternode= new Masternode(JSON.parse(localStorage.getItem("masternode")));
-                  refreshMasternodeData(cMasternode);
-                } 
+                  const cMasternode = new Masternode(JSON.parse(localStorage.getItem("masternode")));
+                  // Refresh the display, and also keep the data for further use
+                  const cMasternodeData = await refreshMasternodeData(cMasternode);
+                  domMnDashboard.style.display = "";
+
+                  // If the MN is not enabled, display our configuration screen
+                  if (!cMasternodeData.status.includes("ENABLED")) {
+                    domAccessMasternode.style.display = "block";
+                  }
+                }
 
                 for (const [key, value] of wallets_map) {
                   const option = document.createElement('option');
@@ -2071,8 +2124,6 @@
               }
             }
           } else if (masterKey.isHardwareWallet) {
-            domCreateMasternode.style.display = "none";
-            domAccessMasternode.style.display = "none";
             domMnTxId.style.display = "none";
             domErrText.innerHTML = "Ledger is not yet supported";
           }
@@ -2086,6 +2137,16 @@
 
     async function refreshMasternodeData(cMasternode, fAlert = false) {
       const cMasternodeData = await cMasternode.getFullData();
+
+      // If we have MN data available, update the dashboard
+      if (cMasternodeData && cMasternode.status !== "MISSING") {
+        domMnTextErrors.children[1].innerHTML = "";
+        domMnProtocol.innerText = `(${sanitizeHTML(cMasternodeData.version)})`;
+        domMnStatus.innerText = sanitizeHTML(cMasternodeData.status);
+        domMnNetType.innerText = sanitizeHTML(cMasternodeData.network.toUpperCase());
+        domMnNetIP.innerText = cMasternode.addr;
+        domMnLastSeen.innerText = new Date(cMasternodeData.lastseen * 1000).toLocaleTimeString();
+      }
 
       if (cMasternodeData.status === "MISSING") {
         domMnTextErrors.children[1].innerHTML = "Masternode is currently <b>OFFLINE</b>";
@@ -2101,10 +2162,6 @@
           createAlert('warning', 'We could not start your masternode', 6000);
         }
       } else if (cMasternodeData.status === "ENABLED" || cMasternodeData.status === "PRE_ENABLED") {
-        domMnTextErrors.children[1].innerHTML = `Your masternode is: <b>${sanitizeHTML(cMasternodeData.status)}</b>!
-                                                <br>IP: <b>${sanitizeHTML(cMasternode.addr)}</b> (<b>${sanitizeHTML(cMasternodeData.network)}</b>)
-                                                <br>Masternode Version: <b>${sanitizeHTML(cMasternodeData.version)}</b>
-                                                <br>Last Seen: <b>${(new Date(cMasternodeData.lastseen*1000)).toString().split(" GMT")[0]}</b>`;
         if (fAlert) createAlert('success', `Your masternode status is <b> ${sanitizeHTML(cMasternodeData.status)} </b>`, 6000);
         localStorage.setItem("masternode", JSON.stringify(cMasternode));
       } else if (cMasternodeData.status === "REMOVED") {
@@ -2114,6 +2171,9 @@
         domMnTextErrors.children[1].innerHTML = "Unable to connect!";
         if (fAlert) createAlert('warning', 'Unable to connect!', 6000);
       }
+
+      // Return the data in case the caller needs additional context
+      return cMasternodeData;
     }
 
     function refreshChainData() {
