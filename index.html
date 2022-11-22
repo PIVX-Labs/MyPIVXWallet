@@ -677,9 +677,13 @@
               <div class="container" >
 
                 <p>Create your masternode (note: you need 10k <b> PIV </b> ).</p> 
-                <br>
                 <input class="hide-element" type="text">
                 <div style='display: block;'>
+                  <p>Select VPS if you also need to generate the masternode private key</p>
+                  <select id='mnCreateType' style="display: block;" placeholder="Masternode collateral tx" class="form-control">
+		              <option value="VPS"> VPS </option>
+                  <option value="Third Party"> Third Party </option>
+                  </select>
                   <button class="pivx-button-big" onclick="createMasternode()">
                                 <span class="buttoni-icon"><i class="fas fa-file-upload fa-tiny-margin"></i></span>
                                 <span class="buttoni-text" id="importMnText">Create Masternode</span>
@@ -899,6 +903,7 @@
     const domDestroyMasternode= document.getElementById('destroyMasternode')
     const domAccessMasternode = document.getElementById('accessMasternode');
     const domMnAccessMasternodeText = document.getElementById('accessMasternodeText');
+    const domMnCreateType = document.getElementById('mnCreateType');
     const domMnTextErrors = document.getElementById('mnTextErrors');
     const domMnIP = document.getElementById('mnIP');
     const domMnTxId = document.getElementById('mnTxId');
@@ -1120,13 +1125,14 @@
     }
   
     async function createMasternode() {
-      
+      const needMnPrivKey = (domMnCreateType.value==="VPS");
       const address = await getNewAddress();
       let nValue = 10000 * COIN;
     
       const nBalance = getBalance();
       const cTx = bitjs.transaction();
       const cCoinControl = chooseUTXOs(cTx, nValue, 0, false);
+      
       if (!cCoinControl.success) return alert(cCoinControl.msg);
       // Compute fee
       const nFee = getFee(cTx.serialize().length);
@@ -1189,13 +1195,14 @@
         sendTransaction(strSerialisedTx);
         
       }
-      let masternodePrivateKey= await generateMnPrivkey();
-      await confirmPopup({
-        title: "Your Masternode Private Key",
-        html: `${masternodePrivateKey} <br> Save this private key and copy it to your VPS config`, 
-      });
+      if(needMnPrivKey){
+        let masternodePrivateKey= await generateMnPrivkey();
+        await confirmPopup({
+          title: "Your Masternode Private Key",
+          html: `${masternodePrivateKey} <br> Save this private key and copy it to your VPS config <br>`, 
+        });
+      }
       createAlert("success", "Your masternode has been created! Wait 15 confirmations to proceed further");
-
       // Remove any previous Masternode data, if there were any
       localStorage.removeItem("masternode");
     }

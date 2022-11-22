@@ -1,15 +1,16 @@
 "use strict";
 
 class Masternode {
-    static protocolVersion = cChainParams.current.isTestnet ? 70926 : 70924;
     constructor({walletPrivateKeyPath, mnPrivateKey, collateralTxId, outidx, addr} = {}) {
-	//this.walletPrivateKey = walletPrivateKey;
 	this.walletPrivateKeyPath = walletPrivateKeyPath;
 	this.mnPrivateKey = mnPrivateKey;
 	this.collateralTxId = collateralTxId;
 	this.outidx = outidx;
 	this.addr = addr;
     }
+	static getProtocolVersion(){
+		return (cChainParams.current.isTestnet ? 70926 : 70924);
+	}
 	async getWalletPrivateKey(){
 		let result= await masterKey.getPrivateKey(this.walletPrivateKeyPath)
 		return result
@@ -87,7 +88,7 @@ class Masternode {
 	    ...publicKey,
 	    ...Masternode.numToBytes(mnPublicKey.length, 1, true), // Masternode public key length
 	    ...mnPublicKey,
-	    ...Masternode.numToBytes(Masternode.protocolVersion, 4, true), // Protocol version
+	    ...Masternode.numToBytes(Masternode.getProtocolVersion(), 4, true), // Protocol version
 	];
 	const hash = new jsSHA(0, 0, {numRounds: 2});
 	hash.update(pkt);
@@ -170,7 +171,7 @@ class Masternode {
 	    ...Masternode.numToBytes(sigBytes.length, 1, true),
 	    ...sigBytes,
 	    ...Masternode.numToBytes(sigTime, 8, true),
-	    ...Masternode.numToBytes(Masternode.protocolVersion, 4, true),
+	    ...Masternode.numToBytes(Masternode.getProtocolVersion(), 4, true),
 	    ...Crypto.util.hexToBytes(this.collateralTxId).reverse(),
 	    ...Masternode.numToBytes(this.outidx, 4, true),
 	    ...Masternode.numToBytes(0, 1, true),
