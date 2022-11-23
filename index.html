@@ -2050,6 +2050,15 @@
         domCreateMasternode.style.display = "none";
         domMnDashboard.style.display = "none";
         if (masterKey) {
+          if (cachedUTXOs.length) { 
+            //CLEAR THE MASTERNODE LOCAL STORAGE IF THE USER CHANGED HIS ACCOUNT
+            if(localStorage.getItem("masternode")){
+              let stored_tx= JSON.parse(localStorage.getItem("masternode"))["collateralTxId"]
+              if((cachedUTXOs.filter((utxo)=> utxo.id===stored_tx)).length===0){
+                localStorage.removeItem("masternode");
+              }
+            }
+          }
           domControlMasternode.style.display = (localStorage.getItem("masternode")? "block" : "none");
           // first case: the wallet is not HD and it is not hardware, so in case the wallet has collateral the user can check its status and do simple stuff like voting
           if (!masterKey.isHD && !masterKey.isHardwareWallet) {
@@ -2058,14 +2067,7 @@
             if (!cachedUTXOs.length) {
               domMnTextErrors.innerHTML = "Your wallet is empty or still loading, re-open the tab in a few seconds!"
             } else {
-              
-              //CLEAR THE MASTERNODE LOCAL STORAGE IF THE USER CHANGED HIS ACCOUNT
-              if(localStorage.getItem("masternode")){
-                let stored_tx= JSON.parse(localStorage.getItem("masternode"))["collateralTxId"]
-                if((cachedUTXOs.filter((utxo)=> utxo.id===stored_tx)).length===0){
-                  localStorage.removeItem("masternode");
-                }
-              }
+           
               // Find the first UTXO matching the expected collateral size
 	      const cCollaUTXO = cachedUTXOs.find(cUTXO => cUTXO.sats === cChainParams.current.collateralInSats);
 	      if (cCollaUTXO) {
@@ -2074,8 +2076,6 @@
 		  const cMasternode = new Masternode(JSON.parse(localStorage.getItem("masternode")));
 		  const cMasternodeData = await refreshMasternodeData(cMasternode);
 		  domMnDashboard.style.display = "";
-                } else {
-		  domAccessMasternode.style.display = "block";
                 }
               } else if (getBalance(false) < cChainParams.current.collateralInSats) {
                 // The user needs more funds
@@ -2105,27 +2105,23 @@
                   wallets_map.delete(key);
                 }
               }
-	      console.log(wallets_map);
-              if (!wallets_map.size || !localStorage.getItem("masternode")) {
-                domCreateMasternode.style.display = "block";
-              } else {
-                domMnTxId.style.display = "block";
-                const cMasternode = new Masternode(JSON.parse(localStorage.getItem("masternode")));
-                // Refresh the display, and also keep the data for further use
-                const cMasternodeData = await refreshMasternodeData(cMasternode);
-                domMnDashboard.style.display = "";
-		
-                // If the MN is not enabled, display our configuration screen
-                if (!cMasternodeData.status.includes("ENABLED")) {
-                  domAccessMasternode.style.display = "block";
-                }
-		
-                for (const [key, value] of wallets_map) {
+              domMnTxId.style.display = "block";
+              domAccessMasternode.style.display = "block";
+
+              for (const [key, value] of wallets_map) {
                   const option = document.createElement('option');
                   option.value = key;
                   option.innerText = await masterKey.getAddress(key);
                   domMnTxId.appendChild(option);
                 }
+              
+              if (!wallets_map.size || !localStorage.getItem("masternode")) {
+                domCreateMasternode.style.display = "block";
+              } else {
+                const cMasternode = new Masternode(JSON.parse(localStorage.getItem("masternode")));
+                // Refresh the display, and also keep the data for further use
+                const cMasternodeData = await refreshMasternodeData(cMasternode);
+                domMnDashboard.style.display = "";
               }
             }
           } else if (masterKey.isHardwareWallet) {
@@ -2142,9 +2138,9 @@
 
     async function refreshMasternodeData(cMasternode, fAlert = false) {
       const cMasternodeData = await cMasternode.getFullData();
-
+      console.log(cMasternodeData)
       // If we have MN data available, update the dashboard
-      if (cMasternodeData && cMasternode.status !== "MISSING") {
+      if (cMasternodeData && cMasternodeData.status !== "MISSING") {
         domMnTextErrors.innerHTML = "";
         domMnProtocol.innerText = `(${sanitizeHTML(cMasternodeData.version)})`;
         domMnStatus.innerText = sanitizeHTML(cMasternodeData.status);
