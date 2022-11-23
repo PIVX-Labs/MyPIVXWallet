@@ -2097,7 +2097,7 @@
             } else {
               // First UTXO for each address in HD
               const mapCollateralAddresses = new Map();
-              const cMasternodeJSON = localStorage.getItem("masternode");
+              const strMasternodeJSON = localStorage.getItem("masternode");
 
               // Aggregate all valid Masternode collaterals into a map of Address <--> Collateral
               for (const cUTXO of cachedUTXOs) {
@@ -2107,7 +2107,7 @@
               const fHasCollateral = mapCollateralAddresses.size > 0;
 
               // If there's no loaded MN, but valid collaterals, display the configuration screen
-              if (!cMasternodeJSON && fHasCollateral) {
+              if (!strMasternodeJSON && fHasCollateral) {
                 domMnTxId.style.display = "block";
                 domAccessMasternode.style.display = "block";
 
@@ -2123,8 +2123,8 @@
               if (!fHasCollateral) domCreateMasternode.style.display = "block";
 
               // If we have a collateral and a loaded Masternode, display the Dashboard
-              if (fHasCollateral && cMasternodeJSON) {
-                const cMasternode = new Masternode(JSON.parse(cMasternodeJSON));
+              if (fHasCollateral && strMasternodeJSON) {
+                const cMasternode = new Masternode(JSON.parse(strMasternodeJSON));
                 // Refresh the display, and also keep the data for further use
                 const cMasternodeData = await refreshMasternodeData(cMasternode);
                 domMnDashboard.style.display = "";
