@@ -2105,19 +2105,21 @@
                   wallets_map.delete(key);
                 }
               }
-              domMnTxId.style.display = "block";
-              domAccessMasternode.style.display = "block";
+              if(!localStorage.getItem("masternode") && wallets_map.size){
+                domMnTxId.style.display = "block";
+                domAccessMasternode.style.display = "block";
 
-              for (const [key, value] of wallets_map) {
+                for (const [key, value] of wallets_map) {
                   const option = document.createElement('option');
                   option.value = key;
                   option.innerText = await masterKey.getAddress(key);
                   domMnTxId.appendChild(option);
                 }
-              
-              if (!wallets_map.size || !localStorage.getItem("masternode")) {
+              }
+              if(!wallets_map.size){
                 domCreateMasternode.style.display = "block";
-              } else {
+              }
+              if (wallets_map.size && localStorage.getItem("masternode")) {
                 const cMasternode = new Masternode(JSON.parse(localStorage.getItem("masternode")));
                 // Refresh the display, and also keep the data for further use
                 const cMasternodeData = await refreshMasternodeData(cMasternode);

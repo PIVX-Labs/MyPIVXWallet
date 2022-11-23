@@ -21,9 +21,7 @@ class Masternode {
 	    if(cMasternodes.length > 0) {
 		return cMasternodes[0];
 	    } else {
-			const missing= new Object();
-			missing.status="MISSING";
-			return missing;
+			return {status: "MISSING"};
 	    }
 	} catch(e) { //this is the unfortunate state in which the node is not reachable
 	    console.error(e);
