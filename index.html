@@ -2051,15 +2051,15 @@
         domMnDashboard.style.display = "none";
         if (masterKey) {
           if (cachedUTXOs.length) { 
-            //CLEAR THE MASTERNODE LOCAL STORAGE IF THE USER CHANGED HIS ACCOUNT
-            if(localStorage.getItem("masternode")){
-              let stored_tx= JSON.parse(localStorage.getItem("masternode"))["collateralTxId"]
-              if((cachedUTXOs.filter((utxo)=> utxo.id===stored_tx)).length===0){
+            // If the collateral is missing (spent, or switched wallet) then remove the current MN
+            if (localStorage.getItem("masternode")) {
+              const strColla = JSON.parse(localStorage.getItem("masternode")).collateralTxId;
+              if (!cachedUTXOs.find(cUTXO => cUTXO.id === strColla)) {
                 localStorage.removeItem("masternode");
               }
             }
           }
-          domControlMasternode.style.display = (localStorage.getItem("masternode")? "block" : "none");
+          domControlMasternode.style.display = localStorage.getItem("masternode") ? "block" : "none";
           // first case: the wallet is not HD and it is not hardware, so in case the wallet has collateral the user can check its status and do simple stuff like voting
           if (!masterKey.isHD && !masterKey.isHardwareWallet) {
             domMnAccessMasternodeText.innerHTML = masternodeLegacyAccessText;
@@ -2095,32 +2095,36 @@
             if (!cachedUTXOs.length) {
               domMnTextErrors.innerHTML = "This HD wallet is empty or still loading, re-open the tab in a few seconds!";
             } else {
-              let wallets_map = new Map(); //first UTXO for each address in HD
-              for (let i in cachedUTXOs) {
-                wallets_map.set(cachedUTXOs[i].path, cachedUTXOs[i]);
+              // First UTXO for each address in HD
+              const mapCollateralAddresses = new Map();
+              const cMasternodeJSON = localStorage.getItem("masternode");
+
+              // Aggregate all valid Masternode collaterals into a map of Address <--> Collateral
+              for (const cUTXO of cachedUTXOs) {
+                if (cUTXO.sats !== cChainParams.current.collateralInSats) continue;
+                mapCollateralAddresses.set(cUTXO.path, cUTXO);
               }
-              
-              for (const [key, value] of wallets_map) {
-                if (value.sats !== cChainParams.current.collateralInSats) {
-                  wallets_map.delete(key);
-                }
-              }
-              if(!localStorage.getItem("masternode") && wallets_map.size){
+              const fHasCollateral = mapCollateralAddresses.size > 0;
+
+              // If there's no loaded MN, but valid collaterals, display the configuration screen
+              if (!cMasternodeJSON && fHasCollateral) {
                 domMnTxId.style.display = "block";
                 domAccessMasternode.style.display = "block";
 
-                for (const [key, value] of wallets_map) {
+                for (const [key, value] of mapCollateralAddresses) {
                   const option = document.createElement('option');
                   option.value = key;
                   option.innerText = await masterKey.getAddress(key);
                   domMnTxId.appendChild(option);
                 }
               }
-              if(!wallets_map.size){
-                domCreateMasternode.style.display = "block";
-              }
-              if (wallets_map.size && localStorage.getItem("masternode")) {
-                const cMasternode = new Masternode(JSON.parse(localStorage.getItem("masternode")));
+
+              // If there's no collateral found, display the creation UI
+              if (!fHasCollateral) domCreateMasternode.style.display = "block";
+
+              // If we have a collateral and a loaded Masternode, display the Dashboard
+              if (fHasCollateral && cMasternodeJSON) {
+                const cMasternode = new Masternode(JSON.parse(cMasternodeJSON));
                 // Refresh the display, and also keep the data for further use
                 const cMasternodeData = await refreshMasternodeData(cMasternode);
                 domMnDashboard.style.display = "";
@@ -2140,7 +2144,8 @@
 
     async function refreshMasternodeData(cMasternode, fAlert = false) {
       const cMasternodeData = await cMasternode.getFullData();
-      console.log(cMasternodeData)
+      if (debug) console.log(cMasternodeData);
+
       // If we have MN data available, update the dashboard
       if (cMasternodeData && cMasternodeData.status !== "MISSING") {
         domMnTextErrors.innerHTML = "";
