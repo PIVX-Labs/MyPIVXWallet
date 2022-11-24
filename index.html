@@ -1791,10 +1791,10 @@
       return ccSuccess(cCoinControl);
     }
 
-  function isMasternodeUTXO(cUTXO) {
-      const strMn = localStorage.getItem("masternode");
-      if (strMn) {
-	  const { collateralTxId, outidx } = JSON.parse(strMn);
+  function isMasternodeUTXO(cUTXO, masternode = null) {
+      const cMasternode = masternode || JSON.parse(localStorage.getItem("masternode"));
+      if (cMasternode) {
+	  const { collateralTxId, outidx } = cMasternode;
 	  return collateralTxId === cUTXO.id && cUTXO.vout === outidx;
       } else {
 	  return false;
@@ -2086,8 +2086,8 @@
     let strMasternodeJSON = localStorage.getItem("masternode");
     // If the collateral is missing (spent, or switched wallet) then remove the current MN
     if (strMasternodeJSON) {
-      const { collateralTxId, outidx } = JSON.parse(strMasternodeJSON);
-      if (!cachedUTXOs.find(cUTXO => cUTXO.id === collateralTxId && cUTXO.vout === outidx)) {
+      const cMasternode = JSON.parse(strMasternodeJSON);
+      if (!cachedUTXOs.find(utxo => isMasternodeUTXO(utxo, cMasternode))) {
         localStorage.removeItem("masternode");
 	strMasternodeJSON = null;
       }
