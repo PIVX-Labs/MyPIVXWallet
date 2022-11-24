@@ -2007,188 +2007,197 @@
         domNavbarToggler.click();
       
       if (tabName === "Governance") {
-        const proposals= await Masternode.getProposals();
-        domGovProposalsTableBody.innerHTML="";
-	      for (const proposal of proposals){
-          if(proposal.RemainingPaymentCount === 0){
-            continue;
-          }
-          const tr = domGovProposalsTableBody.insertRow();
-          const td1 = tr.insertCell();
-	  // IMPORTANT: We must sanite all of our HTML or a rogue server or malicious proposal could perform a cross side scripting attack
-          td1.innerHTML=`<a class="active" href="${sanitizeHTML(proposal.URL)}"><b>${sanitizeHTML(proposal.Name)}</b></a>`
-          const td2 = tr.insertCell();
-	  td2.innerHTML=`<b>${sanitizeHTML(proposal.MonthlyPayment)}</b> ${cChainParams.current.TICKER} <br>
-	  <small> ${sanitizeHTML(proposal['RemainingPaymentCount'])} payments remaining of <b>${sanitizeHTML(proposal.TotalPayment)}</b> ${cChainParams.current.TICKER} total</small>`
-          const td3 = tr.insertCell();
-	  let {Yeas, Nays} = proposal;
-	  Yeas = parseInt(Yeas);
-	  Nays = parseInt(Nays);
-	  const percentage = Yeas + Nays !== 0 ? (Yeas / (Yeas + Nays)) * 100 : 0;
-	  
-          td3.innerHTML=`<b>${percentage.toFixed(2)}%</b> <br>
-	  <small> <b><div class="text-success" style="display:inline;"> ${Yeas} </div></b> /
-	      <b><div class="text-danger" style="display:inline;"> ${Nays} </div></b>
-	  `;
-          const td4 = tr.insertCell();
-          //append vote buttons	  
-          const buttonNo = document.createElement('button');
-	  buttonNo.className = "pivx-button-big";
-          buttonNo.innerText="No";
-          buttonNo.onclick = () => govVote(proposal.Hash, 2);
-
-          const buttonYes = document.createElement('button');
-	  buttonYes.className = "pivx-button-big";
-          buttonYes.innerText="Yes";
-          buttonYes.onclick = () => govVote(proposal.Hash, 1);
-          
-          td4.appendChild(buttonNo)
-	  td4.appendChild(buttonYes)
-        }
+	updateGovernanceTab();
       }
       if (tabName==="Masternode") {
-        
-        //TODO: IN A FUTURE ADD MULTI-MASTERNODE SUPPORT BY SAVING MNs with which you logged in the past.
-
-        // Ensure a wallet is loaded
-        domMnTextErrors.innerHTML = "";
-        domAccessMasternode.style.display = "none";
-        domCreateMasternode.style.display = "none";
-        domMnDashboard.style.display = "none";
-        if (masterKey) {
-          if (cachedUTXOs.length) { 
-            // If the collateral is missing (spent, or switched wallet) then remove the current MN
-            if (localStorage.getItem("masternode")) {
-              const { collateralTxId, outidx } = JSON.parse(localStorage.getItem("masternode"));
-              if (!cachedUTXOs.find(cUTXO => cUTXO.id === collateralTxId && cUTXO.vout === outidx)) {
-                localStorage.removeItem("masternode");
-              }
-            }
-          }
-          domControlMasternode.style.display = localStorage.getItem("masternode") ? "block" : "none";
-          // first case: the wallet is not HD and it is not hardware, so in case the wallet has collateral the user can check its status and do simple stuff like voting
-          if (!masterKey.isHD && !masterKey.isHardwareWallet) {
-            domMnAccessMasternodeText.innerHTML = masternodeLegacyAccessText;
-            domMnTxId.style.display = "none";
-            if (!cachedUTXOs.length) {
-              domMnTextErrors.innerHTML = "Your wallet is empty or still loading, re-open the tab in a few seconds!"
-            } else {
-           
-              // Find the first UTXO matching the expected collateral size
-	      const cCollaUTXO = cachedUTXOs.find(cUTXO => cUTXO.sats === cChainParams.current.collateralInSats);
-	      if (cCollaUTXO) {
-                domMnTextErrors.innerHTML = "";
-                if (localStorage.getItem("masternode")) {
-		  const cMasternode = new Masternode(JSON.parse(localStorage.getItem("masternode")));
-		  const cMasternodeData = await refreshMasternodeData(cMasternode);
-		  domMnDashboard.style.display = "";
-                }
-              } else if (getBalance(false) < cChainParams.current.collateralInSats) {
-                // The user needs more funds
-                domMnTextErrors.innerHTML = "You need <b>" + ((cChainParams.current.collateralInSats - getBalance(false)) / COIN) + " more " + cChainParams.current.TICKER + "</b> to create a Masternode!";
-              } else {
-                // The user has the funds, but not an exact collateral, prompt for them to create one
-                domCreateMasternode.style.display = "block";
-                domMnTxId.style.display = "none";
-                domMnTxId.innerHTML = "";
-              }
-            }
-          } else if (masterKey.isHD) {
-            domMnTxId.style.display = "none";
-            domMnTxId.innerHTML = "";
-            domMnAccessMasternodeText.innerHTML = masternodeHDAccessText;
-
-            if (!cachedUTXOs.length) {
-              domMnTextErrors.innerHTML = "This HD wallet is empty or still loading, re-open the tab in a few seconds!";
-            } else {
-              // First UTXO for each address in HD
-              const mapCollateralAddresses = new Map();
-              const strMasternodeJSON = localStorage.getItem("masternode");
-
-              // Aggregate all valid Masternode collaterals into a map of Address <--> Collateral
-              for (const cUTXO of cachedUTXOs) {
-                if (cUTXO.sats !== cChainParams.current.collateralInSats) continue;
-                mapCollateralAddresses.set(cUTXO.path, cUTXO);
-              }
-              const fHasCollateral = mapCollateralAddresses.size > 0;
-
-              // If there's no loaded MN, but valid collaterals, display the configuration screen
-              if (!strMasternodeJSON && fHasCollateral) {
-                domMnTxId.style.display = "block";
-                domAccessMasternode.style.display = "block";
-
-                for (const [key, value] of mapCollateralAddresses) {
-                  const option = document.createElement('option');
-                  option.value = key;
-                  option.innerText = await masterKey.getAddress(key);
-                  domMnTxId.appendChild(option);
-                }
-              }
-
-              // If there's no collateral found, display the creation UI
-              if (!fHasCollateral) domCreateMasternode.style.display = "block";
-
-              // If we have a collateral and a loaded Masternode, display the Dashboard
-              if (fHasCollateral && strMasternodeJSON) {
-                const cMasternode = new Masternode(JSON.parse(strMasternodeJSON));
-                // Refresh the display, and also keep the data for further use
-                const cMasternodeData = await refreshMasternodeData(cMasternode);
-                domMnDashboard.style.display = "";
-              }
-            }
-          } else if (masterKey.isHardwareWallet) {
-            domMnTxId.style.display = "none";
-            domMnTextErrors.innerHTML = "Ledger is not yet supported";
-          }
-        } else {
-          domMnTextErrors.innerHTML = "Please " + (hasEncryptedWallet() ? "unlock" : "import") + " your <b>COLLATERAL WALLET</b> first.";
-        }
+	updateMasternodeTab();
       }  
       
     }
-    domStart.click();
+  domStart.click();
 
-    async function refreshMasternodeData(cMasternode, fAlert = false) {
-      const cMasternodeData = await cMasternode.getFullData();
-      if (debug) console.log(cMasternodeData);
-
-      // If we have MN data available, update the dashboard
-      if (cMasternodeData && cMasternodeData.status !== "MISSING") {
-        domMnTextErrors.innerHTML = "";
-        domMnProtocol.innerText = `(${sanitizeHTML(cMasternodeData.version)})`;
-        domMnStatus.innerText = sanitizeHTML(cMasternodeData.status);
-        domMnNetType.innerText = sanitizeHTML(cMasternodeData.network.toUpperCase());
-        domMnNetIP.innerText = cMasternode.addr;
-        domMnLastSeen.innerText = new Date(cMasternodeData.lastseen * 1000).toLocaleTimeString();
+  async function updateGovernanceTab() {
+    const proposals= await Masternode.getProposals();
+    domGovProposalsTableBody.innerHTML="";
+    for (const proposal of proposals){
+      if(proposal.RemainingPaymentCount === 0){
+        continue;
       }
-
-      if (cMasternodeData.status === "MISSING") {
-        domMnTextErrors.innerHTML = "Masternode is currently <b>OFFLINE</b>";
-        createAlert('warning', 'Your masternode is offline, we will try to start it', 6000);
-        // try to start the masternode
-        const started = await cMasternode.start();
-        if (started) {
-          domMnTextErrors.innerHTML = "Masternode successfully started!";
-          createAlert('success', 'Masternode successfully started!, it will be soon online', 6000);
-          localStorage.setItem("masternode", JSON.stringify(cMasternode));
-        } else {
-          domMnTextErrors.innerHTML = "We couldn't start your masternode";
-          createAlert('warning', 'We could not start your masternode', 6000);
-        }
-      } else if (cMasternodeData.status === "ENABLED" || cMasternodeData.status === "PRE_ENABLED") {
-        if (fAlert) createAlert('success', `Your masternode status is <b> ${sanitizeHTML(cMasternodeData.status)} </b>`, 6000);
-        localStorage.setItem("masternode", JSON.stringify(cMasternode));
-      } else if (cMasternodeData.status === "REMOVED") {
-        domMnTextErrors.innerHTML = "Masternode is currently <b>REMOVED</b>";
-        if (fAlert) createAlert('warning', 'Your masternode is in <b>REMOVED</b> state', 6000);
-      } else { // connection problem
-        domMnTextErrors.innerHTML = "Unable to connect!";
-        if (fAlert) createAlert('warning', 'Unable to connect!', 6000);
-      }
-
-      // Return the data in case the caller needs additional context
-      return cMasternodeData;
+      const tr = domGovProposalsTableBody.insertRow();
+      const td1 = tr.insertCell();
+      // IMPORTANT: We must sanite all of our HTML or a rogue server or malicious proposal could perform a cross side scripting attack
+      td1.innerHTML=`<a class="active" href="${sanitizeHTML(proposal.URL)}"><b>${sanitizeHTML(proposal.Name)}</b></a>`
+      const td2 = tr.insertCell();
+      td2.innerHTML=`<b>${sanitizeHTML(proposal.MonthlyPayment)}</b> ${cChainParams.current.TICKER} <br>
+      <small> ${sanitizeHTML(proposal['RemainingPaymentCount'])} payments remaining of <b>${sanitizeHTML(proposal.TotalPayment)}</b> ${cChainParams.current.TICKER} total</small>`
+      const td3 = tr.insertCell();
+      let {Yeas, Nays} = proposal;
+      Yeas = parseInt(Yeas);
+      Nays = parseInt(Nays);
+      const percentage = Yeas + Nays !== 0 ? (Yeas / (Yeas + Nays)) * 100 : 0;
+      
+      td3.innerHTML=`<b>${percentage.toFixed(2)}%</b> <br>
+      <small> <b><div class="text-success" style="display:inline;"> ${Yeas} </div></b> /
+	  <b><div class="text-danger" style="display:inline;"> ${Nays} </div></b>
+      `;
+      const td4 = tr.insertCell();
+      //append vote buttons	  
+      const buttonNo = document.createElement('button');
+      buttonNo.className = "pivx-button-big";
+      buttonNo.innerText="No";
+      buttonNo.onclick = () => govVote(proposal.Hash, 2);
+      
+      const buttonYes = document.createElement('button');
+      buttonYes.className = "pivx-button-big";
+      buttonYes.innerText="Yes";
+      buttonYes.onclick = () => govVote(proposal.Hash, 1);
+      
+      td4.appendChild(buttonNo)
+      td4.appendChild(buttonYes)
     }
+  }
+  
+  async function updateMasternodeTab() {
+    //TODO: IN A FUTURE ADD MULTI-MASTERNODE SUPPORT BY SAVING MNs with which you logged in the past.
+    // Ensure a wallet is loaded
+    domMnTextErrors.innerHTML = "";
+    domAccessMasternode.style.display = "none";
+    domCreateMasternode.style.display = "none";
+    domMnDashboard.style.display = "none";
+    
+    if (!masterKey) {
+      domMnTextErrors.innerHTML = "Please " + (hasEncryptedWallet() ? "unlock" : "import") + " your <b>COLLATERAL WALLET</b> first.";
+      return;
+    }
+    
+    if (masterKey.isHardwareWallet) {
+      domMnTxId.style.display = "none";
+      domMnTextErrors.innerHTML = "Ledger is not yet supported";
+      return;
+    }
+
+    if(!cachedUTXOs.length) {
+      domMnTextErrors.innerHTML = "Your wallet is empty or still loading, re-open the tab in a few seconds!";
+      return;
+    }
+    
+    let strMasternodeJSON = localStorage.getItem("masternode");
+    // If the collateral is missing (spent, or switched wallet) then remove the current MN
+    if (strMasternodeJSON) {
+      const { collateralTxId, outidx } = JSON.parse(strMasternodeJSON);
+      if (!cachedUTXOs.find(cUTXO => cUTXO.id === collateralTxId && cUTXO.vout === outidx)) {
+        localStorage.removeItem("masternode");
+	strMasternodeJSON = null;
+      }
+    }
+    
+    domControlMasternode.style.display = strMasternodeJSON ? "block" : "none";
+    
+    // first case: the wallet is not HD and it is not hardware, so in case the wallet has collateral the user can check its status and do simple stuff like voting
+    if (!masterKey.isHD) {
+      domMnAccessMasternodeText.innerHTML = masternodeLegacyAccessText;
+      domMnTxId.style.display = "none";
+      // Find the first UTXO matching the expected collateral size
+      const cCollaUTXO = cachedUTXOs.find(cUTXO => cUTXO.sats === cChainParams.current.collateralInSats);
+      const balance = getBalance(false);
+      if (cCollaUTXO) {
+        domMnTextErrors.innerHTML = "";
+        if (localStorage.getItem("masternode")) {
+	  const cMasternode = new Masternode(JSON.parse(localStorage.getItem("masternode")));
+	  const cMasternodeData = await refreshMasternodeData(cMasternode);
+	  domMnDashboard.style.display = "";
+        }
+      } else if (balance < cChainParams.current.collateralInSats) {
+        // The user needs more funds
+        domMnTextErrors.innerHTML = "You need <b>" + ((cChainParams.current.collateralInSats - balance) / COIN) + " more " + cChainParams.current.TICKER + "</b> to create a Masternode!";
+      } else {
+        // The user has the funds, but not an exact collateral, prompt for them to create one
+        domCreateMasternode.style.display = "block";
+        domMnTxId.style.display = "none";
+        domMnTxId.innerHTML = "";
+      }
+    } else {
+      domMnTxId.style.display = "none";
+      domMnTxId.innerHTML = "";
+      domMnAccessMasternodeText.innerHTML = masternodeHDAccessText;
+      
+      // First UTXO for each address in HD
+      const mapCollateralAddresses = new Map();
+      
+      // Aggregate all valid Masternode collaterals into a map of Address <--> Collateral
+      for (const cUTXO of cachedUTXOs) {
+        if (cUTXO.sats !== cChainParams.current.collateralInSats) continue;
+        mapCollateralAddresses.set(cUTXO.path, cUTXO);
+      }
+      const fHasCollateral = mapCollateralAddresses.size > 0;
+      
+      // If there's no loaded MN, but valid collaterals, display the configuration screen
+      if (!strMasternodeJSON && fHasCollateral) {
+        domMnTxId.style.display = "block";
+        domAccessMasternode.style.display = "block";
+	
+        for (const [key, value] of mapCollateralAddresses) {
+          const option = document.createElement('option');
+          option.value = key;
+          option.innerText = await masterKey.getAddress(key);
+          domMnTxId.appendChild(option);
+        }
+      }
+      
+      // If there's no collateral found, display the creation UI
+      if (!fHasCollateral) domCreateMasternode.style.display = "block";
+      
+      // If we have a collateral and a loaded Masternode, display the Dashboard
+      if (fHasCollateral && strMasternodeJSON) {
+        const cMasternode = new Masternode(JSON.parse(strMasternodeJSON));
+        // Refresh the display
+        refreshMasternodeData(cMasternode);
+        domMnDashboard.style.display = "";
+      }
+    }
+  }
+  
+  async function refreshMasternodeData(cMasternode, fAlert = false) {
+    const cMasternodeData = await cMasternode.getFullData();
+    if (debug) console.log(cMasternodeData);
+
+    // If we have MN data available, update the dashboard
+    if (cMasternodeData && cMasternodeData.status !== "MISSING") {
+      domMnTextErrors.innerHTML = "";
+      domMnProtocol.innerText = `(${sanitizeHTML(cMasternodeData.version)})`;
+      domMnStatus.innerText = sanitizeHTML(cMasternodeData.status);
+      domMnNetType.innerText = sanitizeHTML(cMasternodeData.network.toUpperCase());
+      domMnNetIP.innerText = cMasternode.addr;
+      domMnLastSeen.innerText = new Date(cMasternodeData.lastseen * 1000).toLocaleTimeString();
+    }
+
+    if (cMasternodeData.status === "MISSING") {
+      domMnTextErrors.innerHTML = "Masternode is currently <b>OFFLINE</b>";
+      createAlert('warning', 'Your masternode is offline, we will try to start it', 6000);
+      // try to start the masternode
+      const started = await cMasternode.start();
+      if (started) {
+        domMnTextErrors.innerHTML = "Masternode successfully started!";
+        createAlert('success', 'Masternode successfully started!, it will be soon online', 6000);
+        localStorage.setItem("masternode", JSON.stringify(cMasternode));
+      } else {
+        domMnTextErrors.innerHTML = "We couldn't start your masternode";
+        createAlert('warning', 'We could not start your masternode', 6000);
+      }
+    } else if (cMasternodeData.status === "ENABLED" || cMasternodeData.status === "PRE_ENABLED") {
+      if (fAlert) createAlert('success', `Your masternode status is <b> ${sanitizeHTML(cMasternodeData.status)} </b>`, 6000);
+      localStorage.setItem("masternode", JSON.stringify(cMasternode));
+    } else if (cMasternodeData.status === "REMOVED") {
+      domMnTextErrors.innerHTML = "Masternode is currently <b>REMOVED</b>";
+      if (fAlert) createAlert('warning', 'Your masternode is in <b>REMOVED</b> state', 6000);
+    } else { // connection problem
+      domMnTextErrors.innerHTML = "Unable to connect!";
+      if (fAlert) createAlert('warning', 'Unable to connect!', 6000);
+    }
+
+    // Return the data in case the caller needs additional context
+    return cMasternodeData;
+  }
 
     function refreshChainData() {
       // If in offline mode: don't sync ANY data or connect to the internet
