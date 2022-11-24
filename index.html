@@ -1262,11 +1262,11 @@
       domMnPrivateKey.value = "";
 
       if (!ip.includes(":")) {
-	      address = `${ip}:${cChainParams.current.MASTERNODE_PORT}`;
+	address = `${ip}:${cChainParams.current.MASTERNODE_PORT}`;
       } else {
-	      address = ip;
+	address = ip;
       }
-
+      
       if (!masterKey.isHD) {
         // Find the first UTXO matching the expected collateral size
 	const cCollaUTXO = cachedUTXOs.find(cUTXO => cUTXO.sats === cChainParams.current.collateralInSats);
