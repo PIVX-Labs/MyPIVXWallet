@@ -1789,8 +1789,14 @@
       return ccSuccess(cCoinControl);
     }
 
-    function isMasternodeUTXO(cUTXO) {
-        return localStorage.getItem("masternode") && JSON.parse(localStorage.getItem("masternode")).collateralTxId === cUTXO.id;
+  function isMasternodeUTXO(cUTXO) {
+      const strMn = localStorage.getItem("masternode");
+      if (strMn) {
+	  const { collateralTxId, outidx } = JSON.parse(strMn);
+	  return collateralTxId === cUTXO.id && cUTXO.vout === outidx;
+      } else {
+	  return false;
+      }
     }
 
 
@@ -2004,7 +2010,7 @@
         const proposals= await Masternode.getProposals();
         domGovProposalsTableBody.innerHTML="";
 	      for (const proposal of proposals){
-          if(proposal.RemainingPaymentCount===0){
+          if(proposal.RemainingPaymentCount === 0){
             continue;
           }
           const tr = domGovProposalsTableBody.insertRow();
@@ -2053,8 +2059,8 @@
           if (cachedUTXOs.length) { 
             // If the collateral is missing (spent, or switched wallet) then remove the current MN
             if (localStorage.getItem("masternode")) {
-              const strColla = JSON.parse(localStorage.getItem("masternode")).collateralTxId;
-              if (!cachedUTXOs.find(cUTXO => cUTXO.id === strColla)) {
+              const { collateralTxId, outidx } = JSON.parse(localStorage.getItem("masternode"));
+              if (!cachedUTXOs.find(cUTXO => cUTXO.id === collateralTxId && cUTXO.vout === outidx)) {
                 localStorage.removeItem("masternode");
               }
             }
