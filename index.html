@@ -1269,7 +1269,7 @@
 
       if (!masterKey.isHD) {
         // Find the first UTXO matching the expected collateral size
-	      const cCollaUTXO = cachedUTXOs.find(cUTXO => cUTXO.sats === cChainParams.current.collateralInSats);
+	const cCollaUTXO = cachedUTXOs.find(cUTXO => cUTXO.sats === cChainParams.current.collateralInSats);
 
         // If there's no valid UTXO, exit with a contextual message
         if (!cCollaUTXO) {
@@ -2101,12 +2101,14 @@
       const cCollaUTXO = cachedUTXOs.find(cUTXO => cUTXO.sats === cChainParams.current.collateralInSats);
       const balance = getBalance(false);
       if (cCollaUTXO) {
-        domMnTextErrors.innerHTML = "";
-        if (localStorage.getItem("masternode")) {
+	if (strMasternodeJSON) {
 	  const cMasternode = new Masternode(JSON.parse(localStorage.getItem("masternode")));
 	  const cMasternodeData = await refreshMasternodeData(cMasternode);
 	  domMnDashboard.style.display = "";
-        }
+	} else {
+	  domMnTxId.style.display = "none";
+          domAccessMasternode.style.display = "block";
+	}
       } else if (balance < cChainParams.current.collateralInSats) {
         // The user needs more funds
         domMnTextErrors.innerHTML = "You need <b>" + ((cChainParams.current.collateralInSats - balance) / COIN) + " more " + cChainParams.current.TICKER + "</b> to create a Masternode!";
