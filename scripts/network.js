@@ -75,7 +75,8 @@ if (networkEnabled) {
       // Shift the queue and update the UI
       getBalance(true);
       getStakingBalance(true);
-      
+      updateMasternodeTab();
+            
       // Loop validation until queue is empty
       arrUTXOsToValidate.shift();
       acceptUTXO();
@@ -278,6 +279,7 @@ var getUTXOsHeavy = async function() {
       getNewAddress(true);
       getBalance(true);
       getStakingBalance(true);
+      updateMasternodeTab();
     }
   } catch(e) {
     networkError();
@@ -286,8 +288,6 @@ var getUTXOsHeavy = async function() {
     fHeavySyncing = false;
   }
 }
-
-
 
 // PIVX Labs Analytics: if you are a user, you can disable this FULLY via the Settings.
 // ... if you're a developer, we ask you to keep these stats to enhance upstream development,

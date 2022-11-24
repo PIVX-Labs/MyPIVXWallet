@@ -1166,6 +1166,7 @@
       if (localStorage.getItem("masternode")) {
         localStorage.removeItem("masternode");
         createAlert('success', '<b>Masternode destroyed!</b><br>Your coins are now spendable.', 5000);
+	updateMasternodeTab();
       }
     }
 
@@ -1288,7 +1289,7 @@
         outidx = cCollaUTXO.vout;
         collateralPrivKeyPath = "legacy";
       } else {
-        let path = domMnTxId.value;
+        const path = domMnTxId.value;
         const masterUtxo = cachedUTXOs.findLast(u=>u.path === path); // first UTXO for each address in HD
         // sanity check:
         if (masterUtxo.sats !== cChainParams.current.collateralInSats) {
@@ -1309,6 +1310,7 @@
         addr: address
       });
       await refreshMasternodeData(cMasternode, true);
+      await updateMasternodeTab();
     }
 
     function accessOrImportWallet() {
