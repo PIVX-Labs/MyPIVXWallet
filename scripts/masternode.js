@@ -1,15 +1,14 @@
 "use strict";
 
+/**
+    * Construct a masternode
+    * @param {string} [masternode.walletPrivateKeyPath] - BIP39 path pointing to the private key holding the collateral. Optional if not HD
+    * @param {string} masternode.mnPrivateKey - Masternode private key. Must be uncompressed WIF
+    * @param {string} masternode.collateralTxId - Must be a UTXO pointing to the collateral
+    * @param {number} masternode.outidx - The output id of the collateral starting from 0
+    * @param {string} masternode.addr - IPV4 address in the form `ip:port`
+*/
 class Masternode {
-    /**
-     * Construct a masterndode
-     * @param {Object} masternode - Object
-     * @param {string} [masternode.walletPrivateKetPath] - bip39 path pointing to the private key holding the collateral. Optional if not HD
-     * @param {string} masternode.mnPrivateKey - Masternode private key. Must be non compressed wif
-     * @param {string} masternode.collateralTxId - Must be an UTXO poiting to the collateral
-     * @param {number} masternode.outidx - The output id of the collateral starting from 0
-     * @param {string} masternode.addr - IPV4 address in the form `ip:port`
-     */
     constructor({walletPrivateKeyPath, mnPrivateKey, collateralTxId, outidx, addr} = {}) {
 	this.walletPrivateKeyPath = walletPrivateKeyPath;
 	this.mnPrivateKey = mnPrivateKey;
@@ -53,7 +52,7 @@ class Masternode {
     }
     
     static _decodeIpAddress(ip, port) {
-	// Only ipv4 for now
+	// Only IPV4 for now
 	let start = '00000000000000000000ffff';
 	for (const digit of ip.split('.').map(n=>parseInt(n))) {
 	    start += ('0' + (digit).toString(16)).slice(-2);
