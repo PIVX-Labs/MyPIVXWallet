@@ -71,16 +71,21 @@ class Masternode {
     }
 
     /**
+     * @param {Object} message - message to encode
+     * @param {string} message.vin.txid - transaction id of the collateral
+     * @param {number} message.vin.idx - output id of the collateral starting from 0
+     * @param {string} message.blockHash - latest blockhash
+     * @param {number} message.sigTime - current time in seconds since UNIX epoch
      * @return {Array} Returns the unsigned ping message. It needs to be signed with the MN private key
      */
-    static getPingSignature(msg) {
+    static getPingSignature({vin, blockHash, sigTime}) {
 	const ping = [
-	    ...Crypto.util.hexToBytes(msg.vin.txid).reverse(),
-	    ...Masternode._numToBytes(msg.vin.idx, 4, true),
+	    ...Crypto.util.hexToBytes(vin.txid).reverse(),
+	    ...Masternode._numToBytes(vin.idx, 4, true),
 	    // Should be tx sequence, but 0xffffff is fine
 	    ...[0, 255, 255, 255, 255],
-	    ...Crypto.util.hexToBytes(msg.blockHash).reverse(),
-	    ...Masternode._numToBytes(msg.sigTime, 8, true),
+	    ...Crypto.util.hexToBytes(blockHash).reverse(),
+	    ...Masternode._numToBytes(sigTime, 8, true),
 	];
 	const hash = new jsSHA(0, 0, {numRounds: 2});
 	hash.update(ping);
@@ -245,7 +250,7 @@ class Masternode {
     /**
      * @param {string} hash - the hash of the proposal to vote
      * @param {number} voteCode - the vote code. "Yes" is 1, "No" is 2
-     * @param {number} sigTime - The current time in seconds
+     * @param {number} sigTime - The current time in seconds since UNIX epoch
      * @return {Promise<string>} The signed message used to vote
      */
     async getSignedVoteMessage(hash, voteCode, sigTime) {
