@@ -95,9 +95,9 @@ class Masternode {
     /**
      * @param {Object} message - Message to encode
      * @param {string} message.walletPrivateKey - private key of the collateral
-     * @param {string} addr - Masternode ipv4 with port
-     * @param {string} mnPrivateKey - private key of masternode
-     * @param {number} sigTime - current time in seconds since UNIX epoch
+     * @param {string} message.addr - Masternode ipv4 with port
+     * @param {string} message.mnPrivateKey - private key of masternode
+     * @param {number} message.sigTime - current time in seconds since UNIX epoch
      * @return {string} The message to be signed with the collateral private key.
      * it needs to be padded with "\x18DarkNet Signed Message:\n" + Message length + Message
      * Then hashed two times with SHA256
