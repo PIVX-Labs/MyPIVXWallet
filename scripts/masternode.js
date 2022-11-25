@@ -93,19 +93,24 @@ class Masternode {
     }
 
     /**
+     * @param {Object} message - Message to encode
+     * @param {string} message.walletPrivateKey - private key of the collateral
+     * @param {string} addr - Masternode ipv4 with port
+     * @param {string} mnPrivateKey - private key of masternode
+     * @param {number} sigTime - current time in seconds since UNIX epoch
      * @return {string} The message to be signed with the collateral private key.
      * it needs to be padded with "\x18DarkNet Signed Message:\n" + Message length + Message
      * Then hashed two times with SHA256
      */
-    static getToSign(msg) {
-	const [ ip, port ] = msg.addr.split(":");
+    static getToSign({walletPrivateKey, addr, mnPrivateKey, sigTime}) {
+	const [ ip, port ] = addr.split(":");
 	const publicKey = deriveAddress({
-	    pkBytes: parseWIF(msg.walletPrivateKey, true),
+	    pkBytes: parseWIF(walletPrivateKey, true),
 	    output: "RAW_BYTES",
 	    compress: true,
 	});
 	const mnPublicKey = deriveAddress({
-	    pkBytes: parseWIF(msg.mnPrivateKey, true),
+	    pkBytes: parseWIF(mnPrivateKey, true),
 	    output: "RAW_BYTES",
 	    compress: false,
 	});
@@ -113,7 +118,7 @@ class Masternode {
 	const pkt = [
 	    ...Masternode._numToBytes(1, 4, true), // Message version
 	    ...Crypto.util.hexToBytes(Masternode._decodeIpAddress(ip, port)), // Encoded ip + port
-	    ...Masternode._numToBytes(msg.sigTime, 8, true),
+	    ...Masternode._numToBytes(sigTime, 8, true),
 	    ...Masternode._numToBytes(publicKey.length, 1, true), // Collateral public key length
 	    ...publicKey,
 	    ...Masternode._numToBytes(mnPublicKey.length, 1, true), // Masternode public key length
