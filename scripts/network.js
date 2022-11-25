@@ -75,7 +75,8 @@ if (networkEnabled) {
       // Shift the queue and update the UI
       getBalance(true);
       getStakingBalance(true);
-      
+      updateMasternodeTab();
+            
       // Loop validation until queue is empty
       arrUTXOsToValidate.shift();
       acceptUTXO();
@@ -117,7 +118,7 @@ if (networkEnabled) {
 
 var sendTransaction = function(hex, msg = '') {
     const request = new XMLHttpRequest();
-    request.open('GET', cExplorer.url + "/api/v2/sendtx/" + hex, true);
+    request.open('POST', cExplorer.url + "/api/v2/sendtx/", true);
     request.onerror = networkError;
     request.onreadystatechange = function () {
         if (!this.response || (!this.status === 200 && !this.status === 400)) return;
@@ -148,7 +149,7 @@ var sendTransaction = function(hex, msg = '') {
             domTxOutput.innerHTML = '<h4 style="color:red;font-family:mono !important;"><pre style="color: inherit;">' + strError + "</pre></h4>";
         }
     }
-    request.send();
+    request.send(hex);
 }
 
   var getFee = function (bytes) {
@@ -278,6 +279,7 @@ var getUTXOsHeavy = async function() {
       getNewAddress(true);
       getBalance(true);
       getStakingBalance(true);
+      updateMasternodeTab();
     }
   } catch(e) {
     networkError();
@@ -286,8 +288,6 @@ var getUTXOsHeavy = async function() {
     fHeavySyncing = false;
   }
 }
-
-
 
 // PIVX Labs Analytics: if you are a user, you can disable this FULLY via the Settings.
 // ... if you're a developer, we ask you to keep these stats to enhance upstream development,

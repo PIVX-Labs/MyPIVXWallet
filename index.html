@@ -79,45 +79,6 @@
   <script>
       // In most BTC-derived coins, the below parameters can be found in the 'src/chainparams.cpp' Mainnet configuration.
       // These below params share the same names as the CPP params, so finding and editing these is easy-peasy!
-
-      /* chainparams */
-      const cChainParams = {
-          current: null,
-          main: {
-              isTestnet         : false,
-              TICKER            : "PIV",
-              PUBKEY_PREFIX     : ["D"],
-              STAKING_PREFIX    : "S",
-              PUBKEY_ADDRESS    : 30,
-              SECRET_KEY        : 212,
-              BIP44_TYPE        : 119,
-              BIP44_TYPE_LEDGER : 77,
-              // A list of Labs-trusted explorers
-              Explorers         : [
-                  // Display name      Blockbook-compatible API base
-                  { name: "rockdev",   url: "https://explorer.rockdev.org" },
-                  { name: "zkBitcoin", url: "https://zkbitcoin.com" }
-              ]
-          },
-          testnet: {
-              isTestnet         : true,
-              TICKER            : "tPIV",
-              PUBKEY_PREFIX     : ["x","y"],
-              STAKING_PREFIX    : "W",
-              PUBKEY_ADDRESS    : 139,
-              SECRET_KEY        : 239,
-              BIP44_TYPE        : 1,
-              BIP44_TYPE_LEDGER : 1,
-              // A list of Labs-trusted explorers
-              Explorers         : [
-                  // Display name      Blockbook-compatible API base
-                  { name: "rockdev",   url: "https://testnet.rockdev.org" }
-              ]
-          }
-      }
-      // Set default chain
-      cChainParams.current = cChainParams.main;
-
       // <[network_byte] [32_byte_payload] [0x01] [4_byte_checksum]>
       const PRIVKEY_BYTE_LENGTH = 38;
 
@@ -130,6 +91,56 @@
 
       // Cool stuff
       const donationAddress = "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb";
+
+      /* chainparams */
+      const cChainParams = {
+          current: null,
+          main: {
+              collateralInSats   : 10000 * COIN,
+              isTestnet         : false,
+              TICKER            : "PIV",
+              PUBKEY_PREFIX     : ["D"],
+              STAKING_PREFIX    : "S",
+              PUBKEY_ADDRESS    : 30,
+              SECRET_KEY        : 212,
+              BIP44_TYPE        : 119,
+              BIP44_TYPE_LEDGER : 77,
+	      MASTERNODE_PORT   : 51472,
+              // A list of Labs-trusted explorers
+              Explorers         : [
+                  // Display name      Blockbook-compatible API base
+                  { name: "rockdev",   url: "https://explorer.rockdev.org" },
+                  { name: "zkBitcoin", url: "https://zkbitcoin.com" }
+              ],
+	      Nodes: [
+		  { name: "duddino", url: "https://rpc.duddino.com/mainnet"}
+	      ]
+
+          },
+          testnet: {
+	      collateralInSats   : 10000 * COIN,
+              isTestnet         : true,
+              TICKER            : "tPIV",
+              PUBKEY_PREFIX     : ["x","y"],
+              STAKING_PREFIX    : "W",
+              PUBKEY_ADDRESS    : 139,
+              SECRET_KEY        : 239,
+              BIP44_TYPE        : 1,
+              BIP44_TYPE_LEDGER : 1,
+	      MASTERNODE_PORT   : 51474,
+              // A list of Labs-trusted explorers
+              Explorers         : [
+                  // Display name      Blockbook-compatible API base
+                  { name: "rockdev",   url: "https://testnet.rockdev.org" }
+              ],
+	      Nodes: [
+		  { name: "duddino", url: "https://rpc.duddino.com/testnet"}
+	      ]
+          }
+      }
+      // Set default chain
+      cChainParams.current = cChainParams.main;
+
   </script>
 </head>
 
@@ -154,6 +165,7 @@
               <li class="nav-item"><a id="txTab" class="nav-link tablinks" onclick="openTab(event, 'Transaction')" data-i18n="navSend">Send</a></li>
               <li class="nav-item"><a id="stakeTab" class="nav-link tablinks" onclick="openTab(event, 'StakingTab')" data-i18n="navStake">Stake</a></li>
               <li class="nav-item"><a class="nav-link tablinks" onclick="openTab(event, 'Settings');" data-i18n="navSettings">Settings</a></li>
+
             </ul>
 
             <!-- SIDE NAVBAR -->
@@ -346,7 +358,7 @@
 
               <!-- PIVX DONATION SECTION -->
               <div class="col-md-12 donation-section float-left rm-pd text-center">
-                  <button class="pivx-button-big" onclick="openDonatePage()">
+                  <button class="pivx-button-big" onclick="guiPreparePayment(donationAddress)">
                             <span class="buttoni-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 70"><path d="M3.497 25.717C1.401 25.588 0 23.847 0 21.753v-2.535c0-.775.149-1.593.925-1.593h22.719c2.173 0 3.941 1.861 3.941 4.034 0 2.174-1.769 3.988-3.941 3.988l-20.207.048c-.02 0 .08.023.06.022z"></path><path d="M5.229 69.625C4.455 69.625 4 68.494 4 67.719V38.661c0-1.911 1.447-3.731 3.258-3.989.175-.029.285-.047.483-.047h21.525c7.137 0 12.751-5.86 12.751-13.027 0-7.096-5.528-12.841-12.586-13.177-.002 0-.671.016-1.41.016l-20.335.066C5.529 8.373 4 6.652 4 4.558V2.023C4 1.247 4.407.625 5.183.625h24.059c11.57 0 20.654 9.546 20.706 21.104 0 9.378-6.307 17.727-15.337 20.311-1.622.445-3.122.705-4.735.778L12 42.842v22.485c0 2.156-2.141 4.298-4.235 4.298H5.229z"></path></svg></span>
                             <span class="buttoni-text" data-i18n="buttonDonate">Donate - Pay with MyPIVXWallet</span>
                             <span class="buttoni-arrow"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M23.328 16.707L13.121 26.914a.5.5 0 01-.707 0l-2.828-2.828a.5.5 0 010-.707L16.964 16 9.586 8.621a.5.5 0 010-.707l2.828-2.828a.5.5 0 01.707 0l10.207 10.207a1 1 0 010 1.414z"></path></svg></span>
@@ -638,8 +650,120 @@
 	      </div>
 	    </div>
     </div>
-	    
+          <div id="Governance" class="tabcontent">
+              <div class="col-md-12 title-section float-left rm-pd">
+                <h3 class="pivx-bold-title center-text"> Governance</h3>
+                <p class="center-text">From this tab you can check the proposals and, if you have a masternode, be a part of the <b>DAO</b> and vote!</p>
+              </div>
+              <table id="proposalsTable" class="table table-hover table-dark bg-transparent" style="width:100%">
+		  <thead>
+		      <td class="text-center"> <b> Name </b> </td>
+		      <td class="text-center"> <b> Payment </b> </td>
+		      <td class="text-center"> <b> Votes </b> </td>
+		      <td class="text-center"> <b> Vote </b> </td>
+		  </thead>
+		  <tbody id="proposalsTableBody" style="text-align: center; vertical-align: middle;">
+		  </tbody>
+              </table>
+          </div>
+          <div id="Masternode" class="tabcontent">
+            <div class="col-md-12 title-section float-left rm-pd">
+              <h3 class="pivx-bold-title center-text"><span>Control your</span> Masternode</h3>
+              <p class="center-text">From this tab you can create and access one or more masternodes</p>
+            </div>
+         
+            <div style='display: block;'>
+              <br>
+              <p id="mnTextErrors" class="center-text"></p>
+            </div>
 
+            <!-- IMPORT MASTERNODE -->
+            <div id='accessMasternode' class="dashboard-item" style='display:none; width:100%;'>
+              <div class="container">
+
+                <div id="accessMasternodeText"></div> 
+                <br>
+                <input class="hide-element" type="text">
+                <div style='display: block;'>
+                  <input type="password" id='mnPrivateKey' placeholder="Masternode Private Key">
+                  <input type="text" id='mnIP' placeholder="Masternode ip address">
+                  <select id='mnTxId' style="display: block;" placeholder="Masternode collateral tx" class="form-control">
+		  </select>
+                  <button class="pivx-button-big" onclick="importMasternode()">
+                                <span class="buttoni-icon"><i class="fas fa-file-upload fa-tiny-margin"></i></span>
+                                <span class="buttoni-text" id="importMnText">Access Masternode</span>
+                                <span class="buttoni-arrow"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M23.328 16.707L13.121 26.914a.5.5 0 01-.707 0l-2.828-2.828a.5.5 0 010-.707L16.964 16 9.586 8.621a.5.5 0 010-.707l2.828-2.828a.5.5 0 01.707 0l10.207 10.207a1 1 0 010 1.414z"></path></svg></span>
+                      </button>
+                </div>
+              </div>
+            </div>
+            <!-- // IMPORT MASTERNODE -->
+            <br>            
+
+            <div id='createMasternode' class="dashboard-item" style='display:none; width:100%;'>
+              <div class="container" >
+
+                <h4>Create a masternode <small style="opacity: 0.75;">(10k PIV)</small></h4> 
+                <input class="hide-element" type="text">
+                <div style='display: block;'>
+                  <p>Choose your Masternode type</p>
+                  <select id='mnCreateType' style="display: block; text-align: center;" placeholder="Masternode collateral tx" class="form-control">
+		                <option value="VPS"> Self-hosted (a masternode server ran by you)</option>
+                    <option value="Third Party"> Third Party (a masternode server ran by someone else)</option>
+                  </select>
+                  <br>
+                  <br>
+                  <button class="pivx-button-big" onclick="createMasternode()">
+                                <span class="buttoni-icon"><i class="fas fa-file-upload fa-tiny-margin"></i></span>
+                                <span class="buttoni-text" id="importMnText">Create Masternode</span>
+                                <span class="buttoni-arrow"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M23.328 16.707L13.121 26.914a.5.5 0 01-.707 0l-2.828-2.828a.5.5 0 010-.707L16.964 16 9.586 8.621a.5.5 0 010-.707l2.828-2.828a.5.5 0 01.707 0l10.207 10.207a1 1 0 010 1.414z"></path></svg></span>
+                      </button>
+                </div>
+              </div>
+            </div>
+
+            <div id="mnDashboard" class="staking-banner-bottom">
+              <div class="stake-box large-box col-md-4">
+                <h4 class="stake-balances" style="background-color: #2c0044;border-radius: 10px;">
+                  Status <small id="mnProtocol" style="opacity: 0.5;"></small>
+                </h4>
+                <h2 id="mnStatus" class="stake-balances" style="overflow-wrap: anywhere;top: 50%;left: 50%;transform: translate(-50%, -50%);position: absolute;width: 100%;padding: 10px;" id="mnStatus">
+                  
+                </h2>
+              </div>
+              <div class="stake-box large-box col-md-4">
+                <h4 id="mnNetType" class="stake-balances" style="background-color: #2c0044;border-radius: 10px;">
+                  
+                </h4>
+                <h2 id="mnNetIP" class="stake-balances" style="overflow-wrap: anywhere;top: 50%;left: 50%;transform: translate(-50%, -50%);position: absolute;width: 100%;padding: 10px;font-family: mono !important;font-size: x-large;" id="mnStatus">
+                  
+                </h2>
+              </div>
+              <div class="stake-box large-box col-md-4">
+                <h4 class="stake-balances" style="background-color: #2c0044;border-radius: 10px;">
+                  Last Seen
+                </h4>
+                <h2 id="mnLastSeen" class="stake-balances" style="overflow-wrap: anywhere;top: 50%;left: 50%;transform: translate(-50%, -50%);position: absolute;width: 100%;padding: 10px;font-size: xx-large;" id="mnStatus">
+                  
+                </h2>
+              </div>
+            </div>
+
+            <br>
+
+            <center id='controlMasternode' style='display:none; width:100%;'>
+                <button class="pivx-button-big" onclick="destroyMasternode()" style="margin: 20px; font-weight: 550 !important;">
+                  <span class="buttoni-icon"><i class="fas fa-burn fa-tiny-margin"></i></span>
+                  <span class="buttoni-text" id="importMnText">Destroy Masternode</span>
+                </button>
+
+                <button class="pivx-button-big" onclick="startMasternode(true)" style="margin: 20px; font-weight: 550 !important;">
+                  <span class="buttoni-icon"><i class="fas fa-redo-alt fa-tiny-margin"></i></span>
+                  <span class="buttoni-text" id="importMnText">Restart Masternode</span>
+                </button>
+            </center>
+
+          </div>
 
             <div id="Transaction" class="tabcontent">
 
@@ -731,6 +855,13 @@
               <label for="translation" data-i18n="settingsLanguage">Choose an Language:</label>
               <br>
               <select id="translation" class="form-control" name="translation">
+                <!-- Populated via JS at DOM load (settings.js) -->
+              </select>
+              <br>
+	      
+              <label for="node">Choose a PIVX node:</label>
+              <br>
+              <select id="node" class="form-control" name="explorer">
                 <!-- Populated via JS at DOM load (settings.js) -->
               </select>
               <br>
@@ -847,6 +978,26 @@
     const domGenerateWallet = document.getElementById('generateWallet');
     const domGenVanityWallet = document.getElementById('generateVanityWallet');
     const domGenHardwareWallet = document.getElementById('generateHardwareWallet');
+    //GOVERNANCE ELEMENTS
+    const domGovProposalsTable = document.getElementById('proposalsTable');
+    const domGovProposalsTableBody = document.getElementById('proposalsTableBody');
+    //MASTERNODE ELEMENTS
+    const domCreateMasternode = document.getElementById('createMasternode');
+    const domControlMasternode = document.getElementById('controlMasternode')
+    const domAccessMasternode = document.getElementById('accessMasternode');
+    const domMnAccessMasternodeText = document.getElementById('accessMasternodeText');
+    const domMnCreateType = document.getElementById('mnCreateType');
+    const domMnTextErrors = document.getElementById('mnTextErrors');
+    const domMnIP = document.getElementById('mnIP');
+    const domMnTxId = document.getElementById('mnTxId');
+    const domMnPrivateKey = document.getElementById('mnPrivateKey');
+    const domMnDashboard = document.getElementById('mnDashboard');
+    const domMnProtocol = document.getElementById('mnProtocol');
+    const domMnStatus = document.getElementById('mnStatus');
+    const domMnNetType = document.getElementById('mnNetType');
+    const domMnNetIP = document.getElementById('mnNetIP');
+    const domMnLastSeen = document.getElementById('mnLastSeen');
+
     const domAccessWallet = document.getElementById('accessWallet');
     const domImportWallet = document.getElementById('importWallet');
     const domImportWalletText = document.getElementById('importWalletText');
@@ -885,7 +1036,8 @@
     const domConfirmModalConfirmButton = document.getElementById("confirmModalConfirmButton");
     const domConfirmModalCancelButton = document.getElementById("confirmModalCancelButton");
 	  
-
+    const masternodeLegacyAccessText='Access the masternode linked to this address<br> Note: the masternode MUST have been already created (however it can be online or offline)<br>  If you want to create a new masternode access with a HD wallet'
+    const masternodeHDAccessText="Access your masternodes if you have any! If you don't you can create one"
     // Aggregate menu screens and links for faster switching
     const arrDomScreens = document.getElementsByClassName("tabcontent");
     const arrDomScreenLinks = document.getElementsByClassName("tablinks");
@@ -894,7 +1046,7 @@
     const domAlertPos = document.getElementsByClassName("alertPositioning")[0];
 
     function getBalance(updateGUI = false) {
-      const nBalance = cachedUTXOs.reduce((a, b) => a + b.sats, 0);
+      const nBalance = cachedUTXOs.filter(a => !isMasternodeUTXO(a)).reduce((a, b) => a + b.sats, 0);
 
       // Update the GUI too, if chosen
       if (updateGUI) {
@@ -1002,11 +1154,15 @@
       }, 1000);
     }
 
-    function openDonatePage() {
+    function guiPreparePayment(strTo = "", strAmount = 0, strDesc = "") {
       domTxTab.click();
       if (domSimpleTXs.style.display === 'none')
         domSimpleTXsDropdown.click();
-      domAddress1s.value = donationAddress;
+      // Apply values
+      domAddress1s.value = strTo;
+      domValue1s.value = strAmount;
+      domReqDesc.value = strDesc;
+	    domReqDisplay.style.display = strDesc ? 'block' : 'none';
       domValue1s.focus();
     }
 
@@ -1021,6 +1177,196 @@
       domGenVanityWallet.style.display = 'none';
       domAccessWallet.style.display = 'none';
       domGenHardwareWallet.style.display = 'none';
+    }
+
+    async function govVote(hash, voteCode){
+      if (await confirmPopup({
+          title: "Confirm Vote",
+          html: "Are you sure? It takes 60 minutes to change vote",
+        }) == true) {
+        if(localStorage.getItem("masternode")){
+          const cMasternode = new Masternode(JSON.parse(localStorage.getItem("masternode")));
+          if (await cMasternode.getStatus() !== "ENABLED") {
+            createAlert("warning","Your masternode is not enabled yet!", 6000);
+            return;
+          }
+          const result = await cMasternode.vote(hash.toString(), voteCode); //1 yes 2 no
+          if (result.includes("Voted successfully")) { //good vote
+            createAlert('success', 'Vote submitted!', 6000);
+          } else if(result.includes("Error voting :")) { //If you already voted return an alert
+            createAlert('warning', 'You already voted for this proposal! Please wait 1 hour', 6000);
+          } else if(result.includes("Failure to verify signature.")) { //wrong masternode private key
+            createAlert('warning', 'Failed to verify signature, please check your masternode\'s private key', 6000);
+          } else { //this could be everything
+	          console.error(result);
+            createAlert('warning', 'Internal error, please try again later', 6000);
+          }
+        } else {
+          createAlert('warning', 'Access a masternode before voting!', 6000);
+        }
+      }
+    }
+
+    async function startMasternode(fRestart = false) {
+      if (localStorage.getItem("masternode")) {
+        const cMasternode = new Masternode(JSON.parse(localStorage.getItem("masternode")));
+        if (await cMasternode.start()) {
+          createAlert('success', '<b>Masternode ' + (fRestart ? 're' : '') + 'started!</b>', 4000);
+        } else {
+          createAlert('warning', '<b>Failed to ' + (fRestart ? 're' : '') + 'start masternode!</b>', 4000);
+        }
+      }
+    }
+
+    function destroyMasternode() {
+      if (localStorage.getItem("masternode")) {
+        localStorage.removeItem("masternode");
+        createAlert('success', '<b>Masternode destroyed!</b><br>Your coins are now spendable.', 5000);
+	updateMasternodeTab();
+      }
+    }
+
+    async function createMasternode() {
+      const fGeneratePrivkey = domMnCreateType.value === "VPS";
+      const strAddress = await getNewAddress();
+      const nValue = cChainParams.current.collateralInSats;
+    
+      const nBalance = getBalance();
+      const cTx = bitjs.transaction();
+      const cCoinControl = chooseUTXOs(cTx, nValue, 0, false);
+      
+      if (!cCoinControl.success) return alert(cCoinControl.msg);
+      // Compute fee
+      const nFee = getFee(cTx.serialize().length);
+      
+      // Compute change (or lack thereof)
+      const nChange = cCoinControl.nValue - (nFee + nValue);
+      const changeAddress = await getNewAddress({verify: masterKey.isHardwareWallet});
+      const outputs = [];
+      if (nChange > 0) {
+        // Change output
+        outputs.push([changeAddress, nChange / COIN]);
+      } else {
+       return createAlert("warning", "You don't have enough " + cChainParams.current.TICKER + " to create a masternode", 5000);
+      }
+      
+      // Primary output (receiver)
+      outputs.push([strAddress, nValue / COIN]);
+      
+      // Debug-only verbose response
+      if (debug) domHumanReadable.innerHTML = "Balance: " + (nBalance / COIN) + "<br>Fee: " + (nFee / COIN) + "<br>To: " + strAddress + "<br>Sent: " + (nValue / COIN) + (nChange > 0 ? "<br>Change Address: " + changeAddress + "<br>Change: " + (nChange / COIN) : "");
+
+      // Add outputs to the Tx
+      for (const output of outputs) {
+        cTx.addoutput(output[0], output[1]);
+      }
+
+      // Sign and broadcast!
+      if (!masterKey.isHardwareWallet) {
+        const sign = await cTx.sign(masterKey, 1);
+        sendTransaction(sign);
+      } else {
+        // Format the inputs how the Ledger SDK prefers
+        const arrInputs = [];
+        const arrAssociatedKeysets = [];
+        for (const cInput of cTx.inputs) {
+          const cInputFull = await getTxInfo(cInput.outpoint.hash);
+          arrInputs.push([await cHardwareWallet.splitTransaction(cInputFull.hex), cInput.outpoint.index]);
+          arrAssociatedKeysets.push(cInput.path);
+        }
+        const cLedgerTx = await cHardwareWallet.splitTransaction(cTx.serialize());
+              const strOutputScriptHex = await cHardwareWallet
+          .serializeTransactionOutputs(cLedgerTx)
+          .toString("hex");
+
+        // Sign the transaction via Ledger
+        const strSerialisedTx = await confirmPopup(
+          {
+            title: "Confirm your transaction",
+            html: createTxConfirmation(outputs),
+            resolvePromise: cHardwareWallet.createPaymentTransactionNew({
+              inputs: arrInputs,
+              associatedKeysets: arrAssociatedKeysets,
+              outputScriptHex: strOutputScriptHex,
+            }),
+          }
+        );
+
+        // Broadcast the Hardware (Ledger) TX
+        sendTransaction(strSerialisedTx);
+        
+      }
+      if(fGeneratePrivkey){
+        let masternodePrivateKey= await generateMnPrivkey();
+        await confirmPopup({
+          title: "Your Masternode Private Key",
+          html: `${masternodePrivateKey} <br> Save this private key and copy it to your VPS config <br>`, 
+        });
+      }
+      createAlert("success", "<b>Masternode Created!<b><br>Wait 15 confirmations to proceed further");
+      // Remove any previous Masternode data, if there were any
+      localStorage.removeItem("masternode");
+    }
+    async function importMasternode(){
+      const mnPrivKey = domMnPrivateKey.value;
+      
+      const ip = domMnIP.value;
+      let address;
+      let collateralTxId;
+      let outidx;
+      let collateralPrivKeyPath;
+      domMnIP.value = "";
+      domMnPrivateKey.value = "";
+
+      if (!ip.includes(":")) {
+	address = `${ip}:${cChainParams.current.MASTERNODE_PORT}`;
+      } else {
+	address = ip;
+      }
+      
+      if (!masterKey.isHD) {
+        // Find the first UTXO matching the expected collateral size
+	const cCollaUTXO = cachedUTXOs.find(cUTXO => cUTXO.sats === cChainParams.current.collateralInSats);
+
+        // If there's no valid UTXO, exit with a contextual message
+        if (!cCollaUTXO) {
+          if (getBalance(false) < cChainParams.current.collateralInSats) {
+            // Not enough balance to create an MN UTXO
+            createAlert("warning", "You need <b>" + ((cChainParams.current.collateralInSats - getBalance(false)) / COIN) + " more " + cChainParams.current.TICKER + "</b> to create a Masternode!", 10000);
+          } else {
+            // Balance is capable of a masternode, just needs to be created
+            // TODO: this UX flow is weird, is it even possible? perhaps we can re-design this entire function accordingly
+            createAlert("warning", "You have enough balance for a Masternode, but no valid collateral UTXO of " + (cChainParams.current.collateralInSats / COIN) + " " + cChainParams.current.TICKER, 10000);
+          }
+          return;
+        }
+
+        collateralTxId = cCollaUTXO.id;
+        outidx = cCollaUTXO.vout;
+        collateralPrivKeyPath = "legacy";
+      } else {
+        const path = domMnTxId.value;
+        const masterUtxo = cachedUTXOs.findLast(u=>u.path === path); // first UTXO for each address in HD
+        // sanity check:
+        if (masterUtxo.sats !== cChainParams.current.collateralInSats) {
+          return createAlert("warning", "This is not a suitable UTXO for a Masternode", 10000);
+        }
+        collateralTxId = masterUtxo.id;
+        outidx = masterUtxo.vout;
+        collateralPrivKeyPath = path;     
+      }
+      domMnTxId.value = "";
+
+      
+      const cMasternode = new Masternode({
+        walletPrivateKeyPath: collateralPrivKeyPath,
+        mnPrivateKey: mnPrivKey,
+        collateralTxId: collateralTxId,
+        outidx: outidx,
+        addr: address
+      });
+      await refreshMasternodeData(cMasternode, true);
+      await updateMasternodeTab();
     }
 
     function accessOrImportWallet() {
@@ -1136,12 +1482,12 @@
       const address = await masterKey.getAddress(path);
       if (verify && masterKey.isHardwareWallet) {
         // Generate address to present to the user without asking to verify
-        const conf_address = await confirmPopup({
+        const confAddress = await confirmPopup({
           title: "Verify your address",
           html: createAddressConfirmation(address),
           resolvePromise: masterKey.getAddress(path, { verify })
         });
-        if (address !== conf_address) {
+        if (address !== confAddress) {
           throw new Error("User did not verify address");
         }
       }
@@ -1463,6 +1809,10 @@
       // Select and return UTXO pointers (filters applied)
       const cCoinControl = { nValue: 0, nChange: 0, arrSelectedUTXOs: [] }
       for (const cUTXO of arrUTXOs) {
+
+        // Don't spend locked Masternode collaterals
+        if (isMasternodeUTXO(cUTXO)) continue;
+
         // Have we met the required sats threshold?
         if (cCoinControl.nValue >= nTotalSatsRequired + getFee(cTx.serialize().length)) {
           // Required Coin Control value met, yahoo!
@@ -1494,7 +1844,18 @@
       cCoinControl.nChange = nTotalSatsRequired - cCoinControl.nValue;
       return ccSuccess(cCoinControl);
     }
-  
+
+  function isMasternodeUTXO(cUTXO, masternode = null) {
+      const cMasternode = masternode || JSON.parse(localStorage.getItem("masternode"));
+      if (cMasternode) {
+	  const { collateralTxId, outidx } = cMasternode;
+	  return collateralTxId === cUTXO.id && cUTXO.vout === outidx;
+      } else {
+	  return false;
+      }
+    }
+
+
     async function createTxGUI() {
       if (!hasWalletUnlocked(true)) return;
       
@@ -1683,8 +2044,12 @@
       const wif = document.getElementById("wif").value;
       document.getElementById("rawTrx").value = await cTx.sign(wif, 1); //SIGHASH_ALL DEFAULT 1
     }
-
-    function openTab(evt, tabName) {
+    function addCellToTable(row,data){
+      let td=row.insertCell();
+      td.appendChild(document.createTextNode(data));
+      td.style.border = '1px solid black';
+    }
+    async function openTab(evt, tabName) {
       // Hide all screens and deactivate link highlights
       for (const domScreen of arrDomScreens) domScreen.style.display = "none";
       for (const domLink of arrDomScreenLinks) domLink.classList.remove("active");
@@ -1692,12 +2057,205 @@
       // Show and activate the given screen
       document.getElementById(tabName).style.display = "block";
       evt.currentTarget.classList.add("active");
-
+      
       // Close the navbar if it's not already closed
       if (!domNavbarToggler.className.includes("collapsed"))
         domNavbarToggler.click();
+      
+      if (tabName === "Governance") {
+	updateGovernanceTab();
+      }
+      if (tabName==="Masternode") {
+	updateMasternodeTab();
+      }  
+      
     }
-    domStart.click();
+  domStart.click();
+
+  async function updateGovernanceTab() {
+    const proposals= await Masternode.getProposals();
+    domGovProposalsTableBody.innerHTML="";
+    for (const proposal of proposals){
+      if(proposal.RemainingPaymentCount === 0){
+        continue;
+      }
+      const tr = domGovProposalsTableBody.insertRow();
+      const td1 = tr.insertCell();
+      // IMPORTANT: We must sanite all of our HTML or a rogue server or malicious proposal could perform a cross side scripting attack
+      td1.innerHTML=`<a class="active" href="${sanitizeHTML(proposal.URL)}"><b>${sanitizeHTML(proposal.Name)}</b></a>`
+      const td2 = tr.insertCell();
+      td2.innerHTML=`<b>${sanitizeHTML(proposal.MonthlyPayment)}</b> ${cChainParams.current.TICKER} <br>
+      <small> ${sanitizeHTML(proposal['RemainingPaymentCount'])} payments remaining of <b>${sanitizeHTML(proposal.TotalPayment)}</b> ${cChainParams.current.TICKER} total</small>`
+      const td3 = tr.insertCell();
+      let {Yeas, Nays} = proposal;
+      Yeas = parseInt(Yeas);
+      Nays = parseInt(Nays);
+      const percentage = Yeas + Nays !== 0 ? (Yeas / (Yeas + Nays)) * 100 : 0;
+      
+      td3.innerHTML=`<b>${percentage.toFixed(2)}%</b> <br>
+      <small> <b><div class="text-success" style="display:inline;"> ${Yeas} </div></b> /
+	  <b><div class="text-danger" style="display:inline;"> ${Nays} </div></b>
+      `;
+      const td4 = tr.insertCell();
+      //append vote buttons	  
+      const buttonNo = document.createElement('button');
+      buttonNo.className = "pivx-button-big";
+      buttonNo.innerText="No";
+      buttonNo.onclick = () => govVote(proposal.Hash, 2);
+      
+      const buttonYes = document.createElement('button');
+      buttonYes.className = "pivx-button-big";
+      buttonYes.innerText="Yes";
+      buttonYes.onclick = () => govVote(proposal.Hash, 1);
+      
+      td4.appendChild(buttonNo)
+      td4.appendChild(buttonYes)
+    }
+  }
+  
+  async function updateMasternodeTab() {
+    //TODO: IN A FUTURE ADD MULTI-MASTERNODE SUPPORT BY SAVING MNs with which you logged in the past.
+    // Ensure a wallet is loaded
+    domMnTextErrors.innerHTML = "";
+    domAccessMasternode.style.display = "none";
+    domCreateMasternode.style.display = "none";
+    domMnDashboard.style.display = "none";
+    
+    if (!masterKey) {
+      domMnTextErrors.innerHTML = "Please " + (hasEncryptedWallet() ? "unlock" : "import") + " your <b>COLLATERAL WALLET</b> first.";
+      return;
+    }
+    
+    if (masterKey.isHardwareWallet) {
+      domMnTxId.style.display = "none";
+      domMnTextErrors.innerHTML = "Ledger is not yet supported";
+      return;
+    }
+
+    if(!cachedUTXOs.length) {
+      domMnTextErrors.innerHTML = "Your wallet is empty or still loading, re-open the tab in a few seconds!";
+      return;
+    }
+    
+    let strMasternodeJSON = localStorage.getItem("masternode");
+    // If the collateral is missing (spent, or switched wallet) then remove the current MN
+    if (strMasternodeJSON) {
+      const cMasternode = JSON.parse(strMasternodeJSON);
+      if (!cachedUTXOs.find(utxo => isMasternodeUTXO(utxo, cMasternode))) {
+        localStorage.removeItem("masternode");
+	strMasternodeJSON = null;
+      }
+    }
+    
+    domControlMasternode.style.display = strMasternodeJSON ? "block" : "none";
+    
+    // first case: the wallet is not HD and it is not hardware, so in case the wallet has collateral the user can check its status and do simple stuff like voting
+    if (!masterKey.isHD) {
+      domMnAccessMasternodeText.innerHTML = masternodeLegacyAccessText;
+      domMnTxId.style.display = "none";
+      // Find the first UTXO matching the expected collateral size
+      const cCollaUTXO = cachedUTXOs.find(cUTXO => cUTXO.sats === cChainParams.current.collateralInSats);
+      const balance = getBalance(false);
+      if (cCollaUTXO) {
+	if (strMasternodeJSON) {
+	  const cMasternode = new Masternode(JSON.parse(localStorage.getItem("masternode")));
+	  const cMasternodeData = await refreshMasternodeData(cMasternode);
+	  domMnDashboard.style.display = "";
+	} else {
+	  domMnTxId.style.display = "none";
+          domAccessMasternode.style.display = "block";
+	}
+      } else if (balance < cChainParams.current.collateralInSats) {
+        // The user needs more funds
+        domMnTextErrors.innerHTML = "You need <b>" + ((cChainParams.current.collateralInSats - balance) / COIN) + " more " + cChainParams.current.TICKER + "</b> to create a Masternode!";
+      } else {
+        // The user has the funds, but not an exact collateral, prompt for them to create one
+        domCreateMasternode.style.display = "block";
+        domMnTxId.style.display = "none";
+        domMnTxId.innerHTML = "";
+      }
+    } else {
+      domMnTxId.style.display = "none";
+      domMnTxId.innerHTML = "";
+      domMnAccessMasternodeText.innerHTML = masternodeHDAccessText;
+      
+      // First UTXO for each address in HD
+      const mapCollateralAddresses = new Map();
+      
+      // Aggregate all valid Masternode collaterals into a map of Address <--> Collateral
+      for (const cUTXO of cachedUTXOs) {
+        if (cUTXO.sats !== cChainParams.current.collateralInSats) continue;
+        mapCollateralAddresses.set(cUTXO.path, cUTXO);
+      }
+      const fHasCollateral = mapCollateralAddresses.size > 0;
+      
+      // If there's no loaded MN, but valid collaterals, display the configuration screen
+      if (!strMasternodeJSON && fHasCollateral) {
+        domMnTxId.style.display = "block";
+        domAccessMasternode.style.display = "block";
+	
+        for (const [key, value] of mapCollateralAddresses) {
+          const option = document.createElement('option');
+          option.value = key;
+          option.innerText = await masterKey.getAddress(key);
+          domMnTxId.appendChild(option);
+        }
+      }
+      
+      // If there's no collateral found, display the creation UI
+      if (!fHasCollateral) domCreateMasternode.style.display = "block";
+      
+      // If we have a collateral and a loaded Masternode, display the Dashboard
+      if (fHasCollateral && strMasternodeJSON) {
+        const cMasternode = new Masternode(JSON.parse(strMasternodeJSON));
+        // Refresh the display
+        refreshMasternodeData(cMasternode);
+        domMnDashboard.style.display = "";
+      }
+    }
+  }
+  
+  async function refreshMasternodeData(cMasternode, fAlert = false) {
+    const cMasternodeData = await cMasternode.getFullData();
+    if (debug) console.log(cMasternodeData);
+
+    // If we have MN data available, update the dashboard
+    if (cMasternodeData && cMasternodeData.status !== "MISSING") {
+      domMnTextErrors.innerHTML = "";
+      domMnProtocol.innerText = `(${sanitizeHTML(cMasternodeData.version)})`;
+      domMnStatus.innerText = sanitizeHTML(cMasternodeData.status);
+      domMnNetType.innerText = sanitizeHTML(cMasternodeData.network.toUpperCase());
+      domMnNetIP.innerText = cMasternode.addr;
+      domMnLastSeen.innerText = new Date(cMasternodeData.lastseen * 1000).toLocaleTimeString();
+    }
+
+    if (cMasternodeData.status === "MISSING") {
+      domMnTextErrors.innerHTML = "Masternode is currently <b>OFFLINE</b>";
+      createAlert('warning', 'Your masternode is offline, we will try to start it', 6000);
+      // try to start the masternode
+      const started = await cMasternode.start();
+      if (started) {
+        domMnTextErrors.innerHTML = "Masternode successfully started!";
+        createAlert('success', 'Masternode successfully started!, it will be soon online', 6000);
+        localStorage.setItem("masternode", JSON.stringify(cMasternode));
+      } else {
+        domMnTextErrors.innerHTML = "We couldn't start your masternode";
+        createAlert('warning', 'We could not start your masternode', 6000);
+      }
+    } else if (cMasternodeData.status === "ENABLED" || cMasternodeData.status === "PRE_ENABLED") {
+      if (fAlert) createAlert('success', `Your masternode status is <b> ${sanitizeHTML(cMasternodeData.status)} </b>`, 6000);
+      localStorage.setItem("masternode", JSON.stringify(cMasternode));
+    } else if (cMasternodeData.status === "REMOVED") {
+      domMnTextErrors.innerHTML = "Masternode is currently <b>REMOVED</b>";
+      if (fAlert) createAlert('warning', 'Your masternode is in <b>REMOVED</b> state', 6000);
+    } else { // connection problem
+      domMnTextErrors.innerHTML = "Unable to connect!";
+      if (fAlert) createAlert('warning', 'Unable to connect!', 6000);
+    }
+
+    // Return the data in case the caller needs additional context
+    return cMasternodeData;
+  }
 
     function refreshChainData() {
       // If in offline mode: don't sync ANY data or connect to the internet
@@ -1735,24 +2293,9 @@
         accessOrImportWallet();
       }
 
-      // Configure payment processor
+      // Payment processor redirect
       if (requestTo && requestAmount) {
-        // Open 'Create Transaction' menu
-        domTxTab.click();
-        if (domSimpleTXs.style.display === 'none')
-          domSimpleTXsDropdown.click();
-
-        // Pre-fill inputs
-        domAddress1s.value = requestTo;
-        domValue1s.value   = requestAmount;
-
-        // Payment request 'desc' is optional
-        if (urlParams.has('desc')) {
-          domReqDisplay.style.display = 'block';
-          domReqDesc.value = urlParams.get('desc');
-        } else {
-          domReqDisplay.style.display = 'none';
-        }
+        guiPreparePayment(requestTo, requestAmount, urlParams.has('desc') ? urlParams.get('desc') : "");
       }
 
       // If allowed by settings: submit a simple 'hit' (app load) to Labs Analytics
@@ -1781,5 +2324,6 @@
 <script type="text/javascript" src="scripts/bitTrx.js"></script>
 <script type="text/javascript" src="scripts/libs/ledger.js"></script>
 <script type="text/javascript" src="scripts/libs/bip39.js"></script>
+<script type="text/javascript" src="scripts/masternode.js"></script>
 
 </html>
