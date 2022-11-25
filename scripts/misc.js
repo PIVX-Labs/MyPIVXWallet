@@ -96,13 +96,13 @@ function from_b58(S) {
 /* --- NOTIFICATIONS --- */
 // Alert - Do NOT display arbitrary / external errors, the use of `.innerHTML` allows for input styling at this cost.
 // Supported types: success, info, warning
-function createAlert(type, message, alertVariables, timeout = 0) {
+function createAlert(type, message, alertVariables = [], timeout = 0) {
     const domAlert = document.createElement("div");
     domAlert.classList.add("alertpop");
     domAlert.classList.add(type);
 
-    //TRANSLATION
-    let translatedMessage = translateAlerts(message, alertVariables)
+    // Apply translations
+    const translatedMessage = translateAlerts(message, alertVariables);
 
     // Message
     domAlert.innerHTML = translatedMessage;

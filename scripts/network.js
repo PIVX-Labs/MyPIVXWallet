@@ -4,7 +4,7 @@ function networkError() {
     if (disableNetwork()) {
         createAlert('warning',
                     '<b>Failed to synchronize!</b> Please try again later.' +
-                    '<br>You can attempt re-connect via the Settings.');
+                    '<br>You can attempt re-connect via the Settings.', []);
     }
 }
 
@@ -132,13 +132,13 @@ var sendTransaction = function(hex, msg = '') {
             domSimpleTXs.style.display = 'none';
             domAddress1s.value = '';
             domValue1s.innerHTML = '';
-            createAlert('success', msg || 'Transaction sent!', msg ? (1250 + (msg.length * 50)) : 1500);
+            createAlert('success', msg || 'Transaction sent!', [], msg ? (1250 + (msg.length * 50)) : 1500);
 
             // If allowed by settings: submit a simple 'tx' ping to Labs Analytics
             submitAnalytics('transaction');
         } else {
             console.log('Error sending transaction: ' + data.result);
-            createAlert('warning', 'Transaction Failed!', 1250);
+            createAlert('warning', 'Transaction Failed!', [], 1250);
             // Attempt to parse and prettify JSON (if any), otherwise, display the raw output.
             let strError = data.error;
             try {

@@ -58,7 +58,7 @@ function setExplorer(explorer, fSilent = false) {
 
     // Enable networking + notify if allowed
     enableNetwork();
-    if (!fSilent) createAlert('success', '<b>Switched explorer!</b><br>Now using ' + cExplorer.name, 2250);
+    if (!fSilent) createAlert('success', '<b>Switched explorer!</b><br>Now using ' + cExplorer.name, [], 2250);
 }
 // Hook up the 'explorer' select UI
 document.getElementById('explorer').onchange = function(evt) {
@@ -108,7 +108,7 @@ function setAnalytics(level, fSilent = false) {
 
     // Set display + notify if allowed
     domAnalyticsDescriptor.innerHTML = cAnalyticsLevel.name === arrAnalytics[0].name ? '' : '<h6 style="color:#dcdf6b;font-family:mono !important;"><pre style="color: inherit;">' + strDesc + '</pre></h6>';
-    if (!fSilent) createAlert('success', '<b>Switched analytics level!</b><br>Now ' + cAnalyticsLevel.name, 2250);
+    if (!fSilent) createAlert('success', '<b>Switched analytics level!</b><br>Now ' + cAnalyticsLevel.name, [], 2250);
 }
 // Hook up the 'analytics' select UI
 document.getElementById('analytics').onchange = function(evt) {
@@ -116,7 +116,7 @@ document.getElementById('analytics').onchange = function(evt) {
 }
 
 function toggleTestnet() {
-    if (fWalletLoaded) return createAlert('warning', '<b>Unable to switch Testnet Mode!</b><br>A wallet is already loaded', 3250);
+    if (fWalletLoaded) return createAlert('warning', '<b>Unable to switch Testnet Mode!</b><br>A wallet is already loaded', [], 3250);
 
     // Update current chain config
     cChainParams.current = cChainParams.current.isTestnet ? cChainParams.main : cChainParams.testnet;
@@ -138,7 +138,7 @@ function toggleSyncMode() {
     //TRANSLATION CHANGE
     //domSyncMode.innerHTML = fAlternativeSync ? '<b>Experimental Sync Active</b>' : '';
     domSyncMode.style.display = (fAlternativeSync ? '' : 'none');
-    createAlert('success', '<b>Switched sync mode!</b><br>Now using ' + (fAlternativeSync ? 'experimental' : 'stable') + ' sync', 3000);
+    createAlert('success', '<b>Switched sync mode!</b><br>Now using ' + (fAlternativeSync ? 'experimental' : 'stable') + ' sync', [], 3000);
 }
 
 function toggleDebug() {

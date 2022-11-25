@@ -244,7 +244,7 @@ async function importWallet({
     if (isHardwareWallet) {
       // Firefox does NOT support WebUSB, thus cannot work with Hardware wallets out-of-the-box
       if (navigator.userAgent.includes("Firefox")) {
-        return createAlert("warning", "<b>Firefox doesn't support this!</b><br>Unfortunately, Firefox does not support hardware wallets", 7500);
+        return createAlert("warning", "<b>Firefox doesn't support this!</b><br>Unfortunately, Firefox does not support hardware wallets", [], 7500);
       }
 
       const publicKey = await getHardwareWalletKeys(getDerivationPath(true));
@@ -257,7 +257,7 @@ async function importWallet({
       // Hide the 'export wallet' button, it's not relevant to hardware wallets
       domExportWallet.style.display = "none";
 
-      createAlert("info", "<b>Hardware wallet ready!</b><br>Please keep your " + strHardwareName + " plugged in, unlocked, and in the PIVX app", 12500);
+      createAlert("info", "<b>Hardware wallet ready!</b><br>Please keep your " + strHardwareName + " plugged in, unlocked, and in the PIVX app", [], 12500);
     } else {
       // If raw bytes: purely encode the given bytes rather than generating our own bytes
       if (fRaw) {
@@ -294,7 +294,7 @@ async function importWallet({
           }
         } catch (e) {
           return createAlert('warning', '<b>Failed to import!</b>' +
-                             '<br>' + e.message,
+                             '<br>' + e.message, [],
                              6000);
         }
       }
@@ -449,9 +449,9 @@ function hasHardwareWallet() {
 
 function hasWalletUnlocked(fIncludeNetwork = false) {
   if (fIncludeNetwork && !networkEnabled)
-    return createAlert('warning', "<b>Offline Mode is active!</b><br>Please disable Offline Mode for automatic transactions", 5500);
+    return createAlert('warning', "<b>Offline Mode is active!</b><br>Please disable Offline Mode for automatic transactions", [], 5500);
     if (!masterKey) {
-      return createAlert('warning', "Please " + (hasEncryptedWallet() ? "unlock " : "import/create") + " your wallet before sending transactions!", 3500);
+      return createAlert('warning', "Please " + (hasEncryptedWallet() ? "unlock " : "import/create") + " your wallet before sending transactions!", [], 3500);
   } else {
     return true;
   }
@@ -470,7 +470,7 @@ async function getHardwareWalletKeys(path, xpub = false, verify = false, _attemp
     strHardwareName = cHardwareWallet.transport.device.manufacturerName + " " + cHardwareWallet.transport.device.productName;
 
     // Prompt the user in both UIs
-    if (verify) createAlert("info", "Confirm the import on your Ledger", 3500);
+    if (verify) createAlert("info", "Confirm the import on your Ledger", [], 3500);
     const cPubKey = await cHardwareWallet.getWalletPublicKey(path, {
       verify,
       format: "legacy",
@@ -498,19 +498,19 @@ async function getHardwareWalletKeys(path, xpub = false, verify = false, _attemp
     }
     // If there's no device, nudge the user to plug it in.
     if (e.message.toLowerCase().includes('no device selected')) {
-      createAlert("info", "<b>No device available</b><br>Couldn't find a hardware wallet; please plug it in and unlock!", 10000);
+      createAlert("info", "<b>No device available</b><br>Couldn't find a hardware wallet; please plug it in and unlock!", [], 10000);
       return false;
     }
 
     // If the device is unplugged, or connection lost through other means (such as spontanious device explosion)
     if (e.message.includes("Failed to execute 'transferIn'")) {
-      createAlert("info", "<b>Lost connection to " + strHardwareName + "</b><br>It seems the " + cHardwareWallet.transport.device.productName + " was unplugged mid-operation, oops!", 10000);
+      createAlert("info", "<b>Lost connection to " + strHardwareName + "</b><br>It seems the " + cHardwareWallet.transport.device.productName + " was unplugged mid-operation, oops!", [], 10000);
       return false;
     }
 
     // If the ledger is busy, just nudge the user.
     if (e.message.includes('is busy')) {
-      createAlert("info", "<b>" + strHardwareName + " is waiting</b><br>Please unlock your " + cHardwareWallet.transport.device.productName + " or finish it's current prompt", 7500);
+      createAlert("info", "<b>" + strHardwareName + " is waiting</b><br>Please unlock your " + cHardwareWallet.transport.device.productName + " or finish it's current prompt", [], 7500);
       return false;
     }
 
@@ -521,7 +521,7 @@ async function getHardwareWalletKeys(path, xpub = false, verify = false, _attemp
     }
 
     // Translate the error to a user-friendly string (if possible)
-    createAlert("warning", "<b>" + strHardwareName + "</b><br>" + (LEDGER_ERRS.get(e.statusCode) || e.message), 5500);
+    createAlert("warning", "<b>" + strHardwareName + "</b><br>" + (LEDGER_ERRS.get(e.statusCode) || e.message), [], 5500);
     return false;
   }
 }
