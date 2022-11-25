@@ -920,18 +920,16 @@
       "uwu": uwu_translation
     }
     localTranslation = localStorage.getItem('translation')
-    //Check if set in local storage
-    console.log(localTranslation)
+    // Check if set in local storage
     if(localTranslation != null){
       translation = translatableLanguages[localTranslation]
     }else{
-      //Check what is the browsers default lang
+      // Check if we support the user's browser locale
       if (arrActiveLangs.includes(strLang)) {
-        console.log('ran')
         translation = translatableLanguages[strLang]
       }else{
-        //Defaults to en if the lang doesn't exist yet
-        console.log("Your language is not supported yet, if you would like to help visit the github or discord")
+        // Default to EN if the locale isn't supported yet
+        console.log("i18n: Your language (" + strLang + ") is not supported yet, if you'd like to contribute translations (for rewards!) contact us on GitHub or Discord!")
         translation = en_translation
       }
     }
