@@ -45,7 +45,9 @@ jobs:
           context: .
           file: docker/Dockerfile
           platforms: linux/amd64
-          tags: ${{ steps.meta.outputs.tags }}
+          tags: |
+            ghcr.io/pivx-labs/mypivxwallet:latest
+            ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: release=1
           push: true

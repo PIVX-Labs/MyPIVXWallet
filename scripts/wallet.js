@@ -1,46 +1,90 @@
 'use strict';
-
+/**
+ * Abstract class masterkey
+ * @abstract
+ */
 class MasterKey {
   
   constructor() { }
-  
+
+  /**
+   * @param {string} [path] - Bip32 path pointing to the private key.
+   * @return {Promise<Array<number>>} Array of bytes containing private key
+   * @abstract
+   */
   async getPrivateKeyBytes(path) {
     throw new Error("Not implemented");
   }
   
+  /**
+   * @param {string} [path] - Bip32 path pointing to the private key.
+   * @return {string} encoded private key
+   * @abstract
+   */
   async getPrivateKey(path) {
     return generateOrEncodePrivkey(await this.getPrivateKeyBytes(path)).strWIF;
   }
-  
+
+  /**
+   * @param {string} [path] - Bip32 path pointing to the address
+   * @return {string} Address
+   * @abstract
+   */
   async getAddress(path) {
     return deriveAddress({pkBytes: await this.getPrivateKeyBytes(path)});
   }
   
+  /**
+   * @param {string} [path] - Bip32 path pointing to the xpub
+   * @return {Promise<string>} xpub
+   * @abstract
+   */
   async getxpub(path) {
     throw new Error("Not implemented");
   }
 
+  /**
+   * Wipe all private data from key.
+   * @return {void}
+   * @abstract
+   */
   wipePrivateData() {
     throw new Error("Not implemented");
   }
   
+  /**
+   * @return {string} private key suitable for backup.
+   * @abstract
+   */
   get keyToBackup() {
     throw new Error("Not implemented");
   }
 
-  // Public key
+  /**
+   * @return {string} public key to export. Only suitable for monitoring balance.
+   * @abstract
+   */
   get keyToExport() {
     throw new Error("Not implemented");
   }
-  
+
+  /**
+   * @return {boolean} Whether or not this is a Hierarchical Deterministic wallet
+   */
   get isHD() {
     return this._isHD;
   }
-  
+
+  /**
+   * @return {boolean} Whether or not this is a hardware wallet
+   */
   get isHardwareWallet() {
     return this._isHardwareWallet;
   }
 
+  /**
+   * @return {boolean} Whether or not this key is view only or not
+   */
   get isViewOnly() {
     return this._isViewOnly;
   }
@@ -206,40 +250,42 @@ function getDerivationPath(fLedger = false, nAccount = 0, nReceiving = 0, nIndex
 }
 
 // Verify the integrity of a WIF private key, optionally parsing and returning the key payload
-function verifyWIF(strWIF = "", fParseBytes = false) {
+function verifyWIF(strWIF = "", fParseBytes = false, skipVerification = false) {
   // Convert from Base58
   const bWIF = from_b58(strWIF);
-
-  // Verify the byte length
-  if (bWIF.byteLength !== PRIVKEY_BYTE_LENGTH) {
-    throw Error("Private key length (" + bWIF.byteLength + ") is invalid, should be " + PRIVKEY_BYTE_LENGTH + "!");
+    
+  if(!skipVerification) {
+    // Verify the byte length
+    if (bWIF.byteLength !== PRIVKEY_BYTE_LENGTH) {
+      throw Error("Private key length (" + bWIF.byteLength + ") is invalid, should be " + PRIVKEY_BYTE_LENGTH + "!");
+    }
+    
+    // Verify the network byte
+    if (bWIF[0] !== cChainParams.current.SECRET_KEY) {
+      // Find the network it's trying to use, if any
+      const cNetwork = Object.keys(cChainParams).filter(strNet => strNet !== 'current').map(strNet => cChainParams[strNet]).find(cNet => cNet.SECRET_KEY === bWIF[0]);
+      // Give a specific alert based on the byte properties
+      throw Error(cNetwork ? "This private key is for " + (cNetwork.isTestnet ? "Testnet" : "Mainnet") + ", wrong network!" : "This private key belongs to another coin, or is corrupted.");
+    }
+    
+    // Perform SHA256d hash of the WIF bytes
+    const shaHash = new jsSHA(0, 0, { "numRounds": 2 });
+    shaHash.update(bWIF.slice(0, 34));
+    
+    // Verify checksum (comparison by String since JS hates comparing object-like primitives)
+    const bChecksumWIF = bWIF.slice(bWIF.byteLength - 4);
+    const bChecksum = shaHash.getHash(0).slice(0, 4);
+    if (bChecksumWIF.join('') !== bChecksum.join('')) {
+      throw Error("Private key checksum is invalid, key may be modified, mis-typed, or corrupt.");
+    }
   }
-
-  // Verify the network byte
-  if (bWIF[0] !== cChainParams.current.SECRET_KEY) {
-    // Find the network it's trying to use, if any
-    const cNetwork = Object.keys(cChainParams).filter(strNet => strNet !== 'current').map(strNet => cChainParams[strNet]).find(cNet => cNet.SECRET_KEY === bWIF[0]);
-    // Give a specific alert based on the byte properties
-    throw Error(cNetwork ? "This private key is for " + (cNetwork.isTestnet ? "Testnet" : "Mainnet") + ", wrong network!" : "This private key belongs to another coin, or is corrupted.");
-  }
-
-  // Perform SHA256d hash of the WIF bytes
-  const shaHash = new jsSHA(0, 0, { "numRounds": 2 });
-  shaHash.update(bWIF.slice(0, 34));
-
-  // Verify checksum (comparison by String since JS hates comparing object-like primitives)
-  const bChecksumWIF = bWIF.slice(bWIF.byteLength - 4);
-  const bChecksum = shaHash.getHash(0).slice(0, 4);
-  if (bChecksumWIF.join('') !== bChecksum.join('')) {
-    throw Error("Private key checksum is invalid, key may be modified, mis-typed, or corrupt.");
-  }
-
+  
   return fParseBytes ? Uint8Array.from(bWIF.slice(1, 33)) : true;
 }
 
 // A convenient alias to verifyWIF that returns the raw byte payload
-function parseWIF(strWIF) {
-  return verifyWIF(strWIF, true);
+function parseWIF(strWIF, skipVerification = false) {
+  return verifyWIF(strWIF, true, skipVerification);
 }
 
 // Generate a new private key OR encode an existing private key from raw bytes
@@ -277,15 +323,32 @@ function compressPublicKey(pubKeyBytes) {
   return [ y[31] % 2 === 0 ? 2 : 3, ...x ];
 }
 
-// Derive a Secp256k1 network-encoded public key (coin address) from raw private or public key bytes
+/**
+ * Derive a Secp256k1 network-encoded public key (coin address) from raw private or public key bytes
+ * @param {Object} options - The object to deconstruct
+ * @param {string} [options.publicKey] - The hex encoded public key. Can be both compressed or uncompressed
+ * @param {Array<number> | Uint8Array} [options.pkBytes] - An array of bytes containing the private key
+ * @param {"ENCODED" | "UNCOMPRESSED_HEX" | "COMPRESSED_HEX"} options.output - Output. 
+ * @return {string} the public key with the specified encoding
+ */
 function deriveAddress({
   pkBytes,
   publicKey,
-  fNoEncoding
+  output = "ENCODED",
 }) {
   if(!pkBytes && !publicKey) return null;
+  const compress = output !== "UNCOMPRESSED_HEX";
   // Public Key Derivation
-  let pubKeyBytes = (publicKey ? Crypto.util.hexToBytes(publicKey) : (nobleSecp256k1.getPublicKey(pkBytes, true)));
+  let pubKeyBytes = (publicKey ? Crypto.util.hexToBytes(publicKey) : (nobleSecp256k1.getPublicKey(pkBytes, compress)));
+
+  if (output === "UNCOMPRESSED_HEX") {
+    if (pubKeyBytes.length !== 65) {
+      // It's actually possible, but it's probably not something that we'll need
+      throw new Error("Can't uncompress an already compressed key");
+    }
+    return Crypto.util.bytesToHex(pubKeyBytes);
+  }
+  
   if(pubKeyBytes.length === 65) {
     pubKeyBytes = compressPublicKey(pubKeyBytes);
   }
@@ -294,8 +357,9 @@ function deriveAddress({
     throw new Error("Invalid public key");
   }
 
-  // If we're only trying to derive a Secp256k1 pubkey (not an encoded address), return early
-  if (fNoEncoding) return pubKeyBytes;
+  if (output === "COMPRESSED_HEX") {
+    return Crypto.util.bytesToHex(pubKeyBytes);
+  }
 
   // First pubkey SHA-256 hash
   const pubKeyHashing = new jsSHA(0, 0, { "numRounds": 1 });
