@@ -160,8 +160,24 @@ var translation = {
     BAD_ADDR_PREFIX: "",             //'<b>Invalid PIVX address!<b><br>Bad prefix {address} (Should start with {addressPrefix})',
     SENT_NOTHING: "",                //'You can\'t send \'nothing\'!',
     MORE_THEN_8_DECIMALS: "",        //'8 decimal limit exceeded',
-    SAVE_WALLET_PLEASE: "",          //"<b>Save your wallet!</b><br>Dashboard ➜ Set Password",
-    BACKUP_OR_ENCRYPT_WALLET: "",    //"Please ENCRYPT and/or BACKUP your keys before leaving, or you may lose them!"
+    SAVE_WALLET_PLEASE: "",          //<b>Save your wallet!</b><br>Dashboard ➜ Set Password,
+    BACKUP_OR_ENCRYPT_WALLET: "",    //Please ENCRYPT and/or BACKUP your keys before leaving, or you may lose them!
+
+    SWITCHED_EXPLORERS : "",         //<b>Switched explorer!</b><br>Now using {explorerName},
+    SWITCHED_NODE : "",              //<b>Switched node!</b><br>Now using {node},
+    SWITCHED_ANALYTICS: "",          //<b>Switched analytics level!</b><br>Now {level},
+    SWITCHED_SYNC: "",               //<b>Switched sync mode!</b><br>Now using {sync} sync,
+    UNABLE_SWITCH_TESTNET: "",       //<b>Unable to switch Testnet Mode!</b><br>A wallet is already loaded
+
+    WALLET_OFFLINE_AUTOMATIC: "",       //"<b>Offline Mode is active!</b><br>Please disable Offline Mode for automatic transactions",
+    WALLET_UNLOCK_IMPORT: "",           //"Please {unlock} your wallet before sending transactions!",
+    WALLET_FIREFOX_UNSUPPORTED: "",     //"<b>Firefox doesn't support this!</b><br>Unfortunately, Firefox does not support hardware wallets",
+    WALLET_HARDWARE_WALLET: "",         //"<b>Hardware wallet ready!</b><br>Please keep your {hardwareWallet} plugged in, unlocked, and in the PIVX app",
+    WALLET_CONFIRM_L: "",               //"Confirm the import on your Ledger",
+    WALLET_NO_HARDWARE: "",             //"<b>No device available</b><br>Couldn't find a hardware wallet; please plug it in and unlock!",
+    WALLET_HARDWARE_CONNECTION_LOST: "",// "<b>Lost connection to {hardwareWallet} </b><br>It seems the {hardwareWalletProductionName} was unplugged mid-operation, oops!",
+    WALLET_HARDWARE_BUSY: "",           //"<b>{hardwareWallet} is waiting</b><br>Please unlock your {hardwareWalletProductionName} or finish it's current prompt",
+    WALLET_HARDWARE_ERROR: "",          //"<b> {hardwareWallet} </b><br> {error}"
 
 
 }

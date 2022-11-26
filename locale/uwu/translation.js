@@ -147,4 +147,19 @@ var uwu_translation = {
     SAVE_WALLET_PLEASE:"<b>Save yowour wawwet!</b><br>Dashbowed ➜ Set Password",           // "<b>Save your wallet!</b><br>Dashboard ➜ Set Password",
     BACKUP_OR_ENCRYPT_WALLET:"Pwease ENCWYPT and/or BACKUP yowour keys befowe weaving, or you may lose dem! Oh noes!",     // "Please ENCRYPT and/or BACKUP your keys before leaving, or you may lose them!"
 
+    SWITCHED_EXPLORERS : "<b>Switched expwower!</b><br>Nowo using {explorerName}✿",         //<b>Switched explorer!</b><br>Now using {explorerName},
+    SWITCHED_NODE : "<b>Switched nowode!✿</b><br>Nowo using {node}",              //<b>Switched node!</b><br>Now using {node},
+    SWITCHED_ANALYTICS: "<b>Switched anawytics wevel!</b><br>Nowo {level}",          //<b>Switched analytics level!</b><br>Now {level},
+    SWITCHED_SYNC: "<b>Switched sync mowode!✿</b><br>Nowo using {sync} sync",               //<b>Switched sync mode!</b><br>Now using {sync} sync,
+    UNABLE_SWITCH_TESTNET: "<b>Unable to switch Testnet Mowode!</b><br>A wawwet is alweady woaded✿",       //<b>Unable to switch Testnet Mode!</b><br>A wallet is already loaded
+
+    WALLET_OFFLINE_AUTOMATIC: "<b>Offwine Mowode is active!</b><br>Pwease disabwe Offwine Mowode for automatic twansactions",       //"<b>Offline Mode is active!</b><br>Please disable Offline Mode for automatic transactions",
+    WALLET_UNLOCK_IMPORT: "Pwease {unlock} your wawwet befowore sending twansactions!",           //"Please {unlock} your wallet before sending transactions!",
+    WALLET_FIREFOX_UNSUPPORTED: "Oh noes!<b>Firefox senpai doesn't sup<i>purr</i>t this!</b><br>Unfortunatewy, Firefox senpai does not sup<i>purr</i>t hawdware wawwets",     //"<b>Firefox doesn't support this!</b><br>Unfortunately, Firefox does not support hardware wallets",
+    WALLET_HARDWARE_WALLET: "<b>Hawdware wawwet ready!</b><br>Pwease keep your {hardwareWallet} pwugged in, unwocked, and in da PIVX app ♥",         //"<b>Hardware wallet ready!</b><br>Please keep your {hardwareWallet} plugged in, unlocked, and in the PIVX app",
+    WALLET_CONFIRM_L: "Confiwm da impowot on your Wedger",               //"Confirm the import on your Ledger",
+    WALLET_NO_HARDWARE: "<b>No device avaiwable ☹</b><br>Couldn't find a hawdware wawwet; pwease pwug it in and unwock!",             //"<b>No device available</b><br>Couldn't find a hardware wallet; please plug it in and unlock!",
+    WALLET_HARDWARE_CONNECTION_LOST: "<b>Wost connection to da {hardwareWallet} </b><br>It seems da {hardwareWalletProductionName} was unpwugged mid-opewation, oops!!",// "<b>Lost connection to {hardwareWallet} </b><br>It seems the {hardwareWalletProductionName} was unplugged mid-operation, oops!",
+    WALLET_HARDWARE_BUSY: "<b>{hardwareWallet} is waiting!</b><br>Pwease unwock yowour {hardwareWalletProductionName} or finish it's cuwwent pwompt",           //"<b>{hardwareWallet} is waiting</b><br>Please unlock your {hardwareWalletProductionName} or finish it's current prompt",
+    WALLET_HARDWARE_ERROR: "<b> {hardwareWallet} </b><br> {error}",          //"<b> {hardwareWallet} </b><br> {error}"
 }
