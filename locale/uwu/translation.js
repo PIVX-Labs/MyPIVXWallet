@@ -1,8 +1,8 @@
 var uwu_translation = {
-    //This document is to be used as a template as all the base code is in English
-    //Basic HTML tags are allowed such as <b><i> etc. All data is sanitized https://developer.mozilla.org/en-US/docs/Web/API/Element/innerHTML
+    // This document is to be used as a template as all the base code is in English
+    // Basic HTML tags are allowed such as <b><i> etc. All data is sanitized https://developer.mozilla.org/en-US/docs/Web/API/Element/innerHTML
 
-    //General words
+    // General words
     enabled: "enabwed",                    //enabled
     active: "",                     //Active
     disabled: "disabwed",                   //disabled
@@ -13,7 +13,7 @@ var uwu_translation = {
     rewards:"rewowods",                     //rewards
     available:"avawable",                   //Available
 
-    //NAV BAR
+    // Nav Bar
     navIntro: "Intwo",                   //Intro
     navDashboard: "Dashbowed",               //Dashboard
     navSend: "Send❣",                    //Send
@@ -25,12 +25,12 @@ var uwu_translation = {
     navDebug: "Debuwug",                   //Debug
     navExperimentalSync:"<b>Dangewous sync actiwated!</b>",         //<b>Experimental Sync Active</b>
 
-    //Footer
+    // Footer
     footerDonateLink: "Donate pwease owo!",           //Donate!
     footerBuiltWithPivxLabs: "Built with wuv by PIVX Wabs❣",    //Built with 💜 by PIVX Labs
     footerGithubLink: "",           //MyPIVXWallet
 
-    //Intro
+    // Intro
     title: "Wewcome to",                      //Welcome to
     titleName: "My PIVX Wawwet!",                  //My PIVX Wallet!
 
@@ -52,7 +52,7 @@ var uwu_translation = {
 
     buttonDonate: "Dowonate! Pay with MyPIVXWawwet!",               //Donate - Pay with MyPIVXWallet
 
-    //Dashboard
+    // Dashboard
     dashboardTitle: "Dashbowod",             //Dashboard
     dCardOneTitle: "Cweate a",              //Create a
     dCardOneSubTitle: "New Wawwet!",           //New Wallet
@@ -76,7 +76,7 @@ var uwu_translation = {
     dCardFourButtonI:"Impowt Wawwet",            //Import Wallet
     dCardFourButtonA:"Access My Wawwet",            //Access My Wallet
 
-    //SEND
+    // Send
     sendTitle: "Cweate a",                  //Create a
     sendSubTitle: "Twansaction",               //Transaction
     sendShieldingWarning: "Pwetty Pwease <b>AVOID</b> sending to Sheilded addwesses using dis wawwet, dis functionawity is cuwwentwy unsu<i>purr</i>ted.",       //Please <b>AVOID</b> sending to Shielded addresses using this wallet - this functionality is currently unsupported.
@@ -103,13 +103,13 @@ var uwu_translation = {
     sendSignedTutorialLink:"Tutowial hewe!",      //Tutorial Here
     sendSignedTutorialAdvInfo:"Advanced Detaiws: <br>wocktime is set to zewo, sequence is set to max. SIGHASH_ALL option is chosen for signing rawr Twansaction.",   //Advanced Details: <br>locktime is set to 0, sequence is set to max. SIGHASH_ALL option is chosen for signing raw Transaction.
 
-    //Stake
+    // Stake
     stakeTitle:"New Feature!♡",                  //<b>New Feature!<b>
     stakeSubTitle:"Pwease be aware MPW Cold staking is new, slightly expewimental, feature. It may be unstabwe, and is cuwwentwy slow. Pwease have patience when using dis feature, and wait for bwock confiwmations befowore actions and bawances are showown on-scween.",               //Please be aware MPW Cold Staking is a new, slightly experimental feature, it may be unstable, and is currently slow. Please have patience when using this feature, and wait for block confirmations before actions and balances are shown on-screen.
     stakeUnstake:"",                //Unstake
     stakeLoadMore:"Lowoad Mowore",               //Load more
 
-    //Settings
+    // Settings
     settingsExplorer:"Chowose an expwower",            //Choose an explorer
     settingsLanguage:"Chowose a Languwuage!",            //Choose an Language:
     settingsAnalytics:"Chowose your anawytics contwibution wevel:",           //Choose your analytics contribution level:
@@ -117,13 +117,15 @@ var uwu_translation = {
     settingsToggleSync:"Toggle Sync Mowode",          //Toggle Sync Mode
     settingsToggleTestnet:"Toggle Testnet Mowode",       //Toggle Testnet Mode
 
-    //Transparency Report
+    // Transparency Report
     transparencyReport: "Twanspawency Repawt",
     hit:"A ping indicating an app load, no unique data is sent.♡",
     time_to_sync:"The time in seconds it took for MPW to last synchronise.♡",
     transaction:"A ping indicating a Tx, no unique data is sent, but may be infewwed from on-chain time.♡",
     
-    //ALERTS
+    // Alerts
+    ALERTS: "<-- DO NOT EDIT! All below entries are for Alert Popups",
+
     FAILED_TO_IMPORT:"<b>Faiwed to impawt!</b> Invawed password! Baka!",             //'<b>Failed to import!</b> Invalid password',
     TESTNET_ENCRYPTION_DISABLED:"<b>Testnet Mowode in ON!</b><br>Wawwet encwyption disabwed",  //"<b>Testnet Mode is ON!</b><br>Wallet encryption disabled",
     PASSWORD_TOO_SMALL:"Dat password is a wittle short!<br>Pwease use at least<b> {MIN_PASS_LENGTH} chawacters!</b>",           //"That password is a little short!<br>Use at least <b>" + MIN_PASS_LENGTH + " characters.</b>",

@@ -60,32 +60,14 @@ function translate(i18nLangs) {
     loadAlerts();
 }
 
-function loadAlerts(){
-    ALERTS = {
-        FAILED_TO_IMPORT: translation.FAILED_TO_IMPORT,
-        TESTNET_ENCRYPTION_DISABLED: translation.TESTNET_ENCRYPTION_DISABLED,
-        PASSWORD_TOO_SMALL: translation.PASSWORD_TOO_SMALL,
-        PASSWORD_DOESNT_MATCH: translation.PASSWORD_DOESNT_MATCH,
-        NEW_PASSWORD_SUCCESS: translation.NEW_PASSWORD_SUCCESS,
-        INVALID_AMOUNT: translation.INVALID_AMOUNT,
-        VALIDATE_AMOUNT_LOW: translation.VALIDATE_AMOUNT_LOW,
-        VALIDATE_AMOUNT_DECIMAL: translation.VALIDATE_AMOUNT_DECIMAL,
-        SUCCESS_STAKING_ADDR: translation.SUCCESS_STAKING_ADDR,
-        CONFIRM_UNSTAKE_H_WALLET: translation.CONFIRM_UNSTAKE_H_WALLET,
-        CONFIRM_TRANSACTION_H_WALLET:translation.CONFIRM_TRANSACTION_H_WALLET,
-        SUCCESS_STAKING_ADDR_SET: translation.SUCCESS_STAKING_ADDR_SET,
-        STAKE_NOT_SEND: translation.STAKE_NOT_SEND,
-        BAD_ADDR_LENGTH: translation.BAD_ADDR_LENGTH,
-        BAD_ADDR_PREFIX: translation.BAD_ADDR_PREFIX,
-        BAD_ADDR_PREFIX_2: translation.BAD_ADDR_PREFIX_2,
-        SENT_NOTHING: translation.SENT_NOTHING,
-        MORE_THEN_8_DECIMALS: translation.MORE_THEN_8_DECIMALS,
-        SAVE_WALLET_PLEASE: translation.SAVE_WALLET_PLEASE,
-        BACKUP_OR_ENCRYPT_WALLET: translation.BACKUP_OR_ENCRYPT_WALLET,
-        SWITCHED_EXPLORERS : translation.SWITCHED_EXPLORERS,
-        SWITCHED_NODE : translation.SWITCHED_NODE,
-        SWITCHED_ANALYTICS: translation.SWITCHED_ANALYTICS,
-        SWITCHED_SYNC: translation.SWITCHED_SYNC,
-        UNABLE_SWITCH_TESTNET: translation.UNABLE_SWITCH_TESTNET
+function loadAlerts() {
+    // Alerts are designated by a special 'ALERTS' entry in each translation file
+    let fFoundAlerts = false;
+    for (const [alert_key, alert_translation] of Object.entries(translation)) {
+        if (fFoundAlerts) {
+            ALERTS[alert_key] = alert_translation;
+        }
+        // Skip all entries until we find the ALERTS flag
+        if (alert_key === 'ALERTS') fFoundAlerts = true;
     }
 }

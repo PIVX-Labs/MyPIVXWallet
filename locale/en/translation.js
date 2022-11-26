@@ -1,8 +1,8 @@
 var en_translation = {
-    //This document is to be used as a template as all the base code is in English
-    //Basic HTML tags are allowed such as <b><i> etc. All data is sanitized https://developer.mozilla.org/en-US/docs/Web/API/Element/innerHTML
+    // This document is to be used as a template as all the base code is in English
+    // Basic HTML tags are allowed such as <b><i> etc. All data is sanitized https://developer.mozilla.org/en-US/docs/Web/API/Element/innerHTML
 
-    //General words
+    // General words
     enabled: "enabled",                    //
     active: "Active",                     //
     disabled: "disabled",                   //
@@ -13,7 +13,7 @@ var en_translation = {
     rewards:"rewards",                     //
     available:"Available",                   //
 
-    //NAV BAR
+    // Nav Bar
     navIntro: "Intro",                   //
     navDashboard: "Dashboard",               //
     navSend: "Send",                    //
@@ -25,12 +25,12 @@ var en_translation = {
     navDebug: "Debug",                   //
     navExperimentalSync:"<b>Experimental Sync Active</b>",         //
 
-    //Footer
+    // Footer
     footerDonateLink: "Donate!",           //
     footerBuiltWithPivxLabs: "Built with 💜 by PIVX Labs",    //
     footerGithubLink: "MyPIVXWallet",           //
 
-    //Intro
+    // Intro
     title: "Welcome to",                      //
     titleName: "My PIVX Wallet!",                  //
 
@@ -52,7 +52,7 @@ var en_translation = {
 
     buttonDonate: "Donate - Pay with MyPIVXWallet",               //
 
-    //Dashboard
+    // Dashboard
     dashboardTitle: "Dashboard",             //
     dCardOneTitle: "Create a",              //
     dCardOneSubTitle: "New Wallet",           //
@@ -76,7 +76,7 @@ var en_translation = {
     dCardFourButtonI:"Import Wallet",            //
     dCardFourButtonA:"Access My Wallet",            //
 
-    //SEND
+    // Send
     sendTitle: "Create a",                  //
     sendSubTitle: "Transaction",               //
     sendShieldingWarning: "Please <b>AVOID</b> sending to Shielded addresses using this wallet - this functionality is currently unsupported.",       //
@@ -103,13 +103,13 @@ var en_translation = {
     sendSignedTutorialLink:"Tutorial Here",      //
     sendSignedTutorialAdvInfo:"Advanced Details: <br>locktime is set to 0, sequence is set to max. SIGHASH_ALL option is chosen for signing raw Transaction.",   //
 
-    //Stake
+    // Stake
     stakeTitle:"<b>New Feature!<b>",                  //
     stakeSubTitle:"Please be aware MPW Cold Staking is a new, slightly experimental feature, it may be unstable, and is currently slow. Please have patience when using this feature, and wait for block confirmations before actions and balances are shown on-screen.",               //
     stakeUnstake:"Unstake",                //
     stakeLoadMore:"Load more",               //
 
-    //Settings
+    // Settings
     settingsExplorer:"Choose an explorer",            //
     settingsLanguage:"Choose an Language:",            //
     settingsAnalytics:"Choose your analytics contribution level:",           //
@@ -117,13 +117,15 @@ var en_translation = {
     settingsToggleSync:"Toggle Sync Mode",          //
     settingsToggleTestnet:"Toggle Testnet Mode",       //
 
-    //Transparency Report
+    // Transparency Report
     transparencyReport: "Transparency Report",
     hit:"A ping indicating an app load, no unique data is sent.",
     time_to_sync:"The time in seconds it took for MPW to last synchronise.",
     transaction:"A ping indicating a Tx, no unique data is sent, but may be inferred from on-chain time.",
 
-    //ALERTS
+    // Alerts
+    ALERTS: "<-- DO NOT EDIT! All below entries are for Alert Popups",
+
     FAILED_TO_IMPORT: '<b>Failed to import!</b> Invalid password',
     TESTNET_ENCRYPTION_DISABLED: "<b>Testnet Mode is ON!</b><br>Wallet encryption disabled",
     PASSWORD_TOO_SMALL: "That password is a little short!<br>Use at least <b>{MIN_PASS_LENGTH} characters.</b>",
@@ -162,6 +164,4 @@ var en_translation = {
     WALLET_HARDWARE_CONNECTION_LOST: "<b>Lost connection to {hardwareWallet} </b><br>It seems the {hardwareWalletProductionName} was unplugged mid-operation, oops!",
     WALLET_HARDWARE_BUSY: "<b>{hardwareWallet} is waiting</b><br>Please unlock your {hardwareWalletProductionName} or finish it's current prompt",
     WALLET_HARDWARE_ERROR: "<b> {hardwareWallet} </b><br> {error}"
-
-
 }
