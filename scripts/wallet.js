@@ -35,7 +35,7 @@ class MasterKey {
   }
   
   /**
-   * @param {string} [path] - Bip32 path pointing to the xpub
+   * @param {string} path - Bip32 path pointing to the xpub
    * @return {Promise<string>} xpub
    * @abstract
    */
