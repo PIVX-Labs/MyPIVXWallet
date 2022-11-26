@@ -84,7 +84,6 @@ function setTranslation(lang, fSilent = false) {
 }
 // Hook up the 'lang' select UI
 document.getElementById('translation').onchange = function(evt) {
-    console.log(evt.target.value)
     setTranslation(evt.target.value);
 }
 function fillTranslationSelect() {
