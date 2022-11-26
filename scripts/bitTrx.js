@@ -7,55 +7,6 @@
 	Object.defineProperty(bitjs, 'priv', { get() { return cChainParams.current.SECRET_KEY.toString(16); } });
 	bitjs.compressed = true;
 
-	/* convert a wif key back to a private key */
-	bitjs.wif2privkey = function(wif) {
-		let compressed = false;
-		const decode = B58.decode(wif);
-		let key = decode.slice(0, decode.length-4);
-		key = key.slice(1, key.length);
-		if (key.length >=33 && key[key.length-1] == 0x01) {
-			key = key.slice(0, key.length-1);
-			compressed = true;
-		}
-		return {'privkey': Crypto.util.bytesToHex(key), 'compressed':compressed};
-	}
-
-	/* convert a wif to a pubkey */
-	bitjs.wif2pubkey = function(wif) {
-		const compressed = bitjs.compressed;
-		const r = bitjs.wif2privkey(wif);
-		bitjs.compressed = r['compressed'];
-		const pubkey = bitjs.newPubkey(r['privkey']);
-		bitjs.compressed = compressed;
-		return {'pubkey':pubkey,'compressed':r['compressed']};
-	}
-
-	/* generate a public key from a private key */
-	bitjs.newPubkey = function(hash) {
-		const privkeyBigInt = BigInteger.fromByteArrayUnsigned(Crypto.util.hexToBytes(hash));
-		const curve = EllipticCurve.getSECCurveByName("secp256k1");
-
-		const curvePt = curve.getG().multiply(privkeyBigInt);
-		const x = curvePt.getX().toBigInteger();
-		const y = curvePt.getY().toBigInteger();
-
-		let pubkeyBytes = EllipticCurve.integerToBytes(x, 32);
-		pubkeyBytes = pubkeyBytes.concat(EllipticCurve.integerToBytes(y,32));
-		pubkeyBytes.unshift(0x04);
-
-		if (bitjs.compressed == true) {
-			const publicKeyBytesCompressed = EllipticCurve.integerToBytes(x,32)
-			if (y.isEven()) {
-				publicKeyBytesCompressed.unshift(0x02)
-			} else {
-				publicKeyBytesCompressed.unshift(0x03)
-			}
-			return Crypto.util.bytesToHex(publicKeyBytesCompressed);
-		} else {
-			return Crypto.util.bytesToHex(pubkeyBytes);
-		}
-	}
-
 	bitjs.transaction = function() {
 		var btrx = {};
 		btrx.version = 1;
@@ -200,148 +151,51 @@
 		}
 
 		/* generate a signature from a transaction hash */
-		btrx.transactionSig = function(index, wif, sigHashType, txhash) {
+		btrx.transactionSig = async function(index, wif, sigHashType, txhash) {
+			const nSigHashType = sigHashType || 1;
+			const strHash = txhash || this.transactionHash(index, nSigHashType);
+			if (!strHash) return false;
 
-			function serializeSig(r, s) {
-				const rBa = r.toByteArraySigned();
-				const sBa = s.toByteArraySigned();
+			// Parse the private key
+			let bPrivkey = parseWIF(wif);
 
-				let sequence = [];
-				sequence.push(0x02); // INTEGER
-				sequence.push(rBa.length);
-				sequence = sequence.concat(rBa);
+			// Generate low-s deterministic ECDSA signature as per RFC6979
+			// [0] = Uint8Array(sig), [1] = Int(recovery_byte)
+			let arrSig = await nobleSecp256k1.sign(strHash, bPrivkey, { canonical: true, recovered: true });
 
-				sequence.push(0x02); // INTEGER
-				sequence.push(sBa.length);
-				sequence = sequence.concat(sBa);
-
-				sequence.unshift(sequence.length);
-				sequence.unshift(0x30); // SEQUENCE
-
-				return sequence;
-			}
-
-			const shType = sigHashType || 1;
-			const hash = txhash || Crypto.util.hexToBytes(this.transactionHash(index, shType));
-
-			if (hash) {
-				const curve = EllipticCurve.getSECCurveByName("secp256k1");
-				const key = bitjs.wif2privkey(wif);
-				const priv = BigInteger.fromByteArrayUnsigned(Crypto.util.hexToBytes(key['privkey']));
-				const n = curve.getN();
-				const e = BigInteger.fromByteArrayUnsigned(hash);
-				let badrs = 0
-				let r, s;
-				do {
-					const k = this.deterministicK(wif, hash, badrs);
-					const G = curve.getG();
-					const Q = G.multiply(k);
-					r = Q.getX().toBigInteger().mod(n);
-					s = k.modInverse(n).multiply(e.add(priv.multiply(r))).mod(n);
-					badrs++
-				} while (r.compareTo(BigInteger.ZERO) <= 0 || s.compareTo(BigInteger.ZERO) <= 0);
-
-				// Force lower s values per BIP62
-				const halfn = n.shiftRight(1);
-				if (s.compareTo(halfn) > 0) {
-					s = n.subtract(s);
-				};
-
-				const sig = serializeSig(r, s);
-				sig.push(parseInt(shType, 10));
-
-				return Crypto.util.bytesToHex(sig);
-			} else {
-				return false;
-			}
+			// Concat the Signature with the SigHashType byte, and return
+			return [...arrSig[0], nSigHashType];
 		}
 
-		// https://tools.ietf.org/html/rfc6979#section-3.2
-		btrx.deterministicK = function(wif, hash, badrs) {
-			// if r or s were invalid when this function was used in signing,
-			// we do not want to actually compute r, s here for efficiency, so,
-			// we can increment badrs. explained at end of RFC 6979 section 3.2
+		/* sign an input */
+		btrx.signinput = async function(index, masterKey, sigHashType, txType = 'pubkey') {
+			const strWIF = await masterKey.getPrivateKey(this.inputs[index].path);
+			const bPubkeyBytes = deriveAddress({pkBytes: parseWIF(strWIF), fNoEncoding: true});
+			const nSigHashType = sigHashType || 1;
 
-			// wif is b58check encoded wif privkey.
-			// hash is byte array of transaction digest.
-			// badrs is used only if the k resulted in bad r or s.
+			// Create signature
+			const sigBytes = await this.transactionSig(index, strWIF, nSigHashType);
 
-			// some necessary things out of the way for clarity.
-			badrs = badrs || 0;
-			const key = bitjs.wif2privkey(wif);
-			const x = Crypto.util.hexToBytes(key['privkey'])
-			const curve = EllipticCurve.getSECCurveByName("secp256k1");
-			const N = curve.getN();
+			// Construct the redeem script
+			let bScript = [];
 
-			// Step: a
-			// hash is a byteArray of the message digest. so h1 == hash in our case
+			// Push the signature to the stack
+			bScript.push(sigBytes.length);
+			bScript = bScript.concat(sigBytes);
 
-			// Step: b
-			let v = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1];
+			if (txType === 'coldstake') {
+				// OP_FALSE to flag the redeeming of the delegation back to the Owner Address
+				bScript.push(OP['FALSE']);
+			}
 
-			// Step: c
-			let k = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+			// Push the pubkey to the stack
+			bScript.push(bPubkeyBytes.length);
+			bScript = bScript.concat(bPubkeyBytes);
 
-			// Step: d
-			k = Crypto.HMAC(Crypto.SHA256, v.concat([0]).concat(x).concat(hash), k, { asBytes: true });
-
-			// Step: e
-			v = Crypto.HMAC(Crypto.SHA256, v, k, { asBytes: true });
-
-			// Step: f
-			k = Crypto.HMAC(Crypto.SHA256, v.concat([1]).concat(x).concat(hash), k, { asBytes: true });
-
-			// Step: g
-			v = Crypto.HMAC(Crypto.SHA256, v, k, { asBytes: true });
-
-			// Step: h1
-			let T = [];
-
-			// Step: h2 (since we know tlen = qlen, just copy v to T.)
-			v = Crypto.HMAC(Crypto.SHA256, v, k, { asBytes: true });
-			T = v;
-
-			// Step: h3
-			let KBigInt = BigInteger.fromByteArrayUnsigned(T);
-
-			// loop if KBigInt is not in the range of [1, N-1] or if badrs needs incrementing.
-			let i = 0;
-			while (KBigInt.compareTo(N) >= 0 || KBigInt.compareTo(BigInteger.ZERO) <= 0 || i < badrs) {
-				k = Crypto.HMAC(Crypto.SHA256, v.concat([0]), k, { asBytes: true });
-				v = Crypto.HMAC(Crypto.SHA256, v, k, { asBytes: true });
-				v = Crypto.HMAC(Crypto.SHA256, v, k, { asBytes: true });
-				T = v;
-				KBigInt = BigInteger.fromByteArrayUnsigned(T);
-				i++
-			};
-
-			return KBigInt;
-		};
-
-    	/* sign a "standard" input */
-	    btrx.signinput = async function(index, masterKey, sigHashType, txType = 'pubkey') {
-
-		const wif = await masterKey.getPrivateKey(this.inputs[index].path);
-		const key = bitjs.wif2pubkey(wif);
-		const shType = sigHashType || 1;
-		var buf = [];
-
-		const signature = this.transactionSig(index, wif, shType);
-
-		const sigBytes = Crypto.util.hexToBytes(signature);
-		buf.push(sigBytes.length);
-		buf = buf.concat(sigBytes);
-
-		if (txType === 'coldstake') {
-		    // OP_FALSE to flag the redeeming of the delegation back to the Owner Address
-		    buf.push(OP['FALSE']);
+			// Append as an input script
+			this.inputs[index].script = bScript;
+			return true;
 		}
-		const pubkeyBytes = Crypto.util.hexToBytes(key['pubkey']);
-		buf.push(pubkeyBytes.length);
-		buf = buf.concat(pubkeyBytes);
-		this.inputs[index].script = buf;
-		return true;
-	    }
 
 		/* sign inputs */
 		btrx.sign = async function(masterKey, sigHashType, txType) {

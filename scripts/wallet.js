@@ -1,3 +1,5 @@
+'use strict';
+
 class MasterKey {
   
   constructor() { }
@@ -63,8 +65,8 @@ class HardwareWalletMasterKey extends MasterKey {
     throw new Error("Hardware wallets cannot export private keys");
   }
   
-  async getAddress(path) {
-    return deriveAddress({publicKey: await getHardwareWalletKeys(path)});
+  async getAddress(path, { verify } = {}) {
+    return deriveAddress({publicKey: await getHardwareWalletKeys(path, false, verify)});
   }
   
   get keyToBackup() {
@@ -121,44 +123,46 @@ function getDerivationPath(fLedger = false, nAccount = 0, nReceiving = 0, nIndex
 }
 
 // Verify the integrity of a WIF private key, optionally parsing and returning the key payload
-function verifyWIF(strWIF = "", fParseBytes = false) {
+function verifyWIF(strWIF = "", fParseBytes = false, skipVerification = false) {
   // Convert from Base58
   const bWIF = from_b58(strWIF);
-
-  // Verify the byte length
-  if (bWIF.byteLength !== PRIVKEY_BYTE_LENGTH) {
-    throw Error("Private key length (" + bWIF.byteLength + ") is invalid, should be " + PRIVKEY_BYTE_LENGTH + "!");
+    
+  if(!skipVerification) {
+    // Verify the byte length
+    if (bWIF.byteLength !== PRIVKEY_BYTE_LENGTH) {
+      throw Error("Private key length (" + bWIF.byteLength + ") is invalid, should be " + PRIVKEY_BYTE_LENGTH + "!");
+    }
+    
+    // Verify the network byte
+    if (bWIF[0] !== cChainParams.current.SECRET_KEY) {
+      // Find the network it's trying to use, if any
+      const cNetwork = Object.keys(cChainParams).filter(strNet => strNet !== 'current').map(strNet => cChainParams[strNet]).find(cNet => cNet.SECRET_KEY === bWIF[0]);
+      // Give a specific alert based on the byte properties
+      throw Error(cNetwork ? "This private key is for " + (cNetwork.isTestnet ? "Testnet" : "Mainnet") + ", wrong network!" : "This private key belongs to another coin, or is corrupted.");
+    }
+    
+    // Perform SHA256d hash of the WIF bytes
+    const shaHash = new jsSHA(0, 0, { "numRounds": 2 });
+    shaHash.update(bWIF.slice(0, 34));
+    
+    // Verify checksum (comparison by String since JS hates comparing object-like primitives)
+    const bChecksumWIF = bWIF.slice(bWIF.byteLength - 4);
+    const bChecksum = shaHash.getHash(0).slice(0, 4);
+    if (bChecksumWIF.join('') !== bChecksum.join('')) {
+      throw Error("Private key checksum is invalid, key may be modified, mis-typed, or corrupt.");
+    }
   }
-
-  // Verify the network byte
-  if (bWIF[0] !== cChainParams.current.SECRET_KEY) {
-    // Find the network it's trying to use, if any
-    const cNetwork = Object.keys(cChainParams).filter(strNet => strNet !== 'current').map(strNet => cChainParams[strNet]).find(cNet => cNet.SECRET_KEY === bWIF[0]);
-    // Give a specific alert based on the byte properties
-    throw Error(cNetwork ? "This private key is for " + (cNetwork.isTestnet ? "Testnet" : "Mainnet") + ", wrong network!" : "This private key belongs to another coin, or is corrupted.");
-  }
-
-  // Perform SHA256d hash of the WIF bytes
-  const shaHash = new jsSHA(0, 0, { "numRounds": 2 });
-  shaHash.update(bWIF.slice(0, 34));
-
-  // Verify checksum (comparison by String since JS hates comparing object-like primitives)
-  const bChecksumWIF = bWIF.slice(bWIF.byteLength - 4);
-  const bChecksum = shaHash.getHash(0).slice(0, 4);
-  if (bChecksumWIF.join('') !== bChecksum.join('')) {
-    throw Error("Private key checksum is invalid, key may be modified, mis-typed, or corrupt.");
-  }
-
-  return fParseBytes ? bWIF.slice(1, 33) : true;
+  
+  return fParseBytes ? Uint8Array.from(bWIF.slice(1, 33)) : true;
 }
 
 // A convenient alias to verifyWIF that returns the raw byte payload
-function parseWIF(strWIF) {
-  return verifyWIF(strWIF, true);
+function parseWIF(strWIF, skipVerification = false) {
+  return verifyWIF(strWIF, true, skipVerification);
 }
 
 // Generate a new private key OR encode an existing private key from raw bytes
-generateOrEncodePrivkey = function (pkBytesToEncode) {
+function generateOrEncodePrivkey(pkBytesToEncode) {
   // Private Key Generation
   const pkBytes = pkBytesToEncode || getSafeRand();
   const pkNetBytesLen = pkBytes.length + 2;
@@ -184,17 +188,29 @@ generateOrEncodePrivkey = function (pkBytesToEncode) {
 }
 
 // Derive a Secp256k1 network-encoded public key (coin address) from raw private or public key bytes
-deriveAddress = function({
+function deriveAddress({
   pkBytes,
-  publicKey
+  publicKey,
+  fNoEncoding,
+  compress = false,
+  output="ENCODED", // "ENCODED", "HEX" or "RAW_BYTES"
 }) {
   if(!pkBytes && !publicKey) return null;
   // Public Key Derivation
-  let nPubkey = (publicKey || Crypto.util.bytesToHex(nSecp256k1.getPublicKey(pkBytes))).substring(2)
-  const pubY = Secp256k1.uint256(nPubkey.substr(64), 16);
+  let nPubkey = (publicKey || Crypto.util.bytesToHex(nobleSecp256k1.getPublicKey(pkBytes, compress)));
+  if (output === "HEX") {
+    return nPubkey;
+  } else if (output === "RAW_BYTES") {
+    return Crypto.util.hexToBytes(nPubkey);
+  }
+  nPubkey = nPubkey.substring(2);
+  const pubY = uint256(nPubkey.substr(64), 16);
   nPubkey = nPubkey.substr(0, 64);
   const publicKeyBytesCompressed = Crypto.util.hexToBytes(nPubkey);
   publicKeyBytesCompressed.unshift(pubY.isEven() ? 2 : 3);
+
+  // If we're only trying to derive a Secp256k1 pubkey (not an encoded address), return early
+  if (fNoEncoding) return publicKeyBytesCompressed;
 
   // First pubkey SHA-256 hash
   const pubKeyHashing = new jsSHA(0, 0, { "numRounds": 1 });
@@ -226,13 +242,13 @@ deriveAddress = function({
 }
 
 // Wallet Import
-importWallet = async function({
+async function importWallet({
   newWif = false,
   fRaw = false,
   isHardwareWallet = false
 } = {}) {
   const strImportConfirm = "Do you really want to import a new address? If you haven't saved the last private key, the wallet will be LOST forever.";
-  const walletConfirm = fWalletLoaded ? window.confirm(strImportConfirm) : true;
+  const walletConfirm = fWalletLoaded ? await confirmPopup({html: strImportConfirm}) : true;
 
   if (walletConfirm) {
     if (isHardwareWallet) {
@@ -267,7 +283,7 @@ importWallet = async function({
       const privateImportValue = newWif || domPrivKey.value;
       domPrivKey.value = "";
 
-      if (verifyMnemonic(privateImportValue)) {
+      if (await verifyMnemonic(privateImportValue)) {
         // Generate our masterkey via Mnemonic Phrase
         const seed = await bip39.mnemonicToSeed(privateImportValue);
         masterKey = new HdMasterKey({seed});
@@ -297,7 +313,7 @@ importWallet = async function({
     // Reaching here: the deserialisation was a full cryptographic success, so a wallet is now imported!
     fWalletLoaded = true;
 
-    getNewAddress(true);
+    getNewAddress({updateGUI: true});
     // Display Text
     domGuiWallet.style.display = 'block';
 
@@ -318,9 +334,9 @@ importWallet = async function({
 }
 
 // Wallet Generation
-generateWallet = async function (noUI = false) {
+async function generateWallet(noUI = false) {
     const strImportConfirm = "Do you really want to import a new address? If you haven't saved the last private key, the wallet will be LOST forever.";
-    const walletConfirm = fWalletLoaded && !noUI ? window.confirm(strImportConfirm) : true;
+    const walletConfirm = fWalletLoaded && !noUI ? await confirmPopup({html: strImportConfirm}) : true;
     if (walletConfirm) {
       const mnemonic = await bip39.generateMnemonic();
 
@@ -337,14 +353,13 @@ generateWallet = async function (noUI = false) {
 
       // Display the dashboard
       domGuiWallet.style.display = 'block';
-      viewPrivKey = false;
       hideAllWalletOptions();
 
       // Update identicon
       domIdenticon.dataset.jdenticonValue = masterKey.getAddress(getDerivationPath());
       jdenticon();
 
-      getNewAddress(true);
+      getNewAddress({ updateGUI: true });
 
       // Refresh the balance UI (why? because it'll also display any 'get some funds!' alerts)
       getBalance(true);
@@ -354,7 +369,7 @@ generateWallet = async function (noUI = false) {
     return masterKey;
 }
 
-function verifyMnemonic(strMnemonic = "", fPopupConfirm = true) {
+async function verifyMnemonic(strMnemonic = "", fPopupConfirm = true) {
   const nWordCount = strMnemonic.trim().split(/\s+/g).length;
 
   // Sanity check: Convert to lowercase
@@ -365,7 +380,7 @@ function verifyMnemonic(strMnemonic = "", fPopupConfirm = true) {
     if (!bip39.validateMnemonic(strMnemonic)) {
       // The reason we want to ask the user for confirmation is that the mnemonic
       // Could have been generated with another app that has a different dictionary
-      return fPopupConfirm && confirm("Warning: The mnemonic is either invalid, or was not generated by MPW. Do you still want to proceed?");
+      return fPopupConfirm && await confirmPopup({ title: "Unexpected Seed Phrase", html: "The seed phrase is either invalid, or was not generated by MPW.<br>Do you still want to proceed?"});
     } else {
       // Valid count and mnemonic
       return true;
@@ -376,7 +391,7 @@ function verifyMnemonic(strMnemonic = "", fPopupConfirm = true) {
   }
 }
 
-informUserOfMnemonic = function (mnemonic) {
+function informUserOfMnemonic(mnemonic) {
   return new Promise((res, rej) => {
     $('#mnemonicModal').modal({keyboard: false})
     domMnemonicModalContent.innerText = mnemonic;
@@ -400,7 +415,7 @@ async function benchmark(quantity) {
   console.log("Time taken to generate " + i + " addresses: " + (nEndTime - nStartTime).toFixed(2) + 'ms');
 }
 
-encryptWallet = async function (strPassword = '') {
+async function encryptWallet(strPassword = '') {
   // Encrypt the wallet WIF with AES-GCM and a user-chosen password - suitable for browser storage
   let strEncWIF = await encrypt(masterKey.keyToBackup, strPassword);
   if (!strEncWIF) return false;
@@ -415,7 +430,7 @@ encryptWallet = async function (strPassword = '') {
   removeEventListener("beforeunload", beforeUnloadListener, {capture: true});
 }
 
-decryptWallet = async function (strPassword = '') {
+async function decryptWallet(strPassword = '') {
   // Check if there's any encrypted WIF available
   const strEncWIF = localStorage.getItem("encwif");
   if (!strEncWIF || strEncWIF.length < 1) return false;
@@ -432,17 +447,17 @@ decryptWallet = async function (strPassword = '') {
   }
 }
 
-hasEncryptedWallet = function () {
+function hasEncryptedWallet() {
   return localStorage.getItem("encwif") ? true : false;
 }
 
 // If the privateKey is null then the user connected a hardware wallet
-hasHardwareWallet = function() {
+function hasHardwareWallet() {
   if (!masterKey) return false;
   return masterKey.isHardwareWallet == true;
 }
 
-hasWalletUnlocked = function (fIncludeNetwork = false) {
+function hasWalletUnlocked(fIncludeNetwork = false) {
   if (fIncludeNetwork && !networkEnabled)
     return createAlert('warning', "<b>Offline Mode is active!</b><br>Please disable Offline Mode for automatic transactions", 5500);
     if (!masterKey) {
@@ -454,7 +469,7 @@ hasWalletUnlocked = function (fIncludeNetwork = false) {
 
 let cHardwareWallet = null;
 let strHardwareName = "";
-getHardwareWalletKeys = async function(path, xpub = false, verify = false, _attempts = 0) {
+async function getHardwareWalletKeys(path, xpub = false, verify = false, _attempts = 0) {
   try {
     // Check if we haven't setup a connection yet OR the previous connection disconnected
     if (!cHardwareWallet || cHardwareWallet.transport._disconnectEmitted) {
@@ -482,11 +497,14 @@ getHardwareWalletKeys = async function(path, xpub = false, verify = false, _atte
       return cPubKey.publicKey;
     }
   } catch (e) {
+    if(e.message.includes("denied by the user")) { // User denied an operation
+      return false;
+    }
     if (_attempts < 10) { // This is an ugly hack :(
       // in the event where multiple parts of the code decide to ask for an address, just
       // Retry at most 10 times waiting 200ms each time
       await sleep(200);
-      return getHardwareWalletKeys(path, xpub, false, _attempts+1);
+      return getHardwareWalletKeys(path, xpub, verify, _attempts+1);
     }
     // If there's no device, nudge the user to plug it in.
     if (e.message.toLowerCase().includes('no device selected')) {
