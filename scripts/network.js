@@ -248,31 +248,19 @@ var getUTXOsHeavy = async function() {
         for (const cOut of cTx.vout) {
           if (cOut.spent) continue; // We don't care about spent outputs
           const paths = cOut.addresses.map(strAddr => mapPaths.get(strAddr)).filter(v => v);
-          // If an absence of any address, or a Cold Staking address is detected, we mark this as a delegated UTXO
-          if (cOut.addresses.length === 0 || cOut.addresses.some(strAddr => strAddr.startsWith(cChainParams.current.STAKING_PREFIX))) {
-            arrDelegatedUTXOs.push({
-              'id': cTx.txid,
-              'vout': cOut.n,
-              'sats': parseInt(cOut.value),
-              'script': cOut.hex,
-	      // Until we can get blockbook to tell us which address are involved in cold staking
-	      // We will only use the first key
-	      'path': getDerivationPath(masterKey.isHardwareWallet),
-            });
-          }
-          // Otherwise, an address matches one of ours
-          else if (paths.length > 0) {
-	    // Blockbook still returns 119' as the coinType, even in testnet
-	    let path = paths[0].split("/");
-	    path[2] = (masterKey.isHardwareWallet ? cChainParams.current.BIP44_TYPE_LEDGER : cChainParams.current.BIP44_TYPE) + "'";
-            cachedUTXOs.push({
-              'id': cTx.txid,
-              'vout': cOut.n,
-              'sats': parseInt(cOut.value),
-              'script': cOut.hex,
-              'path': path.join("/"),
-            });
-          }
+	  // No addresses match ours
+	  if (!paths.length) continue;
+	  const arrToPush = cOut.addresses.some(strAddr => strAddr.startsWith(cChainParams.current.STAKING_PREFIX)) ? arrDelegatedUTXOs : cachedUTXOs;
+	  // Blockbook still returns 119' as the coinType, even in testnet
+	  let path = paths[0].split("/");
+	  path[2] = (masterKey.isHardwareWallet ? cChainParams.current.BIP44_TYPE_LEDGER : cChainParams.current.BIP44_TYPE) + "'";
+          arrToPush.push({
+            'id': cTx.txid,
+            'vout': cOut.n,
+            'sats': parseInt(cOut.value),
+            'script': cOut.hex,
+            'path': path.join("/"),
+          });
         }
       }
       // Update UI
