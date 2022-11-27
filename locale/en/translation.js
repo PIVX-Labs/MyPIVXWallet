@@ -18,6 +18,8 @@ var en_translation = {
     navDashboard: "Dashboard",               //
     navSend: "Send",                    //
     navStake: "Stake",                   //
+    navMasternode: "Masternode",              //
+    navGovernance:"Governance",               //
     navSettings: "Settings",                //
 
     navTestnet: "<b>Testnet Mode On</b>",                 //

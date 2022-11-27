@@ -18,6 +18,8 @@ var uwu_translation = {
     navDashboard: "Dashbowed",               //Dashboard
     navSend: "Send❣",                    //Send
     navStake: "",                   //Stake
+    navMasternode: "",              //Masternode
+    navGovernance:"",               //Governance
     navSettings: "",                //Settings
 
     navTestnet: "Testnet Mowode On",                 //<b>Testnet Mode On</b>
