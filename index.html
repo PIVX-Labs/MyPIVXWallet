@@ -114,8 +114,11 @@
               ],
 	      Nodes: [
 		  { name: "duddino", url: "https://rpc.duddino.com/mainnet"}
-	      ]
-
+	      ],
+	      Consensus         : {
+                  // Network upgrades
+                  UPGRADE_V6_0  : undefined
+              },
           },
           testnet: {
 	      collateralInSats   : 10000 * COIN,
@@ -135,7 +138,11 @@
               ],
 	      Nodes: [
 		  { name: "duddino", url: "https://rpc.duddino.com/testnet"}
-	      ]
+	      ],
+	      Consensus         : {
+                  // Network upgrades
+                  UPGRADE_V6_0  : undefined
+              },
           }
       }
       // Set default chain

@@ -48,7 +48,11 @@
 			buf.push(OP['HASH160']);
 			buf.push(OP['ROT']);
 			buf.push(OP['IF']);
-			buf.push(OP['CHECKCOLDSTAKEVERIFY']);
+			if(cachedBlockCount >= cChainParams.current.Consensus.UPGRADE_V6_0) {
+				buf.push(OP['CHECKCOLDSTAKEVERIFY']);
+			} else {
+				buf.push(OP['CHECKCOLDSTAKEVERIFY_LOF']);
+			}
 			buf.push(addrCSDecoded.length);
 			buf = buf.concat(addrCSDecoded); // staking key in bytes
 			buf.push(OP['ELSE']);
