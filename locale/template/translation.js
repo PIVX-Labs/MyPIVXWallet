@@ -184,4 +184,12 @@ var translation = {
     WALLET_HARDWARE_CONNECTION_LOST: "",// "<b>Lost connection to {hardwareWallet} </b><br>It seems the {hardwareWalletProductionName} was unplugged mid-operation, oops!",
     WALLET_HARDWARE_BUSY: "",           //"<b>{hardwareWallet} is waiting</b><br>Please unlock your {hardwareWalletProductionName} or finish it's current prompt",
     WALLET_HARDWARE_ERROR: "",          //"<b> {hardwareWallet} </b><br> {error}"
+
+    CONFIRM_POPUP_VOTE: "",             //Confirm Vote
+    CONFIRM_POPUP_VOTE_HTML: "",        //Are you sure? It takes 60 minutes to change vote
+    CONFIRM_POPUP_TRANSACTION: "",      //Confirm your transaction
+    CONFIRM_POPUP_MN_P_KEY: "",         //Your Masternode Private Key
+    CONFIRM_POPUP_MN_P_KEY_HTML: "",    // <br> Save this private key and copy it to your VPS config <br>
+    CONFIRM_POPUP_VERIFY_ADDR: "",      //Verify your address
+
 }

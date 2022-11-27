@@ -1188,8 +1188,8 @@
 
     async function govVote(hash, voteCode){
       if (await confirmPopup({
-          title: "Confirm Vote",
-          html: "Are you sure? It takes 60 minutes to change vote",
+          title: ALERTS.CONFIRM_POPUP_VOTE,
+          html: ALERTS.CONFIRM_POPUP_VOTE_HTML,
         }) == true) {
         if(localStorage.getItem("masternode")){
           const cMasternode = new Masternode(JSON.parse(localStorage.getItem("masternode")));
@@ -1289,7 +1289,7 @@
         // Sign the transaction via Ledger
         const strSerialisedTx = await confirmPopup(
           {
-            title: "Confirm your transaction",
+            title: ALERTS.CONFIRM_POPUP_TRANSACTION,
             html: createTxConfirmation(outputs),
             resolvePromise: cHardwareWallet.createPaymentTransactionNew({
               inputs: arrInputs,
@@ -1306,8 +1306,8 @@
       if(fGeneratePrivkey){
         let masternodePrivateKey= await generateMnPrivkey();
         await confirmPopup({
-          title: "Your Masternode Private Key",
-          html: `${masternodePrivateKey} <br> Save this private key and copy it to your VPS config <br>`, 
+          title: ALERTS.CONFIRM_POPUP_MN_P_KEY,
+          html: masternodePrivateKey + ALERTS.CONFIRM_POPUP_MN_P_KEY_HTML, 
         });
       }
       createAlert("success", "<b>Masternode Created!<b><br>Wait 15 confirmations to proceed further");
@@ -1490,7 +1490,7 @@
       if (verify && masterKey.isHardwareWallet) {
         // Generate address to present to the user without asking to verify
         const confAddress = await confirmPopup({
-          title: "Verify your address",
+          title: ALERTS.CONFIRM_POPUP_VERIFY_ADDR,
           html: createAddressConfirmation(address),
           resolvePromise: masterKey.getAddress(path, { verify })
         });
@@ -1943,7 +1943,7 @@
         // Sign the transaction via Ledger
         const strSerialisedTx = await confirmPopup(
           {
-            title: "Confirm your transaction",
+            title: ALERTS.CONFIRM_POPUP_TRANSACTION,
             html: createTxConfirmation(outputs),
             resolvePromise: cHardwareWallet.createPaymentTransactionNew({
               inputs: arrInputs,
