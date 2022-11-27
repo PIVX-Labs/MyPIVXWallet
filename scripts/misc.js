@@ -102,6 +102,12 @@ function createAlert(type, message, alertVariables = [], timeout = 0) {
     domAlert.classList.add("alertpop");
     domAlert.classList.add(type);
 
+    // Maintainer QoL adjustment: if `alertVariables` is a number, it is instead assumed to be `timeout`
+    if (typeof alertVariables === "number") {
+        timeout = alertVariables;
+        alertVariables = [];
+    }
+
     // Apply translations
     const translatedMessage = translateAlerts(message, alertVariables);
 

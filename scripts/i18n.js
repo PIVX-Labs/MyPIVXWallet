@@ -2,7 +2,6 @@ function switchTranslation(langName){
     if(arrActiveLangs.includes(langName)){
       translation = translatableLanguages[langName]
       translate(translation);
-      console.log(translation)
 
       //Apply translations to the transparency report
       STATS = {
@@ -23,18 +22,15 @@ function switchTranslation(langName){
 
       loadAlerts();
     }else{
-      console.log("That language does not exist")
+      console.log("That language does not exist");
     }
 }
 
 function translateAlerts(message,variables){
     variables.forEach(element => {
-        console.log(Object.keys(element))
-        console.log(element)
-        message = message.replace("{"+Object.keys(element)[0]+"}",Object.values(element)[0])
+        message = message.replace("{"+Object.keys(element)[0]+"}",Object.values(element)[0]);
     });
-    console.log(message)
-    return message
+    return message;
 }
 
 
