@@ -1427,7 +1427,7 @@
       const last = lastWallet || 0;
       addressIndex = addressIndex > last ? addressIndex : last + 1;
       if (addressIndex - last > 20) {
-        // If the user creates more than 10 empty wallets we will not be able to sync them!
+        // If the user creates more than 20 empty wallets we will not be able to sync them!
         addressIndex = last;
       }
       const path = getDerivationPath(masterKey.isHardwareWallet, 0, 0, addressIndex);
