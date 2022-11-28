@@ -42,10 +42,11 @@ const domDebug = document.getElementById('Debug');
 const domSyncMode = document.getElementById('SyncMode');
 const domTestnet = document.getElementById('Testnet');
 const domExplorerSelect = document.getElementById('explorer');
+const domNodeSelect = document.getElementById('node');
 const domTranslationSelect = document.getElementById('translation');
 
 //TRANSLATIONS
-//to make translations work we need to change it so that we just enable or disable the visiblity of the text
+//to make translations work we need to change it so that we just enable or disable the visibility of the text
 domNetworkE.style.display = (networkEnabled ? '' : 'none');
 domNetworkD.style.display = (networkEnabled ? 'none' : '');
 domSyncMode.style.display = fAlternativeSync ? '' : 'none';
@@ -237,8 +238,8 @@ addEventListener('DOMContentLoaded', () => {
     const domAnalyticsSelect = document.getElementById('analytics');
 
     fillExplorerSelect();
+    fillNodeSelect();
     fillTranslationSelect();
-
 
     // Add each analytics level into the UI selector
     for (const analLevel of arrAnalytics) {
