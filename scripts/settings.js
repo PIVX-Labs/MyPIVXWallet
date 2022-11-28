@@ -3,7 +3,6 @@
 // --- Default Settings
 var debug = false;            // A mode that emits verbose console info for internal MPW operations
 var networkEnabled = true;    // A lock which blocks ALL network requests in totality
-var fAlternativeSync = true;  // A more resource-intensive but deep UTXO set sync mode
 var cExplorer = cChainParams.current.Explorers[0];
 let cNode = cChainParams.current.Nodes[0];
 
@@ -39,7 +38,6 @@ const domNetwork = document.getElementById('Network');
 const domNetworkE= document.getElementById('NetworkE')
 const domNetworkD= document.getElementById('NetworkD')
 const domDebug = document.getElementById('Debug');
-const domSyncMode = document.getElementById('SyncMode');
 const domTestnet = document.getElementById('Testnet');
 const domExplorerSelect = document.getElementById('explorer');
 const domNodeSelect = document.getElementById('node');
@@ -49,7 +47,6 @@ const domTranslationSelect = document.getElementById('translation');
 //to make translations work we need to change it so that we just enable or disable the visibility of the text
 domNetworkE.style.display = (networkEnabled ? '' : 'none');
 domNetworkD.style.display = (networkEnabled ? 'none' : '');
-domSyncMode.style.display = fAlternativeSync ? '' : 'none';
 domTestnet.style.display = cChainParams.current.isTestnet ? '': 'none';
 domDebug.style.display = debug ? '' : 'none';
 
@@ -143,14 +140,6 @@ function toggleTestnet() {
     getBalance(true);
     getStakingBalance(true);
     updateStakingRewardsGUI();
-}
-
-function toggleSyncMode() {
-    fAlternativeSync = !fAlternativeSync;
-    //TRANSLATION CHANGE
-    //domSyncMode.innerHTML = fAlternativeSync ? '<b>Experimental Sync Active</b>' : '';
-    domSyncMode.style.display = (fAlternativeSync ? '' : 'none');
-    createAlert('success', ALERTS.SWITCHED_SYNC,[{sync : (fAlternativeSync ? 'experimental' : 'stable')}], 3000);
 }
 
 function toggleDebug() {

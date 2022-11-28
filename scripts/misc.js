@@ -220,8 +220,36 @@ async function hash(byteArray) {
     return hashHex;
   }
 
+/**
+ * Swaps the endianness of a HEX string
+ * @param {String} HEX - HEX string to swap the endianness of
+ * @returns {String} Swapped Endian HEX
+ */
+const swapHEXEndian = (HEX) => {
+    const result = [];
+    let len = HEX.length;
+    while (len >= 0) {
+        result.push(HEX.substring(len, len-2));
+        len -= 2;
+    }
+    return result.join('');
+    }
+
 function sanitizeHTML(text) {
   const element = document.createElement('div');
   element.innerText = text;
   return element.innerHTML;
+}
+
+/** 
+ * An artificial sleep function to pause code execution
+ * 
+ * @param {Number} ms - The milliseconds to sleep
+ * 
+ * @example
+ * // Pause an asynchronous script for 1 second
+ * await sleep(1000);
+ */
+function sleep(ms) {
+    return new Promise((res, _) => setTimeout(res, ms));
 }

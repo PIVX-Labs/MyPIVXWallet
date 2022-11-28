@@ -20,7 +20,7 @@ if (networkEnabled) {
       domBalanceReloadStaking.classList.remove("playAnim");
       if (data.backend.blocks > cachedBlockCount) {
         console.log("New block detected! " + cachedBlockCount + " --> " + data.backend.blocks);
-        getUTXOs();
+        getUTXOsHeavy();
         getStakingRewards();
       }
       cachedBlockCount = data.backend.blocks;
@@ -28,128 +28,41 @@ if (networkEnabled) {
     request.send();
   }
 
-  var arrUTXOsToValidate = [], nTimeSyncStart = 0;
-  var acceptUTXO = () => {
-    // Cancel if the queue is empty: no wasting precious bandwidth & CPU cycles!
-    if (!arrUTXOsToValidate.length) {
-      getNewAddress(true);
-      // If allowed by settings: submit a sync performance measurement to Labs Analytics
-      return submitAnalytics('time_to_sync', { time: (Date.now() / 1000) - nTimeSyncStart, explorer: cExplorer.name });
-    }
-
-    const request = new XMLHttpRequest();
-    request.open('GET', cExplorer.url + "/api/v2/tx-specific/" + arrUTXOsToValidate[0].txid, true);
-    request.onerror = networkError;
-
-    request.onload = function() {
-      // Fetch the single output of the UTXO
-      const cVout = JSON.parse(this.response).vout[arrUTXOsToValidate[0].vout];
-      console.log(arrUTXOsToValidate[0]);
-      let path;
-      if(arrUTXOsToValidate[0].path) {
-	path = arrUTXOsToValidate[0].path.split("/")
-	path[2] = (masterKey.isHardwareWallet ? cChainParams.current.BIP44_TYPE_LEDGER : cChainParams.current.BIP44_TYPE) + "'";
-	lastWallet = Math.max(parseInt(path[5]), lastWallet);
-	path = path.join("/");
-      }
-
-      // Convert to MPW format
-      const cUTXO = {
-        'id': arrUTXOsToValidate[0].txid,
-        'vout': cVout.n,
-        'sats': Math.round(cVout.value * COIN),
-        'script': cVout.scriptPubKey.hex,
-	path,
-      }
-
-      // Determine the UTXO type, and use it accordingly
-      if (cVout.scriptPubKey.type === 'pubkeyhash') {
-        // P2PKH type (Pay-To-Pub-Key-Hash)
-        cachedUTXOs.push(cUTXO);
-      } else
-      if (cVout.scriptPubKey.type === 'coldstake') {
-        // Cold Stake type
-        arrDelegatedUTXOs.push(cUTXO);
-      }
-
-      // Shift the queue and update the UI
-      getBalance(true);
-      getStakingBalance(true);
-      updateMasternodeTab();
-            
-      // Loop validation until queue is empty
-      arrUTXOsToValidate.shift();
-      acceptUTXO();
-    }
-    request.send();
-  }
-
-  var getUTXOs = async () => {
-    // Don't fetch UTXOs if we're already scanning for them!
-    if (arrUTXOsToValidate.length) return;
-
-    // Heavy Sync: if enabled, we cancel the regular UTXO call for a full TX history and a manual UTXO search
-    if (fAlternativeSync) {
-      return getUTXOsHeavy();
-    }
-
-    const request = new XMLHttpRequest()
-    let publicKey;
-    if(masterKey.isHD) {
-      const derivationPath = getDerivationPath(masterKey.isHardwareWallet).split("/").slice(0, 4).join("/");
-      publicKey = await masterKey.getxpub(derivationPath);
+ var sendTransaction = async function(hex, msg = '') {
+  try {
+    const data = await (await fetch(cExplorer.url + "/api/v2/sendtx/",
+    {
+      method:"post",body: hex
+    })).json();
+    if (data.result && data.result.length === 64) {
+      console.log('Transaction sent! ' + data.result);
+      if (domAddress1s.value !== donationAddress)
+          domTxOutput.innerHTML = ('<h4 style="color:green; font-family:mono !important;">' + data.result + '</h4>');
+      else
+          domTxOutput.innerHTML = ('<h4 style="color:green">Thank you for supporting MyPIVXWallet! 💜💜💜<br><span style="font-family:mono !important">' + data.result + '</span></h4>');
+        domSimpleTXs.style.display = 'none';
+        domAddress1s.value = '';
+        domValue1s.innerHTML = '';
+        createAlert('success', msg || 'Transaction sent!', msg ? (1250 + (msg.length * 50)) : 1500);
+        // If allowed by settings: submit a simple 'tx' ping to Labs Analytics
+        submitAnalytics('transaction');
+        return true;
     } else {
-      publicKey = await masterKey.getAddress();
+      console.log('Error sending transaction: ' + data.result);
+      createAlert('warning', 'Transaction Failed!', 1250);
+      // Attempt to parse and prettify JSON (if any), otherwise, display the raw output.
+      let strError = data.error;
+      try {
+          strError = JSON.stringify(JSON.parse(data), null, 4);
+          console.log('parsed');
+      } catch(e){console.log('no parse!'); console.log(e);}
+      domTxOutput.innerHTML = '<h4 style="color:red;font-family:mono !important;"><pre style="color: inherit;">' + strError + "</pre></h4>";
+      return false;
     }
-
-    request.open('GET', cExplorer.url + "/api/v2/utxo/" + publicKey, true);
-    request.onerror = networkError;
-    request.onload = function() {
-      arrUTXOsToValidate = JSON.parse(this.response);
-      // Clear our UTXOs and begin accepting refreshed ones (TODO: build an efficient 'set merge' algo)
-      cachedUTXOs = []; arrDelegatedUTXOs = [];
-      if (arrUTXOsToValidate.length) {
-        nTimeSyncStart = Date.now() / 1000;
-        acceptUTXO();
-      }
-    }
-    request.send();
+  } catch (e) {
+    console.error(e);
+    networkError();
   }
-
-var sendTransaction = function(hex, msg = '') {
-    const request = new XMLHttpRequest();
-    request.open('POST', cExplorer.url + "/api/v2/sendtx/", true);
-    request.onerror = networkError;
-    request.onreadystatechange = function () {
-        if (!this.response || (!this.status === 200 && !this.status === 400)) return;
-        if (this.readyState !== 4) return;
-        const data = JSON.parse(this.response);
-        if (data.result && data.result.length === 64) {
-            console.log('Transaction sent! ' + data.result);
-            if (domAddress1s.value !== donationAddress)
-                domTxOutput.innerHTML = ('<h4 style="color:green; font-family:mono !important;">' + data.result + '</h4>');
-            else
-                domTxOutput.innerHTML = ('<h4 style="color:green">Thank you for supporting MyPIVXWallet! 💜💜💜<br><span style="font-family:mono !important">' + data.result + '</span></h4>');
-            domSimpleTXs.style.display = 'none';
-            domAddress1s.value = '';
-            domValue1s.innerHTML = '';
-            createAlert('success', msg || 'Transaction sent!', [], msg ? (1250 + (msg.length * 50)) : 1500);
-
-            // If allowed by settings: submit a simple 'tx' ping to Labs Analytics
-            submitAnalytics('transaction');
-        } else {
-            console.log('Error sending transaction: ' + data.result);
-            createAlert('warning', 'Transaction Failed!', [], 1250);
-            // Attempt to parse and prettify JSON (if any), otherwise, display the raw output.
-            let strError = data.error;
-            try {
-                strError = JSON.stringify(JSON.parse(data), null, 4);
-                console.log('parsed');
-            } catch(e){console.log('no parse!'); console.log(e);}
-            domTxOutput.innerHTML = '<h4 style="color:red;font-family:mono !important;"><pre style="color: inherit;">' + strError + "</pre></h4>";
-        }
-    }
-    request.send(hex);
 }
 
   var getFee = function (bytes) {
@@ -229,6 +142,7 @@ var getUTXOsHeavy = async function() {
       const xpub = await masterKey.getxpub(derivationPath);
 
       // Run an xpub balance synchronisation
+      
       cData = await (await fetch(`${cExplorer.url}/api/v2/xpub/${xpub}?details=txs&pageSize=1000`)).json();
 
       // Map all address <--> derivation paths
@@ -243,24 +157,22 @@ var getUTXOsHeavy = async function() {
       mapPaths.set(address, ":)");
     }
     if (cData && cData.transactions) {
-      cachedUTXOs = []; arrDelegatedUTXOs = [];
       for (const cTx of cData.transactions) {
+        const fCoinstake = cTx.vout[0].addresses[0] === "CoinStake TX";
         for (const cOut of cTx.vout) {
           if (cOut.spent) continue; // We don't care about spent outputs
           const paths = cOut.addresses.map(strAddr => mapPaths.get(strAddr)).filter(v => v);
-	  // No addresses match ours
-	  if (!paths.length) continue;
-	  const arrToPush = cOut.addresses.some(strAddr => strAddr.startsWith(cChainParams.current.STAKING_PREFIX)) ? arrDelegatedUTXOs : cachedUTXOs;
-	  // Blockbook still returns 119' as the coinType, even in testnet
-	  let path = paths[0].split("/");
-	  path[2] = (masterKey.isHardwareWallet ? cChainParams.current.BIP44_TYPE_LEDGER : cChainParams.current.BIP44_TYPE) + "'";
-          arrToPush.push({
-            'id': cTx.txid,
-            'vout': cOut.n,
-            'sats': parseInt(cOut.value),
-            'script': cOut.hex,
-            'path': path.join("/"),
-          });
+	        // No addresses match ours
+	        if (!paths.length) continue;
+	          const isDelegate = cOut.addresses.some(strAddr => strAddr.startsWith(cChainParams.current.STAKING_PREFIX));
+	          // Blockbook still returns 119' as the coinType, even in testnet
+	          let path = paths[0].split("/");
+	          path[2] = (masterKey.isHardwareWallet ? cChainParams.current.BIP44_TYPE_LEDGER : cChainParams.current.BIP44_TYPE) + "'";
+            if(isDelegate){
+              mempool.addUTXO({id: cTx.txid,path: path.join("/"),sats: parseInt(cOut.value), script: cOut.hex,vout: cOut.n,height: cTx.blockHeight, status: Mempool.DELEGATE});
+            }else{
+              mempool.addUTXO({id: cTx.txid,path: path.join("/"),sats: parseInt(cOut.value), script: cOut.hex,vout: cOut.n,height: cTx.blockHeight, status: !fCoinstake ? Mempool.CONFIRMED : Mempool.REWARD});
+            }
         }
       }
       // Update UI

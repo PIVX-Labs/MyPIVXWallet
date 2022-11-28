@@ -116,9 +116,12 @@ const LEDGER_ERRS = new Map([
 ]);
 
 // Construct a full BIP44 pubkey derivation path from it's parts
-function getDerivationPath(fLedger = false, nAccount = 0, nReceiving = 0, nIndex = 0) {
+function getDerivationPath(fLedger = false,nAccount = 0, nReceiving = 0, nIndex = 0) {
   // Coin-Type is different on Ledger, as such, we modify it if we're using a Ledger to derive a key
   const strCoinType = fLedger ? cChainParams.current.BIP44_TYPE_LEDGER : cChainParams.current.BIP44_TYPE;
+  if (!masterKey.isHD && !fLedger) {
+    return `:)//${strCoinType}'`
+  }
   return `m/44'/${strCoinType}'/${nAccount}'/${nReceiving}/${nIndex}`;
 }
 
