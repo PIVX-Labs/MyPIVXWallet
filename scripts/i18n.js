@@ -1,3 +1,7 @@
+/**
+ * Takes the language name and sets the translation settings based on the language file
+ * @param {string} langName 
+ */
 function switchTranslation(langName){
     if(arrActiveLangs.includes(langName)){
       translation = translatableLanguages[langName]
@@ -26,6 +30,16 @@ function switchTranslation(langName){
     }
 }
 
+/**
+ * Takes a string that includes {x} and replaces that based on what is in the array of objects
+ * @param {string} message 
+ * @param {array<Object>} variables 
+ * @returns a string with the variables implemented in the string
+ * 
+ * @example
+ * //returns "test this"
+ * translateAlerts("test {x}" [x : "this"])
+ */
 function translateAlerts(message,variables){
     variables.forEach(element => {
         message = message.replace("{"+Object.keys(element)[0]+"}",Object.values(element)[0]);
@@ -34,7 +48,11 @@ function translateAlerts(message,variables){
 }
 
 
-
+/**
+ * Translates all the static html based on the tag data-i18n
+ * @param {Array} i18nLangs 
+ *
+ */
 function translate(i18nLangs) {
     if (!i18nLangs) return;
 
@@ -56,6 +74,9 @@ function translate(i18nLangs) {
     loadAlerts();
 }
 
+/**
+ * Translates the alerts by loading the data into the ALERTS object
+ */
 function loadAlerts() {
     // Alerts are designated by a special 'ALERTS' entry in each translation file
     let fFoundAlerts = false;

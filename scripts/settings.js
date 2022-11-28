@@ -75,15 +75,22 @@ document.getElementById('explorer').onchange = function(evt) {
 }
 
 //TRANSLATION
-// --- Translation changing Functions
+/**
+ * switches the translation and sets the translation preference to local storage
+ * @param {string} lang 
+ * @param {bool} fSilent 
+ */
 function setTranslation(lang, fSilent = false) {
     switchTranslation(lang)
     localStorage.setItem('translation', lang);
 }
-// Hook up the 'lang' select UI
+
 document.getElementById('translation').onchange = function(evt) {
     setTranslation(evt.target.value);
 }
+/**
+ * Fills the translation dropbox on the settings page
+ */
 function fillTranslationSelect() {
 
     while (domTranslationSelect.options.length>0) {
