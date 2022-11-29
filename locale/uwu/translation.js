@@ -115,6 +115,7 @@ var uwu_translation = {
     settingsExplorer:"Chowose an expwower",            //Choose an explorer
     settingsLanguage:"Chowose a Languwuage!",            //Choose an Language:
     settingsAnalytics:"Chowose your anawytics contwibution wevel:",           //Choose your analytics contribution level:
+    settingsPivxNode:"Chowose a PIVX nowode pwease:",            //Choose a PIVX node:
     settingsToggleDebug:"Toggle Debug Mowode",         //Toggle Debug Mode
     settingsToggleSync:"Toggle Sync Mowode",          //Toggle Sync Mode
     settingsToggleTestnet:"Toggle Testnet Mowode",       //Toggle Testnet Mode

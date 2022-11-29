@@ -114,6 +114,7 @@ var en_translation = {
     // Settings
     settingsExplorer:"Choose an explorer",            //
     settingsLanguage:"Choose an Language:",            //
+    settingsPivxNode:"Choose a PIVX node:",            //
     settingsAnalytics:"Choose your analytics contribution level:",           //
     settingsToggleDebug:"Toggle Debug Mode",         //
     settingsToggleSync:"Toggle Sync Mode",          //

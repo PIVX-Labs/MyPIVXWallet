@@ -1,10 +1,12 @@
+'use strict';
+
 /**
  * Takes the language name and sets the translation settings based on the language file
  * @param {string} langName 
  */
 function switchTranslation(langName){
     if(arrActiveLangs.includes(langName)){
-      translation = translatableLanguages[langName]
+      let translation = translatableLanguages[langName]
       translate(translation);
 
       //Apply translations to the transparency report
