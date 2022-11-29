@@ -20,10 +20,98 @@ if (networkEnabled) {
       domBalanceReloadStaking.classList.remove("playAnim");
       if (data.backend.blocks > cachedBlockCount) {
         console.log("New block detected! " + cachedBlockCount + " --> " + data.backend.blocks);
-        getUTXOsHeavy();
+        getUTXOs();
         getStakingRewards();
       }
       cachedBlockCount = data.backend.blocks;
+    }
+    request.send();
+  }
+
+  var arrUTXOsToValidate = [], nTimeSyncStart = 0;
+  var acceptUTXO = () => {
+    // Cancel if the queue is empty: no wasting precious bandwidth & CPU cycles!
+    if (!arrUTXOsToValidate.length) {
+      getNewAddress(true);
+      // If allowed by settings: submit a sync performance measurement to Labs Analytics
+      return submitAnalytics('time_to_sync', { time: (Date.now() / 1000) - nTimeSyncStart, explorer: cExplorer.name });
+    }
+
+    const request = new XMLHttpRequest();
+    request.open('GET', cExplorer.url + "/api/v2/tx-specific/" + arrUTXOsToValidate[0].txid, true);
+    request.onerror = networkError;
+
+    request.onload = function() {
+      // Fetch the single output of the UTXO
+      const cVout = JSON.parse(this.response).vout[arrUTXOsToValidate[0].vout];
+      
+      console.log(arrUTXOsToValidate[0]);
+      let path;
+      if(arrUTXOsToValidate[0].path) {
+	path = arrUTXOsToValidate[0].path.split("/")
+	path[2] = (masterKey.isHardwareWallet ? cChainParams.current.BIP44_TYPE_LEDGER : cChainParams.current.BIP44_TYPE) + "'";
+	lastWallet = Math.max(parseInt(path[5]), lastWallet);
+	path = path.join("/");
+      }
+
+      // Convert to MPW format
+      const cUTXO = {
+        'id': arrUTXOsToValidate[0].txid,
+        'vout': cVout.n,
+        'sats': Math.round(cVout.value * COIN),
+        'script': cVout.scriptPubKey.hex,
+	      path,
+      }
+
+      // Determine the UTXO type, and use it accordingly
+      if (cVout.scriptPubKey.type === 'pubkeyhash') {
+        // P2PKH type (Pay-To-Pub-Key-Hash)
+        //mempool.addUTXO...
+      } else
+      if (cVout.scriptPubKey.type === 'coldstake') {
+        // Cold Stake type
+        // mempool.addUTXO...
+      }
+
+      // Shift the queue and update the UI
+      getBalance(true);
+      getStakingBalance(true);
+      updateMasternodeTab();
+            
+      // Loop validation until queue is empty
+      arrUTXOsToValidate.shift();
+      acceptUTXO();
+    }
+    request.send();
+  }
+
+  var getUTXOs = async () => {
+    // Don't fetch UTXOs if we're already scanning for them!
+    if (arrUTXOsToValidate.length) return;
+
+    // Heavy Sync: if enabled, we cancel the regular UTXO call for a full TX history and a manual UTXO search
+    if (fAlternativeSync) {
+      return getUTXOsHeavy();
+    }
+
+    const request = new XMLHttpRequest()
+    let publicKey;
+    if(masterKey.isHD) {
+      const derivationPath = getDerivationPath(masterKey.isHardwareWallet).split("/").slice(0, 4).join("/");
+      publicKey = await masterKey.getxpub(derivationPath);
+    } else {
+      publicKey = await masterKey.getAddress();
+    }
+    console.log(cExplorer.url + "/api/v2/utxo/" + publicKey)
+    request.open('GET', cExplorer.url + "/api/v2/utxo/" + publicKey, true);
+    request.onerror = networkError;
+    request.onload = function() {
+      arrUTXOsToValidate = JSON.parse(this.response);
+      // Clear our UTXOs and begin accepting refreshed ones (TODO: build an efficient 'set merge' algo)
+      if (arrUTXOsToValidate.length) {
+        nTimeSyncStart = Date.now() / 1000;
+        acceptUTXO();
+      }
     }
     request.send();
   }
