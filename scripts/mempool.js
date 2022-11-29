@@ -41,6 +41,10 @@ class UTXO {
          *  @type {Number} */
         this.status = status;
     }
+
+    equalsUTXO(utxo) {
+	return this.id === utxo.id && this.vout === utxo.vout && this.status === utxo.status;
+    }
 };
 
 /** A Mempool instance, stores and handles UTXO data for the wallet */
@@ -84,31 +88,17 @@ class Mempool {
 
     /**
      * Check if an exact UTXO match can be found in our wallet
-     * @param {UTXO} cNewUTXO - UTXO to search for
+     * @param {id, vout, status} - txid path and vout of the UTXO
      * @returns {Boolean} `true` or `false`
      */
-    isAlreadyStored(cNewUTXO) {
+    isAlreadyStored({id, vout, status}) {
         for (const cUTXO of this.UTXOs) {
-            if (JSON.stringify(cUTXO) === JSON.stringify(cNewUTXO)) {
+            if (cUTXO.id === id && cUTXO.vout === vout && cUTXO.status === status) {
                 return true;
             }
         }
         return false;
     }
-
-        /**
-     * Check if an exact UTXO match can be found in our wallet
-     * @param {id,path,vout} - txid path and vout of the UTXO
-     * @returns {Boolean} `true` or `false`
-     */
-         isAlreadyStored({id,path,vout,status}) {
-            for (const cUTXO of this.UTXOs) {
-                if (cUTXO.id === id && cUTXO.path===path && cUTXO.vout===vout && cUTXO.status===status) {
-                    return true;
-                }
-            }
-            return false;
-        }
 
     /**
      * Fetches an array of UTXOs filtered by their state
@@ -162,7 +152,7 @@ class Mempool {
         if (this.isAlreadyStored(newUTXO)) return;
 
         // Ensure the new UTXO doesn't have a REMOVED status
-        if (this.isAlreadyStored({id: id,path: path,vout: vout,status: Mempool.REMOVED})) return;
+        if (this.isAlreadyStored({id: id, vout: vout, status: Mempool.REMOVED})) return;
         
         // Remove any pending versions of this UTXO
         this.removeFromState(newUTXO, Mempool.PENDING);
@@ -181,24 +171,24 @@ class Mempool {
      * @param {UTXO} cUTXO - UTXO to remove
      */
     removeUTXO(cUTXO) {
-        this.UTXOs = this.UTXOs.filter(utxo => JSON.stringify(utxo) !== JSON.stringify(cUTXO));
+        this.UTXOs = this.UTXOs.filter(utxo => !utxo.equalsUTXO(cUTXO));
     }
     
     /**
      * Remove a UTXO completely from our wallet, with a 12 minute delay given his id, path and vout
      * @param {Array<UTXO>} arrUTXOs - UTXOs to remove
      */
-    autoRemoveUTXO({id,path,vout}){
-            for (const cUTXO of this.UTXOs) {
-                // Loop given + internal UTXOs to find a match, then start the delayed removal
-                if (cUTXO.id === id && cUTXO.path===path && cUTXO.vout===vout) {
-                    cUTXO.status = Mempool.REMOVED;
-                    this.removeWithDelay(12, cUTXO);
-                    return;
-                }
+    autoRemoveUTXO({id, vout}){
+        for (const cUTXO of this.UTXOs) {
+            // Loop given + internal UTXOs to find a match, then start the delayed removal
+            if (cUTXO.id === id && cUTXO.vout===vout) {
+                cUTXO.status = Mempool.REMOVED;
+                this.removeWithDelay(12, cUTXO);
+                return;
             }
-            console.error("Mempool: Failed to find UTXO " + id + " (" + vout + ") for auto-removal!");
         }
+        console.error("Mempool: Failed to find UTXO " + id + " (" + vout + ") for auto-removal!");
+    }
     
     /**
      * Remove many UTXOs completely from our wallet, with a 12 minute delay
@@ -208,7 +198,7 @@ class Mempool {
         for (const cNewUTXO of arrUTXOs) {
             for (const cUTXO of this.UTXOs) {
                 // Loop given + internal UTXOs to find a match, then start the delayed removal
-                if (JSON.stringify(cUTXO) === JSON.stringify(cNewUTXO)) {
+                if (cUTXO.equalsUTXO(cNewUTXO)) {
                     cUTXO.status = Mempool.REMOVED;
                     this.removeWithDelay(12, cUTXO);
                     break;

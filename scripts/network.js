@@ -102,7 +102,6 @@ if (networkEnabled) {
 	publicKey = await masterKey.getAddress();
       }
       const arrUTXOsToValidate = await (await fetch(`${cExplorer.url}/api/v2/utxo/${publicKey}`)).json();
-      // Clear our UTXOs and begin accepting refreshed ones (TODO: build an efficient 'set merge' algo)
       await acceptUTXO(arrUTXOsToValidate);
     } catch(e) {
       console.error(e);
