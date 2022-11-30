@@ -62,11 +62,11 @@ class Masternode {
     }
 
     static _numToBytes(number, numBytes=8, littleEndian = true) {
-	const bytes = [];
-	for(let i=0; i<numBytes; i++) {
-	    bytes.push((number / 2**(8*i)) & 0xFF);
-	}
-	return littleEndian ? bytes : bytes.reverse();
+		const bytes = [];
+		for(let i=0; i<numBytes; i++) {
+			bytes.push((number / 2**(8*i)) & 0xFF);
+		}
+		return littleEndian ? bytes : bytes.reverse();
     }
 
     /**
@@ -78,6 +78,7 @@ class Masternode {
      * @return {Array} Returns the unsigned ping message. It needs to be signed with the MN private key
      */
     static getPingSignature({vin, blockHash, sigTime}) {
+
 	const ping = [
 	    ...Crypto.util.hexToBytes(vin.txid).reverse(),
 	    ...Masternode._numToBytes(vin.idx, 4, true),
@@ -192,7 +193,7 @@ class Masternode {
 	    pkBytes: parseWIF(walletPrivateKey, true),
 	    output: "COMPRESSED_HEX",
         }));
-        const mnPublicKey = Crypto.utils.hexToBytes(deriveAddress({
+        const mnPublicKey = Crypto.util.hexToBytes(deriveAddress({
 	    pkBytes: parseWIF(this.mnPrivateKey, true),
 	    output: "UNCOMPRESSED_HEX",
 	    compress: false,
