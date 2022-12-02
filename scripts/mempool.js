@@ -42,8 +42,13 @@ class UTXO {
         this.status = status;
     }
 
-    equalsUTXO(utxo) {
-	return this.id === utxo.id && this.vout === utxo.vout && this.status === utxo.status;
+    /**
+     * Check for equality between this UTXO and another UTXO
+     * @param {UTXO} cUTXO - UTXO to compare against
+     * @returns {Boolean} `true` if equal, `false` if unequal
+     */
+    equalsUTXO(cUTXO) {
+        return this.id === cUTXO.id && this.vout === cUTXO.vout && this.status === cUTXO.status;
     }
 };
 
@@ -88,7 +93,10 @@ class Mempool {
 
     /**
      * Check if an exact UTXO match can be found in our wallet
-     * @param {id, vout, status} - txid path and vout of the UTXO
+     * @param {Object} UTXO
+     * @param {String} UTXO.id - Transaction ID
+     * @param {Number} UTXO.vout - Output position of this transaction
+     * @param {Number} UTXO.status - UTXO status enum state
      * @returns {Boolean} `true` or `false`
      */
     isAlreadyStored({id, vout, status}) {
@@ -176,12 +184,14 @@ class Mempool {
     
     /**
      * Remove a UTXO completely from our wallet, with a 12 minute delay given his id, path and vout
-     * @param {Array<UTXO>} arrUTXOs - UTXOs to remove
+     * @param {Object} UTXO
+     * @param {String} UTXO.id - Transaction ID
+     * @param {Number} UTXO.vout - Output position of this transaction
      */
-    autoRemoveUTXO({id, vout}){
+    autoRemoveUTXO({id, vout}) {
         for (const cUTXO of this.UTXOs) {
             // Loop given + internal UTXOs to find a match, then start the delayed removal
-            if (cUTXO.id === id && cUTXO.vout===vout) {
+            if (cUTXO.id === id && cUTXO.vout === vout) {
                 cUTXO.status = Mempool.REMOVED;
                 this.removeWithDelay(12, cUTXO);
                 return;

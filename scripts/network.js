@@ -32,7 +32,7 @@ if (networkEnabled) {
 
   /**
    * Parses UTXOs and puts them in the mempool
-   * @param arrUTXOs {Array<Object>} - Array of UTXOs, from the utxo endpoint of blockbook
+   * @param {Array<Object>} arrUTXOs - Array of object-formatted UTXOs
    * @returns {Promise<void>} Resolves when it has parsed every UTXO
    */
   async function acceptUTXO(arrUTXOs) {
@@ -86,7 +86,7 @@ if (networkEnabled) {
   }
 
   /**
-   * Fetch UTXOs
+   * Fetch UTXOs from the current primary explorer
    * @returns {Promise<void>} Resolves when it has finished fetching UTXOs
    */
   async function getUTXOs() {
@@ -101,8 +101,8 @@ if (networkEnabled) {
       } else {
 	publicKey = await masterKey.getAddress();
       }
-      const arrUTXOsToValidate = await (await fetch(`${cExplorer.url}/api/v2/utxo/${publicKey}`)).json();
-      await acceptUTXO(arrUTXOsToValidate);
+      // Validate and sync these UTXOs
+      await acceptUTXO(await (await fetch(`${cExplorer.url}/api/v2/utxo/${publicKey}`)).json());
     } catch(e) {
       console.error(e);
       networkError();
