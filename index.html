@@ -85,6 +85,9 @@
       const COIN_DECIMALS = 8;
       const COIN = 10**8;
 
+      /** The maximum gap (absence of transactions within a range of derived addresses) before an account search ends */
+      const MAX_ACCOUNT_GAP = 20;
+      
       /* Internal tweaking parameters */
       // A new encryption password must be 'at least' this long.
       const MIN_PASS_LENGTH = 6;
@@ -1497,8 +1500,8 @@
     async function getNewAddress({updateGUI = false, verify = false} = {}) {
       const last = lastWallet || 0;
       addressIndex = addressIndex > last ? addressIndex : last + 1;
-      if (addressIndex - last > 20) {
-        // If the user creates more than 20 empty wallets we will not be able to sync them!
+      if (addressIndex - last > MAX_ACCOUNT_GAP) {
+        // If the user creates more than ${MAX_ACCOUNT_GAP} empty wallets we will not be able to sync them!
         addressIndex = last;
       }
       const path = getDerivationPath(masterKey.isHardwareWallet, 0, 0, addressIndex);
