@@ -5,6 +5,9 @@ const pubKeyHashNetworkLen = 21;
 const pubChksum = 4;
 const pubPrebaseLen = pubKeyHashNetworkLen + pubChksum;
 
+// Notifications map
+let ALERTS = {}
+
 // Base58 Encoding Map
 const MAP_B58 = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
 const LEN_B58= MAP_B58.length;
@@ -94,12 +97,22 @@ function from_b58(S) {
 /* --- NOTIFICATIONS --- */
 // Alert - Do NOT display arbitrary / external errors, the use of `.innerHTML` allows for input styling at this cost.
 // Supported types: success, info, warning
-function createAlert(type, message, timeout = 0) {
+function createAlert(type, message, alertVariables = [], timeout = 0) {
     const domAlert = document.createElement("div");
     domAlert.classList.add("alertpop");
     domAlert.classList.add(type);
+
+    // Maintainer QoL adjustment: if `alertVariables` is a number, it is instead assumed to be `timeout`
+    if (typeof alertVariables === "number") {
+        timeout = alertVariables;
+        alertVariables = [];
+    }
+
+    // Apply translations
+    const translatedMessage = translateAlerts(message, alertVariables);
+
     // Message
-    domAlert.innerHTML = message;
+    domAlert.innerHTML = translatedMessage;
     domAlert.destroy = () => {
         // Fully destroy timers + DOM elements, no memory leaks!
         clearTimeout(domAlert.timer);
@@ -207,8 +220,36 @@ async function hash(byteArray) {
     return hashHex;
   }
 
+/**
+ * Swaps the endianness of a HEX string
+ * @param {String} HEX - HEX string to swap the endianness of
+ * @returns {String} Swapped Endian HEX
+ */
+const swapHEXEndian = (HEX) => {
+    const result = [];
+    let len = HEX.length;
+    while (len >= 0) {
+        result.push(HEX.substring(len, len-2));
+        len -= 2;
+    }
+    return result.join('');
+    }
+
 function sanitizeHTML(text) {
   const element = document.createElement('div');
   element.innerText = text;
   return element.innerHTML;
+}
+
+/** 
+ * An artificial sleep function to pause code execution
+ * 
+ * @param {Number} ms - The milliseconds to sleep
+ * 
+ * @example
+ * // Pause an asynchronous script for 1 second
+ * await sleep(1000);
+ */
+function sleep(ms) {
+    return new Promise((res, _) => setTimeout(res, ms));
 }
