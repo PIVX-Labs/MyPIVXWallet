@@ -93,19 +93,24 @@ class Mempool {
 
     /**
      * Check if an exact UTXO match can be found in our wallet
+<<<<<<< HEAD
      * @param {Object} UTXO
      * @param {String} UTXO.id - Transaction ID
      * @param {Number} UTXO.vout - Output position of this transaction
      * @param {Number} UTXO.status - UTXO status enum state
+||||||| parent of 4e40c84 (Avoid request to tx-specific if it's already in mempool)
+     * @param {id, vout, status} - txid path and vout of the UTXO
+=======
+     * @param {Object} UTXO - object to be deconstructed
+     * @param {String} UTXO.id - Transaction id of the UTXO
+     * @param {Number} UTXO.vout - Vout of the UTXO
+     * @param {Number} [UTXO.status] - Status of the UTXO to find. If undefined, consider all statuses.
+>>>>>>> 4e40c84 (Avoid request to tx-specific if it's already in mempool)
      * @returns {Boolean} `true` or `false`
      */
     isAlreadyStored({id, vout, status}) {
-        for (const cUTXO of this.UTXOs) {
-            if (cUTXO.id === id && cUTXO.vout === vout && cUTXO.status === status) {
-                return true;
-            }
-        }
-        return false;
+	return this.UTXOs.some(
+	    cUTXO => (cUTXO.id === id && cUTXO.vout === vout && (!status || cUTXO.status === status)));
     }
 
     /**
@@ -160,18 +165,37 @@ class Mempool {
         if (this.isAlreadyStored(newUTXO)) return;
 
         // Ensure the new UTXO doesn't have a REMOVED status
-        if (this.isAlreadyStored({id: id, vout: vout, status: Mempool.REMOVED})) return;
-        
-        // Remove any pending versions of this UTXO
-        this.removeFromState(newUTXO, Mempool.PENDING);
-
-        // If delegated, remove pending versions of that too
-        if (status === Mempool.DELEGATE) this.removeFromState(newUTXO, Mempool.PENDING_COLD);
-
-        // Add to list
-        this.UTXOs.push(newUTXO);
+        if (this.isAlreadyStored({id, vout })) {
+	    this.updateUTXO({id, vout});
+	} else {
+            this.UTXOs.push(newUTXO);
+	}
         getBalance(true);
         getStakingBalance(true);
+    }
+
+    /**
+     * Update an existing UTXO, by confirming its pending status
+     * The UTXO must be in 
+     * @param {Object} obj - Object to be deconstructed
+     * @param {String} id - Transaction id
+     * @param {Number} vout - vout
+     */
+    updateUTXO({id, vout}) {
+	if(debug) {
+	    console.assert(this.isAlreadyStored({id, vout}), "updateUTXO must be called with an existing UTXO");
+	}
+	const cUTXO = this.UTXOs.find(utxo => utxo.id === id && utxo.vout == vout);
+	switch (cUTXO.status) {
+	case Mempool.PENDING:
+	    cUTXO.status = Mempool.CONFIRMED;
+	    break;
+	case Mempool.PENDING_COLD:
+	    cUTXO.status = Mempool.DELEGATE;
+	    break;
+	}
+	getBalance(true);
+	getStakingBalance(true);
     }
 
     /**

@@ -39,7 +39,11 @@ if (networkEnabled) {
     const nTimeSyncStart = Date.now() / 1000;
     
     for (const cUTXO of arrUTXOs) {
-      const cTx = await (await fetch(`${cExplorer.url}/api/v2/tx-specific/${cUTXO.txid}`)).json()
+      if(mempool.isAlreadyStored({id: cUTXO.txid, vout: cUTXO.vout})) {
+	mempool.updateUTXO({id: cUTXO.txid, vout: cUTXO.vout});
+	continue;
+      }
+      const cTx = await (await fetch(`${cExplorer.url}/api/v2/tx-specific/${cUTXO.txid}`)).json();
       const cVout = cTx.vout[cUTXO.vout];
       
       let path;
