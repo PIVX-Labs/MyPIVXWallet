@@ -651,7 +651,7 @@
               <h3 class="pivx-bold-title center-text"><span>Control your</span> Masternode</h3>
               <p class="center-text">From this tab you can create and access one or more masternodes</p>
             </div>
-
+         
             <div style='display: block;'>
               <br>
               <p id="mnTextErrors" class="center-text"></p>
@@ -661,7 +661,7 @@
             <div id='accessMasternode' class="dashboard-item" style='display:none; width:100%;'>
               <div class="container">
 
-                <div id="accessMasternodeText"></div>
+                <div id="accessMasternodeText"></div> 
                 <br>
                 <input class="hide-element" type="text">
                 <div style='display: block;'>
@@ -678,12 +678,12 @@
               </div>
             </div>
             <!-- // IMPORT MASTERNODE -->
-            <br>
+            <br>            
 
             <div id='createMasternode' class="dashboard-item" style='display:none; width:100%;'>
               <div class="container" >
 
-                <h4>Create a masternode <small style="opacity: 0.75;">(10k PIV)</small></h4>
+                <h4>Create a masternode <small style="opacity: 0.75;">(10k PIV)</small></h4> 
                 <input class="hide-element" type="text">
                 <div style='display: block;'>
                   <p>Choose your Masternode type</p>
@@ -708,15 +708,15 @@
                   Status <small id="mnProtocol" style="opacity: 0.5;"></small>
                 </h4>
                 <h2 id="mnStatus" class="stake-balances" style="overflow-wrap: anywhere;top: 50%;left: 50%;transform: translate(-50%, -50%);position: absolute;width: 100%;padding: 10px;" id="mnStatus">
-
+                  
                 </h2>
               </div>
               <div class="stake-box large-box col-md-4">
                 <h4 id="mnNetType" class="stake-balances" style="background-color: #2c0044;border-radius: 10px;">
-
+                  
                 </h4>
                 <h2 id="mnNetIP" class="stake-balances" style="overflow-wrap: anywhere;top: 50%;left: 50%;transform: translate(-50%, -50%);position: absolute;width: 100%;padding: 10px;font-family: mono !important;font-size: x-large;" id="mnStatus">
-
+                  
                 </h2>
               </div>
               <div class="stake-box large-box col-md-4">
@@ -724,7 +724,7 @@
                   Last Seen
                 </h4>
                 <h2 id="mnLastSeen" class="stake-balances" style="overflow-wrap: anywhere;top: 50%;left: 50%;transform: translate(-50%, -50%);position: absolute;width: 100%;padding: 10px;font-size: xx-large;" id="mnStatus">
-
+                  
                 </h2>
               </div>
             </div>
@@ -833,7 +833,7 @@
                 <!-- Populated via JS at DOM load (settings.js) -->
               </select>
               <br>
-
+	      
               <label for="node">Choose a PIVX node:</label>
               <br>
               <select id="node" class="form-control" name="explorer">
@@ -986,7 +986,7 @@
     const domConfirmModalButtons = document.getElementById("confirmModalButtons");
     const domConfirmModalConfirmButton = document.getElementById("confirmModalConfirmButton");
     const domConfirmModalCancelButton = document.getElementById("confirmModalCancelButton");
-
+	  
     const masternodeLegacyAccessText='Access the masternode linked to this address<br> Note: the masternode MUST have been already created (however it can be online or offline)<br>  If you want to create a new masternode access with a HD wallet'
     const masternodeHDAccessText="Access your masternodes if you have any! If you don't you can create one"
     // Aggregate menu screens and links for faster switching
@@ -1005,7 +1005,7 @@
         const nLen = (nBalance / COIN).toFixed(2).length;
         domGuiBalance.innerText = (nBalance / COIN).toFixed(nLen >= 6 ? 0 : 2);
         domAvailToDelegate.innerText = "Available: ~" + (nBalance / COIN).toFixed(2) + " " + cChainParams.current.TICKER;
-
+        
         // Add a notice to the Send page if balance is lacking
         domsendNotice.innerHTML = nBalance ? '' : '<div class="alert alert-danger" role="alert"><h4>Note:</h4><h5>You don\'t have any funds, get some coins first!</h5></div>';
       }
@@ -1181,15 +1181,15 @@
       const fGeneratePrivkey = domMnCreateType.value === "VPS";
       const strAddress = await getNewAddress();
       const nValue = cChainParams.current.collateralInSats;
-
+    
       const nBalance = getBalance();
       const cTx = bitjs.transaction();
       const cCoinControl = chooseUTXOs(cTx, nValue, 0, false);
-
+      
       if (!cCoinControl.success) return alert(cCoinControl.msg);
       // Compute fee
       const nFee = getFee(cTx.serialize().length);
-
+      
       // Compute change (or lack thereof)
       const nChange = cCoinControl.nValue - (nFee + nValue);
       const changeAddress = await getNewAddress({verify: masterKey.isHardwareWallet});
@@ -1200,10 +1200,10 @@
       } else {
        return createAlert("warning", "You don't have enough " + cChainParams.current.TICKER + " to create a masternode", 5000);
       }
-
+      
       // Primary output (receiver)
       outputs.push([strAddress, nValue / COIN]);
-
+      
       // Debug-only verbose response
       if (debug) domHumanReadable.innerHTML = "Balance: " + (nBalance / COIN) + "<br>Fee: " + (nFee / COIN) + "<br>To: " + strAddress + "<br>Sent: " + (nValue / COIN) + (nChange > 0 ? "<br>Change Address: " + changeAddress + "<br>Change: " + (nChange / COIN) : "");
 
@@ -1245,13 +1245,13 @@
 
         // Broadcast the Hardware (Ledger) TX
         sendTransaction(strSerialisedTx);
-
+        
       }
       if(fGeneratePrivkey){
         let masternodePrivateKey= await generateMnPrivkey();
         await confirmPopup({
           title: "Your Masternode Private Key",
-          html: `${masternodePrivateKey} <br> Save this private key and copy it to your VPS config <br>`,
+          html: `${masternodePrivateKey} <br> Save this private key and copy it to your VPS config <br>`, 
         });
       }
       createAlert("success", "<b>Masternode Created!<b><br>Wait 15 confirmations to proceed further");
@@ -1260,7 +1260,7 @@
     }
     async function importMasternode(){
       const mnPrivKey = domMnPrivateKey.value;
-
+      
       const ip = domMnIP.value;
       let address;
       let collateralTxId;
@@ -1274,7 +1274,7 @@
       } else {
 	address = ip;
       }
-
+      
       if (!masterKey.isHD) {
         // Find the first UTXO matching the expected collateral size
 	const cCollaUTXO = cachedUTXOs.find(cUTXO => cUTXO.sats === cChainParams.current.collateralInSats);
@@ -1304,11 +1304,11 @@
         }
         collateralTxId = masterUtxo.id;
         outidx = masterUtxo.vout;
-        collateralPrivKeyPath = path;
+        collateralPrivKeyPath = path;     
       }
       domMnTxId.value = "";
 
-
+      
       const cMasternode = new Masternode({
         walletPrivateKeyPath: collateralPrivKeyPath,
         mnPrivateKey: mnPrivKey,
@@ -1357,7 +1357,7 @@
       // If we don't have a DB wallet and the input is plain: prompt an import
       if (!hasEncryptedWallet() && !fEncrypted) return importWallet();
 
-      // If we don't have a DB wallet and the input is ciphered:
+      // If we don't have a DB wallet and the input is ciphered: 
       const strPrivKey = domPrivKey.value
       const strPassword = domPrivKeyPassword.value;
       if (!hasEncryptedWallet() && fEncrypted) {
@@ -1393,7 +1393,7 @@
               strPassRetype = domEncryptPasswordSecond.value;
         if (strPass.length < MIN_PASS_LENGTH) return createAlert('warning', 'That password is a little short!<br>' +
 														  'Use at least <b>' + MIN_PASS_LENGTH + ' characters.</b>', 4000);
-
+	  
         if (strPass !== strPassRetype) return createAlert('warning', 'Your passwords don\'t match!', 2250);
         encryptWallet(strPass);
         createAlert('success', '<b>You\'re Secured! 🔐</b><br>Nice stuff, Armoured PIVian!', 5500);
@@ -1421,7 +1421,7 @@
         domExportKey.innerText = "";
       }
     }
-
+    
     let addressIndex = 0;
     async function getNewAddress({updateGUI = false, verify = false} = {}) {
       const last = lastWallet || 0;
@@ -1578,7 +1578,7 @@
 
     async function undelegate(nValue) {
       if (!hasWalletUnlocked(true)) return;
-
+	
       // Construct a TX and fetch Cold inputs
       const nBalance = getStakingBalance();
       const cTx = bitjs.transaction();
@@ -1676,7 +1676,7 @@
       if (!validateAmount(nAmount, COIN)) return;
 
       // Ensure the user has an address set - if not, request one!
-      if (!askForCSAddr()) return;
+      if (!askForCSAddr()) return;      
 
       // Sanity
       if (cachedColdStakeAddr.length !== 34 || !cachedColdStakeAddr.startsWith(cChainParams.current.STAKING_PREFIX)) {
@@ -1773,7 +1773,7 @@
 
         // Does the UTXO meet size requirements?
         if (cUTXO.sats < nMinInputSize) continue;
-
+        
         // Push UTXO and cache new total value
         cCoinControl.arrSelectedUTXOs.push(cUTXO);
         cCoinControl.nValue += cUTXO.sats;
@@ -1809,7 +1809,7 @@
 
     async function createTxGUI() {
       if (!hasWalletUnlocked(true)) return;
-
+      
       // Clear the inputs on 'Continue'
       if (domGenIt.innerHTML === 'Continue') {
 	domGenIt.innerHTML = 'Send Transaction';
@@ -1831,12 +1831,12 @@
       if (address.length !== 34) return createAlert('warning', '<b>Invalid PIVX address!<b><br>Bad length (' + address.length + ')', 2500);
       if (!cChainParams.current.PUBKEY_PREFIX.includes(address[0])) return createAlert('warning', '<b>Invalid PIVX address!<b><br>Bad prefix ' + address[0] + ' (Should start with ' + cChainParams.current.PUBKEY_PREFIX.join(' or ') + ')', 3500);
       if (!bitjs.isValidDestination(address,cChainParams.current.PUBKEY_ADDRESS)) return createAlert('warning', '<b>Invalid PIVX address!<b><br>' + address, 3500);
-
+      
       // Sanity check the amount
       let nValue = Math.round(Number(domValue1s.value.trim()) * COIN);
       if (nValue <= 0 || isNaN(nValue))  return createAlert('warning', '<b>Invalid amount!</b><br>You can\'t send \'nothing\'!', 2500);
       if (!Number.isSafeInteger(nValue)) return createAlert('warning', '<b>Invalid amount!</b><br>8 decimal limit exceeded', 2500);
-
+      
       // Construct a TX and fetch Standard inputs
       const nBalance = getBalance();
       const cTx = bitjs.transaction();
@@ -1844,7 +1844,7 @@
       if (!cCoinControl.success) return alert(cCoinControl.msg);
       // Compute fee
       const nFee = getFee(cTx.serialize().length);
-
+      
       // Compute change (or lack thereof)
       const nChange = cCoinControl.nValue - (nFee + nValue);
       const changeAddress = await getNewAddress({verify: masterKey.isHardwareWallet});
@@ -1856,10 +1856,10 @@
         // We're sending alot! So we deduct the fee from the send amount. There's not enough change to pay it with!
         nValue -= nFee;
       }
-
+      
       // Primary output (receiver)
       outputs.push([address, nValue / COIN]);
-
+      
       // Debug-only verbose response
       if (debug) domHumanReadable.innerHTML = "Balance: " + (nBalance / COIN) + "<br>Fee: " + (nFee / COIN) + "<br>To: " + address + "<br>Sent: " + (nValue / COIN) + (nChange > 0 ? "<br>Change Address: " + changeAddress + "<br>Change: " + (nChange / COIN) : "");
 
@@ -1905,7 +1905,7 @@
       domGenIt.innerHTML = "Continue";
     }
 
-
+    
     function insert(arr, index, newItem) {
       // part of the array before the specified index
       return [...arr.slice(0, index),
@@ -2008,18 +2008,18 @@
       // Show and activate the given screen
       document.getElementById(tabName).style.display = "block";
       evt.currentTarget.classList.add("active");
-
+      
       // Close the navbar if it's not already closed
       if (!domNavbarToggler.className.includes("collapsed"))
         domNavbarToggler.click();
-
+      
       if (tabName === "Governance") {
 	updateGovernanceTab();
       }
       if (tabName==="Masternode") {
 	updateMasternodeTab();
-      }
-
+      }  
+      
     }
   domStart.click();
 
@@ -2042,28 +2042,28 @@
       Yeas = parseInt(Yeas);
       Nays = parseInt(Nays);
       const percentage = Yeas + Nays !== 0 ? (Yeas / (Yeas + Nays)) * 100 : 0;
-
+      
       td3.innerHTML=`<b>${percentage.toFixed(2)}%</b> <br>
       <small> <b><div class="text-success" style="display:inline;"> ${Yeas} </div></b> /
 	  <b><div class="text-danger" style="display:inline;"> ${Nays} </div></b>
       `;
       const td4 = tr.insertCell();
-      //append vote buttons
+      //append vote buttons	  
       const buttonNo = document.createElement('button');
       buttonNo.className = "pivx-button-big";
       buttonNo.innerText="No";
       buttonNo.onclick = () => govVote(proposal.Hash, 2);
-
+      
       const buttonYes = document.createElement('button');
       buttonYes.className = "pivx-button-big";
       buttonYes.innerText="Yes";
       buttonYes.onclick = () => govVote(proposal.Hash, 1);
-
+      
       td4.appendChild(buttonNo)
       td4.appendChild(buttonYes)
     }
   }
-
+  
   async function updateMasternodeTab() {
     //TODO: IN A FUTURE ADD MULTI-MASTERNODE SUPPORT BY SAVING MNs with which you logged in the past.
     // Ensure a wallet is loaded
@@ -2071,12 +2071,12 @@
     domAccessMasternode.style.display = "none";
     domCreateMasternode.style.display = "none";
     domMnDashboard.style.display = "none";
-
+    
     if (!masterKey) {
       domMnTextErrors.innerHTML = "Please " + (hasEncryptedWallet() ? "unlock" : "import") + " your <b>COLLATERAL WALLET</b> first.";
       return;
     }
-
+    
     if (masterKey.isHardwareWallet) {
       domMnTxId.style.display = "none";
       domMnTextErrors.innerHTML = "Ledger is not yet supported";
@@ -2087,7 +2087,7 @@
       domMnTextErrors.innerHTML = "Your wallet is empty or still loading, re-open the tab in a few seconds!";
       return;
     }
-
+    
     let strMasternodeJSON = localStorage.getItem("masternode");
     // If the collateral is missing (spent, or switched wallet) then remove the current MN
     if (strMasternodeJSON) {
@@ -2097,9 +2097,9 @@
 	strMasternodeJSON = null;
       }
     }
-
+    
     domControlMasternode.style.display = strMasternodeJSON ? "block" : "none";
-
+    
     // first case: the wallet is not HD and it is not hardware, so in case the wallet has collateral the user can check its status and do simple stuff like voting
     if (!masterKey.isHD) {
       domMnAccessMasternodeText.innerHTML = masternodeLegacyAccessText;
@@ -2129,22 +2129,22 @@
       domMnTxId.style.display = "none";
       domMnTxId.innerHTML = "";
       domMnAccessMasternodeText.innerHTML = masternodeHDAccessText;
-
+      
       // First UTXO for each address in HD
       const mapCollateralAddresses = new Map();
-
+      
       // Aggregate all valid Masternode collaterals into a map of Address <--> Collateral
       for (const cUTXO of cachedUTXOs) {
         if (cUTXO.sats !== cChainParams.current.collateralInSats) continue;
         mapCollateralAddresses.set(cUTXO.path, cUTXO);
       }
       const fHasCollateral = mapCollateralAddresses.size > 0;
-
+      
       // If there's no loaded MN, but valid collaterals, display the configuration screen
       if (!strMasternodeJSON && fHasCollateral) {
         domMnTxId.style.display = "block";
         domAccessMasternode.style.display = "block";
-
+	
         for (const [key, value] of mapCollateralAddresses) {
           const option = document.createElement('option');
           option.value = key;
@@ -2152,10 +2152,10 @@
           domMnTxId.appendChild(option);
         }
       }
-
+      
       // If there's no collateral found, display the creation UI
       if (!fHasCollateral) domCreateMasternode.style.display = "block";
-
+      
       // If we have a collateral and a loaded Masternode, display the Dashboard
       if (fHasCollateral && strMasternodeJSON) {
         const cMasternode = new Masternode(JSON.parse(strMasternodeJSON));
@@ -2165,7 +2165,7 @@
       }
     }
   }
-
+  
   async function refreshMasternodeData(cMasternode, fAlert = false) {
     const cMasternodeData = await cMasternode.getFullData();
     if (debug) console.log(cMasternodeData);
