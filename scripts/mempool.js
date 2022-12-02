@@ -93,19 +93,10 @@ class Mempool {
 
     /**
      * Check if an exact UTXO match can be found in our wallet
-<<<<<<< HEAD
      * @param {Object} UTXO
      * @param {String} UTXO.id - Transaction ID
      * @param {Number} UTXO.vout - Output position of this transaction
-     * @param {Number} UTXO.status - UTXO status enum state
-||||||| parent of 4e40c84 (Avoid request to tx-specific if it's already in mempool)
-     * @param {id, vout, status} - txid path and vout of the UTXO
-=======
-     * @param {Object} UTXO - object to be deconstructed
-     * @param {String} UTXO.id - Transaction id of the UTXO
-     * @param {Number} UTXO.vout - Vout of the UTXO
-     * @param {Number} [UTXO.status] - Status of the UTXO to find. If undefined, consider all statuses.
->>>>>>> 4e40c84 (Avoid request to tx-specific if it's already in mempool)
+     * @param {Number} [UTXO.status] - UTXO status enum state. If it's undefined, it will ignore it.
      * @returns {Boolean} `true` or `false`
      */
     isAlreadyStored({id, vout, status}) {
@@ -160,12 +151,9 @@ class Mempool {
      * @param {Number} UTXO.status - UTXO status enum state
      */
     addUTXO({id, path, sats, script, vout, height, status}) {
-        const newUTXO = new UTXO({id, path, sats, script, vout, height, status});
-        // Ensure the new UTXO doesn't have the same status
-        if (this.isAlreadyStored(newUTXO)) return;
-
-        // Ensure the new UTXO doesn't have a REMOVED status
-        if (this.isAlreadyStored({id, vout })) {
+	const newUTXO = new UTXO({id, path, sats, script, vout, height, status});
+	
+	if (this.isAlreadyStored({ id, vout })) {
 	    this.updateUTXO({id, vout});
 	} else {
             this.UTXOs.push(newUTXO);
