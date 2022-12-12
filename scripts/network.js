@@ -60,8 +60,8 @@ if (networkEnabled) {
       if (!isColdStake && !isStandard) {
 	continue;
       }
-      
-      const isCoinStake = cTx.vout[0].scriptPubKey.hex.length === 0;
+
+      const isCoinStake = cTx.vout[0].scriptPubKey.hex.length === 0 && !isColdStake;
       
       let status;
       if (isCoinStake) {
