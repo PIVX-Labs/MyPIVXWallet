@@ -62,15 +62,7 @@ if (networkEnabled) {
       }
 
       const isCoinStake = cTx.vout[0].scriptPubKey.hex.length === 0 && !isColdStake;
-      
-      let status;
-      if (isCoinStake) {
-	status = Mempool.REWARD;
-      } else if (isColdStake) {
-	status = Mempool.DELEGATE;
-      } else {
-	status = Mempool.CONFIRMED;
-      }
+      const status = isCoinStake ? Mempool.REWARD : Mempool.CONFIRMED;
       
       mempool.addUTXO({
 	id: cUTXO.txid,
@@ -80,6 +72,7 @@ if (networkEnabled) {
 	vout: cVout.n,
 	height: cachedBlockCount - (cTx.confirmations - 1),
 	status,
+	isCoinStake: isCoinStake,
       });
     }
     getNewAddress(true);

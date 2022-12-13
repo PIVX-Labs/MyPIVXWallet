@@ -11,8 +11,10 @@ class UTXO {
      * @param {Number} UTXO.vout - Output position of this transaction
      * @param {Number} UTXO.height - Block height of the UTXO
      * @param {Number} UTXO.status - UTXO status enum state
+     * @param {bool} UTXO.isCoinstake - Whether the UTXO is coinstake
+     * @param {bool} UTXO.isDelegate - Whether the UTXO is a cold stake delegation
      */
-    constructor({id, path, sats, script, vout, height, status} = {}) {
+    constructor({id, path, sats, script, vout, height, status, isDelegate} = {}) {
         /** Transaction ID
          * @type {String} */
         this.id = id;
@@ -40,6 +42,10 @@ class UTXO {
         /** UTXO status enum state
          *  @type {Number} */
         this.status = status;
+
+	/** If it's a delegation UTXO
+	 * @type {bool} */
+	this.isDelegate = isDelegate || false;
     }
 
     /**
@@ -70,16 +76,6 @@ class Mempool {
 
     /** The PENDING state (standard UTXO is in mempool, pending confirmation) */
     static PENDING = 2;
-
-    /** The DELEGATED PENDING state (cold UTXO is in mempool, pending confirmation) */
-    static PENDING_COLD = 3;
-
-    /** The CONFIRMED DELEGATED state (cold UTXO is spendable) */
-    static DELEGATE = 4;
-
-    /** The REWARD state (UTXO is a reward from a stake or masternode) */
-    static REWARD = 5;
-
 
     /**
      * Remove a UTXO after a set amount of time
@@ -150,8 +146,8 @@ class Mempool {
      * @param {Number} UTXO.height - Block height of the UTXO
      * @param {Number} UTXO.status - UTXO status enum state
      */
-    addUTXO({id, path, sats, script, vout, height, status}) {
-	const newUTXO = new UTXO({id, path, sats, script, vout, height, status});
+    addUTXO({id, path, sats, script, vout, height, status, isDelegate}) {
+      const newUTXO = new UTXO({id, path, sats, script, vout, height, status, isDelegate});
 	
 	if (this.isAlreadyStored({ id, vout })) {
 	    this.updateUTXO({id, vout});
@@ -177,9 +173,6 @@ class Mempool {
 	switch (cUTXO.status) {
 	case Mempool.PENDING:
 	    cUTXO.status = Mempool.CONFIRMED;
-	    break;
-	case Mempool.PENDING_COLD:
-	    cUTXO.status = Mempool.DELEGATE;
 	    break;
 	}
 	getBalance(true);
@@ -254,15 +247,31 @@ class Mempool {
     }
 
     /**
+     * Get standard, non delegated, UTXOs
+     * @returns {Array<UTXO>} Non delegated utxos
+     */
+    getStandardUTXOs() {
+	return this.UTXOs.filter(cUTXO => !cUTXO.isDelegate);
+    }
+
+    /**
+     * Get delegated UTXOs
+     * @returns {Array<UTXO>} Delegated UTXOs
+     */
+    getDelegatedUTXOs() {
+	return this.UTXOs.filter(cUTXO => cUTXO.isDelegate);
+    }
+
+    /**
      * Returns the real-time balance of the wallet (all addresses)
      * @returns {Number} Balance in satoshis
      */
     getBalance() {
         // Fetch 'standard' balances: the sum of all Confirmed or Unconfirmed transactions (excluding Masternode collaterals)
-        const nStandardBalance = this.UTXOs.filter(cUTXO => (cUTXO.status === Mempool.CONFIRMED || cUTXO.status === Mempool.PENDING) && !isMasternodeUTXO(cUTXO)).reduce((a, b) => a + b.sats, 0);
+        const nStandardBalance = this.getStandardUTXOs().filter(cUTXO => (cUTXO.status === Mempool.CONFIRMED || cUTXO.status === Mempool.PENDING) && !isMasternodeUTXO(cUTXO)).reduce((a, b) => a + b.sats, 0);
         
         // Fetch 'staked' balances: the sum of all Confirmed Rewards (excluding rewards not yet 'matured')
-        const nStakedBalance = this.UTXOs.filter(cUTXO => cUTXO.status === Mempool.REWARD).filter(cUTXO => Mempool.isValidReward(cUTXO)).reduce((a, b) => a + b.sats, 0);
+        const nStakedBalance = this.getStandardUTXOs().filter(cUTXO => cUTXO.status === Mempool.REWARD).filter(cUTXO => Mempool.isValidReward(cUTXO)).reduce((a, b) => a + b.sats, 0);
 
         // Combine and return total satoshis
         return nStandardBalance + nStakedBalance;
@@ -282,6 +291,6 @@ class Mempool {
      * @returns {Number} Delegated balance in satoshis
      */
     getDelegatedBalance() {
-        return this.UTXOs.filter(cUTXO => cUTXO.status === Mempool.DELEGATE || cUTXO.status === Mempool.PENDING_COLD).reduce((a, b) => a + b.sats, 0);
+        return this.getDelegatedUTXOs().filter(cUTXO => cUTXO.status === Mempool.CONFIRMED || cUTXO.status === Mempool.PENDING || cUTXO.status === Mempool.REWARD).reduce((a, b) => a + b.sats, 0);
     }
 };
