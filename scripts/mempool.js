@@ -11,7 +11,6 @@ class UTXO {
      * @param {Number} UTXO.vout - Output position of this transaction
      * @param {Number} UTXO.height - Block height of the UTXO
      * @param {Number} UTXO.status - UTXO status enum state
-     * @param {bool} UTXO.isCoinstake - Whether the UTXO is coinstake
      * @param {bool} UTXO.isDelegate - Whether the UTXO is a cold stake delegation
      */
     constructor({id, path, sats, script, vout, height, status, isDelegate} = {}) {
@@ -43,9 +42,9 @@ class UTXO {
          *  @type {Number} */
         this.status = status;
 
-	/** If it's a delegation UTXO
-	 * @type {bool} */
-	this.isDelegate = isDelegate || false;
+        /** If it's a delegation UTXO
+        * @type {bool} */
+        this.isDelegate = isDelegate || false;
     }
 
     /**
@@ -109,13 +108,7 @@ class Mempool {
         return this.UTXOs.filter(cUTXO => cUTXO.status === nState);
     }
 
-    /**
-     * Fetches an array of confirmed UTXOs, an easier alias to {@link getUTXOsByState}
-     * @returns {Array<UTXO>} `array` - An array of UTXOs
-     */
-    getConfirmed() {
-        return this.getUTXOsByState(Mempool.CONFIRMED);
-    }
+
 
     /**
      * Removes a UTXO from a specific state
@@ -224,27 +217,11 @@ class Mempool {
     }
 
     /**
-     * Change the status of a UTXO, matched by it's properties
-     * @param {String} id - Transaction ID
-     * @param {String} path - If applicable, the HD Path of the owning address
-     * @param {Number} sats - Satoshi value in this UTXO
-     * @param {String} script - The HEX encoded spending script
-     * @param {Number} vout - Output position of this transaction
-     * @param {Number} newStatus - New mempool status to apply to the UTXO
-     * @returns {Boolean} `true` if successful, `false` if UTXO not found
+     * Fetches an array of confirmed UTXOs, an easier alias to {@link getUTXOsByState}
+     * @returns {Array<UTXO>} `array` - An array of UTXOs
      */
-    changeUTXOstatus(id, path, sats, script, vout, newStatus) {
-        for (const cUTXO of this.UTXOs) {
-            if (cUTXO.id === id && cUTXO.path === path && cUTXO.sats === sats && cUTXO.script === script && cUTXO.vout === vout) {
-                cUTXO.status = newStatus;
-                // If the new status is REMOVED, start the delayed removal
-                if (newStatus === Mempool.REMOVED) {
-                    this.removeWithDelay(12, cUTXO);
-                }
-                return;
-            }
-        }
-        console.log("Mempool: Failed to find UTXO " + id + " (" + vout + ") for auto-removal!");
+    getConfirmed() {
+        return this.getUTXOsByState(Mempool.CONFIRMED);
     }
 
     /**
@@ -252,7 +229,7 @@ class Mempool {
      * @returns {Array<UTXO>} Non delegated utxos
      */
     getStandardUTXOs() {
-	return this.UTXOs.filter(cUTXO => !cUTXO.isDelegate);
+        return this.UTXOs.filter(cUTXO => cUTXO.status !== Mempool.REMOVED && !cUTXO.isDelegate);
     }
 
     /**
@@ -260,7 +237,7 @@ class Mempool {
      * @returns {Array<UTXO>} Delegated UTXOs
      */
     getDelegatedUTXOs() {
-	return this.UTXOs.filter(cUTXO => cUTXO.isDelegate);
+        return this.UTXOs.filter(cUTXO => cUTXO.status !== Mempool.REMOVED && cUTXO.isDelegate);
     }
 
     /**
@@ -269,13 +246,7 @@ class Mempool {
      */
     getBalance() {
         // Fetch 'standard' balances: the sum of all Confirmed or Unconfirmed transactions (excluding Masternode collaterals)
-        const nStandardBalance = this.getStandardUTXOs().filter(cUTXO => (cUTXO.status === Mempool.CONFIRMED || cUTXO.status === Mempool.PENDING) && !isMasternodeUTXO(cUTXO)).reduce((a, b) => a + b.sats, 0);
-        
-        // Fetch 'staked' balances: the sum of all Confirmed Rewards (excluding rewards not yet 'matured')
-        const nStakedBalance = this.getStandardUTXOs().filter(cUTXO => cUTXO.status === Mempool.REWARD).filter(cUTXO => Mempool.isValidReward(cUTXO)).reduce((a, b) => a + b.sats, 0);
-
-        // Combine and return total satoshis
-        return nStandardBalance + nStakedBalance;
+        return this.getStandardUTXOs().filter(cUTXO => !isMasternodeUTXO(cUTXO)).reduce((a, b) => a + b.sats, 0);
     }
 
     /**
@@ -292,6 +263,6 @@ class Mempool {
      * @returns {Number} Delegated balance in satoshis
      */
     getDelegatedBalance() {
-        return this.getDelegatedUTXOs().filter(cUTXO => cUTXO.status === Mempool.CONFIRMED || cUTXO.status === Mempool.PENDING || cUTXO.status === Mempool.REWARD).reduce((a, b) => a + b.sats, 0);
+        return this.getDelegatedUTXOs().reduce((a, b) => a + b.sats, 0);
     }
 };

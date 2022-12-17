@@ -1896,11 +1896,8 @@
       
       for(let i=0; i< arrUTXOs.length;i++){
         const cUTXO= arrUTXOs[i]
-	if (cUTXO.status == Mempool.REMOVED) {
-	  continue;
-	}
 	
-	if (cUTXO.status === Mempool.REWARD && !Mempool.isValidReward(cUTXO)) {
+	if (cUTXO.isDelegate && !Mempool.isValidReward(cUTXO)) {
 	  continue;
 	}
 	
