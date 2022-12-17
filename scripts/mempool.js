@@ -145,6 +145,7 @@ class Mempool {
      * @param {Number} UTXO.vout - Output position of this transaction
      * @param {Number} UTXO.height - Block height of the UTXO
      * @param {Number} UTXO.status - UTXO status enum state
+     * @param {Boolean} UTXO.isDelegate - If this is a Cold Delegation
      */
     addUTXO({id, path, sats, script, vout, height, status, isDelegate}) {
       const newUTXO = new UTXO({id, path, sats, script, vout, height, status, isDelegate});
@@ -161,9 +162,9 @@ class Mempool {
     /**
      * Update an existing UTXO, by confirming its pending status
      * The UTXO must be in 
-     * @param {Object} obj - Object to be deconstructed
-     * @param {String} id - Transaction id
-     * @param {Number} vout - vout
+     * @param {Object} UTXO - Object to be deconstructed
+     * @param {String} UTXO.id - Transaction id
+     * @param {Number} UTXO.vout - vout
      */
     updateUTXO({id, vout}) {
 	if(debug) {

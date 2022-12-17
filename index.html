@@ -1749,7 +1749,7 @@
           // Add our undelegation + change re-delegation (if any) to the local mempool
           const futureTxid=swapHEXEndian(await hash(Crypto.util.hexToBytes((await hash((Crypto.util.hexToBytes(sign)))))));
           if(fReDelegateChange){
-            mempool.addUTXO({id: futureTxid,path:reDelegateAddressPath,script:Crypto.util.bytesToHex(cTx.outputs[0].script) ,sats: nChange,vout: 0,status: Mempool.PENDING, isDeleage: true});
+            mempool.addUTXO({id: futureTxid,path:reDelegateAddressPath,script:Crypto.util.bytesToHex(cTx.outputs[0].script) ,sats: nChange,vout: 0,status: Mempool.PENDING, isDelegate: true});
             mempool.addUTXO({id: futureTxid,path: outputKeyPath,script:Crypto.util.bytesToHex(cTx.outputs[1].script) ,sats: nValue,vout: 1,status: Mempool.PENDING});
           }else{
             mempool.addUTXO({id: futureTxid,path: outputKeyPath,sats: nValue,script:Crypto.util.bytesToHex(cTx.outputs[0].script),vout: 0,status: Mempool.PENDING});
