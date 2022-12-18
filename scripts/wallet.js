@@ -586,7 +586,7 @@ async function encryptWallet(strPassword = '') {
 
   // Set the encrypted wallet in localStorage
   localStorage.setItem("encwif", strEncWIF);
-  localStorage.setItem("publicKey", masterKey.keyToExport);
+  localStorage.setItem("publicKey", await masterKey.keyToExport);
 
   // Hide the encryption warning
   domGenKeyWarning.style.display = 'none';
@@ -610,7 +610,7 @@ async function decryptWallet(strPassword = '') {
       skipConfirmation: true,
     });
     // Ensure publicKey is set
-    localStorage.setItem("publicKey", masterKey.keyToExport);
+    localStorage.setItem("publicKey", await masterKey.keyToExport);
     return true;
   }
 }

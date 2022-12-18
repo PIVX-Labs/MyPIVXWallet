@@ -1239,6 +1239,9 @@
     }
 
     async function createMasternode() {
+      if (masterKey.isViewOnly) {
+        return createAlert("warning", "Can't create a masternode in view only mode", 6000);
+      }
       const fGeneratePrivkey = domMnCreateType.value === "VPS";
       const [strAddress,strAddressPath] = await getNewAddress();
       const nValue = cChainParams.current.collateralInSats;
