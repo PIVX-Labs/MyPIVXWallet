@@ -8,8 +8,8 @@ class MasterKey {
   constructor() { }
 
   /**
-   * @param {string} [path] - Bip32 path pointing to the private key.
-   * @return {Promise<Array<number>>} Array of bytes containing private key
+   * @param {String} [path] - BIP32 path pointing to the private key.
+   * @return {Promise<Array<Number>>} Array of bytes containing private key
    * @abstract
    */
   async getPrivateKeyBytes(path) {
@@ -17,8 +17,8 @@ class MasterKey {
   }
   
   /**
-   * @param {string} [path] - Bip32 path pointing to the private key.
-   * @return {string} encoded private key
+   * @param {String} [path] - BIP32 path pointing to the private key.
+   * @return {String} encoded private key
    * @abstract
    */
   async getPrivateKey(path) {
@@ -26,8 +26,8 @@ class MasterKey {
   }
 
   /**
-   * @param {string} [path] - Bip32 path pointing to the address
-   * @return {string} Address
+   * @param {String} [path] - BIP32 path pointing to the address
+   * @return {String} Address
    * @abstract
    */
   async getAddress(path) {
@@ -35,8 +35,8 @@ class MasterKey {
   }
   
   /**
-   * @param {string} path - Bip32 path pointing to the xpub
-   * @return {Promise<string>} xpub
+   * @param {String} path - BIP32 path pointing to the xpub
+   * @return {Promise<String>} xpub
    * @abstract
    */
   async getxpub(path) {
@@ -53,7 +53,7 @@ class MasterKey {
   }
   
   /**
-   * @return {string} private key suitable for backup.
+   * @return {String} private key suitable for backup.
    * @abstract
    */
   get keyToBackup() {
@@ -61,7 +61,7 @@ class MasterKey {
   }
 
   /**
-   * @return {string} public key to export. Only suitable for monitoring balance.
+   * @return {String} public key to export. Only suitable for monitoring balance.
    * @abstract
    */
   get keyToExport() {
@@ -69,21 +69,21 @@ class MasterKey {
   }
 
   /**
-   * @return {boolean} Whether or not this is a Hierarchical Deterministic wallet
+   * @return {Boolean} Whether or not this is a Hierarchical Deterministic wallet
    */
   get isHD() {
     return this._isHD;
   }
 
   /**
-   * @return {boolean} Whether or not this is a hardware wallet
+   * @return {Boolean} Whether or not this is a hardware wallet
    */
   get isHardwareWallet() {
     return this._isHardwareWallet;
   }
 
   /**
-   * @return {boolean} Whether or not this key is view only or not
+   * @return {Boolean} Whether or not this key is view only or not
    */
   get isViewOnly() {
     return this._isViewOnly;
@@ -317,6 +317,11 @@ function generateOrEncodePrivkey(pkBytesToEncode) {
   return { pkBytes, strWIF: to_b58(keyWithChecksum) };
 }
 
+/**
+ * Compress an uncompressed Public Key in byte form
+ * @param {Array<Number> | Uint8Array} pubKeyBytes - The uncompressed public key bytes
+ * @returns {Array<Number>} The compressed public key bytes
+ */
 function compressPublicKey(pubKeyBytes) {
   if(pubKeyBytes.length != 65) throw new Error("Attempting to compress an invalid uncompressed key");
   const x = pubKeyBytes.slice(1, 33);
@@ -329,10 +334,10 @@ function compressPublicKey(pubKeyBytes) {
 /**
  * Derive a Secp256k1 network-encoded public key (coin address) from raw private or public key bytes
  * @param {Object} options - The object to deconstruct
- * @param {string} [options.publicKey] - The hex encoded public key. Can be both compressed or uncompressed
- * @param {Array<number> | Uint8Array} [options.pkBytes] - An array of bytes containing the private key
- * @param {"ENCODED" | "UNCOMPRESSED_HEX" | "COMPRESSED_HEX"} options.output - Output. 
- * @return {string} the public key with the specified encoding
+ * @param {String} [options.publicKey] - The hex encoded public key. Can be both compressed or uncompressed
+ * @param {Array<Number> | Uint8Array} [options.pkBytes] - An array of bytes containing the private key
+ * @param {"ENCODED" | "UNCOMPRESSED_HEX" | "COMPRESSED_HEX"} options.output - Output
+ * @return {String} the public key with the specified encoding
  */
 function deriveAddress({
   pkBytes,
