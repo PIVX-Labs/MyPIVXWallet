@@ -1,57 +1,153 @@
 'use strict';
-
+/**
+ * Abstract class masterkey
+ * @abstract
+ */
 class MasterKey {
   
   constructor() { }
-  
+
+  /**
+   * @param {String} [path] - BIP32 path pointing to the private key.
+   * @return {Promise<Array<Number>>} Array of bytes containing private key
+   * @abstract
+   */
   async getPrivateKeyBytes(path) {
     throw new Error("Not implemented");
   }
   
+  /**
+   * @param {String} [path] - BIP32 path pointing to the private key.
+   * @return {String} encoded private key
+   * @abstract
+   */
   async getPrivateKey(path) {
     return generateOrEncodePrivkey(await this.getPrivateKeyBytes(path)).strWIF;
   }
-  
+
+  /**
+   * @param {String} [path] - BIP32 path pointing to the address
+   * @return {String} Address
+   * @abstract
+   */
   async getAddress(path) {
     return deriveAddress({pkBytes: await this.getPrivateKeyBytes(path)});
   }
   
+  /**
+   * @param {String} path - BIP32 path pointing to the xpub
+   * @return {Promise<String>} xpub
+   * @abstract
+   */
   async getxpub(path) {
     throw new Error("Not implemented");
   }
-  
-  get keyToBackup() {
+
+  /**
+   * Wipe all private data from key.
+   * @return {void}
+   * @abstract
+   */
+  wipePrivateData() {
     throw new Error("Not implemented");
   }
   
+  /**
+   * @return {String} private key suitable for backup.
+   * @abstract
+   */
+  get keyToBackup() {
+    throw new Error("Not implemented");
+  }
+
+  /**
+   * @return {String} public key to export. Only suitable for monitoring balance.
+   * @abstract
+   */
+  get keyToExport() {
+    throw new Error("Not implemented");
+  }
+
+  /**
+   * @return {Boolean} Whether or not this is a Hierarchical Deterministic wallet
+   */
   get isHD() {
     return this._isHD;
   }
+
+  /**
+   * @return {Boolean} Whether or not this is a hardware wallet
+   */
   get isHardwareWallet() {
     return this._isHardwareWallet;
+  }
+
+  /**
+   * @return {Boolean} Whether or not this key is view only or not
+   */
+  get isViewOnly() {
+    return this._isViewOnly;
   }
 }
 
 class HdMasterKey extends MasterKey {
-  constructor({seed, xpriv}) {
+  constructor({seed, xpriv, xpub}) {
     super();
     // Generate the HDKey
     if(seed) this._hdKey = HDKey.fromMasterSeed(seed);
     if(xpriv) this._hdKey = HDKey.fromExtendedKey(xpriv);
-    if (!this._hdKey) throw new Error("Both seed and xpriv are undefined");
+    if(xpub) this._hdKey = HDKey.fromExtendedKey(xpub);
+    this._isViewOnly = !!xpub;
+    if (!this._hdKey) throw new Error("All of seed, xpriv and xpub are undefined");
     this._isHD = true;
     this._isHardwareWallet = false;
   }
   
   async getPrivateKeyBytes(path) {
+    if(this.isViewOnly) {
+      throw new Error("Trying to get private key bytes from a view only key");
+    }
     return this._hdKey.derive(path).privateKey;
   }
   
   get keyToBackup() {
+    if (this.isViewOnly) {
+      throw new Error("Trying to get private key from a view only key");
+    }
     return this._hdKey.privateExtendedKey;
   }
+  
   async getxpub(path) {
+    if(this.isViewOnly) return this._hdKey.publicExtendedKey;
     return this._hdKey.derive(path).publicExtendedKey;
+  }
+
+  getAddress(path) {
+    let child;
+    if (this.isViewOnly) {
+      // If we're view only we can't derive hardened keys, so we'll assume
+      // That the xpub has already been derived
+      child = this._hdKey.derive(path.split("/").filter(n=>!n.includes("'")).join("/"))
+    } else {
+      child = this._hdKey.derive(path);
+    }
+    return deriveAddress({publicKey: Crypto.util.bytesToHex(child.publicKey)});
+  }
+
+  wipePrivateData() {
+    if(this._isViewOnly) return;
+
+    this._hdKey = HDKey.fromExtendedKey(this.keyToExport);
+    this._isViewOnly = true;
+  }
+
+  get keyToExport() {
+    if (this._isViewOnly) return this._hdKey.publicExtendedKey;
+    // We need the xpub to point at the account level
+    return this._hdKey.derive(getDerivationPath(false)
+				     .split("/")
+				     .slice(0, 4)
+				     .join("/")).publicExtendedKey;
   }
 }
 
@@ -79,17 +175,43 @@ class HardwareWalletMasterKey extends MasterKey {
     }
     return this.xpub;
   }
+
+  // Hardware Wallets don't have exposed private data
+  wipePrivateData() { }
+  
+  get isViewOnly() {
+    return false;
+  }
+  get keyToExport() {
+    return this.getxpub(getDerivationPath(true)
+			.split("/")
+			.filter(v=>!v.includes("'"))
+			.join("/"));
+  }
 }
 
 class LegacyMasterKey extends MasterKey {
-  constructor (pkBytes) {
+  constructor ({pkBytes, address}) {
     super();
     this._isHD = false;
     this._isHardwareWallet = false;
     this._pkBytes = pkBytes;
+    this._address = address || super.getAddress();
+    this._isViewOnly = !!address;
+  }
+
+  getAddress() {
+    return this._address;
+  }
+
+  get keyToExport() {
+    return this._address;
   }
   
   async getPrivateKeyBytes(_path) {
+    if (this.isViewOnly) {
+      throw new Error("Trying to get private key bytes from a view only key");
+    }
     return this._pkBytes;
   }
   
@@ -99,6 +221,11 @@ class LegacyMasterKey extends MasterKey {
   
   async getxpub(path) {
     throw new Error("Trying to get an extended public key from a legacy address");
+  }
+  
+  wipePrivateData() {
+    this._pkBytes = null;
+    this._isViewOnly = true;
   }
 }
 
@@ -190,34 +317,61 @@ function generateOrEncodePrivkey(pkBytesToEncode) {
   return { pkBytes, strWIF: to_b58(keyWithChecksum) };
 }
 
-// Derive a Secp256k1 network-encoded public key (coin address) from raw private or public key bytes
+/**
+ * Compress an uncompressed Public Key in byte form
+ * @param {Array<Number> | Uint8Array} pubKeyBytes - The uncompressed public key bytes
+ * @returns {Array<Number>} The compressed public key bytes
+ */
+function compressPublicKey(pubKeyBytes) {
+  if(pubKeyBytes.length != 65) throw new Error("Attempting to compress an invalid uncompressed key");
+  const x = pubKeyBytes.slice(1, 33);
+  const y = pubKeyBytes.slice(33);
+
+  // Compressed key is [key_parity + 2, x]
+  return [ y[31] % 2 === 0 ? 2 : 3, ...x ];
+}
+
+/**
+ * Derive a Secp256k1 network-encoded public key (coin address) from raw private or public key bytes
+ * @param {Object} options - The object to deconstruct
+ * @param {String} [options.publicKey] - The hex encoded public key. Can be both compressed or uncompressed
+ * @param {Array<Number> | Uint8Array} [options.pkBytes] - An array of bytes containing the private key
+ * @param {"ENCODED" | "UNCOMPRESSED_HEX" | "COMPRESSED_HEX"} options.output - Output
+ * @return {String} the public key with the specified encoding
+ */
 function deriveAddress({
   pkBytes,
   publicKey,
-  fNoEncoding,
-  compress = false,
-  output="ENCODED", // "ENCODED", "HEX" or "RAW_BYTES"
+  output = "ENCODED",
 }) {
   if(!pkBytes && !publicKey) return null;
+  const compress = output !== "UNCOMPRESSED_HEX";
   // Public Key Derivation
-  let nPubkey = (publicKey || Crypto.util.bytesToHex(nobleSecp256k1.getPublicKey(pkBytes, compress)));
-  if (output === "HEX") {
-    return nPubkey;
-  } else if (output === "RAW_BYTES") {
-    return Crypto.util.hexToBytes(nPubkey);
-  }
-  nPubkey = nPubkey.substring(2);
-  const pubY = uint256(nPubkey.substr(64), 16);
-  nPubkey = nPubkey.substr(0, 64);
-  const publicKeyBytesCompressed = Crypto.util.hexToBytes(nPubkey);
-  publicKeyBytesCompressed.unshift(pubY.isEven() ? 2 : 3);
+  let pubKeyBytes = (publicKey ? Crypto.util.hexToBytes(publicKey) : (nobleSecp256k1.getPublicKey(pkBytes, compress)));
 
-  // If we're only trying to derive a Secp256k1 pubkey (not an encoded address), return early
-  if (fNoEncoding) return publicKeyBytesCompressed;
+  if (output === "UNCOMPRESSED_HEX") {
+    if (pubKeyBytes.length !== 65) {
+      // It's actually possible, but it's probably not something that we'll need
+      throw new Error("Can't uncompress an already compressed key");
+    }
+    return Crypto.util.bytesToHex(pubKeyBytes);
+  }
+  
+  if(pubKeyBytes.length === 65) {
+    pubKeyBytes = compressPublicKey(pubKeyBytes);
+  }
+
+  if (pubKeyBytes.length != 33) {
+    throw new Error("Invalid public key");
+  }
+
+  if (output === "COMPRESSED_HEX") {
+    return Crypto.util.bytesToHex(pubKeyBytes);
+  }
 
   // First pubkey SHA-256 hash
   const pubKeyHashing = new jsSHA(0, 0, { "numRounds": 1 });
-  pubKeyHashing.update(publicKeyBytesCompressed);
+  pubKeyHashing.update(pubKeyBytes);
 
   // RIPEMD160 hash
   const pubKeyHashRipemd160 = ripemd160(pubKeyHashing.getHash(0));
@@ -248,10 +402,11 @@ function deriveAddress({
 async function importWallet({
   newWif = false,
   fRaw = false,
-  isHardwareWallet = false
+  isHardwareWallet = false,
+  skipConfirmation = false,
 } = {}) {
   const strImportConfirm = "Do you really want to import a new address? If you haven't saved the last private key, the wallet will be LOST forever.";
-  const walletConfirm = fWalletLoaded ? await confirmPopup({html: strImportConfirm}) : true;
+  const walletConfirm = (fWalletLoaded && !skipConfirmation) ? await confirmPopup({html: strImportConfirm}) : true;
 
   if (walletConfirm) {
     if (isHardwareWallet) {
@@ -293,9 +448,13 @@ async function importWallet({
       } else {
         // Public Key Derivation
         try {
-          if (privateImportValue.startsWith("xprv")) {
-            masterKey = new HdMasterKey({xpriv: privateImportValue})
-          } else {
+	  if (privateImportValue.startsWith("xpub")) {
+	    masterKey = new HdMasterKey({xpub: privateImportValue});
+	  } else if (privateImportValue.startsWith("xprv")) {
+            masterKey = new HdMasterKey({xpriv: privateImportValue});
+          } else if (privateImportValue.length === 34 && cChainParams.current.PUBKEY_PREFIX.includes(privateImportValue[0])) {
+	    masterKey = new LegacyMasterKey({address: privateImportValue});
+	  } else {
             // Lastly, attempt to parse as a WIF private key
             const pkBytes = parseWIF(privateImportValue);
 
@@ -303,7 +462,7 @@ async function importWallet({
             domNewAddress.style.display = "none";
 
             // Import the raw private key
-            masterKey = new LegacyMasterKey(pkBytes);
+            masterKey = new LegacyMasterKey({pkBytes});
           }
         } catch (e) {
           return createAlert('warning', ALERTS.FAILED_TO_IMPORT + e.message, [],
@@ -315,6 +474,14 @@ async function importWallet({
     // Reaching here: the deserialisation was a full cryptographic success, so a wallet is now imported!
     fWalletLoaded = true;
 
+    // Hide wipe wallet button if there is no private key
+    if (masterKey.isViewOnly || masterKey.isHardwareWallet) {
+      domWipeWallet.hidden = true;
+      if (hasEncryptedWallet()) {
+	domRestoreWallet.hidden = false;
+      }
+    }
+
     getNewAddress({updateGUI: true});
     // Display Text
     domGuiWallet.style.display = 'block';
@@ -324,8 +491,8 @@ async function importWallet({
     jdenticon();
 
     // Hide the encryption warning if the user pasted the private key
-    // Or in Testnet mode or is using a hardware wallet
-    if (!(newWif || cChainParams.current.isTestnet || isHardwareWallet)) domGenKeyWarning.style.display = 'block';
+    // Or in Testnet mode or is using a hardware wallet or is view-only mode
+    if (!(newWif || cChainParams.current.isTestnet || isHardwareWallet || masterKey.isViewOnly)) domGenKeyWarning.style.display = 'block';
 
     // Fetch state from explorer
     if (networkEnabled) refreshChainData();
@@ -424,6 +591,7 @@ async function encryptWallet(strPassword = '') {
 
   // Set the encrypted wallet in localStorage
   localStorage.setItem("encwif", strEncWIF);
+  localStorage.setItem("publicKey", await masterKey.keyToExport);
 
   // Hide the encryption warning
   domGenKeyWarning.style.display = 'none';
@@ -440,11 +608,14 @@ async function decryptWallet(strPassword = '') {
   // Prompt to decrypt it via password
   const strDecWIF = await decrypt(strEncWIF, strPassword);
   if (!strDecWIF || strDecWIF === "decryption failed!") {
-    if (strDecWIF) return alert("Incorrect password!");
+    if (strDecWIF) return createAlert("warning", "Incorrect password!", 6000);
   } else {
-    importWallet({
-      newWif: strDecWIF
+    await importWallet({
+      newWif: strDecWIF,
+      skipConfirmation: true,
     });
+    // Ensure publicKey is set
+    localStorage.setItem("publicKey", await masterKey.keyToExport);
     return true;
   }
 }

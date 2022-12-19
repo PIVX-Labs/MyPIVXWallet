@@ -472,12 +472,18 @@
                                       <i id="guiNewAddress" onclick="getNewAddress({updateGUI: true, verify: true})" class="fas fa-sync fa-stacked-ptr"></i>
                                       <i onclick="toClipboard('guiAddress', this)" id="guiAddressCopy" class="fas fa-clipboard fa-stacked-ptr"></i>
                                       <i id="guiExportWallet" onclick="toggleExportUI()" class="fas fa-share fa-stacked-ptr"></i>
+				      <i id="guiWipeWallet" onclick="wipePrivateData()" class="fas fa-lock fa-stacked-ptr"></i>
+				      <i id="guiRestoreWallet" onclick="restoreWallet()" class="fas fa-unlock fa-stacked-ptr" hidden></i>
+				      
                                     </b>
                                 </div>
                             </div>
                           <div id="exportKeyDiv" hidden="true">
-                            Your private key:
-                            <div class="export-key private-key-area" id="exportKeyText"> </div>
+                            <div id="exportPrivateKey">Your private key:
+				<div class="export-key private-key-area" id="exportPrivateKeyText"> </div>
+			    </div>
+			    Your public key:
+                            <div class="export-key private-key-area" id="exportPublicKeyText"> </div>
                           </div>
                         </div>
                     </div>
@@ -1029,8 +1035,12 @@
     const domMnemonicModalContent = document.getElementById("ModalMnemonicContent");
     const domMnemonicModalButton = document.getElementById("modalMnemonicConfirmButton");
     const domExportDiv = document.getElementById("exportKeyDiv");
-    const domExportKey = document.getElementById("exportKeyText");
+    const domExportPublicKey = document.getElementById("exportPublicKeyText");
+    const domExportPrivateKeyHold = document.getElementById("exportPrivateKey");
+    const domExportPrivateKey = document.getElementById("exportPrivateKeyText");
     const domExportWallet = document.getElementById("guiExportWallet");
+    const domWipeWallet = document.getElementById("guiWipeWallet");
+    const domRestoreWallet = document.getElementById("guiRestoreWallet");
     const domNewAddress = document.getElementById("guiNewAddress");
     const domConfirmModalHeader = document.getElementById("confirmModalHeader");
     const domConfirmModalTitle = document.getElementById("confirmModalTitle");
@@ -1208,6 +1218,9 @@
 
     async function startMasternode(fRestart = false) {
       if (localStorage.getItem("masternode")) {
+	if (masterKey.isViewOnly) {
+	  return createAlert("warning", "Can't start masternode in view only mode", 6000);
+	}
         const cMasternode = new Masternode(JSON.parse(localStorage.getItem("masternode")));
         if (await cMasternode.start()) {
           createAlert('success', '<b>Masternode ' + (fRestart ? 're' : '') + 'started!</b>', 4000);
@@ -1226,6 +1239,9 @@
     }
 
     async function createMasternode() {
+      if (masterKey.isViewOnly) {
+        return createAlert("warning", "Can't create a masternode in view only mode", 6000);
+      }
       const fGeneratePrivkey = domMnCreateType.value === "VPS";
       const [strAddress,strAddressPath] = await getNewAddress();
       const nValue = cChainParams.current.collateralInSats;
@@ -1394,6 +1410,10 @@
       domAccessWalletBtn.style.display = 'none';
 
       // If we have a local wallet, display the decryption prompt
+      // This is no longer being used, as the user will be put in view-only
+      // mode when logging in, however if the user locked the wallet before
+      // #52 there would be no way to recover the public key without getting
+      // The password from the user
       if (hasEncryptedWallet()) {
         domPrivKey.placeholder = 'Enter your wallet password';
         domImportWalletText.innerText = 'Unlock Wallet';
@@ -1478,9 +1498,21 @@
     async function toggleExportUI() {
       domExportDiv.hidden = !domExportDiv.hidden;
       if (!domExportDiv.hidden) {
-        domExportKey.innerText = hasEncryptedWallet() ? localStorage.getItem("encwif") : masterKey.keyToBackup;
+	if (hasEncryptedWallet()) {
+	  domExportPrivateKey.innerText = localStorage.getItem("encwif");
+	  domExportPrivateKeyHold.hidden = false;
+	} else {
+	  if(masterKey.isViewOnly) {
+	    domExportPrivateKeyHold.hidden = true;
+	  } else {
+	    domExportPrivateKey.innerText = masterKey.keyToBackup;
+	    domExportPrivateKeyHold.hidden = false;
+	  }
+	}
+
+	domExportPublicKey.innerText = await masterKey.keyToExport;
       } else {
-        domExportKey.innerText = "";
+        domExportPrivateKey.innerText = "";
       }
     }
     
@@ -1644,9 +1676,13 @@
     }
 
     function undelegateGUI() {
+      if (masterKey.isViewOnly) {
+	return createAlert("warning", "Attempting to undelegate in view only mode.", 6000);
+      }
       // Verify the amount
       const nAmount = Math.round(Number(domGuiUndelegateAmount.value.trim()) * COIN);
       if(!validateAmount(nAmount)) return;
+
       undelegate(nAmount);
     }
 
@@ -1772,6 +1808,9 @@
     }
 
     function delegateGUI() {
+      if(masterKey.isViewOnly) {
+	return createAlert("warning", "Attempting to delegate in view only mode.", 6000);
+      }
       // Verify the amount; Delegations must be a minimum of 1 PIV, enforced by the network
       const nAmount = Number(domGuiDelegateAmount.value.trim()) * COIN;
       if (!validateAmount(nAmount, COIN)) return;
@@ -1950,6 +1989,10 @@
     async function createTxGUI() {
       if (!hasWalletUnlocked(true)) return;
       
+      if(masterKey.isViewOnly) {
+	return createAlert("warning", "Attempting to send funds in view only mode.", 6000);
+      }
+      
       // Clear the inputs on 'Continue'
       if (domGenIt.innerHTML === 'Continue') {
 	domGenIt.innerHTML = 'Send Transaction';
@@ -2086,6 +2129,38 @@
         }
       }
       domGenIt.innerHTML = "Continue";
+    }
+
+  async function wipePrivateData() {
+      const title = hasEncryptedWallet() ?
+		    "Do you want to lock your wallet?" :
+		    "Do you want to wipe your wallet private data?";
+      const html = hasEncryptedWallet() ?
+		   "You will need to enter your password to access your funds" :
+		   "You will lose access to your funds if you haven't backed up your private key or seed phrase";
+      if (await confirmPopup({
+	title,
+	html,
+      })) {
+	masterKey.wipePrivateData();
+	domWipeWallet.hidden = true;
+	if (hasEncryptedWallet()) {
+	  domRestoreWallet.hidden = false;
+	}
+      }
+    }
+
+    async function restoreWallet() {
+      if(await confirmPopup({
+	title: "Unlock your wallet",
+	html: '<input type="password" id="restoreWalletPassword" placeholder="Wallet password">',
+      })) {
+	const password = document.getElementById("restoreWalletPassword").value;
+	if(await decryptWallet(password)) {
+	  domRestoreWallet.hidden = true;
+	  domWipeWallet.hidden = false;
+	}
+      }
     }
 
     
@@ -2365,16 +2440,18 @@
 
     if (cMasternodeData.status === "MISSING") {
       domMnTextErrors.innerHTML = "Masternode is currently <b>OFFLINE</b>";
-      createAlert('warning', 'Your masternode is offline, we will try to start it', 6000);
-      // try to start the masternode
-      const started = await cMasternode.start();
-      if (started) {
-        domMnTextErrors.innerHTML = "Masternode successfully started!";
-        createAlert('success', 'Masternode successfully started!, it will be soon online', 6000);
-        localStorage.setItem("masternode", JSON.stringify(cMasternode));
-      } else {
-        domMnTextErrors.innerHTML = "We couldn't start your masternode";
-        createAlert('warning', 'We could not start your masternode', 6000);
+      if (!masterKey.isViewOnly) {
+	createAlert('warning', 'Your masternode is offline, we will try to start it', 6000);
+	// try to start the masternode
+	const started = await cMasternode.start();
+	if (started) {
+          domMnTextErrors.innerHTML = "Masternode successfully started!";
+          createAlert('success', 'Masternode successfully started!, it will be soon online', 6000);
+          localStorage.setItem("masternode", JSON.stringify(cMasternode));
+	} else {
+          domMnTextErrors.innerHTML = "We couldn't start your masternode";
+          createAlert('warning', 'We could not start your masternode', 6000);
+	}
       }
     } else if (cMasternodeData.status === "ENABLED" || cMasternodeData.status === "PRE_ENABLED") {
       if (fAlert) createAlert('success', `Your masternode status is <b> ${sanitizeHTML(cMasternodeData.status)} </b>`, 6000);
@@ -2423,8 +2500,14 @@
         domGenerateWallet.style.display = "none";
         domGenVanityWallet.style.display = "none";
 
-        // Display the password unlock upfront
-        accessOrImportWallet();
+	const publicKey = localStorage.getItem("publicKey");
+
+	if (publicKey) {
+	  importWallet({newWif: publicKey});
+	} else {
+          // Display the password unlock upfront
+          accessOrImportWallet();
+	}
       }
 
       // Payment processor redirect
@@ -2438,7 +2521,7 @@
 
     setInterval(refreshChainData, 15000);
     domPrefix.value = ""
-    domPrefixNetwork.innerText = cChainParams.current.PUBKEY_PREFIX.join(' or ');
+      domPrefixNetwork.innerText = cChainParams.current.PUBKEY_PREFIX.join(' or ');
   </script>
 
 </body>

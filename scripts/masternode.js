@@ -104,16 +104,14 @@ class Masternode {
      */
     static getToSign({walletPrivateKey, addr, mnPrivateKey, sigTime}) {
 	const [ ip, port ] = addr.split(":");
-	const publicKey = deriveAddress({
+        const publicKey = Crypto.util.hexToBytes(deriveAddress({
 	    pkBytes: parseWIF(walletPrivateKey, true),
-	    output: "RAW_BYTES",
-	    compress: true,
-	});
-	const mnPublicKey = deriveAddress({
+	    output: "COMPRESSED_HEX",
+        }));
+        const mnPublicKey = Crypto.util.hexToBytes(deriveAddress({
 	    pkBytes: parseWIF(mnPrivateKey, true),
-	    output: "RAW_BYTES",
-	    compress: false,
-	});
+	    output: "UNCOMPRESSED_HEX",
+        }));
 
 	const pkt = [
 	    ...Masternode._numToBytes(1, 4, true), // Message version
@@ -190,17 +188,16 @@ class Masternode {
 	const sigTime = Math.round(Date.now() / 1000);
 	const blockHash = await Masternode.getLastBlockHash();
 	const [ ip, port ] = this.addr.split(':');
-	const walletPrivateKey=await this._getWalletPrivateKey()
-	const walletPublicKey = deriveAddress({
+	const walletPrivateKey = await this._getWalletPrivateKey()
+        const walletPublicKey = Crypto.util.hexToBytes(deriveAddress({
 	    pkBytes: parseWIF(walletPrivateKey, true),
-	    output: "RAW_BYTES",
-	    compress: true,
-	});
-	const mnPublicKey = deriveAddress({
+	    output: "COMPRESSED_HEX",
+        }));
+        const mnPublicKey = Crypto.util.hexToBytes(deriveAddress({
 	    pkBytes: parseWIF(this.mnPrivateKey, true),
-	    output: "RAW_BYTES",
+	    output: "UNCOMPRESSED_HEX",
 	    compress: false,
-	});
+        }));
 	const sigBytes = await this.getSignedMessage(sigTime);
 	const sigPingBytes = await this.getSignedPingMessage(sigTime, blockHash);
 

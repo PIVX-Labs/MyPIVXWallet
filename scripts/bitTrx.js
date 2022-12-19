@@ -170,7 +170,7 @@
 		/* sign an input */
 		btrx.signinput = async function(index, masterKey, sigHashType, txType = 'pubkey') {
 			const strWIF = await masterKey.getPrivateKey(this.inputs[index].path);
-			const bPubkeyBytes = deriveAddress({pkBytes: parseWIF(strWIF), fNoEncoding: true});
+                        const bPubkeyBytes = Crypto.util.hexToBytes(deriveAddress({pkBytes: parseWIF(strWIF), output: "COMPRESSED_HEX"}));
 			const nSigHashType = sigHashType || 1;
 
 			// Create signature
