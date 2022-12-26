@@ -48,7 +48,11 @@
 			buf.push(OP['HASH160']);
 			buf.push(OP['ROT']);
 			buf.push(OP['IF']);
-			buf.push(OP['CHECKCOLDSTAKEVERIFY']);
+			if(cachedBlockCount >= cChainParams.current.Consensus.UPGRADE_V6_0) {
+				buf.push(OP['CHECKCOLDSTAKEVERIFY']);
+			} else {
+				buf.push(OP['CHECKCOLDSTAKEVERIFY_LOF']);
+			}
 			buf.push(addrCSDecoded.length);
 			buf = buf.concat(addrCSDecoded); // staking key in bytes
 			buf.push(OP['ELSE']);
@@ -166,7 +170,7 @@
 		/* sign an input */
 		btrx.signinput = async function(index, masterKey, sigHashType, txType = 'pubkey') {
 			const strWIF = await masterKey.getPrivateKey(this.inputs[index].path);
-			const bPubkeyBytes = deriveAddress({pkBytes: parseWIF(strWIF), fNoEncoding: true});
+                        const bPubkeyBytes = Crypto.util.hexToBytes(deriveAddress({pkBytes: parseWIF(strWIF), output: "COMPRESSED_HEX"}));
 			const nSigHashType = sigHashType || 1;
 
 			// Create signature

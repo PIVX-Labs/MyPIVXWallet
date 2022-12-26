@@ -1,57 +1,153 @@
 'use strict';
-
+/**
+ * Abstract class masterkey
+ * @abstract
+ */
 class MasterKey {
   
   constructor() { }
-  
+
+  /**
+   * @param {String} [path] - BIP32 path pointing to the private key.
+   * @return {Promise<Array<Number>>} Array of bytes containing private key
+   * @abstract
+   */
   async getPrivateKeyBytes(path) {
     throw new Error("Not implemented");
   }
   
+  /**
+   * @param {String} [path] - BIP32 path pointing to the private key.
+   * @return {String} encoded private key
+   * @abstract
+   */
   async getPrivateKey(path) {
     return generateOrEncodePrivkey(await this.getPrivateKeyBytes(path)).strWIF;
   }
-  
+
+  /**
+   * @param {String} [path] - BIP32 path pointing to the address
+   * @return {String} Address
+   * @abstract
+   */
   async getAddress(path) {
     return deriveAddress({pkBytes: await this.getPrivateKeyBytes(path)});
   }
   
+  /**
+   * @param {String} path - BIP32 path pointing to the xpub
+   * @return {Promise<String>} xpub
+   * @abstract
+   */
   async getxpub(path) {
     throw new Error("Not implemented");
   }
-  
-  get keyToBackup() {
+
+  /**
+   * Wipe all private data from key.
+   * @return {void}
+   * @abstract
+   */
+  wipePrivateData() {
     throw new Error("Not implemented");
   }
   
+  /**
+   * @return {String} private key suitable for backup.
+   * @abstract
+   */
+  get keyToBackup() {
+    throw new Error("Not implemented");
+  }
+
+  /**
+   * @return {String} public key to export. Only suitable for monitoring balance.
+   * @abstract
+   */
+  get keyToExport() {
+    throw new Error("Not implemented");
+  }
+
+  /**
+   * @return {Boolean} Whether or not this is a Hierarchical Deterministic wallet
+   */
   get isHD() {
     return this._isHD;
   }
+
+  /**
+   * @return {Boolean} Whether or not this is a hardware wallet
+   */
   get isHardwareWallet() {
     return this._isHardwareWallet;
+  }
+
+  /**
+   * @return {Boolean} Whether or not this key is view only or not
+   */
+  get isViewOnly() {
+    return this._isViewOnly;
   }
 }
 
 class HdMasterKey extends MasterKey {
-  constructor({seed, xpriv}) {
+  constructor({seed, xpriv, xpub}) {
     super();
     // Generate the HDKey
     if(seed) this._hdKey = HDKey.fromMasterSeed(seed);
     if(xpriv) this._hdKey = HDKey.fromExtendedKey(xpriv);
-    if (!this._hdKey) throw new Error("Both seed and xpriv are undefined");
+    if(xpub) this._hdKey = HDKey.fromExtendedKey(xpub);
+    this._isViewOnly = !!xpub;
+    if (!this._hdKey) throw new Error("All of seed, xpriv and xpub are undefined");
     this._isHD = true;
     this._isHardwareWallet = false;
   }
   
   async getPrivateKeyBytes(path) {
+    if(this.isViewOnly) {
+      throw new Error("Trying to get private key bytes from a view only key");
+    }
     return this._hdKey.derive(path).privateKey;
   }
   
   get keyToBackup() {
+    if (this.isViewOnly) {
+      throw new Error("Trying to get private key from a view only key");
+    }
     return this._hdKey.privateExtendedKey;
   }
+  
   async getxpub(path) {
+    if(this.isViewOnly) return this._hdKey.publicExtendedKey;
     return this._hdKey.derive(path).publicExtendedKey;
+  }
+
+  getAddress(path) {
+    let child;
+    if (this.isViewOnly) {
+      // If we're view only we can't derive hardened keys, so we'll assume
+      // That the xpub has already been derived
+      child = this._hdKey.derive(path.split("/").filter(n=>!n.includes("'")).join("/"))
+    } else {
+      child = this._hdKey.derive(path);
+    }
+    return deriveAddress({publicKey: Crypto.util.bytesToHex(child.publicKey)});
+  }
+
+  wipePrivateData() {
+    if(this._isViewOnly) return;
+
+    this._hdKey = HDKey.fromExtendedKey(this.keyToExport);
+    this._isViewOnly = true;
+  }
+
+  get keyToExport() {
+    if (this._isViewOnly) return this._hdKey.publicExtendedKey;
+    // We need the xpub to point at the account level
+    return this._hdKey.derive(getDerivationPath(false)
+				     .split("/")
+				     .slice(0, 4)
+				     .join("/")).publicExtendedKey;
   }
 }
 
@@ -79,17 +175,43 @@ class HardwareWalletMasterKey extends MasterKey {
     }
     return this.xpub;
   }
+
+  // Hardware Wallets don't have exposed private data
+  wipePrivateData() { }
+  
+  get isViewOnly() {
+    return false;
+  }
+  get keyToExport() {
+    return this.getxpub(getDerivationPath(true)
+			.split("/")
+			.filter(v=>!v.includes("'"))
+			.join("/"));
+  }
 }
 
 class LegacyMasterKey extends MasterKey {
-  constructor (pkBytes) {
+  constructor ({pkBytes, address}) {
     super();
     this._isHD = false;
     this._isHardwareWallet = false;
     this._pkBytes = pkBytes;
+    this._address = address || super.getAddress();
+    this._isViewOnly = !!address;
+  }
+
+  getAddress() {
+    return this._address;
+  }
+
+  get keyToExport() {
+    return this._address;
   }
   
   async getPrivateKeyBytes(_path) {
+    if (this.isViewOnly) {
+      throw new Error("Trying to get private key bytes from a view only key");
+    }
     return this._pkBytes;
   }
   
@@ -99,6 +221,11 @@ class LegacyMasterKey extends MasterKey {
   
   async getxpub(path) {
     throw new Error("Trying to get an extended public key from a legacy address");
+  }
+  
+  wipePrivateData() {
+    this._pkBytes = null;
+    this._isViewOnly = true;
   }
 }
 
@@ -116,47 +243,52 @@ const LEDGER_ERRS = new Map([
 ]);
 
 // Construct a full BIP44 pubkey derivation path from it's parts
-function getDerivationPath(fLedger = false, nAccount = 0, nReceiving = 0, nIndex = 0) {
+function getDerivationPath(fLedger = false,nAccount = 0, nReceiving = 0, nIndex = 0) {
   // Coin-Type is different on Ledger, as such, we modify it if we're using a Ledger to derive a key
   const strCoinType = fLedger ? cChainParams.current.BIP44_TYPE_LEDGER : cChainParams.current.BIP44_TYPE;
+  if (!masterKey.isHD && !fLedger) {
+    return `:)//${strCoinType}'`
+  }
   return `m/44'/${strCoinType}'/${nAccount}'/${nReceiving}/${nIndex}`;
 }
 
 // Verify the integrity of a WIF private key, optionally parsing and returning the key payload
-function verifyWIF(strWIF = "", fParseBytes = false) {
+function verifyWIF(strWIF = "", fParseBytes = false, skipVerification = false) {
   // Convert from Base58
   const bWIF = from_b58(strWIF);
-
-  // Verify the byte length
-  if (bWIF.byteLength !== PRIVKEY_BYTE_LENGTH) {
-    throw Error("Private key length (" + bWIF.byteLength + ") is invalid, should be " + PRIVKEY_BYTE_LENGTH + "!");
+    
+  if(!skipVerification) {
+    // Verify the byte length
+    if (bWIF.byteLength !== PRIVKEY_BYTE_LENGTH) {
+      throw Error("Private key length (" + bWIF.byteLength + ") is invalid, should be " + PRIVKEY_BYTE_LENGTH + "!");
+    }
+    
+    // Verify the network byte
+    if (bWIF[0] !== cChainParams.current.SECRET_KEY) {
+      // Find the network it's trying to use, if any
+      const cNetwork = Object.keys(cChainParams).filter(strNet => strNet !== 'current').map(strNet => cChainParams[strNet]).find(cNet => cNet.SECRET_KEY === bWIF[0]);
+      // Give a specific alert based on the byte properties
+      throw Error(cNetwork ? "This private key is for " + (cNetwork.isTestnet ? "Testnet" : "Mainnet") + ", wrong network!" : "This private key belongs to another coin, or is corrupted.");
+    }
+    
+    // Perform SHA256d hash of the WIF bytes
+    const shaHash = new jsSHA(0, 0, { "numRounds": 2 });
+    shaHash.update(bWIF.slice(0, 34));
+    
+    // Verify checksum (comparison by String since JS hates comparing object-like primitives)
+    const bChecksumWIF = bWIF.slice(bWIF.byteLength - 4);
+    const bChecksum = shaHash.getHash(0).slice(0, 4);
+    if (bChecksumWIF.join('') !== bChecksum.join('')) {
+      throw Error("Private key checksum is invalid, key may be modified, mis-typed, or corrupt.");
+    }
   }
-
-  // Verify the network byte
-  if (bWIF[0] !== cChainParams.current.SECRET_KEY) {
-    // Find the network it's trying to use, if any
-    const cNetwork = Object.keys(cChainParams).filter(strNet => strNet !== 'current').map(strNet => cChainParams[strNet]).find(cNet => cNet.SECRET_KEY === bWIF[0]);
-    // Give a specific alert based on the byte properties
-    throw Error(cNetwork ? "This private key is for " + (cNetwork.isTestnet ? "Testnet" : "Mainnet") + ", wrong network!" : "This private key belongs to another coin, or is corrupted.");
-  }
-
-  // Perform SHA256d hash of the WIF bytes
-  const shaHash = new jsSHA(0, 0, { "numRounds": 2 });
-  shaHash.update(bWIF.slice(0, 34));
-
-  // Verify checksum (comparison by String since JS hates comparing object-like primitives)
-  const bChecksumWIF = bWIF.slice(bWIF.byteLength - 4);
-  const bChecksum = shaHash.getHash(0).slice(0, 4);
-  if (bChecksumWIF.join('') !== bChecksum.join('')) {
-    throw Error("Private key checksum is invalid, key may be modified, mis-typed, or corrupt.");
-  }
-
+  
   return fParseBytes ? Uint8Array.from(bWIF.slice(1, 33)) : true;
 }
 
 // A convenient alias to verifyWIF that returns the raw byte payload
-function parseWIF(strWIF) {
-  return verifyWIF(strWIF, true);
+function parseWIF(strWIF, skipVerification = false) {
+  return verifyWIF(strWIF, true, skipVerification);
 }
 
 // Generate a new private key OR encode an existing private key from raw bytes
@@ -185,26 +317,61 @@ function generateOrEncodePrivkey(pkBytesToEncode) {
   return { pkBytes, strWIF: to_b58(keyWithChecksum) };
 }
 
-// Derive a Secp256k1 network-encoded public key (coin address) from raw private or public key bytes
+/**
+ * Compress an uncompressed Public Key in byte form
+ * @param {Array<Number> | Uint8Array} pubKeyBytes - The uncompressed public key bytes
+ * @returns {Array<Number>} The compressed public key bytes
+ */
+function compressPublicKey(pubKeyBytes) {
+  if(pubKeyBytes.length != 65) throw new Error("Attempting to compress an invalid uncompressed key");
+  const x = pubKeyBytes.slice(1, 33);
+  const y = pubKeyBytes.slice(33);
+
+  // Compressed key is [key_parity + 2, x]
+  return [ y[31] % 2 === 0 ? 2 : 3, ...x ];
+}
+
+/**
+ * Derive a Secp256k1 network-encoded public key (coin address) from raw private or public key bytes
+ * @param {Object} options - The object to deconstruct
+ * @param {String} [options.publicKey] - The hex encoded public key. Can be both compressed or uncompressed
+ * @param {Array<Number> | Uint8Array} [options.pkBytes] - An array of bytes containing the private key
+ * @param {"ENCODED" | "UNCOMPRESSED_HEX" | "COMPRESSED_HEX"} options.output - Output
+ * @return {String} the public key with the specified encoding
+ */
 function deriveAddress({
   pkBytes,
   publicKey,
-  fNoEncoding
+  output = "ENCODED",
 }) {
   if(!pkBytes && !publicKey) return null;
+  const compress = output !== "UNCOMPRESSED_HEX";
   // Public Key Derivation
-  let nPubkey = (publicKey || Crypto.util.bytesToHex(nobleSecp256k1.getPublicKey(pkBytes))).substring(2)
-  const pubY = uint256(nPubkey.substr(64), 16);
-  nPubkey = nPubkey.substr(0, 64);
-  const publicKeyBytesCompressed = Crypto.util.hexToBytes(nPubkey);
-  publicKeyBytesCompressed.unshift(pubY.isEven() ? 2 : 3);
+  let pubKeyBytes = (publicKey ? Crypto.util.hexToBytes(publicKey) : (nobleSecp256k1.getPublicKey(pkBytes, compress)));
 
-  // If we're only trying to derive a Secp256k1 pubkey (not an encoded address), return early
-  if (fNoEncoding) return publicKeyBytesCompressed;
+  if (output === "UNCOMPRESSED_HEX") {
+    if (pubKeyBytes.length !== 65) {
+      // It's actually possible, but it's probably not something that we'll need
+      throw new Error("Can't uncompress an already compressed key");
+    }
+    return Crypto.util.bytesToHex(pubKeyBytes);
+  }
+  
+  if(pubKeyBytes.length === 65) {
+    pubKeyBytes = compressPublicKey(pubKeyBytes);
+  }
+
+  if (pubKeyBytes.length != 33) {
+    throw new Error("Invalid public key");
+  }
+
+  if (output === "COMPRESSED_HEX") {
+    return Crypto.util.bytesToHex(pubKeyBytes);
+  }
 
   // First pubkey SHA-256 hash
   const pubKeyHashing = new jsSHA(0, 0, { "numRounds": 1 });
-  pubKeyHashing.update(publicKeyBytesCompressed);
+  pubKeyHashing.update(pubKeyBytes);
 
   // RIPEMD160 hash
   const pubKeyHashRipemd160 = ripemd160(pubKeyHashing.getHash(0));
@@ -235,16 +402,17 @@ function deriveAddress({
 async function importWallet({
   newWif = false,
   fRaw = false,
-  isHardwareWallet = false
+  isHardwareWallet = false,
+  skipConfirmation = false,
 } = {}) {
   const strImportConfirm = "Do you really want to import a new address? If you haven't saved the last private key, the wallet will be LOST forever.";
-  const walletConfirm = fWalletLoaded ? await confirmPopup({html: strImportConfirm}) : true;
+  const walletConfirm = (fWalletLoaded && !skipConfirmation) ? await confirmPopup({html: strImportConfirm}) : true;
 
   if (walletConfirm) {
     if (isHardwareWallet) {
       // Firefox does NOT support WebUSB, thus cannot work with Hardware wallets out-of-the-box
       if (navigator.userAgent.includes("Firefox")) {
-        return createAlert("warning", "<b>Firefox doesn't support this!</b><br>Unfortunately, Firefox does not support hardware wallets", 7500);
+        return createAlert("warning", ALERTS.WALLET_FIREFOX_UNSUPPORTED, [], 7500);
       }
 
       const publicKey = await getHardwareWalletKeys(getDerivationPath(true));
@@ -257,7 +425,7 @@ async function importWallet({
       // Hide the 'export wallet' button, it's not relevant to hardware wallets
       domExportWallet.style.display = "none";
 
-      createAlert("info", "<b>Hardware wallet ready!</b><br>Please keep your " + strHardwareName + " plugged in, unlocked, and in the PIVX app", 12500);
+      createAlert("info", ALERTS.WALLET_HARDWARE_WALLET, [{hardwareWallet : strHardwareName}], 12500);
     } else {
       // If raw bytes: purely encode the given bytes rather than generating our own bytes
       if (fRaw) {
@@ -280,9 +448,13 @@ async function importWallet({
       } else {
         // Public Key Derivation
         try {
-          if (privateImportValue.startsWith("xprv")) {
-            masterKey = new HdMasterKey({xpriv: privateImportValue})
-          } else {
+	  if (privateImportValue.startsWith("xpub")) {
+	    masterKey = new HdMasterKey({xpub: privateImportValue});
+	  } else if (privateImportValue.startsWith("xprv")) {
+            masterKey = new HdMasterKey({xpriv: privateImportValue});
+          } else if (privateImportValue.length === 34 && cChainParams.current.PUBKEY_PREFIX.includes(privateImportValue[0])) {
+	    masterKey = new LegacyMasterKey({address: privateImportValue});
+	  } else {
             // Lastly, attempt to parse as a WIF private key
             const pkBytes = parseWIF(privateImportValue);
 
@@ -290,11 +462,10 @@ async function importWallet({
             domNewAddress.style.display = "none";
 
             // Import the raw private key
-            masterKey = new LegacyMasterKey(pkBytes);
+            masterKey = new LegacyMasterKey({pkBytes});
           }
         } catch (e) {
-          return createAlert('warning', '<b>Failed to import!</b>' +
-                             '<br>' + e.message,
+          return createAlert('warning', ALERTS.FAILED_TO_IMPORT + e.message, [],
                              6000);
         }
       }
@@ -302,6 +473,14 @@ async function importWallet({
 
     // Reaching here: the deserialisation was a full cryptographic success, so a wallet is now imported!
     fWalletLoaded = true;
+
+    // Hide wipe wallet button if there is no private key
+    if (masterKey.isViewOnly || masterKey.isHardwareWallet) {
+      domWipeWallet.hidden = true;
+      if (hasEncryptedWallet()) {
+	domRestoreWallet.hidden = false;
+      }
+    }
 
     getNewAddress({updateGUI: true});
     // Display Text
@@ -312,8 +491,8 @@ async function importWallet({
     jdenticon();
 
     // Hide the encryption warning if the user pasted the private key
-    // Or in Testnet mode or is using a hardware wallet
-    if (!(newWif || cChainParams.current.isTestnet || isHardwareWallet)) domGenKeyWarning.style.display = 'block';
+    // Or in Testnet mode or is using a hardware wallet or is view-only mode
+    if (!(newWif || cChainParams.current.isTestnet || isHardwareWallet || masterKey.isViewOnly)) domGenKeyWarning.style.display = 'block';
 
     // Fetch state from explorer
     if (networkEnabled) refreshChainData();
@@ -412,6 +591,7 @@ async function encryptWallet(strPassword = '') {
 
   // Set the encrypted wallet in localStorage
   localStorage.setItem("encwif", strEncWIF);
+  localStorage.setItem("publicKey", await masterKey.keyToExport);
 
   // Hide the encryption warning
   domGenKeyWarning.style.display = 'none';
@@ -428,11 +608,14 @@ async function decryptWallet(strPassword = '') {
   // Prompt to decrypt it via password
   const strDecWIF = await decrypt(strEncWIF, strPassword);
   if (!strDecWIF || strDecWIF === "decryption failed!") {
-    if (strDecWIF) return alert("Incorrect password!");
+    if (strDecWIF) return createAlert("warning", "Incorrect password!", 6000);
   } else {
-    importWallet({
-      newWif: strDecWIF
+    await importWallet({
+      newWif: strDecWIF,
+      skipConfirmation: true,
     });
+    // Ensure publicKey is set
+    localStorage.setItem("publicKey", await masterKey.keyToExport);
     return true;
   }
 }
@@ -449,9 +632,9 @@ function hasHardwareWallet() {
 
 function hasWalletUnlocked(fIncludeNetwork = false) {
   if (fIncludeNetwork && !networkEnabled)
-    return createAlert('warning', "<b>Offline Mode is active!</b><br>Please disable Offline Mode for automatic transactions", 5500);
+    return createAlert('warning', ALERTS.WALLET_OFFLINE_AUTOMATIC, [], 5500);
     if (!masterKey) {
-      return createAlert('warning', "Please " + (hasEncryptedWallet() ? "unlock " : "import/create") + " your wallet before sending transactions!", 3500);
+      return createAlert('warning', ALERTS.WALLET_UNLOCK_IMPORT, [{unlock : (hasEncryptedWallet() ? "unlock " : "import/create")}], 3500);
   } else {
     return true;
   }
@@ -470,7 +653,7 @@ async function getHardwareWalletKeys(path, xpub = false, verify = false, _attemp
     strHardwareName = cHardwareWallet.transport.device.manufacturerName + " " + cHardwareWallet.transport.device.productName;
 
     // Prompt the user in both UIs
-    if (verify) createAlert("info", "Confirm the import on your Ledger", 3500);
+    if (verify) createAlert("info", WALLET_CONFIRM_L, [], 3500);
     const cPubKey = await cHardwareWallet.getWalletPublicKey(path, {
       verify,
       format: "legacy",
@@ -498,19 +681,19 @@ async function getHardwareWalletKeys(path, xpub = false, verify = false, _attemp
     }
     // If there's no device, nudge the user to plug it in.
     if (e.message.toLowerCase().includes('no device selected')) {
-      createAlert("info", "<b>No device available</b><br>Couldn't find a hardware wallet; please plug it in and unlock!", 10000);
+      createAlert("info", ALERTS.WALLET_NO_HARDWARE, [], 10000);
       return false;
     }
 
     // If the device is unplugged, or connection lost through other means (such as spontanious device explosion)
     if (e.message.includes("Failed to execute 'transferIn'")) {
-      createAlert("info", "<b>Lost connection to " + strHardwareName + "</b><br>It seems the " + cHardwareWallet.transport.device.productName + " was unplugged mid-operation, oops!", 10000);
+      createAlert("info", ALERTS.WALLET_HARDWARE_CONNECTION_LOST, [{hardwareWallet : strHardwareName, hardwareWalletProductionName : cHardwareWallet.transport.device.productName}], 10000);
       return false;
     }
 
     // If the ledger is busy, just nudge the user.
     if (e.message.includes('is busy')) {
-      createAlert("info", "<b>" + strHardwareName + " is waiting</b><br>Please unlock your " + cHardwareWallet.transport.device.productName + " or finish it's current prompt", 7500);
+      createAlert("info", ALERTS.WALLET_HARDWARE_BUSY, [{hardwareWallet : strHardwareName, hardwareWalletProductionName : cHardwareWallet.transport.device.productName}], 7500);
       return false;
     }
 
@@ -521,7 +704,7 @@ async function getHardwareWalletKeys(path, xpub = false, verify = false, _attemp
     }
 
     // Translate the error to a user-friendly string (if possible)
-    createAlert("warning", "<b>" + strHardwareName + "</b><br>" + (LEDGER_ERRS.get(e.statusCode) || e.message), 5500);
+    createAlert("warning", ALERTS.WALLET_HARDWARE_ERROR, [{hardwareWallet : strHardwareName, error: (LEDGER_ERRS.get(e.statusCode))}], 5500);
     return false;
   }
 }
