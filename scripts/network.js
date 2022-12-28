@@ -56,7 +56,7 @@ if (networkEnabled) {
       
       const isColdStake = cVout.scriptPubKey.type === 'coldstake';
       const isStandard = cVout.scriptPubKey.type === 'pubkeyhash';
-      const isReward = false; // Change this
+      const isReward = cTx.vout[0].hex === "";
       // We don't know what this is
       if (!isColdStake && !isStandard) {
 	continue;
