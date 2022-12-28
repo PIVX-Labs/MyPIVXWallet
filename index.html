@@ -1936,7 +1936,7 @@
       for(let i=0; i< arrUTXOs.length;i++){
         const cUTXO= arrUTXOs[i]
 	
-	if (cUTXO.isDelegate && !Mempool.isValidReward(cUTXO)) {
+	if (!Mempool.isValidUTXO(cUTXO)) {
 	  continue;
 	}
 	

@@ -56,6 +56,7 @@ if (networkEnabled) {
       
       const isColdStake = cVout.scriptPubKey.type === 'coldstake';
       const isStandard = cVout.scriptPubKey.type === 'pubkeyhash';
+      const isReward = false; // Change this
       // We don't know what this is
       if (!isColdStake && !isStandard) {
 	continue;
@@ -70,6 +71,7 @@ if (networkEnabled) {
 	height: cachedBlockCount - (cTx.confirmations - 1),
 	status: cTx.confirmations < 1 ? Mempool.PENDING : Mempool.CONFIRMED,
 	isDelegate: isColdStake,
+	isReward,
       });
     }
     getNewAddress(true);

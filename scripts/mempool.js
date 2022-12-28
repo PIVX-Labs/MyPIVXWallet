@@ -13,7 +13,7 @@ class UTXO {
      * @param {Number} UTXO.status - UTXO status enum state
      * @param {bool} UTXO.isDelegate - Whether the UTXO is a cold stake delegation
      */
-    constructor({id, path, sats, script, vout, height, status, isDelegate} = {}) {
+    constructor({id, path, sats, script, vout, height, status, isDelegate = false, isReward = false} = {}) {
         /** Transaction ID
          * @type {String} */
         this.id = id;
@@ -44,7 +44,9 @@ class UTXO {
 
         /** If it's a delegation UTXO
         * @type {bool} */
-        this.isDelegate = isDelegate || false;
+        this.isDelegate = isDelegate;
+
+	this.isReward = isReward;
     }
 
     /**
@@ -250,12 +252,16 @@ class Mempool {
     }
 
     /**
-     * Returns if a reward is fully confirmed, matured and spendable
-     * @param {UTXO} cUTXO - Reward UTXO
+     * Returns if a UTXO is valid
+     * @param {UTXO} cUTXO - UTXO
      * @returns {Boolean} `true` if the reward UTXO is spendable, `false` if not
      */
-    static isValidReward(cUTXO) {
-        return cachedBlockCount - cUTXO.height > 100;
+    static isValidUTXO(cUTXO) {
+	if (cUTXO.isReward) {
+            return cachedBlockCount - cUTXO.height > 100;
+	} else {
+	    return true;
+	}
     }
 
     /**
