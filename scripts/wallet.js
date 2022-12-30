@@ -90,7 +90,7 @@ class MasterKey {
   }
 }
 
-class HdMasterKey extends MasterKey {
+export class HdMasterKey extends MasterKey {
   constructor({seed, xpriv, xpub}) {
     super();
     // Generate the HDKey
@@ -151,7 +151,7 @@ class HdMasterKey extends MasterKey {
   }
 }
 
-class HardwareWalletMasterKey extends MasterKey {
+export class HardwareWalletMasterKey extends MasterKey {
   constructor() {
     super();
     this._isHD = true;
@@ -190,7 +190,7 @@ class HardwareWalletMasterKey extends MasterKey {
   }
 }
 
-class LegacyMasterKey extends MasterKey {
+export class LegacyMasterKey extends MasterKey {
   constructor ({pkBytes, address}) {
     super();
     this._isHD = false;
@@ -230,7 +230,7 @@ class LegacyMasterKey extends MasterKey {
 }
 
 // Ledger Hardware wallet constants
-const LEDGER_ERRS = new Map([
+export const LEDGER_ERRS = new Map([
   // Ledger error code <--> User-friendly string
   [25870, "Open the PIVX app on your device"],
   [25873, "Open the PIVX app on your device"],
@@ -243,7 +243,7 @@ const LEDGER_ERRS = new Map([
 ]);
 
 // Construct a full BIP44 pubkey derivation path from it's parts
-function getDerivationPath(fLedger = false,nAccount = 0, nReceiving = 0, nIndex = 0) {
+export function getDerivationPath(fLedger = false,nAccount = 0, nReceiving = 0, nIndex = 0) {
   // Coin-Type is different on Ledger, as such, we modify it if we're using a Ledger to derive a key
   const strCoinType = fLedger ? cChainParams.current.BIP44_TYPE_LEDGER : cChainParams.current.BIP44_TYPE;
   if (!masterKey.isHD && !fLedger) {
@@ -253,7 +253,7 @@ function getDerivationPath(fLedger = false,nAccount = 0, nReceiving = 0, nIndex 
 }
 
 // Verify the integrity of a WIF private key, optionally parsing and returning the key payload
-function verifyWIF(strWIF = "", fParseBytes = false, skipVerification = false) {
+export function verifyWIF(strWIF = "", fParseBytes = false, skipVerification = false) {
   // Convert from Base58
   const bWIF = from_b58(strWIF);
     
@@ -287,12 +287,12 @@ function verifyWIF(strWIF = "", fParseBytes = false, skipVerification = false) {
 }
 
 // A convenient alias to verifyWIF that returns the raw byte payload
-function parseWIF(strWIF, skipVerification = false) {
+export function parseWIF(strWIF, skipVerification = false) {
   return verifyWIF(strWIF, true, skipVerification);
 }
 
 // Generate a new private key OR encode an existing private key from raw bytes
-function generateOrEncodePrivkey(pkBytesToEncode) {
+export function generateOrEncodePrivkey(pkBytesToEncode) {
   // Private Key Generation
   const pkBytes = pkBytesToEncode || getSafeRand();
   const pkNetBytesLen = pkBytes.length + 2;
@@ -339,7 +339,7 @@ function compressPublicKey(pubKeyBytes) {
  * @param {"ENCODED" | "UNCOMPRESSED_HEX" | "COMPRESSED_HEX"} options.output - Output
  * @return {String} the public key with the specified encoding
  */
-function deriveAddress({
+export function deriveAddress({
   pkBytes,
   publicKey,
   output = "ENCODED",
@@ -399,7 +399,7 @@ function deriveAddress({
 }
 
 // Wallet Import
-async function importWallet({
+export async function importWallet({
   newWif = false,
   fRaw = false,
   isHardwareWallet = false,
@@ -503,7 +503,7 @@ async function importWallet({
 }
 
 // Wallet Generation
-async function generateWallet(noUI = false) {
+export async function generateWallet(noUI = false) {
     const strImportConfirm = "Do you really want to import a new address? If you haven't saved the last private key, the wallet will be LOST forever.";
     const walletConfirm = fWalletLoaded && !noUI ? await confirmPopup({html: strImportConfirm}) : true;
     if (walletConfirm) {
@@ -538,7 +538,7 @@ async function generateWallet(noUI = false) {
     return masterKey;
 }
 
-async function verifyMnemonic(strMnemonic = "", fPopupConfirm = true) {
+export async function verifyMnemonic(strMnemonic = "", fPopupConfirm = true) {
   const nWordCount = strMnemonic.trim().split(/\s+/g).length;
 
   // Sanity check: Convert to lowercase
@@ -584,7 +584,7 @@ async function benchmark(quantity) {
   console.log("Time taken to generate " + i + " addresses: " + (nEndTime - nStartTime).toFixed(2) + 'ms');
 }
 
-async function encryptWallet(strPassword = '') {
+export async function encryptWallet(strPassword = '') {
   // Encrypt the wallet WIF with AES-GCM and a user-chosen password - suitable for browser storage
   let strEncWIF = await encrypt(masterKey.keyToBackup, strPassword);
   if (!strEncWIF) return false;
@@ -600,7 +600,7 @@ async function encryptWallet(strPassword = '') {
   removeEventListener("beforeunload", beforeUnloadListener, {capture: true});
 }
 
-async function decryptWallet(strPassword = '') {
+export async function decryptWallet(strPassword = '') {
   // Check if there's any encrypted WIF available
   const strEncWIF = localStorage.getItem("encwif");
   if (!strEncWIF || strEncWIF.length < 1) return false;
@@ -620,7 +620,7 @@ async function decryptWallet(strPassword = '') {
   }
 }
 
-function hasEncryptedWallet() {
+export function hasEncryptedWallet() {
   return localStorage.getItem("encwif") ? true : false;
 }
 

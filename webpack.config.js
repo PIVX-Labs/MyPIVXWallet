@@ -3,15 +3,15 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 module.exports = {
     entry: './scripts/index.js',
-    //output: {
-//	filename: 'main.js',
-//	path: path.resolve(__dirname, 'dist'),
-  //  },
+    /*output: {
+	filename: 'main.js',
+	path: path.resolve(__dirname, 'dist'),
+    },*/
     output: {
-      path: path.resolve(__dirname, './dist'),
-      filename: './mpw.js',
-      library: 'MPW',
-      libraryTarget: 'var',
+	path: path.resolve(__dirname, './dist'),
+	filename: './mpw.js',
+	library: 'MPW',
+	libraryTarget: 'var',
     },
     mode: "development",
     module: {

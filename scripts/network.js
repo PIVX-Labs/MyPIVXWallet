@@ -192,7 +192,7 @@ var getUTXOsHeavy = async function() {
 // PIVX Labs Analytics: if you are a user, you can disable this FULLY via the Settings.
 // ... if you're a developer, we ask you to keep these stats to enhance upstream development,
 // ... but you are free to completely strip MPW of any analytics, if you wish, no hard feelings.
-var submitAnalytics = function (strType, cData = {}) {
+export function submitAnalytics(strType, cData = {}) {
     if (!networkEnabled) return;
 
     // Limit analytics here to prevent 'leakage' even if stats are implemented incorrectly or forced

@@ -2,6 +2,9 @@ import { Mempool } from "./mempool.js";
 import { en_translation } from "../locale/en/translation.js";
 import { uwu_translation } from "../locale/uwu/translation.js";
 import { translate } from "./i18n.js";
+import * as jdenticon from "jdenticon";
+import { hasEncryptedWallet } from "./wallet.js";
+import { submitAnalytics } from "./network.js";
 
 // TRANSLATION
 //Create an object of objects filled with all the translations
@@ -9,18 +12,181 @@ const translatableLanguages = {
     "en": en_translation,
     "uwu": uwu_translation
 }
-export async function openTab(evt, tabName) {
-    // Hide all screens and deactivate link highlights
-    for (const domScreen of arrDomScreens) domScreen.style.display = "none";
-    for (const domLink of arrDomScreenLinks) domLink.classList.remove("active");
 
+export let doms = {};
+export let translation = {};
+
+export function start() {
+    doms = {
+	domStart: document.getElementById("start"),
+	domNavbarToggler: document.getElementById("navbarToggler"),
+	domGuiStaking: document.getElementById('guiStaking'),
+	domGuiWallet: document.getElementById('guiWallet'),
+	domGuiBalance: document.getElementById("guiBalance"),
+	domGuiBalanceTicker: document.getElementById("guiBalanceTicker"),
+	domGuiBalanceBox: document.getElementById("guiBalanceBox"),
+	domBalanceReload: document.getElementById("balanceReload"),
+	domBalanceReloadStaking: document.getElementById("balanceReloadStaking"),
+	domGuiBalanceStaking: document.getElementById("guiBalanceStaking"),
+	domGuiBalanceStakingTicker: document.getElementById("guiBalanceStakingTicker"),
+	domGuiStakingLoadMore: document.getElementById("stakingLoadMore"),
+	domGuiStakingLoadMoreIcon: document.getElementById("stakingLoadMoreIcon"),
+	domGuiBalanceBoxStaking: document.getElementById("guiBalanceBoxStaking"),
+	domGuiDelegateAmount: document.getElementById('delegateAmount'),
+	domGuiUndelegateAmount: document.getElementById('undelegateAmount'),
+	domTxTab: document.getElementById("txTab"),
+	domStakeTab: document.getElementById("stakeTab"),
+	domsendNotice: document.getElementById("sendNotice"),
+	domSimpleTXs: document.getElementById("simpleTransactions"),
+	domSimpleTXsDropdown: document.getElementById("simpleTransactionsDropdown"),
+	domAddress1s: document.getElementById("address1s"),
+	domValue1s: document.getElementById("value1s"),
+	domGuiViewKey: document.getElementById('guiViewKey'),
+	domModalQR: document.getElementById('ModalQR'),
+	domModalQrLabel: document.getElementById('ModalQRLabel'),
+	domPrefix: document.getElementById('prefix'),
+	domPrefixNetwork: document.getElementById('prefixNetwork'),
+	domWalletToggle: document.getElementById("wToggle"),
+	domGenerateWallet: document.getElementById('generateWallet'),
+	domGenVanityWallet: document.getElementById('generateVanityWallet'),
+	domGenHardwareWallet: document.getElementById('generateHardwareWallet'),
+	//GOVERNANCE ELEMENTS
+	domGovProposalsTable: document.getElementById('proposalsTable'),
+	domGovProposalsTableBody: document.getElementById('proposalsTableBody'),
+	//MASTERNODE ELEMENTS
+	domCreateMasternode: document.getElementById('createMasternode'),
+	domControlMasternode: document.getElementById('controlMasternode'),
+	domAccessMasternode: document.getElementById('accessMasternode'),
+	domMnAccessMasternodeText: document.getElementById('accessMasternodeText'),
+	domMnCreateType: document.getElementById('mnCreateType'),
+	domMnTextErrors: document.getElementById('mnTextErrors'),
+	domMnIP: document.getElementById('mnIP'),
+	domMnTxId: document.getElementById('mnTxId'),
+	domMnPrivateKey: document.getElementById('mnPrivateKey'),
+	domMnDashboard: document.getElementById('mnDashboard'),
+	domMnProtocol: document.getElementById('mnProtocol'),
+	domMnStatus: document.getElementById('mnStatus'),
+	domMnNetType: document.getElementById('mnNetType'),
+	domMnNetIP: document.getElementById('mnNetIP'),
+	domMnLastSeen: document.getElementById('mnLastSeen'),
+
+	domAccessWallet: document.getElementById('accessWallet'),
+	domImportWallet: document.getElementById('importWallet'),
+	domImportWalletText: document.getElementById('importWalletText'),
+	domAccessWalletBtn: document.getElementById('accessWalletBtn'),
+	domVanityUiButtonTxt: document.getElementById("vanButtonText"),
+	domGenKeyWarning: document.getElementById('genKeyWarning'),
+	domEncryptWarningTxt: document.getElementById('encryptWarningText'),
+	domEncryptBtnTxt: document.getElementById('encryptButton'),
+	domEncryptPasswordBox: document.getElementById('encryptPassword'),
+	domEncryptPasswordFirst: document.getElementById('newPassword'),
+	domEncryptPasswordSecond: document.getElementById('newPasswordRetype'),
+	domGuiAddress: document.getElementById('guiAddress'),
+	domGenIt: document.getElementById("genIt"),
+	domHumanReadable: document.getElementById("HumanReadable"),
+	domTxOutput: document.getElementById("transactionFinal"),
+	domReqDesc: document.getElementById('reqDesc'),
+	domReqDisplay: document.getElementById('reqDescDisplay'),
+	domIdenticon: document.getElementById("identicon"),
+	domPrivKey: document.getElementById("privateKey"),
+	domPrivKeyPassword: document.getElementById("privateKeyPassword"),
+	domAvailToDelegate: document.getElementById('availToDelegate'),
+	domAvailToUndelegate: document.getElementById('availToUndelegate'),
+	domAnalyticsDescriptor: document.getElementById('analyticsDescriptor'),
+	domStakingRewardsList: document.getElementById('staking-rewards-content'),
+	domStakingRewardsTitle: document.getElementById('staking-rewards-title'),
+	domMnemonicModalContent: document.getElementById("ModalMnemonicContent"),
+	domMnemonicModalButton: document.getElementById("modalMnemonicConfirmButton"),
+	domExportDiv: document.getElementById("exportKeyDiv"),
+	domExportPublicKey: document.getElementById("exportPublicKeyText"),
+	domExportPrivateKeyHold: document.getElementById("exportPrivateKey"),
+	domExportPrivateKey: document.getElementById("exportPrivateKeyText"),
+	domExportWallet: document.getElementById("guiExportWallet"),
+	domWipeWallet: document.getElementById("guiWipeWallet"),
+	domRestoreWallet: document.getElementById("guiRestoreWallet"),
+	domNewAddress: document.getElementById("guiNewAddress"),
+	domConfirmModalHeader: document.getElementById("confirmModalHeader"),
+	domConfirmModalTitle: document.getElementById("confirmModalTitle"),
+	domConfirmModalContent: document.getElementById("confirmModalContent"),
+	domConfirmModalButtons: document.getElementById("confirmModalButtons"),
+	domConfirmModalConfirmButton: document.getElementById("confirmModalConfirmButton"),
+	domConfirmModalCancelButton: document.getElementById("confirmModalCancelButton"),
+	
+	masternodeLegacyAccessText: 'Access the masternode linked to this address<br> Note: the masternode MUST have been already created (however it can be online or offline)<br>  If you want to create a new masternode access with a HD wallet',
+	masternodeHDAccessText: "Access your masternodes if you have any! If you don't you can create one",
+	// Aggregate menu screens and links for faster switching
+	arrDomScreens: document.getElementsByClassName("tabcontent"),
+	arrDomScreenLinks: document.getElementsByClassName("tablinks"),
+	// Alert DOM element
+	domAlertPos: document.getElementsByClassName("alertPositioning")[0],
+    };
+    let localTranslation = localStorage.getItem('translation');
+    // Check if set in local storage
+    if(localTranslation != null){
+	translation = translatableLanguages[localTranslation];
+    }else{
+	// Check if we support the user's browser locale
+	if (arrActiveLangs.includes(strLang)) {
+            translation = translatableLanguages[strLang]
+	}else{
+            // Default to EN if the locale isn't supported yet
+            console.log("i18n: Your language (" + strLang + ") is not supported yet, if you'd like to contribute translations (for rewards!) contact us on GitHub or Discord!")
+            translation = en_translation
+	}
+    }
+    translate(translation);
+    doms.domStart.click();
+    // Configure Identicon
+    jdenticon.configure();
+
+    // Customise the UI if a saved wallet exists
+    if (hasEncryptedWallet()) {
+        // Hide the 'Generate wallet' buttons
+        domGenerateWallet.style.display = "none";
+        domGenVanityWallet.style.display = "none";
+
+	const publicKey = localStorage.getItem("publicKey");
+
+	if (publicKey) {
+	    importWallet({newWif: publicKey});
+	} else {
+            // Display the password unlock upfront
+            accessOrImportWallet();
+	}
+    }
+
+    // Payment processor redirect
+    if (requestTo && requestAmount) {
+        guiPreparePayment(requestTo, requestAmount, urlParams.has('desc') ? urlParams.get('desc') : "");
+    }
+
+    // If allowed by settings: submit a simple 'hit' (app load) to Labs Analytics
+    submitAnalytics('hit');
+    setInterval(refreshChainData, 15000);
+    doms.domPrefix.value = ""
+    doms.domPrefixNetwork.innerText = cChainParams.current.PUBKEY_PREFIX.join(' or ');
+}
+
+// WALLET STATE DATA
+export const mempool = new Mempool();
+export let arrRewards = [];
+export let cachedBlockCount = 0;
+//                        PIVX Labs' Cold Pool
+export let cachedColdStakeAddr = "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy";
+
+
+export function openTab(evt, tabName) {
+    // Hide all screens and deactivate link highlights
+    for (const domScreen of doms.arrDomScreens) domScreen.style.display = "none";
+    for (const domLink of doms.arrDomScreenLinks) domLink.classList.remove("active");
+    
     // Show and activate the given screen
     document.getElementById(tabName).style.display = "block";
     evt.currentTarget.classList.add("active");
     
     // Close the navbar if it's not already closed
-    if (!domNavbarToggler.className.includes("collapsed"))
-        domNavbarToggler.click();
+    if (!doms.domNavbarToggler.className.includes("collapsed"))
+        doms.domNavbarToggler.click();
     
     if (tabName === "Governance") {
 	updateGovernanceTab();
@@ -30,133 +196,6 @@ export async function openTab(evt, tabName) {
     }  
     
 }
-
-export let translation = {};
-export function start() {
-let localTranslation = localStorage.getItem('translation')
-// Check if set in local storage
-if(localTranslation != null){
-    translation = translatableLanguages[localTranslation];
-}else{
-    // Check if we support the user's browser locale
-    if (arrActiveLangs.includes(strLang)) {
-        translation = translatableLanguages[strLang]
-    }else{
-        // Default to EN if the locale isn't supported yet
-        console.log("i18n: Your language (" + strLang + ") is not supported yet, if you'd like to contribute translations (for rewards!) contact us on GitHub or Discord!")
-        translation = en_translation
-    }
-}
-translate(translation);
-
-// WALLET STATE DATA
-const mempool = new Mempool();
-let arrRewards = [];
-let cachedBlockCount = 0;
-//                        PIVX Labs' Cold Pool
-let cachedColdStakeAddr = "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy";
-
-const domStart = document.getElementById("start");
-const domNavbarToggler = document.getElementById("navbarToggler");
-const domGuiStaking = document.getElementById('guiStaking');
-    const domGuiWallet = document.getElementById('guiWallet');
-    const domGuiBalance = document.getElementById("guiBalance");
-    const domGuiBalanceTicker = document.getElementById("guiBalanceTicker");
-    const domGuiBalanceBox = document.getElementById("guiBalanceBox");
-    const domBalanceReload = document.getElementById("balanceReload");
-    const domBalanceReloadStaking = document.getElementById("balanceReloadStaking");
-    const domGuiBalanceStaking = document.getElementById("guiBalanceStaking");
-    const domGuiBalanceStakingTicker = document.getElementById("guiBalanceStakingTicker");
-    const domGuiStakingLoadMore = document.getElementById("stakingLoadMore");
-    const domGuiStakingLoadMoreIcon = document.getElementById("stakingLoadMoreIcon");
-    const domGuiBalanceBoxStaking = document.getElementById("guiBalanceBoxStaking");
-    const domGuiDelegateAmount = document.getElementById('delegateAmount');
-    const domGuiUndelegateAmount = document.getElementById('undelegateAmount');
-    const domTxTab = document.getElementById("txTab");
-    const domStakeTab = document.getElementById("stakeTab");
-    const domsendNotice = document.getElementById("sendNotice");
-    const domSimpleTXs = document.getElementById("simpleTransactions");
-    const domSimpleTXsDropdown = document.getElementById("simpleTransactionsDropdown");
-    const domAddress1s = document.getElementById("address1s");
-    const domValue1s = document.getElementById("value1s");
-    const domGuiViewKey = document.getElementById('guiViewKey');
-    const domModalQR = document.getElementById('ModalQR');
-    const domModalQrLabel = document.getElementById('ModalQRLabel');
-    const domPrefix = document.getElementById('prefix');
-    const domPrefixNetwork = document.getElementById('prefixNetwork');
-    const domWalletToggle = document.getElementById("wToggle");
-    const domGenerateWallet = document.getElementById('generateWallet');
-    const domGenVanityWallet = document.getElementById('generateVanityWallet');
-    const domGenHardwareWallet = document.getElementById('generateHardwareWallet');
-    //GOVERNANCE ELEMENTS
-    const domGovProposalsTable = document.getElementById('proposalsTable');
-    const domGovProposalsTableBody = document.getElementById('proposalsTableBody');
-    //MASTERNODE ELEMENTS
-    const domCreateMasternode = document.getElementById('createMasternode');
-    const domControlMasternode = document.getElementById('controlMasternode')
-    const domAccessMasternode = document.getElementById('accessMasternode');
-    const domMnAccessMasternodeText = document.getElementById('accessMasternodeText');
-    const domMnCreateType = document.getElementById('mnCreateType');
-    const domMnTextErrors = document.getElementById('mnTextErrors');
-    const domMnIP = document.getElementById('mnIP');
-    const domMnTxId = document.getElementById('mnTxId');
-    const domMnPrivateKey = document.getElementById('mnPrivateKey');
-    const domMnDashboard = document.getElementById('mnDashboard');
-    const domMnProtocol = document.getElementById('mnProtocol');
-    const domMnStatus = document.getElementById('mnStatus');
-    const domMnNetType = document.getElementById('mnNetType');
-    const domMnNetIP = document.getElementById('mnNetIP');
-    const domMnLastSeen = document.getElementById('mnLastSeen');
-
-    const domAccessWallet = document.getElementById('accessWallet');
-    const domImportWallet = document.getElementById('importWallet');
-    const domImportWalletText = document.getElementById('importWalletText');
-    const domAccessWalletBtn = document.getElementById('accessWalletBtn');
-    const domVanityUiButtonTxt = document.getElementById("vanButtonText");
-    const domGenKeyWarning = document.getElementById('genKeyWarning');
-    const domEncryptWarningTxt = document.getElementById('encryptWarningText');
-    const domEncryptBtnTxt = document.getElementById('encryptButton');
-    const domEncryptPasswordBox = document.getElementById('encryptPassword');
-    const domEncryptPasswordFirst = document.getElementById('newPassword');
-    const domEncryptPasswordSecond = document.getElementById('newPasswordRetype');
-    const domGuiAddress = document.getElementById('guiAddress');
-    const domGenIt = document.getElementById("genIt");
-    const domHumanReadable = document.getElementById("HumanReadable");
-    const domTxOutput = document.getElementById("transactionFinal");
-    const domReqDesc = document.getElementById('reqDesc');
-    const domReqDisplay = document.getElementById('reqDescDisplay');
-    const domIdenticon = document.getElementById("identicon");
-    const domPrivKey = document.getElementById("privateKey");
-    const domPrivKeyPassword = document.getElementById("privateKeyPassword");
-    const domAvailToDelegate = document.getElementById('availToDelegate');
-    const domAvailToUndelegate = document.getElementById('availToUndelegate');
-    const domAnalyticsDescriptor = document.getElementById('analyticsDescriptor');
-    const domStakingRewardsList = document.getElementById('staking-rewards-content');
-    const domStakingRewardsTitle = document.getElementById('staking-rewards-title');
-    const domMnemonicModalContent = document.getElementById("ModalMnemonicContent");
-    const domMnemonicModalButton = document.getElementById("modalMnemonicConfirmButton");
-    const domExportDiv = document.getElementById("exportKeyDiv");
-    const domExportPublicKey = document.getElementById("exportPublicKeyText");
-    const domExportPrivateKeyHold = document.getElementById("exportPrivateKey");
-    const domExportPrivateKey = document.getElementById("exportPrivateKeyText");
-    const domExportWallet = document.getElementById("guiExportWallet");
-    const domWipeWallet = document.getElementById("guiWipeWallet");
-    const domRestoreWallet = document.getElementById("guiRestoreWallet");
-    const domNewAddress = document.getElementById("guiNewAddress");
-    const domConfirmModalHeader = document.getElementById("confirmModalHeader");
-    const domConfirmModalTitle = document.getElementById("confirmModalTitle");
-    const domConfirmModalContent = document.getElementById("confirmModalContent");
-    const domConfirmModalButtons = document.getElementById("confirmModalButtons");
-    const domConfirmModalConfirmButton = document.getElementById("confirmModalConfirmButton");
-    const domConfirmModalCancelButton = document.getElementById("confirmModalCancelButton");
-	  
-    const masternodeLegacyAccessText='Access the masternode linked to this address<br> Note: the masternode MUST have been already created (however it can be online or offline)<br>  If you want to create a new masternode access with a HD wallet'
-    const masternodeHDAccessText="Access your masternodes if you have any! If you don't you can create one"
-    // Aggregate menu screens and links for faster switching
-    const arrDomScreens = document.getElementsByClassName("tabcontent");
-    const arrDomScreenLinks = document.getElementsByClassName("tablinks");
-// Alert DOM element
-const domAlertPos = document.getElementsByClassName("alertPositioning")[0];
 
 function getBalance(updateGUI = false) {
     const nBalance = mempool.getBalance();
@@ -171,9 +210,10 @@ function getBalance(updateGUI = false) {
         // Add a notice to the Send page if balance is lacking
         domsendNotice.innerHTML = nBalance ? '' : '<div class="alert alert-danger" role="alert"><h4>Note:</h4><h5>You don\'t have any funds, get some coins first!</h5></div>';
     }
-
+    
     return nBalance;
 }
+
 
 function getStakingBalance(updateGUI = false) {
     const nBalance = mempool.getDelegatedBalance();
@@ -184,7 +224,7 @@ function getStakingBalance(updateGUI = false) {
         domGuiBalanceBoxStaking.style.fontSize = Math.floor(nBalance / COIN).toString().length >= 4 ? "large" : "x-large";
         domAvailToUndelegate.innerText = "Staking: ~" + (nBalance / COIN).toFixed(2) + " " + cChainParams.current.TICKER;
     }
-
+    
     return nBalance;
 }
 
@@ -224,7 +264,7 @@ let audio = null;
 function playMusic() {
     // On first play: load the audio into memory from the host
     if (audio === null) audio = new Audio('assets/music.mp3');
-
+    
     // Play or Pause
     if (audio.paused || audio.ended) {
         audio.play();
@@ -238,20 +278,20 @@ function playMusic() {
 function toClipboard(source, caller) {
     // Fetch the text/value source
     const domCopy = document.getElementById(source);
-
+    
     // Use an invisible textbox as the clipboard source
     const domClipboard = document.getElementById('clipboard');
     domClipboard.value = domCopy.value || domCopy.innerHTML;
     domClipboard.select();
     domClipboard.setSelectionRange(0, 99999);
-
+    
     // Browser-dependent clipboard execution
     if (!navigator.clipboard) {
         document.execCommand("copy");
     } else {
         navigator.clipboard.writeText(domCopy.innerHTML);
     }
-
+    
     // Display a temporary checkmark response
     caller.classList.add("fa-check");
     caller.classList.remove("fa-clipboard");
@@ -277,15 +317,15 @@ function guiPreparePayment(strTo = "", strAmount = 0, strDesc = "") {
 
 function hideAllWalletOptions() {
     // Hide and Reset the Vanity address input
-    domPrefix.value = "";
-    domPrefix.style.display = 'none';
-
+    doms.domPrefix.value = "";
+    doms.domPrefix.style.display = 'none';
+    
     // Hide all "*Wallet" buttons
-    domGenerateWallet.style.display = 'none';
-    domImportWallet.style.display = 'none';
-    domGenVanityWallet.style.display = 'none';
-    domAccessWallet.style.display = 'none';
-    domGenHardwareWallet.style.display = 'none';
+    doms.domGenerateWallet.style.display = 'none';
+    doms.domImportWallet.style.display = 'none';
+    doms.domGenVanityWallet.style.display = 'none';
+    doms.domAccessWallet.style.display = 'none';
+    doms.domGenHardwareWallet.style.display = 'none';
 }
 
 async function govVote(hash, voteCode){
@@ -294,24 +334,24 @@ async function govVote(hash, voteCode){
         html: ALERTS.CONFIRM_POPUP_VOTE_HTML,
     }) == true) {
         if(localStorage.getItem("masternode")){
-            const cMasternode = new Masternode(JSON.parse(localStorage.getItem("masternode")));
-            if (await cMasternode.getStatus() !== "ENABLED") {
+	    const cMasternode = new Masternode(JSON.parse(localStorage.getItem("masternode")));
+	    if (await cMasternode.getStatus() !== "ENABLED") {
 		createAlert("warning","Your masternode is not enabled yet!", 6000);
 		return;
-            }
-            const result = await cMasternode.vote(hash.toString(), voteCode); //1 yes 2 no
-            if (result.includes("Voted successfully")) { //good vote
+	    }
+	    const result = await cMasternode.vote(hash.toString(), voteCode); //1 yes 2 no
+	    if (result.includes("Voted successfully")) { //good vote
 		createAlert('success', 'Vote submitted!', 6000);
-            } else if(result.includes("Error voting :")) { //If you already voted return an alert
+	    } else if(result.includes("Error voting :")) { //If you already voted return an alert
 		createAlert('warning', 'You already voted for this proposal! Please wait 1 hour', 6000);
-            } else if(result.includes("Failure to verify signature.")) { //wrong masternode private key
+	    } else if(result.includes("Failure to verify signature.")) { //wrong masternode private key
 		createAlert('warning', 'Failed to verify signature, please check your masternode\'s private key', 6000);
-            } else { //this could be everything
+	    } else { //this could be everything
 	        console.error(result);
 		createAlert('warning', 'Internal error, please try again later', 6000);
-            }
+	    }
         } else {
-            createAlert('warning', 'Access a masternode before voting!', 6000);
+	    createAlert('warning', 'Access a masternode before voting!', 6000);
         }
     }
 }
@@ -323,9 +363,9 @@ async function startMasternode(fRestart = false) {
 	}
         const cMasternode = new Masternode(JSON.parse(localStorage.getItem("masternode")));
         if (await cMasternode.start()) {
-            createAlert('success', '<b>Masternode ' + (fRestart ? 're' : '') + 'started!</b>', 4000);
+	    createAlert('success', '<b>Masternode ' + (fRestart ? 're' : '') + 'started!</b>', 4000);
         } else {
-            createAlert('warning', '<b>Failed to ' + (fRestart ? 're' : '') + 'start masternode!</b>', 4000);
+	    createAlert('warning', '<b>Failed to ' + (fRestart ? 're' : '') + 'start masternode!</b>', 4000);
         }
     }
 }
@@ -381,30 +421,30 @@ async function createMasternode() {
         const sign = await cTx.sign(masterKey, 1);
         const result = await sendTransaction(sign);
         if(result){
-            for(const tx of cTx.inputs){
+	    for(const tx of cTx.inputs){
 		mempool.autoRemoveUTXO({id: tx.outpoint.hash,path: tx.path,vout: tx.outpoint.index})
-            }
-            const futureTxid=swapHEXEndian(await hash(Crypto.util.hexToBytes((await hash((Crypto.util.hexToBytes(sign)))))));
-            mempool.addUTXO({id: futureTxid,path: changeAddressPath,sats: nChange,vout: 0,script:Crypto.util.bytesToHex(cTx.outputs[0].script),status: Mempool.PENDING})
-            mempool.addUTXO({id: futureTxid,path: strAddressPath,script:Crypto.util.bytesToHex(cTx.outputs[1].script),sats: nValue,vout: 1,status: Mempool.PENDING})
+	    }
+	    const futureTxid=swapHEXEndian(await hash(Crypto.util.hexToBytes((await hash((Crypto.util.hexToBytes(sign)))))));
+	    mempool.addUTXO({id: futureTxid,path: changeAddressPath,sats: nChange,vout: 0,script:Crypto.util.bytesToHex(cTx.outputs[0].script),status: Mempool.PENDING})
+	    mempool.addUTXO({id: futureTxid,path: strAddressPath,script:Crypto.util.bytesToHex(cTx.outputs[1].script),sats: nValue,vout: 1,status: Mempool.PENDING})
         }
     } else {
         // Format the inputs how the Ledger SDK prefers
         const arrInputs = [];
         const arrAssociatedKeysets = [];
         for (const cInput of cTx.inputs) {
-            const cInputFull = await getTxInfo(cInput.outpoint.hash);
-            arrInputs.push([await cHardwareWallet.splitTransaction(cInputFull.hex), cInput.outpoint.index]);
-            arrAssociatedKeysets.push(cInput.path);
+	    const cInputFull = await getTxInfo(cInput.outpoint.hash);
+	    arrInputs.push([await cHardwareWallet.splitTransaction(cInputFull.hex), cInput.outpoint.index]);
+	    arrAssociatedKeysets.push(cInput.path);
         }
         const cLedgerTx = await cHardwareWallet.splitTransaction(cTx.serialize());
         const strOutputScriptHex = await cHardwareWallet
-              .serializeTransactionOutputs(cLedgerTx)
-              .toString("hex");
+	      .serializeTransactionOutputs(cLedgerTx)
+	      .toString("hex");
 
         // Sign the transaction via Ledger
         const strSerialisedTx = await confirmPopup(
-            {
+	    {
 		title: ALERTS.CONFIRM_POPUP_TRANSACTION,
 		html: createTxConfirmation(outputs),
 		resolvePromise: cHardwareWallet.createPaymentTransactionNew({
@@ -412,26 +452,26 @@ async function createMasternode() {
 		    associatedKeysets: arrAssociatedKeysets,
 		    outputScriptHex: strOutputScriptHex,
 		}),
-            }
+	    }
         );
 
         // Broadcast the Hardware (Ledger) TX
         const result = await sendTransaction(strSerialisedTx);
         if(result){
-            for(const tx of cTx.inputs){
+	    for(const tx of cTx.inputs){
 		mempool.autoRemoveUTXO({id: tx.outpoint.hash,path: tx.path,vout: tx.outpoint.index})
-            }
-            const futureTxid=swapHEXEndian(await hash(Crypto.util.hexToBytes((await hash((Crypto.util.hexToBytes(strSerialisedTx)))))));
-            mempool.addUTXO({id: futureTxid,path: changeAddressPath,sats: nChange,vout: 0,script:Crypto.util.bytesToHex(cTx.outputs[0].script),status: Mempool.PENDING});
-            mempool.addUTXO({id: futureTxid,path: strAddressPath,script:Crypto.util.bytesToHex(cTx.outputs[1].script),sats: nValue,vout: 1,status: Mempool.PENDING});
+	    }
+	    const futureTxid=swapHEXEndian(await hash(Crypto.util.hexToBytes((await hash((Crypto.util.hexToBytes(strSerialisedTx)))))));
+	    mempool.addUTXO({id: futureTxid,path: changeAddressPath,sats: nChange,vout: 0,script:Crypto.util.bytesToHex(cTx.outputs[0].script),status: Mempool.PENDING});
+	    mempool.addUTXO({id: futureTxid,path: strAddressPath,script:Crypto.util.bytesToHex(cTx.outputs[1].script),sats: nValue,vout: 1,status: Mempool.PENDING});
         }
         
     }
     if(fGeneratePrivkey){
         let masternodePrivateKey= await generateMnPrivkey();
         await confirmPopup({
-            title: ALERTS.CONFIRM_POPUP_MN_P_KEY,
-            html: masternodePrivateKey + ALERTS.CONFIRM_POPUP_MN_P_KEY_HTML, 
+	    title: ALERTS.CONFIRM_POPUP_MN_P_KEY,
+	    html: masternodePrivateKey + ALERTS.CONFIRM_POPUP_MN_P_KEY_HTML, 
         });
     }
     createAlert("success", "<b>Masternode Created!<b><br>Wait 15 confirmations to proceed further");
@@ -461,15 +501,15 @@ async function importMasternode(){
 
         // If there's no valid UTXO, exit with a contextual message
         if (!cCollaUTXO) {
-            if (getBalance(false) < cChainParams.current.collateralInSats) {
+	    if (getBalance(false) < cChainParams.current.collateralInSats) {
 		// Not enough balance to create an MN UTXO
 		createAlert("warning", "You need <b>" + ((cChainParams.current.collateralInSats - getBalance(false)) / COIN) + " more " + cChainParams.current.TICKER + "</b> to create a Masternode!", 10000);
-            } else {
+	    } else {
 		// Balance is capable of a masternode, just needs to be created
 		// TODO: this UX flow is weird, is it even possible? perhaps we can re-design this entire function accordingly
 		createAlert("warning", "You have enough balance for a Masternode, but no valid collateral UTXO of " + (cChainParams.current.collateralInSats / COIN) + " " + cChainParams.current.TICKER, 10000);
-            }
-            return;
+	    }
+	    return;
         }
 
         collateralTxId = cCollaUTXO.id;
@@ -480,7 +520,7 @@ async function importMasternode(){
         const masterUtxo = mempool.getConfirmed().findLast(u=>u.path === path); // first UTXO for each address in HD
         // sanity check:
         if (masterUtxo.sats !== cChainParams.current.collateralInSats) {
-            return createAlert("warning", "This is not a suitable UTXO for a Masternode", 10000);
+	    return createAlert("warning", "This is not a suitable UTXO for a Masternode", 10000);
         }
         collateralTxId = masterUtxo.id;
         outidx = masterUtxo.vout;
@@ -502,8 +542,8 @@ async function importMasternode(){
 
 function accessOrImportWallet() {
     // Hide and Reset the Vanity address input
-    domPrefix.value = "";
-    domPrefix.style.display = 'none';
+    doms.domPrefix.value = "";
+    doms.domPrefix.style.display = 'none';
 
     // Show Import button, hide access button
     domImportWallet.style.display = 'block';
@@ -547,12 +587,12 @@ async function guiImportWallet() {
     if (!hasEncryptedWallet() && fEncrypted) {
         const strDecWIF = await decrypt(strPrivKey, strPassword);
         if (!strDecWIF || strDecWIF === "decryption failed!") {
-            return createAlert('warning', ALERTS.FAILED_TO_IMPORT, [], 6000);
+	    return createAlert('warning', ALERTS.FAILED_TO_IMPORT, [], 6000);
         } else {
-            localStorage.setItem("encwif", strPrivKey);
-            return importWallet({
+	    localStorage.setItem("encwif", strPrivKey);
+	    return importWallet({
 		newWif: strDecWIF
-            });
+	    });
         }
     }
     // Prompt for decryption of the existing wallet
@@ -574,7 +614,7 @@ function guiEncryptWallet() {
     } else {
         // Fetch our inputs, ensure they're of decent entropy + match eachother
         const strPass = domEncryptPasswordFirst.value,
-              strPassRetype = domEncryptPasswordSecond.value;
+	      strPassRetype = domEncryptPasswordSecond.value;
         if (strPass.length < MIN_PASS_LENGTH) return createAlert('warning', ALERTS.PASSWORD_TOO_SMALL, [{"MIN_PASS_LENGTH" : MIN_PASS_LENGTH}], 4000);
         if (strPass !== strPassRetype) return createAlert('warning', ALERTS.PASSWORD_DOESNT_MATCH, [], 2250);
         encryptWallet(strPass);
@@ -623,7 +663,7 @@ async function isYourAddress(address){
         const path = getDerivationPath(masterKey.isHardwareWallet, 0, 0, i);
         const testAddress = await masterKey.getAddress(path);
         if(address===testAddress){
-            return [true,path];
+	    return [true,path];
         }
         i++;
     }
@@ -642,12 +682,12 @@ async function getNewAddress({updateGUI = false, verify = false} = {}) {
     if (verify && masterKey.isHardwareWallet) {
         // Generate address to present to the user without asking to verify
         const confAddress = await confirmPopup({
-            title: ALERTS.CONFIRM_POPUP_VERIFY_ADDR,
-            html: createAddressConfirmation(address),
-            resolvePromise: masterKey.getAddress(path, { verify })
+	    title: ALERTS.CONFIRM_POPUP_VERIFY_ADDR,
+	    html: createAddressConfirmation(address),
+	    resolvePromise: masterKey.getAddress(path, { verify })
         });
         if (address !== confAddress) {
-            throw new Error("User did not verify address");
+	    throw new Error("User did not verify address");
         }
     }
 
@@ -688,7 +728,7 @@ function stopSearch() {
         thread.terminate();
     }
     while (arrWorkers.length) arrWorkers.pop();
-    domPrefix.disabled = false;
+    doms.domPrefix.disabled = false;
     domVanityUiButtonTxt.innerText = 'Create A Vanity Wallet';
     clearInterval(vanUiUpdater);
 }
@@ -697,7 +737,7 @@ async function generateVanityWallet() {
     if (isVanityGenerating) return stopSearch();
     if (typeof(Worker) === "undefined") return createAlert('error', ALERTS.UNSUPPORTED_WEBWORKERS, [], 7500);
     // Generate a vanity address with the given prefix
-    if (domPrefix.value.length === 0 || domPrefix.style.display === 'none') {
+    if (doms.domPrefix.value.length === 0 || doms.domPrefix.style.display === 'none') {
         // No prefix, display the intro!
         domPrefix.style.display = 'block';
         domGenKeyWarning.style.display = 'none';
@@ -713,7 +753,7 @@ async function generateVanityWallet() {
 
         // Ensure the input is base58 compatible
         for (const char of domPrefix.value) {
-            if (!MAP_B58.toLowerCase().includes(char.toLowerCase())) return createAlert('warning',ALERTS.UNSUPPORTED_CHARACTER, [{"char" : char}], 3500);
+	    if (!MAP_B58.toLowerCase().includes(char.toLowerCase())) return createAlert('warning',ALERTS.UNSUPPORTED_CHARACTER, [{"char" : char}], 3500);
         }
         // We also don't want users to be mining addresses for years... so cap the letters to four until the generator is more optimized
         if (domPrefix.value.length > 5) return createAlert('warning', ALERTS.UNSUPPORTED_CHARACTER, [{"char" : char}], 3500);
@@ -725,20 +765,20 @@ async function generateVanityWallet() {
         const nThreads = Math.max(Math.floor(window.navigator.hardwareConcurrency * 0.75), 1);
         console.log('Spawning ' + nThreads + ' vanity search threads!');
         while (arrWorkers.length < nThreads) {
-            arrWorkers.push(new Worker("scripts/vanitygen_worker.js"));
-            arrWorkers[arrWorkers.length - 1].onmessage = (event) => checkResult(event.data);
-            arrWorkers[arrWorkers.length - 1].postMessage(cChainParams.current.PUBKEY_ADDRESS);
+	    arrWorkers.push(new Worker("scripts/vanitygen_worker.js"));
+	    arrWorkers[arrWorkers.length - 1].onmessage = (event) => checkResult(event.data);
+	    arrWorkers[arrWorkers.length - 1].postMessage(cChainParams.current.PUBKEY_ADDRESS);
         }
 
         // GUI Updater
         domVanityUiButtonTxt.innerText = 'Stop (Searched ' + attempts.toLocaleString('en-GB') + ' keys)';
         vanUiUpdater = setInterval(() => {
-            domVanityUiButtonTxt.innerText = 'Stop (Searched ' + attempts.toLocaleString('en-GB') + ' keys)';
+	    domVanityUiButtonTxt.innerText = 'Stop (Searched ' + attempts.toLocaleString('en-GB') + ' keys)';
         }, 200);
 
         function checkResult(data) {
-            attempts++;
-            if (data.pub.substr(1, nPrefixLen).toLowerCase() == nInsensitivePrefix) {
+	    attempts++;
+	    if (data.pub.substr(1, nPrefixLen).toLowerCase() == nInsensitivePrefix) {
 		importWallet({
 		    newWif: data.priv,
 		    fRaw: true
@@ -747,7 +787,7 @@ async function generateVanityWallet() {
 		domGuiBalance.innerHTML = "0";
 		domGuiBalanceBox.style.fontSize = "x-large";
 		return console.log("VANITY: Found an address after " + attempts + " attempts!");
-            }
+	    }
         }
     }
 }
@@ -1366,7 +1406,6 @@ function addCellToTable(row,data){
     td.appendChild(document.createTextNode(data));
     td.style.border = '1px solid black';
 }
-domStart.click();
 
 async function updateGovernanceTab() {
     const proposals= await Masternode.getProposals();
@@ -1577,36 +1616,3 @@ const beforeUnloadListener = (evt) => {
     return evt.returnValue = BACKUP_OR_ENCRYPT_WALLET;
 };
 
-window.onload = (() => {
-    // Configure Identicon
-    jdenticon.configure();
-
-    // Customise the UI if a saved wallet exists
-    if (hasEncryptedWallet()) {
-        // Hide the 'Generate wallet' buttons
-        domGenerateWallet.style.display = "none";
-        domGenVanityWallet.style.display = "none";
-
-	const publicKey = localStorage.getItem("publicKey");
-
-	if (publicKey) {
-	    importWallet({newWif: publicKey});
-	} else {
-            // Display the password unlock upfront
-            accessOrImportWallet();
-	}
-    }
-
-    // Payment processor redirect
-    if (requestTo && requestAmount) {
-        guiPreparePayment(requestTo, requestAmount, urlParams.has('desc') ? urlParams.get('desc') : "");
-    }
-
-    // If allowed by settings: submit a simple 'hit' (app load) to Labs Analytics
-    submitAnalytics('hit');
-});
-
-setInterval(refreshChainData, 15000);
-domPrefix.value = ""
-domPrefixNetwork.innerText = cChainParams.current.PUBKEY_PREFIX.join(' or ');
-}
