@@ -1,10 +1,14 @@
 'use strict';
 
+import { translation } from "./global.js";
+
+export const ALERTS = {};
+
 /**
  * Takes the language name and sets the translation settings based on the language file
  * @param {string} langName 
  */
-function switchTranslation(langName){
+export function switchTranslation(langName){
     if(arrActiveLangs.includes(langName)){
       let translation = translatableLanguages[langName]
       translate(translation);
@@ -42,7 +46,7 @@ function switchTranslation(langName){
  * //returns "test this"
  * translateAlerts("test {x}" [x : "this"])
  */
-function translateAlerts(message,variables){
+export function translateAlerts(message,variables){
     variables.forEach(element => {
         message = message.replace("{"+Object.keys(element)[0]+"}",Object.values(element)[0]);
     });
@@ -55,7 +59,7 @@ function translateAlerts(message,variables){
  * @param {Array} i18nLangs 
  *
  */
-function translate(i18nLangs) {
+export function translate(i18nLangs) {
     if (!i18nLangs) return;
 
     document.querySelectorAll("[data-i18n]").forEach(function(element) {
@@ -79,7 +83,7 @@ function translate(i18nLangs) {
 /**
  * Translates the alerts by loading the data into the ALERTS object
  */
-function loadAlerts() {
+export function loadAlerts() {
     // Alerts are designated by a special 'ALERTS' entry in each translation file
     let fFoundAlerts = false;
     for (const [alert_key, alert_translation] of Object.entries(translation)) {

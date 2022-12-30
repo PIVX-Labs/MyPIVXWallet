@@ -1,7 +1,7 @@
 "use strict";
 
 /** An Unspent Transaction Output, used as Inputs of future transactions */
-class UTXO {
+export class UTXO {
     /**
      * @param {Object} UTXO
      * @param {String} UTXO.id - Transaction ID
@@ -44,7 +44,7 @@ class UTXO {
 };
 
 /** A Mempool instance, stores and handles UTXO data for the wallet */
-class Mempool {
+export class Mempool {
     constructor() {
         /** 
          * An array of all known UTXOs
@@ -273,3 +273,4 @@ class Mempool {
         return this.UTXOs.filter(cUTXO => cUTXO.status === Mempool.DELEGATE || cUTXO.status === Mempool.PENDING_COLD).reduce((a, b) => a + b.sats, 0);
     }
 };
+
