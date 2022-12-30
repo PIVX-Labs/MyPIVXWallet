@@ -4,7 +4,8 @@ import { uwu_translation } from "../locale/uwu/translation.js";
 import { translate } from "./i18n.js";
 import * as jdenticon from "jdenticon";
 import { hasEncryptedWallet } from "./wallet.js";
-import { submitAnalytics } from "./network.js";
+import { submitAnalytics, networkEnabled } from "./network.js";
+import { start as settingsStart } from "./settings.js";
 
 // TRANSLATION
 //Create an object of objects filled with all the translations
@@ -119,6 +120,15 @@ export function start() {
 	arrDomScreenLinks: document.getElementsByClassName("tablinks"),
 	// Alert DOM element
 	domAlertPos: document.getElementsByClassName("alertPositioning")[0],
+	domNetwork: document.getElementById('Network'),
+	domNetworkE: document.getElementById('NetworkE'),
+	domNetworkD: document.getElementById('NetworkD'),
+	domDebug: document.getElementById('Debug'),
+	domTestnet: document.getElementById('Testnet'),
+	domExplorerSelect: document.getElementById('explorer'),
+	domNodeSelect: document.getElementById('node'),
+	domTranslationSelect: document.getElementById('translation'),
+
     };
     let localTranslation = localStorage.getItem('translation');
     // Check if set in local storage
@@ -165,6 +175,7 @@ export function start() {
     setInterval(refreshChainData, 15000);
     doms.domPrefix.value = ""
     doms.domPrefixNetwork.innerText = cChainParams.current.PUBKEY_PREFIX.join(' or ');
+    settingsStart();
 }
 
 // WALLET STATE DATA

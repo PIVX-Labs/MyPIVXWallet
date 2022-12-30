@@ -1,5 +1,7 @@
 'use strict';
 
+import { doms } from "./global.js";
+
 // --- Default Settings
 var debug = false;            // A mode that emits verbose console info for internal MPW operations
 var networkEnabled = true;    // A lock which blocks ALL network requests in totality
@@ -8,14 +10,14 @@ let cNode = cChainParams.current.Nodes[0];
 
 let transparencyReport
 // A list of statistic keys and their descriptions
-let STATS = {
+export let STATS = {
     // Stat key   // Description of the stat, it's data, and it's purpose
     hit:          "A ping indicating an app load, no unique data is sent.",
     time_to_sync: "The time in seconds it took for MPW to last synchronise.",
     transaction:  "A ping indicating a Tx, no unique data is sent, but may be inferred from on-chain time."
 }
 
-const cStatKeys = Object.keys(STATS);
+export const cStatKeys = Object.keys(STATS);
 
 // A list of Analytics 'levels' at which the user may set depending on their privacy preferences
 let arrAnalytics = [
@@ -25,7 +27,7 @@ let arrAnalytics = [
     { name: "Balanced", stats: [STATS.hit, STATS.time_to_sync, STATS.transaction] }
 ]
 
-var cAnalyticsLevel = arrAnalytics[2];
+export let cAnalyticsLevel = arrAnalytics[2];
 
 // Users need not look below here.
 // ------------------------------
@@ -34,22 +36,28 @@ var masterKey;
 var fWalletLoaded = false;
 
 // --- DOM Cache
-const domNetwork = document.getElementById('Network');
-const domNetworkE= document.getElementById('NetworkE')
-const domNetworkD= document.getElementById('NetworkD')
-const domDebug = document.getElementById('Debug');
-const domTestnet = document.getElementById('Testnet');
-const domExplorerSelect = document.getElementById('explorer');
-const domNodeSelect = document.getElementById('node');
-const domTranslationSelect = document.getElementById('translation');
+export function start() {
+    //TRANSLATIONS
+    //to make translations work we need to change it so that we just enable or disable the visibility of the text
+    doms.domNetworkE.style.display = (networkEnabled ? '' : 'none');
+    doms.domNetworkD.style.display = (networkEnabled ? 'none' : '');
+    doms.domTestnet.style.display = cChainParams.current.isTestnet ? '': 'none';
+    doms.domDebug.style.display = debug ? '' : 'none';
 
-//TRANSLATIONS
-//to make translations work we need to change it so that we just enable or disable the visibility of the text
-domNetworkE.style.display = (networkEnabled ? '' : 'none');
-domNetworkD.style.display = (networkEnabled ? 'none' : '');
-domTestnet.style.display = cChainParams.current.isTestnet ? '': 'none';
-domDebug.style.display = debug ? '' : 'none';
+    // Hook up the 'explorer' select UI
+    document.getElementById('explorer').onchange = function(evt) {
+	setExplorer(cChainParams.current.Explorers.find(a => a.url === evt.target.value));
+    }
 
+    document.getElementById('translation').onchange = function(evt) {
+    setTranslation(evt.target.value);
+    }
+    // Hook up the 'analytics' select UI
+    document.getElementById('analytics').onchange = function(evt) {
+	setAnalytics(arrAnalytics.find(a => a.name === evt.target.value));
+    }
+    
+}
 // --- Settings Functions
 function setExplorer(explorer, fSilent = false) {
     cExplorer = explorer;
@@ -69,10 +77,6 @@ function setNode(node, fSilent = false) {
     if (!fSilent) createAlert('success', ALERTS.SWITCHED_NODE, [{node : cNode.name}], 2250);
 }
 
-// Hook up the 'explorer' select UI
-document.getElementById('explorer').onchange = function(evt) {
-    setExplorer(cChainParams.current.Explorers.find(a => a.url === evt.target.value));
-}
 
 //TRANSLATION
 /**
@@ -85,16 +89,13 @@ function setTranslation(lang, fSilent = false) {
     localStorage.setItem('translation', lang);
 }
 
-document.getElementById('translation').onchange = function(evt) {
-    setTranslation(evt.target.value);
-}
 /**
  * Fills the translation dropbox on the settings page
  */
 function fillTranslationSelect() {
 
-    while (domTranslationSelect.options.length>0) {
-        domTranslationSelect.remove(0);
+    while (doms.domTranslationSelect.options.length>0) {
+        doms.domTranslationSelect.remove(0);
     }
 
     // Add each trusted explorer into the UI selector
@@ -102,11 +103,11 @@ function fillTranslationSelect() {
         const opt = document.createElement('option');
         opt.value = lang;
         opt.innerHTML = lang;
-        domTranslationSelect.appendChild(opt);
+        doms.domTranslationSelect.appendChild(opt);
     }
 
     // And update the UI to reflect them
-    domTranslationSelect.value = (localStorage.getItem('translation') || 'en');
+    doms.domTranslationSelect.value = (localStorage.getItem('translation') || 'en');
 }
 
 function setAnalytics(level, fSilent = false) {
@@ -122,12 +123,8 @@ function setAnalytics(level, fSilent = false) {
     }
 
     // Set display + notify if allowed
-    domAnalyticsDescriptor.innerHTML = cAnalyticsLevel.name === arrAnalytics[0].name ? '' : '<h6 style="color:#dcdf6b;font-family:mono !important;"><pre style="color: inherit;">' + strDesc + '</pre></h6>';
+    doms.domAnalyticsDescriptor.innerHTML = cAnalyticsLevel.name === arrAnalytics[0].name ? '' : '<h6 style="color:#dcdf6b;font-family:mono !important;"><pre style="color: inherit;">' + strDesc + '</pre></h6>';
     if (!fSilent) createAlert('success', ALERTS.SWITCHED_ANALYTICS,[{level : cAnalyticsLevel.name}], 2250);
-}
-// Hook up the 'analytics' select UI
-document.getElementById('analytics').onchange = function(evt) {
-    setAnalytics(arrAnalytics.find(a => a.name === evt.target.value));
 }
 
 function toggleTestnet() {
@@ -138,10 +135,10 @@ function toggleTestnet() {
 
     // Update UI and static tickers
     //TRANSLATIONS
-    domTestnet.style.display = (cChainParams.current.isTestnet ? '' : 'none');
-    domGuiBalanceTicker.innerText        = cChainParams.current.TICKER;
-    domGuiBalanceStakingTicker.innerText = cChainParams.current.TICKER;
-    domPrefixNetwork.innerText = cChainParams.current.PUBKEY_PREFIX.join(' or ');
+    doms.domTestnet.style.display = (cChainParams.current.isTestnet ? '' : 'none');
+    doms.domGuiBalanceTicker.innerText        = cChainParams.current.TICKER;
+    doms.domGuiBalanceStakingTicker.innerText = cChainParams.current.TICKER;
+    doms.domPrefixNetwork.innerText = cChainParams.current.PUBKEY_PREFIX.join(' or ');
     fillExplorerSelect();
     fillNodeSelect();
     getBalance(true);
@@ -152,17 +149,17 @@ function toggleTestnet() {
 function toggleDebug() {
     debug = !debug;
     //TRANSLATION CHANGES
-    //domDebug.innerHTML = debug ? '<b>DEBUG MODE ON</b>' : '';
-    domDebug.style.display = debug ? '' : 'none';
+    //doms.domDebug.innerHTML = debug ? '<b>DEBUG MODE ON</b>' : '';
+    doms.domDebug.style.display = debug ? '' : 'none';
 
 }
 
 function toggleNetwork() {
     networkEnabled = !networkEnabled;
     //TRANSLATION CHANGE
-    //domNetwork.innerHTML = '<b>Network:</b> ' + (networkEnabled ? 'Enabled' : 'Disabled');
-    domNetworkE.style.display = (networkEnabled ? '' : 'none');
-    domNetworkD.style.display = (networkEnabled ? 'none' : '');
+    //doms.domNetwork.innerHTML = '<b>Network:</b> ' + (networkEnabled ? 'Enabled' : 'Disabled');
+    doms.domNetworkE.style.display = (networkEnabled ? '' : 'none');
+    doms.domNetworkD.style.display = (networkEnabled ? 'none' : '');
     return networkEnabled;
 }
 
@@ -181,8 +178,8 @@ function disableNetwork() {
 function fillExplorerSelect() {
     cExplorer = cChainParams.current.Explorers[0];
 
-    while (domExplorerSelect.options.length>0) {
-        domExplorerSelect.remove(0);
+    while (doms.domExplorerSelect.options.length>0) {
+        doms.domExplorerSelect.remove(0);
     }
 
     // Add each trusted explorer into the UI selector
@@ -190,7 +187,7 @@ function fillExplorerSelect() {
         const opt = document.createElement('option');
         opt.value = explorer.url;
         opt.innerHTML = explorer.name + ' (' + explorer.url.replace('https://', '') + ')';
-        domExplorerSelect.appendChild(opt);
+        doms.domExplorerSelect.appendChild(opt);
     }
 
     // Fetch settings from LocalStorage
@@ -200,14 +197,14 @@ function fillExplorerSelect() {
     setExplorer(cChainParams.current.Explorers.find(a => a.url === strSettingExplorer) || cExplorer, true);
 
     // And update the UI to reflect them
-    domExplorerSelect.value = cExplorer.url;
+    doms.domExplorerSelect.value = cExplorer.url;
 }
 
 function fillNodeSelect() {
     cNode = cChainParams.current.Nodes[0];
     
-    while (domNodeSelect.options.length>0) {
-        domNodeSelect.remove(0);
+    while (doms.domNodeSelect.options.length>0) {
+        doms.domNodeSelect.remove(0);
     }
 
     // Add each trusted node into the UI selector
@@ -215,7 +212,7 @@ function fillNodeSelect() {
         const opt = document.createElement('option');
         opt.value = node.url;
         opt.innerHTML = node.name + ' (' + node.url.replace('https://', '') + ')';
-        domNodeSelect.appendChild(opt);
+        doms.domNodeSelect.appendChild(opt);
     }
 
     // Fetch settings from LocalStorage
@@ -225,12 +222,12 @@ function fillNodeSelect() {
     setNode(cChainParams.current.Nodes.find(a => a.url === strSettingNode) || cNode, true);
 
     // And update the UI to reflect them
-    domNodeSelect.value = cNode.url;
+    doms.domNodeSelect.value = cNode.url;
 
 }
 
-// Once the DOM is ready; plug-in any settings to the UI
-addEventListener('DOMContentLoaded', () => {
+// Once the DOMS.DOM is ready; plug-in any settings to the UI
+addEventListener('DOMS.DOMContentLoaded', () => {
     const domAnalyticsSelect = document.getElementById('analytics');
 
     fillExplorerSelect();

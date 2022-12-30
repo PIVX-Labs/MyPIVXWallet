@@ -1,4 +1,6 @@
 'use strict';
+import {cAnalyticsLevel, cStatKeys, STATS} from "./settings.js";
+export let networkEnabled = true;
 
 function networkError() {
     if (disableNetwork()) {
