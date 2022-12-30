@@ -33,7 +33,7 @@ export let cAnalyticsLevel = arrAnalytics[2];
 // ------------------------------
 // Global Keystore / Wallet Information
 var masterKey;
-var fWalletLoaded = false;
+export let fWalletLoaded = false;
 
 // --- DOM Cache
 export function start() {
