@@ -11,12 +11,16 @@ import { bytesToHex, hexToBytes, dSHA256 } from "./utils.js";
 
 function validateAmount(nAmountSats, nMinSats = 10000) {
     // Validate the amount is a valid number, and meets the minimum (if any)
-    if (nAmountSats < nMinSats || isNaN(nAmountSats))
-        return createAlertWithFalse('warning', ALERTS.INVALID_AMOUNT + ALERTS.VALIDATE_AMOUNT_LOW, [{"minimumAmount" : (nMinSats / COIN)}, {"coinTicker" : cChainParams.current.TICKER}], 2500);
+    if (nAmountSats < nMinSats || isNaN(nAmountSats)) {
+        createAlert('warning', ALERTS.INVALID_AMOUNT + ALERTS.VALIDATE_AMOUNT_LOW, [{"minimumAmount" : (nMinSats / COIN)}, {"coinTicker" : cChainParams.current.TICKER}], 2500);
+	return false;
+    }
 
     // Validate the amount in Satoshi terms meets the coin's native decimal depth
-    if (!Number.isSafeInteger(nAmountSats))
-        return createAlertWithFalse('warning', ALERTS.INVALID_AMOUNT + '<br>' + ALERTS.VALIDATE_AMOUNT_DECIMAL,[{"coinDecimal" : COIN_DECIMALS}], 2500);
+    if (!Number.isSafeInteger(nAmountSats)) {
+        createAlert('warning', ALERTS.INVALID_AMOUNT + '<br>' + ALERTS.VALIDATE_AMOUNT_DECIMAL,[{"coinDecimal" : COIN_DECIMALS}], 2500);
+	return false;
+    }
 
     // Amount looks valid!
     return true;
@@ -590,4 +594,69 @@ export async function createMasternode() {
     createAlert("success", "<b>Masternode Created!<b><br>Wait 15 confirmations to proceed further");
     // Remove any previous Masternode data, if there were any
     localStorage.removeItem("masternode");
+}
+
+function addScriptLength(arrTxBytes, arrPubKey, nInputLen) { // ???
+    let n_found = 0;
+    const new_transaction_bytes = arrTxBytes;
+    for (let i = 0; i < arrTxBytes.length; i++) {
+        if (arrTxBytes[i + 1] === 71 || arrTxBytes[i + 1] === 72 || arrTxBytes[i + 1] === 73) {
+            if (arrTxBytes[i + arrTxBytes[i]] === arrTxBytes[arrTxBytes.length - 1]){
+		new_transaction_bytes[i]++;
+		n_found++;
+		if (n_found === nInputLen) {
+		    return new_transaction_bytes;
+		}
+            }
+        }
+    }
+}
+
+function findCompressedPubKey(arrTxBytes) {
+    const arrToFind = [1, 33];
+    for (let i = 0; i < arrTxBytes.length; i++) {
+        if (arrTxBytes[i] === arrToFind[0]) {
+            if (arrTxBytes[i + 1] === arrToFind[1]) {
+		const compressedPubKey = [];
+		for (let j = 0; j < 33; j++) {
+		    compressedPubKey.push(arrTxBytes[i + 2 + j]);
+		}
+		return compressedPubKey;
+            }
+        }
+    }
+}
+
+function addExtraBytes(arrTxBytes, arrPubkeyBytes, nLen) {
+    let arrNewTxBytes = [];
+    let nFound = 0;
+    for (let i = 0; i < arrTxBytes.length; i++) {
+        arrNewTxBytes.push(arrTxBytes[i]);
+        let fFound = true;
+
+        if (nFound !== nLen) {
+            for (let j = 0; j < arrPubkeyBytes.length; j++) {
+		if (arrTxBytes[i + j] !== arrPubkeyBytes[j]) {
+		    fFound = false;
+		    break;
+		}
+            }
+
+            if (fFound) {
+		arrNewTxBytes = insert(arrNewTxBytes, arrNewTxBytes.length - 2, 0);
+		nFound++;
+            }
+        }
+    }
+    return arrNewTxBytes;
+}
+
+function insert(arr, index, newItem) {
+    // part of the array before the specified index
+    return [...arr.slice(0, index),
+            // inserted item
+            newItem,
+            // part of the array after the specified index
+            ...arr.slice(index)
+           ]
 }

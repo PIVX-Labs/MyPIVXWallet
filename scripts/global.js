@@ -585,7 +585,7 @@ export async function toggleExportUI() {
 }
 
 
-function checkVanity() {
+export function checkVanity() {
     var e = event || window.event;  // get event object
     var key = e.keyCode || e.which; // get key cross-browser
     var char = String.fromCharCode(key).trim(); // convert key to char
@@ -637,7 +637,7 @@ export async function generateVanityWallet() {
 	    if (!MAP_B58.toLowerCase().includes(char.toLowerCase())) return createAlert('warning',ALERTS.UNSUPPORTED_CHARACTER, [{"char" : char}], 3500);
         }
         // We also don't want users to be mining addresses for years... so cap the letters to four until the generator is more optimized
-        if (domPrefix.value.length > 5) return createAlert('warning', ALERTS.UNSUPPORTED_CHARACTER, [{"char" : char}], 3500);
+        if (doms.domPrefix.value.length > 5) return createAlert('warning', ALERTS.UNSUPPORTED_CHARACTER, [{"char" : char}], 3500);
         isVanityGenerating = true;
       doms.domPrefix.disabled = true;
         let attempts = 0;
@@ -646,15 +646,15 @@ export async function generateVanityWallet() {
         const nThreads = Math.max(Math.floor(window.navigator.hardwareConcurrency * 0.75), 1);
         console.log('Spawning ' + nThreads + ' vanity search threads!');
         while (arrWorkers.length < nThreads) {
-	    arrWorkers.push(new Worker("scripts/vanitygen_worker.js"));
+	    arrWorkers.push(new Worker(new URL("./vanitygen_worker.js", import.meta.url)));
 	    arrWorkers[arrWorkers.length - 1].onmessage = (event) => checkResult(event.data);
 	    arrWorkers[arrWorkers.length - 1].postMessage(cChainParams.current.PUBKEY_ADDRESS);
         }
 
         // GUI Updater
-      doms.domVanityUiButtonTxt.innerText = 'Stop (Searched ' + attempts.toLocaleString('en-GB') + ' keys)';
+	doms.domVanityUiButtonTxt.innerText = 'Stop (Searched ' + attempts.toLocaleString('en-GB') + ' keys)';
         vanUiUpdater = setInterval(() => {
-	  doms.domVanityUiButtonTxt.innerText = 'Stop (Searched ' + attempts.toLocaleString('en-GB') + ' keys)';
+	    doms.domVanityUiButtonTxt.innerText = 'Stop (Searched ' + attempts.toLocaleString('en-GB') + ' keys)';
         }, 200);
 
         function checkResult(data) {
@@ -665,22 +665,17 @@ export async function generateVanityWallet() {
 		    fRaw: true
 		});
 		stopSearch();
-	doms.domuiBalance.innerHTML = "0";
-	doms.domuiBalanceBox.style.fontSize = "x-large";
+		doms.domGuiBalance.innerHTML = "0";
+		doms.domGuiBalanceBox.style.fontSize = "x-large";
 		return console.log("VANITY: Found an address after " + attempts + " attempts!");
 	    }
         }
     }
 }
 
-function toggleDropDown(id) {
+export function toggleDropDown(id) {
     const domID = document.getElementById(id);
     domID.style.display = domID.style.display === 'block' ? 'none' : 'block';
-}
-
-function createAlertWithFalse() {
-    createAlert(...arguments);
-    return false;
 }
 
 export function askForCSAddr(force = false) {
@@ -719,7 +714,7 @@ export async function wipePrivateData() {
 	html,
     })) {
 	masterKey.wipePrivateData();
-doms.domipeWallet.hidden = true;
+	doms.domWipeWallet.hidden = true;
 	if (hasEncryptedWallet()) {
 	  doms.domRestoreWallet.hidden = false;
 	}
@@ -737,78 +732,6 @@ export async function restoreWallet() {
 	  doms.domWipeWallet.hidden = false;
 	}
     }
-}
-
-
-function insert(arr, index, newItem) {
-    // part of the array before the specified index
-    return [...arr.slice(0, index),
-            // inserted item
-            newItem,
-            // part of the array after the specified index
-            ...arr.slice(index)
-           ]
-}
-
-function addScriptLength(arrTxBytes, arrTxBytes2, nInputLen) { // ???
-    let n_found = 0;
-    const new_transaction_bytes = arrTxBytes;
-    for (let i = 0; i < arrTxBytes.length; i++) {
-        if (arrTxBytes[i + 1] === 71 || arrTxBytes[i + 1] === 72 || arrTxBytes[i + 1] === 73) {
-            if (arrTxBytes[i + arrTxBytes[i]] === arrTxBytes[arrTxBytes.length - 1]){
-		new_transaction_bytes[i]++;
-		n_found++;
-		if (n_found === nInputLen) {
-		    return new_transaction_bytes;
-		}
-            }
-        }
-    }
-}
-
-function findCompressedPubKey(arrTxBytes) {
-    const arrToFind = [1, 33];
-    for (let i = 0; i < arrTxBytes.length; i++) {
-        if (arrTxBytes[i] === arrToFind[0]) {
-            if (arrTxBytes[i + 1] === arrToFind[1]) {
-		const compressedPubKey = [];
-		for (let j = 0; j < 33; j++) {
-		    compressedPubKey.push(arrTxBytes[i + 2 + j]);
-		}
-		return compressedPubKey;
-            }
-        }
-    }
-}
-
-function addExtraBytes(arrTxBytes, arrPubkeyBytes, nLen) {
-    let arrNewTxBytes = [];
-    let nFound = 0;
-    for (let i = 0; i < arrTxBytes.length; i++) {
-        arrNewTxBytes.push(arrTxBytes[i]);
-        let fFound = true;
-
-        if (nFound !== nLen) {
-            for (let j = 0; j < arrPubkeyBytes.length; j++) {
-		if (arrTxBytes[i + j] !== arrPubkeyBytes[j]) {
-		    fFound = false;
-		    break;
-		}
-            }
-
-            if (fFound) {
-		arrNewTxBytes = insert(arrNewTxBytes, arrNewTxBytes.length - 2, 0);
-		nFound++;
-            }
-        }
-    }
-    return arrNewTxBytes;
-}
-
-function addCellToTable(row,data){
-    let td=row.insertCell();
-    td.appendChild(document.createTextNode(data));
-    td.style.border = '1px solid black';
 }
 
 async function updateGovernanceTab() {
@@ -960,12 +883,12 @@ async function refreshMasternodeData(cMasternode, fAlert = false) {
 
     // If we have MN data available, update the dashboard
     if (cMasternodeData && cMasternodeData.status !== "MISSING") {
-doms.domMnTextErrors.innerHTML = "";
-doms.domMnProtocol.innerText = `(${sanitizeHTML(cMasternodeData.version)})`;
-doms.domMnStatus.innerText = sanitizeHTML(cMasternodeData.status);
-doms.domMnNetType.innerText = sanitizeHTML(cMasternodeData.network.toUpperCase());
-doms.domMnNetIP.innerText = cMasternode.addr;
-doms.domMnLastSeen.innerText = new Date(cMasternodeData.lastseen * 1000).toLocaleTimeString();
+	doms.domMnTextErrors.innerHTML = "";
+	doms.domMnProtocol.innerText = `(${sanitizeHTML(cMasternodeData.version)})`;
+	doms.domMnStatus.innerText = sanitizeHTML(cMasternodeData.status);
+	doms.domMnNetType.innerText = sanitizeHTML(cMasternodeData.network.toUpperCase());
+	doms.domMnNetIP.innerText = cMasternode.addr;
+	doms.domMnLastSeen.innerText = new Date(cMasternodeData.lastseen * 1000).toLocaleTimeString();
     }
 
     if (cMasternodeData.status === "MISSING") {

@@ -3,6 +3,7 @@
 import { translateAlerts } from "./i18n.js";
 import { doms } from "./global.js";
 import qrcode from "qrcode-generator";
+import bs58 from "bs58";
 import { ALERTS } from "./i18n.js";
 
 /* MPW constants */
@@ -16,7 +17,7 @@ export const LEN_B58= MAP_B58.length;
 
 /* --- UTILS --- */
 // Cryptographic Random-Gen
-function getSafeRand(nSize = 32) {
+export function getSafeRand(nSize = 32) {
     return crypto.getRandomValues(new Uint8Array(nSize));
 }
 
@@ -145,7 +146,7 @@ export async function convertMnPrivKeyFromHex(hexStr){
         data.push(checksum[i])
     }
     
-    return to_b58(data);
+    return bs58.encode(data);
 
 }
 
