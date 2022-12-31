@@ -36,6 +36,8 @@
     "webpack-cli": "^5.0.1"
   },
   "dependencies": {
+    "@ledgerhq/hw-app-btc": "^9.1.1",
+    "@ledgerhq/hw-transport-webusb": "^6.27.9",
     "@noble/hashes": "^1.1.5",
     "@noble/secp256k1": "^1.7.0",
     "@popperjs/core": "^2.11.6",
@@ -49,5 +51,8 @@
     "jquery": "^3.6.3",
     "qrcode-generator": "^1.4.4",
     "resource-loader": "^4.0.0-rc4"
+  },
+  "alias": {
+    "@ledgerhq/devices": "@ledgerhq/devices/lib-es"
   }
 }

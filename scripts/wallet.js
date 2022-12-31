@@ -13,6 +13,8 @@ import { cChainParams, MAX_ACCOUNT_GAP, PRIVKEY_BYTE_LENGTH } from "./chain_para
 import { ALERTS } from "./i18n.js";
 import { encrypt, decrypt } from "./aes-gcm.js";
 import bs58 from "bs58";
+import AppBtc from "@ledgerhq/hw-app-btc";
+import TransportWebUSB from "@ledgerhq/hw-transport-webusb";
 
 const jdenticon = require("jdenticon");
 
@@ -267,7 +269,7 @@ export let masterKey;
 export function getDerivationPath(fLedger = false,nAccount = 0, nReceiving = 0, nIndex = 0) {
   // Coin-Type is different on Ledger, as such, we modify it if we're using a Ledger to derive a key
   const strCoinType = fLedger ? cChainParams.current.BIP44_TYPE_LEDGER : cChainParams.current.BIP44_TYPE;
-  if (!masterKey.isHD && !fLedger) {
+  if (masterKey && !masterKey.isHD && !fLedger) {
     return `:)//${strCoinType}'`
   }
   return `m/44'/${strCoinType}'/${nAccount}'/${nReceiving}/${nIndex}`;
@@ -712,7 +714,7 @@ async function getHardwareWalletKeys(path, xpub = false, verify = false, _attemp
   try {
     // Check if we haven't setup a connection yet OR the previous connection disconnected
     if (!cHardwareWallet || cHardwareWallet.transport._disconnectEmitted) {
-      cHardwareWallet = new AppBtc(await window.transport.create());
+      cHardwareWallet = new AppBtc(await TransportWebUSB.create());
     }
 
     // Update device info and fetch the pubkey
