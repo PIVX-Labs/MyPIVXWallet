@@ -4,7 +4,6 @@
 <head>
   <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <meta http-equiv="X-UA-Compatible" content="IE=9" />
   <link rel="shortcut icon" href="assets/favicon.ico" type="image/x-icon">
   <!-- Primary Meta Tags -->
@@ -62,10 +61,6 @@
     //When removing you do not have to remove from translatableLanguages
     const arrActiveLangs = ['en', 'uwu'];
 
-    //Due to the need to switch language we need to load all the languages and then set the active one to the translation variable
-    for(i=0; i<arrActiveLangs.length; i++){
-      document.write('\x3Cscript src="locale/' + arrActiveLangs[i] + '/translation.js">\x3C/script>')
-    }
   </script>
 
 </head>
@@ -77,7 +72,7 @@
       <!-- NAVBAR -->
       <nav class="navbar navbar-expand-lg sticky-top navbar-dark navbarSpecial">
         <div class="container">
-          <img onclick="MPW.playMusic()" class="nav-logo navbar-brand noselect" src='assets/logo.png' alt="PIVX">
+          <img onclick="MPW.playMusic()" class="nav-logo navbar-brand noselect" alt="PIVX" id="mpw-main-logo">
           <button id="navbarToggler" class="navbar-toggler collapsed" type="button" data-toggle="collapse" data-target="#navbarNav"
             aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>

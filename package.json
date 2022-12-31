@@ -29,6 +29,7 @@
     "file-loader": "^6.2.0",
     "html-loader": "^4.2.0",
     "html-webpack-plugin": "^5.5.0",
+    "mini-css-extract-plugin": "^2.7.2",
     "node-polyfill-webpack-plugin": "^2.0.1",
     "style-loader": "^3.3.1",
     "webpack": "^5.75.0",
@@ -40,12 +41,13 @@
     "@popperjs/core": "^2.11.6",
     "biginteger": "^1.0.3",
     "bip39": "^3.0.4",
-    "bootstrap": "^5.2.3",
+    "bootstrap-4": "^4.0.0",
     "bs58": "^5.0.0",
     "buffer": "^6.0.3",
     "hdkey": "^2.0.1",
     "jdenticon": "^3.2.0",
     "jquery": "^3.6.3",
-    "qrcode-generator": "^1.4.4"
+    "qrcode-generator": "^1.4.4",
+    "resource-loader": "^4.0.0-rc4"
   }
 }

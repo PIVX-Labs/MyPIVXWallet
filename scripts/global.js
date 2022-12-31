@@ -6,7 +6,7 @@ import { translate, ALERTS } from "./i18n.js";
 import * as jdenticon from "jdenticon";
 import { masterKey, hasEncryptedWallet, importWallet, getNewAddress, isYourAddress, encryptWallet } from "./wallet.js";
 import { submitAnalytics, networkEnabled, getBlockCount, arrRewards, getStakingRewards } from "./network.js";
-import { start as settingsStart, cExplorer } from "./settings.js";
+import { start as settingsStart, cExplorer, debug } from "./settings.js";
 import { createAlert, confirmPopup, sanitizeHTML, MAP_B58 } from "./misc.js";
 import { cChainParams, COIN, MIN_PASS_LENGTH } from "./chain_params.js";
 
@@ -133,6 +133,7 @@ export function start() {
 	domTranslationSelect: document.getElementById('translation'),
 
     };
+    loadImages();
     let localTranslation = localStorage.getItem('translation');
     // Check if set in local storage
     if(localTranslation != null){
@@ -273,6 +274,15 @@ export function updateStakingRewardsGUI(fCallback = false) {
   doms.domStakingRewardsList.innerHTML = strList;
 }
 
+async function loadImages() {
+    // Promise.all is useless since we only need to load one image, but we might need to load more in the future
+    Promise.all(
+	[
+	    (async () => { document.getElementById("mpw-main-logo").src = (await import("../assets/logo.png")).default })()
+	]
+    );
+
+}
 
 let audio = null;
 export async function playMusic() {
@@ -280,8 +290,7 @@ export async function playMusic() {
     // On first play: load the audio into memory from the host
     if (audio === null) {
 	// Dynamically load the file
-	await import('../assets/music.mp3');
-	audio = new Audio('assets/music.mp3');
+	audio = new Audio((await import('../assets/music.mp3')).default);
     }
     
     // Play or Pause
@@ -375,7 +384,7 @@ async function govVote(hash, voteCode){
     }
 }
 
-async function startMasternode(fRestart = false) {
+export async function startMasternode(fRestart = false) {
     if (localStorage.getItem("masternode")) {
 	if (masterKey.isViewOnly) {
 	    return createAlert("warning", "Can't start masternode in view only mode", 6000);
@@ -389,7 +398,7 @@ async function startMasternode(fRestart = false) {
     }
 }
 
-function destroyMasternode() {
+export function destroyMasternode() {
     if (localStorage.getItem("masternode")) {
         localStorage.removeItem("masternode");
         createAlert('success', '<b>Masternode destroyed!</b><br>Your coins are now spendable.', 5000);
@@ -397,7 +406,7 @@ function destroyMasternode() {
     }
 }
 
-async function importMasternode(){
+export async function importMasternode(){
     const mnPrivKey =doms.domMnPrivateKey.value;
     
     const ip =doms.domMnIP.value;

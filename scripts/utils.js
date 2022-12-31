@@ -13,6 +13,6 @@ export function bytesToHex(bytes) {
    @returns {Uint8Array} double sha256 or the buffer
  */
 export function dSHA256(buff) {
-    return sha256(sha256(buff));
+    return sha256(sha256(new Uint8Array(buff)));
 }
 
