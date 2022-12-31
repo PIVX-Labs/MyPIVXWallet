@@ -542,7 +542,7 @@
               <br>
               <div class="staking-banner-bottom">
                 <div class="stake-box large-box col-md-4">
-                  <h5 id="availToDelegate" onclick="MPW.selectMaxBalance(domGuiDelegateAmount)" class="stake-balances ptr"><span data-i18n="available">Available</span>: 0 PIV</h5>
+                  <h5 id="availToDelegate" onclick="MPW.selectMaxBalance(MPW.doms.domGuiDelegateAmount)" class="stake-balances ptr"><span data-i18n="available">Available</span>: 0 PIV</h5>
                   <textarea id="delegateAmount" class="stake-input form-control private-key-area"></textarea>
                   <div class="button-padd">
                       <button class="pivx-button-big" onclick="MPW.delegateGUI()">
@@ -553,7 +553,7 @@
                  </div>
                 </div>
                 <div class="stake-box large-box col-md-4">
-                  <h5 id="availToUndelegate" onclick="MPW.selectMaxBalance(domGuiUndelegateAmount, true)" class="stake-balances ptr"><span data-i18n="staking">Staking</span>: 0 PIV</h5>
+                  <h5 id="availToUndelegate" onclick="MPW.selectMaxBalance(MPW.doms.domGuiUndelegateAmount, true)" class="stake-balances ptr"><span data-i18n="staking">Staking</span>: 0 PIV</h5>
                   <textarea id="undelegateAmount" class="stake-input form-control private-key-area"></textarea>
                   <div class="button-padd">
                       <button class="pivx-button-big" onclick="MPW.undelegateGUI()">

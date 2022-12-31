@@ -2,6 +2,7 @@
 
 import {cachedBlockCount} from "./network.js";
 import {getBalance, isMasternodeUTXO, getStakingBalance} from "./global.js";
+import { sleep } from "./misc.js";
 
 /** An Unspent Transaction Output, used as Inputs of future transactions */
 export class UTXO {

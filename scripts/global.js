@@ -392,106 +392,6 @@ function destroyMasternode() {
     }
 }
 
-async function createMasternode() {
-    if (masterKey.isViewOnly) {
-        return createAlert("warning", "Can't create a masternode in view only mode", 6000);
-    }
-    const fGeneratePrivkey =doms.domMnCreateType.value === "VPS";
-    const [strAddress,strAddressPath] = await getNewAddress();
-    const nValue = cChainParams.current.collateralInSats;
-    
-    const nBalance = getBalance();
-    const cTx = bitjs.transaction();
-    const cCoinControl = chooseUTXOs(cTx, nValue, 0, false);
-    
-    if (!cCoinControl.success) return alert(cCoinControl.msg);
-    // Compute fee
-    const nFee = getFee(cTx.serialize().length);
-    
-    // Compute change (or lack thereof)
-    const nChange = cCoinControl.nValue - (nFee + nValue);
-    const [changeAddress,changeAddressPath] = await getNewAddress({verify: masterKey.isHardwareWallet});
-    const outputs = [];
-    if (nChange > 0) {
-        // Change output
-        outputs.push([changeAddress, nChange / COIN]);
-    } else {
-	return createAlert("warning", "You don't have enough " + cChainParams.current.TICKER + " to create a masternode", 5000);
-    }
-    
-    // Primary output (receiver)
-    outputs.push([strAddress, nValue / COIN]);
-    
-    // Debug-only verbose response
-    if (debug)doms.domHumanReadable.innerHTML = "Balance: " + (nBalance / COIN) + "<br>Fee: " + (nFee / COIN) + "<br>To: " + strAddress + "<br>Sent: " + (nValue / COIN) + (nChange > 0 ? "<br>Change Address: " + changeAddress + "<br>Change: " + (nChange / COIN) : "");
-
-    // Add outputs to the Tx
-    for (const output of outputs) {
-        cTx.addoutput(output[0], output[1]);
-    }
-
-    // Sign and broadcast!
-    if (!masterKey.isHardwareWallet) {
-        const sign = await cTx.sign(masterKey, 1);
-        const result = await sendTransaction(sign);
-        if(result){
-	    for(const tx of cTx.inputs){
-		mempool.autoRemoveUTXO({id: tx.outpoint.hash,path: tx.path,vout: tx.outpoint.index})
-	    }
-	    const futureTxid=swapHEXEndian(await hash(Crypto.util.hexToBytes((await hash((Crypto.util.hexToBytes(sign)))))));
-	    mempool.addUTXO({id: futureTxid,path: changeAddressPath,sats: nChange,vout: 0,script:Crypto.util.bytesToHex(cTx.outputs[0].script),status: Mempool.PENDING})
-	    mempool.addUTXO({id: futureTxid,path: strAddressPath,script:Crypto.util.bytesToHex(cTx.outputs[1].script),sats: nValue,vout: 1,status: Mempool.PENDING})
-        }
-    } else {
-        // Format the inputs how the Ledger SDK prefers
-        const arrInputs = [];
-        const arrAssociatedKeysets = [];
-        for (const cInput of cTx.inputs) {
-	    const cInputFull = await getTxInfo(cInput.outpoint.hash);
-	    arrInputs.push([await cHardwareWallet.splitTransaction(cInputFull.hex), cInput.outpoint.index]);
-	    arrAssociatedKeysets.push(cInput.path);
-        }
-        const cLedgerTx = await cHardwareWallet.splitTransaction(cTx.serialize());
-        const strOutputScriptHex = await cHardwareWallet
-	      .serializeTransactionOutputs(cLedgerTx)
-	      .toString("hex");
-
-        // Sign the transaction via Ledger
-        const strSerialisedTx = await confirmPopup(
-	    {
-		title: ALERTS.CONFIRM_POPUP_TRANSACTION,
-		html: createTxConfirmation(outputs),
-		resolvePromise: cHardwareWallet.createPaymentTransactionNew({
-		    inputs: arrInputs,
-		    associatedKeysets: arrAssociatedKeysets,
-		    outputScriptHex: strOutputScriptHex,
-		}),
-	    }
-        );
-
-        // Broadcast the Hardware (Ledger) TX
-        const result = await sendTransaction(strSerialisedTx);
-        if(result){
-	    for(const tx of cTx.inputs){
-		mempool.autoRemoveUTXO({id: tx.outpoint.hash,path: tx.path,vout: tx.outpoint.index})
-	    }
-	    const futureTxid=swapHEXEndian(await hash(Crypto.util.hexToBytes((await hash((Crypto.util.hexToBytes(strSerialisedTx)))))));
-	    mempool.addUTXO({id: futureTxid,path: changeAddressPath,sats: nChange,vout: 0,script:Crypto.util.bytesToHex(cTx.outputs[0].script),status: Mempool.PENDING});
-	    mempool.addUTXO({id: futureTxid,path: strAddressPath,script:Crypto.util.bytesToHex(cTx.outputs[1].script),sats: nValue,vout: 1,status: Mempool.PENDING});
-        }
-        
-    }
-    if(fGeneratePrivkey){
-        let masternodePrivateKey= await generateMnPrivkey();
-        await confirmPopup({
-	    title: ALERTS.CONFIRM_POPUP_MN_P_KEY,
-	    html: masternodePrivateKey + ALERTS.CONFIRM_POPUP_MN_P_KEY_HTML, 
-        });
-    }
-    createAlert("success", "<b>Masternode Created!<b><br>Wait 15 confirmations to proceed further");
-    // Remove any previous Masternode data, if there were any
-    localStorage.removeItem("masternode");
-}
 async function importMasternode(){
     const mnPrivKey =doms.domMnPrivateKey.value;
     
@@ -769,7 +669,7 @@ function createAlertWithFalse() {
     return false;
 }
 
-function askForCSAddr(force = false) {
+export function askForCSAddr(force = false) {
     if (force) cachedColdStakeAddr = null;
     if (cachedColdStakeAddr === "" || cachedColdStakeAddr === null) {
         cachedColdStakeAddr = prompt('Please provide a Cold Staking address (either from your own node, or a 3rd-party!)').trim();

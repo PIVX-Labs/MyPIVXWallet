@@ -9,8 +9,8 @@ window.onload = start;
 import '../assets/style/style.css';
 
 // Export global functions to the MPW namespace so we can use them in html
-export { openTab, accessOrImportWallet, guiImportWallet, onPrivateKeyChanged, toClipboard, toggleExportUI, wipePrivateData, restoreWallet, refreshChainData } from './global.js';
+export { openTab, accessOrImportWallet, guiImportWallet, onPrivateKeyChanged, toClipboard, toggleExportUI, wipePrivateData, restoreWallet, refreshChainData, doms } from './global.js';
 export { generateWallet, getNewAddress } from "./wallet.js";
 export { toggleTestnet, toggleDebug }  from "./settings.js";
-export { createTxGUI, createRawTransaction, undelegateGUI, delegateGUI} from "./transactions.js";
+export { createTxGUI, createRawTransaction, undelegateGUI, delegateGUI, createMasternode } from "./transactions.js";
 export { hexToBytes, bytesToHex, dSHA256 } from "./utils.js";

@@ -1,12 +1,13 @@
 import bitjs from "./bitTrx.js";
 import { debug } from "./settings.js";
-import { doms, getBalance, getStakingBalance, mempool, isMasternodeUTXO } from "./global.js";
+import { doms, getBalance, getStakingBalance, mempool, isMasternodeUTXO, askForCSAddr, cachedColdStakeAddr } from "./global.js";
 import { getFee, sendTransaction } from "./network.js";
 import { Mempool } from "./mempool.js";
 import { ALERTS } from "./i18n.js";
-import { hasWalletUnlocked, hasHardwareWallet, hasEncryptedWallet, masterKey, getNewAddress } from "./wallet.js";
+import { hasWalletUnlocked, hasHardwareWallet, hasEncryptedWallet, masterKey, getNewAddress, isYourAddress } from "./wallet.js";
 import { cChainParams, COIN } from "./chain_params.js";
-import { createAlert } from "./misc.js";
+import { createAlert, swapHEXEndian } from "./misc.js";
+import { bytesToHex, hexToBytes, dSHA256 } from "./utils.js";
 
 function validateAmount(nAmountSats, nMinSats = 10000) {
     // Validate the amount is a valid number, and meets the minimum (if any)
@@ -26,7 +27,7 @@ export function undelegateGUI() {
 	return createAlert("warning", "Attempting to undelegate in view only mode.", 6000);
     }
     // Verify the amount
-    const nAmount = Math.round(Number(domGuiUndelegateAmount.value.trim()) * COIN);
+    const nAmount = Math.round(Number(doms.domGuiUndelegateAmount.value.trim()) * COIN);
     if(!validateAmount(nAmount)) return;
 
     undelegate(nAmount);
@@ -97,12 +98,12 @@ async function undelegate(nValue) {
         const nInputLen = cTx.inputs.length;
 
         // Put public key bytes instead of [3,195,174...]
-        const arrSignedTxBytes = Crypto.util.hexToBytes(cLedgerSignedTx);
+        const arrSignedTxBytes = hexToBytes(cLedgerSignedTx);
         const arrPubkey = findCompressedPubKey(arrSignedTxBytes);
         const arrPubkeyWithScriptLen = addScriptLength(arrSignedTxBytes, arrPubkey, nInputLen);
         const arrPubkeyWithScript = addExtraBytes(arrPubkeyWithScriptLen, arrPubkey, nInputLen);
 
-        const strSerialisedTx = Crypto.util.bytesToHex(arrPubkeyWithScript);
+        const strSerialisedTx = bytesToHex(arrPubkeyWithScript);
 
         // Broadcast the Hardware (Ledger) TX
         const result = await sendTransaction(strSerialisedTx, "<b>Delegation successfully spent!</b>");
@@ -111,12 +112,12 @@ async function undelegate(nValue) {
 		mempool.autoRemoveUTXO({id: tx.outpoint.hash,path: tx.path,vout: tx.outpoint.index})
             }
             // Add our undelegation + change re-delegation (if any) to the local mempool
-            const futureTxid=swapHEXEndian(await hash(Crypto.util.hexToBytes((await hash((Crypto.util.hexToBytes(strSerialisedTx)))))));
+            const futureTxid=swapHEXEndian(await hash(hexToBytes((await hash((hexToBytes(strSerialisedTx)))))));
             if(fReDelegateChange){
-		mempool.addUTXO({id: futureTxid,path: reDelegateAddressPath,script:Crypto.util.bytesToHex(cTx.outputs[0].script) ,sats: nChange,vout: 0,status: Mempool.PENDING_COLD});
-		mempool.addUTXO({id: futureTxid,path: outputKeyPath,script:Crypto.util.bytesToHex(cTx.outputs[1].script) ,sats: nValue,vout: 1,status: Mempool.PENDING});
+		mempool.addUTXO({id: futureTxid,path: reDelegateAddressPath,script:bytesToHex(cTx.outputs[0].script) ,sats: nChange,vout: 0,status: Mempool.PENDING_COLD});
+		mempool.addUTXO({id: futureTxid,path: outputKeyPath,script:bytesToHex(cTx.outputs[1].script) ,sats: nValue,vout: 1,status: Mempool.PENDING});
             }else{
-		mempool.addUTXO({id: futureTxid,path: outputKeyPath,sats: nValue,script:Crypto.util.bytesToHex(cTx.outputs[0].script),vout: 0,status: Mempool.PENDING});
+		mempool.addUTXO({id: futureTxid,path: outputKeyPath,sats: nValue,script:bytesToHex(cTx.outputs[0].script),vout: 0,status: Mempool.PENDING});
             }
         }
     } else {
@@ -129,12 +130,12 @@ async function undelegate(nValue) {
 		mempool.autoRemoveUTXO({id: tx.outpoint.hash,path: tx.path,vout: tx.outpoint.index})
             }
             // Add our undelegation + change re-delegation (if any) to the local mempool
-            const futureTxid=swapHEXEndian(await hash(Crypto.util.hexToBytes((await hash((Crypto.util.hexToBytes(sign)))))));
+	    const futureTxid = bytesToHex(dSHA256(hexToBytes(sign)).reverse());
             if(fReDelegateChange){
-		mempool.addUTXO({id: futureTxid,path:reDelegateAddressPath,script:Crypto.util.bytesToHex(cTx.outputs[0].script) ,sats: nChange,vout: 0,status: Mempool.PENDING_COLD});
-		mempool.addUTXO({id: futureTxid,path: outputKeyPath,script:Crypto.util.bytesToHex(cTx.outputs[1].script) ,sats: nValue,vout: 1,status: Mempool.PENDING});
+		mempool.addUTXO({id: futureTxid,path:reDelegateAddressPath,script:bytesToHex(cTx.outputs[0].script) ,sats: nChange,vout: 0,status: Mempool.PENDING_COLD});
+		mempool.addUTXO({id: futureTxid,path: outputKeyPath,script:bytesToHex(cTx.outputs[1].script) ,sats: nValue,vout: 1,status: Mempool.PENDING});
             }else{
-		mempool.addUTXO({id: futureTxid,path: outputKeyPath,sats: nValue,script:Crypto.util.bytesToHex(cTx.outputs[0].script),vout: 0,status: Mempool.PENDING});
+		mempool.addUTXO({id: futureTxid,path: outputKeyPath,sats: nValue,script:bytesToHex(cTx.outputs[0].script),vout: 0,status: Mempool.PENDING});
             }
         }
     }
@@ -147,7 +148,7 @@ export function delegateGUI() {
 	return createAlert("warning", "Attempting to delegate in view only mode.", 6000);
     }
     // Verify the amount; Delegations must be a minimum of 1 PIV, enforced by the network
-    const nAmount = Number(domGuiDelegateAmount.value.trim()) * COIN;
+    const nAmount = Number(doms.domGuiDelegateAmount.value.trim()) * COIN;
     if (!validateAmount(nAmount, COIN)) return;
 
     // Ensure the user has an address set - if not, request one!
@@ -221,13 +222,13 @@ async function delegate(nValue, coldAddr) {
             for(const tx of cTx.inputs){
 		mempool.autoRemoveUTXO({id: tx.outpoint.hash,path: tx.path,vout: tx.outpoint.index})
             }
-            const futureTxid=swapHEXEndian(await hash(Crypto.util.hexToBytes((await hash((Crypto.util.hexToBytes(strSerialisedTx)))))));
+            const futureTxid=swapHEXEndian(await hash(hexToBytes((await hash((hexToBytes(strSerialisedTx)))))));
 	    
             if(nChange>0){
-		mempool.addUTXO({id: futureTxid,path: changeAddressPath,sats: nChange,script:Crypto.util.bytesToHex(cTx.outputs[0].script),vout: 0,status: Mempool.PENDING});
-		mempool.addUTXO({id: futureTxid,path: primaryAddressPath,sats: nValue,vout: 1,script:Crypto.util.bytesToHex(cTx.outputs[1].script),status: Mempool.PENDING_COLD});
+		mempool.addUTXO({id: futureTxid,path: changeAddressPath,sats: nChange,script:bytesToHex(cTx.outputs[0].script),vout: 0,status: Mempool.PENDING});
+		mempool.addUTXO({id: futureTxid,path: primaryAddressPath,sats: nValue,vout: 1,script:bytesToHex(cTx.outputs[1].script),status: Mempool.PENDING_COLD});
             }else{
-		mempool.addUTXO({id: futureTxid,path: primaryAddressPath,script: Crypto.util.bytesToHex(cTx.outputs[0].script),sats: nValue,vout: 0,status: Mempool.PENDING_COLD});
+		mempool.addUTXO({id: futureTxid,path: primaryAddressPath,script: bytesToHex(cTx.outputs[0].script),sats: nValue,vout: 0,status: Mempool.PENDING_COLD});
             }
         }
 	
@@ -242,12 +243,12 @@ async function delegate(nValue, coldAddr) {
 		mempool.autoRemoveUTXO({id: tx.outpoint.hash,path: tx.path,vout: tx.outpoint.index})
             }
             // Add our delegation + change (if any) to the local mempool
-            const futureTxid=swapHEXEndian(await hash(Crypto.util.hexToBytes((await hash((Crypto.util.hexToBytes(sign)))))));
+	    const futureTxid = bytesToHex(dSHA256(hexToBytes(sign)).reverse());
             if(nChange>0){
-		mempool.addUTXO({id: futureTxid,path: changeAddressPath,sats: nChange,script:Crypto.util.bytesToHex(cTx.outputs[0].script),vout: 0,status: Mempool.PENDING});
-		mempool.addUTXO({id: futureTxid,path: primaryAddressPath,sats: nValue,vout: 1,script:Crypto.util.bytesToHex(cTx.outputs[1].script),status: Mempool.PENDING_COLD});
+		mempool.addUTXO({id: futureTxid,path: changeAddressPath,sats: nChange,script:bytesToHex(cTx.outputs[0].script),vout: 0,status: Mempool.PENDING});
+		mempool.addUTXO({id: futureTxid,path: primaryAddressPath,sats: nValue,vout: 1,script:bytesToHex(cTx.outputs[1].script),status: Mempool.PENDING_COLD});
             }else{
-		mempool.addUTXO({id: futureTxid,path: primaryAddressPath,script: Crypto.util.bytesToHex(cTx.outputs[0].script),sats: nValue,vout: 0,status: Mempool.PENDING_COLD});
+		mempool.addUTXO({id: futureTxid,path: primaryAddressPath,script: bytesToHex(cTx.outputs[0].script),sats: nValue,vout: 0,status: Mempool.PENDING_COLD});
             }
         }
         
@@ -396,17 +397,17 @@ export async function createTxGUI() {
             for(const tx of cTx.inputs){
 		mempool.autoRemoveUTXO({id: tx.outpoint.hash,path: tx.path,vout: tx.outpoint.index})
             }
-            const futureTxid=swapHEXEndian(await hash(Crypto.util.hexToBytes((await hash((Crypto.util.hexToBytes(sign)))))));
+	    const futureTxid = bytesToHex(dSHA256(hexToBytes(sign)).reverse());
             
             const [isYours,yourPath]= await isYourAddress(address);
             if(nChange>0){
-		mempool.addUTXO({id: futureTxid,path: changeAddressPath,sats: nChange,script:Crypto.util.bytesToHex(cTx.outputs[0].script) ,vout: 0,status: Mempool.PENDING});
+		mempool.addUTXO({id: futureTxid,path: changeAddressPath,sats: nChange,script:bytesToHex(cTx.outputs[0].script) ,vout: 0,status: Mempool.PENDING});
 		if(isYours){
-		    mempool.addUTXO({id: futureTxid,path: yourPath,sats: nValue,vout: 1,script:Crypto.util.bytesToHex(cTx.outputs[1].script),status: Mempool.PENDING});
+		    mempool.addUTXO({id: futureTxid,path: yourPath,sats: nValue,vout: 1,script:bytesToHex(cTx.outputs[1].script),status: Mempool.PENDING});
 		}
             }else{
 		if(isYours){
-		    mempool.addUTXO({id: futureTxid,path: yourPath,sats: nValue,vout: 0,script:Crypto.util.bytesToHex(cTx.outputs[0].script),status: Mempool.PENDING});
+		    mempool.addUTXO({id: futureTxid,path: yourPath,sats: nValue,vout: 0,script:bytesToHex(cTx.outputs[0].script),status: Mempool.PENDING});
 		}
             }
         }  
@@ -446,16 +447,17 @@ export async function createTxGUI() {
             }
             // Add our change (if any) to the local mempool
             const [isYours,yourPath]= await isYourAddress(address);
-            const futureTxid=swapHEXEndian(await hash(Crypto.util.hexToBytes((await hash((Crypto.util.hexToBytes(strSerialisedTx)))))));
+	    const futureTxid = bytesToHex(dSHA256(hexToBytes(strSerialisedTx)).reverse());
+
             
             if(nChange>0){
-		mempool.addUTXO({id: futureTxid,path: changeAddressPath,sats: nChange,script:Crypto.util.bytesToHex(cTx.outputs[0].script) ,vout: 0,status: Mempool.PENDING});        
+		mempool.addUTXO({id: futureTxid,path: changeAddressPath,sats: nChange,script:bytesToHex(cTx.outputs[0].script) ,vout: 0,status: Mempool.PENDING});        
 		if(isYours){
-		    mempool.addUTXO({id: futureTxid,path: yourPath,sats: nValue,vout: 1,script:Crypto.util.bytesToHex(cTx.outputs[1].script),status: Mempool.PENDING});
+		    mempool.addUTXO({id: futureTxid,path: yourPath,sats: nValue,vout: 1,script:bytesToHex(cTx.outputs[1].script),status: Mempool.PENDING});
 		}
             }else{
 		if(isYours){
-		    mempool.addUTXO({id: futureTxid,path: yourPath,sats: nValue,vout: 0,script:Crypto.util.bytesToHex(cTx.outputs[0].script),status: Mempool.PENDING});
+		    mempool.addUTXO({id: futureTxid,path: yourPath,sats: nValue,vout: 0,script:bytesToHex(cTx.outputs[0].script),status: Mempool.PENDING});
 		}
             }
         }
@@ -486,4 +488,106 @@ export async function createRawTransaction() {
     // Sign via WIF key
     const wif = document.getElementById("wif").value;
     document.getElementById("rawTrx").value = await cTx.sign(wif, 1); //SIGHASH_ALL DEFAULT 1
+}
+
+export async function createMasternode() {
+    if (masterKey.isViewOnly) {
+        return createAlert("warning", "Can't create a masternode in view only mode", 6000);
+    }
+    const fGeneratePrivkey =doms.domMnCreateType.value === "VPS";
+    const [strAddress,strAddressPath] = await getNewAddress();
+    const nValue = cChainParams.current.collateralInSats;
+    
+    const nBalance = getBalance();
+    const cTx = bitjs.transaction();
+    const cCoinControl = chooseUTXOs(cTx, nValue, 0, false);
+    
+    if (!cCoinControl.success) return alert(cCoinControl.msg);
+    // Compute fee
+    const nFee = getFee(cTx.serialize().length);
+    
+    // Compute change (or lack thereof)
+    const nChange = cCoinControl.nValue - (nFee + nValue);
+    const [changeAddress,changeAddressPath] = await getNewAddress({verify: masterKey.isHardwareWallet});
+    const outputs = [];
+    if (nChange > 0) {
+        // Change output
+        outputs.push([changeAddress, nChange / COIN]);
+    } else {
+	return createAlert("warning", "You don't have enough " + cChainParams.current.TICKER + " to create a masternode", 5000);
+    }
+    
+    // Primary output (receiver)
+    outputs.push([strAddress, nValue / COIN]);
+    
+    // Debug-only verbose response
+    if (debug)doms.domHumanReadable.innerHTML = "Balance: " + (nBalance / COIN) + "<br>Fee: " + (nFee / COIN) + "<br>To: " + strAddress + "<br>Sent: " + (nValue / COIN) + (nChange > 0 ? "<br>Change Address: " + changeAddress + "<br>Change: " + (nChange / COIN) : "");
+
+    // Add outputs to the Tx
+    for (const output of outputs) {
+        cTx.addoutput(output[0], output[1]);
+    }
+
+    // Sign and broadcast!
+    if (!masterKey.isHardwareWallet) {
+        const sign = await cTx.sign(masterKey, 1);
+        const result = await sendTransaction(sign);
+        if(result){
+	    for(const tx of cTx.inputs){
+		mempool.autoRemoveUTXO({id: tx.outpoint.hash,path: tx.path,vout: tx.outpoint.index})
+	    }
+	    const futureTxid = bytesToHex(dSHA256(hexToBytes(sign)).reverse());
+	    mempool.addUTXO({id: futureTxid,path: changeAddressPath,sats: nChange,vout: 0,script:bytesToHex(cTx.outputs[0].script),status: Mempool.PENDING})
+	    mempool.addUTXO({id: futureTxid,path: strAddressPath,script:bytesToHex(cTx.outputs[1].script),sats: nValue,vout: 1,status: Mempool.PENDING})
+        }
+    } else {
+        // Format the inputs how the Ledger SDK prefers
+        const arrInputs = [];
+        const arrAssociatedKeysets = [];
+        for (const cInput of cTx.inputs) {
+	    const cInputFull = await getTxInfo(cInput.outpoint.hash);
+	    arrInputs.push([await cHardwareWallet.splitTransaction(cInputFull.hex), cInput.outpoint.index]);
+	    arrAssociatedKeysets.push(cInput.path);
+        }
+        const cLedgerTx = await cHardwareWallet.splitTransaction(cTx.serialize());
+        const strOutputScriptHex = await cHardwareWallet
+	      .serializeTransactionOutputs(cLedgerTx)
+	      .toString("hex");
+
+        // Sign the transaction via Ledger
+        const strSerialisedTx = await confirmPopup(
+	    {
+		title: ALERTS.CONFIRM_POPUP_TRANSACTION,
+		html: createTxConfirmation(outputs),
+		resolvePromise: cHardwareWallet.createPaymentTransactionNew({
+		    inputs: arrInputs,
+		    associatedKeysets: arrAssociatedKeysets,
+		    outputScriptHex: strOutputScriptHex,
+		}),
+	    }
+        );
+
+        // Broadcast the Hardware (Ledger) TX
+        const result = await sendTransaction(strSerialisedTx);
+        if(result){
+	    for(const tx of cTx.inputs){
+		mempool.autoRemoveUTXO({id: tx.outpoint.hash,path: tx.path,vout: tx.outpoint.index})
+	    }
+	    const futureTxid = bytesToHex(dSHA256(hexToBytes(strSerialisedTx)).reverse());
+
+	    mempool.addUTXO({id: futureTxid,path: changeAddressPath,sats: nChange,vout: 0,script:bytesToHex(cTx.outputs[0].script),status: Mempool.PENDING});
+	    mempool.addUTXO({id: futureTxid,path: strAddressPath,script: bytesToHex(cTx.outputs[1].script),sats: nValue,vout: 1,status: Mempool.PENDING});
+        }
+        
+    }
+    if(fGeneratePrivkey){
+        let masternodePrivateKey= await generateMnPrivkey();
+        await confirmPopup({
+	    title: ALERTS.CONFIRM_POPUP_MN_P_KEY,
+	    html: masternodePrivateKey + ALERTS.CONFIRM_POPUP_MN_P_KEY_HTML, 
+        });
+    }
+    createAlert("success", "<b>Masternode Created!<b><br>Wait 15 confirmations to proceed further");
+    // Remove any previous Masternode data, if there were any
+    localStorage.removeItem("masternode");
 }

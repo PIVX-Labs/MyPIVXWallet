@@ -5,6 +5,8 @@ import bs58 from "bs58";
 import { OP } from "./script.js";
 import { deriveAddress, parseWIF } from "./wallet.js";
 import { sha256 } from '@noble/hashes/sha256';
+import { cachedBlockCount } from "./network.js";
+import { cChainParams } from "./chain_params.js";
 import _ from "lodash";
 
 export default class bitjs {
