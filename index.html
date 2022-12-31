@@ -463,11 +463,11 @@
                                     <b id="guiAddress">~</b>
                                     <b id="guiQRButton">
                                       <i data-toggle="modal" data-target="#qrModal" class="fas fa-qrcode fa-stacked-ptr"></i>
-                                      <i id="guiNewAddress" onclick="getNewAddress({updateGUI: true, verify: true})" class="fas fa-sync fa-stacked-ptr"></i>
-                                      <i onclick="toClipboard('guiAddress', this)" id="guiAddressCopy" class="fas fa-clipboard fa-stacked-ptr"></i>
-                                      <i id="guiExportWallet" onclick="toggleExportUI()" class="fas fa-share fa-stacked-ptr"></i>
-				      <i id="guiWipeWallet" onclick="wipePrivateData()" class="fas fa-lock fa-stacked-ptr"></i>
-				      <i id="guiRestoreWallet" onclick="restoreWallet()" class="fas fa-unlock fa-stacked-ptr" hidden></i>
+                                      <i id="guiNewAddress" onclick="MPW.getNewAddress({updateGUI: true, verify: true})" class="fas fa-sync fa-stacked-ptr"></i>
+                                      <i onclick="MPW.toClipboard('guiAddress', this)" id="guiAddressCopy" class="fas fa-clipboard fa-stacked-ptr"></i>
+                                      <i id="guiExportWallet" onclick="MPW.toggleExportUI()" class="fas fa-share fa-stacked-ptr"></i>
+				      <i id="guiWipeWallet" onclick="MPW.wipePrivateData()" class="fas fa-lock fa-stacked-ptr"></i>
+				      <i id="guiRestoreWallet" onclick="MPW.restoreWallet()" class="fas fa-unlock fa-stacked-ptr" hidden></i>
 				      
                                     </b>
                                 </div>

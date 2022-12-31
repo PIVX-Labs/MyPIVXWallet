@@ -34,7 +34,11 @@ module.exports = {
 	new NodePolyfillPlugin(),
 	new webpack.ProvidePlugin({
             $: "jquery",
-            jQuery: "jquery"
+          jQuery: "jquery",
+	  'window.jQuery': 'jquery',
+	  tether: 'tether',
+	  Tether: 'tether',
+	  'window.Tether': 'tether',
 	}),
 	//new webpack.IgnorePlugin(/^\.\/wordlists\/(?!english)/, /bip39\/src$/),
     ],

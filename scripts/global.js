@@ -6,7 +6,7 @@ import * as jdenticon from "jdenticon";
 import { masterKey, hasEncryptedWallet, importWallet, getNewAddress, isYourAddress } from "./wallet.js";
 import { submitAnalytics, networkEnabled, getBlockCount, arrRewards } from "./network.js";
 import { start as settingsStart, cExplorer } from "./settings.js";
-import { createAlert } from "./misc.js";
+import { createAlert, confirmPopup } from "./misc.js";
 
 // TRANSLATION
 //Create an object of objects filled with all the translations
@@ -287,7 +287,7 @@ function playMusic() {
     }
 }
 
-function toClipboard(source, caller) {
+export function toClipboard(source, caller) {
     // Fetch the text/value source
     const domCopy = document.getElementById(source);
     
@@ -647,9 +647,9 @@ function createTxConfirmation(outputs) {
     return strHtml;
 }
 
-async function toggleExportUI() {
-  doms.domExportDiv.hidden = !domExportDiv.hidden;
-    if (!domExportDiv.hidden) {
+export async function toggleExportUI() {
+  doms.domExportDiv.hidden = !doms.domExportDiv.hidden;
+    if (!doms.domExportDiv.hidden) {
 	if (hasEncryptedWallet()) {
 	  doms.domExportPrivateKey.innerText = localStorage.getItem("encwif");
 	  doms.domExportPrivateKeyHold.hidden = false;
@@ -1244,7 +1244,7 @@ doms.domeqDisplay.style.display = 'none';
   doms.domGenIt.innerHTML = "Continue";
 }
 
-async function wipePrivateData() {
+export async function wipePrivateData() {
     const title = hasEncryptedWallet() ?
 	  "Do you want to lock your wallet?" :
 	  "Do you want to wipe your wallet private data?";
@@ -1263,7 +1263,7 @@ doms.domipeWallet.hidden = true;
     }
 }
 
-async function restoreWallet() {
+export async function restoreWallet() {
     if(await confirmPopup({
 	title: "Unlock your wallet",
 	html: '<input type="password" id="restoreWalletPassword" placeholder="Wallet password">',
@@ -1573,7 +1573,7 @@ export function refreshChainData() {
 }
 
 // A safety mechanism enabled if the user attempts to leave without encrypting/saving their keys
-const beforeUnloadListener = (evt) => {
+export const beforeUnloadListener = (evt) => {
     evt.preventDefault();
     // Disable Save your wallet warning on unload
     if( !cChainParams.current.isTestnet ) createAlert("warning", ALERTS.SAVE_WALLET_PLEASE, [], 10000);

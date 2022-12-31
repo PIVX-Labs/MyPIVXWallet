@@ -2,6 +2,7 @@
 
 import { translateAlerts } from "./i18n.js";
 import { doms } from "./global.js";
+import qrcode from "qrcode-generator";
 
 /* MPW constants */
 export const pubKeyHashNetworkLen = 21;
@@ -163,11 +164,11 @@ export async function confirmPopup({ title, html, resolvePromise }) {
 // Generates and sets a QRCode image from a string and dom element
 export function createQR(strData = '', domImg,size=4) {
     // QRCode class consists of 'typeNumber' & 'errorCorrectionLevel'
-    //const cQR = qrcode(size, 'L');
-    //cQR.addData(strData);
-    //cQR.make();
-    //domImg.innerHTML = cQR.createImgTag();
-    //domImg.firstChild.style.borderRadius = '8px';
+    const cQR = qrcode(size, 'L');
+    cQR.addData(strData);
+    cQR.make();
+    domImg.innerHTML = cQR.createImgTag();
+    domImg.firstChild.style.borderRadius = '8px';
 }
 
 

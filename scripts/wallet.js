@@ -1,14 +1,14 @@
 'use strict';
-
 import { hexToBytes, bytesToHex, dSHA256 } from "./utils.js";
 import { sha256 } from '@noble/hashes/sha256';
 import { ripemd160 } from '@noble/hashes/ripemd160';
 import { generateMnemonic, mnemonicToSeed, validateMnemonic } from "bip39";
-import { doms } from "./global.js";
+import { doms, beforeUnloadListener } from "./global.js";
 import HDKey from "hdkey";
 import {lastWallet, networkEnabled } from "./network.js";
-import {pubKeyHashNetworkLen, confirmPopup, writeToUint8, pubPrebaseLen, to_b58, createQR} from "./misc.js";
-import { refreshChainData, hideAllWalletOptions } from "./global.js";
+import {pubKeyHashNetworkLen, confirmPopup, writeToUint8, pubPrebaseLen, to_b58, createQR, createAlert} from "./misc.js";
+import { refreshChainData, hideAllWalletOptions, getBalance, getStakingBalance } from "./global.js";
+const jdenticon = require("jdenticon");
 
 //import $ from "jquery";
 
@@ -435,7 +435,7 @@ export async function importWallet({
       masterKey = new HardwareWalletMasterKey();
 
       // Hide the 'export wallet' button, it's not relevant to hardware wallets
-      domExportWallet.style.display = "none";
+      doms.domExportWallet.style.display = "none";
 
       createAlert("info", ALERTS.WALLET_HARDWARE_WALLET, [{hardwareWallet : strHardwareName}], 12500);
     } else {
@@ -471,7 +471,7 @@ export async function importWallet({
             const pkBytes = parseWIF(privateImportValue);
 
             // Hide the 'new address' button, since non-HD wallets are essentially single-address MPW wallets
-            domNewAddress.style.display = "none";
+            doms.domNewAddress.style.display = "none";
 
             // Import the raw private key
             masterKey = new LegacyMasterKey({pkBytes});
@@ -488,9 +488,9 @@ export async function importWallet({
 
     // Hide wipe wallet button if there is no private key
     if (masterKey.isViewOnly || masterKey.isHardwareWallet) {
-      domWipeWallet.hidden = true;
+      doms.domWipeWallet.hidden = true;
       if (hasEncryptedWallet()) {
-	domRestoreWallet.hidden = false;
+	doms.domRestoreWallet.hidden = false;
       }
     }
 
@@ -500,7 +500,7 @@ export async function importWallet({
 
     // Update identicon
     doms.domIdenticon.dataset.jdenticonValue = masterKey.getAddress(getDerivationPath());
-    //jdenticon();
+    jdenticon();
 
     // Hide the encryption warning if the user pasted the private key
     // Or in Testnet mode or is using a hardware wallet or is view-only mode
@@ -528,7 +528,7 @@ export async function generateWallet(noUI = false) {
       masterKey = new HdMasterKey({seed});
       fWalletLoaded = true;
 
-      if(!cChainParams.current.isTestnet) domGenKeyWarning.style.display = 'block';
+      if(!cChainParams.current.isTestnet) doms.domGenKeyWarning.style.display = 'block';
       // Add a listener to block page unloads until we are sure the user has saved their keys, safety first!
       addEventListener("beforeunload", beforeUnloadListener, {capture: true});
 
@@ -537,8 +537,8 @@ export async function generateWallet(noUI = false) {
       hideAllWalletOptions();
 
       // Update identicon
-      domIdenticon.dataset.jdenticonValue = masterKey.getAddress(getDerivationPath());
-      //jdenticon();
+      doms.domIdenticon.dataset.jdenticonValue = masterKey.getAddress(getDerivationPath());
+      jdenticon();
 
       getNewAddress({ updateGUI: true });
 
@@ -575,8 +575,8 @@ export async function verifyMnemonic(strMnemonic = "", fPopupConfirm = true) {
 function informUserOfMnemonic(mnemonic) {
   return new Promise((res, rej) => {
     $('#mnemonicModal').modal({keyboard: false})
-    domMnemonicModalContent.innerText = mnemonic;
-    domMnemonicModalButton.onclick = () => {
+    doms.domMnemonicModalContent.innerText = mnemonic;
+    doms.domMnemonicModalButton.onclick = () => {
       res();
       $('#mnemonicModal').modal("hide");
     };
@@ -606,7 +606,7 @@ export async function encryptWallet(strPassword = '') {
   localStorage.setItem("publicKey", await masterKey.keyToExport);
 
   // Hide the encryption warning
-  domGenKeyWarning.style.display = 'none';
+  doms.domGenKeyWarning.style.display = 'none';
 
   // Remove the exit blocker, we can annoy the user less knowing the key is safe in their localstorage!
   removeEventListener("beforeunload", beforeUnloadListener, {capture: true});
@@ -692,9 +692,9 @@ export async function getNewAddress({updateGUI = false, verify = false} = {}) {
 	doms.domGuiAddress.innerText = address;
         createQR('pivx:' + address,doms.domModalQR);
 	doms.domModalQrLabel.innerHTML = 'pivx:' + address;
-	//doms.domModalQR.firstChild.style.width = "100%";
-	//doms.domModalQR.firstChild.style.height = "auto";
-	//doms.domModalQR.firstChild.style.imageRendering = "crisp-edges";
+	doms.domModalQR.firstChild.style.width = "100%";
+	doms.domModalQR.firstChild.style.height = "auto";
+	doms.domModalQR.firstChild.style.imageRendering = "crisp-edges";
         document.getElementById('clipboard').value = address;
     }
     addressIndex++;
