@@ -2,6 +2,7 @@
 import { cAnalyticsLevel, cStatKeys, cExplorer, STATS } from "./settings.js";
 import { doms, mempool, updateStakingRewardsGUI, updateMasternodeTab } from "./global.js";
 import { masterKey, getDerivationPath, getNewAddress } from "./wallet.js";
+import { cChainParams, donationAddress } from "./chain_params.js";
 import { createAlert } from "./misc.js";
 import { Mempool } from "./mempool.js";
 export let networkEnabled = true;

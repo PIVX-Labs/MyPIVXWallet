@@ -1,13 +1,18 @@
 'use strict';
 
-import { doms } from "./global.js";
+import { doms, getBalance, getStakingBalance, updateStakingRewardsGUI } from "./global.js";
 import { fWalletLoaded } from "./wallet.js";
+import { cChainParams } from "./chain_params.js";
+import { enableNetwork } from "./network.js";
+import { createAlert } from "./misc.js";
+import { switchTranslation, ALERTS } from "./i18n.js";
+
 
 // --- Default Settings
-var debug = false;            // A mode that emits verbose console info for internal MPW operations
-var networkEnabled = true;    // A lock which blocks ALL network requests in totality
+export let debug = false;            // A mode that emits verbose console info for internal MPW operations
+let networkEnabled = true;    // A lock which blocks ALL network requests in totality
 export let cExplorer = cChainParams.current.Explorers[0];
-let cNode = cChainParams.current.Nodes[0];
+export let cNode = cChainParams.current.Nodes[0];
 
 let transparencyReport
 // A list of statistic keys and their descriptions
@@ -26,14 +31,13 @@ let arrAnalytics = [
     { name: "Disabled", stats: [] },
     { name: "Minimal",  stats: [STATS.hit, STATS.time_to_sync] },
     { name: "Balanced", stats: [STATS.hit, STATS.time_to_sync, STATS.transaction] }
-]
+];
 
 export let cAnalyticsLevel = arrAnalytics[2];
 
 // Users need not look below here.
 // ------------------------------
 // Global Keystore / Wallet Information
-var masterKey;
 
 // --- DOM Cache
 export function start() {
@@ -56,6 +60,51 @@ export function start() {
     document.getElementById('analytics').onchange = function(evt) {
 	setAnalytics(arrAnalytics.find(a => a.name === evt.target.value));
     }
+
+        const domAnalyticsSelect = document.getElementById('analytics');
+
+    fillExplorerSelect();
+    fillNodeSelect();
+    fillTranslationSelect();
+
+    // Add each analytics level into the UI selector
+    for (const analLevel of arrAnalytics) {
+        const opt = document.createElement('option');
+        opt.value = opt.innerHTML = analLevel.name;
+        domAnalyticsSelect.appendChild(opt);
+    }
+
+    // Fetch settings from LocalStorage
+    const strSettingAnalytics = localStorage.getItem('analytics');
+
+    // Apply translations to the transparency report
+    STATS = {
+        // Stat key   // Description of the stat, it's data, and it's purpose
+        hit:          translation.hit,
+        time_to_sync: translation.time_to_sync,
+        transaction:  translation.transaction
+    }
+    transparencyReport = translation.transparencyReport
+    arrAnalytics = [
+        // Statistic level  // Allowed statistics
+        { name: "Disabled", stats: [] },
+        { name: "Minimal",  stats: [STATS.hit, STATS.time_to_sync] },
+        { name: "Balanced", stats: [STATS.hit, STATS.time_to_sync, STATS.transaction] }
+    ]
+    
+    // Honour the "Do Not Track" header by default
+    if (!strSettingAnalytics && navigator.doNotTrack === "1") {
+        // Disabled
+        setAnalytics(arrAnalytics[0], true);
+        domAnalyticsDescriptor.innerHTML = '<h6 style="color:#dcdf6b;font-family:mono !important;"><pre style="color: inherit;">Analytics disabled to honour "Do Not Track" browser setting, you may manually enable if desired, though!</pre></h6>';
+    } else {
+        // Load from storage, or use defaults
+        setAnalytics(cAnalyticsLevel = arrAnalytics.find(a => a.name === strSettingAnalytics) || cAnalyticsLevel, true);
+    }
+
+    // And update the UI to reflect them
+    domAnalyticsSelect.value = cAnalyticsLevel.name;
+
     
 }
 // --- Settings Functions
@@ -127,7 +176,7 @@ function setAnalytics(level, fSilent = false) {
     if (!fSilent) createAlert('success', ALERTS.SWITCHED_ANALYTICS,[{level : cAnalyticsLevel.name}], 2250);
 }
 
-function toggleTestnet() {
+export function toggleTestnet() {
     if (fWalletLoaded) return createAlert('warning', ALERTS.UNABLE_SWITCH_TESTNET, [], 3250);
 
     // Update current chain config
@@ -146,7 +195,7 @@ function toggleTestnet() {
     updateStakingRewardsGUI();
 }
 
-function toggleDebug() {
+export function toggleDebug() {
     debug = !debug;
     //TRANSLATION CHANGES
     //doms.domDebug.innerHTML = debug ? '<b>DEBUG MODE ON</b>' : '';
@@ -203,50 +252,3 @@ function fillNodeSelect() {
     doms.domNodeSelect.value = cNode.url;
 
 }
-
-// Once the DOMS.DOM is ready; plug-in any settings to the UI
-addEventListener('DOMS.DOMContentLoaded', () => {
-    const domAnalyticsSelect = document.getElementById('analytics');
-
-    fillExplorerSelect();
-    fillNodeSelect();
-    fillTranslationSelect();
-
-    // Add each analytics level into the UI selector
-    for (const analLevel of arrAnalytics) {
-        const opt = document.createElement('option');
-        opt.value = opt.innerHTML = analLevel.name;
-        domAnalyticsSelect.appendChild(opt);
-    }
-
-    // Fetch settings from LocalStorage
-    const strSettingAnalytics = localStorage.getItem('analytics');
-
-    // Apply translations to the transparency report
-    STATS = {
-        // Stat key   // Description of the stat, it's data, and it's purpose
-        hit:          translation.hit,
-        time_to_sync: translation.time_to_sync,
-        transaction:  translation.transaction
-    }
-    transparencyReport = translation.transparencyReport
-    arrAnalytics = [
-        // Statistic level  // Allowed statistics
-        { name: "Disabled", stats: [] },
-        { name: "Minimal",  stats: [STATS.hit, STATS.time_to_sync] },
-        { name: "Balanced", stats: [STATS.hit, STATS.time_to_sync, STATS.transaction] }
-    ]
-    
-    // Honour the "Do Not Track" header by default
-    if (!strSettingAnalytics && navigator.doNotTrack === "1") {
-        // Disabled
-        setAnalytics(arrAnalytics[0], true);
-        domAnalyticsDescriptor.innerHTML = '<h6 style="color:#dcdf6b;font-family:mono !important;"><pre style="color: inherit;">Analytics disabled to honour "Do Not Track" browser setting, you may manually enable if desired, though!</pre></h6>';
-    } else {
-        // Load from storage, or use defaults
-        setAnalytics(cAnalyticsLevel = arrAnalytics.find(a => a.name === strSettingAnalytics) || cAnalyticsLevel, true);
-    }
-
-    // And update the UI to reflect them
-    domAnalyticsSelect.value = cAnalyticsLevel.name;
-});

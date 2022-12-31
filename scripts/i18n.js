@@ -1,6 +1,7 @@
 'use strict';
 
-import { translation } from "./global.js";
+import { translation, translatableLanguages } from "./global.js";
+import { createAlert } from "./misc.js";
 
 export const ALERTS = {};
 
@@ -13,8 +14,10 @@ export function switchTranslation(langName){
       let translation = translatableLanguages[langName]
       translate(translation);
 
+	// TODO: tidy it up in a function
+	/*
       //Apply translations to the transparency report
-      STATS = {
+      const STATS = {
           // Stat key   // Description of the stat, it's data, and it's purpose
           hit:          translation.hit,
           time_to_sync: translation.time_to_sync,
@@ -26,9 +29,10 @@ export function switchTranslation(langName){
           { name: "Disabled", stats: [] },
           { name: "Minimal",  stats: [STATS.hit, STATS.time_to_sync] },
           { name: "Balanced", stats: [STATS.hit, STATS.time_to_sync, STATS.transaction] }
-      ]
+      ];
       let SettingAnalytics = localStorage.getItem('analytics');
       setAnalytics(cAnalyticsLevel = arrAnalytics.find(a => a.name === SettingAnalytics) || cAnalyticsLevel, true);
+      */
 
       loadAlerts();
     }else{

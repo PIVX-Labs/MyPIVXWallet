@@ -1,12 +1,12 @@
-import conv from "binstring";
+import { Buffer } from "buffer";
 import { sha256 } from '@noble/hashes/sha256';
 
 export function hexToBytes(str) {
-    return conv(str, {in: "hex", out: "binary"});
+    return Buffer.from(str, 'hex');
 }
 
 export function bytesToHex(bytes) {
-    return conv(bytes, {in: "binary", out: "hex"});
+    return Buffer.from(bytes).toString("hex");
 }
 
 /**

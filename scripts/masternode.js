@@ -1,5 +1,7 @@
 "use strict";
 
+import { cNode } from "./settings.js";
+
 /**
     * Construct a masternode
     * @param {string} [masternode.walletPrivateKeyPath] - BIP39 path pointing to the private key holding the collateral. Optional if not HD
@@ -8,7 +10,7 @@
     * @param {number} masternode.outidx - The output id of the collateral starting from 0
     * @param {string} masternode.addr - IPV4 address in the form `ip:port`
 */
-class Masternode {
+export default class Masternode {
     constructor({walletPrivateKeyPath, mnPrivateKey, collateralTxId, outidx, addr} = {}) {
 	this.walletPrivateKeyPath = walletPrivateKeyPath;
 	this.mnPrivateKey = mnPrivateKey;

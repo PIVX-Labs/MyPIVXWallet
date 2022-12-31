@@ -68,84 +68,6 @@
     }
   </script>
 
-
-  <!--- IMPORTANT: CHAIN PARAMS BELOW, DO NOT EDIT UNLESS YOU'RE ABSOLUTELY CERTAIN YOU KNOW WHAT YOU'RE DOING  --->
-  <script>
-      // In most BTC-derived coins, the below parameters can be found in the 'src/chainparams.cpp' Mainnet configuration.
-      // These below params share the same names as the CPP params, so finding and editing these is easy-peasy!
-      // <[network_byte] [32_byte_payload] [0x01] [4_byte_checksum]>
-      const PRIVKEY_BYTE_LENGTH = 38;
-
-      const COIN_DECIMALS = 8;
-      const COIN = 10**8;
-
-      /** The maximum gap (absence of transactions within a range of derived addresses) before an account search ends */
-      const MAX_ACCOUNT_GAP = 20;
-      
-      /* Internal tweaking parameters */
-      // A new encryption password must be 'at least' this long.
-      const MIN_PASS_LENGTH = 6;
-
-      // Cool stuff
-      const donationAddress = "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb";
-
-      /* chainparams */
-      const cChainParams = {
-          current: null,
-          main: {
-              collateralInSats   : 10000 * COIN,
-              isTestnet         : false,
-              TICKER            : "PIV",
-              PUBKEY_PREFIX     : ["D"],
-              STAKING_PREFIX    : "S",
-              PUBKEY_ADDRESS    : 30,
-              SECRET_KEY        : 212,
-              BIP44_TYPE        : 119,
-              BIP44_TYPE_LEDGER : 77,
-	      MASTERNODE_PORT   : 51472,
-              // A list of Labs-trusted explorers
-              Explorers         : [
-                  // Display name      Blockbook-compatible API base
-                  { name: "rockdev",   url: "https://explorer.rockdev.org" },
-                  { name: "zkBitcoin", url: "https://zkbitcoin.com" }
-              ],
-	      Nodes: [
-		  { name: "duddino", url: "https://rpc.duddino.com/mainnet"}
-	      ],
-	      Consensus         : {
-                  // Network upgrades
-                  UPGRADE_V6_0  : undefined
-              },
-          },
-          testnet: {
-	      collateralInSats   : 10000 * COIN,
-              isTestnet         : true,
-              TICKER            : "tPIV",
-              PUBKEY_PREFIX     : ["x","y"],
-              STAKING_PREFIX    : "W",
-              PUBKEY_ADDRESS    : 139,
-              SECRET_KEY        : 239,
-              BIP44_TYPE        : 1,
-              BIP44_TYPE_LEDGER : 1,
-	      MASTERNODE_PORT   : 51474,
-              // A list of Labs-trusted explorers
-              Explorers         : [
-                  // Display name      Blockbook-compatible API base
-                  { name: "rockdev",   url: "https://testnet.rockdev.org" }
-              ],
-	      Nodes: [
-		  { name: "duddino", url: "https://rpc.duddino.com/testnet"}
-	      ],
-	      Consensus         : {
-                  // Network upgrades
-                  UPGRADE_V6_0  : undefined
-              },
-          }
-      }
-      // Set default chain
-      cChainParams.current = cChainParams.main;
-
-  </script>
 </head>
 
 <body>
@@ -155,7 +77,7 @@
       <!-- NAVBAR -->
       <nav class="navbar navbar-expand-lg sticky-top navbar-dark navbarSpecial">
         <div class="container">
-          <img onclick="playMusic()" class="nav-logo navbar-brand noselect" src='assets/logo.png' alt="PIVX">
+          <img onclick="MPW.playMusic()" class="nav-logo navbar-brand noselect" src='assets/logo.png' alt="PIVX">
           <button id="navbarToggler" class="navbar-toggler collapsed" type="button" data-toggle="collapse" data-target="#navbarNav"
             aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
@@ -177,9 +99,9 @@
             <!-- SIDE NAVBAR -->
             <div class="form-inline my-2 my-lg-0">
               <ul class="navbar-nav mr-auto ptr">
-                <li class="nav-item"><a class="nav-link tablinks active" id="Testnet" onclick="toggleTestnet()" data-i18n="navTestnet"><b>Testnet Mode On</b></a></li>
-                <li class="nav-item"><a class="nav-link tablinks active" id="Network" onclick="toggleNetwork()"><span data-i18n="navNetwork">Network:</span> <span id="NetworkE" data-i18n="enabled">Enabled</span><span id="NetworkD" data-i18n="disabled">Disabled</span></a></li>
-                <li class="nav-item"><a class="nav-link tablinks active" id="Debug" onclick="toggleDebug()"><b>DEBUG MODE ON</b></a></li>
+                <li class="nav-item"><a class="nav-link tablinks active" id="Testnet" onclick="MPW.toggleTestnet()" data-i18n="navTestnet"><b>Testnet Mode On</b></a></li>
+                <li class="nav-item"><a class="nav-link tablinks active" id="Network" onclick="MPW.toggleNetwork()"><span data-i18n="navNetwork">Network:</span> <span id="NetworkE" data-i18n="enabled">Enabled</span><span id="NetworkD" data-i18n="disabled">Disabled</span></a></li>
+                <li class="nav-item"><a class="nav-link tablinks active" id="Debug" onclick="MPW.toggleDebug()"><b>DEBUG MODE ON</b></a></li>
               </ul>
             </div>
           </div>
@@ -362,7 +284,7 @@
 
               <!-- PIVX DONATION SECTION -->
               <div class="col-md-12 donation-section float-left rm-pd text-center">
-                  <button class="pivx-button-big" onclick="guiPreparePayment(donationAddress)">
+                  <button class="pivx-button-big" onclick="MPW.guiPreparePayment(donationAddress)">
                             <span class="buttoni-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 70"><path d="M3.497 25.717C1.401 25.588 0 23.847 0 21.753v-2.535c0-.775.149-1.593.925-1.593h22.719c2.173 0 3.941 1.861 3.941 4.034 0 2.174-1.769 3.988-3.941 3.988l-20.207.048c-.02 0 .08.023.06.022z"></path><path d="M5.229 69.625C4.455 69.625 4 68.494 4 67.719V38.661c0-1.911 1.447-3.731 3.258-3.989.175-.029.285-.047.483-.047h21.525c7.137 0 12.751-5.86 12.751-13.027 0-7.096-5.528-12.841-12.586-13.177-.002 0-.671.016-1.41.016l-20.335.066C5.529 8.373 4 6.652 4 4.558V2.023C4 1.247 4.407.625 5.183.625h24.059c11.57 0 20.654 9.546 20.706 21.104 0 9.378-6.307 17.727-15.337 20.311-1.622.445-3.122.705-4.735.778L12 42.842v22.485c0 2.156-2.141 4.298-4.235 4.298H5.229z"></path></svg></span>
                             <span class="buttoni-text" data-i18n="buttonDonate">Donate - Pay with MyPIVXWallet</span>
                             <span class="buttoni-arrow"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M23.328 16.707L13.121 26.914a.5.5 0 01-.707 0l-2.828-2.828a.5.5 0 010-.707L16.964 16 9.586 8.621a.5.5 0 010-.707l2.828-2.828a.5.5 0 01.707 0l10.207 10.207a1 1 0 010 1.414z"></path></svg></span>
@@ -424,7 +346,7 @@
                   <input class="center-text" style="width: 100%; font-family: monospace;" type="password" id="newPassword" placeholder="Enter Password">
                   <input class="center-text" style="width: 100%; font-family: monospace;" type="password" id="newPasswordRetype" placeholder="Re-type Password">
                 </div>
-                  <button class="pivx-button-big" onclick="guiEncryptWallet()" style="float: none;margin: 0 auto;display: block;">
+                  <button class="pivx-button-big" onclick="MPW.guiEncryptWallet()" style="float: none;margin: 0 auto;display: block;">
                     <span class="buttoni-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M85.967 10.65l-32.15-9.481a13.466 13.466 0 00-7.632 0l-32.15 9.48C11.661 11.351 10 13.567 10 16.042v26.623c0 12.321 3.67 24.186 10.609 34.31 6.774 9.885 16.204 17.49 27.264 21.99a5.612 5.612 0 004.251 0c11.061-4.5 20.491-12.104 27.266-21.99C86.329 66.85 90 54.985 90 42.664V16.042a5.656 5.656 0 00-4.033-5.392zM69 68.522C69 70.907 67.03 72 64.584 72H34.092C31.646 72 30 70.907 30 68.522v-23.49C30 42.647 31.646 41 34.092 41H37v-9.828C37 24.524 41.354 18.5 49.406 18.5 57.37 18.5 62 24.066 62 31.172V41h2.584C67.03 41 69 42.647 69 45.032v23.49zM58 41v-9.828c0-4.671-3.708-8.472-8.5-8.472-4.791 0-8.5 3.8-8.5 8.472V41h17z"></path></svg></span>
                     <span class="buttoni-text" id="encryptButton">Set Password</span>
                     <span class="buttoni-arrow"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M23.328 16.707L13.121 26.914a.5.5 0 01-.707 0l-2.828-2.828a.5.5 0 010-.707L16.964 16 9.586 8.621a.5.5 0 010-.707l2.828-2.828a.5.5 0 01.707 0l10.207 10.207a1 1 0 010 1.414z"></path></svg></span>
@@ -445,7 +367,7 @@
                                 </div>
                             </div>
                             <div id="bal-title">
-                                <h3 class="noselect balance-title">Balance &nbsp;&nbsp;<span id="balanceReload" class="reload noselect" onclick="refreshChainData()">&#x21bb;</span></h3>
+                                <h3 class="noselect balance-title">Balance &nbsp;&nbsp;<span id="balanceReload" class="reload noselect" onclick="MPW.refreshChainData()">&#x21bb;</span></h3>
                             </div>
                         </div>
                     </div>
@@ -505,7 +427,7 @@
 
                   <input class="center-text" style="display:none;" type="text" id='prefix' placeholder="Address Prefix" onkeypress="checkVanity()">
 
-                  <button class="pivx-button-big" onclick="generateVanityWallet()">
+                  <button class="pivx-button-big" onclick="MPW.generateVanityWallet()">
                               <span class="buttoni-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 70"><path d="M3.497 25.717C1.401 25.588 0 23.847 0 21.753v-2.535c0-.775.149-1.593.925-1.593h22.719c2.173 0 3.941 1.861 3.941 4.034 0 2.174-1.769 3.988-3.941 3.988l-20.207.048c-.02 0 .08.023.06.022z"></path><path d="M5.229 69.625C4.455 69.625 4 68.494 4 67.719V38.661c0-1.911 1.447-3.731 3.258-3.989.175-.029.285-.047.483-.047h21.525c7.137 0 12.751-5.86 12.751-13.027 0-7.096-5.528-12.841-12.586-13.177-.002 0-.671.016-1.41.016l-20.335.066C5.529 8.373 4 6.652 4 4.558V2.023C4 1.247 4.407.625 5.183.625h24.059c11.57 0 20.654 9.546 20.706 21.104 0 9.378-6.307 17.727-15.337 20.311-1.622.445-3.122.705-4.735.778L12 42.842v22.485c0 2.156-2.141 4.298-4.235 4.298H5.229z"></path></svg></span>
 
                               <span class="buttoni-text" id="vanButtonText" data-i18n="dCardTwoButton" >Create A Vanity Wallet</span>
@@ -534,7 +456,7 @@
                     <p data-i18n="dCardThreeDesc">This will help managing the PIVX wallet on your ledger. Notice that the private key will remain safe in your hardware device</p>
                   </div>
 
-                  <button class="pivx-button-big" onclick="importWallet({isHardwareWallet: true})">
+                  <button class="pivx-button-big" onclick="MPW.importWallet({isHardwareWallet: true})">
                     <span class="buttoni-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 70">
                         <path d="M3.497 25.717C1.401 25.588 0 23.847 0 21.753v-2.535c0-.775.149-1.593.925-1.593h22.719c2.173 0 3.941 1.861 3.941 4.034 0 2.174-1.769 3.988-3.941 3.988l-20.207.048c-.02 0 .08.023.06.022z"></path>
                         <path d="M5.229 69.625C4.455 69.625 4 68.494 4 67.719V38.661c0-1.911 1.447-3.731 3.258-3.989.175-.029.285-.047.483-.047h21.525c7.137 0 12.751-5.86 12.751-13.027 0-7.096-5.528-12.841-12.586-13.177-.002 0-.671.016-1.41.016l-20.335.066C5.529 8.373 4 6.652 4 4.558V2.023C4 1.247 4.407.625 5.183.625h24.059c11.57 0 20.654 9.546 20.706 21.104 0 9.378-6.307 17.727-15.337 20.311-1.622.445-3.122.705-4.735.778L12 42.842v22.485c0 2.156-2.141 4.298-4.235 4.298H5.229z"></path>
@@ -613,17 +535,17 @@
                         </div>
                     </div>
                     <div id="staking-box">
-                      <h3 id="stake-title" class="noselect"><span data-i18n="staking">Staking</span> &nbsp;&nbsp;<span id="balanceReloadStaking" class="reload noselect" onclick="refreshChainData()">&#x21bb;</span></h3>
+                      <h3 id="stake-title" class="noselect"><span data-i18n="staking">Staking</span> &nbsp;&nbsp;<span id="balanceReloadStaking" class="reload noselect" onclick="MPW.refreshChainData()">&#x21bb;</span></h3>
                     </div>
                 </div>
               </div>
               <br>
               <div class="staking-banner-bottom">
                 <div class="stake-box large-box col-md-4">
-                  <h5 id="availToDelegate" onclick="selectMaxBalance(domGuiDelegateAmount)" class="stake-balances ptr"><span data-i18n="available">Available</span>: 0 PIV</h5>
+                  <h5 id="availToDelegate" onclick="MPW.selectMaxBalance(domGuiDelegateAmount)" class="stake-balances ptr"><span data-i18n="available">Available</span>: 0 PIV</h5>
                   <textarea id="delegateAmount" class="stake-input form-control private-key-area"></textarea>
                   <div class="button-padd">
-                      <button class="pivx-button-big" onclick="delegateGUI()">
+                      <button class="pivx-button-big" onclick="MPW.delegateGUI()">
                                   <span class="buttoni-icon"><i class="far fa-snowflake fa-tiny-margin"></i></span>
                                   <span class="buttoni-text" data-i18n="staking">Stake</span>
                                   <span class="buttoni-arrow"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M23.328 16.707L13.121 26.914a.5.5 0 01-.707 0l-2.828-2.828a.5.5 0 010-.707L16.964 16 9.586 8.621a.5.5 0 010-.707l2.828-2.828a.5.5 0 01.707 0l10.207 10.207a1 1 0 010 1.414z"></path></svg></span>
@@ -631,10 +553,10 @@
                  </div>
                 </div>
                 <div class="stake-box large-box col-md-4">
-                  <h5 id="availToUndelegate" onclick="selectMaxBalance(domGuiUndelegateAmount, true)" class="stake-balances ptr"><span data-i18n="staking">Staking</span>: 0 PIV</h5>
+                  <h5 id="availToUndelegate" onclick="MPW.selectMaxBalance(domGuiUndelegateAmount, true)" class="stake-balances ptr"><span data-i18n="staking">Staking</span>: 0 PIV</h5>
                   <textarea id="undelegateAmount" class="stake-input form-control private-key-area"></textarea>
                   <div class="button-padd">
-                      <button class="pivx-button-big" onclick="undelegateGUI()">
+                      <button class="pivx-button-big" onclick="MPW.undelegateGUI()">
                                   <span class="buttoni-icon"><i class="far fa-snowflake fa-tiny-margin"></i></span>
                                   <span class="buttoni-text" data-i18n="stakeUnstake">Unstake</span>
                                   <span class="buttoni-arrow"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M23.328 16.707L13.121 26.914a.5.5 0 01-.707 0l-2.828-2.828a.5.5 0 010-.707L16.964 16 9.586 8.621a.5.5 0 010-.707l2.828-2.828a.5.5 0 01.707 0l10.207 10.207a1 1 0 010 1.414z"></path></svg></span>
@@ -651,7 +573,7 @@
                   <div class="staking-rewards-list">
                 <div id="staking-rewards-content">
               </div>
-              <button type="button" id="stakingLoadMore" onclick="getStakingRewards()">
+              <button type="button" id="stakingLoadMore" onclick="MPW.getStakingRewards()">
                 <span class="buttoni-icon" id="stakingLoadMoreIcon"><i class="fas fa-sync fa-tiny-margin"></i></span>
                 <span class="buttoni-text" data-i18n="stakeLoadMore">Load more</span>
               </button>
@@ -699,7 +621,7 @@
                   <input type="text" id='mnIP' placeholder="Masternode ip address">
                   <select id='mnTxId' style="display: block;" placeholder="Masternode collateral tx" class="form-control">
 		  </select>
-                  <button class="pivx-button-big" onclick="importMasternode()">
+                  <button class="pivx-button-big" onclick="MPW.importMasternode()">
                                 <span class="buttoni-icon"><i class="fas fa-file-upload fa-tiny-margin"></i></span>
                                 <span class="buttoni-text" id="importMnText">Access Masternode</span>
                                 <span class="buttoni-arrow"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M23.328 16.707L13.121 26.914a.5.5 0 01-.707 0l-2.828-2.828a.5.5 0 010-.707L16.964 16 9.586 8.621a.5.5 0 010-.707l2.828-2.828a.5.5 0 01.707 0l10.207 10.207a1 1 0 010 1.414z"></path></svg></span>
@@ -723,7 +645,7 @@
                   </select>
                   <br>
                   <br>
-                  <button class="pivx-button-big" onclick="createMasternode()">
+                  <button class="pivx-button-big" onclick="MPW.createMasternode()">
                                 <span class="buttoni-icon"><i class="fas fa-file-upload fa-tiny-margin"></i></span>
                                 <span class="buttoni-text" id="importMnText">Create Masternode</span>
                                 <span class="buttoni-arrow"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M23.328 16.707L13.121 26.914a.5.5 0 01-.707 0l-2.828-2.828a.5.5 0 010-.707L16.964 16 9.586 8.621a.5.5 0 010-.707l2.828-2.828a.5.5 0 01.707 0l10.207 10.207a1 1 0 010 1.414z"></path></svg></span>
@@ -762,12 +684,12 @@
             <br>
 
             <center id='controlMasternode' style='display:none; width:100%;'>
-                <button class="pivx-button-big" onclick="destroyMasternode()" style="margin: 20px; font-weight: 550 !important;">
+                <button class="pivx-button-big" onclick="MPW.destroyMasternode()" style="margin: 20px; font-weight: 550 !important;">
                   <span class="buttoni-icon"><i class="fas fa-burn fa-tiny-margin"></i></span>
                   <span class="buttoni-text" id="importMnText">Destroy Masternode</span>
                 </button>
 
-                <button class="pivx-button-big" onclick="startMasternode(true)" style="margin: 20px; font-weight: 550 !important;">
+                <button class="pivx-button-big" onclick="MPW.startMasternode(true)" style="margin: 20px; font-weight: 550 !important;">
                   <span class="buttoni-icon"><i class="fas fa-redo-alt fa-tiny-margin"></i></span>
                   <span class="buttoni-text" id="importMnText">Restart Masternode</span>
                 </button>
@@ -789,14 +711,14 @@
                 <p id="communication" class="center-text" data-i18n="sendShieldingWarning">Please <b>AVOID</b> sending to Shielded addresses using this wallet - this functionality is currently unsupported.</p>
               </div>
               <div class='max-width' style='clear:both;'>
-                <div id="simpleTransactionsDropdown" class="bold-trans" onclick='toggleDropDown("simpleTransactions")'><div data-i18n="sendSimpleTxTitle">Create Simple Transactions</div><span
+                <div id="simpleTransactionsDropdown" class="bold-trans" onclick='MPW.toggleDropDown("simpleTransactions")'><div data-i18n="sendSimpleTxTitle">Create Simple Transactions</div><span
                     style='float:right;'>▼</span></div>
                 <div id='simpleTransactions' style='display: block'>
                   <br>
                   <label data-i18n="sendSimpleTxAddress">Address</label><br>
                   <input class="center-text" style="width: 100%; font-family: monospace;" type="text" id="address1s">
                   <br>
-                  <label><span data-i18n="amount">Amount</span> | <b onclick="selectMaxBalance(domValue1s)" style="opacity: 0.8;" class="ptr" data-i18n="sendSimpleTxAll">(Send All)</b></label><br>
+                  <label><span data-i18n="amount">Amount</span> | <b onclick="MPW.selectMaxBalance(domValue1s)" style="opacity: 0.8;" class="ptr" data-i18n="sendSimpleTxAll">(Send All)</b></label><br>
                   <input class="center-text" type="text" id="value1s">
                   <div id="reqDescDisplay" style="display: none;">
                     <label data-i18n="sendSimpleTxDesc">Description (from the merchant)</label><br>
@@ -805,7 +727,7 @@
                   <br>
                   <div id='HumanReadable'></div>
                   <br>
-                  <button class="pivx-button-big" onclick="createTxGUI()">
+                  <button class="pivx-button-big" onclick="MPW.createTxGUI()">
                               <span class="buttoni-icon"><i class="fas fa-paper-plane fa-tiny-margin"></i></span>
                               <span class="buttoni-text" id="genIt" data-i18n="sendSimpleTxButton">Send Transaction</span>
                               <span class="buttoni-arrow"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M23.328 16.707L13.121 26.914a.5.5 0 01-.707 0l-2.828-2.828a.5.5 0 010-.707L16.964 16 9.586 8.621a.5.5 0 010-.707l2.828-2.828a.5.5 0 01.707 0l10.207 10.207a1 1 0 010 1.414z"></path></svg></span>
@@ -815,7 +737,7 @@
               </div>
               <br>
               <div class='max-width' style='clear:both;'>
-                <div onclick='toggleDropDown("advTransactions")' class="bold-trans"><div data-i18n="sendManualTxTitle">Manual Transactions</div><span
+                <div onclick='MPW.toggleDropDown("advTransactions")' class="bold-trans"><div data-i18n="sendManualTxTitle">Manual Transactions</div><span
                     style='float:right;'>▼</span></div>
                 <div id='advTransactions' style='display:none'>
                   <br>
@@ -840,7 +762,7 @@
                   <input type="text" id="wif">
                   <br /><br />
                   <p style="padding: 5px 0 15px;" data-i18n="sendManualTxWarning"><b>WARNING:</b> ANY FUNDS NOT ALLOCATED WILL BE USED AS FEES</p>
-                  <button class="pivx-button-big" onclick="createRawTransaction()">
+                  <button class="pivx-button-big" onclick="MPW.createRawTransaction()">
                               <span class="buttoni-icon"><i class="fas fa-paper-plane fa-tiny-margin"></i></span>
                               <span class="buttoni-text" data-i18n="sendManualTxButton">Create Raw Signed Transction</span>
                               <span class="buttoni-arrow"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M23.328 16.707L13.121 26.914a.5.5 0 01-.707 0l-2.828-2.828a.5.5 0 010-.707L16.964 16 9.586 8.621a.5.5 0 010-.707l2.828-2.828a.5.5 0 01.707 0l10.207 10.207a1 1 0 010 1.414z"></path></svg></span>
@@ -884,12 +806,12 @@
               <div id='analyticsDescriptor'></div>
               <br>
 
-              <button class="pivx-button-big" onclick="toggleDebug()">
+              <button class="pivx-button-big" onclick="MPW.toggleDebug()">
                               <span class="buttoni-icon"><i class="fas fa-bug fa-tiny-margin"></i></span>
                               <span class="buttoni-text" data-i18n="settingsToggleDebug">Toggle Debug Mode</span>
                               <span class="buttoni-arrow"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M23.328 16.707L13.121 26.914a.5.5 0 01-.707 0l-2.828-2.828a.5.5 0 010-.707L16.964 16 9.586 8.621a.5.5 0 010-.707l2.828-2.828a.5.5 0 01.707 0l10.207 10.207a1 1 0 010 1.414z"></path></svg></span>
               </button>
-              <button class="pivx-button-big" onclick="toggleTestnet()">
+              <button class="pivx-button-big" onclick="MPW.toggleTestnet()">
                               <span class="buttoni-icon"><i class="fas fa-network-wired fa-tiny-margin"></i></span>
                               <span class="buttoni-text" data-i18n="settingsToggleTestnet">Toggle Testnet Mode</span>
                               <span class="buttoni-arrow"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M23.328 16.707L13.121 26.914a.5.5 0 01-.707 0l-2.828-2.828a.5.5 0 010-.707L16.964 16 9.586 8.621a.5.5 0 010-.707l2.828-2.828a.5.5 0 01.707 0l10.207 10.207a1 1 0 010 1.414z"></path></svg></span>
@@ -906,7 +828,7 @@
     <div class="alertPositioning"></div>
     <footer id="foot">
         <div class="footer">
-          <div><span> © MIT 2022 </span> - <span data-i18n="footerBuiltWithPivxLabs">Built with 💜 by PIVX Labs</span> - <b style='cursor:pointer' onclick='openDonatePage()' data-i18n="footerDonateLink">Donate!</b><br><a href="https://github.com/PIVX-Labs/MyPIVXWallet" data-i18n="footerGithubLink">MyPIVXWallet</a></div>
+          <div><span> © MIT 2022 </span> - <span data-i18n="footerBuiltWithPivxLabs">Built with 💜 by PIVX Labs</span> - <b style='cursor:pointer' onclick='MPW.openDonatePage()' data-i18n="footerDonateLink">Donate!</b><br><a href="https://github.com/PIVX-Labs/MyPIVXWallet" data-i18n="footerGithubLink">MyPIVXWallet</a></div>
         </div>
     </footer>
   </div>

@@ -1,13 +1,18 @@
 'use strict';
 import { hexToBytes, bytesToHex, dSHA256 } from "./utils.js";
+import * as nobleSecp256k1 from "@noble/secp256k1";
 import { sha256 } from '@noble/hashes/sha256';
 import { ripemd160 } from '@noble/hashes/ripemd160';
 import { generateMnemonic, mnemonicToSeed, validateMnemonic } from "bip39";
 import { doms, beforeUnloadListener } from "./global.js";
 import HDKey from "hdkey";
 import {lastWallet, networkEnabled } from "./network.js";
-import {pubKeyHashNetworkLen, confirmPopup, writeToUint8, pubPrebaseLen, to_b58, createQR, createAlert} from "./misc.js";
+import {pubKeyHashNetworkLen, confirmPopup, writeToUint8, pubPrebaseLen, createQR, createAlert} from "./misc.js";
 import { refreshChainData, hideAllWalletOptions, getBalance, getStakingBalance } from "./global.js";
+import { cChainParams, MAX_ACCOUNT_GAP, PRIVKEY_BYTE_LENGTH } from "./chain_params.js";
+import { ALERTS } from "./i18n.js";
+import bs58 from "bs58";
+
 const jdenticon = require("jdenticon");
 
 //import $ from "jquery";
@@ -272,7 +277,7 @@ export function getDerivationPath(fLedger = false,nAccount = 0, nReceiving = 0, 
 // Verify the integrity of a WIF private key, optionally parsing and returning the key payload
 export function verifyWIF(strWIF = "", fParseBytes = false, skipVerification = false) {
   // Convert from Base58
-  const bWIF = from_b58(strWIF);
+  const bWIF = bs58.decode(strWIF);
     
   if(!skipVerification) {
     // Verify the byte length
@@ -329,7 +334,7 @@ export function generateOrEncodePrivkey(pkBytesToEncode) {
   writeToUint8(keyWithChecksum, checksum, pkNetBytesLen);
 
   // Return both the raw bytes and the WIF format
-  return { pkBytes, strWIF: to_b58(keyWithChecksum) };
+  return { pkBytes, strWIF: bs58.encode(keyWithChecksum) };
 }
 
 /**
@@ -407,7 +412,7 @@ export function deriveAddress({
   writeToUint8(pubKeyPreBase, checksumPubKey, pubKeyHashNetworkLen);
 
   // Encode as Base58 human-readable network address
-  return to_b58(pubKeyPreBase);
+  return bs58.encode(pubKeyPreBase);
 }
 
 // Wallet Import
@@ -637,12 +642,12 @@ export function hasEncryptedWallet() {
 }
 
 // If the privateKey is null then the user connected a hardware wallet
-function hasHardwareWallet() {
+export function hasHardwareWallet() {
   if (!masterKey) return false;
   return masterKey.isHardwareWallet == true;
 }
 
-function hasWalletUnlocked(fIncludeNetwork = false) {
+export function hasWalletUnlocked(fIncludeNetwork = false) {
   if (fIncludeNetwork && !networkEnabled)
     return createAlert('warning', ALERTS.WALLET_OFFLINE_AUTOMATIC, [], 5500);
     if (!masterKey) {

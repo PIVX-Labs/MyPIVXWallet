@@ -1,6 +1,6 @@
 'use strict';
 
-const OP = {
+export const OP = {
   // push value
   '0': 0x00,
   'FALSE': 0x00, // ALIAS FOR: 0
@@ -147,7 +147,7 @@ const OP = {
 }
 Object.freeze(OP);
 
-function getScriptForBurn(data) {
+export function getScriptForBurn(data) {
   let cScript = [];
   // Check if we're fitting any data into the TX
   if (typeof data === "string" && data.length > 0) {
