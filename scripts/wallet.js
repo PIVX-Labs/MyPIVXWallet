@@ -16,8 +16,6 @@ import bs58 from "bs58";
 
 const jdenticon = require("jdenticon");
 
-//import $ from "jquery";
-
 export let fWalletLoaded = false;
 
 /**

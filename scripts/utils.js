@@ -15,3 +15,4 @@ export function bytesToHex(bytes) {
 export function dSHA256(buff) {
     return sha256(sha256(buff));
 }
+

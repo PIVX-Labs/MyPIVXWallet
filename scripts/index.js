@@ -9,8 +9,9 @@ import "../assets/logo.png";
 import '../assets/style/style.css';
 
 // Export global functions to the MPW namespace so we can use them in html
-export { openTab, accessOrImportWallet, guiImportWallet, onPrivateKeyChanged, toClipboard, toggleExportUI, wipePrivateData, restoreWallet, refreshChainData, playMusic, selectMaxBalance, guiEncryptWallet, doms } from './global.js';
+export { openTab, accessOrImportWallet, guiImportWallet, onPrivateKeyChanged, toClipboard, toggleExportUI, wipePrivateData, restoreWallet, refreshChainData, playMusic, selectMaxBalance, guiEncryptWallet, guiPreparePayment, doms, generateVanityWallet } from './global.js';
 export { generateWallet, getNewAddress } from "./wallet.js";
 export { toggleTestnet, toggleDebug }  from "./settings.js";
 export { createTxGUI, createRawTransaction, undelegateGUI, delegateGUI, createMasternode } from "./transactions.js";
 export { hexToBytes, bytesToHex, dSHA256 } from "./utils.js";
+export { donationAddress } from "./chain_params.js";

@@ -6,7 +6,7 @@ import { Mempool } from "./mempool.js";
 import { ALERTS } from "./i18n.js";
 import { hasWalletUnlocked, hasHardwareWallet, hasEncryptedWallet, masterKey, getNewAddress, isYourAddress } from "./wallet.js";
 import { cChainParams, COIN } from "./chain_params.js";
-import { createAlert, swapHEXEndian } from "./misc.js";
+import { createAlert, swapHEXEndian, generateMnPrivkey } from "./misc.js";
 import { bytesToHex, hexToBytes, dSHA256 } from "./utils.js";
 
 function validateAmount(nAmountSats, nMinSats = 10000) {
@@ -112,7 +112,7 @@ async function undelegate(nValue) {
 		mempool.autoRemoveUTXO({id: tx.outpoint.hash,path: tx.path,vout: tx.outpoint.index})
             }
             // Add our undelegation + change re-delegation (if any) to the local mempool
-            const futureTxid=swapHEXEndian(await hash(hexToBytes((await hash((hexToBytes(strSerialisedTx)))))));
+	    const futureTxid = bytesToHex(dSHA256(hexToBytes(strSerialisedTx)).reverse());
             if(fReDelegateChange){
 		mempool.addUTXO({id: futureTxid,path: reDelegateAddressPath,script:bytesToHex(cTx.outputs[0].script) ,sats: nChange,vout: 0,status: Mempool.PENDING_COLD});
 		mempool.addUTXO({id: futureTxid,path: outputKeyPath,script:bytesToHex(cTx.outputs[1].script) ,sats: nValue,vout: 1,status: Mempool.PENDING});
@@ -222,7 +222,7 @@ async function delegate(nValue, coldAddr) {
             for(const tx of cTx.inputs){
 		mempool.autoRemoveUTXO({id: tx.outpoint.hash,path: tx.path,vout: tx.outpoint.index})
             }
-            const futureTxid=swapHEXEndian(await hash(hexToBytes((await hash((hexToBytes(strSerialisedTx)))))));
+	    const futureTxid = bytesToHex(dSHA256(hexToBytes(strSerialisedTx)).reverse());
 	    
             if(nChange>0){
 		mempool.addUTXO({id: futureTxid,path: changeAddressPath,sats: nChange,script:bytesToHex(cTx.outputs[0].script),vout: 0,status: Mempool.PENDING});
@@ -499,7 +499,7 @@ export async function createMasternode() {
     const nValue = cChainParams.current.collateralInSats;
     
     const nBalance = getBalance();
-    const cTx = bitjs.transaction();
+    const cTx = new bitjs.transaction();
     const cCoinControl = chooseUTXOs(cTx, nValue, 0, false);
     
     if (!cCoinControl.success) return alert(cCoinControl.msg);

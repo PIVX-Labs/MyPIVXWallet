@@ -284,7 +284,7 @@
 
               <!-- PIVX DONATION SECTION -->
               <div class="col-md-12 donation-section float-left rm-pd text-center">
-                  <button class="pivx-button-big" onclick="MPW.guiPreparePayment(donationAddress)">
+                  <button class="pivx-button-big" onclick="MPW.guiPreparePayment(MPW.donationAddress)">
                             <span class="buttoni-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 70"><path d="M3.497 25.717C1.401 25.588 0 23.847 0 21.753v-2.535c0-.775.149-1.593.925-1.593h22.719c2.173 0 3.941 1.861 3.941 4.034 0 2.174-1.769 3.988-3.941 3.988l-20.207.048c-.02 0 .08.023.06.022z"></path><path d="M5.229 69.625C4.455 69.625 4 68.494 4 67.719V38.661c0-1.911 1.447-3.731 3.258-3.989.175-.029.285-.047.483-.047h21.525c7.137 0 12.751-5.86 12.751-13.027 0-7.096-5.528-12.841-12.586-13.177-.002 0-.671.016-1.41.016l-20.335.066C5.529 8.373 4 6.652 4 4.558V2.023C4 1.247 4.407.625 5.183.625h24.059c11.57 0 20.654 9.546 20.706 21.104 0 9.378-6.307 17.727-15.337 20.311-1.622.445-3.122.705-4.735.778L12 42.842v22.485c0 2.156-2.141 4.298-4.235 4.298H5.229z"></path></svg></span>
                             <span class="buttoni-text" data-i18n="buttonDonate">Donate - Pay with MyPIVXWallet</span>
                             <span class="buttoni-arrow"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M23.328 16.707L13.121 26.914a.5.5 0 01-.707 0l-2.828-2.828a.5.5 0 010-.707L16.964 16 9.586 8.621a.5.5 0 010-.707l2.828-2.828a.5.5 0 01.707 0l10.207 10.207a1 1 0 010 1.414z"></path></svg></span>
@@ -718,7 +718,7 @@
                   <label data-i18n="sendSimpleTxAddress">Address</label><br>
                   <input class="center-text" style="width: 100%; font-family: monospace;" type="text" id="address1s">
                   <br>
-                  <label><span data-i18n="amount">Amount</span> | <b onclick="MPW.selectMaxBalance(domValue1s)" style="opacity: 0.8;" class="ptr" data-i18n="sendSimpleTxAll">(Send All)</b></label><br>
+                  <label><span data-i18n="amount">Amount</span> | <b onclick="MPW.selectMaxBalance(MPW.doms.domValue1s)" style="opacity: 0.8;" class="ptr" data-i18n="sendSimpleTxAll">(Send All)</b></label><br>
                   <input class="center-text" type="text" id="value1s">
                   <div id="reqDescDisplay" style="display: none;">
                     <label data-i18n="sendSimpleTxDesc">Description (from the merchant)</label><br>

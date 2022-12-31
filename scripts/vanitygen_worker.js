@@ -1,6 +1,6 @@
 'use strict';
 
-importScripts('misc.js', 'libs/noble-secp256k1.js', 'libs/bn.js', 'libs/crypto-min.js', 'libs/crypto-sha256-hmac.js', 'libs/crypto-sha256.js', 'libs/jsbn.js', 'libs/ripemd160.js', 'libs/sha256.js');
+//importScripts('misc.js', 'libs/noble-secp256k1.js', 'libs/bn.js', 'libs/crypto-min.js', 'libs/crypto-sha256-hmac.js', 'libs/crypto-sha256.js', 'libs/jsbn.js', 'libs/ripemd160.js', 'libs/sha256.js');
 
 const cKeypair = {
   'pub':  '',

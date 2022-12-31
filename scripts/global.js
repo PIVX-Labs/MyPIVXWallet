@@ -7,7 +7,7 @@ import * as jdenticon from "jdenticon";
 import { masterKey, hasEncryptedWallet, importWallet, getNewAddress, isYourAddress, encryptWallet } from "./wallet.js";
 import { submitAnalytics, networkEnabled, getBlockCount, arrRewards, getStakingRewards } from "./network.js";
 import { start as settingsStart, cExplorer } from "./settings.js";
-import { createAlert, confirmPopup, sanitizeHTML } from "./misc.js";
+import { createAlert, confirmPopup, sanitizeHTML, MAP_B58 } from "./misc.js";
 import { cChainParams, COIN, MIN_PASS_LENGTH } from "./chain_params.js";
 
 // TRANSLATION
@@ -168,8 +168,8 @@ export function start() {
     // Customise the UI if a saved wallet exists
     if (hasEncryptedWallet()) {
         // Hide the 'Generate wallet' buttons
-       doms.domenerateWallet.style.display = "none";
-       doms.domenVanityWallet.style.display = "none";
+       doms.domGenerateWallet.style.display = "none";
+       doms.domGenVanityWallet.style.display = "none";
 
 	const publicKey = localStorage.getItem("publicKey");
 
@@ -322,9 +322,9 @@ export function toClipboard(source, caller) {
     }, 1000);
 }
 
-function guiPreparePayment(strTo = "", strAmount = 0, strDesc = "") {
+export function guiPreparePayment(strTo = "", strAmount = 0, strDesc = "") {
   doms.domTxTab.click();
-    if (domSimpleTXs.style.display === 'none')
+    if (doms.domSimpleTXs.style.display === 'none')
       doms.domSimpleTXsDropdown.click();
     // Apply values
   doms.domAddress1s.value = strTo;
@@ -605,7 +605,7 @@ function stopSearch() {
     clearInterval(vanUiUpdater);
 }
 
-async function generateVanityWallet() {
+export async function generateVanityWallet() {
     if (isVanityGenerating) return stopSearch();
     if (typeof(Worker) === "undefined") return createAlert('error', ALERTS.UNSUPPORTED_WEBWORKERS, [], 7500);
     // Generate a vanity address with the given prefix

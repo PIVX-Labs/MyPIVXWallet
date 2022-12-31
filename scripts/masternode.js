@@ -1,6 +1,10 @@
 "use strict";
 
 import { cNode } from "./settings.js";
+import { cChainParams } from "./chain_params.js";
+import { masterKey, parseWIF } from "./wallet.js";
+import { dSHA256, bytesToHex, hexToBytes } from "./utils.js";
+import * as  nobleSecp256k1 from "@noble/secp256k1";
 
 /**
     * Construct a masternode
@@ -59,16 +63,16 @@ export default class Masternode {
 	for (const digit of ip.split('.').map(n=>parseInt(n))) {
 	    start += ('0' + (digit).toString(16)).slice(-2);
 	}
-	start += Crypto.util.bytesToHex(Masternode._numToBytes(port, 2, false));
+	start += bytesToHex(Masternode._numToBytes(port, 2, false));
 	return start;
     }
 
     static _numToBytes(number, numBytes=8, littleEndian = true) {
-		const bytes = [];
-		for(let i=0; i<numBytes; i++) {
-			bytes.push((number / 2**(8*i)) & 0xFF);
-		}
-		return littleEndian ? bytes : bytes.reverse();
+	const bytes = [];
+	for(let i=0; i<numBytes; i++) {
+	    bytes.push((number / 2**(8*i)) & 0xFF);
+	}
+	return littleEndian ? bytes : bytes.reverse();
     }
 
     /**
@@ -82,16 +86,14 @@ export default class Masternode {
     static getPingSignature({vin, blockHash, sigTime}) {
 
 	const ping = [
-	    ...Crypto.util.hexToBytes(vin.txid).reverse(),
+	    ...hexToBytes(vin.txid).reverse(),
 	    ...Masternode._numToBytes(vin.idx, 4, true),
 	    // Should be tx sequence, but 0xffffff is fine
 	    ...[0, 255, 255, 255, 255],
-	    ...Crypto.util.hexToBytes(blockHash).reverse(),
+	    ...hexToBytes(blockHash).reverse(),
 	    ...Masternode._numToBytes(sigTime, 8, true),
 	];
-	const hash = new jsSHA(0, 0, {numRounds: 2});
-	hash.update(ping);
-	return hash.getHash(0);
+	return dSHA256(ping);
     }
 
     /**
@@ -106,18 +108,18 @@ export default class Masternode {
      */
     static getToSign({walletPrivateKey, addr, mnPrivateKey, sigTime}) {
 	const [ ip, port ] = addr.split(":");
-        const publicKey = Crypto.util.hexToBytes(deriveAddress({
+        const publicKey = hexToBytes(deriveAddress({
 	    pkBytes: parseWIF(walletPrivateKey, true),
 	    output: "COMPRESSED_HEX",
         }));
-        const mnPublicKey = Crypto.util.hexToBytes(deriveAddress({
+        const mnPublicKey = hexToBytes(deriveAddress({
 	    pkBytes: parseWIF(mnPrivateKey, true),
 	    output: "UNCOMPRESSED_HEX",
         }));
 
 	const pkt = [
 	    ...Masternode._numToBytes(1, 4, true), // Message version
-	    ...Crypto.util.hexToBytes(Masternode._decodeIpAddress(ip, port)), // Encoded ip + port
+	    ...hexToBytes(Masternode._decodeIpAddress(ip, port)), // Encoded ip + port
 	    ...Masternode._numToBytes(sigTime, 8, true),
 	    ...Masternode._numToBytes(publicKey.length, 1, true), // Collateral public key length
 	    ...publicKey,
@@ -125,10 +127,7 @@ export default class Masternode {
 	    ...mnPublicKey,
 	    ...Masternode._numToBytes(Masternode._getProtocolVersion(), 4, true), // Protocol version
 	];
-	const hash = new jsSHA(0, 0, {numRounds: 2});
-	hash.update(pkt);
-	// It's important to note that the thing to be signed is the hex representation of the hash, not the bytes
-	return Crypto.util.bytesToHex(hash.getHash(0).reverse());
+	return bytesToHex(dSHA256(pkt).reverse());
     }
 
     /**
@@ -152,11 +151,8 @@ export default class Masternode {
 	    mnPrivateKey: this.mnPrivateKey,
 	    sigTime,
 	}).split("").map(c=>c.charCodeAt(0));
-	const hash = new jsSHA(0, 0, { numRounds: 2 });
-	hash.update(padding
-		    .concat(toSign.length)
-		    .concat(toSign));
-	const [ signature, v ] = await nobleSecp256k1.sign(hash.getHash(0), parseWIF(walletPrivateKey, true), { der: false, recovered: true});
+	const hash = dSHA256(padding.concat(toSign.length).concat(toSign));
+	const [ signature, v ] = await nobleSecp256k1.sign(hash, parseWIF(walletPrivateKey, true), { der: false, recovered: true});
 	return [
 	    v + 31, ...signature
 	];
@@ -191,24 +187,26 @@ export default class Masternode {
 	const blockHash = await Masternode.getLastBlockHash();
 	const [ ip, port ] = this.addr.split(':');
 	const walletPrivateKey = await this._getWalletPrivateKey()
-        const walletPublicKey = Crypto.util.hexToBytes(deriveAddress({
+        const walletPublicKey = hexToBytes(deriveAddress({
 	    pkBytes: parseWIF(walletPrivateKey, true),
 	    output: "COMPRESSED_HEX",
         }));
-        const mnPublicKey = Crypto.util.hexToBytes(deriveAddress({
+	
+        const mnPublicKey = hexToBytes(deriveAddress({
 	    pkBytes: parseWIF(this.mnPrivateKey, true),
 	    output: "UNCOMPRESSED_HEX",
 	    compress: false,
         }));
+	
 	const sigBytes = await this.getSignedMessage(sigTime);
 	const sigPingBytes = await this.getSignedPingMessage(sigTime, blockHash);
 
 	const message = [
-	    ...Crypto.util.hexToBytes(this.collateralTxId).reverse(),
+	    ...hexToBytes(this.collateralTxId).reverse(),
 	    ...Masternode._numToBytes(this.outidx, 4, true),
 	    ...Masternode._numToBytes(0, 1, true), // Message version
 	    ...Masternode._numToBytes(0xffffffff, 4, true),
-	    ...Crypto.util.hexToBytes(Masternode._decodeIpAddress(ip, port)),
+	    ...hexToBytes(Masternode._decodeIpAddress(ip, port)),
 	    ...Masternode._numToBytes(walletPublicKey.length, 1, true),
 	    ...walletPublicKey,
 	    ...Masternode._numToBytes(mnPublicKey.length, 1, true),
@@ -217,18 +215,18 @@ export default class Masternode {
 	    ...sigBytes,
 	    ...Masternode._numToBytes(sigTime, 8, true),
 	    ...Masternode._numToBytes(Masternode._getProtocolVersion(), 4, true),
-	    ...Crypto.util.hexToBytes(this.collateralTxId).reverse(),
+	    ...hexToBytes(this.collateralTxId).reverse(),
 	    ...Masternode._numToBytes(this.outidx, 4, true),
 	    ...Masternode._numToBytes(0, 1, true),
 	    ...Masternode._numToBytes(0xffffffff, 4, true),
-	    ...Crypto.util.hexToBytes(blockHash).reverse(),
+	    ...hexToBytes(blockHash).reverse(),
 	    ...Masternode._numToBytes(sigTime, 8, true),
 	    ...Masternode._numToBytes(sigPingBytes.length, 1, true),
 	    ...sigPingBytes,
 	    ...Masternode._numToBytes(1, 4, true),
 	    ...Masternode._numToBytes(1, 4, true),
 	];
-	return Crypto.util.bytesToHex(message);
+	return bytesToHex(message);
     }
 
     /**
@@ -259,18 +257,17 @@ export default class Masternode {
      */
     async getSignedVoteMessage(hash, voteCode, sigTime) {
 	const msg = [
-	    ...Crypto.util.hexToBytes(this.collateralTxId).reverse(),
+	    ...hexToBytes(this.collateralTxId).reverse(),
 	    ...Masternode._numToBytes(this.outidx, 4, true),
 	    // Should be tx sequence, but 0xffffff is fine
 	    ...[0, 255, 255, 255, 255],
-	    ...Crypto.util.hexToBytes(hash).reverse(),
+	    ...hexToBytes(hash).reverse(),
 	    ...Masternode._numToBytes(voteCode, 4, true),
 	    ...Masternode._numToBytes(sigTime, 8, true),
 	];
-	const sha = new jsSHA(0, 0, {numRounds: 2});
-	sha.update(msg);
-	const [ signature, v ] = await nobleSecp256k1.sign(sha.getHash(0), parseWIF(this.mnPrivateKey, true), { der: false, recovered: true});
-	return Crypto.util.bytesToBase64([
+	
+	const [ signature, v ] = await nobleSecp256k1.sign(dSHA256(msg), parseWIF(this.mnPrivateKey, true), { der: false, recovered: true});
+	return bytesToBase64([
 	    v + 27, ...signature,
 	]);
     }

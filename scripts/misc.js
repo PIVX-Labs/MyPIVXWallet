@@ -11,8 +11,8 @@ export const pubChksum = 4;
 export const pubPrebaseLen = pubKeyHashNetworkLen + pubChksum;
 
 // Base58 Encoding Map
-const MAP_B58 = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
-const LEN_B58= MAP_B58.length;
+export const MAP_B58 = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+export const LEN_B58= MAP_B58.length;
 
 /* --- UTILS --- */
 // Cryptographic Random-Gen
@@ -75,20 +75,20 @@ export function createAlert(type, message, alertVariables = [], timeout = 0) {
 // or true/false if the user confirmed or not the modal
 export async function confirmPopup({ title, html, resolvePromise }) {
     // If there's a title provided: display the header and text
-    domConfirmModalHeader.style.display = title ? "block" : "none";
-    domConfirmModalTitle.innerHTML = title || "";
+    doms.domConfirmModalHeader.style.display = title ? "block" : "none";
+    doms.domConfirmModalTitle.innerHTML = title || "";
 
     // If there's a promise to resolve, don't display buttons; the modal visibility will be controlled by the promise (f.e: a 'pls wait' screen)
-    domConfirmModalButtons.style.setProperty("display", resolvePromise ? "none" : "block", resolvePromise ? "important" : undefined);
+    doms.domConfirmModalButtons.style.setProperty("display", resolvePromise ? "none" : "block", resolvePromise ? "important" : undefined);
     $("#confirmModal").modal(resolvePromise ? "show" : { keyboard: false });
 
     // Set content display
-    domConfirmModalContent.innerHTML = html;
+    doms.domConfirmModalContent.innerHTML = html;
 
     // Wait for the promise to resolve OR create a new one which resolves upon a modal button click
     resolvePromise = resolvePromise || new Promise((res, _) => {
-        domConfirmModalConfirmButton.onclick = () => { res(true); }
-        domConfirmModalCancelButton.onclick = () => { res(false); }
+        doms.domConfirmModalConfirmButton.onclick = () => { res(true); }
+        doms.domConfirmModalCancelButton.onclick = () => { res(false); }
     });
     try {
         return await resolvePromise;
