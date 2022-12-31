@@ -14,10 +14,14 @@ module.exports = {
   mode: "development",
   module: {
     rules: [
-      {
-	test: /\.css$/i,
-	use: ['style-loader', 'css-loader']
-      },
+	{
+	    test: /\.css$/i,
+	    use: ['style-loader', 'css-loader']
+	},
+	{
+	    test: /\.(jpe?g|png|gif|svg|mp3)$/i, 
+	    use: ["file-loader?name=/assets/[name].[ext]"]
+	},
     ],
   },
   devtool: "source-map",
@@ -25,7 +29,7 @@ module.exports = {
     //new CleanWebpackPlugin({
     //    verbose: true
     //}),
-    new HtmlWebpackPlugin({ template: './index.html', filename: 'index.html', inject: "head", scriptLoading: "blocking", }),
+      new HtmlWebpackPlugin({ template: './index.html', filename: 'index.html', inject: "head", scriptLoading: "blocking", favicon: "./assets/favicon.ico"}),
     new NodePolyfillPlugin(),
     new webpack.ProvidePlugin({
       $: "jquery",

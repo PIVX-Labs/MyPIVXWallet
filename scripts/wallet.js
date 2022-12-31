@@ -11,6 +11,7 @@ import {pubKeyHashNetworkLen, confirmPopup, writeToUint8, pubPrebaseLen, createQ
 import { refreshChainData, hideAllWalletOptions, getBalance, getStakingBalance } from "./global.js";
 import { cChainParams, MAX_ACCOUNT_GAP, PRIVKEY_BYTE_LENGTH } from "./chain_params.js";
 import { ALERTS } from "./i18n.js";
+import { encrypt, decrypt } from "./aes-gcm.js";
 import bs58 from "bs58";
 
 const jdenticon = require("jdenticon");

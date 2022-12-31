@@ -4,11 +4,11 @@ import { en_translation } from "../locale/en/translation.js";
 import { uwu_translation } from "../locale/uwu/translation.js";
 import { translate, ALERTS } from "./i18n.js";
 import * as jdenticon from "jdenticon";
-import { masterKey, hasEncryptedWallet, importWallet, getNewAddress, isYourAddress } from "./wallet.js";
+import { masterKey, hasEncryptedWallet, importWallet, getNewAddress, isYourAddress, encryptWallet } from "./wallet.js";
 import { submitAnalytics, networkEnabled, getBlockCount, arrRewards, getStakingRewards } from "./network.js";
 import { start as settingsStart, cExplorer } from "./settings.js";
 import { createAlert, confirmPopup, sanitizeHTML } from "./misc.js";
-import { cChainParams, COIN } from "./chain_params.js";
+import { cChainParams, COIN, MIN_PASS_LENGTH } from "./chain_params.js";
 
 // TRANSLATION
 //Create an object of objects filled with all the translations
@@ -255,7 +255,7 @@ export function getStakingBalance(updateGUI = false) {
 }
 
 export function selectMaxBalance(domValueInput, fCold = false) {
-  doms.domValueInput.value = (fCold ? getStakingBalance() : getBalance()) / COIN;
+  domValueInput.value = (fCold ? getStakingBalance() : getBalance()) / COIN;
 }
 
 export function updateStakingRewardsGUI(fCallback = false) {
@@ -275,9 +275,14 @@ export function updateStakingRewardsGUI(fCallback = false) {
 
 
 let audio = null;
-function playMusic() {
+export async function playMusic() {
+
     // On first play: load the audio into memory from the host
-    if (audio === null) audio = new Audio('assets/music.mp3');
+    if (audio === null) {
+	// Dynamically load the file
+	await import('../assets/music.mp3');
+	audio = new Audio('assets/music.mp3');
+    }
     
     // Play or Pause
     if (audio.paused || audio.ended) {
@@ -516,19 +521,19 @@ export async function guiImportWallet() {
     if (fHasWallet) hideAllWalletOptions();
 }
 
-function guiEncryptWallet() {
+export function guiEncryptWallet() {
     // Disable wallet encryption in testnet mode
     if (cChainParams.current.isTestnet) return createAlert('warning', ALERTS.TESTNET_ENCRYPTION_DISABLED, [], 2500);
 
     // Show our inputs if we haven't already
-    if (domEncryptPasswordBox.style.display === 'none') {
+    if (doms.domEncryptPasswordBox.style.display === 'none') {
         // Return the display to it's class form
       doms.domEncryptPasswordBox.style.display = '';
       doms.domEncryptBtnTxt.innerText = 'Finish Encryption';
     } else {
         // Fetch our inputs, ensure they're of decent entropy + match eachother
-        const strPass =doms.domEncryptPasswordFirst.value,
-	      strPassRetype =doms.domEncryptPasswordSecond.value;
+        const strPass = doms.domEncryptPasswordFirst.value,
+	      strPassRetype = doms.domEncryptPasswordSecond.value;
         if (strPass.length < MIN_PASS_LENGTH) return createAlert('warning', ALERTS.PASSWORD_TOO_SMALL, [{"MIN_PASS_LENGTH" : MIN_PASS_LENGTH}], 4000);
         if (strPass !== strPassRetype) return createAlert('warning', ALERTS.PASSWORD_DOESNT_MATCH, [], 2250);
         encryptWallet(strPass);
@@ -557,14 +562,14 @@ export async function toggleExportUI() {
 	  doms.domExportPrivateKeyHold.hidden = false;
 	} else {
 	    if(masterKey.isViewOnly) {
-	doms.domxportPrivateKeyHold.hidden = true;
+		doms.domExportPrivateKeyHold.hidden = true;
 	    } else {
-	doms.domxportPrivateKey.innerText = masterKey.keyToBackup;
-	doms.domxportPrivateKeyHold.hidden = false;
+		doms.domExportPrivateKey.innerText = masterKey.keyToBackup;
+		doms.domExportPrivateKeyHold.hidden = false;
 	    }
 	}
 
-doms.domxportPublicKey.innerText = await masterKey.keyToExport;
+	doms.domExportPublicKey.innerText = await masterKey.keyToExport;
     } else {
       doms.domExportPrivateKey.innerText = "";
     }
