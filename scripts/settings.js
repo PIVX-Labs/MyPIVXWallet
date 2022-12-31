@@ -1,11 +1,12 @@
 'use strict';
 
 import { doms } from "./global.js";
+import { fWalletLoaded } from "./wallet.js";
 
 // --- Default Settings
 var debug = false;            // A mode that emits verbose console info for internal MPW operations
 var networkEnabled = true;    // A lock which blocks ALL network requests in totality
-var cExplorer = cChainParams.current.Explorers[0];
+export let cExplorer = cChainParams.current.Explorers[0];
 let cNode = cChainParams.current.Nodes[0];
 
 let transparencyReport
@@ -33,7 +34,6 @@ export let cAnalyticsLevel = arrAnalytics[2];
 // ------------------------------
 // Global Keystore / Wallet Information
 var masterKey;
-export let fWalletLoaded = false;
 
 // --- DOM Cache
 export function start() {
@@ -151,28 +151,6 @@ function toggleDebug() {
     //TRANSLATION CHANGES
     //doms.domDebug.innerHTML = debug ? '<b>DEBUG MODE ON</b>' : '';
     doms.domDebug.style.display = debug ? '' : 'none';
-
-}
-
-function toggleNetwork() {
-    networkEnabled = !networkEnabled;
-    //TRANSLATION CHANGE
-    //doms.domNetwork.innerHTML = '<b>Network:</b> ' + (networkEnabled ? 'Enabled' : 'Disabled');
-    doms.domNetworkE.style.display = (networkEnabled ? '' : 'none');
-    doms.domNetworkD.style.display = (networkEnabled ? 'none' : '');
-    return networkEnabled;
-}
-
-// Enable the network, return true if successful.
-function enableNetwork() {
-    if (!networkEnabled) return toggleNetwork();
-    return false;
-}
-
-// Disable the network, return true if successful.
-function disableNetwork() {
-    if (networkEnabled) return !toggleNetwork();
-    return false;
 }
 
 function fillExplorerSelect() {

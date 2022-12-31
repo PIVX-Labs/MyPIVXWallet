@@ -1,9 +1,12 @@
 'use strict';
 
+import { translateAlerts } from "./i18n.js";
+import { doms } from "./global.js";
+
 /* MPW constants */
-const pubKeyHashNetworkLen = 21;
-const pubChksum = 4;
-const pubPrebaseLen = pubKeyHashNetworkLen + pubChksum;
+export const pubKeyHashNetworkLen = 21;
+export const pubChksum = 4;
+export const pubPrebaseLen = pubKeyHashNetworkLen + pubChksum;
 
 // Notifications map
 let ALERTS = {}
@@ -19,7 +22,7 @@ function getSafeRand(nSize = 32) {
 }
 
 // Writes a sequence of Array-like bytes into a location within a Uint8Array
-function writeToUint8(arr, bytes, pos) {
+export function writeToUint8(arr, bytes, pos) {
     const arrLen = arr.length;
     // Sanity: ensure an overflow cannot occur, if one is detected, somewhere in MPW's state could be corrupted.
     if ((arrLen - pos) - bytes.length < 0) {
@@ -41,7 +44,7 @@ function uint256(x, base) {
 
 /* --- BASE58 (EN/DE)CODING */
 // ByteArray to Base58 String
-function to_b58(B) {
+export function to_b58(B) {
     var d = [],    //the array for storing the stream of base58 digits
         s = "",    //the result string variable that will be returned
         i,         //the iterator variable for the byte input
@@ -97,7 +100,7 @@ function from_b58(S) {
 /* --- NOTIFICATIONS --- */
 // Alert - Do NOT display arbitrary / external errors, the use of `.innerHTML` allows for input styling at this cost.
 // Supported types: success, info, warning
-function createAlert(type, message, alertVariables = [], timeout = 0) {
+export function createAlert(type, message, alertVariables = [], timeout = 0) {
     const domAlert = document.createElement("div");
     domAlert.classList.add("alertpop");
     domAlert.classList.add(type);
@@ -125,7 +128,7 @@ function createAlert(type, message, alertVariables = [], timeout = 0) {
     domAlert.addEventListener("click", domAlert.destroy);
     // On Timeout: Delete alert from DOM after a period of inactive time.
     if (timeout > 0) domAlert.timer = setTimeout(domAlert.destroy, timeout);
-    domAlertPos.appendChild(domAlert);
+    doms.domAlertPos.appendChild(domAlert);
 }
 
 // Shows the confirm modal with the provided html.
@@ -133,7 +136,7 @@ function createAlert(type, message, alertVariables = [], timeout = 0) {
 // Confirm/Cancel buttons and will wait for the promise to resolve
 // Returns the awaited value of resolvePromise
 // or true/false if the user confirmed or not the modal
-async function confirmPopup({ title, html, resolvePromise }) {
+export async function confirmPopup({ title, html, resolvePromise }) {
     // If there's a title provided: display the header and text
     domConfirmModalHeader.style.display = title ? "block" : "none";
     domConfirmModalTitle.innerHTML = title || "";
@@ -158,18 +161,18 @@ async function confirmPopup({ title, html, resolvePromise }) {
 }
 
 // Generates and sets a QRCode image from a string and dom element
-function createQR(strData = '', domImg,size=4) {
+export function createQR(strData = '', domImg,size=4) {
     // QRCode class consists of 'typeNumber' & 'errorCorrectionLevel'
-    const cQR = qrcode(size, 'L');
-    cQR.addData(strData);
-    cQR.make();
-    domImg.innerHTML = cQR.createImgTag();
-    domImg.firstChild.style.borderRadius = '8px';
+    //const cQR = qrcode(size, 'L');
+    //cQR.addData(strData);
+    //cQR.make();
+    //domImg.innerHTML = cQR.createImgTag();
+    //domImg.firstChild.style.borderRadius = '8px';
 }
 
 
 //generate private key for masternodes
-async function generateMnPrivkey(){
+export async function generateMnPrivkey(){
     // maximum value for a decoded private key
     let max_decoded_value=115792089237316195423570985008687907852837564279074904382605163141518161494337n;
     let valid=false;
@@ -186,7 +189,7 @@ async function generateMnPrivkey(){
     return await convertMnPrivKeyFromHex(priv_key);
 }
 
-async function convertMnPrivKeyFromHex(hexStr){
+export async function convertMnPrivKeyFromHex(hexStr){
     //prefixes
     let WIF_PREFIX = 212;  
     let TESTNET_WIF_PREFIX = 239; 
@@ -210,7 +213,7 @@ async function convertMnPrivKeyFromHex(hexStr){
 }
 
 //sha256 a bytearray and return the hash in hexadecimal
-async function hash(byteArray) {
+export async function hash(byteArray) {
     const utf8 = new Uint8Array(byteArray);
     const hashBuffer = await crypto.subtle.digest('SHA-256', utf8);
     const hashArray = Array.from(new Uint8Array(hashBuffer));
@@ -225,7 +228,7 @@ async function hash(byteArray) {
  * @param {String} HEX - HEX string to swap the endianness of
  * @returns {String} Swapped Endian HEX
  */
-const swapHEXEndian = (HEX) => {
+export function swapHEXEndian(HEX) {
     const result = [];
     let len = HEX.length;
     while (len >= 0) {
@@ -235,7 +238,7 @@ const swapHEXEndian = (HEX) => {
     return result.join('');
     }
 
-function sanitizeHTML(text) {
+export function sanitizeHTML(text) {
   const element = document.createElement('div');
   element.innerText = text;
   return element.innerHTML;
@@ -250,6 +253,6 @@ function sanitizeHTML(text) {
  * // Pause an asynchronous script for 1 second
  * await sleep(1000);
  */
-function sleep(ms) {
+export function sleep(ms) {
     return new Promise((res, _) => setTimeout(res, ms));
 }

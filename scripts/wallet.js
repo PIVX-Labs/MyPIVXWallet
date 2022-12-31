@@ -1,8 +1,18 @@
 'use strict';
 
-import { fWalletLoaded } from "./settings.js";
+import { hexToBytes, bytesToHex, dSHA256 } from "./utils.js";
+import { sha256 } from '@noble/hashes/sha256';
+import { ripemd160 } from '@noble/hashes/ripemd160';
 import { generateMnemonic, mnemonicToSeed, validateMnemonic } from "bip39";
+import { doms } from "./global.js";
+import HDKey from "hdkey";
+import {lastWallet, networkEnabled } from "./network.js";
+import {pubKeyHashNetworkLen, confirmPopup, writeToUint8, pubPrebaseLen, to_b58, createQR} from "./misc.js";
+import { refreshChainData, hideAllWalletOptions } from "./global.js";
+
 //import $ from "jquery";
+
+export let fWalletLoaded = false;
 
 /**
  * Abstract class masterkey
@@ -136,7 +146,7 @@ export class HdMasterKey extends MasterKey {
     } else {
       child = this._hdKey.derive(path);
     }
-    return deriveAddress({publicKey: Crypto.util.bytesToHex(child.publicKey)});
+    return deriveAddress({publicKey: bytesToHex(child.publicKey)});
   }
 
   wipePrivateData() {
@@ -279,12 +289,11 @@ export function verifyWIF(strWIF = "", fParseBytes = false, skipVerification = f
     }
     
     // Perform SHA256d hash of the WIF bytes
-    const shaHash = new jsSHA(0, 0, { "numRounds": 2 });
-    shaHash.update(bWIF.slice(0, 34));
+    const shaHash = dSHA256(bWIF.slice(0, 34));
     
     // Verify checksum (comparison by String since JS hates comparing object-like primitives)
     const bChecksumWIF = bWIF.slice(bWIF.byteLength - 4);
-    const bChecksum = shaHash.getHash(0).slice(0, 4);
+    const bChecksum = shaHash.slice(0, 4);
     if (bChecksumWIF.join('') !== bChecksum.join('')) {
       throw Error("Private key checksum is invalid, key may be modified, mis-typed, or corrupt.");
     }
@@ -311,11 +320,10 @@ export function generateOrEncodePrivkey(pkBytesToEncode) {
   pkNetBytes[pkNetBytesLen - 1] = 1;               // Leading digit      (1 byte)
 
   // Double SHA-256 hash
-  const shaObj = new jsSHA(0, 0, { "numRounds": 2 });
-  shaObj.update(pkNetBytes);
+  const shaObj = dSHA256(pkNetBytes);
 
   // WIF Checksum
-  const checksum = shaObj.getHash(0).slice(0, 4);
+  const checksum = shaObj.slice(0, 4);
   const keyWithChecksum = new Uint8Array(pkNetBytesLen + checksum.length);
   writeToUint8(keyWithChecksum, pkNetBytes, 0);
   writeToUint8(keyWithChecksum, checksum, pkNetBytesLen);
@@ -354,14 +362,14 @@ export function deriveAddress({
   if(!pkBytes && !publicKey) return null;
   const compress = output !== "UNCOMPRESSED_HEX";
   // Public Key Derivation
-  let pubKeyBytes = (publicKey ? Crypto.util.hexToBytes(publicKey) : (nobleSecp256k1.getPublicKey(pkBytes, compress)));
+  let pubKeyBytes = (publicKey ? hexToBytes(publicKey) : (nobleSecp256k1.getPublicKey(pkBytes, compress)));
 
   if (output === "UNCOMPRESSED_HEX") {
     if (pubKeyBytes.length !== 65) {
       // It's actually possible, but it's probably not something that we'll need
       throw new Error("Can't uncompress an already compressed key");
     }
-    return Crypto.util.bytesToHex(pubKeyBytes);
+    return bytesToHex(pubKeyBytes);
   }
   
   if(pubKeyBytes.length === 65) {
@@ -373,15 +381,14 @@ export function deriveAddress({
   }
 
   if (output === "COMPRESSED_HEX") {
-    return Crypto.util.bytesToHex(pubKeyBytes);
+    return bytesToHex(pubKeyBytes);
   }
 
   // First pubkey SHA-256 hash
-  const pubKeyHashing = new jsSHA(0, 0, { "numRounds": 1 });
-  pubKeyHashing.update(pubKeyBytes);
+  const pubKeyHashing = sha256(pubKeyBytes);
 
   // RIPEMD160 hash
-  const pubKeyHashRipemd160 = ripemd160(pubKeyHashing.getHash(0));
+  const pubKeyHashRipemd160 = ripemd160(pubKeyHashing);
 
   // Network Encoding
   const pubKeyHashNetwork = new Uint8Array(pubKeyHashNetworkLen);
@@ -389,9 +396,7 @@ export function deriveAddress({
   writeToUint8(pubKeyHashNetwork, pubKeyHashRipemd160, 1);
 
   // Double SHA-256 hash
-  const pubKeyHashingS = new jsSHA(0, 0, { "numRounds": 2 });
-  pubKeyHashingS.update(pubKeyHashNetwork);
-  const pubKeyHashingSF = pubKeyHashingS.getHash(0);
+  const pubKeyHashingSF = dSHA256(pubKeyHashNetwork);
 
   // Checksum
   const checksumPubKey = pubKeyHashingSF.slice(0, 4);
@@ -445,8 +450,8 @@ export async function importWallet({
       }
 
       // Select WIF from internal source OR user input (could be: WIF, Mnemonic or xpriv)
-      const privateImportValue = newWif || domPrivKey.value;
-      domPrivKey.value = "";
+      const privateImportValue = newWif || doms.domPrivKey.value;
+      doms.domPrivKey.value = "";
 
       if (await verifyMnemonic(privateImportValue)) {
         // Generate our masterkey via Mnemonic Phrase
@@ -491,15 +496,15 @@ export async function importWallet({
 
     getNewAddress({updateGUI: true});
     // Display Text
-    domGuiWallet.style.display = 'block';
+    doms.domGuiWallet.style.display = 'block';
 
     // Update identicon
-    domIdenticon.dataset.jdenticonValue = masterKey.getAddress(getDerivationPath());
-    jdenticon();
+    doms.domIdenticon.dataset.jdenticonValue = masterKey.getAddress(getDerivationPath());
+    //jdenticon();
 
     // Hide the encryption warning if the user pasted the private key
     // Or in Testnet mode or is using a hardware wallet or is view-only mode
-    if (!(newWif || cChainParams.current.isTestnet || isHardwareWallet || masterKey.isViewOnly)) domGenKeyWarning.style.display = 'block';
+    if (!(newWif || cChainParams.current.isTestnet || isHardwareWallet || masterKey.isViewOnly)) doms.domGenKeyWarning.style.display = 'block';
 
     // Fetch state from explorer
     if (networkEnabled) refreshChainData();
@@ -528,12 +533,12 @@ export async function generateWallet(noUI = false) {
       addEventListener("beforeunload", beforeUnloadListener, {capture: true});
 
       // Display the dashboard
-      domGuiWallet.style.display = 'block';
+      doms.domGuiWallet.style.display = 'block';
       hideAllWalletOptions();
 
       // Update identicon
       domIdenticon.dataset.jdenticonValue = masterKey.getAddress(getDerivationPath());
-      jdenticon();
+      //jdenticon();
 
       getNewAddress({ updateGUI: true });
 
@@ -646,6 +651,56 @@ function hasWalletUnlocked(fIncludeNetwork = false) {
     return true;
   }
 }
+
+let addressIndex = 0;
+export async function isYourAddress(address){
+    let i=0;
+    while(i<addressIndex){
+        const path = getDerivationPath(masterKey.isHardwareWallet, 0, 0, i);
+        const testAddress = await masterKey.getAddress(path);
+        if(address===testAddress){
+	    return [true,path];
+        }
+        i++;
+    }
+    return [false,0];
+}
+
+export async function getNewAddress({updateGUI = false, verify = false} = {}) {
+    const last = lastWallet || 0;
+    addressIndex = addressIndex > last ? addressIndex : last + 1;
+    if (addressIndex - last > MAX_ACCOUNT_GAP) {
+        // If the user creates more than ${MAX_ACCOUNT_GAP} empty wallets we will not be able to sync them!
+        addressIndex = last;
+    }
+    const path = getDerivationPath(masterKey.isHardwareWallet, 0, 0, addressIndex);
+    // Use Xpub?
+    const address = await masterKey.getAddress(path);
+    if (verify && masterKey.isHardwareWallet) {
+        // Generate address to present to the user without asking to verify
+        const confAddress = await confirmPopup({
+	    title: ALERTS.CONFIRM_POPUP_VERIFY_ADDR,
+	    html: createAddressConfirmation(address),
+	    resolvePromise: masterKey.getAddress(path, { verify })
+        });
+        if (address !== confAddress) {
+	    throw new Error("User did not verify address");
+        }
+    }
+
+    if (updateGUI) {
+	doms.domGuiAddress.innerText = address;
+        createQR('pivx:' + address,doms.domModalQR);
+	doms.domModalQrLabel.innerHTML = 'pivx:' + address;
+	//doms.domModalQR.firstChild.style.width = "100%";
+	//doms.domModalQR.firstChild.style.height = "auto";
+	//doms.domModalQR.firstChild.style.imageRendering = "crisp-edges";
+        document.getElementById('clipboard').value = address;
+    }
+    addressIndex++;
+    return [address,path];
+}
+
 
 let cHardwareWallet = null;
 let strHardwareName = "";

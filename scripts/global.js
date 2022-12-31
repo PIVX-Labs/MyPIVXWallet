@@ -3,9 +3,10 @@ import { en_translation } from "../locale/en/translation.js";
 import { uwu_translation } from "../locale/uwu/translation.js";
 import { translate } from "./i18n.js";
 import * as jdenticon from "jdenticon";
-import { masterKey, hasEncryptedWallet } from "./wallet.js";
-import { submitAnalytics, networkEnabled } from "./network.js";
-import { start as settingsStart } from "./settings.js";
+import { masterKey, hasEncryptedWallet, importWallet, getNewAddress, isYourAddress } from "./wallet.js";
+import { submitAnalytics, networkEnabled, getBlockCount, arrRewards } from "./network.js";
+import { start as settingsStart, cExplorer } from "./settings.js";
+import { createAlert } from "./misc.js";
 
 // TRANSLATION
 //Create an object of objects filled with all the translations
@@ -145,7 +146,7 @@ export function start() {
 	}
     }
     translate(translation);
-    doms.domStart.click();
+   doms.domStart.click();
     // Configure Identicon
     jdenticon.configure();
     // URL-Query request processing
@@ -165,8 +166,8 @@ export function start() {
     // Customise the UI if a saved wallet exists
     if (hasEncryptedWallet()) {
         // Hide the 'Generate wallet' buttons
-        domGenerateWallet.style.display = "none";
-        domGenVanityWallet.style.display = "none";
+       doms.domenerateWallet.style.display = "none";
+       doms.domenVanityWallet.style.display = "none";
 
 	const publicKey = localStorage.getItem("publicKey");
 
@@ -186,23 +187,22 @@ export function start() {
     // If allowed by settings: submit a simple 'hit' (app load) to Labs Analytics
     submitAnalytics('hit');
     setInterval(refreshChainData, 15000);
-    doms.domPrefix.value = ""
-    doms.domPrefixNetwork.innerText = cChainParams.current.PUBKEY_PREFIX.join(' or ');
+   doms.domPrefix.value = ""
+   doms.domPrefixNetwork.innerText = cChainParams.current.PUBKEY_PREFIX.join(' or ');
     settingsStart();
 }
 
 // WALLET STATE DATA
 export const mempool = new Mempool();
-export let arrRewards = [];
-export let cachedBlockCount = 0;
+
 //                        PIVX Labs' Cold Pool
 export let cachedColdStakeAddr = "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy";
 
 
 export function openTab(evt, tabName) {
     // Hide all screens and deactivate link highlights
-    for (constdoms.domScreen ofdoms.doms.arrDomScreens)doms.domScreen.style.display = "none";
-    for (constdoms.domLink ofdoms.doms.arrDomScreenLinks)doms.domLink.classList.remove("active");
+    for (const domScreen of doms.arrDomScreens) domScreen.style.display = "none";
+    for (const domLink of doms.arrDomScreenLinks) domLink.classList.remove("active");
     
     // Show and activate the given screen
     document.getElementById(tabName).style.display = "block";
@@ -210,7 +210,7 @@ export function openTab(evt, tabName) {
     
     // Close the navbar if it's not already closed
     if (!doms.domNavbarToggler.className.includes("collapsed"))
-       doms.doms.domNavbarToggler.click();
+      doms.domNavbarToggler.click();
     
     if (tabName === "Governance") {
 	updateGovernanceTab();
@@ -221,42 +221,42 @@ export function openTab(evt, tabName) {
     
 }
 
-function getBalance(updateGUI = false) {
+export function getBalance(updateGUI = false) {
     const nBalance = mempool.getBalance();
     
     // Update the GUI too, if chosen
     if (updateGUI) {
         // Set the balance, and adjust font-size for large balance strings
         const nLen = (nBalance / COIN).toFixed(2).length;
-       doms.domGuiBalance.innerText = (nBalance / COIN).toFixed(nLen >= 6 ? 0 : 2);
-       doms.domAvailToDelegate.innerText = "Available: ~" + (nBalance / COIN).toFixed(2) + " " + cChainParams.current.TICKER;
+      doms.domGuiBalance.innerText = (nBalance / COIN).toFixed(nLen >= 6 ? 0 : 2);
+      doms.domAvailToDelegate.innerText = "Available: ~" + (nBalance / COIN).toFixed(2) + " " + cChainParams.current.TICKER;
         
         // Add a notice to the Send page if balance is lacking
-       doms.domsendNotice.innerHTML = nBalance ? '' : '<div class="alert alert-danger" role="alert"><h4>Note:</h4><h5>You don\'t have any funds, get some coins first!</h5></div>';
+      doms.domsendNotice.innerHTML = nBalance ? '' : '<div class="alert alert-danger" role="alert"><h4>Note:</h4><h5>You don\'t have any funds, get some coins first!</h5></div>';
     }
     
     return nBalance;
 }
 
 
-function getStakingBalance(updateGUI = false) {
+export function getStakingBalance(updateGUI = false) {
     const nBalance = mempool.getDelegatedBalance();
     
     if (updateGUI) {
         // Set the balance, and adjust font-size for large balance strings
-       doms.domGuiBalanceStaking.innerText = Math.floor(nBalance / COIN);
-       doms.domGuiBalanceBoxStaking.style.fontSize = Math.floor(nBalance / COIN).toString().length >= 4 ? "large" : "x-large";
-       doms.domAvailToUndelegate.innerText = "Staking: ~" + (nBalance / COIN).toFixed(2) + " " + cChainParams.current.TICKER;
+      doms.domGuiBalanceStaking.innerText = Math.floor(nBalance / COIN);
+      doms.domGuiBalanceBoxStaking.style.fontSize = Math.floor(nBalance / COIN).toString().length >= 4 ? "large" : "x-large";
+      doms.domAvailToUndelegate.innerText = "Staking: ~" + (nBalance / COIN).toFixed(2) + " " + cChainParams.current.TICKER;
     }
     
     return nBalance;
 }
 
-function selectMaxBalance(domValueInput, fCold = false) {
-   doms.domValueInput.value = (fCold ? getStakingBalance() : getBalance()) / COIN;
+export function selectMaxBalance(domValueInput, fCold = false) {
+  doms.domValueInput.value = (fCold ? getStakingBalance() : getBalance()) / COIN;
 }
 
-function updateStakingRewardsGUI(fCallback = false) {
+export function updateStakingRewardsGUI(fCallback = false) {
     if (!arrRewards.length) {
         // This ensures we don't spam network requests, since if a network callback says we have no stakes; no point checking again!
         if (!fCallback) getStakingRewards();
@@ -267,8 +267,8 @@ function updateStakingRewardsGUI(fCallback = false) {
     // Calculate total
     const nRewards = arrRewards.reduce((total, reward) => total + reward.amount, 0);
     // UpdateDOMS.DOM
-   doms.domStakingRewardsTitle.innerHTML = `Staking Rewards: ≥${nRewards} ${cChainParams.current.TICKER}`;
-   doms.domStakingRewardsList.innerHTML = strList;
+  doms.domStakingRewardsTitle.innerHTML = `Staking Rewards: ≥${nRewards} ${cChainParams.current.TICKER}`;
+  doms.domStakingRewardsList.innerHTML = strList;
 }
 
 
@@ -280,22 +280,22 @@ function playMusic() {
     // Play or Pause
     if (audio.paused || audio.ended) {
         audio.play();
-        for (constdoms.domImg of document.getElementsByTagName('img'))doms.domImg.classList.add("discoFilter");
+        for (const domImg of document.getElementsByTagName('img')) domImg.classList.add("discoFilter");
     } else {
         audio.pause();
-        for (constdoms.domImg of document.getElementsByTagName('img'))doms.domImg.classList.remove("discoFilter");
+        for (const domImg of document.getElementsByTagName('img')) domImg.classList.remove("discoFilter");
     }
 }
 
 function toClipboard(source, caller) {
     // Fetch the text/value source
-    constdoms.domCopy = document.getElementById(source);
+    const domCopy = document.getElementById(source);
     
     // Use an invisible textbox as the clipboard source
-    constdoms.domClipboard = document.getElementById('clipboard');
-   doms.domClipboard.value =doms.domCopy.value ||doms.domCopy.innerHTML;
-   doms.domClipboard.select();
-   doms.domClipboard.setSelectionRange(0, 99999);
+    const domClipboard = document.getElementById('clipboard');
+  domClipboard.value = domCopy.value || domCopy.innerHTML;
+  domClipboard.select();
+  domClipboard.setSelectionRange(0, 99999);
     
     // Browser-dependent clipboard execution
     if (!navigator.clipboard) {
@@ -316,28 +316,28 @@ function toClipboard(source, caller) {
 }
 
 function guiPreparePayment(strTo = "", strAmount = 0, strDesc = "") {
-   doms.domTxTab.click();
+  doms.domTxTab.click();
     if (domSimpleTXs.style.display === 'none')
-       doms.domSimpleTXsDropdown.click();
+      doms.domSimpleTXsDropdown.click();
     // Apply values
-   doms.domAddress1s.value = strTo;
-   doms.domValue1s.value = strAmount;
-   doms.domReqDesc.value = strDesc;
-   doms.domReqDisplay.style.display = strDesc ? 'block' : 'none';
-   doms.domValue1s.focus();
+  doms.domAddress1s.value = strTo;
+  doms.domValue1s.value = strAmount;
+  doms.domReqDesc.value = strDesc;
+  doms.domReqDisplay.style.display = strDesc ? 'block' : 'none';
+  doms.domValue1s.focus();
 }
 
-function hideAllWalletOptions() {
+export function hideAllWalletOptions() {
     // Hide and Reset the Vanity address input
-   doms.doms.domPrefix.value = "";
-   doms.doms.domPrefix.style.display = 'none';
+  doms.domPrefix.value = "";
+  doms.domPrefix.style.display = 'none';
     
     // Hide all "*Wallet" buttons
-   doms.doms.domGenerateWallet.style.display = 'none';
-   doms.doms.domImportWallet.style.display = 'none';
-   doms.doms.domGenVanityWallet.style.display = 'none';
-   doms.doms.domAccessWallet.style.display = 'none';
-   doms.doms.domGenHardwareWallet.style.display = 'none';
+  doms.domGenerateWallet.style.display = 'none';
+  doms.domImportWallet.style.display = 'none';
+  doms.domGenVanityWallet.style.display = 'none';
+  doms.domAccessWallet.style.display = 'none';
+  doms.domGenHardwareWallet.style.display = 'none';
 }
 
 async function govVote(hash, voteCode){
@@ -498,8 +498,8 @@ async function importMasternode(){
     let collateralTxId;
     let outidx;
     let collateralPrivKeyPath;
-   doms.domMnIP.value = "";
-   doms.domMnPrivateKey.value = "";
+  doms.domMnIP.value = "";
+  doms.domMnPrivateKey.value = "";
 
     if (!ip.includes(":")) {
 	address = `${ip}:${cChainParams.current.MASTERNODE_PORT}`;
@@ -538,7 +538,7 @@ async function importMasternode(){
         outidx = masterUtxo.vout;
         collateralPrivKeyPath = path;     
     }
-   doms.domMnTxId.value = "";
+  doms.domMnTxId.value = "";
 
     
     const cMasternode = new Masternode({
@@ -554,34 +554,34 @@ async function importMasternode(){
 
 export function accessOrImportWallet() {
     // Hide and Reset the Vanity address input
-   doms.doms.domPrefix.value = "";
-   doms.doms.domPrefix.style.display = 'none';
-
+    doms.domPrefix.value = "";
+    doms.domPrefix.style.display = 'none';
+    
     // Show Import button, hide access button
-   doms.domImportWallet.style.display = 'block';
-   doms.domAccessWalletBtn.style.display = 'none';
-
+    doms.domImportWallet.style.display = 'block';
+    doms.domAccessWalletBtn.style.display = 'none';
+    
     // If we have a local wallet, display the decryption prompt
     // This is no longer being used, as the user will be put in view-only
     // mode when logging in, however if the user locked the wallet before
     // #52 there would be no way to recover the public key without getting
     // The password from the user
     if (hasEncryptedWallet()) {
-       doms.domPrivKey.placeholder = 'Enter your wallet password';
-       doms.domImportWalletText.innerText = 'Unlock Wallet';
-       doms.domPrivKey.focus();
+      doms.domPrivKey.placeholder = 'Enter your wallet password';
+      doms.domImportWalletText.innerText = 'Unlock Wallet';
+      doms.domPrivKey.focus();
     }
 }
 
-function onPrivateKeyChanged() {
+export function onPrivateKeyChanged() {
     if (hasEncryptedWallet()) return;
     // Check whether the length of the string is 128 bytes (that's the length of ciphered plain texts)
     // and it doesn't have any spaces (would be a mnemonic seed)
     const fContainsSpaces =doms.domPrivKey.value.includes(" ");
-   doms.domPrivKeyPassword.hidden =doms.domPrivKey.value.length !== 128 || fContainsSpaces;
+  doms.domPrivKeyPassword.hidden =doms.domPrivKey.value.length !== 128 || fContainsSpaces;
 
     // Uncloak the private input IF spaces are detected, to make Seed Phrases easier to input and verify
-   doms.domPrivKey.setAttribute('type', fContainsSpaces ? 'text' : 'password');
+  doms.domPrivKey.setAttribute('type', fContainsSpaces ? 'text' : 'password');
 }
 
 export async function guiImportWallet() {
@@ -621,8 +621,8 @@ function guiEncryptWallet() {
     // Show our inputs if we haven't already
     if (domEncryptPasswordBox.style.display === 'none') {
         // Return the display to it's class form
-       doms.domEncryptPasswordBox.style.display = '';
-       doms.domEncryptBtnTxt.innerText = 'Finish Encryption';
+      doms.domEncryptPasswordBox.style.display = '';
+      doms.domEncryptBtnTxt.innerText = 'Finish Encryption';
     } else {
         // Fetch our inputs, ensure they're of decent entropy + match eachother
         const strPass =doms.domEncryptPasswordFirst.value,
@@ -648,73 +648,26 @@ function createTxConfirmation(outputs) {
 }
 
 async function toggleExportUI() {
-   doms.domExportDiv.hidden = !domExportDiv.hidden;
+  doms.domExportDiv.hidden = !domExportDiv.hidden;
     if (!domExportDiv.hidden) {
 	if (hasEncryptedWallet()) {
-	   doms.domExportPrivateKey.innerText = localStorage.getItem("encwif");
-	   doms.domExportPrivateKeyHold.hidden = false;
+	  doms.domExportPrivateKey.innerText = localStorage.getItem("encwif");
+	  doms.domExportPrivateKeyHold.hidden = false;
 	} else {
 	    if(masterKey.isViewOnly) {
-		domExportPrivateKeyHold.hidden = true;
+	doms.domxportPrivateKeyHold.hidden = true;
 	    } else {
-		domExportPrivateKey.innerText = masterKey.keyToBackup;
-		domExportPrivateKeyHold.hidden = false;
+	doms.domxportPrivateKey.innerText = masterKey.keyToBackup;
+	doms.domxportPrivateKeyHold.hidden = false;
 	    }
 	}
 
-	domExportPublicKey.innerText = await masterKey.keyToExport;
+doms.domxportPublicKey.innerText = await masterKey.keyToExport;
     } else {
-       doms.domExportPrivateKey.innerText = "";
+      doms.domExportPrivateKey.innerText = "";
     }
 }
 
-let addressIndex = 0;
-async function isYourAddress(address){
-    let i=0;
-    while(i<addressIndex){
-        const path = getDerivationPath(masterKey.isHardwareWallet, 0, 0, i);
-        const testAddress = await masterKey.getAddress(path);
-        if(address===testAddress){
-	    return [true,path];
-        }
-        i++;
-    }
-    return [false,0];
-}
-async function getNewAddress({updateGUI = false, verify = false} = {}) {
-    const last = lastWallet || 0;
-    addressIndex = addressIndex > last ? addressIndex : last + 1;
-    if (addressIndex - last > MAX_ACCOUNT_GAP) {
-        // If the user creates more than ${MAX_ACCOUNT_GAP} empty wallets we will not be able to sync them!
-        addressIndex = last;
-    }
-    const path = getDerivationPath(masterKey.isHardwareWallet, 0, 0, addressIndex);
-    // Use Xpub?
-    const address = await masterKey.getAddress(path);
-    if (verify && masterKey.isHardwareWallet) {
-        // Generate address to present to the user without asking to verify
-        const confAddress = await confirmPopup({
-	    title: ALERTS.CONFIRM_POPUP_VERIFY_ADDR,
-	    html: createAddressConfirmation(address),
-	    resolvePromise: masterKey.getAddress(path, { verify })
-        });
-        if (address !== confAddress) {
-	    throw new Error("User did not verify address");
-        }
-    }
-
-    if (updateGUI) {
-       doms.domGuiAddress.innerText = address;
-        createQR('pivx:' + address,doms.domModalQR);
-       doms.domModalQrLabel.innerHTML = 'pivx:' + address;
-       doms.domModalQR.firstChild.style.width = "100%";
-       doms.domModalQR.firstChild.style.height = "auto";
-       doms.domModalQR.firstChild.style.imageRendering = "crisp-edges";
-        document.getElementById('clipboard').value = address;
-    }
-    addressIndex++;
-    return [address,path];
-}
 
 function checkVanity() {
     var e = event || window.event;  // get event object
@@ -740,8 +693,8 @@ function stopSearch() {
         thread.terminate();
     }
     while (arrWorkers.length) arrWorkers.pop();
-   doms.doms.domPrefix.disabled = false;
-   doms.domVanityUiButtonTxt.innerText = 'Create A Vanity Wallet';
+  doms.domPrefix.disabled = false;
+  doms.domVanityUiButtonTxt.innerText = 'Create A Vanity Wallet';
     clearInterval(vanUiUpdater);
 }
 
@@ -749,28 +702,28 @@ async function generateVanityWallet() {
     if (isVanityGenerating) return stopSearch();
     if (typeof(Worker) === "undefined") return createAlert('error', ALERTS.UNSUPPORTED_WEBWORKERS, [], 7500);
     // Generate a vanity address with the given prefix
-    if (doms.domPrefix.value.length === 0 ||doms.doms.domPrefix.style.display === 'none') {
+    if (doms.domPrefix.value.length === 0 ||doms.domPrefix.style.display === 'none') {
         // No prefix, display the intro!
-       doms.domPrefix.style.display = 'block';
-       doms.domGenKeyWarning.style.display = 'none';
-       doms.domGuiAddress.innerHTML = "~";
-       doms.domPrefix.focus();
+      doms.domPrefix.style.display = 'block';
+      doms.domGenKeyWarning.style.display = 'none';
+      doms.domGuiAddress.innerHTML = "~";
+      doms.domPrefix.focus();
     } else {
         // Remove spaces from prefix
-       doms.domPrefix.value =doms.domPrefix.value.replace(/ /g, "");
+      doms.domPrefix.value =doms.domPrefix.value.replace(/ /g, "");
 
         // Cache a lowercase equivilent for lower-entropy comparisons (a case-insensitive search is ALOT faster!) and strip accidental spaces
         const nInsensitivePrefix =doms.domPrefix.value.toLowerCase();
         const nPrefixLen = nInsensitivePrefix.length;
 
         // Ensure the input is base58 compatible
-        for (const char ofdoms.domPrefix.value) {
+        for (const char of doms.domPrefix.value) {
 	    if (!MAP_B58.toLowerCase().includes(char.toLowerCase())) return createAlert('warning',ALERTS.UNSUPPORTED_CHARACTER, [{"char" : char}], 3500);
         }
         // We also don't want users to be mining addresses for years... so cap the letters to four until the generator is more optimized
         if (domPrefix.value.length > 5) return createAlert('warning', ALERTS.UNSUPPORTED_CHARACTER, [{"char" : char}], 3500);
         isVanityGenerating = true;
-       doms.domPrefix.disabled = true;
+      doms.domPrefix.disabled = true;
         let attempts = 0;
 
         // Setup workers
@@ -783,9 +736,9 @@ async function generateVanityWallet() {
         }
 
         // GUI Updater
-       doms.domVanityUiButtonTxt.innerText = 'Stop (Searched ' + attempts.toLocaleString('en-GB') + ' keys)';
+      doms.domVanityUiButtonTxt.innerText = 'Stop (Searched ' + attempts.toLocaleString('en-GB') + ' keys)';
         vanUiUpdater = setInterval(() => {
-	   doms.domVanityUiButtonTxt.innerText = 'Stop (Searched ' + attempts.toLocaleString('en-GB') + ' keys)';
+	  doms.domVanityUiButtonTxt.innerText = 'Stop (Searched ' + attempts.toLocaleString('en-GB') + ' keys)';
         }, 200);
 
         function checkResult(data) {
@@ -796,8 +749,8 @@ async function generateVanityWallet() {
 		    fRaw: true
 		});
 		stopSearch();
-		domGuiBalance.innerHTML = "0";
-		domGuiBalanceBox.style.fontSize = "x-large";
+	doms.domuiBalance.innerHTML = "0";
+	doms.domuiBalanceBox.style.fontSize = "x-large";
 		return console.log("VANITY: Found an address after " + attempts + " attempts!");
 	    }
         }
@@ -805,8 +758,8 @@ async function generateVanityWallet() {
 }
 
 function toggleDropDown(id) {
-    constdoms.domID = document.getElementById(id);
-   doms.domID.style.display =doms.domID.style.display === 'block' ? 'none' : 'block';
+    const domID = document.getElementById(id);
+    domID.style.display = domID.style.display === 'block' ? 'none' : 'block';
 }
 
 function createAlertWithFalse() {
@@ -945,7 +898,7 @@ async function undelegate(nValue) {
         }
     }
 
-   doms.domGenIt.innerHTML = "Continue";
+  doms.domGenIt.innerHTML = "Continue";
 }
 
 function askForCSAddr(force = false) {
@@ -1069,7 +1022,7 @@ async function delegate(nValue, coldAddr) {
         }
         
     }
-   doms.domGenIt.innerHTML = "Continue";
+  doms.domGenIt.innerHTML = "Continue";
 }
 
 // Coin Control response formats
@@ -1135,7 +1088,7 @@ function chooseUTXOs(cTx, nTotalSatsRequired = 0, nMinInputSize = 0, fColdOnly =
     return ccSuccess(cCoinControl);
 }
 
-function isMasternodeUTXO(cUTXO, masternode = null) {
+export function isMasternodeUTXO(cUTXO, masternode = null) {
     const cMasternode = masternode || JSON.parse(localStorage.getItem("masternode"));
     if (cMasternode) {
 	const { collateralTxId, outidx } = cMasternode;
@@ -1155,13 +1108,13 @@ async function createTxGUI() {
     
     // Clear the inputs on 'Continue'
     if (domGenIt.innerHTML === 'Continue') {
-	domGenIt.innerHTML = 'Send Transaction';
-	domTxOutput.innerHTML = '';
-	domHumanReadable.innerHTML = "";
-	domValue1s.value = "";
-	domAddress1s.value = "";
-	domReqDesc.value = '';
-	domReqDisplay.style.display = 'none';
+doms.domenIt.innerHTML = 'Send Transaction';
+doms.domxOutput.innerHTML = '';
+doms.domumanReadable.innerHTML = "";
+doms.domalue1s.value = "";
+doms.domddress1s.value = "";
+doms.domeqDesc.value = '';
+doms.domeqDisplay.style.display = 'none';
 	return;
     }
     // Sanity check the address
@@ -1288,7 +1241,7 @@ async function createTxGUI() {
             }
         }
     }
-   doms.domGenIt.innerHTML = "Continue";
+  doms.domGenIt.innerHTML = "Continue";
 }
 
 async function wipePrivateData() {
@@ -1303,9 +1256,9 @@ async function wipePrivateData() {
 	html,
     })) {
 	masterKey.wipePrivateData();
-	domWipeWallet.hidden = true;
+doms.domipeWallet.hidden = true;
 	if (hasEncryptedWallet()) {
-	   doms.domRestoreWallet.hidden = false;
+	  doms.domRestoreWallet.hidden = false;
 	}
     }
 }
@@ -1317,8 +1270,8 @@ async function restoreWallet() {
     })) {
 	const password = document.getElementById("restoreWalletPassword").value;
 	if(await decryptWallet(password)) {
-	   doms.domRestoreWallet.hidden = true;
-	   doms.domWipeWallet.hidden = false;
+	  doms.domRestoreWallet.hidden = true;
+	  doms.domWipeWallet.hidden = false;
 	}
     }
 }
@@ -1421,7 +1374,7 @@ function addCellToTable(row,data){
 
 async function updateGovernanceTab() {
     const proposals= await Masternode.getProposals();
-   doms.domGovProposalsTableBody.innerHTML="";
+  doms.domGovProposalsTableBody.innerHTML="";
     for (const proposal of proposals){
 	if(proposal.RemainingPaymentCount === 0){
             continue;
@@ -1460,27 +1413,27 @@ async function updateGovernanceTab() {
     }
 }
 
-async function updateMasternodeTab() {
+export async function updateMasternodeTab() {
     //TODO: IN A FUTURE ADD MULTI-MASTERNODE SUPPORT BY SAVING MNs with which you logged in the past.
     // Ensure a wallet is loaded
-   doms.domMnTextErrors.innerHTML = "";
-   doms.domAccessMasternode.style.display = "none";
-   doms.domCreateMasternode.style.display = "none";
-   doms.domMnDashboard.style.display = "none";
+  doms.domMnTextErrors.innerHTML = "";
+  doms.domAccessMasternode.style.display = "none";
+  doms.domCreateMasternode.style.display = "none";
+  doms.domMnDashboard.style.display = "none";
     
     if (!masterKey) {
-	domMnTextErrors.innerHTML = "Please " + (hasEncryptedWallet() ? "unlock" : "import") + " your <b>COLLATERAL WALLET</b> first.";
+doms.domMnTextErrors.innerHTML = "Please " + (hasEncryptedWallet() ? "unlock" : "import") + " your <b>COLLATERAL WALLET</b> first.";
 	return;
     }
     
     if (masterKey.isHardwareWallet) {
-	domMnTxId.style.display = "none";
-	domMnTextErrors.innerHTML = "Ledger is not yet supported";
+doms.domMnTxId.style.display = "none";
+doms.domMnTextErrors.innerHTML = "Ledger is not yet supported";
 	return;
     }
 
     if(!mempool.getConfirmed().length) {
-	domMnTextErrors.innerHTML = "Your wallet is empty or still loading, re-open the tab in a few seconds!";
+doms.domMnTextErrors.innerHTML = "Your wallet is empty or still loading, re-open the tab in a few seconds!";
 	return;
     }
     
@@ -1494,12 +1447,12 @@ async function updateMasternodeTab() {
 	}
     }
     
-   doms.domControlMasternode.style.display = strMasternodeJSON ? "block" : "none";
+  doms.domControlMasternode.style.display = strMasternodeJSON ? "block" : "none";
     
     // first case: the wallet is not HD and it is not hardware, so in case the wallet has collateral the user can check its status and do simple stuff like voting
     if (!masterKey.isHD) {
-	domMnAccessMasternodeText.innerHTML = masternodeLegacyAccessText;
-	domMnTxId.style.display = "none";
+doms.domMnAccessMasternodeText.innerHTML = doms.masternodeLegacyAccessText;
+doms.domMnTxId.style.display = "none";
 	// Find the first UTXO matching the expected collateral size
 	const cCollaUTXO = mempool.getConfirmed().find(cUTXO => cUTXO.sats === cChainParams.current.collateralInSats);
 	const balance = getBalance(false);
@@ -1507,24 +1460,24 @@ async function updateMasternodeTab() {
 	    if (strMasternodeJSON) {
 		const cMasternode = new Masternode(JSON.parse(localStorage.getItem("masternode")));
 		const cMasternodeData = await refreshMasternodeData(cMasternode);
-		domMnDashboard.style.display = "";
+	doms.domMnDashboard.style.display = "";
 	    } else {
-		domMnTxId.style.display = "none";
-		domAccessMasternode.style.display = "block";
+	doms.domMnTxId.style.display = "none";
+	doms.domccessMasternode.style.display = "block";
 	    }
 	} else if (balance < cChainParams.current.collateralInSats) {
             // The user needs more funds
-           doms.domMnTextErrors.innerHTML = "You need <b>" + ((cChainParams.current.collateralInSats - balance) / COIN) + " more " + cChainParams.current.TICKER + "</b> to create a Masternode!";
+          doms.domMnTextErrors.innerHTML = "You need <b>" + ((cChainParams.current.collateralInSats - balance) / COIN) + " more " + cChainParams.current.TICKER + "</b> to create a Masternode!";
 	} else {
             // The user has the funds, but not an exact collateral, prompt for them to create one
-           doms.domCreateMasternode.style.display = "block";
-           doms.domMnTxId.style.display = "none";
-           doms.domMnTxId.innerHTML = "";
+          doms.domCreateMasternode.style.display = "block";
+          doms.domMnTxId.style.display = "none";
+          doms.domMnTxId.innerHTML = "";
 	}
     } else {
-	domMnTxId.style.display = "none";
-	domMnTxId.innerHTML = "";
-	domMnAccessMasternodeText.innerHTML = masternodeHDAccessText;
+      doms.domMnTxId.style.display = "none";
+      doms.domMnTxId.innerHTML = "";
+      doms.domMnAccessMasternodeText.innerHTML = doms.masternodeHDAccessText;
 	
 	// First UTXO for each address in HD
 	const mapCollateralAddresses = new Map();
@@ -1538,14 +1491,14 @@ async function updateMasternodeTab() {
 	
 	// If there's no loaded MN, but valid collaterals, display the configuration screen
 	if (!strMasternodeJSON && fHasCollateral) {
-           doms.domMnTxId.style.display = "block";
-           doms.domAccessMasternode.style.display = "block";
+          doms.domMnTxId.style.display = "block";
+          doms.domAccessMasternode.style.display = "block";
 	    
             for (const [key, value] of mapCollateralAddresses) {
 		const option = document.createElement('option');
 		option.value = key;
 		option.innerText = await masterKey.getAddress(key);
-		domMnTxId.appendChild(option);
+	doms.domMnTxId.appendChild(option);
             }
 	}
 	
@@ -1557,7 +1510,7 @@ async function updateMasternodeTab() {
             const cMasternode = new Masternode(JSON.parse(strMasternodeJSON));
             // Refresh the display
             refreshMasternodeData(cMasternode);
-           doms.domMnDashboard.style.display = "";
+          doms.domMnDashboard.style.display = "";
 	}
     }
 }
@@ -1568,26 +1521,26 @@ async function refreshMasternodeData(cMasternode, fAlert = false) {
 
     // If we have MN data available, update the dashboard
     if (cMasternodeData && cMasternodeData.status !== "MISSING") {
-	domMnTextErrors.innerHTML = "";
-	domMnProtocol.innerText = `(${sanitizeHTML(cMasternodeData.version)})`;
-	domMnStatus.innerText = sanitizeHTML(cMasternodeData.status);
-	domMnNetType.innerText = sanitizeHTML(cMasternodeData.network.toUpperCase());
-	domMnNetIP.innerText = cMasternode.addr;
-	domMnLastSeen.innerText = new Date(cMasternodeData.lastseen * 1000).toLocaleTimeString();
+doms.domMnTextErrors.innerHTML = "";
+doms.domMnProtocol.innerText = `(${sanitizeHTML(cMasternodeData.version)})`;
+doms.domMnStatus.innerText = sanitizeHTML(cMasternodeData.status);
+doms.domMnNetType.innerText = sanitizeHTML(cMasternodeData.network.toUpperCase());
+doms.domMnNetIP.innerText = cMasternode.addr;
+doms.domMnLastSeen.innerText = new Date(cMasternodeData.lastseen * 1000).toLocaleTimeString();
     }
 
     if (cMasternodeData.status === "MISSING") {
-	domMnTextErrors.innerHTML = "Masternode is currently <b>OFFLINE</b>";
+doms.domMnTextErrors.innerHTML = "Masternode is currently <b>OFFLINE</b>";
 	if (!masterKey.isViewOnly) {
 	    createAlert('warning', 'Your masternode is offline, we will try to start it', 6000);
 	    // try to start the masternode
 	    const started = await cMasternode.start();
 	    if (started) {
-		domMnTextErrors.innerHTML = "Masternode successfully started!";
+	doms.domMnTextErrors.innerHTML = "Masternode successfully started!";
 		createAlert('success', 'Masternode successfully started!, it will be soon online', 6000);
 		localStorage.setItem("masternode", JSON.stringify(cMasternode));
 	    } else {
-		domMnTextErrors.innerHTML = "We couldn't start your masternode";
+	doms.domMnTextErrors.innerHTML = "We couldn't start your masternode";
 		createAlert('warning', 'We could not start your masternode', 6000);
 	    }
 	}
@@ -1595,10 +1548,10 @@ async function refreshMasternodeData(cMasternode, fAlert = false) {
 	if (fAlert) createAlert('success', `Your masternode status is <b> ${sanitizeHTML(cMasternodeData.status)} </b>`, 6000);
 	localStorage.setItem("masternode", JSON.stringify(cMasternode));
     } else if (cMasternodeData.status === "REMOVED") {
-	domMnTextErrors.innerHTML = "Masternode is currently <b>REMOVED</b>";
+doms.domMnTextErrors.innerHTML = "Masternode is currently <b>REMOVED</b>";
 	if (fAlert) createAlert('warning', 'Your masternode is in <b>REMOVED</b> state', 6000);
     } else { // connection problem
-	domMnTextErrors.innerHTML = "Unable to connect!";
+doms.domMnTextErrors.innerHTML = "Unable to connect!";
 	if (fAlert) createAlert('warning', 'Unable to connect!', 6000);
     }
 
@@ -1606,14 +1559,14 @@ async function refreshMasternodeData(cMasternode, fAlert = false) {
     return cMasternodeData;
 }
 
-function refreshChainData() {
+export function refreshChainData() {
     // If in offline mode: don't sync ANY data or connect to the internet
     if (!networkEnabled) return console.warn("Offline mode active: For your security, the wallet will avoid ALL internet requests.");
     if (!masterKey) return;
 
     // Play reload anim
-   doms.domBalanceReload.classList.add("playAnim");
-   doms.domBalanceReloadStaking.classList.add("playAnim");
+  doms.domBalanceReload.classList.add("playAnim");
+  doms.domBalanceReloadStaking.classList.add("playAnim");
 
     // Fetch block count + UTXOs
     getBlockCount();

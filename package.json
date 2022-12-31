@@ -22,6 +22,7 @@
   },
   "homepage": "https://github.com/PIVX-Labs/MyPIVXWallet#readme",
   "devDependencies": {
+    "@fortawesome/fontawesome-free": "^6.2.1",
     "css-loader": "^6.7.3",
     "node-polyfill-webpack-plugin": "^2.0.1",
     "style-loader": "^3.3.1",
@@ -29,11 +30,13 @@
     "webpack-cli": "^5.0.1"
   },
   "dependencies": {
+    "@noble/hashes": "^1.1.5",
+    "binstring": "^0.2.1",
     "bip39": "^3.0.4",
     "bootstrap": "^5.2.3",
     "bootstrap-sass": "^3.4.3",
     "clean-webpack-plugin": "^4.0.0",
-    "fontawesome": "^5.6.3",
+    "hdkey": "^2.0.1",
     "html-loader": "^4.2.0",
     "html-webpack-plugin": "^5.5.0",
     "jdenticon": "^3.2.0",
