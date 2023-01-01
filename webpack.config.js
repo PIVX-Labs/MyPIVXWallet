@@ -29,7 +29,7 @@ module.exports = {
   plugins: [
       new CleanWebpackPlugin(),
       new HtmlWebpackPlugin({
-	  template: './index.html',
+	  template: './index.template.html',
 	  filename: 'index.html',
 	  inject: "head",
 	  scriptLoading: "blocking",
