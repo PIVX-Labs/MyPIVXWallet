@@ -4,7 +4,7 @@ import { en_translation } from "../locale/en/translation.js";
 import { uwu_translation } from "../locale/uwu/translation.js";
 import { translate, ALERTS } from "./i18n.js";
 import * as jdenticon from "jdenticon";
-import { masterKey, hasEncryptedWallet, importWallet, getNewAddress, isYourAddress, encryptWallet } from "./wallet.js";
+import { masterKey, hasEncryptedWallet, importWallet, getNewAddress, isYourAddress, encryptWallet, decryptWallet } from "./wallet.js";
 import { submitAnalytics, networkEnabled, getBlockCount, arrRewards, getStakingRewards } from "./network.js";
 import { start as settingsStart, cExplorer, debug } from "./settings.js";
 import { createAlert, confirmPopup, sanitizeHTML, MAP_B58 } from "./misc.js";

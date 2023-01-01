@@ -3,7 +3,7 @@ import * as nobleSecp256k1 from "@noble/secp256k1";
 import { BigInteger } from "biginteger";
 import bs58 from "bs58";
 import { OP } from "./script.js";
-import { deriveAddress, parseWIF } from "./wallet.js";
+import { deriveAddress, parseWIF, getDerivationPath } from "./wallet.js";
 import { sha256 } from '@noble/hashes/sha256';
 import { cachedBlockCount } from "./network.js";
 import { cChainParams } from "./chain_params.js";
