@@ -267,9 +267,9 @@ export default class Masternode {
 	];
 	
 	const [ signature, v ] = await nobleSecp256k1.sign(dSHA256(msg), parseWIF(this.mnPrivateKey, true), { der: false, recovered: true});
-	return bytesToBase64([ // TODO: fix
+	return Buffer.from([
 	    v + 27, ...signature,
-	]);
+	]).toString("base64");
     }
 
     /**
