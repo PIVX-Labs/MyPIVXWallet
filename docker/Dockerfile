@@ -1,7 +1,10 @@
-FROM nginx
+FROM nginx:alpine
 
-COPY assets /usr/share/nginx/html/assets/
-COPY index.html /usr/share/nginx/html/index.html
-COPY scripts /usr/share/nginx/html/scripts
-COPY locale /usr/share/nginx/html/locale
+RUN apk add --update nodejs npm
+COPY . /src
+WORKDIR /src
+RUN npm i
+RUN npm run build
+COPY dist/ /usr/share/nginx/html/
+
 EXPOSE 80
