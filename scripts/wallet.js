@@ -7,7 +7,7 @@ import { generateMnemonic, mnemonicToSeed, validateMnemonic } from "bip39";
 import { doms, beforeUnloadListener } from "./global.js";
 import HDKey from "hdkey";
 import {lastWallet, networkEnabled } from "./network.js";
-import {pubKeyHashNetworkLen, confirmPopup, writeToUint8, pubPrebaseLen, createQR, createAlert} from "./misc.js";
+import {pubKeyHashNetworkLen, confirmPopup, writeToUint8, pubPrebaseLen, createQR, createAlert, sleep, getSafeRand } from "./misc.js";
 import { refreshChainData, hideAllWalletOptions, getBalance, getStakingBalance } from "./global.js";
 import { cChainParams, MAX_ACCOUNT_GAP, PRIVKEY_BYTE_LENGTH } from "./chain_params.js";
 import { ALERTS } from "./i18n.js";
@@ -15,8 +15,9 @@ import { encrypt, decrypt } from "./aes-gcm.js";
 import bs58 from "bs58";
 import AppBtc from "@ledgerhq/hw-app-btc";
 import TransportWebUSB from "@ledgerhq/hw-transport-webusb";
-
-const jdenticon = require("jdenticon");
+import createXpub from "create-xpub";
+//import * as jdenticon from "jdenticon";
+const jdenticon = require("jdenticon"); // If I import we lose the jdenticon function
 
 export let fWalletLoaded = false;
 
@@ -25,15 +26,13 @@ export let fWalletLoaded = false;
  * @abstract
  */
 class MasterKey {
-  
-  constructor() { }
 
   /**
    * @param {String} [path] - BIP32 path pointing to the private key.
    * @return {Promise<Array<Number>>} Array of bytes containing private key
    * @abstract
    */
-  async getPrivateKeyBytes(path) {
+  async getPrivateKeyBytes(_path) {
     throw new Error("Not implemented");
   }
   
@@ -60,7 +59,7 @@ class MasterKey {
    * @return {Promise<String>} xpub
    * @abstract
    */
-  async getxpub(path) {
+  async getxpub(_path) {
     throw new Error("Not implemented");
   }
 
@@ -178,7 +177,7 @@ export class HardwareWalletMasterKey extends MasterKey {
     this._isHD = true;
     this._isHardwareWallet = true;
   }
-  async getPrivateKeyBytes(path) {
+  async getPrivateKeyBytes(_path) {
     throw new Error("Hardware wallets cannot export private keys");
   }
   
@@ -240,7 +239,7 @@ export class LegacyMasterKey extends MasterKey {
     return generateOrEncodePrivkey(this._pkBytes).strWIF;
   }
   
-  async getxpub(path) {
+  async getxpub(_path) {
     throw new Error("Trying to get an extended public key from a legacy address");
   }
   
@@ -525,7 +524,7 @@ export async function generateWallet(noUI = false) {
     const strImportConfirm = "Do you really want to import a new address? If you haven't saved the last private key, the wallet will be LOST forever.";
     const walletConfirm = fWalletLoaded && !noUI ? await confirmPopup({html: strImportConfirm}) : true;
     if (walletConfirm) {
-      const mnemonic = await generateMnemonic();
+      const mnemonic = generateMnemonic();
 
       if(!noUI) await informUserOfMnemonic(mnemonic);
       const seed = await mnemonicToSeed(mnemonic);
@@ -579,7 +578,7 @@ export async function verifyMnemonic(strMnemonic = "", fPopupConfirm = true) {
 }
 
 function informUserOfMnemonic(mnemonic) {
-  return new Promise((res, rej) => {
+  return new Promise((res, _) => {
     $('#mnemonicModal').modal({keyboard: false})
     doms.domMnemonicModalContent.innerText = mnemonic;
     doms.domMnemonicModalButton.onclick = () => {
@@ -672,6 +671,11 @@ export async function isYourAddress(address){
     return [false,0];
 }
 
+function createAddressConfirmation(address) {
+    return `Please confirm this is the address you see on your ${strHardwareName}.
+              <div class="seed-phrase">${address}</div>`;
+}
+
 export async function getNewAddress({updateGUI = false, verify = false} = {}) {
     const last = lastWallet || 0;
     addressIndex = addressIndex > last ? addressIndex : last + 1;
@@ -708,8 +712,8 @@ export async function getNewAddress({updateGUI = false, verify = false} = {}) {
 }
 
 
-let cHardwareWallet = null;
-let strHardwareName = "";
+export let cHardwareWallet = null;
+export let strHardwareName = "";
 async function getHardwareWalletKeys(path, xpub = false, verify = false, _attempts = 0) {
   try {
     // Check if we haven't setup a connection yet OR the previous connection disconnected
@@ -721,7 +725,7 @@ async function getHardwareWalletKeys(path, xpub = false, verify = false, _attemp
     strHardwareName = cHardwareWallet.transport.device.manufacturerName + " " + cHardwareWallet.transport.device.productName;
 
     // Prompt the user in both UIs
-    if (verify) createAlert("info", WALLET_CONFIRM_L, [], 3500);
+    if (verify) createAlert("info", ALERTS.WALLET_CONFIRM_L, [], 3500);
     const cPubKey = await cHardwareWallet.getWalletPublicKey(path, {
       verify,
       format: "legacy",

@@ -4,7 +4,7 @@ import { translateAlerts } from "./i18n.js";
 import { doms } from "./global.js";
 import qrcode from "qrcode-generator";
 import bs58 from "bs58";
-import { ALERTS } from "./i18n.js";
+import { cChainParams } from "./chain_params";
 
 /* MPW constants */
 export const pubKeyHashNetworkLen = 21;
@@ -161,20 +161,6 @@ export async function hash(byteArray) {
     return hashHex;
   }
 
-/**
- * Swaps the endianness of a HEX string
- * @param {String} HEX - HEX string to swap the endianness of
- * @returns {String} Swapped Endian HEX
- */
-export function swapHEXEndian(HEX) {
-    const result = [];
-    let len = HEX.length;
-    while (len >= 0) {
-        result.push(HEX.substring(len, len-2));
-        len -= 2;
-    }
-    return result.join('');
-    }
 
 export function sanitizeHTML(text) {
   const element = document.createElement('div');

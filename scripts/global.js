@@ -4,7 +4,7 @@ import { en_translation } from "../locale/en/translation.js";
 import { uwu_translation } from "../locale/uwu/translation.js";
 import { translate, ALERTS } from "./i18n.js";
 import * as jdenticon from "jdenticon";
-import { masterKey, hasEncryptedWallet, importWallet, getNewAddress, isYourAddress, encryptWallet, decryptWallet } from "./wallet.js";
+import { masterKey, hasEncryptedWallet, importWallet, encryptWallet, decryptWallet } from "./wallet.js";
 import { submitAnalytics, networkEnabled, getBlockCount, arrRewards, getStakingRewards } from "./network.js";
 import { start as settingsStart, cExplorer, debug } from "./settings.js";
 import { createAlert, confirmPopup, sanitizeHTML, MAP_B58 } from "./misc.js";
@@ -138,7 +138,7 @@ export function start() {
     // Check if set in local storage
     if(localTranslation != null){
 	translation = translatableLanguages[localTranslation];
-    }else{
+    } else {
 	// Check if we support the user's browser locale
 	if (arrActiveLangs.includes(strLang)) {
             translation = translatableLanguages[strLang]
@@ -149,7 +149,7 @@ export function start() {
 	}
     }
     translate(translation);
-   doms.domStart.click();
+    doms.domStart.click();
     // Configure Identicon
     jdenticon.configure();
     // URL-Query request processing
@@ -524,7 +524,7 @@ export async function guiImportWallet() {
         }
     }
     // Prompt for decryption of the existing wallet
-    const fHasWallet = await decryptWallet(domPrivKey.value);
+    const fHasWallet = await decryptWallet(doms.domPrivKey.value);
 
     // If the wallet was successfully loaded, hide all options and load the dash!
     if (fHasWallet) hideAllWalletOptions();
@@ -548,19 +548,6 @@ export function guiEncryptWallet() {
         encryptWallet(strPass);
         createAlert('success', ALERTS.NEW_PASSWORD_SUCCESS, [], 5500);
     }
-}
-
-function createAddressConfirmation(address) {
-    return `Please confirm this is the address you see on your ${strHardwareName}.
-              <div class="seed-phrase">${address}</div>`;
-}
-
-function createTxConfirmation(outputs) {
-    let strHtml = "Confirm this transaction matches the one on your " + strHardwareName +  ".";
-    for (const output of outputs) {
-        strHtml += `<br> <br> You will send <b>${output[1].toFixed(2)} ${cChainParams.current.TICKER}</b> to <div class="inline-address">${output[0]}</div>`
-    }
-    return strHtml;
 }
 
 export async function toggleExportUI() {
@@ -635,9 +622,10 @@ export async function generateVanityWallet() {
         // Ensure the input is base58 compatible
         for (const char of doms.domPrefix.value) {
 	    if (!MAP_B58.toLowerCase().includes(char.toLowerCase())) return createAlert('warning',ALERTS.UNSUPPORTED_CHARACTER, [{"char" : char}], 3500);
+	    // We also don't want users to be mining addresses for years... so cap the letters to four until the generator is more optimized
+            if (doms.domPrefix.value.length > 5) return createAlert('warning', ALERTS.UNSUPPORTED_CHARACTER, [{"char" : char}], 3500);
+
         }
-        // We also don't want users to be mining addresses for years... so cap the letters to four until the generator is more optimized
-        if (doms.domPrefix.value.length > 5) return createAlert('warning', ALERTS.UNSUPPORTED_CHARACTER, [{"char" : char}], 3500);
         isVanityGenerating = true;
       doms.domPrefix.disabled = true;
         let attempts = 0;

@@ -1,12 +1,12 @@
 import bitjs from "./bitTrx.js";
 import { debug } from "./settings.js";
 import { doms, getBalance, getStakingBalance, mempool, isMasternodeUTXO, askForCSAddr, cachedColdStakeAddr } from "./global.js";
-import { getFee, sendTransaction } from "./network.js";
+import { getFee, sendTransaction, getTxInfo } from "./network.js";
 import { Mempool } from "./mempool.js";
 import { ALERTS } from "./i18n.js";
-import { hasWalletUnlocked, hasHardwareWallet, hasEncryptedWallet, masterKey, getNewAddress, isYourAddress } from "./wallet.js";
-import { cChainParams, COIN } from "./chain_params.js";
-import { createAlert, swapHEXEndian, generateMnPrivkey } from "./misc.js";
+import { hasWalletUnlocked, hasHardwareWallet, masterKey, getNewAddress, isYourAddress, cHardwareWallet, strHardwareName } from "./wallet.js";
+import { cChainParams, COIN, COIN_DECIMALS } from "./chain_params.js";
+import { createAlert, generateMnPrivkey, confirmPopup } from "./misc.js";
 import { bytesToHex, hexToBytes, dSHA256 } from "./utils.js";
 
 function validateAmount(nAmountSats, nMinSats = 10000) {
@@ -266,9 +266,9 @@ function ccSuccess  (data)     { return { success: true, ...data } };
 
 function chooseUTXOs(cTx, nTotalSatsRequired = 0, nMinInputSize = 0, fColdOnly = false) {
     console.log("Constructing TX of value: " + (nTotalSatsRequired / COIN) + " " + cChainParams.current.TICKER);
-
+    
     // Select the UTXO type bucket
-
+    
     //const arrUTXOs
     const arrUTXOs = mempool.UTXOs;
 
@@ -346,7 +346,7 @@ export async function createTxGUI() {
     // If Staking address: redirect to staking page
     if (address.startsWith(cChainParams.current.STAKING_PREFIX)) {
 	createAlert('warning', ALERTS.STAKE_NOT_SEND, [], 7500);
-	returndoms.domStakeTab.click();
+	return doms.domStakeTab.click();
     }
     if (address.length !== 34) return createAlert('warning', ALERTS.BAD_ADDR_LENGTH,[{"addressLength" : address.length}], 2500);
     if (!cChainParams.current.PUBKEY_PREFIX.includes(address[0])) return createAlert('warning', ALERTS.BAD_ADDR_PREFIX, [{"address" : address[0]},{"addressPrefix" : cChainParams.current.PUBKEY_PREFIX.join(' or ')}], 3500);
@@ -653,10 +653,21 @@ function addExtraBytes(arrTxBytes, arrPubkeyBytes, nLen) {
 
 function insert(arr, index, newItem) {
     // part of the array before the specified index
-    return [...arr.slice(0, index),
-            // inserted item
-            newItem,
-            // part of the array after the specified index
-            ...arr.slice(index)
-           ]
+    return [
+	...arr.slice(0, index),
+        // inserted item
+        newItem,
+        // part of the array after the specified index
+        ...arr.slice(index)
+    ];
 }
+
+
+function createTxConfirmation(outputs) {
+    let strHtml = "Confirm this transaction matches the one on your " + strHardwareName +  ".";
+    for (const output of outputs) {
+        strHtml += `<br> <br> You will send <b>${output[1].toFixed(2)} ${cChainParams.current.TICKER}</b> to <div class="inline-address">${output[0]}</div>`
+    }
+    return strHtml;
+}
+
