@@ -173,7 +173,7 @@ async function delegate(nValue, coldAddr) {
     const nBalance = getBalance();
     const cTx = new bitjs.transaction();
     const cCoinControl = chooseUTXOs(cTx, nValue, 0, false);
-    if (!cCoinControl.success) return alert(cCoinControl.msg);
+    if (!cCoinControl.success) return createAlert("warning", cCoinControl.msg, 5000);
 
     // Compute fee and change (or lack thereof)
     const nFee = getFee(cTx.serialize().length);
@@ -361,7 +361,7 @@ export async function createTxGUI() {
     const nBalance = getBalance();
     const cTx = new bitjs.transaction();
     const cCoinControl = chooseUTXOs(cTx, nValue, 0, false);
-    if (!cCoinControl.success) return alert(cCoinControl.msg);
+    if (!cCoinControl.success) return createAlert("warning", cCoinControl.msg, 5000);
     // Compute fee
     const nFee = getFee(cTx.serialize().length);
     
@@ -506,7 +506,7 @@ export async function createMasternode() {
     const cTx = new bitjs.transaction();
     const cCoinControl = chooseUTXOs(cTx, nValue, 0, false);
     
-    if (!cCoinControl.success) return alert(cCoinControl.msg);
+    if (!cCoinControl.success) return createAlert("warning",cCoinControl.msg ,5000);
     // Compute fee
     const nFee = getFee(cTx.serialize().length);
     

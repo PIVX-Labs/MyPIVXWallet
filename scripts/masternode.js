@@ -7,7 +7,7 @@ import { dSHA256, bytesToHex, hexToBytes } from "./utils.js";
 import * as  nobleSecp256k1 from "@noble/secp256k1";
 
 /**
-    * Construct a masternode
+    * Construct a Masternode
     * @param {string} [masternode.walletPrivateKeyPath] - BIP39 path pointing to the private key holding the collateral. Optional if not HD
     * @param {string} masternode.mnPrivateKey - Masternode private key. Must be uncompressed WIF
     * @param {string} masternode.collateralTxId - Must be a UTXO pointing to the collateral
