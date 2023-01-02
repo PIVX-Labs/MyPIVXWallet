@@ -4,6 +4,7 @@ import { cNode, cExplorer } from "./settings.js";
 import { cChainParams } from "./chain_params.js";
 import { masterKey, parseWIF, deriveAddress } from "./wallet.js";
 import { dSHA256, bytesToHex, hexToBytes } from "./utils.js";
+import { Buffer } from "buffer";
 import * as  nobleSecp256k1 from "@noble/secp256k1";
 
 /**

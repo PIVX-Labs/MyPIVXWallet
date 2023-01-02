@@ -1,11 +1,11 @@
 'use strict';
 
-import { doms, getBalance, getStakingBalance, updateStakingRewardsGUI, translation } from "./global.js";
+import { doms, getBalance, getStakingBalance, updateStakingRewardsGUI } from "./global.js";
 import { fWalletLoaded } from "./wallet.js";
 import { cChainParams } from "./chain_params.js";
 import { enableNetwork } from "./network.js";
 import { createAlert } from "./misc.js";
-import { switchTranslation, ALERTS } from "./i18n.js";
+import { switchTranslation, ALERTS, translation } from "./i18n.js";
 
 
 // --- Default Settings
