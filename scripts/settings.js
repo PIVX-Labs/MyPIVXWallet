@@ -1,6 +1,6 @@
 'use strict';
 
-import { doms, getBalance, getStakingBalance, updateStakingRewardsGUI } from "./global.js";
+import { doms, getBalance, getStakingBalance, updateStakingRewardsGUI, translation } from "./global.js";
 import { fWalletLoaded } from "./wallet.js";
 import { cChainParams } from "./chain_params.js";
 import { enableNetwork } from "./network.js";
@@ -96,7 +96,7 @@ export function start() {
     if (!strSettingAnalytics && navigator.doNotTrack === "1") {
         // Disabled
         setAnalytics(arrAnalytics[0], true);
-        domAnalyticsDescriptor.innerHTML = '<h6 style="color:#dcdf6b;font-family:mono !important;"><pre style="color: inherit;">Analytics disabled to honour "Do Not Track" browser setting, you may manually enable if desired, though!</pre></h6>';
+        doms.domAnalyticsDescriptor.innerHTML = '<h6 style="color:#dcdf6b;font-family:mono !important;"><pre style="color: inherit;">Analytics disabled to honour "Do Not Track" browser setting, you may manually enable if desired, though!</pre></h6>';
     } else {
         // Load from storage, or use defaults
         setAnalytics(cAnalyticsLevel = arrAnalytics.find(a => a.name === strSettingAnalytics) || cAnalyticsLevel, true);

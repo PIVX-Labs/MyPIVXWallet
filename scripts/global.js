@@ -1,24 +1,16 @@
 import { Mempool } from "./mempool.js";
 import Masternode from "./masternode.js";
-import { en_translation } from "../locale/en/translation.js";
-import { uwu_translation } from "../locale/uwu/translation.js";
-import { translate, ALERTS } from "./i18n.js";
+import { translate, translation, switchTranslation, ALERTS } from "./i18n.js";
 import * as jdenticon from "jdenticon";
 import { masterKey, hasEncryptedWallet, importWallet, encryptWallet, decryptWallet } from "./wallet.js";
 import { submitAnalytics, networkEnabled, getBlockCount, arrRewards, getStakingRewards } from "./network.js";
 import { start as settingsStart, cExplorer, debug } from "./settings.js";
 import { createAlert, confirmPopup, sanitizeHTML, MAP_B58 } from "./misc.js";
 import { cChainParams, COIN, MIN_PASS_LENGTH } from "./chain_params.js";
+import { decrypt } from "./aes-gcm.js";
 
-// TRANSLATION
-//Create an object of objects filled with all the translations
-export const translatableLanguages = {
-    "en": en_translation,
-    "uwu": uwu_translation
-};
 
 export let doms = {};
-export let translation = {};
 
 export function start() {
     doms = {
@@ -137,15 +129,15 @@ export function start() {
     let localTranslation = localStorage.getItem('translation');
     // Check if set in local storage
     if(localTranslation != null){
-	translation = translatableLanguages[localTranslation];
+	switchTranslation(localTranslation);
     } else {
 	// Check if we support the user's browser locale
 	if (arrActiveLangs.includes(strLang)) {
-            translation = translatableLanguages[strLang]
+            switchTranslation(strLang);
 	}else{
             // Default to EN if the locale isn't supported yet
             console.log("i18n: Your language (" + strLang + ") is not supported yet, if you'd like to contribute translations (for rewards!) contact us on GitHub or Discord!")
-            translation = en_translation
+	    switchTranslation("en");
 	}
     }
     translate(translation);
@@ -922,12 +914,13 @@ export function refreshChainData() {
     getBlockCount();
 }
 
+console.log(translation);
 // A safety mechanism enabled if the user attempts to leave without encrypting/saving their keys
 export const beforeUnloadListener = (evt) => {
     evt.preventDefault();
     // Disable Save your wallet warning on unload
     if( !cChainParams.current.isTestnet ) createAlert("warning", ALERTS.SAVE_WALLET_PLEASE, [], 10000);
     // Most browsers ignore this nowadays, but still, keep it 'just incase'
-    return evt.returnValue = BACKUP_OR_ENCRYPT_WALLET;
+    return evt.returnValue = translation.BACKUP_OR_ENCRYPT_WALLET;
 };
 

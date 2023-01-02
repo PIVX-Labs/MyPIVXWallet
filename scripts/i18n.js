@@ -1,9 +1,20 @@
 'use strict';
 
-import { translation, translatableLanguages } from "./global.js";
 import { createAlert } from "./misc.js";
+import { en_translation } from "../locale/en/translation.js";
+import { uwu_translation } from "../locale/uwu/translation.js";
+
 
 export const ALERTS = {};
+export let translation = {};
+
+// TRANSLATION
+//Create an object of objects filled with all the translations
+export const translatableLanguages = {
+    "en": en_translation,
+    "uwu": uwu_translation
+};
+
 
 /**
  * Takes the language name and sets the translation settings based on the language file
@@ -11,7 +22,7 @@ export const ALERTS = {};
  */
 export function switchTranslation(langName){
     if(arrActiveLangs.includes(langName)){
-      let translation = translatableLanguages[langName]
+      translation = translatableLanguages[langName];
       translate(translation);
 
 	// TODO: tidy it up in a function
@@ -34,9 +45,12 @@ export function switchTranslation(langName){
       setAnalytics(cAnalyticsLevel = arrAnalytics.find(a => a.name === SettingAnalytics) || cAnalyticsLevel, true);
       */
 
-      loadAlerts();
-    }else{
-      console.log("That language does not exist");
+	loadAlerts();
+	return true;
+    } else {
+	console.log("i18n: The language (" + langName + ") is not supported yet, if you'd like to contribute translations (for rewards!) contact us on GitHub or Discord!");
+	translation = translatableLanguages.en_translation;
+	return false;
     }
 }
 
