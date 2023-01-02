@@ -112,3 +112,40 @@ export function loadAlerts() {
         if (alert_key === 'ALERTS') fFoundAlerts = true;
     }
 }
+function parseUserAgentLang(strUA, arrLangsWithSubset) {
+    if (arrLangsWithSubset.some(strLang => strUA.includes(strLang))) {
+        // Split the lang in to 'primary' and 'subset', only use the primary lang
+        return strUA.substring(0, 2);
+    }
+    // Otherwise, just use the full language spec
+    return strUA;
+}
+
+// When adding a lang remember to add it to the object translatableLanguages as well as here.
+export const arrActiveLangs = ['en', 'uwu'];
+
+export function start() {
+    // We use this function to parse the UA lang in a safer way: for example, there's multiple `en` definitions
+    // ... but we shouldn't duplicate the language files, we can instead cut the affix (US, GB) and simply use 'en'.
+    // ... This logic may apply to other languages with such subsets as well, so take care of them here!
+    const arrLangsWithSubset = ['en'];
+
+    const strLang = parseUserAgentLang(window.navigator.userLanguage || window.navigator.language, arrLangsWithSubset);
+
+    // When removing you do not have to remove from translatableLanguages
+    let localTranslation = localStorage.getItem('translation');
+    // Check if set in local storage
+    if(localTranslation != null){
+	switchTranslation(localTranslation);
+    } else {
+	// Check if we support the user's browser locale
+	if (arrActiveLangs.includes(strLang)) {
+            switchTranslation(strLang);
+	}else{
+            // Default to EN if the locale isn't supported yet
+            console.log("i18n: Your language (" + strLang + ") is not supported yet, if you'd like to contribute translations (for rewards!) contact us on GitHub or Discord!")
+	    switchTranslation("en");
+	}
+    }
+    translate(translation);
+}

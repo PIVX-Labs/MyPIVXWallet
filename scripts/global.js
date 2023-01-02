@@ -1,6 +1,6 @@
 import { Mempool } from "./mempool.js";
 import Masternode from "./masternode.js";
-import { translate, translation, switchTranslation, ALERTS } from "./i18n.js";
+import { ALERTS, start as i18nStart, translation } from "./i18n.js";
 import * as jdenticon from "jdenticon";
 import { masterKey, hasEncryptedWallet, importWallet, encryptWallet, decryptWallet } from "./wallet.js";
 import { submitAnalytics, networkEnabled, getBlockCount, arrRewards, getStakingRewards } from "./network.js";
@@ -125,22 +125,8 @@ export function start() {
 	domTranslationSelect: document.getElementById('translation'),
 
     };
+    i18nStart();
     loadImages();
-    let localTranslation = localStorage.getItem('translation');
-    // Check if set in local storage
-    if(localTranslation != null){
-	switchTranslation(localTranslation);
-    } else {
-	// Check if we support the user's browser locale
-	if (arrActiveLangs.includes(strLang)) {
-            switchTranslation(strLang);
-	}else{
-            // Default to EN if the locale isn't supported yet
-            console.log("i18n: Your language (" + strLang + ") is not supported yet, if you'd like to contribute translations (for rewards!) contact us on GitHub or Discord!")
-	    switchTranslation("en");
-	}
-    }
-    translate(translation);
     doms.domStart.click();
     // Configure Identicon
     jdenticon.configure();
@@ -914,7 +900,6 @@ export function refreshChainData() {
     getBlockCount();
 }
 
-console.log(translation);
 // A safety mechanism enabled if the user attempts to leave without encrypting/saving their keys
 export const beforeUnloadListener = (evt) => {
     evt.preventDefault();

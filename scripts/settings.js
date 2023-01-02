@@ -5,7 +5,7 @@ import { fWalletLoaded } from "./wallet.js";
 import { cChainParams } from "./chain_params.js";
 import { enableNetwork } from "./network.js";
 import { createAlert } from "./misc.js";
-import { switchTranslation, ALERTS, translation } from "./i18n.js";
+import { switchTranslation, ALERTS, translation, arrActiveLangs } from "./i18n.js";
 
 
 // --- Default Settings
@@ -61,7 +61,7 @@ export function start() {
 	setAnalytics(arrAnalytics.find(a => a.name === evt.target.value));
     }
 
-        const domAnalyticsSelect = document.getElementById('analytics');
+    const domAnalyticsSelect = document.getElementById('analytics');
 
     fillExplorerSelect();
     fillNodeSelect();

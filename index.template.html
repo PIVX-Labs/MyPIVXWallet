@@ -38,31 +38,6 @@
 
   <link rel="preconnect" href="https://fonts.gstatic.com">
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
-
-  <script>
-    // TRANSLATION
-
-    // We use this function to parse the UA lang in a safer way: for example, there's multiple `en` definitions
-    // ... but we shouldn't duplicate the language files, we can instead cut the affix (US, GB) and simply use 'en'.
-    // ... This logic may apply to other languages with such subsets as well, so take care of them here!
-    const arrLangsWithSubset = ['en'];
-    function parseUserAgentLang(strUA) {
-      if (arrLangsWithSubset.some(strLang => strUA.includes(strLang))) {
-        // Split the lang in to 'primary' and 'subset', only use the primary lang
-        return strUA.substring(0, 2);
-      }
-      // Otherwise, just use the full language spec
-      return strUA;
-    }
-
-    const strLang = parseUserAgentLang(window.navigator.userLanguage || window.navigator.language);
-
-    //When adding a lang remember to add it to the object translatableLanguages as well as here.
-    //When removing you do not have to remove from translatableLanguages
-    const arrActiveLangs = ['en', 'uwu'];
-
-  </script>
-
 </head>
 
 <body>
