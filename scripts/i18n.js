@@ -1,9 +1,8 @@
 'use strict';
 
-import { createAlert } from "./misc.js";
-import { en_translation } from "../locale/en/translation.js";
-import { uwu_translation } from "../locale/uwu/translation.js";
-
+import { createAlert } from './misc.js';
+import { en_translation } from '../locale/en/translation.js';
+import { uwu_translation } from '../locale/uwu/translation.js';
 
 export const ALERTS = {};
 export let translation = {};
@@ -11,22 +10,21 @@ export let translation = {};
 // TRANSLATION
 //Create an object of objects filled with all the translations
 export const translatableLanguages = {
-    "en": en_translation,
-    "uwu": uwu_translation
+    en: en_translation,
+    uwu: uwu_translation,
 };
-
 
 /**
  * Takes the language name and sets the translation settings based on the language file
- * @param {string} langName 
+ * @param {string} langName
  */
-export function switchTranslation(langName){
-    if(arrActiveLangs.includes(langName)){
-      translation = translatableLanguages[langName];
-      translate(translation);
+export function switchTranslation(langName) {
+    if (arrActiveLangs.includes(langName)) {
+        translation = translatableLanguages[langName];
+        translate(translation);
 
-	// TODO: tidy it up in a function
-	/*
+        // TODO: tidy it up in a function
+        /*
       //Apply translations to the transparency report
       const STATS = {
           // Stat key   // Description of the stat, it's data, and it's purpose
@@ -45,50 +43,57 @@ export function switchTranslation(langName){
       setAnalytics(cAnalyticsLevel = arrAnalytics.find(a => a.name === SettingAnalytics) || cAnalyticsLevel, true);
       */
 
-	loadAlerts();
-	return true;
+        loadAlerts();
+        return true;
     } else {
-	console.log("i18n: The language (" + langName + ") is not supported yet, if you'd like to contribute translations (for rewards!) contact us on GitHub or Discord!");
-	translation = translatableLanguages.en_translation;
-	return false;
+        console.log(
+            'i18n: The language (' +
+                langName +
+                ") is not supported yet, if you'd like to contribute translations (for rewards!) contact us on GitHub or Discord!"
+        );
+        translation = translatableLanguages.en_translation;
+        return false;
     }
 }
 
 /**
  * Takes a string that includes {x} and replaces that based on what is in the array of objects
- * @param {string} message 
- * @param {array<Object>} variables 
+ * @param {string} message
+ * @param {array<Object>} variables
  * @returns a string with the variables implemented in the string
- * 
+ *
  * @example
  * //returns "test this"
  * translateAlerts("test {x}" [x : "this"])
  */
-export function translateAlerts(message,variables){
-    variables.forEach(element => {
-        message = message.replace("{"+Object.keys(element)[0]+"}",Object.values(element)[0]);
+export function translateAlerts(message, variables) {
+    variables.forEach((element) => {
+        message = message.replace(
+            '{' + Object.keys(element)[0] + '}',
+            Object.values(element)[0]
+        );
     });
     return message;
 }
 
-
 /**
  * Translates all the static html based on the tag data-i18n
- * @param {Array} i18nLangs 
+ * @param {Array} i18nLangs
  *
  */
 export function translate(i18nLangs) {
     if (!i18nLangs) return;
 
-    document.querySelectorAll("[data-i18n]").forEach(function(element) {
+    document.querySelectorAll('[data-i18n]').forEach(function (element) {
         if (!i18nLangs[element.dataset.i18n]) return;
 
         if (element.dataset.i18n_target) {
-            element[element.dataset.i18n_target] = i18nLangs[element.dataset.i18n];
+            element[element.dataset.i18n_target] =
+                i18nLangs[element.dataset.i18n];
         } else {
             switch (element.tagName.toLowerCase()) {
-                case "input":
-                case "textarea":
+                case 'input':
+                case 'textarea':
                     element.placeholder = i18nLangs[element.dataset.i18n];
                 default:
                     element.innerHTML = i18nLangs[element.dataset.i18n];
@@ -113,7 +118,7 @@ export function loadAlerts() {
     }
 }
 function parseUserAgentLang(strUA, arrLangsWithSubset) {
-    if (arrLangsWithSubset.some(strLang => strUA.includes(strLang))) {
+    if (arrLangsWithSubset.some((strLang) => strUA.includes(strLang))) {
         // Split the lang in to 'primary' and 'subset', only use the primary lang
         return strUA.substring(0, 2);
     }
@@ -130,22 +135,29 @@ export function start() {
     // ... This logic may apply to other languages with such subsets as well, so take care of them here!
     const arrLangsWithSubset = ['en'];
 
-    const strLang = parseUserAgentLang(window.navigator.userLanguage || window.navigator.language, arrLangsWithSubset);
+    const strLang = parseUserAgentLang(
+        window.navigator.userLanguage || window.navigator.language,
+        arrLangsWithSubset
+    );
 
     // When removing you do not have to remove from translatableLanguages
     let localTranslation = localStorage.getItem('translation');
     // Check if set in local storage
-    if(localTranslation != null){
-	switchTranslation(localTranslation);
+    if (localTranslation != null) {
+        switchTranslation(localTranslation);
     } else {
-	// Check if we support the user's browser locale
-	if (arrActiveLangs.includes(strLang)) {
+        // Check if we support the user's browser locale
+        if (arrActiveLangs.includes(strLang)) {
             switchTranslation(strLang);
-	}else{
+        } else {
             // Default to EN if the locale isn't supported yet
-            console.log("i18n: Your language (" + strLang + ") is not supported yet, if you'd like to contribute translations (for rewards!) contact us on GitHub or Discord!")
-	    switchTranslation("en");
-	}
+            console.log(
+                'i18n: Your language (' +
+                    strLang +
+                    ") is not supported yet, if you'd like to contribute translations (for rewards!) contact us on GitHub or Discord!"
+            );
+            switchTranslation('en');
+        }
     }
     translate(translation);
 }

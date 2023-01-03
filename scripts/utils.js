@@ -1,4 +1,4 @@
-import { Buffer } from "buffer";
+import { Buffer } from 'buffer';
 import { sha256 } from '@noble/hashes/sha256';
 
 export function hexToBytes(str) {
@@ -6,7 +6,7 @@ export function hexToBytes(str) {
 }
 
 export function bytesToHex(bytes) {
-    return Buffer.from(bytes).toString("hex");
+    return Buffer.from(bytes).toString('hex');
 }
 
 /**
@@ -15,4 +15,3 @@ export function bytesToHex(bytes) {
 export function dSHA256(buff) {
     return sha256(sha256(new Uint8Array(buff)));
 }
-
