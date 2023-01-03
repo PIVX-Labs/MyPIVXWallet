@@ -580,6 +580,20 @@ function stopSearch() {
 }
 
 export async function generateVanityWallet() {
+    const checkResult = data => {
+	attempts++;
+	if (data.pub.substr(1, nPrefixLen).toLowerCase() == nInsensitivePrefix) {
+	    importWallet({
+		newWif: data.priv,
+		fRaw: true
+	    });
+	    stopSearch();
+	    doms.domGuiBalance.innerHTML = "0";
+	    doms.domGuiBalanceBox.style.fontSize = "x-large";
+	    return console.log("VANITY: Found an address after " + attempts + " attempts!");
+	}
+    }
+    
     if (isVanityGenerating) return stopSearch();
     if (typeof(Worker) === "undefined") return createAlert('error', ALERTS.UNSUPPORTED_WEBWORKERS, [], 7500);
     // Generate a vanity address with the given prefix
@@ -623,19 +637,6 @@ export async function generateVanityWallet() {
 	    doms.domVanityUiButtonTxt.innerText = 'Stop (Searched ' + attempts.toLocaleString('en-GB') + ' keys)';
         }, 200);
 
-        function checkResult(data) {
-	    attempts++;
-	    if (data.pub.substr(1, nPrefixLen).toLowerCase() == nInsensitivePrefix) {
-		importWallet({
-		    newWif: data.priv,
-		    fRaw: true
-		});
-		stopSearch();
-		doms.domGuiBalance.innerHTML = "0";
-		doms.domGuiBalanceBox.style.fontSize = "x-large";
-		return console.log("VANITY: Found an address after " + attempts + " attempts!");
-	    }
-        }
     }
 }
 
