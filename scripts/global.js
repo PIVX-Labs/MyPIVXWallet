@@ -743,24 +743,6 @@ function stopSearch() {
 }
 
 export async function generateVanityWallet() {
-    const checkResult = (data) => {
-        attempts++;
-        if (
-            data.pub.substr(1, nPrefixLen).toLowerCase() == nInsensitivePrefix
-        ) {
-            importWallet({
-                newWif: data.priv,
-                fRaw: true,
-            });
-            stopSearch();
-            doms.domGuiBalance.innerHTML = '0';
-            doms.domGuiBalanceBox.style.fontSize = 'x-large';
-            return console.log(
-                'VANITY: Found an address after ' + attempts + ' attempts!'
-            );
-        }
-    };
-
     if (isVanityGenerating) return stopSearch();
     if (typeof Worker === 'undefined')
         return createAlert('error', ALERTS.UNSUPPORTED_WEBWORKERS, [], 7500);
@@ -814,6 +796,27 @@ export async function generateVanityWallet() {
             arrWorkers.push(
                 new Worker(new URL('./vanitygen_worker.js', import.meta.url))
             );
+            const checkResult = (data) => {
+                attempts++;
+                if (
+                    data.pub.substr(1, nPrefixLen).toLowerCase() ==
+                    nInsensitivePrefix
+                ) {
+                    importWallet({
+                        newWif: data.priv,
+                        fRaw: true,
+                    });
+                    stopSearch();
+                    doms.domGuiBalance.innerHTML = '0';
+                    doms.domGuiBalanceBox.style.fontSize = 'x-large';
+                    return console.log(
+                        'VANITY: Found an address after ' +
+                            attempts +
+                            ' attempts!'
+                    );
+                }
+            };
+
             arrWorkers[arrWorkers.length - 1].onmessage = (event) =>
                 checkResult(event.data);
             arrWorkers[arrWorkers.length - 1].postMessage(
