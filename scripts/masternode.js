@@ -1,7 +1,7 @@
 "use strict";
 
 /**
-    * Construct a masternode
+    * Construct a Masternode
     * @param {string} [masternode.walletPrivateKeyPath] - BIP39 path pointing to the private key holding the collateral. Optional if not HD
     * @param {string} masternode.mnPrivateKey - Masternode private key. Must be uncompressed WIF
     * @param {string} masternode.collateralTxId - Must be a UTXO pointing to the collateral
@@ -15,10 +15,6 @@ class Masternode {
 	this.collateralTxId = collateralTxId;
 	this.outidx = outidx;
 	this.addr = addr;
-    }
-    
-    static _getProtocolVersion(){
-	return cChainParams.current.isTestnet ? 70926 : 70924;
     }
     
     async _getWalletPrivateKey(){
@@ -121,7 +117,7 @@ class Masternode {
 	    ...publicKey,
 	    ...Masternode._numToBytes(mnPublicKey.length, 1, true), // Masternode public key length
 	    ...mnPublicKey,
-	    ...Masternode._numToBytes(Masternode._getProtocolVersion(), 4, true), // Protocol version
+	    ...Masternode._numToBytes(cChainParams.current.PROTOCOL_VERSION, 4, true), // Protocol version
 	];
 	const hash = new jsSHA(0, 0, {numRounds: 2});
 	hash.update(pkt);
@@ -214,7 +210,7 @@ class Masternode {
 	    ...Masternode._numToBytes(sigBytes.length, 1, true),
 	    ...sigBytes,
 	    ...Masternode._numToBytes(sigTime, 8, true),
-	    ...Masternode._numToBytes(Masternode._getProtocolVersion(), 4, true),
+	    ...Masternode._numToBytes(cChainParams.current.PROTOCOL_VERSION, 4, true),
 	    ...Crypto.util.hexToBytes(this.collateralTxId).reverse(),
 	    ...Masternode._numToBytes(this.outidx, 4, true),
 	    ...Masternode._numToBytes(0, 1, true),

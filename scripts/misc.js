@@ -24,7 +24,7 @@ function writeToUint8(arr, bytes, pos) {
     // Sanity: ensure an overflow cannot occur, if one is detected, somewhere in MPW's state could be corrupted.
     if ((arrLen - pos) - bytes.length < 0) {
         const strERR = 'CRITICAL: Overflow detected (' + ((arrLen - pos) - bytes.length) + '), possible state corruption, backup and refresh advised.';
-        alert(strERR);
+        createAlert("warning",strERR,5000);
         throw Error(strERR);
     }
     let i = 0;
