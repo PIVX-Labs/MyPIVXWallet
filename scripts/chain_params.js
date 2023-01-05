@@ -30,6 +30,7 @@ export const cChainParams = {
         SECRET_KEY: 212,
         BIP44_TYPE: 119,
         BIP44_TYPE_LEDGER: 77,
+        PROTOCOL_VERSION: 70926,
         MASTERNODE_PORT: 51472,
         // A list of Labs-trusted explorers
         Explorers: [
@@ -53,6 +54,7 @@ export const cChainParams = {
         SECRET_KEY: 239,
         BIP44_TYPE: 1,
         BIP44_TYPE_LEDGER: 1,
+        PROTOCOL_VERSION: 70926,
         MASTERNODE_PORT: 51474,
         // A list of Labs-trusted explorers
         Explorers: [

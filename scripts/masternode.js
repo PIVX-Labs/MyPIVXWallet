@@ -30,10 +30,6 @@ export default class Masternode {
         this.addr = addr;
     }
 
-    static _getProtocolVersion() {
-        return cChainParams.current.isTestnet ? 70926 : 70924;
-    }
-
     async _getWalletPrivateKey() {
         return await masterKey.getPrivateKey(this.walletPrivateKeyPath);
     }
@@ -139,7 +135,7 @@ export default class Masternode {
             ...Masternode._numToBytes(mnPublicKey.length, 1, true), // Masternode public key length
             ...mnPublicKey,
             ...Masternode._numToBytes(
-                Masternode._getProtocolVersion(),
+                cChainParams.current.PROTOCOL_VERSION,
                 4,
                 true
             ), // Protocol version
@@ -246,7 +242,7 @@ export default class Masternode {
             ...sigBytes,
             ...Masternode._numToBytes(sigTime, 8, true),
             ...Masternode._numToBytes(
-                Masternode._getProtocolVersion(),
+                cChainParams.current.PROTOCOL_VERSION,
                 4,
                 true
             ),
