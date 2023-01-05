@@ -210,7 +210,8 @@ async function undelegate(nValue) {
                     script: bytesToHex(cTx.outputs[0].script),
                     sats: nChange,
                     vout: 0,
-                    status: Mempool.PENDING_COLD,
+                    status: Mempool.PENDING,
+                    isDelegate: true,
                 });
                 mempool.addUTXO({
                     id: futureTxid,
@@ -256,7 +257,8 @@ async function undelegate(nValue) {
                     script: bytesToHex(cTx.outputs[0].script),
                     sats: nChange,
                     vout: 0,
-                    status: Mempool.PENDING_COLD,
+                    status: Mempool.PENDING,
+                    isDelegate: true,
                 });
                 mempool.addUTXO({
                     id: futureTxid,
@@ -420,7 +422,8 @@ async function delegate(nValue, coldAddr) {
                     sats: nValue,
                     vout: 1,
                     script: bytesToHex(cTx.outputs[1].script),
-                    status: Mempool.PENDING_COLD,
+                    status: Mempool.PENDING,
+                    isDelegate: true,
                 });
             } else {
                 mempool.addUTXO({
@@ -429,7 +432,8 @@ async function delegate(nValue, coldAddr) {
                     script: bytesToHex(cTx.outputs[0].script),
                     sats: nValue,
                     vout: 0,
-                    status: Mempool.PENDING_COLD,
+                    status: Mempool.PENDING,
+                    isDelegate: true,
                 });
             }
         }
@@ -466,7 +470,8 @@ async function delegate(nValue, coldAddr) {
                     sats: nValue,
                     vout: 1,
                     script: bytesToHex(cTx.outputs[1].script),
-                    status: Mempool.PENDING_COLD,
+                    status: Mempool.PENDING,
+                    isDelegate: true,
                 });
             } else {
                 mempool.addUTXO({
@@ -475,7 +480,8 @@ async function delegate(nValue, coldAddr) {
                     script: bytesToHex(cTx.outputs[0].script),
                     sats: nValue,
                     vout: 0,
-                    status: Mempool.PENDING_COLD,
+                    status: Mempool.PENDING,
+                    isDelegate: true,
                 });
             }
         }
@@ -507,35 +513,18 @@ function chooseUTXOs(
     // Select the UTXO type bucket
 
     //const arrUTXOs
-    const arrUTXOs = mempool.UTXOs;
+    const arrUTXOs = fColdOnly
+        ? mempool.getDelegatedUTXOs()
+        : mempool.getStandardUTXOs();
 
     // Select and return UTXO pointers (filters applied)
     const cCoinControl = { nValue: 0, nChange: 0, arrSelectedUTXOs: [] };
 
-    let spent = [];
     for (let i = 0; i < arrUTXOs.length; i++) {
         const cUTXO = arrUTXOs[i];
-        if (!fColdOnly) {
-            if (
-                cUTXO.status !== Mempool.CONFIRMED &&
-                cUTXO.status !== Mempool.REWARD &&
-                cUTXO.status !== Mempool.PENDING
-            ) {
-                continue;
-            }
-            if (
-                cUTXO.status === Mempool.REWARD &&
-                !Mempool.isValidReward(cUTXO)
-            ) {
-                continue;
-            }
-        }
-        if (
-            fColdOnly &&
-            cUTXO.status !== Mempool.DELEGATE &&
-            cUTXO.status !== Mempool.PENDING_COLD
-        )
+        if (!Mempool.isValidUTXO(cUTXO)) {
             continue;
+        }
         // Don't spend locked Masternode collaterals
         if (isMasternodeUTXO(cUTXO)) continue; //CHANGE THIS
 
@@ -584,7 +573,6 @@ function chooseUTXOs(
             script: cUTXO.script,
             path: cUTXO.path,
         });
-        spent.push(cUTXO);
     }
 
     // if we don't have enough value: return false

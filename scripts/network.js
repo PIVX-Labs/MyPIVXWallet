@@ -1,11 +1,7 @@
 'use strict';
+
 import { cAnalyticsLevel, cStatKeys, cExplorer, STATS } from './settings.js';
-import {
-    doms,
-    mempool,
-    updateStakingRewardsGUI,
-    updateMasternodeTab,
-} from './global.js';
+import { doms, mempool, updateStakingRewardsGUI } from './global.js';
 import { masterKey, getDerivationPath, getNewAddress } from './wallet.js';
 import { cChainParams, donationAddress, COIN } from './chain_params.js';
 import { createAlert } from './misc.js';
@@ -35,6 +31,8 @@ export function enableNetwork() {
     return false;
 }
 
+export let lastWallet = 0;
+
 function networkError() {
     if (disableNetwork()) {
         createAlert(
@@ -62,12 +60,104 @@ export function getBlockCount() {
                     ' --> ' +
                     data.backend.blocks
             );
-            getUTXOsHeavy();
+            getUTXOs();
             getStakingRewards();
         }
         cachedBlockCount = data.backend.blocks;
     };
     request.send();
+}
+
+/**
+ * Parses UTXOs and puts them in the mempool
+ * @param {Array<Object>} arrUTXOs - Array of object-formatted UTXOs
+ * @returns {Promise<void>} Resolves when it has parsed every UTXO
+ */
+async function acceptUTXO(arrUTXOs) {
+    const nTimeSyncStart = Date.now() / 1000;
+
+    for (const cUTXO of arrUTXOs) {
+        if (mempool.isAlreadyStored({ id: cUTXO.txid, vout: cUTXO.vout })) {
+            mempool.updateUTXO({ id: cUTXO.txid, vout: cUTXO.vout });
+            continue;
+        }
+        const cTx = await (
+            await fetch(`${cExplorer.url}/api/v2/tx-specific/${cUTXO.txid}`)
+        ).json();
+        const cVout = cTx.vout[cUTXO.vout];
+
+        let path;
+        if (cUTXO.path) {
+            path = cUTXO.path.split('/');
+            path[2] =
+                (masterKey.isHardwareWallet
+                    ? cChainParams.current.BIP44_TYPE_LEDGER
+                    : cChainParams.current.BIP44_TYPE) + "'";
+            lastWallet = Math.max(parseInt(path[5]), lastWallet);
+            path = path.join('/');
+        }
+
+        const isColdStake = cVout.scriptPubKey.type === 'coldstake';
+        const isStandard = cVout.scriptPubKey.type === 'pubkeyhash';
+        const isReward = cTx.vout[0].hex === '';
+        // We don't know what this is
+        if (!isColdStake && !isStandard) {
+            continue;
+        }
+
+        mempool.addUTXO({
+            id: cUTXO.txid,
+            path,
+            sats: Math.round(cVout.value * COIN),
+            script: cVout.scriptPubKey.hex,
+            vout: cVout.n,
+            height: cachedBlockCount - (cTx.confirmations - 1),
+            status: cTx.confirmations < 1 ? Mempool.PENDING : Mempool.CONFIRMED,
+            isDelegate: isColdStake,
+            isReward,
+        });
+    }
+    getNewAddress(true);
+    if (arrUTXOs.length) {
+        // If allowed by settings: submit a sync performance measurement to Labs Analytics
+        return submitAnalytics('time_to_sync', {
+            time: Date.now() / 1000 - nTimeSyncStart,
+            explorer: cExplorer.name,
+        });
+    }
+}
+
+/**
+ * Fetch UTXOs from the current primary explorer
+ * @returns {Promise<void>} Resolves when it has finished fetching UTXOs
+ */
+async function getUTXOs() {
+    // Don't fetch UTXOs if we're already scanning for them!
+    if (getUTXOs.isSyncing) return;
+    getUTXOs.isSyncing = true;
+    try {
+        let publicKey;
+        if (masterKey.isHD) {
+            const derivationPath = getDerivationPath(masterKey.isHardwareWallet)
+                .split('/')
+                .slice(0, 4)
+                .join('/');
+            publicKey = await masterKey.getxpub(derivationPath);
+        } else {
+            publicKey = await masterKey.getAddress();
+        }
+        // Validate and sync these UTXOs
+        await acceptUTXO(
+            await (
+                await fetch(`${cExplorer.url}/api/v2/utxo/${publicKey}`)
+            ).json()
+        );
+    } catch (e) {
+        console.error(e);
+        networkError();
+    } finally {
+        getUTXOs.isSyncing = false;
+    }
 }
 
 export async function sendTransaction(hex, msg = '') {
@@ -219,107 +309,6 @@ export async function getTxInfo(txHash) {
     const req = await fetch(`${cExplorer.url}/api/v2/tx/${txHash}`);
     return await req.json();
 }
-
-// EXPERIMENTAL: a very heavy synchronisation method which can be used to find missing UTXOs in the event of a Blockbook UTXO API failure
-export let lastWallet = 0;
-var fHeavySyncing = false;
-var getUTXOsHeavy = async function () {
-    if (fHeavySyncing || !networkEnabled || masterKey == undefined) return;
-    fHeavySyncing = true;
-
-    try {
-        let cData;
-        let mapPaths = new Map();
-        if (masterKey.isHD) {
-            // Fetch our xpub
-            const derivationPath = getDerivationPath(masterKey.isHardwareWallet)
-                .split('/')
-                .slice(0, 4)
-                .join('/');
-            const xpub = await masterKey.getxpub(derivationPath);
-
-            // Run an xpub balance synchronisation
-
-            cData = await (
-                await fetch(
-                    `${cExplorer.url}/api/v2/xpub/${xpub}?details=txs&pageSize=1000`
-                )
-            ).json();
-
-            // Map all address <--> derivation paths
-            if (cData.tokens) {
-                cData.tokens.forEach((cAddrPath) =>
-                    mapPaths.set(cAddrPath.name, cAddrPath.path)
-                );
-                lastWallet = parseInt(
-                    cData.tokens[cData.tokens.length - 1].path.split('/')[5]
-                );
-            }
-        } else {
-            // Fetch our single address and state, map address to an empty derivation path
-            const address = await masterKey.getAddress();
-            cData = await (
-                await fetch(
-                    `${cExplorer.url}/api/v2/address/${address}?details=txs&pageSize=1000`
-                )
-            ).json();
-            mapPaths.set(address, ':)');
-        }
-        if (cData && cData.transactions) {
-            for (const cTx of cData.transactions) {
-                const fCoinstake = cTx.vout[0].addresses[0] === 'CoinStake TX';
-                for (const cOut of cTx.vout) {
-                    if (cOut.spent) continue; // We don't care about spent outputs
-                    const paths = cOut.addresses
-                        .map((strAddr) => mapPaths.get(strAddr))
-                        .filter((v) => v);
-                    // No addresses match ours
-                    if (!paths.length) continue;
-                    const isDelegate = cOut.addresses.some((strAddr) =>
-                        strAddr.startsWith(cChainParams.current.STAKING_PREFIX)
-                    );
-                    // Blockbook still returns 119' as the coinType, even in testnet
-                    let path = paths[0].split('/');
-                    path[2] =
-                        (masterKey.isHardwareWallet
-                            ? cChainParams.current.BIP44_TYPE_LEDGER
-                            : cChainParams.current.BIP44_TYPE) + "'";
-                    if (isDelegate) {
-                        mempool.addUTXO({
-                            id: cTx.txid,
-                            path: path.join('/'),
-                            sats: parseInt(cOut.value),
-                            script: cOut.hex,
-                            vout: cOut.n,
-                            height: cTx.blockHeight,
-                            status: Mempool.DELEGATE,
-                        });
-                    } else {
-                        mempool.addUTXO({
-                            id: cTx.txid,
-                            path: path.join('/'),
-                            sats: parseInt(cOut.value),
-                            script: cOut.hex,
-                            vout: cOut.n,
-                            height: cTx.blockHeight,
-                            status: !fCoinstake
-                                ? Mempool.CONFIRMED
-                                : Mempool.REWARD,
-                        });
-                    }
-                }
-            }
-            // Update UI
-            getNewAddress(true);
-            updateMasternodeTab();
-        }
-    } catch (e) {
-        networkError();
-        throw e;
-    } finally {
-        fHeavySyncing = false;
-    }
-};
 
 // PIVX Labs Analytics: if you are a user, you can disable this FULLY via the Settings.
 // ... if you're a developer, we ask you to keep these stats to enhance upstream development,

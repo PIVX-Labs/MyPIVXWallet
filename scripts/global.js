@@ -1168,6 +1168,7 @@ export function refreshChainData() {
 
     // Fetch block count + UTXOs
     getBlockCount();
+    getBalance(true);
 }
 
 // A safety mechanism enabled if the user attempts to leave without encrypting/saving their keys
