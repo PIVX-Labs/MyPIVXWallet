@@ -1011,9 +1011,7 @@ export async function updateMasternodeTab() {
                 const cMasternode = new Masternode(
                     JSON.parse(localStorage.getItem('masternode'))
                 );
-                const cMasternodeData = await refreshMasternodeData(
-                    cMasternode
-                );
+                await refreshMasternodeData(cMasternode);
                 doms.domMnDashboard.style.display = '';
             } else {
                 doms.domMnTxId.style.display = 'none';
@@ -1053,7 +1051,7 @@ export async function updateMasternodeTab() {
             doms.domMnTxId.style.display = 'block';
             doms.domAccessMasternode.style.display = 'block';
 
-            for (const [key, value] of mapCollateralAddresses) {
+            for (const [key] of mapCollateralAddresses) {
                 const option = document.createElement('option');
                 option.value = key;
                 option.innerText = await masterKey.getAddress(key);

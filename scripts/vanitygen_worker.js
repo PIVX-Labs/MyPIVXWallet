@@ -3,12 +3,7 @@
 import { deriveAddress } from './wallet.js';
 import { getSafeRand } from './misc.js';
 
-const cKeypair = {
-    pub: '',
-    priv: new Uint8Array(),
-};
-
-onmessage = function (evt) {
+onmessage = function (_evt) {
     while (true) {
         const cKeypair = {};
         cKeypair.priv = getSafeRand();

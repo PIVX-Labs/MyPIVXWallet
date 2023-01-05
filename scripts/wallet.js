@@ -34,8 +34,7 @@ import bs58 from 'bs58';
 import AppBtc from '@ledgerhq/hw-app-btc';
 import TransportWebUSB from '@ledgerhq/hw-transport-webusb';
 import createXpub from 'create-xpub';
-//import * as jdenticon from "jdenticon";
-const jdenticon = require('jdenticon'); // If I import we lose the jdenticon function
+import * as jdenticon from 'jdenticon';
 
 export let fWalletLoaded = false;
 
@@ -598,7 +597,7 @@ export async function importWallet({
         doms.domIdenticon.dataset.jdenticonValue = masterKey.getAddress(
             getDerivationPath()
         );
-        jdenticon();
+        jdenticon.update('#identicon');
 
         // Hide the encryption warning if the user pasted the private key
         // Or in Testnet mode or is using a hardware wallet or is view-only mode
@@ -653,7 +652,7 @@ export async function generateWallet(noUI = false) {
         doms.domIdenticon.dataset.jdenticonValue = masterKey.getAddress(
             getDerivationPath()
         );
-        jdenticon();
+        jdenticon.update('#identicon');
 
         getNewAddress({ updateGUI: true });
 
@@ -703,23 +702,6 @@ function informUserOfMnemonic(mnemonic) {
         };
         $('#mnemonicModal').modal('show');
     });
-}
-
-async function benchmark(quantity) {
-    let i = 0;
-    const nStartTime = Date.now();
-    while (i < quantity) {
-        await generateWallet(true);
-        i++;
-    }
-    const nEndTime = Date.now();
-    console.log(
-        'Time taken to generate ' +
-            i +
-            ' addresses: ' +
-            (nEndTime - nStartTime).toFixed(2) +
-            'ms'
-    );
 }
 
 export async function encryptWallet(strPassword = '') {

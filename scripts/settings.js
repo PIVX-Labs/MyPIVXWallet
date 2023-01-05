@@ -176,7 +176,7 @@ function setNode(node, fSilent = false) {
  * @param {string} lang
  * @param {bool} fSilent
  */
-function setTranslation(lang, fSilent = false) {
+function setTranslation(lang) {
     switchTranslation(lang);
     localStorage.setItem('translation', lang);
 }
