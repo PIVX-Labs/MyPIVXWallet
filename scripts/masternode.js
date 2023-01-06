@@ -1,4 +1,3 @@
-'use strict';
 
 import { cNode, cExplorer } from './settings.js';
 import { cChainParams } from './chain_params.js';

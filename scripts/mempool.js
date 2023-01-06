@@ -1,4 +1,3 @@
-'use strict';
 
 import { cachedBlockCount } from './network.js';
 import { getBalance, isMasternodeUTXO, getStakingBalance } from './global.js';

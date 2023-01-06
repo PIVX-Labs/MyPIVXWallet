@@ -1,10 +1,9 @@
-'use strict';
-
 import { translateAlerts } from './i18n.js';
 import { doms } from './global.js';
 import qrcode from 'qrcode-generator';
 import bs58 from 'bs58';
 import { cChainParams } from './chain_params';
+import  { hexToBytes, bytesToHex } from './utils.js';
 
 /* MPW constants */
 export const pubKeyHashNetworkLen = 21;
@@ -130,7 +129,7 @@ export async function generateMnPrivkey() {
     let valid = false;
     let priv_key = 0;
     while (!valid) {
-        priv_key = Crypto.util.bytesToHex(Crypto.util.randomBytes(32));
+        priv_key = bytesToHex(getSafeRand(32));
         let decoded_priv_key = BigInt('0x' + priv_key);
 
         if (0 < decoded_priv_key && decoded_priv_key < max_decoded_value) {
@@ -148,13 +147,12 @@ export async function convertMnPrivKeyFromHex(hexStr) {
         ? TESTNET_WIF_PREFIX
         : WIF_PREFIX;
 
-    //convert the hexStr+ initial prefix to byte array Crypto.util.hexToBytes(string)
-    let data = Crypto.util.hexToBytes(hexStr);
+    //convert the hexStr+ initial prefix to byte array hexToBytes(string)
+    let data = hexToBytes(hexStr);
     data.unshift(base58_secret);
 
     //generate the checksum with double sha256 hashing
-    let checksum = Crypto.util
-        .hexToBytes(await hash(Crypto.util.hexToBytes(await hash(data))))
+    let checksum = hexToBytes(await hash(hexToBytes(await hash(data))))
         .slice(0, 4);
 
     //concatenate data and checksum

@@ -1,4 +1,3 @@
-'use strict';
 // In most BTC-derived coins, the below parameters can be found in the 'src/chainparams.cpp' Mainnet configuration.
 // These below params share the same names as the CPP params, so finding and editing these is easy-peasy!
 // <[network_byte] [32_byte_payload] [0x01] [4_byte_checksum]>

@@ -1,4 +1,3 @@
-'use strict';
 import { hexToBytes, bytesToHex, dSHA256 } from './utils.js';
 import * as nobleSecp256k1 from '@noble/secp256k1';
 import { sha256 } from '@noble/hashes/sha256';

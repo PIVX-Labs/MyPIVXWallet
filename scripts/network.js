@@ -1,4 +1,3 @@
-'use strict';
 
 import { cAnalyticsLevel, cStatKeys, cExplorer, STATS } from './settings.js';
 import { doms, mempool, updateStakingRewardsGUI } from './global.js';

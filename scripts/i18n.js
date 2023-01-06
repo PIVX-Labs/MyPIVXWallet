@@ -1,4 +1,3 @@
-'use strict';
 
 import { en_translation } from '../locale/en/translation.js';
 import { uwu_translation } from '../locale/uwu/translation.js';

@@ -1,4 +1,3 @@
-'use strict';
 
 import { deriveAddress } from './wallet.js';
 import { getSafeRand } from './misc.js';

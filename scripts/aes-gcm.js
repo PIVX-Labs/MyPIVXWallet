@@ -1,4 +1,3 @@
-'use strict';
 
 const buff_to_base64 = (buff) => btoa(String.fromCharCode.apply(null, buff));
 
