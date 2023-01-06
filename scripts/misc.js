@@ -148,7 +148,7 @@ export async function convertMnPrivKeyFromHex(hexStr) {
         : WIF_PREFIX;
 
     //convert the hexStr+ initial prefix to byte array hexToBytes(string)
-    let data = hexToBytes(hexStr);
+    let data = [...hexToBytes(hexStr)];
     data.unshift(base58_secret);
 
     //generate the checksum with double sha256 hashing
