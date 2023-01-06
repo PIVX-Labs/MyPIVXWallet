@@ -156,9 +156,8 @@ export async function convertMnPrivKeyFromHex(hexStr) {
         .slice(0, 4);
 
     //concatenate data and checksum
-    let i = 0;
-    for (i in checksum) {
-        data.push(checksum[i]);
+    for (const byte of checksum) {
+        data.push(byte);
     }
 
     return bs58.encode(data);
