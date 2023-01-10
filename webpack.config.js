@@ -3,7 +3,6 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const NodePolyfillPlugin = require('node-polyfill-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const webpack = require('webpack');
-const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 module.exports = {
     entry: './scripts/index.js',
     output: {
@@ -11,6 +10,7 @@ module.exports = {
         filename: './mpw.js',
         library: 'MPW',
         libraryTarget: 'var',
+	clean: true,
     },
     mode: 'development',
     module: {
@@ -27,8 +27,6 @@ module.exports = {
     },
     devtool: 'source-map',
     plugins: [
-        // Removes the dist/ folder before building
-        new CleanWebpackPlugin(),
         new HtmlWebpackPlugin({
             template: './index.template.html',
             filename: 'index.html',
