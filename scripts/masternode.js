@@ -1,4 +1,3 @@
-
 import { cNode, cExplorer } from './settings.js';
 import { cChainParams } from './chain_params.js';
 import { masterKey, parseWIF, deriveAddress } from './wallet.js';

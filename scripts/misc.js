@@ -3,7 +3,7 @@ import { doms } from './global.js';
 import qrcode from 'qrcode-generator';
 import bs58 from 'bs58';
 import { cChainParams } from './chain_params';
-import  { hexToBytes, bytesToHex } from './utils.js';
+import { hexToBytes, bytesToHex } from './utils.js';
 
 /* MPW constants */
 export const pubKeyHashNetworkLen = 21;
@@ -152,8 +152,10 @@ export async function convertMnPrivKeyFromHex(hexStr) {
     data.unshift(base58_secret);
 
     //generate the checksum with double sha256 hashing
-    let checksum = hexToBytes(await hash(hexToBytes(await hash(data))))
-        .slice(0, 4);
+    let checksum = hexToBytes(await hash(hexToBytes(await hash(data)))).slice(
+        0,
+        4
+    );
 
     //concatenate data and checksum
     for (const byte of checksum) {

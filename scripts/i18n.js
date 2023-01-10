@@ -1,4 +1,3 @@
-
 import { en_translation } from '../locale/en/translation.js';
 import { uwu_translation } from '../locale/uwu/translation.js';
 
@@ -71,11 +70,11 @@ export function translate(i18nLangs) {
             switch (element.tagName.toLowerCase()) {
                 case 'input':
                 case 'textarea':
-                element.placeholder = i18nLangs[element.dataset.i18n];
-		break;
+                    element.placeholder = i18nLangs[element.dataset.i18n];
+                    break;
                 default:
-                element.innerHTML = i18nLangs[element.dataset.i18n];
-		break;
+                    element.innerHTML = i18nLangs[element.dataset.i18n];
+                    break;
             }
         }
     });

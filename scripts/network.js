@@ -1,4 +1,3 @@
-
 import { cAnalyticsLevel, cStatKeys, cExplorer, STATS } from './settings.js';
 import { doms, mempool, updateStakingRewardsGUI } from './global.js';
 import { masterKey, getDerivationPath, getNewAddress } from './wallet.js';
@@ -98,11 +97,12 @@ async function acceptUTXO(arrUTXOs) {
 
         const isColdStake = cVout.scriptPubKey.type === 'coldstake';
         const isStandard = cVout.scriptPubKey.type === 'pubkeyhash';
-        const isReward = cTx.vout[0].hex === '';
+        const isReward = cTx.vout[0].scriptPubKey.hex === '';
         // We don't know what this is
         if (!isColdStake && !isStandard) {
             continue;
         }
+        console.log(mempool);
 
         mempool.addUTXO({
             id: cUTXO.txid,

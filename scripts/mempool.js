@@ -1,4 +1,3 @@
-
 import { cachedBlockCount } from './network.js';
 import { getBalance, isMasternodeUTXO, getStakingBalance } from './global.js';
 import { sleep } from './misc.js';
@@ -162,7 +161,17 @@ export class Mempool {
      * @param {Number} UTXO.status - UTXO status enum state
      * @param {Boolean} UTXO.isDelegate - If this is a Cold Delegation
      */
-    addUTXO({ id, path, sats, script, vout, height, status, isDelegate }) {
+    addUTXO({
+        id,
+        path,
+        sats,
+        script,
+        vout,
+        height,
+        status,
+        isDelegate,
+        isReward,
+    }) {
         const newUTXO = new UTXO({
             id,
             path,
@@ -172,6 +181,7 @@ export class Mempool {
             height,
             status,
             isDelegate,
+            isReward,
         });
 
         if (this.isAlreadyStored({ id, vout })) {
