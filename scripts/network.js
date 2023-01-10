@@ -102,7 +102,6 @@ async function acceptUTXO(arrUTXOs) {
         if (!isColdStake && !isStandard) {
             continue;
         }
-        console.log(mempool);
 
         mempool.addUTXO({
             id: cUTXO.txid,
