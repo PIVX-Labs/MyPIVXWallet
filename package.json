@@ -6,7 +6,7 @@
   "scripts": {
     "build": "webpack",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist"
+    "deploy": "gh-pages -d dist",
     "prettier": "prettier --write --cache scripts",
     "lint": "eslint scripts/",
     "test": "echo \"Error: no test specified\" && exit 1"
