@@ -10,7 +10,18 @@ module.exports = {
         filename: './mpw.js',
         library: 'MPW',
         libraryTarget: 'var',
-	clean: true,
+	    clean: true
+    },
+    devServer: {
+        static: {
+          directory: path.join(__dirname, './'),
+        },
+        compress: true,
+        port: 5500,
+        hot: true,
+        client: {
+            overlay: false
+        }
     },
     mode: 'development',
     module: {
