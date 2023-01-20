@@ -409,51 +409,51 @@
                   <!-- // WARNING -->
                   <br />
 
-                <!-- WALLET FEATURES -->
-                <div id="guiWallet" style="display: none;">
-                  <div id="bcg-wallet-box">
-                    <div id="headline-balance">
-                      <div id="balance-box" class="large-box">
-                        <div id="window-icon-piv">
-                          <div id="piv-ring"></div>
-                          <div id="number-piv">
-                            <p id="guiBalanceBox"><b id="guiBalance">~</b> <span id="guiBalanceTicker">PIV</span></p>
+                  <!-- WALLET FEATURES -->
+                  <div id="guiWallet" style="display: none;">
+                    <div class="row p-0">
+                      <!-- Balance in PIVX & USD-->
+                      <div class="col-12 mb-5">
+                        <center>
+                          <div class="dcWallet-balances mb-4">
+                            <div class="dcWallet-topRightMenu">
+                              <div class="btn-group dropleft">
+                                <i class="fa-solid fa-ellipsis-vertical" style="width: 20px;" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></i>
+                                <div class="dropdown">
+                                  <div class="dropdown-move">
+                                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                      <a class="dropdown-item" href="#" data-toggle="modal" data-target="#exportPrivateKeysModal" data-backdrop="static" data-keyboard="false" onclick="MPW.toggleExportUI()">
+                                        <i class="fas fa-key"></i> Export
+                                      </a>
+                                      <a class="dropdown-item" href="#!" id="guiNewAddress" data-toggle="modal" data-target="#qrModal" onclick="MPW.getNewAddress({updateGUI: true, verify: true});">
+                                        <i class="fas fa-sync-alt"></i> Refresh address
+                                      </a>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div class="dcWallet-topLeftMenu">
+                              <h3 class="noselect balance-title">
+                                <span id="balanceReload" class="reload noselect" onclick="MPW.refreshChainData()">&#x21bb;</span>
+                              </h3>
+                            </div>
+
+                            <canvas id="identicon" class="innerShadow" width="65" height="65" data-jdenticon-value=""></canvas><br />
+                            <span class="dcWallet-pivxBalance" id="guiBalance"></span> <span id="guiBalanceTicker" class="dcWallet-pivxTicker">PIVX</span><br />
+                            <div class="dcWallet-usdBalance">
+                              <span class="dcWallet-usdValue">$-</span>
+                              <span class="dcWallet-usdValue">USD</span>
+                            </div>
                           </div>
-                        </div>
-                        <div id="bal-title">
-                          <h3 class="noselect balance-title">Balance &nbsp;&nbsp;<span id="balanceReload" class="reload noselect" onclick="MPW.refreshChainData()">&#x21bb;</span></h3>
-                        </div>
+
+                          <div class="dcWallet-withdrawDeposit">
+                            <button class="dcWallet-withdrawBtn" style="margin-right: 2px;" onclick="MPW.openTab({ currentTarget: document.getElementById('txTab') }, 'Transaction')"><i class="fas fa-arrow-up"></i> Send</button>
+                            <button class="dcWallet-withdrawBtn" style="margin-left: 2px;" data-toggle="modal" data-target="#qrModal"><i class="fas fa-arrow-down"></i> Receive</button>
+                          </div>
+                        </center>
                       </div>
-                    </div>
-                    <!-- WALLET FEATURE -->
-                    <div id="big-frame-address">
-                      <div id="address-box" class="large-box">
-                        <div id="title-address-box">
-                          <h3 class="noselect addr-title">Address</h3>
-                        </div>
-                        <div id="box-info-address">
-                          <div id="ring">
-                            <canvas id="identicon" class="innerShadow" width="65" height="65" data-jdenticon-value=""></canvas>
-                          </div>
-                          <div id="address-info">
-                            <b id="guiAddress">~</b>
-                            <b id="guiQRButton">
-                              <i data-toggle="modal" data-target="#qrModal" class="fas fa-qrcode fa-stacked-ptr"></i>
-                              <i id="guiNewAddress" onclick="MPW.getNewAddress({updateGUI: true, verify: true})" class="fas fa-sync fa-stacked-ptr"></i>
-                              <i onclick="MPW.toClipboard('guiAddress', this)" id="guiAddressCopy" class="fas fa-clipboard fa-stacked-ptr"></i>
-                              <i id="guiExportWallet" onclick="MPW.toggleExportUI()" class="fas fa-share fa-stacked-ptr"></i>
-                              <i id="guiWipeWallet" onclick="MPW.wipePrivateData()" class="fas fa-lock fa-stacked-ptr"></i>
-                              <i id="guiRestoreWallet" onclick="MPW.restoreWallet()" class="fas fa-unlock fa-stacked-ptr" hidden></i>
-                            </b>
-                          </div>
-                        </div>
-                        <div id="exportKeyDiv" hidden="true">
-                          <div id="exportPrivateKey">
-                            Your private key:
-                            <div class="export-key private-key-area" id="exportPrivateKeyText"></div>
-                          </div>
-                          Your public key:
-                          <div class="export-key private-key-area" id="exportPublicKeyText"></div>
                         </div>
                       </div>
                     </div>
