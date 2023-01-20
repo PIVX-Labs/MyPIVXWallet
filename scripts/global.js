@@ -215,6 +215,7 @@ export function start() {
 
 // WALLET STATE DATA
 export const mempool = new Mempool();
+let exportHidden = false;
 
 //                        PIVX Labs' Cold Pool
 export let cachedColdStakeAddr = 'SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy';
@@ -697,23 +698,23 @@ export function guiEncryptWallet() {
 }
 
 export async function toggleExportUI() {
-    doms.domExportDiv.hidden = !doms.domExportDiv.hidden;
-    if (!doms.domExportDiv.hidden) {
+    if (!exportHidden) {
         if (hasEncryptedWallet()) {
-            doms.domExportPrivateKey.innerText = localStorage.getItem('encwif');
-            doms.domExportPrivateKeyHold.hidden = false;
+            doms.domExportPrivateKey.innerHTML = localStorage.getItem('encwif');
+            exportHidden = true;
         } else {
             if (masterKey.isViewOnly) {
-                doms.domExportPrivateKeyHold.hidden = true;
+                exportHidden = false;
             } else {
-                doms.domExportPrivateKey.innerText = masterKey.keyToBackup;
-                doms.domExportPrivateKeyHold.hidden = false;
+                doms.domExportPrivateKey.innerHTML = masterKey.keyToBackup;
+                exportHidden = true;
             }
         }
 
-        doms.domExportPublicKey.innerText = await masterKey.keyToExport;
+        //doms.domExportPublicKey.innerText = await masterKey.keyToExport;
     } else {
-        doms.domExportPrivateKey.innerText = '';
+        doms.domExportPrivateKey.innerHTML = '';
+        exportHidden = false;
     }
 }
 
