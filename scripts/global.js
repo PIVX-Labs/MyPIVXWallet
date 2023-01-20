@@ -599,6 +599,9 @@ export function accessOrImportWallet() {
 
     // Show Import button, hide access button
     doms.domImportWallet.style.display = 'block';
+    setTimeout(() => {
+        doms.domPrivKey.style.opacity = '1';
+    }, 100);
     doms.domAccessWalletBtn.style.display = 'none';
 
     // If we have a local wallet, display the decryption prompt
