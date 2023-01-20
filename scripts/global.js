@@ -327,6 +327,12 @@ async function loadImages() {
             document.getElementById('mpw-main-logo').src = (
                 await import('../assets/logo.png')
             ).default;
+            document.getElementById('privateKeyImage').src = (
+                await import('../assets/key.png')
+            ).default;
+            document.getElementById('pivxLogoSend').src = (
+                await import('../assets/pivx.png')
+            ).default;
         })(),
     ]);
 }
