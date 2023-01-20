@@ -822,9 +822,8 @@ export async function getNewAddress({
     }
 
     if (updateGUI) {
-        doms.domGuiAddress.innerText = address;
         createQR('pivx:' + address, doms.domModalQR);
-        doms.domModalQrLabel.innerHTML = 'pivx:' + address;
+        doms.domModalQrLabel.innerHTML = 'pivx:' + address + `<i onclick="MPW.toClipboard('guiAddress', this)" id="guiAddressCopy" class="fas fa-clipboard fa-stacked-ptr"></i>`;
         doms.domModalQR.firstChild.style.width = '100%';
         doms.domModalQR.firstChild.style.height = 'auto';
         doms.domModalQR.firstChild.classList.add('no-antialias');
