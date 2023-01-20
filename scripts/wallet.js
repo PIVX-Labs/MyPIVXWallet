@@ -827,7 +827,7 @@ export async function getNewAddress({
         doms.domModalQrLabel.innerHTML = 'pivx:' + address;
         doms.domModalQR.firstChild.style.width = '100%';
         doms.domModalQR.firstChild.style.height = 'auto';
-        doms.domModalQR.firstChild.style.imageRendering = 'crisp-edges';
+        doms.domModalQR.firstChild.classList.add('no-antialias');
         document.getElementById('clipboard').value = address;
     }
     addressIndex++;
