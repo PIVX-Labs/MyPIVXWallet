@@ -763,7 +763,9 @@ export async function generateVanityWallet() {
     ) {
         // No prefix, display the intro!
         doms.domPrefix.style.display = 'block';
-        doms.domGenKeyWarning.style.display = 'none';
+        setTimeout(() => {
+            doms.domPrefix.style.opacity = '1';
+        },100);
         doms.domGuiAddress.innerHTML = '~';
         doms.domPrefix.focus();
     } else {
