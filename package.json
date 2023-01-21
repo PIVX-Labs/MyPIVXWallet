@@ -57,6 +57,7 @@
     "bs58": "^5.0.0",
     "buffer": "^6.0.3",
     "create-xpub": "^2.1.0",
+    "gh-pages": "^5.0.0",
     "hdkey": "^2.0.1",
     "jdenticon": "^3.2.0",
     "jquery": "^3.6.3",
