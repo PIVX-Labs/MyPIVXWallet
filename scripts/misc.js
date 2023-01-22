@@ -124,7 +124,7 @@ export function createQR(strData = '', domImg, size = 4) {
     const cQR = qrcode(size, 'L');
     cQR.addData(strData);
     cQR.make();
-    domImg.innerHTML = cQR.createImgTag();
+    domImg.innerHTML = cQR.createImgTag(2,2);
     domImg.firstChild.style.borderRadius = '8px';
 }
 
