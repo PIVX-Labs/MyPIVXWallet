@@ -65,23 +65,7 @@ button {
     text-align: center;
     font-size: 16px;
     outline: 0;
-}
-
-button:hover {
-    color: rgba(255, 255, 255, 0.95);
-    background-color: #380c6a;
-    border-color: #380c6a;
-    border-width: 1px;
-    border-style: solid;
-}
-
-button:focus,
-button:active {
-    outline: none !important;
-    box-shadow: none;
-    border-color: #7300ff;
-    border-width: 1px;
-    border-style: solid;
+    transition: all .2s ease-in-out;
 }
 
 .hide-element {
