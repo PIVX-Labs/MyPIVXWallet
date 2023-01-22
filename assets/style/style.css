@@ -290,6 +290,16 @@ input::-moz-focus-inner {
     margin-top: 75px;
 }
 
+@media (max-width: 768px) {
+  #content-wrap {
+    margin-top:40px
+  }
+
+  #page-container {
+    min-height: calc(100vh - 40px);
+  }
+}
+
 .rm-pd {
     padding: 15px 15px 40px;
 }
