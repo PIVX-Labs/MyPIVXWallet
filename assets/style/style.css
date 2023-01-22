@@ -239,7 +239,7 @@ input::-moz-focus-inner {
 }
 
 .seed-phrase {
-    font-family: mono;
+    font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
     background-color: #00000014;
     color: #8e21ff;
     margin: 10px;
