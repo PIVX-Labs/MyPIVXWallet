@@ -697,7 +697,9 @@ export function guiEncryptWallet() {
     encryptWallet(strPass);
     createAlert('success', ALERTS.NEW_PASSWORD_SUCCESS, [], 5500);
 
-    $('#encryptWalletModal').modal('hide')
+    $('#encryptWalletModal').modal('hide');
+
+    doms.domWipeWallet.hidden = false;
 }
 
 export async function toggleExportUI() {
