@@ -689,7 +689,7 @@ export function guiEncryptWallet() {
     encryptWallet(strPass);
     createAlert('success', ALERTS.NEW_PASSWORD_SUCCESS, [], 5500);
 
-    $('#encryptWalletModal').modal('hide');
+    $('#encryptWalletModal').modal('hide')
 }
 
 export async function toggleExportUI() {
