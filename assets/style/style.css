@@ -2209,6 +2209,12 @@ a {
   border-radius: 10px;
 }
 
+.dcWallet-warningMessage .lockUnlock {
+  display: flex;
+  align-content: center;
+  flex-wrap: wrap;
+}
+
 .dcWallet-topRightMenu {
   position: absolute;
   top: 9px;

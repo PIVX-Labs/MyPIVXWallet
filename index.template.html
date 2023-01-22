@@ -387,6 +387,44 @@
                   <!-- // WARNING -->
                   <br />
 
+                  <!-- Unlock wallet -->
+                  <div class="col-12" id='guiRestoreWallet' hidden>
+                    <center>
+                      <div class="dcWallet-warningMessage" onclick="MPW.restoreWallet()">
+                        <div class="shieldLogo">
+                          <div class="shieldBackground">
+                            <span class="dcWallet-svgIconPurple" style="top: 14px; left: 7px;">
+                              <i class="fas fa-unlock" style="position: relative; left: 3px; top: -5px;"></i>
+                            </span>
+                          </div>
+                        </div>
+                        <div class="lockUnlock">
+                          Unlock wallet
+                        </div>
+                      </div>
+                    </center>
+                  </div>
+                  <!-- // Unlock Wallet -->
+
+                  <!-- Lock wallet -->
+                  <div class="col-12" id='guiWipeWallet' hidden>
+                    <center>
+                      <div class="dcWallet-warningMessage" onclick="MPW.wipePrivateData()">
+                        <div class="shieldLogo">
+                          <div class="shieldBackground">
+                            <span class="dcWallet-svgIconPurple" style="top: 14px; left: 7px;">
+                              <i class="fas fa-lock" style="position: relative; left: 3px; top: -5px;"></i>
+                            </span>
+                          </div>
+                        </div>
+                        <div class="lockUnlock">
+                          Lock wallet
+                        </div>
+                      </div>
+                    </center>
+                  </div>
+                  <!-- // Lock Wallet -->
+
                   <!-- WALLET FEATURES -->
                   <div id="guiWallet" style="display: none;">
                     <div class="row p-0">
