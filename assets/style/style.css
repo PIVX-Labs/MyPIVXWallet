@@ -2184,47 +2184,29 @@ a {
   fill: #AD78F3;
 }
 
-.dcWallet-alertWarning {
-  background-color: #6c349d;
-  border-left: 5px solid #6c349d;
-  border-radius: 7px;
-  width: 100%;
-  font-family: Montserrat, sans-serif !important;
-  backdrop-filter: blur(4px);
-  box-shadow: 10px 10px 34px -2px rgba(0, 0, 0, 0.1);
-}
-
-.dcWallet-alertWarning .dcWallet-alertWarningLbl {
-  background-color: #6c349d;
-  border-top-right-radius: 7px;
-  padding-top: 5px;
-  padding-bottom: 4px;
-  padding-left: 8px;
-  padding-right: 8px;
-  font-weight: bold;
-  font-size: 14px;
-}
-
-.dcWallet-alertWarning .dcWallet-alertWarningMessage {
-  font-size: 13px;
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 10px;
-  padding-right: 8px;
-  background-color: #5d258d;
-  border-top-left-radius: 7px;
-}
-
-.dcWallet-alertWarning .dcWallet-alertWarningMessage .dcWallet-flexButton {
+.dcWallet-warningMessage {
+  cursor: pointer;
+  text-align: left;
+  width: 310px;
+  margin-bottom: 15px;
+  border-radius: 10px;
+  padding: 8px 12px;
+  background-color: rgba(255, 255, 255, 12%);
   display: flex;
-  flex-direction: column;
-  justify-content: center;
+  line-height: 18px;
+  background: radial-gradient(45vw 80% at 90% 40%, rgb(223 185 255 / 5%), rgba(44, 11, 76, 0) 95%), linear-gradient(52deg, rgb(43 11 76 / 0%), #500f8300 60%, rgb(44 11 76 / 0%)), linear-gradient(35deg, hsl(270deg 38% 60% / 28%), rgb(171 133 201 / 15%) 37%, rgb(80 32 126 / 45%) 0, rgb(102 45 147 / 25%) 76%, rgb(61 19 102 / 22%) 0, rgb(124 37 193 / 34%)), linear-gradient(90deg, rgb(44 11 76 / 12%), #500f8300 60%, #2c0b4c00);
 }
 
-@media (min-width: 768px) {
-  .dcWallet-alertWarning .dcWallet-alertWarningMessage .dcWallet-flexButton {
-    width: 265px;
-  }
+.dcWallet-warningMessage .shieldLogo {
+  padding-top: 1px;
+  padding-right: 12px;
+}
+
+.dcWallet-warningMessage .shieldLogo .shieldBackground {
+  background-color: rgb(0 0 0 / 18%);
+  width: 35px;
+  height: 35px;
+  border-radius: 10px;
 }
 
 .dcWallet-topRightMenu {
