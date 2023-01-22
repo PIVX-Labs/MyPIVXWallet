@@ -736,6 +736,36 @@ input::-moz-focus-inner {
 /* New styling */
 
 /* Buttons */
+.pivx-button-small {
+  display: inline-block;
+  outline: none;
+  margin: 5px;
+  font-family: Montserrat, sans-serif;
+  height: auto;
+  padding: 8px 18px;
+  /* background: linear-gradient(183deg, #9621ff, #7d21ff); */
+  background-image: linear-gradient(183deg, #9621ff, #7d21ff);
+  position: relative;
+  z-index: 1;
+  line-height: 1.25em;
+  font: 13px Montserrat, sans-serif !important;
+  letter-spacing: .025em;
+  font-family: Montserrat, sans-serif;
+  color: #fffeff;
+  text-transform: uppercase;
+  -webkit-border-radius: 35px;
+  -moz-border-radius: 35px;
+  -ms-border-radius: 35px;
+  border-radius: 35px;
+  -webkit-box-shadow: 3px 3px 25px 2px rgb(26 14 42 / 50%);
+  -moz-box-shadow: 3px 3px 25px 2px rgba(26, 14, 42, .5);
+  box-shadow: 3px 3px 25px 2px rgb(26 14 42 / 50%);
+  -webkit-transition: all .2s ease-in-out;
+  -moz-transition: all .2s ease-in-out;
+  -o-transition: all .2s ease-in-out;
+  transition: all .2s ease-in-out;
+}
+
 .pivx-button-big {
     display: inline-block;
     outline: none;
