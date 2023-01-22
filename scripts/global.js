@@ -710,8 +710,6 @@ export async function toggleExportUI() {
                 exportHidden = true;
             }
         }
-
-        //doms.domExportPublicKey.innerText = await masterKey.keyToExport;
     } else {
         doms.domExportPrivateKey.innerHTML = '';
         exportHidden = false;
