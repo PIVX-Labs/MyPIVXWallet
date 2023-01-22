@@ -358,21 +358,13 @@ export async function playMusic() {
     }
 }
 
-export function toClipboard(source, caller) {
-    // Fetch the text/value source
-    const domCopy = document.getElementById(source);
-
-    // Use an invisible textbox as the clipboard source
-    const domClipboard = document.getElementById('clipboard');
-    domClipboard.value = domCopy.value || domCopy.innerHTML;
-    domClipboard.select();
-    domClipboard.setSelectionRange(0, 99999);
+export function toClipboard(address, caller) {
 
     // Browser-dependent clipboard execution
     if (!navigator.clipboard) {
         document.execCommand('copy');
     } else {
-        navigator.clipboard.writeText(domCopy.innerHTML);
+        navigator.clipboard.writeText(address);
     }
 
     // Display a temporary checkmark response
