@@ -823,7 +823,7 @@ export async function getNewAddress({
 
     if (updateGUI) {
         createQR('pivx:' + address, doms.domModalQR);
-        doms.domModalQrLabel.innerHTML = 'pivx:' + address + `<i onclick="MPW.toClipboard('pivx:${address}', this)" id="guiAddressCopy" class="fas fa-clipboard" style="cursor: pointer; width: 23px;"></i>`;
+        doms.domModalQrLabel.innerHTML = 'pivx:' + address + `<i onclick="MPW.toClipboard('${address}', this)" id="guiAddressCopy" class="fas fa-clipboard" style="cursor: pointer; width: 20px;"></i>`;
         doms.domModalQR.firstChild.style.width = '100%';
         doms.domModalQR.firstChild.style.height = 'auto';
         doms.domModalQR.firstChild.classList.add('no-antialias');
