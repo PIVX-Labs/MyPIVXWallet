@@ -358,13 +358,21 @@ export async function playMusic() {
     }
 }
 
-export function toClipboard(address, caller) {
+export function toClipboard(source, caller) {
+    // Fetch the text/value source
+    const domCopy = document.getElementById(source) || source;
+
+    // Use an invisible textbox as the clipboard source
+    const domClipboard = document.getElementById('clipboard');
+    domClipboard.value = domCopy.value || domCopy.innerHTML || domCopy;
+    domClipboard.select();
+    domClipboard.setSelectionRange(0, 99999);
 
     // Browser-dependent clipboard execution
     if (!navigator.clipboard) {
         document.execCommand('copy');
     } else {
-        navigator.clipboard.writeText(address);
+        navigator.clipboard.writeText(domCopy.innerHTML || domCopy);
     }
 
     // Display a temporary checkmark response
