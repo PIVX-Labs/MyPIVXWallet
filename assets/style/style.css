@@ -548,28 +548,6 @@ input::-moz-focus-inner {
 
 
 /* -- Pubkey QR -- */
-
-/*-- Warning --*/
-
-#genKeyWarning {
-    position: relative;
-    padding: 20px;
-}
-
-#genKeyWarning div {
-    display: inline-block !important;
-    width: 100%;
-    max-width: calc(100% - 304px) !important;
-    padding-top: 5px;
-
-}
-
-#genKeyWarning .pivx-button-big {
-    float: right;
-}
-
-/* -- Warning -- */
-
 .margin-padded-qr {
     margin-bottom: 10px;
     padding: 5px 10px 10px 10px;
