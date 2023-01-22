@@ -358,6 +358,14 @@ export async function playMusic() {
     }
 }
 
+export function unblurPrivKey() {
+    if (document.getElementById("exportPrivateKeyText").classList.contains("blurred")) {
+        document.getElementById("exportPrivateKeyText").classList.remove("blurred");
+    } else {
+        document.getElementById("exportPrivateKeyText").classList.add("blurred");
+    }
+}
+
 export function toClipboard(source, caller) {
     // Fetch the text/value source
     const domCopy = document.getElementById(source) || source;
