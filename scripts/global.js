@@ -669,32 +669,27 @@ export function guiEncryptWallet() {
             2500
         );
 
-    // Show our inputs if we haven't already
-    if (doms.domEncryptPasswordBox.style.display === 'none') {
-        // Return the display to it's class form
-        doms.domEncryptPasswordBox.style.display = '';
-        doms.domEncryptBtnTxt.innerText = 'Finish Encryption';
-    } else {
-        // Fetch our inputs, ensure they're of decent entropy + match eachother
-        const strPass = doms.domEncryptPasswordFirst.value,
-            strPassRetype = doms.domEncryptPasswordSecond.value;
-        if (strPass.length < MIN_PASS_LENGTH)
-            return createAlert(
-                'warning',
-                ALERTS.PASSWORD_TOO_SMALL,
-                [{ MIN_PASS_LENGTH: MIN_PASS_LENGTH }],
-                4000
-            );
-        if (strPass !== strPassRetype)
-            return createAlert(
-                'warning',
-                ALERTS.PASSWORD_DOESNT_MATCH,
-                [],
-                2250
-            );
-        encryptWallet(strPass);
-        createAlert('success', ALERTS.NEW_PASSWORD_SUCCESS, [], 5500);
-    }
+    // Fetch our inputs, ensure they're of decent entropy + match eachother
+    const strPass = doms.domEncryptPasswordFirst.value,
+        strPassRetype = doms.domEncryptPasswordSecond.value;
+    if (strPass.length < MIN_PASS_LENGTH)
+        return createAlert(
+            'warning',
+            ALERTS.PASSWORD_TOO_SMALL,
+            [{ MIN_PASS_LENGTH: MIN_PASS_LENGTH }],
+            4000
+        );
+    if (strPass !== strPassRetype)
+        return createAlert(
+            'warning',
+            ALERTS.PASSWORD_DOESNT_MATCH,
+            [],
+            2250
+        );
+    encryptWallet(strPass);
+    createAlert('success', ALERTS.NEW_PASSWORD_SUCCESS, [], 5500);
+
+    $('#encryptWalletModal').modal('hide');
 }
 
 export async function toggleExportUI() {
