@@ -163,7 +163,7 @@ async function undelegate(nValue) {
             7500
         );
         const cLedgerSignedTx =
-            await cHardwareWallet.createPaymentTransactionNew({
+            await cHardwareWallet.createPaymentTransaction({
                 inputs: arrInputs,
                 associatedKeysets: arrAssociatedKeysets,
                 outputScriptHex: strOutputScriptHex,
@@ -384,7 +384,7 @@ async function delegate(nValue, coldAddr) {
             7500
         );
         const strSerialisedTx =
-            await cHardwareWallet.createPaymentTransactionNew({
+            await cHardwareWallet.createPaymentTransaction({
                 inputs: arrInputs,
                 associatedKeysets: arrAssociatedKeysets,
                 outputScriptHex: strOutputScriptHex,
@@ -786,7 +786,7 @@ export async function createTxGUI() {
         const strSerialisedTx = await confirmPopup({
             title: ALERTS.CONFIRM_POPUP_TRANSACTION,
             html: createTxConfirmation(outputs),
-            resolvePromise: cHardwareWallet.createPaymentTransactionNew({
+            resolvePromise: cHardwareWallet.createPaymentTransaction({
                 inputs: arrInputs,
                 associatedKeysets: arrAssociatedKeysets,
                 outputScriptHex: strOutputScriptHex,
@@ -989,7 +989,7 @@ export async function createMasternode() {
         const strSerialisedTx = await confirmPopup({
             title: ALERTS.CONFIRM_POPUP_TRANSACTION,
             html: createTxConfirmation(outputs),
-            resolvePromise: cHardwareWallet.createPaymentTransactionNew({
+            resolvePromise: cHardwareWallet.createPaymentTransaction({
                 inputs: arrInputs,
                 associatedKeysets: arrAssociatedKeysets,
                 outputScriptHex: strOutputScriptHex,

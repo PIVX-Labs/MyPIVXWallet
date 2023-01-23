@@ -448,7 +448,7 @@ export function deriveAddress({ pkBytes, publicKey, output = 'ENCODED' }) {
     }
 
     // First pubkey SHA-256 hash
-    const pubKeyHashing = sha256(pubKeyBytes);
+    const pubKeyHashing = sha256(new Uint8Array(pubKeyBytes));
 
     // RIPEMD160 hash
     const pubKeyHashRipemd160 = ripemd160(pubKeyHashing);
@@ -836,6 +836,7 @@ export async function getNewAddress({
 
 export let cHardwareWallet = null;
 export let strHardwareName = '';
+let transport;
 async function getHardwareWalletKeys(
     path,
     xpub = false,
@@ -844,15 +845,16 @@ async function getHardwareWalletKeys(
 ) {
     try {
         // Check if we haven't setup a connection yet OR the previous connection disconnected
-        if (!cHardwareWallet || cHardwareWallet.transport._disconnectEmitted) {
-            cHardwareWallet = new AppBtc(await TransportWebUSB.create());
+        if (!cHardwareWallet || transport._disconnectEmitted) {
+	    transport = await TransportWebUSB.create();
+            cHardwareWallet = new AppBtc({transport, currency: "PIVX"});
         }
 
         // Update device info and fetch the pubkey
         strHardwareName =
-            cHardwareWallet.transport.device.manufacturerName +
+            transport.device.manufacturerName +
             ' ' +
-            cHardwareWallet.transport.device.productName;
+            transport.device.productName;
 
         // Prompt the user in both UIs
         if (verify) createAlert('info', ALERTS.WALLET_CONFIRM_L, [], 3500);
@@ -898,7 +900,7 @@ async function getHardwareWalletKeys(
                     {
                         hardwareWallet: strHardwareName,
                         hardwareWalletProductionName:
-                            cHardwareWallet.transport.device.productName,
+                            transport.device.productName,
                     },
                 ],
                 10000
@@ -915,7 +917,7 @@ async function getHardwareWalletKeys(
                     {
                         hardwareWallet: strHardwareName,
                         hardwareWalletProductionName:
-                            cHardwareWallet.transport.device.productName,
+                            transport.device.productName,
                     },
                 ],
                 7500
