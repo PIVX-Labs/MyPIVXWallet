@@ -834,6 +834,10 @@ export async function getNewAddress({
     return [address, path];
 }
 
+export function handleLedgerErrors(e) {
+    console.log(strHardwareName);
+}
+
 export let cHardwareWallet = null;
 export let strHardwareName = '';
 let transport;
@@ -846,8 +850,8 @@ async function getHardwareWalletKeys(
     try {
         // Check if we haven't setup a connection yet OR the previous connection disconnected
         if (!cHardwareWallet || transport._disconnectEmitted) {
-	    transport = await TransportWebUSB.create();
-            cHardwareWallet = new AppBtc({transport, currency: "PIVX"});
+            transport = await TransportWebUSB.create();
+            cHardwareWallet = new AppBtc({ transport, currency: 'PIVX' });
         }
 
         // Update device info and fetch the pubkey
@@ -878,13 +882,7 @@ async function getHardwareWalletKeys(
             // User denied an operation
             return false;
         }
-        if (_attempts < 10) {
-            // This is an ugly hack :(
-            // in the event where multiple parts of the code decide to ask for an address, just
-            // Retry at most 10 times waiting 200ms each time
-            await sleep(200);
-            return getHardwareWalletKeys(path, xpub, verify, _attempts + 1);
-        }
+
         // If there's no device, nudge the user to plug it in.
         if (e.message.toLowerCase().includes('no device selected')) {
             createAlert('info', ALERTS.WALLET_NO_HARDWARE, [], 10000);
@@ -899,13 +897,18 @@ async function getHardwareWalletKeys(
                 [
                     {
                         hardwareWallet: strHardwareName,
-                        hardwareWalletProductionName:
-                            transport.device.productName,
                     },
                 ],
                 10000
             );
             return false;
+        }
+        if (_attempts < 10) {
+            // This is an ugly hack :(
+            // in the event where multiple parts of the code decide to ask for an address, just
+            // Retry at most 10 times waiting 200ms each time
+            await sleep(200);
+            return getHardwareWalletKeys(path, xpub, verify, _attempts + 1);
         }
 
         // If the ledger is busy, just nudge the user.
@@ -916,8 +919,6 @@ async function getHardwareWalletKeys(
                 [
                     {
                         hardwareWallet: strHardwareName,
-                        hardwareWalletProductionName:
-                            transport.device.productName,
                     },
                 ],
                 7500
@@ -933,6 +934,8 @@ async function getHardwareWalletKeys(
             console.error(e);
         }
 
+        console.log(strHardwareName);
+
         // Translate the error to a user-friendly string (if possible)
         createAlert(
             'warning',
@@ -940,11 +943,14 @@ async function getHardwareWalletKeys(
             [
                 {
                     hardwareWallet: strHardwareName,
+                },
+                {
                     error: LEDGER_ERRS.get(e.statusCode),
                 },
             ],
             5500
         );
+
         return false;
     }
 }
