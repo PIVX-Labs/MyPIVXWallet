@@ -930,8 +930,6 @@ async function getHardwareWalletKeys(
             console.error(e);
         }
 
-        console.log(strHardwareName);
-
         // Translate the error to a user-friendly string (if possible)
         createAlert(
             'warning',
