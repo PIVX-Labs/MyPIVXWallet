@@ -834,10 +834,6 @@ export async function getNewAddress({
     return [address, path];
 }
 
-export function handleLedgerErrors(e) {
-    console.log(strHardwareName);
-}
-
 export let cHardwareWallet = null;
 export let strHardwareName = '';
 let transport;
