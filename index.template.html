@@ -462,11 +462,13 @@
                               <span class="dcWallet-usdValue">$-</span>
                               <span class="dcWallet-usdValue">USD</span>
                             </div>
-                          </div>
+                            <div class="dcWallet-sWithdraw" onclick="MPW.openTab({ currentTarget: document.getElementById('txTab') }, 'Transaction')">
+                              <i class="fas fa-arrow-up"></i>  
+                            </div>
 
-                          <div class="dcWallet-withdrawDeposit">
-                            <button class="dcWallet-withdrawBtn" style="margin-right: 2px;" onclick="MPW.openTab({ currentTarget: document.getElementById('txTab') }, 'Transaction')"><i class="fas fa-arrow-up"></i> Send</button>
-                            <button class="dcWallet-withdrawBtn" style="margin-left: 2px;" data-toggle="modal" data-target="#qrModal"><i class="fas fa-arrow-down"></i> Receive</button>
+                            <div class="dcWallet-sDeposit" data-toggle="modal" data-target="#qrModal">
+                              <i class="fas fa-arrow-down"></i>  
+                            </div>
                           </div>
                         </center>
                       </div>

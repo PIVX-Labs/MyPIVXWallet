@@ -2097,6 +2097,8 @@ a {
   border-radius: 13px;
   padding: 22px 0px 22px 0px;
   backdrop-filter: blur(4px);
+  border-bottom-left-radius: 22px;
+  border-bottom-right-radius: 22px;
 }
 
 .dcWallet-balances .dcWallet-pivxBalance {
@@ -2115,42 +2117,6 @@ a {
 .dcWallet-balances .dcWallet-usdValue {
   font-size: 13px;
   color: rgb(206, 206, 206);
-}
-
-.dcWallet-withdrawDeposit .dcWallet-withdrawBtn {
-  background-color: rgba(255, 255, 255, 12%);
-  border: 0px;
-  color: #fff;
-  border-radius: 100px;
-  padding-left: 5px;
-  padding-top: 5px;
-  padding-bottom: 5px;
-  transition: all .2s ease-in-out;
-}
-
-.dcWallet-withdrawDeposit .dcWallet-withdrawBtn i {
-  background-color: #771CEF;
-  width: 45px;
-  height: 45px;
-  border-radius: 100px;
-  padding-top: 14px;
-  padding-right: 2px;
-  margin-right: 6px;
-  transition: all .2s ease-in-out;
-}
-
-.dcWallet-withdrawDeposit .dcWallet-withdrawBtn:hover {
-  background-color: rgba(255, 255, 255, 8%);
-  border: 0px;
-  color: #fff;
-  border-radius: 100px;
-  padding-left: 5px;
-  padding-top: 5px;
-  padding-bottom: 5px;
-}
-
-.dcWallet-withdrawDeposit .dcWallet-withdrawBtn:hover i {
-  background-color: #6b17da;
 }
 
 .dcWallet-activityLbl {
@@ -2341,4 +2307,33 @@ a {
 
 input {
   outline-color: rgba(0,0,0,0);
+}
+
+.dcWallet-sWithdraw {
+    background-color: #ffffff29;
+    width: 50px;
+    height: 50px;
+    position: absolute;
+    bottom: 0px;
+    padding-top: 13px;
+    border-radius: 50%;
+    border-top-left-radius: 7px;
+    border-bottom-right-radius: 7px;
+    background-image: linear-gradient(183deg, #9621ff, #7d21ff);
+    cursor:pointer;
+}
+
+.dcWallet-sDeposit {
+    background-color: #ffffff29;
+    width: 50px;
+    height: 50px;
+    position: absolute;
+    bottom: 0px;
+    right:0px;
+    padding-top: 13px;
+    border-radius: 50%;
+    border-top-right-radius: 7px;
+    border-bottom-left-radius: 7px;
+    background-image: linear-gradient(183deg, #9621ff, #7d21ff);
+    cursor:pointer;
 }
