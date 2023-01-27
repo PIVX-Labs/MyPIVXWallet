@@ -1,5 +1,5 @@
-import { doms } from "./global";
-import { createAlert } from "./misc";
+import { doms } from './global';
+import { createAlert } from './misc';
 
 // Register a service worker, if it's supported
 export function registerWorker() {
@@ -15,15 +15,15 @@ export function registerWorker() {
             window.deferredInstallPrompt = event;
 
             // Remove the 'hidden' class from the install button container.
-            doms.domInstall.style.display = "";
+            doms.domInstall.style.display = '';
         });
 
         // Listen for installer clicks
         doms.domInstall.addEventListener('click', async () => {
             const promptEvent = window.deferredInstallPrompt;
             if (!promptEvent) {
-            // The deferred install prompt isn't available.
-            return;
+                // The deferred install prompt isn't available.
+                return;
             }
 
             // Show the install prompt.
@@ -42,16 +42,12 @@ export function registerWorker() {
         });
 
         // Listen for successful installs
-        window.addEventListener('appinstalled', (event) => {
+        window.addEventListener('appinstalled', (_event) => {
             // Clear the deferredPrompt so it can be garbage collected.
             window.deferredInstallPrompt = null;
 
             // Notify!
-            return createAlert(
-                'success',
-                "App Installed!",
-                2500
-            );
+            return createAlert('success', 'App Installed!', 2500);
         });
     }
 }
