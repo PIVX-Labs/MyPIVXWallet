@@ -1,0 +1,22 @@
+{
+    "icons": [
+      {
+        "src": "512.png",
+        "sizes": "512x512",
+        "type": "image/png"
+      },
+      {
+        "src": "192.png",
+        "sizes": "192x192",
+        "type": "image/png"
+      }
+    ],
+    "name": "My PIVX Wallet",
+    "short_name": "MPW",
+    "orientation": "portrait",
+    "display": "fullscreen",
+    "start_url": ".",
+    "description": "Send, Stake and Receive with PIVX's most universal wallet. ",
+    "background_color": "#470e75",
+    "theme_color": "#470e75"
+  }
