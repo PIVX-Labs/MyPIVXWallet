@@ -4,7 +4,7 @@
   "start_url": ".",
   "description": "Send, Stake and Receive with PIVX's most universal wallet. ",
   "orientation": "portrait",
-  "display": "fullscreen",
+  "display": "standalone",
   "icons": [
     {
       "src": "512.png",
@@ -17,6 +17,6 @@
       "type": "image/png"
     }
   ],
-  "background_color": "#470e75",
+  "background_color": "#17012c",
   "theme_color": "#470e75"
 }

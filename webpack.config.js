@@ -55,8 +55,9 @@ module.exports = {
         // Copy static web-facing files
         new CopyPlugin({
             patterns: [
-                { from: "manifest.json", to: "" },
-                { from: "assets/icons", to: "" },
+                { from: "manifest.json" },
+                { from: "assets/icons" },
+                { from: "scripts/native-worker.js"}
             ],
         }),
     ],
