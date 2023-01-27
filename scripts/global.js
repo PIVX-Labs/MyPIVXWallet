@@ -28,7 +28,6 @@ export let doms = {};
 export function start() {
     doms = {
         domStart: document.getElementById('start'),
-        domInstall: document.getElementById('installTab'),
         domNavbarToggler: document.getElementById('navbarToggler'),
         domGuiStaking: document.getElementById('guiStaking'),
         domGuiWallet: document.getElementById('guiWallet'),
