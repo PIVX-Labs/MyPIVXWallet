@@ -44,7 +44,7 @@ export function switchTranslation(langName) {
  */
 export function translateAlerts(message, variables) {
     variables.forEach((element) => {
-        message = message.replace(
+        message = message.replaceAll(
             '{' + Object.keys(element)[0] + '}',
             Object.values(element)[0]
         );
