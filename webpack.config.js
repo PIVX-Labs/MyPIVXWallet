@@ -2,6 +2,7 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const NodePolyfillPlugin = require('node-polyfill-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const CopyPlugin = require("copy-webpack-plugin");
 const webpack = require('webpack');
 module.exports = {
     entry: './scripts/index.js',
@@ -10,7 +11,7 @@ module.exports = {
         filename: './mpw.js',
         library: 'MPW',
         libraryTarget: 'var',
-	    clean: true
+        clean: true
     },
     devServer: {
         static: {
@@ -61,6 +62,14 @@ module.exports = {
         new webpack.IgnorePlugin({
             resourceRegExp: /^\.\/wordlists\/(?!english)/,
             contextRegExp: /bip39\/src$/,
+        }),
+        // Copy static web-facing files
+        new CopyPlugin({
+            patterns: [
+                { from: "manifest.json" },
+                { from: "assets/icons" },
+                { from: "scripts/native-worker.js"}
+            ],
         }),
     ],
 };
