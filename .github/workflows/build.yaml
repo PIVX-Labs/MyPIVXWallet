@@ -27,9 +27,9 @@ jobs:
         with:
           node-version: 18
       - name: Install packages
-        run: npm ci
+        run: npm install
       - name: Build 
-        run: npm run webpack
+        run: npm run build
 
       - name: Set up Docker Buildx
         id: buildx
