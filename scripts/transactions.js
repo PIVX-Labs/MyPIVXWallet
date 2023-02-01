@@ -162,12 +162,11 @@ async function undelegate(nValue) {
             [{ strHardwareName: strHardwareName }],
             7500
         );
-        const cLedgerSignedTx =
-            await cHardwareWallet.createPaymentTransactionNew({
-                inputs: arrInputs,
-                associatedKeysets: arrAssociatedKeysets,
-                outputScriptHex: strOutputScriptHex,
-            });
+        const cLedgerSignedTx = await cHardwareWallet.createPaymentTransaction({
+            inputs: arrInputs,
+            associatedKeysets: arrAssociatedKeysets,
+            outputScriptHex: strOutputScriptHex,
+        });
         const nInputLen = cTx.inputs.length;
 
         // Put public key bytes instead of [3,195,174...]
@@ -383,12 +382,11 @@ async function delegate(nValue, coldAddr) {
             [{ strHardwareName: strHardwareName }],
             7500
         );
-        const strSerialisedTx =
-            await cHardwareWallet.createPaymentTransactionNew({
-                inputs: arrInputs,
-                associatedKeysets: arrAssociatedKeysets,
-                outputScriptHex: strOutputScriptHex,
-            });
+        const strSerialisedTx = await cHardwareWallet.createPaymentTransaction({
+            inputs: arrInputs,
+            associatedKeysets: arrAssociatedKeysets,
+            outputScriptHex: strOutputScriptHex,
+        });
 
         // Broadcast the Hardware (Ledger) tx
         const result = await sendTransaction(
@@ -786,7 +784,7 @@ export async function createTxGUI() {
         const strSerialisedTx = await confirmPopup({
             title: ALERTS.CONFIRM_POPUP_TRANSACTION,
             html: createTxConfirmation(outputs),
-            resolvePromise: cHardwareWallet.createPaymentTransactionNew({
+            resolvePromise: cHardwareWallet.createPaymentTransaction({
                 inputs: arrInputs,
                 associatedKeysets: arrAssociatedKeysets,
                 outputScriptHex: strOutputScriptHex,
@@ -989,7 +987,7 @@ export async function createMasternode() {
         const strSerialisedTx = await confirmPopup({
             title: ALERTS.CONFIRM_POPUP_TRANSACTION,
             html: createTxConfirmation(outputs),
-            resolvePromise: cHardwareWallet.createPaymentTransactionNew({
+            resolvePromise: cHardwareWallet.createPaymentTransaction({
                 inputs: arrInputs,
                 associatedKeysets: arrAssociatedKeysets,
                 outputScriptHex: strOutputScriptHex,

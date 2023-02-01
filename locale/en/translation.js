@@ -164,8 +164,8 @@ export const en_translation = {
     WALLET_HARDWARE_WALLET:"<b>Hardware wallet ready!</b><br>Please keep your {hardwareWallet} plugged in, unlocked, and in the PIVX app",
     WALLET_CONFIRM_L:"Confirm the import on your Ledger",
     WALLET_NO_HARDWARE: "<b>No device available</b><br>Couldn't find a hardware wallet; please plug it in and unlock!",
-    WALLET_HARDWARE_CONNECTION_LOST: "<b>Lost connection to {hardwareWallet} </b><br>It seems the {hardwareWalletProductionName} was unplugged mid-operation, oops!",
-    WALLET_HARDWARE_BUSY: "<b>{hardwareWallet} is waiting</b><br>Please unlock your {hardwareWalletProductionName} or finish it's current prompt",
+    WALLET_HARDWARE_CONNECTION_LOST: "<b>Lost connection to {hardwareWallet} </b><br>It seems the {hardwareWallet} was unplugged mid-operation, oops!",
+    WALLET_HARDWARE_BUSY: "<b>{hardwareWallet} is waiting</b><br>Please unlock your {hardwareWallet} or finish it's current prompt",
     WALLET_HARDWARE_ERROR: "<b> {hardwareWallet} </b><br> {error}",
 
 

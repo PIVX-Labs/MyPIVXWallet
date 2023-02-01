@@ -448,7 +448,7 @@ export function deriveAddress({ pkBytes, publicKey, output = 'ENCODED' }) {
     }
 
     // First pubkey SHA-256 hash
-    const pubKeyHashing = sha256(pubKeyBytes);
+    const pubKeyHashing = sha256(new Uint8Array(pubKeyBytes));
 
     // RIPEMD160 hash
     const pubKeyHashRipemd160 = ripemd160(pubKeyHashing);
@@ -835,6 +835,7 @@ export async function getNewAddress({
 
 export let cHardwareWallet = null;
 export let strHardwareName = '';
+let transport;
 async function getHardwareWalletKeys(
     path,
     xpub = false,
@@ -843,15 +844,16 @@ async function getHardwareWalletKeys(
 ) {
     try {
         // Check if we haven't setup a connection yet OR the previous connection disconnected
-        if (!cHardwareWallet || cHardwareWallet.transport._disconnectEmitted) {
-            cHardwareWallet = new AppBtc(await TransportWebUSB.create());
+        if (!cHardwareWallet || transport._disconnectEmitted) {
+            transport = await TransportWebUSB.create();
+            cHardwareWallet = new AppBtc({ transport, currency: 'PIVX' });
         }
 
         // Update device info and fetch the pubkey
         strHardwareName =
-            cHardwareWallet.transport.device.manufacturerName +
+            transport.device.manufacturerName +
             ' ' +
-            cHardwareWallet.transport.device.productName;
+            transport.device.productName;
 
         // Prompt the user in both UIs
         if (verify) createAlert('info', ALERTS.WALLET_CONFIRM_L, [], 3500);
@@ -875,13 +877,7 @@ async function getHardwareWalletKeys(
             // User denied an operation
             return false;
         }
-        if (_attempts < 10) {
-            // This is an ugly hack :(
-            // in the event where multiple parts of the code decide to ask for an address, just
-            // Retry at most 10 times waiting 200ms each time
-            await sleep(200);
-            return getHardwareWalletKeys(path, xpub, verify, _attempts + 1);
-        }
+
         // If there's no device, nudge the user to plug it in.
         if (e.message.toLowerCase().includes('no device selected')) {
             createAlert('info', ALERTS.WALLET_NO_HARDWARE, [], 10000);
@@ -896,13 +892,18 @@ async function getHardwareWalletKeys(
                 [
                     {
                         hardwareWallet: strHardwareName,
-                        hardwareWalletProductionName:
-                            cHardwareWallet.transport.device.productName,
                     },
                 ],
                 10000
             );
             return false;
+        }
+        if (_attempts < 10) {
+            // This is an ugly hack :(
+            // in the event where multiple parts of the code decide to ask for an address, just
+            // Retry at most 10 times waiting 200ms each time
+            await sleep(200);
+            return getHardwareWalletKeys(path, xpub, verify, _attempts + 1);
         }
 
         // If the ledger is busy, just nudge the user.
@@ -913,8 +914,6 @@ async function getHardwareWalletKeys(
                 [
                     {
                         hardwareWallet: strHardwareName,
-                        hardwareWalletProductionName:
-                            cHardwareWallet.transport.device.productName,
                     },
                 ],
                 7500
@@ -937,11 +936,14 @@ async function getHardwareWalletKeys(
             [
                 {
                     hardwareWallet: strHardwareName,
+                },
+                {
                     error: LEDGER_ERRS.get(e.statusCode),
                 },
             ],
             5500
         );
+
         return false;
     }
 }
