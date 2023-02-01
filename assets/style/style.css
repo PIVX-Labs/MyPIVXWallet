@@ -192,30 +192,33 @@ input::-moz-focus-inner {
 }
 
 .reload {
-    position: relative;
-    top: 16px;
-    left: 10px;
-    display: inline-block;
     font-family: Lucida Sans Unicode;
     cursor: pointer;
+    margin-left: 10px;
+}
+
+.reload i {
     animation-name: spinner;
     animation-duration: 0.75s;
     animation-play-state: paused;
     animation-iteration-count: infinite;
     animation-timing-function: linear;
+    font-size:21px;
+    width: 21px;
+    height: 21px;
 }
 
 .playAnim {
-    animation-play-state: running;
+    animation-play-state: running!important;
 }
 
 @keyframes spinner {
     0% {
-        transform: translate3d(-50%, -50%, 0) rotate(0deg);
+        transform: translate3d(0%, 0%, 0) rotate(0deg);
     }
 
     100% {
-        transform: translate3d(-50%, -50%, 0) rotate(360deg);
+        transform: translate3d(0%, 0%, 0) rotate(360deg);
     }
 }
 
@@ -1724,11 +1727,6 @@ a {
         padding: 15px 10px;
     }
 
-    #identicon,
-    #ring {
-        display: none;
-    }
-
     #piv-price-amount {
         padding: 30px 5px 30px 20px;
     }
@@ -2095,10 +2093,18 @@ a {
   width: 310px;
   background-color: rgba(255, 255, 255, 12%);
   border-radius: 13px;
-  padding: 22px 0px 22px 0px;
+  padding: 3px 0px 0px 0px;
   backdrop-filter: blur(4px);
-  border-bottom-left-radius: 22px;
-  border-bottom-right-radius: 22px;
+  border-bottom-left-radius: 25px;
+  border-bottom-right-radius: 25px;
+}
+
+.dcWallet-balances .lessBot {
+  margin-bottom: -20px;
+}
+
+.dcWallet-balances .lessTop {
+  margin-top: -28px;
 }
 
 .dcWallet-balances .dcWallet-pivxBalance {
@@ -2182,13 +2188,15 @@ a {
 }
 
 .dcWallet-topRightMenu {
-  position: absolute;
-  top: 9px;
-  right: 7px;
   font-size: 18px;
   cursor: pointer;
   width: 27px;
   transition: all .2s ease-in-out;
+}
+
+.dcWallet-topRightMenu .btn-group {
+  margin-top: 8px;
+  margin-right: 6px;
 }
 
 .dcWallet-topRightMenu:hover {
@@ -2286,9 +2294,6 @@ a {
 }
 
 .dcWallet-topLeftMenu {
-  position: absolute;
-  top: 7px;
-  left: 9px;
   font-size: 18px;
   cursor: pointer;
   width: 27px;
@@ -2313,8 +2318,6 @@ input {
     background-color: #ffffff29;
     width: 50px;
     height: 50px;
-    position: absolute;
-    bottom: 0px;
     padding-top: 13px;
     border-radius: 50%;
     border-top-left-radius: 7px;
@@ -2327,9 +2330,6 @@ input {
     background-color: #ffffff29;
     width: 50px;
     height: 50px;
-    position: absolute;
-    bottom: 0px;
-    right:0px;
     padding-top: 13px;
     border-radius: 50%;
     border-top-right-radius: 7px;

@@ -429,46 +429,58 @@
                   <div id="guiWallet" style="display: none;">
                     <div class="row p-0">
                       <!-- Balance in PIVX & USD-->
-                      <div class="col-12 mb-5">
+                      <div class="col-12 p-0 mb-5">
                         <center>
                           <div class="dcWallet-balances mb-4">
-                            <div class="dcWallet-topRightMenu">
-                              <div class="btn-group dropleft">
-                                <i class="fa-solid fa-ellipsis-vertical" style="width: 20px;" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></i>
-                                <div class="dropdown">
-                                  <div class="dropdown-move">
-                                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                      <a class="dropdown-item" href="#" data-toggle="modal" data-target="#exportPrivateKeysModal" data-backdrop="static" data-keyboard="false" onclick="MPW.toggleExportUI()">
-                                        <i class="fas fa-key"></i> Export
-                                      </a>
-                                      <a class="dropdown-item" href="#!" id="guiNewAddress" data-toggle="modal" data-target="#qrModal" onclick="MPW.getNewAddress({updateGUI: true, verify: true});">
-                                        <i class="fas fa-sync-alt"></i> Refresh address
-                                      </a>
+
+                            <div class="row lessBot p-0">
+                              <div class="col-6 d-flex dcWallet-topLeftMenu" style="justify-content: flex-start;">
+                                <h3 class="noselect balance-title">
+                                  <span class="reload noselect" onclick="MPW.refreshChainData()"><i id="balanceReload" class="fa-solid fa-rotate-right"></i></span>
+                                </h3>
+                              </div>
+
+                              <div class="col-6 d-flex dcWallet-topRightMenu" style="justify-content: flex-end;">
+                                <div class="btn-group dropleft">
+                                  <i class="fa-solid fa-ellipsis-vertical" style="width: 20px;" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></i>
+                                  <div class="dropdown">
+                                    <div class="dropdown-move">
+                                      <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                        <a class="dropdown-item" href="#" data-toggle="modal" data-target="#exportPrivateKeysModal" data-backdrop="static" data-keyboard="false" onclick="MPW.toggleExportUI()">
+                                          <i class="fas fa-key"></i> Export
+                                        </a>
+                                        <a class="dropdown-item" href="#!" id="guiNewAddress" data-toggle="modal" data-target="#qrModal" onclick="MPW.getNewAddress({updateGUI: true, verify: true});">
+                                          <i class="fas fa-sync-alt"></i> Refresh address
+                                        </a>
+                                      </div>
                                     </div>
                                   </div>
                                 </div>
                               </div>
                             </div>
 
-                            <div class="dcWallet-topLeftMenu">
-                              <h3 class="noselect balance-title">
-                                <span id="balanceReload" class="reload noselect" onclick="MPW.refreshChainData()">&#x21bb;</span>
-                              </h3>
-                            </div>
-
-                            <canvas id="identicon" class="innerShadow" width="65" height="65" data-jdenticon-value=""></canvas><br />
+                            <canvas id="identicon" class="innerShadow" style="width: 65px; height: 65px;" data-jdenticon-value=""></canvas><br />
                             <span class="dcWallet-pivxBalance" id="guiBalance"></span> <span id="guiBalanceTicker" class="dcWallet-pivxTicker">PIVX</span><br />
                             <div class="dcWallet-usdBalance">
                               <span class="dcWallet-usdValue">$-</span>
                               <span class="dcWallet-usdValue">USD</span>
                             </div>
-                            <div class="dcWallet-sWithdraw" onclick="MPW.openTab({ currentTarget: document.getElementById('txTab') }, 'Transaction')">
-                              <i class="fas fa-arrow-up"></i>  
+
+                            <div class="row lessTop p-0">
+                              <div class="col-6 d-flex" style="justify-content: flex-start;">
+                                <div class="dcWallet-sWithdraw" onclick="MPW.openTab({ currentTarget: document.getElementById('txTab') }, 'Transaction')">
+                                  <i class="fas fa-arrow-up"></i>  
+                                </div>
+                              </div>
+
+                              <div class="col-6 d-flex" style="justify-content: flex-end;">
+                                <div class="dcWallet-sDeposit" data-toggle="modal" data-target="#qrModal">
+                                  <i class="fas fa-arrow-down"></i>  
+                                </div>
+                              </div>
                             </div>
 
-                            <div class="dcWallet-sDeposit" data-toggle="modal" data-target="#qrModal">
-                              <i class="fas fa-arrow-down"></i>  
-                            </div>
+
                           </div>
                         </center>
                       </div>
