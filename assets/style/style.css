@@ -2090,7 +2090,7 @@ a {
 
 
 .dcWallet-balances {
-  width: 310px;
+  max-width: 310px;
   background-color: rgba(255, 255, 255, 12%);
   border-radius: 13px;
   padding: 3px 0px 0px 0px;
@@ -2159,7 +2159,7 @@ a {
 .dcWallet-warningMessage {
   cursor: pointer;
   text-align: left;
-  width: 310px;
+  max-width: 310px;
   margin-bottom: 15px;
   border-radius: 10px;
   padding: 8px 12px;
