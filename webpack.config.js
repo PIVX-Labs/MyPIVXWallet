@@ -68,7 +68,8 @@ module.exports = {
             patterns: [
                 { from: "manifest.json" },
                 { from: "assets/icons" },
-                { from: "scripts/native-worker.js"}
+                { from: "assets/logo_opaque-dark-bg.png" },
+                { from: "scripts/native-worker.js" }
             ],
         }),
     ],
