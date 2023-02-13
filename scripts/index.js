@@ -29,7 +29,7 @@ export {
     startMasternode,
     checkVanity,
     toggleDropDown,
-    unblurPrivKey
+    unblurPrivKey,
 } from './global.js';
 export { generateWallet, getNewAddress, importWallet } from './wallet.js';
 export { toggleTestnet, toggleDebug } from './settings.js';

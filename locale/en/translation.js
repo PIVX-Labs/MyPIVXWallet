@@ -112,8 +112,9 @@ export const en_translation = {
     stakeLoadMore:"Load more",               //
 
     // Settings
-    settingsExplorer:"Choose an explorer",            //
-    settingsLanguage:"Choose an Language:",            //
+    settingsCurrency:"Choose a display currency:",
+    settingsExplorer:"Choose an explorer:",            //
+    settingsLanguage:"Choose a Language:",            //
     settingsPivxNode:"Choose a PIVX node:",            //
     settingsAnalytics:"Choose your analytics contribution level:",           //
     settingsToggleDebug:"Toggle Debug Mode",         //

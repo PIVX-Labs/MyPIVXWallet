@@ -463,8 +463,8 @@
                             <canvas id="identicon" class="innerShadow" style="width: 65px; height: 65px;" data-jdenticon-value=""></canvas><br />
                             <span class="dcWallet-pivxBalance" id="guiBalance"></span> <span id="guiBalanceTicker" class="dcWallet-pivxTicker">PIVX</span><br />
                             <div class="dcWallet-usdBalance">
-                              <span class="dcWallet-usdValue">$-</span>
-                              <span class="dcWallet-usdValue">USD</span>
+                              <span id="guiBalanceValue" class="dcWallet-usdValue">$-</span>
+                              <span id="guiBalanceValueCurrency" class="dcWallet-usdValue">USD</span>
                             </div>
 
                             <div class="row lessTop p-0">
@@ -983,13 +983,19 @@
                 </div>
               </div>
               <div id="Settings" class="tabcontent">
+                <label for="currency" data-i18n="settingsCurrency">Choose a display currency:</label>
+                <br />
+                <select id="currency" class="form-control" name="currency">
+                  <!-- Populated via JS at Price Source data load (prices.js) -->
+                </select>
+                <br />
                 <label for="explorer" data-i18n="settingsExplorer">Choose an explorer:</label>
                 <br />
                 <select id="explorer" class="form-control" name="explorer">
                   <!-- Populated via JS at DOM load (settings.js) -->
                 </select>
                 <br />
-                <label for="translation" data-i18n="settingsLanguage">Choose an Language:</label>
+                <label for="translation" data-i18n="settingsLanguage">Choose a Language:</label>
                 <br />
                 <select id="translation" class="form-control" name="translation">
                   <!-- Populated via JS at DOM load (settings.js) -->

@@ -112,8 +112,9 @@ export const uwu_translation = {
     stakeLoadMore:"Lowoad Mowore",               //Load more
 
     // Settings
-    settingsExplorer:"Chowose an expwower",            //Choose an explorer
-    settingsLanguage:"Chowose a Languwuage!",            //Choose an Language:
+    settingsCurrency:"Chowose a dispway cuwwency:",
+    settingsExplorer:"Chowose an expwower:",            //Choose an explorer:
+    settingsLanguage:"Chowose a Languwuage!",            //Choose a Language:
     settingsAnalytics:"Chowose your anawytics contwibution wevel:",           //Choose your analytics contribution level:
     settingsPivxNode:"Chowose a PIVX nowode pwease:",            //Choose a PIVX node:
     settingsToggleDebug:"Toggle Debug Mowode",         //Toggle Debug Mode
