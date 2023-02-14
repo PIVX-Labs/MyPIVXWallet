@@ -76,23 +76,22 @@ var translation = {
     dashboardTitle: "",             //Dashboard
     dCardOneTitle: "",              //Create a
     dCardOneSubTitle: "",           //New Wallet
-    dCardOneDesc: "",               //This will create a new, random PIVX wallet that will contain no initial funds, you may transfer to-and-from this wallet with ease.
+    dCardOneDesc: "",               //Create a new PIVX wallet, offering the most secure backup & security methods.
     dCardOneButton: "",             //Create A New Wallet
 
     dCardTwoTitle: "",              //Create a new
     dCardTwoSubTitle: "",           //Vanity Wallet
-    dCardTwoDesc: "",               //This will create a PIVX wallet with a customized prefix of your choosing, requiring more processing power to generate such addresses, it is recommended to generate a prefix of less than 6 characters, for example: "DAD" is a possible address prefix.
+    dCardTwoDesc: "",               //Create a wallet with a custom prefix, this can take a long time!
     dCardTwoButton: "",             //Create A Vanity Wallet
 
     dCardThreeTitle: "",            //Access your
     dCardThreeSubTitle: "",         //Hardware Wallet
-    dCardThreeDesc: "",             //This will help managing the PIVX wallet on your ledger. Notice that the private key will remain safe in your hardware device
-    dCardThreeButton: "",           //Access my hardware wallet
+    dCardThreeDesc: "",             //Use your Ledger Hardware wallet with MPW's familiar interface.
+    dCardThreeButton: "",           //Access my Ledger
 
     dCardFourTitle: "",             //Go to
     dCardFourSubTitle: "",          //My Wallet
-    dCardFourDesc: "",              //This will import a PIVX wallet that you hold via it's private key, loading the address and pulling your existing balance, if any, from an explorer node.
-    dCardFourSubDesc:"",            //*Note: MPW developers can NOT access your wallet, this wallet runs purely in YOUR browser using JavaScript.
+    dCardFourDesc: "",              //Import a PIVX wallet using a Private Key, xpriv, or Seed Phrase.
     dCardFourButtonI:"",            //Import Wallet
     dCardFourButtonA:"",            //Access My Wallet
 
@@ -124,8 +123,9 @@ var translation = {
     sendSignedTutorialAdvInfo:"",   //Advanced Details: <br>locktime is set to 0, sequence is set to max. SIGHASH_ALL option is chosen for signing raw Transaction.
 
     // Stake
-    stakeTitle:"",                  //<b>New Feature!<b>
-    stakeSubTitle:"",               //Please be aware MPW Cold Staking is a new, slightly experimental feature, it may be unstable, and is currently slow. Please have patience when using this feature, and wait for block confirmations before actions and balances are shown on-screen.
+    stakeTitle:"",                  //Stake your PIV to generate rewards!
+    stakeSubTitle:"",               //Coins that you Stake are \"Locked\" seperately from your Available balance, and have a chance to generate rewards. <br> The more coins you stake, the more frequently you'll receive rewards.
+    stake:"",                       //Stake
     stakeUnstake:"",                //Unstake
     stakeLoadMore:"",               //Load more
 

@@ -312,7 +312,7 @@
                           <span data-i18n="dCardOneTitle">Create a</span>
                           <div data-i18n="dCardOneSubTitle">New Wallet</div>
                         </h3>
-                        <p data-i18n="dCardOneDesc">This will create a new, random PIVX wallet that will contain no initial funds, you may transfer to-and-from this wallet with ease.</p>
+                        <p data-i18n="dCardOneDesc">Create a new PIVX wallet, offering the most secure backup & security methods.</p>
                       </div>
 
                       <button class="pivx-button-big" onclick="MPW.generateWallet()">
@@ -545,12 +545,10 @@
                             <span data-i18n="dCardTwoTitle">Create a new</span>
                             <div data-i18n="dCardTwoSubTitle">Vanity Wallet</div>
                           </h3>
-                          <span class="badge badge-warning" data-i18n="experimental">Experimental</span>
                           <p data-i18n="dCardTwoDesc">
-                            This will create a PIVX wallet with a customized prefix of your choosing, requiring more processing power to generate such addresses, it is recommended to generate a prefix of less than 6 characters, for example:
-                            "DAD" is a possible address prefix.
+                            Create a wallet with a custom prefix, this can take a long time!
                           </p>
-                          <span style="opacity: 0.75; font-size: small;">*Note: Generated addresses will automatically be preceded by the network prefix: <b id="prefixNetwork"></b></span>
+                          <span style="opacity: 0.75; font-size: small;">Note: addresses will always start with: <b id="prefixNetwork"></b></span>
                         </div>
 
                         <input class="center-text" style="display: none; opacity: 0;" type="text" id="prefix" placeholder="Address Prefix" onkeypress="MPW.checkVanity()" />
@@ -592,9 +590,9 @@
                         <div class="col-md-12 dashboard-title">
                           <h3 class="pivx-bold-title" style="font-size: 38px;">
                             <span data-i18n="dCardThreeTitle">Access your</span>
-                            <div data-i18n="dCardThreeSubTitle">Hardware Wallet</div>
+                            <div data-i18n="dCardThreeSubTitle">Ledger Wallet</div>
                           </h3>
-                          <p data-i18n="dCardThreeDesc">This will help managing the PIVX wallet on your ledger. Notice that the private key will remain safe in your hardware device</p>
+                          <p data-i18n="dCardThreeDesc">Use your Ledger Hardware wallet with MPW's familiar interface.</p>
                         </div>
 
                         <button class="pivx-button-big" onclick="MPW.importWallet({isHardwareWallet: true})">
@@ -607,7 +605,7 @@
                             </svg>
                           </span>
 
-                          <span class="buttoni-text" data-i18n="dCardThreeButton">Access my hardware wallet</span>
+                          <span class="buttoni-text" data-i18n="dCardThreeButton">Access my Ledger</span>
                         </button>
                       </div>
                     </div>
@@ -645,9 +643,7 @@
                             <div data-i18n="dCardFourSubTitle">My Wallet</div>
                           </h3>
                           <p data-i18n="dCardFourDesc">
-                            This will import a PIVX wallet that you hold via it's private key, loading the address and pulling your existing balance, if any, from an explorer node.
-                            <br />
-                            <span style="opacity: 0.75; font-size: small;" data-i18n="dCardFourSubDesc">*Note: MPW developers can NOT access your wallet, this wallet runs purely in YOUR browser using JavaScript.</span>
+                            Import a PIVX wallet using a Private Key, xpriv, or Seed Phrase.
                           </p>
                         </div>
 
@@ -694,10 +690,12 @@
               <div id="StakingTab" class="tabcontent">
                 <!-- STAKING FEATURES -->
                 <p id="info" class="minor-notif-subtext">
-                  <span data-i18n="stakeTitle"><b>New Feature!</b></span><br />
+                  <b data-i18n="stakeTitle">Stake your PIV to generate rewards!</b>
+                  <br>
                   <span data-i18n="stakeSubTitle">
-                    Please be aware MPW Cold Staking is a new, slightly experimental feature, it may be unstable, and is currently slow. Please have patience when using this feature, and wait for block confirmations before actions and
-                    balances are shown on-screen.
+                    Coins that you Stake are "Locked" seperately from your Available balance, and have a chance to generate rewards.
+                    <br>
+                    The more coins you stake, the more frequently you'll receive rewards.
                   </span>
                 </p>
                 <div class="add-frame">
@@ -724,7 +722,7 @@
                       <div class="button-padd">
                         <button class="pivx-button-big" onclick="MPW.delegateGUI()">
                           <span class="buttoni-icon"><i class="far fa-snowflake fa-tiny-margin"></i></span>
-                          <span class="buttoni-text" data-i18n="staking">Stake</span>
+                          <span class="buttoni-text" data-i18n="stake">Stake</span>
                           <span class="buttoni-arrow">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
                               <path d="M23.328 16.707L13.121 26.914a.5.5 0 01-.707 0l-2.828-2.828a.5.5 0 010-.707L16.964 16 9.586 8.621a.5.5 0 010-.707l2.828-2.828a.5.5 0 01.707 0l10.207 10.207a1 1 0 010 1.414z"></path>
