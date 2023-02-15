@@ -8,6 +8,9 @@ import { cMarket, fillCurrencySelect } from './settings';
 export const COINGECKO_ENDPOINT =
     'https://api.coingecko.com/api/v3/coins/pivx?localization=false&tickers=false&market_data=true&community_data=false&developer_data=false&sparkline=false';
 
+/**
+ * The generic market data source template, used to build site-specific classes
+ */
 export class MarketSource {
     /** The storage object for raw market data */
     cData = {};
@@ -34,6 +37,9 @@ export class MarketSource {
     }
 }
 
+/**
+ * The CoinGecko market data source
+ */
 export class CoinGecko extends MarketSource {
     constructor() {
         super();
@@ -61,6 +67,9 @@ export class CoinGecko extends MarketSource {
     }
 }
 
+/**
+ * Refreshes market data from the user's data source, then re-renders currency options and price displays
+ */
 export async function refreshPriceDisplay() {
     // Refresh our price data
     await cMarket.fetch();
