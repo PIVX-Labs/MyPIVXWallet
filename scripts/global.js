@@ -73,6 +73,8 @@ export function start() {
         //GOVERNANCE ELEMENTS
         domGovProposalsTable: document.getElementById('proposalsTable'),
         domGovProposalsTableBody: document.getElementById('proposalsTableBody'),
+        domGovProposalsContestedTable: document.getElementById('proposalsContestedTable'),
+        domGovProposalsContestedTableBody: document.getElementById('proposalsContestedTableBody'),
         //MASTERNODE ELEMENTS
         domCreateMasternode: document.getElementById('createMasternode'),
         domControlMasternode: document.getElementById('controlMasternode'),
@@ -921,52 +923,81 @@ export async function restoreWallet() {
     }
 }
 
+/**
+ * Fetch Governance data and re-render the Governance UI
+ */
 async function updateGovernanceTab() {
-    const proposals = await Masternode.getProposals();
-    doms.domGovProposalsTableBody.innerHTML = '';
-    for (const proposal of proposals) {
-        if (proposal.RemainingPaymentCount === 0) {
-            continue;
-        }
-        const tr = doms.domGovProposalsTableBody.insertRow();
-        const td1 = tr.insertCell();
-        // IMPORTANT: We must sanite all of our HTML or a rogue server or malicious proposal could perform a cross side scripting attack
-        td1.innerHTML = `<a class="active" href="${sanitizeHTML(
-            proposal.URL
-        )}"><b>${sanitizeHTML(proposal.Name)}</b></a>`;
-        const td2 = tr.insertCell();
-        td2.innerHTML = `<b>${sanitizeHTML(proposal.MonthlyPayment)}</b> ${
+    // Fetch all proposals from the network
+    const arrProposals = await Masternode.getProposals();
+
+    /* Sort proposals into two categories
+        - Standard
+        - Contested (When a proposal may be considered spam, malicious, or simply highly contestable)
+    */
+    const arrStandard = arrProposals.filter(a => a.RemainingPaymentCount > 0 && a.Ratio > 0.25);
+    const arrContested = arrProposals.filter(a => a.RemainingPaymentCount > 0 && a.Ratio <= 0.25);
+
+    // Render Proposals
+    renderProposals(arrStandard, false);
+    renderProposals(arrContested, true);
+}
+
+/**
+ * Render Governance proposal objects to a given Proposal category
+ * @param {Array<object>} arrProposals - The proposals to render
+ * @param {boolean} fContested - The proposal category
+ */
+function renderProposals(arrProposals, fContested) {
+    // Select the table based on the proposal category
+    const domTable = fContested ? doms.domGovProposalsContestedTableBody : doms.domGovProposalsTableBody;
+
+    // Render the proposals in the relevent table
+    domTable.innerHTML = '';
+    for (const cProposal of arrProposals) {
+        const domRow = domTable.insertRow();
+
+        // Name and URL hyperlink
+        const domNameAndURL = domRow.insertCell();
+        // IMPORTANT: Sanitise all of our HTML or a rogue server or malicious proposal could perform a cross-site scripting attack
+        domNameAndURL.innerHTML = `<a class="active" href="${sanitizeHTML(
+            cProposal.URL
+        )}"><b>${sanitizeHTML(cProposal.Name)}</b></a>`;
+
+        // Payment Schedule and Amounts
+        const domPayments = domRow.insertCell();
+        domPayments.innerHTML = `<b>${sanitizeHTML(cProposal.MonthlyPayment)}</b> ${
             cChainParams.current.TICKER
         } <br>
       <small> ${sanitizeHTML(
-          proposal['RemainingPaymentCount']
-      )} payments remaining of <b>${sanitizeHTML(proposal.TotalPayment)}</b> ${
+          cProposal['RemainingPaymentCount']
+      )} payments remaining of <b>${sanitizeHTML(cProposal.TotalPayment)}</b> ${
             cChainParams.current.TICKER
         } total</small>`;
-        const td3 = tr.insertCell();
-        let { Yeas, Nays } = proposal;
-        Yeas = parseInt(Yeas);
-        Nays = parseInt(Nays);
-        const percentage = Yeas + Nays !== 0 ? (Yeas / (Yeas + Nays)) * 100 : 0;
 
-        td3.innerHTML = `<b>${percentage.toFixed(2)}%</b> <br>
+        // Vote Counts and Consensus Percentages
+        const domVoteCounters = domRow.insertCell();
+        const { Yeas, Nays } = cProposal;
+        const nPercent = cProposal.Ratio * 100;
+
+        domVoteCounters.innerHTML = `<b>${nPercent.toFixed(2)}%</b> <br>
       <small> <b><div class="text-success" style="display:inline;"> ${Yeas} </div></b> /
 	  <b><div class="text-danger" style="display:inline;"> ${Nays} </div></b>
       `;
-        const td4 = tr.insertCell();
-        //append vote buttons
-        const buttonNo = document.createElement('button');
-        buttonNo.className = 'pivx-button-big';
-        buttonNo.innerText = 'No';
-        buttonNo.onclick = () => govVote(proposal.Hash, 2);
 
-        const buttonYes = document.createElement('button');
-        buttonYes.className = 'pivx-button-big';
-        buttonYes.innerText = 'Yes';
-        buttonYes.onclick = () => govVote(proposal.Hash, 1);
+        // Voting Buttons for Masternode owners (MNOs)
+        const domVoteBtns = domRow.insertCell();
+        const domNoBtn = document.createElement('button');
+        domNoBtn.className = 'pivx-button-big';
+        domNoBtn.innerText = 'No';
+        domNoBtn.onclick = () => govVote(cProposal.Hash, 2);
 
-        td4.appendChild(buttonNo);
-        td4.appendChild(buttonYes);
+        const domYesBtn = document.createElement('button');
+        domYesBtn.className = 'pivx-button-big';
+        domYesBtn.innerText = 'Yes';
+        domYesBtn.onclick = () => govVote(cProposal.Hash, 1);
+
+        domVoteBtns.appendChild(domNoBtn);
+        domVoteBtns.appendChild(domYesBtn);
     }
 }
 

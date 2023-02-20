@@ -111,6 +111,10 @@ export const uwu_translation = {
     stakeUnstake:"",                //Unstake
     stakeLoadMore:"Lowoad Mowore",               //Load more
 
+    // Governance
+    contestedProposalsTitle:"Contwested Pwoposals",
+    contestedProposalsDesc:"Dees are pwoposals dat received an overwhelming ameownt of downwotes, making it likely spam or a highly contwestable pwoposal.",
+
     // Settings
     settingsExplorer:"Chowose an expwower",            //Choose an explorer
     settingsLanguage:"Chowose a Languwuage!",            //Choose an Language:

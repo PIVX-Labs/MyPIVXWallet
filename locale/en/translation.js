@@ -111,6 +111,10 @@ export const en_translation = {
     stakeUnstake:"Unstake",                //
     stakeLoadMore:"Load more",               //
 
+    // Governance
+    contestedProposalsTitle:"Contested Proposals",
+    contestedProposalsDesc:"These are proposals that received an overwhelming amount of downvotes, making it likely spam or a highly contestable proposal.",
+
     // Settings
     settingsExplorer:"Choose an explorer",            //
     settingsLanguage:"Choose an Language:",            //
