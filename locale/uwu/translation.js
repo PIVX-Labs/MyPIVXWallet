@@ -28,7 +28,6 @@ export const uwu_translation = {
     navExperimentalSync:"<b>Dangewous sync actiwated!</b>",         //<b>Experimental Sync Active</b>
 
     // Footer
-    footerDonateLink: "Donate pwease owo!",           //Donate!
     footerBuiltWithPivxLabs: "Built with wuv by PIVX Wabs❣",    //Built with 💜 by PIVX Labs
     footerGithubLink: "",           //MyPIVXWallet
 
@@ -51,8 +50,6 @@ export const uwu_translation = {
     cardFourTitle: "For da Commuwunity",              //For the community
     cardFourDesc: "MyPIVXWawwet is built with wuv without any fees, pwiwacy intruwutions, or adwertizing.",               //MyPIVXWallet is built with love without any fees, privacy intrusions or advertising. 
     cardFourLink: "Knowo mowore",               //Know more
-
-    buttonDonate: "Dowonate! Pay with MyPIVXWawwet!",               //Donate - Pay with MyPIVXWallet
 
     // Dashboard
     dashboardTitle: "Dashbowod",             //Dashboard

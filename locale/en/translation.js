@@ -28,7 +28,6 @@ export const en_translation = {
     navExperimentalSync:"<b>Experimental Sync Active</b>",         //
 
     // Footer
-    footerDonateLink: "Donate!",           //
     footerBuiltWithPivxLabs: "Built with 💜 by PIVX Labs",    //
     footerGithubLink: "MyPIVXWallet",           //
 
@@ -51,8 +50,6 @@ export const en_translation = {
     cardFourTitle: "For the community",              //
     cardFourDesc: "MyPIVXWallet is built with love without any fees, privacy intrusions or advertising. ",               //
     cardFourLink: "Know more",               //
-
-    buttonDonate: "Donate - Pay with MyPIVXWallet",               //
 
     // Dashboard
     dashboardTitle: "Dashboard",             //

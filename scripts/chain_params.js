@@ -13,9 +13,6 @@ export const MAX_ACCOUNT_GAP = 20;
 // A new encryption password must be 'at least' this long.
 export const MIN_PASS_LENGTH = 6;
 
-// Cool stuff
-export const donationAddress = 'DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb';
-
 /* chainparams */
 export const cChainParams = {
     current: null,

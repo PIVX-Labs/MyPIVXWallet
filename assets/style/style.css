@@ -1033,12 +1033,6 @@ a {
     border: none;
 }
 
-/*PIVX DONATION SECTION*/
-.donation-section {
-    margin-top: 30px;
-    margin-bottom: 80px;
-}
-
 /*PIVX DASHBOARD*/
 .dashboard-item {
     background: rgba(43, 9, 80, .75);
@@ -1794,11 +1788,6 @@ a {
         height: auto;
     }
 
-    .donation-section .pivx-button-big {
-        width: 225px !important;
-        margin: 0 auto;
-    }
-
     /* Stake */
 
     #piv-price-amount {
@@ -1860,10 +1849,6 @@ a {
 
     .pivx-bold-title {
         font-size: calc(32px + 1vw);
-    }
-
-    .donation-section {
-        margin-top: 0px;
     }
 
     /* Stake */

@@ -41,5 +41,4 @@ export {
     createMasternode,
 } from './transactions.js';
 export { hexToBytes, bytesToHex, dSHA256 } from './utils.js';
-export { donationAddress } from './chain_params.js';
 export { toggleNetwork } from './network.js';
