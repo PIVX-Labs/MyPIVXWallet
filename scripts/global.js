@@ -84,8 +84,12 @@ export function start() {
         //GOVERNANCE ELEMENTS
         domGovProposalsTable: document.getElementById('proposalsTable'),
         domGovProposalsTableBody: document.getElementById('proposalsTableBody'),
-        domGovProposalsContestedTable: document.getElementById('proposalsContestedTable'),
-        domGovProposalsContestedTableBody: document.getElementById('proposalsContestedTableBody'),
+        domGovProposalsContestedTable: document.getElementById(
+            'proposalsContestedTable'
+        ),
+        domGovProposalsContestedTableBody: document.getElementById(
+            'proposalsContestedTableBody'
+        ),
         //MASTERNODE ELEMENTS
         domCreateMasternode: document.getElementById('createMasternode'),
         domControlMasternode: document.getElementById('controlMasternode'),
@@ -970,14 +974,20 @@ export async function restoreWallet() {
  */
 async function updateGovernanceTab() {
     // Fetch all proposals from the network
-    const arrProposals = await Masternode.getProposals({ fAllowFinished: false });
+    const arrProposals = await Masternode.getProposals({
+        fAllowFinished: false,
+    });
 
     /* Sort proposals into two categories
         - Standard (Proposal is either new with <100 votes, or has a healthy vote count)
         - Contested (When a proposal may be considered spam, malicious, or simply highly contestable)
     */
-    const arrStandard = arrProposals.filter(a => a.Yeas + a.Nays < 100 || a.Ratio > 0.25);
-    const arrContested = arrProposals.filter(a => a.Yeas + a.Nays >= 100 && a.Ratio <= 0.25);
+    const arrStandard = arrProposals.filter(
+        (a) => a.Yeas + a.Nays < 100 || a.Ratio > 0.25
+    );
+    const arrContested = arrProposals.filter(
+        (a) => a.Yeas + a.Nays >= 100 && a.Ratio <= 0.25
+    );
 
     // Render Proposals
     renderProposals(arrStandard, false);
@@ -991,7 +1001,9 @@ async function updateGovernanceTab() {
  */
 function renderProposals(arrProposals, fContested) {
     // Select the table based on the proposal category
-    const domTable = fContested ? doms.domGovProposalsContestedTableBody : doms.domGovProposalsTableBody;
+    const domTable = fContested
+        ? doms.domGovProposalsContestedTableBody
+        : doms.domGovProposalsTableBody;
 
     // Render the proposals in the relevent table
     domTable.innerHTML = '';
@@ -1007,9 +1019,9 @@ function renderProposals(arrProposals, fContested) {
 
         // Payment Schedule and Amounts
         const domPayments = domRow.insertCell();
-        domPayments.innerHTML = `<b>${sanitizeHTML(cProposal.MonthlyPayment)}</b> ${
-            cChainParams.current.TICKER
-        } <br>
+        domPayments.innerHTML = `<b>${sanitizeHTML(
+            cProposal.MonthlyPayment
+        )}</b> ${cChainParams.current.TICKER} <br>
       <small> ${sanitizeHTML(
           cProposal['RemainingPaymentCount']
       )} payments remaining of <b>${sanitizeHTML(cProposal.TotalPayment)}</b> ${

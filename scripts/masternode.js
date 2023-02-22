@@ -271,7 +271,7 @@ export default class Masternode {
     }
 
     /**
-     * 
+     *
      * @param {object} options
      * @param {bool} options.fAllowFinished - Pass `true` to stop filtering proposals if finished
      * @return {Promise<Array<object>} A list of currently active proposal
@@ -282,7 +282,9 @@ export default class Masternode {
 
         // Apply optional filters
         if (!fAllowFinished) {
-            arrProposals = arrProposals.filter(a => a.RemainingPaymentCount > 0);
+            arrProposals = arrProposals.filter(
+                (a) => a.RemainingPaymentCount > 0
+            );
         }
         return arrProposals;
     }

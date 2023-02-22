@@ -169,9 +169,9 @@ export async function sendTransaction(hex, msg = '') {
         if (data.result && data.result.length === 64) {
             console.log('Transaction sent! ' + data.result);
             doms.domTxOutput.innerHTML =
-                    '<h4 style="color:green; font-family:mono !important;">' +
-                    data.result +
-                    '</h4>';
+                '<h4 style="color:green; font-family:mono !important;">' +
+                data.result +
+                '</h4>';
             doms.domSimpleTXs.style.display = 'none';
             doms.domAddress1s.value = '';
             doms.domValue1s.innerHTML = '';
