@@ -1,7 +1,7 @@
 import { cAnalyticsLevel, cStatKeys, cExplorer, STATS } from './settings.js';
 import { doms, mempool, updateStakingRewardsGUI } from './global.js';
 import { masterKey, getDerivationPath, getNewAddress } from './wallet.js';
-import { cChainParams, donationAddress, COIN } from './chain_params.js';
+import { cChainParams, COIN } from './chain_params.js';
 import { createAlert } from './misc.js';
 import { Mempool } from './mempool.js';
 export let networkEnabled = true;
@@ -168,16 +168,10 @@ export async function sendTransaction(hex, msg = '') {
         ).json();
         if (data.result && data.result.length === 64) {
             console.log('Transaction sent! ' + data.result);
-            if (doms.domAddress1s.value !== donationAddress)
-                doms.domTxOutput.innerHTML =
+            doms.domTxOutput.innerHTML =
                     '<h4 style="color:green; font-family:mono !important;">' +
                     data.result +
                     '</h4>';
-            else
-                doms.domTxOutput.innerHTML =
-                    '<h4 style="color:green">Thank you for supporting MyPIVXWallet! 💜💜💜<br><span style="font-family:mono !important">' +
-                    data.result +
-                    '</span></h4>';
             doms.domSimpleTXs.style.display = 'none';
             doms.domAddress1s.value = '';
             doms.domValue1s.innerHTML = '';

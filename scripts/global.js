@@ -16,12 +16,19 @@ import {
     arrRewards,
     getStakingRewards,
 } from './network.js';
-import { start as settingsStart, cExplorer, debug } from './settings.js';
+import {
+    start as settingsStart,
+    cExplorer,
+    debug,
+    cMarket,
+    strCurrency,
+} from './settings.js';
 import { createAlert, confirmPopup, sanitizeHTML, MAP_B58 } from './misc.js';
 import { cChainParams, COIN, MIN_PASS_LENGTH } from './chain_params.js';
 import { decrypt } from './aes-gcm.js';
 
 import { registerWorker } from './native.js';
+import { refreshPriceDisplay } from './prices.js';
 
 export let doms = {};
 
@@ -34,6 +41,10 @@ export function start() {
         domGuiWallet: document.getElementById('guiWallet'),
         domGuiBalance: document.getElementById('guiBalance'),
         domGuiBalanceTicker: document.getElementById('guiBalanceTicker'),
+        domGuiBalanceValue: document.getElementById('guiBalanceValue'),
+        domGuiBalanceValueCurrency: document.getElementById(
+            'guiBalanceValueCurrency'
+        ),
         domGuiBalanceBox: document.getElementById('guiBalanceBox'),
         domBalanceReload: document.getElementById('balanceReload'),
         domBalanceReloadStaking: document.getElementById(
@@ -162,6 +173,7 @@ export function start() {
         domNetworkD: document.getElementById('NetworkD'),
         domDebug: document.getElementById('Debug'),
         domTestnet: document.getElementById('Testnet'),
+        domCurrencySelect: document.getElementById('currency'),
         domExplorerSelect: document.getElementById('explorer'),
         domNodeSelect: document.getElementById('node'),
         domTranslationSelect: document.getElementById('translation'),
@@ -254,19 +266,46 @@ export function openTab(evt, tabName) {
 
 export function getBalance(updateGUI = false) {
     const nBalance = mempool.getBalance();
+    const nCoins = nBalance / COIN;
 
     // Update the GUI too, if chosen
     if (updateGUI) {
         // Set the balance, and adjust font-size for large balance strings
-        const nLen = (nBalance / COIN).toFixed(2).length;
-        doms.domGuiBalance.innerText = (nBalance / COIN).toFixed(
-            nLen >= 6 ? 0 : 2
-        );
+        const nLen = nCoins.toFixed(2).length;
+        doms.domGuiBalance.innerText = nCoins.toFixed(nLen >= 6 ? 0 : 2);
         doms.domAvailToDelegate.innerText =
             'Available: ~' +
-            (nBalance / COIN).toFixed(2) +
+            nCoins.toFixed(2) +
             ' ' +
             cChainParams.current.TICKER;
+
+        // Update currency values
+        cMarket.getPrice(strCurrency).then((nPrice) => {
+            // Configure locale settings by detecting currency support
+            const cLocale = Intl.supportedValuesOf('currency').includes(
+                strCurrency.toUpperCase()
+            )
+                ? {
+                      style: 'currency',
+                      currency: strCurrency,
+                      currencyDisplay: 'narrowSymbol',
+                  }
+                : { maximumFractionDigits: 8, minimumFractionDigits: 8 };
+            let nValue = nCoins * nPrice;
+            // Handle certain edge-cases; like satoshis having decimals.
+            switch (strCurrency) {
+                case 'sats':
+                    nValue = Math.round(nValue);
+                    cLocale.maximumFractionDigits = 0;
+                    cLocale.minimumFractionDigits = 0;
+            }
+            doms.domGuiBalanceValue.innerText = nValue.toLocaleString(
+                'en-gb',
+                cLocale
+            );
+            doms.domGuiBalanceValueCurrency.innerText =
+                strCurrency.toUpperCase();
+        });
 
         // Add a notice to the Send page if balance is lacking
         doms.domsendNotice.innerHTML = nBalance
@@ -368,10 +407,18 @@ export async function playMusic() {
 }
 
 export function unblurPrivKey() {
-    if (document.getElementById("exportPrivateKeyText").classList.contains("blurred")) {
-        document.getElementById("exportPrivateKeyText").classList.remove("blurred");
+    if (
+        document
+            .getElementById('exportPrivateKeyText')
+            .classList.contains('blurred')
+    ) {
+        document
+            .getElementById('exportPrivateKeyText')
+            .classList.remove('blurred');
     } else {
-        document.getElementById("exportPrivateKeyText").classList.add("blurred");
+        document
+            .getElementById('exportPrivateKeyText')
+            .classList.add('blurred');
     }
 }
 
@@ -697,12 +744,7 @@ export function guiEncryptWallet() {
             4000
         );
     if (strPass !== strPassRetype)
-        return createAlert(
-            'warning',
-            ALERTS.PASSWORD_DOESNT_MATCH,
-            [],
-            2250
-        );
+        return createAlert('warning', ALERTS.PASSWORD_DOESNT_MATCH, [], 2250);
     encryptWallet(strPass);
     createAlert('success', ALERTS.NEW_PASSWORD_SUCCESS, [], 5500);
 
@@ -777,7 +819,7 @@ export async function generateVanityWallet() {
         doms.domPrefix.style.display = 'block';
         setTimeout(() => {
             doms.domPrefix.style.opacity = '1';
-        },100);
+        }, 100);
         doms.domGuiAddress.innerHTML = '~';
         doms.domPrefix.focus();
     } else {
@@ -1222,6 +1264,9 @@ export function refreshChainData() {
     // Fetch block count + UTXOs
     getBlockCount();
     getBalance(true);
+
+    // Fetch pricing data
+    refreshPriceDisplay();
 }
 
 // A safety mechanism enabled if the user attempts to leave without encrypting/saving their keys

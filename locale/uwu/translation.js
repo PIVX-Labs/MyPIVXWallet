@@ -28,7 +28,6 @@ export const uwu_translation = {
     navExperimentalSync:"<b>Dangewous sync actiwated!</b>",         //<b>Experimental Sync Active</b>
 
     // Footer
-    footerDonateLink: "Donate pwease owo!",           //Donate!
     footerBuiltWithPivxLabs: "Built with wuv by PIVX Wabs❣",    //Built with 💜 by PIVX Labs
     footerGithubLink: "",           //MyPIVXWallet
 
@@ -51,8 +50,6 @@ export const uwu_translation = {
     cardFourTitle: "For da Commuwunity",              //For the community
     cardFourDesc: "MyPIVXWawwet is built with wuv without any fees, pwiwacy intruwutions, or adwertizing.",               //MyPIVXWallet is built with love without any fees, privacy intrusions or advertising. 
     cardFourLink: "Knowo mowore",               //Know more
-
-    buttonDonate: "Dowonate! Pay with MyPIVXWawwet!",               //Donate - Pay with MyPIVXWallet
 
     // Dashboard
     dashboardTitle: "Dashbowod",             //Dashboard
@@ -116,8 +113,9 @@ export const uwu_translation = {
     contestedProposalsDesc:"Dees are pwoposals dat received an overwhelming ameownt of downwotes, making it likely spam or a highly contwestable pwoposal.",
 
     // Settings
-    settingsExplorer:"Chowose an expwower",            //Choose an explorer
-    settingsLanguage:"Chowose a Languwuage!",            //Choose an Language:
+    settingsCurrency:"Chowose a dispway cuwwency:",
+    settingsExplorer:"Chowose an expwower:",            //Choose an explorer:
+    settingsLanguage:"Chowose a Languwuage!",            //Choose a Language:
     settingsAnalytics:"Chowose your anawytics contwibution wevel:",           //Choose your analytics contribution level:
     settingsPivxNode:"Chowose a PIVX nowode pwease:",            //Choose a PIVX node:
     settingsToggleDebug:"Toggle Debug Mowode",         //Toggle Debug Mode

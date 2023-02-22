@@ -46,7 +46,6 @@ var translation = {
     navExperimentalSync:"",         //<b>Experimental Sync Active</b>
 
     // Footer
-    footerDonateLink: "",           //Donate!
     footerBuiltWithPivxLabs: "",    //Built with 💜 by PIVX Labs
     footerGithubLink: "",           //MyPIVXWallet
 
@@ -69,8 +68,6 @@ var translation = {
     cardFourTitle: "",              //For the community
     cardFourDesc: "",               //MyPIVXWallet is built with love without any fees, privacy intrusions or advertising. 
     cardFourLink: "",               //Know more
-
-    buttonDonate: "",               //Donate - Pay with MyPIVXWallet
 
     // Dashboard
     dashboardTitle: "",             //Dashboard
@@ -134,8 +131,9 @@ var translation = {
     contestedProposalsDesc:"",      //These are proposals that received an overwhelming amount of downvotes, making it likely spam or a highly contestable proposal.
 
     // Settings
-    settingsExplorer:"",            //Choose an explorer
-    settingsLanguage:"",            //Choose an Language:
+    settingsCurrency:"",            //Choose a display currency:
+    settingsExplorer:"",            //Choose an explorer:
+    settingsLanguage:"",            //Choose a Language:
     settingsPivxNode:"",            //Choose a PIVX node:
     settingsAnalytics:"",           //Choose your analytics contribution level:
     settingsToggleDebug:"",         //Toggle Debug Mode
