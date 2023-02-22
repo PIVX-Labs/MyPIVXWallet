@@ -276,7 +276,7 @@ export default class Masternode {
      * @param {bool} options.fAllowFinished - Pass `true` to stop filtering proposals if finished
      * @return {Promise<Array<object>} A list of currently active proposal
      */
-    static async getProposals({ fAllowFinished = false }) {
+    static async getProposals({ fAllowFinished = false } = {}) {
         const url = `${cNode.url}/getbudgetinfo`;
         let arrProposals = await (await fetch(url)).json();
 
