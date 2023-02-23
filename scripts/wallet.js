@@ -508,9 +508,9 @@ export async function importWallet({
             // Derive our hardware address and import!
             masterKey = new HardwareWalletMasterKey();
 
-	    // Hide the 'export wallet' button, it's not relevant to hardware wallets
-	    doms.domExportWallet.hidden = true;
-	    
+            // Hide the 'export wallet' button, it's not relevant to hardware wallets
+            doms.domExportWallet.hidden = true;
+
             createAlert(
                 'info',
                 ALERTS.WALLET_HARDWARE_WALLET,
