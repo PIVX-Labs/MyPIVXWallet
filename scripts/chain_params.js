@@ -49,7 +49,7 @@ export const cChainParams = {
         PUBKEY_ADDRESS: 139,
         SECRET_KEY: 239,
         BIP44_TYPE: 1,
-        BIP44_TYPE_LEDGER: 1,
+        BIP44_TYPE_LEDGER: 119,
         PROTOCOL_VERSION: 70926,
         MASTERNODE_PORT: 51474,
         // A list of Labs-trusted explorers

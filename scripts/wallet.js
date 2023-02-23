@@ -498,7 +498,6 @@ export async function importWallet({
                     7500
                 );
             }
-
             const publicKey = await getHardwareWalletKeys(
                 getDerivationPath(true)
             );
@@ -509,7 +508,6 @@ export async function importWallet({
             masterKey = new HardwareWalletMasterKey();
 
             // Hide the 'export wallet' button, it's not relevant to hardware wallets
-            doms.domExportWallet.style.display = 'none';
 
             createAlert(
                 'info',
@@ -876,6 +874,7 @@ async function getHardwareWalletKeys(
             return cPubKey.publicKey;
         }
     } catch (e) {
+	console.log(e);
         if (e.message.includes('denied by the user')) {
             // User denied an operation
             return false;
@@ -901,12 +900,12 @@ async function getHardwareWalletKeys(
             );
             return false;
         }
-        if (_attempts < 10) {
+        if (_attempts < 20) {
             // This is an ugly hack :(
             // in the event where multiple parts of the code decide to ask for an address, just
             // Retry at most 10 times waiting 200ms each time
-            await sleep(200);
-            return getHardwareWalletKeys(path, xpub, verify, _attempts + 1);
+            await sleep(1000);
+            return await getHardwareWalletKeys(path, xpub, verify, _attempts + 1);
         }
 
         // If the ledger is busy, just nudge the user.

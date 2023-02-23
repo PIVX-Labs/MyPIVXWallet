@@ -1071,12 +1071,6 @@ export async function updateMasternodeTab() {
         return;
     }
 
-    if (masterKey.isHardwareWallet) {
-        doms.domMnTxId.style.display = 'none';
-        doms.domMnTextErrors.innerHTML = 'Ledger is not yet supported';
-        return;
-    }
-
     if (!mempool.getConfirmed().length) {
         doms.domMnTextErrors.innerHTML =
             'Your wallet is empty or still loading, re-open the tab in a few seconds!';

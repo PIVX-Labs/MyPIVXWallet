@@ -1,6 +1,6 @@
 import { cNode, cExplorer } from './settings.js';
 import { cChainParams } from './chain_params.js';
-import { masterKey, parseWIF, deriveAddress } from './wallet.js';
+import { masterKey, parseWIF, deriveAddress, cHardwareWallet } from './wallet.js';
 import { dSHA256, bytesToHex, hexToBytes } from './utils.js';
 import { Buffer } from 'buffer';
 import * as nobleSecp256k1 from '@noble/secp256k1';
@@ -153,25 +153,34 @@ export default class Masternode {
      * @return {Promise<string>} The signed message signed with the collateral private key
      */
     async getSignedMessage(sigTime) {
-        const padding = '\x18DarkNet Signed Message:\n'
-            .split('')
-            .map((c) => c.charCodeAt(0));
-        const walletPrivateKey = await this._getWalletPrivateKey();
-        const toSign = Masternode.getToSign({
-            addr: this.addr,
-            walletPrivateKey: walletPrivateKey,
-            mnPrivateKey: this.mnPrivateKey,
-            sigTime,
+	const toSign = Masternode.getToSign({
+	    addr: this.addr,
+	    walletPrivateKey: walletPrivateKey,
+	    mnPrivateKey: this.mnPrivateKey,
+	    sigTime,
         })
-            .split('')
-            .map((c) => c.charCodeAt(0));
-        const hash = dSHA256(padding.concat(toSign.length).concat(toSign));
-        const [signature, v] = await nobleSecp256k1.sign(
-            hash,
-            parseWIF(walletPrivateKey, true),
-            { der: false, recovered: true }
-        );
-        return [v + 31, ...signature];
+
+	if (masterKey.isHardwareWallet) {
+
+	    const { r, s, v } = cHardwareWallet.signMessage(this.walletPrivateKeyPath, Buffer.from(toSign).to("hex"));
+	    console.log(r, s, v);
+	    return [v, ...r, ...s];
+	} else {
+            const padding = '\x18DarkNet Signed Message:\n'
+		  .split('')
+		  .map((c) => c.charCodeAt(0));
+            const walletPrivateKey = await this._getWalletPrivateKey();
+
+	    const message = toSign.split('')
+		  .map((c) => c.charCodeAt(0));
+            const hash = dSHA256(padding.concat(message.length).concat(message));
+            const [signature, v] = await nobleSecp256k1.sign(
+		hash,
+		parseWIF(walletPrivateKey, true),
+		{ der: false, recovered: true }
+            );
+            return [v + 31, ...signature];
+	}
     }
     /**
      * @return {Promise<string>} The signed ping message signed with the masternode private key
