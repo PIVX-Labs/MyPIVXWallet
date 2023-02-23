@@ -3,159 +3,288 @@ import { doms, mempool, updateStakingRewardsGUI } from './global.js';
 import { masterKey, getDerivationPath, getNewAddress } from './wallet.js';
 import { cChainParams, COIN } from './chain_params.js';
 import { createAlert } from './misc.js';
-import { Mempool } from './mempool.js';
+import { Mempool, UTXO } from './mempool.js';
+import { EventEmitter } from 'node:events';
 export let networkEnabled = true;
 export let cachedBlockCount = 0;
 export let arrRewards = [];
 
-// Disable the network, return true if successful.
-export function disableNetwork() {
-    if (networkEnabled) return !toggleNetwork();
-    return false;
-}
+/**
+ * Virtual class rapresenting any network backend
+ */
+export class Network {
+    constructor() {
+	if (this.constructor === Network) {
+	    throw new Error("Initializing virtual class");
+	}
+	this._enabled = true;
 
-export function toggleNetwork() {
-    networkEnabled = !networkEnabled;
-    doms.domNetwork.innerHTML =
-        '<i class="fa-solid fa-' + (networkEnabled ? 'wifi' : 'ban') + '"></i>';
-    return networkEnabled;
-}
+	/**
+	 * @type {EventEmitter}
+	 * @public
+	 */
+	this.eventEmitter = new EventEmitter();
+    }
 
-// Enable the network, return true if successful.
-export function enableNetwork() {
-    if (!networkEnabled) return toggleNetwork();
-    return false;
-}
+    /**
+     * @param {boolean} value
+     */
+    set enabled(value) {
+	if (value !== this._enabled) {
+	    this.eventEmitter.emit("network-toggle", value);
+	    this._enabled = value;
+	}
+    }
 
-export let lastWallet = 0;
+    get enabled() {
+	return this._enabled;
+    }
 
-function networkError() {
-    if (disableNetwork()) {
-        createAlert(
-            'warning',
-            '<b>Failed to synchronize!</b> Please try again later.' +
-                '<br>You can attempt re-connect via the Settings.',
-            []
-        );
+    enable() {
+	this.enabled = true;
+    }
+
+    disable() {
+	this.enabled = false;
+    }
+    
+    toggle() {
+	this.enabled = !this.enabled;
+    }
+
+    getFee(bytes) {
+	// TEMPORARY: Hardcoded fee per-byte
+	return bytes * 50; // 50 sat/byte
+    }
+
+    get cachedBlockCount() {
+	throw new Error("cachedBlockCount must be implemented");
+    }
+
+    error() {
+	throw new Error("Error must be implemented");
+    }
+
+    getBlockCount() {
+	throw new Error("getBlockCount must be implemented");
+    }
+
+    sentTransaction() {
+	throw new Error("sendTransaction must be implemented");
+    }
+
+    submitAnalytics(strType, cData = {}) {
+	throw new Error("submitAnalytics must be implemented");
     }
 }
 
-export function getBlockCount() {
-    var request = new XMLHttpRequest();
-    request.open('GET', cExplorer.url + '/api/v2/api', true);
-    request.onerror = networkError;
-    request.onload = function () {
-        const data = JSON.parse(this.response);
-        // If the block count has changed, refresh all of our data!
-        doms.domBalanceReload.classList.remove('playAnim');
-        doms.domBalanceReloadStaking.classList.remove('playAnim');
-        if (data.backend.blocks > cachedBlockCount) {
-            console.log(
-                'New block detected! ' +
-                    cachedBlockCount +
-                    ' --> ' +
-                    data.backend.blocks
-            );
-            getUTXOs();
-            getStakingRewards();
-        }
-        cachedBlockCount = data.backend.blocks;
-    };
-    request.send();
-}
-
 /**
- * Parses UTXOs and puts them in the mempool
- * @param {Array<Object>} arrUTXOs - Array of object-formatted UTXOs
- * @returns {Promise<void>} Resolves when it has parsed every UTXO
+ *
  */
-async function acceptUTXO(arrUTXOs) {
-    const nTimeSyncStart = Date.now() / 1000;
+export class ExplorerNetwork extends Network {
+    /**
+     * @param {string} strUrl - Url pointing to the blockbook explorer
+     */
+    constructor(strUrl, masterkey) {
+	super();
+	/**
+	 * @type{string}
+	 * @public
+	 */
+	this.strUrl = strUrl;
 
-    for (const cUTXO of arrUTXOs) {
-        if (mempool.isAlreadyStored({ id: cUTXO.txid, vout: cUTXO.vout })) {
-            mempool.updateUTXO({ id: cUTXO.txid, vout: cUTXO.vout });
-            continue;
-        }
+	this.masterkey = masterkey;
+
+	/**
+	 * @type{Number}
+	 * @private
+	 */
+	this.blocks = 0;
+    }
+    
+    error() {
+	if (this.enabled) {
+	    this.disable();
+	    createAlert(
+		'warning',
+		'<b>Failed to synchronize!</b> Please try again later.' +
+                    '<br>You can attempt re-connect via the Settings.',
+		[]
+            );
+	}
+    }
+
+    get cachedBlockCount() {
+	return this.blocks;
+    }
+
+    async getBlockCount() {
+	try {
+	    const { backend } = await (await fetch(`${this.strUrl}/api/v2/api`)).json();
+	    if (backend.blocks > this.blocks) {
+		console.log(
+                    'New block detected! ' +
+			this.blocks +
+			' --> ' +
+			backend.blocks
+		);
+		this.eventEmitter.emit("sync-status", "start");
+		
+	    }
+	} catch (e) {
+	    this.error();
+	    throw e;
+	}
+    }
+
+    /**
+     * Fetch UTXOs from the current primary explorer
+     * @returns {Promise<void>} Resolves when it has finished fetching UTXOs
+     */
+    async getUTXOs() {
+	// Don't fetch UTXOs if we're already scanning for them!
+	if (this.isSyncing) return;
+	this.isSyncing = true;
+	try {
+            let publicKey;
+            if (this.masterKey.isHD) {
+		const derivationPath = getDerivationPath(masterKey.isHardwareWallet)
+                      .split('/')
+                      .slice(0, 4)
+                      .join('/');
+		publicKey = await masterKey.getxpub(derivationPath);
+            } else {
+		publicKey = await masterKey.getAddress();
+            }
+
+	    this.eventEmitter.emit("utxo", await (await fetch(`${cExplorer.url}/api/v2/utxo/${publicKey}`)
+		).json()
+);
+	} catch (e) {
+            console.error(e);
+            networkError();
+	} finally {
+            getUTXOs.isSyncing = false;
+	}
+    }
+    /**
+     * Fetches UTXOs full info
+     * @param {Object} cUTXO - object-formatted UTXO
+     * @returns {Promise<UTXO>} Promise that resolves with the full info of the UTXO
+     */
+    async getUTXOFullInfo(cUTXO) {
         const cTx = await (
-            await fetch(`${cExplorer.url}/api/v2/tx-specific/${cUTXO.txid}`)
+	    await fetch(`${cExplorer.url}/api/v2/tx-specific/${cUTXO.id}`)
         ).json();
         const cVout = cTx.vout[cUTXO.vout];
-
+	
         let path;
         if (cUTXO.path) {
-            path = cUTXO.path.split('/');
-            path[2] =
+	    path = cUTXO.path.split('/');
+	    path[2] =
                 (masterKey.isHardwareWallet
-                    ? cChainParams.current.BIP44_TYPE_LEDGER
-                    : cChainParams.current.BIP44_TYPE) + "'";
-            lastWallet = Math.max(parseInt(path[5]), lastWallet);
-            path = path.join('/');
+                 ? cChainParams.current.BIP44_TYPE_LEDGER
+                 : cChainParams.current.BIP44_TYPE) + "'";
+	    lastWallet = Math.max(parseInt(path[5]), lastWallet);
+	    path = path.join('/');
         }
-
+	
         const isColdStake = cVout.scriptPubKey.type === 'coldstake';
         const isStandard = cVout.scriptPubKey.type === 'pubkeyhash';
         const isReward = cTx.vout[0].scriptPubKey.hex === '';
         // We don't know what this is
         if (!isColdStake && !isStandard) {
-            continue;
+	    return null;
         }
+	
+        return new UTXO({
+	    id: cUTXO.txid,
+	    path,
+	    sats: Math.round(cVout.value * COIN),
+	    script: cVout.scriptPubKey.hex,
+	    vout: cVout.n,
+	    height: cachedBlockCount - (cTx.confirmations - 1),
+	    status: cTx.confirmations < 1 ? Mempool.PENDING : Mempool.CONFIRMED,
+	    isDelegate: isColdStake,
+	    isReward,
+        });
+	// TODO: readd as event getNewAddress(true);
+    }
 
-        mempool.addUTXO({
-            id: cUTXO.txid,
-            path,
-            sats: Math.round(cVout.value * COIN),
-            script: cVout.scriptPubKey.hex,
-            vout: cVout.n,
-            height: cachedBlockCount - (cTx.confirmations - 1),
-            status: cTx.confirmations < 1 ? Mempool.PENDING : Mempool.CONFIRMED,
-            isDelegate: isColdStake,
-            isReward,
-        });
+    async sendTransaction(hex, msg = '') {
+	try {
+            const data = await (
+		await fetch(cExplorer.url + '/api/v2/sendtx/', {
+                    method: 'post',
+                    body: hex,
+		})
+            ).json();
+            if (data.result && data.result.length === 64) {
+		console.log('Transaction sent! ' + data.result);
+		this.eventEmitter.emit("transaction-sent", true);
+		/*
+		doms.domTxOutput.innerHTML =
+                    '<h4 style="color:green; font-family:mono !important;">' +
+                    data.result +
+                    '</h4>';
+		doms.domSimpleTXs.style.display = 'none';
+		doms.domAddress1s.value = '';
+		doms.domValue1s.innerHTML = '';
+		createAlert(
+                    'success',
+                    msg || 'Transaction sent!',
+                    msg ? 1250 + msg.length * 50 : 1500
+		    );
+
+		// If allowed by settings: submit a simple 'tx' ping to Labs Analytics
+		submitAnalytics('transaction');
+		*/
+		return true;
+            } else {
+		console.log('Error sending transaction: ' + data.result);
+		//createAlert('warning', 'Transaction Failed!', 1250);
+		// Attempt to parse and prettify JSON (if any), otherwise, display the raw output.
+		let strError = data.error;
+		try {
+                    strError = JSON.stringify(JSON.parse(data), null, 4);
+                    console.log('parsed');
+		} catch (e) {
+                    console.log('no parse!');
+                    console.log(e);
+		}
+		this.eventEmitter.emit("transaction-sent", false);
+		/*doms.domTxOutput.innerHTML =
+                    '<h4 style="color:red;font-family:mono !important;"><pre style="color: inherit;">' +
+                    strError +
+                    '</pre></h4>';*/
+		return false;
+            }
+	} catch (e) {
+            console.error(e);
+            this.error();
+	}
     }
-    getNewAddress(true);
-    if (arrUTXOs.length) {
-        // If allowed by settings: submit a sync performance measurement to Labs Analytics
-        return submitAnalytics('time_to_sync', {
-            time: Date.now() / 1000 - nTimeSyncStart,
-            explorer: cExplorer.name,
-        });
-    }
+}
+
+let _network = null;
+
+/**
+ * Sets the network in use by MPW.
+ * @param {Network} network - network to use
+ */
+export function setNetwork(network) {
+    _network = network;
 }
 
 /**
- * Fetch UTXOs from the current primary explorer
- * @returns {Promise<void>} Resolves when it has finished fetching UTXOs
+ * Sets the network in use by MPW.
+ * @returns {Network?} Returns the network in use, may be null if MPW hasn't properly loaded yet.
  */
-async function getUTXOs() {
-    // Don't fetch UTXOs if we're already scanning for them!
-    if (getUTXOs.isSyncing) return;
-    getUTXOs.isSyncing = true;
-    try {
-        let publicKey;
-        if (masterKey.isHD) {
-            const derivationPath = getDerivationPath(masterKey.isHardwareWallet)
-                .split('/')
-                .slice(0, 4)
-                .join('/');
-            publicKey = await masterKey.getxpub(derivationPath);
-        } else {
-            publicKey = await masterKey.getAddress();
-        }
-        // Validate and sync these UTXOs
-        await acceptUTXO(
-            await (
-                await fetch(`${cExplorer.url}/api/v2/utxo/${publicKey}`)
-            ).json()
-        );
-    } catch (e) {
-        console.error(e);
-        networkError();
-    } finally {
-        getUTXOs.isSyncing = false;
-    }
+export function getNetwork() {
+    return _network;
 }
 
+<<<<<<< HEAD
 export async function sendTransaction(hex, msg = '') {
     try {
         const data = await (
@@ -195,6 +324,59 @@ export async function sendTransaction(hex, msg = '') {
         networkError();
     }
 }
+||||||| parent of a6ae8aa (Initial network reimplementation)
+export async function sendTransaction(hex, msg = '') {
+    try {
+        const data = await (
+            await fetch(cExplorer.url + '/api/v2/sendtx/', {
+                method: 'post',
+                body: hex,
+            })
+        ).json();
+        if (data.result && data.result.length === 64) {
+            console.log('Transaction sent! ' + data.result);
+            doms.domTxOutput.innerHTML =
+                '<h4 style="color:green; font-family:mono !important;">' +
+                data.result +
+                '</h4>';
+            doms.domSimpleTXs.style.display = 'none';
+            doms.domAddress1s.value = '';
+            doms.domValue1s.innerHTML = '';
+            createAlert(
+                'success',
+                msg || 'Transaction sent!',
+                msg ? 1250 + msg.length * 50 : 1500
+            );
+            // If allowed by settings: submit a simple 'tx' ping to Labs Analytics
+            submitAnalytics('transaction');
+            return true;
+        } else {
+            console.log('Error sending transaction: ' + data.result);
+            createAlert('warning', 'Transaction Failed!', 1250);
+            // Attempt to parse and prettify JSON (if any), otherwise, display the raw output.
+            let strError = data.error;
+            try {
+                strError = JSON.stringify(JSON.parse(data), null, 4);
+                console.log('parsed');
+            } catch (e) {
+                console.log('no parse!');
+                console.log(e);
+            }
+            doms.domTxOutput.innerHTML =
+                '<h4 style="color:red;font-family:mono !important;"><pre style="color: inherit;">' +
+                strError +
+                '</pre></h4>';
+            return false;
+        }
+    } catch (e) {
+        console.error(e);
+        networkError();
+    }
+}
+=======
+export let lastWallet = 0;
+
+>>>>>>> a6ae8aa (Initial network reimplementation)
 
 export function getFee(bytes) {
     // TEMPORARY: Hardcoded fee per-byte

@@ -1,4 +1,4 @@
-import { cachedBlockCount } from './network.js';
+import { getNetwork } from './network.js';
 import { getBalance, isMasternodeUTXO, getStakingBalance } from './global.js';
 import { sleep } from './misc.js';
 import { debug } from './settings.js';
@@ -314,7 +314,7 @@ export class Mempool {
      */
     static isValidUTXO(cUTXO) {
         if (cUTXO.isReward) {
-            return cachedBlockCount - cUTXO.height > 100;
+            return getNetwork().cachedBlockCount - cUTXO.height > 100;
         } else {
             return true;
         }
@@ -326,5 +326,21 @@ export class Mempool {
      */
     getDelegatedBalance() {
         return this.getDelegatedUTXOs().reduce((a, b) => a + b.sats, 0);
+    }
+
+    /**
+     * Subscribes to network events
+     * @param {Network} network
+     */
+    subscribeToNetwork(network) {
+	network.eventEmitter.on("utxo", utxos => {
+	    for (const utxo of utxos) {
+		if (this.isAlreadyStored( { id: utxo.txid, vout: utxo.vout } )) {
+		    this.updateUTXO({ id: utxo.txid, vout: utxo.vout });
+		    continue;
+		}
+		this.addUTXO(getNetwork().getUTXOFullInfo(utxo));
+	    }
+	});
     }
 }
