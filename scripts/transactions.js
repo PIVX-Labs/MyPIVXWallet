@@ -4,7 +4,6 @@ import { ALERTS } from './i18n.js';
 import {
     doms,
     getBalance,
-    getStakingBalance,
     mempool,
     isMasternodeUTXO,
     askForCSAddr,
@@ -170,9 +169,9 @@ export async function undelegateGUI() {
         delegateChange: true,
         changeDelegationAddress: cachedColdStakeAddr,
     });
-    if (!result.ok && result.err === "No change addr") {
-	askForCSAddr(true);
-	await undelegateGUI();
+    if (!result.ok && result.err === 'No change addr') {
+        askForCSAddr(true);
+        await undelegateGUI();
     }
 }
 
@@ -182,7 +181,7 @@ async function createAndSendTransaction({
     isDelegation = false,
     useDelegatedInputs = false,
     delegateChange = false,
-    changeDelegationAddress,
+    changeDelegationAddress = null,
 }) {
     if (!hasWalletUnlocked(true)) return;
     if ((isDelegation || useDelegatedInputs) && masterKey.isHardwareWallet) {
@@ -221,6 +220,10 @@ async function createAndSendTransaction({
      * @type{Array<UTXO>}
      */
     const knownUTXOs = [];
+    /**
+     * Array containing the transaction outputs, useful for showing confirmation screen
+     */
+    const outputs = [];
     if (nChange > 0) {
         if (delegateChange && nChange > 1.01 * COIN) {
             if (!changeDelegationAddress)
@@ -231,9 +234,15 @@ async function createAndSendTransaction({
                 changeDelegationAddress,
                 nChange / COIN
             );
+            outputs.push([
+                changeAddress,
+                changeDelegationAddress,
+                nChange / COIN,
+            ]);
         } else {
             // Change output
             cTx.addoutput(changeAddress, nChange / COIN);
+            outputs.push([changeAddress, nChange / COIN]);
         }
         knownUTXOs.push(
             new UTXO({
@@ -255,6 +264,7 @@ async function createAndSendTransaction({
     if (isDelegation) {
         const [primaryAddress, primaryAddressPath] = await getNewAddress();
         cTx.addcoldstakingoutput(primaryAddress, address, amount / COIN);
+        outputs.push([primaryAddress, address, amount / COIN]);
 
         knownUTXOs.push(
             new UTXO({
@@ -269,6 +279,7 @@ async function createAndSendTransaction({
         );
     } else {
         cTx.addoutput(address, amount / COIN);
+        outputs.push([address, amount / COIN]);
     }
 
     // Debug-only verbose response
@@ -288,7 +299,7 @@ async function createAndSendTransaction({
                   '<br>Change: ' +
                   nChange / COIN
                 : '');
-    const sign = await signTransaction(cTx, masterKey, 1, delegateChange);
+    const sign = await signTransaction(cTx, masterKey, outputs, delegateChange);
     const result = await sendTransaction(sign);
     // Update the mempool
     if (result) {
@@ -330,11 +341,40 @@ async function createAndSendTransaction({
     return { ok: result };
 }
 
-async function signTransaction(cTx, masterKey, one, undelegate) {
+export async function createMasternode() {
+    if (masterKey.isViewOnly) {
+        return createAlert(
+            'warning',
+            "Can't create a masternode in view only mode",
+            6000
+        );
+    }
+    const fGeneratePrivkey = doms.domMnCreateType.value === 'VPS';
+    const [address] = await getNewAddress();
+    await createAndSendTransaction({
+        amount: cChainParams.current.collateralInSats,
+        address,
+    });
+    if (fGeneratePrivkey) {
+        const masternodePrivateKey = await generateMnPrivkey();
+        await confirmPopup({
+            title: ALERTS.CONFIRM_POPUP_MN_P_KEY,
+            html: masternodePrivateKey + ALERTS.CONFIRM_POPUP_MN_P_KEY_HTML,
+        });
+    }
+    createAlert(
+        'success',
+        '<b>Masternode Created!<b><br>Wait 15 confirmations to proceed further'
+    );
+    // Remove any previous Masternode data, if there were any
+    localStorage.removeItem('masternode');
+}
+
+async function signTransaction(cTx, masterKey, outputs, undelegate) {
     if (!masterKey.isHardwareWallet) {
         return await cTx.sign(
             masterKey,
-            one,
+            1,
             undelegate ? 'coldstake' : undefined
         );
     }
@@ -466,4 +506,17 @@ function chooseUTXOs(
     // Reaching here: we have sufficient UTXOs, calc final misc data and return!
     cCoinControl.nChange = nTotalSatsRequired - cCoinControl.nValue;
     return ccSuccess(cCoinControl);
+}
+
+function createTxConfirmation(outputs) {
+    let strHtml =
+        'Confirm this transaction matches the one on your ' +
+        strHardwareName +
+        '.';
+    for (const output of outputs) {
+        strHtml += `<br> <br> You will send <b>${output[1].toFixed(2)} ${
+            cChainParams.current.TICKER
+        }</b> to <div class="inline-address">${output[0]}</div>`;
+    }
+    return strHtml;
 }
