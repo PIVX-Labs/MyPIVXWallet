@@ -351,10 +351,13 @@ export async function createMasternode() {
     }
     const fGeneratePrivkey = doms.domMnCreateType.value === 'VPS';
     const [address] = await getNewAddress();
-    await createAndSendTransaction({
+    const result = await createAndSendTransaction({
         amount: cChainParams.current.collateralInSats,
         address,
     });
+    if (!result.ok) {
+        return;
+    }
     if (fGeneratePrivkey) {
         const masternodePrivateKey = await generateMnPrivkey();
         await confirmPopup({
