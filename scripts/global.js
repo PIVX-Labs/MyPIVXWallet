@@ -144,11 +144,7 @@ export function start() {
         domMnemonicModalButton: document.getElementById(
             'modalMnemonicConfirmButton'
         ),
-        domExportDiv: document.getElementById('exportKeyDiv'),
-        domExportPublicKey: document.getElementById('exportPublicKeyText'),
-        domExportPrivateKeyHold: document.getElementById('exportPrivateKey'),
-        domExportPrivateKey: document.getElementById('exportPrivateKeyText'),
-        domExportWallet: document.getElementById('guiExportWallet'),
+        domExportWallet: document.getElementById('guiExportWalletItem'),
         domWipeWallet: document.getElementById('guiWipeWallet'),
         domRestoreWallet: document.getElementById('guiRestoreWallet'),
         domNewAddress: document.getElementById('guiNewAddress'),
