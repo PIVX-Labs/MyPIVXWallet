@@ -4,9 +4,9 @@ import {
     getStakingBalance,
     updateStakingRewardsGUI,
 } from './global.js';
-import { fWalletLoaded } from './wallet.js';
+import { fWalletLoaded, masterKey } from './wallet.js';
 import { cChainParams } from './chain_params.js';
-import { enableNetwork } from './network.js';
+import { setNetwork, ExplorerNetwork, getNetwork } from './network.js';
 import { createAlert } from './misc.js';
 import {
     switchTranslation,
@@ -19,8 +19,6 @@ import { CoinGecko } from './prices.js';
 // --- Default Settings
 /** A mode that emits verbose console info for internal MPW operations */
 export let debug = false;
-/** A lock which blocks ALL network requests in totality */
-let networkEnabled = true;
 /**
  * The user-selected display currency from market-aggregator sites
  * @type {string}
@@ -70,6 +68,10 @@ export function start() {
     // Initialise status icons as their default variables
     doms.domNetwork.innerHTML =
         '<i class="fa-solid fa-' + (networkEnabled ? 'wifi' : 'ban') + '"></i>';
+    //TRANSLATIONS
+    //to make translations work we need to change it so that we just enable or disable the visibility of the text
+    doms.domNetworkE.style.display = '';
+    doms.domNetworkD.style.display = 'none';
     doms.domTestnet.style.display = cChainParams.current.isTestnet
         ? ''
         : 'none';
@@ -100,7 +102,7 @@ export function start() {
     };
 
     // Fill all selection UIs with their options
-    if (networkEnabled) {
+    if (getNetwork().enabled) {
         fillCurrencySelect();
     }
     fillExplorerSelect();
@@ -164,7 +166,8 @@ function setExplorer(explorer, fSilent = false) {
     );
 
     // Enable networking + notify if allowed
-    enableNetwork();
+    const network = new ExplorerNetwork(cExplorer.url, masterKey);
+    setNetwork(network);
     if (!fSilent)
         createAlert(
             'success',
@@ -182,7 +185,7 @@ function setNode(node, fSilent = false) {
     );
 
     // Enable networking + notify if allowed
-    enableNetwork();
+    getNetwork().enable();
     if (!fSilent)
         createAlert(
             'success',

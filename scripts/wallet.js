@@ -5,7 +5,7 @@ import { ripemd160 } from '@noble/hashes/ripemd160';
 import { generateMnemonic, mnemonicToSeed, validateMnemonic } from 'bip39';
 import { doms, beforeUnloadListener } from './global.js';
 import HDKey from 'hdkey';
-import { lastWallet, networkEnabled } from './network.js';
+import { getNetwork } from './network.js';
 import {
     pubKeyHashNetworkLen,
     confirmPopup,
@@ -506,7 +506,7 @@ export async function importWallet({
             if (!publicKey) return;
 
             // Derive our hardware address and import!
-            masterKey = new HardwareWalletMasterKey();
+            setMasterKey(new HardwareWalletMasterKey());
 
             // Hide the 'export wallet' button, it's not relevant to hardware wallets
             doms.domExportWallet.hidden = true;
@@ -535,27 +535,27 @@ export async function importWallet({
             if (await verifyMnemonic(privateImportValue)) {
                 // Generate our masterkey via Mnemonic Phrase
                 const seed = await mnemonicToSeed(privateImportValue);
-                masterKey = new HdMasterKey({ seed });
+                setMasterKey(new HdMasterKey({ seed }));
             } else {
                 // Public Key Derivation
                 try {
                     if (privateImportValue.startsWith('xpub')) {
-                        masterKey = new HdMasterKey({
+                        setMasterKey(new HdMasterKey({
                             xpub: privateImportValue,
-                        });
+                        }));
                     } else if (privateImportValue.startsWith('xprv')) {
-                        masterKey = new HdMasterKey({
+                        setMasterKey(new HdMasterKey({
                             xpriv: privateImportValue,
-                        });
+                        }));
                     } else if (
                         privateImportValue.length === 34 &&
                         cChainParams.current.PUBKEY_PREFIX.includes(
                             privateImportValue[0]
                         )
                     ) {
-                        masterKey = new LegacyMasterKey({
+                        setMasterKey(new LegacyMasterKey({
                             address: privateImportValue,
-                        });
+                        }));
                     } else {
                         // Lastly, attempt to parse as a WIF private key
                         const pkBytes = parseWIF(privateImportValue);
@@ -564,7 +564,7 @@ export async function importWallet({
                         doms.domNewAddress.style.display = 'none';
 
                         // Import the raw private key
-                        masterKey = new LegacyMasterKey({ pkBytes });
+                        setMasterKey(new LegacyMasterKey({ pkBytes }));
                     }
                 } catch (e) {
                     return createAlert(
@@ -611,11 +611,17 @@ export async function importWallet({
             doms.domGenKeyWarning.style.display = 'block';
 
         // Fetch state from explorer
-        if (networkEnabled) refreshChainData();
+        if (getNetwork().enabled) refreshChainData();
 
         // Hide all wallet starter options
         hideAllWalletOptions();
     }
+}
+
+function setMasterKey(mk) {
+    masterKey = mk;
+    // Update the network master key
+    getNetwork().setMasterKey(masterKey);
 }
 
 // Wallet Generation
@@ -633,7 +639,7 @@ export async function generateWallet(noUI = false) {
         const seed = await mnemonicToSeed(mnemonic);
 
         // Prompt the user to encrypt the seed
-        masterKey = new HdMasterKey({ seed });
+	setMasterKey(new HdMasterKey({ seed }));
         fWalletLoaded = true;
 
         if (!cChainParams.current.isTestnet)
@@ -753,7 +759,7 @@ export function hasHardwareWallet() {
 }
 
 export function hasWalletUnlocked(fIncludeNetwork = false) {
-    if (fIncludeNetwork && !networkEnabled)
+    if (fIncludeNetwork && !getNetwork().enabled)
         return createAlert(
             'warning',
             ALERTS.WALLET_OFFLINE_AUTOMATIC,
@@ -795,7 +801,7 @@ export async function getNewAddress({
     updateGUI = false,
     verify = false,
 } = {}) {
-    const last = lastWallet || 0;
+    const last = getNetwork().lastWallet;
     addressIndex = addressIndex > last ? addressIndex : last + 1;
     if (addressIndex - last > MAX_ACCOUNT_GAP) {
         // If the user creates more than ${MAX_ACCOUNT_GAP} empty wallets we will not be able to sync them!

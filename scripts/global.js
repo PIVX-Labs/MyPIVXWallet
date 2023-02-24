@@ -10,11 +10,9 @@ import {
     decryptWallet,
 } from './wallet.js';
 import {
-    submitAnalytics,
-    networkEnabled,
-    getBlockCount,
     arrRewards,
     getStakingRewards,
+    getNetwork,
 } from './network.js';
 import {
     start as settingsStart,
@@ -245,7 +243,7 @@ export function start() {
     }
 
     // If allowed by settings: submit a simple 'hit' (app load) to Labs Analytics
-    submitAnalytics('hit');
+    getNetwork().submitAnalytics('hit');
     setInterval(refreshChainData, 15000);
     doms.domPrefix.value = '';
     doms.domPrefixNetwork.innerText =
@@ -1397,7 +1395,7 @@ async function refreshMasternodeData(cMasternode, fAlert = false) {
 
 export function refreshChainData() {
     // If in offline mode: don't sync ANY data or connect to the internet
-    if (!networkEnabled)
+    if (!getNetwork().enabled)
         return console.warn(
             'Offline mode active: For your security, the wallet will avoid ALL internet requests.'
         );
@@ -1408,7 +1406,7 @@ export function refreshChainData() {
     doms.domBalanceReloadStaking.classList.add('playAnim');
 
     // Fetch block count + UTXOs
-    getBlockCount();
+    getNetwork().getBlockCount();
     getBalance(true);
 
     // Fetch pricing data
