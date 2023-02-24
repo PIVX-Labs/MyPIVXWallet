@@ -175,6 +175,17 @@ export async function undelegateGUI() {
     }
 }
 
+/**
+ * Creates and sends a transaction to the network.
+ * @param {Object} options
+ * @param {string} options.address - base38 encoded address to send funds to
+ * @param {Number} options.amount - Number of satoshi to send
+ * @param {boolean} options.isDelegation - Whether to delegate the amount. Address will be the cold staking address
+ * @param {boolean} options.useDelegatedInputs - If true, only delegated coins will be used in the transaction
+ * @param {delegateChange} options.delegateChange - If there is at least 1.01 PIV of change, the change will be delegated to options.changeDelegationAddress
+ * @param {string|null} options.changeDelegationAddress - See options.delegateChange
+ * @returns {{ok: boolean, err: string?}}
+ */
 async function createAndSendTransaction({
     address,
     amount,
@@ -228,7 +239,6 @@ async function createAndSendTransaction({
         if (delegateChange && nChange > 1.01 * COIN) {
             if (!changeDelegationAddress)
                 return { ok: false, error: 'No change addr' };
-            console.log(changeDelegationAddress);
             cTx.addcoldstakingoutput(
                 changeAddress,
                 changeDelegationAddress,
