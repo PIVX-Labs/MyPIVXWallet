@@ -65,11 +65,6 @@ export function start() {
         domGuiUndelegateAmount: document.getElementById('undelegateAmount'),
         domTxTab: document.getElementById('txTab'),
         domStakeTab: document.getElementById('stakeTab'),
-        domsendNotice: document.getElementById('sendNotice'),
-        domSimpleTXs: document.getElementById('simpleTransactions'),
-        domSimpleTXsDropdown: document.getElementById(
-            'simpleTransactionsDropdown'
-        ),
         domAddress1s: document.getElementById('address1s'),
         domValue1s: document.getElementById('value1s'),
         domGuiViewKey: document.getElementById('guiViewKey'),
@@ -123,7 +118,6 @@ export function start() {
         domGuiAddress: document.getElementById('guiAddress'),
         domGenIt: document.getElementById('genIt'),
         domHumanReadable: document.getElementById('HumanReadable'),
-        domTxOutput: document.getElementById('transactionFinal'),
         domReqDesc: document.getElementById('reqDesc'),
         domReqDisplay: document.getElementById('reqDescDisplay'),
         domIdenticon: document.getElementById('identicon'),
@@ -310,11 +304,6 @@ export function getBalance(updateGUI = false) {
             doms.domGuiBalanceValueCurrency.innerText =
                 strCurrency.toUpperCase();
         });
-
-        // Add a notice to the Send page if balance is lacking
-        doms.domsendNotice.innerHTML = nBalance
-            ? ''
-            : '<div class="alert alert-danger" role="alert"><h4>Note:</h4><h5>You don\'t have any funds, get some coins first!</h5></div>';
     }
 
     return nBalance;
@@ -382,9 +371,6 @@ async function loadImages() {
             ).default;
             document.getElementById('privateKeyImage').src = (
                 await import('../assets/key.png')
-            ).default;
-            document.getElementById('pivxLogoSend').src = (
-                await import('../assets/pivx.png')
             ).default;
         })(),
     ]);

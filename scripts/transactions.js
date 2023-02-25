@@ -602,12 +602,8 @@ export async function createTxGUI() {
     // Clear the inputs on 'Continue'
     if (doms.domGenIt.innerHTML === 'Continue') {
         doms.domGenIt.innerHTML = 'Send Transaction';
-        doms.domTxOutput.innerHTML = '';
-        doms.domHumanReadable.innerHTML = '';
         doms.domValue1s.value = '';
         doms.domAddress1s.value = '';
-        doms.domReqDesc.value = '';
-        doms.domReqDisplay.style.display = 'none';
         return;
     }
     // Sanity check the address

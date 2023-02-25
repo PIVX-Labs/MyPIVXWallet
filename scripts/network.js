@@ -168,11 +168,6 @@ export async function sendTransaction(hex, msg = '') {
         ).json();
         if (data.result && data.result.length === 64) {
             console.log('Transaction sent! ' + data.result);
-            doms.domTxOutput.innerHTML =
-                '<h4 style="color:green; font-family:mono !important;">' +
-                data.result +
-                '</h4>';
-            doms.domSimpleTXs.style.display = 'none';
             doms.domAddress1s.value = '';
             doms.domValue1s.innerHTML = '';
             createAlert(
@@ -195,10 +190,6 @@ export async function sendTransaction(hex, msg = '') {
                 console.log('no parse!');
                 console.log(e);
             }
-            doms.domTxOutput.innerHTML =
-                '<h4 style="color:red;font-family:mono !important;"><pre style="color: inherit;">' +
-                strError +
-                '</pre></h4>';
             return false;
         }
     } catch (e) {
