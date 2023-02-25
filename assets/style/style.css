@@ -40,14 +40,26 @@ textarea,
 input {
     font-family: monospace !important;
     background-color: #fff;
-    border-style: dashed;
-    border-width: 2px;
-    border-radius: 8px;
+    border-radius: 9px;
     margin-bottom: 5px;
     width: 100%;
     height: 43px;
     margin-bottom: 14px;
     transition: all .125s ease-in-out;
+    border: 2px solid #fff;
+    padding-left: 12px;
+    padding-right: 12px;
+    font-size: 14px;
+}
+
+input[type=number] {
+    -moz-appearance: textfield;
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 #privateKey {
@@ -131,9 +143,6 @@ button {
     text-align: center;
 }
 
-input::-moz-focus-inner {
-    border: 0;
-}
 
 .large-box {
     background: rgba(43, 9, 80, 0.55);
