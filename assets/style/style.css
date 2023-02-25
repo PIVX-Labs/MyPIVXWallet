@@ -2378,3 +2378,120 @@ input {
     background-image: linear-gradient(183deg, #9621ff, #7d21ff);
     cursor:pointer;
 }
+
+
+
+
+
+.transferMenu {
+    width: calc(100% - 30px);
+    position: fixed;
+    left: 15px;
+    bottom: 0px;
+    z-index: 1;
+    border-top-left-radius:10px;
+    border-top-right-radius:10px;
+    min-height: 155px;
+    transition: .4s;
+    /*background-color:rgba(255, 255, 255, 12%)!important;*/
+    background-color:#5d2f83c9;
+}
+
+@media (min-width: 768px) {
+    .transferMenu {
+        width: 310px!important;
+        left: calc((100% - 310px) / 2)!important;
+    }
+}
+
+.transferMenu .transferHeader .transferExit {
+    cursor:pointer;
+}
+
+.transferAnimation {
+    transform: translate3d(0, 390px, 0);
+}
+
+.transferMenu .transferHeader {
+    padding: 9px 12px;
+    display:flex;
+}
+
+.transferMenu .transferHeader .transferHeaderText {
+    width: 100%;
+}
+
+.transferItem {
+    cursor:pointer;
+    margin: 9px 12px;
+    display:flex;
+}
+
+.transferItem .transferIcon {
+    margin-right:10px;
+}
+
+.transferItem .transferText {
+    line-height: 17px;
+    font-size: 15px;
+}
+
+.transferItem .transferText span {
+    font-size:11px;
+    color:#dbdbdb;
+}
+
+.transferMenu .transferBody {
+    padding: 9px 12px;
+    font-size:15px;
+}
+
+.transferMenu .transferBody .feeButton {
+    background-color: #ffffff00;
+    border:1px solid #ffffff1f;
+    border-radius: 8px;
+    padding: 5px 0px;
+    font-size: 13px;
+    cursor:pointer;
+    transition: all 0.125s ease-in-out;
+}
+
+.transferMenu .transferBody .feeButtonSelected {
+    background-color: #ffffff0f;
+}
+
+.transferMenu .transferBody .pasteAddress i {
+    transition: all 0.125s ease-in-out;
+    cursor: pointer;
+}
+
+.transferMenu .transferBody .pasteAddress i:hover {
+    color:#9621ff9c;
+}
+
+
+.abcd {
+    padding: 14px 16px;
+    background-color: rgba(255, 255, 255, 12%);
+    border-radius: 10px;
+    backdrop-filter: blur(4px);
+}
+
+.btn-group-input {
+    position: relative;
+    -ms-flex: 1 1 auto;
+    flex: 1 1 auto;
+    width: 1%;
+    min-width: 0;
+    margin-bottom: 0;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.input-group-text {
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+    font-size:13px;
+    background-color:#fff;
+    border:0px;
+}
