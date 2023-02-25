@@ -2352,7 +2352,7 @@ a {
 }
 
 input {
-  outline-color: rgba(0,0,0,0);
+  outline-color: rgb(180, 180, 180);
 }
 
 .dcWallet-sWithdraw {
