@@ -412,6 +412,15 @@ export function unblurPrivKey() {
     }
 }
 
+export function toggleBottomMenu(dom, ani) {
+    let element = document.getElementById(dom);
+    if(element.classList.contains(ani)) {
+        element.classList.remove(ani);
+    } else {
+        element.classList.add(ani);
+    }
+}
+
 export function toClipboard(source, caller) {
     // Fetch the text/value source
     const domCopy = document.getElementById(source) || source;
