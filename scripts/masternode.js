@@ -66,10 +66,14 @@ export default class Masternode {
      * @param {String} ip
      */
     static _decodeIpAddress(ip, port) {
-	const address = ip.includes(".") ? Address6.fromAddress4(ip) : new Address6(ip);
-	const bytes = address.toUnsignedByteArray();
-	const res =  bytesToHex([...(new Array(16 - bytes.length).fill(0)), ...bytes]) + bytesToHex(Masternode._numToBytes(port, 2, false));
-	return res;
+        const address = ip.includes('.')
+            ? Address6.fromAddress4(ip)
+            : new Address6(ip);
+        const bytes = address.toUnsignedByteArray();
+        const res =
+            bytesToHex([...new Array(16 - bytes.length).fill(0), ...bytes]) +
+            bytesToHex(Masternode._numToBytes(port, 2, false));
+        return res;
     }
 
     static _numToBytes(number, numBytes = 8, littleEndian = true) {
@@ -111,13 +115,15 @@ export default class Masternode {
      * Then hashed two times with SHA256
      */
     static getToSign({ walletPrivateKey, addr, mnPrivateKey, sigTime }) {
-	let ip, port;
-	if (addr.includes(".")) { // IPv4
+        let ip, port;
+        if (addr.includes('.')) {
+            // IPv4
             [ip, port] = addr.split(':');
-	} else { // IPv6
-	    [ip, port] = addr.slice(1).split(']');
-	    port = port.slice(1);
-	}
+        } else {
+            // IPv6
+            [ip, port] = addr.slice(1).split(']');
+            port = port.slice(1);
+        }
         const publicKey = hexToBytes(
             deriveAddress({
                 pkBytes: parseWIF(walletPrivateKey, true),

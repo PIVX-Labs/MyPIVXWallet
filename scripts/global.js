@@ -585,13 +585,13 @@ export async function importMasternode() {
     doms.domMnPrivateKey.value = '';
 
     if (ip.includes('.')) {
-	if (!ip.includes(':')) {
+        if (!ip.includes(':')) {
             address = `${ip}:${cChainParams.current.MASTERNODE_PORT}`;
-	} else {
+        } else {
             address = ip;
-	}
-    } else if (!ip.includes("[")) {
-	address = `[${ip}]:${cChainParams.current.MASTERNODE_PORT}`;
+        }
+    } else if (!ip.includes('[')) {
+        address = `[${ip}]:${cChainParams.current.MASTERNODE_PORT}`;
     }
 
     if (!masterKey.isHD) {
