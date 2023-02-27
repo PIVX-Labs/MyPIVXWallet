@@ -206,7 +206,14 @@ export class HardwareWalletMasterKey extends MasterKey {
 
     async getAddress(path, { verify } = {}) {
         return deriveAddress({
+            publicKey: await this.getPublicKey(path, { verify }),
+        });
+    }
+
+    async getPublicKey(path, { verify } = {}) {
+        return deriveAddress({
             publicKey: await getHardwareWalletKeys(path, false, verify),
+            output: 'COMPRESSED_HEX',
         });
     }
 

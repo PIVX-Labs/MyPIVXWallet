@@ -114,20 +114,16 @@ export default class Masternode {
      * it needs to be padded with "\x18DarkNet Signed Message:\n" + Message length + Message
      * Then hashed two times with SHA256
      */
-    static getToSign({ walletPrivateKey, addr, mnPrivateKey, sigTime }) {
+    static getToSign({ publicKey, addr, mnPrivateKey, sigTime }) {
         const [ip, port] = addr.split(':');
-        const publicKey = hexToBytes(
-            deriveAddress({
-                pkBytes: parseWIF(walletPrivateKey, true),
-                output: 'COMPRESSED_HEX',
-            })
-        );
         const mnPublicKey = hexToBytes(
             deriveAddress({
                 pkBytes: parseWIF(mnPrivateKey, true),
                 output: 'UNCOMPRESSED_HEX',
             })
         );
+
+        console.log(publicKey);
 
         const pkt = [
             ...Masternode._numToBytes(1, 4, true), // Message version
@@ -160,18 +156,18 @@ export default class Masternode {
     async getSignedMessage(sigTime) {
         const toSign = Masternode.getToSign({
             addr: this.addr,
-            walletPrivateKey: walletPrivateKey,
+            publicKey: await this.getWalletPublicKey(),
             mnPrivateKey: this.mnPrivateKey,
             sigTime,
         });
 
         if (masterKey.isHardwareWallet) {
-            const { r, s, v } = cHardwareWallet.signMessage(
+            const { r, s, v } = await cHardwareWallet.signMessage(
                 this.walletPrivateKeyPath,
-                Buffer.from(toSign).to('hex')
+                bytesToHex(toSign)
             );
             console.log(r, s, v);
-            return [v, ...r, ...s];
+            return [v + 31, ...hexToBytes(r), ...hexToBytes(s)];
         } else {
             const padding = '\x18DarkNet Signed Message:\n'
                 .split('')
@@ -210,6 +206,22 @@ export default class Masternode {
         return [v + 27, ...signature];
     }
 
+    async getWalletPublicKey() {
+        if (masterKey.isHardwareWallet) {
+            const hi = await masterKey.getPublicKey(this.walletPrivateKeyPath);
+            console.log(hi);
+            return hexToBytes(hi);
+        } else {
+            const walletPrivateKey = await this._getWalletPrivateKey();
+            return hexToBytes(
+                deriveAddress({
+                    pkBytes: parseWIF(walletPrivateKey, true),
+                    output: 'COMPRESSED_HEX',
+                })
+            );
+        }
+    }
+
     /**
      * Get the message encoded to hex used to start a masternode
      * It uses to two signatures: `getPingSignature()` which is signed
@@ -221,13 +233,7 @@ export default class Masternode {
         const sigTime = Math.round(Date.now() / 1000);
         const blockHash = await Masternode.getLastBlockHash();
         const [ip, port] = this.addr.split(':');
-        const walletPrivateKey = await this._getWalletPrivateKey();
-        const walletPublicKey = hexToBytes(
-            deriveAddress({
-                pkBytes: parseWIF(walletPrivateKey, true),
-                output: 'COMPRESSED_HEX',
-            })
-        );
+        const walletPublicKey = await this.getWalletPublicKey();
 
         const mnPublicKey = hexToBytes(
             deriveAddress({
