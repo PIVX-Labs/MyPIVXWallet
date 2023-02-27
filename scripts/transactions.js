@@ -474,7 +474,7 @@ function chooseUTXOs(
         // Have we met the required sats threshold?
         if (
             cCoinControl.nValue >=
-            nTotalSatsRequired + getFee(cTx.serialize().length)
+            nTotalSatsRequired + getNetwork().getFee(cTx.serialize().length)
         ) {
             // Required Coin Control value met, yahoo!
             console.log(

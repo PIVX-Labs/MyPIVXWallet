@@ -3,7 +3,6 @@ import {
     getBalance,
     getStakingBalance,
     updateStakingRewardsGUI,
-    mempool,
 } from './global.js';
 import { fWalletLoaded, masterKey } from './wallet.js';
 import { cChainParams } from './chain_params.js';
@@ -101,7 +100,7 @@ export function start() {
     document.getElementById('analytics').onchange = function (evt) {
         setAnalytics(arrAnalytics.find((a) => a.name === evt.target.value));
     };
-    
+
     fillExplorerSelect();
     fillNodeSelect();
     fillTranslationSelect();
@@ -170,22 +169,6 @@ function setExplorer(explorer, fSilent = false) {
     // Enable networking + notify if allowed
     const network = new ExplorerNetwork(cExplorer.url, masterKey);
     setNetwork(network);
-    
-    network.eventEmitter.on('network-toggle', value => {
-	doms.domNetworkE.style.display = value ? '' : 'none';
-	doms.domNetworkD.style.display = value ? 'none' : '';
-    });
-
-    network.eventEmitter.on('sync-status', value => {
-	switch (value) {
-	case 'start':
-	    doms.domBalanceReload.classList.remove('playAnim');
-            doms.domBalanceReloadStaking.classList.remove('playAnim');
-	    break;
-	}
-    });
-
-    mempool.subscribeToNetwork(network);
 
     if (!fSilent)
         createAlert(

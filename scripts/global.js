@@ -9,9 +9,7 @@ import {
     encryptWallet,
     decryptWallet,
 } from './wallet.js';
-import {
-    getNetwork,
-} from './network.js';
+import { getNetwork } from './network.js';
 import {
     start as settingsStart,
     cExplorer,
@@ -26,6 +24,7 @@ import { decrypt } from './aes-gcm.js';
 import { registerWorker } from './native.js';
 import { refreshPriceDisplay } from './prices.js';
 import { Address6 } from 'ip-address';
+import { getEventEmitter } from './event_bus.js';
 
 export let doms = {};
 
@@ -240,6 +239,8 @@ export function start() {
         );
     }
 
+    subscribeToNetworkEvents();
+
     doms.domPrefix.value = '';
     doms.domPrefixNetwork.innerText =
         cChainParams.current.PUBKEY_PREFIX.join(' or ');
@@ -247,6 +248,44 @@ export function start() {
     // If allowed by settings: submit a simple 'hit' (app load) to Labs Analytics
     getNetwork().submitAnalytics('hit');
     setInterval(refreshChainData, 15000);
+}
+
+function subscribeToNetworkEvents() {
+    getEventEmitter().on('network-toggle', (value) => {
+        doms.domNetworkE.style.display = value ? '' : 'none';
+        doms.domNetworkD.style.display = value ? 'none' : '';
+    });
+
+    getEventEmitter().on('sync-status', (value) => {
+        switch (value) {
+            case 'start':
+                doms.domBalanceReload.classList.remove('playAnim');
+                doms.domBalanceReloadStaking.classList.remove('playAnim');
+                break;
+        }
+    });
+
+    getEventEmitter().on('transaction-sent', (success, result) => {
+        if (success) {
+            doms.domTxOutput.innerHTML =
+                '<h4 style="color:green; font-family:mono !important;">' +
+                result +
+                '</h4>';
+            doms.domSimpleTXs.style.display = 'none';
+            doms.domAddress1s.value = '';
+            doms.domValue1s.innerHTML = '';
+            createAlert('success', 'Transaction sent!', 1500);
+
+            // If allowed by settings: submit a simple 'tx' ping to Labs Analytics
+            submitAnalytics('transaction');
+        } else {
+            createAlert('warning', 'Transaction Failed!', 1250);
+            doms.domTxOutput.innerHTML =
+                '<h4 style="color:red;font-family:mono !important;"><pre style="color: inherit;">' +
+                result +
+                '</pre></h4>';
+        }
+    });
 }
 
 // WALLET STATE DATA

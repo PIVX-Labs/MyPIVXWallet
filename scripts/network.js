@@ -2,7 +2,7 @@ import { getDerivationPath } from './wallet.js';
 import { cChainParams, COIN } from './chain_params.js';
 import { createAlert } from './misc.js';
 import { Mempool, UTXO } from './mempool.js';
-import { EventEmitter } from 'events';
+import { getEventEmitter } from './event_bus.js';
 
 /**
  * Virtual class rapresenting any network backend
@@ -14,13 +14,7 @@ export class Network {
         }
         this._enabled = true;
 
-	this.masterKey = masterKey;
-
-        /**
-         * @type {EventEmitter}
-         * @public
-         */
-        this.eventEmitter = new EventEmitter();
+        this.masterKey = masterKey;
 
         this.lastWallet = 0;
     }
@@ -30,7 +24,7 @@ export class Network {
      */
     set enabled(value) {
         if (value !== this._enabled) {
-            this.eventEmitter.emit('network-toggle', value);
+            getEventEmitter().emit('network-toggle', value);
             this._enabled = value;
         }
     }
@@ -77,8 +71,12 @@ export class Network {
     }
 
     setMasterKey(masterKey) {
-	this.masterKey = masterKey;
+        this.masterKey = masterKey;
     }
+    
+    async getTxInfo(txHash) {
+        throw new Error('getTxInfo must be implemented');
+    }    
 }
 
 /**
@@ -133,9 +131,9 @@ export class ExplorerNetwork extends Network {
                         ' --> ' +
                         backend.blocks
                 );
-		this.blocks = backend.blocks;
-                this.eventEmitter.emit('sync-status', 'start');
-		this.getUTXOs();
+                this.blocks = backend.blocks;
+                getEventEmitter().emit('sync-status', 'start');
+                this.getUTXOs();
             }
         } catch (e) {
             this.error();
@@ -149,7 +147,7 @@ export class ExplorerNetwork extends Network {
      */
     async getUTXOs() {
         // Don't fetch UTXOs if we're already scanning for them!
-	if (!this.masterKey) return;
+        if (!this.masterKey) return;
         if (this.isSyncing) return;
         this.isSyncing = true;
         try {
@@ -166,7 +164,7 @@ export class ExplorerNetwork extends Network {
                 publicKey = await this.masterKey.getAddress();
             }
 
-            this.eventEmitter.emit(
+            getEventEmitter().emit(
                 'utxo',
                 await (
                     await fetch(`${this.strUrl}/api/v2/utxo/${publicKey}`)
@@ -233,35 +231,11 @@ export class ExplorerNetwork extends Network {
             ).json();
             if (data.result && data.result.length === 64) {
                 console.log('Transaction sent! ' + data.result);
-                this.eventEmitter.emit('transaction-sent', true);
-                /*
-		doms.domTxOutput.innerHTML =
-                    '<h4 style="color:green; font-family:mono !important;">' +
-                    data.result +
-                    '</h4>';
-		doms.domSimpleTXs.style.display = 'none';
-		doms.domAddress1s.value = '';
-		doms.domValue1s.innerHTML = '';
-		createAlert(
-                    'success',
-                    msg || 'Transaction sent!',
-                    msg ? 1250 + msg.length * 50 : 1500
-		    );
-
-		// If allowed by settings: submit a simple 'tx' ping to Labs Analytics
-		submitAnalytics('transaction');
-		*/
+                getEventEmitter().emit('transaction-sent', true, data.result);
                 return true;
             } else {
                 console.log('Error sending transaction: ' + data.result);
-                //createAlert('warning', 'Transaction Failed!', 1250);
-                // Attempt to parse and prettify JSON (if any), otherwise, display the raw output.
-
-                this.eventEmitter.emit('transaction-sent', false, data.error);
-                /*doms.domTxOutput.innerHTML =
-                    '<h4 style="color:red;font-family:mono !important;"><pre style="color: inherit;">' +
-                    strError +
-                    '</pre></h4>';*/
+                getEventEmitter().emit('transaction-sent', false, data.error);
                 return false;
             }
         } catch (e) {
@@ -349,10 +323,14 @@ export class ExplorerNetwork extends Network {
     }
 
     setMasterKey(masterKey) {
-	this.masterKey = masterKey;
-	this.arrRewards = [];
+        this.masterKey = masterKey;
+        this.arrRewards = [];
     }
 
+    async getTxInfo(txHash) {
+        const req = await fetch(`${cExplorer.url}/api/v2/tx/${txHash}`);
+        return await req.json();
+    }
 }
 
 let _network = null;
@@ -372,199 +350,3 @@ export function setNetwork(network) {
 export function getNetwork() {
     return _network;
 }
-
-export let lastWallet = 0;
-
-export function getFee(bytes) {
-    // TEMPORARY: Hardcoded fee per-byte
-    return bytes * 50; // 50 sat/byte
-}
-
-export async function getStakingRewards() {
-    if (!networkEnabled || masterKey == undefined) return;
-    doms.domGuiStakingLoadMoreIcon.style.opacity = 0.5;
-    const stopAnim = () => (doms.domGuiStakingLoadMoreIcon.style.opacity = 1);
-    const nHeight = arrRewards.length
-        ? arrRewards[arrRewards.length - 1].blockHeight
-        : 0;
-    let mapPaths = new Map();
-    const txSum = (v) =>
-        v.reduce(
-            (t, s) =>
-                t +
-                (s.addresses
-                    .map((strAddr) => mapPaths.get(strAddr))
-                    .filter((v) => v).length && s.addresses.length === 2
-                    ? parseInt(s.value)
-                    : 0),
-            0
-        );
-    let cData;
-    if (masterKey.isHD) {
-        const derivationPath = getDerivationPath(masterKey.isHardwareWallet)
-            .split('/')
-            .slice(0, 4)
-            .join('/');
-        const xpub = await masterKey.getxpub(derivationPath);
-        cData = await (
-            await fetch(
-                `${
-                    cExplorer.url
-                }/api/v2/xpub/${xpub}?details=txs&pageSize=500&to=${
-                    nHeight ? nHeight - 1 : 0
-                }`
-            )
-        ).json();
-        // Map all address <--> derivation paths
-        if (cData.tokens)
-            cData.tokens.forEach((cAddrPath) =>
-                mapPaths.set(cAddrPath.name, cAddrPath.path)
-            );
-    } else {
-        const address = await masterKey.getAddress();
-        cData = await (
-            await fetch(
-                `${
-                    cExplorer.url
-                }/api/v2/address/${address}?details=txs&pageSize=500&to=${
-                    nHeight ? nHeight - 1 : 0
-                }`
-            )
-        ).json();
-        mapPaths.set(address, ':)');
-    }
-    if (cData && cData.transactions) {
-        // Update rewards
-        arrRewards = arrRewards.concat(
-            cData.transactions
-                .filter((tx) => tx.vout[0].addresses[0] === 'CoinStake TX')
-                .map((tx) => {
-                    return {
-                        id: tx.txid,
-                        time: tx.blockTime,
-                        blockHeight: tx.blockHeight,
-                        amount: (txSum(tx.vout) - txSum(tx.vin)) / COIN,
-                    };
-                })
-                .filter((tx) => tx.amount != 0)
-        );
-
-        // If the results don't match the full 'max/requested results', then we know there's nothing more to load, hide the button!
-        if (cData.transactions.length !== cData.itemsOnPage)
-            doms.domGuiStakingLoadMore.style.display = 'none';
-
-        // Update GUI
-        stopAnim();
-        updateStakingRewardsGUI(true);
-    } else {
-        // No balance history!
-        doms.domGuiStakingLoadMore.style.display = 'none';
-
-        // Update GUI
-        stopAnim();
-    }
-}
-
-||||||| parent of fa34b25 (Fleshed out the system a bit more)
-export let lastWallet = 0;
-
-
-export function getFee(bytes) {
-    // TEMPORARY: Hardcoded fee per-byte
-    return bytes * 50; // 50 sat/byte
-}
-
-export async function getStakingRewards() {
-    if (!networkEnabled || masterKey == undefined) return;
-    doms.domGuiStakingLoadMoreIcon.style.opacity = 0.5;
-    const stopAnim = () => (doms.domGuiStakingLoadMoreIcon.style.opacity = 1);
-    const nHeight = arrRewards.length
-        ? arrRewards[arrRewards.length - 1].blockHeight
-        : 0;
-    let mapPaths = new Map();
-    const txSum = (v) =>
-        v.reduce(
-            (t, s) =>
-                t +
-                (s.addresses
-                    .map((strAddr) => mapPaths.get(strAddr))
-                    .filter((v) => v).length && s.addresses.length === 2
-                    ? parseInt(s.value)
-                    : 0),
-            0
-        );
-    let cData;
-    if (masterKey.isHD) {
-        const derivationPath = getDerivationPath(masterKey.isHardwareWallet)
-            .split('/')
-            .slice(0, 4)
-            .join('/');
-        const xpub = await masterKey.getxpub(derivationPath);
-        cData = await (
-            await fetch(
-                `${
-                    cExplorer.url
-                }/api/v2/xpub/${xpub}?details=txs&pageSize=500&to=${
-                    nHeight ? nHeight - 1 : 0
-                }`
-            )
-        ).json();
-        // Map all address <--> derivation paths
-        if (cData.tokens)
-            cData.tokens.forEach((cAddrPath) =>
-                mapPaths.set(cAddrPath.name, cAddrPath.path)
-            );
-    } else {
-        const address = await masterKey.getAddress();
-        cData = await (
-            await fetch(
-                `${
-                    cExplorer.url
-                }/api/v2/address/${address}?details=txs&pageSize=500&to=${
-                    nHeight ? nHeight - 1 : 0
-                }`
-            )
-        ).json();
-        mapPaths.set(address, ':)');
-    }
-    if (cData && cData.transactions) {
-        // Update rewards
-        arrRewards = arrRewards.concat(
-            cData.transactions
-                .filter((tx) => tx.vout[0].addresses[0] === 'CoinStake TX')
-                .map((tx) => {
-                    return {
-                        id: tx.txid,
-                        time: tx.blockTime,
-                        blockHeight: tx.blockHeight,
-                        amount: (txSum(tx.vout) - txSum(tx.vin)) / COIN,
-                    };
-                })
-                .filter((tx) => tx.amount != 0)
-        );
-
-        // If the results don't match the full 'max/requested results', then we know there's nothing more to load, hide the button!
-        if (cData.transactions.length !== cData.itemsOnPage)
-            doms.domGuiStakingLoadMore.style.display = 'none';
-
-        // Update GUI
-        stopAnim();
-        updateStakingRewardsGUI(true);
-    } else {
-        // No balance history!
-        doms.domGuiStakingLoadMore.style.display = 'none';
-
-        // Update GUI
-        stopAnim();
-    }
-}
-
-=======
-/*
->>>>>>> fa34b25 (Fleshed out the system a bit more)
-export async function getTxInfo(txHash) {
-    const req = await fetch(`${cExplorer.url}/api/v2/tx/${txHash}`);
-    return await req.json();
-}
-
-*/

@@ -2,6 +2,7 @@ import { getNetwork } from './network.js';
 import { getBalance, isMasternodeUTXO, getStakingBalance } from './global.js';
 import { sleep } from './misc.js';
 import { debug } from './settings.js';
+import { getEventEmitter } from './event_bus.js';
 
 /** An Unspent Transaction Output, used as Inputs of future transactions */
 export class UTXO {
@@ -84,6 +85,7 @@ export class Mempool {
          * @type {Array<UTXO>}
          */
         this.UTXOs = [];
+        this.subscribeToNetwork();
     }
 
     /** The CONFIRMED state (UTXO is spendable) */
@@ -332,8 +334,8 @@ export class Mempool {
      * Subscribes to network events
      * @param {Network} network
      */
-    subscribeToNetwork(network) {
-        network.eventEmitter.on('utxo', async (utxos) => {
+    subscribeToNetwork() {
+        getEventEmitter().on('utxo', async (utxos) => {
             for (const utxo of utxos) {
                 if (this.isAlreadyStored({ id: utxo.txid, vout: utxo.vout })) {
                     this.updateUTXO({ id: utxo.txid, vout: utxo.vout });

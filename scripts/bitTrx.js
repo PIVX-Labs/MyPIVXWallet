@@ -66,7 +66,8 @@ export default class bitjs {
             buf.push(OP['ROT']);
             buf.push(OP['IF']);
             if (
-                getNetwork().cachedBlockCount >= cChainParams.current.Consensus.UPGRADE_V6_0
+                getNetwork().cachedBlockCount >=
+                cChainParams.current.Consensus.UPGRADE_V6_0
             ) {
                 buf.push(OP['CHECKCOLDSTAKEVERIFY']);
             } else {

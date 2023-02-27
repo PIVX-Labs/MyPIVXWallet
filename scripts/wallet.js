@@ -540,22 +540,28 @@ export async function importWallet({
                 // Public Key Derivation
                 try {
                     if (privateImportValue.startsWith('xpub')) {
-                        setMasterKey(new HdMasterKey({
-                            xpub: privateImportValue,
-                        }));
+                        setMasterKey(
+                            new HdMasterKey({
+                                xpub: privateImportValue,
+                            })
+                        );
                     } else if (privateImportValue.startsWith('xprv')) {
-                        setMasterKey(new HdMasterKey({
-                            xpriv: privateImportValue,
-                        }));
+                        setMasterKey(
+                            new HdMasterKey({
+                                xpriv: privateImportValue,
+                            })
+                        );
                     } else if (
                         privateImportValue.length === 34 &&
                         cChainParams.current.PUBKEY_PREFIX.includes(
                             privateImportValue[0]
                         )
                     ) {
-                        setMasterKey(new LegacyMasterKey({
-                            address: privateImportValue,
-                        }));
+                        setMasterKey(
+                            new LegacyMasterKey({
+                                address: privateImportValue,
+                            })
+                        );
                     } else {
                         // Lastly, attempt to parse as a WIF private key
                         const pkBytes = parseWIF(privateImportValue);
@@ -639,7 +645,7 @@ export async function generateWallet(noUI = false) {
         const seed = await mnemonicToSeed(mnemonic);
 
         // Prompt the user to encrypt the seed
-	setMasterKey(new HdMasterKey({ seed }));
+        setMasterKey(new HdMasterKey({ seed }));
         fWalletLoaded = true;
 
         if (!cChainParams.current.isTestnet)
