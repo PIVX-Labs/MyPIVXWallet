@@ -907,11 +907,11 @@ async function getHardwareWalletKeys(
             );
             return false;
         }
-        if (_attempts < 20) {
+        if (_attempts < 10) {
             // This is an ugly hack :(
             // in the event where multiple parts of the code decide to ask for an address, just
             // Retry at most 10 times waiting 200ms each time
-            await sleep(1000);
+            await sleep(200);
             return await getHardwareWalletKeys(
                 path,
                 xpub,
