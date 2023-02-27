@@ -874,7 +874,7 @@ async function getHardwareWalletKeys(
             return cPubKey.publicKey;
         }
     } catch (e) {
-	console.log(e);
+        console.log(e);
         if (e.message.includes('denied by the user')) {
             // User denied an operation
             return false;
@@ -905,7 +905,12 @@ async function getHardwareWalletKeys(
             // in the event where multiple parts of the code decide to ask for an address, just
             // Retry at most 10 times waiting 200ms each time
             await sleep(1000);
-            return await getHardwareWalletKeys(path, xpub, verify, _attempts + 1);
+            return await getHardwareWalletKeys(
+                path,
+                xpub,
+                verify,
+                _attempts + 1
+            );
         }
 
         // If the ledger is busy, just nudge the user.
