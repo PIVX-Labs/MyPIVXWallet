@@ -160,7 +160,6 @@ export async function undelegateGUI() {
     );
     if (!validateAmount(nAmount)) return;
     const [address] = await getNewAddress();
-    //askForCSAddr(true);
     const result = await createAndSendTransaction({
         address,
         amount: nAmount,
@@ -178,7 +177,7 @@ export async function undelegateGUI() {
 /**
  * Creates and sends a transaction to the network.
  * @param {Object} options
- * @param {string} options.address - base38 encoded address to send funds to
+ * @param {string} options.address - base58 encoded address to send funds to
  * @param {Number} options.amount - Number of satoshi to send
  * @param {boolean} options.isDelegation - Whether to delegate the amount. Address will be the cold staking address
  * @param {boolean} options.useDelegatedInputs - If true, only delegated coins will be used in the transaction
