@@ -83,7 +83,7 @@ export const en_translation = {
     sendSimpleTxAddress: "Address",        //
     sendSimpleTxAll: "(Send All)",            //
     sendSimpleTxDesc: "Description (from the merchant)",           //
-    sendSimpleTxButton:"Send Transaction",          //
+    sendSimpleTxButton:"Send",          //
 
     sendManualTxTitle:"Create Manual Transactions",           //
     sendManualTxInput:"Inputs",           //

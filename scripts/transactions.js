@@ -602,7 +602,7 @@ export async function createTxGUI() {
     // Clear the inputs on 'Continue'
     if (doms.domGenIt.innerHTML === 'Continue') {
         doms.domGenIt.innerHTML = 'Send Transaction';
-        doms.domValue1s.value = '';
+        doms.domSendAmountCoins.value = '';
         doms.domAddress1s.value = '';
         return;
     }
@@ -642,7 +642,9 @@ export async function createTxGUI() {
         );
 
     // Sanity check the amount
-    let nValue = Math.round(Number(doms.domValue1s.value.trim()) * COIN);
+    let nValue = Math.round(
+        Number(doms.domSendAmountCoins.value.trim()) * COIN
+    );
     if (nValue <= 0 || isNaN(nValue))
         return createAlert(
             'warning',

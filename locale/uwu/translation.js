@@ -83,7 +83,7 @@ export const uwu_translation = {
     sendSimpleTxAddress: "Addwess",        //Address
     sendSimpleTxAll: "(Send All♡)",            //(Send All)
     sendSimpleTxDesc: "Deswiption (fwom da Mewrchant)",           //Description (from the merchant)
-    sendSimpleTxButton:"Send Twansaction",          //Send Transaction
+    sendSimpleTxButton:"Send",          //Send
 
     sendManualTxTitle:"Cweate Manuwual Twansactions",           //Create Manual Transactions
     sendManualTxInput:"",           //Inputs

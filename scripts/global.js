@@ -63,10 +63,16 @@ export function start() {
         ),
         domGuiDelegateAmount: document.getElementById('delegateAmount'),
         domGuiUndelegateAmount: document.getElementById('undelegateAmount'),
-        domTxTab: document.getElementById('txTab'),
         domStakeTab: document.getElementById('stakeTab'),
         domAddress1s: document.getElementById('address1s'),
-        domValue1s: document.getElementById('value1s'),
+        domSendAmountCoins: document.getElementById('sendAmountCoins'),
+        domSendAmountCoinsTicker: document.getElementById(
+            'sendAmountCoinsTicker'
+        ),
+        domSendAmountValue: document.getElementById('sendAmountValue'),
+        domSendAmountValueCurrency: document.getElementById(
+            'sendAmountValueCurrency'
+        ),
         domGuiViewKey: document.getElementById('guiViewKey'),
         domModalQR: document.getElementById('ModalQR'),
         domModalQrLabel: document.getElementById('ModalQRLabel'),
@@ -179,6 +185,22 @@ export function start() {
     i18nStart();
     loadImages();
     doms.domStart.click();
+
+    // Register Input Pair events
+    doms.domSendAmountCoins.oninput = () => {
+        updateAmountInputPair(
+            doms.domSendAmountCoins,
+            doms.domSendAmountValue,
+            true
+        );
+    };
+    doms.domSendAmountValue.oninput = () => {
+        updateAmountInputPair(
+            doms.domSendAmountCoins,
+            doms.domSendAmountValue,
+            false
+        );
+    };
 
     // Register native app service
     registerWorker();
@@ -301,8 +323,16 @@ export function getBalance(updateGUI = false) {
                 'en-gb',
                 cLocale
             );
+
+            // Update the Dashboard currency
             doms.domGuiBalanceValueCurrency.innerText =
                 strCurrency.toUpperCase();
+
+            // Update the Send menu ticker and currency
+            doms.domSendAmountValueCurrency.innerText =
+                strCurrency.toUpperCase();
+            doms.domSendAmountCoinsTicker.innerText =
+                cChainParams.current.TICKER;
         });
     }
 
@@ -331,6 +361,13 @@ export function getStakingBalance(updateGUI = false) {
 
 export function selectMaxBalance(domValueInput, fCold = false) {
     domValueInput.value = (fCold ? getStakingBalance() : getBalance()) / COIN;
+    // Update the Send menu's value (assumption: if it's not a Cold balance, it's probably for Sending!)
+    if (!fCold)
+        updateAmountInputPair(
+            doms.domSendAmountCoins,
+            doms.domSendAmountValue,
+            true
+        );
 }
 
 export function updateStakingRewardsGUI(fCallback = false) {
@@ -414,11 +451,31 @@ export function unblurPrivKey() {
 
 export function toggleBottomMenu(dom, ani) {
     let element = document.getElementById(dom);
-    if(element.classList.contains(ani)) {
+    if (element.classList.contains(ani)) {
         element.classList.remove(ani);
     } else {
         element.classList.add(ani);
     }
+}
+
+/**
+ * Updates an Amount Input UI pair ('Coin' and 'Value' input boxes) in relation to the input box used
+ * @param {HTMLInputElement} domCoin - The DOM input for the Coin amount
+ * @param {HTMLInputElement} domValue - The DOM input for the Value amount
+ * @param {boolean} fCoinEdited - `true` if Coin, `false` if Value
+ */
+export function updateAmountInputPair(domCoin, domValue, fCoinEdited) {
+    cMarket.getPrice(strCurrency).then((nPrice) => {
+        if (fCoinEdited) {
+            // If the 'Coin' input is edited, then update the 'Value' input with it's converted currency
+            const nValue = Number(doms.domSendAmountCoins.value) * nPrice;
+            domValue.value = nValue <= 0 ? '' : nValue;
+        } else {
+            // If the 'Value' input is edited, then update the 'Coin' input with the reversed conversion rate
+            const nValue = Number(doms.domSendAmountValue.value) / nPrice;
+            domCoin.value = nValue <= 0 ? '' : nValue;
+        }
+    });
 }
 
 export function toClipboard(source, caller) {
@@ -450,15 +507,29 @@ export function toClipboard(source, caller) {
 }
 
 export function guiPreparePayment(strTo = '', strAmount = 0, strDesc = '') {
-    doms.domTxTab.click();
-    if (doms.domSimpleTXs.style.display === 'none')
-        doms.domSimpleTXsDropdown.click();
     // Apply values
     doms.domAddress1s.value = strTo;
-    doms.domValue1s.value = strAmount;
+    doms.domSendAmountCoins.value = strAmount;
     doms.domReqDesc.value = strDesc;
     doms.domReqDisplay.style.display = strDesc ? 'block' : 'none';
-    doms.domValue1s.focus();
+
+    // Switch to the Dashboard
+    document.getElementById('dashboard').click();
+
+    // Open the Send menu (with a small timeout post-load to allow for CSS loading)
+    setTimeout(() => {
+        toggleBottomMenu('transferMenu', 'transferAnimation');
+    }, 300);
+
+    // Update the conversion value
+    updateAmountInputPair(
+        doms.domSendAmountCoins,
+        doms.domSendAmountValue,
+        true
+    );
+
+    // Focus on the coin input box
+    doms.domSendAmountCoins.focus();
 }
 
 export function hideAllWalletOptions() {

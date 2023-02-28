@@ -169,7 +169,7 @@ export async function sendTransaction(hex, msg = '') {
         if (data.result && data.result.length === 64) {
             console.log('Transaction sent! ' + data.result);
             doms.domAddress1s.value = '';
-            doms.domValue1s.innerHTML = '';
+            doms.domSendAmountCoins.innerHTML = '';
             createAlert(
                 'success',
                 msg || 'Transaction sent!',
