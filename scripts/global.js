@@ -584,23 +584,23 @@ export function destroyMasternode() {
 function parseIpAddress(ip) {
     // IPv4 without port
     if (ip.match(/\d+\.\d+\.\d+\.\d+/)) {
-	return `${ip}:${cChainParams.current.MASTERNODE_PORT}`;
+        return `${ip}:${cChainParams.current.MASTERNODE_PORT}`;
     }
     // IPv4 with port
     if (ip.match(/\d+\.\d+\.\d+\.\d+:\d+/)) {
-	return ip;
+        return ip;
     }
     // IPv6 without port
     if (Address6.isValid(ip)) {
-	return `[${ip}]:${cChainParams.current.MASTERNODE_PORT}`;
+        return `[${ip}]:${cChainParams.current.MASTERNODE_PORT}`;
     }
 
     const groups = /\[(.*)\]:\d+/.exec(ip);
     if (groups !== null && groups.length > 1) {
-	// IPv6 with port
-	if (Address6.isValid(groups[1])) {
-	    return ip;
-	}
+        // IPv6 with port
+        if (Address6.isValid(groups[1])) {
+            return ip;
+        }
     }
 
     // If we haven't returned yet, the address was invalid.
@@ -611,17 +611,15 @@ export async function importMasternode() {
     const mnPrivKey = doms.domMnPrivateKey.value;
     const address = parseIpAddress(doms.domMnIP.value);
     if (!address) {
-	createAlert('warning', 'The ip address is invalid!', 5000);
-	return;
+        createAlert('warning', 'The ip address is invalid!', 5000);
+        return;
     }
-    
+
     let collateralTxId;
     let outidx;
     let collateralPrivKeyPath;
     doms.domMnIP.value = '';
     doms.domMnPrivateKey.value = '';
-
-
 
     if (!masterKey.isHD) {
         // Find the first UTXO matching the expected collateral size
