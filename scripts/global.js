@@ -259,6 +259,11 @@ function subscribeToNetworkEvents() {
     getEventEmitter().on('sync-status', (value) => {
         switch (value) {
             case 'start':
+                // Play reload anim
+                doms.domBalanceReload.classList.add('playAnim');
+                doms.domBalanceReloadStaking.classList.add('playAnim');
+                break;
+            case 'stop':
                 doms.domBalanceReload.classList.remove('playAnim');
                 doms.domBalanceReloadStaking.classList.remove('playAnim');
                 break;
@@ -407,6 +412,10 @@ export function selectMaxBalance(domValueInput, fCold = false) {
 export async function updateStakingRewardsGUI() {
     const network = getNetwork();
     const arrRewards = await network.getStakingRewards();
+    if (network.areRewardsComplete) {
+	// Hide the load more button
+	doms.domGuiStakingLoadMore.style.display = 'none';
+    }
 
     //DOMS.DOM-optimised list generation
     const strList = arrRewards
@@ -1435,10 +1444,6 @@ export function refreshChainData() {
             'Offline mode active: For your security, the wallet will avoid ALL internet requests.'
         );
     if (!masterKey) return;
-
-    // Play reload anim
-    doms.domBalanceReload.classList.add('playAnim');
-    doms.domBalanceReloadStaking.classList.add('playAnim');
 
     // Fetch block count + UTXOs
     getNetwork().getBlockCount();

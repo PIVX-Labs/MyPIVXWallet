@@ -17,6 +17,7 @@ export class Network {
         this.masterKey = masterKey;
 
         this.lastWallet = 0;
+	this.areRewardsComplete = false;
     }
 
     /**
@@ -101,6 +102,7 @@ export class ExplorerNetwork extends Network {
         this.blocks = 0;
 
         this.arrRewards = [];
+        this.rewardsSyncing = false;
     }
 
     error() {
@@ -121,6 +123,7 @@ export class ExplorerNetwork extends Network {
 
     async getBlockCount() {
         try {
+            getEventEmitter().emit('sync-status', 'start');
             const { backend } = await (
                 await fetch(`${this.strUrl}/api/v2/api`)
             ).json();
@@ -132,12 +135,14 @@ export class ExplorerNetwork extends Network {
                         backend.blocks
                 );
                 this.blocks = backend.blocks;
-                getEventEmitter().emit('sync-status', 'start');
-                this.getUTXOs();
+
+                await this.getUTXOs();
             }
         } catch (e) {
             this.error();
             throw e;
+        } finally {
+            getEventEmitter().emit('sync-status', 'stop');
         }
     }
 
@@ -245,81 +250,90 @@ export class ExplorerNetwork extends Network {
     }
 
     async getStakingRewards() {
-        if (!this.enabled || !this.masterKey) return;
-        const nHeight = this.arrRewards.length
-            ? this.arrRewards[this.arrRewards.length - 1].blockHeight
-            : 0;
-        const mapPaths = new Map();
-        const txSum = (v) =>
-            v.reduce(
-                (t, s) =>
-                    t +
-                    (s.addresses
-                        .map((strAddr) => mapPaths.get(strAddr))
-                        .filter((v) => v).length && s.addresses.length === 2
-                        ? parseInt(s.value)
-                        : 0),
-                0
-            );
-        let cData;
-        if (this.masterKey.isHD) {
-            const derivationPath = getDerivationPath(
-                this.masterKey.isHardwareWallet
-            )
-                .split('/')
-                .slice(0, 4)
-                .join('/');
-            const xpub = await this.masterKey.getxpub(derivationPath);
-            cData = await (
-                await fetch(
-                    `${
-                        this.strUrl
-                    }/api/v2/xpub/${xpub}?details=txs&pageSize=500&to=${
-                        nHeight ? nHeight - 1 : 0
-                    }`
-                )
-            ).json();
-            // Map all address <--> derivation paths
-            if (cData.tokens)
-                cData.tokens.forEach((cAddrPath) =>
-                    mapPaths.set(cAddrPath.name, cAddrPath.path)
+        if (this.rewardsSyncing) {
+            return this.arrRewards;
+        }
+        try {
+            if (!this.enabled || !this.masterKey || this.areRewardsComplete) return;
+	    this.rewardsSyncing = true;
+            const nHeight = this.arrRewards.length
+                ? this.arrRewards[this.arrRewards.length - 1].blockHeight
+                : 0;
+            const mapPaths = new Map();
+            const txSum = (v) =>
+                v.reduce(
+                    (t, s) =>
+                        t +
+                        (s.addresses
+                            .map((strAddr) => mapPaths.get(strAddr))
+                            .filter((v) => v).length && s.addresses.length === 2
+                            ? parseInt(s.value)
+                            : 0),
+                    0
                 );
-        } else {
-            const address = await this.masterKey.getAddress();
-            cData = await (
-                await fetch(
-                    `${
-                        this.strUrl
-                    }/api/v2/address/${address}?details=txs&pageSize=500&to=${
-                        nHeight ? nHeight - 1 : 0
-                    }`
+            let cData;
+            if (this.masterKey.isHD) {
+                const derivationPath = getDerivationPath(
+                    this.masterKey.isHardwareWallet
                 )
-            ).json();
-            mapPaths.set(address, ':)');
-        }
-        if (cData && cData.transactions) {
-            // Update rewards
-            this.arrRewards = this.arrRewards.concat(
-                cData.transactions
-                    .filter((tx) => tx.vout[0].addresses[0] === 'CoinStake TX')
-                    .map((tx) => {
-                        return {
-                            id: tx.txid,
-                            time: tx.blockTime,
-                            blockHeight: tx.blockHeight,
-                            amount: (txSum(tx.vout) - txSum(tx.vin)) / COIN,
-                        };
-                    })
-                    .filter((tx) => tx.amount != 0)
-            );
+                    .split('/')
+                    .slice(0, 4)
+                    .join('/');
+                const xpub = await this.masterKey.getxpub(derivationPath);
+                cData = await (
+                    await fetch(
+                        `${
+                            this.strUrl
+                        }/api/v2/xpub/${xpub}?details=txs&pageSize=500&to=${
+                            nHeight ? nHeight - 1 : 0
+                        }`
+                    )
+                ).json();
+                // Map all address <--> derivation paths
+                if (cData.tokens)
+                    cData.tokens.forEach((cAddrPath) =>
+                        mapPaths.set(cAddrPath.name, cAddrPath.path)
+                    );
+            } else {
+                const address = await this.masterKey.getAddress();
+                cData = await (
+                    await fetch(
+                        `${
+                            this.strUrl
+                        }/api/v2/address/${address}?details=txs&pageSize=500&to=${
+                            nHeight ? nHeight - 1 : 0
+                        }`
+                    )
+                ).json();
+                mapPaths.set(address, ':)');
+            }
+            if (cData && cData.transactions) {
+                // Update rewards
+                this.arrRewards = this.arrRewards.concat(
+                    cData.transactions
+                        .filter(
+                            (tx) => tx.vout[0].addresses[0] === 'CoinStake TX'
+                        )
+                        .map((tx) => {
+                            return {
+                                id: tx.txid,
+                                time: tx.blockTime,
+                                blockHeight: tx.blockHeight,
+                                amount: (txSum(tx.vout) - txSum(tx.vin)) / COIN,
+                            };
+                        })
+                        .filter((tx) => tx.amount != 0)
+                );
 
-            // If the results don't match the full 'max/requested results', then we know there's nothing more to load, hide the button!
-            /*
-            if (cData.transactions.length !== cData.itemsOnPage)
-            doms.domGuiStakingLoadMore.style.display = 'none';
-	    */
+                // If the results don't match the full 'max/requested results', then we know the rewards are complete
+		if (cData.transactions.length !== cData.itemsOnPage) {
+		    this.areRewardsComplete = true;
+		}
+            }
+            return this.arrRewards;
+        } finally {
+	    this.rewardsSyncing = false;
         }
-        return this.arrRewards;
     }
 
     setMasterKey(masterKey) {

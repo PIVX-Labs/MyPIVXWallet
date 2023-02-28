@@ -31,6 +31,7 @@ export {
     toggleDropDown,
     unblurPrivKey,
     toggleBottomMenu,
+    updateStakingRewardsGUI,
 } from './global.js';
 export { generateWallet, getNewAddress, importWallet } from './wallet.js';
 export { toggleTestnet, toggleDebug } from './settings.js';
@@ -42,6 +43,6 @@ export {
     createMasternode,
 } from './transactions.js';
 export { hexToBytes, bytesToHex, dSHA256 } from './utils.js';
-import { getNetwork } from './network.js';
+export { getNetwork } from './network.js';
 const toggleNetwork = () => getNetwork().toggle();
 export { toggleNetwork };
