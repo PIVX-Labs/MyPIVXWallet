@@ -123,8 +123,6 @@ export default class Masternode {
             })
         );
 
-        console.log(publicKey);
-
         const pkt = [
             ...Masternode._numToBytes(1, 4, true), // Message version
             ...hexToBytes(Masternode._decodeIpAddress(ip, port)), // Encoded ip + port
@@ -166,7 +164,6 @@ export default class Masternode {
                 this.walletPrivateKeyPath,
                 bytesToHex(toSign)
             );
-            console.log(r, s, v);
             return [v + 31, ...hexToBytes(r), ...hexToBytes(s)];
         } else {
             const padding = '\x18DarkNet Signed Message:\n'
@@ -208,9 +205,7 @@ export default class Masternode {
 
     async getWalletPublicKey() {
         if (masterKey.isHardwareWallet) {
-            const hi = await masterKey.getPublicKey(this.walletPrivateKeyPath);
-            console.log(hi);
-            return hexToBytes(hi);
+           return hexToBytes(await masterKey.getPublicKey(this.walletPrivateKeyPath));
         } else {
             const walletPrivateKey = await this._getWalletPrivateKey();
             return hexToBytes(

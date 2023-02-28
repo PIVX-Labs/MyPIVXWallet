@@ -881,7 +881,6 @@ async function getHardwareWalletKeys(
             return cPubKey.publicKey;
         }
     } catch (e) {
-        console.log(e);
         if (e.message.includes('denied by the user')) {
             // User denied an operation
             return false;
