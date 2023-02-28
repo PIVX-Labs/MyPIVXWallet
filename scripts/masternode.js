@@ -64,6 +64,8 @@ export default class Masternode {
 
     /**
      * @param {String} ip
+     * @param {Number} port
+     * @returns {string} hex representation of the IP + port pair
      */
     static _decodeIpAddress(ip, port) {
         const address = ip.includes('.')
