@@ -29,6 +29,7 @@ import { decrypt } from './aes-gcm.js';
 
 import { registerWorker } from './native.js';
 import { refreshPriceDisplay } from './prices.js';
+import { Address6 } from 'ip-address';
 
 export let doms = {};
 
@@ -144,11 +145,7 @@ export function start() {
         domMnemonicModalButton: document.getElementById(
             'modalMnemonicConfirmButton'
         ),
-        domExportDiv: document.getElementById('exportKeyDiv'),
-        domExportPublicKey: document.getElementById('exportPublicKeyText'),
-        domExportPrivateKeyHold: document.getElementById('exportPrivateKey'),
-        domExportPrivateKey: document.getElementById('exportPrivateKeyText'),
-        domExportWallet: document.getElementById('guiExportWallet'),
+        domExportWallet: document.getElementById('guiExportWalletItem'),
         domWipeWallet: document.getElementById('guiWipeWallet'),
         domRestoreWallet: document.getElementById('guiRestoreWallet'),
         domNewAddress: document.getElementById('guiNewAddress'),
@@ -639,22 +636,52 @@ export function destroyMasternode() {
     }
 }
 
+/**
+ * Takes an ip address and adds the port.
+ * If it's an IPv4 address, ip:port will be used, (e.g. 127.0.0.1:12345)
+ * If it's an IPv6 address, [ip]:port will be used, (e.g. [::1]:12345)
+ * @param {String} ip - Ip address with or without port
+ * @returns {String}
+ */
+function parseIpAddress(ip) {
+    // IPv4 without port
+    if (ip.match(/\d+\.\d+\.\d+\.\d+/)) {
+        return `${ip}:${cChainParams.current.MASTERNODE_PORT}`;
+    }
+    // IPv4 with port
+    if (ip.match(/\d+\.\d+\.\d+\.\d+:\d+/)) {
+        return ip;
+    }
+    // IPv6 without port
+    if (Address6.isValid(ip)) {
+        return `[${ip}]:${cChainParams.current.MASTERNODE_PORT}`;
+    }
+
+    const groups = /\[(.*)\]:\d+/.exec(ip);
+    if (groups !== null && groups.length > 1) {
+        // IPv6 with port
+        if (Address6.isValid(groups[1])) {
+            return ip;
+        }
+    }
+
+    // If we haven't returned yet, the address was invalid.
+    return null;
+}
+
 export async function importMasternode() {
     const mnPrivKey = doms.domMnPrivateKey.value;
+    const address = parseIpAddress(doms.domMnIP.value);
+    if (!address) {
+        createAlert('warning', 'The ip address is invalid!', 5000);
+        return;
+    }
 
-    const ip = doms.domMnIP.value;
-    let address;
     let collateralTxId;
     let outidx;
     let collateralPrivKeyPath;
     doms.domMnIP.value = '';
     doms.domMnPrivateKey.value = '';
-
-    if (!ip.includes(':')) {
-        address = `${ip}:${cChainParams.current.MASTERNODE_PORT}`;
-    } else {
-        address = ip;
-    }
 
     if (!masterKey.isHD) {
         // Find the first UTXO matching the expected collateral size
