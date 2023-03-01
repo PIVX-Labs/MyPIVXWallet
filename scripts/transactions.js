@@ -64,14 +64,6 @@ export async function createTxGUI() {
         );
     }
 
-    // Clear the inputs on 'Continue'
-    if (doms.domGenIt.innerHTML === 'Continue') {
-        doms.domGenIt.innerHTML = 'Send Transaction';
-        doms.domSendAmountCoins.value = '';
-        doms.domAddress1s.value = '';
-        return;
-    }
-
     // Sanity check the address
     const address = doms.domAddress1s.value.trim();
 
