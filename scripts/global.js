@@ -205,18 +205,15 @@ export function start() {
 
     // Configure Identicon
     jdenticon.configure();
+
     // URL-Query request processing
-    const queryString = window.location.search;
-    const urlParams = new URLSearchParams(queryString);
-    let requestTo;
-    let requestAmount;
-    // Check for a payment request
-    if (urlParams.has('pay') && urlParams.has('amount')) {
-        requestTo = urlParams.get('pay');
-        requestAmount = parseFloat(urlParams.get('amount'));
-        console.log(requestTo + ' ' + requestAmount);
-        // We have our payment request info, wait until the page is fully loaded then display the payment request via .onload
-    }
+    const urlParams = new URLSearchParams(window.location.search);
+
+    // Check for a payment request address
+    const reqTo = urlParams.has('pay') ? urlParams.get('pay') : '';
+
+    // Check for a payment request amount
+    const reqAmount = urlParams.has('amount') ? parseFloat(urlParams.get('amount')) : 0;
 
     // Customise the UI if a saved wallet exists
     if (hasEncryptedWallet()) {
@@ -235,10 +232,10 @@ export function start() {
     }
 
     // Payment processor redirect
-    if (requestTo && requestAmount) {
+    if (reqTo.length || reqAmount > 0) {
         guiPreparePayment(
-            requestTo,
-            requestAmount,
+            reqTo,
+            reqAmount,
             urlParams.has('desc') ? urlParams.get('desc') : ''
         );
     }
@@ -507,13 +504,13 @@ export function toClipboard(source, caller) {
 /**
  * Prompt for a payment in the GUI with pre-filled inputs
  * @param {string} strTo - The address receiving the payment
- * @param {number} strAmount - The payment amount in full coins
+ * @param {number} nAmount - The payment amount in full coins
  * @param {string} strDesc - The payment message or description
  */
-export function guiPreparePayment(strTo = '', strAmount = 0, strDesc = '') {
+export function guiPreparePayment(strTo = '', nAmount = 0, strDesc = '') {
     // Apply values
     doms.domAddress1s.value = strTo;
-    doms.domSendAmountCoins.value = strAmount;
+    doms.domSendAmountCoins.value = nAmount;
     doms.domReqDesc.value = strDesc;
     doms.domReqDisplay.style.display = strDesc ? 'block' : 'none';
 
