@@ -462,18 +462,18 @@ export function toggleBottomMenu(dom, ani) {
  * @param {HTMLInputElement} domValue - The DOM input for the Value amount
  * @param {boolean} fCoinEdited - `true` if Coin, `false` if Value
  */
-export function updateAmountInputPair(domCoin, domValue, fCoinEdited) {
-    cMarket.getPrice(strCurrency).then((nPrice) => {
-        if (fCoinEdited) {
-            // If the 'Coin' input is edited, then update the 'Value' input with it's converted currency
-            const nValue = Number(doms.domSendAmountCoins.value) * nPrice;
-            domValue.value = nValue <= 0 ? '' : nValue;
-        } else {
-            // If the 'Value' input is edited, then update the 'Coin' input with the reversed conversion rate
-            const nValue = Number(doms.domSendAmountValue.value) / nPrice;
-            domCoin.value = nValue <= 0 ? '' : nValue;
-        }
-    });
+export async function updateAmountInputPair(domCoin, domValue, fCoinEdited) {
+    // Fetch the price in the user's preferred currency
+    const nPrice = await cMarket.getPrice(strCurrency);
+    if (fCoinEdited) {
+        // If the 'Coin' input is edited, then update the 'Value' input with it's converted currency
+        const nValue = Number(doms.domSendAmountCoins.value) * nPrice;
+        domValue.value = nValue <= 0 ? '' : nValue;
+    } else {
+        // If the 'Value' input is edited, then update the 'Coin' input with the reversed conversion rate
+        const nValue = Number(doms.domSendAmountValue.value) / nPrice;
+        domCoin.value = nValue <= 0 ? '' : nValue;
+    }
 }
 
 export function toClipboard(source, caller) {
@@ -504,6 +504,12 @@ export function toClipboard(source, caller) {
     }, 1000);
 }
 
+/**
+ * Prompt for a payment in the GUI with pre-filled inputs
+ * @param {string} strTo - The address receiving the payment
+ * @param {number} strAmount - The payment amount in full coins
+ * @param {string} strDesc - The payment message or description
+ */
 export function guiPreparePayment(strTo = '', strAmount = 0, strDesc = '') {
     // Apply values
     doms.domAddress1s.value = strTo;
