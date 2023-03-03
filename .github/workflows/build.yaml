@@ -47,7 +47,11 @@ jobs:
         uses: docker/metadata-action@v3
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-
+          
+      - name: Set tag date-SHA
+        id: tag
+        run: echo "tag=$(date +'%Y-%m-%d')-$(git rev-parse --short "$GITHUB_SHA")" >> $GITHUB_ENV
+        
       - name: Build image and push to GitHub Container Registry
         uses: docker/build-push-action@v2
         with:
@@ -56,6 +60,7 @@ jobs:
           platforms: linux/amd64
           tags: |
             ghcr.io/pivx-labs/mypivxwallet:latest
+            ghcr.io/pivx-labs/mypivxwallet:${{ env.tag }}
             ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: release=1

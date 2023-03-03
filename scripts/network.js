@@ -169,11 +169,11 @@ export async function sendTransaction(hex, msg = '') {
         if (data.result && data.result.length === 64) {
             console.log('Transaction sent! ' + data.result);
             doms.domAddress1s.value = '';
-            doms.domValue1s.innerHTML = '';
+            doms.domSendAmountCoins.innerHTML = '';
             createAlert(
                 'success',
                 msg || 'Transaction sent!',
-                msg ? 1250 + msg.length * 50 : 1500
+                msg ? 1250 + msg.length * 50 : 3000
             );
             // If allowed by settings: submit a simple 'tx' ping to Labs Analytics
             submitAnalytics('transaction');
