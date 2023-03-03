@@ -2381,14 +2381,28 @@ input {
 
 
 
+.blackBack {
+    transition: all 0.15s ease-in-out; 
+    opacity: .5;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1040;
+    width: 100vw;
+    height: 100vh;
+    background-color: #000;
+}
 
+.blackBackHide {
+    opacity: 0!important;
+}
 
 .transferMenu {
     width: calc(100% - 30px);
     position: fixed;
     left: 15px;
     bottom: 0px;
-    z-index: 1;
+    z-index: 1050;
     border-top-left-radius:10px;
     border-top-right-radius:10px;
     min-height: 155px;

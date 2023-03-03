@@ -175,6 +175,7 @@ export function start() {
         domExplorerSelect: document.getElementById('explorer'),
         domNodeSelect: document.getElementById('node'),
         domTranslationSelect: document.getElementById('translation'),
+        domBlackBack: document.getElementById('blackBack'),
     };
     i18nStart();
     loadImages();
@@ -416,8 +417,16 @@ export function toggleBottomMenu(dom, ani) {
     let element = document.getElementById(dom);
     if(element.classList.contains(ani)) {
         element.classList.remove(ani);
+        doms.domBlackBack.classList.remove('d-none');
+        setTimeout(() => {
+            doms.domBlackBack.classList.remove('blackBackHide');
+        }, 10);
     } else {
         element.classList.add(ani);
+        doms.domBlackBack.classList.add('blackBackHide');
+        setTimeout(() => {
+            doms.domBlackBack.classList.add('d-none');
+        }, 150);
     }
 }
 
