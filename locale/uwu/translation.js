@@ -14,7 +14,6 @@ export const uwu_translation = {
     available:"Avawable",                   //Available
 
     // Nav Bar
-    navIntro: "Intwo",                   //Intro
     navDashboard: "Dashbowed",               //Dashboard
     navSend: "Send❣",                    //Send
     navStake: "",                   //Stake
@@ -29,7 +28,6 @@ export const uwu_translation = {
 
     // Footer
     footerBuiltWithPivxLabs: "Built with wuv by PIVX Wabs❣",    //Built with 💜 by PIVX Labs
-    footerGithubLink: "",           //MyPIVXWallet
 
     // Intro
     title: "Wewcome to",                      //Welcome to

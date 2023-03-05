@@ -46,14 +46,13 @@
         <!-- NAVBAR -->
         <nav class="navbar navbar-expand-lg sticky-top navbar-dark navbarSpecial">
           <div class="container">
-            <img onclick="MPW.playMusic()" class="nav-logo navbar-brand noselect" alt="PIVX" id="mpw-main-logo" />
+            <img onclick="MPW.openTab(event, 'home')" style="cursor: pointer;" class="nav-logo navbar-brand noselect" alt="PIVX" id="mpw-main-logo" />
             <button id="navbarToggler" class="navbar-toggler collapsed" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
               <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse noselect" id="navbarNav">
               <!-- MAIN NAVBAR -->
               <ul class="navbar-nav mr-auto ptr">
-                <li class="nav-item"><a id="start" class="nav-link tablinks" onclick="MPW.openTab(event, 'home')" data-i18n="navIntro">Intro</a></li>
                 <li class="nav-item"><a id="dashboard" class="nav-link tablinks" onclick="MPW.openTab(event, 'keypair')" data-i18n="navDashboard">Dashboard</a></li>
                 <li class="nav-item"><a id="stakeTab" class="nav-link tablinks" onclick="MPW.openTab(event, 'StakingTab')" data-i18n="navStake">Stake</a></li>
                 <li class="nav-item"><a id="masternodeTab" class="nav-link tablinks" onclick="MPW.openTab(event, 'Masternode')" data-i18n="navMasternode">Masternode</a></li>
@@ -163,7 +162,7 @@
         <div class="container">
           <div class="row no-gutters">
             <div class="col-md-12 rm-pd">
-              <div id="home" class="tabcontent">
+              <div id="home" class="tabcontent" style="display: block;">
                 <!-- PIVX TITLE SECTION -->
                 <div class="col-md-12 title-section float-left rm-pd">
                   <h1 class="pivx-bold-title center-text">
@@ -1022,8 +1021,8 @@
       <footer id="foot">
         <div class="footer">
           <div>
-            <span> © MIT 2023 </span> - <span data-i18n="footerBuiltWithPivxLabs">Built with 💜 by PIVX Labs</span><br />
-            <a href="https://github.com/PIVX-Labs/MyPIVXWallet" data-i18n="footerGithubLink">MyPIVXWallet</a>
+            <span> © MIT 2023 </span> - <span style="cursor: pointer;" onclick="MPW.playMusic()" data-i18n="footerBuiltWithPivxLabs">Built with 💜 by PIVX Labs</span><br />
+            <a href="https://github.com/PIVX-Labs/MyPIVXWallet" target="_blank"><i class="fa-brands fa-github"></i></i> GitHub</a> - <a href="https://discord.gg/zTScGaGtgv" target="_blank"><i class="fa-brands fa-discord"></i></i> Discord</a> - <a href="https://medium.com/@pivx-labs" target="_blank"><i class="fa-brands fa-medium"></i></i> Medium</a>
           </div>
         </div>
       </footer>

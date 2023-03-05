@@ -32,7 +32,6 @@ var translation = {
     available:"",                   //Available
 
     // Nav Bar
-    navIntro: "",                   //Intro
     navDashboard: "",               //Dashboard
     navSend: "",                    //Send
     navStake: "",                   //Stake
@@ -47,7 +46,6 @@ var translation = {
 
     // Footer
     footerBuiltWithPivxLabs: "",    //Built with 💜 by PIVX Labs
-    footerGithubLink: "",           //MyPIVXWallet
 
     // Intro
     title: "",                      //Welcome to

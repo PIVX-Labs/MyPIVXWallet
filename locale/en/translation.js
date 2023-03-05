@@ -14,7 +14,6 @@ export const en_translation = {
     available:"Available",                   //
 
     // Nav Bar
-    navIntro: "Intro",                   //
     navDashboard: "Dashboard",               //
     navSend: "Send",                    //
     navStake: "Stake",                   //
@@ -29,7 +28,6 @@ export const en_translation = {
 
     // Footer
     footerBuiltWithPivxLabs: "Built with 💜 by PIVX Labs",    //
-    footerGithubLink: "MyPIVXWallet",           //
 
     // Intro
     title: "Welcome to",                      //
