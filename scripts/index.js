@@ -42,4 +42,6 @@ export {
     createMasternode,
 } from './transactions.js';
 export { hexToBytes, bytesToHex, dSHA256 } from './utils.js';
-export { toggleNetwork } from './network.js';
+import { getNetwork } from './network.js';
+const toggleNetwork = () => getNetwork().toggle();
+export { toggleNetwork };

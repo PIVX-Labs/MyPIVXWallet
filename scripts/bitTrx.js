@@ -5,7 +5,7 @@ import bs58 from 'bs58';
 import { OP } from './script.js';
 import { deriveAddress, parseWIF, getDerivationPath } from './wallet.js';
 import { sha256 } from '@noble/hashes/sha256';
-import { cachedBlockCount } from './network.js';
+import { getNetwork } from './network.js';
 import { cChainParams } from './chain_params.js';
 import _ from 'lodash';
 
@@ -66,7 +66,7 @@ export default class bitjs {
             buf.push(OP['ROT']);
             buf.push(OP['IF']);
             if (
-                cachedBlockCount >= cChainParams.current.Consensus.UPGRADE_V6_0
+                getNetwork().cachedBlockCount >= cChainParams.current.Consensus.UPGRADE_V6_0
             ) {
                 buf.push(OP['CHECKCOLDSTAKEVERIFY']);
             } else {

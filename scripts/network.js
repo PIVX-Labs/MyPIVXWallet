@@ -133,7 +133,9 @@ export class ExplorerNetwork extends Network {
                         ' --> ' +
                         backend.blocks
                 );
+		this.blocks = backend.blocks;
                 this.eventEmitter.emit('sync-status', 'start');
+		this.getUTXOs();
             }
         } catch (e) {
             this.error();
@@ -184,7 +186,7 @@ export class ExplorerNetwork extends Network {
      */
     async getUTXOFullInfo(cUTXO) {
         const cTx = await (
-            await fetch(`${this.strUrl}/api/v2/tx-specific/${cUTXO.id}`)
+            await fetch(`${this.strUrl}/api/v2/tx-specific/${cUTXO.txid}`)
         ).json();
         const cVout = cTx.vout[cUTXO.vout];
 

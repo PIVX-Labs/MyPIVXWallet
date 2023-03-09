@@ -333,13 +333,13 @@ export class Mempool {
      * @param {Network} network
      */
     subscribeToNetwork(network) {
-        network.eventEmitter.on('utxo', (utxos) => {
+        network.eventEmitter.on('utxo', async (utxos) => {
             for (const utxo of utxos) {
                 if (this.isAlreadyStored({ id: utxo.txid, vout: utxo.vout })) {
                     this.updateUTXO({ id: utxo.txid, vout: utxo.vout });
                     continue;
                 }
-                this.addUTXO(getNetwork().getUTXOFullInfo(utxo));
+                this.addUTXO(await getNetwork().getUTXOFullInfo(utxo));
             }
         });
     }

@@ -10,8 +10,6 @@ import {
     decryptWallet,
 } from './wallet.js';
 import {
-    arrRewards,
-    getStakingRewards,
     getNetwork,
 } from './network.js';
 import {
@@ -242,13 +240,13 @@ export function start() {
         );
     }
 
-    // If allowed by settings: submit a simple 'hit' (app load) to Labs Analytics
-    getNetwork().submitAnalytics('hit');
-    setInterval(refreshChainData, 15000);
     doms.domPrefix.value = '';
     doms.domPrefixNetwork.innerText =
         cChainParams.current.PUBKEY_PREFIX.join(' or ');
     settingsStart();
+    // If allowed by settings: submit a simple 'hit' (app load) to Labs Analytics
+    getNetwork().submitAnalytics('hit');
+    setInterval(refreshChainData, 15000);
 }
 
 // WALLET STATE DATA
@@ -367,12 +365,10 @@ export function selectMaxBalance(domValueInput, fCold = false) {
         );
 }
 
-export function updateStakingRewardsGUI(fCallback = false) {
-    if (!arrRewards.length) {
-        // This ensures we don't spam network requests, since if a network callback says we have no stakes; no point checking again!
-        if (!fCallback) getStakingRewards();
-        return;
-    }
+export async function updateStakingRewardsGUI() {
+    const network = getNetwork();
+    const arrRewards = await network.getStakingRewards();
+
     //DOMS.DOM-optimised list generation
     const strList = arrRewards
         .map(
