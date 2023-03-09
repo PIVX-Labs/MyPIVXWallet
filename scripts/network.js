@@ -17,7 +17,7 @@ export class Network {
         this.masterKey = masterKey;
 
         this.lastWallet = 0;
-	this.areRewardsComplete = false;
+        this.areRewardsComplete = false;
     }
 
     /**
@@ -74,10 +74,10 @@ export class Network {
     setMasterKey(masterKey) {
         this.masterKey = masterKey;
     }
-    
+
     async getTxInfo(txHash) {
         throw new Error('getTxInfo must be implemented');
-    }    
+    }
 }
 
 /**
@@ -254,8 +254,9 @@ export class ExplorerNetwork extends Network {
             return this.arrRewards;
         }
         try {
-            if (!this.enabled || !this.masterKey || this.areRewardsComplete) return;
-	    this.rewardsSyncing = true;
+            if (!this.enabled || !this.masterKey || this.areRewardsComplete)
+                return;
+            this.rewardsSyncing = true;
             const nHeight = this.arrRewards.length
                 ? this.arrRewards[this.arrRewards.length - 1].blockHeight
                 : 0;
@@ -326,13 +327,13 @@ export class ExplorerNetwork extends Network {
                 );
 
                 // If the results don't match the full 'max/requested results', then we know the rewards are complete
-		if (cData.transactions.length !== cData.itemsOnPage) {
-		    this.areRewardsComplete = true;
-		}
+                if (cData.transactions.length !== cData.itemsOnPage) {
+                    this.areRewardsComplete = true;
+                }
             }
             return this.arrRewards;
         } finally {
-	    this.rewardsSyncing = false;
+            this.rewardsSyncing = false;
         }
     }
 

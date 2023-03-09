@@ -413,8 +413,8 @@ export async function updateStakingRewardsGUI() {
     const network = getNetwork();
     const arrRewards = await network.getStakingRewards();
     if (network.areRewardsComplete) {
-	// Hide the load more button
-	doms.domGuiStakingLoadMore.style.display = 'none';
+        // Hide the load more button
+        doms.domGuiStakingLoadMore.style.display = 'none';
     }
 
     //DOMS.DOM-optimised list generation
