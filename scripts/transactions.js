@@ -193,13 +193,14 @@ export async function undelegateGUI() {
  * @param {string|null} options.changeDelegationAddress - See options.delegateChange
  * @returns {{ok: boolean, err: string?}}
  */
-async function createAndSendTransaction({
+export async function createAndSendTransaction({
     address,
     amount,
     isDelegation = false,
     useDelegatedInputs = false,
     delegateChange = false,
     changeDelegationAddress = null,
+    isProposal = false,
 }) {
     if (!hasWalletUnlocked(true)) return;
     if ((isDelegation || useDelegatedInputs) && masterKey.isHardwareWallet) {
@@ -293,6 +294,8 @@ async function createAndSendTransaction({
                 isDelegate: true,
             })
         );
+    } else if (isProposal) {
+        cTx.addproposaloutput(address, amount / COIN);
     } else {
         cTx.addoutput(address, amount / COIN);
         outputs.push([address, amount / COIN]);
@@ -335,7 +338,7 @@ async function createAndSendTransaction({
             mempool.addUTXO(utxo);
         }
 
-        if (!isDelegation) {
+        if (!isDelegation && !isProposal) {
             const [isYours, yourPath] = await isYourAddress(address);
 
             // If the tx was sent to yourself, add it to the mempool
@@ -354,7 +357,7 @@ async function createAndSendTransaction({
             }
         }
     }
-    return { ok: result };
+    return { ok: !!result, txid: result };
 }
 
 /**

@@ -175,7 +175,7 @@ export async function sendTransaction(hex, msg = '') {
             );
             // If allowed by settings: submit a simple 'tx' ping to Labs Analytics
             submitAnalytics('transaction');
-            return true;
+            return data.result;
         } else {
             console.log('Error sending transaction: ' + data.result);
             createAlert('warning', 'Transaction Failed!', 1250);

@@ -55,6 +55,13 @@ export default class bitjs {
             return this.outputs.push(o);
         }
 
+        addproposaloutput(hash, value) {
+            return this.outputs.push({
+                value: new BigInteger('' + Math.round(value * 1 * 1e8), 10),
+                script: [OP['RETURN'], 32, ...hexToBytes(hash)],
+            });
+        }
+
         addcoldstakingoutput(addr, addrColdStake, value) {
             const o = {};
             let buf = [];

@@ -8,6 +8,7 @@ import {
     importWallet,
     encryptWallet,
     decryptWallet,
+    getNewAddress,
 } from './wallet.js';
 import {
     submitAnalytics,
@@ -23,6 +24,7 @@ import {
     cMarket,
     strCurrency,
 } from './settings.js';
+import { createAndSendTransaction } from './transactions.js';
 import { createAlert, confirmPopup, sanitizeHTML, MAP_B58 } from './misc.js';
 import { cChainParams, COIN, MIN_PASS_LENGTH } from './chain_params.js';
 import { decrypt } from './aes-gcm.js';
@@ -1141,6 +1143,27 @@ function renderProposals(arrProposals, fContested) {
 
     // Render the proposals in the relevent table
     domTable.innerHTML = '';
+
+    if (!fContested) {
+        const localProposals = JSON.parse(
+            localStorage.getItem('localProposals')
+        );
+        arrProposals = arrProposals.concat(
+            localProposals.map((p) => {
+                return {
+                    Name: p.name,
+                    URL: p.url,
+                    MonthlyPayment: p.monthlyPayment / COIN,
+                    RemainingPaymentCount: p.nPayments,
+                    TotalPayment: p.nPayments * (p.montlyPayments / COIN),
+                    Yeas: 0,
+                    Nays: 0,
+                    local: true,
+                    mpw: p,
+                };
+            })
+        );
+    }
     for (const cProposal of arrProposals) {
         const domRow = domTable.insertRow();
 
@@ -1173,19 +1196,58 @@ function renderProposals(arrProposals, fContested) {
       `;
 
         // Voting Buttons for Masternode owners (MNOs)
-        const domVoteBtns = domRow.insertCell();
-        const domNoBtn = document.createElement('button');
-        domNoBtn.className = 'pivx-button-big';
-        domNoBtn.innerText = 'No';
-        domNoBtn.onclick = () => govVote(cProposal.Hash, 2);
+        if (cProposal.local) {
+            domRow.insertCell(); // Yes/no missing button
+            const finalizeRow = domRow.insertCell();
+            const finalizeButton = document.createElement('button');
+            finalizeButton.className = 'pivx-button-small';
+            finalizeButton.innerHTML = '<i class="fas fa-check"></i>';
+            finalizeButton.onclick = async () => {
+                const result = await Masternode.finalizeProposal(cProposal.mpw);
+                if (result.ok) {
+                    createAlert('success', 'Proposal finalized!');
+                    // Remove local Proposal from local storage
+                    const localProposals = JSON.parse(
+                        localStorage.getItem('localProposals')
+                    );
+                    localStorage.setItem(
+                        'localProposals',
+                        JSON.stringify(
+                            localProposals.filter(
+                                (p) => p.txId != cProposal.mpw.txId
+                            )
+                        )
+                    );
+                    updateGovernanceTab();
+                } else {
+                    if (result.err === 'unconfirmed') {
+                        createAlert(
+                            'warning',
+                            "The proposal hasn'n been confirmed yet."
+                        );
+                    } else {
+                        createAlert('warning', 'Failed to finalize proposal.');
+                    }
+                }
+            };
+            finalizeRow.appendChild(finalizeButton);
+        } else {
+            const domVoteBtns = domRow.insertCell();
+            const domNoBtn = document.createElement('button');
+            domNoBtn.className = 'pivx-button-big';
+            domNoBtn.innerText = 'No';
+            domNoBtn.onclick = () => govVote(cProposal.Hash, 2);
 
-        const domYesBtn = document.createElement('button');
-        domYesBtn.className = 'pivx-button-big';
-        domYesBtn.innerText = 'Yes';
-        domYesBtn.onclick = () => govVote(cProposal.Hash, 1);
+            const domYesBtn = document.createElement('button');
+            domYesBtn.className = 'pivx-button-big';
+            domYesBtn.innerText = 'Yes';
+            domYesBtn.onclick = () => govVote(cProposal.Hash, 1);
 
-        domVoteBtns.appendChild(domNoBtn);
-        domVoteBtns.appendChild(domYesBtn);
+            domVoteBtns.appendChild(domNoBtn);
+            domVoteBtns.appendChild(domYesBtn);
+
+            domRow.insertCell(); // Finalize proposal missing button
+        }
     }
 }
 
@@ -1393,6 +1455,62 @@ async function refreshMasternodeData(cMasternode, fAlert = false) {
 
     // Return the data in case the caller needs additional context
     return cMasternodeData;
+}
+
+export async function createProposal() {
+    if (!masterKey) {
+        return createAlert(
+            'warning',
+            'Create or import your wallet to continue'
+        );
+    }
+    if (
+        masterKey.isViewOnly &&
+        !(await restoreWallet('Unlock to create a proposal!'))
+    ) {
+        return;
+    }
+    if (getBalance() * COIN < cChainParams.current.proposalFee) {
+        return createAlert('warning', 'Not enough funds to create a proposal.');
+    }
+    await confirmPopup({
+        title: 'Create Proposal',
+        html: `<input id="proposalTitle" placeholder="Title" style="text-align: center;"><br>
+               <input id="proposalUrl" placeholder="URL" style="text-align: center;"><br>
+               <input type="number" id="proposalCycles" placeholder="Duration in cycles" style="text-align: center;"><br>
+               <input type="number" id="proposalPayment" placeholder="${cChainParams.current.TICKER} per cycle" style="text-align: center;"><br>`,
+    });
+    const strTitle = document.getElementById('proposalTitle').value;
+    const strUrl = document.getElementById('proposalUrl').value;
+    const numCycles = parseInt(document.getElementById('proposalCycles').value);
+    const numPayment = parseInt(
+        document.getElementById('proposalPayment').value
+    );
+    const nextSuperblock = await Masternode.getNextSuperblock();
+    const proposal = {
+        name: strTitle,
+        url: strUrl,
+        nPayments: numCycles,
+        start: nextSuperblock,
+        address: (await getNewAddress())[0],
+        monthlyPayment: numPayment * COIN,
+    };
+    const hash = Masternode.createProposalHash(proposal);
+    const { ok, txid } = await createAndSendTransaction({
+        address: hash,
+        amount: cChainParams.current.proposalFee,
+        isProposal: true,
+    });
+    if (ok) {
+        proposal.txid = txid;
+        const localProposals = JSON.parse(
+            localStorage.getItem('localProposals') || '[]'
+        );
+        localProposals.push(proposal);
+        localStorage.setItem('localProposals', JSON.stringify(localProposals));
+        createAlert('success', 'Proposal created! Please finalize it.');
+        updateGovernanceTab();
+    }
 }
 
 export function refreshChainData() {

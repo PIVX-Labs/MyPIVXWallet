@@ -39,6 +39,8 @@ export const cChainParams = {
             // Network upgrades
             UPGRADE_V6_0: undefined,
         },
+        budgetCycleBlocks: 43200,
+        proposalFee: 50 * COIN,
     },
     testnet: {
         collateralInSats: 10000 * COIN,
@@ -62,6 +64,8 @@ export const cChainParams = {
             // Network upgrades
             UPGRADE_V6_0: undefined,
         },
+        budgetCycleBlocks: 144,
+        proposalFee: 50 * COIN,
     },
 };
 // Set default chain

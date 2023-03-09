@@ -31,6 +31,7 @@ export {
     toggleDropDown,
     unblurPrivKey,
     toggleBottomMenu,
+    createProposal,
 } from './global.js';
 export { generateWallet, getNewAddress, importWallet } from './wallet.js';
 export { toggleTestnet, toggleDebug } from './settings.js';
@@ -43,3 +44,5 @@ export {
 } from './transactions.js';
 export { hexToBytes, bytesToHex, dSHA256 } from './utils.js';
 export { toggleNetwork } from './network.js';
+import Masternode from './masternode.js';
+export { Masternode };
