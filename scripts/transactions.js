@@ -19,7 +19,7 @@ import {
     strHardwareName,
 } from './wallet.js';
 import { Mempool, UTXO } from './mempool.js';
-import { getFee, sendTransaction, getTxInfo } from './network.js';
+import { getNetwork } from './network.js';
 import { cChainParams, COIN, COIN_DECIMALS } from './chain_params.js';
 import { createAlert, generateMnPrivkey, confirmPopup } from './misc.js';
 import { bytesToHex, hexToBytes, dSHA256 } from './utils.js';
@@ -224,7 +224,7 @@ async function createAndSendTransaction({
     if (!cCoinControl.success)
         return createAlert('warning', cCoinControl.msg, 5000);
     // Compute fee
-    const nFee = getFee(cTx.serialize().length);
+    const nFee = getNetwork().getFee(cTx.serialize().length);
 
     // Compute change (or lack thereof)
     const nChange = cCoinControl.nValue - (nFee + amount);
@@ -316,7 +316,7 @@ async function createAndSendTransaction({
                   nChange / COIN
                 : '');
     const sign = await signTransaction(cTx, masterKey, outputs, delegateChange);
-    const result = await sendTransaction(sign);
+    const result = await getNetwork().sendTransaction(sign);
     // Update the mempool
     if (result) {
         // Remove spent inputs
@@ -407,7 +407,7 @@ async function signTransaction(cTx, masterKey, outputs, undelegate) {
     const arrInputs = [];
     const arrAssociatedKeysets = [];
     for (const cInput of cTx.inputs) {
-        const cInputFull = await getTxInfo(cInput.outpoint.hash);
+        const cInputFull = await getNetwork().getTxInfo(cInput.outpoint.hash);
         arrInputs.push([
             await cHardwareWallet.splitTransaction(cInputFull.hex),
             cInput.outpoint.index,

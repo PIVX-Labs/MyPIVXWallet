@@ -65,13 +65,8 @@ export let cAnalyticsLevel = arrAnalytics[2];
 
 // --- DOM Cache
 export function start() {
-    // Initialise status icons as their default variables
-    doms.domNetwork.innerHTML =
-        '<i class="fa-solid fa-' + (networkEnabled ? 'wifi' : 'ban') + '"></i>';
     //TRANSLATIONS
     //to make translations work we need to change it so that we just enable or disable the visibility of the text
-    doms.domNetworkE.style.display = '';
-    doms.domNetworkD.style.display = 'none';
     doms.domTestnet.style.display = cChainParams.current.isTestnet
         ? ''
         : 'none';
@@ -138,6 +133,12 @@ export function start() {
             stats: [STATS.hit, STATS.time_to_sync, STATS.transaction],
         },
     ];
+
+    // Initialise status icons as their default variables
+    doms.domNetwork.innerHTML =
+        '<i class="fa-solid fa-' +
+        (getNetwork().enabled ? 'wifi' : 'ban') +
+        '"></i>';
 
     // Honour the "Do Not Track" header by default
     if (!strSettingAnalytics && navigator.doNotTrack === '1') {

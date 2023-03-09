@@ -4,6 +4,7 @@ import '../assets/style/style.css';
 
 import 'bootstrap';
 import { start } from './global.js';
+import { getNetwork } from './network.js';
 
 window.onload = start;
 

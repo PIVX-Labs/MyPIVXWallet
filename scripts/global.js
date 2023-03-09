@@ -252,8 +252,8 @@ export function start() {
 
 function subscribeToNetworkEvents() {
     getEventEmitter().on('network-toggle', (value) => {
-        doms.domNetworkE.style.display = value ? '' : 'none';
-        doms.domNetworkD.style.display = value ? 'none' : '';
+        doms.domNetwork.innerHTML =
+            '<i class="fa-solid fa-' + (value ? 'wifi' : 'ban') + '"></i>';
     });
 
     getEventEmitter().on('sync-status', (value) => {
@@ -272,23 +272,17 @@ function subscribeToNetworkEvents() {
 
     getEventEmitter().on('transaction-sent', (success, result) => {
         if (success) {
-            doms.domTxOutput.innerHTML =
-                '<h4 style="color:green; font-family:mono !important;">' +
-                result +
-                '</h4>';
-            doms.domSimpleTXs.style.display = 'none';
             doms.domAddress1s.value = '';
-            doms.domValue1s.innerHTML = '';
-            createAlert('success', 'Transaction sent!', 1500);
-
+            doms.domSendAmountCoins.innerHTML = '';
+            createAlert(
+                'success',
+                `Transaction sent!<br>${result}`,
+                result ? 1250 + result.length * 50 : 3000
+            );
             // If allowed by settings: submit a simple 'tx' ping to Labs Analytics
-            submitAnalytics('transaction');
+            getNetwork().submitAnalytics('transaction');
         } else {
             createAlert('warning', 'Transaction Failed!', 1250);
-            doms.domTxOutput.innerHTML =
-                '<h4 style="color:red;font-family:mono !important;"><pre style="color: inherit;">' +
-                result +
-                '</pre></h4>';
         }
     });
 }

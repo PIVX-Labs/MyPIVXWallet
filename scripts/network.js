@@ -3,6 +3,7 @@ import { cChainParams, COIN } from './chain_params.js';
 import { createAlert } from './misc.js';
 import { Mempool, UTXO } from './mempool.js';
 import { getEventEmitter } from './event_bus.js';
+import { STATS, cStatKeys, cAnalyticsLevel } from './settings.js';
 
 /**
  * Virtual class rapresenting any network backend
@@ -255,7 +256,7 @@ export class ExplorerNetwork extends Network {
         }
         try {
             if (!this.enabled || !this.masterKey || this.areRewardsComplete)
-                return;
+                return this.arrRewards;
             this.rewardsSyncing = true;
             const nHeight = this.arrRewards.length
                 ? this.arrRewards[this.arrRewards.length - 1].blockHeight
@@ -332,6 +333,8 @@ export class ExplorerNetwork extends Network {
                 }
             }
             return this.arrRewards;
+        } catch (e) {
+            console.error(e);
         } finally {
             this.rewardsSyncing = false;
         }
@@ -343,8 +346,36 @@ export class ExplorerNetwork extends Network {
     }
 
     async getTxInfo(txHash) {
-        const req = await fetch(`${cExplorer.url}/api/v2/tx/${txHash}`);
+        const req = await fetch(`${this.strUrl}/api/v2/tx/${txHash}`);
         return await req.json();
+    }
+
+    // PIVX Labs Analytics: if you are a user, you can disable this FULLY via the Settings.
+    // ... if you're a developer, we ask you to keep these stats to enhance upstream development,
+    // ... but you are free to completely strip MPW of any analytics, if you wish, no hard feelings.
+    submitAnalytics(strType, cData = {}) {
+        if (!this.enabled) return;
+
+        // Limit analytics here to prevent 'leakage' even if stats are implemented incorrectly or forced
+        let i = 0,
+            arrAllowedKeys = [];
+        for (i; i < cAnalyticsLevel.stats.length; i++) {
+            const cStat = cAnalyticsLevel.stats[i];
+            arrAllowedKeys.push(cStatKeys.find((a) => STATS[a] === cStat));
+        }
+
+        // Check if this 'stat type' was granted permissions
+        if (!arrAllowedKeys.includes(strType)) return false;
+
+        // Format
+        const cStats = { type: strType, ...cData };
+
+        // Send to Labs Analytics
+        const request = new XMLHttpRequest();
+        request.open('POST', 'https://scpscan.net/mpw/statistic', true);
+        request.setRequestHeader('Content-Type', 'application/json');
+        request.send(JSON.stringify(cStats));
+        return true;
     }
 }
 
