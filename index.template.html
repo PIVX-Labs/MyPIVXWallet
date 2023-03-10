@@ -444,7 +444,11 @@
                             <div class="dcWallet-usdBalance">
                               <span id="guiBalanceValue" class="dcWallet-usdValue">$-</span>
                               <span id="guiBalanceValueCurrency" class="dcWallet-usdValue">USD</span>
+			      <br>
+			      <span class="dcWallet-pivxTicker"> 120.13 <i class="fa fa-shield"> </i> </span>
+			      <br>
                             </div>
+
 
                             <div class="row lessTop p-0">
                               <div class="col-6 d-flex" style="justify-content: flex-start;">
@@ -526,7 +530,6 @@
                         </div>
                             
                         <label><span data-i18n="amount">Amount</span></label><br />
-
                         <div class="row">
                           <div class="col-7 pr-2">
                             <div class="input-group mb-3">
@@ -537,7 +540,10 @@
                                     MAX
                                   </div>
                                 </span>
-                                <span id="sendAmountCoinsTicker" class="input-group-text">PIVX</span>
+                                <span class="input-group-text">
+				    <i id="sendAmountShieldIcon" class="fas fa-shield" style='display: none;'> &nbsp; </i>
+				    <span id="sendAmountCoinsTicker"> PIVX </span>
+				</span>
                               </div>
                             </div>
                           </div>
@@ -551,7 +557,15 @@
                             </div>
                           </div>
                         </div>
-
+			
+                        <div class="row">
+                            <div class="col-8">
+				<div class="custom-control custom-switch">
+				    <input type="checkbox" class="custom-control-input" id="shieldedSwitch">
+				    <label class="custom-control-label" for="shieldedSwitch">Use Shield PIVs</label>
+				</div>
+                          </div>
+                        </div>
                         <div id="advMode1" class="d-none">
                           <label><span data-i18n="fee">Fee</span></label><br />
 

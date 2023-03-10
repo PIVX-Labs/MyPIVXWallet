@@ -128,6 +128,7 @@ export function start() {
         domAvailToDelegate: document.getElementById('availToDelegate'),
         domAvailToUndelegate: document.getElementById('availToUndelegate'),
         domAnalyticsDescriptor: document.getElementById('analyticsDescriptor'),
+	domShieldedSwitch: document.getElementById('shieldedSwitch'),
         domStakingRewardsList: document.getElementById(
             'staking-rewards-content'
         ),
@@ -200,6 +201,8 @@ export function start() {
             false
         );
     };
+
+    doms.domShieldedSwitch.oninput = onShieldedSwitchChange;
 
     // Register native app service
     registerWorker();
@@ -1453,6 +1456,11 @@ async function refreshMasternodeData(cMasternode, fAlert = false) {
 
     // Return the data in case the caller needs additional context
     return cMasternodeData;
+}
+
+function onShieldedSwitchChange() {
+    const shieldIcon = document.getElementById("sendAmountShieldIcon");
+    shieldIcon.style.display = (doms.domShieldedSwitch.checked) ? 'block' : 'none';
 }
 
 export function refreshChainData() {
