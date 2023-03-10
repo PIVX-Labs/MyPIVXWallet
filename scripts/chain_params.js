@@ -41,8 +41,8 @@ export const cChainParams = {
         },
         budgetCycleBlocks: 43200,
         proposalFee: 50 * COIN,
-	maxPaymentCycles: 6,
-	maxPayment: 10 * 43200 * COIN, // 43200 blocks of 10 PIV
+        maxPaymentCycles: 6,
+        maxPayment: 10 * 43200 * COIN, // 43200 blocks of 10 PIV
     },
     testnet: {
         collateralInSats: 10000 * COIN,
@@ -68,8 +68,8 @@ export const cChainParams = {
         },
         budgetCycleBlocks: 144,
         proposalFee: 50 * COIN,
-	maxPaymentCycles: 20,
-	maxPayment: 10 * 144 * COIN, // 144 blocks of 10 tPIV
+        maxPaymentCycles: 20,
+        maxPayment: 10 * 144 * COIN, // 144 blocks of 10 tPIV
     },
 };
 // Set default chain
