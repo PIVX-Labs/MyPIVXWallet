@@ -1147,21 +1147,22 @@ function renderProposals(arrProposals, fContested) {
     if (!fContested) {
         const localProposals = JSON.parse(
             localStorage.getItem('localProposals')
-        );
-        arrProposals = arrProposals.concat(
-            localProposals.map((p) => {
+        ).map((p) => {
                 return {
                     Name: p.name,
                     URL: p.url,
                     MonthlyPayment: p.monthlyPayment / COIN,
                     RemainingPaymentCount: p.nPayments,
-                    TotalPayment: p.nPayments * (p.montlyPayments / COIN),
+                    TotalPayment: p.nPayments * (p.monthlyPayment / COIN),
                     Yeas: 0,
                     Nays: 0,
                     local: true,
+		    Ratio: 0,
                     mpw: p,
                 };
-            })
+            });
+        arrProposals = localProposals.concat(
+	    arrProposals
         );
     }
     for (const cProposal of arrProposals) {
@@ -1204,8 +1205,7 @@ function renderProposals(arrProposals, fContested) {
             finalizeButton.innerHTML = '<i class="fas fa-check"></i>';
             finalizeButton.onclick = async () => {
                 const result = await Masternode.finalizeProposal(cProposal.mpw);
-                if (result.ok) {
-                    createAlert('success', 'Proposal finalized!');
+		const deleteProposal = () => {
                     // Remove local Proposal from local storage
                     const localProposals = JSON.parse(
                         localStorage.getItem('localProposals')
@@ -1218,14 +1218,27 @@ function renderProposals(arrProposals, fContested) {
                             )
                         )
                     );
-                    updateGovernanceTab();
+		};
+                if (result.ok) {
+                    createAlert('success', 'Proposal finalized!');
+		    deleteProposal();
+		    updateGovernanceTab();
                 } else {
                     if (result.err === 'unconfirmed') {
                         createAlert(
                             'warning',
-                            "The proposal hasn'n been confirmed yet."
+                            "The proposal hasn't been confirmed yet.",
+			    5000
                         );
-                    } else {
+                    } else if (result.err === 'invalid') {
+			createAlert(
+                            'warning',
+                            "The proposal is no longer valid. Create a new one.",
+			    5000
+			);
+			deleteProposal();
+			updateGovernanceTab();
+		    } else {
                         createAlert('warning', 'Failed to finalize proposal.');
                     }
                 }
@@ -1474,9 +1487,9 @@ export async function createProposal() {
         return createAlert('warning', 'Not enough funds to create a proposal.');
     }
     await confirmPopup({
-        title: 'Create Proposal',
-        html: `<input id="proposalTitle" placeholder="Title" style="text-align: center;"><br>
-               <input id="proposalUrl" placeholder="URL" style="text-align: center;"><br>
+        title: `Create Proposal (cost ${cChainParams.current.proposalFee / COIN} ${cChainParams.current.TICKER})`,
+        html: `<input id="proposalTitle" maxlength="20" placeholder="Title" style="text-align: center;"><br>
+               <input id="proposalUrl" maxlength="64" placeholder="URL" style="text-align: center;"><br>
                <input type="number" id="proposalCycles" placeholder="Duration in cycles" style="text-align: center;"><br>
                <input type="number" id="proposalPayment" placeholder="${cChainParams.current.TICKER} per cycle" style="text-align: center;"><br>`,
     });
@@ -1495,6 +1508,14 @@ export async function createProposal() {
         address: (await getNewAddress())[0],
         monthlyPayment: numPayment * COIN,
     };
+
+    const isValid = Masternode.isValidProposal(proposal);
+    console.log(isValid);
+    if (!isValid.ok) {
+	createAlert('warning', `Proposal is invalid. Error: ${isValid.err}`, 5000);
+	return;
+    }
+	
     const hash = Masternode.createProposalHash(proposal);
     const { ok, txid } = await createAndSendTransaction({
         address: hash,
