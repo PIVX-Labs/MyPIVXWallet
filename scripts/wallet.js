@@ -530,11 +530,16 @@ export async function importWallet({
 
             // Select WIF from internal source OR user input (could be: WIF, Mnemonic or xpriv)
             const privateImportValue = newWif || doms.domPrivKey.value;
+            const passphrase = doms.domPrivKeyPassword.value;
             doms.domPrivKey.value = '';
+            doms.domPrivKeyPassword.value = '';
 
             if (await verifyMnemonic(privateImportValue)) {
                 // Generate our masterkey via Mnemonic Phrase
-                const seed = await mnemonicToSeed(privateImportValue);
+                const seed = await mnemonicToSeed(
+                    privateImportValue,
+                    passphrase
+                );
                 masterKey = new HdMasterKey({ seed });
             } else {
                 // Public Key Derivation
@@ -629,8 +634,10 @@ export async function generateWallet(noUI = false) {
     if (walletConfirm) {
         const mnemonic = generateMnemonic();
 
-        if (!noUI) await informUserOfMnemonic(mnemonic);
-        const seed = await mnemonicToSeed(mnemonic);
+        const passphrase = !noUI
+            ? await informUserOfMnemonic(mnemonic)
+            : undefined;
+        const seed = await mnemonicToSeed(mnemonic, passphrase);
 
         // Prompt the user to encrypt the seed
         masterKey = new HdMasterKey({ seed });
@@ -696,7 +703,7 @@ function informUserOfMnemonic(mnemonic) {
         $('#mnemonicModal').modal({ keyboard: false });
         doms.domMnemonicModalContent.innerText = mnemonic;
         doms.domMnemonicModalButton.onclick = () => {
-            res();
+            res(doms.domMnemonicModalPassphrase.value);
             $('#mnemonicModal').modal('hide');
         };
         $('#mnemonicModal').modal('show');

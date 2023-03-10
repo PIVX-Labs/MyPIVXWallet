@@ -144,6 +144,9 @@ export function start() {
         domMnemonicModalButton: document.getElementById(
             'modalMnemonicConfirmButton'
         ),
+        domMnemonicModalPassphrase: document.getElementById(
+            'ModalMnemonicPassphrase'
+        ),
         domExportPrivateKey: document.getElementById('exportPrivateKeyText'),
         domExportWallet: document.getElementById('guiExportWalletItem'),
         domWipeWallet: document.getElementById('guiWipeWallet'),
@@ -802,8 +805,11 @@ export function onPrivateKeyChanged() {
     // and it doesn't have any spaces (would be a mnemonic seed)
     const fContainsSpaces = doms.domPrivKey.value.includes(' ');
     doms.domPrivKeyPassword.hidden =
-        doms.domPrivKey.value.length !== 128 || fContainsSpaces;
+        doms.domPrivKey.value.length !== 128 && !fContainsSpaces;
 
+    doms.domPrivKeyPassword.placeholder = fContainsSpaces
+        ? 'Optional Passphrase'
+        : 'Password';
     // Uncloak the private input IF spaces are detected, to make Seed Phrases easier to input and verify
     doms.domPrivKey.setAttribute('type', fContainsSpaces ? 'text' : 'password');
 }
