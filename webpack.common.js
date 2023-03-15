@@ -1,9 +1,10 @@
 const path = require('path');
+const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const NodePolyfillPlugin = require('node-polyfill-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const CopyPlugin = require("copy-webpack-plugin");
-const webpack = require('webpack');
+
 module.exports = {
     entry: './scripts/index.js',
     output: {
@@ -13,18 +14,7 @@ module.exports = {
         libraryTarget: 'var',
         clean: true
     },
-    devServer: {
-        static: {
-          directory: path.join(__dirname, './'),
-        },
-        compress: true,
-        port: 5500,
-        hot: true,
-        client: {
-            overlay: false
-        }
-    },
-    mode: 'development',
+    devtool: 'source-map',
     module: {
         rules: [
             {
@@ -37,7 +27,11 @@ module.exports = {
             },
         ],
     },
-    devtool: 'source-map',
+    resolve: {
+        alias: {
+          'bn.js': path.join(__dirname, 'node_modules/bn.js/lib/bn.js'),
+        }
+    },
     plugins: [
         new HtmlWebpackPlugin({
             template: './index.template.html',

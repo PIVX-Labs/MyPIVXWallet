@@ -21,6 +21,7 @@ export {
     refreshChainData,
     playMusic,
     selectMaxBalance,
+    openExplorer,
     guiEncryptWallet,
     guiPreparePayment,
     doms,

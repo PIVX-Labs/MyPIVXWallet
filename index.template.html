@@ -53,11 +53,11 @@
             <div class="collapse navbar-collapse noselect" id="navbarNav">
               <!-- MAIN NAVBAR -->
               <ul class="navbar-nav mr-auto ptr">
-                <li class="nav-item"><a id="dashboard" class="nav-link tablinks" onclick="MPW.openTab(event, 'keypair')" data-i18n="navDashboard">Dashboard</a></li>
-                <li class="nav-item"><a id="stakeTab" class="nav-link tablinks" onclick="MPW.openTab(event, 'StakingTab')" data-i18n="navStake">Stake</a></li>
-                <li class="nav-item"><a id="masternodeTab" class="nav-link tablinks" onclick="MPW.openTab(event, 'Masternode')" data-i18n="navMasternode">Masternode</a></li>
-                <li class="nav-item"><a id="governanceTab" class="nav-link tablinks" onclick="MPW.openTab(event, 'Governance')" data-i18n="navGovernance">Governance</a></li>
-                <li class="nav-item"><a class="nav-link tablinks" onclick="MPW.openTab(event, 'Settings');" data-i18n="navSettings">Settings</a></li>
+                <li class="nav-item"><span id="dashboard" class="nav-link tablinks" onclick="MPW.openTab(event, 'keypair')" data-i18n="navDashboard">Dashboard</span></li>
+                <li class="nav-item"><span id="stakeTab" class="nav-link tablinks" onclick="MPW.openTab(event, 'StakingTab')" data-i18n="navStake">Stake</span></li>
+                <li class="nav-item"><span id="masternodeTab" class="nav-link tablinks" onclick="MPW.openTab(event, 'Masternode')" data-i18n="navMasternode">Masternode</span></li>
+                <li class="nav-item"><span id="governanceTab" class="nav-link tablinks" onclick="MPW.openTab(event, 'Governance')" data-i18n="navGovernance">Governance</span></li>
+                <li class="nav-item"><span class="nav-link tablinks" onclick="MPW.openTab(event, 'Settings');" data-i18n="navSettings">Settings</span></li>
               </ul>
 
               <!-- SIDE NAVBAR -->
@@ -115,7 +115,6 @@
                   This is your seed phrase:
                   <b>
                     <div class="seed-phrase noselect" id="ModalMnemonicContent">
-                      <!-- Test1 Test2 Test1 Test2 Test1 Test2 Test1 Test2 Test1 Test2 Test1 Test2 -->
                     </div>
                   </b>
                   <br />
@@ -128,7 +127,9 @@
                   <a href="https://www.ledger.com/blog/how-to-protect-your-seed-phrase" target="_blank">
                     <i>It is <b>NOT</b> advised to store this digitally.</i>
                   </a>
-                  <br />
+		  <br />
+		  <br />
+		  <input class="center-text" type="password" id="ModalMnemonicPassphrase" placeholder="Optional Passphrase" />
                   <br />
                 </div>
                 <div class="modal-footer">
@@ -422,6 +423,9 @@
                                   <div class="dropdown">
                                     <div class="dropdown-move">
                                       <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                        <a class="dropdown-item" href="#" onclick="MPW.openExplorer()">
+                                          <i class="fa-solid fa-magnifying-glass"></i> View on Explorer
+                                        </a>
                                         <a id="guiExportWalletItem" class="dropdown-item" href="#" data-toggle="modal" data-target="#exportPrivateKeysModal" data-backdrop="static" data-keyboard="false" onclick="MPW.toggleExportUI()">
                                           <i class="fas fa-key"></i> Export
                                         </a>

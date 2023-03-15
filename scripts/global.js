@@ -8,6 +8,7 @@ import {
     importWallet,
     encryptWallet,
     decryptWallet,
+    getDerivationPath,
 } from './wallet.js';
 import { getNetwork } from './network.js';
 import {
@@ -138,6 +139,9 @@ export function start() {
         ),
         domMnemonicModalButton: document.getElementById(
             'modalMnemonicConfirmButton'
+        ),
+        domMnemonicModalPassphrase: document.getElementById(
+            'ModalMnemonicPassphrase'
         ),
         domExportPrivateKey: document.getElementById('exportPrivateKeyText'),
         domExportWallet: document.getElementById('guiExportWalletItem'),
@@ -432,6 +436,23 @@ export async function updateStakingRewardsGUI() {
     // UpdateDOMS.DOM
     doms.domStakingRewardsTitle.innerHTML = `Staking Rewards: ≥${nRewards} ${cChainParams.current.TICKER}`;
     doms.domStakingRewardsList.innerHTML = strList;
+}
+
+/**
+ * Open the Explorer in a new tab for the loaded master public key
+ */
+export async function openExplorer() {
+    if (masterKey.isHD) {
+        const derivationPath = getDerivationPath(masterKey.isHardwareWallet)
+            .split('/')
+            .slice(0, 4)
+            .join('/');
+        const xpub = await masterKey.getxpub(derivationPath);
+        window.open(cExplorer.url + '/xpub/' + xpub, '_blank');
+    } else {
+        const address = await masterKey.getAddress();
+        window.open(cExplorer.url + '/address/' + address, '_blank');
+    }
 }
 
 async function loadImages() {
@@ -838,8 +859,11 @@ export function onPrivateKeyChanged() {
     // and it doesn't have any spaces (would be a mnemonic seed)
     const fContainsSpaces = doms.domPrivKey.value.includes(' ');
     doms.domPrivKeyPassword.hidden =
-        doms.domPrivKey.value.length !== 128 || fContainsSpaces;
+        doms.domPrivKey.value.length !== 128 && !fContainsSpaces;
 
+    doms.domPrivKeyPassword.placeholder = fContainsSpaces
+        ? 'Optional Passphrase'
+        : 'Password';
     // Uncloak the private input IF spaces are detected, to make Seed Phrases easier to input and verify
     doms.domPrivKey.setAttribute('type', fContainsSpaces ? 'text' : 'password');
 }
