@@ -23,6 +23,7 @@ import { getNetwork } from './network.js';
 import { cChainParams, COIN, COIN_DECIMALS } from './chain_params.js';
 import { createAlert, generateMnPrivkey, confirmPopup } from './misc.js';
 import { bytesToHex, hexToBytes, dSHA256 } from './utils.js';
+import { UTXO as ShieldUTXO } from 'pivx-shielding-js';
 
 function validateAmount(nAmountSats, nMinSats = 10000) {
     // Validate the amount is a valid number, and meets the minimum (if any)
@@ -71,6 +72,7 @@ export async function createTxGUI() {
     // Sanity check the address
     const address = doms.domAddress1s.value.trim();
 
+    /* TODO: add sheild
     // If Staking address: redirect to staking page
     if (address.startsWith(cChainParams.current.STAKING_PREFIX)) {
         createAlert('warning', ALERTS.STAKE_NOT_SEND, [], 7500);
@@ -83,7 +85,8 @@ export async function createTxGUI() {
             ALERTS.BAD_ADDR_LENGTH,
             [{ addressLength: address.length }],
             2500
-        );
+            );
+    */
 
     // Sanity check the amount
     let nValue = Math.round(
@@ -198,6 +201,7 @@ async function createAndSendTransaction({
     amount,
     isDelegation = false,
     useDelegatedInputs = false,
+    useShieldInputs = false,
     delegateChange = false,
     changeDelegationAddress = null,
 }) {
@@ -208,6 +212,13 @@ async function createAndSendTransaction({
             'Ledger is currently not supported.',
             6000
         );
+    }
+
+    if (address.startsWith("ptest")) {
+	return await createShieldTransaction({
+	    address,
+	    amount,
+	});
     }
 
     // Ensure the wallet is unlocked
@@ -533,6 +544,39 @@ function chooseUTXOs(
     return ccSuccess(cCoinControl);
 }
 
+async function createShieldTransaction({address, amount}) {
+    const shield = masterKey.shield;
+    if (!shield) {
+	return createAlert('warning', 'Shield was not enabled for this wallet.', 5000);
+    }
+
+    const utxos = [];
+
+    for (const u of mempool.getStandardUTXOs()) {
+	const utxo = new ShieldUTXO(
+	    {
+		txid: u.id,
+		vout: u.vout,
+		amount: u.sats,
+		privateKey: await masterKey.getPrivateKey(u.path),
+		script: hexToBytes(u.script),
+	    }
+	);
+	utxos.push(utxo);
+    }
+
+    const tx = await shield.createTransaction({
+	address,
+	amount,
+	blockHeight: 130940,
+	useShieldInputs: false,
+	utxos
+    });
+
+    const result = await getNetwork().sendTransaction(tx);
+    createAlert('success', `Shield transaction sent: ${result}`);
+}
+
 function createTxConfirmation(outputs) {
     let strHtml =
         'Confirm this transaction matches the one on your ' +
@@ -545,3 +589,4 @@ function createTxConfirmation(outputs) {
     }
     return strHtml;
 }
+
