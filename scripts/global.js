@@ -41,6 +41,7 @@ export function start() {
         domGuiBalanceValueCurrency: document.getElementById(
             'guiBalanceValueCurrency'
         ),
+	domShieldBalance: document.getElementById('guiShieldBalance'),
         domGuiBalanceBox: document.getElementById('guiBalanceBox'),
         domBalanceReload: document.getElementById('balanceReload'),
         domBalanceReloadStaking: document.getElementById(
@@ -338,6 +339,11 @@ export function getBalance(updateGUI = false) {
             nCoins.toFixed(2) +
             ' ' +
             cChainParams.current.TICKER;
+
+	if (masterKey && masterKey.shield) {
+	    const shieldBalance = masterKey.shield.getBalance() / COIN;
+	    doms.domShieldBalance.innerText = shieldBalance.toFixed(nLen >= 6 ? 0 : 2);
+	}
 
         // Update currency values
         cMarket.getPrice(strCurrency).then((nPrice) => {

@@ -3,7 +3,7 @@ import { cChainParams, COIN } from './chain_params.js';
 import { createAlert } from './misc.js';
 import { Mempool, UTXO } from './mempool.js';
 import { getEventEmitter } from './event_bus.js';
-import { STATS, cStatKeys, cAnalyticsLevel } from './settings.js';
+import { STATS, cStatKeys, cAnalyticsLevel, cNode } from './settings.js';
 import { PIVXShielding as Shield } from 'pivx-shielding-js';
 
 /**
@@ -385,24 +385,49 @@ export class ExplorerNetwork extends Network {
         return true;
     }
 
+
+    /**
+     * @return {Promise<Number[]>} The list of blocks which have at least one shield transaction
+     */
+    async getShieldBlockList() {
+	// Also add 10 blocks behind for now, will make a smarter system later
+	return (await (await fetch(`${cNode.url}/getshieldblocks`)).json());//.concat([ (await this.getBlockCount()) - 10]);
+    }
+    
+
     /**
      * Sync shield
      * @param {Shield} shield
      */
     async syncShield(shield) {
-        for (
-            let block = shield.getLastSyncedBlock() + 1;
-            block < this.cachedBlockCount;
-            block++
-        ) {
-            const res = await (
+	const blocks = (await this.getShieldBlockList())
+	      .filter((b)=>b > shield.getLastSyncedBlock());
+	for (const block of blocks) {
+	    const res = await (
                 await fetch(`${this.strUrl}/api/v2/block/${block}`)
-            ).json();
-            shield.handleBlock(res);
-            console.log(`block ${block} synced`);
-        }
-        await this.waitForNextBlock();
-        syncShield(shield);
+	    ).json();
+	    shield.handleBlock(res);
+	    console.log(`block ${block} synced`);
+	}
+	while(true) {
+            for (
+		let block = shield.getLastSyncedBlock() + 1;
+		block < this.cachedBlockCount;
+		block++
+            ) {
+		try {
+		    const res = await (
+			await fetch(`${this.strUrl}/api/v2/block/${block}`)
+		    ).json();
+		    shield.handleBlock(res);
+		    console.log(`block ${block} synced`);
+		} catch (e) {
+		    console.error(e);
+		    break;
+		}
+            }
+            await this.waitForNextBlock();
+	}
     }
 
     /**

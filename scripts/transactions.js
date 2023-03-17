@@ -71,7 +71,7 @@ export async function createTxGUI() {
 
     // Sanity check the address
     const address = doms.domAddress1s.value.trim();
-
+    const useShieldInputs = doms.domShieldedSwitch.checked;
     /* TODO: add sheild
     // If Staking address: redirect to staking page
     if (address.startsWith(cChainParams.current.STAKING_PREFIX)) {
@@ -106,7 +106,7 @@ export async function createTxGUI() {
             [],
             2500
         );
-    createAndSendTransaction({ address, amount: nValue, isDelegation: false });
+    createAndSendTransaction({ address, amount: nValue, isDelegation: false, useShieldInputs });
 }
 
 /**
@@ -214,10 +214,11 @@ async function createAndSendTransaction({
         );
     }
 
-    if (address.startsWith('ptest')) {
+    if (address.startsWith('ptest') || useShieldInputs) {
         return await createShieldTransaction({
             address,
             amount,
+	    useShieldInputs,
         });
     }
 
@@ -544,7 +545,7 @@ function chooseUTXOs(
     return ccSuccess(cCoinControl);
 }
 
-async function createShieldTransaction({ address, amount }) {
+async function createShieldTransaction({ address, amount, useShieldInputs }) {
     const shield = masterKey.shield;
     if (!shield) {
         return createAlert(
@@ -555,24 +556,25 @@ async function createShieldTransaction({ address, amount }) {
     }
 
     const utxos = [];
-
-    for (const u of mempool.getStandardUTXOs()) {
-        const utxo = new ShieldUTXO({
-            txid: u.id,
-            vout: u.vout,
-            amount: u.sats,
-            privateKey: await masterKey.getPrivateKey(u.path),
-            script: hexToBytes(u.script),
-        });
-        utxos.push(utxo);
+    if (!useShieldInputs) {
+	for (const u of mempool.getStandardUTXOs()) {
+            const utxo = new ShieldUTXO({
+		txid: u.id,
+		vout: u.vout,
+		amount: u.sats,
+		privateKey: await masterKey.getPrivateKey(u.path),
+		script: hexToBytes(u.script),
+            });
+            utxos.push(utxo);
+	}
     }
 
     const tx = await shield.createTransaction({
         address,
         amount,
         blockHeight: 130940,
-        useShieldInputs: false,
-        utxos,
+        useShieldInputs,
+        utxos: useShieldInputs ? null : utxos,
     });
 
     const result = await getNetwork().sendTransaction(tx);
