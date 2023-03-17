@@ -128,7 +128,7 @@ export function start() {
         domAvailToDelegate: document.getElementById('availToDelegate'),
         domAvailToUndelegate: document.getElementById('availToUndelegate'),
         domAnalyticsDescriptor: document.getElementById('analyticsDescriptor'),
-	domShieldedSwitch: document.getElementById('shieldedSwitch'),
+        domShieldedSwitch: document.getElementById('shieldedSwitch'),
         domStakingRewardsList: document.getElementById(
             'staking-rewards-content'
         ),
@@ -1459,8 +1459,10 @@ async function refreshMasternodeData(cMasternode, fAlert = false) {
 }
 
 function onShieldedSwitchChange() {
-    const shieldIcon = document.getElementById("sendAmountShieldIcon");
-    shieldIcon.style.display = (doms.domShieldedSwitch.checked) ? 'block' : 'none';
+    const shieldIcon = document.getElementById('sendAmountShieldIcon');
+    shieldIcon.style.display = doms.domShieldedSwitch.checked
+        ? 'block'
+        : 'none';
 }
 
 export function refreshChainData() {

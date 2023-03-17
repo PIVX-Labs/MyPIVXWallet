@@ -130,7 +130,7 @@ class MasterKey {
      * @return {Shield?}
      */
     get shield() {
-	return this._shield;
+        return this._shield;
     }
 }
 
@@ -138,26 +138,26 @@ export class HdMasterKey extends MasterKey {
     constructor({ seed, xpriv, xpub, shield }) {
         super();
         // Generate the HDKey
-	this._hdKey = HDKey.fromMasterSeed(seed);
+        this._hdKey = HDKey.fromMasterSeed(seed);
         if (xpriv) this._hdKey = HDKey.fromExtendedKey(xpriv);
         if (xpub) this._hdKey = HDKey.fromExtendedKey(xpub);
         this._isViewOnly = !!xpub;
         if (!this._hdKey)
             throw new Error('All of seed, xpriv and xpub are undefined');
-	/**
-	 * @type{Shield}
-	 */
-	this._shield = shield;
+        /**
+         * @type{Shield}
+         */
+        this._shield = shield;
         this._isHD = true;
         this._isHardwareWallet = false;
-	
-	// Without await because we want to download in the background.
-	// TODO: see how many browsers cache this and decide if we want
-	// to remove this. If this is removed, it will be automatically
-	// downloaded when needed
-	this._shield.loadSaplingProver();
-	getNetwork().syncShield(this._shield);
-	console.log(this._shield);
+
+        // Without await because we want to download in the background.
+        // TODO: see how many browsers cache this and decide if we want
+        // to remove this. If this is removed, it will be automatically
+        // downloaded when needed
+        this._shield.loadSaplingProver();
+        getNetwork().syncShield(this._shield);
+        console.log(this._shield);
     }
 
     async getPrivateKeyBytes(path) {
@@ -563,15 +563,15 @@ export async function importWallet({
                     privateImportValue,
                     passphrase
                 );
-		const shield = await Shield.create({
-		    seed,
-		    // Wrong: We actually want to ask the user for the blockcount
-		    blockHeight: getNetwork().getBlockCount(),
-		    coinType: cChainParams.current.BIP44_TYPE,
-		    loadSaplingData: false,
-		});
+                const shield = await Shield.create({
+                    seed,
+                    // Wrong: We actually want to ask the user for the blockcount
+                    blockHeight: await getNetwork().getBlockCount(),
+                    coinType: cChainParams.current.BIP44_TYPE,
+                    loadSaplingData: false,
+                });
                 setMasterKey(new HdMasterKey({ seed, shield }));
-		console.log("Shield is done lol!");
+                console.log('Shield is done lol!');
             } else {
                 // Public Key Derivation
                 try {
@@ -683,14 +683,14 @@ export async function generateWallet(noUI = false) {
         const seed = await mnemonicToSeed(mnemonic, passphrase);
 
         // Prompt the user to encrypt the seed
-	const shield = await Shield.create({
-	    seed,
-	    // Wrong: We actually want to ask the user for the blockcount
-	    blockHeight: getNetwork().getBlockCount(),
-	    coinType: cChainParams.current.BIP44_TYPE,
-	    loadSaplingData: false,
-	});
-	
+        const shield = await Shield.create({
+            seed,
+            // Wrong: We actually want to ask the user for the blockcount
+            blockHeight: await getNetwork().getBlockCount(),
+            coinType: cChainParams.current.BIP44_TYPE,
+            loadSaplingData: false,
+        });
+
         setMasterKey(new HdMasterKey({ seed, shield }));
         fWalletLoaded = true;
 

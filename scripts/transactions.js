@@ -214,11 +214,11 @@ async function createAndSendTransaction({
         );
     }
 
-    if (address.startsWith("ptest")) {
-	return await createShieldTransaction({
-	    address,
-	    amount,
-	});
+    if (address.startsWith('ptest')) {
+        return await createShieldTransaction({
+            address,
+            amount,
+        });
     }
 
     // Ensure the wallet is unlocked
@@ -544,33 +544,35 @@ function chooseUTXOs(
     return ccSuccess(cCoinControl);
 }
 
-async function createShieldTransaction({address, amount}) {
+async function createShieldTransaction({ address, amount }) {
     const shield = masterKey.shield;
     if (!shield) {
-	return createAlert('warning', 'Shield was not enabled for this wallet.', 5000);
+        return createAlert(
+            'warning',
+            'Shield was not enabled for this wallet.',
+            5000
+        );
     }
 
     const utxos = [];
 
     for (const u of mempool.getStandardUTXOs()) {
-	const utxo = new ShieldUTXO(
-	    {
-		txid: u.id,
-		vout: u.vout,
-		amount: u.sats,
-		privateKey: await masterKey.getPrivateKey(u.path),
-		script: hexToBytes(u.script),
-	    }
-	);
-	utxos.push(utxo);
+        const utxo = new ShieldUTXO({
+            txid: u.id,
+            vout: u.vout,
+            amount: u.sats,
+            privateKey: await masterKey.getPrivateKey(u.path),
+            script: hexToBytes(u.script),
+        });
+        utxos.push(utxo);
     }
 
     const tx = await shield.createTransaction({
-	address,
-	amount,
-	blockHeight: 130940,
-	useShieldInputs: false,
-	utxos
+        address,
+        amount,
+        blockHeight: 130940,
+        useShieldInputs: false,
+        utxos,
     });
 
     const result = await getNetwork().sendTransaction(tx);
@@ -589,4 +591,3 @@ function createTxConfirmation(outputs) {
     }
     return strHtml;
 }
-

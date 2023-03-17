@@ -4,6 +4,7 @@ import { createAlert } from './misc.js';
 import { Mempool, UTXO } from './mempool.js';
 import { getEventEmitter } from './event_bus.js';
 import { STATS, cStatKeys, cAnalyticsLevel } from './settings.js';
+import { PIVXShielding as Shield } from 'pivx-shielding-js';
 
 /**
  * Virtual class rapresenting any network backend
@@ -81,7 +82,7 @@ export class Network {
     }
 
     syncShield(shield) {
-	throw new Error('syncShield must be implemented');
+        throw new Error('syncShield must be implemented');
     }
 }
 
@@ -140,14 +141,16 @@ export class ExplorerNetwork extends Network {
                         backend.blocks
                 );
                 this.blocks = backend.blocks;
+                getEventEmitter().emit('new-block', this.blocks);
 
-                await this.getUTXOs();
+                this.getUTXOs();
             }
         } catch (e) {
             this.error();
             throw e;
         } finally {
             getEventEmitter().emit('sync-status', 'stop');
+            return this.blocks;
         }
     }
 
@@ -382,9 +385,35 @@ export class ExplorerNetwork extends Network {
         return true;
     }
 
-    syncShield(shield) {
+    /**
+     * Sync shield
+     * @param {Shield} shield
+     */
+    async syncShield(shield) {
+        for (
+            let block = shield.getLastSyncedBlock() + 1;
+            block < this.cachedBlockCount;
+            block++
+        ) {
+            const res = await (
+                await fetch(`${this.strUrl}/api/v2/block/${block}`)
+            ).json();
+            shield.handleBlock(res);
+            console.log(`block ${block} synced`);
+        }
+        await this.waitForNextBlock();
+        syncShield(shield);
     }
 
+    /**
+     * Waits for next block
+     * @returns {Promise<Number>} Resolves when the next block is obtained
+     */
+    waitForNextBlock() {
+        return new Promise((res, _rej) => {
+            getEventEmitter().once('new-block', (block) => res(block));
+        });
+    }
 }
 
 let _network = null;
