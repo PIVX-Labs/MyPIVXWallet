@@ -126,7 +126,7 @@ export async function confirmPopup({ title, html, resolvePromise }) {
 }
 
 // Generates and sets a QRCode image from a string and dom element
-export function createQR(strData = '', domImg, size = 4) {
+export function createQR(strData = '', domImg, size = 5) {
     // QRCode class consists of 'typeNumber' & 'errorCorrectionLevel'
     const cQR = qrcode(size, 'L');
     cQR.addData(strData);

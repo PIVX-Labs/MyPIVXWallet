@@ -132,6 +132,18 @@ class MasterKey {
     get shield() {
         return this._shield;
     }
+    get lastTranspAddrForUser(){
+        return this._lastTranspAddrForUser;
+    }
+    set lastTranspAddrForUser(x) {
+        this._lastTranspAddrForUser =x;
+    }
+    get lastShieldAddrForUser(){
+        return this._lastShieldAddrForUser;
+    }
+    set lastShieldAddrForUser(x) {
+        this._lastShieldAddrForUser =x;
+    }   
 }
 
 export class HdMasterKey extends MasterKey {
@@ -150,7 +162,8 @@ export class HdMasterKey extends MasterKey {
         this._shield = shield;
         this._isHD = true;
         this._isHardwareWallet = false;
-
+        this._lastShieldAddrForUser = "";
+        this._lastTranspAddrForUser = "";
         // Without await because we want to download in the background.
         // TODO: see how many browsers cache this and decide if we want
         // to remove this. If this is removed, it will be automatically
@@ -865,6 +878,7 @@ export async function getNewAddress({
         0,
         addressIndex
     );
+    const shieldAddress = masterKey.shield.getNewAddress();
     // Use Xpub?
     const address = await masterKey.getAddress(path);
     if (verify && masterKey.isHardwareWallet) {
@@ -880,18 +894,33 @@ export async function getNewAddress({
     }
 
     if (updateGUI) {
-        createQR('pivx:' + address, doms.domModalQR);
+        masterKey.lastShieldAddrForUser = shieldAddress;
+        masterKey.lastTranspAddrForUser = address;
+        let addressToUpdate = doms.domShieldAddrSwitch.checked ? shieldAddress : address;
+        createQR('pivx:' + addressToUpdate, doms.domModalQR);
         doms.domModalQrLabel.innerHTML =
             'pivx:' +
-            address +
-            `<i onclick="MPW.toClipboard('${address}', this)" id="guiAddressCopy" class="fas fa-clipboard" style="cursor: pointer; width: 20px;"></i>`;
+            addressToUpdate +
+            `<i onclick="MPW.toClipboard('${addressToUpdate}', this)" id="guiAddressCopy" class="fas fa-clipboard" style="cursor: pointer; width: 20px;"></i>`;
         doms.domModalQR.firstChild.style.width = '100%';
         doms.domModalQR.firstChild.style.height = 'auto';
         doms.domModalQR.firstChild.classList.add('no-antialias');
-        document.getElementById('clipboard').value = address;
+        document.getElementById('clipboard').value = addressToUpdate;
     }
     addressIndex++;
     return [address, path];
+}
+export function updateAddressGUI(){
+    let addressToUpdate = doms.domShieldAddrSwitch.checked ? masterKey.lastShieldAddrForUser : masterKey.lastTranspAddrForUser;
+    createQR('pivx:' + addressToUpdate, doms.domModalQR);
+    doms.domModalQrLabel.innerHTML =
+        'pivx:' +
+        addressToUpdate +
+        `<i onclick="MPW.toClipboard('${addressToUpdate}', this)" id="guiAddressCopy" class="fas fa-clipboard" style="cursor: pointer; width: 20px;"></i>`;
+    doms.domModalQR.firstChild.style.width = '100%';
+    doms.domModalQR.firstChild.style.height = 'auto';
+    doms.domModalQR.firstChild.classList.add('no-antialias');
+    document.getElementById('clipboard').value = addressToUpdate;
 }
 
 export let cHardwareWallet = null;

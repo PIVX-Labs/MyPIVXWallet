@@ -9,6 +9,7 @@ import {
     encryptWallet,
     decryptWallet,
     getDerivationPath,
+    updateAddressGUI,
 } from './wallet.js';
 import { getNetwork } from './network.js';
 import {
@@ -130,6 +131,7 @@ export function start() {
         domAvailToUndelegate: document.getElementById('availToUndelegate'),
         domAnalyticsDescriptor: document.getElementById('analyticsDescriptor'),
         domShieldedSwitch: document.getElementById('shieldedSwitch'),
+        domShieldAddrSwitch: document.getElementById('shieldSwitchAddr'),
         domStakingRewardsList: document.getElementById(
             'staking-rewards-content'
         ),
@@ -204,6 +206,7 @@ export function start() {
     };
 
     doms.domShieldedSwitch.oninput = onShieldedSwitchChange;
+    doms.domShieldAddrSwitch.oninput = onShieldAddrSwitchChange;
 
     // Register native app service
     registerWorker();
@@ -1469,6 +1472,9 @@ function onShieldedSwitchChange() {
     shieldIcon.style.display = doms.domShieldedSwitch.checked
         ? 'block'
         : 'none';
+}
+function onShieldAddrSwitchChange(){
+    updateAddressGUI();
 }
 
 export function refreshChainData() {
