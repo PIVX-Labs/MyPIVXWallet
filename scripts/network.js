@@ -406,7 +406,7 @@ export class ExplorerNetwork extends Network {
 	    const res = await (
                 await fetch(`${this.strUrl}/api/v2/block/${block}`)
 	    ).json();
-	    shield.handleBlock(res);
+	    await shield.handleBlock(res);
 	    console.log(`block ${block} synced`);
 	}
 	while(true) {
@@ -419,7 +419,7 @@ export class ExplorerNetwork extends Network {
 		    const res = await (
 			await fetch(`${this.strUrl}/api/v2/block/${block}`)
 		    ).json();
-		    shield.handleBlock(res);
+		    await shield.handleBlock(res);
 		    console.log(`block ${block} synced`);
 		} catch (e) {
 		    console.error(e);

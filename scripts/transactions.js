@@ -569,6 +569,8 @@ async function createShieldTransaction({ address, amount, useShieldInputs }) {
 	}
     }
 
+    console.time("shieldtx");
+
     const tx = await shield.createTransaction({
         address,
         amount,
@@ -576,8 +578,13 @@ async function createShieldTransaction({ address, amount, useShieldInputs }) {
         useShieldInputs,
         utxos: useShieldInputs ? null : utxos,
     });
+    console.timeEnd("shieldtx");
 
     const result = await getNetwork().sendTransaction(tx);
+
+    if (result && useShieldInputs) {
+	shield.finalizeTransaction(result);
+    }
     createAlert('success', `Shield transaction sent: ${result}`);
 }
 

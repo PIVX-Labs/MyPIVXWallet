@@ -13,6 +13,10 @@ module.exports = merge(common, {
         hot: true,
         client: {
             overlay: false
-        }
+        },
+	headers: {
+	    "Cross-Origin-Embedder-Policy": "require-corp",
+	    "Cross-Origin-Opener-Policy": "same-origin",
+	}
     },
 });

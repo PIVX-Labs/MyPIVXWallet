@@ -67,5 +67,5 @@ module.exports = {
             ],
         }),
     ],
-    experiments: { asyncWebAssembly: true },
+    experiments: { syncWebAssembly: true },
 };
