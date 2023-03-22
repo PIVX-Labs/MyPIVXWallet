@@ -590,7 +590,7 @@ async function createShieldTransaction({ address, amount, useShieldInputs }) {
 	if (useShieldInputs) {
             shield.finalizeTransaction(result);
 	}
-	console.log(spentUTXOs);
+
 	for (const utxo of spentUTXOs) {
 	    mempool.autoRemoveUTXO({ id: utxo.txid, vout: utxo.vout });
 	}

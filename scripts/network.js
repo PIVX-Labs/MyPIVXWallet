@@ -168,7 +168,6 @@ export class ExplorerNetwork extends Network {
      * @returns {Promise<void>} Resolves when it has finished fetching UTXOs
      */
     async getUTXOs() {
-        console.log(this.masterKey);
         // Don't fetch UTXOs if we're already scanning for them!
         if (!this.masterKey) return;
         if (this.isSyncing) return;
