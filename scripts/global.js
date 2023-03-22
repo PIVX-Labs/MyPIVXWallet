@@ -31,8 +31,8 @@ export let doms = {};
 
 export function start() {
     doms = {
-        domInstall: document.getElementById('installTab'),
         domNavbarToggler: document.getElementById('navbarToggler'),
+        domDashboard: document.getElementById('dashboard'),
         domGuiStaking: document.getElementById('guiStaking'),
         domGuiWallet: document.getElementById('guiWallet'),
         domGuiBalance: document.getElementById('guiBalance'),
@@ -584,7 +584,7 @@ export function guiPreparePayment(strTo = '', nAmount = 0, strDesc = '') {
     doms.domReqDisplay.style.display = strDesc ? 'block' : 'none';
 
     // Switch to the Dashboard
-    document.getElementById('dashboard').click();
+    doms.domDashboard.click();
 
     // Open the Send menu (with a small timeout post-load to allow for CSS loading)
     setTimeout(() => {
@@ -1209,7 +1209,7 @@ function renderProposals(arrProposals, fContested) {
         // IMPORTANT: Sanitise all of our HTML or a rogue server or malicious proposal could perform a cross-site scripting attack
         domNameAndURL.innerHTML = `<a class="active" href="${sanitizeHTML(
             cProposal.URL
-        )}"><b>${sanitizeHTML(cProposal.Name)}</b></a>`;
+        )}" target="_blank" rel="noopener noreferrer"><b>${sanitizeHTML(cProposal.Name)}</b></a>`;
 
         // Payment Schedule and Amounts
         const domPayments = domRow.insertCell();
