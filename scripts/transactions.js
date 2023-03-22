@@ -576,7 +576,7 @@ async function createShieldTransaction({ address, amount, useShieldInputs }) {
 
     console.time('shieldtx');
 
-    const tx = await shield.createTransaction({
+    const { hex, spentUTXOs } = await shield.createTransaction({
         address,
         amount,
         blockHeight: 130940,
@@ -585,11 +585,17 @@ async function createShieldTransaction({ address, amount, useShieldInputs }) {
     });
     console.timeEnd('shieldtx');
 
-    const result = await getNetwork().sendTransaction(tx);
-
-    if (result && useShieldInputs) {
-        shield.finalizeTransaction(result);
+    const result = await getNetwork().sendTransaction(hex);
+    if (result) {
+	if (useShieldInputs) {
+            shield.finalizeTransaction(result);
+	}
+	console.log(spentUTXOs);
+	for (const utxo of spentUTXOs) {
+	    mempool.autoRemoveUTXO({ id: utxo.txid, vout: utxo.vout });
+	}
     }
+    
     createAlert('success', `Shield transaction sent: ${result}`);
 }
 
