@@ -877,7 +877,7 @@ export async function getNewAddress({
         0,
         addressIndex
     );
-    const shieldAddress = masterKey.shield.getNewAddress();
+    const shieldAddress = await masterKey.shield.getNewAddress();
     // Use Xpub?
     const address = await masterKey.getAddress(path);
     if (verify && masterKey.isHardwareWallet) {
