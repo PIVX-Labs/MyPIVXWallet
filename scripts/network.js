@@ -224,7 +224,6 @@ export class ExplorerNetwork extends Network {
             isDelegate: isColdStake,
             isReward,
         });
-        // TODO: readd as event getNewAddress(true);
     }
 
     async sendTransaction(hex) {

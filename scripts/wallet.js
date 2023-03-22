@@ -540,7 +540,7 @@ export async function importWallet({
                     privateImportValue,
                     passphrase
                 );
-                setMasterKey = new HdMasterKey({ seed });
+                setMasterKey(new HdMasterKey({ seed }));
             } else {
                 // Public Key Derivation
                 try {
