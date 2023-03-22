@@ -61,7 +61,12 @@ export class Network {
         throw new Error('Error must be implemented');
     }
 
-    getBlockCount() {
+    /**
+     * Get updated block count.
+     * @param {boolean} startSyncing - If it should sync
+     * @returns {Promise<Number>} block count
+     */
+    getBlockCount(startSyncing) {
         throw new Error('getBlockCount must be implemented');
     }
 
@@ -127,30 +132,34 @@ export class ExplorerNetwork extends Network {
         return this.blocks;
     }
 
-    async getBlockCount() {
+    async getBlockCount(startSyncing = true) {
         try {
-            getEventEmitter().emit('sync-status', 'start');
+            let newBlockCount = this.blocks;
+            if (startSyncing) getEventEmitter().emit('sync-status', 'start');
             const { backend } = await (
                 await fetch(`${this.strUrl}/api/v2/api`)
             ).json();
-            if (backend.blocks > this.blocks) {
-                console.log(
-                    'New block detected! ' +
-                        this.blocks +
-                        ' --> ' +
-                        backend.blocks
-                );
-                this.blocks = backend.blocks;
-                getEventEmitter().emit('new-block', this.blocks);
+            newBlockCount = backend.blocks;
 
-                this.getUTXOs();
+            if (newBlockCount > this.blocks) {
+                if (startSyncing) {
+                    this.blocks = backend.blocks;
+                    console.log(
+                        'New block detected! ' +
+                            this.blocks +
+                            ' --> ' +
+                            backend.blocks
+                    );
+                    getEventEmitter().emit('new-block', this.blocks);
+                    this.getUTXOs();
+                }
             }
+            return newBlockCount;
         } catch (e) {
             this.error();
             throw e;
         } finally {
-            getEventEmitter().emit('sync-status', 'stop');
-            return this.blocks;
+            if (startSyncing) getEventEmitter().emit('sync-status', 'stop');
         }
     }
 
@@ -159,6 +168,7 @@ export class ExplorerNetwork extends Network {
      * @returns {Promise<void>} Resolves when it has finished fetching UTXOs
      */
     async getUTXOs() {
+        console.log(this.masterKey);
         // Don't fetch UTXOs if we're already scanning for them!
         if (!this.masterKey) return;
         if (this.isSyncing) return;
@@ -348,6 +358,7 @@ export class ExplorerNetwork extends Network {
     }
 
     setMasterKey(masterKey) {
+        this.blocks = 0;
         this.masterKey = masterKey;
         this.arrRewards = [];
     }
@@ -385,49 +396,48 @@ export class ExplorerNetwork extends Network {
         return true;
     }
 
-
     /**
      * @return {Promise<Number[]>} The list of blocks which have at least one shield transaction
      */
     async getShieldBlockList() {
-	// Also add 10 blocks behind for now, will make a smarter system later
-	return (await (await fetch(`${cNode.url}/getshieldblocks`)).json());//.concat([ (await this.getBlockCount()) - 10]);
+        // Also add 10 blocks behind for now, will make a smarter system later
+        return await (await fetch(`${cNode.url}/getshieldblocks`)).json(); //.concat([ (await this.getBlockCount()) - 10]);
     }
-    
 
     /**
      * Sync shield
      * @param {Shield} shield
      */
     async syncShield(shield) {
-	const blocks = (await this.getShieldBlockList())
-	      .filter((b)=>b > shield.getLastSyncedBlock());
-	for (const block of blocks) {
-	    const res = await (
+        const blocks = (await this.getShieldBlockList()).filter(
+            (b) => b > shield.getLastSyncedBlock()
+        );
+        for (const block of blocks) {
+            const res = await (
                 await fetch(`${this.strUrl}/api/v2/block/${block}`)
-	    ).json();
-	    await shield.handleBlock(res);
-	    console.log(`block ${block} synced`);
-	}
-	while(true) {
+            ).json();
+            await shield.handleBlock(res);
+            console.log(`block ${block} synced`);
+        }
+        while (true) {
             for (
-		let block = shield.getLastSyncedBlock() + 1;
-		block < this.cachedBlockCount;
-		block++
+                let block = shield.getLastSyncedBlock() + 1;
+                block < this.cachedBlockCount;
+                block++
             ) {
-		try {
-		    const res = await (
-			await fetch(`${this.strUrl}/api/v2/block/${block}`)
-		    ).json();
-		    await shield.handleBlock(res);
-		    console.log(`block ${block} synced`);
-		} catch (e) {
-		    console.error(e);
-		    break;
-		}
+                try {
+                    const res = await (
+                        await fetch(`${this.strUrl}/api/v2/block/${block}`)
+                    ).json();
+                    await shield.handleBlock(res);
+                    console.log(`block ${block} synced`);
+                } catch (e) {
+                    console.error(e);
+                    break;
+                }
             }
             await this.waitForNextBlock();
-	}
+        }
     }
 
     /**

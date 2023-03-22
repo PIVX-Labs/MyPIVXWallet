@@ -106,7 +106,12 @@ export async function createTxGUI() {
             [],
             2500
         );
-    createAndSendTransaction({ address, amount: nValue, isDelegation: false, useShieldInputs });
+    createAndSendTransaction({
+        address,
+        amount: nValue,
+        isDelegation: false,
+        useShieldInputs,
+    });
 }
 
 /**
@@ -218,7 +223,7 @@ async function createAndSendTransaction({
         return await createShieldTransaction({
             address,
             amount,
-	    useShieldInputs,
+            useShieldInputs,
         });
     }
 
@@ -557,19 +562,19 @@ async function createShieldTransaction({ address, amount, useShieldInputs }) {
 
     const utxos = [];
     if (!useShieldInputs) {
-	for (const u of mempool.getStandardUTXOs()) {
+        for (const u of mempool.getStandardUTXOs()) {
             const utxo = new ShieldUTXO({
-		txid: u.id,
-		vout: u.vout,
-		amount: u.sats,
-		privateKey: await masterKey.getPrivateKey(u.path),
-		script: hexToBytes(u.script),
+                txid: u.id,
+                vout: u.vout,
+                amount: u.sats,
+                privateKey: await masterKey.getPrivateKey(u.path),
+                script: hexToBytes(u.script),
             });
             utxos.push(utxo);
-	}
+        }
     }
 
-    console.time("shieldtx");
+    console.time('shieldtx');
 
     const tx = await shield.createTransaction({
         address,
@@ -578,12 +583,12 @@ async function createShieldTransaction({ address, amount, useShieldInputs }) {
         useShieldInputs,
         utxos: useShieldInputs ? null : utxos,
     });
-    console.timeEnd("shieldtx");
+    console.timeEnd('shieldtx');
 
     const result = await getNetwork().sendTransaction(tx);
 
     if (result && useShieldInputs) {
-	shield.finalizeTransaction(result);
+        shield.finalizeTransaction(result);
     }
     createAlert('success', `Shield transaction sent: ${result}`);
 }
