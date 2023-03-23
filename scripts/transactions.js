@@ -587,15 +587,15 @@ async function createShieldTransaction({ address, amount, useShieldInputs }) {
 
     const result = await getNetwork().sendTransaction(hex);
     if (result) {
-	if (useShieldInputs) {
+        if (useShieldInputs) {
             shield.finalizeTransaction(result);
-	}
+        }
 
-	for (const utxo of spentUTXOs) {
-	    mempool.autoRemoveUTXO({ id: utxo.txid, vout: utxo.vout });
-	}
+        for (const utxo of spentUTXOs) {
+            mempool.autoRemoveUTXO({ id: utxo.txid, vout: utxo.vout });
+        }
     }
-    
+
     createAlert('success', `Shield transaction sent: ${result}`);
 }
 

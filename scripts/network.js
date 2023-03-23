@@ -399,8 +399,17 @@ export class ExplorerNetwork extends Network {
      * @return {Promise<Number[]>} The list of blocks which have at least one shield transaction
      */
     async getShieldBlockList() {
-        // Also add 10 blocks behind for now, will make a smarter system later
-        return await (await fetch(`${cNode.url}/getshieldblocks`)).json(); //.concat([ (await this.getBlockCount()) - 10]);
+        /**
+         * @type {Number[]}
+         */
+        const blocks = await (
+            await fetch(`${cNode.url}/getshieldblocks`)
+        ).json();
+        const max = blocks[blocks.length - 1];
+        if (max < this.cachedBlockCount - 5) {
+            blocks.push(this.cachedBlockCount - 5);
+        }
+        return blocks;
     }
 
     /**
