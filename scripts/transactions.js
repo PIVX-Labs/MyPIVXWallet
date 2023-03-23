@@ -575,13 +575,13 @@ async function createShieldTransaction({ address, amount, useShieldInputs }) {
     }
 
     console.time('shieldtx');
-
     const { hex, spentUTXOs } = await shield.createTransaction({
         address,
         amount,
         blockHeight: 130940,
         useShieldInputs,
         utxos: useShieldInputs ? null : utxos,
+        transparentChangeAddress: useShieldInputs ? null : (await getNewAddress())[0],
     });
     console.timeEnd('shieldtx');
 
