@@ -345,9 +345,12 @@ export function getBalance(updateGUI = false) {
 
         if (masterKey && masterKey.shield) {
             const shieldBalance = masterKey.shield.getBalance() / COIN;
-            doms.domShieldBalance.innerText = shieldBalance.toFixed(
-                nLen >= 6 ? 0 : 2
-            );
+	    const pendingBalance = masterKey.shield.getPendingBalance() / COIN;
+	    
+            doms.domShieldBalance.innerHTML = shieldBalance.toFixed(
+                shieldBalance.toFixed(2).length >= 6 ? 0 : 2
+            ) + (pendingBalance !== 0 ? `+ <small> ${pendingBalance.toFixed(2)} </small>` : "");
+	    
         }
 
         // Update currency values
