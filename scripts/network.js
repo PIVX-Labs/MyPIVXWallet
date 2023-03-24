@@ -237,7 +237,7 @@ export class ExplorerNetwork extends Network {
             if (data.result && data.result.length === 64) {
                 console.log('Transaction sent! ' + data.result);
                 getEventEmitter().emit('transaction-sent', true, data.result);
-                return true;
+                return data.result;
             } else {
                 console.log('Error sending transaction: ' + data.result);
                 getEventEmitter().emit('transaction-sent', false, data.error);
