@@ -46,7 +46,6 @@ export {
 } from './transactions.js';
 export { hexToBytes, bytesToHex, dSHA256 } from './utils.js';
 
-export { toggleNetwork } from './network.js';
 import Masternode from './masternode.js';
 export { Masternode };
 
