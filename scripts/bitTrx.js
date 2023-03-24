@@ -5,9 +5,9 @@ import bs58 from 'bs58';
 import { OP } from './script.js';
 import { deriveAddress, parseWIF, getDerivationPath } from './wallet.js';
 import { sha256 } from '@noble/hashes/sha256';
-import { cachedBlockCount } from './network.js';
+import { getNetwork } from './network.js';
 import { cChainParams } from './chain_params.js';
-import _ from 'lodash';
+import { cloneDeep } from 'lodash-es';
 
 export default class bitjs {
     static get pub() {
@@ -73,7 +73,8 @@ export default class bitjs {
             buf.push(OP['ROT']);
             buf.push(OP['IF']);
             if (
-                cachedBlockCount >= cChainParams.current.Consensus.UPGRADE_V6_0
+                getNetwork().cachedBlockCount >=
+                cChainParams.current.Consensus.UPGRADE_V6_0
             ) {
                 buf.push(OP['CHECKCOLDSTAKEVERIFY']);
             } else {
@@ -103,7 +104,7 @@ export default class bitjs {
         }
         /* generate the transaction hash to sign from a transaction input */
         transactionHash(index, sigHashType) {
-            let clone = bitjs.clone(this);
+            let clone = cloneDeep(this);
             const shType = sigHashType || 1;
 
             /* black out all other ins, except this one */
@@ -319,11 +320,6 @@ export default class bitjs {
     static bytesToNum(bytes) {
         if (bytes.length == 0) return 0;
         else return bytes[0] + 256 * bitjs.bytesToNum(bytes.slice(1));
-    }
-
-    /* clone an object */
-    static clone(obj) {
-        return _.cloneDeep(obj);
     }
 
     static isValidDestination(address, base58Prefix) {

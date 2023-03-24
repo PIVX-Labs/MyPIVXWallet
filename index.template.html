@@ -53,11 +53,11 @@
             <div class="collapse navbar-collapse noselect" id="navbarNav">
               <!-- MAIN NAVBAR -->
               <ul class="navbar-nav mr-auto ptr">
-                <li class="nav-item"><a id="dashboard" class="nav-link tablinks" onclick="MPW.openTab(event, 'keypair')" data-i18n="navDashboard">Dashboard</a></li>
-                <li class="nav-item"><a id="stakeTab" class="nav-link tablinks" onclick="MPW.openTab(event, 'StakingTab')" data-i18n="navStake">Stake</a></li>
-                <li class="nav-item"><a id="masternodeTab" class="nav-link tablinks" onclick="MPW.openTab(event, 'Masternode')" data-i18n="navMasternode">Masternode</a></li>
-                <li class="nav-item"><a id="governanceTab" class="nav-link tablinks" onclick="MPW.openTab(event, 'Governance')" data-i18n="navGovernance">Governance</a></li>
-                <li class="nav-item"><a class="nav-link tablinks" onclick="MPW.openTab(event, 'Settings');" data-i18n="navSettings">Settings</a></li>
+                <li class="nav-item"><span id="dashboard" class="nav-link tablinks" onclick="MPW.openTab(event, 'keypair')" data-i18n="navDashboard">Dashboard</span></li>
+                <li class="nav-item"><span id="stakeTab" class="nav-link tablinks" onclick="MPW.openTab(event, 'StakingTab')" data-i18n="navStake">Stake</span></li>
+                <li class="nav-item"><span id="masternodeTab" class="nav-link tablinks" onclick="MPW.openTab(event, 'Masternode')" data-i18n="navMasternode">Masternode</span></li>
+                <li class="nav-item"><span id="governanceTab" class="nav-link tablinks" onclick="MPW.openTab(event, 'Governance')" data-i18n="navGovernance">Governance</span></li>
+                <li class="nav-item"><span class="nav-link tablinks" onclick="MPW.openTab(event, 'Settings');" data-i18n="navSettings">Settings</span></li>
               </ul>
 
               <!-- SIDE NAVBAR -->
@@ -78,14 +78,6 @@
           </div>
         </nav>
         <!-- // NAVBAR -->
-
-        <!-- // WARNING MESSAGE -->
-        <div class="warning-message" id="outdated">
-          <div class="container">
-            <p>WARNING: your version is outdated, please update to the newest stable version at the <a href="https://github.com/PIVX-Labs/MyPIVXWallet/releases">MyPIVXWallet Github</a></p>
-          </div>
-        </div>
-        <!-- // WARNING MESSAGE -->
 
         <!-- // QR MODAL -->
         <div class="modal fade" id="qrModal" tabindex="-1" role="dialog" aria-labelledby="qrModalLabel" aria-hidden="true">
@@ -115,7 +107,6 @@
                   This is your seed phrase:
                   <b>
                     <div class="seed-phrase noselect" id="ModalMnemonicContent">
-                      <!-- Test1 Test2 Test1 Test2 Test1 Test2 Test1 Test2 Test1 Test2 Test1 Test2 -->
                     </div>
                   </b>
                   <br />
@@ -125,10 +116,12 @@
                   <br />
                   <b>Do NOT share it with anybody</b>. <br />
                   <br />
-                  <a href="https://www.ledger.com/blog/how-to-protect-your-seed-phrase" target="_blank">
+                  <a href="https://www.ledger.com/blog/how-to-protect-your-seed-phrase" target="_blank" rel="noopener noreferrer">
                     <i>It is <b>NOT</b> advised to store this digitally.</i>
                   </a>
-                  <br />
+		  <br />
+		  <br />
+		  <input class="center-text" type="password" id="ModalMnemonicPassphrase" placeholder="Optional Passphrase" />
                   <br />
                 </div>
                 <div class="modal-footer">
@@ -144,7 +137,7 @@
           <div class="modal-dialog modal-dialog-centered" role="document" style="max-width: 600px;">
             <div class="modal-content">
               <div class="modal-header" id="confirmModalHeader">
-                <h3 class="modal-title" id="confirmModalTitle" style="text-align: center; width: 100%; color: #8e21ff;">Insert cool popup title</h3>
+                <h3 class="modal-title" id="confirmModalTitle" style="text-align: center; width: 100%; color: #8e21ff;"></h3>
               </div>
               <div id="confirmModalContent" class="modal-body center-text">
                 <!-- JS populated modal content -->
@@ -422,10 +415,13 @@
                                   <div class="dropdown">
                                     <div class="dropdown-move">
                                       <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                        <a id="guiExportWalletItem" class="dropdown-item" href="#" data-toggle="modal" data-target="#exportPrivateKeysModal" data-backdrop="static" data-keyboard="false" onclick="MPW.toggleExportUI()">
+                                        <a class="dropdown-item ptr" onclick="MPW.openExplorer()">
+                                          <i class="fa-solid fa-magnifying-glass"></i> View on Explorer
+                                        </a>
+                                        <a id="guiExportWalletItem" class="dropdown-item ptr" data-toggle="modal" data-target="#exportPrivateKeysModal" data-backdrop="static" data-keyboard="false" onclick="MPW.toggleExportUI()">
                                           <i class="fas fa-key"></i> Export
                                         </a>
-                                        <a class="dropdown-item" href="#!" id="guiNewAddress" data-toggle="modal" data-target="#qrModal" onclick="MPW.getNewAddress({updateGUI: true, verify: true});">
+                                        <a class="dropdown-item ptr" id="guiNewAddress" data-toggle="modal" data-target="#qrModal" onclick="MPW.getNewAddress({updateGUI: true, verify: true});">
                                           <i class="fas fa-sync-alt"></i> Refresh address
                                         </a>
                                       </div>
@@ -611,7 +607,7 @@
                           <p data-i18n="dCardTwoDesc">
                             Create a wallet with a custom prefix, this can take a long time!
                           </p>
-                          <span style="opacity: 0.75; font-size: small;">Note: addresses will always start with: <b id="prefixNetwork"></b></span>
+                          <span style="opacity: 0.75; font-size: small;">Note: addresses will always start with: <b id="prefixNetwork">D</b></span>
                         </div>
 
                         <input class="center-text" style="display: none; opacity: 0;" type="text" id="prefix" placeholder="Address Prefix" onkeypress="MPW.checkVanity()" />
@@ -756,7 +752,7 @@
                   <b data-i18n="stakeTitle">Stake your PIV to generate rewards!</b>
                   <br>
                   <span data-i18n="stakeSubTitle">
-                    Coins that you Stake are "Locked" seperately from your Available balance, and have a chance to generate rewards.
+                    Coins that you Stake are "Locked" separately from your Available balance, and have a chance to generate rewards.
                     <br>
                     The more coins you stake, the more frequently you'll receive rewards.
                   </span>
@@ -818,7 +814,7 @@
                       </div>
                       <div class="staking-rewards-list">
                         <div id="staking-rewards-content"></div>
-                        <button type="button" id="stakingLoadMore" onclick="MPW.getStakingRewards()">
+                        <button type="button" id="stakingLoadMore" onclick="MPW.updateStakingRewardsGUI()">
                           <span class="buttoni-icon" id="stakingLoadMoreIcon"><i class="fas fa-sync fa-tiny-margin"></i></span>
                           <span class="buttoni-text" data-i18n="stakeLoadMore">Load more</span>
                         </button>
@@ -1023,7 +1019,7 @@
         <div class="footer">
           <div>
             <span> © MIT 2023 </span> - <span style="cursor: pointer;" onclick="MPW.playMusic()" data-i18n="footerBuiltWithPivxLabs">Built with 💜 by PIVX Labs</span><br />
-            <a href="https://github.com/PIVX-Labs/MyPIVXWallet" target="_blank"><i class="fa-brands fa-github"></i></i> GitHub</a> - <a href="https://discord.gg/zTScGaGtgv" target="_blank"><i class="fa-brands fa-discord"></i></i> Discord</a> - <a href="https://medium.com/@pivx-labs" target="_blank"><i class="fa-brands fa-medium"></i></i> Medium</a>
+            <a href="https://github.com/PIVX-Labs/MyPIVXWallet" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-github"></i></i> GitHub</a> - <a href="https://discord.gg/zTScGaGtgv" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-discord"></i></i> Discord</a> - <a href="https://medium.com/@pivx-labs" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-medium"></i></i> Medium</a>
           </div>
         </div>
       </footer>

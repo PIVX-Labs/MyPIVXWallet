@@ -9,14 +9,9 @@ import {
     encryptWallet,
     decryptWallet,
     getNewAddress,
+    getDerivationPath,
 } from './wallet.js';
-import {
-    submitAnalytics,
-    networkEnabled,
-    getBlockCount,
-    arrRewards,
-    getStakingRewards,
-} from './network.js';
+import { getNetwork } from './network.js';
 import {
     start as settingsStart,
     cExplorer,
@@ -32,13 +27,14 @@ import { decrypt } from './aes-gcm.js';
 import { registerWorker } from './native.js';
 import { refreshPriceDisplay } from './prices.js';
 import { Address6 } from 'ip-address';
+import { getEventEmitter } from './event_bus.js';
 
 export let doms = {};
 
 export function start() {
     doms = {
-        domInstall: document.getElementById('installTab'),
         domNavbarToggler: document.getElementById('navbarToggler'),
+        domDashboard: document.getElementById('dashboard'),
         domGuiStaking: document.getElementById('guiStaking'),
         domGuiWallet: document.getElementById('guiWallet'),
         domGuiBalance: document.getElementById('guiBalance'),
@@ -146,6 +142,9 @@ export function start() {
         domMnemonicModalButton: document.getElementById(
             'modalMnemonicConfirmButton'
         ),
+        domMnemonicModalPassphrase: document.getElementById(
+            'ModalMnemonicPassphrase'
+        ),
         domExportPrivateKey: document.getElementById('exportPrivateKeyText'),
         domExportWallet: document.getElementById('guiExportWalletItem'),
         domWipeWallet: document.getElementById('guiWipeWallet'),
@@ -246,13 +245,52 @@ export function start() {
         );
     }
 
-    // If allowed by settings: submit a simple 'hit' (app load) to Labs Analytics
-    submitAnalytics('hit');
-    setInterval(refreshChainData, 15000);
+    subscribeToNetworkEvents();
+
     doms.domPrefix.value = '';
     doms.domPrefixNetwork.innerText =
         cChainParams.current.PUBKEY_PREFIX.join(' or ');
     settingsStart();
+    // If allowed by settings: submit a simple 'hit' (app load) to Labs Analytics
+    getNetwork().submitAnalytics('hit');
+    setInterval(refreshChainData, 15000);
+}
+
+function subscribeToNetworkEvents() {
+    getEventEmitter().on('network-toggle', (value) => {
+        doms.domNetwork.innerHTML =
+            '<i class="fa-solid fa-' + (value ? 'wifi' : 'ban') + '"></i>';
+    });
+
+    getEventEmitter().on('sync-status', (value) => {
+        switch (value) {
+            case 'start':
+                // Play reload anim
+                doms.domBalanceReload.classList.add('playAnim');
+                doms.domBalanceReloadStaking.classList.add('playAnim');
+                break;
+            case 'stop':
+                doms.domBalanceReload.classList.remove('playAnim');
+                doms.domBalanceReloadStaking.classList.remove('playAnim');
+                break;
+        }
+    });
+
+    getEventEmitter().on('transaction-sent', (success, result) => {
+        if (success) {
+            doms.domAddress1s.value = '';
+            doms.domSendAmountCoins.innerHTML = '';
+            createAlert(
+                'success',
+                `Transaction sent!<br>${result}`,
+                result ? 1250 + result.length * 50 : 3000
+            );
+            // If allowed by settings: submit a simple 'tx' ping to Labs Analytics
+            getNetwork().submitAnalytics('transaction');
+        } else {
+            createAlert('warning', 'Transaction Failed!', 1250);
+        }
+    });
 }
 
 // WALLET STATE DATA
@@ -371,12 +409,14 @@ export function selectMaxBalance(domValueInput, fCold = false) {
         );
 }
 
-export function updateStakingRewardsGUI(fCallback = false) {
-    if (!arrRewards.length) {
-        // This ensures we don't spam network requests, since if a network callback says we have no stakes; no point checking again!
-        if (!fCallback) getStakingRewards();
-        return;
+export async function updateStakingRewardsGUI() {
+    const network = getNetwork();
+    const arrRewards = await network.getStakingRewards();
+    if (network.areRewardsComplete) {
+        // Hide the load more button
+        doms.domGuiStakingLoadMore.style.display = 'none';
     }
+
     //DOMS.DOM-optimised list generation
     const strList = arrRewards
         .map(
@@ -398,6 +438,23 @@ export function updateStakingRewardsGUI(fCallback = false) {
     // UpdateDOMS.DOM
     doms.domStakingRewardsTitle.innerHTML = `Staking Rewards: ≥${nRewards} ${cChainParams.current.TICKER}`;
     doms.domStakingRewardsList.innerHTML = strList;
+}
+
+/**
+ * Open the Explorer in a new tab for the loaded master public key
+ */
+export async function openExplorer() {
+    if (masterKey.isHD) {
+        const derivationPath = getDerivationPath(masterKey.isHardwareWallet)
+            .split('/')
+            .slice(0, 4)
+            .join('/');
+        const xpub = await masterKey.getxpub(derivationPath);
+        window.open(cExplorer.url + '/xpub/' + xpub, '_blank');
+    } else {
+        const address = await masterKey.getAddress();
+        window.open(cExplorer.url + '/address/' + address, '_blank');
+    }
 }
 
 async function loadImages() {
@@ -529,7 +586,7 @@ export function guiPreparePayment(strTo = '', nAmount = 0, strDesc = '') {
     doms.domReqDisplay.style.display = strDesc ? 'block' : 'none';
 
     // Switch to the Dashboard
-    document.getElementById('dashboard').click();
+    doms.domDashboard.click();
 
     // Open the Send menu (with a small timeout post-load to allow for CSS loading)
     setTimeout(() => {
@@ -804,8 +861,11 @@ export function onPrivateKeyChanged() {
     // and it doesn't have any spaces (would be a mnemonic seed)
     const fContainsSpaces = doms.domPrivKey.value.includes(' ');
     doms.domPrivKeyPassword.hidden =
-        doms.domPrivKey.value.length !== 128 || fContainsSpaces;
+        doms.domPrivKey.value.length !== 128 && !fContainsSpaces;
 
+    doms.domPrivKeyPassword.placeholder = fContainsSpaces
+        ? 'Optional Passphrase'
+        : 'Password';
     // Uncloak the private input IF spaces are detected, to make Seed Phrases easier to input and verify
     doms.domPrivKey.setAttribute('type', fContainsSpaces ? 'text' : 'password');
 }
@@ -1171,7 +1231,7 @@ function renderProposals(arrProposals, fContested) {
         // IMPORTANT: Sanitise all of our HTML or a rogue server or malicious proposal could perform a cross-site scripting attack
         domNameAndURL.innerHTML = `<a class="active" href="${sanitizeHTML(
             cProposal.URL
-        )}"><b>${sanitizeHTML(cProposal.Name)}</b></a>`;
+        )}" target="_blank" rel="noopener noreferrer"><b>${sanitizeHTML(cProposal.Name)}</b></a>`;
 
         // Payment Schedule and Amounts
         const domPayments = domRow.insertCell();
@@ -1540,18 +1600,14 @@ export async function createProposal() {
 
 export function refreshChainData() {
     // If in offline mode: don't sync ANY data or connect to the internet
-    if (!networkEnabled)
+    if (!getNetwork().enabled)
         return console.warn(
             'Offline mode active: For your security, the wallet will avoid ALL internet requests.'
         );
     if (!masterKey) return;
 
-    // Play reload anim
-    doms.domBalanceReload.classList.add('playAnim');
-    doms.domBalanceReloadStaking.classList.add('playAnim');
-
     // Fetch block count + UTXOs
-    getBlockCount();
+    getNetwork().getBlockCount();
     getBalance(true);
 
     // Fetch pricing data

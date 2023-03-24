@@ -1,7 +1,8 @@
-import { cachedBlockCount } from './network.js';
+import { getNetwork } from './network.js';
 import { getBalance, isMasternodeUTXO, getStakingBalance } from './global.js';
 import { sleep } from './misc.js';
 import { debug } from './settings.js';
+import { getEventEmitter } from './event_bus.js';
 
 /** An Unspent Transaction Output, used as Inputs of future transactions */
 export class UTXO {
@@ -84,6 +85,7 @@ export class Mempool {
          * @type {Array<UTXO>}
          */
         this.UTXOs = [];
+        this.subscribeToNetwork();
     }
 
     /** The CONFIRMED state (UTXO is spendable) */
@@ -314,7 +316,7 @@ export class Mempool {
      */
     static isValidUTXO(cUTXO) {
         if (cUTXO.isReward) {
-            return cachedBlockCount - cUTXO.height > 100;
+            return getNetwork().cachedBlockCount - cUTXO.height > 100;
         } else {
             return true;
         }
@@ -326,5 +328,21 @@ export class Mempool {
      */
     getDelegatedBalance() {
         return this.getDelegatedUTXOs().reduce((a, b) => a + b.sats, 0);
+    }
+
+    /**
+     * Subscribes to network events
+     * @param {Network} network
+     */
+    subscribeToNetwork() {
+        getEventEmitter().on('utxo', async (utxos) => {
+            for (const utxo of utxos) {
+                if (this.isAlreadyStored({ id: utxo.txid, vout: utxo.vout })) {
+                    this.updateUTXO({ id: utxo.txid, vout: utxo.vout });
+                    continue;
+                }
+                this.addUTXO(await getNetwork().getUTXOFullInfo(utxo));
+            }
+        });
     }
 }

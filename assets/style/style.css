@@ -2116,11 +2116,6 @@ a {
   box-shadow: 0 0 0 0.2rem #cba7fa40;
 }
 
-.navbar-nav .nav-item a {
-  margin-left: 16px;
-  transition: all .2s ease-in-out;
-}
-
 .navbar-nav .nav-item span {
   margin-left: 5px;
   margin-right: 5px;

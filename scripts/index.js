@@ -4,6 +4,7 @@ import '../assets/style/style.css';
 
 import 'bootstrap';
 import { start } from './global.js';
+import { getNetwork } from './network.js';
 
 window.onload = start;
 
@@ -20,6 +21,7 @@ export {
     refreshChainData,
     playMusic,
     selectMaxBalance,
+    openExplorer,
     guiEncryptWallet,
     guiPreparePayment,
     doms,
@@ -32,17 +34,23 @@ export {
     unblurPrivKey,
     toggleBottomMenu,
     createProposal,
+    updateStakingRewardsGUI,
 } from './global.js';
 export { generateWallet, getNewAddress, importWallet } from './wallet.js';
 export { toggleTestnet, toggleDebug } from './settings.js';
 export {
     createTxGUI,
-    createRawTransaction,
     undelegateGUI,
     delegateGUI,
     createMasternode,
 } from './transactions.js';
 export { hexToBytes, bytesToHex, dSHA256 } from './utils.js';
+
 export { toggleNetwork } from './network.js';
 import Masternode from './masternode.js';
 export { Masternode };
+
+export { getNetwork } from './network.js';
+const toggleNetwork = () => getNetwork().toggle();
+export { toggleNetwork };
+
