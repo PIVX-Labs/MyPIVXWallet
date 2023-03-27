@@ -132,6 +132,7 @@ export function start() {
         domAnalyticsDescriptor: document.getElementById('analyticsDescriptor'),
         domShieldedSwitch: document.getElementById('shieldedSwitch'),
         domShieldAddrSwitch: document.getElementById('shieldSwitchAddr'),
+	domSendButton: document.getElementById('sendButton'),
         domStakingRewardsList: document.getElementById(
             'staking-rewards-content'
         ),
@@ -264,6 +265,7 @@ export function start() {
 
 function subscribeToTransactionEvents() {
     getEventEmitter().on('tx-shield-start', (shield) => {
+	doms.domSendButton.disabled = true;
         document.getElementById('shield-progress-bar').style.width = '0%';
 
         const interval = setInterval(async () => {
@@ -275,6 +277,7 @@ function subscribeToTransactionEvents() {
         getEventEmitter().once('tx-shield-end', () => {
             document.getElementById('shield-progress-bar').style.width = '100%';
             clearInterval(interval);
+	    doms.domSendButton.disabled = false;
         });
     });
 }

@@ -785,6 +785,16 @@ button {
     transition: all .2s ease-in-out;
 }
 
+.pivx-button-medium:disabled,
+.pivx-button-medium[disabled]{
+  border: 1px solid #999999;
+  background-color: #cccccc;
+  background-image: none;
+  pointer-events: none;
+  color: #666666;
+}
+
+
 .pivx-button-big::before {
   position: absolute;
   content: "";
