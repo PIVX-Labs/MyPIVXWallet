@@ -553,6 +553,10 @@ button {
     line-height: 20px;
 }
 
+.progress-bar-pivx {
+    background-color: #7d21ff !important;
+}
+
 
 /* -- Pubkey QR -- */
 .margin-padded-qr {
@@ -2510,3 +2514,4 @@ input {
     background-color:#fff;
     border:0px;
 }
+

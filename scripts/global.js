@@ -251,6 +251,7 @@ export function start() {
     }
 
     subscribeToNetworkEvents();
+    subscribeToTransactionEvents();
 
     doms.domPrefix.value = '';
     doms.domPrefixNetwork.innerText =
@@ -259,6 +260,23 @@ export function start() {
     // If allowed by settings: submit a simple 'hit' (app load) to Labs Analytics
     getNetwork().submitAnalytics('hit');
     setInterval(refreshChainData, 15000);
+}
+
+function subscribeToTransactionEvents() {
+    getEventEmitter().on('tx-shield-start', (shield) => {
+        document.getElementById('shield-progress-bar').style.width = '0%';
+
+        const interval = setInterval(async () => {
+            document.getElementById('shield-progress-bar').style.width = `${
+                (await shield.getTxStatus()) * 100
+            }%`;
+        }, 1000);
+
+        getEventEmitter().once('tx-shield-end', () => {
+            document.getElementById('shield-progress-bar').style.width = '100%';
+            clearInterval(interval);
+        });
+    });
 }
 
 function subscribeToNetworkEvents() {
@@ -345,12 +363,15 @@ export function getBalance(updateGUI = false) {
 
         if (masterKey && masterKey.shield) {
             const shieldBalance = masterKey.shield.getBalance() / COIN;
-	    const pendingBalance = masterKey.shield.getPendingBalance() / COIN;
-	    
-            doms.domShieldBalance.innerHTML = shieldBalance.toFixed(
-                shieldBalance.toFixed(2).length >= 6 ? 0 : 2
-            ) + (pendingBalance !== 0 ? `+ <small> ${pendingBalance.toFixed(2)} </small>` : "");
-	    
+            const pendingBalance = masterKey.shield.getPendingBalance() / COIN;
+
+            doms.domShieldBalance.innerHTML =
+                shieldBalance.toFixed(
+                    shieldBalance.toFixed(2).length >= 6 ? 0 : 2
+                ) +
+                (pendingBalance !== 0
+                    ? `+ <small> ${pendingBalance.toFixed(2)} </small>`
+                    : '');
         }
 
         // Update currency values

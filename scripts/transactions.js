@@ -24,6 +24,7 @@ import { cChainParams, COIN, COIN_DECIMALS } from './chain_params.js';
 import { createAlert, generateMnPrivkey, confirmPopup } from './misc.js';
 import { bytesToHex, hexToBytes, dSHA256 } from './utils.js';
 import { UTXO as ShieldUTXO } from 'pivx-shielding-js';
+import { getEventEmitter } from './event_bus.js';
 
 function validateAmount(nAmountSats, nMinSats = 10000) {
     // Validate the amount is a valid number, and meets the minimum (if any)
@@ -573,30 +574,35 @@ async function createShieldTransaction({ address, amount, useShieldInputs }) {
             utxos.push(utxo);
         }
     }
+    try {
+        getEventEmitter().emit('tx-shield-start', shield);
+        console.time('shieldtx');
 
-    console.time('shieldtx');
-    const { hex, spentUTXOs } = await shield.createTransaction({
-        address,
-        amount,
-        blockHeight: 130940,
-        useShieldInputs,
-        utxos: useShieldInputs ? null : utxos,
-        transparentChangeAddress: useShieldInputs ? null : (await getNewAddress())[0],
-    });
-    console.timeEnd('shieldtx');
+        const { hex, spentUTXOs } = await shield.createTransaction({
+            address,
+            amount,
+            blockHeight: 130940,
+            useShieldInputs,
+            utxos: useShieldInputs ? null : utxos,
+	    transparentChangeAddress: useShieldInputs ? null : (await getNewAddress())[0],
+        });
 
-    const result = await getNetwork().sendTransaction(hex);
-    if (result) {
-        if (useShieldInputs) {
-            shield.finalizeTransaction(result);
+        const result = await getNetwork().sendTransaction(hex);
+        // TODO: move alert to this event
+
+        if (result) {
+            if (useShieldInputs) {
+                shield.finalizeTransaction(result);
+            }
+
+            for (const utxo of spentUTXOs) {
+                mempool.autoRemoveUTXO({ id: utxo.txid, vout: utxo.vout });
+            }
         }
-
-        for (const utxo of spentUTXOs) {
-            mempool.autoRemoveUTXO({ id: utxo.txid, vout: utxo.vout });
-        }
+    } finally {
+        getEventEmitter().emit('tx-shield-end');
+        console.timeEnd('shieldtx');
     }
-
-    createAlert('success', `Shield transaction sent: ${result}`);
 }
 
 function createTxConfirmation(outputs) {
