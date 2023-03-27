@@ -557,8 +557,16 @@ async function createShieldTransaction({ address, amount, useShieldInputs }) {
         return createAlert(
             'warning',
             'Shield was not enabled for this wallet.',
-            5000
+            5000,
         );
+    }
+
+    if (!masterKey.shieldSynced) {
+	return createAlert(
+	    'warning',
+	    'Shield is not synced yet',
+	    5000,
+	);
     }
 
     const utxos = [];
