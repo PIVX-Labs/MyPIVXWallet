@@ -576,6 +576,7 @@ export async function importWallet({
                     privateImportValue,
                     passphrase
                 );
+		
                 const shield = await Shield.create({
                     seed,
                     // Wrong: We actually want to ask the user for the blockcount
@@ -642,9 +643,12 @@ export async function importWallet({
         // For non-HD wallets: hide the 'new address' button, since these are essentially single-address MPW wallets
         if (!masterKey.isHD) doms.domNewAddress.style.display = 'none';
 
+        // Update the loaded address in the Dashboard
         getNewAddress({ updateGUI: true });
+
         // Display Text
         doms.domGuiWallet.style.display = 'block';
+        doms.domDashboard.click();
 
         // Update identicon
         doms.domIdenticon.dataset.jdenticonValue = masterKey.getAddress(

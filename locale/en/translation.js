@@ -75,7 +75,7 @@ export const en_translation = {
 
     // Stake
     stakeTitle:"Stake your PIV to generate rewards!",                  //
-    stakeSubTitle:"Coins that you Stake are \"Locked\" seperately from your Available balance, and have a chance to generate rewards. <br> The more coins you stake, the more frequently you'll receive rewards.",               //
+    stakeSubTitle:"Coins that you Stake are \"Locked\" separately from your Available balance, and have a chance to generate rewards. <br> The more coins you stake, the more frequently you'll receive rewards.",               //
     stake:"Stake",
     stakeUnstake:"Unstake",                //
     stakeLoadMore:"Load more",               //

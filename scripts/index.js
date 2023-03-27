@@ -39,7 +39,6 @@ export { generateWallet, getNewAddress, importWallet } from './wallet.js';
 export { toggleTestnet, toggleDebug } from './settings.js';
 export {
     createTxGUI,
-    createRawTransaction,
     undelegateGUI,
     delegateGUI,
     createMasternode,
