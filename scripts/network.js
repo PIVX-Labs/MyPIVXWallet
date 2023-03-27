@@ -426,6 +426,7 @@ export class ExplorerNetwork extends Network {
             await shield.handleBlock(res);
             console.log(`block ${block} synced`);
         }
+        await this.saveShieldData(shield);
         while (true) {
             for (
                 let block = shield.getLastSyncedBlock() + 1;
@@ -437,6 +438,7 @@ export class ExplorerNetwork extends Network {
                         await fetch(`${this.strUrl}/api/v2/block/${block}`)
                     ).json();
                     await shield.handleBlock(res);
+                    await this.saveShieldData(shield);
                     console.log(`block ${block} synced`);
                 } catch (e) {
                     console.error(e);
@@ -450,7 +452,16 @@ export class ExplorerNetwork extends Network {
 	    await this.waitForNextBlock();
         }
     }
-
+     /**
+     * Save your sapling data in localStorage
+     * @param {Shield} shield
+     */
+    async saveShieldData(shield){
+        localStorage.setItem(
+            'shieldData' + (cChainParams.current.isTestnet ? '-testnet' : ''),
+            JSON.stringify(await shield.save())
+        );
+    }
     /**
      * Waits for next block
      * @returns {Promise<Number>} Resolves when the next block is obtained

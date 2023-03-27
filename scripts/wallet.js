@@ -586,8 +586,9 @@ export async function importWallet({
                     privateImportValue,
                     passphrase
                 );
-		
+                const shieldData = localStorage.getItem('shieldData' + (cChainParams.current.isTestnet ? '-testnet' : ''));
                 const shield = await Shield.create({
+                    data: shieldData,
                     seed,
                     // Wrong: We actually want to ask the user for the blockcount
                     blockHeight: await getNetwork().getBlockCount(false),
@@ -709,7 +710,9 @@ export async function generateWallet(noUI = false) {
         const seed = await mnemonicToSeed(mnemonic, passphrase);
 
         // Prompt the user to encrypt the seed
+        const shieldData = localStorage.getItem('shieldData' + (cChainParams.current.isTestnet ? '-testnet' : ''));
         const shield = await Shield.create({
+            data: shieldData,
             seed,
             // Wrong: We actually want to ask the user for the blockcount
             blockHeight: await getNetwork().getBlockCount(false),
