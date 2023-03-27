@@ -43,6 +43,16 @@ export let fWalletLoaded = false;
  * @abstract
  */
 class MasterKey {
+    constructor() {
+	if (this.constructor === MasterKey) {
+	    throw new Error('Initializing virtual class');
+        }
+	/**
+	 * If the shield has been synced
+	 * @type {bool}
+	 */
+	this.shieldSynced = false;
+    }
     /**
      * @param {String} [path] - BIP32 path pointing to the private key.
      * @return {Promise<Array<Number>>} Array of bytes containing private key

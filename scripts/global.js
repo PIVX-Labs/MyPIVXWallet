@@ -317,6 +317,9 @@ function subscribeToNetworkEvents() {
             createAlert('warning', 'Transaction Failed!', 1250);
         }
     });
+
+    // Update the UI the first time the shield is synced.
+    getEventEmitter().once('shield-sync-done', () => getBalance(true));
 }
 
 // WALLET STATE DATA
@@ -364,7 +367,7 @@ export function getBalance(updateGUI = false) {
             ' ' +
             cChainParams.current.TICKER;
 
-        if (masterKey && masterKey.shield) {
+        if (masterKey && masterKey.shield && masterKey.shieldSynced) {
             const shieldBalance = masterKey.shield.getBalance() / COIN;
             const pendingBalance = masterKey.shield.getPendingBalance() / COIN;
 

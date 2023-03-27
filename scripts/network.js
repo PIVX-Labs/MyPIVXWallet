@@ -443,7 +443,11 @@ export class ExplorerNetwork extends Network {
                     break;
                 }
             }
-            await this.waitForNextBlock();
+	    
+            this.masterKey.shieldSynced = true;
+	    getEventEmitter().emit('shield-sync-done');
+
+	    await this.waitForNextBlock();
         }
     }
 
