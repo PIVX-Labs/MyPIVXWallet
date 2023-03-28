@@ -459,7 +459,7 @@ export class ExplorerNetwork extends Network {
     async saveShieldData(shield){
         localStorage.setItem(
             'shieldData' + (cChainParams.current.isTestnet ? '-testnet' : ''),
-            JSON.stringify(await shield.save())
+            await shield.save()
         );
     }
     /**
