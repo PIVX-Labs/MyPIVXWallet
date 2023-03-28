@@ -441,7 +441,17 @@ export function getStakingBalance(updateGUI = false) {
 }
 
 export function selectMaxBalance(domValueInput, fCold = false) {
-    domValueInput.value = (fCold ? getStakingBalance() : getBalance()) / COIN;
+    const useShieldInputs = doms.domShieldedSwitch.checked && !fCold;
+    let balance;
+    if (fCold) {
+	balance = getStakingBalance();
+    } else if(useShieldInputs) {
+	balance = masterKey.shield.getBalance();
+    } else {
+	balance = getBalance();
+    }
+    
+    domValueInput.value = balance / COIN;
     // Update the Send menu's value (assumption: if it's not a Cold balance, it's probably for Sending!)
     if (!fCold)
         updateAmountInputPair(
