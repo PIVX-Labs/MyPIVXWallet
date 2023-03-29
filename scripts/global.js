@@ -326,6 +326,14 @@ function subscribeToNetworkEvents() {
         }
     });
 
+    // Save shield data every time it finishes syncing
+    getEventEmitter().on('shield-sync-done', async (shield) => {
+        localStorage.setItem(
+            'shieldData' + (cChainParams.current.isTestnet ? '-testnet' : ''),
+            await shield.save()
+        );
+    });
+    
     // Update the UI the first time the shield is synced.
     getEventEmitter().once('shield-sync-done', () => getBalance(true));
 }
