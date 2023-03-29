@@ -785,12 +785,23 @@ button {
     transition: all .2s ease-in-out;
 }
 
+.pivx-button-progress {
+    position: absolute;
+    height: 100%;
+    width: 0%;
+    top: 0;
+    left: 0;
+    background: rgba(0, 0, 0, 0.2);
+    transition: width 1s;
+}
+
 .pivx-button-medium:disabled,
 .pivx-button-medium[disabled]{
   border: 1px solid #999999;
   background-color: #cccccc;
   background-image: none;
   pointer-events: none;
+  overflow: hidden;
   color: #666666;
 }
 

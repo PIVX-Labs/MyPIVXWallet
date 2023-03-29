@@ -564,13 +564,6 @@
 				</div>
                           </div>
                         </div>
-			<div class="row">
-			    <div class="col-12 pb-1">
-				<div class="progress" style="color: purple;">
-				    <div class="progress-bar progress-bar-pivx" id="shield-progress-bar" role="progressbar" style="width: 100%"></div>
-				</div>
-			    </div>
-			</div>
                         <div id="advMode1" class="d-none">
                           <label><span data-i18n="fee">Fee</span></label><br />
 
@@ -600,7 +593,8 @@
       
 
                         <div class="text-right pb-2">
-                          <button id="sendButton" class="pivx-button-medium w-100" style="margin:0px;" onclick="MPW.createTxGUI()">
+                            <button id="sendButton" class="pivx-button-medium w-100" style="margin:0px;" onclick="MPW.createTxGUI()">
+				<div id="guiSendButtonProgress" class="pivx-button-progress"> </div>
                             <span class="buttoni-icon"><i class="fas fa-paper-plane fa-tiny-margin"></i></span>
                             <span class="buttoni-text" id="genIt" data-i18n="sendTransaction">Send</span>
                           </button>

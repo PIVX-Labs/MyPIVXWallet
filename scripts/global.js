@@ -269,19 +269,22 @@ function subscribeToShieldEvents() {
 	document.getElementById("guiShieldSwitchDiv").hidden = false;
 	document.getElementById("shieldSwitchAddrDiv").hidden = false;
     });
+    const buttonProgress = document.getElementById('guiSendButtonProgress');
+    buttonProgress.hidden = false;
     getEventEmitter().on('tx-shield-start', (shield) => {
 	doms.domSendButton.disabled = true;
-        document.getElementById('shield-progress-bar').style.width = '0%';
+	buttonProgress.style.width = '0%';
 
         const interval = setInterval(async () => {
-            document.getElementById('shield-progress-bar').style.width = `${
-                (await shield.getTxStatus()) * 100
-            }%`;
+	    // Add an initial 10% so it seems like it's doing something
+	    const percent = 10 + await shield.getTxStatus() * 90;
+	    buttonProgress.style.width = `${percent}%`;
         }, 1000);
 
         getEventEmitter().once('tx-shield-end', () => {
-            document.getElementById('shield-progress-bar').style.width = '100%';
             clearInterval(interval);
+	    buttonProgress.hidden = true;
+	    buttonProgress.style.width = '0%';
 	    doms.domSendButton.disabled = false;
         });
     });
