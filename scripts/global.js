@@ -252,7 +252,7 @@ export function start() {
     }
 
     subscribeToNetworkEvents();
-    subscribeToTransactionEvents();
+    subscribeToShieldEvents();
 
     doms.domPrefix.value = '';
     doms.domPrefixNetwork.innerText =
@@ -263,7 +263,12 @@ export function start() {
     setInterval(refreshChainData, 15000);
 }
 
-function subscribeToTransactionEvents() {
+function subscribeToShieldEvents() {
+    getEventEmitter().on('shield-enabled', (_) => {
+	document.getElementById("guiShieldBalanceSpan").hidden = false;
+	document.getElementById("guiShieldSwitchDiv").hidden = false;
+	document.getElementById("shieldSwitchAddrDiv").hidden = false;
+    });
     getEventEmitter().on('tx-shield-start', (shield) => {
 	doms.domSendButton.disabled = true;
         document.getElementById('shield-progress-bar').style.width = '0%';

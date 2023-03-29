@@ -89,7 +89,7 @@
                   <span aria-hidden="true">&times;</span>
                 </button>
               </div>
-              <div class="custom-control custom-switch" style="padding-left: 50px;">
+              <div class="custom-control custom-switch" style="padding-left: 50px;" id="shieldSwitchAddrDiv" hidden>
                 <input type="checkbox" class="custom-control-input" id="shieldSwitchAddr">
                 <label class="custom-control-label" for="shieldSwitchAddr">Show shield address</label>
               </div>
@@ -441,7 +441,9 @@
                               <span id="guiBalanceValue" class="dcWallet-usdValue">$-</span>
                               <span id="guiBalanceValueCurrency" class="dcWallet-usdValue">USD</span>
 			      <br>
-			      <span class="dcWallet-pivxTicker"> <span id="guiShieldBalance"> ~ </span> <i class="fa fa-shield"> </i> </span>
+			      <span class="dcWallet-pivxTicker" id="guiShieldBalanceSpan" hidden>
+				  <span id="guiShieldBalance"> ~ </span> <i class="fa fa-shield"> </i>
+			      </span>
 			      <br>
                             </div>
 
@@ -555,7 +557,7 @@
                         </div>
 			
                         <div class="row">
-                            <div class="col-8 pb-1">
+                            <div class="col-8 pb-1" id="guiShieldSwitchDiv" hidden>
 				<div class="custom-control custom-switch">
 				    <input type="checkbox" class="custom-control-input" id="shieldedSwitch">
 				    <label class="custom-control-label" for="shieldedSwitch">Use Shield PIVs</label>

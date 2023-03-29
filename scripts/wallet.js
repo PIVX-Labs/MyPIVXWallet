@@ -35,6 +35,7 @@ import TransportWebUSB from '@ledgerhq/hw-transport-webusb';
 import createXpub from 'create-xpub';
 import * as jdenticon from 'jdenticon';
 import { PIVXShielding as Shield } from 'pivx-shielding-js';
+import { getEventEmitter } from './event_bus.js';
 
 export let fWalletLoaded = false;
 
@@ -689,6 +690,9 @@ export async function importWallet({
 
 function setMasterKey(mk) {
     masterKey = mk;
+    if (masterKey.shield) {
+	getEventEmitter().emit('shield-enabled', masterKey.shield);
+    }
     // Update the network master key
     getNetwork().setMasterKey(masterKey);
 }
@@ -894,7 +898,6 @@ export async function getNewAddress({
         0,
         addressIndex
     );
-    const shieldAddress = await masterKey.shield.getNewAddress();
     // Use Xpub?
     const address = await masterKey.getAddress(path);
     if (verify && masterKey.isHardwareWallet) {
@@ -910,11 +913,16 @@ export async function getNewAddress({
     }
 
     if (updateGUI) {
-        masterKey.lastShieldAddrForUser = shieldAddress;
+	let shieldAddress = "";
+	if (masterKey.shield) {
+	    shieldAddress = await masterKey.shield.getNewAddress();
+            masterKey.lastShieldAddrForUser = shieldAddress;
+
+	}
+	let addressToUpdate = doms.domShieldAddrSwitch.checked
+	    ? shieldAddress
+	    : address;
         masterKey.lastTranspAddrForUser = address;
-        let addressToUpdate = doms.domShieldAddrSwitch.checked
-            ? shieldAddress
-            : address;
         createQR('pivx:' + addressToUpdate, doms.domModalQR);
         doms.domModalQrLabel.innerHTML =
             'pivx:' +
