@@ -439,7 +439,8 @@ export class ExplorerNetwork extends Network {
                     ).json();
 		    if (res.txs) {
 			await shield.handleBlock(res);
-			console.log(`block ${block} synced`);
+		    } else {
+			break;
 		    }
                 } catch (e) {
                     console.error(e);
