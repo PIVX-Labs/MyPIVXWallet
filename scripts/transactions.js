@@ -23,7 +23,7 @@ import { getNetwork } from './network.js';
 import { cChainParams, COIN, COIN_DECIMALS } from './chain_params.js';
 import { createAlert, generateMnPrivkey, confirmPopup } from './misc.js';
 import { bytesToHex, hexToBytes, dSHA256 } from './utils.js';
-import { UTXO as ShieldUTXO } from 'pivx-shield-js';
+import { UTXO as ShieldUTXO } from 'pivx-shield';
 import { getEventEmitter } from './event_bus.js';
 
 function validateAmount(nAmountSats, nMinSats = 10000) {
