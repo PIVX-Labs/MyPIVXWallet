@@ -4,7 +4,7 @@ import { createAlert } from './misc.js';
 import { Mempool, UTXO } from './mempool.js';
 import { getEventEmitter } from './event_bus.js';
 import { STATS, cStatKeys, cAnalyticsLevel, cNode } from './settings.js';
-import { PIVXShielding as Shield } from 'pivx-shielding-js';
+import { PIVXShield as Shield } from 'pivx-shield';
 
 /**
  * Virtual class rapresenting any network backend

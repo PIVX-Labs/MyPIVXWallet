@@ -34,7 +34,7 @@ import AppBtc from '@ledgerhq/hw-app-btc';
 import TransportWebUSB from '@ledgerhq/hw-transport-webusb';
 import createXpub from 'create-xpub';
 import * as jdenticon from 'jdenticon';
-import { PIVXShielding as Shield } from 'pivx-shielding-js';
+import { PIVXShield as Shield } from 'pivx-shield';
 import { getEventEmitter } from './event_bus.js';
 
 export let fWalletLoaded = false;
