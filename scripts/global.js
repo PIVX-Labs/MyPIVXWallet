@@ -1206,7 +1206,7 @@ function renderProposals(arrProposals, fContested) {
 
     if (!fContested) {
         const localProposals = JSON.parse(
-            localStorage.getItem('localProposals')
+            localStorage.getItem('localProposals') || '[]'
         ).map((p) => {
             return {
                 Name: p.name,
@@ -1231,7 +1231,9 @@ function renderProposals(arrProposals, fContested) {
         // IMPORTANT: Sanitise all of our HTML or a rogue server or malicious proposal could perform a cross-site scripting attack
         domNameAndURL.innerHTML = `<a class="active" href="${sanitizeHTML(
             cProposal.URL
-        )}" target="_blank" rel="noopener noreferrer"><b>${sanitizeHTML(cProposal.Name)}</b></a>`;
+        )}" target="_blank" rel="noopener noreferrer"><b>${sanitizeHTML(
+            cProposal.Name
+        )}</b></a>`;
 
         // Payment Schedule and Amounts
         const domPayments = domRow.insertCell();
