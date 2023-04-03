@@ -220,7 +220,7 @@ async function createAndSendTransaction({
         );
     }
 
-    if (address.startsWith('ptest') || useShieldInputs) {
+    if (address.startsWith('p') || useShieldInputs) {
         return await createShieldTransaction({
             address,
             amount,
@@ -596,7 +596,6 @@ async function createShieldTransaction({ address, amount, useShieldInputs }) {
         });
 
         const result = await getNetwork().sendTransaction(hex);
-        // TODO: move alert to this event
 
         if (result) {
             if (useShieldInputs) {

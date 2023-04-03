@@ -401,12 +401,13 @@ export class ExplorerNetwork extends Network {
         /**
          * @type {Number[]}
          */
+	const blockCount = await this.getBlockCount(false);
         const blocks = await (
             await fetch(`${cNode.url}/getshieldblocks`)
         ).json();
         const max = blocks[blocks.length - 1];
-        if (max < this.cachedBlockCount - 5) {
-            blocks.push(this.cachedBlockCount - 5);
+        if (max < blockCount - 5) {
+            blocks.push(blockCount - 5);
         }
         return blocks;
     }
@@ -424,7 +425,6 @@ export class ExplorerNetwork extends Network {
                 await fetch(`${this.strUrl}/api/v2/block/${block}`)
             ).json();
             await shield.handleBlock(res);
-            console.log(`block ${block} synced`);
         }
 
         while (true) {
