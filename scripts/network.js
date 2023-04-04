@@ -401,7 +401,7 @@ export class ExplorerNetwork extends Network {
         /**
          * @type {Number[]}
          */
-	const blockCount = await this.getBlockCount(false);
+        const blockCount = await this.getBlockCount(false);
         const blocks = await (
             await fetch(`${cNode.url}/getshieldblocks`)
         ).json();
@@ -437,21 +437,21 @@ export class ExplorerNetwork extends Network {
                     const res = await (
                         await fetch(`${this.strUrl}/api/v2/block/${block}`)
                     ).json();
-		    if (res.txs) {
-			await shield.handleBlock(res);
-		    } else {
-			break;
-		    }
+                    if (res.txs) {
+                        await shield.handleBlock(res);
+                    } else {
+                        break;
+                    }
                 } catch (e) {
                     console.error(e);
                     break;
                 }
             }
-	    
-            this.masterKey.shieldSynced = true;
-	    getEventEmitter().emit('shield-sync-done', shield);
 
-	    await this.waitForNextBlock();
+            this.masterKey.shieldSynced = true;
+            getEventEmitter().emit('shield-sync-done', shield);
+
+            await this.waitForNextBlock();
         }
     }
 

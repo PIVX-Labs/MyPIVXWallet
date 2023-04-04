@@ -134,7 +134,7 @@ export function start() {
         domAnalyticsDescriptor: document.getElementById('analyticsDescriptor'),
         domShieldedSwitch: document.getElementById('shieldedSwitch'),
         domShieldAddrSwitch: document.getElementById('shieldSwitchAddr'),
-	domSendButton: document.getElementById('sendButton'),
+        domSendButton: document.getElementById('sendButton'),
         domStakingRewardsList: document.getElementById(
             'staking-rewards-content'
         ),
@@ -267,27 +267,27 @@ export function start() {
 
 function subscribeToShieldEvents() {
     getEventEmitter().on('shield-enabled', (_) => {
-	document.getElementById("guiShieldBalanceSpan").hidden = false;
-	document.getElementById("guiShieldSwitchDiv").hidden = false;
-	document.getElementById("shieldSwitchAddrDiv").hidden = false;
+        document.getElementById('guiShieldBalanceSpan').hidden = false;
+        document.getElementById('guiShieldSwitchDiv').hidden = false;
+        document.getElementById('shieldSwitchAddrDiv').hidden = false;
     });
     const buttonProgress = document.getElementById('guiSendButtonProgress');
     buttonProgress.hidden = false;
     getEventEmitter().on('tx-shield-start', (shield) => {
-	doms.domSendButton.disabled = true;
-	buttonProgress.style.width = '0%';
+        doms.domSendButton.disabled = true;
+        buttonProgress.style.width = '0%';
 
         const interval = setInterval(async () => {
-	    // Add an initial 10% so it seems like it's doing something
-	    const percent = 10 + await shield.getTxStatus() * 90;
-	    buttonProgress.style.width = `${percent}%`;
+            // Add an initial 10% so it seems like it's doing something
+            const percent = 10 + (await shield.getTxStatus()) * 90;
+            buttonProgress.style.width = `${percent}%`;
         }, 1000);
 
         getEventEmitter().once('tx-shield-end', () => {
             clearInterval(interval);
-	    buttonProgress.hidden = true;
-	    buttonProgress.style.width = '0%';
-	    doms.domSendButton.disabled = false;
+            buttonProgress.hidden = true;
+            buttonProgress.style.width = '0%';
+            doms.domSendButton.disabled = false;
         });
     });
 }
@@ -335,7 +335,7 @@ function subscribeToNetworkEvents() {
             await shield.save()
         );
     });
-    
+
     // Update the UI the first time the shield is synced.
     getEventEmitter().once('shield-sync-done', () => getBalance(true));
 }
@@ -462,13 +462,13 @@ export function selectMaxBalance(domValueInput, fCold = false) {
     const useShieldInputs = doms.domShieldedSwitch.checked && !fCold;
     let balance;
     if (fCold) {
-	balance = getStakingBalance();
-    } else if(useShieldInputs) {
-	balance = masterKey.shield.getBalance();
+        balance = getStakingBalance();
+    } else if (useShieldInputs) {
+        balance = masterKey.shield.getBalance();
     } else {
-	balance = getBalance();
+        balance = getBalance();
     }
-    
+
     domValueInput.value = balance / COIN;
     // Update the Send menu's value (assumption: if it's not a Cold balance, it's probably for Sending!)
     if (!fCold)

@@ -23,13 +23,13 @@ export const cChainParams = {
         PUBKEY_PREFIX: ['D'],
         STAKING_PREFIX: 'S',
         PUBKEY_ADDRESS: 30,
-	STAKING_ADDRESS: 63,
+        STAKING_ADDRESS: 63,
         SECRET_KEY: 212,
         BIP44_TYPE: 119,
         BIP44_TYPE_LEDGER: 77,
         PROTOCOL_VERSION: 70926,
         MASTERNODE_PORT: 51472,
-	SHIELD_PREFIX: 'ps',
+        SHIELD_PREFIX: 'ps',
         // A list of Labs-trusted explorers
         Explorers: [
             // Display name      Blockbook-compatible API base
@@ -52,9 +52,9 @@ export const cChainParams = {
         TICKER: 'tPIV',
         PUBKEY_PREFIX: ['x', 'y'],
         STAKING_PREFIX: 'W',
-	SHIELD_PREFIX: 'ptest',
+        SHIELD_PREFIX: 'ptest',
         PUBKEY_ADDRESS: 139,
-	STAKING_ADDRESS: 73,
+        STAKING_ADDRESS: 73,
         SECRET_KEY: 239,
         BIP44_TYPE: 1,
         BIP44_TYPE_LEDGER: 1,

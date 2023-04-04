@@ -21,7 +21,12 @@ import {
 import { Mempool, UTXO } from './mempool.js';
 import { getNetwork } from './network.js';
 import { cChainParams, COIN, COIN_DECIMALS } from './chain_params.js';
-import { createAlert, generateMnPrivkey, confirmPopup, validateAddress } from './misc.js';
+import {
+    createAlert,
+    generateMnPrivkey,
+    confirmPopup,
+    validateAddress,
+} from './misc.js';
 import { bytesToHex, hexToBytes, dSHA256 } from './utils.js';
 import { UTXO as ShieldUTXO } from 'pivx-shield';
 import { getEventEmitter } from './event_bus.js';
@@ -74,18 +79,15 @@ export async function createTxGUI() {
     const address = doms.domAddress1s.value.trim();
     const useShieldInputs = doms.domShieldedSwitch.checked;
     const { type, valid, error } = validateAddress(address);
-    
+
     // If Staking address: redirect to staking page
-    if (type === "cold_stake") {
+    if (type === 'cold_stake') {
         createAlert('warning', ALERTS.STAKE_NOT_SEND, [], 7500);
         return doms.domStakeTab.click();
     }
 
     if (!valid) {
-	return createAlert(
-	    'warning',
-	    error
-	);
+        return createAlert('warning', error);
     }
 
     // Sanity check the amount
@@ -553,43 +555,30 @@ function chooseUTXOs(
     return ccSuccess(cCoinControl);
 }
 
-
 async function createShieldTransaction({ address, amount, useShieldInputs }) {
     const shield = masterKey.shield;
     const { type, valid } = validateAddress(address);
-    
+
     if (type === 'cold_stake' || !valid) {
-	return createAlert(
-            'warning',
-            'Invalid address.',
-            5000,
-        );
+        return createAlert('warning', 'Invalid address.', 5000);
     }
-    
+
     if (!shield) {
         return createAlert(
             'warning',
             'Shield was not enabled for this wallet.',
-            5000,
+            5000
         );
     }
-    
+
     if (!masterKey.shieldSynced) {
-	return createAlert(
-	    'warning',
-	    'Shield is not synced yet',
-	    5000,
-	);
+        return createAlert('warning', 'Shield is not synced yet', 5000);
     }
 
     const balance = useShieldInputs ? shield.getBalance() : getBalance();
-    
+
     if (balance < amount) {
-	return createAlert(
-	    'warning',
-	    'Invalid balance',
-	    5000
-	);
+        return createAlert('warning', 'Invalid balance', 5000);
     }
 
     const utxos = [];
@@ -615,7 +604,11 @@ async function createShieldTransaction({ address, amount, useShieldInputs }) {
             blockHeight: 130940,
             useShieldInputs,
             utxos: useShieldInputs ? null : utxos,
-	    transparentChangeAddress: useShieldInputs ? null : (await getNewAddress())[0],
+            transparentChangeAddress: useShieldInputs
+                ? null
+                : (
+                      await getNewAddress()
+                  )[0],
         });
 
         const result = await getNetwork().sendTransaction(hex);

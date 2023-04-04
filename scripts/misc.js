@@ -6,7 +6,6 @@ import { cChainParams } from './chain_params';
 import { hexToBytes, bytesToHex, dSHA256 } from './utils.js';
 import { bech32 } from 'bech32';
 
-
 /* MPW constants */
 export const pubKeyHashNetworkLen = 21;
 export const pubChksum = 4;
@@ -211,47 +210,46 @@ export function sleep(ms) {
     return new Promise((res, _) => setTimeout(res, ms));
 }
 
-
 /**
  * Validate a shield address
  * @param {String} address
  */
 export function validateShieldAddress(address) {
     try {
-	const { prefix } = bech32.decode(address);
-	if (prefix !== cChainParams.current.SHIELD_PREFIX) {
-	    return { valid: false, error: 'Invalid prefix' };
-	}
+        const { prefix } = bech32.decode(address);
+        if (prefix !== cChainParams.current.SHIELD_PREFIX) {
+            return { valid: false, error: 'Invalid prefix' };
+        }
 
-	return { valid: true };
+        return { valid: true };
     } catch (e) {
-	console.error(e);
-	return { valid: false, error: 'Invalid bech32' };
+        console.error(e);
+        return { valid: false, error: 'Invalid bech32' };
     }
 }
 
 function validateBs58(address, prefix) {
     try {
-    const bytes = bs58.decode(address);
-    if (bytes.length !== 25) {
-	return { valid: false, error: 'Invalid length' };
-    }
-    
-    if (bytes[0] !== prefix) {
-	return { valid: false, error: 'Not a PIVX Address' };
-    }
-    
-    const front = bytes.slice(0, bytes.length - 4);
-    const back = bytes.slice(bytes.length - 4);
-    const checksum = dSHA256(front);
-    for (let i = 0; i < 4; i++) {
-	if (checksum[i] !== back[i]) {
-	    return { valid: false, error: 'invalid checksum'};
-	}
-    }
+        const bytes = bs58.decode(address);
+        if (bytes.length !== 25) {
+            return { valid: false, error: 'Invalid length' };
+        }
+
+        if (bytes[0] !== prefix) {
+            return { valid: false, error: 'Not a PIVX Address' };
+        }
+
+        const front = bytes.slice(0, bytes.length - 4);
+        const back = bytes.slice(bytes.length - 4);
+        const checksum = dSHA256(front);
+        for (let i = 0; i < 4; i++) {
+            if (checksum[i] !== back[i]) {
+                return { valid: false, error: 'invalid checksum' };
+            }
+        }
     } catch (e) {
-	console.error(e);
-	return { valid: false, error: 'Invalid base58' }
+        console.error(e);
+        return { valid: false, error: 'Invalid base58' };
     }
     return { valid: true };
 }
@@ -282,10 +280,10 @@ export function validateColdstakeAddress(address) {
 export function validateAddress(address) {
     // Addresses starting with 'p' may be shield addresses
     if (address.startsWith('p')) {
-	return { type: 'shield', ...validateShieldAddress(address) };
-    } else if (address.startsWith(cChainParams.current.STAKING_PREFIX)){
-	return { type: 'cold_stake', ...validateColdstakeAddress(address) };
+        return { type: 'shield', ...validateShieldAddress(address) };
+    } else if (address.startsWith(cChainParams.current.STAKING_PREFIX)) {
+        return { type: 'cold_stake', ...validateColdstakeAddress(address) };
     } else {
-    	return { type: 'transparent', ...validateTransparentAddress(address) };
+        return { type: 'transparent', ...validateTransparentAddress(address) };
     }
 }

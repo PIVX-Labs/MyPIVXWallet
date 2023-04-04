@@ -45,14 +45,14 @@ export let fWalletLoaded = false;
  */
 class MasterKey {
     constructor() {
-	if (this.constructor === MasterKey) {
-	    throw new Error('Initializing virtual class');
+        if (this.constructor === MasterKey) {
+            throw new Error('Initializing virtual class');
         }
-	/**
-	 * If the shield has been synced
-	 * @type {bool}
-	 */
-	this.shieldSynced = false;
+        /**
+         * If the shield has been synced
+         * @type {bool}
+         */
+        this.shieldSynced = false;
     }
     /**
      * @param {String} [path] - BIP32 path pointing to the private key.
@@ -587,7 +587,10 @@ export async function importWallet({
                     privateImportValue,
                     passphrase
                 );
-                const shieldData = localStorage.getItem('shieldData' + (cChainParams.current.isTestnet ? '-testnet' : ''));
+                const shieldData = localStorage.getItem(
+                    'shieldData' +
+                        (cChainParams.current.isTestnet ? '-testnet' : '')
+                );
                 const shield = await Shield.create({
                     data: shieldData,
                     seed,
@@ -691,7 +694,7 @@ export async function importWallet({
 function setMasterKey(mk) {
     masterKey = mk;
     if (masterKey.shield) {
-	getEventEmitter().emit('shield-enabled', masterKey.shield);
+        getEventEmitter().emit('shield-enabled', masterKey.shield);
     }
     // Update the network master key
     getNetwork().setMasterKey(masterKey);
@@ -714,7 +717,9 @@ export async function generateWallet(noUI = false) {
         const seed = await mnemonicToSeed(mnemonic, passphrase);
 
         // Prompt the user to encrypt the seed
-        const shieldData = localStorage.getItem('shieldData' + (cChainParams.current.isTestnet ? '-testnet' : ''));
+        const shieldData = localStorage.getItem(
+            'shieldData' + (cChainParams.current.isTestnet ? '-testnet' : '')
+        );
         const shield = await Shield.create({
             data: shieldData,
             seed,
@@ -913,15 +918,14 @@ export async function getNewAddress({
     }
 
     if (updateGUI) {
-	let shieldAddress = "";
-	if (masterKey.shield) {
-	    shieldAddress = await masterKey.shield.getNewAddress();
+        let shieldAddress = '';
+        if (masterKey.shield) {
+            shieldAddress = await masterKey.shield.getNewAddress();
             masterKey.lastShieldAddrForUser = shieldAddress;
-
-	}
-	let addressToUpdate = doms.domShieldAddrSwitch.checked
-	    ? shieldAddress
-	    : address;
+        }
+        let addressToUpdate = doms.domShieldAddrSwitch.checked
+            ? shieldAddress
+            : address;
         masterKey.lastTranspAddrForUser = address;
         createQR('pivx:' + addressToUpdate, doms.domModalQR);
         doms.domModalQrLabel.innerHTML =
