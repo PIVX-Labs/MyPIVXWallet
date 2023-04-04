@@ -6,8 +6,6 @@ import {
     deriveAddress,
     cHardwareWallet,
 } from './wallet.js';
-import { cChainParams, COIN } from './chain_params.js';
-import { masterKey, parseWIF, deriveAddress } from './wallet.js';
 import { dSHA256, bytesToHex, hexToBytes } from './utils.js';
 import { Buffer } from 'buffer';
 import { Address6 } from 'ip-address';
