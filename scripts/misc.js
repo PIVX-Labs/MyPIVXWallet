@@ -198,6 +198,35 @@ export function sanitizeHTML(text) {
 }
 
 /**
+ * Check if a string is valid Base64 encoding
+ * @param {string} str - String to check
+ * @returns {boolean}
+ */
+export function isBase64(str) {
+    const base64Regex = /^[A-Za-z0-9+/=]+$/;
+
+    // Check if the string contains only Base64 characters:
+    if (!base64Regex.test(str)) {
+        return false;
+    }
+
+    // Check if the length is a multiple of 4 (required for Base64):
+    if (str.length % 4 !== 0) {
+        return false;
+    }
+
+    // Try decoding the Base64 string to check for errors:
+    try {
+        atob(str);
+    } catch (e) {
+        return false;
+    }
+
+    // The string is likely Base64-encoded:
+    return true;
+}
+
+/**
  * An artificial sleep function to pause code execution
  *
  * @param {Number} ms - The milliseconds to sleep

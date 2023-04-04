@@ -21,7 +21,13 @@ import {
     strCurrency,
 } from './settings.js';
 import { createAndSendTransaction } from './transactions.js';
-import { createAlert, confirmPopup, sanitizeHTML, MAP_B58 } from './misc.js';
+import {
+    createAlert,
+    confirmPopup,
+    sanitizeHTML,
+    MAP_B58,
+    isBase64,
+} from './misc.js';
 import { cChainParams, COIN, MIN_PASS_LENGTH } from './chain_params.js';
 import { decrypt } from './aes-gcm.js';
 
@@ -924,14 +930,20 @@ export function accessOrImportWallet() {
         doms.domPrivKey.focus();
     }
 }
-
+/**
+ * An event function triggered apon private key UI input changes
+ *
+ * Useful for adjusting the input types or displaying password prompts depending on the import scheme
+ */
 export function onPrivateKeyChanged() {
     if (hasEncryptedWallet()) return;
-    // Check whether the length of the string is 128 bytes (that's the length of ciphered plain texts)
+    // Check whether the string is Base64 (would likely be an MPW-encrypted import)
     // and it doesn't have any spaces (would be a mnemonic seed)
     const fContainsSpaces = doms.domPrivKey.value.includes(' ');
     doms.domPrivKeyPassword.hidden =
-        doms.domPrivKey.value.length !== 128 && !fContainsSpaces;
+        (doms.domPrivKey.value.length < 128 ||
+            !isBase64(doms.domPrivKey.value)) &&
+        !fContainsSpaces;
 
     doms.domPrivKeyPassword.placeholder = fContainsSpaces
         ? 'Optional Passphrase'
@@ -940,8 +952,12 @@ export function onPrivateKeyChanged() {
     doms.domPrivKey.setAttribute('type', fContainsSpaces ? 'text' : 'password');
 }
 
+/**
+ * Imports a wallet using the GUI input, handling decryption via UI
+ */
 export async function guiImportWallet() {
-    const fEncrypted = doms.domPrivKey.value.length === 128;
+    const fEncrypted =
+        doms.domPrivKey.value.length >= 128 && isBase64(doms.domPrivKey.value);
 
     // If we are in testnet: prompt an import
     if (cChainParams.current.isTestnet) return importWallet();
@@ -960,6 +976,8 @@ export async function guiImportWallet() {
             localStorage.setItem('encwif', strPrivKey);
             return importWallet({
                 newWif: strDecWIF,
+                // Save the public key to disk for future View Only mode post-decryption
+                fSavePublicKey: true,
             });
         }
     }

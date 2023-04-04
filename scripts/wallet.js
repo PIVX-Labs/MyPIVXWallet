@@ -520,12 +520,22 @@ export function deriveAddress({ pkBytes, publicKey, output = 'ENCODED' }) {
     return bs58.encode(pubKeyPreBase);
 }
 
-// Wallet Import
+/**
+ * Import a wallet (with it's private, public or encrypted data)
+ * @param {object} options
+ * @param {string | Array<number>} options.newWif - The import data (if omitted, the UI input is accessed)
+ * @param {boolean} options.fRaw - Whether the import data is raw bytes or encoded (WIF, xpriv, seed)
+ * @param {boolean} options.isHardwareWallet - Whether the import is from a Hardware wallet or not
+ * @param {boolean} options.skipConfirmation - Whether to skip the import UI confirmation or not
+ * @param {boolean} options.fSavePublicKey - Whether to save the derived public key to disk (for View Only mode)
+ * @returns {Promise<void>}
+ */
 export async function importWallet({
     newWif = false,
     fRaw = false,
     isHardwareWallet = false,
     skipConfirmation = false,
+    fSavePublicKey = false,
 } = {}) {
     const strImportConfirm =
         "Do you really want to import a new address? If you haven't saved the last private key, the wallet will be LOST forever.";
@@ -655,6 +665,11 @@ export async function importWallet({
             }
         }
 
+        // If allowed and requested, save the public key to disk for future View Only mode
+        if (fSavePublicKey && !masterKey.isHardwareWallet) {
+            localStorage.setItem('publicKey', await masterKey.keyToExport);
+        }
+
         // For non-HD wallets: hide the 'new address' button, since these are essentially single-address MPW wallets
         if (!masterKey.isHD) doms.domNewAddress.style.display = 'none';
 
@@ -671,17 +686,28 @@ export async function importWallet({
         );
         jdenticon.update('#identicon');
 
-        // Hide the encryption warning if the user pasted the private key
-        // Or in Testnet mode or is using a hardware wallet or is view-only mode
+        // Hide the encryption prompt if the user is in Testnet mode
+        // ... or is using a hardware wallet, or is view-only mode.
         if (
             !(
-                newWif ||
                 cChainParams.current.isTestnet ||
                 isHardwareWallet ||
                 masterKey.isViewOnly
             )
-        )
-            doms.domGenKeyWarning.style.display = 'block';
+        ) {
+            if (
+                // If the wallet was internally imported (not UI pasted), like via vanity, display the encryption prompt
+                (((fRaw && newWif.length) || newWif) &&
+                    !hasEncryptedWallet()) ||
+                // If the wallet was pasted and is an unencrypted key, then display the encryption prompt
+                !hasEncryptedWallet()
+            ) {
+                doms.domGenKeyWarning.style.display = 'block';
+            } else if (hasEncryptedWallet()) {
+                // If the wallet was pasted and is an encrypted import, display the lock wallet UI
+                doms.domWipeWallet.hidden = false;
+            }
+        }
 
         // Fetch state from explorer
         if (getNetwork().enabled) refreshChainData();
@@ -831,9 +857,9 @@ export async function decryptWallet(strPassword = '') {
         await importWallet({
             newWif: strDecWIF,
             skipConfirmation: true,
+            // Save the public key to disk for View Only mode
+            fSavePublicKey: true,
         });
-        // Ensure publicKey is set
-        localStorage.setItem('publicKey', await masterKey.keyToExport);
         return true;
     }
 }
