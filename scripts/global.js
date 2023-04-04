@@ -516,17 +516,19 @@ export async function openExplorer() {
 
 async function loadImages() {
     const images = [
-	['mpw-main-logo', import('../assets/logo.png')],
-	['privateKeyImage', import('../assets/key.png')],
-	['img-governance', import('../assets/img_governance.png')],
-	['img-pos', import('../assets/img_pos.png')],
-	['img-privacy', import('../assets/img_privacy.png')],
-	['img-slider-bars', import('../assets/img_slider_bars.png')],
+        ['mpw-main-logo', import('../assets/logo.png')],
+        ['privateKeyImage', import('../assets/key.png')],
+        ['img-governance', import('../assets/img_governance.png')],
+        ['img-pos', import('../assets/img_pos.png')],
+        ['img-privacy', import('../assets/img_privacy.png')],
+        ['img-slider-bars', import('../assets/img_slider_bars.png')],
     ];
 
-    const promises = images.map(([id, path]) => (async () => {
-	document.getElementById(id).src = (await path).default;
-    })());
+    const promises = images.map(([id, path]) =>
+        (async () => {
+            document.getElementById(id).src = (await path).default;
+        })()
+    );
     await Promise.all(promises);
 }
 
