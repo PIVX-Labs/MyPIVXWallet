@@ -1,5 +1,5 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
-import '@fortawesome/fontawesome-free/css/all.css';
+import '@fortawesome/fontawesome-free/css/all.min.css';
 import '../assets/style/style.css';
 
 import 'bootstrap';
@@ -29,6 +29,8 @@ export {
     startMasternode,
     checkVanity,
     toggleDropDown,
+    unblurPrivKey,
+    toggleBottomMenu,
 } from './global.js';
 export { generateWallet, getNewAddress, importWallet } from './wallet.js';
 export { toggleTestnet, toggleDebug } from './settings.js';
@@ -41,4 +43,4 @@ export {
 } from './transactions.js';
 export { hexToBytes, bytesToHex, dSHA256 } from './utils.js';
 export { donationAddress } from './chain_params.js';
-export { toggleNetwork } from './network.js';
+export { toggleNetwork, getMasternodeRewards } from './network.js';

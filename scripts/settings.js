@@ -3,6 +3,7 @@ import {
     getBalance,
     getStakingBalance,
     updateStakingRewardsGUI,
+    updateMasternodeRewardsGUI,
 } from './global.js';
 import { fWalletLoaded } from './wallet.js';
 import { cChainParams } from './chain_params.js';
@@ -14,11 +15,26 @@ import {
     translation,
     arrActiveLangs,
 } from './i18n.js';
+import { CoinGecko } from './prices.js';
 
 // --- Default Settings
-export let debug = false; // A mode that emits verbose console info for internal MPW operations
-let networkEnabled = true; // A lock which blocks ALL network requests in totality
+/** A mode that emits verbose console info for internal MPW operations */
+export let debug = false;
+/** A lock which blocks ALL network requests in totality */
+let networkEnabled = true;
+/**
+ * The user-selected display currency from market-aggregator sites
+ * @type {string}
+ */
+export let strCurrency = 'usd';
+/**
+ * The global market data source
+ * @type {CoinGecko}
+ */
+export let cMarket = new CoinGecko();
+/** The user-selected explorer, used for most of MPW's data synchronisation */
 export let cExplorer = cChainParams.current.Explorers[0];
+/** The user-selected MPW node, used for alternative blockchain data */
 export let cNode = cChainParams.current.Nodes[0];
 
 let transparencyReport;
@@ -61,6 +77,11 @@ export function start() {
         : 'none';
     doms.domDebug.style.display = debug ? '' : 'none';
 
+    // Hook up the 'currency' select UI
+    document.getElementById('currency').onchange = function (evt) {
+        setCurrency(evt.target.value);
+    };
+
     // Hook up the 'explorer' select UI
     document.getElementById('explorer').onchange = function (evt) {
         setExplorer(
@@ -70,21 +91,26 @@ export function start() {
         );
     };
 
+    // Hook up the 'translation' select UI
     document.getElementById('translation').onchange = function (evt) {
         setTranslation(evt.target.value);
     };
+
     // Hook up the 'analytics' select UI
     document.getElementById('analytics').onchange = function (evt) {
         setAnalytics(arrAnalytics.find((a) => a.name === evt.target.value));
     };
 
-    const domAnalyticsSelect = document.getElementById('analytics');
-
+    // Fill all selection UIs with their options
+    if (networkEnabled) {
+        fillCurrencySelect();
+    }
     fillExplorerSelect();
     fillNodeSelect();
     fillTranslationSelect();
 
     // Add each analytics level into the UI selector
+    const domAnalyticsSelect = document.getElementById('analytics');
     for (const analLevel of arrAnalytics) {
         const opt = document.createElement('option');
         opt.value = opt.innerHTML = analLevel.name;
@@ -170,13 +196,24 @@ function setNode(node, fSilent = false) {
 
 //TRANSLATION
 /**
- * switches the translation and sets the translation preference to local storage
+ * Switches the translation and sets the translation preference to local storage
  * @param {string} lang
  * @param {bool} fSilent
  */
 function setTranslation(lang) {
     switchTranslation(lang);
     localStorage.setItem('translation', lang);
+}
+
+/**
+ * Sets and saves the display currency setting in runtime and localStorage
+ * @param {string} currency - The currency string name
+ */
+function setCurrency(currency) {
+    strCurrency = currency;
+    localStorage.setItem('displayCurrency', strCurrency);
+    // Update the UI to reflect the new currency
+    getBalance(true);
 }
 
 /**
@@ -190,14 +227,34 @@ function fillTranslationSelect() {
     // Add each trusted explorer into the UI selector
     for (const lang of arrActiveLangs) {
         const opt = document.createElement('option');
-        opt.value = lang;
-        opt.innerHTML = lang;
+        opt.innerHTML = opt.value = lang;
         doms.domTranslationSelect.appendChild(opt);
     }
 
     // And update the UI to reflect them
     doms.domTranslationSelect.value =
         localStorage.getItem('translation') || 'en';
+}
+
+/**
+ * Fills the display currency dropbox on the settings page
+ */
+export async function fillCurrencySelect() {
+    while (doms.domCurrencySelect.options.length > 0) {
+        doms.domCurrencySelect.remove(0);
+    }
+
+    // Add each data source currency into the UI selector
+    for (const currency of await cMarket.getCurrencies()) {
+        const opt = document.createElement('option');
+        opt.innerHTML = currency.toUpperCase();
+        opt.value = currency;
+        doms.domCurrencySelect.appendChild(opt);
+    }
+
+    // And update the UI to reflect them
+    strCurrency = doms.domCurrencySelect.value =
+        localStorage.getItem('displayCurrency') || strCurrency;
 }
 
 function setAnalytics(level, fSilent = false) {
@@ -260,6 +317,7 @@ export function toggleTestnet() {
     getBalance(true);
     getStakingBalance(true);
     updateStakingRewardsGUI();
+    updateMasternodeRewardsGUI();
 }
 
 export function toggleDebug() {

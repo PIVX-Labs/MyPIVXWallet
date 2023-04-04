@@ -14,25 +14,39 @@ import {
     networkEnabled,
     getBlockCount,
     arrRewards,
+    masternodeRewards,
     getStakingRewards,
+    getMasternodeRewards,
 } from './network.js';
-import { start as settingsStart, cExplorer, debug } from './settings.js';
+import {
+    start as settingsStart,
+    cExplorer,
+    debug,
+    cMarket,
+    strCurrency,
+} from './settings.js';
 import { createAlert, confirmPopup, sanitizeHTML, MAP_B58 } from './misc.js';
 import { cChainParams, COIN, MIN_PASS_LENGTH } from './chain_params.js';
 import { decrypt } from './aes-gcm.js';
 
 import { registerWorker } from './native.js';
+import { refreshPriceDisplay } from './prices.js';
+import { Address6 } from 'ip-address';
 
 export let doms = {};
 
 export function start() {
     doms = {
-        domStart: document.getElementById('start'),
+        domInstall: document.getElementById('installTab'),
         domNavbarToggler: document.getElementById('navbarToggler'),
         domGuiStaking: document.getElementById('guiStaking'),
         domGuiWallet: document.getElementById('guiWallet'),
         domGuiBalance: document.getElementById('guiBalance'),
         domGuiBalanceTicker: document.getElementById('guiBalanceTicker'),
+        domGuiBalanceValue: document.getElementById('guiBalanceValue'),
+        domGuiBalanceValueCurrency: document.getElementById(
+            'guiBalanceValueCurrency'
+        ),
         domGuiBalanceBox: document.getElementById('guiBalanceBox'),
         domBalanceReload: document.getElementById('balanceReload'),
         domBalanceReloadStaking: document.getElementById(
@@ -51,15 +65,16 @@ export function start() {
         ),
         domGuiDelegateAmount: document.getElementById('delegateAmount'),
         domGuiUndelegateAmount: document.getElementById('undelegateAmount'),
-        domTxTab: document.getElementById('txTab'),
         domStakeTab: document.getElementById('stakeTab'),
-        domsendNotice: document.getElementById('sendNotice'),
-        domSimpleTXs: document.getElementById('simpleTransactions'),
-        domSimpleTXsDropdown: document.getElementById(
-            'simpleTransactionsDropdown'
-        ),
         domAddress1s: document.getElementById('address1s'),
-        domValue1s: document.getElementById('value1s'),
+        domSendAmountCoins: document.getElementById('sendAmountCoins'),
+        domSendAmountCoinsTicker: document.getElementById(
+            'sendAmountCoinsTicker'
+        ),
+        domSendAmountValue: document.getElementById('sendAmountValue'),
+        domSendAmountValueCurrency: document.getElementById(
+            'sendAmountValueCurrency'
+        ),
         domGuiViewKey: document.getElementById('guiViewKey'),
         domModalQR: document.getElementById('ModalQR'),
         domModalQrLabel: document.getElementById('ModalQRLabel'),
@@ -72,6 +87,12 @@ export function start() {
         //GOVERNANCE ELEMENTS
         domGovProposalsTable: document.getElementById('proposalsTable'),
         domGovProposalsTableBody: document.getElementById('proposalsTableBody'),
+        domGovProposalsContestedTable: document.getElementById(
+            'proposalsContestedTable'
+        ),
+        domGovProposalsContestedTableBody: document.getElementById(
+            'proposalsContestedTableBody'
+        ),
         //MASTERNODE ELEMENTS
         domCreateMasternode: document.getElementById('createMasternode'),
         domControlMasternode: document.getElementById('controlMasternode'),
@@ -90,6 +111,11 @@ export function start() {
         domMnNetType: document.getElementById('mnNetType'),
         domMnNetIP: document.getElementById('mnNetIP'),
         domMnLastSeen: document.getElementById('mnLastSeen'),
+        domMnLastPaid: document.getElementById('mnLastPaid'),
+        domGuiMasternodeLoadMore: document.getElementById('masternodeLoadMore'),
+        domGuiMasternodeLoadMoreIcon: document.getElementById(
+            'masternodeLoadMoreIcon'
+        ),
 
         domAccessWallet: document.getElementById('accessWallet'),
         domImportWallet: document.getElementById('importWallet'),
@@ -105,7 +131,6 @@ export function start() {
         domGuiAddress: document.getElementById('guiAddress'),
         domGenIt: document.getElementById('genIt'),
         domHumanReadable: document.getElementById('HumanReadable'),
-        domTxOutput: document.getElementById('transactionFinal'),
         domReqDesc: document.getElementById('reqDesc'),
         domReqDisplay: document.getElementById('reqDescDisplay'),
         domIdenticon: document.getElementById('identicon'),
@@ -120,17 +145,20 @@ export function start() {
         domStakingRewardsTitle: document.getElementById(
             'staking-rewards-title'
         ),
+        domMasternodeRewardsList: document.getElementById(
+            'masternode-rewards-content'
+        ),
+        domMasternodeRewardsTitle: document.getElementById(
+            'masternode-rewards-title'
+        ),
         domMnemonicModalContent: document.getElementById(
             'ModalMnemonicContent'
         ),
         domMnemonicModalButton: document.getElementById(
             'modalMnemonicConfirmButton'
         ),
-        domExportDiv: document.getElementById('exportKeyDiv'),
-        domExportPublicKey: document.getElementById('exportPublicKeyText'),
-        domExportPrivateKeyHold: document.getElementById('exportPrivateKey'),
         domExportPrivateKey: document.getElementById('exportPrivateKeyText'),
-        domExportWallet: document.getElementById('guiExportWallet'),
+        domExportWallet: document.getElementById('guiExportWalletItem'),
         domWipeWallet: document.getElementById('guiWipeWallet'),
         domRestoreWallet: document.getElementById('guiRestoreWallet'),
         domNewAddress: document.getElementById('guiNewAddress'),
@@ -159,31 +187,45 @@ export function start() {
         domNetworkD: document.getElementById('NetworkD'),
         domDebug: document.getElementById('Debug'),
         domTestnet: document.getElementById('Testnet'),
+        domCurrencySelect: document.getElementById('currency'),
         domExplorerSelect: document.getElementById('explorer'),
         domNodeSelect: document.getElementById('node'),
         domTranslationSelect: document.getElementById('translation'),
+        domBlackBack: document.getElementById('blackBack'),
     };
     i18nStart();
     loadImages();
-    doms.domStart.click();
+
+    // Register Input Pair events
+    doms.domSendAmountCoins.oninput = () => {
+        updateAmountInputPair(
+            doms.domSendAmountCoins,
+            doms.domSendAmountValue,
+            true
+        );
+    };
+    doms.domSendAmountValue.oninput = () => {
+        updateAmountInputPair(
+            doms.domSendAmountCoins,
+            doms.domSendAmountValue,
+            false
+        );
+    };
 
     // Register native app service
     registerWorker();
 
     // Configure Identicon
     jdenticon.configure();
+
     // URL-Query request processing
-    const queryString = window.location.search;
-    const urlParams = new URLSearchParams(queryString);
-    let requestTo;
-    let requestAmount;
-    // Check for a payment request
-    if (urlParams.has('pay') && urlParams.has('amount')) {
-        requestTo = urlParams.get('pay');
-        requestAmount = parseFloat(urlParams.get('amount'));
-        console.log(requestTo + ' ' + requestAmount);
-        // We have our payment request info, wait until the page is fully loaded then display the payment request via .onload
-    }
+    const urlParams = new URLSearchParams(window.location.search);
+
+    // Check for a payment request address
+    const reqTo = urlParams.has('pay') ? urlParams.get('pay') : '';
+
+    // Check for a payment request amount
+    const reqAmount = urlParams.has('amount') ? parseFloat(urlParams.get('amount')) : 0;
 
     // Customise the UI if a saved wallet exists
     if (hasEncryptedWallet()) {
@@ -202,10 +244,10 @@ export function start() {
     }
 
     // Payment processor redirect
-    if (requestTo && requestAmount) {
+    if (reqTo.length || reqAmount > 0) {
         guiPreparePayment(
-            requestTo,
-            requestAmount,
+            reqTo,
+            reqAmount,
             urlParams.has('desc') ? urlParams.get('desc') : ''
         );
     }
@@ -221,6 +263,7 @@ export function start() {
 
 // WALLET STATE DATA
 export const mempool = new Mempool();
+let exportHidden = false;
 
 //                        PIVX Labs' Cold Pool
 export let cachedColdStakeAddr = 'SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy';
@@ -250,24 +293,54 @@ export function openTab(evt, tabName) {
 
 export function getBalance(updateGUI = false) {
     const nBalance = mempool.getBalance();
+    const nCoins = nBalance / COIN;
 
     // Update the GUI too, if chosen
     if (updateGUI) {
         // Set the balance, and adjust font-size for large balance strings
-        const nLen = (nBalance / COIN).toFixed(2).length;
-        doms.domGuiBalance.innerText = (nBalance / COIN).toFixed(
-            nLen >= 6 ? 0 : 2
-        );
+        const nLen = nCoins.toFixed(2).length;
+        doms.domGuiBalance.innerText = nCoins.toFixed(nLen >= 6 ? 0 : 2);
         doms.domAvailToDelegate.innerText =
             'Available: ~' +
-            (nBalance / COIN).toFixed(2) +
+            nCoins.toFixed(2) +
             ' ' +
             cChainParams.current.TICKER;
 
-        // Add a notice to the Send page if balance is lacking
-        doms.domsendNotice.innerHTML = nBalance
-            ? ''
-            : '<div class="alert alert-danger" role="alert"><h4>Note:</h4><h5>You don\'t have any funds, get some coins first!</h5></div>';
+        // Update currency values
+        cMarket.getPrice(strCurrency).then((nPrice) => {
+            // Configure locale settings by detecting currency support
+            const cLocale = Intl.supportedValuesOf('currency').includes(
+                strCurrency.toUpperCase()
+            )
+                ? {
+                      style: 'currency',
+                      currency: strCurrency,
+                      currencyDisplay: 'narrowSymbol',
+                  }
+                : { maximumFractionDigits: 8, minimumFractionDigits: 8 };
+            let nValue = nCoins * nPrice;
+            // Handle certain edge-cases; like satoshis having decimals.
+            switch (strCurrency) {
+                case 'sats':
+                    nValue = Math.round(nValue);
+                    cLocale.maximumFractionDigits = 0;
+                    cLocale.minimumFractionDigits = 0;
+            }
+            doms.domGuiBalanceValue.innerText = nValue.toLocaleString(
+                'en-gb',
+                cLocale
+            );
+
+            // Update the Dashboard currency
+            doms.domGuiBalanceValueCurrency.innerText =
+                strCurrency.toUpperCase();
+
+            // Update the Send menu ticker and currency
+            doms.domSendAmountValueCurrency.innerText =
+                strCurrency.toUpperCase();
+            doms.domSendAmountCoinsTicker.innerText =
+                cChainParams.current.TICKER;
+        });
     }
 
     return nBalance;
@@ -295,6 +368,13 @@ export function getStakingBalance(updateGUI = false) {
 
 export function selectMaxBalance(domValueInput, fCold = false) {
     domValueInput.value = (fCold ? getStakingBalance() : getBalance()) / COIN;
+    // Update the Send menu's value (assumption: if it's not a Cold balance, it's probably for Sending!)
+    if (!fCold)
+        updateAmountInputPair(
+            doms.domSendAmountCoins,
+            doms.domSendAmountValue,
+            true
+        );
 }
 
 export function updateStakingRewardsGUI(fCallback = false) {
@@ -326,12 +406,44 @@ export function updateStakingRewardsGUI(fCallback = false) {
     doms.domStakingRewardsList.innerHTML = strList;
 }
 
+export function updateMasternodeRewardsGUI(fCallback = false) {
+    if (!masternodeRewards.length) {
+        // This ensures we don't spam network requests, since if a network callback says we have no stakes; no point checking again!
+        if (!fCallback) getMasternodeRewards();
+        return;
+    }
+    //DOMS.DOM-optimised list generation
+    const strList = masternodeRewards
+        .map(
+            (cReward) =>
+                `<i style="opacity: 0.75; cursor: pointer" onclick="window.open('${
+                    cExplorer.url + '/tx/' + cReward.id
+                }', '_blank')">${new Date(
+                    cReward.time * 1000
+                ).toLocaleDateString()}</i> <b>+${cReward.amount} ${
+                    cChainParams.current.TICKER
+                }</b>`
+        )
+        .join('<br>');
+    // Calculate total
+    const nRewards = masternodeRewards.reduce(
+        (total, reward) => total + reward.amount,
+        0
+    );
+    // UpdateDOMS.DOM
+    doms.domMasternodeRewardsTitle.innerHTML = `Masternode Rewards: ≥${nRewards} ${cChainParams.current.TICKER}`;
+    doms.domMasternodeRewardsList.innerHTML = strList;
+}
+
 async function loadImages() {
     // Promise.all is useless since we only need to load one image, but we might need to load more in the future
     Promise.all([
         (async () => {
             document.getElementById('mpw-main-logo').src = (
                 await import('../assets/logo.png')
+            ).default;
+            document.getElementById('privateKeyImage').src = (
+                await import('../assets/key.png')
             ).default;
         })(),
     ]);
@@ -357,13 +469,66 @@ export async function playMusic() {
     }
 }
 
+export function unblurPrivKey() {
+    if (
+        document
+            .getElementById('exportPrivateKeyText')
+            .classList.contains('blurred')
+    ) {
+        document
+            .getElementById('exportPrivateKeyText')
+            .classList.remove('blurred');
+    } else {
+        document
+            .getElementById('exportPrivateKeyText')
+            .classList.add('blurred');
+    }
+}
+
+export function toggleBottomMenu(dom, ani) {
+    let element = document.getElementById(dom);
+    if (element.classList.contains(ani)) {
+        element.classList.remove(ani);
+        doms.domBlackBack.classList.remove('d-none');
+        setTimeout(() => {
+            doms.domBlackBack.classList.remove('blackBackHide');
+        }, 10);
+    } else {
+        element.classList.add(ani);
+        doms.domBlackBack.classList.add('blackBackHide');
+        setTimeout(() => {
+            doms.domBlackBack.classList.add('d-none');
+        }, 150);
+    }
+}
+
+/**
+ * Updates an Amount Input UI pair ('Coin' and 'Value' input boxes) in relation to the input box used
+ * @param {HTMLInputElement} domCoin - The DOM input for the Coin amount
+ * @param {HTMLInputElement} domValue - The DOM input for the Value amount
+ * @param {boolean} fCoinEdited - `true` if Coin, `false` if Value
+ */
+export async function updateAmountInputPair(domCoin, domValue, fCoinEdited) {
+    // Fetch the price in the user's preferred currency
+    const nPrice = await cMarket.getPrice(strCurrency);
+    if (fCoinEdited) {
+        // If the 'Coin' input is edited, then update the 'Value' input with it's converted currency
+        const nValue = Number(doms.domSendAmountCoins.value) * nPrice;
+        domValue.value = nValue <= 0 ? '' : nValue;
+    } else {
+        // If the 'Value' input is edited, then update the 'Coin' input with the reversed conversion rate
+        const nValue = Number(doms.domSendAmountValue.value) / nPrice;
+        domCoin.value = nValue <= 0 ? '' : nValue;
+    }
+}
+
 export function toClipboard(source, caller) {
     // Fetch the text/value source
-    const domCopy = document.getElementById(source);
+    const domCopy = document.getElementById(source) || source;
 
     // Use an invisible textbox as the clipboard source
     const domClipboard = document.getElementById('clipboard');
-    domClipboard.value = domCopy.value || domCopy.innerHTML;
+    domClipboard.value = domCopy.value || domCopy.innerHTML || domCopy;
     domClipboard.select();
     domClipboard.setSelectionRange(0, 99999);
 
@@ -371,7 +536,7 @@ export function toClipboard(source, caller) {
     if (!navigator.clipboard) {
         document.execCommand('copy');
     } else {
-        navigator.clipboard.writeText(domCopy.innerHTML);
+        navigator.clipboard.writeText(domCopy.innerHTML || domCopy);
     }
 
     // Display a temporary checkmark response
@@ -385,16 +550,36 @@ export function toClipboard(source, caller) {
     }, 1000);
 }
 
-export function guiPreparePayment(strTo = '', strAmount = 0, strDesc = '') {
-    doms.domTxTab.click();
-    if (doms.domSimpleTXs.style.display === 'none')
-        doms.domSimpleTXsDropdown.click();
+/**
+ * Prompt for a payment in the GUI with pre-filled inputs
+ * @param {string} strTo - The address receiving the payment
+ * @param {number} nAmount - The payment amount in full coins
+ * @param {string} strDesc - The payment message or description
+ */
+export function guiPreparePayment(strTo = '', nAmount = 0, strDesc = '') {
     // Apply values
     doms.domAddress1s.value = strTo;
-    doms.domValue1s.value = strAmount;
+    doms.domSendAmountCoins.value = nAmount;
     doms.domReqDesc.value = strDesc;
     doms.domReqDisplay.style.display = strDesc ? 'block' : 'none';
-    doms.domValue1s.focus();
+
+    // Switch to the Dashboard
+    document.getElementById('dashboard').click();
+
+    // Open the Send menu (with a small timeout post-load to allow for CSS loading)
+    setTimeout(() => {
+        toggleBottomMenu('transferMenu', 'transferAnimation');
+    }, 300);
+
+    // Update the conversion value
+    updateAmountInputPair(
+        doms.domSendAmountCoins,
+        doms.domSendAmountValue,
+        true
+    );
+
+    // Focus on the coin input box
+    doms.domSendAmountCoins.focus();
 }
 
 export function hideAllWalletOptions() {
@@ -504,22 +689,52 @@ export function destroyMasternode() {
     }
 }
 
+/**
+ * Takes an ip address and adds the port.
+ * If it's an IPv4 address, ip:port will be used, (e.g. 127.0.0.1:12345)
+ * If it's an IPv6 address, [ip]:port will be used, (e.g. [::1]:12345)
+ * @param {String} ip - Ip address with or without port
+ * @returns {String}
+ */
+function parseIpAddress(ip) {
+    // IPv4 without port
+    if (ip.match(/\d+\.\d+\.\d+\.\d+/)) {
+        return `${ip}:${cChainParams.current.MASTERNODE_PORT}`;
+    }
+    // IPv4 with port
+    if (ip.match(/\d+\.\d+\.\d+\.\d+:\d+/)) {
+        return ip;
+    }
+    // IPv6 without port
+    if (Address6.isValid(ip)) {
+        return `[${ip}]:${cChainParams.current.MASTERNODE_PORT}`;
+    }
+
+    const groups = /\[(.*)\]:\d+/.exec(ip);
+    if (groups !== null && groups.length > 1) {
+        // IPv6 with port
+        if (Address6.isValid(groups[1])) {
+            return ip;
+        }
+    }
+
+    // If we haven't returned yet, the address was invalid.
+    return null;
+}
+
 export async function importMasternode() {
     const mnPrivKey = doms.domMnPrivateKey.value;
+    const address = parseIpAddress(doms.domMnIP.value);
+    if (!address) {
+        createAlert('warning', 'The ip address is invalid!', 5000);
+        return;
+    }
 
-    const ip = doms.domMnIP.value;
-    let address;
     let collateralTxId;
     let outidx;
     let collateralPrivKeyPath;
     doms.domMnIP.value = '';
     doms.domMnPrivateKey.value = '';
-
-    if (!ip.includes(':')) {
-        address = `${ip}:${cChainParams.current.MASTERNODE_PORT}`;
-    } else {
-        address = ip;
-    }
 
     if (!masterKey.isHD) {
         // Find the first UTXO matching the expected collateral size
@@ -599,6 +814,9 @@ export function accessOrImportWallet() {
 
     // Show Import button, hide access button
     doms.domImportWallet.style.display = 'block';
+    setTimeout(() => {
+        doms.domPrivKey.style.opacity = '1';
+    }, 100);
     doms.domAccessWalletBtn.style.display = 'none';
 
     // If we have a local wallet, display the decryption prompt
@@ -665,52 +883,42 @@ export function guiEncryptWallet() {
             2500
         );
 
-    // Show our inputs if we haven't already
-    if (doms.domEncryptPasswordBox.style.display === 'none') {
-        // Return the display to it's class form
-        doms.domEncryptPasswordBox.style.display = '';
-        doms.domEncryptBtnTxt.innerText = 'Finish Encryption';
-    } else {
-        // Fetch our inputs, ensure they're of decent entropy + match eachother
-        const strPass = doms.domEncryptPasswordFirst.value,
-            strPassRetype = doms.domEncryptPasswordSecond.value;
-        if (strPass.length < MIN_PASS_LENGTH)
-            return createAlert(
-                'warning',
-                ALERTS.PASSWORD_TOO_SMALL,
-                [{ MIN_PASS_LENGTH: MIN_PASS_LENGTH }],
-                4000
-            );
-        if (strPass !== strPassRetype)
-            return createAlert(
-                'warning',
-                ALERTS.PASSWORD_DOESNT_MATCH,
-                [],
-                2250
-            );
-        encryptWallet(strPass);
-        createAlert('success', ALERTS.NEW_PASSWORD_SUCCESS, [], 5500);
-    }
+    // Fetch our inputs, ensure they're of decent entropy + match eachother
+    const strPass = doms.domEncryptPasswordFirst.value,
+        strPassRetype = doms.domEncryptPasswordSecond.value;
+    if (strPass.length < MIN_PASS_LENGTH)
+        return createAlert(
+            'warning',
+            ALERTS.PASSWORD_TOO_SMALL,
+            [{ MIN_PASS_LENGTH: MIN_PASS_LENGTH }],
+            4000
+        );
+    if (strPass !== strPassRetype)
+        return createAlert('warning', ALERTS.PASSWORD_DOESNT_MATCH, [], 2250);
+    encryptWallet(strPass);
+    createAlert('success', ALERTS.NEW_PASSWORD_SUCCESS, [], 5500);
+
+    $('#encryptWalletModal').modal('hide');
+
+    doms.domWipeWallet.hidden = false;
 }
 
 export async function toggleExportUI() {
-    doms.domExportDiv.hidden = !doms.domExportDiv.hidden;
-    if (!doms.domExportDiv.hidden) {
+    if (!exportHidden) {
         if (hasEncryptedWallet()) {
-            doms.domExportPrivateKey.innerText = localStorage.getItem('encwif');
-            doms.domExportPrivateKeyHold.hidden = false;
+            doms.domExportPrivateKey.innerHTML = localStorage.getItem('encwif');
+            exportHidden = true;
         } else {
             if (masterKey.isViewOnly) {
-                doms.domExportPrivateKeyHold.hidden = true;
+                exportHidden = false;
             } else {
-                doms.domExportPrivateKey.innerText = masterKey.keyToBackup;
-                doms.domExportPrivateKeyHold.hidden = false;
+                doms.domExportPrivateKey.innerHTML = masterKey.keyToBackup;
+                exportHidden = true;
             }
         }
-
-        doms.domExportPublicKey.innerText = await masterKey.keyToExport;
     } else {
-        doms.domExportPrivateKey.innerText = '';
+        doms.domExportPrivateKey.innerHTML = '';
+        exportHidden = false;
     }
 }
 
@@ -759,7 +967,9 @@ export async function generateVanityWallet() {
     ) {
         // No prefix, display the intro!
         doms.domPrefix.style.display = 'block';
-        doms.domGenKeyWarning.style.display = 'none';
+        setTimeout(() => {
+            doms.domPrefix.style.opacity = '1';
+        }, 100);
         doms.domGuiAddress.innerHTML = '~';
         doms.domPrefix.focus();
     } else {
@@ -905,52 +1115,89 @@ export async function restoreWallet() {
     }
 }
 
+/**
+ * Fetch Governance data and re-render the Governance UI
+ */
 async function updateGovernanceTab() {
-    const proposals = await Masternode.getProposals();
-    doms.domGovProposalsTableBody.innerHTML = '';
-    for (const proposal of proposals) {
-        if (proposal.RemainingPaymentCount === 0) {
-            continue;
-        }
-        const tr = doms.domGovProposalsTableBody.insertRow();
-        const td1 = tr.insertCell();
-        // IMPORTANT: We must sanite all of our HTML or a rogue server or malicious proposal could perform a cross side scripting attack
-        td1.innerHTML = `<a class="active" href="${sanitizeHTML(
-            proposal.URL
-        )}"><b>${sanitizeHTML(proposal.Name)}</b></a>`;
-        const td2 = tr.insertCell();
-        td2.innerHTML = `<b>${sanitizeHTML(proposal.MonthlyPayment)}</b> ${
-            cChainParams.current.TICKER
-        } <br>
+    // Fetch all proposals from the network
+    const arrProposals = await Masternode.getProposals({
+        fAllowFinished: false,
+    });
+
+    /* Sort proposals into two categories
+        - Standard (Proposal is either new with <100 votes, or has a healthy vote count)
+        - Contested (When a proposal may be considered spam, malicious, or simply highly contestable)
+    */
+    const arrStandard = arrProposals.filter(
+        (a) => a.Yeas + a.Nays < 100 || a.Ratio > 0.25
+    );
+    const arrContested = arrProposals.filter(
+        (a) => a.Yeas + a.Nays >= 100 && a.Ratio <= 0.25
+    );
+
+    // Render Proposals
+    renderProposals(arrStandard, false);
+    renderProposals(arrContested, true);
+}
+
+/**
+ * Render Governance proposal objects to a given Proposal category
+ * @param {Array<object>} arrProposals - The proposals to render
+ * @param {boolean} fContested - The proposal category
+ */
+function renderProposals(arrProposals, fContested) {
+    // Select the table based on the proposal category
+    const domTable = fContested
+        ? doms.domGovProposalsContestedTableBody
+        : doms.domGovProposalsTableBody;
+
+    // Render the proposals in the relevent table
+    domTable.innerHTML = '';
+    for (const cProposal of arrProposals) {
+        const domRow = domTable.insertRow();
+
+        // Name and URL hyperlink
+        const domNameAndURL = domRow.insertCell();
+        // IMPORTANT: Sanitise all of our HTML or a rogue server or malicious proposal could perform a cross-site scripting attack
+        domNameAndURL.innerHTML = `<a class="active" href="${sanitizeHTML(
+            cProposal.URL
+        )}"><b>${sanitizeHTML(cProposal.Name)}</b></a>`;
+
+        // Payment Schedule and Amounts
+        const domPayments = domRow.insertCell();
+        domPayments.innerHTML = `<b>${sanitizeHTML(
+            cProposal.MonthlyPayment
+        )}</b> ${cChainParams.current.TICKER} <br>
       <small> ${sanitizeHTML(
-          proposal['RemainingPaymentCount']
-      )} payments remaining of <b>${sanitizeHTML(proposal.TotalPayment)}</b> ${
+          cProposal['RemainingPaymentCount']
+      )} payments remaining of <b>${sanitizeHTML(cProposal.TotalPayment)}</b> ${
             cChainParams.current.TICKER
         } total</small>`;
-        const td3 = tr.insertCell();
-        let { Yeas, Nays } = proposal;
-        Yeas = parseInt(Yeas);
-        Nays = parseInt(Nays);
-        const percentage = Yeas + Nays !== 0 ? (Yeas / (Yeas + Nays)) * 100 : 0;
 
-        td3.innerHTML = `<b>${percentage.toFixed(2)}%</b> <br>
+        // Vote Counts and Consensus Percentages
+        const domVoteCounters = domRow.insertCell();
+        const { Yeas, Nays } = cProposal;
+        const nPercent = cProposal.Ratio * 100;
+
+        domVoteCounters.innerHTML = `<b>${nPercent.toFixed(2)}%</b> <br>
       <small> <b><div class="text-success" style="display:inline;"> ${Yeas} </div></b> /
 	  <b><div class="text-danger" style="display:inline;"> ${Nays} </div></b>
       `;
-        const td4 = tr.insertCell();
-        //append vote buttons
-        const buttonNo = document.createElement('button');
-        buttonNo.className = 'pivx-button-big';
-        buttonNo.innerText = 'No';
-        buttonNo.onclick = () => govVote(proposal.Hash, 2);
 
-        const buttonYes = document.createElement('button');
-        buttonYes.className = 'pivx-button-big';
-        buttonYes.innerText = 'Yes';
-        buttonYes.onclick = () => govVote(proposal.Hash, 1);
+        // Voting Buttons for Masternode owners (MNOs)
+        const domVoteBtns = domRow.insertCell();
+        const domNoBtn = document.createElement('button');
+        domNoBtn.className = 'pivx-button-big';
+        domNoBtn.innerText = 'No';
+        domNoBtn.onclick = () => govVote(cProposal.Hash, 2);
 
-        td4.appendChild(buttonNo);
-        td4.appendChild(buttonYes);
+        const domYesBtn = document.createElement('button');
+        domYesBtn.className = 'pivx-button-big';
+        domYesBtn.innerText = 'Yes';
+        domYesBtn.onclick = () => govVote(cProposal.Hash, 1);
+
+        domVoteBtns.appendChild(domNoBtn);
+        domVoteBtns.appendChild(domYesBtn);
     }
 }
 
@@ -1080,6 +1327,7 @@ export async function updateMasternodeTab() {
 
 async function refreshMasternodeData(cMasternode, fAlert = false) {
     const cMasternodeData = await cMasternode.getFullData();
+    const cMasternodeReward = await cMasternode.getNextMasternodePaymentInMinutes();
     if (debug) console.log(cMasternodeData);
 
     // If we have MN data available, update the dashboard
@@ -1097,6 +1345,12 @@ async function refreshMasternodeData(cMasternode, fAlert = false) {
             cMasternodeData.lastseen * 1000
         ).toLocaleTimeString();
     }
+
+    if (cMasternodeReward != 0 && cMasternodeReward > 30) {
+        doms.domMnLastPaid.innerText = "~" + cMasternodeReward + " blocks";
+      } else {
+        doms.domMnLastPaid.innerText = "Coming soon";
+      }
 
     if (cMasternodeData.status === 'MISSING') {
         doms.domMnTextErrors.innerHTML =
@@ -1175,6 +1429,9 @@ export function refreshChainData() {
     // Fetch block count + UTXOs
     getBlockCount();
     getBalance(true);
+
+    // Fetch pricing data
+    refreshPriceDisplay();
 }
 
 // A safety mechanism enabled if the user attempts to leave without encrypting/saving their keys

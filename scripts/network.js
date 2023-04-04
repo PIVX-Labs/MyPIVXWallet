@@ -1,12 +1,14 @@
 import { cAnalyticsLevel, cStatKeys, cExplorer, STATS } from './settings.js';
-import { doms, mempool, updateStakingRewardsGUI } from './global.js';
+import { doms, mempool, updateStakingRewardsGUI, updateMasternodeRewardsGUI } from './global.js';
 import { masterKey, getDerivationPath, getNewAddress } from './wallet.js';
-import { cChainParams, donationAddress, COIN } from './chain_params.js';
+import { cChainParams, COIN } from './chain_params.js';
 import { createAlert } from './misc.js';
 import { Mempool } from './mempool.js';
+import { Masternode, getFullData } from './masternode.js';
 export let networkEnabled = true;
 export let cachedBlockCount = 0;
 export let arrRewards = [];
+export let masternodeRewards = [];
 
 // Disable the network, return true if successful.
 export function disableNetwork() {
@@ -60,6 +62,7 @@ export function getBlockCount() {
             );
             getUTXOs();
             getStakingRewards();
+            getMasternodeRewards();
         }
         cachedBlockCount = data.backend.blocks;
     };
@@ -168,23 +171,12 @@ export async function sendTransaction(hex, msg = '') {
         ).json();
         if (data.result && data.result.length === 64) {
             console.log('Transaction sent! ' + data.result);
-            if (doms.domAddress1s.value !== donationAddress)
-                doms.domTxOutput.innerHTML =
-                    '<h4 style="color:green; font-family:mono !important;">' +
-                    data.result +
-                    '</h4>';
-            else
-                doms.domTxOutput.innerHTML =
-                    '<h4 style="color:green">Thank you for supporting MyPIVXWallet! 💜💜💜<br><span style="font-family:mono !important">' +
-                    data.result +
-                    '</span></h4>';
-            doms.domSimpleTXs.style.display = 'none';
             doms.domAddress1s.value = '';
-            doms.domValue1s.innerHTML = '';
+            doms.domSendAmountCoins.innerHTML = '';
             createAlert(
                 'success',
                 msg || 'Transaction sent!',
-                msg ? 1250 + msg.length * 50 : 1500
+                msg ? 1250 + msg.length * 50 : 3000
             );
             // If allowed by settings: submit a simple 'tx' ping to Labs Analytics
             submitAnalytics('transaction');
@@ -201,10 +193,6 @@ export async function sendTransaction(hex, msg = '') {
                 console.log('no parse!');
                 console.log(e);
             }
-            doms.domTxOutput.innerHTML =
-                '<h4 style="color:red;font-family:mono !important;"><pre style="color: inherit;">' +
-                strError +
-                '</pre></h4>';
             return false;
         }
     } catch (e) {
@@ -297,6 +285,71 @@ export async function getStakingRewards() {
     } else {
         // No balance history!
         doms.domGuiStakingLoadMore.style.display = 'none';
+
+        // Update GUI
+        stopAnim();
+    }
+}
+
+export async function getMasternodeRewards() {
+    const cMasternode = new Masternode(
+        JSON.parse(localStorage.getItem('masternode'))
+    );
+    const cMasternodeData = await cMasternode.getFullData();
+    if (!networkEnabled || cMasternodeData == undefined) return;
+    doms.domGuiMasternodeLoadMoreIcon.style.opacity = 0.5;
+    const stopAnim = () => (doms.domGuiMasternodeLoadMoreIcon.style.opacity = 1);
+    const nHeight = masternodeRewards.length
+        ? masternodeRewards[masternodeRewards.length - 1].blockHeight
+        : 0;
+    let mapPaths = new Map();
+    const txSum = (v) =>
+        v.reduce(
+            (t, s) =>
+                t +
+                (s.addresses
+                    .map((strAddr) => mapPaths.get(strAddr))
+                    .filter((v) => v).length && s.addresses.length === 2
+                    ? parseInt(s.value)
+                    : 0),
+            0
+        );
+    let cData = await (
+        await fetch(
+            `${
+                cExplorer.url
+            }/api/v2/address/${cMasternodeData.addr}?details=txs&pageSize=500&to=${
+                nHeight ? nHeight - 1 : 0
+            }`
+        )
+    ).json();
+    mapPaths.set(cMasternodeData.addr, ':)');
+    if (cData && cData.transactions) {
+        // Update rewards
+        masternodeRewards = masternodeRewards.concat(
+            cData.transactions
+                .filter((tx) => tx.vout[0].addresses[0] === 'CoinStake TX')
+                .map((tx) => {
+                    return {
+                        id: tx.txid,
+                        time: tx.blockTime,
+                        blockHeight: tx.blockHeight,
+                        amount: txSum(tx.vout.slice(-1)) / COIN,
+                    };
+                })
+                .filter((tx) => tx.amount != 0)
+        );
+
+        // If the results don't match the full 'max/requested results', then we know there's nothing more to load, hide the button!
+        if (cData.transactions.length !== cData.itemsOnPage)
+            doms.domGuiMasternodeLoadMore.style.display = 'none';
+
+        // Update GUI
+        stopAnim();
+        updateMasternodeRewardsGUI(true);
+    } else {
+        // No balance history!
+        doms.domGuiMasternodeLoadMore.style.display = 'none';
 
         // Update GUI
         stopAnim();

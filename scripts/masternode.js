@@ -3,6 +3,7 @@ import { cChainParams } from './chain_params.js';
 import { masterKey, parseWIF, deriveAddress } from './wallet.js';
 import { dSHA256, bytesToHex, hexToBytes } from './utils.js';
 import { Buffer } from 'buffer';
+import { Address6 } from 'ip-address';
 import * as nobleSecp256k1 from '@noble/secp256k1';
 
 /**
@@ -61,14 +62,66 @@ export default class Masternode {
         return cMasternode ? cMasternode.status : 'MISSING';
     }
 
-    static _decodeIpAddress(ip, port) {
-        // Only IPV4 for now
-        let start = '00000000000000000000ffff';
-        for (const digit of ip.split('.').map((n) => parseInt(n))) {
-            start += ('0' + digit.toString(16)).slice(-2);
+    /**
+     * 
+     * @returns The last paid time in seconds of the masternode.
+     */
+    async getLastPaidTime() {
+        const lastPaidTime = await this.getFullData();
+        return lastPaidTime.lastpaid;
+    }
+    
+    /**
+     * 
+     * @returns The current masternode count on the network.
+     */
+    async getMasternodeCount() {
+        const strURL = `${cNode.url}/getmasternodecount?params=`;
+        try {
+            const cMasternodeCount = (await fetch(strURL));
+            return cMasternodeCount.total
+        } catch(e) { // Recatch when polling for service failure
+            console.error(e);
+            return "EXPLORER_DOWN";
         }
-        start += bytesToHex(Masternode._numToBytes(port, 2, false));
-        return start;
+    }
+    
+    /**
+     * 
+     * @returns Time in minutes to next payment for the masternode
+     */
+    async getNextMasternodePaymentInMinutes() {
+        // Last paid time in seconds
+        const lastPaid = await this.getLastPaidTime();
+        if (lastPaid == 0) {
+            // return 0 for not yet paid status
+            return lastPaid
+        }
+        // Masternode count
+        const mnCount = this.getMasternodeCount();
+        // Current time in seconds
+        const timeNow = Math.floor(Date.now() / 1000);
+        // Convert current time to minutes 
+        const lastPaidInMinutes = ((timeNow - lastPaid) / 60);
+        // MasternodeCount - Minutes since last paid (1 MN per minute average) equals time to next payment
+        const timeToNextPay = mnCount - lastPaidInMinutes;
+        return timeToNextPay;
+    }
+
+    /*
+     * @param {String} ip
+     * @param {Number} port
+     * @returns {string} hex representation of the IP + port pair
+     */
+    static _decodeIpAddress(ip, port) {
+        const address = ip.includes('.')
+            ? Address6.fromAddress4(ip)
+            : new Address6(ip);
+        const bytes = address.toUnsignedByteArray();
+        const res =
+            bytesToHex([...new Array(16 - bytes.length).fill(0), ...bytes]) +
+            bytesToHex(Masternode._numToBytes(port, 2, false));
+        return res;
     }
 
     static _numToBytes(number, numBytes = 8, littleEndian = true) {
@@ -110,7 +163,15 @@ export default class Masternode {
      * Then hashed two times with SHA256
      */
     static getToSign({ walletPrivateKey, addr, mnPrivateKey, sigTime }) {
-        const [ip, port] = addr.split(':');
+        let ip, port;
+        if (addr.includes('.')) {
+            // IPv4
+            [ip, port] = addr.split(':');
+        } else {
+            // IPv6
+            [ip, port] = addr.slice(1).split(']');
+            port = port.slice(1);
+        }
         const publicKey = hexToBytes(
             deriveAddress({
                 pkBytes: parseWIF(walletPrivateKey, true),
@@ -271,11 +332,22 @@ export default class Masternode {
     }
 
     /**
-     * @return {Promise<Array>} A list of currently active proposal
+     *
+     * @param {object} options
+     * @param {bool} options.fAllowFinished - Pass `true` to stop filtering proposals if finished
+     * @return {Promise<Array<object>} A list of currently active proposal
      */
-    static async getProposals() {
+    static async getProposals({ fAllowFinished = false } = {}) {
         const url = `${cNode.url}/getbudgetinfo`;
-        return await (await fetch(url)).json();
+        let arrProposals = await (await fetch(url)).json();
+
+        // Apply optional filters
+        if (!fAllowFinished) {
+            arrProposals = arrProposals.filter(
+                (a) => a.RemainingPaymentCount > 0
+            );
+        }
+        return arrProposals;
     }
 
     /**
