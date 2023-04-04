@@ -20,20 +20,20 @@
     <meta property="og:url" content="https://mypivxwallet.org/" />
     <meta property="og:title" content="My PIVX Wallet" />
     <meta property="og:description" content="The wallet of the future - Receive, Send, Stake and Exchange using a completely decentralized, open-source, battle-hardened PIVX wallet." />
-    <meta property="og:image" content="logo_opaque-dark-bg.png" />
+    <meta property="og:image" content="/logo_opaque-dark-bg.png" />
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image" />
     <meta property="twitter:url" content="https://mypivxwallet.org/" />
     <meta property="twitter:title" content="My PIVX Wallet" />
     <meta property="twitter:description" content="The wallet of the future - Receive, Send, Stake and Exchange using a completely decentralized, open-source, battle-hardened PIVX wallet." />
-    <meta property="twitter:image" content="logo_opaque-dark-bg.png" />
+    <meta property="twitter:image" content="/logo_opaque-dark-bg.png" />
 
     <!-- Colour Theme -->
     <meta name="msapplication-TileColor" content="#470e75" />
     <meta name="theme-color" content="#470e75" />
 
-    <link rel="icon" type="image/png" href="logo_opaque-dark-bg.png" />
+    <link rel="icon" type="image/png" href="/logo_opaque-dark-bg.png" />
     <link rel="canonical" href="https://mypivxwallet.org/" />
 
     <link rel="preconnect" href="https://fonts.bunny.net">
@@ -46,35 +46,31 @@
         <!-- NAVBAR -->
         <nav class="navbar navbar-expand-lg sticky-top navbar-dark navbarSpecial">
           <div class="container">
-            <img onclick="MPW.playMusic()" class="nav-logo navbar-brand noselect" alt="PIVX" id="mpw-main-logo" />
+            <img onclick="MPW.openTab(event, 'home')" style="cursor: pointer;" class="nav-logo navbar-brand noselect" alt="PIVX" id="mpw-main-logo" />
             <button id="navbarToggler" class="navbar-toggler collapsed" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
               <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse noselect" id="navbarNav">
               <!-- MAIN NAVBAR -->
               <ul class="navbar-nav mr-auto ptr">
-                <li class="nav-item"><a id="start" class="nav-link tablinks" onclick="MPW.openTab(event, 'home')" data-i18n="navIntro">Intro</a></li>
-                <li class="nav-item"><a class="nav-link tablinks" onclick="MPW.openTab(event, 'keypair')" data-i18n="navDashboard">Dashboard</a></li>
-                <li class="nav-item"><a id="txTab" class="nav-link tablinks" onclick="MPW.openTab(event, 'Transaction')" data-i18n="navSend">Send</a></li>
-                <li class="nav-item"><a id="stakeTab" class="nav-link tablinks" onclick="MPW.openTab(event, 'StakingTab')" data-i18n="navStake">Stake</a></li>
-                <li class="nav-item"><a id="masternodeTab" class="nav-link tablinks" onclick="MPW.openTab(event, 'Masternode')" data-i18n="navMasternode">Masternode</a></li>
-                <li class="nav-item"><a id="governanceTab" class="nav-link tablinks" onclick="MPW.openTab(event, 'Governance')" data-i18n="navGovernance">Governance</a></li>
-                <li class="nav-item"><a class="nav-link tablinks" onclick="MPW.openTab(event, 'Settings');" data-i18n="navSettings">Settings</a></li>
+                <li class="nav-item"><span id="dashboard" class="nav-link tablinks" onclick="MPW.openTab(event, 'keypair')" data-i18n="navDashboard">Dashboard</span></li>
+                <li class="nav-item"><span id="stakeTab" class="nav-link tablinks" onclick="MPW.openTab(event, 'StakingTab')" data-i18n="navStake">Stake</span></li>
+                <li class="nav-item"><span id="masternodeTab" class="nav-link tablinks" onclick="MPW.openTab(event, 'Masternode')" data-i18n="navMasternode">Masternode</span></li>
+                <li class="nav-item"><span id="governanceTab" class="nav-link tablinks" onclick="MPW.openTab(event, 'Governance')" data-i18n="navGovernance">Governance</span></li>
+                <li class="nav-item"><span class="nav-link tablinks" onclick="MPW.openTab(event, 'Settings');" data-i18n="navSettings">Settings</span></li>
               </ul>
 
               <!-- SIDE NAVBAR -->
               <div class="form-inline my-2 my-lg-0">
-                <ul class="navbar-nav mr-auto ptr">
+                <ul class="navbar-nav mr-auto small-dark-bg">
                   <li class="nav-item">
-                    <a class="nav-link tablinks active" id="Testnet" onclick="MPW.toggleTestnet()" data-i18n="navTestnet"><b>Testnet Mode On</b></a>
+                    <span class="nav-link ptr" style="display: none;" id="Debug" onclick="MPW.toggleDebug()" data-toggle="tooltip" data-html="true" data-placement="bottom" title="<b>Debug Mode</b><br>You're in debug mode, which is logging additional verbose data in the console"><i class="fa-solid fa-bug"></i></span>
                   </li>
                   <li class="nav-item">
-                    <a class="nav-link tablinks active" id="Network" onclick="MPW.toggleNetwork()">
-                      <span data-i18n="navNetwork">Network:</span> <span id="NetworkE" data-i18n="enabled">Enabled</span><span id="NetworkD" data-i18n="disabled">Disabled</span>
-                    </a>
+                    <span class="nav-link ptr" style="display: none;" id="Testnet" onclick="MPW.toggleTestnet()" data-toggle="tooltip" data-html="true" data-placement="bottom" title="<b>Testnet Mode</b><br>You're currently using MPW on the Testnet Network"><i class="fa-solid fa-network-wired"></i></span>
                   </li>
                   <li class="nav-item">
-                    <a class="nav-link tablinks active" id="Debug" onclick="MPW.toggleDebug()"><b>DEBUG MODE ON</b></a>
+                    <span class="nav-link ptr" id="Network" onclick="MPW.toggleNetwork()" data-toggle="tooltip" data-html="true" data-placement="bottom" title="<b>Internet Access</b><br>Whether or not your node is connected to the internet"><i class="fa-solid fa-wifi"></i></span>
                   </li>
                 </ul>
               </div>
@@ -82,14 +78,6 @@
           </div>
         </nav>
         <!-- // NAVBAR -->
-
-        <!-- // WARNING MESSAGE -->
-        <div class="warning-message" id="outdated">
-          <div class="container">
-            <p>WARNING: your version is outdated, please update to the newest stable version at the <a href="https://github.com/PIVX-Labs/MyPIVXWallet/releases">MyPIVXWallet Github</a></p>
-          </div>
-        </div>
-        <!-- // WARNING MESSAGE -->
 
         <!-- // QR MODAL -->
         <div class="modal fade" id="qrModal" tabindex="-1" role="dialog" aria-labelledby="qrModalLabel" aria-hidden="true">
@@ -119,7 +107,6 @@
                   This is your seed phrase:
                   <b>
                     <div class="seed-phrase noselect" id="ModalMnemonicContent">
-                      <!-- Test1 Test2 Test1 Test2 Test1 Test2 Test1 Test2 Test1 Test2 Test1 Test2 -->
                     </div>
                   </b>
                   <br />
@@ -129,10 +116,12 @@
                   <br />
                   <b>Do NOT share it with anybody</b>. <br />
                   <br />
-                  <a href="https://www.ledger.com/blog/how-to-protect-your-seed-phrase" target="_blank">
+                  <a href="https://www.ledger.com/blog/how-to-protect-your-seed-phrase" target="_blank" rel="noopener noreferrer">
                     <i>It is <b>NOT</b> advised to store this digitally.</i>
                   </a>
-                  <br />
+		  <br />
+		  <br />
+		  <input class="center-text" type="password" id="ModalMnemonicPassphrase" placeholder="Optional Passphrase" />
                   <br />
                 </div>
                 <div class="modal-footer">
@@ -148,7 +137,7 @@
           <div class="modal-dialog modal-dialog-centered" role="document" style="max-width: 600px;">
             <div class="modal-content">
               <div class="modal-header" id="confirmModalHeader">
-                <h3 class="modal-title" id="confirmModalTitle" style="text-align: center; width: 100%; color: #8e21ff;">Insert cool popup title</h3>
+                <h3 class="modal-title" id="confirmModalTitle" style="text-align: center; width: 100%; color: #8e21ff;"></h3>
               </div>
               <div id="confirmModalContent" class="modal-body center-text">
                 <!-- JS populated modal content -->
@@ -164,7 +153,7 @@
         <div class="container">
           <div class="row no-gutters">
             <div class="col-md-12 rm-pd">
-              <div id="home" class="tabcontent">
+              <div id="home" class="tabcontent" style="display: block;">
                 <!-- PIVX TITLE SECTION -->
                 <div class="col-md-12 title-section float-left rm-pd">
                   <h1 class="pivx-bold-title center-text">
@@ -426,10 +415,13 @@
                                   <div class="dropdown">
                                     <div class="dropdown-move">
                                       <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                        <a class="dropdown-item" href="#" data-toggle="modal" data-target="#exportPrivateKeysModal" data-backdrop="static" data-keyboard="false" onclick="MPW.toggleExportUI()">
+                                        <a class="dropdown-item ptr" onclick="MPW.openExplorer()">
+                                          <i class="fa-solid fa-magnifying-glass"></i> View on Explorer
+                                        </a>
+                                        <a id="guiExportWalletItem" class="dropdown-item ptr" data-toggle="modal" data-target="#exportPrivateKeysModal" data-backdrop="static" data-keyboard="false" onclick="MPW.toggleExportUI()">
                                           <i class="fas fa-key"></i> Export
                                         </a>
-                                        <a class="dropdown-item" href="#!" id="guiNewAddress" data-toggle="modal" data-target="#qrModal" onclick="MPW.getNewAddress({updateGUI: true, verify: true});">
+                                        <a class="dropdown-item ptr" id="guiNewAddress" data-toggle="modal" data-target="#qrModal" onclick="MPW.getNewAddress({updateGUI: true, verify: true});">
                                           <i class="fas fa-sync-alt"></i> Refresh address
                                         </a>
                                       </div>
@@ -448,7 +440,7 @@
 
                             <div class="row lessTop p-0">
                               <div class="col-6 d-flex" style="justify-content: flex-start;">
-                                <div class="dcWallet-sWithdraw" onclick="MPW.openTab({ currentTarget: document.getElementById('txTab') }, 'Transaction')">
+                                <div class="dcWallet-sWithdraw" onclick="MPW.toggleBottomMenu('transferMenu', 'transferAnimation')">
                                   <i class="fas fa-arrow-up"></i>  
                                 </div>
                               </div>
@@ -501,6 +493,94 @@
                       </div>
                     </div>
                     <!-- // Export Private Keys Modal -->
+
+                    <div id="transferMenu" class="exportKeysModalColor transferMenu transferAnimation">
+                      <div class="transferHeader">
+                        <div class="transferHeaderText">Transfer</div>
+                        <div class="transferExit" onclick="MPW.toggleBottomMenu('transferMenu', 'transferAnimation')"><i class="fa-solid fa-xmark"></i></div>
+                      </div>
+    
+                      <div class="transferBody">
+                        <label data-i18n="sendReceiverAddress">Address</label><br />
+                        
+                        <div class="input-group mb-3">
+                          <input class="btn-group-input" style="font-family: monospace; " type="text" id="address1s" placeholder="Receiving address" autocomplete="nope" />
+                          <div class="input-group-append">
+                            <span class="input-group-text"><i class="fa-solid fa-paste"></i></span>
+                          </div>
+                        </div>
+
+                        <div id="reqDescDisplay" style="display: none;">
+                          <label><span data-i18n="paymentRequestMessage">Description (from the merchant)</span></label><br />
+                          <div class="input-group">
+                            <input class="btn-input" style="font-family: monospace; " type="text" disabled id="reqDesc" placeholder="Payment Request Description" autocomplete="nope" />
+                          </div>
+                        </div>
+                            
+                        <label><span data-i18n="amount">Amount</span></label><br />
+
+                        <div class="row">
+                          <div class="col-7 pr-2">
+                            <div class="input-group mb-3">
+                              <input class="btn-group-input" style="padding-right: 0px;" type="number" id="sendAmountCoins" placeholder="0.00" autocomplete="nope" onkeydown="javascript: return event.keyCode == 69 ? false : true" />
+                              <div class="input-group-append">
+                                <span class="input-group-text p-0">
+                                  <div data-i18n="sendAmountCoinsMax" onclick="MPW.selectMaxBalance(MPW.doms.domSendAmountCoins)" style="cursor: pointer; border: 0px; border-radius: 7px; padding: 3px 6px; margin: 0px 1px; background: linear-gradient(183deg, #9621ff9c, #7d21ffc7); color: #fff; font-weight: bold;">
+                                    MAX
+                                  </div>
+                                </span>
+                                <span id="sendAmountCoinsTicker" class="input-group-text">PIVX</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div class="col-5 pl-2">
+                            <div class="input-group mb-3">
+                              <input class="btn-group-input" type="text" id="sendAmountValue" placeholder="0.00" autocomplete="nope" onkeydown="javascript: return event.keyCode == 69 ? false : true" />
+                              <div class="input-group-append">
+                                <span id="sendAmountValueCurrency" class="input-group-text pl-0">USD</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div id="advMode1" class="d-none">
+                          <label><span data-i18n="fee">Fee</span></label><br />
+
+                          <div class="row text-center">
+                            <div class="col-4 pr-1">
+                              <div id="lowFee" onclick="switchFee(this)" class="feeButton">
+                                Low<br>
+                                9 sat/B
+                              </div>
+                            </div>
+
+                            <div class="col-4 pl-2 pr-2">
+                              <div id="mediumFee" onclick="switchFee(this)" class="feeButton feeButtonSelected">
+                                Medium<br>
+                                11 sat/B
+                              </div>
+                            </div>
+
+                            <div class="col-4 pl-1">
+                              <div id="highFee" onclick="switchFee(this)" class="feeButton">
+                                High<br>
+                                14 sat/B
+                              </div>
+                            </div>
+                          </div><br />
+                        </div>
+      
+
+                        <div class="text-right pb-2">
+                          <button class="pivx-button-medium w-100" style="margin:0px;" onclick="MPW.createTxGUI()">
+                            <span class="buttoni-icon"><i class="fas fa-paper-plane fa-tiny-margin"></i></span>
+                            <span class="buttoni-text" id="genIt" data-i18n="sendTransaction">Send</span>
+                          </button>
+                        </div>
+
+                      </div>
+                    </div>
                   </div>
 
                   <!-- GENERATE VANITY WALLET -->
@@ -527,7 +607,7 @@
                           <p data-i18n="dCardTwoDesc">
                             Create a wallet with a custom prefix, this can take a long time!
                           </p>
-                          <span style="opacity: 0.75; font-size: small;">Note: addresses will always start with: <b id="prefixNetwork"></b></span>
+                          <span style="opacity: 0.75; font-size: small;">Note: addresses will always start with: <b id="prefixNetwork">D</b></span>
                         </div>
 
                         <input class="center-text" style="display: none; opacity: 0;" type="text" id="prefix" placeholder="Address Prefix" onkeypress="MPW.checkVanity()" />
@@ -672,7 +752,7 @@
                   <b data-i18n="stakeTitle">Stake your PIV to generate rewards!</b>
                   <br>
                   <span data-i18n="stakeSubTitle">
-                    Coins that you Stake are "Locked" seperately from your Available balance, and have a chance to generate rewards.
+                    Coins that you Stake are "Locked" separately from your Available balance, and have a chance to generate rewards.
                     <br>
                     The more coins you stake, the more frequently you'll receive rewards.
                   </span>
@@ -734,7 +814,7 @@
                       </div>
                       <div class="staking-rewards-list">
                         <div id="staking-rewards-content"></div>
-                        <button type="button" id="stakingLoadMore" onclick="MPW.getStakingRewards()">
+                        <button type="button" id="stakingLoadMore" onclick="MPW.updateStakingRewardsGUI()">
                           <span class="buttoni-icon" id="stakingLoadMoreIcon"><i class="fas fa-sync fa-tiny-margin"></i></span>
                           <span class="buttoni-text" data-i18n="stakeLoadMore">Load more</span>
                         </button>
@@ -754,6 +834,9 @@
                     <td class="text-center"><b> Payment </b></td>
                     <td class="text-center"><b> Votes </b></td>
                     <td class="text-center"><b> Vote </b></td>
+		    <td class="text-center">
+			<div class="pivx-button-small" onclick="MPW.createProposal()"> <i class="fas fa-plus"></i> </div>
+		    </td>
                   </thead>
                   <tbody id="proposalsTableBody" style="text-align: center; vertical-align: middle;"></tbody>
                 </table>
@@ -870,109 +953,6 @@
                 </center>
               </div>
 
-              <div id="Transaction" class="tabcontent">
-                <!-- PIVX TITLE SECTION -->
-                <div class="col-md-12 title-section float-left rm-pd">
-                  <h3 class="pivx-bold-title center-text">
-                    <span data-i18n="sendTitle">Create a</span>
-                    <div data-i18n="sendSubTitle">Transaction</div>
-                  </h3>
-                </div>
-                <br />
-                <!-- // PIVX TITLE SECTION -->
-
-                <div id="sendNotice" class="col-md-12 float-left"></div>
-                <div class="col-md-12">
-                  <p id="communication" class="center-text" data-i18n="sendShieldingWarning">Please <b>AVOID</b> sending to Shielded addresses using this wallet - this functionality is currently unsupported.</p>
-                </div>
-                <div class="max-width" style="clear: both;">
-                  <div id="simpleTransactionsDropdown" class="bold-trans" onclick='MPW.toggleDropDown("simpleTransactions")'>
-                    <div data-i18n="sendSimpleTxTitle">Create Simple Transactions</div>
-                    <span style="float: right;">▼</span>
-                  </div>
-                  <div id="simpleTransactions" style="display: block;">
-                    <br />
-                    <label data-i18n="sendSimpleTxAddress">Address</label><br />
-                    <input class="center-text" style="width: 100%; font-family: monospace;" type="text" id="address1s" />
-                    <br />
-                    <label><span data-i18n="amount">Amount</span> | <b onclick="MPW.selectMaxBalance(MPW.doms.domValue1s)" style="opacity: 0.8;" class="ptr" data-i18n="sendSimpleTxAll">(Send All)</b></label><br />
-                    <input class="center-text" type="text" id="value1s" />
-                    <div id="reqDescDisplay" style="display: none;">
-                      <label data-i18n="sendSimpleTxDesc">Description (from the merchant)</label><br />
-                      <input class="center-text" type="text" disabled id="reqDesc" />
-                    </div>
-                    <br />
-                    <div id="HumanReadable"></div>
-                    <br />
-                    <button class="pivx-button-big" onclick="MPW.createTxGUI()">
-                      <span class="buttoni-icon"><i class="fas fa-paper-plane fa-tiny-margin"></i></span>
-                      <span class="buttoni-text" id="genIt" data-i18n="sendSimpleTxButton">Send Transaction</span>
-                      <span class="buttoni-arrow">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-                          <path d="M23.328 16.707L13.121 26.914a.5.5 0 01-.707 0l-2.828-2.828a.5.5 0 010-.707L16.964 16 9.586 8.621a.5.5 0 010-.707l2.828-2.828a.5.5 0 01.707 0l10.207 10.207a1 1 0 010 1.414z"></path>
-                        </svg>
-                      </span>
-                    </button>
-                  </div>
-                  <div id="transactionFinal"></div>
-                </div>
-                <br />
-                <div class="max-width" style="clear: both;">
-                  <div onclick='MPW.toggleDropDown("advTransactions")' class="bold-trans">
-                    <div data-i18n="sendManualTxTitle">Manual Transactions</div>
-                    <span style="float: right;">▼</span>
-                  </div>
-                  <div id="advTransactions" style="display: none;">
-                    <br />
-                    <h3 data-i18n="sendManualTxInput">Inputs</h3>
-                    <label data-i18n="sendManualTxTRXHash">Trx Hash</label><br />
-                    <input type="text" id="prevTrxHash" />
-                    <label data-i18n="sendManualTxIndex">Index</label><br />
-                    <input type="text" id="index" />
-                    <label data-i18n="sendManualTxScript">Script</label><br />
-                    <input type="text" id="script" /><br />
-                    <br />
-                    <h3 data-i18n="sendManualTxOutputs">Outputs</h3>
-                    <label data-i18n="sendManualTxOutputAddr">Output Address 1</label><br />
-                    <input type="text" id="address1" />
-                    <label data-i18n="amount">Amount</label><br />
-                    <input type="text" id="value1" />
-                    <br />
-                    <label data-i18n="sendManualTxOutputAddrTwo">Output address 2</label><br />
-                    <input type="text" id="address2" />
-                    <label data-i18n="amount">Amount</label><br />
-                    <input type="text" id="value2" /><br />
-                    <br />
-                    <h3 data-i18n="sendManualTxWIFKey">WIF Key</h3>
-                    <input type="text" id="wif" />
-                    <br />
-                    <br />
-                    <p style="padding: 5px 0 15px;" data-i18n="sendManualTxWarning"><b>WARNING:</b> ANY FUNDS NOT ALLOCATED WILL BE USED AS FEES</p>
-                    <button class="pivx-button-big" onclick="MPW.createRawTransaction()">
-                      <span class="buttoni-icon"><i class="fas fa-paper-plane fa-tiny-margin"></i></span>
-                      <span class="buttoni-text" data-i18n="sendManualTxButton">Create Raw Signed Transction</span>
-                      <span class="buttoni-arrow">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-                          <path d="M23.328 16.707L13.121 26.914a.5.5 0 01-.707 0l-2.828-2.828a.5.5 0 010-.707L16.964 16 9.586 8.621a.5.5 0 010-.707l2.828-2.828a.5.5 0 01.707 0l10.207 10.207a1 1 0 010 1.414z"></path>
-                        </svg>
-                      </span>
-                    </button>
-                    <br />
-                    <br />
-                    <br />
-                    <h4 id="signed-raw" data-i18n="sendSignedRawTx">Signed Raw Transaction</h4>
-                    <textarea rows="15" cols="70" id="rawTrx"></textarea>
-                    <p>
-                      <span data-i18n="sendSignedTutorial">Don't understand how this works?</span>
-                      <a target="_blank" href="https://github.com/PIVX-Labs/MyPIVXWallet#transaction"><span data-i18n="sendSignedTutorialLink">Tutorial Here</span></a>
-                    </p>
-                    <p data-i18n="sendSignedTutorialAdvInfo">
-                      Advanced Details: <br />
-                      locktime is set to 0, sequence is set to max. SIGHASH_ALL option is chosen for signing raw Transaction.
-                    </p>
-                  </div>
-                </div>
-              </div>
               <div id="Settings" class="tabcontent">
                 <label for="currency" data-i18n="settingsCurrency">Choose a display currency:</label>
                 <br />
@@ -1038,11 +1018,14 @@
       <footer id="foot">
         <div class="footer">
           <div>
-            <span> © MIT 2023 </span> - <span data-i18n="footerBuiltWithPivxLabs">Built with 💜 by PIVX Labs</span><br />
-            <a href="https://github.com/PIVX-Labs/MyPIVXWallet" data-i18n="footerGithubLink">MyPIVXWallet</a>
+            <span> © MIT 2023 </span> - <span style="cursor: pointer;" onclick="MPW.playMusic()" data-i18n="footerBuiltWithPivxLabs">Built with 💜 by PIVX Labs</span><br />
+            <a href="https://github.com/PIVX-Labs/MyPIVXWallet" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-github"></i></i> GitHub</a> - <a href="https://discord.gg/zTScGaGtgv" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-discord"></i></i> Discord</a> - <a href="https://medium.com/@pivx-labs" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-medium"></i></i> Medium</a>
           </div>
         </div>
       </footer>
     </div>
+
+    <div class="blackBack blackBackHide d-none" id="blackBack"></div>
+
   </body>
 </html>

@@ -14,7 +14,6 @@ export const uwu_translation = {
     available:"Avawable",                   //Available
 
     // Nav Bar
-    navIntro: "Intwo",                   //Intro
     navDashboard: "Dashbowed",               //Dashboard
     navSend: "Send❣",                    //Send
     navStake: "",                   //Stake
@@ -22,14 +21,8 @@ export const uwu_translation = {
     navGovernance:"",               //Governance
     navSettings: "",                //Settings
 
-    navTestnet: "Testnet Mowode On",                 //<b>Testnet Mode On</b>
-    navNetwork: "<b>Netwowork</b>",                 //<b>Network:</b>
-    navDebug: "Debuwug",                   //Debug
-    navExperimentalSync:"<b>Dangewous sync actiwated!</b>",         //<b>Experimental Sync Active</b>
-
     // Footer
     footerBuiltWithPivxLabs: "Built with wuv by PIVX Wabs❣",    //Built with 💜 by PIVX Labs
-    footerGithubLink: "",           //MyPIVXWallet
 
     // Intro
     title: "Wewcome to",                      //Welcome to
@@ -75,35 +68,14 @@ export const uwu_translation = {
     dCardFourButtonA:"Access My Wawwet",            //Access My Wallet
 
     // Send
-    sendTitle: "Cweate a",                  //Create a
-    sendSubTitle: "Twansaction",               //Transaction
-    sendShieldingWarning: "Pwetty Pwease <b>AVOID</b> sending to Sheilded addwesses using dis wawwet, dis functionawity is cuwwentwy unsu<i>purr</i>ted.",       //Please <b>AVOID</b> sending to Shielded addresses using this wallet - this functionality is currently unsupported.
-
-    sendSimpleTxTitle: "Cweate Simple Twansactions",          //Create Simple Transactions
-    sendSimpleTxAddress: "Addwess",        //Address
-    sendSimpleTxAll: "(Send All♡)",            //(Send All)
-    sendSimpleTxDesc: "Deswiption (fwom da Mewrchant)",           //Description (from the merchant)
-    sendSimpleTxButton:"Send Twansaction",          //Send Transaction
-
-    sendManualTxTitle:"Cweate Manuwual Twansactions",           //Create Manual Transactions
-    sendManualTxInput:"",           //Inputs
-    sendManualTxTRXHash: "",        //Trx Hash
-    sendManualTxIndex:"",           //Index
-    sendManualTxScript:"Scwipt",          //Script
-    sendManualTxOutputs:"",         //Outputs
-    sendManualTxOutputAddr:"Output addwess 1",      //Output address 1
-    sendManualTxOutputAddrTwo:"Output addwess 2",   //Output address 2
-    sendManualTxWIFKey:"",          //WIF key
-    sendManualTxWarning:"<b>WARNING:</b> ANY FUNDS NOT AWWOCATED WILL BE USED AS FEES",         //<b>WARNING:</b> ANY FUNDS NOT ALLOCATED WILL BE USED AS FEES
-    sendManualTxButton:"Cweate Rawr Signed Twansaction",          //Create Raw Signed Transction
-    sendSignedRawTx:"Signed Rawr Twansaction",             //Signed Raw Transaction
-    sendSignedTutorial:"Don't undewstand how dis works?",          //Don't understand how this works? 
-    sendSignedTutorialLink:"Tutowial hewe!",      //Tutorial Here
-    sendSignedTutorialAdvInfo:"Advanced Detaiws: <br>wocktime is set to zewo, sequence is set to max. SIGHASH_ALL option is chosen for signing rawr Twansaction.",   //Advanced Details: <br>locktime is set to 0, sequence is set to max. SIGHASH_ALL option is chosen for signing raw Transaction.
+    sendReceiverAddress: "Addwess",        //Address
+    sendAmountCoinsMax: "MAX♡",            //MAX
+    paymentRequestMessage: "Deswiption (fwom da Mewrchant)",           //Description (from the merchant)
+    sendTransaction:"Send",          //Send
 
     // Stake
     stakeTitle:"Stake ur PIV to genewwate wewards!",                  //Stake your PIV to generate rewards!
-    stakeSubTitle:"Coins dat you Stake are \"Locked\" sepewately from ur Avaiwable bwalance, and havs a chance to genewwate rewawrds. <br> Da more coins you stake, da more frequwuntly you'll receive rewawrds.",               // Coins that you Stake are \"Locked\" seperately from your Available balance, and have a chance to generate rewards. <br> The more coins you stake, the more frequently you'll receive rewards.
+    stakeSubTitle:"Coins dat you Stake are \"Locked\" sepawately from ur Avaiwable bwalance, and havs a chance to genewwate rewawrds. <br> Da more coins you stake, da more frequwuntly you'll receive rewawrds.",               // Coins that you Stake are \"Locked\" separately from your Available balance, and have a chance to generate rewards. <br> The more coins you stake, the more frequently you'll receive rewards.
     stake:"", //Stake
     stakeUnstake:"",                //Unstake
     stakeLoadMore:"Lowoad Mowore",               //Load more

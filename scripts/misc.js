@@ -98,6 +98,14 @@ export async function confirmPopup({ title, html, resolvePromise }) {
     // Set content display
     doms.domConfirmModalContent.innerHTML = html;
 
+    // If there's an input in the prompt, focus the cursor upon it
+    for (const domElement of doms.domConfirmModalContent.children) {
+        if (domElement.type === 'text' || domElement.type === 'password') {
+            domElement.focus();
+            break;
+        }
+    }
+
     // Wait for the promise to resolve OR create a new one which resolves upon a modal button click
     resolvePromise =
         resolvePromise ||
@@ -186,6 +194,35 @@ export function sanitizeHTML(text) {
     const element = document.createElement('div');
     element.innerText = text;
     return element.innerHTML;
+}
+
+/**
+ * Check if a string is valid Base64 encoding
+ * @param {string} str - String to check
+ * @returns {boolean}
+ */
+export function isBase64(str) {
+    const base64Regex = /^[A-Za-z0-9+/=]+$/;
+
+    // Check if the string contains only Base64 characters:
+    if (!base64Regex.test(str)) {
+        return false;
+    }
+
+    // Check if the length is a multiple of 4 (required for Base64):
+    if (str.length % 4 !== 0) {
+        return false;
+    }
+
+    // Try decoding the Base64 string to check for errors:
+    try {
+        atob(str);
+    } catch (e) {
+        return false;
+    }
+
+    // The string is likely Base64-encoded:
+    return true;
 }
 
 /**

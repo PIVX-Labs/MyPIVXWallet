@@ -32,7 +32,6 @@ var translation = {
     available:"",                   //Available
 
     // Nav Bar
-    navIntro: "",                   //Intro
     navDashboard: "",               //Dashboard
     navSend: "",                    //Send
     navStake: "",                   //Stake
@@ -40,14 +39,8 @@ var translation = {
     navGovernance:"",               //Governance
     navSettings: "",                //Settings
 
-    navTestnet: "",                 //<b>Testnet Mode On</b>
-    navNetwork: "",                 //<b>Network:</b>
-    navDebug: "",                   //Debug
-    navExperimentalSync:"",         //<b>Experimental Sync Active</b>
-
     // Footer
     footerBuiltWithPivxLabs: "",    //Built with 💜 by PIVX Labs
-    footerGithubLink: "",           //MyPIVXWallet
 
     // Intro
     title: "",                      //Welcome to
@@ -93,35 +86,14 @@ var translation = {
     dCardFourButtonA:"",            //Access My Wallet
 
     // Send
-    sendTitle: "",                  //Create a
-    sendSubTitle: "",               //Transaction
-    sendShieldingWarning: "",       //Please <b>AVOID</b> sending to Shielded addresses using this wallet - this functionality is currently unsupported.
-
-    sendSimpleTxTitle: "",          //Create Simple Transactions
-    sendSimpleTxAddress: "",        //Address
-    sendSimpleTxAll: "",            //(Send All)
-    sendSimpleTxDesc: "",           //Description (from the merchant)
-    sendSimpleTxButton:"",          //Send Transaction
-
-    sendManualTxTitle:"",           //Create Manual Transactions
-    sendManualTxInput:"",           //Inputs
-    sendManualTxTRXHash: "",        //Trx Hash
-    sendManualTxIndex:"",           //Index
-    sendManualTxScript:"",          //Script
-    sendManualTxOutputs:"",         //Outputs
-    sendManualTxOutputAddr:"",      //Output address 1
-    sendManualTxOutputAddrTwo:"",   //Output address 2
-    sendManualTxWIFKey:"",          //WIF key
-    sendManualTxWarning:"",         //<b>WARNING:</b> ANY FUNDS NOT ALLOCATED WILL BE USED AS FEES
-    sendManualTxButton:"",          //Create Raw Signed Transction
-    sendSignedRawTx:"",             //Signed Raw Transaction
-    sendSignedTutorial:"",          //Don't understand how this works? 
-    sendSignedTutorialLink:"",      //Tutorial Here
-    sendSignedTutorialAdvInfo:"",   //Advanced Details: <br>locktime is set to 0, sequence is set to max. SIGHASH_ALL option is chosen for signing raw Transaction.
+    sendReceiverAddress: "",        //Address
+    sendAmountCoinsMax: "",            //MAX
+    paymentRequestMessage: "",           //Description (from the merchant)
+    sendTransaction:"",          //Send
 
     // Stake
     stakeTitle:"",                  //Stake your PIV to generate rewards!
-    stakeSubTitle:"",               //Coins that you Stake are \"Locked\" seperately from your Available balance, and have a chance to generate rewards. <br> The more coins you stake, the more frequently you'll receive rewards.
+    stakeSubTitle:"",               //Coins that you Stake are \"Locked\" separately from your Available balance, and have a chance to generate rewards. <br> The more coins you stake, the more frequently you'll receive rewards.
     stake:"",                       //Stake
     stakeUnstake:"",                //Unstake
     stakeLoadMore:"",               //Load more

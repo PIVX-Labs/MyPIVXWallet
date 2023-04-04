@@ -8,14 +8,10 @@ import {
     importWallet,
     encryptWallet,
     decryptWallet,
+    getNewAddress,
+    getDerivationPath,
 } from './wallet.js';
-import {
-    submitAnalytics,
-    networkEnabled,
-    getBlockCount,
-    arrRewards,
-    getStakingRewards,
-} from './network.js';
+import { getNetwork } from './network.js';
 import {
     start as settingsStart,
     cExplorer,
@@ -23,20 +19,28 @@ import {
     cMarket,
     strCurrency,
 } from './settings.js';
-import { createAlert, confirmPopup, sanitizeHTML, MAP_B58 } from './misc.js';
+import { createAndSendTransaction } from './transactions.js';
+import {
+    createAlert,
+    confirmPopup,
+    sanitizeHTML,
+    MAP_B58,
+    isBase64,
+} from './misc.js';
 import { cChainParams, COIN, MIN_PASS_LENGTH } from './chain_params.js';
 import { decrypt } from './aes-gcm.js';
 
 import { registerWorker } from './native.js';
 import { refreshPriceDisplay } from './prices.js';
+import { Address6 } from 'ip-address';
+import { getEventEmitter } from './event_bus.js';
 
 export let doms = {};
 
 export function start() {
     doms = {
-        domStart: document.getElementById('start'),
-        domInstall: document.getElementById('installTab'),
         domNavbarToggler: document.getElementById('navbarToggler'),
+        domDashboard: document.getElementById('dashboard'),
         domGuiStaking: document.getElementById('guiStaking'),
         domGuiWallet: document.getElementById('guiWallet'),
         domGuiBalance: document.getElementById('guiBalance'),
@@ -63,15 +67,16 @@ export function start() {
         ),
         domGuiDelegateAmount: document.getElementById('delegateAmount'),
         domGuiUndelegateAmount: document.getElementById('undelegateAmount'),
-        domTxTab: document.getElementById('txTab'),
         domStakeTab: document.getElementById('stakeTab'),
-        domsendNotice: document.getElementById('sendNotice'),
-        domSimpleTXs: document.getElementById('simpleTransactions'),
-        domSimpleTXsDropdown: document.getElementById(
-            'simpleTransactionsDropdown'
-        ),
         domAddress1s: document.getElementById('address1s'),
-        domValue1s: document.getElementById('value1s'),
+        domSendAmountCoins: document.getElementById('sendAmountCoins'),
+        domSendAmountCoinsTicker: document.getElementById(
+            'sendAmountCoinsTicker'
+        ),
+        domSendAmountValue: document.getElementById('sendAmountValue'),
+        domSendAmountValueCurrency: document.getElementById(
+            'sendAmountValueCurrency'
+        ),
         domGuiViewKey: document.getElementById('guiViewKey'),
         domModalQR: document.getElementById('ModalQR'),
         domModalQrLabel: document.getElementById('ModalQRLabel'),
@@ -123,7 +128,6 @@ export function start() {
         domGuiAddress: document.getElementById('guiAddress'),
         domGenIt: document.getElementById('genIt'),
         domHumanReadable: document.getElementById('HumanReadable'),
-        domTxOutput: document.getElementById('transactionFinal'),
         domReqDesc: document.getElementById('reqDesc'),
         domReqDisplay: document.getElementById('reqDescDisplay'),
         domIdenticon: document.getElementById('identicon'),
@@ -144,11 +148,11 @@ export function start() {
         domMnemonicModalButton: document.getElementById(
             'modalMnemonicConfirmButton'
         ),
-        domExportDiv: document.getElementById('exportKeyDiv'),
-        domExportPublicKey: document.getElementById('exportPublicKeyText'),
-        domExportPrivateKeyHold: document.getElementById('exportPrivateKey'),
+        domMnemonicModalPassphrase: document.getElementById(
+            'ModalMnemonicPassphrase'
+        ),
         domExportPrivateKey: document.getElementById('exportPrivateKeyText'),
-        domExportWallet: document.getElementById('guiExportWallet'),
+        domExportWallet: document.getElementById('guiExportWalletItem'),
         domWipeWallet: document.getElementById('guiWipeWallet'),
         domRestoreWallet: document.getElementById('guiRestoreWallet'),
         domNewAddress: document.getElementById('guiNewAddress'),
@@ -173,36 +177,54 @@ export function start() {
         // Alert DOM element
         domAlertPos: document.getElementsByClassName('alertPositioning')[0],
         domNetwork: document.getElementById('Network'),
-        domNetworkE: document.getElementById('NetworkE'),
-        domNetworkD: document.getElementById('NetworkD'),
         domDebug: document.getElementById('Debug'),
         domTestnet: document.getElementById('Testnet'),
         domCurrencySelect: document.getElementById('currency'),
         domExplorerSelect: document.getElementById('explorer'),
         domNodeSelect: document.getElementById('node'),
         domTranslationSelect: document.getElementById('translation'),
+        domBlackBack: document.getElementById('blackBack'),
     };
     i18nStart();
     loadImages();
-    doms.domStart.click();
+
+    // Enable all Bootstrap Tooltips
+    $(function () {
+        $('[data-toggle="tooltip"]').tooltip();
+    });
+
+    // Register Input Pair events
+    doms.domSendAmountCoins.oninput = () => {
+        updateAmountInputPair(
+            doms.domSendAmountCoins,
+            doms.domSendAmountValue,
+            true
+        );
+    };
+    doms.domSendAmountValue.oninput = () => {
+        updateAmountInputPair(
+            doms.domSendAmountCoins,
+            doms.domSendAmountValue,
+            false
+        );
+    };
 
     // Register native app service
     registerWorker();
 
     // Configure Identicon
     jdenticon.configure();
+
     // URL-Query request processing
-    const queryString = window.location.search;
-    const urlParams = new URLSearchParams(queryString);
-    let requestTo;
-    let requestAmount;
-    // Check for a payment request
-    if (urlParams.has('pay') && urlParams.has('amount')) {
-        requestTo = urlParams.get('pay');
-        requestAmount = parseFloat(urlParams.get('amount'));
-        console.log(requestTo + ' ' + requestAmount);
-        // We have our payment request info, wait until the page is fully loaded then display the payment request via .onload
-    }
+    const urlParams = new URLSearchParams(window.location.search);
+
+    // Check for a payment request address
+    const reqTo = urlParams.has('pay') ? urlParams.get('pay') : '';
+
+    // Check for a payment request amount
+    const reqAmount = urlParams.has('amount')
+        ? parseFloat(urlParams.get('amount'))
+        : 0;
 
     // Customise the UI if a saved wallet exists
     if (hasEncryptedWallet()) {
@@ -221,21 +243,60 @@ export function start() {
     }
 
     // Payment processor redirect
-    if (requestTo && requestAmount) {
+    if (reqTo.length || reqAmount > 0) {
         guiPreparePayment(
-            requestTo,
-            requestAmount,
+            reqTo,
+            reqAmount,
             urlParams.has('desc') ? urlParams.get('desc') : ''
         );
     }
 
-    // If allowed by settings: submit a simple 'hit' (app load) to Labs Analytics
-    submitAnalytics('hit');
-    setInterval(refreshChainData, 15000);
+    subscribeToNetworkEvents();
+
     doms.domPrefix.value = '';
     doms.domPrefixNetwork.innerText =
         cChainParams.current.PUBKEY_PREFIX.join(' or ');
     settingsStart();
+    // If allowed by settings: submit a simple 'hit' (app load) to Labs Analytics
+    getNetwork().submitAnalytics('hit');
+    setInterval(refreshChainData, 15000);
+}
+
+function subscribeToNetworkEvents() {
+    getEventEmitter().on('network-toggle', (value) => {
+        doms.domNetwork.innerHTML =
+            '<i class="fa-solid fa-' + (value ? 'wifi' : 'ban') + '"></i>';
+    });
+
+    getEventEmitter().on('sync-status', (value) => {
+        switch (value) {
+            case 'start':
+                // Play reload anim
+                doms.domBalanceReload.classList.add('playAnim');
+                doms.domBalanceReloadStaking.classList.add('playAnim');
+                break;
+            case 'stop':
+                doms.domBalanceReload.classList.remove('playAnim');
+                doms.domBalanceReloadStaking.classList.remove('playAnim');
+                break;
+        }
+    });
+
+    getEventEmitter().on('transaction-sent', (success, result) => {
+        if (success) {
+            doms.domAddress1s.value = '';
+            doms.domSendAmountCoins.innerHTML = '';
+            createAlert(
+                'success',
+                `Transaction sent!<br>${result}`,
+                result ? 1250 + result.length * 50 : 3000
+            );
+            // If allowed by settings: submit a simple 'tx' ping to Labs Analytics
+            getNetwork().submitAnalytics('transaction');
+        } else {
+            createAlert('warning', 'Transaction Failed!', 1250);
+        }
+    });
 }
 
 // WALLET STATE DATA
@@ -307,14 +368,17 @@ export function getBalance(updateGUI = false) {
                 'en-gb',
                 cLocale
             );
+
+            // Update the Dashboard currency
             doms.domGuiBalanceValueCurrency.innerText =
                 strCurrency.toUpperCase();
-        });
 
-        // Add a notice to the Send page if balance is lacking
-        doms.domsendNotice.innerHTML = nBalance
-            ? ''
-            : '<div class="alert alert-danger" role="alert"><h4>Note:</h4><h5>You don\'t have any funds, get some coins first!</h5></div>';
+            // Update the Send menu ticker and currency
+            doms.domSendAmountValueCurrency.innerText =
+                strCurrency.toUpperCase();
+            doms.domSendAmountCoinsTicker.innerText =
+                cChainParams.current.TICKER;
+        });
     }
 
     return nBalance;
@@ -342,14 +406,23 @@ export function getStakingBalance(updateGUI = false) {
 
 export function selectMaxBalance(domValueInput, fCold = false) {
     domValueInput.value = (fCold ? getStakingBalance() : getBalance()) / COIN;
+    // Update the Send menu's value (assumption: if it's not a Cold balance, it's probably for Sending!)
+    if (!fCold)
+        updateAmountInputPair(
+            doms.domSendAmountCoins,
+            doms.domSendAmountValue,
+            true
+        );
 }
 
-export function updateStakingRewardsGUI(fCallback = false) {
-    if (!arrRewards.length) {
-        // This ensures we don't spam network requests, since if a network callback says we have no stakes; no point checking again!
-        if (!fCallback) getStakingRewards();
-        return;
+export async function updateStakingRewardsGUI() {
+    const network = getNetwork();
+    const arrRewards = await network.getStakingRewards();
+    if (network.areRewardsComplete) {
+        // Hide the load more button
+        doms.domGuiStakingLoadMore.style.display = 'none';
     }
+
     //DOMS.DOM-optimised list generation
     const strList = arrRewards
         .map(
@@ -373,6 +446,23 @@ export function updateStakingRewardsGUI(fCallback = false) {
     doms.domStakingRewardsList.innerHTML = strList;
 }
 
+/**
+ * Open the Explorer in a new tab for the loaded master public key
+ */
+export async function openExplorer() {
+    if (masterKey.isHD) {
+        const derivationPath = getDerivationPath(masterKey.isHardwareWallet)
+            .split('/')
+            .slice(0, 4)
+            .join('/');
+        const xpub = await masterKey.getxpub(derivationPath);
+        window.open(cExplorer.url + '/xpub/' + xpub, '_blank');
+    } else {
+        const address = await masterKey.getAddress();
+        window.open(cExplorer.url + '/address/' + address, '_blank');
+    }
+}
+
 async function loadImages() {
     // Promise.all is useless since we only need to load one image, but we might need to load more in the future
     Promise.all([
@@ -382,9 +472,6 @@ async function loadImages() {
             ).default;
             document.getElementById('privateKeyImage').src = (
                 await import('../assets/key.png')
-            ).default;
-            document.getElementById('pivxLogoSend').src = (
-                await import('../assets/pivx.png')
             ).default;
         })(),
     ]);
@@ -426,6 +513,43 @@ export function unblurPrivKey() {
     }
 }
 
+export function toggleBottomMenu(dom, ani) {
+    let element = document.getElementById(dom);
+    if (element.classList.contains(ani)) {
+        element.classList.remove(ani);
+        doms.domBlackBack.classList.remove('d-none');
+        setTimeout(() => {
+            doms.domBlackBack.classList.remove('blackBackHide');
+        }, 10);
+    } else {
+        element.classList.add(ani);
+        doms.domBlackBack.classList.add('blackBackHide');
+        setTimeout(() => {
+            doms.domBlackBack.classList.add('d-none');
+        }, 150);
+    }
+}
+
+/**
+ * Updates an Amount Input UI pair ('Coin' and 'Value' input boxes) in relation to the input box used
+ * @param {HTMLInputElement} domCoin - The DOM input for the Coin amount
+ * @param {HTMLInputElement} domValue - The DOM input for the Value amount
+ * @param {boolean} fCoinEdited - `true` if Coin, `false` if Value
+ */
+export async function updateAmountInputPair(domCoin, domValue, fCoinEdited) {
+    // Fetch the price in the user's preferred currency
+    const nPrice = await cMarket.getPrice(strCurrency);
+    if (fCoinEdited) {
+        // If the 'Coin' input is edited, then update the 'Value' input with it's converted currency
+        const nValue = Number(doms.domSendAmountCoins.value) * nPrice;
+        domValue.value = nValue <= 0 ? '' : nValue;
+    } else {
+        // If the 'Value' input is edited, then update the 'Coin' input with the reversed conversion rate
+        const nValue = Number(doms.domSendAmountValue.value) / nPrice;
+        domCoin.value = nValue <= 0 ? '' : nValue;
+    }
+}
+
 export function toClipboard(source, caller) {
     // Fetch the text/value source
     const domCopy = document.getElementById(source) || source;
@@ -454,16 +578,36 @@ export function toClipboard(source, caller) {
     }, 1000);
 }
 
-export function guiPreparePayment(strTo = '', strAmount = 0, strDesc = '') {
-    doms.domTxTab.click();
-    if (doms.domSimpleTXs.style.display === 'none')
-        doms.domSimpleTXsDropdown.click();
+/**
+ * Prompt for a payment in the GUI with pre-filled inputs
+ * @param {string} strTo - The address receiving the payment
+ * @param {number} nAmount - The payment amount in full coins
+ * @param {string} strDesc - The payment message or description
+ */
+export function guiPreparePayment(strTo = '', nAmount = 0, strDesc = '') {
     // Apply values
     doms.domAddress1s.value = strTo;
-    doms.domValue1s.value = strAmount;
+    doms.domSendAmountCoins.value = nAmount;
     doms.domReqDesc.value = strDesc;
     doms.domReqDisplay.style.display = strDesc ? 'block' : 'none';
-    doms.domValue1s.focus();
+
+    // Switch to the Dashboard
+    doms.domDashboard.click();
+
+    // Open the Send menu (with a small timeout post-load to allow for CSS loading)
+    setTimeout(() => {
+        toggleBottomMenu('transferMenu', 'transferAnimation');
+    }, 300);
+
+    // Update the conversion value
+    updateAmountInputPair(
+        doms.domSendAmountCoins,
+        doms.domSendAmountValue,
+        true
+    );
+
+    // Focus on the coin input box
+    doms.domSendAmountCoins.focus();
 }
 
 export function hideAllWalletOptions() {
@@ -531,15 +675,17 @@ async function govVote(hash, voteCode) {
     }
 }
 
+/**
+ * Start a Masternode via a signed network broadcast
+ * @param {boolean} fRestart - Whether this is a Restart or a first Start
+ */
 export async function startMasternode(fRestart = false) {
     if (localStorage.getItem('masternode')) {
-        if (masterKey.isViewOnly) {
-            return createAlert(
-                'warning',
-                "Can't start masternode in view only mode",
-                6000
-            );
-        }
+        if (
+            masterKey.isViewOnly &&
+            !(await restoreWallet('Unlock to start your Masternode!'))
+        )
+            return;
         const cMasternode = new Masternode(
             JSON.parse(localStorage.getItem('masternode'))
         );
@@ -573,22 +719,52 @@ export function destroyMasternode() {
     }
 }
 
+/**
+ * Takes an ip address and adds the port.
+ * If it's an IPv4 address, ip:port will be used, (e.g. 127.0.0.1:12345)
+ * If it's an IPv6 address, [ip]:port will be used, (e.g. [::1]:12345)
+ * @param {String} ip - Ip address with or without port
+ * @returns {String}
+ */
+function parseIpAddress(ip) {
+    // IPv4 without port
+    if (ip.match(/\d+\.\d+\.\d+\.\d+/)) {
+        return `${ip}:${cChainParams.current.MASTERNODE_PORT}`;
+    }
+    // IPv4 with port
+    if (ip.match(/\d+\.\d+\.\d+\.\d+:\d+/)) {
+        return ip;
+    }
+    // IPv6 without port
+    if (Address6.isValid(ip)) {
+        return `[${ip}]:${cChainParams.current.MASTERNODE_PORT}`;
+    }
+
+    const groups = /\[(.*)\]:\d+/.exec(ip);
+    if (groups !== null && groups.length > 1) {
+        // IPv6 with port
+        if (Address6.isValid(groups[1])) {
+            return ip;
+        }
+    }
+
+    // If we haven't returned yet, the address was invalid.
+    return null;
+}
+
 export async function importMasternode() {
     const mnPrivKey = doms.domMnPrivateKey.value;
+    const address = parseIpAddress(doms.domMnIP.value);
+    if (!address) {
+        createAlert('warning', 'The ip address is invalid!', 5000);
+        return;
+    }
 
-    const ip = doms.domMnIP.value;
-    let address;
     let collateralTxId;
     let outidx;
     let collateralPrivKeyPath;
     doms.domMnIP.value = '';
     doms.domMnPrivateKey.value = '';
-
-    if (!ip.includes(':')) {
-        address = `${ip}:${cChainParams.current.MASTERNODE_PORT}`;
-    } else {
-        address = ip;
-    }
 
     if (!masterKey.isHD) {
         // Find the first UTXO matching the expected collateral size
@@ -684,21 +860,34 @@ export function accessOrImportWallet() {
         doms.domPrivKey.focus();
     }
 }
-
+/**
+ * An event function triggered apon private key UI input changes
+ *
+ * Useful for adjusting the input types or displaying password prompts depending on the import scheme
+ */
 export function onPrivateKeyChanged() {
     if (hasEncryptedWallet()) return;
-    // Check whether the length of the string is 128 bytes (that's the length of ciphered plain texts)
+    // Check whether the string is Base64 (would likely be an MPW-encrypted import)
     // and it doesn't have any spaces (would be a mnemonic seed)
     const fContainsSpaces = doms.domPrivKey.value.includes(' ');
     doms.domPrivKeyPassword.hidden =
-        doms.domPrivKey.value.length !== 128 || fContainsSpaces;
+        (doms.domPrivKey.value.length < 128 ||
+            !isBase64(doms.domPrivKey.value)) &&
+        !fContainsSpaces;
 
+    doms.domPrivKeyPassword.placeholder = fContainsSpaces
+        ? 'Optional Passphrase'
+        : 'Password';
     // Uncloak the private input IF spaces are detected, to make Seed Phrases easier to input and verify
     doms.domPrivKey.setAttribute('type', fContainsSpaces ? 'text' : 'password');
 }
 
+/**
+ * Imports a wallet using the GUI input, handling decryption via UI
+ */
 export async function guiImportWallet() {
-    const fEncrypted = doms.domPrivKey.value.length === 128;
+    const fEncrypted =
+        doms.domPrivKey.value.length >= 128 && isBase64(doms.domPrivKey.value);
 
     // If we are in testnet: prompt an import
     if (cChainParams.current.isTestnet) return importWallet();
@@ -717,6 +906,8 @@ export async function guiImportWallet() {
             localStorage.setItem('encwif', strPrivKey);
             return importWallet({
                 newWif: strDecWIF,
+                // Save the public key to disk for future View Only mode post-decryption
+                fSavePublicKey: true,
             });
         }
     }
@@ -954,18 +1145,41 @@ export async function wipePrivateData() {
     }
 }
 
-export async function restoreWallet() {
+/**
+ * Prompt the user in the GUI to unlock their wallet
+ * @param {string} strReason - An optional reason for the unlock
+ * @returns {Promise<boolean>} - If the unlock was successful or rejected
+ */
+export async function restoreWallet(strReason = '') {
+    // Build up the UI elements based upon conditions for the unlock prompt
+    let strHTML = '';
+
+    // If there's a reason given; display it as a sub-text
+    strHTML += `<p style="opacity: 0.75">${strReason}</p>`;
+
+    // Prompt the user
     if (
         await confirmPopup({
             title: 'Unlock your wallet',
-            html: '<input type="password" id="restoreWalletPassword" placeholder="Wallet password">',
+            html: `${strHTML}<input type="password" id="restoreWalletPassword" placeholder="Wallet password" style="text-align: center;">`,
         })
     ) {
-        const password = document.getElementById('restoreWalletPassword').value;
-        if (await decryptWallet(password)) {
+        // Attempt to unlock the wallet with the provided password
+        const strPassword = document.getElementById(
+            'restoreWalletPassword'
+        ).value;
+        if (await decryptWallet(strPassword)) {
             doms.domRestoreWallet.hidden = true;
             doms.domWipeWallet.hidden = false;
+            // Wallet is unlocked!
+            return true;
+        } else {
+            // Password is invalid
+            return false;
         }
+    } else {
+        // User rejected the unlock
+        return false;
     }
 }
 
@@ -1007,6 +1221,26 @@ function renderProposals(arrProposals, fContested) {
 
     // Render the proposals in the relevent table
     domTable.innerHTML = '';
+
+    if (!fContested) {
+        const localProposals = JSON.parse(
+            localStorage.getItem('localProposals') || '[]'
+        ).map((p) => {
+            return {
+                Name: p.name,
+                URL: p.url,
+                MonthlyPayment: p.monthlyPayment / COIN,
+                RemainingPaymentCount: p.nPayments,
+                TotalPayment: p.nPayments * (p.monthlyPayment / COIN),
+                Yeas: 0,
+                Nays: 0,
+                local: true,
+                Ratio: 0,
+                mpw: p,
+            };
+        });
+        arrProposals = localProposals.concat(arrProposals);
+    }
     for (const cProposal of arrProposals) {
         const domRow = domTable.insertRow();
 
@@ -1015,7 +1249,9 @@ function renderProposals(arrProposals, fContested) {
         // IMPORTANT: Sanitise all of our HTML or a rogue server or malicious proposal could perform a cross-site scripting attack
         domNameAndURL.innerHTML = `<a class="active" href="${sanitizeHTML(
             cProposal.URL
-        )}"><b>${sanitizeHTML(cProposal.Name)}</b></a>`;
+        )}" target="_blank" rel="noopener noreferrer"><b>${sanitizeHTML(
+            cProposal.Name
+        )}</b></a>`;
 
         // Payment Schedule and Amounts
         const domPayments = domRow.insertCell();
@@ -1039,19 +1275,70 @@ function renderProposals(arrProposals, fContested) {
       `;
 
         // Voting Buttons for Masternode owners (MNOs)
-        const domVoteBtns = domRow.insertCell();
-        const domNoBtn = document.createElement('button');
-        domNoBtn.className = 'pivx-button-big';
-        domNoBtn.innerText = 'No';
-        domNoBtn.onclick = () => govVote(cProposal.Hash, 2);
+        if (cProposal.local) {
+            domRow.insertCell(); // Yes/no missing button
+            const finalizeRow = domRow.insertCell();
+            const finalizeButton = document.createElement('button');
+            finalizeButton.className = 'pivx-button-small';
+            finalizeButton.innerHTML = '<i class="fas fa-check"></i>';
+            finalizeButton.onclick = async () => {
+                const result = await Masternode.finalizeProposal(cProposal.mpw);
+                const deleteProposal = () => {
+                    // Remove local Proposal from local storage
+                    const localProposals = JSON.parse(
+                        localStorage.getItem('localProposals')
+                    );
+                    localStorage.setItem(
+                        'localProposals',
+                        JSON.stringify(
+                            localProposals.filter(
+                                (p) => p.txId != cProposal.mpw.txId
+                            )
+                        )
+                    );
+                };
+                if (result.ok) {
+                    createAlert('success', 'Proposal finalized!');
+                    deleteProposal();
+                    updateGovernanceTab();
+                } else {
+                    if (result.err === 'unconfirmed') {
+                        createAlert(
+                            'warning',
+                            "The proposal hasn't been confirmed yet.",
+                            5000
+                        );
+                    } else if (result.err === 'invalid') {
+                        createAlert(
+                            'warning',
+                            'The proposal is no longer valid. Create a new one.',
+                            5000
+                        );
+                        deleteProposal();
+                        updateGovernanceTab();
+                    } else {
+                        createAlert('warning', 'Failed to finalize proposal.');
+                    }
+                }
+            };
+            finalizeRow.appendChild(finalizeButton);
+        } else {
+            const domVoteBtns = domRow.insertCell();
+            const domNoBtn = document.createElement('button');
+            domNoBtn.className = 'pivx-button-big';
+            domNoBtn.innerText = 'No';
+            domNoBtn.onclick = () => govVote(cProposal.Hash, 2);
 
-        const domYesBtn = document.createElement('button');
-        domYesBtn.className = 'pivx-button-big';
-        domYesBtn.innerText = 'Yes';
-        domYesBtn.onclick = () => govVote(cProposal.Hash, 1);
+            const domYesBtn = document.createElement('button');
+            domYesBtn.className = 'pivx-button-big';
+            domYesBtn.innerText = 'Yes';
+            domYesBtn.onclick = () => govVote(cProposal.Hash, 1);
 
-        domVoteBtns.appendChild(domNoBtn);
-        domVoteBtns.appendChild(domYesBtn);
+            domVoteBtns.appendChild(domNoBtn);
+            domVoteBtns.appendChild(domYesBtn);
+
+            domRow.insertCell(); // Finalize proposal missing button
+        }
     }
 }
 
@@ -1255,20 +1542,86 @@ async function refreshMasternodeData(cMasternode, fAlert = false) {
     return cMasternodeData;
 }
 
+export async function createProposal() {
+    if (!masterKey) {
+        return createAlert(
+            'warning',
+            'Create or import your wallet to continue'
+        );
+    }
+    if (
+        masterKey.isViewOnly &&
+        !(await restoreWallet('Unlock to create a proposal!'))
+    ) {
+        return;
+    }
+    if (getBalance() * COIN < cChainParams.current.proposalFee) {
+        return createAlert('warning', 'Not enough funds to create a proposal.');
+    }
+    await confirmPopup({
+        title: `Create Proposal (cost ${
+            cChainParams.current.proposalFee / COIN
+        } ${cChainParams.current.TICKER})`,
+        html: `<input id="proposalTitle" maxlength="20" placeholder="Title" style="text-align: center;"><br>
+               <input id="proposalUrl" maxlength="64" placeholder="URL" style="text-align: center;"><br>
+               <input type="number" id="proposalCycles" placeholder="Duration in cycles" style="text-align: center;"><br>
+               <input type="number" id="proposalPayment" placeholder="${cChainParams.current.TICKER} per cycle" style="text-align: center;"><br>`,
+    });
+    const strTitle = document.getElementById('proposalTitle').value;
+    const strUrl = document.getElementById('proposalUrl').value;
+    const numCycles = parseInt(document.getElementById('proposalCycles').value);
+    const numPayment = parseInt(
+        document.getElementById('proposalPayment').value
+    );
+    const nextSuperblock = await Masternode.getNextSuperblock();
+    const proposal = {
+        name: strTitle,
+        url: strUrl,
+        nPayments: numCycles,
+        start: nextSuperblock,
+        address: (await getNewAddress())[0],
+        monthlyPayment: numPayment * COIN,
+    };
+
+    const isValid = Masternode.isValidProposal(proposal);
+    console.log(isValid);
+    if (!isValid.ok) {
+        createAlert(
+            'warning',
+            `Proposal is invalid. Error: ${isValid.err}`,
+            5000
+        );
+        return;
+    }
+
+    const hash = Masternode.createProposalHash(proposal);
+    const { ok, txid } = await createAndSendTransaction({
+        address: hash,
+        amount: cChainParams.current.proposalFee,
+        isProposal: true,
+    });
+    if (ok) {
+        proposal.txid = txid;
+        const localProposals = JSON.parse(
+            localStorage.getItem('localProposals') || '[]'
+        );
+        localProposals.push(proposal);
+        localStorage.setItem('localProposals', JSON.stringify(localProposals));
+        createAlert('success', 'Proposal created! Please finalize it.');
+        updateGovernanceTab();
+    }
+}
+
 export function refreshChainData() {
     // If in offline mode: don't sync ANY data or connect to the internet
-    if (!networkEnabled)
+    if (!getNetwork().enabled)
         return console.warn(
             'Offline mode active: For your security, the wallet will avoid ALL internet requests.'
         );
     if (!masterKey) return;
 
-    // Play reload anim
-    doms.domBalanceReload.classList.add('playAnim');
-    doms.domBalanceReloadStaking.classList.add('playAnim');
-
     // Fetch block count + UTXOs
-    getBlockCount();
+    getNetwork().getBlockCount();
     getBalance(true);
 
     // Fetch pricing data

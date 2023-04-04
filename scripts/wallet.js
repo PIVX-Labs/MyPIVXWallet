@@ -5,7 +5,7 @@ import { ripemd160 } from '@noble/hashes/ripemd160';
 import { generateMnemonic, mnemonicToSeed, validateMnemonic } from 'bip39';
 import { doms, beforeUnloadListener } from './global.js';
 import HDKey from 'hdkey';
-import { lastWallet, networkEnabled } from './network.js';
+import { getNetwork } from './network.js';
 import {
     pubKeyHashNetworkLen,
     confirmPopup,
@@ -480,12 +480,22 @@ export function deriveAddress({ pkBytes, publicKey, output = 'ENCODED' }) {
     return bs58.encode(pubKeyPreBase);
 }
 
-// Wallet Import
+/**
+ * Import a wallet (with it's private, public or encrypted data)
+ * @param {object} options
+ * @param {string | Array<number>} options.newWif - The import data (if omitted, the UI input is accessed)
+ * @param {boolean} options.fRaw - Whether the import data is raw bytes or encoded (WIF, xpriv, seed)
+ * @param {boolean} options.isHardwareWallet - Whether the import is from a Hardware wallet or not
+ * @param {boolean} options.skipConfirmation - Whether to skip the import UI confirmation or not
+ * @param {boolean} options.fSavePublicKey - Whether to save the derived public key to disk (for View Only mode)
+ * @returns {Promise<void>}
+ */
 export async function importWallet({
     newWif = false,
     fRaw = false,
     isHardwareWallet = false,
     skipConfirmation = false,
+    fSavePublicKey = false,
 } = {}) {
     const strImportConfirm =
         "Do you really want to import a new address? If you haven't saved the last private key, the wallet will be LOST forever.";
@@ -512,9 +522,10 @@ export async function importWallet({
             if (!publicKey) return;
 
             // Derive our hardware address and import!
-            masterKey = new HardwareWalletMasterKey();
+            setMasterKey(new HardwareWalletMasterKey());
 
             // Hide the 'export wallet' button, it's not relevant to hardware wallets
+            doms.domExportWallet.hidden = true;
 
             createAlert(
                 'info',
@@ -535,41 +546,49 @@ export async function importWallet({
 
             // Select WIF from internal source OR user input (could be: WIF, Mnemonic or xpriv)
             const privateImportValue = newWif || doms.domPrivKey.value;
+            const passphrase = doms.domPrivKeyPassword.value;
             doms.domPrivKey.value = '';
+            doms.domPrivKeyPassword.value = '';
 
             if (await verifyMnemonic(privateImportValue)) {
                 // Generate our masterkey via Mnemonic Phrase
-                const seed = await mnemonicToSeed(privateImportValue);
-                masterKey = new HdMasterKey({ seed });
+                const seed = await mnemonicToSeed(
+                    privateImportValue,
+                    passphrase
+                );
+                setMasterKey(new HdMasterKey({ seed }));
             } else {
                 // Public Key Derivation
                 try {
                     if (privateImportValue.startsWith('xpub')) {
-                        masterKey = new HdMasterKey({
-                            xpub: privateImportValue,
-                        });
+                        setMasterKey(
+                            new HdMasterKey({
+                                xpub: privateImportValue,
+                            })
+                        );
                     } else if (privateImportValue.startsWith('xprv')) {
-                        masterKey = new HdMasterKey({
-                            xpriv: privateImportValue,
-                        });
+                        setMasterKey(
+                            new HdMasterKey({
+                                xpriv: privateImportValue,
+                            })
+                        );
                     } else if (
                         privateImportValue.length === 34 &&
                         cChainParams.current.PUBKEY_PREFIX.includes(
                             privateImportValue[0]
                         )
                     ) {
-                        masterKey = new LegacyMasterKey({
-                            address: privateImportValue,
-                        });
+                        setMasterKey(
+                            new LegacyMasterKey({
+                                address: privateImportValue,
+                            })
+                        );
                     } else {
                         // Lastly, attempt to parse as a WIF private key
                         const pkBytes = parseWIF(privateImportValue);
 
-                        // Hide the 'new address' button, since non-HD wallets are essentially single-address MPW wallets
-                        doms.domNewAddress.style.display = 'none';
-
                         // Import the raw private key
-                        masterKey = new LegacyMasterKey({ pkBytes });
+                        setMasterKey(new LegacyMasterKey({ pkBytes }));
                     }
                 } catch (e) {
                     return createAlert(
@@ -593,9 +612,20 @@ export async function importWallet({
             }
         }
 
+        // If allowed and requested, save the public key to disk for future View Only mode
+        if (fSavePublicKey && !masterKey.isHardwareWallet) {
+            localStorage.setItem('publicKey', await masterKey.keyToExport);
+        }
+
+        // For non-HD wallets: hide the 'new address' button, since these are essentially single-address MPW wallets
+        if (!masterKey.isHD) doms.domNewAddress.style.display = 'none';
+
+        // Update the loaded address in the Dashboard
         getNewAddress({ updateGUI: true });
+
         // Display Text
         doms.domGuiWallet.style.display = 'block';
+        doms.domDashboard.click();
 
         // Update identicon
         doms.domIdenticon.dataset.jdenticonValue = masterKey.getAddress(
@@ -603,24 +633,41 @@ export async function importWallet({
         );
         jdenticon.update('#identicon');
 
-        // Hide the encryption warning if the user pasted the private key
-        // Or in Testnet mode or is using a hardware wallet or is view-only mode
+        // Hide the encryption prompt if the user is in Testnet mode
+        // ... or is using a hardware wallet, or is view-only mode.
         if (
             !(
-                newWif ||
                 cChainParams.current.isTestnet ||
                 isHardwareWallet ||
                 masterKey.isViewOnly
             )
-        )
-            doms.domGenKeyWarning.style.display = 'block';
+        ) {
+            if (
+                // If the wallet was internally imported (not UI pasted), like via vanity, display the encryption prompt
+                (((fRaw && newWif.length) || newWif) &&
+                    !hasEncryptedWallet()) ||
+                // If the wallet was pasted and is an unencrypted key, then display the encryption prompt
+                !hasEncryptedWallet()
+            ) {
+                doms.domGenKeyWarning.style.display = 'block';
+            } else if (hasEncryptedWallet()) {
+                // If the wallet was pasted and is an encrypted import, display the lock wallet UI
+                doms.domWipeWallet.hidden = false;
+            }
+        }
 
         // Fetch state from explorer
-        if (networkEnabled) refreshChainData();
+        if (getNetwork().enabled) refreshChainData();
 
         // Hide all wallet starter options
         hideAllWalletOptions();
     }
+}
+
+function setMasterKey(mk) {
+    masterKey = mk;
+    // Update the network master key
+    getNetwork().setMasterKey(masterKey);
 }
 
 // Wallet Generation
@@ -634,11 +681,13 @@ export async function generateWallet(noUI = false) {
     if (walletConfirm) {
         const mnemonic = generateMnemonic();
 
-        if (!noUI) await informUserOfMnemonic(mnemonic);
-        const seed = await mnemonicToSeed(mnemonic);
+        const passphrase = !noUI
+            ? await informUserOfMnemonic(mnemonic)
+            : undefined;
+        const seed = await mnemonicToSeed(mnemonic, passphrase);
 
         // Prompt the user to encrypt the seed
-        masterKey = new HdMasterKey({ seed });
+        setMasterKey(new HdMasterKey({ seed }));
         fWalletLoaded = true;
 
         if (!cChainParams.current.isTestnet)
@@ -701,7 +750,7 @@ function informUserOfMnemonic(mnemonic) {
         $('#mnemonicModal').modal({ keyboard: false });
         doms.domMnemonicModalContent.innerText = mnemonic;
         doms.domMnemonicModalButton.onclick = () => {
-            res();
+            res(doms.domMnemonicModalPassphrase.value);
             $('#mnemonicModal').modal('hide');
         };
         $('#mnemonicModal').modal('show');
@@ -740,9 +789,9 @@ export async function decryptWallet(strPassword = '') {
         await importWallet({
             newWif: strDecWIF,
             skipConfirmation: true,
+            // Save the public key to disk for View Only mode
+            fSavePublicKey: true,
         });
-        // Ensure publicKey is set
-        localStorage.setItem('publicKey', await masterKey.keyToExport);
         return true;
     }
 }
@@ -758,7 +807,7 @@ export function hasHardwareWallet() {
 }
 
 export function hasWalletUnlocked(fIncludeNetwork = false) {
-    if (fIncludeNetwork && !networkEnabled)
+    if (fIncludeNetwork && !getNetwork().enabled)
         return createAlert(
             'warning',
             ALERTS.WALLET_OFFLINE_AUTOMATIC,
@@ -800,7 +849,7 @@ export async function getNewAddress({
     updateGUI = false,
     verify = false,
 } = {}) {
-    const last = lastWallet || 0;
+    const last = getNetwork().lastWallet;
     addressIndex = addressIndex > last ? addressIndex : last + 1;
     if (addressIndex - last > MAX_ACCOUNT_GAP) {
         // If the user creates more than ${MAX_ACCOUNT_GAP} empty wallets we will not be able to sync them!
