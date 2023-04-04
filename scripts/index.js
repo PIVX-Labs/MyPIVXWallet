@@ -1,8 +1,12 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
+import '@fontsource/chivo/900.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import '../assets/style/style.css';
-
 import 'bootstrap';
+
+// Import all montserrat font weights
+require.context('@fontsource/montserrat', false, /^[0-9]+\.css$/);
+
 import { start } from './global.js';
 import { getNetwork } from './network.js';
 
