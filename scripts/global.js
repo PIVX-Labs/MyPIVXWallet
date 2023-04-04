@@ -515,17 +515,19 @@ export async function openExplorer() {
 }
 
 async function loadImages() {
-    // Promise.all is useless since we only need to load one image, but we might need to load more in the future
-    Promise.all([
-        (async () => {
-            document.getElementById('mpw-main-logo').src = (
-                await import('../assets/logo.png')
-            ).default;
-            document.getElementById('privateKeyImage').src = (
-                await import('../assets/key.png')
-            ).default;
-        })(),
-    ]);
+    const images = [
+	['mpw-main-logo', import('../assets/logo.png')],
+	['privateKeyImage', import('../assets/key.png')],
+	['img-governance', import('../assets/img_governance.png')],
+	['img-pos', import('../assets/img_pos.png')],
+	['img-privacy', import('../assets/img_privacy.png')],
+	['img-slider-bars', import('../assets/img_slider_bars.png')],
+    ];
+
+    const promises = images.map(([id, path]) => (async () => {
+	document.getElementById(id).src = (await path).default;
+    })());
+    await Promise.all(promises);
 }
 
 let audio = null;
