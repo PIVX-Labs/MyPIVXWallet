@@ -8,6 +8,7 @@ import {
     importWallet,
     encryptWallet,
     decryptWallet,
+    getNewAddress,
     getDerivationPath,
     updateAddressGUI,
 } from './wallet.js';
@@ -19,6 +20,7 @@ import {
     cMarket,
     strCurrency,
 } from './settings.js';
+import { createAndSendTransaction } from './transactions.js';
 import { createAlert, confirmPopup, sanitizeHTML, MAP_B58 } from './misc.js';
 import { cChainParams, COIN, MIN_PASS_LENGTH } from './chain_params.js';
 import { decrypt } from './aes-gcm.js';
@@ -1271,6 +1273,26 @@ function renderProposals(arrProposals, fContested) {
 
     // Render the proposals in the relevent table
     domTable.innerHTML = '';
+
+    if (!fContested) {
+        const localProposals = JSON.parse(
+            localStorage.getItem('localProposals') || '[]'
+        ).map((p) => {
+            return {
+                Name: p.name,
+                URL: p.url,
+                MonthlyPayment: p.monthlyPayment / COIN,
+                RemainingPaymentCount: p.nPayments,
+                TotalPayment: p.nPayments * (p.monthlyPayment / COIN),
+                Yeas: 0,
+                Nays: 0,
+                local: true,
+                Ratio: 0,
+                mpw: p,
+            };
+        });
+        arrProposals = localProposals.concat(arrProposals);
+    }
     for (const cProposal of arrProposals) {
         const domRow = domTable.insertRow();
 
@@ -1279,7 +1301,9 @@ function renderProposals(arrProposals, fContested) {
         // IMPORTANT: Sanitise all of our HTML or a rogue server or malicious proposal could perform a cross-site scripting attack
         domNameAndURL.innerHTML = `<a class="active" href="${sanitizeHTML(
             cProposal.URL
-        )}" target="_blank" rel="noopener noreferrer"><b>${sanitizeHTML(cProposal.Name)}</b></a>`;
+        )}" target="_blank" rel="noopener noreferrer"><b>${sanitizeHTML(
+            cProposal.Name
+        )}</b></a>`;
 
         // Payment Schedule and Amounts
         const domPayments = domRow.insertCell();
@@ -1303,19 +1327,70 @@ function renderProposals(arrProposals, fContested) {
       `;
 
         // Voting Buttons for Masternode owners (MNOs)
-        const domVoteBtns = domRow.insertCell();
-        const domNoBtn = document.createElement('button');
-        domNoBtn.className = 'pivx-button-big';
-        domNoBtn.innerText = 'No';
-        domNoBtn.onclick = () => govVote(cProposal.Hash, 2);
+        if (cProposal.local) {
+            domRow.insertCell(); // Yes/no missing button
+            const finalizeRow = domRow.insertCell();
+            const finalizeButton = document.createElement('button');
+            finalizeButton.className = 'pivx-button-small';
+            finalizeButton.innerHTML = '<i class="fas fa-check"></i>';
+            finalizeButton.onclick = async () => {
+                const result = await Masternode.finalizeProposal(cProposal.mpw);
+                const deleteProposal = () => {
+                    // Remove local Proposal from local storage
+                    const localProposals = JSON.parse(
+                        localStorage.getItem('localProposals')
+                    );
+                    localStorage.setItem(
+                        'localProposals',
+                        JSON.stringify(
+                            localProposals.filter(
+                                (p) => p.txId != cProposal.mpw.txId
+                            )
+                        )
+                    );
+                };
+                if (result.ok) {
+                    createAlert('success', 'Proposal finalized!');
+                    deleteProposal();
+                    updateGovernanceTab();
+                } else {
+                    if (result.err === 'unconfirmed') {
+                        createAlert(
+                            'warning',
+                            "The proposal hasn't been confirmed yet.",
+                            5000
+                        );
+                    } else if (result.err === 'invalid') {
+                        createAlert(
+                            'warning',
+                            'The proposal is no longer valid. Create a new one.',
+                            5000
+                        );
+                        deleteProposal();
+                        updateGovernanceTab();
+                    } else {
+                        createAlert('warning', 'Failed to finalize proposal.');
+                    }
+                }
+            };
+            finalizeRow.appendChild(finalizeButton);
+        } else {
+            const domVoteBtns = domRow.insertCell();
+            const domNoBtn = document.createElement('button');
+            domNoBtn.className = 'pivx-button-big';
+            domNoBtn.innerText = 'No';
+            domNoBtn.onclick = () => govVote(cProposal.Hash, 2);
 
-        const domYesBtn = document.createElement('button');
-        domYesBtn.className = 'pivx-button-big';
-        domYesBtn.innerText = 'Yes';
-        domYesBtn.onclick = () => govVote(cProposal.Hash, 1);
+            const domYesBtn = document.createElement('button');
+            domYesBtn.className = 'pivx-button-big';
+            domYesBtn.innerText = 'Yes';
+            domYesBtn.onclick = () => govVote(cProposal.Hash, 1);
 
-        domVoteBtns.appendChild(domNoBtn);
-        domVoteBtns.appendChild(domYesBtn);
+            domVoteBtns.appendChild(domNoBtn);
+            domVoteBtns.appendChild(domYesBtn);
+
+            domRow.insertCell(); // Finalize proposal missing button
+        }
     }
 }
 
@@ -1531,8 +1606,79 @@ function onShieldedSwitchChange() {
         ? 'block'
         : 'none';
 }
+
 function onShieldAddrSwitchChange() {
     updateAddressGUI();
+}
+
+export async function createProposal() {
+    if (!masterKey) {
+        return createAlert(
+            'warning',
+            'Create or import your wallet to continue'
+        );
+    }
+    if (
+        masterKey.isViewOnly &&
+        !(await restoreWallet('Unlock to create a proposal!'))
+    ) {
+        return;
+    }
+    if (getBalance() * COIN < cChainParams.current.proposalFee) {
+        return createAlert('warning', 'Not enough funds to create a proposal.');
+    }
+    await confirmPopup({
+        title: `Create Proposal (cost ${
+            cChainParams.current.proposalFee / COIN
+        } ${cChainParams.current.TICKER})`,
+        html: `<input id="proposalTitle" maxlength="20" placeholder="Title" style="text-align: center;"><br>
+               <input id="proposalUrl" maxlength="64" placeholder="URL" style="text-align: center;"><br>
+               <input type="number" id="proposalCycles" placeholder="Duration in cycles" style="text-align: center;"><br>
+               <input type="number" id="proposalPayment" placeholder="${cChainParams.current.TICKER} per cycle" style="text-align: center;"><br>`,
+    });
+    const strTitle = document.getElementById('proposalTitle').value;
+    const strUrl = document.getElementById('proposalUrl').value;
+    const numCycles = parseInt(document.getElementById('proposalCycles').value);
+    const numPayment = parseInt(
+        document.getElementById('proposalPayment').value
+    );
+    const nextSuperblock = await Masternode.getNextSuperblock();
+    const proposal = {
+        name: strTitle,
+        url: strUrl,
+        nPayments: numCycles,
+        start: nextSuperblock,
+        address: (await getNewAddress())[0],
+        monthlyPayment: numPayment * COIN,
+    };
+
+    const isValid = Masternode.isValidProposal(proposal);
+    console.log(isValid);
+    if (!isValid.ok) {
+        createAlert(
+            'warning',
+            `Proposal is invalid. Error: ${isValid.err}`,
+            5000
+        );
+        return;
+    }
+
+    const hash = Masternode.createProposalHash(proposal);
+    const { ok, txid } = await createAndSendTransaction({
+        address: hash,
+        amount: cChainParams.current.proposalFee,
+        isProposal: true,
+    });
+    if (ok) {
+        proposal.txid = txid;
+        const localProposals = JSON.parse(
+            localStorage.getItem('localProposals') || '[]'
+        );
+        localProposals.push(proposal);
+        localStorage.setItem('localProposals', JSON.stringify(localProposals));
+        createAlert('success', 'Proposal created! Please finalize it.');
+        updateGovernanceTab();
+    }
 }
 
 export function refreshChainData() {

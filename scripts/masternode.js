@@ -1,10 +1,12 @@
 import { cNode, cExplorer } from './settings.js';
-import { cChainParams } from './chain_params.js';
+import { cChainParams, COIN } from './chain_params.js';
 import { masterKey, parseWIF, deriveAddress } from './wallet.js';
 import { dSHA256, bytesToHex, hexToBytes } from './utils.js';
 import { Buffer } from 'buffer';
 import { Address6 } from 'ip-address';
 import * as nobleSecp256k1 from '@noble/secp256k1';
+import { OP } from './script.js';
+import bs58 from 'bs58';
 
 /**
  * Construct a Masternode
@@ -348,5 +350,166 @@ export default class Masternode {
         },${sigTime},${encodeURI(signature).replaceAll('+', '%2b')}`;
         const text = await (await fetch(url)).text();
         return text;
+    }
+
+    /**
+     * Create proposal hash
+     * @param {Object} options
+     * @param {String} options.name - Name of the proposal
+     * @param {String} options.url - Url of the proposal
+     * @param {Number} options.nPayments - Number of cycles this proposal is gonna last
+     * @param {Number} options.start - Superblock of when the proposal is going to start
+     * @param {String} options.address - Base58 encoded PIVX address
+     * @param {Number} options.monthlyPayment - Payment amount per cycle in satoshi
+     * @returns {String} hex hash of the proposal
+     */
+    static createProposalHash({
+        name,
+        url,
+        nPayments,
+        start,
+        address,
+        monthlyPayment,
+    }) {
+        const end =
+            start + (cChainParams.current.budgetCycleBlocks + 1) * nPayments;
+        const addressBytes = bs58.decode(address);
+        const scriptBytes = [
+            OP.DUP,
+            OP.HASH160,
+            addressBytes.length - 5,
+            ...addressBytes.slice(1, addressBytes.length - 4),
+            OP.EQUALVERIFY,
+            OP.CHECKSIG,
+        ];
+        const msg = [
+            name.length,
+            ...name.split('').map((c) => c.charCodeAt(0)),
+            url.length,
+            ...url.split('').map((c) => c.charCodeAt(0)),
+            ...Masternode._numToBytes(start, 4, true),
+            ...Masternode._numToBytes(end, 4, true),
+            ...Masternode._numToBytes(monthlyPayment, 8, true),
+            scriptBytes.length,
+            ...scriptBytes,
+        ];
+        return bytesToHex(dSHA256(new Uint8Array(msg)));
+    }
+
+    /**
+     * Finalize the proposal
+     * @param {Object} options
+     * @param {String} options.name - Name of the proposal
+     * @param {String} options.url - Url of the proposal
+     * @param {Number} options.nPayments - Number of cycles this proposal is gonna last
+     * @param {Number} options.start - Superblock of when the proposal is going to start
+     * @param {String} options.address - Base58 encoded PIVX address
+     * @param {Number} options.monthlyPayment - Payment amount per cycle in satoshi
+     * @param {String} options.txid - Transaction id of the proposal fee
+     * @returns {Promise<boolean>} If the finalization happened without errors
+     */
+    static async finalizeProposal({
+        name,
+        url,
+        nPayments,
+        start,
+        address,
+        monthlyPayment,
+        txid,
+    }) {
+        try {
+            const res = await (
+                await fetch(
+                    `${cNode.url}/submitbudget?params=${encodeURI(
+                        name
+                    )},${encodeURI(url)},${nPayments},${start},${encodeURI(
+                        address
+                    )},${monthlyPayment / COIN},${txid}`
+                )
+            ).text();
+
+            if (/^\"[a-f0-9]\"$/ && res.length == 64 + 2) {
+                return { ok: true };
+            } else if (
+                res.includes('is unconfirmed') ||
+                res.includes('requires at least')
+            ) {
+                return { ok: false, err: 'unconfirmed' };
+            } else if (res.includes('invalid budget proposal')) {
+                return { ok: false, err: 'invalid' };
+            } else {
+                return { ok: false, err: 'other' };
+            }
+        } catch (e) {
+            console.error(e);
+            return { ok: false, err: e };
+        }
+    }
+
+    static async getNextSuperblock() {
+        return parseInt(
+            await (await fetch(`${cNode.url}/getnextsuperblock`)).text()
+        );
+    }
+
+    /**
+     * @param {Object} options
+     * @param {String} options.name - Name of the proposal
+     * @param {String} options.url - Url of the proposal
+     * @param {Number} options.nPayments - Number of cycles this proposal is gonna last
+     * @param {Number} options.start - Superblock of when the proposal is going to start
+     * @param {String} options.address - Base58 encoded PIVX address
+     * @param {Number} options.monthlyPayment - Payment amount per cycle in satoshi
+     * @returns {boolean} If the proposal is valid
+     */
+    static isValidProposal({
+        name,
+        url,
+        nPayments,
+        _start,
+        _address,
+        monthlyPayment,
+    }) {
+        const isSafeStr = /^[a-z0-9 .,;\-_/:?@()]+$/i;
+        if (name.length > 20) {
+            return { ok: false, err: 'name_length' };
+        }
+
+        if (!isSafeStr.test(name)) {
+            return { ok: false, err: 'invaild_name' };
+        }
+
+        if (url.length > 64) {
+            return { ok: false, err: 'url_length' };
+        }
+
+        if (!isSafeStr.test(url)) {
+            return { ok: false, err: 'invaild_url' };
+        }
+
+        if (
+            !/^(https?):\/\/[^\s/$.?#][^\s]*[^\s/.]\.[^\s/.][^\s]*[^\s.]$/.test(
+                url
+            )
+        ) {
+            return { ok: false, err: 'invalid_url' };
+        }
+
+        if (
+            nPayments < 1 ||
+            nPayments > cChainParams.current.maxPaymentCycles
+        ) {
+            return { ok: false, err: 'invalid_payment_count' };
+        }
+
+        if (
+            monthlyPayment < 10 * COIN ||
+            monthlyPayment * nPayments > cChainParams.current.maxPayment
+        ) {
+            return { ok: false, err: 'invalid_monthly_payment' };
+        }
+        // No need to validate start or address as they're generated by MPW
+
+        return { ok: true };
     }
 }

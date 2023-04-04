@@ -23,11 +23,13 @@ export const cChainParams = {
         PUBKEY_PREFIX: ['D'],
         STAKING_PREFIX: 'S',
         PUBKEY_ADDRESS: 30,
+	STAKING_ADDRESS: 63,
         SECRET_KEY: 212,
         BIP44_TYPE: 119,
         BIP44_TYPE_LEDGER: 77,
         PROTOCOL_VERSION: 70926,
         MASTERNODE_PORT: 51472,
+	SHIELD_PREFIX: 'ps',
         // A list of Labs-trusted explorers
         Explorers: [
             // Display name      Blockbook-compatible API base
@@ -39,6 +41,10 @@ export const cChainParams = {
             // Network upgrades
             UPGRADE_V6_0: undefined,
         },
+        budgetCycleBlocks: 43200,
+        proposalFee: 50 * COIN,
+        maxPaymentCycles: 6,
+        maxPayment: 10 * 43200 * COIN, // 43200 blocks of 10 PIV
     },
     testnet: {
         collateralInSats: 10000 * COIN,
@@ -46,7 +52,9 @@ export const cChainParams = {
         TICKER: 'tPIV',
         PUBKEY_PREFIX: ['x', 'y'],
         STAKING_PREFIX: 'W',
+	SHIELD_PREFIX: 'ptest',
         PUBKEY_ADDRESS: 139,
+	STAKING_ADDRESS: 73,
         SECRET_KEY: 239,
         BIP44_TYPE: 1,
         BIP44_TYPE_LEDGER: 1,
@@ -62,6 +70,10 @@ export const cChainParams = {
             // Network upgrades
             UPGRADE_V6_0: undefined,
         },
+        budgetCycleBlocks: 144,
+        proposalFee: 50 * COIN,
+        maxPaymentCycles: 20,
+        maxPayment: 10 * 144 * COIN, // 144 blocks of 10 tPIV
     },
 };
 // Set default chain

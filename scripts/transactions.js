@@ -21,7 +21,7 @@ import {
 import { Mempool, UTXO } from './mempool.js';
 import { getNetwork } from './network.js';
 import { cChainParams, COIN, COIN_DECIMALS } from './chain_params.js';
-import { createAlert, generateMnPrivkey, confirmPopup } from './misc.js';
+import { createAlert, generateMnPrivkey, confirmPopup, validateAddress } from './misc.js';
 import { bytesToHex, hexToBytes, dSHA256 } from './utils.js';
 import { UTXO as ShieldUTXO } from 'pivx-shield';
 import { getEventEmitter } from './event_bus.js';
@@ -73,21 +73,20 @@ export async function createTxGUI() {
     // Sanity check the address
     const address = doms.domAddress1s.value.trim();
     const useShieldInputs = doms.domShieldedSwitch.checked;
-    /* TODO: add sheild
+    const { type, valid, error } = validateAddress(address);
+    
     // If Staking address: redirect to staking page
-    if (address.startsWith(cChainParams.current.STAKING_PREFIX)) {
+    if (type === "cold_stake") {
         createAlert('warning', ALERTS.STAKE_NOT_SEND, [], 7500);
         return doms.domStakeTab.click();
     }
 
-    if (address.length !== 34)
-        return createAlert(
-            'warning',
-            ALERTS.BAD_ADDR_LENGTH,
-            [{ addressLength: address.length }],
-            2500
-            );
-    */
+    if (!valid) {
+	return createAlert(
+	    'warning',
+	    error
+	);
+    }
 
     // Sanity check the amount
     let nValue = Math.round(
@@ -202,7 +201,7 @@ export async function undelegateGUI() {
  * @param {string|null} options.changeDelegationAddress - See options.delegateChange
  * @returns {{ok: boolean, err: string?}}
  */
-async function createAndSendTransaction({
+export async function createAndSendTransaction({
     address,
     amount,
     isDelegation = false,
@@ -210,6 +209,7 @@ async function createAndSendTransaction({
     useShieldInputs = false,
     delegateChange = false,
     changeDelegationAddress = null,
+    isProposal = false,
 }) {
     if (!hasWalletUnlocked(true)) return;
     if ((isDelegation || useDelegatedInputs) && masterKey.isHardwareWallet) {
@@ -311,6 +311,8 @@ async function createAndSendTransaction({
                 isDelegate: true,
             })
         );
+    } else if (isProposal) {
+        cTx.addproposaloutput(address, amount / COIN);
     } else {
         cTx.addoutput(address, amount / COIN);
         outputs.push([address, amount / COIN]);
@@ -353,7 +355,7 @@ async function createAndSendTransaction({
             mempool.addUTXO(utxo);
         }
 
-        if (!isDelegation) {
+        if (!isDelegation && !isProposal) {
             const [isYours, yourPath] = await isYourAddress(address);
 
             // If the tx was sent to yourself, add it to the mempool
@@ -372,7 +374,7 @@ async function createAndSendTransaction({
             }
         }
     }
-    return { ok: result };
+    return { ok: !!result, txid: result };
 }
 
 /**
@@ -551,8 +553,19 @@ function chooseUTXOs(
     return ccSuccess(cCoinControl);
 }
 
+
 async function createShieldTransaction({ address, amount, useShieldInputs }) {
     const shield = masterKey.shield;
+    const { type, valid } = validateAddress(address);
+    
+    if (type === 'cold_stake' || !valid) {
+	return createAlert(
+            'warning',
+            'Invalid address.',
+            5000,
+        );
+    }
+    
     if (!shield) {
         return createAlert(
             'warning',
@@ -560,12 +573,22 @@ async function createShieldTransaction({ address, amount, useShieldInputs }) {
             5000,
         );
     }
-
+    
     if (!masterKey.shieldSynced) {
 	return createAlert(
 	    'warning',
 	    'Shield is not synced yet',
 	    5000,
+	);
+    }
+
+    const balance = useShieldInputs ? shield.getBalance() : getBalance();
+    
+    if (balance < amount) {
+	return createAlert(
+	    'warning',
+	    'Invalid balance',
+	    5000
 	);
     }
 

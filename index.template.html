@@ -20,20 +20,20 @@
     <meta property="og:url" content="https://mypivxwallet.org/" />
     <meta property="og:title" content="My PIVX Wallet" />
     <meta property="og:description" content="The wallet of the future - Receive, Send, Stake and Exchange using a completely decentralized, open-source, battle-hardened PIVX wallet." />
-    <meta property="og:image" content="logo_opaque-dark-bg.png" />
+    <meta property="og:image" content="/logo_opaque-dark-bg.png" />
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image" />
     <meta property="twitter:url" content="https://mypivxwallet.org/" />
     <meta property="twitter:title" content="My PIVX Wallet" />
     <meta property="twitter:description" content="The wallet of the future - Receive, Send, Stake and Exchange using a completely decentralized, open-source, battle-hardened PIVX wallet." />
-    <meta property="twitter:image" content="logo_opaque-dark-bg.png" />
+    <meta property="twitter:image" content="/logo_opaque-dark-bg.png" />
 
     <!-- Colour Theme -->
     <meta name="msapplication-TileColor" content="#470e75" />
     <meta name="theme-color" content="#470e75" />
 
-    <link rel="icon" type="image/png" href="logo_opaque-dark-bg.png" />
+    <link rel="icon" type="image/png" href="/logo_opaque-dark-bg.png" />
     <link rel="canonical" href="https://mypivxwallet.org/" />
 
     <link rel="preconnect" href="https://fonts.bunny.net">
@@ -855,6 +855,9 @@
                     <td class="text-center"><b> Payment </b></td>
                     <td class="text-center"><b> Votes </b></td>
                     <td class="text-center"><b> Vote </b></td>
+		    <td class="text-center">
+			<div class="pivx-button-small" onclick="MPW.createProposal()"> <i class="fas fa-plus"></i> </div>
+		    </td>
                   </thead>
                   <tbody id="proposalsTableBody" style="text-align: center; vertical-align: middle;"></tbody>
                 </table>
