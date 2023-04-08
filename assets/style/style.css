@@ -2367,7 +2367,6 @@ a {
 
 .dcWallet-topLeftMenu {
   font-size: 18px;
-  cursor: pointer;
   width: 27px;
   transition: all .2s ease-in-out;
 }
@@ -2539,6 +2538,10 @@ input {
     font-size:13px;
     background-color:#fff;
     border:0px;
+}
+
+.cur-pointer {
+    cursor:pointer;
 }
 
 .stakingTx {
