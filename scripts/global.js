@@ -478,16 +478,6 @@ export async function updateStakingRewardsGUI() {
         let i = true;
     arrRewards.map(
         (cReward) => {
-            if(i) {
-                i = false;
-                cReward = {
-                    amount: 2,
-                    blockHeight: 3652502,
-                    id: "4503d57e9f5f13b9a9782e87459e437795aedaf8f5cb900bc2c8e5ebebdf93f5",
-                    time: 1680964867
-                }
-            }
-
             let dateTime = new Date( cReward.time * 1000 );
             let newDate = [("0" + dateTime.getMonth()+1).slice(-2), ("0" + dateTime.getDate()).slice(-2), dateTime.getFullYear().toString().substr(-2)].join('-');
             let newTime = [("0" + dateTime.getHours()).slice(-2), ("0" + dateTime.getMinutes()).slice(-2)].join(':');
