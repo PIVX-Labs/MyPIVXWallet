@@ -2086,7 +2086,7 @@ a {
   border-radius: 5px;
   margin-bottom: 1px;
   display: block;
-  width: 350px;
+  width: 100%;
 }
 
 .exportPrivateKey {
@@ -2539,4 +2539,81 @@ input {
     font-size:13px;
     background-color:#fff;
     border:0px;
+}
+
+.stakingTx {
+    color:#fff;
+    font-size:14px;
+}
+
+.stakingTx thead tr th {
+    border-top:0px;
+    border-color:#ffffff5c;
+}
+
+.stakingTx tbody tr td {
+    border-top: 1px solid #ffffff1f;
+}
+
+.stakingTx tbody tr {
+    transition: all .125s ease-in-out;
+}
+
+.stakingTx tbody tr:hover {
+    background-color:#ffffff1a;
+}
+
+.badge-purple {
+    background-color: #9552cf!important;
+    padding: 4px 7px;
+    padding-top: 5px;
+    border-radius: 4px;
+}
+
+.pr-10px {
+    padding-right: 10px!important;
+}
+
+.table-mobile-scroll {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+}
+
+@media (max-width: 767.98px) {
+    .tx1 {
+        width:64px;
+    }
+    .tx2 {
+        width:900px;
+    }
+    .tx3 {
+        width:69px;
+    }
+    .tx4 {
+        width:40px;
+    }
+}
+
+@media (min-width: 767.98px) {
+    .tx1 {
+        width:190px;
+    }
+    .tx2 {
+        width:900px;
+    }
+    .txcode code {
+        width:450px!important;
+    }
+    .tx3 {
+        width:900px;
+    }
+    .tx4 {
+        width:300px;
+    }
+}
+
+.closeCross {
+    color: #fff;
+    font-size: 20px;
 }

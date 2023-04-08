@@ -344,11 +344,7 @@ export function getBalance(updateGUI = false) {
         // Set the balance, and adjust font-size for large balance strings
         const nLen = nCoins.toFixed(2).length;
         doms.domGuiBalance.innerText = nCoins.toFixed(nLen >= 6 ? 0 : 2);
-        doms.domAvailToDelegate.innerText =
-            'Available: ~' +
-            nCoins.toFixed(2) +
-            ' ' +
-            cChainParams.current.TICKER;
+        doms.domAvailToDelegate.innerText = nCoins.toFixed(2) + ' ' + cChainParams.current.TICKER;
 
         // Update currency values
         cMarket.getPrice(strCurrency).then((nPrice) => {
@@ -396,15 +392,7 @@ export function getStakingBalance(updateGUI = false) {
     if (updateGUI) {
         // Set the balance, and adjust font-size for large balance strings
         doms.domGuiBalanceStaking.innerText = Math.floor(nBalance / COIN);
-        doms.domGuiBalanceBoxStaking.style.fontSize =
-            Math.floor(nBalance / COIN).toString().length >= 4
-                ? 'large'
-                : 'x-large';
-        doms.domAvailToUndelegate.innerText =
-            'Staking: ~' +
-            (nBalance / COIN).toFixed(2) +
-            ' ' +
-            cChainParams.current.TICKER;
+        doms.domAvailToUndelegate.innerText = (nBalance / COIN).toFixed(2) + ' ' + cChainParams.current.TICKER;
     }
 
     return nBalance;
@@ -475,25 +463,66 @@ export async function updateStakingRewardsGUI() {
     }
 
     //DOMS.DOM-optimised list generation
-    const strList = arrRewards
-        .map(
-            (cReward) =>
-                `<i style="opacity: 0.75; cursor: pointer" onclick="window.open('${
-                    cExplorer.url + '/tx/' + cReward.id
-                }', '_blank')">${new Date(
-                    cReward.time * 1000
-                ).toLocaleDateString()}</i> <b>+${cReward.amount} ${
-                    cChainParams.current.TICKER
-                }</b>`
-        )
-        .join('<br>');
+    let strList = `
+    <table class="table table-responsive table-sm stakingTx table-mobile-scroll">
+        <thead>
+            <tr>
+                <th scope="col" class="tx1">Time</th>
+                <th scope="col" class="tx2">Hash</th>
+                <th scope="col" class="tx3">Amount</th>
+                <th scope="col" class="tx4 text-right"></th>
+            </tr>
+        </thead>
+        <tbody>`;
+
+        let i = true;
+    arrRewards.map(
+        (cReward) => {
+            if(i) {
+                i = false;
+                cReward = {
+                    amount: 2,
+                    blockHeight: 3652502,
+                    id: "4503d57e9f5f13b9a9782e87459e437795aedaf8f5cb900bc2c8e5ebebdf93f5",
+                    time: 1680964867
+                }
+            }
+
+            let dateTime = new Date( cReward.time * 1000 );
+            let newDate = [("0" + dateTime.getMonth()+1).slice(-2), ("0" + dateTime.getDate()).slice(-2), dateTime.getFullYear().toString().substr(-2)].join('-');
+            let newTime = [("0" + dateTime.getHours()).slice(-2), ("0" + dateTime.getMinutes()).slice(-2)].join(':');
+               
+            strList += `
+            <tr>
+                <td class="align-middle pr-10px" style="font-size:12px;">
+                    <i style="opacity: 0.75;">
+                        ${((Math.round(Date.now() / 1000) - cReward.time) > 86400 ? newDate : newTime)}
+                    </i>
+                </td>
+                <td class="align-middle pr-10px txcode">
+                    <code class="wallet-code text-center" style="padding: 4px 9px;">
+                        ${cReward.id.slice(0, 24)}</div> <!-- .slice(0, 24) -->
+                    </code>
+                </td>
+                <td class="align-middle pr-10px">
+                    <b><i class="fa-solid fa-gift"></i> ${cReward.amount} ${cChainParams.current.TICKER}</b>
+                </td>
+                <td class="text-right pr-10px align-middle">
+                    <span class="badge ${(getNetwork().cachedBlockCount-cReward.blockHeight >= 60 ? 'badge-purple' : 'bg-danger')} mb-0">${(getNetwork().cachedBlockCount-cReward.blockHeight >= 60 ? '<i class="fas fa-check"></i>' : `<i class="fas fa-hourglass-end"></i>`)}</span>
+                </td>
+            </tr>`
+        }
+    )
     // Calculate total
     const nRewards = arrRewards.reduce(
         (total, reward) => total + reward.amount,
         0
     );
+
+    strList += `</tbody></table>`;
+
     // UpdateDOMS.DOM
-    doms.domStakingRewardsTitle.innerHTML = `Staking Rewards: ≥${nRewards} ${cChainParams.current.TICKER}`;
+    doms.domStakingRewardsTitle.innerHTML = `≥${nRewards} ${cChainParams.current.TICKER}`;
     doms.domStakingRewardsList.innerHTML = strList;
 }
 
