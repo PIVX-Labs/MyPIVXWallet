@@ -480,8 +480,7 @@ export async function updateStakingRewardsGUI() {
         (cReward) => {
             let dateTime = new Date( cReward.time * 1000 );
             let newDate = [("0" + dateTime.getMonth()+1).slice(-2), ("0" + dateTime.getDate()).slice(-2), dateTime.getFullYear().toString().substr(-2)].join('-');
-            let newTime = [("0" + dateTime.getHours()).slice(-2), ("0" + dateTime.getMinutes()).slice(-2)].join(':');
-               
+            let newTime = [(dateTime.getHours() + 24) % 12 || 12, ("0" + dateTime.getMinutes()).slice(-2)].join(':') + " " + (("0" + dateTime.getHours()).slice(-2) > 12 ? "PM" : "AM");
             strList += `
             <tr>
                 <td class="align-middle pr-10px" style="font-size:12px;">
