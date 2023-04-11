@@ -36,8 +36,9 @@ export const cChainParams = {
             // Display name      Blockbook-compatible API base
             { name: 'rockdev', url: 'https://explorer.rockdev.org' },
             { name: 'zkBitcoin', url: 'https://zkbitcoin.com' },
+            { name: 'Duddino', url: 'https://explorer.duddino.com' },
         ],
-        Nodes: [{ name: 'duddino', url: 'https://rpc.duddino.com/mainnet' }],
+        Nodes: [{ name: 'Duddino', url: 'https://rpc.duddino.com/mainnet' }],
         Consensus: {
             // Network upgrades
             UPGRADE_V6_0: undefined,
@@ -64,7 +65,7 @@ export const cChainParams = {
             // Display name      Blockbook-compatible API base
             { name: 'rockdev', url: 'https://testnet.rockdev.org' },
         ],
-        Nodes: [{ name: 'duddino', url: 'https://rpc.duddino.com/testnet' }],
+        Nodes: [{ name: 'Duddino', url: 'https://rpc.duddino.com/testnet' }],
         Consensus: {
             // Network upgrades
             UPGRADE_V6_0: undefined,
