@@ -35,9 +35,6 @@
 
     <link rel="icon" type="image/png" href="/logo_opaque-dark-bg.png" />
     <link rel="canonical" href="https://mypivxwallet.org/" />
-
-    <link rel="preconnect" href="https://fonts.bunny.net">
-  <link href="https://fonts.bunny.net/css?family=chivo:900i|montserrat:100,200,300,400,500,600,700,800,900" rel="stylesheet" />
   </head>
 
   <body>
@@ -100,6 +97,24 @@
             </div>
           </div>
         </div>
+
+        <!-- // QR Reader -->
+        <div class="modal fade" id="qrReaderModal" tabindex="-1" role="dialog" aria-labelledby="qrReaderModalLabel" aria-hidden="true">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content exportKeysModalColor">
+              <div class="modal-header">
+                <h5 class="modal-title" id="qrReaderModalLabel">QR Scanner</h5>
+                <button id="closeQrReader" type="button" class="close" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body center-text">
+                <video id="qrReaderStream"></video>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <br />
         <!-- // MNEMONIC MODAL -->
         <div class="modal fade" id="mnemonicModal" tabindex="-1" role="dialog" aria-labelledby="qrModalLabel" aria-hidden="true" data-backdrop="static" data-keyboard="false">
@@ -173,7 +188,7 @@
                   <div class="col-md-6 float-left pivx-feature-father">
                     <div class="col-md-11 pivx-feature-interior">
                       <div class="col-md-12 feature-icon">
-                        <img src="https://pivx.org/build/images/content/img_governance.png" alt="PIVX Governance" />
+                        <img id="img-governance" alt="PIVX Governance" />
                       </div>
 
                       <h4 data-i18n="cardOneTitle">Be your own Bank!</h4>
@@ -194,7 +209,7 @@
                   <div class="col-md-6 float-left pivx-feature-father">
                     <div class="col-md-11 pivx-feature-interior">
                       <div class="col-md-12 feature-icon">
-                        <img src="https://pivx.org/build/images/content/img_pos.png" alt="PIVX Proof of Stake (PoS)" />
+                        <img id="img-pos" alt="PIVX Proof of Stake (PoS)" />
                       </div>
 
                       <h4 data-i18n="cardTwoTitle">Universal and Portable</h4>
@@ -217,7 +232,7 @@
                   <div class="col-md-6 float-left pivx-feature-father">
                     <div class="col-md-11 pivx-feature-interior">
                       <div class="col-md-12 feature-icon">
-                        <img src="https://pivx.org/build/images/content/img_privacy.png" alt="PIVX Privacy" class="smaller-feature" />
+                        <img id="img-privacy" alt="PIVX Privacy" class="smaller-feature" />
                       </div>
 
                       <h4 data-i18n="cardThreeTitle">Don't trust, verify!</h4>
@@ -240,7 +255,7 @@
                   <div class="col-md-6 float-left pivx-feature-father">
                     <div class="col-md-11 pivx-feature-interior">
                       <div class="col-md-12 feature-icon">
-                        <img src="https://pivx.org/build/images/content/img_slider_bars.png" alt="PIVX Bar Chart" class="smaller-feature" />
+                        <img id="img-slider-bars" alt="PIVX Bar Chart" class="smaller-feature" />
                       </div>
 
                       <h4 data-i18n="cardFourTitle">For the community</h4>
@@ -516,7 +531,7 @@
                         <div class="input-group mb-3">
                           <input class="btn-group-input" style="font-family: monospace; " type="text" id="address1s" placeholder="Receiving address" autocomplete="nope" />
                           <div class="input-group-append">
-                            <span class="input-group-text"><i class="fa-solid fa-paste"></i></span>
+                            <span class="input-group-text ptr" onclick="MPW.openSendQRScanner()"><i class="fa-solid fa-qrcode fa-2xl"></i></span>
                           </div>
                         </div>
 

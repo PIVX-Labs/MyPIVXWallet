@@ -3,8 +3,9 @@ import { doms } from './global.js';
 import qrcode from 'qrcode-generator';
 import bs58 from 'bs58';
 import { cChainParams } from './chain_params';
-import { hexToBytes, bytesToHex, dSHA256 } from './utils.js';
+import { dSHA256 } from './utils.js';
 import { bech32 } from 'bech32';
+import { BIP21_PREFIX, cChainParams } from './chain_params';
 
 /* MPW constants */
 export const pubKeyHashNetworkLen = 21;
@@ -136,59 +137,71 @@ export function createQR(strData = '', domImg, size = 5) {
     domImg.firstChild.style.borderRadius = '8px';
 }
 
-//generate private key for masternodes
-export async function generateMnPrivkey() {
-    // maximum value for a decoded private key
-    let max_decoded_value =
-        115792089237316195423570985008687907852837564279074904382605163141518161494337n;
-    let valid = false;
-    let priv_key = 0;
-    while (!valid) {
-        priv_key = bytesToHex(getSafeRand(32));
-        let decoded_priv_key = BigInt('0x' + priv_key);
+/**
+ * Attempt to safely parse a BIP21 Payment Request
+ * @param {string} strReq - BIP21 Payment Request string
+ * @returns {object | false}
+ */
+export function parseBIP21Request(strReq) {
+    // Format should match: pivx:addr[?amount=x&label=x]
+    if (!strReq.includes(BIP21_PREFIX + ':')) return false;
 
-        if (0 < decoded_priv_key && decoded_priv_key < max_decoded_value) {
-            valid = true;
-        }
-    }
-    return await convertMnPrivKeyFromHex(priv_key);
-}
+    const [addressPart, optionsPart] = strReq.includes('?')
+        ? strReq.split('?')
+        : [strReq, false];
+    const strAddress = addressPart.substring(BIP21_PREFIX.length + 1); // remove 'pivx:' prefix
+    let cOptions = {};
 
-export async function convertMnPrivKeyFromHex(hexStr) {
-    //prefixes
-    let WIF_PREFIX = 212;
-    let TESTNET_WIF_PREFIX = 239;
-    let base58_secret = cChainParams.current.isTestnet
-        ? TESTNET_WIF_PREFIX
-        : WIF_PREFIX;
-
-    //convert the hexStr+ initial prefix to byte array hexToBytes(string)
-    let data = [...hexToBytes(hexStr)];
-    data.unshift(base58_secret);
-
-    //generate the checksum with double sha256 hashing
-    let checksum = hexToBytes(await hash(hexToBytes(await hash(data)))).slice(
-        0,
-        4
-    );
-
-    //concatenate data and checksum
-    for (const byte of checksum) {
-        data.push(byte);
+    // Ensure the address is valid
+    if (
+        // Standard address
+        (strAddress.length !== 34 ||
+            !cChainParams.current.PUBKEY_PREFIX.includes(strAddress[0])) &&
+        // Shield address
+        !isValidBech32(strAddress).valid
+    ) {
+        return false;
     }
 
-    return bs58.encode(data);
+    if (optionsPart) {
+        cOptions = Object.fromEntries(
+            optionsPart
+                .split('&')
+                .map((opt) => opt.split('=').map(decodeURIComponent))
+        );
+    }
+
+    return { address: strAddress, options: cOptions };
 }
 
-//sha256 a bytearray and return the hash in hexadecimal
-export async function hash(byteArray) {
-    const utf8 = new Uint8Array(byteArray);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', utf8);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    const hashHex = hashArray
-        .map((bytes) => bytes.toString(16).padStart(2, '0'))
-        .join('');
-    return hashHex;
+/**
+ * @typedef {object} Bech32Check
+ * @property {boolean} valid - If the string is a valid bech32 address
+ * @property {object} res - The results of the bech32 decoding
+ */
+
+/**
+ * A safe bech32 wrapper for quickly checking if an address is valid
+ * @param {string} str - Bech32 Address
+ * @returns {Bech32Check} - Both the validity and decoding results
+ */
+export function isValidBech32(str) {
+    try {
+        return { valid: true, res: bech32.decode(str) };
+    } catch (e) {
+        return { valid: false, res: e };
+    }
+}
+
+/**
+ * Generate an encoded private key for masternodes
+ */
+export function generateMasternodePrivkey() {
+    // Prefix the network byte with the private key (32 random bytes)
+    const data = [cChainParams.current.SECRET_KEY, ...getSafeRand(32)];
+
+    // Compute and concatenate the checksum, then encode the private key as Base58
+    return bs58.encode([...data, ...dSHA256(data).slice(0, 4)]);
 }
 
 export function sanitizeHTML(text) {

@@ -10,7 +10,9 @@ export function bytesToHex(bytes) {
 }
 
 /**
-   @returns {Uint8Array} double sha256 or the buffer
+ * Double SHA256 hash a byte array
+ * @param {Array<number>} buff - Bytes to hash
+ * @returns {Uint8Array} Hash buffer
  */
 export function dSHA256(buff) {
     return sha256(sha256(new Uint8Array(buff)));

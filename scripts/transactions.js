@@ -23,7 +23,7 @@ import { getNetwork } from './network.js';
 import { cChainParams, COIN, COIN_DECIMALS } from './chain_params.js';
 import {
     createAlert,
-    generateMnPrivkey,
+    generateMasternodePrivkey,
     confirmPopup,
     validateAddress,
 } from './misc.js';
@@ -403,10 +403,11 @@ export async function createMasternode() {
     // Generate a Masternode private key if the user wants a self-hosted masternode
     const fGeneratePrivkey = doms.domMnCreateType.value === 'VPS';
     if (fGeneratePrivkey) {
-        const masternodePrivateKey = await generateMnPrivkey();
         await confirmPopup({
             title: ALERTS.CONFIRM_POPUP_MN_P_KEY,
-            html: masternodePrivateKey + ALERTS.CONFIRM_POPUP_MN_P_KEY_HTML,
+            html:
+                generateMasternodePrivkey() +
+                ALERTS.CONFIRM_POPUP_MN_P_KEY_HTML,
         });
     }
     createAlert(

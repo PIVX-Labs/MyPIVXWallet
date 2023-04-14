@@ -125,6 +125,7 @@ export const uwu_translation = {
     MORE_THEN_8_DECIMALS:"8 decimal wimit exceeded. Too many nyumbers!!",         //'8 decimal limit exceeded',
     SAVE_WALLET_PLEASE:"<b>Save yowour wawwet!</b><br>Dashbowed ➜ Set Password",           // "<b>Save your wallet!</b><br>Dashboard ➜ Set Password",
     BACKUP_OR_ENCRYPT_WALLET:"Pwease ENCWYPT and/or BACKUP yowour keys befowe weaving, or you may lose dem! Oh noes!",     // "Please ENCRYPT and/or BACKUP your keys before leaving, or you may lose them!"
+    NO_CAMERAS: "Dis device has nwo camwera!",
 
     SWITCHED_EXPLORERS : "<b>Switched expwower!</b><br>Nowo using {explorerName}✿",         //<b>Switched explorer!</b><br>Now using {explorerName},
     SWITCHED_NODE : "<b>Switched nowode!✿</b><br>Nowo using {node}",              //<b>Switched node!</b><br>Now using {node},
