@@ -417,41 +417,47 @@ export class ExplorerNetwork extends Network {
      * @param {Shield} shield
      */
     async syncShield(shield) {
-        const blocks = (await this.getShieldBlockList()).filter(
-            (b) => b > shield.getLastSyncedBlock()
-        );
-        for (const block of blocks) {
-            const res = await (
-                await fetch(`${this.strUrl}/api/v2/block/${block}`)
-            ).json();
-            await shield.handleBlock(res);
-        }
-
-        while (true) {
-            for (
-                let block = shield.getLastSyncedBlock() + 1;
-                block < this.cachedBlockCount;
-                block++
-            ) {
-                try {
-                    const res = await (
-                        await fetch(`${this.strUrl}/api/v2/block/${block}`)
-                    ).json();
-                    if (res.txs) {
-                        await shield.handleBlock(res);
-                    } else {
-                        break;
-                    }
-                } catch (e) {
-                    console.error(e);
-                    break;
-                }
+        try {
+            const blocks = (await this.getShieldBlockList()).filter(
+                (b) => b > shield.getLastSyncedBlock()
+            );
+            for (const block of blocks) {
+                const res = await (
+                    await fetch(`${this.strUrl}/api/v2/block/${block}`)
+                ).json();
+                await shield.handleBlock(res);
             }
 
-            this.masterKey.shieldSynced = true;
-            getEventEmitter().emit('shield-sync-done', shield);
+            while (true) {
+                for (
+                    let block = shield.getLastSyncedBlock() + 1;
+                    block < this.cachedBlockCount;
+                    block++
+                ) {
+                    try {
+                        const res = await (
+                            await fetch(`${this.strUrl}/api/v2/block/${block}`)
+                        ).json();
+                        if (res.txs) {
+                            await shield.handleBlock(res);
+                        } else {
+                            break;
+                        }
+                    } catch (e) {
+                        console.error(e);
+                        break;
+                    }
+                }
 
+                this.masterKey.shieldSynced = true;
+                getEventEmitter().emit('shield-sync-done', shield);
+
+                await this.waitForNextBlock();
+            }
+        } catch (e) {
+            console.error(e);
             await this.waitForNextBlock();
+            return this.syncShield(shield);
         }
     }
 
