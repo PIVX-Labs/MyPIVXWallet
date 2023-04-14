@@ -98,6 +98,9 @@ var translation = {
     stakeUnstake:"",                //Unstake
     stakeLoadMore:"",               //Load more
 
+    // Masternode
+    masternodeLoadMore:"",          //Load more
+
     // Governance
     contestedProposalsTitle:"",     //Contested Proposals
     contestedProposalsDesc:"",      //These are proposals that received an overwhelming amount of downvotes, making it likely spam or a highly contestable proposal.

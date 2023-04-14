@@ -36,7 +36,7 @@ export default class Masternode {
     }
 
     /**
-       @return {Promise<Object>} The object containing masternode information for this masternode
+     * @return {Promise<Object>} The object containing masternode information for this masternode
      */
     async getFullData() {
         const strURL = `${cNode.url}/listmasternodes?params=${this.collateralTxId}`;
@@ -57,11 +57,58 @@ export default class Masternode {
     }
 
     /**
-       @return {Promise<string>} The status of this masternode.
+     * @return {Promise<string>} The status of this masternode.
      */
     async getStatus() {
         const cMasternode = await this.getFullData();
         return cMasternode ? cMasternode.status : 'MISSING';
+    }
+
+    /**
+     *
+     * @returns The last paid time in seconds of the masternode.
+     */
+    async getLastPaidTime() {
+        const lastPaidTime = await this.getFullData();
+        return lastPaidTime.lastpaid;
+    }
+
+    /**
+     *
+     * @returns The current masternode count on the network.
+     */
+    async getMasternodeCount() {
+        const strURL = `${cNode.url}/getmasternodecount?params=`;
+        try {
+            const cMasternodeCount = await fetch(strURL);
+            return cMasternodeCount.total;
+        } catch (e) {
+            // Recatch when polling for service failure
+            console.error(e);
+            return 'EXPLORER_DOWN';
+        }
+    }
+
+    /**
+     *
+     * @returns Time in minutes to next payment for the masternode
+     */
+    async getNextMasternodePaymentInMinutes() {
+        // Last paid time in seconds
+        const lastPaid = await this.getLastPaidTime();
+        if (lastPaid == 0) {
+            // return 0 for not yet paid status
+            return lastPaid;
+        }
+        // Masternode count
+        const mnCount = this.getMasternodeCount();
+        // Current time in seconds
+        const timeNow = Math.floor(Date.now() / 1000);
+        // Convert current time to minutes
+        const lastPaidInMinutes = (timeNow - lastPaid) / 60;
+        // MasternodeCount - Minutes since last paid (1 MN per minute average) equals time to next payment
+        const timeToNextPay = mnCount - lastPaidInMinutes;
+        return timeToNextPay;
     }
 
     /**

@@ -951,7 +951,29 @@
                     </h4>
                     <h2 id="mnLastSeen" class="stake-balances" style="overflow-wrap: anywhere; top: 50%; left: 50%; transform: translate(-50%, -50%); position: absolute; width: 100%; padding: 10px; font-size: xx-large;" id="mnStatus"></h2>
                   </div>
+                  <div class="stake-box large-box col-md-4">
+                  <h4 class="stake-balances" style="background-color: #2c0044; border-radius: 10px;">
+                    Last Paid
+                  </h4>
+                  <h2 id="mnLastPaid" class="stake-balances" style="overflow-wrap: anywhere; top: 50%; left: 50%; transform: translate(-50%, -50%); position: absolute; width: 100%; padding: 10px; font-size: xx-large;" id="mnStatus"></h2>
+                  </div>
+                  <!-- // MASTERNODE REWARD LIST -->
+                  <div class="staking-banner-bottom">
+                    <div class="stake-box large-box col-md-4">
+                      <div id="masternode-rewards-title" class="staking-rewards-header">
+                      <h5><span data-i18n="masternode">Masternode</span> <span data-i18n="rewards">Rewards</span></h5>
+                      </div>
+                      <div class="masternode-rewards-list">
+                        <div id="masternode-rewards-content"></div>
+                          <button type="button" id="stakingLoadMore" onclick="MPW.updateMasternodeRewardsGUI()">
+                          <span class="buttoni-icon" id="stakingLoadMoreIcon"><i class="fas fa-sync fa-tiny-margin"></i></span>
+                          <span class="buttoni-text" data-i18n="stakingLoadMore">Load more</span>
+                          </button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
+              </div>
 
                 <br />
 

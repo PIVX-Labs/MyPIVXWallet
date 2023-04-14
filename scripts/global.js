@@ -148,6 +148,12 @@ export function start() {
         domStakingRewardsTitle: document.getElementById(
             'staking-rewards-title'
         ),
+        domMasternodeRewardsList: document.getElementById(
+            'masternode-rewards-content'
+        ),
+        domMasternodeRewardsTitle: document.getElementById(
+            'masternode-rewards-title'
+        ),
         domMnemonicModalContent: document.getElementById(
             'ModalMnemonicContent'
         ),
@@ -495,6 +501,37 @@ export async function updateStakingRewardsGUI() {
     // UpdateDOMS.DOM
     doms.domStakingRewardsTitle.innerHTML = `Staking Rewards: ≥${nRewards} ${cChainParams.current.TICKER}`;
     doms.domStakingRewardsList.innerHTML = strList;
+}
+
+export async function updateMasternodeRewardsGUI() {
+    const network = getNetwork();
+    const masternodeRewards = await network.getMasternodeRewards();
+    if (network.areRewardsComplete) {
+        // Hide the load more button
+        doms.domGuiMasternodeLoadMore.style.display = 'none';
+    }
+
+    //DOMS.DOM-optimised list generation
+    const strList = masternodeRewards
+        .map(
+            (cReward) =>
+                `<i style="opacity: 0.75; cursor: pointer" onclick="window.open('${
+                    cExplorer.url + '/tx/' + cReward.id
+                }', '_blank')">${new Date(
+                    cReward.time * 1000
+                ).toLocaleDateString()}</i> <b>+${cReward.amount} ${
+                    cChainParams.current.TICKER
+                }</b>`
+        )
+        .join('<br>');
+    // Calculate total
+    const nRewards = masternodeRewards.reduce(
+        (total, reward) => total + reward.amount,
+        0
+    );
+    // UpdateDOMS.DOM
+    doms.domMasternodeRewardsTitle.innerHTML = `Masternode Rewards: ≥${nRewards} ${cChainParams.current.TICKER}`;
+    doms.domMasternodeRewardsList.innerHTML = strList;
 }
 
 /**

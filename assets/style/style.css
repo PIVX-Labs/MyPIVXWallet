@@ -619,6 +619,11 @@ button {
     font-size: large;
     height: 85%;
 }
+.masternode-rewards-list {
+    overflow: auto;
+    font-size: large;
+    height: 85%;
+}
 
 #staking-rectangle {
     position: relative;
