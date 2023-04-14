@@ -2,7 +2,6 @@ import { translateAlerts } from './i18n.js';
 import { doms } from './global.js';
 import qrcode from 'qrcode-generator';
 import bs58 from 'bs58';
-import { cChainParams } from './chain_params';
 import { dSHA256 } from './utils.js';
 import { bech32 } from 'bech32';
 import { BIP21_PREFIX, cChainParams } from './chain_params';
