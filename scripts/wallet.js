@@ -206,7 +206,14 @@ export class HardwareWalletMasterKey extends MasterKey {
 
     async getAddress(path, { verify } = {}) {
         return deriveAddress({
+            publicKey: await this.getPublicKey(path, { verify }),
+        });
+    }
+
+    async getPublicKey(path, { verify } = {}) {
+        return deriveAddress({
             publicKey: await getHardwareWalletKeys(path, false, verify),
+            output: 'COMPRESSED_HEX',
         });
     }
 
@@ -508,7 +515,6 @@ export async function importWallet({
                     7500
                 );
             }
-
             const publicKey = await getHardwareWalletKeys(
                 getDerivationPath(true)
             );
@@ -954,7 +960,12 @@ async function getHardwareWalletKeys(
             // in the event where multiple parts of the code decide to ask for an address, just
             // Retry at most 10 times waiting 200ms each time
             await sleep(200);
-            return getHardwareWalletKeys(path, xpub, verify, _attempts + 1);
+            return await getHardwareWalletKeys(
+                path,
+                xpub,
+                verify,
+                _attempts + 1
+            );
         }
 
         // If the ledger is busy, just nudge the user.

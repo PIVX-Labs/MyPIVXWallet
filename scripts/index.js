@@ -49,6 +49,7 @@ export {
     delegateGUI,
     createMasternode,
 } from './transactions.js';
+export { renderWalletBreakdown } from './charting';
 export { hexToBytes, bytesToHex, dSHA256 } from './utils.js';
 
 import Masternode from './masternode.js';
