@@ -335,9 +335,13 @@ export function openTab(evt, tabName) {
 
     if (tabName === 'Governance') {
         updateGovernanceTab();
-    }
-    if (tabName === 'Masternode') {
+    } else if (tabName === 'Masternode') {
         updateMasternodeTab();
+    } else if (
+        tabName === 'StakingTab' &&
+        getNetwork().arrRewards.length === 0
+    ) {
+        updateStakingRewardsGUI();
     }
 }
 
