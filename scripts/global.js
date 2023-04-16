@@ -494,38 +494,71 @@ export async function updateStakingRewardsGUI() {
         <tbody>`;
 
     let nRewards = 0;
-    arrRewards.forEach(
-        (cReward) => {
-            nRewards += cReward.amount;
-            const dateTime = new Date(cReward.time * 1000);
-            const dateOptions = { year: '2-digit', month: '2-digit', day: '2-digit' };
-            const timeOptions = { hour: '2-digit', minute: '2-digit', hour12: true, };
-            strList += `
+    arrRewards.forEach((cReward) => {
+        nRewards += cReward.amount;
+        const dateTime = new Date(cReward.time * 1000);
+        const dateOptions = {
+            year: '2-digit',
+            month: '2-digit',
+            day: '2-digit',
+        };
+        const timeOptions = {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true,
+        };
+        strList += `
             <tr>
                 <td class="align-middle pr-10px" style="font-size:12px;">
                     <i style="opacity: 0.75;">
-                        ${(((Date.now() / 1000) - cReward.time) > 86400 ? dateTime.toLocaleDateString(undefined, dateOptions) : dateTime.toLocaleTimeString(undefined, timeOptions))}
+                        ${
+                            Date.now() / 1000 - cReward.time > 86400
+                                ? dateTime.toLocaleDateString(
+                                      undefined,
+                                      dateOptions
+                                  )
+                                : dateTime.toLocaleTimeString(
+                                      undefined,
+                                      timeOptions
+                                  )
+                        }
                     </i>
                 </td>
                 <td class="align-middle pr-10px txcode">
-                    <a href="${cExplorer.url}/tx/${cReward.id}" target="_blank" rel="noopener noreferrer">
-                        <code class="wallet-code text-center active ptr" style="padding: 4px 9px;">${cReward.id.slice(0, 24)}</code>
+                    <a href="${cExplorer.url}/tx/${
+            cReward.id
+        }" target="_blank" rel="noopener noreferrer">
+                        <code class="wallet-code text-center active ptr" style="padding: 4px 9px;">${cReward.id.slice(
+                            0,
+                            24
+                        )}</code>
                     </a>
                 </td>
                 <td class="align-middle pr-10px">
-                    <b><i class="fa-solid fa-gift"></i> ${cReward.amount} ${cChainParams.current.TICKER}</b>
+                    <b><i class="fa-solid fa-gift"></i> ${cReward.amount} ${
+            cChainParams.current.TICKER
+        }</b>
                 </td>
                 <td class="text-right pr-10px align-middle">
-                    <span class="badge ${(cNet.cachedBlockCount - cReward.blockHeight >= 100 ? 'badge-purple' : 'bg-danger')} mb-0">${(cNet.cachedBlockCount-cReward.blockHeight >= 100 ? '<i class="fas fa-check"></i>' : `<i class="fas fa-hourglass-end"></i>`)}</span>
+                    <span class="badge ${
+                        cNet.cachedBlockCount - cReward.blockHeight >= 100
+                            ? 'badge-purple'
+                            : 'bg-danger'
+                    } mb-0">${
+            cNet.cachedBlockCount - cReward.blockHeight >= 100
+                ? '<i class="fas fa-check"></i>'
+                : `<i class="fas fa-hourglass-end"></i>`
+        }</span>
                 </td>
-            </tr>`
-        }
-    )
+            </tr>`;
+    });
 
     strList += `</tbody></table>`;
 
     // Update the DOM
-    doms.domStakingRewardsTitle.innerHTML = `${cNet.areRewardsComplete ? '' : '≥'}${nRewards} ${cChainParams.current.TICKER}`;
+    doms.domStakingRewardsTitle.innerHTML = `${
+        cNet.areRewardsComplete ? '' : '≥'
+    }${nRewards} ${cChainParams.current.TICKER}`;
     doms.domStakingRewardsList.innerHTML = strList;
 }
 
