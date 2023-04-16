@@ -825,12 +825,12 @@
                   </div>
 
                   <div class="col-12 mb-5">
-                    <center><span class="dcWallet-activityLbl">Activity (<span id="staking-rewards-title">-</span>)</span></center>
+                    <center><span class="dcWallet-activityLbl">Reward History (<span id="staking-rewards-title">-</span>)</span></center>
                     <div class="dcWallet-activity">
                       <div id="staking-rewards-content"></div>
                       <center>
-                        <button class="pivx-button-medium" onclick="MPW.updateStakingRewardsGUI()">
-                          <span class="buttoni-icon" id="stakingLoadMoreIcon"><i class="fas fa-sync fa-tiny-margin"></i></span>
+                        <button class="pivx-button-medium" id="stakingLoadMore" onclick="MPW.updateStakingRewardsGUI()">
+                          <span class="buttoni-icon"><i class="fas fa-sync fa-tiny-margin" id="stakingLoadMoreIcon"></i></span>
                           <span class="buttoni-text" data-i18n="stakeLoadMore">Load more</span>
                         </button>
                       </center>

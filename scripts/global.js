@@ -460,15 +460,27 @@ export async function openSendQRScanner() {
     );
 }
 
+/**
+ * Refreshes the Staking Rewards table, charts and related information
+ */
 export async function updateStakingRewardsGUI() {
-    const network = getNetwork();
-    const arrRewards = await network.getStakingRewards();
-    if (network.areRewardsComplete) {
+    const cNet = getNetwork();
+
+    // Prevent the user from spamming refreshes
+    if (cNet.rewardsSyncing) return;
+
+    // Load rewards from the network, displaying the sync spin icon until finished
+    doms.domGuiStakingLoadMoreIcon.classList.add('fa-spin');
+    const arrRewards = await cNet.getStakingRewards();
+    doms.domGuiStakingLoadMoreIcon.classList.remove('fa-spin');
+
+    // Check if all rewards are loaded
+    if (cNet.areRewardsComplete) {
         // Hide the load more button
         doms.domGuiStakingLoadMore.style.display = 'none';
     }
 
-    //DOMS.DOM-optimised list generation
+    // DOM-optimised list generation
     let strList = `
     <table class="table table-responsive table-sm stakingTx table-mobile-scroll">
         <thead>
@@ -481,45 +493,39 @@ export async function updateStakingRewardsGUI() {
         </thead>
         <tbody>`;
 
-        let i = true;
-    arrRewards.map(
+    let nRewards = 0;
+    arrRewards.forEach(
         (cReward) => {
+            nRewards += cReward.amount;
             const dateTime = new Date(cReward.time * 1000);
             const dateOptions = { year: '2-digit', month: '2-digit', day: '2-digit' };
             const timeOptions = { hour: '2-digit', minute: '2-digit', hour12: true, };
-            const newDate = dateTime.toLocaleDateString(undefined, dateOptions);
-            const newTime = dateTime.toLocaleTimeString(undefined, timeOptions);
             strList += `
             <tr>
                 <td class="align-middle pr-10px" style="font-size:12px;">
                     <i style="opacity: 0.75;">
-                        ${((Math.round(Date.now() / 1000) - cReward.time) > 86400 ? newDate : newTime)}
+                        ${(((Date.now() / 1000) - cReward.time) > 86400 ? dateTime.toLocaleDateString(undefined, dateOptions) : dateTime.toLocaleTimeString(undefined, timeOptions))}
                     </i>
                 </td>
                 <td class="align-middle pr-10px txcode">
-                    <code class="wallet-code text-center" style="padding: 4px 9px;">
-                        ${cReward.id.slice(0, 24)}</div> <!-- .slice(0, 24) -->
-                    </code>
+                    <a href="${cExplorer.url}/tx/${cReward.id}" target="_blank" rel="noopener noreferrer">
+                        <code class="wallet-code text-center active ptr" style="padding: 4px 9px;">${cReward.id.slice(0, 24)}</code>
+                    </a>
                 </td>
                 <td class="align-middle pr-10px">
                     <b><i class="fa-solid fa-gift"></i> ${cReward.amount} ${cChainParams.current.TICKER}</b>
                 </td>
                 <td class="text-right pr-10px align-middle">
-                    <span class="badge ${(getNetwork().cachedBlockCount-cReward.blockHeight >= 60 ? 'badge-purple' : 'bg-danger')} mb-0">${(getNetwork().cachedBlockCount-cReward.blockHeight >= 60 ? '<i class="fas fa-check"></i>' : `<i class="fas fa-hourglass-end"></i>`)}</span>
+                    <span class="badge ${(cNet.cachedBlockCount - cReward.blockHeight >= 100 ? 'badge-purple' : 'bg-danger')} mb-0">${(cNet.cachedBlockCount-cReward.blockHeight >= 100 ? '<i class="fas fa-check"></i>' : `<i class="fas fa-hourglass-end"></i>`)}</span>
                 </td>
             </tr>`
         }
     )
-    // Calculate total
-    const nRewards = arrRewards.reduce(
-        (total, reward) => total + reward.amount,
-        0
-    );
 
     strList += `</tbody></table>`;
 
-    // UpdateDOMS.DOM
-    doms.domStakingRewardsTitle.innerHTML = `≥${nRewards} ${cChainParams.current.TICKER}`;
+    // Update the DOM
+    doms.domStakingRewardsTitle.innerHTML = `${cNet.areRewardsComplete ? '' : '≥'}${nRewards} ${cChainParams.current.TICKER}`;
     doms.domStakingRewardsList.innerHTML = strList;
 }
 
