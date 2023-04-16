@@ -35,9 +35,6 @@
 
     <link rel="icon" type="image/png" href="/logo_opaque-dark-bg.png" />
     <link rel="canonical" href="https://mypivxwallet.org/" />
-
-    <link rel="preconnect" href="https://fonts.bunny.net">
-  <link href="https://fonts.bunny.net/css?family=chivo:900i|montserrat:100,200,300,400,500,600,700,800,900" rel="stylesheet" />
   </head>
 
   <body>
@@ -52,7 +49,7 @@
             </button>
             <div class="collapse navbar-collapse noselect" id="navbarNav">
               <!-- MAIN NAVBAR -->
-              <ul class="navbar-nav mr-auto ptr">
+              <ul class="navbar-nav mr-auto">
                 <li class="nav-item"><span id="dashboard" class="nav-link tablinks" onclick="MPW.openTab(event, 'keypair')" data-i18n="navDashboard">Dashboard</span></li>
                 <li class="nav-item"><span id="stakeTab" class="nav-link tablinks" onclick="MPW.openTab(event, 'StakingTab')" data-i18n="navStake">Stake</span></li>
                 <li class="nav-item"><span id="masternodeTab" class="nav-link tablinks" onclick="MPW.openTab(event, 'Masternode')" data-i18n="navMasternode">Masternode</span></li>
@@ -109,6 +106,23 @@
               </div>
               <div class="modal-body center-text">
                 <video id="qrReaderStream"></video>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- // Wallet Breakdown -->
+        <div class="modal fade" id="walletBreakdownModal" tabindex="-1" aria-labelledby="walletBreakdownModalLabel" role="dialog" aria-hidden="true">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content exportKeysModalColor">
+              <div class="modal-header">
+                <h5 class="modal-title" id="walletBreakdownModalLabel">Wallet Breakdown</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body center-text">
+                <canvas id="walletBreakdownCanvas"></canvas>
               </div>
             </div>
           </div>
@@ -187,7 +201,7 @@
                   <div class="col-md-6 float-left pivx-feature-father">
                     <div class="col-md-11 pivx-feature-interior">
                       <div class="col-md-12 feature-icon">
-                        <img src="https://pivx.org/build/images/content/img_governance.png" alt="PIVX Governance" />
+                        <img id="img-governance" alt="PIVX Governance" />
                       </div>
 
                       <h4 data-i18n="cardOneTitle">Be your own Bank!</h4>
@@ -208,7 +222,7 @@
                   <div class="col-md-6 float-left pivx-feature-father">
                     <div class="col-md-11 pivx-feature-interior">
                       <div class="col-md-12 feature-icon">
-                        <img src="https://pivx.org/build/images/content/img_pos.png" alt="PIVX Proof of Stake (PoS)" />
+                        <img id="img-pos" alt="PIVX Proof of Stake (PoS)" />
                       </div>
 
                       <h4 data-i18n="cardTwoTitle">Universal and Portable</h4>
@@ -231,7 +245,7 @@
                   <div class="col-md-6 float-left pivx-feature-father">
                     <div class="col-md-11 pivx-feature-interior">
                       <div class="col-md-12 feature-icon">
-                        <img src="https://pivx.org/build/images/content/img_privacy.png" alt="PIVX Privacy" class="smaller-feature" />
+                        <img id="img-privacy" alt="PIVX Privacy" class="smaller-feature" />
                       </div>
 
                       <h4 data-i18n="cardThreeTitle">Don't trust, verify!</h4>
@@ -254,7 +268,7 @@
                   <div class="col-md-6 float-left pivx-feature-father">
                     <div class="col-md-11 pivx-feature-interior">
                       <div class="col-md-12 feature-icon">
-                        <img src="https://pivx.org/build/images/content/img_slider_bars.png" alt="PIVX Bar Chart" class="smaller-feature" />
+                        <img id="img-slider-bars" alt="PIVX Bar Chart" class="smaller-feature" />
                       </div>
 
                       <h4 data-i18n="cardFourTitle">For the community</h4>
@@ -433,6 +447,9 @@
                                   <div class="dropdown">
                                     <div class="dropdown-move">
                                       <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                        <a class="dropdown-item ptr" onclick="MPW.renderWalletBreakdown()" data-toggle="modal" data-target="#walletBreakdownModal">
+                                          <i class="fa-solid fa-chart-pie"></i> Balance Breakdown
+                                        </a>
                                         <a class="dropdown-item ptr" onclick="MPW.openExplorer()">
                                           <i class="fa-solid fa-magnifying-glass"></i> View on Explorer
                                         </a>
@@ -450,7 +467,12 @@
                             </div>
 
                             <canvas id="identicon" class="innerShadow" style="width: 65px; height: 65px;" data-jdenticon-value=""></canvas><br />
-                            <span class="dcWallet-pivxBalance" id="guiBalance"></span> <span id="guiBalanceTicker" class="dcWallet-pivxTicker">PIVX</span><br />
+                            <span class="ptr" onclick="MPW.renderWalletBreakdown()" data-toggle="modal" data-target="#walletBreakdownModal">
+                              <span class="dcWallet-pivxBalance" id="guiBalance"></span>
+                              <span id="guiBalanceTicker" class="dcWallet-pivxTicker">PIVX</span>
+                              <i class="fa-solid fa-plus" style="opacity: 0.5; position: relative; left: 2px;"></i>
+                            </span>
+                            <br />
                             <div class="dcWallet-usdBalance">
                               <span id="guiBalanceValue" class="dcWallet-usdValue">$-</span>
                               <span id="guiBalanceValueCurrency" class="dcWallet-usdValue">USD</span>

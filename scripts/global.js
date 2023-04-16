@@ -86,6 +86,12 @@ export function start() {
         domModalQRReader: document.getElementById('qrReaderModal'),
         domQrReaderStream: document.getElementById('qrReaderStream'),
         domCloseQrReaderBtn: document.getElementById('closeQrReader'),
+        domModalWalletBreakdown: document.getElementById(
+            'walletBreakdownModal'
+        ),
+        domWalletBreakdownCanvas: document.getElementById(
+            'walletBreakdownCanvas'
+        ),
         domPrefix: document.getElementById('prefix'),
         domPrefixNetwork: document.getElementById('prefixNetwork'),
         domWalletToggle: document.getElementById('wToggle'),
@@ -533,17 +539,21 @@ export async function openExplorer() {
 }
 
 async function loadImages() {
-    // Promise.all is useless since we only need to load one image, but we might need to load more in the future
-    Promise.all([
+    const images = [
+        ['mpw-main-logo', import('../assets/logo.png')],
+        ['privateKeyImage', import('../assets/key.png')],
+        ['img-governance', import('../assets/img_governance.png')],
+        ['img-pos', import('../assets/img_pos.png')],
+        ['img-privacy', import('../assets/img_privacy.png')],
+        ['img-slider-bars', import('../assets/img_slider_bars.png')],
+    ];
+
+    const promises = images.map(([id, path]) =>
         (async () => {
-            document.getElementById('mpw-main-logo').src = (
-                await import('../assets/logo.png')
-            ).default;
-            document.getElementById('privateKeyImage').src = (
-                await import('../assets/key.png')
-            ).default;
-        })(),
-    ]);
+            document.getElementById(id).src = (await path).default;
+        })()
+    );
+    await Promise.all(promises);
 }
 
 let audio = null;
@@ -1192,8 +1202,8 @@ export function askForCSAddr(force = false) {
 
 export function isMasternodeUTXO(cUTXO, masternode = null) {
     const cMasternode =
-        masternode || JSON.parse(localStorage.getItem('masternode'));
-    if (cMasternode) {
+        masternode || JSON.parse(localStorage.getItem('masternode') || '{}');
+    if (cMasternode && cMasternode.collateralTxId) {
         const { collateralTxId, outidx } = cMasternode;
         return collateralTxId === cUTXO.id && cUTXO.vout === outidx;
     } else {
@@ -1432,12 +1442,6 @@ export async function updateMasternodeTab() {
             'Please ' +
             (hasEncryptedWallet() ? 'unlock' : 'import') +
             ' your <b>COLLATERAL WALLET</b> first.';
-        return;
-    }
-
-    if (masterKey.isHardwareWallet) {
-        doms.domMnTxId.style.display = 'none';
-        doms.domMnTextErrors.innerHTML = 'Ledger is not yet supported';
         return;
     }
 
