@@ -52,6 +52,10 @@ export function start() {
         domGuiBalanceValueCurrency: document.getElementById(
             'guiBalanceValueCurrency'
         ),
+        domGuiStakingValue: document.getElementById('guiStakingValue'),
+        domGuiStakingValueCurrency: document.getElementById(
+            'guiStakingValueCurrency'
+        ),
         domGuiBalanceBox: document.getElementById('guiBalanceBox'),
         domBalanceReload: document.getElementById('balanceReload'),
         domBalanceReloadStaking: document.getElementById(
@@ -398,11 +402,38 @@ export function getBalance(updateGUI = false) {
 
 export function getStakingBalance(updateGUI = false) {
     const nBalance = mempool.getDelegatedBalance();
+    const nCoins = nBalance / COIN;
 
     if (updateGUI) {
         // Set the balance, and adjust font-size for large balance strings
         doms.domGuiBalanceStaking.innerText = Math.floor(nBalance / COIN);
         doms.domAvailToUndelegate.innerText = (nBalance / COIN).toFixed(2) + ' ' + cChainParams.current.TICKER;
+
+        // Update currency values
+        cMarket.getPrice(strCurrency).then((nPrice) => {
+            // Configure locale settings by detecting currency support
+            const cLocale = Intl.supportedValuesOf('currency').includes(
+                strCurrency.toUpperCase()
+            )
+                ? {
+                      style: 'currency',
+                      currency: strCurrency,
+                      currencyDisplay: 'narrowSymbol',
+                  }
+                : { maximumFractionDigits: 8, minimumFractionDigits: 8 };
+            let nValue = nCoins * nPrice;
+            // Handle certain edge-cases; like satoshis having decimals.
+            switch (strCurrency) {
+                case 'sats':
+                    nValue = Math.round(nValue);
+                    cLocale.maximumFractionDigits = 0;
+                    cLocale.minimumFractionDigits = 0;
+            }
+            doms.domGuiStakingValue.innerText = nValue.toLocaleString(
+                'en-gb',
+                cLocale
+            );
+        });
     }
 
     return nBalance;
