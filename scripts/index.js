@@ -40,6 +40,7 @@ export {
     toggleBottomMenu,
     createProposal,
     updateStakingRewardsGUI,
+    updateMasternodeRewardsGUI,
 } from './global.js';
 export { generateWallet, getNewAddress, importWallet } from './wallet.js';
 export { toggleTestnet, toggleDebug } from './settings.js';

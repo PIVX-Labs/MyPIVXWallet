@@ -68,6 +68,7 @@ export function start() {
         domGuiBalanceBoxStaking: document.getElementById(
             'guiBalanceBoxStaking'
         ),
+        domGuiMasternodeLoadMore: document.getElementById('masternodeLoadMore'),
         domGuiDelegateAmount: document.getElementById('delegateAmount'),
         domGuiUndelegateAmount: document.getElementById('undelegateAmount'),
         domStakeTab: document.getElementById('stakeTab'),
@@ -125,6 +126,7 @@ export function start() {
         domMnNetType: document.getElementById('mnNetType'),
         domMnNetIP: document.getElementById('mnNetIP'),
         domMnLastSeen: document.getElementById('mnLastSeen'),
+        domMnLastPaid: document.getElementById('mnLastPaid'),
 
         domAccessWallet: document.getElementById('accessWallet'),
         domImportWallet: document.getElementById('importWallet'),
@@ -512,7 +514,7 @@ export async function updateStakingRewardsGUI() {
 export async function updateMasternodeRewardsGUI() {
     const network = getNetwork();
     const masternodeRewards = await network.getMasternodeRewards();
-    if (network.areRewardsComplete) {
+    if (network.areRewardsMasternodeComplete) {
         // Hide the load more button
         doms.domGuiMasternodeLoadMore.style.display = 'none';
     }
@@ -535,9 +537,12 @@ export async function updateMasternodeRewardsGUI() {
         (total, reward) => total + reward.amount,
         0
     );
-    // UpdateDOMS.DOM
-    doms.domMasternodeRewardsTitle.innerHTML = `Masternode Rewards: ≥${nRewards} ${cChainParams.current.TICKER}`;
-    doms.domMasternodeRewardsList.innerHTML = strList;
+    if(nRewards.length != 0) {
+        // UpdateDOMS.DOM
+        doms.domMasternodeRewardsTitle.style.cssText = 'background-color:#2c0044;border-radius:10px;margin-top:1rem;margin-bottom:0.75rem;padding:5px;font-size:22px;font-weight:500;line-height:1.2;font-family:Montserrat,sans-serif!important;';
+        doms.domMasternodeRewardsTitle.innerHTML = `Masternode Rewards: ≥ ${nRewards} ${cChainParams.current.TICKER}`;
+        doms.domMasternodeRewardsList.innerHTML = strList;
+    }
 }
 
 /**
@@ -1568,6 +1573,7 @@ export async function updateMasternodeTab() {
 
 async function refreshMasternodeData(cMasternode, fAlert = false) {
     const cMasternodeData = await cMasternode.getFullData();
+    const cMasternodeReward = await cMasternode.getNextMasternodePaymentInMinutes();
     if (debug) console.log(cMasternodeData);
 
     // If we have MN data available, update the dashboard
@@ -1584,6 +1590,14 @@ async function refreshMasternodeData(cMasternode, fAlert = false) {
         doms.domMnLastSeen.innerText = new Date(
             cMasternodeData.lastseen * 1000
         ).toLocaleTimeString();
+
+        if (cMasternodeReward > 30) {
+            doms.domMnLastPaid.innerText = "~" + cMasternodeReward + " blocks";
+        } else if (cMasternodeReward == 0) {
+            doms.domMnLastPaid.innerText = "Not yet paid";
+        } else {
+            doms.domMnLastPaid.innerText = "Coming soon";
+        }
     }
 
     if (cMasternodeData.status === 'MISSING') {

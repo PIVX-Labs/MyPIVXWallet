@@ -4,7 +4,7 @@ import { createAlert } from './misc.js';
 import { Mempool, UTXO } from './mempool.js';
 import { getEventEmitter } from './event_bus.js';
 import { STATS, cStatKeys, cAnalyticsLevel } from './settings.js';
-import { Masternode, getFullData } from './masternode.js';
+import Masternode from './masternode.js';
 
 /**
  * Virtual class rapresenting any network backend
@@ -348,80 +348,76 @@ export class ExplorerNetwork extends Network {
      * @returns Filtered array of Masternode rewards
      */
     async getMasternodeRewards() {
-        const cMasternode = new Masternode(
-            JSON.parse(localStorage.getItem('masternode'))
-        );
-        const cMasternodeData = await cMasternode.getFullData();
         if (this.rewardsMasternodeSyncing) {
             return this.masternodeRewards;
         }
-        try {
-            if (!this.enabled || this.areRewardsMasternodeComplete)
+        if(localStorage.getItem('masternode')) {
+            const cMasternode = new Masternode(
+                JSON.parse(localStorage.getItem('masternode'))
+            );
+            const cMasternodeData = await cMasternode.getFullData();
+            if (this.rewardsMasternodeSyncing) {
                 return this.masternodeRewards;
-            this.rewardsMasternodeSyncing = true;
-            const nHeight = this.masternodeRewards.length
-                ? this.masternodeRewards[this.masternodeRewards.length - 1].blockHeight
-                : 0;
-            const mapPaths = new Map();
-            const txSum = (v) =>
-                v.reduce(
-                    (t, s) =>
-                        t +
-                        (s.addresses
-                            .map((strAddr) => mapPaths.get(strAddr))
-                            .filter((v) => v).length && s.addresses.length === 2
-                            ? parseInt(s.value)
-                            : 0),
-                    0
-                );
-            let cData;
-            cData = await (
-                await fetch(
-                    `${
-                        this.strUrl
-                    }/api/v2/xpub/${cMasternodeData.addr}?details=txs&pageSize=500&to=${
-                        nHeight ? nHeight - 1 : 0
-                    }`
-                )
-            ).json();
-            cData = await (
-                await fetch(
-                    `${
-                        this.strUrl
-                    }/api/v2/address/${cMasternodeData.addr}?details=txs&pageSize=500&to=${
-                        nHeight ? nHeight - 1 : 0
-                    }`
-                )
-            ).json();
-            mapPaths.set(cMasternodeData.addr, ':)');
-        if (cData && cData.transactions) {
-            // Update rewards
-            this.masternodeRewards = this.masternodeRewards.concat(
-                cData.transactions
-                    .filter(
-                        (tx) => tx.vout[0].addresses[0] === 'CoinStake TX'
-                    )
-                    .map((tx) => {
-                        return {
-                            id: tx.txid,
-                            time: tx.blockTime,
-                            blockHeight: tx.blockHeight,
-                            amount: txSum(tx.vout.slice(-1)) / COIN,
-                        };
-                    })
-                    .filter((tx) => tx.amount != 0)
-                );
-
-                // If the results don't match the full 'max/requested results', then we know the rewards are complete
-                if (cData.transactions.length !== cData.itemsOnPage) {
-                    this.areMasternodeRewardsComplete = true;
-                }
             }
-            return this.masternodeRewards;
-        } catch (e) {
-            console.error(e);
-        } finally {
-            this.rewardsMasternodeSyncing = false;
+            try {
+                if (!this.enabled || this.areRewardsMasternodeComplete)
+                    return this.masternodeRewards;
+                this.rewardsMasternodeSyncing = true;
+                const nHeight = this.masternodeRewards.length
+                    ? this.masternodeRewards[this.masternodeRewards.length - 1].blockHeight
+                    : 0;
+                const mapPaths = new Map();
+                const txSum = (v) =>
+                    v.reduce(
+                        (t, s) =>
+                            t +
+                            (s.addresses
+                                .map((strAddr) => mapPaths.get(strAddr))
+                                .filter((v) => v).length && s.addresses.length === 2
+                                ? parseInt(s.value)
+                                : 0),
+                        0
+                    );
+                let cData;
+                cData = await (
+                    await fetch(
+                        `${
+                            this.strUrl
+                        }/api/v2/address/${cMasternodeData.addr}?details=txs&pageSize=500&to=${
+                            nHeight ? nHeight - 1 : 0
+                        }`
+                    )
+                ).json();
+                mapPaths.set(cMasternodeData.addr, ':)');
+            if (cData && cData.transactions) {
+                // Update rewards
+                this.masternodeRewards = this.masternodeRewards.concat(
+                    cData.transactions
+                        .filter(
+                            (tx) => tx.vout[0].addresses[0] === 'CoinStake TX'
+                        )
+                        .map((tx) => {
+                            return {
+                                id: tx.txid,
+                                time: tx.blockTime,
+                                blockHeight: tx.blockHeight,
+                                amount: txSum(tx.vout.slice(-1)) / COIN,
+                            };
+                        })
+                        .filter((tx) => tx.amount != 0)
+                    );
+    
+                    // If the results don't match the full 'max/requested results', then we know the rewards are complete
+                    if (cData.transactions.length !== cData.itemsOnPage) {
+                        this.areMasternodeRewardsComplete = true;
+                    }
+                }
+                return this.masternodeRewards;
+            } catch (e) {
+                console.error(e);
+            } finally {
+                this.rewardsMasternodeSyncing = false;
+            }
         }
     }
 
