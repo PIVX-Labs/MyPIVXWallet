@@ -1730,3 +1730,18 @@ export const beforeUnloadListener = (evt) => {
     // Most browsers ignore this nowadays, but still, keep it 'just incase'
     return (evt.returnValue = translation.BACKUP_OR_ENCRYPT_WALLET);
 };
+
+function errorHandler(e) {
+    const message = `Unhandled exception. ${e.message || e.reason}`;
+    console.log(e);
+    try {
+        createAlert('warning', message);
+    } catch (_) {
+        // Something as gone wrong, so we fall back to the default alert
+        // This can happen on early errors for example
+        alert(message);
+    }
+}
+
+window.addEventListener('error', errorHandler);
+window.addEventListener('unhandledrejection', errorHandler);
