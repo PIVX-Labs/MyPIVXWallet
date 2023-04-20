@@ -34,6 +34,7 @@ import AppBtc from '@ledgerhq/hw-app-btc';
 import TransportWebUSB from '@ledgerhq/hw-transport-webusb';
 import createXpub from 'create-xpub';
 import * as jdenticon from 'jdenticon';
+import { Database } from './database.js';
 
 export let fWalletLoaded = false;
 
@@ -607,14 +608,9 @@ export async function importWallet({
         // Hide wipe wallet button if there is no private key
         if (masterKey.isViewOnly || masterKey.isHardwareWallet) {
             doms.domWipeWallet.hidden = true;
-            if (hasEncryptedWallet()) {
+            if (await hasEncryptedWallet()) {
                 doms.domRestoreWallet.hidden = false;
             }
-        }
-
-        // If allowed and requested, save the public key to disk for future View Only mode
-        if (fSavePublicKey && !masterKey.isHardwareWallet) {
-            localStorage.setItem('publicKey', await masterKey.keyToExport);
         }
 
         // For non-HD wallets: hide the 'new address' button, since these are essentially single-address MPW wallets
@@ -645,12 +641,12 @@ export async function importWallet({
             if (
                 // If the wallet was internally imported (not UI pasted), like via vanity, display the encryption prompt
                 (((fRaw && newWif.length) || newWif) &&
-                    !hasEncryptedWallet()) ||
+                    !(await hasEncryptedWallet())) ||
                 // If the wallet was pasted and is an unencrypted key, then display the encryption prompt
-                !hasEncryptedWallet()
+                !(await hasEncryptedWallet())
             ) {
                 doms.domGenKeyWarning.style.display = 'block';
-            } else if (hasEncryptedWallet()) {
+            } else if (await hasEncryptedWallet()) {
                 // If the wallet was pasted and is an encrypted import, display the lock wallet UI
                 doms.domWipeWallet.hidden = false;
             }
@@ -762,13 +758,11 @@ export async function encryptWallet(strPassword = '') {
     let strEncWIF = await encrypt(masterKey.keyToBackup, strPassword);
     if (!strEncWIF) return false;
 
-    // Set the encrypted wallet in localStorage
-    localStorage.setItem('encwif', strEncWIF);
-    localStorage.setItem('publicKey', await masterKey.keyToExport);
-
     // Hide the encryption warning
     doms.domGenKeyWarning.style.display = 'none';
 
+    const database = await Database.getInstance();
+    database.addAccount({publicKey: masterKey.keyToExport, encWif: strEncWIF});
     // Remove the exit blocker, we can annoy the user less knowing the key is safe in their localstorage!
     removeEventListener('beforeunload', beforeUnloadListener, {
         capture: true,
@@ -777,7 +771,8 @@ export async function encryptWallet(strPassword = '') {
 
 export async function decryptWallet(strPassword = '') {
     // Check if there's any encrypted WIF available
-    const strEncWIF = localStorage.getItem('encwif');
+    const database = await Database.getInstance();
+    const { encWif: strEncWIF } = await database.getAccount();
     if (!strEncWIF || strEncWIF.length < 1) return false;
 
     // Prompt to decrypt it via password
@@ -796,8 +791,13 @@ export async function decryptWallet(strPassword = '') {
     }
 }
 
-export function hasEncryptedWallet() {
-    return localStorage.getItem('encwif') ? true : false;
+/**
+ * @returns {Promise<bool>} If the wallet is unlocked
+ */
+export async function hasEncryptedWallet() {
+    const database = await Database.getInstance();
+    const { encWif } = await database.getAccount();
+    return !!encWif;
 }
 
 // If the privateKey is null then the user connected a hardware wallet
@@ -806,7 +806,7 @@ export function hasHardwareWallet() {
     return masterKey.isHardwareWallet == true;
 }
 
-export function hasWalletUnlocked(fIncludeNetwork = false) {
+export async function hasWalletUnlocked(fIncludeNetwork = false) {
     if (fIncludeNetwork && !getNetwork().enabled)
         return createAlert(
             'warning',
@@ -818,7 +818,13 @@ export function hasWalletUnlocked(fIncludeNetwork = false) {
         return createAlert(
             'warning',
             ALERTS.WALLET_UNLOCK_IMPORT,
-            [{ unlock: hasEncryptedWallet() ? 'unlock ' : 'import/create' }],
+            [
+                {
+                    unlock: (await hasEncryptedWallet())
+                        ? 'unlock '
+                        : 'import/create',
+                },
+            ],
             3500
         );
     } else {

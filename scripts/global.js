@@ -37,10 +37,11 @@ import { refreshPriceDisplay } from './prices.js';
 import { Address6 } from 'ip-address';
 import { getEventEmitter } from './event_bus.js';
 import { scanQRCode } from './scanner.js';
+import { Database } from './database.js';
 
 export let doms = {};
 
-export function start() {
+export async function start() {
     doms = {
         domNavbarToggler: document.getElementById('navbarToggler'),
         domDashboard: document.getElementById('dashboard'),
@@ -239,18 +240,19 @@ export function start() {
         : 0;
 
     // Customise the UI if a saved wallet exists
-    if (hasEncryptedWallet()) {
+    if (await hasEncryptedWallet()) {
         // Hide the 'Generate wallet' buttons
         doms.domGenerateWallet.style.display = 'none';
         doms.domGenVanityWallet.style.display = 'none';
-
-        const publicKey = localStorage.getItem('publicKey');
+        const database = await Database.getInstance();
+        const { publicKey } = await database.getAccount();
+	console.log("Hi");
 
         if (publicKey) {
             importWallet({ newWif: publicKey });
         } else {
             // Display the password unlock upfront
-            accessOrImportWallet();
+            await accessOrImportWallet();
         }
     }
 
@@ -699,10 +701,9 @@ async function govVote(hash, voteCode) {
             html: ALERTS.CONFIRM_POPUP_VOTE_HTML,
         })) == true
     ) {
-        if (localStorage.getItem('masternode')) {
-            const cMasternode = new Masternode(
-                JSON.parse(localStorage.getItem('masternode'))
-            );
+        const database = await Database.getInstance();
+        const cMasternode = database.getMasternode();
+        if (cMasternode) {
             if ((await cMasternode.getStatus()) !== 'ENABLED') {
                 createAlert(
                     'warning',
@@ -749,15 +750,14 @@ async function govVote(hash, voteCode) {
  * @param {boolean} fRestart - Whether this is a Restart or a first Start
  */
 export async function startMasternode(fRestart = false) {
-    if (localStorage.getItem('masternode')) {
+    const database = await Database.getInstance();
+    const cMasternode = await database.getMasternode(masterKey);
+    if (cMasternode) {
         if (
             masterKey.isViewOnly &&
             !(await restoreWallet('Unlock to start your Masternode!'))
         )
             return;
-        const cMasternode = new Masternode(
-            JSON.parse(localStorage.getItem('masternode'))
-        );
         if (await cMasternode.start()) {
             createAlert(
                 'success',
@@ -776,9 +776,11 @@ export async function startMasternode(fRestart = false) {
     }
 }
 
-export function destroyMasternode() {
-    if (localStorage.getItem('masternode')) {
-        localStorage.removeItem('masternode');
+export async function destroyMasternode() {
+    const database = await Database.getInstance();
+
+    if (await database.getMasternode(masterKey)) {
+        database.removeMasternode(masterKey);
         createAlert(
             'success',
             '<b>Masternode destroyed!</b><br>Your coins are now spendable.',
@@ -906,7 +908,7 @@ export async function importMasternode() {
     await updateMasternodeTab();
 }
 
-export function accessOrImportWallet() {
+export async function accessOrImportWallet() {
     // Hide and Reset the Vanity address input
     doms.domPrefix.value = '';
     doms.domPrefix.style.display = 'none';
@@ -923,7 +925,7 @@ export function accessOrImportWallet() {
     // mode when logging in, however if the user locked the wallet before
     // #52 there would be no way to recover the public key without getting
     // The password from the user
-    if (hasEncryptedWallet()) {
+    if (await hasEncryptedWallet()) {
         doms.domPrivKey.placeholder = 'Enter your wallet password';
         doms.domImportWalletText.innerText = 'Unlock Wallet';
         doms.domPrivKey.focus();
@@ -934,8 +936,8 @@ export function accessOrImportWallet() {
  *
  * Useful for adjusting the input types or displaying password prompts depending on the import scheme
  */
-export function onPrivateKeyChanged() {
-    if (hasEncryptedWallet()) return;
+export async function onPrivateKeyChanged() {
+    if (await hasEncryptedWallet()) return;
     // Check whether the string is Base64 (would likely be an MPW-encrypted import)
     // and it doesn't have any spaces (would be a mnemonic seed)
     const fContainsSpaces = doms.domPrivKey.value.includes(' ');
@@ -962,22 +964,29 @@ export async function guiImportWallet() {
     if (cChainParams.current.isTestnet) return importWallet();
 
     // If we don't have a DB wallet and the input is plain: prompt an import
-    if (!hasEncryptedWallet() && !fEncrypted) return importWallet();
+    if (!await hasEncryptedWallet() && !fEncrypted) return importWallet();
 
     // If we don't have a DB wallet and the input is ciphered:
     const strPrivKey = doms.domPrivKey.value;
     const strPassword = doms.domPrivKeyPassword.value;
-    if (!hasEncryptedWallet() && fEncrypted) {
+    if (!await hasEncryptedWallet() && fEncrypted) {
         const strDecWIF = await decrypt(strPrivKey, strPassword);
         if (!strDecWIF || strDecWIF === 'decryption failed!') {
             return createAlert('warning', ALERTS.FAILED_TO_IMPORT, [], 6000);
         } else {
-            localStorage.setItem('encwif', strPrivKey);
-            return importWallet({
+            await importWallet({
                 newWif: strDecWIF,
                 // Save the public key to disk for future View Only mode post-decryption
                 fSavePublicKey: true,
             });
+            const database = await Database.getInstance();
+            if (masterKey) {
+                database.addAccount({
+                    publicKey: masterKey.keyToExport,
+                    encWif: strPrivKey,
+                });
+            }
+            return;
         }
     }
     // Prompt for decryption of the existing wallet
@@ -1019,8 +1028,11 @@ export function guiEncryptWallet() {
 
 export async function toggleExportUI() {
     if (!exportHidden) {
-        if (hasEncryptedWallet()) {
-            doms.domExportPrivateKey.innerHTML = localStorage.getItem('encwif');
+        if (await hasEncryptedWallet()) {
+            const { encWif } = await (
+                await Database.getInstance()
+            ).getAccount();
+            doms.domExportPrivateKey.innerHTML = encWif;
             exportHidden = true;
         } else {
             if (masterKey.isViewOnly) {
@@ -1182,10 +1194,8 @@ export function askForCSAddr(force = false) {
     return false;
 }
 
-export function isMasternodeUTXO(cUTXO, masternode = null) {
-    const cMasternode =
-        masternode || JSON.parse(localStorage.getItem('masternode') || '{}');
-    if (cMasternode && cMasternode.collateralTxId) {
+export function isMasternodeUTXO(cUTXO, cMasternode) {
+    if (cMasternode?.collateralTxId) {
         const { collateralTxId, outidx } = cMasternode;
         return collateralTxId === cUTXO.id && cUTXO.vout === outidx;
     } else {
@@ -1194,10 +1204,11 @@ export function isMasternodeUTXO(cUTXO, masternode = null) {
 }
 
 export async function wipePrivateData() {
-    const title = hasEncryptedWallet()
+    const isEncrypted = await hasEncryptedWallet();
+    const title = isEncrypted
         ? 'Do you want to lock your wallet?'
         : 'Do you want to wipe your wallet private data?';
-    const html = hasEncryptedWallet()
+    const html = isEncrypted
         ? 'You will need to enter your password to access your funds'
         : "You will lose access to your funds if you haven't backed up your private key or seed phrase";
     if (
@@ -1208,7 +1219,7 @@ export async function wipePrivateData() {
     ) {
         masterKey.wipePrivateData();
         doms.domWipeWallet.hidden = true;
-        if (hasEncryptedWallet()) {
+        if (isEncrypted) {
             doms.domRestoreWallet.hidden = false;
         }
     }
@@ -1422,7 +1433,7 @@ export async function updateMasternodeTab() {
     if (!masterKey) {
         doms.domMnTextErrors.innerHTML =
             'Please ' +
-            (hasEncryptedWallet() ? 'unlock' : 'import') +
+            (await hasEncryptedWallet() ? 'unlock' : 'import') +
             ' your <b>COLLATERAL WALLET</b> first.';
         return;
     }
@@ -1433,23 +1444,22 @@ export async function updateMasternodeTab() {
         return;
     }
 
-    let strMasternodeJSON = localStorage.getItem('masternode');
+    const database = await Database.getInstance();
+
+    let cMasternode = await database.getMasternode();
     // If the collateral is missing (spent, or switched wallet) then remove the current MN
-    if (strMasternodeJSON) {
-        const cMasternode = JSON.parse(strMasternodeJSON);
+    if (cMasternode) {
         if (
             !mempool
                 .getConfirmed()
                 .find((utxo) => isMasternodeUTXO(utxo, cMasternode))
         ) {
-            localStorage.removeItem('masternode');
-            strMasternodeJSON = null;
+            database.removeMasternode();
+            cMasternode = null;
         }
     }
 
-    doms.domControlMasternode.style.display = strMasternodeJSON
-        ? 'block'
-        : 'none';
+    doms.domControlMasternode.style.display = cMasternode ? 'block' : 'none';
 
     // first case: the wallet is not HD and it is not hardware, so in case the wallet has collateral the user can check its status and do simple stuff like voting
     if (!masterKey.isHD) {
@@ -1464,10 +1474,7 @@ export async function updateMasternodeTab() {
             );
         const balance = getBalance(false);
         if (cCollaUTXO) {
-            if (strMasternodeJSON) {
-                const cMasternode = new Masternode(
-                    JSON.parse(localStorage.getItem('masternode'))
-                );
+            if (cMasternode) {
                 await refreshMasternodeData(cMasternode);
                 doms.domMnDashboard.style.display = '';
             } else {
@@ -1504,7 +1511,7 @@ export async function updateMasternodeTab() {
         const fHasCollateral = mapCollateralAddresses.size > 0;
 
         // If there's no loaded MN, but valid collaterals, display the configuration screen
-        if (!strMasternodeJSON && fHasCollateral) {
+        if (!cMasternode && fHasCollateral) {
             doms.domMnTxId.style.display = 'block';
             doms.domAccessMasternode.style.display = 'block';
 
@@ -1520,8 +1527,7 @@ export async function updateMasternodeTab() {
         if (!fHasCollateral) doms.domCreateMasternode.style.display = 'block';
 
         // If we have a collateral and a loaded Masternode, display the Dashboard
-        if (fHasCollateral && strMasternodeJSON) {
-            const cMasternode = new Masternode(JSON.parse(strMasternodeJSON));
+        if (fHasCollateral && cMasternode) {
             // Refresh the display
             refreshMasternodeData(cMasternode);
             doms.domMnDashboard.style.display = '';
@@ -1568,7 +1574,8 @@ async function refreshMasternodeData(cMasternode, fAlert = false) {
                     'Masternode successfully started!, it will be soon online',
                     6000
                 );
-                localStorage.setItem('masternode', JSON.stringify(cMasternode));
+                const database = await Database.getInstance();
+                await database.addMasternode(cMasternode);
             } else {
                 doms.domMnTextErrors.innerHTML =
                     "We couldn't start your masternode";
@@ -1591,7 +1598,8 @@ async function refreshMasternodeData(cMasternode, fAlert = false) {
                 )} </b>`,
                 6000
             );
-        localStorage.setItem('masternode', JSON.stringify(cMasternode));
+        const database = await Database.getInstance();
+        await database.addMasternode(cMasternode);
     } else if (cMasternodeData.status === 'REMOVED') {
         doms.domMnTextErrors.innerHTML =
             'Masternode is currently <b>REMOVED</b>';
