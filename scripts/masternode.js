@@ -1,6 +1,11 @@
 import { cNode, cExplorer } from './settings.js';
 import { cChainParams, COIN } from './chain_params.js';
-import { masterKey, parseWIF, deriveAddress } from './wallet.js';
+import {
+    masterKey,
+    parseWIF,
+    deriveAddress,
+    cHardwareWallet,
+} from './wallet.js';
 import { dSHA256, bytesToHex, hexToBytes } from './utils.js';
 import { Buffer } from 'buffer';
 import { Address6 } from 'ip-address';
@@ -30,6 +35,10 @@ export default class Masternode {
         this.outidx = outidx;
         this.addr = addr;
     }
+    /**
+     * @type {[string, number]} array of vote hash and corresponding vote for the current session
+     */
+    static sessionVotes = [];
 
     async _getWalletPrivateKey() {
         return await masterKey.getPrivateKey(this.walletPrivateKeyPath);
@@ -118,7 +127,7 @@ export default class Masternode {
      * it needs to be padded with "\x18DarkNet Signed Message:\n" + Message length + Message
      * Then hashed two times with SHA256
      */
-    static getToSign({ walletPrivateKey, addr, mnPrivateKey, sigTime }) {
+    static getToSign({ publicKey, addr, mnPrivateKey, sigTime }) {
         let ip, port;
         if (addr.includes('.')) {
             // IPv4
@@ -128,12 +137,7 @@ export default class Masternode {
             [ip, port] = addr.slice(1).split(']');
             port = port.slice(1);
         }
-        const publicKey = hexToBytes(
-            deriveAddress({
-                pkBytes: parseWIF(walletPrivateKey, true),
-                output: 'COMPRESSED_HEX',
-            })
-        );
+
         const mnPublicKey = hexToBytes(
             deriveAddress({
                 pkBytes: parseWIF(mnPrivateKey, true),
@@ -170,25 +174,36 @@ export default class Masternode {
      * @return {Promise<string>} The signed message signed with the collateral private key
      */
     async getSignedMessage(sigTime) {
-        const padding = '\x18DarkNet Signed Message:\n'
-            .split('')
-            .map((c) => c.charCodeAt(0));
-        const walletPrivateKey = await this._getWalletPrivateKey();
         const toSign = Masternode.getToSign({
             addr: this.addr,
-            walletPrivateKey: walletPrivateKey,
+            publicKey: await this.getWalletPublicKey(),
             mnPrivateKey: this.mnPrivateKey,
             sigTime,
-        })
-            .split('')
-            .map((c) => c.charCodeAt(0));
-        const hash = dSHA256(padding.concat(toSign.length).concat(toSign));
-        const [signature, v] = await nobleSecp256k1.sign(
-            hash,
-            parseWIF(walletPrivateKey, true),
-            { der: false, recovered: true }
-        );
-        return [v + 31, ...signature];
+        });
+
+        if (masterKey.isHardwareWallet) {
+            const { r, s, v } = await cHardwareWallet.signMessage(
+                this.walletPrivateKeyPath,
+                bytesToHex(toSign)
+            );
+            return [v + 31, ...hexToBytes(r), ...hexToBytes(s)];
+        } else {
+            const padding = '\x18DarkNet Signed Message:\n'
+                .split('')
+                .map((c) => c.charCodeAt(0));
+            const walletPrivateKey = await this._getWalletPrivateKey();
+
+            const message = toSign.split('').map((c) => c.charCodeAt(0));
+            const hash = dSHA256(
+                padding.concat(message.length).concat(message)
+            );
+            const [signature, v] = await nobleSecp256k1.sign(
+                hash,
+                parseWIF(walletPrivateKey, true),
+                { der: false, recovered: true }
+            );
+            return [v + 31, ...signature];
+        }
     }
     /**
      * @return {Promise<string>} The signed ping message signed with the masternode private key
@@ -210,6 +225,22 @@ export default class Masternode {
         return [v + 27, ...signature];
     }
 
+    async getWalletPublicKey() {
+        if (masterKey.isHardwareWallet) {
+            return hexToBytes(
+                await masterKey.getPublicKey(this.walletPrivateKeyPath)
+            );
+        } else {
+            const walletPrivateKey = await this._getWalletPrivateKey();
+            return hexToBytes(
+                deriveAddress({
+                    pkBytes: parseWIF(walletPrivateKey, true),
+                    output: 'COMPRESSED_HEX',
+                })
+            );
+        }
+    }
+
     /**
      * Get the message encoded to hex used to start a masternode
      * It uses to two signatures: `getPingSignature()` which is signed
@@ -221,13 +252,7 @@ export default class Masternode {
         const sigTime = Math.round(Date.now() / 1000);
         const blockHash = await Masternode.getLastBlockHash();
         const [ip, port] = this.addr.split(':');
-        const walletPrivateKey = await this._getWalletPrivateKey();
-        const walletPublicKey = hexToBytes(
-            deriveAddress({
-                pkBytes: parseWIF(walletPrivateKey, true),
-                output: 'COMPRESSED_HEX',
-            })
-        );
+        const walletPublicKey = await this.getWalletPublicKey();
 
         const mnPublicKey = hexToBytes(
             deriveAddress({
@@ -330,7 +355,50 @@ export default class Masternode {
         );
         return Buffer.from([v + 27, ...signature]).toString('base64');
     }
-
+    /**
+     * @param {string} proposalName - the name of the proposal you want to get the vote of
+     * @param {string} hash - the hash of the proposal you want to get the vote of
+     * @return {Promise<number>} Vote code "Yes" is 1, "No" is 2
+     */
+    async getVote(proposalName, hash) {
+        //See if you already voted the proposal in the current session
+        const index = Masternode.sessionVotes.findIndex(
+            ([vHash]) => vHash === hash
+        );
+        if (index !== -1) {
+            //Found it! return the vote
+            return Masternode.sessionVotes[index][1];
+        }
+        //Haven't voted yet, fetch the result from Duddino's node
+        const filterString = `.[] | select(.mnId=="`;
+        const filter =
+            `${encodeURI(filterString)}` +
+            `${this.collateralTxId}-${this.outidx}")`;
+        const url = `${cNode.url}/getbudgetvotes?params=${proposalName}&filter=${filter}`;
+        try {
+            const { Vote: vote } = await (await fetch(url)).json();
+            return vote === 'YES' ? 1 : 2;
+        } catch (e) {
+            //Cannot parse JSON! This means that you did not vote hence return null
+            return null;
+        }
+    }
+    /**
+     * Stores a vote for the current session
+     * @param {string} hash - the hash of the proposal to vote
+     * @param {number} voteCode - the vote code. "Yes" is 1, "No" is 2
+     */
+    storeVote(hash, voteCode) {
+        const newVote = [hash, voteCode];
+        const index = Masternode.sessionVotes.findIndex(
+            ([vHash]) => vHash === hash
+        );
+        if (index !== -1) {
+            Masternode.sessionVotes[index] = newVote;
+        } else {
+            Masternode.sessionVotes.push(newVote);
+        }
+    }
     /**
      * @param {string} hash - the hash of the proposal to vote
      * @param {number} voteCode - the vote code. "Yes" is 1, "No" is 2

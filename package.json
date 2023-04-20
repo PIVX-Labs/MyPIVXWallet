@@ -64,6 +64,7 @@
     "bootstrap-4": "^4.0.0",
     "bs58": "^5.0.0",
     "buffer": "^6.0.3",
+    "chart.js": "^4.2.1",
     "create-xpub": "^2.1.0",
     "hdkey": "^2.0.1",
     "ip-address": "^8.1.0",

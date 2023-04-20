@@ -91,6 +91,11 @@ button {
 
 .ptr {
     cursor: pointer;
+    transition: all .175s ease-in-out;
+}
+
+.ptr:hover {
+    opacity: 0.8;
 }
 
 .fa-stacked-ptr {
@@ -820,6 +825,18 @@ button {
   color: #666666;
 }
 
+
+.pivx-button-big-no-gov {
+    background-image: linear-gradient(183deg, #B31010, #A10E0E);
+    border-color: #850C0C;
+    pointer-events: none;
+}
+
+.pivx-button-big-yes-gov {
+    background-image: linear-gradient(183deg, #27823F, #237639);
+    border-color: #1F6130;
+    pointer-events: none;
+}
 
 .pivx-button-big::before {
   position: absolute;
@@ -2170,6 +2187,7 @@ a {
 }
 
 .navbar-nav .nav-item span {
+  cursor: pointer;
   margin-left: 5px;
   margin-right: 5px;
   transition: all .2s ease-in-out;
@@ -2311,7 +2329,7 @@ a {
 .dcWallet-topRightMenu .dropdown-move .dropdown-menu {
   backdrop-filter: blur(5px);
   background-color: rgba(88, 37, 131, 0.95);
-  border: 1px solid rgb(6 6 6 / 0%);
+  border: 1px solid hsl(273 54% 56% / 1);
 }
 
 .dcWallet-topRightMenu .dropdown-move .dropdown-menu .dropdown-item {
@@ -2562,5 +2580,9 @@ input {
     font-size:13px;
     background-color:#fff;
     border:0px;
+}
+
+.dropdown {
+    z-index:10;
 }
 

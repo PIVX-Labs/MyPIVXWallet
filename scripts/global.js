@@ -88,6 +88,12 @@ export function start() {
         domModalQRReader: document.getElementById('qrReaderModal'),
         domQrReaderStream: document.getElementById('qrReaderStream'),
         domCloseQrReaderBtn: document.getElementById('closeQrReader'),
+        domModalWalletBreakdown: document.getElementById(
+            'walletBreakdownModal'
+        ),
+        domWalletBreakdownCanvas: document.getElementById(
+            'walletBreakdownCanvas'
+        ),
         domPrefix: document.getElementById('prefix'),
         domPrefixNetwork: document.getElementById('prefixNetwork'),
         domWalletToggle: document.getElementById('wToggle'),
@@ -778,6 +784,8 @@ async function govVote(hash, voteCode) {
             const result = await cMasternode.vote(hash.toString(), voteCode); //1 yes 2 no
             if (result.includes('Voted successfully')) {
                 //good vote
+                cMasternode.storeVote(hash.toString(), voteCode);
+                await updateGovernanceTab();
                 createAlert('success', 'Vote submitted!', 6000);
             } else if (result.includes('Error voting :')) {
                 //If you already voted return an alert
@@ -1248,8 +1256,8 @@ export function askForCSAddr(force = false) {
 
 export function isMasternodeUTXO(cUTXO, masternode = null) {
     const cMasternode =
-        masternode || JSON.parse(localStorage.getItem('masternode'));
-    if (cMasternode) {
+        masternode || JSON.parse(localStorage.getItem('masternode') || '{}');
+    if (cMasternode && cMasternode.collateralTxId) {
         const { collateralTxId, outidx } = cMasternode;
         return collateralTxId === cUTXO.id && cUTXO.vout === outidx;
     } else {
@@ -1337,8 +1345,8 @@ async function updateGovernanceTab() {
     );
 
     // Render Proposals
-    renderProposals(arrStandard, false);
-    renderProposals(arrContested, true);
+    await renderProposals(arrStandard, false);
+    await renderProposals(arrContested, true);
 }
 
 /**
@@ -1346,7 +1354,7 @@ async function updateGovernanceTab() {
  * @param {Array<object>} arrProposals - The proposals to render
  * @param {boolean} fContested - The proposal category
  */
-function renderProposals(arrProposals, fContested) {
+async function renderProposals(arrProposals, fContested) {
     // Select the table based on the proposal category
     const domTable = fContested
         ? doms.domGovProposalsContestedTableBody
@@ -1354,7 +1362,9 @@ function renderProposals(arrProposals, fContested) {
 
     // Render the proposals in the relevent table
     domTable.innerHTML = '';
-
+    const cMasternode = localStorage.getItem('masternode')
+        ? new Masternode(JSON.parse(localStorage.getItem('masternode')))
+        : null;
     if (!fContested) {
         const localProposals = JSON.parse(
             localStorage.getItem('localProposals') || '[]'
@@ -1374,6 +1384,17 @@ function renderProposals(arrProposals, fContested) {
         });
         arrProposals = localProposals.concat(arrProposals);
     }
+    arrProposals = await Promise.all(
+        arrProposals.map(async (p) => {
+            return {
+                YourVote:
+                    cMasternode && p.Hash
+                        ? await cMasternode.getVote(p.Name, p.Hash)
+                        : null,
+                ...p,
+            };
+        })
+    );
     for (const cProposal of arrProposals) {
         const domRow = domTable.insertRow();
 
@@ -1456,14 +1477,23 @@ function renderProposals(arrProposals, fContested) {
             };
             finalizeRow.appendChild(finalizeButton);
         } else {
+            let btnYesClass = 'pivx-button-big';
+            let btnNoClass = 'pivx-button-big';
+            if (cProposal.YourVote) {
+                if (cProposal.YourVote === 1) {
+                    btnYesClass += ' pivx-button-big-yes-gov';
+                } else {
+                    btnNoClass += ' pivx-button-big-no-gov';
+                }
+            }
             const domVoteBtns = domRow.insertCell();
             const domNoBtn = document.createElement('button');
-            domNoBtn.className = 'pivx-button-big';
+            domNoBtn.className = btnNoClass;
             domNoBtn.innerText = 'No';
             domNoBtn.onclick = () => govVote(cProposal.Hash, 2);
 
             const domYesBtn = document.createElement('button');
-            domYesBtn.className = 'pivx-button-big';
+            domYesBtn.className = btnYesClass;
             domYesBtn.innerText = 'Yes';
             domYesBtn.onclick = () => govVote(cProposal.Hash, 1);
 
@@ -1488,12 +1518,6 @@ export async function updateMasternodeTab() {
             'Please ' +
             (hasEncryptedWallet() ? 'unlock' : 'import') +
             ' your <b>COLLATERAL WALLET</b> first.';
-        return;
-    }
-
-    if (masterKey.isHardwareWallet) {
-        doms.domMnTxId.style.display = 'none';
-        doms.domMnTextErrors.innerHTML = 'Ledger is not yet supported';
         return;
     }
 
