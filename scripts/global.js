@@ -1733,7 +1733,6 @@ export const beforeUnloadListener = (evt) => {
 
 function errorHandler(e) {
     const message = `Unhandled exception. ${e.message || e.reason}`;
-    console.log(e);
     try {
         createAlert('warning', message);
     } catch (_) {
