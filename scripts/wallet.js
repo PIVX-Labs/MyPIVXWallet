@@ -498,7 +498,7 @@ export async function importWallet({
     fSavePublicKey = false,
 } = {}) {
     const strImportConfirm =
-        "Do you really want to import a new address? If you haven't saved the last private key, the wallet will be LOST forever.";
+          "Do you really want to import a new address? If you haven't saved the last private key, the wallet will be LOST forever.";
     const walletConfirm =
         fWalletLoaded && !skipConfirmation
             ? await confirmPopup({ html: strImportConfirm })

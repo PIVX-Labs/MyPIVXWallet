@@ -118,8 +118,8 @@ export async function generateWalletBreakdown(arrBreakdown) {
                     labels: {
                         color: '#FFFFFF',
                         font: {
-                            size: 16
-                        }
+                            size: 16,
+                        },
                     },
                 },
             },
