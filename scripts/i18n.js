@@ -1,5 +1,6 @@
 import { en_translation } from '../locale/en/translation.js';
 import { uwu_translation } from '../locale/uwu/translation.js';
+import { Database } from './database.js';
 
 export const ALERTS = {};
 export let translation = {};
@@ -107,7 +108,7 @@ function parseUserAgentLang(strUA, arrLangsWithSubset) {
 // When adding a lang remember to add it to the object translatableLanguages as well as here.
 export const arrActiveLangs = ['en', 'uwu'];
 
-export function start() {
+export async function start() {
     // We use this function to parse the UA lang in a safer way: for example, there's multiple `en` definitions
     // ... but we shouldn't duplicate the language files, we can instead cut the affix (US, GB) and simply use 'en'.
     // ... This logic may apply to other languages with such subsets as well, so take care of them here!
@@ -119,7 +120,9 @@ export function start() {
     );
 
     // When removing you do not have to remove from translatableLanguages
-    let localTranslation = localStorage.getItem('translation');
+    const database = await Database.getInstance();
+    const { translation: localTranslation } = await database.getSettings();
+
     // Check if set in local storage
     if (localTranslation != null) {
         switchTranslation(localTranslation);

@@ -1,5 +1,7 @@
 import { openDB, IDBPDatabase } from 'idb';
 import Masternode from './masternode.js';
+import { Settings } from './settings.js';
+
 
 /**
  *
@@ -13,16 +15,16 @@ export class Database {
     static version = 1;
 
     /**
-     * @type{IDBPDatabase?}
+     * @type{IDBPDatabase}
      */
-    #db = null;
+    #db;
 
     constructor({ db }) {
         this.#db = db;
     }
 
     close() {
-        this.#db?.close();
+        this.#db.close();
     }
 
     /**
@@ -98,6 +100,28 @@ export class Database {
         return new Masternode(await store.get('masternode'));
     }
 
+    /**
+     * @returns {Promise<Settings>}
+     */
+    async getSettings() {
+	const store = this.#db.transaction('settings', 'readonly').objectStore('settings');
+	return new Settings(await store.get('settings'));
+    }
+    
+    /**
+     * @param {Settings} settings - settings to use
+     * @returns {Promise<void>}
+     */
+    async setSettings(settings) {
+	const oldSettings = await this.getSettings();
+	const store = this.#db.transaction('settings', 'readwrite').objectStore('settings');
+	
+	await store.put('settings', {
+	    ...oldSettings,
+	    ...settings,
+	});
+    }
+
     static async create() {
         const db = await openDB('MPW', 1, {
             upgrade: (db, oldVersion) => {
@@ -105,6 +129,7 @@ export class Database {
                 if (oldVersion == 0) {
                     db.createObjectStore('masternodes');
 		    db.createObjectStore('accounts');
+		    db.createObjectStore('settings');
                 }
             },
             blocking: () => {
