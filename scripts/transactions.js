@@ -64,7 +64,7 @@ function validateAmount(nAmountSats, nMinSats = 10000) {
  */
 export async function createTxGUI() {
     // Ensure a wallet is loaded
-    if (!await hasWalletUnlocked(true)) return;
+    if (!(await hasWalletUnlocked(true))) return;
 
     // Ensure the wallet is unlocked
     if (
@@ -207,7 +207,7 @@ export async function createAndSendTransaction({
     changeDelegationAddress = null,
     isProposal = false,
 }) {
-    if (!await hasWalletUnlocked(true)) return;
+    if (!(await hasWalletUnlocked(true))) return;
     if ((isDelegation || useDelegatedInputs) && masterKey.isHardwareWallet) {
         return createAlert(
             'warning',

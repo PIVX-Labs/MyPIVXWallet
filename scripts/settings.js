@@ -55,15 +55,21 @@ export class Settings {
      */
     translation;
     /**
-     * @type {String} Currency to display 
+     * @type {String} Currency to display
      */
     displayCurrency;
-    constructor({analytics, explorer, node, translation = 'en', displayCurrency = 'usd'} = {}) {
-	this.analytics = analytics;
-	this.explorer = explorer;
-	this.node = node;
-	this.translation = translation;
-	this.displayCurrency = displayCurrency;
+    constructor({
+        analytics,
+        explorer,
+        node,
+        translation = 'en',
+        displayCurrency = 'usd',
+    } = {}) {
+        this.analytics = analytics;
+        this.explorer = explorer;
+        this.node = node;
+        this.translation = translation;
+        this.displayCurrency = displayCurrency;
     }
 }
 
@@ -129,9 +135,9 @@ export async function start() {
     };
 
     await Promise.all([
-	fillExplorerSelect(),
-	fillNodeSelect(),
-	fillTranslationSelect(),
+        fillExplorerSelect(),
+        fillNodeSelect(),
+        fillTranslationSelect(),
     ]);
 
     // Fill all selection UIs with their options
@@ -217,7 +223,7 @@ async function setNode(node, fSilent = false) {
     cNode = node;
     const database = await Database.getInstance();
     database.setSettings({ node: node.url });
-    
+
     // Enable networking + notify if allowed
     getNetwork().enable();
     if (!fSilent)
@@ -238,7 +244,7 @@ async function setNode(node, fSilent = false) {
 async function setTranslation(lang) {
     switchTranslation(lang);
     const database = await Database.getInstance();
-    database.setSettings({translation: lang});
+    database.setSettings({ translation: lang });
 }
 
 /**
@@ -300,7 +306,7 @@ export async function fillCurrencySelect() {
 async function setAnalytics(level, fSilent = false) {
     cAnalyticsLevel = level;
     const database = await Database.getInstance();
-    await database.setSettings({analytics: level.name});
+    await database.setSettings({ analytics: level.name });
 
     // For total transparency, we'll 'describe' the various analytic keys of this chosen level
     let strDesc = '<center>--- ' + transparencyReport + ' ---</center><br>',

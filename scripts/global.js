@@ -247,7 +247,7 @@ export async function start() {
         doms.domGenVanityWallet.style.display = 'none';
         const database = await Database.getInstance();
         const { publicKey } = await database.getAccount();
-	console.log("Hi");
+        console.log('Hi');
 
         if (publicKey) {
             importWallet({ newWif: publicKey });
@@ -964,12 +964,12 @@ export async function guiImportWallet() {
     if (cChainParams.current.isTestnet) return importWallet();
 
     // If we don't have a DB wallet and the input is plain: prompt an import
-    if (!await hasEncryptedWallet() && !fEncrypted) return importWallet();
+    if (!(await hasEncryptedWallet()) && !fEncrypted) return importWallet();
 
     // If we don't have a DB wallet and the input is ciphered:
     const strPrivKey = doms.domPrivKey.value;
     const strPassword = doms.domPrivKeyPassword.value;
-    if (!await hasEncryptedWallet() && fEncrypted) {
+    if (!(await hasEncryptedWallet()) && fEncrypted) {
         const strDecWIF = await decrypt(strPrivKey, strPassword);
         if (!strDecWIF || strDecWIF === 'decryption failed!') {
             return createAlert('warning', ALERTS.FAILED_TO_IMPORT, [], 6000);
@@ -1284,8 +1284,10 @@ async function updateGovernanceTab() {
     );
 
     // Render Proposals
-    renderProposals(arrStandard, false);
-    renderProposals(arrContested, true);
+    await Promise.all([
+        renderProposals(arrStandard, false),
+        renderProposals(arrContested, true),
+    ]);
 }
 
 /**
@@ -1293,7 +1295,7 @@ async function updateGovernanceTab() {
  * @param {Array<object>} arrProposals - The proposals to render
  * @param {boolean} fContested - The proposal category
  */
-function renderProposals(arrProposals, fContested) {
+async function renderProposals(arrProposals, fContested) {
     // Select the table based on the proposal category
     const domTable = fContested
         ? doms.domGovProposalsContestedTableBody
@@ -1303,9 +1305,9 @@ function renderProposals(arrProposals, fContested) {
     domTable.innerHTML = '';
 
     if (!fContested) {
-        const localProposals = JSON.parse(
-            localStorage.getItem('localProposals') || '[]'
-        ).map((p) => {
+        const database = await Database.getInstance();
+
+        const localProposals = (await database.getAccount())?.map((p) => {
             return {
                 Name: p.name,
                 URL: p.url,
@@ -1363,19 +1365,18 @@ function renderProposals(arrProposals, fContested) {
             finalizeButton.innerHTML = '<i class="fas fa-check"></i>';
             finalizeButton.onclick = async () => {
                 const result = await Masternode.finalizeProposal(cProposal.mpw);
-                const deleteProposal = () => {
+                const deleteProposal = async () => {
                     // Remove local Proposal from local storage
-                    const localProposals = JSON.parse(
-                        localStorage.getItem('localProposals')
-                    );
-                    localStorage.setItem(
-                        'localProposals',
-                        JSON.stringify(
-                            localProposals.filter(
-                                (p) => p.txId != cProposal.mpw.txId
-                            )
-                        )
-                    );
+                    const database = await Database.getInstance();
+                    const account = await database.getAccount();
+                    if (account) {
+                        const localProposals = account.localProposals;
+                        await database.addAccount({
+                            localProposals: localProposals.filter(
+                                (p) => p.txId !== cProposal.mpw.txId
+                            ),
+                        });
+                    }
                 };
                 if (result.ok) {
                     createAlert('success', 'Proposal finalized!');
@@ -1433,7 +1434,7 @@ export async function updateMasternodeTab() {
     if (!masterKey) {
         doms.domMnTextErrors.innerHTML =
             'Please ' +
-            (await hasEncryptedWallet() ? 'unlock' : 'import') +
+            ((await hasEncryptedWallet()) ? 'unlock' : 'import') +
             ' your <b>COLLATERAL WALLET</b> first.';
         return;
     }
@@ -1679,13 +1680,14 @@ export async function createProposal() {
     });
     if (ok) {
         proposal.txid = txid;
-        const localProposals = JSON.parse(
-            localStorage.getItem('localProposals') || '[]'
-        );
-        localProposals.push(proposal);
-        localStorage.setItem('localProposals', JSON.stringify(localProposals));
-        createAlert('success', 'Proposal created! Please finalize it.');
-        updateGovernanceTab();
+        const database = await Database.getInstance();
+        const account = await database.getAccount();
+        if (account) {
+            account.localProposals.push(proposal);
+            await database.addAccount(account);
+            createAlert('success', 'Proposal created! Please finalize it.');
+            updateGovernanceTab();
+        }
     }
 }
 

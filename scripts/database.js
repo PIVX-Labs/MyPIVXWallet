@@ -57,11 +57,13 @@ export class Database {
      * @param {Array<any>} o.localProposals - Local proposals awaiting to be finalized
      */
     async addAccount({ publicKey, encWif, localProposals = [] }) {
+        const oldAccount = await getAccount();
+        const newAccount = { publicKey, encWif, localProposals };
         const store = this.#db
             .transaction('accounts', 'readwrite')
             .objectStore('accounts');
-        // WHen the account system is gonig to be added, the key is gonna be the publicKey
-        await store.put({ publicKey, encWif, localProposals }, 'account');
+        // When the account system is gonig to be added, the key is gonna be the publicKey
+        await store.put({ ...oldAccount, ...newAccount }, 'account');
     }
 
     /**
@@ -83,9 +85,9 @@ export class Database {
      */
     async getAccount() {
         const store = this.#db
-              .transaction('accounts', 'readonly')
-              .objectStore('accounts');
-	return await store.get('account');
+            .transaction('accounts', 'readonly')
+            .objectStore('accounts');
+        return await store.get('account');
     }
 
     /**
@@ -102,25 +104,32 @@ export class Database {
      * @returns {Promise<Settings>}
      */
     async getSettings() {
-	const store = this.#db.transaction('settings', 'readonly').objectStore('settings');
-	return new Settings(await store.get('settings'));
+        const store = this.#db
+            .transaction('settings', 'readonly')
+            .objectStore('settings');
+        return new Settings(await store.get('settings'));
     }
-    
+
     /**
      * @param {Settings} settings - settings to use
      * @returns {Promise<void>}
      */
     async setSettings(settings) {
-	const oldSettings = await this.getSettings();
-	const store = this.#db.transaction('settings', 'readwrite').objectStore('settings');
-	console.log({
-	    ...oldSettings,
-	    ...settings,
-	});
-	await store.put({
-	    ...oldSettings,
-	    ...settings,
-	}, 'settings');
+        const oldSettings = await this.getSettings();
+        const store = this.#db
+            .transaction('settings', 'readwrite')
+            .objectStore('settings');
+        console.log({
+            ...oldSettings,
+            ...settings,
+        });
+        await store.put(
+            {
+                ...oldSettings,
+                ...settings,
+            },
+            'settings'
+        );
     }
 
     static async create() {
@@ -129,8 +138,8 @@ export class Database {
                 console.log(oldVersion);
                 if (oldVersion == 0) {
                     db.createObjectStore('masternodes');
-		    db.createObjectStore('accounts');
-		    db.createObjectStore('settings');
+                    db.createObjectStore('accounts');
+                    db.createObjectStore('settings');
                 }
             },
             blocking: () => {
