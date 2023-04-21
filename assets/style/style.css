@@ -2666,3 +2666,28 @@ input {
 .dropdown {
     z-index:10;
 }
+
+.scrollTable {
+    display: flex;
+    flex-flow: column;
+    height: 500px;
+    overflow-y: scroll;
+}
+
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: #e7e7e7; 
+    border-radius:10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #797979;
+    border-radius:10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #696969; 
+}
