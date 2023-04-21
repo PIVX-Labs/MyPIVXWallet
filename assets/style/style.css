@@ -2413,6 +2413,32 @@ input {
     cursor:pointer;
 }
 
+.dcWallet-unstake {
+    background-color: #ffffff29;
+    width: 100px;
+    height: 43px;
+    margin-top: 17px;
+    padding-top: 9px;
+    border-radius: 24px;
+    border-top-left-radius: 7px;
+    border-bottom-right-radius: 7px;
+    background-image: linear-gradient(183deg, #9621ff, #7d21ff);
+    cursor: pointer;
+}
+
+.dcWallet-stake {
+    background-color: #ffffff29;
+    width: 100px;
+    height: 43px;
+    margin-top: 17px;
+    padding-top: 9px;
+    border-radius: 24px;
+    border-top-right-radius: 7px;
+    border-bottom-left-radius: 7px;
+    background-image: linear-gradient(183deg, #9621ff, #7d21ff);
+    cursor:pointer;
+}
+
 .dcWallet-sDeposit {
     background-color: #ffffff29;
     width: 50px;
