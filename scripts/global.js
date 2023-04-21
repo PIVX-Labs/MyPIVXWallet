@@ -198,8 +198,8 @@ export async function start() {
         domTranslationSelect: document.getElementById('translation'),
         domBlackBack: document.getElementById('blackBack'),
     };
-    i18nStart();
-    loadImages();
+    await i18nStart();
+    await loadImages();
 
     // Enable all Bootstrap Tooltips
     $(function () {
@@ -238,6 +238,7 @@ export async function start() {
     const reqAmount = urlParams.has('amount')
         ? parseFloat(urlParams.get('amount'))
         : 0;
+    await settingsStart();
 
     // Customise the UI if a saved wallet exists
     if (await hasEncryptedWallet()) {
@@ -270,7 +271,6 @@ export async function start() {
     doms.domPrefix.value = '';
     doms.domPrefixNetwork.innerText =
         cChainParams.current.PUBKEY_PREFIX.join(' or ');
-    settingsStart();
     // If allowed by settings: submit a simple 'hit' (app load) to Labs Analytics
     getNetwork().submitAnalytics('hit');
     setInterval(refreshChainData, 15000);

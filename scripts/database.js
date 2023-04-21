@@ -2,7 +2,6 @@ import { openDB, IDBPDatabase } from 'idb';
 import Masternode from './masternode.js';
 import { Settings } from './settings.js';
 
-
 /**
  *
  */
@@ -80,13 +79,12 @@ export class Database {
 
     /**
      * Gets an account from the database
-     * @returns {Promise<{publicKey: String, encWif: String?, localProposals: Array<any>}>}
+     * @returns {Promise<{publicKey: String, encWif: String?, localProposals: Array<any>}?>}
      */
     async getAccount() {
         const store = this.#db
-            .transaction('accounts', 'readonly')
+              .transaction('accounts', 'readonly')
               .objectStore('accounts');
-	console.log("hi");
 	return await store.get('account');
     }
 
@@ -115,11 +113,14 @@ export class Database {
     async setSettings(settings) {
 	const oldSettings = await this.getSettings();
 	const store = this.#db.transaction('settings', 'readwrite').objectStore('settings');
-	
-	await store.put('settings', {
+	console.log({
 	    ...oldSettings,
 	    ...settings,
 	});
+	await store.put({
+	    ...oldSettings,
+	    ...settings,
+	}, 'settings');
     }
 
     static async create() {

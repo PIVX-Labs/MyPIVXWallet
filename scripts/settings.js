@@ -58,7 +58,7 @@ export class Settings {
      * @type {String} Currency to display 
      */
     displayCurrency;
-    constructor({analytics, explorer, node, translation = 'en', displayCurrency = 'USD'}) {
+    constructor({analytics, explorer, node, translation = 'en', displayCurrency = 'usd'} = {}) {
 	this.analytics = analytics;
 	this.explorer = explorer;
 	this.node = node;
@@ -128,9 +128,11 @@ export async function start() {
         setAnalytics(arrAnalytics.find((a) => a.name === evt.target.value));
     };
 
-    fillExplorerSelect();
-    fillNodeSelect();
-    fillTranslationSelect();
+    await Promise.all([
+	fillExplorerSelect(),
+	fillNodeSelect(),
+	fillTranslationSelect(),
+    ]);
 
     // Fill all selection UIs with their options
     if (getNetwork().enabled) {
@@ -385,7 +387,7 @@ async function fillExplorerSelect() {
     const { explorer: strSettingExplorer } = await database.getSettings();
 
     // For any that exist: load them, or use the defaults
-    setExplorer(
+    await setExplorer(
         cChainParams.current.Explorers.find(
             (a) => a.url === strSettingExplorer
         ) || cExplorer,

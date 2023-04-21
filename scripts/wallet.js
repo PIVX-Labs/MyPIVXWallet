@@ -796,8 +796,8 @@ export async function decryptWallet(strPassword = '') {
  */
 export async function hasEncryptedWallet() {
     const database = await Database.getInstance();
-    const { encWif } = await database.getAccount();
-    return !!encWif;
+    const account = await database.getAccount();
+    return !!account?.encWif;
 }
 
 // If the privateKey is null then the user connected a hardware wallet
