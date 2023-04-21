@@ -2413,7 +2413,7 @@ input {
     cursor:pointer;
 }
 
-.dcWallet-unstake {
+.dcWallet-stake {
     background-color: #ffffff29;
     width: 100px;
     height: 43px;
@@ -2426,7 +2426,7 @@ input {
     cursor: pointer;
 }
 
-.dcWallet-stake {
+.dcWallet-unstake {
     background-color: #ffffff29;
     width: 100px;
     height: 43px;
