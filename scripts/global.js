@@ -72,8 +72,8 @@ export function start() {
         domGuiBalanceBoxStaking: document.getElementById(
             'guiBalanceBoxStaking'
         ),
-        domGuiDelegateAmount: document.getElementById('delegateAmount'),
-        domGuiUndelegateAmount: document.getElementById('undelegateAmount'),
+        domStakeAmount: document.getElementById('delegateAmount'),
+        domUnstakeAmount: document.getElementById('undelegateAmount'),
         domStakeTab: document.getElementById('stakeTab'),
         domAddress1s: document.getElementById('address1s'),
         domSendAmountCoins: document.getElementById('sendAmountCoins'),
@@ -83,6 +83,25 @@ export function start() {
         domSendAmountValue: document.getElementById('sendAmountValue'),
         domSendAmountValueCurrency: document.getElementById(
             'sendAmountValueCurrency'
+        ),
+        domStakeAmountCoinsTicker: document.getElementById(
+            'stakeAmountCoinsTicker'
+        ),
+        domStakeAmountValueCurrency: document.getElementById(
+            'stakeAmountValueCurrency'
+        ),
+        domStakeAmountValue: document.getElementById(
+            'stakeAmountValue'
+        ),
+        domUnstakeAmountCoinsTicker: document.getElementById(
+            'unstakeAmountCoinsTicker'
+        ),
+        domUnstakeAmountValueCurrency: document.getElementById(
+            'unstakeAmountValueCurrency'
+        ),
+
+        domUnstakeAmountValue: document.getElementById(
+            'unstakeAmountValue'
         ),
         domGuiViewKey: document.getElementById('guiViewKey'),
         domModalQR: document.getElementById('ModalQR'),
@@ -210,6 +229,8 @@ export function start() {
     });
 
     // Register Input Pair events
+
+    /** Dashboard (Send) */
     doms.domSendAmountCoins.oninput = () => {
         updateAmountInputPair(
             doms.domSendAmountCoins,
@@ -221,6 +242,38 @@ export function start() {
         updateAmountInputPair(
             doms.domSendAmountCoins,
             doms.domSendAmountValue,
+            false
+        );
+    };
+
+    /** Staking (Stake) */
+    doms.domStakeAmount.oninput = () => {
+        updateAmountInputPair(
+            doms.domStakeAmount,
+            doms.domStakeAmountValue,
+            true
+        );
+    };
+    doms.domStakeAmountValue.oninput = () => {
+        updateAmountInputPair(
+            doms.domStakeAmount,
+            doms.domStakeAmountValue,
+            false
+        );
+    };
+
+    /** Staking (Unstake) */
+    doms.domUnstakeAmount.oninput = () => {
+        updateAmountInputPair(
+            doms.domUnstakeAmount,
+            doms.domUnstakeAmountValue,
+            true
+        );
+    };
+    doms.domUnstakeAmountValue.oninput = () => {
+        updateAmountInputPair(
+            doms.domUnstakeAmount,
+            doms.domUnstakeAmountValue,
             false
         );
     };
@@ -433,21 +486,29 @@ export function getStakingBalance(updateGUI = false) {
                 'en-gb',
                 cLocale
             );
+
+            // Update the Stake/Unstake menu ticker and currency
+            // Stake
+            doms.domStakeAmountValueCurrency.innerText =
+                strCurrency.toUpperCase();
+            doms.domStakeAmountCoinsTicker.innerText =
+                cChainParams.current.TICKER;
+            
+            // Unstake
+            doms.domStakeAmountValueCurrency.innerText =
+                strCurrency.toUpperCase();
+            doms.domUnstakeAmountCoinsTicker.innerText =
+                cChainParams.current.TICKER;
         });
     }
 
     return nBalance;
 }
 
-export function selectMaxBalance(domValueInput, fCold = false) {
-    domValueInput.value = (fCold ? getStakingBalance() : getBalance()) / COIN;
+export function selectMaxBalance(domCoin, domValue, fCold = false) {
+    domCoin.value = (fCold ? getStakingBalance() : getBalance()) / COIN;
     // Update the Send menu's value (assumption: if it's not a Cold balance, it's probably for Sending!)
-    if (!fCold)
-        updateAmountInputPair(
-            doms.domSendAmountCoins,
-            doms.domSendAmountValue,
-            true
-        );
+    updateAmountInputPair(domCoin, domValue, true);
 }
 
 /**
@@ -696,11 +757,11 @@ export async function updateAmountInputPair(domCoin, domValue, fCoinEdited) {
     const nPrice = await cMarket.getPrice(strCurrency);
     if (fCoinEdited) {
         // If the 'Coin' input is edited, then update the 'Value' input with it's converted currency
-        const nValue = Number(doms.domSendAmountCoins.value) * nPrice;
+        const nValue = Number(domCoin.value) * nPrice;
         domValue.value = nValue <= 0 ? '' : nValue;
     } else {
         // If the 'Value' input is edited, then update the 'Coin' input with the reversed conversion rate
-        const nValue = Number(doms.domSendAmountValue.value) / nPrice;
+        const nValue = Number(domValue.value) / nPrice;
         domCoin.value = nValue <= 0 ? '' : nValue;
     }
 }

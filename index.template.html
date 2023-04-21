@@ -565,7 +565,7 @@
                               <input class="btn-group-input" style="padding-right: 0px;" type="number" id="sendAmountCoins" placeholder="0.00" autocomplete="nope" onkeydown="javascript: return event.keyCode == 69 ? false : true" />
                               <div class="input-group-append">
                                 <span class="input-group-text p-0">
-                                  <div data-i18n="sendAmountCoinsMax" onclick="MPW.selectMaxBalance(MPW.doms.domSendAmountCoins)" style="cursor: pointer; border: 0px; border-radius: 7px; padding: 3px 6px; margin: 0px 1px; background: linear-gradient(183deg, #9621ff9c, #7d21ffc7); color: #fff; font-weight: bold;">
+                                  <div data-i18n="sendAmountCoinsMax" onclick="MPW.selectMaxBalance(MPW.doms.domSendAmountCoins, MPW.doms.domSendAmountValue)" style="cursor: pointer; border: 0px; border-radius: 7px; padding: 3px 6px; margin: 0px 1px; background: linear-gradient(183deg, #9621ff9c, #7d21ffc7); color: #fff; font-weight: bold;">
                                     MAX
                                   </div>
                                 </span>
@@ -855,20 +855,20 @@
                           <input class="btn-group-input" style="padding-right: 0px;" type="number" id="undelegateAmount" placeholder="0.00" autocomplete="nope" onkeydown="javascript: return event.keyCode == 69 ? false : true" />
                           <div class="input-group-append">
                             <span class="input-group-text p-0">
-                              <div onclick="MPW.selectMaxBalance(MPW.doms.domGuiUndelegateAmount, true)" style="cursor: pointer; border: 0px; border-radius: 7px; padding: 3px 6px; margin: 0px 1px; background: linear-gradient(183deg, #9621ff9c, #7d21ffc7); color: #fff; font-weight: bold;">
+                              <div onclick="MPW.selectMaxBalance(MPW.doms.domUnstakeAmount, MPW.doms.domUnstakeAmountValue, true)" style="cursor: pointer; border: 0px; border-radius: 7px; padding: 3px 6px; margin: 0px 1px; background: linear-gradient(183deg, #9621ff9c, #7d21ffc7); color: #fff; font-weight: bold;">
                                 MAX
                               </div>
                             </span>
-                            <span class="input-group-text">PIVX</span>
+                            <span id="unstakeAmountCoinsTicker" class="input-group-text">PIVX</span>
                           </div>
                         </div>
                       </div>
 
                       <div class="col-5 pl-2">
                         <div class="input-group mb-3">
-                          <input class="btn-group-input" type="text" id="value2s" placeholder="0.00" autocomplete="nope" onkeydown="javascript: return event.keyCode == 69 ? false : true" />
+                          <input class="btn-group-input" type="text" id="unstakeAmountValue" placeholder="0.00" autocomplete="nope" onkeydown="javascript: return event.keyCode == 69 ? false : true" />
                           <div class="input-group-append">
-                            <span class="input-group-text pl-0">USD</span>
+                            <span id="unstakeAmountValueCurrency" class="input-group-text pl-0">USD</span>
                           </div>
                         </div>
                       </div>
@@ -899,20 +899,20 @@
                           <input class="btn-group-input" style="padding-right: 0px;" type="number" id="delegateAmount" placeholder="0.00" autocomplete="nope" onkeydown="javascript: return event.keyCode == 69 ? false : true" />
                           <div class="input-group-append">
                             <span class="input-group-text p-0">
-                              <div onclick="MPW.selectMaxBalance(MPW.doms.domGuiDelegateAmount)" style="cursor: pointer; border: 0px; border-radius: 7px; padding: 3px 6px; margin: 0px 1px; background: linear-gradient(183deg, #9621ff9c, #7d21ffc7); color: #fff; font-weight: bold;">
+                              <div onclick="MPW.selectMaxBalance(MPW.doms.domStakeAmount, MPW.doms.domStakeAmountValue)" style="cursor: pointer; border: 0px; border-radius: 7px; padding: 3px 6px; margin: 0px 1px; background: linear-gradient(183deg, #9621ff9c, #7d21ffc7); color: #fff; font-weight: bold;">
                                 MAX
                               </div>
                             </span>
-                            <span class="input-group-text">PIVX</span>
+                            <span id="stakeAmountCoinsTicker" class="input-group-text">PIVX</span>
                           </div>
                         </div>
                       </div>
 
                       <div class="col-5 pl-2">
                         <div class="input-group mb-3">
-                          <input class="btn-group-input" type="text" id="value2s" placeholder="0.00" autocomplete="nope" onkeydown="javascript: return event.keyCode == 69 ? false : true" />
+                          <input class="btn-group-input" type="text" id="stakeAmountValue" placeholder="0.00" autocomplete="nope" onkeydown="javascript: return event.keyCode == 69 ? false : true" />
                           <div class="input-group-append">
-                            <span class="input-group-text pl-0">USD</span>
+                            <span id="stakeAmountValueCurrency" class="input-group-text pl-0">USD</span>
                           </div>
                         </div>
                       </div>

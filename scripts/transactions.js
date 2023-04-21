@@ -124,7 +124,7 @@ export async function delegateGUI() {
         return;
 
     // Verify the amount; Delegations must be a minimum of 1 PIV, enforced by the network
-    const nAmount = Number(doms.domGuiDelegateAmount.value.trim()) * COIN;
+    const nAmount = Number(doms.domStakeAmount.value.trim()) * COIN;
     if (!validateAmount(nAmount, COIN)) return;
 
     // Ensure the user has an address set - if not, request one!
@@ -165,7 +165,7 @@ export async function undelegateGUI() {
 
     // Verify the amount
     const nAmount = Math.round(
-        Number(doms.domGuiUndelegateAmount.value.trim()) * COIN
+        Number(doms.domUnstakeAmount.value.trim()) * COIN
     );
     if (!validateAmount(nAmount)) return;
 
