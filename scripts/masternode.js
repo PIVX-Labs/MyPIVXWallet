@@ -35,6 +35,10 @@ export default class Masternode {
         this.outidx = outidx;
         this.addr = addr;
     }
+    /**
+     * @type {[string, number]} array of vote hash and corresponding vote for the current session
+     */
+    static sessionVotes = [];
 
     async _getWalletPrivateKey() {
         return await masterKey.getPrivateKey(this.walletPrivateKeyPath);
@@ -223,7 +227,9 @@ export default class Masternode {
 
     async getWalletPublicKey() {
         if (masterKey.isHardwareWallet) {
-           return hexToBytes(await masterKey.getPublicKey(this.walletPrivateKeyPath));
+            return hexToBytes(
+                await masterKey.getPublicKey(this.walletPrivateKeyPath)
+            );
         } else {
             const walletPrivateKey = await this._getWalletPrivateKey();
             return hexToBytes(
@@ -349,7 +355,50 @@ export default class Masternode {
         );
         return Buffer.from([v + 27, ...signature]).toString('base64');
     }
-
+    /**
+     * @param {string} proposalName - the name of the proposal you want to get the vote of
+     * @param {string} hash - the hash of the proposal you want to get the vote of
+     * @return {Promise<number>} Vote code "Yes" is 1, "No" is 2
+     */
+    async getVote(proposalName, hash) {
+        //See if you already voted the proposal in the current session
+        const index = Masternode.sessionVotes.findIndex(
+            ([vHash]) => vHash === hash
+        );
+        if (index !== -1) {
+            //Found it! return the vote
+            return Masternode.sessionVotes[index][1];
+        }
+        //Haven't voted yet, fetch the result from Duddino's node
+        const filterString = `.[] | select(.mnId=="`;
+        const filter =
+            `${encodeURI(filterString)}` +
+            `${this.collateralTxId}-${this.outidx}")`;
+        const url = `${cNode.url}/getbudgetvotes?params=${proposalName}&filter=${filter}`;
+        try {
+            const { Vote: vote } = await (await fetch(url)).json();
+            return vote === 'YES' ? 1 : 2;
+        } catch (e) {
+            //Cannot parse JSON! This means that you did not vote hence return null
+            return null;
+        }
+    }
+    /**
+     * Stores a vote for the current session
+     * @param {string} hash - the hash of the proposal to vote
+     * @param {number} voteCode - the vote code. "Yes" is 1, "No" is 2
+     */
+    storeVote(hash, voteCode) {
+        const newVote = [hash, voteCode];
+        const index = Masternode.sessionVotes.findIndex(
+            ([vHash]) => vHash === hash
+        );
+        if (index !== -1) {
+            Masternode.sessionVotes[index] = newVote;
+        } else {
+            Masternode.sessionVotes.push(newVote);
+        }
+    }
     /**
      * @param {string} hash - the hash of the proposal to vote
      * @param {number} voteCode - the vote code. "Yes" is 1, "No" is 2
