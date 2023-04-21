@@ -57,7 +57,7 @@ export class Database {
      * @param {Array<any>} o.localProposals - Local proposals awaiting to be finalized
      */
     async addAccount({ publicKey, encWif, localProposals = [] }) {
-        const oldAccount = await getAccount();
+        const oldAccount = await this.getAccount();
         const newAccount = { publicKey, encWif, localProposals };
         const store = this.#db
             .transaction('accounts', 'readwrite')

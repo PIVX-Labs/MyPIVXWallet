@@ -702,7 +702,7 @@ async function govVote(hash, voteCode) {
         })) == true
     ) {
         const database = await Database.getInstance();
-        const cMasternode = database.getMasternode();
+        const cMasternode = await database.getMasternode();
         if (cMasternode) {
             if ((await cMasternode.getStatus()) !== 'ENABLED') {
                 createAlert(
@@ -1307,7 +1307,7 @@ async function renderProposals(arrProposals, fContested) {
     if (!fContested) {
         const database = await Database.getInstance();
 
-        const localProposals = (await database.getAccount())?.map((p) => {
+        const localProposals = (await database.getAccount())?.localProposals?.map((p) => {
             return {
                 Name: p.name,
                 URL: p.url,
@@ -1320,7 +1320,7 @@ async function renderProposals(arrProposals, fContested) {
                 Ratio: 0,
                 mpw: p,
             };
-        });
+        }) || [];
         arrProposals = localProposals.concat(arrProposals);
     }
     for (const cProposal of arrProposals) {
@@ -1369,14 +1369,12 @@ async function renderProposals(arrProposals, fContested) {
                     // Remove local Proposal from local storage
                     const database = await Database.getInstance();
                     const account = await database.getAccount();
-                    if (account) {
-                        const localProposals = account.localProposals;
-                        await database.addAccount({
-                            localProposals: localProposals.filter(
-                                (p) => p.txId !== cProposal.mpw.txId
-                            ),
-                        });
-                    }
+                    const localProposals = account?.localProposals || [];
+                    await database.addAccount({
+                        localProposals: localProposals.filter(
+                            (p) => p.txId !== cProposal.mpw.txId
+                        ),
+                    });
                 };
                 if (result.ok) {
                     createAlert('success', 'Proposal finalized!');
@@ -1661,6 +1659,8 @@ export async function createProposal() {
         monthlyPayment: numPayment * COIN,
     };
 
+    console.log(proposal);
+
     const isValid = Masternode.isValidProposal(proposal);
     console.log(isValid);
     if (!isValid.ok) {
@@ -1682,12 +1682,11 @@ export async function createProposal() {
         proposal.txid = txid;
         const database = await Database.getInstance();
         const account = await database.getAccount();
-        if (account) {
-            account.localProposals.push(proposal);
-            await database.addAccount(account);
-            createAlert('success', 'Proposal created! Please finalize it.');
-            updateGovernanceTab();
-        }
+	const localProposals = account?.localProposals || [];
+        localProposals.push(proposal);
+        await database.addAccount({ localProposals });
+        createAlert('success', 'Proposal created! Please finalize it.');
+        updateGovernanceTab();
     }
 }
 
