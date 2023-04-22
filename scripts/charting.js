@@ -9,6 +9,7 @@ import {
 } from 'chart.js';
 import { cChainParams, COIN } from './chain_params';
 import { doms, isMasternodeUTXO, mempool } from './global';
+import { masterKey } from './wallet';
 
 Chart.register(
     Colors,
@@ -45,8 +46,29 @@ export function getWalletDataset() {
         arrBreakdown.push({
             type: 'Public Available',
             balance: mempool.getBalance() / COIN,
-            colour: 'rgba(127, 17, 224, 1)',
+            colour: '#9236e2',
         });
+    }
+
+    // If Shield (Private Balances) is enabled, show them too
+    if (masterKey.shield) {
+        // Private (Available)
+        if (masterKey.shield.getBalance() > 0) {
+            arrBreakdown.push({
+                type: 'Private Available',
+                balance: masterKey.shield.getBalance() / COIN,
+                colour: '#781dc9',
+            });
+        }
+
+        // Private (Pending)
+        if (masterKey.shield.getPendingBalance() > 0) {
+            arrBreakdown.push({
+                type: 'Private Pending',
+                balance: masterKey.shield.getPendingBalance() / COIN,
+                colour: '#5e169c',
+            });
+        }
     }
 
     // Staking (Locked)
@@ -54,7 +76,7 @@ export function getWalletDataset() {
         arrBreakdown.push({
             type: 'Staking',
             balance: mempool.getDelegatedBalance() / COIN,
-            colour: 'rgba(42, 27, 66, 1)',
+            colour: '#360c5a',
         });
     }
 
@@ -66,7 +88,7 @@ export function getWalletDataset() {
         arrBreakdown.push({
             type: 'Masternode',
             balance: cMasternodeUTXO.sats / COIN,
-            colour: 'rgba(19, 13, 30, 1)',
+            colour: '#280943',
         });
     }
 
@@ -118,8 +140,8 @@ export async function generateWalletBreakdown(arrBreakdown) {
                     labels: {
                         color: '#FFFFFF',
                         font: {
-                            size: 16
-                        }
+                            size: 16,
+                        },
                     },
                 },
             },
