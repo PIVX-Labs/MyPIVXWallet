@@ -153,7 +153,7 @@ export async function delegateGUI() {
         doms.domStakeAmountValue.value = "";
 
         // And close the modal
-        MPW.toggleBottomMenu('stakingDeposit', 'transferAnimation');
+        MPW.toggleBottomMenu('stakingDelegate', 'transferAnimation');
     }
 }
 
@@ -202,7 +202,7 @@ export async function undelegateGUI() {
         doms.domUnstakeAmountValue.value = "";
 
         // And close the modal
-        MPW.toggleBottomMenu('stakingWithdraw', 'transferAnimation');
+        MPW.toggleBottomMenu('stakingUndelegate', 'transferAnimation');
     }
 }
 

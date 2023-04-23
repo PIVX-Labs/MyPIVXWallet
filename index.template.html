@@ -809,13 +809,13 @@
 
                         <div class="row lessTop p-0">
                           <div class="col-6 d-flex" style="justify-content: flex-start;">
-                            <div class="dcWallet-stake" onclick="MPW.toggleBottomMenu('stakingDeposit', 'transferAnimation')">
+                            <div class="dcWallet-stake" onclick="MPW.toggleBottomMenu('stakingDelegate', 'transferAnimation')">
                               Stake
                             </div>
                           </div>
 
                           <div class="col-6 d-flex" style="justify-content: flex-end;">
-                            <div class="dcWallet-unstake" onclick="MPW.toggleBottomMenu('stakingWithdraw', 'transferAnimation')">
+                            <div class="dcWallet-unstake" onclick="MPW.toggleBottomMenu('stakingUndelegate', 'transferAnimation')">
                               Unstake  
                             </div>
                           </div>
@@ -840,10 +840,10 @@
                   </div>
                 </div>
 
-                <div id="stakingWithdraw" class="exportKeysModalColor transferMenu transferAnimation">
+                <div id="stakingUndelegate" class="exportKeysModalColor transferMenu transferAnimation">
                   <div class="transferHeader">
                     <div class="transferHeaderText">Unstake</div>
-                    <div class="transferExit" onclick="MPW.toggleBottomMenu('stakingWithdraw', 'transferAnimation')"><i class="fa-solid fa-xmark"></i></div>
+                    <div class="transferExit" onclick="MPW.toggleBottomMenu('stakingUndelegate', 'transferAnimation')"><i class="fa-solid fa-xmark"></i></div>
                   </div>
 
                   <div class="transferBody">
@@ -884,10 +884,10 @@
                   </div>
                 </div>
 
-                <div id="stakingDeposit" class="exportKeysModalColor transferMenu transferAnimation">
+                <div id="stakingDelegate" class="exportKeysModalColor transferMenu transferAnimation">
                   <div class="transferHeader">
                     <div class="transferHeaderText">Stake</div>
-                    <div class="transferExit" onclick="MPW.toggleBottomMenu('stakingDeposit', 'transferAnimation')"><i class="fa-solid fa-xmark"></i></div>
+                    <div class="transferExit" onclick="MPW.toggleBottomMenu('stakingDelegate', 'transferAnimation')"><i class="fa-solid fa-xmark"></i></div>
                   </div>
 
                   <div class="transferBody">
