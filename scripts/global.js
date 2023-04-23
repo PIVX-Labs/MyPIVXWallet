@@ -505,6 +505,12 @@ export function getStakingBalance(updateGUI = false) {
     return nBalance;
 }
 
+/**
+ * Fill a 'Coin Amount' with all of a balance type, and update the 'Coin Value'
+ * @param {HTMLInputElement} domCoin - The 'Coin Amount' input element
+ * @param {HTMLInputElement} domValue - Th 'Coin Value' input element
+ * @param {boolean} fCold - Use the Cold Staking balance, or Available balance
+ */
 export function selectMaxBalance(domCoin, domValue, fCold = false) {
     domCoin.value = (fCold ? getStakingBalance() : getBalance()) / COIN;
     // Update the Send menu's value (assumption: if it's not a Cold balance, it's probably for Sending!)
