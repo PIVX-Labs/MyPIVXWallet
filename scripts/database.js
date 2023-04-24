@@ -121,10 +121,6 @@ export class Database {
         const store = this.#db
             .transaction('settings', 'readwrite')
             .objectStore('settings');
-        console.log({
-            ...oldSettings,
-            ...settings,
-        });
         await store.put(
             {
                 ...oldSettings,

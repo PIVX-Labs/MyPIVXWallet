@@ -247,7 +247,6 @@ export async function start() {
         doms.domGenVanityWallet.style.display = 'none';
         const database = await Database.getInstance();
         const { publicKey } = await database.getAccount();
-        console.log('Hi');
 
         if (publicKey) {
             importWallet({ newWif: publicKey });
@@ -1684,10 +1683,7 @@ export async function createProposal() {
         monthlyPayment: numPayment * COIN,
     };
 
-    console.log(proposal);
-
     const isValid = Masternode.isValidProposal(proposal);
-    console.log(isValid);
     if (!isValid.ok) {
         createAlert(
             'warning',
