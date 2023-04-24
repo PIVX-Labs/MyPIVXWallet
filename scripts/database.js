@@ -25,6 +25,7 @@ export class Database {
 
     close() {
         this.#db.close();
+        this.#db = null;
     }
 
     /**
@@ -76,7 +77,7 @@ export class Database {
         const store = this.#db
             .transaction('accounts', 'readwrite')
             .objectStore('accounts');
-        // WHen the account system is gonig to be added, the key is gonna be the publicKey
+        // When the account system is going to be added, the key is gonna be the publicKey
         await store.delete('account');
     }
 
@@ -183,6 +184,7 @@ export class Database {
 
     static async create(name) {
         let migrate = false;
+        const database = new Database({ db: null });
         const db = await openDB(`MPW-${name}`, 1, {
             upgrade: (db, oldVersion) => {
                 if (oldVersion == 0) {
@@ -193,16 +195,25 @@ export class Database {
                 }
             },
             blocking: () => {
-                // TODO: close
+                // Another instance is waiting to upgrade, and we're preventing it
+                // Close the database and refresh the page
+                // (This would only happen if the user opened another window after MPW got an update)
+                database.close();
+                alert('New update received!');
+                window.location.reload();
             },
         });
-        const database = new Database({ db });
+        database.#db = db;
         if (migrate) {
             database.#migrateLocalStorage();
         }
         return database;
     }
 
+    /**
+     * Map name->instnace
+     * @type{Map<String, Database>}
+     */
     static #instances = new Map();
 
     /**
@@ -210,7 +221,8 @@ export class Database {
      */
     static async getInstance() {
         const name = cChainParams.current.name;
-        if (!this.#instances.get(name)) {
+        const instance = this.#instances.get(name);
+        if (!instance || !instance.#db) {
             this.#instances.set(name, await Database.create(name));
         }
 
