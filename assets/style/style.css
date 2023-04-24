@@ -801,6 +801,18 @@ button {
     transition: all .2s ease-in-out;
 }
 
+.pivx-button-big-no-gov {
+    background-image: linear-gradient(183deg, #B31010, #A10E0E);
+    border-color: #850C0C;
+    pointer-events: none;
+}
+
+.pivx-button-big-yes-gov {
+    background-image: linear-gradient(183deg, #27823F, #237639);
+    border-color: #1F6130;
+    pointer-events: none;
+}
+
 .pivx-button-big::before {
   position: absolute;
   content: "";
