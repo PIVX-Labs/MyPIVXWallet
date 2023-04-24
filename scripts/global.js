@@ -563,6 +563,97 @@ export async function openSendQRScanner() {
 }
 
 /**
+ * Generate a DOM-optimised activity list
+ * @param {Array<object>} arrTXs - The TX array to compute the list from
+ * @param {boolean} fRewards - If this list is for Reward transactions
+ * @returns {string} HTML - The Activity List in HTML string form
+ */
+export function createActivityListHTML(arrTXs, fRewards = false) {
+    const cNet = getNetwork();
+
+    // Prepare the table HTML
+    let strList = `
+    <table class="table table-responsive table-sm stakingTx table-mobile-scroll">
+        <thead>
+            <tr>
+                <th scope="col" class="tx1">Time</th>
+                <th scope="col" class="tx2">Hash</th>
+                <th scope="col" class="tx3">Amount</th>
+                <th scope="col" class="tx4 text-right"></th>
+            </tr>
+        </thead>
+        <tbody>`;
+
+    // Prepare time formatting
+    const dateOptions = {
+            year: '2-digit',
+            month: '2-digit',
+            day: '2-digit',
+        };
+        const timeOptions = {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true,
+        };
+
+    // Generate the TX list
+    arrTXs.forEach((cTx) => {
+        const dateTime = new Date(cTx.time * 1000);
+        
+        // Coinbase Transactions (rewards) require 100 confs
+        const fConfirmed = cNet.cachedBlockCount - cTx.blockHeight >= fRewards ? 100 : 6;
+
+        // Render the list element from Tx data
+        strList += `
+            <tr>
+                <td class="align-middle pr-10px" style="font-size:12px;">
+                    <i style="opacity: 0.75;">
+                        ${
+                            Date.now() / 1000 - cTx.time > 86400
+                                ? dateTime.toLocaleDateString(
+                                      undefined,
+                                      dateOptions
+                                  )
+                                : dateTime.toLocaleTimeString(
+                                      undefined,
+                                      timeOptions
+                                  )
+                        }
+                    </i>
+                </td>
+                <td class="align-middle pr-10px txcode">
+                    <a href="${cExplorer.url}/tx/${
+            cTx.id
+        }" target="_blank" rel="noopener noreferrer">
+                        <code class="wallet-code text-center active ptr" style="padding: 4px 9px;">${cTx.id.slice(
+                            0,
+                            24
+                        )}</code>
+                    </a>
+                </td>
+                <td class="align-middle pr-10px">
+                    <b><i class="fa-solid fa-gift"></i> ${cTx.amount} ${
+            cChainParams.current.TICKER
+        }</b>
+                </td>
+                <td class="text-right pr-10px align-middle">
+                    <span class="badge ${fConfirmed ? 'badge-purple' : 'bg-danger'} mb-0">${
+                        fConfirmed
+                ? '<i class="fas fa-check"></i>'
+                : `<i class="fas fa-hourglass-end"></i>`
+        }</span>
+                </td>
+            </tr>`;
+    });
+
+    // End the table
+    strList += `</tbody></table>`;
+
+    // Return the HTML string
+    return strList;
+}
+
+/**
  * Refreshes the Staking Rewards table, charts and related information
  */
 export async function updateStakingRewardsGUI() {
@@ -582,86 +673,14 @@ export async function updateStakingRewardsGUI() {
         doms.domGuiStakingLoadMore.style.display = 'none';
     }
 
-    // DOM-optimised list generation
-    let strList = `
-    <table class="table table-responsive table-sm stakingTx table-mobile-scroll">
-        <thead>
-            <tr>
-                <th scope="col" class="tx1">Time</th>
-                <th scope="col" class="tx2">Hash</th>
-                <th scope="col" class="tx3">Amount</th>
-                <th scope="col" class="tx4 text-right"></th>
-            </tr>
-        </thead>
-        <tbody>`;
-
-    let nRewards = 0;
-    arrRewards.forEach((cReward) => {
-        nRewards += cReward.amount;
-        const dateTime = new Date(cReward.time * 1000);
-        const dateOptions = {
-            year: '2-digit',
-            month: '2-digit',
-            day: '2-digit',
-        };
-        const timeOptions = {
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: true,
-        };
-        strList += `
-            <tr>
-                <td class="align-middle pr-10px" style="font-size:12px;">
-                    <i style="opacity: 0.75;">
-                        ${
-                            Date.now() / 1000 - cReward.time > 86400
-                                ? dateTime.toLocaleDateString(
-                                      undefined,
-                                      dateOptions
-                                  )
-                                : dateTime.toLocaleTimeString(
-                                      undefined,
-                                      timeOptions
-                                  )
-                        }
-                    </i>
-                </td>
-                <td class="align-middle pr-10px txcode">
-                    <a href="${cExplorer.url}/tx/${
-            cReward.id
-        }" target="_blank" rel="noopener noreferrer">
-                        <code class="wallet-code text-center active ptr" style="padding: 4px 9px;">${cReward.id.slice(
-                            0,
-                            24
-                        )}</code>
-                    </a>
-                </td>
-                <td class="align-middle pr-10px">
-                    <b><i class="fa-solid fa-gift"></i> ${cReward.amount} ${
-            cChainParams.current.TICKER
-        }</b>
-                </td>
-                <td class="text-right pr-10px align-middle">
-                    <span class="badge ${
-                        cNet.cachedBlockCount - cReward.blockHeight >= 100
-                            ? 'badge-purple'
-                            : 'bg-danger'
-                    } mb-0">${
-            cNet.cachedBlockCount - cReward.blockHeight >= 100
-                ? '<i class="fas fa-check"></i>'
-                : `<i class="fas fa-hourglass-end"></i>`
-        }</span>
-                </td>
-            </tr>`;
-    });
-
-    strList += `</tbody></table>`;
-
-    // Update the DOM
+    // Display total rewards from known history
+    const nRewards = arrRewards.reduce((a, b) => a + b.amount, 0);
     doms.domStakingRewardsTitle.innerHTML = `${
         cNet.areRewardsComplete ? '' : '≥'
     }${nRewards} ${cChainParams.current.TICKER}`;
-    doms.domStakingRewardsList.innerHTML = strList;
+
+    // Create and render the Activity List
+    doms.domStakingRewardsList.innerHTML = createActivityListHTML(arrRewards);
 }
 
 /**
