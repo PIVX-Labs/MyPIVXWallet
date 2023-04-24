@@ -132,21 +132,68 @@ export class Database {
         );
     }
 
+    /**
+     * Migrates from local storage
+     * @param {IDBPDatabase} db
+     */
+    async #migrateLocalStorage() {
+	if (localStorage.length === 0) return;
+	const settings = new Settings(
+	    {
+		analytics: localStorage.analytics,
+		explorer: localStorage.explorer,
+		node: localStorage.node,
+		translation: localStorage.translation,
+		displayCurrency: localStorage.displayCurrency
+	    }
+	);
+	await this.setSettings(settings);
+
+	if (localStorage.masternode) {
+	    try {
+		const masternode = JSON.parse(localStorage.masternode);
+		await this.addMasternode(masternode);
+	    } catch(e) {
+		console.error(e);
+		createAlert('warning', 'Failed to recover your masternode. Please reimport it.');
+	    }
+	}
+
+	if (localStorage.encwif || localStorage.publicKey) {
+	    try {
+		const localProposals = JSON.parse(localStorage.localProposals || '[]');
+		await this.addAccount({
+		    publicKey: localStorage.publicKey,
+		    encWif: localStorage.encwif,
+		    localProposals
+		});
+	    } catch (e) {
+		console.error(e);
+		createAlert('warning', 'Failed to recover your account. Please reimport it.');
+	    }
+	}
+    }
+
     static async create() {
+	let migrate = false;
         const db = await openDB('MPW', 1, {
             upgrade: (db, oldVersion) => {
-                console.log(oldVersion);
                 if (oldVersion == 0) {
                     db.createObjectStore('masternodes');
                     db.createObjectStore('accounts');
                     db.createObjectStore('settings');
+		    migrate = true;
                 }
             },
             blocking: () => {
                 // TODO: close
             },
         });
-        return new Database({ db });
+	const database = new Database({ db });
+	if (migrate) {
+	    database.#migrateLocalStorage();
+	}
+        return database;
     }
 
     static #instance = null;
