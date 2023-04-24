@@ -1,6 +1,7 @@
 import { openDB, IDBPDatabase } from 'idb';
 import Masternode from './masternode.js';
 import { Settings } from './settings.js';
+import { cChainParams } from './chain_params.js';
 
 /**
  *
@@ -137,75 +138,82 @@ export class Database {
      * @param {IDBPDatabase} db
      */
     async #migrateLocalStorage() {
-	if (localStorage.length === 0) return;
-	const settings = new Settings(
-	    {
-		analytics: localStorage.analytics,
-		explorer: localStorage.explorer,
-		node: localStorage.node,
-		translation: localStorage.translation,
-		displayCurrency: localStorage.displayCurrency
-	    }
-	);
-	await this.setSettings(settings);
+        if (localStorage.length === 0) return;
+        const settings = new Settings({
+            analytics: localStorage.analytics,
+            explorer: localStorage.explorer,
+            node: localStorage.node,
+            translation: localStorage.translation,
+            displayCurrency: localStorage.displayCurrency,
+        });
+        await this.setSettings(settings);
 
-	if (localStorage.masternode) {
-	    try {
-		const masternode = JSON.parse(localStorage.masternode);
-		await this.addMasternode(masternode);
-	    } catch(e) {
-		console.error(e);
-		createAlert('warning', 'Failed to recover your masternode. Please reimport it.');
-	    }
-	}
+        if (localStorage.masternode) {
+            try {
+                const masternode = JSON.parse(localStorage.masternode);
+                await this.addMasternode(masternode);
+            } catch (e) {
+                console.error(e);
+                createAlert(
+                    'warning',
+                    'Failed to recover your masternode. Please reimport it.'
+                );
+            }
+        }
 
-	if (localStorage.encwif || localStorage.publicKey) {
-	    try {
-		const localProposals = JSON.parse(localStorage.localProposals || '[]');
-		await this.addAccount({
-		    publicKey: localStorage.publicKey,
-		    encWif: localStorage.encwif,
-		    localProposals
-		});
-	    } catch (e) {
-		console.error(e);
-		createAlert('warning', 'Failed to recover your account. Please reimport it.');
-	    }
-	}
+        if (localStorage.encwif || localStorage.publicKey) {
+            try {
+                const localProposals = JSON.parse(
+                    localStorage.localProposals || '[]'
+                );
+                await this.addAccount({
+                    publicKey: localStorage.publicKey,
+                    encWif: localStorage.encwif,
+                    localProposals,
+                });
+            } catch (e) {
+                console.error(e);
+                createAlert(
+                    'warning',
+                    'Failed to recover your account. Please reimport it.'
+                );
+            }
+        }
     }
 
-    static async create() {
-	let migrate = false;
-        const db = await openDB('MPW', 1, {
+    static async create(name) {
+        let migrate = false;
+        const db = await openDB(`MPW-${name}`, 1, {
             upgrade: (db, oldVersion) => {
                 if (oldVersion == 0) {
                     db.createObjectStore('masternodes');
                     db.createObjectStore('accounts');
                     db.createObjectStore('settings');
-		    migrate = true;
+                    migrate = true;
                 }
             },
             blocking: () => {
                 // TODO: close
             },
         });
-	const database = new Database({ db });
-	if (migrate) {
-	    database.#migrateLocalStorage();
-	}
+        const database = new Database({ db });
+        if (migrate) {
+            database.#migrateLocalStorage();
+        }
         return database;
     }
 
-    static #instance = null;
+    static #instances = new Map();
 
     /**
      * @return {Promise<Database>} the default database instance
      */
     static async getInstance() {
-        if (!this.#instance) {
-            this.#instance = await Database.create();
+        const name = cChainParams.current.name;
+        if (!this.#instances.get(name)) {
+            this.#instances.set(name, await Database.create(name));
         }
 
-        return this.#instance;
+        return this.#instances.get(name);
     }
 }

@@ -1311,20 +1311,21 @@ async function renderProposals(arrProposals, fContested) {
     if (!fContested) {
         const database = await Database.getInstance();
 
-        const localProposals = (await database.getAccount())?.localProposals?.map((p) => {
-            return {
-                Name: p.name,
-                URL: p.url,
-                MonthlyPayment: p.monthlyPayment / COIN,
-                RemainingPaymentCount: p.nPayments,
-                TotalPayment: p.nPayments * (p.monthlyPayment / COIN),
-                Yeas: 0,
-                Nays: 0,
-                local: true,
-                Ratio: 0,
-                mpw: p,
-            };
-        }) || [];
+        const localProposals =
+            (await database.getAccount())?.localProposals?.map((p) => {
+                return {
+                    Name: p.name,
+                    URL: p.url,
+                    MonthlyPayment: p.monthlyPayment / COIN,
+                    RemainingPaymentCount: p.nPayments,
+                    TotalPayment: p.nPayments * (p.monthlyPayment / COIN),
+                    Yeas: 0,
+                    Nays: 0,
+                    local: true,
+                    Ratio: 0,
+                    mpw: p,
+                };
+            }) || [];
         arrProposals = localProposals.concat(arrProposals);
     }
     arrProposals = await Promise.all(
@@ -1706,7 +1707,7 @@ export async function createProposal() {
         proposal.txid = txid;
         const database = await Database.getInstance();
         const account = await database.getAccount();
-	const localProposals = account?.localProposals || [];
+        const localProposals = account?.localProposals || [];
         localProposals.push(proposal);
         await database.addAccount({ localProposals });
         createAlert('success', 'Proposal created! Please finalize it.');
