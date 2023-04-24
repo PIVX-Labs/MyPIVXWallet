@@ -2,6 +2,7 @@ import { openDB, IDBPDatabase } from 'idb';
 import Masternode from './masternode.js';
 import { Settings } from './settings.js';
 import { cChainParams } from './chain_params.js';
+import { confirmPopup, sanitizeHTML, createAlert } from './misc.js';
 
 /**
  *
@@ -174,6 +175,12 @@ export class Database {
                     'warning',
                     'Failed to recover your account. Please reimport it.'
                 );
+		if (localStorage.encwif) {
+		    await confirmPopup({
+			title: 'Failed to recover account',
+			html: `There was an error recovering your account. <br> Please reimport your wallet using the following key: <code id="exportPrivateKeyText">${sanitizeHTML(localStorage.encwif)} </code>`,
+		    });
+		}
             }
         }
     }
