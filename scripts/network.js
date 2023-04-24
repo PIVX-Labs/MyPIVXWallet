@@ -68,7 +68,7 @@ export class Network {
         throw new Error('sendTransaction must be implemented');
     }
 
-    submitAnalytics(strType, cData = {}) {
+    submitAnalytics(_strType, _cData = {}) {
         throw new Error('submitAnalytics must be implemented');
     }
 
@@ -76,7 +76,7 @@ export class Network {
         this.masterKey = masterKey;
     }
 
-    async getTxInfo(txHash) {
+    async getTxInfo(_txHash) {
         throw new Error('getTxInfo must be implemented');
     }
 }
