@@ -149,8 +149,8 @@ export async function delegateGUI() {
 
     // If successful, reset the inputs
     if (cTxRes.ok) {
-        doms.domStakeAmount.value = "";
-        doms.domStakeAmountValue.value = "";
+        doms.domStakeAmount.value = '';
+        doms.domStakeAmountValue.value = '';
 
         // And close the modal
         MPW.toggleBottomMenu('stakingDelegate', 'transferAnimation');
@@ -198,8 +198,8 @@ export async function undelegateGUI() {
         await undelegateGUI();
     } else {
         // If successful, reset the inputs
-        doms.domUnstakeAmount.value = "";
-        doms.domUnstakeAmountValue.value = "";
+        doms.domUnstakeAmount.value = '';
+        doms.domUnstakeAmountValue.value = '';
 
         // And close the modal
         MPW.toggleBottomMenu('stakingUndelegate', 'transferAnimation');
