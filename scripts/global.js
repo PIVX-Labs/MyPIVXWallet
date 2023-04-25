@@ -90,9 +90,7 @@ export function start() {
         domStakeAmountValueCurrency: document.getElementById(
             'stakeAmountValueCurrency'
         ),
-        domStakeAmountValue: document.getElementById(
-            'stakeAmountValue'
-        ),
+        domStakeAmountValue: document.getElementById('stakeAmountValue'),
         domUnstakeAmountCoinsTicker: document.getElementById(
             'unstakeAmountCoinsTicker'
         ),
@@ -100,9 +98,7 @@ export function start() {
             'unstakeAmountValueCurrency'
         ),
 
-        domUnstakeAmountValue: document.getElementById(
-            'unstakeAmountValue'
-        ),
+        domUnstakeAmountValue: document.getElementById('unstakeAmountValue'),
         domGuiViewKey: document.getElementById('guiViewKey'),
         domModalQR: document.getElementById('ModalQR'),
         domModalQrLabel: document.getElementById('ModalQRLabel'),
@@ -407,33 +403,26 @@ export function openTab(evt, tabName) {
  */
 export function updateTicker() {
     // Update the Dashboard currency
-    doms.domGuiBalanceValueCurrency.innerText =
-    strCurrency.toUpperCase();
+    doms.domGuiBalanceValueCurrency.innerText = strCurrency.toUpperCase();
 
     // Update the Send menu ticker and currency
-    doms.domSendAmountValueCurrency.innerText =
-        strCurrency.toUpperCase();
-    doms.domSendAmountCoinsTicker.innerText =
-        cChainParams.current.TICKER;
+    doms.domSendAmountValueCurrency.innerText = strCurrency.toUpperCase();
+    doms.domSendAmountCoinsTicker.innerText = cChainParams.current.TICKER;
 
     // Update the Stake/Unstake menu ticker and currency
     // Stake
-    doms.domStakeAmountValueCurrency.innerText =
-        strCurrency.toUpperCase();
-    doms.domStakeAmountCoinsTicker.innerText =
-        cChainParams.current.TICKER;
+    doms.domStakeAmountValueCurrency.innerText = strCurrency.toUpperCase();
+    doms.domStakeAmountCoinsTicker.innerText = cChainParams.current.TICKER;
 
     // Unstake
-    doms.domStakeAmountValueCurrency.innerText =
-        strCurrency.toUpperCase();
-    doms.domUnstakeAmountCoinsTicker.innerText =
-        cChainParams.current.TICKER;
+    doms.domStakeAmountValueCurrency.innerText = strCurrency.toUpperCase();
+    doms.domUnstakeAmountCoinsTicker.innerText = cChainParams.current.TICKER;
 }
 
 /**
  * Update a 'price value' DOM display for the given balance type
- * @param {HTMLElement} domValue 
- * @param {boolean} fCold 
+ * @param {HTMLElement} domValue
+ * @param {boolean} fCold
  */
 export function updatePriceDisplay(domValue, fCold = false) {
     // Update currency values
@@ -450,7 +439,8 @@ export function updatePriceDisplay(domValue, fCold = false) {
             : { maximumFractionDigits: 8, minimumFractionDigits: 8 };
 
         // Calculate the value
-        let nValue = ((fCold ? getStakingBalance() : getBalance()) / COIN) * nPrice;
+        let nValue =
+            ((fCold ? getStakingBalance() : getBalance()) / COIN) * nPrice;
 
         // Handle certain edge-cases; like satoshis having decimals.
         switch (strCurrency) {
@@ -461,10 +451,7 @@ export function updatePriceDisplay(domValue, fCold = false) {
         }
 
         // Update the DOM
-        domValue.innerText = nValue.toLocaleString(
-            'en-gb',
-            cLocale
-        );
+        domValue.innerText = nValue.toLocaleString('en-gb', cLocale);
     });
 }
 
@@ -477,7 +464,8 @@ export function getBalance(updateGUI = false) {
         // Set the balance, and adjust font-size for large balance strings
         const nLen = nCoins.toFixed(2).length;
         doms.domGuiBalance.innerText = nCoins.toFixed(nLen >= 6 ? 0 : 2);
-        doms.domAvailToDelegate.innerText = nCoins.toFixed(2) + ' ' + cChainParams.current.TICKER;
+        doms.domAvailToDelegate.innerText =
+            nCoins.toFixed(2) + ' ' + cChainParams.current.TICKER;
 
         // Update tickers
         updateTicker();
@@ -496,7 +484,8 @@ export function getStakingBalance(updateGUI = false) {
     if (updateGUI) {
         // Set the balance, and adjust font-size for large balance strings
         doms.domGuiBalanceStaking.innerText = Math.floor(nBalance / COIN);
-        doms.domAvailToUndelegate.innerText = (nBalance / COIN).toFixed(2) + ' ' + cChainParams.current.TICKER;
+        doms.domAvailToUndelegate.innerText =
+            (nBalance / COIN).toFixed(2) + ' ' + cChainParams.current.TICKER;
 
         // Update tickers
         updateTicker();
@@ -589,22 +578,23 @@ export function createActivityListHTML(arrTXs, fRewards = false) {
 
     // Prepare time formatting
     const dateOptions = {
-            year: '2-digit',
-            month: '2-digit',
-            day: '2-digit',
-        };
-        const timeOptions = {
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: true,
-        };
+        year: '2-digit',
+        month: '2-digit',
+        day: '2-digit',
+    };
+    const timeOptions = {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true,
+    };
 
     // Generate the TX list
     arrTXs.forEach((cTx) => {
         const dateTime = new Date(cTx.time * 1000);
-        
+
         // Coinbase Transactions (rewards) require 100 confs
-        const fConfirmed = cNet.cachedBlockCount - cTx.blockHeight >= fRewards ? 100 : 6;
+        const fConfirmed =
+            cNet.cachedBlockCount - cTx.blockHeight >= fRewards ? 100 : 6;
 
         // Render the list element from Tx data
         strList += `
@@ -640,8 +630,10 @@ export function createActivityListHTML(arrTXs, fRewards = false) {
         }</b>
                 </td>
                 <td class="text-right pr-10px align-middle">
-                    <span class="badge ${fConfirmed ? 'badge-purple' : 'bg-danger'} mb-0">${
-                        fConfirmed
+                    <span class="badge ${
+                        fConfirmed ? 'badge-purple' : 'bg-danger'
+                    } mb-0">${
+            fConfirmed
                 ? '<i class="fas fa-check"></i>'
                 : `<i class="fas fa-hourglass-end"></i>`
         }</span>
