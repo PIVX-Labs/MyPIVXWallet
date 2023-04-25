@@ -513,15 +513,16 @@ export async function updateStakingRewardsGUI() {
 
 export async function updateMasternodeRewardsGUI() {
     const network = getNetwork();
-    const masternodeRewards = await network.getMasternodeRewards();
+    const arrMasternodeRewards = await network.getMasternodeRewards();
+
     if (network.areRewardsMasternodeComplete) {
         // Hide the load more button
         doms.domGuiMasternodeLoadMore.style.display = 'none';
     }
 
     //DOMS.DOM-optimised list generation
-    const strList = masternodeRewards
-        .map(
+    const strList = arrMasternodeRewards
+       .map(
             (cReward) =>
                 `<i style="opacity: 0.75; cursor: pointer" onclick="window.open('${
                     cExplorer.url + '/tx/' + cReward.id
@@ -533,7 +534,7 @@ export async function updateMasternodeRewardsGUI() {
         )
         .join('<br>');
     // Calculate total
-    const nRewards = masternodeRewards.reduce(
+    const nRewards = arrMasternodeRewards.reduce(
         (total, reward) => total + reward.amount,
         0
     );

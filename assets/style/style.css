@@ -627,7 +627,7 @@ button {
 .masternode-rewards-list {
     overflow: auto;
     font-size: large;
-    height: 85%;
+    height: 55%;
 }
 
 #staking-rectangle {
@@ -688,6 +688,7 @@ button {
     margin-right: auto !important;
     height: 220px;
     margin: 30px 5px 10px;
+    display: inline-block;
 }
 
 

@@ -105,7 +105,7 @@ export class ExplorerNetwork extends Network {
         this.blocks = 0;
 
         this.arrRewards = [];
-        this.masternodeRewards = [];
+        this.arrMnRewards = [];
         this.rewardsSyncing = false;
         this.rewardsMasternodeSyncing = false;
     }
@@ -349,7 +349,7 @@ export class ExplorerNetwork extends Network {
      */
     async getMasternodeRewards() {
         if (this.rewardsMasternodeSyncing) {
-            return this.masternodeRewards;
+            return this.arrMnRewards;
         }
         if(localStorage.getItem('masternode')) {
             const cMasternode = new Masternode(
@@ -357,27 +357,16 @@ export class ExplorerNetwork extends Network {
             );
             const cMasternodeData = await cMasternode.getFullData();
             if (this.rewardsMasternodeSyncing) {
-                return this.masternodeRewards;
+                return this.arrMnRewards;
             }
             try {
                 if (!this.enabled || this.areRewardsMasternodeComplete)
-                    return this.masternodeRewards;
+                    return this.arrMnRewards;
                 this.rewardsMasternodeSyncing = true;
-                const nHeight = this.masternodeRewards.length
-                    ? this.masternodeRewards[this.masternodeRewards.length - 1].blockHeight
+                const nHeight = this.arrMnRewards.length
+                    ? this.arrMnRewards[this.arrMnRewards.length - 1].blockHeight
                     : 0;
                 const mapPaths = new Map();
-                const txSum = (v) =>
-                    v.reduce(
-                        (t, s) =>
-                            t +
-                            (s.addresses
-                                .map((strAddr) => mapPaths.get(strAddr))
-                                .filter((v) => v).length && s.addresses.length === 2
-                                ? parseInt(s.value)
-                                : 0),
-                        0
-                    );
                 let cData;
                 cData = await (
                     await fetch(
@@ -391,7 +380,7 @@ export class ExplorerNetwork extends Network {
                 mapPaths.set(cMasternodeData.addr, ':)');
             if (cData && cData.transactions) {
                 // Update rewards
-                this.masternodeRewards = this.masternodeRewards.concat(
+                this.arrMnRewards = this.arrMnRewards.concat(
                     cData.transactions
                         .filter(
                             (tx) => tx.vout[0].addresses[0] === 'CoinStake TX'
@@ -401,7 +390,7 @@ export class ExplorerNetwork extends Network {
                                 id: tx.txid,
                                 time: tx.blockTime,
                                 blockHeight: tx.blockHeight,
-                                amount: txSum(tx.vout.slice(-1)) / COIN,
+                                amount: tx.vout[2].value / COIN,
                             };
                         })
                         .filter((tx) => tx.amount != 0)
@@ -412,7 +401,7 @@ export class ExplorerNetwork extends Network {
                         this.areMasternodeRewardsComplete = true;
                     }
                 }
-                return this.masternodeRewards;
+                return this.arrMnRewards;
             } catch (e) {
                 console.error(e);
             } finally {
