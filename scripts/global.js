@@ -402,6 +402,72 @@ export function openTab(evt, tabName) {
     }
 }
 
+/**
+ * Updates the GUI ticker among all elements; useful for Network Switching
+ */
+export function updateTicker() {
+    // Update the Dashboard currency
+    doms.domGuiBalanceValueCurrency.innerText =
+    strCurrency.toUpperCase();
+
+    // Update the Send menu ticker and currency
+    doms.domSendAmountValueCurrency.innerText =
+        strCurrency.toUpperCase();
+    doms.domSendAmountCoinsTicker.innerText =
+        cChainParams.current.TICKER;
+
+    // Update the Stake/Unstake menu ticker and currency
+    // Stake
+    doms.domStakeAmountValueCurrency.innerText =
+        strCurrency.toUpperCase();
+    doms.domStakeAmountCoinsTicker.innerText =
+        cChainParams.current.TICKER;
+
+    // Unstake
+    doms.domStakeAmountValueCurrency.innerText =
+        strCurrency.toUpperCase();
+    doms.domUnstakeAmountCoinsTicker.innerText =
+        cChainParams.current.TICKER;
+}
+
+/**
+ * Update a 'price value' DOM display for the given balance type
+ * @param {HTMLElement} domValue 
+ * @param {boolean} fCold 
+ */
+export function updatePriceDisplay(domValue, fCold = false) {
+    // Update currency values
+    cMarket.getPrice(strCurrency).then((nPrice) => {
+        // Configure locale settings by detecting currency support
+        const cLocale = Intl.supportedValuesOf('currency').includes(
+            strCurrency.toUpperCase()
+        )
+            ? {
+                  style: 'currency',
+                  currency: strCurrency,
+                  currencyDisplay: 'narrowSymbol',
+              }
+            : { maximumFractionDigits: 8, minimumFractionDigits: 8 };
+
+        // Calculate the value
+        let nValue = ((fCold ? getStakingBalance() : getBalance()) / COIN) * nPrice;
+
+        // Handle certain edge-cases; like satoshis having decimals.
+        switch (strCurrency) {
+            case 'sats':
+                nValue = Math.round(nValue);
+                cLocale.maximumFractionDigits = 0;
+                cLocale.minimumFractionDigits = 0;
+        }
+
+        // Update the DOM
+        domValue.innerText = nValue.toLocaleString(
+            'en-gb',
+            cLocale
+        );
+    });
+}
+
 export function getBalance(updateGUI = false) {
     const nBalance = mempool.getBalance();
     const nCoins = nBalance / COIN;
@@ -413,41 +479,11 @@ export function getBalance(updateGUI = false) {
         doms.domGuiBalance.innerText = nCoins.toFixed(nLen >= 6 ? 0 : 2);
         doms.domAvailToDelegate.innerText = nCoins.toFixed(2) + ' ' + cChainParams.current.TICKER;
 
-        // Update currency values
-        cMarket.getPrice(strCurrency).then((nPrice) => {
-            // Configure locale settings by detecting currency support
-            const cLocale = Intl.supportedValuesOf('currency').includes(
-                strCurrency.toUpperCase()
-            )
-                ? {
-                      style: 'currency',
-                      currency: strCurrency,
-                      currencyDisplay: 'narrowSymbol',
-                  }
-                : { maximumFractionDigits: 8, minimumFractionDigits: 8 };
-            let nValue = nCoins * nPrice;
-            // Handle certain edge-cases; like satoshis having decimals.
-            switch (strCurrency) {
-                case 'sats':
-                    nValue = Math.round(nValue);
-                    cLocale.maximumFractionDigits = 0;
-                    cLocale.minimumFractionDigits = 0;
-            }
-            doms.domGuiBalanceValue.innerText = nValue.toLocaleString(
-                'en-gb',
-                cLocale
-            );
+        // Update tickers
+        updateTicker();
 
-            // Update the Dashboard currency
-            doms.domGuiBalanceValueCurrency.innerText =
-                strCurrency.toUpperCase();
-
-            // Update the Send menu ticker and currency
-            doms.domSendAmountValueCurrency.innerText =
-                strCurrency.toUpperCase();
-            doms.domSendAmountCoinsTicker.innerText =
-                cChainParams.current.TICKER;
-        });
+        // Update price displays
+        updatePriceDisplay(doms.domGuiBalanceValue);
     }
 
     return nBalance;
@@ -462,44 +498,11 @@ export function getStakingBalance(updateGUI = false) {
         doms.domGuiBalanceStaking.innerText = Math.floor(nBalance / COIN);
         doms.domAvailToUndelegate.innerText = (nBalance / COIN).toFixed(2) + ' ' + cChainParams.current.TICKER;
 
-        // Update currency values
-        cMarket.getPrice(strCurrency).then((nPrice) => {
-            // Configure locale settings by detecting currency support
-            const cLocale = Intl.supportedValuesOf('currency').includes(
-                strCurrency.toUpperCase()
-            )
-                ? {
-                      style: 'currency',
-                      currency: strCurrency,
-                      currencyDisplay: 'narrowSymbol',
-                  }
-                : { maximumFractionDigits: 8, minimumFractionDigits: 8 };
-            let nValue = nCoins * nPrice;
-            // Handle certain edge-cases; like satoshis having decimals.
-            switch (strCurrency) {
-                case 'sats':
-                    nValue = Math.round(nValue);
-                    cLocale.maximumFractionDigits = 0;
-                    cLocale.minimumFractionDigits = 0;
-            }
-            doms.domGuiStakingValue.innerText = nValue.toLocaleString(
-                'en-gb',
-                cLocale
-            );
+        // Update tickers
+        updateTicker();
 
-            // Update the Stake/Unstake menu ticker and currency
-            // Stake
-            doms.domStakeAmountValueCurrency.innerText =
-                strCurrency.toUpperCase();
-            doms.domStakeAmountCoinsTicker.innerText =
-                cChainParams.current.TICKER;
-            
-            // Unstake
-            doms.domStakeAmountValueCurrency.innerText =
-                strCurrency.toUpperCase();
-            doms.domUnstakeAmountCoinsTicker.innerText =
-                cChainParams.current.TICKER;
-        });
+        // Update price displays
+        updatePriceDisplay(doms.domGuiStakingValue, true);
     }
 
     return nBalance;
