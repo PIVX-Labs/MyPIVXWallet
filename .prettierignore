@@ -1,0 +1,7 @@
+node_modules/
+index.template.html
+*.css
+*.yaml
+LICENSE
+*.md
+*.json

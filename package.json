@@ -9,8 +9,8 @@
     "dev": "webpack serve --config webpack.dev.js",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist",
-    "prettier": "prettier --write --cache scripts",
-    "lint": "eslint scripts/",
+    "prettier": "prettier --write --cache scripts locale/ *.js",
+    "lint": "eslint scripts/ *.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

@@ -1813,7 +1813,9 @@ export const beforeUnloadListener = (evt) => {
 };
 
 function errorHandler(e) {
-    const message = `Unhandled exception. <br> ${sanitizeHTML(e.message || e.reason)}`;
+    const message = `Unhandled exception. <br> ${sanitizeHTML(
+        e.message || e.reason
+    )}`;
     try {
         createAlert('warning', message);
     } catch (_) {

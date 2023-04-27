@@ -1,9 +1,12 @@
+/* eslint-env node */
+/* eslint @typescript-eslint/no-var-requires: "off" */
+
 const path = require('path');
 const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const NodePolyfillPlugin = require('node-polyfill-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const CopyPlugin = require("copy-webpack-plugin");
+const CopyPlugin = require('copy-webpack-plugin');
 
 module.exports = {
     entry: './scripts/index.js',
@@ -12,7 +15,7 @@ module.exports = {
         filename: './mpw.js',
         library: 'MPW',
         libraryTarget: 'var',
-        clean: true
+        clean: true,
     },
     devtool: 'source-map',
     module: {
@@ -29,8 +32,8 @@ module.exports = {
     },
     resolve: {
         alias: {
-          'bn.js': path.join(__dirname, 'node_modules/bn.js/lib/bn.js'),
-        }
+            'bn.js': path.join(__dirname, 'node_modules/bn.js/lib/bn.js'),
+        },
     },
     plugins: [
         new HtmlWebpackPlugin({
@@ -60,10 +63,10 @@ module.exports = {
         // Copy static web-facing files
         new CopyPlugin({
             patterns: [
-                { from: "manifest.json" },
-                { from: "assets/icons" },
-                { from: "assets/logo_opaque-dark-bg.png" },
-                { from: "scripts/native-worker.js" }
+                { from: 'manifest.json' },
+                { from: 'assets/icons' },
+                { from: 'assets/logo_opaque-dark-bg.png' },
+                { from: 'scripts/native-worker.js' },
             ],
         }),
     ],
