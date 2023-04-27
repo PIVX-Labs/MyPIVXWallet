@@ -592,7 +592,9 @@ async function createShieldTransaction({ address, amount, useShieldInputs }) {
                 privateKey: await masterKey.getPrivateKey(u.path),
                 script: hexToBytes(u.script),
             });
-            utxos.push(utxo);
+	    if (Mempool.isValidUTXO(utxo)) {
+		utxos.push(utxo);
+	    }
         }
     }
     try {
