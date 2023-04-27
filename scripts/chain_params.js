@@ -56,7 +56,7 @@ export const cChainParams = {
         TICKER: 'tPIV',
         PUBKEY_PREFIX: ['x', 'y'],
         STAKING_PREFIX: 'W',
-        SHIELD_PREFIX: 'ptest',
+        SHIELD_PREFIX: 'ptestsapling',
         PUBKEY_ADDRESS: 139,
         STAKING_ADDRESS: 73,
         SECRET_KEY: 239,
