@@ -1,4 +1,3 @@
-import { doms } from './global';
 import { createAlert } from './misc';
 
 // Register a service worker, if it's supported
