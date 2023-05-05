@@ -251,7 +251,15 @@ export default class Masternode {
     async broadcastMessageToHex() {
         const sigTime = Math.round(Date.now() / 1000);
         const blockHash = await Masternode.getLastBlockHash();
-        const [ip, port] = this.addr.split(':');
+        let ip, port;
+        if (this.addr.includes('.')) {
+            // IPv4
+            [ip, port] = this.addr.split(':');
+        } else {
+            // IPv6
+            [ip, port] = this.addr.slice(1).split(']');
+            port = port.slice(1);
+        }
         const walletPublicKey = await this.getWalletPublicKey();
 
         const mnPublicKey = hexToBytes(
