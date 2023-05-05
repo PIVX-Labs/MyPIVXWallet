@@ -167,6 +167,7 @@ export function start() {
         domAvailToDelegate: document.getElementById('availToDelegate'),
         domAvailToUndelegate: document.getElementById('availToUndelegate'),
         domAnalyticsDescriptor: document.getElementById('analyticsDescriptor'),
+        domStakingRewardsBox: document.getElementById('stakingRewardsBox'),
         domStakingRewardsList: document.getElementById(
             'staking-rewards-content'
         ),
@@ -667,6 +668,9 @@ export async function updateStakingRewardsGUI() {
         // Hide the load more button
         doms.domGuiStakingLoadMore.style.display = 'none';
     }
+
+    // Only show the table if there are rewards
+    doms.domStakingRewardsBox.style.display = arrRewards.length ? '' : 'none';
 
     // Display total rewards from known history
     const nRewards = arrRewards.reduce((a, b) => a + b.amount, 0);
@@ -1905,19 +1909,3 @@ export const beforeUnloadListener = (evt) => {
     // Most browsers ignore this nowadays, but still, keep it 'just incase'
     return (evt.returnValue = translation.BACKUP_OR_ENCRYPT_WALLET);
 };
-
-function errorHandler(e) {
-    const message = `Unhandled exception. <br> ${sanitizeHTML(
-        e.message || e.reason
-    )}`;
-    try {
-        createAlert('warning', message);
-    } catch (_) {
-        // Something as gone wrong, so we fall back to the default alert
-        // This can happen on early errors for example
-        alert(message);
-    }
-}
-
-window.addEventListener('error', errorHandler);
-window.addEventListener('unhandledrejection', errorHandler);
