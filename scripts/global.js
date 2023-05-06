@@ -618,10 +618,7 @@ export function createActivityListHTML(arrTXs, fRewards = false) {
                     <a href="${cExplorer.url}/tx/${
             cTx.id
         }" target="_blank" rel="noopener noreferrer">
-                        <code class="wallet-code text-center active ptr" style="padding: 4px 9px;">${cTx.id.slice(
-                            0,
-                            24
-                        )}</code>
+                        <code class="wallet-code text-center active ptr" style="padding: 4px 9px;">${cTx.id}</code>
                     </a>
                 </td>
                 <td class="align-middle pr-10px">

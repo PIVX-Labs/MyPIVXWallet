@@ -1483,6 +1483,23 @@ a {
 
 @media screen and (max-width: 767px) {
 
+    /* Tables */
+    table td {
+        max-width: 80px;
+    }
+
+    table td a {
+        width: 100%;
+    }
+
+    table td a code {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100%;
+        min-width: 30px
+    }
+
     /* Dashboard */
 
     #genKeyWarning .pivx-button-big {
@@ -1525,7 +1542,7 @@ a {
     .modal-content {
         height: 100%;
     }
-  
+
     .modal-body {
         overflow-y: auto;
     }
@@ -2648,7 +2665,7 @@ input {
         width:900px;
     }
     .txcode code {
-        width:450px!important;
+        width:max-content;
     }
     .tx3 {
         width:900px;
