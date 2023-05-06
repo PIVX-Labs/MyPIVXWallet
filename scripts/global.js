@@ -167,7 +167,6 @@ export function start() {
         domAvailToDelegate: document.getElementById('availToDelegate'),
         domAvailToUndelegate: document.getElementById('availToUndelegate'),
         domAnalyticsDescriptor: document.getElementById('analyticsDescriptor'),
-        domStakingRewardsBox: document.getElementById('stakingRewardsBox'),
         domStakingRewardsList: document.getElementById(
             'staking-rewards-content'
         ),
@@ -668,9 +667,6 @@ export async function updateStakingRewardsGUI() {
         // Hide the load more button
         doms.domGuiStakingLoadMore.style.display = 'none';
     }
-
-    // Only show the table if there are rewards
-    doms.domStakingRewardsBox.style.display = arrRewards.length ? '' : 'none';
 
     // Display total rewards from known history
     const nRewards = arrRewards.reduce((a, b) => a + b.amount, 0);
