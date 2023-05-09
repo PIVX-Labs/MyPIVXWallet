@@ -763,7 +763,7 @@ export async function encryptWallet(strPassword = '') {
 
     const database = await Database.getInstance();
     database.addAccount({
-        publicKey: masterKey.keyToExport,
+        publicKey: await masterKey.keyToExport,
         encWif: strEncWIF,
     });
     // Remove the exit blocker, we can annoy the user less knowing the key is safe in their database!

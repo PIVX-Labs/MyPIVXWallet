@@ -175,12 +175,14 @@ export class Database {
                     'warning',
                     'Failed to recover your account. Please reimport it.'
                 );
-		if (localStorage.encwif) {
-		    await confirmPopup({
-			title: 'Failed to recover account',
-			html: `There was an error recovering your account. <br> Please reimport your wallet using the following key: <code id="exportPrivateKeyText">${sanitizeHTML(localStorage.encwif)} </code>`,
-		    });
-		}
+                if (localStorage.encwif) {
+                    await confirmPopup({
+                        title: 'Failed to recover account',
+                        html: `There was an error recovering your account. <br> Please reimport your wallet using the following key: <code id="exportPrivateKeyText">${sanitizeHTML(
+                            localStorage.encwif
+                        )} </code>`,
+                    });
+                }
             }
         }
     }
