@@ -53,6 +53,10 @@ export async function start() {
         domGuiBalanceValueCurrency: document.getElementById(
             'guiBalanceValueCurrency'
         ),
+        domGuiStakingValue: document.getElementById('guiStakingValue'),
+        domGuiStakingValueCurrency: document.getElementById(
+            'guiStakingValueCurrency'
+        ),
         domGuiBalanceBox: document.getElementById('guiBalanceBox'),
         domBalanceReload: document.getElementById('balanceReload'),
         domBalanceReloadStaking: document.getElementById(
@@ -69,8 +73,8 @@ export async function start() {
         domGuiBalanceBoxStaking: document.getElementById(
             'guiBalanceBoxStaking'
         ),
-        domGuiDelegateAmount: document.getElementById('delegateAmount'),
-        domGuiUndelegateAmount: document.getElementById('undelegateAmount'),
+        domStakeAmount: document.getElementById('delegateAmount'),
+        domUnstakeAmount: document.getElementById('undelegateAmount'),
         domStakeTab: document.getElementById('stakeTab'),
         domAddress1s: document.getElementById('address1s'),
         domSendAmountCoins: document.getElementById('sendAmountCoins'),
@@ -81,6 +85,21 @@ export async function start() {
         domSendAmountValueCurrency: document.getElementById(
             'sendAmountValueCurrency'
         ),
+        domStakeAmountCoinsTicker: document.getElementById(
+            'stakeAmountCoinsTicker'
+        ),
+        domStakeAmountValueCurrency: document.getElementById(
+            'stakeAmountValueCurrency'
+        ),
+        domStakeAmountValue: document.getElementById('stakeAmountValue'),
+        domUnstakeAmountCoinsTicker: document.getElementById(
+            'unstakeAmountCoinsTicker'
+        ),
+        domUnstakeAmountValueCurrency: document.getElementById(
+            'unstakeAmountValueCurrency'
+        ),
+
+        domUnstakeAmountValue: document.getElementById('unstakeAmountValue'),
         domGuiViewKey: document.getElementById('guiViewKey'),
         domModalQR: document.getElementById('ModalQR'),
         domModalQrLabel: document.getElementById('ModalQRLabel'),
@@ -207,6 +226,8 @@ export async function start() {
     });
 
     // Register Input Pair events
+
+    /** Dashboard (Send) */
     doms.domSendAmountCoins.oninput = () => {
         updateAmountInputPair(
             doms.domSendAmountCoins,
@@ -218,6 +239,38 @@ export async function start() {
         updateAmountInputPair(
             doms.domSendAmountCoins,
             doms.domSendAmountValue,
+            false
+        );
+    };
+
+    /** Staking (Stake) */
+    doms.domStakeAmount.oninput = () => {
+        updateAmountInputPair(
+            doms.domStakeAmount,
+            doms.domStakeAmountValue,
+            true
+        );
+    };
+    doms.domStakeAmountValue.oninput = () => {
+        updateAmountInputPair(
+            doms.domStakeAmount,
+            doms.domStakeAmountValue,
+            false
+        );
+    };
+
+    /** Staking (Unstake) */
+    doms.domUnstakeAmount.oninput = () => {
+        updateAmountInputPair(
+            doms.domUnstakeAmount,
+            doms.domUnstakeAmountValue,
+            true
+        );
+    };
+    doms.domUnstakeAmountValue.oninput = () => {
+        updateAmountInputPair(
+            doms.domUnstakeAmount,
+            doms.domUnstakeAmountValue,
             false
         );
     };
@@ -336,10 +389,71 @@ export function openTab(evt, tabName) {
 
     if (tabName === 'Governance') {
         updateGovernanceTab();
-    }
-    if (tabName === 'Masternode') {
+    } else if (tabName === 'Masternode') {
         updateMasternodeTab();
+    } else if (
+        tabName === 'StakingTab' &&
+        getNetwork().arrRewards.length === 0
+    ) {
+        updateStakingRewardsGUI();
     }
+}
+
+/**
+ * Updates the GUI ticker among all elements; useful for Network Switching
+ */
+export function updateTicker() {
+    // Update the Dashboard currency
+    doms.domGuiBalanceValueCurrency.innerText = strCurrency.toUpperCase();
+
+    // Update the Send menu ticker and currency
+    doms.domSendAmountValueCurrency.innerText = strCurrency.toUpperCase();
+    doms.domSendAmountCoinsTicker.innerText = cChainParams.current.TICKER;
+
+    // Update the Stake/Unstake menu ticker and currency
+    // Stake
+    doms.domStakeAmountValueCurrency.innerText = strCurrency.toUpperCase();
+    doms.domStakeAmountCoinsTicker.innerText = cChainParams.current.TICKER;
+
+    // Unstake
+    doms.domStakeAmountValueCurrency.innerText = strCurrency.toUpperCase();
+    doms.domUnstakeAmountCoinsTicker.innerText = cChainParams.current.TICKER;
+}
+
+/**
+ * Update a 'price value' DOM display for the given balance type
+ * @param {HTMLElement} domValue
+ * @param {boolean} fCold
+ */
+export function updatePriceDisplay(domValue, fCold = false) {
+    // Update currency values
+    cMarket.getPrice(strCurrency).then((nPrice) => {
+        // Configure locale settings by detecting currency support
+        const cLocale = Intl.supportedValuesOf('currency').includes(
+            strCurrency.toUpperCase()
+        )
+            ? {
+                  style: 'currency',
+                  currency: strCurrency,
+                  currencyDisplay: 'narrowSymbol',
+              }
+            : { maximumFractionDigits: 8, minimumFractionDigits: 8 };
+
+        // Calculate the value
+        let nValue =
+            ((fCold ? getStakingBalance() : getBalance()) / COIN) * nPrice;
+
+        // Handle certain edge-cases; like satoshis having decimals.
+        switch (strCurrency) {
+            case 'sats':
+                nValue = Math.round(nValue);
+                cLocale.maximumFractionDigits = 0;
+                cLocale.minimumFractionDigits = 0;
+        }
+
+        // Update the DOM
+        domValue.innerText = nValue.toLocaleString('en-gb', cLocale);
+    });
 }
 
 export function getBalance(updateGUI = false) {
@@ -352,46 +466,13 @@ export function getBalance(updateGUI = false) {
         const nLen = nCoins.toFixed(2).length;
         doms.domGuiBalance.innerText = nCoins.toFixed(nLen >= 6 ? 0 : 2);
         doms.domAvailToDelegate.innerText =
-            'Available: ~' +
-            nCoins.toFixed(2) +
-            ' ' +
-            cChainParams.current.TICKER;
+            nCoins.toFixed(2) + ' ' + cChainParams.current.TICKER;
 
-        // Update currency values
-        cMarket.getPrice(strCurrency).then((nPrice) => {
-            // Configure locale settings by detecting currency support
-            const cLocale = Intl.supportedValuesOf('currency').includes(
-                strCurrency.toUpperCase()
-            )
-                ? {
-                      style: 'currency',
-                      currency: strCurrency,
-                      currencyDisplay: 'narrowSymbol',
-                  }
-                : { maximumFractionDigits: 8, minimumFractionDigits: 8 };
-            let nValue = nCoins * nPrice;
-            // Handle certain edge-cases; like satoshis having decimals.
-            switch (strCurrency) {
-                case 'sats':
-                    nValue = Math.round(nValue);
-                    cLocale.maximumFractionDigits = 0;
-                    cLocale.minimumFractionDigits = 0;
-            }
-            doms.domGuiBalanceValue.innerText = nValue.toLocaleString(
-                'en-gb',
-                cLocale
-            );
+        // Update tickers
+        updateTicker();
 
-            // Update the Dashboard currency
-            doms.domGuiBalanceValueCurrency.innerText =
-                strCurrency.toUpperCase();
-
-            // Update the Send menu ticker and currency
-            doms.domSendAmountValueCurrency.innerText =
-                strCurrency.toUpperCase();
-            doms.domSendAmountCoinsTicker.innerText =
-                cChainParams.current.TICKER;
-        });
+        // Update price displays
+        updatePriceDisplay(doms.domGuiBalanceValue);
     }
 
     return nBalance;
@@ -399,33 +480,34 @@ export function getBalance(updateGUI = false) {
 
 export function getStakingBalance(updateGUI = false) {
     const nBalance = mempool.getDelegatedBalance();
+    const nCoins = nBalance / COIN;
 
     if (updateGUI) {
         // Set the balance, and adjust font-size for large balance strings
         doms.domGuiBalanceStaking.innerText = Math.floor(nBalance / COIN);
-        doms.domGuiBalanceBoxStaking.style.fontSize =
-            Math.floor(nBalance / COIN).toString().length >= 4
-                ? 'large'
-                : 'x-large';
         doms.domAvailToUndelegate.innerText =
-            'Staking: ~' +
-            (nBalance / COIN).toFixed(2) +
-            ' ' +
-            cChainParams.current.TICKER;
+            (nBalance / COIN).toFixed(2) + ' ' + cChainParams.current.TICKER;
+
+        // Update tickers
+        updateTicker();
+
+        // Update price displays
+        updatePriceDisplay(doms.domGuiStakingValue, true);
     }
 
     return nBalance;
 }
 
-export function selectMaxBalance(domValueInput, fCold = false) {
-    domValueInput.value = (fCold ? getStakingBalance() : getBalance()) / COIN;
+/**
+ * Fill a 'Coin Amount' with all of a balance type, and update the 'Coin Value'
+ * @param {HTMLInputElement} domCoin - The 'Coin Amount' input element
+ * @param {HTMLInputElement} domValue - Th 'Coin Value' input element
+ * @param {boolean} fCold - Use the Cold Staking balance, or Available balance
+ */
+export function selectMaxBalance(domCoin, domValue, fCold = false) {
+    domCoin.value = (fCold ? getStakingBalance() : getBalance()) / COIN;
     // Update the Send menu's value (assumption: if it's not a Cold balance, it's probably for Sending!)
-    if (!fCold)
-        updateAmountInputPair(
-            doms.domSendAmountCoins,
-            doms.domSendAmountValue,
-            true
-        );
+    updateAmountInputPair(domCoin, domValue, true);
 }
 
 /**
@@ -473,35 +555,125 @@ export async function openSendQRScanner() {
     );
 }
 
+/**
+ * Generate a DOM-optimised activity list
+ * @param {Array<object>} arrTXs - The TX array to compute the list from
+ * @param {boolean} fRewards - If this list is for Reward transactions
+ * @returns {string} HTML - The Activity List in HTML string form
+ */
+export function createActivityListHTML(arrTXs, fRewards = false) {
+    const cNet = getNetwork();
+
+    // Prepare the table HTML
+    let strList = `
+    <table class="table table-responsive table-sm stakingTx table-mobile-scroll">
+        <thead>
+            <tr>
+                <th scope="col" class="tx1">Time</th>
+                <th scope="col" class="tx2">Hash</th>
+                <th scope="col" class="tx3">Amount</th>
+                <th scope="col" class="tx4 text-right"></th>
+            </tr>
+        </thead>
+        <tbody>`;
+
+    // Prepare time formatting
+    const dateOptions = {
+        year: '2-digit',
+        month: '2-digit',
+        day: '2-digit',
+    };
+    const timeOptions = {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true,
+    };
+
+    // Generate the TX list
+    arrTXs.forEach((cTx) => {
+        const dateTime = new Date(cTx.time * 1000);
+
+        // Coinbase Transactions (rewards) require 100 confs
+        const fConfirmed =
+            cNet.cachedBlockCount - cTx.blockHeight >= fRewards ? 100 : 6;
+
+        // Render the list element from Tx data
+        strList += `
+            <tr>
+                <td class="align-middle pr-10px" style="font-size:12px;">
+                    <i style="opacity: 0.75;">
+                        ${
+                            Date.now() / 1000 - cTx.time > 86400
+                                ? dateTime.toLocaleDateString(
+                                      undefined,
+                                      dateOptions
+                                  )
+                                : dateTime.toLocaleTimeString(
+                                      undefined,
+                                      timeOptions
+                                  )
+                        }
+                    </i>
+                </td>
+                <td class="align-middle pr-10px txcode">
+                    <a href="${cExplorer.url}/tx/${
+            cTx.id
+        }" target="_blank" rel="noopener noreferrer">
+                        <code class="wallet-code text-center active ptr" style="padding: 4px 9px;">${cTx.id}</code>
+                    </a>
+                </td>
+                <td class="align-middle pr-10px">
+                    <b><i class="fa-solid fa-gift"></i> ${cTx.amount} ${
+            cChainParams.current.TICKER
+        }</b>
+                </td>
+                <td class="text-right pr-10px align-middle">
+                    <span class="badge ${
+                        fConfirmed ? 'badge-purple' : 'bg-danger'
+                    } mb-0">${
+            fConfirmed
+                ? '<i class="fas fa-check"></i>'
+                : `<i class="fas fa-hourglass-end"></i>`
+        }</span>
+                </td>
+            </tr>`;
+    });
+
+    // End the table
+    strList += `</tbody></table>`;
+
+    // Return the HTML string
+    return strList;
+}
+
+/**
+ * Refreshes the Staking Rewards table, charts and related information
+ */
 export async function updateStakingRewardsGUI() {
-    const network = getNetwork();
-    const arrRewards = await network.getStakingRewards();
-    if (network.areRewardsComplete) {
+    const cNet = getNetwork();
+
+    // Prevent the user from spamming refreshes
+    if (cNet.rewardsSyncing) return;
+
+    // Load rewards from the network, displaying the sync spin icon until finished
+    doms.domGuiStakingLoadMoreIcon.classList.add('fa-spin');
+    const arrRewards = await cNet.getStakingRewards();
+    doms.domGuiStakingLoadMoreIcon.classList.remove('fa-spin');
+
+    // Check if all rewards are loaded
+    if (cNet.areRewardsComplete) {
         // Hide the load more button
         doms.domGuiStakingLoadMore.style.display = 'none';
     }
 
-    //DOMS.DOM-optimised list generation
-    const strList = arrRewards
-        .map(
-            (cReward) =>
-                `<i style="opacity: 0.75; cursor: pointer" onclick="window.open('${
-                    cExplorer.url + '/tx/' + cReward.id
-                }', '_blank')">${new Date(
-                    cReward.time * 1000
-                ).toLocaleDateString()}</i> <b>+${cReward.amount} ${
-                    cChainParams.current.TICKER
-                }</b>`
-        )
-        .join('<br>');
-    // Calculate total
-    const nRewards = arrRewards.reduce(
-        (total, reward) => total + reward.amount,
-        0
-    );
-    // UpdateDOMS.DOM
-    doms.domStakingRewardsTitle.innerHTML = `Staking Rewards: ≥${nRewards} ${cChainParams.current.TICKER}`;
-    doms.domStakingRewardsList.innerHTML = strList;
+    // Display total rewards from known history
+    const nRewards = arrRewards.reduce((a, b) => a + b.amount, 0);
+    doms.domStakingRewardsTitle.innerHTML = `${
+        cNet.areRewardsComplete ? '' : '≥'
+    }${nRewards} ${cChainParams.current.TICKER}`;
+
+    // Create and render the Activity List
+    doms.domStakingRewardsList.innerHTML = createActivityListHTML(arrRewards);
 }
 
 /**
@@ -603,11 +775,11 @@ export async function updateAmountInputPair(domCoin, domValue, fCoinEdited) {
     const nPrice = await cMarket.getPrice(strCurrency);
     if (fCoinEdited) {
         // If the 'Coin' input is edited, then update the 'Value' input with it's converted currency
-        const nValue = Number(doms.domSendAmountCoins.value) * nPrice;
+        const nValue = Number(domCoin.value) * nPrice;
         domValue.value = nValue <= 0 ? '' : nValue;
     } else {
         // If the 'Value' input is edited, then update the 'Coin' input with the reversed conversion rate
-        const nValue = Number(doms.domSendAmountValue.value) / nPrice;
+        const nValue = Number(domValue.value) / nPrice;
         domCoin.value = nValue <= 0 ? '' : nValue;
     }
 }

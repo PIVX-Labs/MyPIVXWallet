@@ -125,7 +125,7 @@ export async function delegateGUI() {
         return;
 
     // Verify the amount; Delegations must be a minimum of 1 PIV, enforced by the network
-    const nAmount = Number(doms.domGuiDelegateAmount.value.trim()) * COIN;
+    const nAmount = Number(doms.domStakeAmount.value.trim()) * COIN;
     if (!validateAmount(nAmount, COIN)) return;
 
     // Ensure the user has an address set - if not, request one!
@@ -139,12 +139,23 @@ export async function delegateGUI() {
         askForCSAddr(true);
         return createAlert('success', ALERTS.SUCCESS_STAKING_ADDR_SET, []);
     }
-    createAndSendTransaction({
+
+    // Perform the TX
+    const cTxRes = await createAndSendTransaction({
         amount: nAmount,
         address: cachedColdStakeAddr,
         isDelegation: true,
         useDelegatedInputs: false,
     });
+
+    // If successful, reset the inputs
+    if (cTxRes.ok) {
+        doms.domStakeAmount.value = '';
+        doms.domStakeAmountValue.value = '';
+
+        // And close the modal
+        MPW.toggleBottomMenu('stakingDelegate', 'transferAnimation');
+    }
 }
 
 /**
@@ -166,13 +177,15 @@ export async function undelegateGUI() {
 
     // Verify the amount
     const nAmount = Math.round(
-        Number(doms.domGuiUndelegateAmount.value.trim()) * COIN
+        Number(doms.domUnstakeAmount.value.trim()) * COIN
     );
     if (!validateAmount(nAmount)) return;
 
     // Generate a new address to undelegate towards
     const [address] = await getNewAddress();
-    const result = await createAndSendTransaction({
+
+    // Perform the TX
+    const cTxRes = await createAndSendTransaction({
         address,
         amount: nAmount,
         isDelegation: false,
@@ -181,9 +194,16 @@ export async function undelegateGUI() {
         changeDelegationAddress: cachedColdStakeAddr,
     });
 
-    if (!result.ok && result.err === 'No change addr') {
+    if (!cTxRes.ok && cTxRes.err === 'No change addr') {
         askForCSAddr(true);
         await undelegateGUI();
+    } else {
+        // If successful, reset the inputs
+        doms.domUnstakeAmount.value = '';
+        doms.domUnstakeAmountValue.value = '';
+
+        // And close the modal
+        MPW.toggleBottomMenu('stakingUndelegate', 'transferAnimation');
     }
 }
 
@@ -196,7 +216,7 @@ export async function undelegateGUI() {
  * @param {boolean} options.useDelegatedInputs - If true, only delegated coins will be used in the transaction
  * @param {delegateChange} options.delegateChange - If there is at least 1.01 PIV of change, the change will be delegated to options.changeDelegationAddress
  * @param {string|null} options.changeDelegationAddress - See options.delegateChange
- * @returns {{ok: boolean, err: string?}}
+ * @returns {Promise<{ok: boolean, err: string?}>}
  */
 export async function createAndSendTransaction({
     address,
