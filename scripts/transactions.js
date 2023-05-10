@@ -9,6 +9,7 @@ import {
     askForCSAddr,
     cachedColdStakeAddr,
     restoreWallet,
+    toggleBottomMenu,
 } from './global.js';
 import {
     hasWalletUnlocked,
@@ -153,7 +154,7 @@ export async function delegateGUI() {
         doms.domStakeAmountValue.value = '';
 
         // And close the modal
-        MPW.toggleBottomMenu('stakingDelegate', 'transferAnimation');
+        toggleBottomMenu('stakingDelegate', 'transferAnimation');
     }
 }
 
@@ -202,7 +203,7 @@ export async function undelegateGUI() {
         doms.domUnstakeAmountValue.value = '';
 
         // And close the modal
-        MPW.toggleBottomMenu('stakingUndelegate', 'transferAnimation');
+        toggleBottomMenu('stakingUndelegate', 'transferAnimation');
     }
 }
 
