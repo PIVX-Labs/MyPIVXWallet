@@ -98,7 +98,7 @@ class MasterKey {
     }
 
     /**
-     * @return {String} public key to export. Only suitable for monitoring balance.
+     * @return {Promise<String>} public key to export. Only suitable for monitoring balance.
      * @abstract
      */
     get keyToExport() {
@@ -301,6 +301,9 @@ export const LEDGER_ERRS = new Map([
     [27404, 'Unlock your Ledger, then try again!'],
 ]);
 
+/**
+ * @type{MasterKey}
+ */
 export let masterKey;
 
 // Construct a full BIP44 pubkey derivation path from it's parts
