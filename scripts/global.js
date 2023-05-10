@@ -1271,7 +1271,6 @@ export async function generateVanityWallet() {
         setTimeout(() => {
             doms.domPrefix.style.opacity = '1';
         }, 100);
-        doms.domGuiAddress.innerHTML = '~';
         doms.domPrefix.focus();
     } else {
         // Remove spaces from prefix
@@ -1325,7 +1324,6 @@ export async function generateVanityWallet() {
                     });
                     stopSearch();
                     doms.domGuiBalance.innerHTML = '0';
-                    doms.domGuiBalanceBox.style.fontSize = 'x-large';
                     return console.log(
                         'VANITY: Found an address after ' +
                             attempts +
@@ -1924,5 +1922,11 @@ function errorHandler(e) {
     }
 }
 
-window.addEventListener('error', errorHandler);
-window.addEventListener('unhandledrejection', errorHandler);
+// This code is ran in the vanity gen worker as well!
+// In which case, window would be not defined.
+// `if (window)` wouldn't work either because
+// window is not defined as opposed to undefined
+try {
+    window.addEventListener('error', errorHandler);
+    window.addEventListener('unhandledrejection', errorHandler);
+} catch (_) {}
