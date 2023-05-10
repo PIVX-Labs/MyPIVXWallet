@@ -1157,7 +1157,7 @@ export async function guiImportWallet() {
             const database = await Database.getInstance();
             if (masterKey) {
                 database.addAccount({
-                    publicKey: masterKey.keyToExport,
+                    publicKey: await masterKey.keyToExport,
                     encWif: strPrivKey,
                 });
             }
