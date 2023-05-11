@@ -29,5 +29,5 @@ module.exports = {
         '@typescript-eslint/no-floating-promises': 'error',
         '@typescript-eslint/ban-ts-comment': 'off',
     },
-    ignorePatterns: ['webpack.*', 'locale/**/*'],
+    ignorePatterns: ['webpack.*', 'locale/**/*', '.eslintconfig.js'],
 };
