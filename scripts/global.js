@@ -38,6 +38,14 @@ import { Address6 } from 'ip-address';
 import { getEventEmitter } from './event_bus.js';
 import { scanQRCode } from './scanner.js';
 
+/** A flag showing if base MPW is fully loaded or not */
+export let fIsLoaded = false;
+
+/** A getter for the flag showing if base MPW is fully loaded or not */
+export function isLoaded() {
+    return fIsLoaded;
+}
+
 /**
  * @type{any}
  */
@@ -302,8 +310,9 @@ export async function start() {
 
         const publicKey = localStorage.getItem('publicKey');
 
+        // Import the wallet, and toggle the startup flag, which delegates the chain data refresh to settingsStart();
         if (publicKey) {
-            await importWallet({ newWif: publicKey });
+            await importWallet({ newWif: publicKey, fStartup: true });
         } else {
             // Display the password unlock upfront
             accessOrImportWallet();
@@ -327,7 +336,16 @@ export async function start() {
     settingsStart();
     // If allowed by settings: submit a simple 'hit' (app load) to Labs Analytics
     getNetwork().submitAnalytics('hit');
-    setInterval(refreshChainData, 15000);
+    setInterval(() => {
+        // Refresh blockchain data
+        refreshChainData();
+
+        // Fetch the PIVX prices
+        refreshPriceDisplay();
+    }, 15000);
+
+    // After reaching here; we know MPW's base is fully loaded!
+    fIsLoaded = true;
 }
 
 function subscribeToNetworkEvents() {
@@ -374,7 +392,15 @@ let exportHidden = false;
 //                        PIVX Labs' Cold Pool
 export let cachedColdStakeAddr = 'SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy';
 
+/**
+ * Open a UI 'tab' menu, and close all other tabs, intended for frontend use
+ * @param {Event} evt - The click event target
+ * @param {string} tabName - The name of the tab to load
+ */
 export async function openTab(evt, tabName) {
+    // Only allow switching tabs if MPw is loaded
+    if (!isLoaded()) return;
+
     // Hide all screens and deactivate link highlights
     for (const domScreen of doms.arrDomScreens)
         domScreen.style.display = 'none';
@@ -383,6 +409,7 @@ export async function openTab(evt, tabName) {
 
     // Show and activate the given screen
     document.getElementById(tabName).style.display = 'block';
+    // @ts-ignore
     evt.currentTarget.classList.add('active');
 
     // Close the navbar if it's not already closed
@@ -431,6 +458,7 @@ export function updatePriceDisplay(domValue, fCold = false) {
     // Update currency values
     cMarket.getPrice(strCurrency).then((nPrice) => {
         // Configure locale settings by detecting currency support
+	// @ts-ignore
         const cLocale = Intl.supportedValuesOf('currency').includes(
             strCurrency.toUpperCase()
         )
@@ -482,7 +510,6 @@ export function getBalance(updateGUI = false) {
 
 export function getStakingBalance(updateGUI = false) {
     const nBalance = mempool.getDelegatedBalance();
-    const nCoins = nBalance / COIN;
 
     if (updateGUI) {
         // Set the balance, and adjust font-size for large balance strings
@@ -507,6 +534,7 @@ export function getStakingBalance(updateGUI = false) {
  * @param {boolean} fCold - Use the Cold Staking balance, or Available balance
  */
 export function selectMaxBalance(domCoin, domValue, fCold = false) {
+    // @ts-ignore
     domCoin.value = (fCold ? getStakingBalance() : getBalance()) / COIN;
     // Update the Send menu's value (assumption: if it's not a Cold balance, it's probably for Sending!)
     updateAmountInputPair(domCoin, domValue, true).then(()=>{}).catch(e=>{throw e});
@@ -597,7 +625,7 @@ export function createActivityListHTML(arrTXs, fRewards = false) {
 
         // Coinbase Transactions (rewards) require 100 confs
         const fConfirmed =
-            cNet.cachedBlockCount - cTx.blockHeight >= fRewards ? 100 : 6;
+              cNet.cachedBlockCount - cTx.blockHeight >= (fRewards ? 100 : 6);
 
         // Render the list element from Tx data
         strList += `
@@ -1892,9 +1920,6 @@ export function refreshChainData() {
     // Fetch block count + UTXOs
     getNetwork().getBlockCount().then(()=>{}).catch(e=>{throw e});
     getBalance(true);
-
-    // Fetch pricing data
-    refreshPriceDisplay().then(()=>{}).catch(e=>{throw e});
 }
 
 // A safety mechanism enabled if the user attempts to leave without encrypting/saving their keys

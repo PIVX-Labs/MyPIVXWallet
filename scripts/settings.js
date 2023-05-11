@@ -2,6 +2,7 @@ import {
     doms,
     getBalance,
     getStakingBalance,
+    refreshChainData,
     updateStakingRewardsGUI,
 } from './global.js';
 import { fWalletLoaded, masterKey } from './wallet.js';
@@ -14,7 +15,7 @@ import {
     translation,
     arrActiveLangs,
 } from './i18n.js';
-import { CoinGecko } from './prices.js';
+import { CoinGecko, refreshPriceDisplay } from './prices.js';
 
 // --- Default Settings
 /** A mode that emits verbose console info for internal MPW operations */
@@ -74,6 +75,7 @@ export function start() {
 
     // Hook up the 'currency' select UI
     document.getElementById('currency').onchange = function (evt) {
+	// @ts-ignore
         setCurrency(evt.target.value);
     };
 
@@ -81,6 +83,7 @@ export function start() {
     document.getElementById('explorer').onchange = function (evt) {
         setExplorer(
             cChainParams.current.Explorers.find(
+		// @ts-ignore
                 (a) => a.url === evt.target.value
             )
         );
@@ -88,11 +91,13 @@ export function start() {
 
     // Hook up the 'translation' select UI
     document.getElementById('translation').onchange = function (evt) {
+	// @ts-ignore
         setTranslation(evt.target.value);
     };
 
     // Hook up the 'analytics' select UI
     document.getElementById('analytics').onchange = function (evt) {
+	// @ts-ignore
         setAnalytics(arrAnalytics.find((a) => a.name === evt.target.value));
     };
 
@@ -100,13 +105,9 @@ export function start() {
     fillNodeSelect();
     fillTranslationSelect();
 
-    // Fill all selection UIs with their options
+    // Fetch price data, then fetch chain data
     if (getNetwork().enabled) {
-        fillCurrencySelect()
-            .then(() => {})
-            .catch((e) => {
-                throw e;
-            });
+        refreshPriceDisplay().then(()=>{}).finally(refreshChainData);
     }
 
     // Add each analytics level into the UI selector
@@ -161,6 +162,7 @@ export function start() {
     }
 
     // And update the UI to reflect them
+    // @ts-ignore
     domAnalyticsSelect.value = cAnalyticsLevel.name;
 }
 // --- Settings Functions
@@ -206,7 +208,6 @@ function setNode(node, fSilent = false) {
 /**
  * Switches the translation and sets the translation preference to local storage
  * @param {string} lang
- * @param {bool} fSilent
  */
 function setTranslation(lang) {
     switchTranslation(lang);

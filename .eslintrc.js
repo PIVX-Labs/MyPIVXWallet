@@ -24,6 +24,7 @@ module.exports = {
                 argsIgnorePattern: '^_',
             },
         ],
+        'no-empty': ['error', { allowEmptyCatch: true }],
         'no-constant-condition': 'off',
         '@typescript-eslint/no-empty-function': 'off',
 	// You can assign `any` to a typed property
