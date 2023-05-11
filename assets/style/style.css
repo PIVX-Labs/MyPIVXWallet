@@ -1508,6 +1508,23 @@ a {
 
 @media screen and (max-width: 767px) {
 
+    /* Tables */
+    table td {
+        max-width: 80px;
+    }
+
+    table td a {
+        width: 100%;
+    }
+
+    table td a code {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100%;
+        min-width: 30px
+    }
+
     /* Dashboard */
 
     #genKeyWarning .pivx-button-big {
@@ -1550,7 +1567,7 @@ a {
     .modal-content {
         height: 100%;
     }
-  
+
     .modal-body {
         overflow-y: auto;
     }
@@ -2126,7 +2143,7 @@ a {
   border-radius: 5px;
   margin-bottom: 1px;
   display: block;
-  width: 350px;
+  width: 100%;
 }
 
 .exportPrivateKey {
@@ -2408,7 +2425,6 @@ a {
 
 .dcWallet-topLeftMenu {
   font-size: 18px;
-  cursor: pointer;
   width: 27px;
   transition: all .2s ease-in-out;
 }
@@ -2435,6 +2451,32 @@ input {
     border-radius: 50%;
     border-top-left-radius: 7px;
     border-bottom-right-radius: 7px;
+    background-image: linear-gradient(183deg, #9621ff, #7d21ff);
+    cursor:pointer;
+}
+
+.dcWallet-stake {
+    background-color: #ffffff29;
+    width: 100px;
+    height: 43px;
+    margin-top: 17px;
+    padding-top: 9px;
+    border-radius: 24px;
+    border-top-left-radius: 7px;
+    border-bottom-right-radius: 7px;
+    background-image: linear-gradient(183deg, #9621ff, #7d21ff);
+    cursor: pointer;
+}
+
+.dcWallet-unstake {
+    background-color: #ffffff29;
+    width: 100px;
+    height: 43px;
+    margin-top: 17px;
+    padding-top: 9px;
+    border-radius: 24px;
+    border-top-right-radius: 7px;
+    border-bottom-left-radius: 7px;
     background-image: linear-gradient(183deg, #9621ff, #7d21ff);
     cursor:pointer;
 }
@@ -2582,7 +2624,113 @@ input {
     border:0px;
 }
 
+.cur-pointer {
+    cursor:pointer;
+}
+
+.stakingTx {
+    color:#fff;
+    font-size:14px;
+}
+
+.stakingTx thead tr th {
+    border-top:0px;
+    border-color:#ffffff5c;
+}
+
+.stakingTx tbody tr td {
+    border-top: 1px solid #ffffff1f;
+}
+
+.stakingTx tbody tr {
+    transition: all .125s ease-in-out;
+}
+
+.stakingTx tbody tr:hover {
+    background-color:#ffffff1a;
+}
+
+.badge-purple {
+    background-color: #9552cf!important;
+    padding: 4px 7px;
+    padding-top: 5px;
+    border-radius: 4px;
+}
+
+.pr-10px {
+    padding-right: 10px!important;
+}
+
+.table-mobile-scroll {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+}
+
+@media (max-width: 767.98px) {
+    .tx1 {
+        width:64px;
+    }
+    .tx2 {
+        width:900px;
+    }
+    .tx3 {
+        width:69px;
+    }
+    .tx4 {
+        width:40px;
+    }
+}
+
+@media (min-width: 767.98px) {
+    .tx1 {
+        width:190px;
+    }
+    .tx2 {
+        width:900px;
+    }
+    .txcode code {
+        width:max-content;
+    }
+    .tx3 {
+        width:900px;
+    }
+    .tx4 {
+        width:300px;
+    }
+}
+
+.closeCross {
+    color: #fff;
+    font-size: 20px;
+}
+
 .dropdown {
     z-index:10;
+}
+
+.scrollTable {
+    display: flex;
+    flex-flow: column;
+    max-height: 500px;
+    overflow-y: scroll;
+}
+
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: #e7e7e7; 
+    border-radius:10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #797979;
+    border-radius:10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #696969; 
 }
 

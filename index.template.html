@@ -82,8 +82,8 @@
             <div class="modal-content exportKeysModalColor">
               <div class="modal-header">
                 <h5 class="modal-title" id="qrModalLabel">Address QR</h5>
-                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                  <span aria-hidden="true">&times;</span>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <i class="fa-solid fa-xmark closeCross"></i>
                 </button>
               </div>
               <div class="custom-control custom-switch" style="padding-left: 50px;" id="shieldSwitchAddrDiv" hidden>
@@ -105,7 +105,7 @@
               <div class="modal-header">
                 <h5 class="modal-title" id="qrReaderModalLabel">QR Scanner</h5>
                 <button id="closeQrReader" type="button" class="close" aria-label="Close">
-                  <span aria-hidden="true">&times;</span>
+                  <i class="fa-solid fa-xmark closeCross"></i>
                 </button>
               </div>
               <div class="modal-body center-text">
@@ -361,7 +361,7 @@
                         <div class="modal-header">
                           <h5 class="modal-title" id="encryptWalletLabel">Encrypt wallet</h5>
                           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
+                            <i class="fa-solid fa-xmark closeCross"></i>
                           </button>
                         </div>
                         <div class="modal-body">
@@ -399,7 +399,7 @@
                         <div class="shieldLogo">
                           <div class="shieldBackground">
                             <span class="dcWallet-svgIconPurple" style="top: 14px; left: 7px;">
-                              <i class="fas fa-unlock" style="position: relative; left: 3px; top: -5px;"></i>
+                              <i class="fas fa-lock" style="position: relative; left: 3px; top: -5px;"></i>
                             </span>
                           </div>
                         </div>
@@ -418,7 +418,7 @@
                         <div class="shieldLogo">
                           <div class="shieldBackground">
                             <span class="dcWallet-svgIconPurple" style="top: 14px; left: 7px;">
-                              <i class="fas fa-lock" style="position: relative; left: 3px; top: -5px;"></i>
+                              <i class="fas fa-unlock" style="position: relative; left: 3px; top: -5px;"></i>
                             </span>
                           </div>
                         </div>
@@ -522,7 +522,7 @@
                           <div class="modal-header">
                             <h5 class="modal-title" id="exportPrivateKeysLabel">Private Key</h5>
                             <button type="button" class="close" onclick="MPW.toggleExportUI()" data-dismiss="modal" aria-label="Close">
-                              <span aria-hidden="true">&times;</span>
+                              <i class="fa-solid fa-xmark closeCross"></i>
                             </button>
                           </div>
                           <div class="modal-body">
@@ -574,7 +574,7 @@
                               <input class="btn-group-input" style="padding-right: 0px;" type="number" id="sendAmountCoins" placeholder="0.00" autocomplete="nope" onkeydown="javascript: return event.keyCode == 69 ? false : true" />
                               <div class="input-group-append">
                                 <span class="input-group-text p-0">
-                                  <div data-i18n="sendAmountCoinsMax" onclick="MPW.selectMaxBalance(MPW.doms.domSendAmountCoins)" style="cursor: pointer; border: 0px; border-radius: 7px; padding: 3px 6px; margin: 0px 1px; background: linear-gradient(183deg, #9621ff9c, #7d21ffc7); color: #fff; font-weight: bold;">
+                                  <div data-i18n="sendAmountCoinsMax" onclick="MPW.selectMaxBalance(MPW.doms.domSendAmountCoins, MPW.doms.domSendAmountValue)" style="cursor: pointer; border: 0px; border-radius: 7px; padding: 3px 6px; margin: 0px 1px; background: linear-gradient(183deg, #9621ff9c, #7d21ffc7); color: #fff; font-weight: bold;">
                                     MAX
                                   </div>
                                 </span>
@@ -808,78 +808,142 @@
               <!-- // KEYPAIR SECTION -->
 
               <div id="StakingTab" class="tabcontent">
-                <!-- STAKING FEATURES -->
-                <p id="info" class="minor-notif-subtext">
-                  <b data-i18n="stakeTitle">Stake your PIV to generate rewards!</b>
-                  <br>
-                  <span data-i18n="stakeSubTitle">
-                    Coins that you Stake are "Locked" separately from your Available balance, and have a chance to generate rewards.
-                    <br>
-                    The more coins you stake, the more frequently you'll receive rewards.
-                  </span>
-                </p>
-                <div class="add-frame">
-                  <div class="staking-banner-top">
-                    <div id="staking-rectangle" class="col-md-4">
-                      <div id="pivx-price-box">
-                        <div id="icon-box-piv">
-                          <div id="piv-price" class="staking-piv-icon"></div>
+                <div class="row p-0">
+                  <div class="col-12 p-0 mb-5">
+                    <center>
+                      <div class="dcWallet-balances mb-4" style="margin-top: 37px;">
+
+                        <div class="row lessBot p-0">
+                          <div class="col-6 d-flex dcWallet-topLeftMenu" style="justify-content: flex-start;">
+                            <h3 class="noselect balance-title">
+                              <span class="reload noselect" onclick="MPW.refreshChainData()"><i id="balanceReloadStaking" class="fa-solid fa-rotate-right cur-pointer"></i></span>
+                            </h3>
+                          </div>
                         </div>
-                        <div id="piv-price-amount">
-                          <p id="guiBalanceBoxStaking"><b id="guiBalanceStaking">~</b> <span id="guiBalanceStakingTicker">PIV</span></p>
+
+                        Staking<br>
+                        <span class="dcWallet-pivxBalance" id="guiBalanceStaking">0</span> <span id="guiBalanceStakingTicker" class="dcWallet-pivxTicker">PIVX</span><br />
+                        <div class="dcWallet-usdBalance">
+                          <span id="guiStakingValue" class="dcWallet-usdValue">$-</span>
+                          <span id="guiStakingValueCurrency" class="dcWallet-usdValue">USD</span>
+                        </div>
+
+                        <div class="row lessTop p-0">
+                          <div class="col-6 d-flex" style="justify-content: flex-start;">
+                            <div class="dcWallet-stake" onclick="MPW.toggleBottomMenu('stakingDelegate', 'transferAnimation')">
+                              Stake
+                            </div>
+                          </div>
+
+                          <div class="col-6 d-flex" style="justify-content: flex-end;">
+                            <div class="dcWallet-unstake" onclick="MPW.toggleBottomMenu('stakingUndelegate', 'transferAnimation')">
+                              Unstake  
+                            </div>
+                          </div>
                         </div>
                       </div>
-                      <div id="staking-box">
-                        <h3 id="stake-title" class="noselect"><span data-i18n="staking">Staking</span> &nbsp;&nbsp;<span id="balanceReloadStaking" class="reload noselect" onclick="MPW.refreshChainData()">&#x21bb;</span></h3>
-                      </div>
-                    </div>
+                    </center>
                   </div>
-                  <br />
-                  <div class="staking-banner-bottom">
-                    <div class="stake-box large-box col-md-4">
-                      <h5 id="availToDelegate" onclick="MPW.selectMaxBalance(MPW.doms.domGuiDelegateAmount)" class="stake-balances ptr"><span data-i18n="available">Available</span>: 0 PIV</h5>
-                      <textarea id="delegateAmount" class="stake-input form-control private-key-area"></textarea>
-                      <div class="button-padd">
-                        <button class="pivx-button-big" onclick="MPW.delegateGUI()">
-                          <span class="buttoni-icon"><i class="far fa-snowflake fa-tiny-margin"></i></span>
-                          <span class="buttoni-text" data-i18n="stake">Stake</span>
-                          <span class="buttoni-arrow">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-                              <path d="M23.328 16.707L13.121 26.914a.5.5 0 01-.707 0l-2.828-2.828a.5.5 0 010-.707L16.964 16 9.586 8.621a.5.5 0 010-.707l2.828-2.828a.5.5 0 01.707 0l10.207 10.207a1 1 0 010 1.414z"></path>
-                            </svg>
-                          </span>
-                        </button>
-                      </div>
-                    </div>
-                    <div class="stake-box large-box col-md-4">
-                      <h5 id="availToUndelegate" onclick="MPW.selectMaxBalance(MPW.doms.domGuiUndelegateAmount, true)" class="stake-balances ptr"><span data-i18n="staking">Staking</span>: 0 PIV</h5>
-                      <textarea id="undelegateAmount" class="stake-input form-control private-key-area"></textarea>
-                      <div class="button-padd">
-                        <button class="pivx-button-big" onclick="MPW.undelegateGUI()">
-                          <span class="buttoni-icon"><i class="far fa-snowflake fa-tiny-margin"></i></span>
-                          <span class="buttoni-text" data-i18n="stakeUnstake">Unstake</span>
-                          <span class="buttoni-arrow">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-                              <path d="M23.328 16.707L13.121 26.914a.5.5 0 01-.707 0l-2.828-2.828a.5.5 0 010-.707L16.964 16 9.586 8.621a.5.5 0 010-.707l2.828-2.828a.5.5 0 01.707 0l10.207 10.207a1 1 0 010 1.414z"></path>
-                            </svg>
-                          </span>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                  <!-- STAKING FEATURES -->
-                  <div class="staking-banner-bottom">
-                    <div class="stake-box large-box col-md-4">
-                      <div id="staking-rewards-title" class="staking-rewards-header">
-                        <h5><span data-i18n="staking">Staking</span> <span data-i18n="rewards">Rewards</span></h5>
-                      </div>
-                      <div class="staking-rewards-list">
+
+                  <div class="col-12 mb-5">
+                    <center><span class="dcWallet-activityLbl">Reward History (<span id="staking-rewards-title">-</span>)</span></center>
+                    <div class="dcWallet-activity">
+                      <div class="scrollTable">
                         <div id="staking-rewards-content"></div>
-                        <button type="button" id="stakingLoadMore" onclick="MPW.updateStakingRewardsGUI()">
-                          <span class="buttoni-icon" id="stakingLoadMoreIcon"><i class="fas fa-sync fa-tiny-margin"></i></span>
-                          <span class="buttoni-text" data-i18n="stakeLoadMore">Load more</span>
-                        </button>
+                        <center>
+                          <button class="pivx-button-medium" id="stakingLoadMore" onclick="MPW.updateStakingRewardsGUI()">
+                            <span class="buttoni-icon"><i class="fas fa-sync fa-tiny-margin" id="stakingLoadMoreIcon"></i></span>
+                            <span class="buttoni-text" data-i18n="stakeLoadMore">Load more</span>
+                          </button>
+                        </center>
                       </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div id="stakingUndelegate" class="exportKeysModalColor transferMenu transferAnimation">
+                  <div class="transferHeader">
+                    <div class="transferHeaderText">Unstake</div>
+                    <div class="transferExit" onclick="MPW.toggleBottomMenu('stakingUndelegate', 'transferAnimation')"><i class="fa-solid fa-xmark"></i></div>
+                  </div>
+
+                  <div class="transferBody">
+                    <label><span data-i18n="amount">Amount</span> (<span id="availToUndelegate">-</span>)</label><br />
+
+                    <div class="row">
+                      <div class="col-7 pr-2">
+                        <div class="input-group mb-3">
+                          <input class="btn-group-input" style="padding-right: 0px;" type="number" id="undelegateAmount" placeholder="0.00" autocomplete="nope" onkeydown="javascript: return event.keyCode == 69 ? false : true" />
+                          <div class="input-group-append">
+                            <span class="input-group-text p-0">
+                              <div onclick="MPW.selectMaxBalance(MPW.doms.domUnstakeAmount, MPW.doms.domUnstakeAmountValue, true)" style="cursor: pointer; border: 0px; border-radius: 7px; padding: 3px 6px; margin: 0px 1px; background: linear-gradient(183deg, #9621ff9c, #7d21ffc7); color: #fff; font-weight: bold;">
+                                MAX
+                              </div>
+                            </span>
+                            <span id="unstakeAmountCoinsTicker" class="input-group-text">PIVX</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="col-5 pl-2">
+                        <div class="input-group mb-3">
+                          <input class="btn-group-input" type="text" id="unstakeAmountValue" placeholder="0.00" autocomplete="nope" onkeydown="javascript: return event.keyCode == 69 ? false : true" />
+                          <div class="input-group-append">
+                            <span id="unstakeAmountValueCurrency" class="input-group-text pl-0">USD</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="text-right pb-2">
+                      <button class="pivx-button-medium w-100" style="margin:0px;" onclick="MPW.undelegateGUI()">
+                        <span class="buttoni-icon"><i class="fas fa-paper-plane fa-tiny-margin"></i></span>
+                        <span class="buttoni-text">Unstake</span>
+                      </button>
+                    </div>
+
+                  </div>
+                </div>
+
+                <div id="stakingDelegate" class="exportKeysModalColor transferMenu transferAnimation">
+                  <div class="transferHeader">
+                    <div class="transferHeaderText">Stake</div>
+                    <div class="transferExit" onclick="MPW.toggleBottomMenu('stakingDelegate', 'transferAnimation')"><i class="fa-solid fa-xmark"></i></div>
+                  </div>
+
+                  <div class="transferBody">
+                    <label><span data-i18n="amount">Amount</span> (<span id="availToDelegate">-</span>)</label><br />
+
+                    <div class="row">
+                      <div class="col-7 pr-2">
+                        <div class="input-group mb-3">
+                          <input class="btn-group-input" style="padding-right: 0px;" type="number" id="delegateAmount" placeholder="0.00" autocomplete="nope" onkeydown="javascript: return event.keyCode == 69 ? false : true" />
+                          <div class="input-group-append">
+                            <span class="input-group-text p-0">
+                              <div onclick="MPW.selectMaxBalance(MPW.doms.domStakeAmount, MPW.doms.domStakeAmountValue)" style="cursor: pointer; border: 0px; border-radius: 7px; padding: 3px 6px; margin: 0px 1px; background: linear-gradient(183deg, #9621ff9c, #7d21ffc7); color: #fff; font-weight: bold;">
+                                MAX
+                              </div>
+                            </span>
+                            <span id="stakeAmountCoinsTicker" class="input-group-text">PIVX</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="col-5 pl-2">
+                        <div class="input-group mb-3">
+                          <input class="btn-group-input" type="text" id="stakeAmountValue" placeholder="0.00" autocomplete="nope" onkeydown="javascript: return event.keyCode == 69 ? false : true" />
+                          <div class="input-group-append">
+                            <span id="stakeAmountValueCurrency" class="input-group-text pl-0">USD</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="text-right pb-2">
+                      <button class="pivx-button-medium w-100" style="margin:0px;" onclick="MPW.delegateGUI()">
+                        <span class="buttoni-icon"><i class="fas fa-paper-plane fa-tiny-margin"></i></span>
+                        <span class="buttoni-text">Stake</span>
+                      </button>
                     </div>
                   </div>
                 </div>
