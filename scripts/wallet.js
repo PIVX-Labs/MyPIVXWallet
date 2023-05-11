@@ -470,8 +470,8 @@ export function deriveAddress({ pkBytes, publicKey, output = 'ENCODED' }) {
     // Public Key Derivation
     let pubKeyBytes = publicKey
         ? hexToBytes(publicKey)
-    // @ts-ignore trust me it works
-        : nobleSecp256k1.getPublicKey(pkBytes, compress);
+        : // @ts-ignore trust me it works
+          nobleSecp256k1.getPublicKey(pkBytes, compress);
 
     if (output === 'UNCOMPRESSED_HEX') {
         if (pubKeyBytes.length !== 65) {
@@ -542,7 +542,10 @@ export async function importWallet({
         "Do you really want to import a new address? If you haven't saved the last private key, the wallet will be LOST forever.";
     const walletConfirm =
         fWalletLoaded && !skipConfirmation
-          ? await confirmPopup({ title: 'Confirm the import?', html: strImportConfirm })
+            ? await confirmPopup({
+                  title: 'Confirm the import?',
+                  html: strImportConfirm,
+              })
             : true;
 
     if (walletConfirm) {
@@ -717,7 +720,10 @@ export async function generateWallet(noUI = false) {
         "Do you really want to import a new address? If you haven't saved the last private key, the wallet will be LOST forever.";
     const walletConfirm =
         fWalletLoaded && !noUI
-          ? await confirmPopup({ title: 'Import new address?', html: strImportConfirm })
+            ? await confirmPopup({
+                  title: 'Import new address?',
+                  html: strImportConfirm,
+              })
             : true;
     if (walletConfirm) {
         const mnemonic = generateMnemonic();
@@ -788,15 +794,15 @@ export async function verifyMnemonic(strMnemonic = '', fPopupConfirm = true) {
 
 function informUserOfMnemonic(mnemonic) {
     return new Promise((res, _) => {
-	// @ts-ignore
+        // @ts-ignore
         $('#mnemonicModal').modal({ keyboard: false });
         doms.domMnemonicModalContent.innerText = mnemonic;
         doms.domMnemonicModalButton.onclick = () => {
             res(doms.domMnemonicModalPassphrase.value);
-	    // @ts-ignore
+            // @ts-ignore
             $('#mnemonicModal').modal('hide');
         };
-	// @ts-ignore
+        // @ts-ignore
         $('#mnemonicModal').modal('show');
     });
 }
@@ -928,7 +934,7 @@ export async function getNewAddress({
         doms.domModalQR.firstChild.style.width = '100%';
         doms.domModalQR.firstChild.style.height = 'auto';
         doms.domModalQR.firstChild.classList.add('no-antialias');
-	// @ts-ignore
+        // @ts-ignore
         document.getElementById('clipboard').value = address;
     }
     addressIndex++;

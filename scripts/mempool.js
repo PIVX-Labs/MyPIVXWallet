@@ -351,7 +351,7 @@ export class Mempool {
                     continue;
                 }
                 getNetwork()
-                    .getUTXOFullInfo()
+                    .getUTXOFullInfo(utxo)
                     .then((utxo) => {
                         this.addUTXO(utxo);
                     })

@@ -21,7 +21,7 @@ Chart.register(
 
 /**
  * The wallet breakdown modal chart
- * @type {Chart}
+ * @type {Chart<"doughnut">}
  */
 let chartWalletBreakdown = null;
 
@@ -75,10 +75,12 @@ export function getWalletDataset() {
 
 /**
  * Create the initial Wallet Breakdown chart configuration and UI rendering
+ * @param {{colour: string, balance: number, type: string}[]} arrBreakdown
  */
 export async function generateWalletBreakdown(arrBreakdown) {
     // Render the PIVX logo in the centre of the "Wallet Doughnut"
     const image = new Image();
+    // @ts-ignore
     image.src = (await import('../assets/logo-circle.svg')).default;
     const logo_plugin = {
         id: 'centreLogo',
@@ -107,6 +109,7 @@ export async function generateWalletBreakdown(arrBreakdown) {
         },
         plugins: [logo_plugin],
         options: {
+            // @ts-ignore
             backgroundColor: arrBreakdown.map((data) => data.colour),
             radius: '75%',
             cutout: '75%',
@@ -127,6 +130,7 @@ export async function generateWalletBreakdown(arrBreakdown) {
     });
 
     // Set an interval internally to refresh the chart in real-time
+    // @ts-ignore
     chartWalletBreakdown.interval = setInterval(() => {
         renderWalletBreakdown()
             .then(() => {})
@@ -141,7 +145,8 @@ export async function generateWalletBreakdown(arrBreakdown) {
  */
 export async function renderWalletBreakdown() {
     // Only if the modal is open, to save performance and prevent rendering when it's not visible
-    if (!doms.domModalWalletBreakdown.style.display === 'block') return;
+    // This doesn't work!
+    // if (doms.domModalWalletBreakdown.style.display !== 'block') return;
 
     // Update the chart data with the new dataset
     const arrBreakdown = getWalletDataset();

@@ -52,6 +52,9 @@ export class Network {
         return bytes * 50; // 50 sat/byte
     }
 
+    /**
+     * @returns {Number} cached block count
+     */
     get cachedBlockCount() {
         throw new Error('cachedBlockCount must be implemented');
     }

@@ -234,12 +234,8 @@ export async function createAndSendTransaction({
 }) {
     if (!hasWalletUnlocked(true)) return;
     if ((isDelegation || useDelegatedInputs) && masterKey.isHardwareWallet) {
-        createAlert(
-            'warning',
-            'Ledger is currently not supported.',
-            6000
-        );
-	return {ok: false, err: 'Ledger is not supported'};
+        createAlert('warning', 'Ledger is currently not supported.', 6000);
+        return { ok: false, err: 'Ledger is not supported' };
     }
 
     // Ensure the wallet is unlocked
@@ -255,7 +251,7 @@ export async function createAndSendTransaction({
     const cCoinControl = chooseUTXOs(cTx, amount, 0, useDelegatedInputs);
     if (!cCoinControl.success) {
         createAlert('warning', cCoinControl.msg, 5000);
-	return {ok: false, err: cCoinControl.msg};
+        return { ok: false, err: cCoinControl.msg };
     }
     // Compute fee
     const nFee = getNetwork().getFee(cTx.serialize().length);
@@ -295,6 +291,7 @@ export async function createAndSendTransaction({
             outputs.push([changeAddress, nChange / COIN]);
         }
         knownUTXOs.push(
+            // @ts-ignore
             new UTXO({
                 id: null, // We still don't know the txid
                 path: changeAddressPath,
@@ -317,7 +314,7 @@ export async function createAndSendTransaction({
         outputs.push([primaryAddress, address, amount / COIN]);
 
         knownUTXOs.push(
-	    // @ts-ignore we're abusing the class
+            // @ts-ignore we're abusing the class
             new UTXO({
                 id: null,
                 path: primaryAddressPath,
@@ -380,7 +377,7 @@ export async function createAndSendTransaction({
                 mempool.addUTXO(
                     new UTXO({
                         id: futureTxid,
-			// @ts-ignore
+                        // @ts-ignore
                         path: yourPath,
                         sats: amount,
                         vout,
@@ -462,7 +459,7 @@ async function signTransaction(cTx, masterKey, outputs, undelegate) {
         title: ALERTS.CONFIRM_POPUP_TRANSACTION,
         html: createTxConfirmation(outputs),
         resolvePromise: cHardwareWallet.createPaymentTransaction({
-	    // @ts-ignore
+            // @ts-ignore
             inputs: arrInputs,
             associatedKeysets: arrAssociatedKeysets,
             outputScriptHex: strOutputScriptHex,

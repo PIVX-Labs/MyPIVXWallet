@@ -6,6 +6,7 @@ import 'bootstrap';
 
 // Import all montserrat font weights
 /* eslint-disable */
+// @ts-ignore
 require.context('@fontsource/montserrat/', false, /\.css$/);
 
 import { start } from './global.js';

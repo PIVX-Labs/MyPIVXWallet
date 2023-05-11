@@ -1,4 +1,6 @@
+// @ts-ignore
 import { en_translation } from '../locale/en/translation.js';
+// @ts-ignore
 import { uwu_translation } from '../locale/uwu/translation.js';
 
 /**
@@ -67,26 +69,25 @@ export function translate(i18nLangs) {
     if (!i18nLangs) return;
 
     document.querySelectorAll('[data-i18n]').forEach(function (element) {
-	if (element instanceof HTMLElement){
+        if (element instanceof HTMLElement) {
+            if (!i18nLangs[element.dataset.i18n]) return;
 
-
-        if (!i18nLangs[element.dataset.i18n]) return;
-
-        if (element.dataset.i18n_target) {
-            element[element.dataset.i18n_target] =
-                i18nLangs[element.dataset.i18n];
-        } else {
-            switch (element.tagName.toLowerCase()) {
-                case 'input':
-                case 'textarea':
-                    element.placeholder = i18nLangs[element.dataset.i18n];
-                    break;
-                default:
-                    element.innerHTML = i18nLangs[element.dataset.i18n];
-                    break;
+            if (element.dataset.i18n_target) {
+                element[element.dataset.i18n_target] =
+                    i18nLangs[element.dataset.i18n];
+            } else {
+                switch (element.tagName.toLowerCase()) {
+                    case 'input':
+                    case 'textarea':
+                        // @ts-ignore
+                        element.placeholder = i18nLangs[element.dataset.i18n];
+                        break;
+                    default:
+                        element.innerHTML = i18nLangs[element.dataset.i18n];
+                        break;
+                }
             }
         }
-	}
     });
     loadAlerts();
 }
@@ -124,6 +125,7 @@ export function start() {
     const arrLangsWithSubset = ['en'];
 
     const strLang = parseUserAgentLang(
+        // @ts-ignore
         window.navigator.userLanguage || window.navigator.language,
         arrLangsWithSubset
     );

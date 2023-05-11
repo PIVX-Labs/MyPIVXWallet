@@ -144,6 +144,7 @@ export async function confirmPopup({ title, html, resolvePromise }) {
         return await resolvePromise;
     } finally {
         // We want to hide the modal even if an exception occurs
+        // @ts-ignore
         $('#confirmModal').modal('hide');
     }
 }
@@ -151,6 +152,7 @@ export async function confirmPopup({ title, html, resolvePromise }) {
 // Generates and sets a QRCode image from a string and dom element
 export function createQR(strData = '', domImg, size = 4) {
     // QRCode class consists of 'typeNumber' & 'errorCorrectionLevel'
+    // @ts-ignore
     const cQR = qrcode(size, 'L');
     cQR.addData(strData);
     cQR.make();

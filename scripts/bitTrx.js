@@ -164,9 +164,9 @@ export default class bitjs {
                     }
                 }
 
-		/**
-		 * @type{Buffer | Uint8Array}
-		 */
+                /**
+                 * @type{Buffer | Uint8Array}
+                 */
                 let buffer = hexToBytes(clone.serialize());
                 buffer = new Uint8Array([
                     ...buffer,
@@ -220,7 +220,7 @@ export default class bitjs {
                 nSigHashType
             );
 
-	    if (!sigBytes) return false;
+            if (!sigBytes) return false;
 
             // Construct the redeem script
             let bScript = [];
@@ -280,10 +280,7 @@ export default class bitjs {
                     ...output.script,
                 ];
             }
-            buffer = [
-                ...buffer,
-                ...bitjs.numToBytes(this.locktime, 4),
-            ];
+            buffer = [...buffer, ...bitjs.numToBytes(this.locktime, 4)];
             return bytesToHex(buffer);
         }
     };

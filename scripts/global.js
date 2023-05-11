@@ -228,10 +228,15 @@ export async function start() {
         domBlackBack: document.getElementById('blackBack'),
     };
     i18nStart();
-    loadImages().then(()=>{}).catch(e=>{throw e});
+    loadImages()
+        .then(() => {})
+        .catch((e) => {
+            throw e;
+        });
 
     // Enable all Bootstrap Tooltips
     $(function () {
+        // @ts-ignore
         $('[data-toggle="tooltip"]').tooltip();
     });
 
@@ -243,14 +248,22 @@ export async function start() {
             doms.domSendAmountCoins,
             doms.domSendAmountValue,
             true
-        ).then(()=>{}).catch(e=>{throw e});
+        )
+            .then(() => {})
+            .catch((e) => {
+                throw e;
+            });
     };
     doms.domSendAmountValue.oninput = () => {
         updateAmountInputPair(
             doms.domSendAmountCoins,
             doms.domSendAmountValue,
             false
-        ).then(()=>{}).catch(e=>{throw e});
+        )
+            .then(() => {})
+            .catch((e) => {
+                throw e;
+            });
     };
 
     /** Staking (Stake) */
@@ -259,14 +272,22 @@ export async function start() {
             doms.domStakeAmount,
             doms.domStakeAmountValue,
             true
-        ).then(()=>{}).catch(e=>{throw e});
+        )
+            .then(() => {})
+            .catch((e) => {
+                throw e;
+            });
     };
     doms.domStakeAmountValue.oninput = () => {
         updateAmountInputPair(
             doms.domStakeAmount,
             doms.domStakeAmountValue,
             false
-        ).then(()=>{}).catch(e=>{throw e});
+        )
+            .then(() => {})
+            .catch((e) => {
+                throw e;
+            });
     };
 
     /** Staking (Unstake) */
@@ -275,14 +296,22 @@ export async function start() {
             doms.domUnstakeAmount,
             doms.domUnstakeAmountValue,
             true
-        ).then(()=>{}).catch(e=>{throw e});
+        )
+            .then(() => {})
+            .catch((e) => {
+                throw e;
+            });
     };
     doms.domUnstakeAmountValue.oninput = () => {
         updateAmountInputPair(
             doms.domUnstakeAmount,
             doms.domUnstakeAmountValue,
             false
-        ).then(()=>{}).catch(e=>{throw e});
+        )
+            .then(() => {})
+            .catch((e) => {
+                throw e;
+            });
     };
 
     // Register native app service
@@ -341,7 +370,7 @@ export async function start() {
         refreshChainData();
 
         // Fetch the PIVX prices
-        refreshPriceDisplay();
+        refreshPriceDisplay().finally(() => {});
     }, 15000);
 
     // After reaching here; we know MPW's base is fully loaded!
@@ -456,34 +485,39 @@ export function updateTicker() {
  */
 export function updatePriceDisplay(domValue, fCold = false) {
     // Update currency values
-    cMarket.getPrice(strCurrency).then((nPrice) => {
-        // Configure locale settings by detecting currency support
-	// @ts-ignore
-        const cLocale = Intl.supportedValuesOf('currency').includes(
-            strCurrency.toUpperCase()
-        )
-            ? {
-                  style: 'currency',
-                  currency: strCurrency,
-                  currencyDisplay: 'narrowSymbol',
-              }
-            : { maximumFractionDigits: 8, minimumFractionDigits: 8 };
+    cMarket
+        .getPrice(strCurrency)
+        .then((nPrice) => {
+            // Configure locale settings by detecting currency support
+            // @ts-ignore
+            const cLocale = Intl.supportedValuesOf('currency').includes(
+                strCurrency.toUpperCase()
+            )
+                ? {
+                      style: 'currency',
+                      currency: strCurrency,
+                      currencyDisplay: 'narrowSymbol',
+                  }
+                : { maximumFractionDigits: 8, minimumFractionDigits: 8 };
 
-        // Calculate the value
-        let nValue =
-            ((fCold ? getStakingBalance() : getBalance()) / COIN) * nPrice;
+            // Calculate the value
+            let nValue =
+                ((fCold ? getStakingBalance() : getBalance()) / COIN) * nPrice;
 
-        // Handle certain edge-cases; like satoshis having decimals.
-        switch (strCurrency) {
-            case 'sats':
-                nValue = Math.round(nValue);
-                cLocale.maximumFractionDigits = 0;
-                cLocale.minimumFractionDigits = 0;
-        }
+            // Handle certain edge-cases; like satoshis having decimals.
+            switch (strCurrency) {
+                case 'sats':
+                    nValue = Math.round(nValue);
+                    cLocale.maximumFractionDigits = 0;
+                    cLocale.minimumFractionDigits = 0;
+            }
 
-        // Update the DOM
-        domValue.innerText = nValue.toLocaleString('en-gb', cLocale);
-    }).catch(e=>{throw e});
+            // Update the DOM
+            domValue.innerText = nValue.toLocaleString('en-gb', cLocale);
+        })
+        .catch((e) => {
+            throw e;
+        });
 }
 
 export function getBalance(updateGUI = false) {
@@ -537,7 +571,11 @@ export function selectMaxBalance(domCoin, domValue, fCold = false) {
     // @ts-ignore
     domCoin.value = (fCold ? getStakingBalance() : getBalance()) / COIN;
     // Update the Send menu's value (assumption: if it's not a Cold balance, it's probably for Sending!)
-    updateAmountInputPair(domCoin, domValue, true).then(()=>{}).catch(e=>{throw e});
+    updateAmountInputPair(domCoin, domValue, true)
+        .then(() => {})
+        .catch((e) => {
+            throw e;
+        });
 }
 
 /**
@@ -608,11 +646,17 @@ export function createActivityListHTML(arrTXs, fRewards = false) {
         <tbody>`;
 
     // Prepare time formatting
+    /**
+     * @type{any}
+     */
     const dateOptions = {
         year: '2-digit',
         month: '2-digit',
         day: '2-digit',
     };
+    /**
+     * @type{any}
+     */
     const timeOptions = {
         hour: '2-digit',
         minute: '2-digit',
@@ -625,7 +669,7 @@ export function createActivityListHTML(arrTXs, fRewards = false) {
 
         // Coinbase Transactions (rewards) require 100 confs
         const fConfirmed =
-              cNet.cachedBlockCount - cTx.blockHeight >= (fRewards ? 100 : 6);
+            cNet.cachedBlockCount - cTx.blockHeight >= (fRewards ? 100 : 6);
 
         // Render the list element from Tx data
         strList += `
@@ -690,29 +734,31 @@ export async function updateStakingRewardsGUI() {
     // Load rewards from the network, displaying the sync spin icon until finished
     doms.domGuiStakingLoadMoreIcon.classList.add('fa-spin');
     const arrRewards = await cNet.getStakingRewards();
-    doms.domGuiStakingLoadMoreIcon.classList.remove('fa-spin');
+    if (arrRewards) {
+        doms.domGuiStakingLoadMoreIcon.classList.remove('fa-spin');
 
-    // Check if all rewards are loaded
-    if (cNet.areRewardsComplete) {
-        // Hide the load more button
-        doms.domGuiStakingLoadMore.style.display = 'none';
+        // Check if all rewards are loaded
+        if (cNet.areRewardsComplete) {
+            // Hide the load more button
+            doms.domGuiStakingLoadMore.style.display = 'none';
+        }
+
+        // Display total rewards from known history
+        const nRewards = arrRewards.reduce((a, b) => a + b.amount, 0);
+        doms.domStakingRewardsTitle.innerHTML = `${
+            cNet.areRewardsComplete ? '' : '≥'
+        }${nRewards} ${cChainParams.current.TICKER}`;
+
+        // Create and render the Activity List
+        doms.domStakingRewardsList.innerHTML =
+            createActivityListHTML(arrRewards);
     }
-
-    // Display total rewards from known history
-    const nRewards = arrRewards.reduce((a, b) => a + b.amount, 0);
-    doms.domStakingRewardsTitle.innerHTML = `${
-        cNet.areRewardsComplete ? '' : '≥'
-    }${nRewards} ${cChainParams.current.TICKER}`;
-
-    // Create and render the Activity List
-    doms.domStakingRewardsList.innerHTML = createActivityListHTML(arrRewards);
 }
 
 /**
  * Open the Explorer in a new tab for the loaded master public key
  */
 export async function openExplorer() {
-    masterKey.isHardwareWallet()
     if (masterKey.isHD) {
         const derivationPath = getDerivationPath(masterKey.isHardwareWallet)
             .split('/')
@@ -728,16 +774,23 @@ export async function openExplorer() {
 
 async function loadImages() {
     const images = [
+        // @ts-ignore
         ['mpw-main-logo', import('../assets/logo.png')],
+        // @ts-ignore
         ['privateKeyImage', import('../assets/key.png')],
+        // @ts-ignore
         ['img-governance', import('../assets/img_governance.png')],
+        // @ts-ignore
         ['img-pos', import('../assets/img_pos.png')],
+        // @ts-ignore
         ['img-privacy', import('../assets/img_privacy.png')],
+        // @ts-ignore
         ['img-slider-bars', import('../assets/img_slider_bars.png')],
     ];
 
     const promises = images.map(([id, path]) =>
         (async () => {
+            // @ts-ignore
             document.getElementById(id).src = (await path).default;
         })()
     );
@@ -749,6 +802,7 @@ export async function playMusic() {
     // On first play: load the audio into memory from the host
     if (audio === null) {
         // Dynamically load the file
+        // @ts-ignore
         audio = new Audio((await import('../assets/music.mp3')).default);
     }
 
@@ -809,10 +863,12 @@ export async function updateAmountInputPair(domCoin, domValue, fCoinEdited) {
     if (fCoinEdited) {
         // If the 'Coin' input is edited, then update the 'Value' input with it's converted currency
         const nValue = Number(domCoin.value) * nPrice;
+        // @ts-ignore
         domValue.value = nValue <= 0 ? '' : nValue;
     } else {
         // If the 'Value' input is edited, then update the 'Coin' input with the reversed conversion rate
         const nValue = Number(domValue.value) / nPrice;
+        // @ts-ignore
         domCoin.value = nValue <= 0 ? '' : nValue;
     }
 }
@@ -822,6 +878,9 @@ export async function toClipboard(source, caller) {
     const domCopy = document.getElementById(source) || source;
 
     // Use an invisible textbox as the clipboard source
+    /**
+     * @type {any}
+     */
     const domClipboard = document.getElementById('clipboard');
     domClipboard.value = domCopy.value || domCopy.innerHTML || domCopy;
     domClipboard.select();
@@ -877,7 +936,11 @@ export function guiPreparePayment(strTo = '', nAmount = 0, strDesc = '') {
         doms.domSendAmountCoins,
         doms.domSendAmountValue,
         true
-    ).then(()=>{}).catch(e=>{throw e});
+    )
+        .then(() => {})
+        .catch((e) => {
+            throw e;
+        });
 
     // Focus on the coin input box (if no pre-fill was specified)
     if (nAmount <= 0) {
@@ -992,7 +1055,11 @@ export function destroyMasternode() {
             '<b>Masternode destroyed!</b><br>Your coins are now spendable.',
             5000
         );
-        updateMasternodeTab().then(()=>{}).catch(e=>{throw e});
+        updateMasternodeTab()
+            .then(() => {})
+            .catch((e) => {
+                throw e;
+            });
     }
 }
 
@@ -1088,6 +1155,7 @@ export async function importMasternode() {
         const path = doms.domMnTxId.value;
         const masterUtxo = mempool
             .getConfirmed()
+            // @ts-ignore ts doesn't have findLast for some reason
             .findLast((u) => u.path === path); // first UTXO for each address in HD
         // sanity check:
         if (masterUtxo.sats !== cChainParams.current.collateralInSats) {
@@ -1219,7 +1287,7 @@ export async function guiEncryptWallet() {
         return createAlert('warning', ALERTS.PASSWORD_DOESNT_MATCH, [], 2250);
     await encryptWallet(strPass);
     createAlert('success', ALERTS.NEW_PASSWORD_SUCCESS, [], 5500);
-
+    // @ts-ignore
     $('#encryptWalletModal').modal('hide');
 
     doms.domWipeWallet.hidden = false;
@@ -1245,9 +1313,12 @@ export function toggleExportUI() {
 }
 
 export function checkVanity() {
-    var e = event || window.event; // get event object
-    var key = e.keyCode || e.which; // get key cross-browser
-    var char = String.fromCharCode(key).trim(); // convert key to char
+    /**
+     * @type{any}
+     */
+    const e = event || window.event; // get event object
+    const key = e.keyCode || e.which; // get key cross-browser
+    const char = String.fromCharCode(key).trim(); // convert key to char
     if (char.length == 0) return;
 
     // Ensure the input is base58 compatible
@@ -1331,6 +1402,7 @@ export function generateVanityWallet() {
         console.log('Spawning ' + nThreads + ' vanity search threads!');
         while (arrWorkers.length < nThreads) {
             arrWorkers.push(
+                // @ts-ignore
                 new Worker(new URL('./vanitygen_worker.js', import.meta.url))
             );
             const checkResult = (data) => {
@@ -1342,7 +1414,11 @@ export function generateVanityWallet() {
                     importWallet({
                         newWif: data.priv,
                         fRaw: true,
-                    }).then(()=>{}).catch(e=>{throw e});
+                    })
+                        .then(() => {})
+                        .catch((e) => {
+                            throw e;
+                        });
                     stopSearch();
                     doms.domGuiBalance.innerHTML = '0';
                     return console.log(
@@ -1440,9 +1516,11 @@ export async function restoreWallet(strReason = '') {
         })
     ) {
         // Attempt to unlock the wallet with the provided password
-        const strPassword = document.getElementById(
-            'restoreWalletPassword'
-        ).value;
+        /**
+         * @type {any}
+         */
+        const domPasswd = document.getElementById('restoreWalletPassword');
+        const strPassword = domPasswd.value;
         if (await decryptWallet(strPassword)) {
             doms.domRestoreWallet.hidden = true;
             doms.domWipeWallet.hidden = false;
@@ -1864,10 +1942,14 @@ export async function createProposal() {
                <input type="number" id="proposalCycles" placeholder="Duration in cycles" style="text-align: center;"><br>
                <input type="number" id="proposalPayment" placeholder="${cChainParams.current.TICKER} per cycle" style="text-align: center;"><br>`,
     });
+    // @ts-ignore
     const strTitle = document.getElementById('proposalTitle').value;
+    // @ts-ignore
     const strUrl = document.getElementById('proposalUrl').value;
+    // @ts-ignore
     const numCycles = parseInt(document.getElementById('proposalCycles').value);
     const numPayment = parseInt(
+        // @ts-ignore
         document.getElementById('proposalPayment').value
     );
     const nextSuperblock = await Masternode.getNextSuperblock();
@@ -1918,7 +2000,12 @@ export function refreshChainData() {
     if (!masterKey) return;
 
     // Fetch block count + UTXOs
-    getNetwork().getBlockCount().then(()=>{}).catch(e=>{throw e});
+    getNetwork()
+        .getBlockCount()
+        .then(() => {})
+        .catch((e) => {
+            throw e;
+        });
     getBalance(true);
 }
 

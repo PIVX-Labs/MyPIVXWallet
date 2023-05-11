@@ -75,7 +75,7 @@ export function start() {
 
     // Hook up the 'currency' select UI
     document.getElementById('currency').onchange = function (evt) {
-	// @ts-ignore
+        // @ts-ignore
         setCurrency(evt.target.value);
     };
 
@@ -83,7 +83,7 @@ export function start() {
     document.getElementById('explorer').onchange = function (evt) {
         setExplorer(
             cChainParams.current.Explorers.find(
-		// @ts-ignore
+                // @ts-ignore
                 (a) => a.url === evt.target.value
             )
         );
@@ -91,13 +91,13 @@ export function start() {
 
     // Hook up the 'translation' select UI
     document.getElementById('translation').onchange = function (evt) {
-	// @ts-ignore
+        // @ts-ignore
         setTranslation(evt.target.value);
     };
 
     // Hook up the 'analytics' select UI
     document.getElementById('analytics').onchange = function (evt) {
-	// @ts-ignore
+        // @ts-ignore
         setAnalytics(arrAnalytics.find((a) => a.name === evt.target.value));
     };
 
@@ -107,7 +107,9 @@ export function start() {
 
     // Fetch price data, then fetch chain data
     if (getNetwork().enabled) {
-        refreshPriceDisplay().then(()=>{}).finally(refreshChainData);
+        refreshPriceDisplay()
+            .then(() => {})
+            .finally(refreshChainData);
     }
 
     // Add each analytics level into the UI selector
