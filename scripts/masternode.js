@@ -5,6 +5,7 @@ import {
     parseWIF,
     deriveAddress,
     cHardwareWallet,
+    HardwareWalletMasterKey,
 } from './wallet.js';
 import { dSHA256, bytesToHex, hexToBytes } from './utils.js';
 import { Buffer } from 'buffer';
@@ -13,22 +14,24 @@ import * as nobleSecp256k1 from '@noble/secp256k1';
 import { OP } from './script.js';
 import bs58 from 'bs58';
 
-/**
- * Construct a Masternode
- * @param {string} [masternode.walletPrivateKeyPath] - BIP39 path pointing to the private key holding the collateral. Optional if not HD
- * @param {string} masternode.mnPrivateKey - Masternode private key. Must be uncompressed WIF
- * @param {string} masternode.collateralTxId - Must be a UTXO pointing to the collateral
- * @param {number} masternode.outidx - The output id of the collateral starting from 0
- * @param {string} masternode.addr - IPV4 address in the form `ip:port`
- */
+
 export default class Masternode {
+    /**
+     * Construct a Masternode
+     * @param {Object} masternode
+     * @param {string} [masternode.walletPrivateKeyPath] - BIP39 path pointing to the private key holding the collateral. Optional if not HD
+     * @param {string} masternode.mnPrivateKey - Masternode private key. Must be uncompressed WIF
+     * @param {string} masternode.collateralTxId - Must be a UTXO pointing to the collateral
+     * @param {number} masternode.outidx - The output id of the collateral starting from 0
+     * @param {string} masternode.addr - IPV4 address in the form `ip:port`
+     */
     constructor({
         walletPrivateKeyPath,
         mnPrivateKey,
         collateralTxId,
         outidx,
         addr,
-    } = {}) {
+    }) {
         this.walletPrivateKeyPath = walletPrivateKeyPath;
         this.mnPrivateKey = mnPrivateKey;
         this.collateralTxId = collateralTxId;
@@ -36,7 +39,7 @@ export default class Masternode {
         this.addr = addr;
     }
     /**
-     * @type {[string, number]} array of vote hash and corresponding vote for the current session
+     * @type {[[string, number]]} array of vote hash and corresponding vote for the current session
      */
     static sessionVotes = [];
 
@@ -99,11 +102,12 @@ export default class Masternode {
 
     /**
      * @param {Object} message - message to encode
+     * @param {Object} message.vin
      * @param {string} message.vin.txid - transaction id of the collateral
      * @param {number} message.vin.idx - output id of the collateral starting from 0
      * @param {string} message.blockHash - latest blockhash
      * @param {number} message.sigTime - current time in seconds since UNIX epoch
-     * @return {Array} Returns the unsigned ping message. It needs to be signed with the MN private key
+     * @return {Uint8Array} Returns the unsigned ping message. It needs to be signed with the MN private key
      */
     static getPingSignature({ vin, blockHash, sigTime }) {
         const ping = [
@@ -171,7 +175,7 @@ export default class Masternode {
     }
 
     /**
-     * @return {Promise<string>} The signed message signed with the collateral private key
+     * @return {Promise<Array<Number>>} The signed message signed with the collateral private key
      */
     async getSignedMessage(sigTime) {
         const toSign = Masternode.getToSign({
@@ -206,7 +210,7 @@ export default class Masternode {
         }
     }
     /**
-     * @return {Promise<string>} The signed ping message signed with the masternode private key
+     * @return {Promise<Array<Number>>} The signed ping message signed with the masternode private key
      */
     async getSignedPingMessage(sigTime, blockHash) {
         const toSign = Masternode.getPingSignature({
@@ -226,7 +230,7 @@ export default class Masternode {
     }
 
     async getWalletPublicKey() {
-        if (masterKey.isHardwareWallet) {
+        if (masterKey instanceof HardwareWalletMasterKey) {
             return hexToBytes(
                 await masterKey.getPublicKey(this.walletPrivateKeyPath)
             );
@@ -266,7 +270,6 @@ export default class Masternode {
             deriveAddress({
                 pkBytes: parseWIF(this.mnPrivateKey, true),
                 output: 'UNCOMPRESSED_HEX',
-                compress: false,
             })
         );
 

@@ -42,18 +42,21 @@ export let fWalletLoaded = false;
  * @abstract
  */
 class MasterKey {
+    _isHD = false;
+    _isHardwareWallet = false;
+    _isViewOnly = false;
     /**
-     * @param {String} [path] - BIP32 path pointing to the private key.
-     * @return {Promise<Array<Number>>} Array of bytes containing private key
+     * @param {String} [_path] - BIP32 path pointing to the private key.
+     * @return {Promise<Uint8Array>} Array of bytes containing private key
      * @abstract
      */
-    async getPrivateKeyBytes(_path) {
+    getPrivateKeyBytes(_path) {
         throw new Error('Not implemented');
     }
 
     /**
      * @param {String} [path] - BIP32 path pointing to the private key.
-     * @return {String} encoded private key
+     * @return {Promise<String>} encoded private key
      * @abstract
      */
     async getPrivateKey(path) {
@@ -63,19 +66,20 @@ class MasterKey {
 
     /**
      * @param {String} [path] - BIP32 path pointing to the address
-     * @return {String} Address
+     * @param {any} [_options]
+     * @return {Promise<String>} Address
      * @abstract
      */
-    async getAddress(path) {
+    async getAddress(path, _options) {
         return deriveAddress({ pkBytes: await this.getPrivateKeyBytes(path) });
     }
 
     /**
-     * @param {String} path - BIP32 path pointing to the xpub
+     * @param {String} _path - BIP32 path pointing to the xpub
      * @return {Promise<String>} xpub
      * @abstract
      */
-    async getxpub(_path) {
+    getxpub(_path) {
         throw new Error('Not implemented');
     }
 
@@ -97,7 +101,7 @@ class MasterKey {
     }
 
     /**
-     * @return {String} public key to export. Only suitable for monitoring balance.
+     * @return {Promise<String> | String} public key to export. Only suitable for monitoring balance.
      * @abstract
      */
     get keyToExport() {
@@ -127,6 +131,14 @@ class MasterKey {
 }
 
 export class HdMasterKey extends MasterKey {
+    /**
+     * Constructs a Hierarchical Deterministic key from a seed
+     * xpub or xpriv
+     * @param {Object} o
+     * @param {Uint8Array | Number[]} [o.seed]
+     * @param {String} [o.xpriv]
+     * @param {String} [o.xpub]
+     */
     constructor({ seed, xpriv, xpub }) {
         super();
         // Generate the HDKey
@@ -140,7 +152,7 @@ export class HdMasterKey extends MasterKey {
         this._isHardwareWallet = false;
     }
 
-    async getPrivateKeyBytes(path) {
+    getPrivateKeyBytes(path) {
         if (this.isViewOnly) {
             throw new Error(
                 'Trying to get private key bytes from a view only key'
@@ -156,12 +168,12 @@ export class HdMasterKey extends MasterKey {
         return this._hdKey.privateExtendedKey;
     }
 
-    async getxpub(path) {
+    getxpub(path) {
         if (this.isViewOnly) return this._hdKey.publicExtendedKey;
         return this._hdKey.derive(path).publicExtendedKey;
     }
 
-    getAddress(path) {
+    async getAddress(path) {
         let child;
         if (this.isViewOnly) {
             // If we're view only we can't derive hardened keys, so we'll assume
@@ -200,23 +212,30 @@ export class HardwareWalletMasterKey extends MasterKey {
         this._isHD = true;
         this._isHardwareWallet = true;
     }
-    async getPrivateKeyBytes(_path) {
+
+    /**
+     * @returns {never} Throws error because hardware wallets don't have exportable private keys
+     */
+    getPrivateKeyBytes(_path) {
         throw new Error('Hardware wallets cannot export private keys');
     }
 
-    async getAddress(path, { verify } = {}) {
+    async getAddress(path, { verify = false } = {}) {
         return deriveAddress({
             publicKey: await this.getPublicKey(path, { verify }),
         });
     }
 
-    async getPublicKey(path, { verify } = {}) {
+    async getPublicKey(path, { verify = false } = {}) {
         return deriveAddress({
             publicKey: await getHardwareWalletKeys(path, false, verify),
             output: 'COMPRESSED_HEX',
         });
     }
 
+    /**
+     * @returns {never} Throws error because hardware wallets don't have keys to backup
+     */
     get keyToBackup() {
         throw new Error("Hardware wallets don't have keys to backup");
     }
@@ -245,6 +264,13 @@ export class HardwareWalletMasterKey extends MasterKey {
 }
 
 export class LegacyMasterKey extends MasterKey {
+    /**
+     * Constructs a legacy key, i.e. one that cannot derive
+     * more addresses, but is tied to only one
+     * @param {Object} o
+     * @param {Number[] | Uint8Array} [o.pkBytes] - Private key bytes
+     * @param {String} [o.address] - Address
+     */
     constructor({ pkBytes, address }) {
         super();
         this._isHD = false;
@@ -254,8 +280,8 @@ export class LegacyMasterKey extends MasterKey {
         this._isViewOnly = !!address;
     }
 
-    getAddress() {
-        return this._address;
+    async getAddress() {
+        return await this._address;
     }
 
     get keyToExport() {
@@ -268,14 +294,17 @@ export class LegacyMasterKey extends MasterKey {
                 'Trying to get private key bytes from a view only key'
             );
         }
-        return this._pkBytes;
+        return new Uint8Array(this._pkBytes);
     }
 
     get keyToBackup() {
         return generateOrEncodePrivkey(this._pkBytes).strWIF;
     }
 
-    async getxpub(_path) {
+    /**
+     * @returns {never} Throws error because legacy keys don't have xpubs
+     */
+    getxpub(_path) {
         throw new Error(
             'Trying to get an extended public key from a legacy address'
         );
@@ -300,6 +329,9 @@ export const LEDGER_ERRS = new Map([
     [27404, 'Unlock your Ledger, then try again!'],
 ]);
 
+/**
+ * @type {MasterKey}
+ */
 export let masterKey;
 
 // Construct a full BIP44 pubkey derivation path from it's parts
@@ -373,8 +405,14 @@ export function verifyWIF(
     return fParseBytes ? Uint8Array.from(bWIF.slice(1, 33)) : true;
 }
 
-// A convenient alias to verifyWIF that returns the raw byte payload
+/**
+ * A convenient alias to verifyWIF that returns the raw byte payload
+ * @param {String} strWIF
+ * @param {Boolean} skipVerification
+ * @returns {Uint8Array} parsed strWIF
+ */
 export function parseWIF(strWIF, skipVerification = false) {
+    // @ts-ignore we know it's going to return Uint8Array
     return verifyWIF(strWIF, true, skipVerification);
 }
 
@@ -406,7 +444,7 @@ export function generateOrEncodePrivkey(pkBytesToEncode) {
 /**
  * Compress an uncompressed Public Key in byte form
  * @param {Array<Number> | Uint8Array} pubKeyBytes - The uncompressed public key bytes
- * @returns {Array<Number>} The compressed public key bytes
+ * @returns {Uint8Array} The compressed public key bytes
  */
 function compressPublicKey(pubKeyBytes) {
     if (pubKeyBytes.length != 65)
@@ -415,7 +453,7 @@ function compressPublicKey(pubKeyBytes) {
     const y = pubKeyBytes.slice(33);
 
     // Compressed key is [key_parity + 2, x]
-    return [y[31] % 2 === 0 ? 2 : 3, ...x];
+    return new Uint8Array([y[31] % 2 === 0 ? 2 : 3, ...x]);
 }
 
 /**
@@ -423,7 +461,7 @@ function compressPublicKey(pubKeyBytes) {
  * @param {Object} options - The object to deconstruct
  * @param {String} [options.publicKey] - The hex encoded public key. Can be both compressed or uncompressed
  * @param {Array<Number> | Uint8Array} [options.pkBytes] - An array of bytes containing the private key
- * @param {"ENCODED" | "UNCOMPRESSED_HEX" | "COMPRESSED_HEX"} options.output - Output
+ * @param {"ENCODED" | "UNCOMPRESSED_HEX" | "COMPRESSED_HEX"} [options.output] - Output
  * @return {String} the public key with the specified encoding
  */
 export function deriveAddress({ pkBytes, publicKey, output = 'ENCODED' }) {
@@ -432,6 +470,7 @@ export function deriveAddress({ pkBytes, publicKey, output = 'ENCODED' }) {
     // Public Key Derivation
     let pubKeyBytes = publicKey
         ? hexToBytes(publicKey)
+    // @ts-ignore trust me it works
         : nobleSecp256k1.getPublicKey(pkBytes, compress);
 
     if (output === 'UNCOMPRESSED_HEX') {
@@ -483,15 +522,15 @@ export function deriveAddress({ pkBytes, publicKey, output = 'ENCODED' }) {
 /**
  * Import a wallet (with it's private, public or encrypted data)
  * @param {object} options
- * @param {string | Array<number>} options.newWif - The import data (if omitted, the UI input is accessed)
- * @param {boolean} options.fRaw - Whether the import data is raw bytes or encoded (WIF, xpriv, seed)
- * @param {boolean} options.isHardwareWallet - Whether the import is from a Hardware wallet or not
- * @param {boolean} options.skipConfirmation - Whether to skip the import UI confirmation or not
- * @param {boolean} options.fSavePublicKey - Whether to save the derived public key to disk (for View Only mode)
+ * @param {string | Array<number> | null} [options.newWif] - The import data (if omitted, the UI input is accessed)
+ * @param {boolean} [options.fRaw] - Whether the import data is raw bytes or encoded (WIF, xpriv, seed)
+ * @param {boolean} [options.isHardwareWallet] - Whether the import is from a Hardware wallet or not
+ * @param {boolean} [options.skipConfirmation] - Whether to skip the import UI confirmation or not
+ * @param {boolean} [options.fSavePublicKey] - Whether to save the derived public key to disk (for View Only mode)
  * @returns {Promise<void>}
  */
 export async function importWallet({
-    newWif = false,
+    newWif = null,
     fRaw = false,
     isHardwareWallet = false,
     skipConfirmation = false,
@@ -501,7 +540,7 @@ export async function importWallet({
         "Do you really want to import a new address? If you haven't saved the last private key, the wallet will be LOST forever.";
     const walletConfirm =
         fWalletLoaded && !skipConfirmation
-            ? await confirmPopup({ html: strImportConfirm })
+          ? await confirmPopup({ title: 'Confirm the import?', html: strImportConfirm })
             : true;
 
     if (walletConfirm) {
@@ -621,7 +660,7 @@ export async function importWallet({
         if (!masterKey.isHD) doms.domNewAddress.style.display = 'none';
 
         // Update the loaded address in the Dashboard
-        getNewAddress({ updateGUI: true });
+        await getNewAddress({ updateGUI: true });
 
         // Display Text
         doms.domGuiWallet.style.display = 'block';
@@ -676,7 +715,7 @@ export async function generateWallet(noUI = false) {
         "Do you really want to import a new address? If you haven't saved the last private key, the wallet will be LOST forever.";
     const walletConfirm =
         fWalletLoaded && !noUI
-            ? await confirmPopup({ html: strImportConfirm })
+          ? await confirmPopup({ title: 'Import new address?', html: strImportConfirm })
             : true;
     if (walletConfirm) {
         const mnemonic = generateMnemonic();
@@ -707,7 +746,7 @@ export async function generateWallet(noUI = false) {
         );
         jdenticon.update('#identicon');
 
-        getNewAddress({ updateGUI: true });
+        await getNewAddress({ updateGUI: true });
 
         // Refresh the balance UI (why? because it'll also display any 'get some funds!' alerts)
         getBalance(true);
@@ -747,12 +786,15 @@ export async function verifyMnemonic(strMnemonic = '', fPopupConfirm = true) {
 
 function informUserOfMnemonic(mnemonic) {
     return new Promise((res, _) => {
+	// @ts-ignore
         $('#mnemonicModal').modal({ keyboard: false });
         doms.domMnemonicModalContent.innerText = mnemonic;
         doms.domMnemonicModalButton.onclick = () => {
             res(doms.domMnemonicModalPassphrase.value);
+	    // @ts-ignore
             $('#mnemonicModal').modal('hide');
         };
+	// @ts-ignore
         $('#mnemonicModal').modal('show');
     });
 }
@@ -884,12 +926,16 @@ export async function getNewAddress({
         doms.domModalQR.firstChild.style.width = '100%';
         doms.domModalQR.firstChild.style.height = 'auto';
         doms.domModalQR.firstChild.classList.add('no-antialias');
+	// @ts-ignore
         document.getElementById('clipboard').value = address;
     }
     addressIndex++;
     return [address, path];
 }
 
+/**
+ * @type{AppBtc?}
+ */
 export let cHardwareWallet = null;
 export let strHardwareName = '';
 let transport;

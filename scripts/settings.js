@@ -102,7 +102,11 @@ export function start() {
 
     // Fill all selection UIs with their options
     if (getNetwork().enabled) {
-        fillCurrencySelect();
+        fillCurrencySelect()
+            .then(() => {})
+            .catch((e) => {
+                throw e;
+            });
     }
 
     // Add each analytics level into the UI selector
@@ -320,7 +324,11 @@ export function toggleTestnet() {
     fillNodeSelect();
     getBalance(true);
     getStakingBalance(true);
-    updateStakingRewardsGUI();
+    updateStakingRewardsGUI()
+        .then(() => {})
+        .catch((e) => {
+            throw e;
+        });
 }
 
 export function toggleDebug() {

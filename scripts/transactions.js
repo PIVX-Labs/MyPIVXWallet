@@ -107,7 +107,11 @@ export async function createTxGUI() {
             [],
             2500
         );
-    createAndSendTransaction({ address, amount: nValue, isDelegation: false });
+    await createAndSendTransaction({
+        address,
+        amount: nValue,
+        isDelegation: false,
+    });
 }
 
 /**
@@ -211,11 +215,12 @@ export async function undelegateGUI() {
  * @param {Object} options
  * @param {string} options.address - base58 encoded address to send funds to
  * @param {Number} options.amount - Number of satoshi to send
- * @param {boolean} options.isDelegation - Whether to delegate the amount. Address will be the cold staking address
- * @param {boolean} options.useDelegatedInputs - If true, only delegated coins will be used in the transaction
- * @param {delegateChange} options.delegateChange - If there is at least 1.01 PIV of change, the change will be delegated to options.changeDelegationAddress
- * @param {string|null} options.changeDelegationAddress - See options.delegateChange
- * @returns {Promise<{ok: boolean, err: string?}>}
+ * @param {boolean} [options.isDelegation] - Whether to delegate the amount. Address will be the cold staking address
+ * @param {boolean} [options.useDelegatedInputs] - If true, only delegated coins will be used in the transaction
+ * @param {boolean} [options.delegateChange] - If there is at least 1.01 PIV of change, the change will be delegated to options.changeDelegationAddress
+ * @param {string|null} [options.changeDelegationAddress] - See options.delegateChange
+ * @param {boolean} [options.isProposal] - if it's a proposal tx
+ * @returns {Promise<Partial<{ok: boolean, err: string?, txid: string}>>}
  */
 export async function createAndSendTransaction({
     address,
@@ -228,11 +233,12 @@ export async function createAndSendTransaction({
 }) {
     if (!hasWalletUnlocked(true)) return;
     if ((isDelegation || useDelegatedInputs) && masterKey.isHardwareWallet) {
-        return createAlert(
+        createAlert(
             'warning',
             'Ledger is currently not supported.',
             6000
         );
+	return {ok: false, err: 'Ledger is not supported'};
     }
 
     // Ensure the wallet is unlocked
@@ -246,8 +252,10 @@ export async function createAndSendTransaction({
     const nBalance = getBalance();
     const cTx = new bitjs.transaction();
     const cCoinControl = chooseUTXOs(cTx, amount, 0, useDelegatedInputs);
-    if (!cCoinControl.success)
-        return createAlert('warning', cCoinControl.msg, 5000);
+    if (!cCoinControl.success) {
+        createAlert('warning', cCoinControl.msg, 5000);
+	return {ok: false, err: cCoinControl.msg};
+    }
     // Compute fee
     const nFee = getNetwork().getFee(cTx.serialize().length);
 
@@ -269,7 +277,7 @@ export async function createAndSendTransaction({
     if (nChange > 0) {
         if (delegateChange && nChange > 1.01 * COIN) {
             if (!changeDelegationAddress)
-                return { ok: false, error: 'No change addr' };
+                return { ok: false, err: 'No change addr' };
             cTx.addcoldstakingoutput(
                 changeAddress,
                 changeDelegationAddress,
@@ -308,6 +316,7 @@ export async function createAndSendTransaction({
         outputs.push([primaryAddress, address, amount / COIN]);
 
         knownUTXOs.push(
+	    // @ts-ignore we're abusing the class
             new UTXO({
                 id: null,
                 path: primaryAddressPath,
@@ -350,7 +359,6 @@ export async function createAndSendTransaction({
         for (const tx of cTx.inputs) {
             mempool.autoRemoveUTXO({
                 id: tx.outpoint.hash,
-                path: tx.path,
                 vout: tx.outpoint.index,
             });
         }
@@ -371,6 +379,7 @@ export async function createAndSendTransaction({
                 mempool.addUTXO(
                     new UTXO({
                         id: futureTxid,
+			// @ts-ignore
                         path: yourPath,
                         sats: amount,
                         vout,
@@ -452,6 +461,7 @@ async function signTransaction(cTx, masterKey, outputs, undelegate) {
         title: ALERTS.CONFIRM_POPUP_TRANSACTION,
         html: createTxConfirmation(outputs),
         resolvePromise: cHardwareWallet.createPaymentTransaction({
+	    // @ts-ignore
             inputs: arrInputs,
             associatedKeysets: arrAssociatedKeysets,
             outputScriptHex: strOutputScriptHex,

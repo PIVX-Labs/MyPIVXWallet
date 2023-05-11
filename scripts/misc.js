@@ -41,7 +41,17 @@ export function writeToUint8(arr, bytes, pos) {
 /* --- NOTIFICATIONS --- */
 // Alert - Do NOT display arbitrary / external errors, the use of `.innerHTML` allows for input styling at this cost.
 // Supported types: success, info, warning
+/**
+ * Create alert
+ * @param {string} type - type of alert
+ * @param {string} message
+ * @param {Array<Object> | number} [alertVariables]
+ * @param {number} timeout
+ */
 export function createAlert(type, message, alertVariables = [], timeout = 0) {
+    /**
+     * @type {any}
+     */
     const domAlert = document.createElement('div');
     domAlert.classList.add('alertpop');
     domAlert.classList.add(type);
@@ -74,15 +84,23 @@ export function createAlert(type, message, alertVariables = [], timeout = 0) {
     // On Click: Delete alert from DOM after close animation.
     domAlert.addEventListener('click', domAlert.destroy);
     // On Timeout: Delete alert from DOM after a period of inactive time.
-    if (timeout > 0) domAlert.timer = setTimeout(domAlert.destroy, timeout);
+    if (timeout > 0)
+        domAlert.timer = setTimeout(() => domAlert.destroy, timeout);
     doms.domAlertPos.appendChild(domAlert);
 }
 
-// Shows the confirm modal with the provided html.
-// If resolvePromise has a value, the popup won't have
-// Confirm/Cancel buttons and will wait for the promise to resolve
-// Returns the awaited value of resolvePromise
-// or true/false if the user confirmed or not the modal
+/**
+ * Shows the confirm modal with the provided html.
+ * If resolvePromise has a value, the popup won't have
+ * Confirm/Cancel buttons and will wait for the promise to resolve instead.
+ * @template T Promise return value
+ * @param {Object} o
+ * @param {String} o.title
+ * @param {String} o.html
+ * @param {Promise<Boolean | T>} [o.resolvePromise]
+ * @returns {Promise<Boolean | T>} Returns the awaited value of resolvePromise
+ * or a boolean is the user confirmed confirmed the modal or not
+ */
 export async function confirmPopup({ title, html, resolvePromise }) {
     // If there's a title provided: display the header and text
     doms.domConfirmModalHeader.style.display = title ? 'block' : 'none';
@@ -94,7 +112,11 @@ export async function confirmPopup({ title, html, resolvePromise }) {
         resolvePromise ? 'none' : 'block',
         resolvePromise ? 'important' : undefined
     );
-    $('#confirmModal').modal(resolvePromise ? 'show' : { keyboard: false });
+    /**
+     * @type any
+     */
+    const confirmModal = $('#confirmModal');
+    confirmModal.modal(resolvePromise ? 'show' : { keyboard: false });
 
     // Set content display
     doms.domConfirmModalContent.innerHTML = html;
@@ -147,7 +169,7 @@ export function parseBIP21Request(strReq) {
 
     const [addressPart, optionsPart] = strReq.includes('?')
         ? strReq.split('?')
-        : [strReq, false];
+        : [strReq, null];
     const strAddress = addressPart.substring(BIP21_PREFIX.length + 1); // remove 'pivx:' prefix
     let cOptions = {};
 

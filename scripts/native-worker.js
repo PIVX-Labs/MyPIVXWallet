@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 // Listen for native worker installs
 self.addEventListener('install', function (_event) {
     console.log('[ServiceWorker] Install');

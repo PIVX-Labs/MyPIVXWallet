@@ -15,7 +15,8 @@ export class UTXO {
      * @param {Number} UTXO.vout - Output position of this transaction
      * @param {Number} UTXO.height - Block height of the UTXO
      * @param {Number} UTXO.status - UTXO status enum state
-     * @param {bool} UTXO.isDelegate - Whether the UTXO is a cold stake delegation
+     * @param {Boolean} [UTXO.isDelegate] - Whether the UTXO is a cold stake delegation
+     * @param {Boolean} [UTXO.isReward] - Whether the UTXO is a reward
      */
     constructor({
         id,
@@ -27,7 +28,7 @@ export class UTXO {
         status,
         isDelegate = false,
         isReward = false,
-    } = {}) {
+    }) {
         /** Transaction ID
          * @type {String} */
         this.id = id;
@@ -57,7 +58,7 @@ export class UTXO {
         this.status = status;
 
         /** If it's a delegation UTXO
-         * @type {bool} */
+         * @type {Boolean} */
         this.isDelegate = isDelegate;
 
         this.isReward = isReward;
@@ -162,6 +163,7 @@ export class Mempool {
      * @param {Number} UTXO.height - Block height of the UTXO
      * @param {Number} UTXO.status - UTXO status enum state
      * @param {Boolean} UTXO.isDelegate - If this is a Cold Delegation
+     * @param {Boolean} UTXO.isReward - If this is a Cold Delegation
      */
     addUTXO({
         id,
@@ -240,7 +242,11 @@ export class Mempool {
             // Loop given + internal UTXOs to find a match, then start the delayed removal
             if (cUTXO.id === id && cUTXO.vout === vout) {
                 cUTXO.status = Mempool.REMOVED;
-                this.removeWithDelay(12, cUTXO);
+                this.removeWithDelay(12, cUTXO)
+                    .then(() => {})
+                    .catch((e) => {
+                        throw e;
+                    });
                 return;
             }
         }
@@ -263,7 +269,11 @@ export class Mempool {
                 // Loop given + internal UTXOs to find a match, then start the delayed removal
                 if (cUTXO.equalsUTXO(cNewUTXO)) {
                     cUTXO.status = Mempool.REMOVED;
-                    this.removeWithDelay(12, cUTXO);
+                    this.removeWithDelay(12, cUTXO)
+                        .then(() => {})
+                        .catch((e) => {
+                            throw e;
+                        });
                     break;
                 }
             }
@@ -272,7 +282,7 @@ export class Mempool {
 
     /**
      * Fetches an array of confirmed UTXOs, an easier alias to {@link getUTXOsByState}
-     * @returns {Array<UTXO>} `array` - An array of UTXOs
+     * @returns {UTXO[]} an array of UTXOs
      */
     getConfirmed() {
         return this.getUTXOsByState(Mempool.CONFIRMED);
@@ -332,16 +342,22 @@ export class Mempool {
 
     /**
      * Subscribes to network events
-     * @param {Network} network
      */
     subscribeToNetwork() {
-        getEventEmitter().on('utxo', async (utxos) => {
+        getEventEmitter().on('utxo', (utxos) => {
             for (const utxo of utxos) {
                 if (this.isAlreadyStored({ id: utxo.txid, vout: utxo.vout })) {
                     this.updateUTXO({ id: utxo.txid, vout: utxo.vout });
                     continue;
                 }
-                this.addUTXO(await getNetwork().getUTXOFullInfo(utxo));
+                getNetwork()
+                    .getUTXOFullInfo()
+                    .then((utxo) => {
+                        this.addUTXO(utxo);
+                    })
+                    .catch((e) => {
+                        throw e;
+                    });
             }
         });
     }

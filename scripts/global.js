@@ -38,9 +38,12 @@ import { Address6 } from 'ip-address';
 import { getEventEmitter } from './event_bus.js';
 import { scanQRCode } from './scanner.js';
 
+/**
+ * @type{any}
+ */
 export let doms = {};
 
-export function start() {
+export async function start() {
     doms = {
         domNavbarToggler: document.getElementById('navbarToggler'),
         domDashboard: document.getElementById('dashboard'),
@@ -217,7 +220,7 @@ export function start() {
         domBlackBack: document.getElementById('blackBack'),
     };
     i18nStart();
-    loadImages();
+    loadImages().then(()=>{}).catch(e=>{throw e});
 
     // Enable all Bootstrap Tooltips
     $(function () {
@@ -232,14 +235,14 @@ export function start() {
             doms.domSendAmountCoins,
             doms.domSendAmountValue,
             true
-        );
+        ).then(()=>{}).catch(e=>{throw e});
     };
     doms.domSendAmountValue.oninput = () => {
         updateAmountInputPair(
             doms.domSendAmountCoins,
             doms.domSendAmountValue,
             false
-        );
+        ).then(()=>{}).catch(e=>{throw e});
     };
 
     /** Staking (Stake) */
@@ -248,14 +251,14 @@ export function start() {
             doms.domStakeAmount,
             doms.domStakeAmountValue,
             true
-        );
+        ).then(()=>{}).catch(e=>{throw e});
     };
     doms.domStakeAmountValue.oninput = () => {
         updateAmountInputPair(
             doms.domStakeAmount,
             doms.domStakeAmountValue,
             false
-        );
+        ).then(()=>{}).catch(e=>{throw e});
     };
 
     /** Staking (Unstake) */
@@ -264,18 +267,18 @@ export function start() {
             doms.domUnstakeAmount,
             doms.domUnstakeAmountValue,
             true
-        );
+        ).then(()=>{}).catch(e=>{throw e});
     };
     doms.domUnstakeAmountValue.oninput = () => {
         updateAmountInputPair(
             doms.domUnstakeAmount,
             doms.domUnstakeAmountValue,
             false
-        );
+        ).then(()=>{}).catch(e=>{throw e});
     };
 
     // Register native app service
-    registerWorker();
+    await registerWorker();
 
     // Configure Identicon
     jdenticon.configure();
@@ -300,7 +303,7 @@ export function start() {
         const publicKey = localStorage.getItem('publicKey');
 
         if (publicKey) {
-            importWallet({ newWif: publicKey });
+            await importWallet({ newWif: publicKey });
         } else {
             // Display the password unlock upfront
             accessOrImportWallet();
@@ -371,7 +374,7 @@ let exportHidden = false;
 //                        PIVX Labs' Cold Pool
 export let cachedColdStakeAddr = 'SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy';
 
-export function openTab(evt, tabName) {
+export async function openTab(evt, tabName) {
     // Hide all screens and deactivate link highlights
     for (const domScreen of doms.arrDomScreens)
         domScreen.style.display = 'none';
@@ -387,14 +390,14 @@ export function openTab(evt, tabName) {
         doms.domNavbarToggler.click();
 
     if (tabName === 'Governance') {
-        updateGovernanceTab();
+        await updateGovernanceTab();
     } else if (tabName === 'Masternode') {
-        updateMasternodeTab();
+        await updateMasternodeTab();
     } else if (
         tabName === 'StakingTab' &&
         getNetwork().arrRewards.length === 0
     ) {
-        updateStakingRewardsGUI();
+        await updateStakingRewardsGUI();
     }
 }
 
@@ -452,7 +455,7 @@ export function updatePriceDisplay(domValue, fCold = false) {
 
         // Update the DOM
         domValue.innerText = nValue.toLocaleString('en-gb', cLocale);
-    });
+    }).catch(e=>{throw e});
 }
 
 export function getBalance(updateGUI = false) {
@@ -506,7 +509,7 @@ export function getStakingBalance(updateGUI = false) {
 export function selectMaxBalance(domCoin, domValue, fCold = false) {
     domCoin.value = (fCold ? getStakingBalance() : getBalance()) / COIN;
     // Update the Send menu's value (assumption: if it's not a Cold balance, it's probably for Sending!)
-    updateAmountInputPair(domCoin, domValue, true);
+    updateAmountInputPair(domCoin, domValue, true).then(()=>{}).catch(e=>{throw e});
 }
 
 /**
@@ -681,6 +684,7 @@ export async function updateStakingRewardsGUI() {
  * Open the Explorer in a new tab for the loaded master public key
  */
 export async function openExplorer() {
+    masterKey.isHardwareWallet()
     if (masterKey.isHD) {
         const derivationPath = getDerivationPath(masterKey.isHardwareWallet)
             .split('/')
@@ -785,7 +789,7 @@ export async function updateAmountInputPair(domCoin, domValue, fCoinEdited) {
     }
 }
 
-export function toClipboard(source, caller) {
+export async function toClipboard(source, caller) {
     // Fetch the text/value source
     const domCopy = document.getElementById(source) || source;
 
@@ -799,7 +803,7 @@ export function toClipboard(source, caller) {
     if (!navigator.clipboard) {
         document.execCommand('copy');
     } else {
-        navigator.clipboard.writeText(domCopy.innerHTML || domCopy);
+        await navigator.clipboard.writeText(domCopy.innerHTML || domCopy);
     }
 
     // Display a temporary checkmark response
@@ -845,7 +849,7 @@ export function guiPreparePayment(strTo = '', nAmount = 0, strDesc = '') {
         doms.domSendAmountCoins,
         doms.domSendAmountValue,
         true
-    );
+    ).then(()=>{}).catch(e=>{throw e});
 
     // Focus on the coin input box (if no pre-fill was specified)
     if (nAmount <= 0) {
@@ -960,7 +964,7 @@ export function destroyMasternode() {
             '<b>Masternode destroyed!</b><br>Your coins are now spendable.',
             5000
         );
-        updateMasternodeTab();
+        updateMasternodeTab().then(()=>{}).catch(e=>{throw e});
     }
 }
 
@@ -1163,7 +1167,7 @@ export async function guiImportWallet() {
     if (fHasWallet) hideAllWalletOptions();
 }
 
-export function guiEncryptWallet() {
+export async function guiEncryptWallet() {
     // Disable wallet encryption in testnet mode
     if (cChainParams.current.isTestnet)
         return createAlert(
@@ -1185,7 +1189,7 @@ export function guiEncryptWallet() {
         );
     if (strPass !== strPassRetype)
         return createAlert('warning', ALERTS.PASSWORD_DOESNT_MATCH, [], 2250);
-    encryptWallet(strPass);
+    await encryptWallet(strPass);
     createAlert('success', ALERTS.NEW_PASSWORD_SUCCESS, [], 5500);
 
     $('#encryptWalletModal').modal('hide');
@@ -1193,7 +1197,7 @@ export function guiEncryptWallet() {
     doms.domWipeWallet.hidden = false;
 }
 
-export async function toggleExportUI() {
+export function toggleExportUI() {
     if (!exportHidden) {
         if (hasEncryptedWallet()) {
             doms.domExportPrivateKey.innerHTML = localStorage.getItem('encwif');
@@ -1246,7 +1250,7 @@ function stopSearch() {
     clearInterval(vanUiUpdater);
 }
 
-export async function generateVanityWallet() {
+export function generateVanityWallet() {
     if (isVanityGenerating) return stopSearch();
     if (typeof Worker === 'undefined')
         return createAlert('error', ALERTS.UNSUPPORTED_WEBWORKERS, [], 7500);
@@ -1310,7 +1314,7 @@ export async function generateVanityWallet() {
                     importWallet({
                         newWif: data.priv,
                         fRaw: true,
-                    });
+                    }).then(()=>{}).catch(e=>{throw e});
                     stopSearch();
                     doms.domGuiBalance.innerHTML = '0';
                     return console.log(
@@ -1556,7 +1560,7 @@ async function renderProposals(arrProposals, fContested) {
                 if (result.ok) {
                     createAlert('success', 'Proposal finalized!');
                     deleteProposal();
-                    updateGovernanceTab();
+                    await updateGovernanceTab();
                 } else {
                     if (result.err === 'unconfirmed') {
                         createAlert(
@@ -1571,7 +1575,7 @@ async function renderProposals(arrProposals, fContested) {
                             5000
                         );
                         deleteProposal();
-                        updateGovernanceTab();
+                        await updateGovernanceTab();
                     } else {
                         createAlert('warning', 'Failed to finalize proposal.');
                     }
@@ -1719,7 +1723,7 @@ export async function updateMasternodeTab() {
         if (fHasCollateral && strMasternodeJSON) {
             const cMasternode = new Masternode(JSON.parse(strMasternodeJSON));
             // Refresh the display
-            refreshMasternodeData(cMasternode);
+            await refreshMasternodeData(cMasternode);
             doms.domMnDashboard.style.display = '';
         }
     }
@@ -1873,7 +1877,7 @@ export async function createProposal() {
         localProposals.push(proposal);
         localStorage.setItem('localProposals', JSON.stringify(localProposals));
         createAlert('success', 'Proposal created! Please finalize it.');
-        updateGovernanceTab();
+        await updateGovernanceTab();
     }
 }
 
@@ -1886,11 +1890,11 @@ export function refreshChainData() {
     if (!masterKey) return;
 
     // Fetch block count + UTXOs
-    getNetwork().getBlockCount();
+    getNetwork().getBlockCount().then(()=>{}).catch(e=>{throw e});
     getBalance(true);
 
     // Fetch pricing data
-    refreshPriceDisplay();
+    refreshPriceDisplay().then(()=>{}).catch(e=>{throw e});
 }
 
 // A safety mechanism enabled if the user attempts to leave without encrypting/saving their keys

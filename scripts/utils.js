@@ -11,7 +11,7 @@ export function bytesToHex(bytes) {
 
 /**
  * Double SHA256 hash a byte array
- * @param {Array<number>} buff - Bytes to hash
+ * @param {Array<number> | Uint8Array } buff - Bytes to hash
  * @returns {Uint8Array} Hash buffer
  */
 export function dSHA256(buff) {

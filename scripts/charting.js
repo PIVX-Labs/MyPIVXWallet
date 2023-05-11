@@ -127,7 +127,13 @@ export async function generateWalletBreakdown(arrBreakdown) {
     });
 
     // Set an interval internally to refresh the chart in real-time
-    chartWalletBreakdown.interval = setInterval(renderWalletBreakdown, 2500);
+    chartWalletBreakdown.interval = setInterval(() => {
+        renderWalletBreakdown()
+            .then(() => {})
+            .catch((e) => {
+                throw e;
+            });
+    }, 2500);
 }
 
 /**
