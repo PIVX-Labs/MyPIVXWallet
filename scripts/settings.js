@@ -2,6 +2,7 @@ import {
     doms,
     getBalance,
     getStakingBalance,
+    refreshChainData,
     updateStakingRewardsGUI,
 } from './global.js';
 import { fWalletLoaded, masterKey } from './wallet.js';
@@ -14,7 +15,7 @@ import {
     translation,
     arrActiveLangs,
 } from './i18n.js';
-import { CoinGecko } from './prices.js';
+import { CoinGecko, refreshPriceDisplay } from './prices.js';
 import { Database } from './database.js';
 
 // --- Default Settings
@@ -140,9 +141,9 @@ export async function start() {
         fillTranslationSelect(),
     ]);
 
-    // Fill all selection UIs with their options
+    // Fetch price data, then fetch chain data
     if (getNetwork().enabled) {
-        fillCurrencySelect();
+        refreshPriceDisplay().finally(refreshChainData);
     }
 
     // Add each analytics level into the UI selector

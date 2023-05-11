@@ -492,6 +492,7 @@ export function deriveAddress({ pkBytes, publicKey, output = 'ENCODED' }) {
  * @param {boolean} options.isHardwareWallet - Whether the import is from a Hardware wallet or not
  * @param {boolean} options.skipConfirmation - Whether to skip the import UI confirmation or not
  * @param {boolean} options.fSavePublicKey - Whether to save the derived public key to disk (for View Only mode)
+ * @param {boolean} options.fStartup - Whether the import is at Startup or at Runtime
  * @returns {Promise<void>}
  */
 export async function importWallet({
@@ -500,6 +501,7 @@ export async function importWallet({
     isHardwareWallet = false,
     skipConfirmation = false,
     fSavePublicKey = false,
+    fStartup = false,
 } = {}) {
     const strImportConfirm =
         "Do you really want to import a new address? If you haven't saved the last private key, the wallet will be LOST forever.";
@@ -655,8 +657,8 @@ export async function importWallet({
             }
         }
 
-        // Fetch state from explorer
-        if (getNetwork().enabled) refreshChainData();
+        // Fetch state from explorer, if this import was post-startup
+        if (getNetwork().enabled && !fStartup) refreshChainData();
 
         // Hide all wallet starter options
         hideAllWalletOptions();

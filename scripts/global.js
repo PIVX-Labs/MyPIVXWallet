@@ -39,6 +39,14 @@ import { getEventEmitter } from './event_bus.js';
 import { scanQRCode } from './scanner.js';
 import { Database } from './database.js';
 
+/** A flag showing if base MPW is fully loaded or not */
+export let fIsLoaded = false;
+
+/** A getter for the flag showing if base MPW is fully loaded or not */
+export function isLoaded() {
+    return fIsLoaded;
+}
+
 export let doms = {};
 
 export async function start() {
@@ -301,8 +309,9 @@ export async function start() {
         const database = await Database.getInstance();
         const { publicKey } = await database.getAccount();
 
+        // Import the wallet, and toggle the startup flag, which delegates the chain data refresh to settingsStart();
         if (publicKey) {
-            importWallet({ newWif: publicKey });
+            importWallet({ newWif: publicKey, fStartup: true });
         } else {
             // Display the password unlock upfront
             await accessOrImportWallet();
@@ -325,7 +334,16 @@ export async function start() {
         cChainParams.current.PUBKEY_PREFIX.join(' or ');
     // If allowed by settings: submit a simple 'hit' (app load) to Labs Analytics
     getNetwork().submitAnalytics('hit');
-    setInterval(refreshChainData, 15000);
+    setInterval(() => {
+        // Refresh blockchain data
+        refreshChainData();
+
+        // Fetch the PIVX prices
+        refreshPriceDisplay();
+    }, 15000);
+
+    // After reaching here; we know MPW's base is fully loaded!
+    fIsLoaded = true;
 }
 
 function subscribeToNetworkEvents() {
@@ -372,7 +390,15 @@ let exportHidden = false;
 //                        PIVX Labs' Cold Pool
 export let cachedColdStakeAddr = 'SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy';
 
+/**
+ * Open a UI 'tab' menu, and close all other tabs, intended for frontend use
+ * @param {Event} evt - The click event target
+ * @param {string} tabName - The name of the tab to load
+ */
 export function openTab(evt, tabName) {
+    // Only allow switching tabs if MPw is loaded
+    if (!isLoaded()) return;
+
     // Hide all screens and deactivate link highlights
     for (const domScreen of doms.arrDomScreens)
         domScreen.style.display = 'none';
@@ -480,7 +506,6 @@ export function getBalance(updateGUI = false) {
 
 export function getStakingBalance(updateGUI = false) {
     const nBalance = mempool.getDelegatedBalance();
-    const nCoins = nBalance / COIN;
 
     if (updateGUI) {
         // Set the balance, and adjust font-size for large balance strings
@@ -1894,9 +1919,6 @@ export function refreshChainData() {
     // Fetch block count + UTXOs
     getNetwork().getBlockCount();
     getBalance(true);
-
-    // Fetch pricing data
-    refreshPriceDisplay();
 }
 
 // A safety mechanism enabled if the user attempts to leave without encrypting/saving their keys
