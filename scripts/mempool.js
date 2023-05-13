@@ -163,7 +163,7 @@ export class Mempool {
      * @param {Number} UTXO.height - Block height of the UTXO
      * @param {Number} UTXO.status - UTXO status enum state
      * @param {Boolean} UTXO.isDelegate - If this is a Cold Delegation
-     * @param {Boolean} UTXO.isReward - If this is a Cold Delegation
+     * @param {Boolean} UTXO.isReward - If this is a Coinbase Reward
      */
     addUTXO({
         id,
