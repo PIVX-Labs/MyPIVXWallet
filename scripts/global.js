@@ -331,23 +331,6 @@ export async function start() {
         ? parseFloat(urlParams.get('amount'))
         : 0;
 
-    // Customise the UI if a saved wallet exists
-    if (hasEncryptedWallet()) {
-        // Hide the 'Generate wallet' buttons
-        doms.domGenerateWallet.style.display = 'none';
-        doms.domGenVanityWallet.style.display = 'none';
-
-        const publicKey = localStorage.getItem('publicKey');
-
-        // Import the wallet, and toggle the startup flag, which delegates the chain data refresh to settingsStart();
-        if (publicKey) {
-            await importWallet({ newWif: publicKey, fStartup: true });
-        } else {
-            // Display the password unlock upfront
-            accessOrImportWallet();
-        }
-    }
-
     // Payment processor redirect
     if (reqTo.length || reqAmount > 0) {
         guiPreparePayment(
@@ -375,6 +358,23 @@ export async function start() {
 
     // After reaching here; we know MPW's base is fully loaded!
     fIsLoaded = true;
+
+    // Customise the UI if a saved wallet exists
+    if (hasEncryptedWallet()) {
+        // Hide the 'Generate wallet' buttons
+        doms.domGenerateWallet.style.display = 'none';
+        doms.domGenVanityWallet.style.display = 'none';
+
+        const publicKey = localStorage.getItem('publicKey');
+
+        // Import the wallet, and toggle the startup flag, which delegates the chain data refresh to settingsStart();
+        if (publicKey) {
+            await importWallet({ newWif: publicKey, fStartup: true });
+        } else {
+            // Display the password unlock upfront
+            accessOrImportWallet();
+        }
+    }
 }
 
 function subscribeToNetworkEvents() {
