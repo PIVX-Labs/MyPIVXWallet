@@ -354,7 +354,7 @@ export class ExplorerNetwork extends Network {
                                             )
                                     );
                                     if (fDelegation) {
-                                        nDelegated += parseInt(vin.value);
+                                        nDelegated -= parseInt(vin.value);
                                     }
                                 }
 
@@ -368,7 +368,7 @@ export class ExplorerNetwork extends Network {
                                             )
                                     );
                                     if (fDelegation) {
-                                        nDelegated -= parseInt(out.value);
+                                        nDelegated += parseInt(out.value);
                                     }
                                 }
 
