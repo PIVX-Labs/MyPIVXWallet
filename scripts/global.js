@@ -195,6 +195,11 @@ export function start() {
         domWipeWallet: document.getElementById('guiWipeWallet'),
         domRestoreWallet: document.getElementById('guiRestoreWallet'),
         domNewAddress: document.getElementById('guiNewAddress'),
+        domActivityList: document.getElementById('activity-list-content'),
+        domActivityLoadMore: document.getElementById('activityLoadMore'),
+        domActivityLoadMoreIcon: document.getElementById(
+            'activityLoadMoreIcon'
+        ),
         domConfirmModalHeader: document.getElementById('confirmModalHeader'),
         domConfirmModalTitle: document.getElementById('confirmModalTitle'),
         domConfirmModalContent: document.getElementById('confirmModalContent'),
@@ -418,9 +423,16 @@ export function openTab(evt, tabName) {
         updateMasternodeTab();
     } else if (
         tabName === 'StakingTab' &&
-        getNetwork().arrRewards.length === 0
+        getNetwork().arrTxHistory.length === 0
     ) {
-        updateStakingRewardsGUI();
+        // Refresh the TX list
+        updateActivityGUI(true);
+    } else if (
+        tabName === 'keypair' &&
+        getNetwork().arrTxHistory.length === 0
+    ) {
+        // Refresh the TX list
+        updateActivityGUI(false);
     }
 }
 
@@ -581,7 +593,7 @@ export async function openSendQRScanner() {
 
 /**
  * Generate a DOM-optimised activity list
- * @param {Array<object>} arrTXs - The TX array to compute the list from
+ * @param {Array<import('./network.js').HistoricalTx>} arrTXs - The TX array to compute the list from
  * @param {boolean} fRewards - If this list is for Reward transactions
  * @returns {string} HTML - The Activity List in HTML string form
  */
@@ -594,7 +606,9 @@ export function createActivityListHTML(arrTXs, fRewards = false) {
         <thead>
             <tr>
                 <th scope="col" class="tx1">Time</th>
-                <th scope="col" class="tx2">Hash</th>
+                <th scope="col" class="tx2">${
+                    fRewards ? 'ID' : 'Description'
+                }</th>
                 <th scope="col" class="tx3">Amount</th>
                 <th scope="col" class="tx4 text-right"></th>
             </tr>
@@ -621,6 +635,54 @@ export function createActivityListHTML(arrTXs, fRewards = false) {
         const fConfirmed =
             cNet.cachedBlockCount - cTx.blockHeight >= fRewards ? 100 : 6;
 
+        // Choose the correct icon and colour for the Tx type, or a question mark if the type is unknown
+        // Defaults: Reward Activity
+        let icon = 'fa-gift';
+        let colour = 'white';
+
+        // Choose the content type, for Rewards, this is just a TX-ID, anything else uses a generative description
+        let txContent = cTx.id;
+
+        // Format the amount to reduce text size
+        let formattedAmt = '';
+        if (cTx.amount < 0.01) {
+            formattedAmt = '<0.01';
+        } else if (cTx.amount >= 100) {
+            formattedAmt = Math.round(cTx.amount).toString();
+        } else {
+            formattedAmt = cTx.amount.toFixed(2);
+        }
+
+        // Generate an icon, colour and description for the Tx
+        if (!fRewards) {
+            switch (cTx.type) {
+                case 'stake':
+                    icon = 'fa-gift';
+                    break;
+                case 'sent':
+                    icon = 'fa-angle-up';
+                    colour = 'red';
+                    txContent = 'Sent';
+                    break;
+                case 'received':
+                    icon = 'fa-angle-down';
+                    colour = '#00fc00';
+                    txContent = 'Received';
+                    break;
+                case 'delegation':
+                    icon = 'fa-snowflake';
+                    txContent = 'Delegated';
+                    break;
+                case 'undelegation':
+                    icon = 'fa-fire';
+                    txContent = 'Undelegated';
+                    break;
+                default:
+                    icon = 'fa-question';
+                    txContent = 'Unknown Tx';
+            }
+        }
+
         // Render the list element from Tx data
         strList += `
             <tr>
@@ -643,13 +705,11 @@ export function createActivityListHTML(arrTXs, fRewards = false) {
                     <a href="${cExplorer.url}/tx/${
             cTx.id
         }" target="_blank" rel="noopener noreferrer">
-                        <code class="wallet-code text-center active ptr" style="padding: 4px 9px;">${
-                            cTx.id
-                        }</code>
+                        <code class="wallet-code text-center active ptr" style="padding: 4px 9px;">${txContent}</code>
                     </a>
                 </td>
                 <td class="align-middle pr-10px">
-                    <b><i class="fa-solid fa-gift"></i> ${cTx.amount} ${
+                    <b style="font-family: monospace;"><i class="fa-solid ${icon}" style="color: ${colour}; padding-right: 3px;"></i> ${formattedAmt} ${
             cChainParams.current.TICKER
         }</b>
                 </td>
@@ -673,33 +733,47 @@ export function createActivityListHTML(arrTXs, fRewards = false) {
 }
 
 /**
- * Refreshes the Staking Rewards table, charts and related information
+ * Refreshes the specified activity table, charts and related information
  */
-export async function updateStakingRewardsGUI() {
+export async function updateActivityGUI(fStaking = false) {
     const cNet = getNetwork();
 
     // Prevent the user from spamming refreshes
-    if (cNet.rewardsSyncing) return;
+    if (cNet.historySyncing) return;
 
-    // Load rewards from the network, displaying the sync spin icon until finished
-    doms.domGuiStakingLoadMoreIcon.classList.add('fa-spin');
-    const arrRewards = await cNet.getStakingRewards();
-    doms.domGuiStakingLoadMoreIcon.classList.remove('fa-spin');
-
-    // Check if all rewards are loaded
-    if (cNet.areRewardsComplete) {
-        // Hide the load more button
-        doms.domGuiStakingLoadMore.style.display = 'none';
+    // Choose the Dashboard or Staking UI accordingly
+    let domActivityList = doms.domActivityList;
+    let domLoadMore = doms.domActivityLoadMore;
+    let domLoadMoreIcon = doms.domActivityLoadMoreIcon;
+    if (fStaking) {
+        domActivityList = doms.domStakingRewardsList;
+        domLoadMore = doms.domGuiStakingLoadMore;
+        domLoadMoreIcon = doms.domGuiStakingLoadMoreIcon;
     }
 
-    // Display total rewards from known history
-    const nRewards = arrRewards.reduce((a, b) => a + b.amount, 0);
-    doms.domStakingRewardsTitle.innerHTML = `${
-        cNet.areRewardsComplete ? '' : '≥'
-    }${nRewards} ${cChainParams.current.TICKER}`;
+    // Load rewards from the network, displaying the sync spin icon until finished
+    domLoadMoreIcon.classList.add('fa-spin');
+    const arrTXs = fStaking
+        ? await cNet.getStakingRewards()
+        : await cNet.syncTxHistoryChunk();
+    domLoadMoreIcon.classList.remove('fa-spin');
+
+    // Check if all transactions are loaded
+    if (cNet.isHistorySynced) {
+        // Hide the load more button
+        domLoadMore.style.display = 'none';
+    }
+
+    // For Staking: Display total rewards from known history
+    if (fStaking) {
+        const nRewards = arrTXs.reduce((a, b) => a + b.amount, 0);
+        doms.domStakingRewardsTitle.innerHTML = `${
+            cNet.isHistorySynced ? '' : '≥'
+        }${nRewards} ${cChainParams.current.TICKER}`;
+    }
 
     // Create and render the Activity List
-    doms.domStakingRewardsList.innerHTML = createActivityListHTML(arrRewards);
+    domActivityList.innerHTML = createActivityListHTML(arrTXs, fStaking);
 }
 
 /**

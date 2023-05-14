@@ -6,6 +6,16 @@ import { getEventEmitter } from './event_bus.js';
 import { STATS, cStatKeys, cAnalyticsLevel } from './settings.js';
 
 /**
+ * A historical transaction
+ * @typedef {Object} HistoricalTx
+ * @property {('stake'|'delegation'|'undelegation'|'received'|'sent'|'unknown')} type - The type of transaction.
+ * @property {string} id - The transaction ID.
+ * @property {number} time - The block time of the transaction.
+ * @property {number} blockHeight - The block height of the transaction.
+ * @property {number} amount - The amount transacted, in coins.
+ */
+
+/**
  * Virtual class rapresenting any network backend
  */
 export class Network {
@@ -18,7 +28,7 @@ export class Network {
         this.masterKey = masterKey;
 
         this.lastWallet = 0;
-        this.areRewardsComplete = false;
+        this.isHistorySynced = false;
     }
 
     /**
@@ -102,8 +112,12 @@ export class ExplorerNetwork extends Network {
          */
         this.blocks = 0;
 
-        this.arrRewards = [];
-        this.rewardsSyncing = false;
+        /**
+         * @type {Array<HistoricalTx>}
+         */
+        this.arrTxHistory = [];
+
+        this.historySyncing = false;
     }
 
     error() {
@@ -249,26 +263,30 @@ export class ExplorerNetwork extends Network {
         }
     }
 
-    async getStakingRewards() {
+    /**
+     * Synchronise a partial chunk of our TX history
+     */
+    async syncTxHistoryChunk() {
         // Do not allow multiple calls at once
-        if (this.rewardsSyncing) {
+        if (this.historySyncing) {
             return false;
         }
         try {
-            if (!this.enabled || !this.masterKey || this.areRewardsComplete)
-                return this.arrRewards;
-            this.rewardsSyncing = true;
-            const nHeight = this.arrRewards.length
-                ? this.arrRewards[this.arrRewards.length - 1].blockHeight
+            if (!this.enabled || !this.masterKey || this.isHistorySynced)
+                return this.arrTxHistory;
+            this.historySyncing = true;
+            const nHeight = this.arrTxHistory.length
+                ? this.arrTxHistory[this.arrTxHistory.length - 1].blockHeight
                 : 0;
             const mapPaths = new Map();
             const txSum = (v) =>
                 v.reduce(
                     (t, s) =>
                         t +
-                        (s.addresses
+                        (s.addresses &&
+                        s.addresses
                             .map((strAddr) => mapPaths.get(strAddr))
-                            .filter((v) => v).length && s.addresses.length === 2
+                            .filter((v) => v).length
                             ? parseInt(s.value)
                             : 0),
                     0
@@ -310,39 +328,101 @@ export class ExplorerNetwork extends Network {
                 mapPaths.set(address, ':)');
             }
             if (cData && cData.transactions) {
-                // Update rewards
-                this.arrRewards = this.arrRewards.concat(
+                // Update TX history
+                this.arrTxHistory = this.arrTxHistory.concat(
                     cData.transactions
-                        .filter(
-                            (tx) => tx.vout[0].addresses[0] === 'CoinStake TX'
-                        )
                         .map((tx) => {
+                            // The total 'delta' or change in balance, from the Tx's sums
+                            let nAmount =
+                                (txSum(tx.vout) - txSum(tx.vin)) / COIN;
+                            let nDelegated = 0;
+
+                            // Figure out the type, based on the Tx's properties
+                            let type = 'unknown';
+                            if (tx.vout[0].addresses[0] === 'CoinStake TX') {
+                                type = 'stake';
+                            } else if (nAmount > 0) {
+                                type = 'received';
+                            } else if (nAmount < 0) {
+                                // Check vins for undelegations
+                                for (const vin of tx.vin) {
+                                    const fDelegation = vin.addresses?.some(
+                                        (addr) =>
+                                            addr.startsWith(
+                                                cChainParams.current
+                                                    .STAKING_PREFIX
+                                            )
+                                    );
+                                    if (fDelegation) {
+                                        nDelegated += parseInt(vin.value);
+                                    }
+                                }
+
+                                // Check vouts for delegations
+                                for (const out of tx.vout) {
+                                    const fDelegation = out.addresses?.some(
+                                        (addr) =>
+                                            addr.startsWith(
+                                                cChainParams.current
+                                                    .STAKING_PREFIX
+                                            )
+                                    );
+                                    if (fDelegation) {
+                                        nDelegated -= parseInt(out.value);
+                                    }
+                                }
+
+                                // If a delegation was made, then display the value delegated
+                                if (nDelegated > 0) {
+                                    type = 'delegation';
+                                    nAmount = nDelegated / COIN;
+                                } else if (nDelegated < 0) {
+                                    type = 'undelegation';
+                                    nAmount = nDelegated / COIN;
+                                } else {
+                                    type = 'sent';
+                                }
+                            }
+
                             return {
+                                type,
                                 id: tx.txid,
                                 time: tx.blockTime,
                                 blockHeight: tx.blockHeight,
-                                amount: (txSum(tx.vout) - txSum(tx.vin)) / COIN,
+                                amount: Math.abs(nAmount),
                             };
                         })
                         .filter((tx) => tx.amount != 0)
                 );
 
-                // If the results don't match the full 'max/requested results', then we know the rewards are complete
+                // If the results don't match the full 'max/requested results', then we know the history is complete
                 if (cData.transactions.length !== cData.itemsOnPage) {
-                    this.areRewardsComplete = true;
+                    this.isHistorySynced = true;
                 }
             }
-            return this.arrRewards;
+            return this.arrTxHistory;
         } catch (e) {
             console.error(e);
         } finally {
-            this.rewardsSyncing = false;
+            this.historySyncing = false;
         }
+    }
+
+    /**
+     * Synchronise and return the list of Staking rewards
+     * @returns {Promise<Array<HistoricalTx>>}
+     */
+    async getStakingRewards() {
+        // Ensure we have some data to display (or continue syncing a new chunk)
+        await this.syncTxHistoryChunk();
+
+        // Filter our TX history for Stake rewards, and return
+        return this.arrTxHistory.filter((cTx) => cTx.type === 'stake');
     }
 
     setMasterKey(masterKey) {
         this.masterKey = masterKey;
-        this.arrRewards = [];
+        this.arrTxHistory = [];
     }
 
     async getTxInfo(txHash) {

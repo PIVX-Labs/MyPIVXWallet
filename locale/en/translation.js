@@ -87,7 +87,7 @@ export const en_translation = {
         'Coins that you Stake are "Locked" separately from your Available balance, and have a chance to generate rewards. <br> The more coins you stake, the more frequently you\'ll receive rewards.', //
     stake: 'Stake',
     stakeUnstake: 'Unstake', //
-    stakeLoadMore: 'Load more', //
+    loadMore: 'Load more', //
 
     // Governance
     contestedProposalsTitle: 'Contested Proposals',
