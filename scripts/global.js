@@ -640,8 +640,8 @@ export function createActivityListHTML(arrTXs, fRewards = false) {
         let icon = 'fa-gift';
         let colour = 'white';
 
-        // Choose the content type, for Rewards, this is just a TX-ID, anything else uses a generative description
-        let txContent = cTx.id;
+        // Choose the content type, for the Dashboard; use a generative description, otherwise, a TX-ID
+        let txContent = fRewards ? cTx.id : 'Block Reward';
 
         // Format the amount to reduce text size
         let formattedAmt = '';
