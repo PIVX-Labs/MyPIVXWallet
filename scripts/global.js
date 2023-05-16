@@ -698,7 +698,7 @@ export async function createActivityListHTML(arrTXs, fRewards = false) {
                                   ].join(', ') + '...');
                     }
                     break;
-                case 'received':
+                case 'received': {
                     icon = 'fa-angle-down';
                     colour = '#00fc00';
                     // Figure out WHO this was sent from, and focus on them contextually
@@ -723,7 +723,7 @@ export async function createActivityListHTML(arrTXs, fRewards = false) {
                             '...';
                     }
                     break;
-                case 'delegation':
+                } case 'delegation':
                     icon = 'fa-snowflake';
                     txContent =
                         'Delegated to ' +
