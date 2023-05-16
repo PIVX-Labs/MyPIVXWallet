@@ -1565,7 +1565,9 @@ export async function updatePromoCreation() {
     doms.domRedeemCodeCreatePendingList.innerHTML = strHTML;
 
     for (const cThread of arrPromoCreationThreads) {
-        incNbrRec(oldPercentage, cThread.thread.progress, document.getElementById(`c${cThread.code}`));
+        try { 
+            incNbrRec(oldPercentage, cThread.thread.progress, document.getElementById(`c${cThread.code}`));
+        } catch(e) { }
     }
 }
 
