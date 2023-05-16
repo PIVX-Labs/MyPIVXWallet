@@ -674,7 +674,7 @@ export async function createActivityListHTML(arrTXs, fRewards = false) {
                     break;
                 case 'sent':
                     icon = 'fa-minus';
-                    colour = 'red';
+                    colour = '#f93c3c';
                     // Figure out WHO this was sent to, and focus on them contextually
                     if (fSendToSelf) {
                         txContent = 'Sent to self';
@@ -700,7 +700,7 @@ export async function createActivityListHTML(arrTXs, fRewards = false) {
                     break;
                 case 'received': {
                     icon = 'fa-plus';
-                    colour = '#00fc00';
+                    colour = '#5cff5c';
                     // Figure out WHO this was sent from, and focus on them contextually
                     // Filter away any of our own addresses
                     const arrExternalAddresses = cTx.senders.filter(
