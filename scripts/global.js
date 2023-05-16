@@ -723,7 +723,8 @@ export async function createActivityListHTML(arrTXs, fRewards = false) {
                             '...';
                     }
                     break;
-                } case 'delegation':
+                }
+                case 'delegation':
                     icon = 'fa-snowflake';
                     txContent =
                         'Delegated to ' +
