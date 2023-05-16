@@ -10,6 +10,7 @@ import {
     decryptWallet,
     getNewAddress,
     getDerivationPath,
+    isYourAddress,
 } from './wallet.js';
 import { getNetwork } from './network.js';
 import {
@@ -595,9 +596,9 @@ export async function openSendQRScanner() {
  * Generate a DOM-optimised activity list
  * @param {Array<import('./network.js').HistoricalTx>} arrTXs - The TX array to compute the list from
  * @param {boolean} fRewards - If this list is for Reward transactions
- * @returns {string} HTML - The Activity List in HTML string form
+ * @returns {Promise<string>} HTML - The Activity List in HTML string form
  */
-export function createActivityListHTML(arrTXs, fRewards = false) {
+export async function createActivityListHTML(arrTXs, fRewards = false) {
     const cNet = getNetwork();
 
     // Prepare the table HTML
@@ -628,7 +629,7 @@ export function createActivityListHTML(arrTXs, fRewards = false) {
     };
 
     // Generate the TX list
-    arrTXs.forEach((cTx) => {
+    for (const cTx of arrTXs) {
         const dateTime = new Date(cTx.time * 1000);
 
         // Coinbase Transactions (rewards) require 100 confs
@@ -653,6 +654,19 @@ export function createActivityListHTML(arrTXs, fRewards = false) {
             formattedAmt = cTx.amount.toFixed(2);
         }
 
+        // Check if this is a send-to-self transaction
+        let fSendToSelf = true;
+        const arrOurAddresses = [];
+        for (const strAddr of cTx.receivers.concat(cTx.senders)) {
+            if (!(await isYourAddress(strAddr))[0]) {
+                // External address, this is not a self-only Tx
+                fSendToSelf = false;
+            } else {
+                // Internal address, remember this for later use
+                arrOurAddresses.push(strAddr);
+            }
+        }
+
         // Generate an icon, colour and description for the Tx
         if (!fRewards) {
             switch (cTx.type) {
@@ -662,16 +676,60 @@ export function createActivityListHTML(arrTXs, fRewards = false) {
                 case 'sent':
                     icon = 'fa-angle-up';
                     colour = 'red';
-                    txContent = 'Sent';
+                    // Figure out WHO this was sent to, and focus on them contextually
+                    if (fSendToSelf) {
+                        txContent = 'Sent to self';
+                    } else {
+                        // Otherwise, anything to us is likely change, so filter it away
+                        const arrExternalAddresses = cTx.receivers.filter(
+                            (addr) => !arrOurAddresses.includes(addr)
+                        );
+                        txContent =
+                            'Sent to ' +
+                            (cTx.shieldedOutputs
+                                ? 'Shielded address'
+                                : [
+                                      ...new Set(
+                                          arrExternalAddresses.map((addr) =>
+                                              addr.length >= 32
+                                                  ? addr.substring(0, 6)
+                                                  : addr
+                                          )
+                                      ),
+                                  ].join(', ') + '...');
+                    }
                     break;
                 case 'received':
                     icon = 'fa-angle-down';
                     colour = '#00fc00';
-                    txContent = 'Received';
+                    // Figure out WHO this was sent from, and focus on them contextually
+                    // Filter away any of our own addresses
+                    const arrExternalAddresses = cTx.senders.filter(
+                        (addr) => !arrOurAddresses.includes(addr)
+                    );
+                    if (cTx.shieldedOutputs) {
+                        txContent = 'Received from Shielded address';
+                    } else {
+                        txContent =
+                            'Received from ' +
+                            [
+                                ...new Set(
+                                    arrExternalAddresses.map((addr) =>
+                                        addr.length >= 32
+                                            ? addr.substring(0, 6)
+                                            : addr
+                                    )
+                                ),
+                            ].join(', ') +
+                            '...';
+                    }
                     break;
                 case 'delegation':
                     icon = 'fa-snowflake';
-                    txContent = 'Delegated';
+                    txContent =
+                        'Delegated to ' +
+                        cTx.receivers[0].substring(0, 6) +
+                        '...';
                     break;
                 case 'undelegation':
                     icon = 'fa-fire';
@@ -723,7 +781,7 @@ export function createActivityListHTML(arrTXs, fRewards = false) {
         }</span>
                 </td>
             </tr>`;
-    });
+    }
 
     // End the table
     strList += `</tbody></table>`;
@@ -773,7 +831,7 @@ export async function updateActivityGUI(fStaking = false) {
     }
 
     // Create and render the Activity List
-    domActivityList.innerHTML = createActivityListHTML(arrTXs, fStaking);
+    domActivityList.innerHTML = await createActivityListHTML(arrTXs, fStaking);
 }
 
 /**

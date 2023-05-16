@@ -10,6 +10,9 @@ import { STATS, cStatKeys, cAnalyticsLevel } from './settings.js';
  * @typedef {Object} HistoricalTx
  * @property {('stake'|'delegation'|'undelegation'|'received'|'sent'|'unknown')} type - The type of transaction.
  * @property {string} id - The transaction ID.
+ * @property {Array<string>} senders - The list of 'input addresses'.
+ * @property {Array<string>} receivers - The list of 'output addresses'.
+ * @property {boolean} shieldedOutputs - If this transaction contains Shield outputs.
  * @property {number} time - The block time of the transaction.
  * @property {number} blockHeight - The block height of the transaction.
  * @property {number} amount - The amount transacted, in coins.
@@ -304,7 +307,7 @@ export class ExplorerNetwork extends Network {
                     await fetch(
                         `${
                             this.strUrl
-                        }/api/v2/xpub/${xpub}?details=txs&pageSize=200&to=${
+                        }/api/v2/xpub/${xpub}?details=txs&tokens=derived&pageSize=200&to=${
                             nHeight ? nHeight - 1 : 0
                         }`
                     )
@@ -335,15 +338,50 @@ export class ExplorerNetwork extends Network {
                             // The total 'delta' or change in balance, from the Tx's sums
                             let nAmount =
                                 (txSum(tx.vout) - txSum(tx.vin)) / COIN;
+
+                            // If this Tx creates any Shield outputs
+                            // Note: shielOuts typo intended, this is a Blockbook error
+                            const fShieldOuts = Number.isFinite(tx.shielOuts);
+
+                            // (Un)Delegated coins in this transaction, if any
                             let nDelegated = 0;
+
+                            // The address(es) delegated to, if any
+                            let strDelegatedAddr = '';
+
+                            // The sender addresses, if any
+                            const arrSenders =
+                                tx.vin?.flatMap((vin) => vin.addresses) || [];
+
+                            // The receiver addresses, if any
+                            let arrReceivers =
+                                tx.vout?.flatMap((vout) => vout.addresses) ||
+                                [];
+                            // Pretty-fy script addresses
+                            arrReceivers = arrReceivers.map((addr) =>
+                                addr.startsWith('OP_') ? 'Contract' : addr
+                            );
 
                             // Figure out the type, based on the Tx's properties
                             let type = 'unknown';
-                            if (tx.vout[0].addresses[0] === 'CoinStake TX') {
+                            if (
+                                !fShieldOuts &&
+                                tx.vout[0].addresses[0] === 'CoinStake TX'
+                            ) {
                                 type = 'stake';
-                            } else if (nAmount > 0) {
+                            } else if (
+                                nAmount > 0 ||
+                                (nAmount > 0 && fShieldOuts)
+                            ) {
                                 type = 'received';
-                            } else if (nAmount < 0) {
+                                // If this contains Shield outputs, then we received them
+                                if (fShieldOuts)
+                                    nAmount =
+                                        parseInt(tx.valueBalanceSat) / COIN;
+                            } else if (
+                                nAmount < 0 ||
+                                (nAmount < 0 && fShieldOuts)
+                            ) {
                                 // Check vins for undelegations
                                 for (const vin of tx.vin) {
                                     const fDelegation = vin.addresses?.some(
@@ -360,13 +398,15 @@ export class ExplorerNetwork extends Network {
 
                                 // Check vouts for delegations
                                 for (const out of tx.vout) {
-                                    const fDelegation = out.addresses?.some(
-                                        (addr) =>
+                                    strDelegatedAddr =
+                                        out.addresses?.find((addr) =>
                                             addr.startsWith(
                                                 cChainParams.current
                                                     .STAKING_PREFIX
                                             )
-                                    );
+                                        ) || strDelegatedAddr;
+
+                                    const fDelegation = !!strDelegatedAddr;
                                     if (fDelegation) {
                                         nDelegated += parseInt(out.value);
                                     }
@@ -381,12 +421,22 @@ export class ExplorerNetwork extends Network {
                                     nAmount = nDelegated / COIN;
                                 } else {
                                     type = 'sent';
+                                    // If this contains Shield outputs, then we sent them
+                                    if (fShieldOuts)
+                                        nAmount =
+                                            parseInt(tx.valueBalanceSat) / COIN;
                                 }
                             }
 
                             return {
                                 type,
                                 id: tx.txid,
+                                senders: arrSenders,
+                                receivers:
+                                    nDelegated !== 0
+                                        ? [strDelegatedAddr]
+                                        : arrReceivers,
+                                shieldedOutputs: fShieldOuts,
                                 time: tx.blockTime,
                                 blockHeight: tx.blockHeight,
                                 amount: Math.abs(nAmount),
