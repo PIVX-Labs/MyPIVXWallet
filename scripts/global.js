@@ -673,7 +673,7 @@ export async function createActivityListHTML(arrTXs, fRewards = false) {
                     icon = 'fa-gift';
                     break;
                 case 'sent':
-                    icon = 'fa-angle-up';
+                    icon = 'fa-minus';
                     colour = 'red';
                     // Figure out WHO this was sent to, and focus on them contextually
                     if (fSendToSelf) {
@@ -699,7 +699,7 @@ export async function createActivityListHTML(arrTXs, fRewards = false) {
                     }
                     break;
                 case 'received': {
-                    icon = 'fa-angle-down';
+                    icon = 'fa-plus';
                     colour = '#00fc00';
                     // Figure out WHO this was sent from, and focus on them contextually
                     // Filter away any of our own addresses
