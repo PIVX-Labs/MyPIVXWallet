@@ -181,7 +181,7 @@ export class ExplorerNetwork extends Network {
                 publicKey = await this.masterKey.getxpub(derivationPath);
             } else {
                 // Use the param address if specified, or the Master Key by default
-                publicKey = strAddress || await this.masterKey.getAddress();
+                publicKey = strAddress || (await this.masterKey.getAddress());
             }
 
             // Fetch UTXOs for the key

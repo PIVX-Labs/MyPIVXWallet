@@ -193,18 +193,32 @@ export function start() {
         domRedeemTitle: document.getElementById('redeemCodeModalTitle'),
         domRedeemCodeUse: document.getElementById('redeemCodeUse'),
         domRedeemCodeCreate: document.getElementById('redeemCodeCreate'),
-        domRedeemCodeGiftIconBox: document.getElementById('redeemCodeGiftIconBox'),
+        domRedeemCodeGiftIconBox: document.getElementById(
+            'redeemCodeGiftIconBox'
+        ),
         domRedeemCodeGiftIcon: document.getElementById('redeemCodeGiftIcon'),
         domRedeemCodeETA: document.getElementById('redeemCodeETA'),
         domRedeemCodeProgress: document.getElementById('redeemCodeProgress'),
         domRedeemCodeInputBox: document.getElementById('redeemCodeInputBox'),
         domRedeemCodeInput: document.getElementById('redeemCodeInput'),
-        domRedeemCodeConfirmBtn: document.getElementById('redeemCodeModalConfirmButton'),
-        domRedeemCodeModeRedeemBtn: document.getElementById('redeemCodeModeRedeem'),
-        domRedeemCodeModeCreateBtn: document.getElementById('redeemCodeModeCreate'),
-        domRedeemCodeCreateInput: document.getElementById('redeemCodeCreateInput'),
-        domRedeemCodeCreateAmountInput: document.getElementById('redeemCodeCreateAmountInput'),
-        domRedeemCodeCreatePendingList: document.getElementById('redeemCodeCreatePendingList'),
+        domRedeemCodeConfirmBtn: document.getElementById(
+            'redeemCodeModalConfirmButton'
+        ),
+        domRedeemCodeModeRedeemBtn: document.getElementById(
+            'redeemCodeModeRedeem'
+        ),
+        domRedeemCodeModeCreateBtn: document.getElementById(
+            'redeemCodeModeCreate'
+        ),
+        domRedeemCodeCreateInput: document.getElementById(
+            'redeemCodeCreateInput'
+        ),
+        domRedeemCodeCreateAmountInput: document.getElementById(
+            'redeemCodeCreateAmountInput'
+        ),
+        domRedeemCodeCreatePendingList: document.getElementById(
+            'redeemCodeCreatePendingList'
+        ),
         domPromoTable: document.getElementById('promo-table'),
         domConfirmModalHeader: document.getElementById('confirmModalHeader'),
         domConfirmModalTitle: document.getElementById('confirmModalTitle'),
@@ -391,10 +405,10 @@ export let fPromptActive = false;
 
 /**
  * Set the fPromptActive state
- * @param {boolean} fBool 
+ * @param {boolean} fBool
  */
 export function setPromptLock(fBool) {
-    fPromptActive = fBool; 
+    fPromptActive = fBool;
 }
 
 //                        PIVX Labs' Cold Pool
@@ -1392,16 +1406,16 @@ export function setPromoMode(fMode) {
         doms.domRedeemCodeCreate.style.display = 'none';
 
         // Set the title and confirm button
-        doms.domRedeemTitle.innerText = 'Redeem Code'
+        doms.domRedeemTitle.innerText = 'Redeem Code';
         doms.domRedeemCodeConfirmBtn.innerText = 'Redeem';
 
         // Hide table
-        doms.domPromoTable.classList.add("d-none");
-        
+        doms.domPromoTable.classList.add('d-none');
+
         // Show smooth table animation
         setTimeout(() => {
-            doms.domPromoTable.style.maxHeight = "0px";
-        },100);
+            doms.domPromoTable.style.maxHeight = '0px';
+        }, 100);
     } else {
         // Swap the buttons
         doms.domRedeemCodeModeRedeemBtn.style.opacity = '0.8';
@@ -1414,18 +1428,18 @@ export function setPromoMode(fMode) {
         doms.domRedeemCodeCreate.style.display = '';
 
         // Set the title and confirm button
-        doms.domRedeemTitle.innerText = 'Create Code'
+        doms.domRedeemTitle.innerText = 'Create Code';
         doms.domRedeemCodeConfirmBtn.innerText = 'Create';
 
         // Show animation when promo creation thread has 1 or more items
-        if(arrPromoCreationThreads.length > 0) {
+        if (arrPromoCreationThreads.length > 0) {
             // Show table
-            doms.domPromoTable.classList.remove("d-none");
-        
+            doms.domPromoTable.classList.remove('d-none');
+
             // Show smooth table animation
             setTimeout(() => {
-                doms.domPromoTable.style.maxHeight = "600px";
-            },100);
+                doms.domPromoTable.style.maxHeight = '600px';
+            }, 100);
         }
     }
 }
@@ -1438,19 +1452,22 @@ export function promoConfirm() {
         redeemPromoCode(doms.domRedeemCodeInput.value);
     } else {
         // Show table
-        doms.domPromoTable.classList.remove("d-none");
-        
+        doms.domPromoTable.classList.remove('d-none');
+
         // Show smooth table animation
         setTimeout(() => {
-            doms.domPromoTable.style.maxHeight = "600px";
-        },100);
+            doms.domPromoTable.style.maxHeight = '600px';
+        }, 100);
 
-        createPromoCode(doms.domRedeemCodeCreateInput.value, Number(doms.domRedeemCodeCreateAmountInput.value));
+        createPromoCode(
+            doms.domRedeemCodeCreateInput.value,
+            Number(doms.domRedeemCodeCreateAmountInput.value)
+        );
     }
 }
 
 /**
- * A list of promo creation threads, each thread works on a unique code 
+ * A list of promo creation threads, each thread works on a unique code
  * @type {Array<Worker>}
  */
 const arrPromoCreationThreads = [];
@@ -1465,7 +1482,7 @@ let promoCreationInterval = null;
  * @param {string} strCode - The Promo Code to create
  * @param {number} nAmount - The Promo Code amount in coins
  */
- export async function createPromoCode(strCode, nAmount) {
+export async function createPromoCode(strCode, nAmount) {
     // Ensure there's no more than half the device's cores used
     if (arrPromoCreationThreads.length >= navigator.hardwareConcurrency) return;
 
@@ -1475,13 +1492,14 @@ let promoCreationInterval = null;
         amount: nAmount,
         thread: new Worker(new URL('./promos_worker.js', import.meta.url)),
         txid: '',
-        update: function(evt) {
+        update: function (evt) {
             if (evt.data.type === 'progress') {
                 this.progress = evt.data.res.progress;
             } else {
                 this.key = evt.data.res.bytes;
             }
-        }
+        },
+        end_state: '',
     };
 
     // Setup it's internal update function
@@ -1494,7 +1512,8 @@ let promoCreationInterval = null;
     arrPromoCreationThreads.push(cThread);
 
     // If no creation interval exists, create one
-    if (!promoCreationInterval) promoCreationInterval = setInterval(updatePromoCreation, 1000);
+    if (!promoCreationInterval)
+        promoCreationInterval = setInterval(updatePromoCreation, 1000);
 }
 
 /**
@@ -1502,22 +1521,25 @@ let promoCreationInterval = null;
  */
 export async function updatePromoCreation() {
     /* Animated counter function */
-    function incNbrRec(i, endNbr, elt) {
-        if (i <= endNbr) {
-          elt.innerHTML = i;
-          setTimeout(function() {
-            incNbrRec(i + 1, endNbr, elt);
-          }, 100);
+    function progressAnimateTick(i, target, el) {
+        if (i <= target) {
+            el.innerHTML = i;
+            // Cancel once at 100%
+            if (target === 100) return;
+            // Otherwise, recursively callback
+            setTimeout(() => {
+                progressAnimateTick(i + 1, target, el);
+            }, 100);
         }
     }
 
     // Loop all threads, displaying their progress
     let strHTML = '';
     let oldPercentage = 0;
-    
+
     for (const cThread of arrPromoCreationThreads) {
         // Check if the code is derived, if so, fill it with it's balance
-        if (cThread.thread.key && !cThread.txid) {
+        if (cThread.thread.key && !cThread.end_state) {
             const strAddress = deriveAddress({ pkBytes: cThread.thread.key });
 
             // Ensure no unlock prompt is already active, if it is, hide the promo modal too
@@ -1531,20 +1553,45 @@ export async function updatePromoCreation() {
                     // Unlocked! Re-show the promo UI and continue
                     $('#redeemCodeModal').modal('show');
                 } else {
-                    // Failed to unlock, so just repeat next update loop
-                    return;
+                    // Failed to unlock, so just mark as cancelled
+                    return (cThread.end_state = 'Cancelled');
                 }
             }
 
             // Send the fill transaction
-            const res = await createAndSendTransaction({ address: strAddress, amount: (cThread.amount * COIN) + 10000 })
-            if (res.ok) {
+            const res = await createAndSendTransaction({
+                address: strAddress,
+                amount: cThread.amount * COIN + 10000,
+            }).catch((_) => {
+                // Failed to create this code - mark it as errored
+                cThread.end_state = 'Errored';
+            });
+            if (res && res.ok) {
                 cThread.txid = res.txid;
+                cThread.end_state = 'Done';
+            } else {
+                // If it looks like it was purposefully cancelled, then mark it as such
+                cThread.end_state = 'Cancelled';
             }
         }
 
-        // The 'state' is either a percentage to completion, or the TXID
-        const strState = cThread.txid ? 'Ready! (' + cThread.txid.substring(0, 5) + ')' : '<span id="c' + cThread.code + '">' + cThread.thread.progress + '</span>%';
+        // The 'state' is either a percentage to completion, the TXID, or an arbitrary state (error, etc)
+        let strState = '';
+        if (cThread.txid) {
+            // Complete state
+            strState = 'Ready! (' + cThread.txid.substring(0, 5) + ')';
+        } else if (cThread.end_state) {
+            // Errored state (failed to broadcast, etc)
+            strState = cThread.end_state;
+        } else {
+            // Display progress
+            strState =
+                '<span id="c' +
+                cThread.code +
+                '">' +
+                cThread.thread.progress +
+                '</span>%';
+        }
 
         // Render the table row
         strHTML += `
@@ -1554,20 +1601,28 @@ export async function updatePromoCreation() {
                 <td>${strState}</td>
             </tr>
         `;
-        
-        try {
-            oldPercentage = Number(document.getElementById(`c${cThread.code}`).innerHTML);
-            console.log(oldPercentage);
-        } catch(e) { }
+
+        // Only update after we have a little progress, but not yet complete
+        if (cThread.thread.progress >= 5 && !cThread.end_state) {
+            oldPercentage = Number(
+                document.getElementById(`c${cThread.code}`).innerHTML
+            );
+        }
     }
 
     // Render the compiled HTML
     doms.domRedeemCodeCreatePendingList.innerHTML = strHTML;
 
     for (const cThread of arrPromoCreationThreads) {
-        try { 
-            incNbrRec(oldPercentage, cThread.thread.progress, document.getElementById(`c${cThread.code}`));
-        } catch(e) { }
+        if (cThread.thread.progress === 100) {
+            // TODO: destroy thread, move to 'read-only' list and possibly Local Storage w/ redeem tracking
+        } else {
+            progressAnimateTick(
+                oldPercentage,
+                cThread.thread.progress,
+                document.getElementById(`c${cThread.code}`)
+            );
+        }
     }
 }
 
@@ -1628,20 +1683,33 @@ export async function sweepPromoCode() {
     if (!cPromoWallet) return false;
 
     // Convert the Promo Wallet in to a LegacyMasterkey
-    const cSweepMasterkey = new LegacyMasterKey( { pkBytes: cPromoWallet.pkBytes } );
+    const cSweepMasterkey = new LegacyMasterKey({
+        pkBytes: cPromoWallet.pkBytes,
+    });
 
     // Perform sweep
-    const strTXID = await sweepAddress(cPromoWallet.utxos, cSweepMasterkey, 10000);
+    const strTXID = await sweepAddress(
+        cPromoWallet.utxos,
+        cSweepMasterkey,
+        10000
+    );
 
     // Display the promo redeem results, then schedule a reset of the UI
     if (strTXID) {
         // Coins were redeemed!
-        const nAmt = (cPromoWallet.utxos.reduce((a, b) => a + b.sats, 0) - 10000) / COIN;
-        doms.domRedeemCodeETA.innerHTML = '<br><br>You redeemed <b>' + nAmt.toLocaleString('en-GB') + ' ' + cChainParams.current.TICKER + '!</b>';
+        const nAmt =
+            (cPromoWallet.utxos.reduce((a, b) => a + b.sats, 0) - 10000) / COIN;
+        doms.domRedeemCodeETA.innerHTML =
+            '<br><br>You redeemed <b>' +
+            nAmt.toLocaleString('en-GB') +
+            ' ' +
+            cChainParams.current.TICKER +
+            '!</b>';
         resetRedeemPromo(15);
     } else {
         // Most likely; this TX was claimed very recently and a mempool conflict occurred
-        doms.domRedeemCodeETA.innerHTML = '<br><br>Oops, this code was valid, but someone may have claimed it seconds earlier!';
+        doms.domRedeemCodeETA.innerHTML =
+            '<br><br>Oops, this code was valid, but someone may have claimed it seconds earlier!';
         doms.domRedeemCodeGiftIcon.classList.remove('fa-gift');
         doms.domRedeemCodeGiftIcon.classList.remove('fa-solid');
         doms.domRedeemCodeGiftIcon.classList.add('fa-face-frown');
@@ -1705,7 +1773,12 @@ export async function redeemPromoCode(strCode) {
     promoThread.onmessage = async (evt) => {
         if (evt.data.type === 'progress') {
             doms.domRedeemCodeProgress.style.display = '';
-            doms.domRedeemCodeETA.innerHTML = '<br><br>' + evt.data.res.eta.toFixed(0) + 's remaining to unwrap...<br><br>' + evt.data.res.progress + '%';
+            doms.domRedeemCodeETA.innerHTML =
+                '<br><br>' +
+                evt.data.res.eta.toFixed(0) +
+                's remaining to unwrap...<br><br>' +
+                evt.data.res.progress +
+                '%';
             doms.domRedeemCodeProgress.value = evt.data.res.progress;
         } else {
             // The finished key!
@@ -1721,26 +1794,34 @@ export async function redeemPromoCode(strCode) {
             cPromoWallet = {
                 address: '',
                 pkBytes: evt.data.res.bytes,
-                utxos: []
-            }
+                utxos: [],
+            };
 
             // Derive the public key from the promo code's WIF
-            cPromoWallet.address = deriveAddress({ pkBytes: cPromoWallet.pkBytes });
+            cPromoWallet.address = deriveAddress({
+                pkBytes: cPromoWallet.pkBytes,
+            });
 
             // Check for UTXOs on the explorer, fetch their full datasets
-            const arrSimpleUTXOs = await getNetwork().getUTXOs(cPromoWallet.address);
+            const arrSimpleUTXOs = await getNetwork().getUTXOs(
+                cPromoWallet.address
+            );
             cPromoWallet.utxos = [];
             for (const cUTXO of arrSimpleUTXOs) {
-                cPromoWallet.utxos.push(await getNetwork().getUTXOFullInfo(cUTXO));
+                cPromoWallet.utxos.push(
+                    await getNetwork().getUTXOFullInfo(cUTXO)
+                );
             }
 
             // Display if the code is Valid (has coins) or is empty
             if (cPromoWallet.utxos.length) {
                 doms.domRedeemCodeGiftIcon.classList.add('fa-shake');
-                doms.domRedeemCodeETA.innerHTML = '<br><br>This code is <b>verified!</b> Tap the gift to open it!';
+                doms.domRedeemCodeETA.innerHTML =
+                    '<br><br>This code is <b>verified!</b> Tap the gift to open it!';
                 doms.domRedeemCodeGiftIcon.classList.add('ptr');
             } else {
-                doms.domRedeemCodeETA.innerHTML = '<br><br>This code had no balance!';
+                doms.domRedeemCodeETA.innerHTML =
+                    '<br><br>This code had no balance!';
                 doms.domRedeemCodeGiftIcon.classList.remove('fa-gift');
                 doms.domRedeemCodeGiftIcon.classList.remove('fa-solid');
                 doms.domRedeemCodeGiftIcon.classList.add('fa-face-frown');
@@ -1748,7 +1829,7 @@ export async function redeemPromoCode(strCode) {
                 resetRedeemPromo();
             }
         }
-    }
+    };
 
     // Send our 'Promo Code' to be derived on a separate thread, allowing a faster and non-blocking derivation
     promoThread.postMessage(strCode);
