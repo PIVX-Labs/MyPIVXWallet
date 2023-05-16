@@ -2751,3 +2751,14 @@ input {
 ::-webkit-scrollbar-thumb:hover {
     background: #696969; 
 }
+
+@media (min-width: 768px) {
+    .max-w-600 {
+        max-width: 600px;
+    }
+}
+
+.table-promo {
+    transition:all 0.5s ease-in-out;
+    max-height: 0px;
+}

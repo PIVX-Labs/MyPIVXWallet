@@ -205,6 +205,7 @@ export function start() {
         domRedeemCodeCreateInput: document.getElementById('redeemCodeCreateInput'),
         domRedeemCodeCreateAmountInput: document.getElementById('redeemCodeCreateAmountInput'),
         domRedeemCodeCreatePendingList: document.getElementById('redeemCodeCreatePendingList'),
+        domPromoTable: document.getElementById('promo-table'),
         domConfirmModalHeader: document.getElementById('confirmModalHeader'),
         domConfirmModalTitle: document.getElementById('confirmModalTitle'),
         domConfirmModalContent: document.getElementById('confirmModalContent'),
@@ -243,8 +244,6 @@ export function start() {
     });
 
     // Register Input Pair events
-
-    /** Dashboard (Send) */
     doms.domSendAmountCoins.oninput = () => {
         updateAmountInputPair(
             doms.domSendAmountCoins,
@@ -1395,6 +1394,14 @@ export function setPromoMode(fMode) {
         // Set the title and confirm button
         doms.domRedeemTitle.innerText = 'Redeem Code'
         doms.domRedeemCodeConfirmBtn.innerText = 'Redeem';
+
+        // Hide table
+        doms.domPromoTable.classList.add("d-none");
+        
+        // Show smooth table animation
+        setTimeout(() => {
+            doms.domPromoTable.style.maxHeight = "0px";
+        },100);
     } else {
         // Swap the buttons
         doms.domRedeemCodeModeRedeemBtn.style.opacity = '0.8';
@@ -1409,6 +1416,17 @@ export function setPromoMode(fMode) {
         // Set the title and confirm button
         doms.domRedeemTitle.innerText = 'Create Code'
         doms.domRedeemCodeConfirmBtn.innerText = 'Create';
+
+        // Show animation when promo creation thread has 1 or more items
+        if(arrPromoCreationThreads.length > 0) {
+            // Show table
+            doms.domPromoTable.classList.remove("d-none");
+        
+            // Show smooth table animation
+            setTimeout(() => {
+                doms.domPromoTable.style.maxHeight = "600px";
+            },100);
+        }
     }
 }
 
@@ -1419,6 +1437,14 @@ export function promoConfirm() {
     if (fPromoRedeem) {
         redeemPromoCode(doms.domRedeemCodeInput.value);
     } else {
+        // Show table
+        doms.domPromoTable.classList.remove("d-none");
+        
+        // Show smooth table animation
+        setTimeout(() => {
+            doms.domPromoTable.style.maxHeight = "600px";
+        },100);
+
         createPromoCode(doms.domRedeemCodeCreateInput.value, Number(doms.domRedeemCodeCreateAmountInput.value));
     }
 }
@@ -1475,8 +1501,20 @@ let promoCreationInterval = null;
  * Handle the Promo Workers and update or prompt the UI appropriately
  */
 export async function updatePromoCreation() {
+    /* Animated counter function */
+    function incNbrRec(i, endNbr, elt) {
+        if (i <= endNbr) {
+          elt.innerHTML = i;
+          setTimeout(function() {
+            incNbrRec(i + 1, endNbr, elt);
+          }, 100);
+        }
+    }
+
     // Loop all threads, displaying their progress
     let strHTML = '';
+    let oldPercentage = 0;
+    
     for (const cThread of arrPromoCreationThreads) {
         // Check if the code is derived, if so, fill it with it's balance
         if (cThread.thread.key && !cThread.txid) {
@@ -1506,7 +1544,7 @@ export async function updatePromoCreation() {
         }
 
         // The 'state' is either a percentage to completion, or the TXID
-        const strState = cThread.txid ? 'Ready! (' + cThread.txid.substring(0, 5) + ')' : cThread.thread.progress + '%';
+        const strState = cThread.txid ? 'Ready! (' + cThread.txid.substring(0, 5) + ')' : '<span id="c' + cThread.code + '">' + cThread.thread.progress + '</span>%';
 
         // Render the table row
         strHTML += `
@@ -1516,10 +1554,19 @@ export async function updatePromoCreation() {
                 <td>${strState}</td>
             </tr>
         `;
+        
+        try {
+            oldPercentage = Number(document.getElementById(`c${cThread.code}`).innerHTML);
+            console.log(oldPercentage);
+        } catch(e) { }
     }
 
     // Render the compiled HTML
     doms.domRedeemCodeCreatePendingList.innerHTML = strHTML;
+
+    for (const cThread of arrPromoCreationThreads) {
+        incNbrRec(oldPercentage, cThread.thread.progress, document.getElementById(`c${cThread.code}`));
+    }
 }
 
 /**

@@ -166,7 +166,7 @@
         <br />
         <!-- // CONFIRM MODAL -->
         <div class="modal" id="confirmModal" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
-          <div class="modal-dialog modal-dialog-centered" role="document" style="max-width: 600px;">
+          <div class="modal-dialog modal-dialog-centered max-w-600" role="document">
             <div class="modal-content">
               <div class="modal-header" id="confirmModalHeader">
                 <h3 class="modal-title" id="confirmModalTitle" style="text-align: center; width: 100%; color: #8e21ff;"></h3>
@@ -428,7 +428,7 @@
 
                   <!-- Redeem Code (PIVX Promos) -->
                   <div class="modal" id="redeemCodeModal" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
-                    <div class="modal-dialog modal-dialog-centered" role="document" style="max-width: 600px;">
+                    <div class="modal-dialog modal-dialog-centered max-w-600" role="document">
                       <div class="modal-content">
                         <div class="modal-header" id="redeemCodeModalHeader">
                           <h3 class="modal-title" id="redeemCodeModalTitle" style="text-align: center; width: 100%; color: #8e21ff;">Redeem Code</h3>
@@ -467,27 +467,35 @@
                               </center>
                             </div>
                             <div id="redeemCodeCreate" style="display: none;">
-                              <div class="col-8">
-                                <div class="input-group" style="border-color: #9121ff;border-style: solid;border-radius: 10px;">
-                                  <input class="btn-group-input mono center-text" type="text" id="redeemCodeCreateInput" placeholder="Promo Code Name" autocomplete="nope" />
-                                </div>
-                                <div class="input-group" style="border-color: #9121ff;border-style: solid;border-radius: 10px;">
-                                  <input class="btn-group-input mono center-text" type="text" id="redeemCodeCreateAmountInput" placeholder="Promo Code Amount" autocomplete="nope" />
+                              <div class="col-11">
+                                <div class="row">
+                                  <div class="col-6" style="padding-right:3px;">
+                                    <div class="input-group" style="border-color: #9121ff;border-style: solid;border-radius: 10px;">
+                                      <input class="btn-group-input mono center-text" style="border-top-right-radius: 9px; border-bottom-right-radius: 9px;" type="text" id="redeemCodeCreateInput" placeholder="Promo Name" autocomplete="nope" />
+                                    </div>
+                                  </div>
+                                  <div class="col-6" style="padding-left:3px;">
+                                    <div class="input-group" style="border-color: #9121ff;border-style: solid;border-radius: 10px;">
+                                      <input class="btn-group-input mono center-text" style="border-top-right-radius: 9px; border-bottom-right-radius: 9px;" type="text" id="redeemCodeCreateAmountInput" placeholder="Promo Amount" autocomplete="nope" />
+                                    </div>
+                                  </div>
                                 </div>
                               </div>
-                              <br>
-                              <table class="table table-hover">
-                                <thead>
-                                  <tr>
-                                    <td class="text-center"><b> Promo Code </b></td>
-                                    <td class="text-center"><b> Amount </b></td>
-                                    <td class="text-center"><b> State </b></td>
-                                  </tr>
-                                </thead>
-                                <tbody id="redeemCodeCreatePendingList" style="text-align: center; vertical-align: middle;">
-
-                                </tbody>
-                              </table>
+                              <div class="table-promo d-none" id="promo-table">
+                                <br>
+                                <table class="table table-hover">
+                                  <thead>
+                                    <tr>
+                                      <td class="text-center"><b> Promo Code </b></td>
+                                      <td class="text-center"><b> Amount </b></td>
+                                      <td class="text-center"><b> State </b></td>
+                                    </tr>
+                                  </thead>
+                                  <tbody id="redeemCodeCreatePendingList" style="text-align: center; vertical-align: middle;">
+                                    
+                                  </tbody>
+                                </table>
+                              </div>
                             </div>
                             <br>
                           </center>
