@@ -823,9 +823,9 @@ export async function updateActivityGUI(fStaking = false) {
 
     // For Staking: Display total rewards from known history
     if (fStaking) {
-        const nRewards = arrRewards.reduce((a, b) => a + b.amount, 0);
+        const nRewards = arrTXs.reduce((a, b) => a + b.amount, 0);
         doms.domStakingRewardsTitle.innerHTML = `${
-            cNet.areRewardsComplete ? '' : '≥'
+            cNet.isHistorySynced ? '' : '≥'
         }${sanitizeHTML(nRewards)} ${cChainParams.current.TICKER}`;
     }
 
