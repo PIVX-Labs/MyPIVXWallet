@@ -377,7 +377,7 @@ function subscribeToNetworkEvents() {
             doms.domSendAmountCoins.innerHTML = '';
             createAlert(
                 'success',
-                `Transaction sent!<br>${result}`,
+                `Transaction sent!<br>${sanitizeHTML(result)}`,
                 result ? 1250 + result.length * 50 : 3000
             );
             // If allowed by settings: submit a simple 'tx' ping to Labs Analytics
@@ -583,9 +583,8 @@ export async function openSendQRScanner() {
     // No idea what this is...
     createAlert(
         'warning',
-        `"${cScan.data.substring(
-            0,
-            Math.min(cScan.data.length, 6)
+        `"${sanitizeHTML(
+            cScan.data.substring(0, Math.min(cScan.data.length, 6))
         )}…" is not a valid payment receiver`,
         [],
         7500
@@ -760,7 +759,7 @@ export async function createActivityListHTML(arrTXs, fRewards = false) {
                     </i>
                 </td>
                 <td class="align-middle pr-10px txcode">
-                    <a href="${cExplorer.url}/tx/${
+                    <a href="${cExplorer.url}/tx/${sanitizeHTML(
             cTx.id
         }" target="_blank" rel="noopener noreferrer">
                         <code class="wallet-code text-center active ptr" style="padding: 4px 9px;">${txContent}</code>
@@ -824,10 +823,10 @@ export async function updateActivityGUI(fStaking = false) {
 
     // For Staking: Display total rewards from known history
     if (fStaking) {
-        const nRewards = arrTXs.reduce((a, b) => a + b.amount, 0);
+        const nRewards = arrRewards.reduce((a, b) => a + b.amount, 0);
         doms.domStakingRewardsTitle.innerHTML = `${
-            cNet.isHistorySynced ? '' : '≥'
-        }${nRewards} ${cChainParams.current.TICKER}`;
+            cNet.areRewardsComplete ? '' : '≥'
+        }${sanitizeHTML(nRewards)} ${cChainParams.current.TICKER}`;
     }
 
     // Create and render the Activity List
@@ -1683,8 +1682,12 @@ async function renderProposals(arrProposals, fContested) {
         const nPercent = cProposal.Ratio * 100;
 
         domVoteCounters.innerHTML = `<b>${nPercent.toFixed(2)}%</b> <br>
-      <small> <b><div class="text-success" style="display:inline;"> ${Yeas} </div></b> /
-	  <b><div class="text-danger" style="display:inline;"> ${Nays} </div></b>
+      <small> <b><div class="text-success" style="display:inline;"> ${sanitizeHTML(
+          Yeas
+      )} </div></b> /
+	  <b><div class="text-danger" style="display:inline;"> ${sanitizeHTML(
+          Nays
+      )} </div></b>
       `;
 
         // Voting Buttons for Masternode owners (MNOs)
