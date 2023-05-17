@@ -372,7 +372,7 @@ function subscribeToNetworkEvents() {
             doms.domSendAmountCoins.innerHTML = '';
             createAlert(
                 'success',
-                `Transaction sent!<br>${result}`,
+                `Transaction sent!<br>${sanitizeHTML(result)}`,
                 result ? 1250 + result.length * 50 : 3000
             );
             // If allowed by settings: submit a simple 'tx' ping to Labs Analytics
@@ -571,9 +571,8 @@ export async function openSendQRScanner() {
     // No idea what this is...
     createAlert(
         'warning',
-        `"${cScan.data.substring(
-            0,
-            Math.min(cScan.data.length, 6)
+        `"${sanitizeHTML(
+            cScan.data.substring(0, Math.min(cScan.data.length, 6))
         )}…" is not a valid payment receiver`,
         [],
         7500
@@ -641,18 +640,18 @@ export function createActivityListHTML(arrTXs, fRewards = false) {
                     </i>
                 </td>
                 <td class="align-middle pr-10px txcode">
-                    <a href="${cExplorer.url}/tx/${
+                    <a href="${cExplorer.url}/tx/${sanitizeHTML(
             cTx.id
-        }" target="_blank" rel="noopener noreferrer">
-                        <code class="wallet-code text-center active ptr" style="padding: 4px 9px;">${
+        )}" target="_blank" rel="noopener noreferrer">
+                        <code class="wallet-code text-center active ptr" style="padding: 4px 9px;">${sanitizeHTML(
                             cTx.id
-                        }</code>
+                        )}</code>
                     </a>
                 </td>
                 <td class="align-middle pr-10px">
-                    <b><i class="fa-solid fa-gift"></i> ${cTx.amount} ${
-            cChainParams.current.TICKER
-        }</b>
+                    <b><i class="fa-solid fa-gift"></i> ${sanitizeHTML(
+                        cTx.amount
+                    )} ${cChainParams.current.TICKER}</b>
                 </td>
                 <td class="text-right pr-10px align-middle">
                     <span class="badge ${
@@ -697,7 +696,7 @@ export async function updateStakingRewardsGUI() {
     const nRewards = arrRewards.reduce((a, b) => a + b.amount, 0);
     doms.domStakingRewardsTitle.innerHTML = `${
         cNet.areRewardsComplete ? '' : '≥'
-    }${nRewards} ${cChainParams.current.TICKER}`;
+    }${sanitizeHTML(nRewards)} ${cChainParams.current.TICKER}`;
 
     // Create and render the Activity List
     doms.domStakingRewardsList.innerHTML = createActivityListHTML(arrRewards);
@@ -1564,8 +1563,12 @@ async function renderProposals(arrProposals, fContested) {
         const nPercent = cProposal.Ratio * 100;
 
         domVoteCounters.innerHTML = `<b>${nPercent.toFixed(2)}%</b> <br>
-      <small> <b><div class="text-success" style="display:inline;"> ${Yeas} </div></b> /
-	  <b><div class="text-danger" style="display:inline;"> ${Nays} </div></b>
+      <small> <b><div class="text-success" style="display:inline;"> ${sanitizeHTML(
+          Yeas
+      )} </div></b> /
+	  <b><div class="text-danger" style="display:inline;"> ${sanitizeHTML(
+          Nays
+      )} </div></b>
       `;
 
         // Voting Buttons for Masternode owners (MNOs)
