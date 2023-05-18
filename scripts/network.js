@@ -303,8 +303,9 @@ export class ExplorerNetwork extends Network {
 
     /**
      * Synchronise a partial chunk of our TX history
+     * @param {boolean} fNewOnly - Whether to sync ONLY new transactions
      */
-    async syncTxHistoryChunk() {
+    async syncTxHistoryChunk(fNewOnly = false) {
         // Do not allow multiple calls at once
         if (this.historySyncing) {
             return false;
@@ -317,171 +318,77 @@ export class ExplorerNetwork extends Network {
                 ? this.arrTxHistory[this.arrTxHistory.length - 1].blockHeight
                 : 0;
             const mapPaths = new Map();
-            const txSum = (v) =>
-                v.reduce(
-                    (t, s) =>
-                        t +
-                        (s.addresses &&
-                        s.addresses
-                            .map((strAddr) => mapPaths.get(strAddr))
-                            .filter((v) => v).length
-                            ? parseInt(s.value)
-                            : 0),
-                    0
-                );
-            let cData;
-            if (this.masterKey.isHD) {
-                const derivationPath = getDerivationPath(
-                    this.masterKey.isHardwareWallet
-                )
-                    .split('/')
-                    .slice(0, 4)
-                    .join('/');
-                const xpub = await this.masterKey.getxpub(derivationPath);
-                cData = await (
-                    await fetch(
-                        `${
-                            this.strUrl
-                        }/api/v2/xpub/${xpub}?details=txs&tokens=derived&pageSize=200&to=${
-                            nHeight ? nHeight - 1 : 0
-                        }`
-                    )
-                ).json();
+
+            // Form the API call using our wallet information
+            const fHD = this.masterKey.isHD;
+            const strDerivPath = getDerivationPath(
+                this.masterKey.isHardwareWallet
+            )
+                .split('/')
+                .slice(0, 4)
+                .join('/');
+            const strKey = fHD
+                ? await this.masterKey.getxpub(strDerivPath)
+                : await this.masterKey.getAddress();
+            const strRoot = `/api/v2/${fHD ? 'xpub/' : 'address/'}${strKey}`;
+            const strCoreParams = `?details=txs&tokens=derived&pageSize=200`;
+            const strAPI = `${this.strUrl + strRoot + strCoreParams}`;
+
+            // If we have a known block height, check for incoming transactions within the last 60 blocks
+            const cRecentTXs =
+                this.blocks > 0
+                    ? await (
+                          await fetch(`${strAPI}&from=${this.blocks - 60}`)
+                      ).json()
+                    : {};
+
+            // Now load historical TXs in a slice
+            const cData = !fNewOnly
+                ? await (
+                      await fetch(`${strAPI}&to=${nHeight ? nHeight - 1 : 0}`)
+                  ).json()
+                : {};
+            if (fHD && cData.tokens) {
                 // Map all address <--> derivation paths
-                if (cData.tokens)
-                    cData.tokens.forEach((cAddrPath) =>
-                        mapPaths.set(cAddrPath.name, cAddrPath.path)
-                    );
-            } else {
-                const address = await this.masterKey.getAddress();
-                cData = await (
-                    await fetch(
-                        `${
-                            this.strUrl
-                        }/api/v2/address/${address}?details=txs&pageSize=200&to=${
-                            nHeight ? nHeight - 1 : 0
-                        }`
-                    )
-                ).json();
-                mapPaths.set(address, ':)');
-            }
-            if (cData && cData.transactions) {
-                // Update TX history
-                this.arrTxHistory = this.arrTxHistory.concat(
-                    cData.transactions
-                        .map((tx) => {
-                            // The total 'delta' or change in balance, from the Tx's sums
-                            let nAmount =
-                                (txSum(tx.vout) - txSum(tx.vin)) / COIN;
-
-                            // If this Tx creates any Shield outputs
-                            // Note: shielOuts typo intended, this is a Blockbook error
-                            const fShieldOuts = Number.isFinite(tx.shielOuts);
-
-                            // (Un)Delegated coins in this transaction, if any
-                            let nDelegated = 0;
-
-                            // The address(es) delegated to, if any
-                            let strDelegatedAddr = '';
-
-                            // The sender addresses, if any
-                            const arrSenders =
-                                tx.vin?.flatMap((vin) => vin.addresses) || [];
-
-                            // The receiver addresses, if any
-                            let arrReceivers =
-                                tx.vout?.flatMap((vout) => vout.addresses) ||
-                                [];
-                            // Pretty-fy script addresses
-                            arrReceivers = arrReceivers.map((addr) =>
-                                addr.startsWith('OP_') ? 'Contract' : addr
-                            );
-
-                            // Figure out the type, based on the Tx's properties
-                            let type = HistoricalTxType.UNKNOWN;
-                            if (
-                                !fShieldOuts &&
-                                tx.vout[0].addresses[0] &&
-                                tx.vout[0].addresses[0].startsWith('CoinStake')
-                            ) {
-                                type = HistoricalTxType.STAKE;
-                            } else if (
-                                nAmount > 0 ||
-                                (nAmount > 0 && fShieldOuts)
-                            ) {
-                                type = HistoricalTxType.RECEIVED;
-                                // If this contains Shield outputs, then we received them
-                                if (fShieldOuts)
-                                    nAmount =
-                                        parseInt(tx.valueBalanceSat) / COIN;
-                            } else if (
-                                nAmount < 0 ||
-                                (nAmount < 0 && fShieldOuts)
-                            ) {
-                                // Check vins for undelegations
-                                for (const vin of tx.vin) {
-                                    const fDelegation = vin.addresses?.some(
-                                        (addr) =>
-                                            addr.startsWith(
-                                                cChainParams.current
-                                                    .STAKING_PREFIX
-                                            )
-                                    );
-                                    if (fDelegation) {
-                                        nDelegated -= parseInt(vin.value);
-                                    }
-                                }
-
-                                // Check vouts for delegations
-                                for (const out of tx.vout) {
-                                    strDelegatedAddr =
-                                        out.addresses?.find((addr) =>
-                                            addr.startsWith(
-                                                cChainParams.current
-                                                    .STAKING_PREFIX
-                                            )
-                                        ) || strDelegatedAddr;
-
-                                    const fDelegation = !!strDelegatedAddr;
-                                    if (fDelegation) {
-                                        nDelegated += parseInt(out.value);
-                                    }
-                                }
-
-                                // If a delegation was made, then display the value delegated
-                                if (nDelegated > 0) {
-                                    type = HistoricalTxType.DELEGATION;
-                                    nAmount = nDelegated / COIN;
-                                } else if (nDelegated < 0) {
-                                    type = HistoricalTxType.UNDELEGATION;
-                                    nAmount = nDelegated / COIN;
-                                } else {
-                                    type = HistoricalTxType.SENT;
-                                    // If this contains Shield outputs, then we sent them
-                                    if (fShieldOuts)
-                                        nAmount =
-                                            parseInt(tx.valueBalanceSat) / COIN;
-                                }
-                            }
-
-                            return new HistoricalTx(
-                                type,
-                                tx.txid,
-                                arrSenders,
-                                nDelegated !== 0
-                                    ? [strDelegatedAddr]
-                                    : arrReceivers,
-                                fShieldOuts,
-                                tx.blockTime,
-                                tx.blockHeight,
-                                Math.abs(nAmount)
-                            );
-                        })
-                        .filter((tx) => tx.amount != 0)
+                cData.tokens.forEach((cAddrPath) =>
+                    mapPaths.set(cAddrPath.name, cAddrPath.path)
                 );
+            } else {
+                mapPaths.set(strKey, ':)');
+            }
+
+            // Process our aggregated history data
+            if (
+                (cData && cData.transactions) ||
+                (cRecentTXs && cRecentTXs.transactions)
+            ) {
+                // Process Older (historical) TXs
+                const arrOlderTXs = this.toHistoricalTXs(
+                    cData.transactions || [],
+                    mapPaths
+                );
+
+                // Process Recent TXs, then add them manually on the basis that they are NOT already known in history
+                const arrRecentTXs = this.toHistoricalTXs(
+                    cRecentTXs.transactions || [],
+                    mapPaths
+                );
+                for (const cTx of arrRecentTXs) {
+                    if (
+                        !this.arrTxHistory.find((a) => a.id === cTx.id) &&
+                        !arrOlderTXs.find((a) => a.id === cTx.id)
+                    ) {
+                        // No identical Tx, so prepend it!
+                        this.arrTxHistory.unshift(cTx);
+                    }
+                }
+                this.arrTxHistory = this.arrTxHistory.concat(arrOlderTXs);
 
                 // If the results don't match the full 'max/requested results', then we know the history is complete
-                if (cData.transactions.length !== cData.itemsOnPage) {
+                if (
+                    cData.transactions &&
+                    cData.transactions.length !== cData.itemsOnPage
+                ) {
                     this.isHistorySynced = true;
                 }
             }
@@ -491,6 +398,121 @@ export class ExplorerNetwork extends Network {
         } finally {
             this.historySyncing = false;
         }
+    }
+
+    /**
+     * Convert a list of Blockbook transactions to HistoricalTxs
+     * @param {Array<object>} arrTXs - An array of the Blockbook TXs
+     * @param {Map} mapPaths - A map of the derivation paths for involved addresses
+     * @returns {Array<HistoricalTx>}
+     */
+    toHistoricalTXs(arrTXs, mapPaths) {
+        const txSum = (v) =>
+            v.reduce(
+                (t, s) =>
+                    t +
+                    (s.addresses &&
+                    s.addresses
+                        .map((strAddr) => mapPaths.get(strAddr))
+                        .filter((v) => v).length
+                        ? parseInt(s.value)
+                        : 0),
+                0
+            );
+
+        return arrTXs
+            .map((tx) => {
+                // The total 'delta' or change in balance, from the Tx's sums
+                let nAmount = (txSum(tx.vout) - txSum(tx.vin)) / COIN;
+
+                // If this Tx creates any Shield outputs
+                // Note: shielOuts typo intended, this is a Blockbook error
+                const fShieldOuts = Number.isFinite(tx.shielOuts);
+
+                // (Un)Delegated coins in this transaction, if any
+                let nDelegated = 0;
+
+                // The address(es) delegated to, if any
+                let strDelegatedAddr = '';
+
+                // The sender addresses, if any
+                const arrSenders =
+                    tx.vin?.flatMap((vin) => vin.addresses) || [];
+
+                // The receiver addresses, if any
+                let arrReceivers =
+                    tx.vout?.flatMap((vout) => vout.addresses) || [];
+                // Pretty-fy script addresses
+                arrReceivers = arrReceivers.map((addr) =>
+                    addr.startsWith('OP_') ? 'Contract' : addr
+                );
+
+                // Figure out the type, based on the Tx's properties
+                let type = HistoricalTxType.UNKNOWN;
+                if (
+                    !fShieldOuts &&
+                    tx.vout[0].addresses[0] &&
+                    tx.vout[0].addresses[0].startsWith('CoinStake')
+                ) {
+                    type = HistoricalTxType.STAKE;
+                } else if (nAmount > 0 || (nAmount > 0 && fShieldOuts)) {
+                    type = HistoricalTxType.RECEIVED;
+                    // If this contains Shield outputs, then we received them
+                    if (fShieldOuts)
+                        nAmount = parseInt(tx.valueBalanceSat) / COIN;
+                } else if (nAmount < 0 || (nAmount < 0 && fShieldOuts)) {
+                    // Check vins for undelegations
+                    for (const vin of tx.vin) {
+                        const fDelegation = vin.addresses?.some((addr) =>
+                            addr.startsWith(cChainParams.current.STAKING_PREFIX)
+                        );
+                        if (fDelegation) {
+                            nDelegated -= parseInt(vin.value);
+                        }
+                    }
+
+                    // Check vouts for delegations
+                    for (const out of tx.vout) {
+                        strDelegatedAddr =
+                            out.addresses?.find((addr) =>
+                                addr.startsWith(
+                                    cChainParams.current.STAKING_PREFIX
+                                )
+                            ) || strDelegatedAddr;
+
+                        const fDelegation = !!strDelegatedAddr;
+                        if (fDelegation) {
+                            nDelegated += parseInt(out.value);
+                        }
+                    }
+
+                    // If a delegation was made, then display the value delegated
+                    if (nDelegated > 0) {
+                        type = HistoricalTxType.DELEGATION;
+                        nAmount = nDelegated / COIN;
+                    } else if (nDelegated < 0) {
+                        type = HistoricalTxType.UNDELEGATION;
+                        nAmount = nDelegated / COIN;
+                    } else {
+                        type = HistoricalTxType.SENT;
+                        // If this contains Shield outputs, then we sent them
+                        if (fShieldOuts)
+                            nAmount = parseInt(tx.valueBalanceSat) / COIN;
+                    }
+                }
+
+                return new HistoricalTx(
+                    type,
+                    tx.txid,
+                    arrSenders,
+                    nDelegated !== 0 ? [strDelegatedAddr] : arrReceivers,
+                    fShieldOuts,
+                    tx.blockTime,
+                    tx.blockHeight,
+                    Math.abs(nAmount)
+                );
+            })
+            .filter((tx) => tx.amount != 0);
     }
 
     setMasterKey(masterKey) {

@@ -428,13 +428,13 @@ export function openTab(evt, tabName) {
         getNetwork().arrTxHistory.length === 0
     ) {
         // Refresh the TX list
-        updateActivityGUI(true);
+        updateActivityGUI(true, false);
     } else if (
         tabName === 'keypair' &&
         getNetwork().arrTxHistory.length === 0
     ) {
         // Refresh the TX list
-        updateActivityGUI(false);
+        updateActivityGUI(false, false);
     }
 }
 
@@ -794,25 +794,23 @@ export async function createActivityListHTML(arrTXs, fRewards = false) {
 /**
  * Refreshes the specified activity table, charts and related information
  */
-export async function updateActivityGUI(fStaking = false) {
+export async function updateActivityGUI(fStaking = false, fNewOnly = false) {
     const cNet = getNetwork();
 
     // Prevent the user from spamming refreshes
     if (cNet.historySyncing) return;
 
     // Choose the Dashboard or Staking UI accordingly
-    let domActivityList = doms.domActivityList;
     let domLoadMore = doms.domActivityLoadMore;
     let domLoadMoreIcon = doms.domActivityLoadMoreIcon;
     if (fStaking) {
-        domActivityList = doms.domStakingRewardsList;
         domLoadMore = doms.domGuiStakingLoadMore;
         domLoadMoreIcon = doms.domGuiStakingLoadMoreIcon;
     }
 
     // Load rewards from the network, displaying the sync spin icon until finished
     domLoadMoreIcon.classList.add('fa-spin');
-    const arrTXs = await cNet.syncTxHistoryChunk();
+    const arrTXs = await cNet.syncTxHistoryChunk(fNewOnly);
     domLoadMoreIcon.classList.remove('fa-spin');
 
     // Check if all transactions are loaded
@@ -2057,8 +2055,12 @@ export function refreshChainData() {
         );
     if (!masterKey) return;
 
-    // Fetch block count + UTXOs
-    getNetwork().getBlockCount();
+    // Fetch block count + UTXOs, update the UI for new transactions
+    getNetwork()
+        .getBlockCount()
+        .then((_) => {
+            updateActivityGUI(false, true);
+        });
     getBalance(true);
 }
 
