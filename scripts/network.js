@@ -502,7 +502,7 @@ export class ExplorerNetwork extends Network {
         await this.syncTxHistoryChunk();
 
         // Filter our TX history for Stake rewards, and return
-        return this.arrTxHistory.filter((cTx) => cTx.type === 'stake');
+        return this.arrTxHistory.filter((cTx) => cTx.type === HistoricalTxType.STAKE);
     }
 
     setMasterKey(masterKey) {
