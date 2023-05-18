@@ -28,6 +28,7 @@ import {
     confirmPopup,
 } from './misc.js';
 import { bytesToHex, hexToBytes, dSHA256 } from './utils.js';
+import { Database } from './database.js';
 
 function validateAmount(nAmountSats, nMinSats = 10000) {
     // Validate the amount is a valid number, and meets the minimum (if any)
@@ -64,7 +65,7 @@ function validateAmount(nAmountSats, nMinSats = 10000) {
  */
 export async function createTxGUI() {
     // Ensure a wallet is loaded
-    if (!hasWalletUnlocked(true)) return;
+    if (!(await hasWalletUnlocked(true))) return;
 
     // Ensure the wallet is unlocked
     if (
@@ -227,7 +228,7 @@ export async function createAndSendTransaction({
     changeDelegationAddress = null,
     isProposal = false,
 }) {
-    if (!hasWalletUnlocked(true)) return;
+    if (!(await hasWalletUnlocked(true))) return;
     if ((isDelegation || useDelegatedInputs) && masterKey.isHardwareWallet) {
         return createAlert(
             'warning',
@@ -246,7 +247,7 @@ export async function createAndSendTransaction({
     // Construct a TX and fetch Standard inputs
     const nBalance = getBalance();
     const cTx = new bitjs.transaction();
-    const cCoinControl = chooseUTXOs(cTx, amount, 0, useDelegatedInputs);
+    const cCoinControl = await chooseUTXOs(cTx, amount, 0, useDelegatedInputs);
     if (!cCoinControl.success)
         return createAlert('warning', cCoinControl.msg, 5000);
     // Compute fee
@@ -421,7 +422,8 @@ export async function createMasternode() {
         '<b>Masternode Created!<b><br>Wait 15 confirmations to proceed further'
     );
     // Remove any previous Masternode data, if there were any
-    localStorage.removeItem('masternode');
+    const database = await Database.getInstance();
+    database.removeMasternode();
 }
 
 async function signTransaction(cTx, masterKey, outputs, undelegate) {
@@ -469,7 +471,7 @@ function ccSuccess(data) {
     return { success: true, ...data };
 }
 
-function chooseUTXOs(
+async function chooseUTXOs(
     cTx,
     nTotalSatsRequired = 0,
     nMinInputSize = 0,
@@ -491,6 +493,7 @@ function chooseUTXOs(
 
     // Select and return UTXO pointers (filters applied)
     const cCoinControl = { nValue: 0, nChange: 0, arrSelectedUTXOs: [] };
+    const masternode = await (await Database.getInstance()).getMasternode();
 
     for (let i = 0; i < arrUTXOs.length; i++) {
         const cUTXO = arrUTXOs[i];
@@ -498,7 +501,7 @@ function chooseUTXOs(
             continue;
         }
         // Don't spend locked Masternode collaterals
-        if (isMasternodeUTXO(cUTXO)) continue; //CHANGE THIS
+        if (isMasternodeUTXO(cUTXO, masternode)) continue; //CHANGE THIS
 
         // Have we met the required sats threshold?
         if (
