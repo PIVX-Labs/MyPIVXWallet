@@ -6,17 +6,52 @@ import { getEventEmitter } from './event_bus.js';
 import { STATS, cStatKeys, cAnalyticsLevel } from './settings.js';
 
 /**
- * A historical transaction
- * @typedef {Object} HistoricalTx
- * @property {('stake'|'delegation'|'undelegation'|'received'|'sent'|'unknown')} type - The type of transaction.
- * @property {string} id - The transaction ID.
- * @property {Array<string>} senders - The list of 'input addresses'.
- * @property {Array<string>} receivers - The list of 'output addresses'.
- * @property {boolean} shieldedOutputs - If this transaction contains Shield outputs.
- * @property {number} time - The block time of the transaction.
- * @property {number} blockHeight - The block height of the transaction.
- * @property {number} amount - The amount transacted, in coins.
+ * A historical transaction type.
+ * @enum {number}
  */
+export const HistoricalTxType = {
+    UNKNOWN: 0,
+    STAKE: 1,
+    DELEGATION: 2,
+    UNDELEGATION: 3,
+    RECEIVED: 4,
+    SENT: 5,
+};
+
+/**
+ * A historical transaction
+ */
+export class HistoricalTx {
+    /**
+     * @param {HistoricalTxType} type - The type of transaction.
+     * @param {string} id - The transaction ID.
+     * @param {Array<string>} senders - The list of 'input addresses'.
+     * @param {Array<string>} receivers - The list of 'output addresses'.
+     * @param {boolean} shieldedOutputs - If this transaction contains Shield outputs.
+     * @param {number} time - The block time of the transaction.
+     * @param {number} blockHeight - The block height of the transaction.
+     * @param {number} amount - The amount transacted, in coins.
+     */
+    constructor(
+        type,
+        id,
+        senders,
+        receivers,
+        shieldedOutputs,
+        time,
+        blockHeight,
+        amount
+    ) {
+        this.type = type;
+        this.id = id;
+        this.senders = senders;
+        this.receivers = receivers;
+        this.shieldedOutputs = shieldedOutputs;
+        this.time = time;
+        this.blockHeight = blockHeight;
+        this.amount = amount;
+    }
+}
 
 /**
  * Virtual class rapresenting any network backend
@@ -363,17 +398,18 @@ export class ExplorerNetwork extends Network {
                             );
 
                             // Figure out the type, based on the Tx's properties
-                            let type = 'unknown';
+                            let type = HistoricalTxType.UNKNOWN;
                             if (
                                 !fShieldOuts &&
-                                tx.vout[0].addresses[0] === 'CoinStake TX'
+                                tx.vout[0].addresses[0] &&
+                                tx.vout[0].addresses[0].startsWith('CoinStake')
                             ) {
-                                type = 'stake';
+                                type = HistoricalTxType.STAKE;
                             } else if (
                                 nAmount > 0 ||
                                 (nAmount > 0 && fShieldOuts)
                             ) {
-                                type = 'received';
+                                type = HistoricalTxType.RECEIVED;
                                 // If this contains Shield outputs, then we received them
                                 if (fShieldOuts)
                                     nAmount =
@@ -414,13 +450,13 @@ export class ExplorerNetwork extends Network {
 
                                 // If a delegation was made, then display the value delegated
                                 if (nDelegated > 0) {
-                                    type = 'delegation';
+                                    type = HistoricalTxType.DELEGATION;
                                     nAmount = nDelegated / COIN;
                                 } else if (nDelegated < 0) {
-                                    type = 'undelegation';
+                                    type = HistoricalTxType.UNDELEGATION;
                                     nAmount = nDelegated / COIN;
                                 } else {
-                                    type = 'sent';
+                                    type = HistoricalTxType.SENT;
                                     // If this contains Shield outputs, then we sent them
                                     if (fShieldOuts)
                                         nAmount =
@@ -428,19 +464,18 @@ export class ExplorerNetwork extends Network {
                                 }
                             }
 
-                            return {
+                            return new HistoricalTx(
                                 type,
-                                id: tx.txid,
-                                senders: arrSenders,
-                                receivers:
-                                    nDelegated !== 0
-                                        ? [strDelegatedAddr]
-                                        : arrReceivers,
-                                shieldedOutputs: fShieldOuts,
-                                time: tx.blockTime,
-                                blockHeight: tx.blockHeight,
-                                amount: Math.abs(nAmount),
-                            };
+                                tx.txid,
+                                arrSenders,
+                                nDelegated !== 0
+                                    ? [strDelegatedAddr]
+                                    : arrReceivers,
+                                fShieldOuts,
+                                tx.blockTime,
+                                tx.blockHeight,
+                                Math.abs(nAmount)
+                            );
                         })
                         .filter((tx) => tx.amount != 0)
                 );

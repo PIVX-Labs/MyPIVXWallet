@@ -12,7 +12,7 @@ import {
     getDerivationPath,
     isYourAddress,
 } from './wallet.js';
-import { getNetwork } from './network.js';
+import { getNetwork, HistoricalTxType } from './network.js';
 import {
     start as settingsStart,
     cExplorer,
@@ -670,10 +670,10 @@ export async function createActivityListHTML(arrTXs, fRewards = false) {
         // Generate an icon, colour and description for the Tx
         if (!fRewards) {
             switch (cTx.type) {
-                case 'stake':
+                case HistoricalTxType.STAKE:
                     icon = 'fa-gift';
                     break;
-                case 'sent':
+                case HistoricalTxType.SENT:
                     icon = 'fa-minus';
                     colour = '#f93c3c';
                     // Figure out WHO this was sent to, and focus on them contextually
@@ -699,7 +699,7 @@ export async function createActivityListHTML(arrTXs, fRewards = false) {
                                   ].join(', ') + '...');
                     }
                     break;
-                case 'received': {
+                case HistoricalTxType.RECEIVED: {
                     icon = 'fa-plus';
                     colour = '#5cff5c';
                     // Figure out WHO this was sent from, and focus on them contextually
@@ -725,14 +725,14 @@ export async function createActivityListHTML(arrTXs, fRewards = false) {
                     }
                     break;
                 }
-                case 'delegation':
+                case HistoricalTxType.DELEGATION:
                     icon = 'fa-snowflake';
                     txContent =
                         'Delegated to ' +
                         cTx.receivers[0].substring(0, 6) +
                         '...';
                     break;
-                case 'undelegation':
+                case HistoricalTxType.UNDELEGATION:
                     icon = 'fa-fire';
                     txContent = 'Undelegated';
                     break;
