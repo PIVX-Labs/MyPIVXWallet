@@ -493,18 +493,6 @@ export class ExplorerNetwork extends Network {
         }
     }
 
-    /**
-     * Synchronise and return the list of Staking rewards
-     * @returns {Promise<Array<HistoricalTx>>}
-     */
-    async getStakingRewards() {
-        // Ensure we have some data to display (or continue syncing a new chunk)
-        await this.syncTxHistoryChunk();
-
-        // Filter our TX history for Stake rewards, and return
-        return this.arrTxHistory.filter((cTx) => cTx.type === HistoricalTxType.STAKE);
-    }
-
     setMasterKey(masterKey) {
         this.masterKey = masterKey;
         this.arrTxHistory = [];

@@ -812,9 +812,7 @@ export async function updateActivityGUI(fStaking = false) {
 
     // Load rewards from the network, displaying the sync spin icon until finished
     domLoadMoreIcon.classList.add('fa-spin');
-    const arrTXs = fStaking
-        ? await cNet.getStakingRewards()
-        : await cNet.syncTxHistoryChunk();
+    const arrTXs = await cNet.syncTxHistoryChunk();
     domLoadMoreIcon.classList.remove('fa-spin');
 
     // Check if all transactions are loaded
@@ -823,16 +821,23 @@ export async function updateActivityGUI(fStaking = false) {
         domLoadMore.style.display = 'none';
     }
 
-    // For Staking: Display total rewards from known history
-    if (fStaking) {
-        const nRewards = arrTXs.reduce((a, b) => a + b.amount, 0);
-        doms.domStakingRewardsTitle.innerHTML = `${
-            cNet.isHistorySynced ? '' : '≥'
-        }${sanitizeHTML(nRewards)} ${cChainParams.current.TICKER}`;
-    }
+    // For Staking: Filter the list for only Stakes, display total rewards from known history
+    const arrStakes = arrTXs.filter((a) => a.type === HistoricalTxType.STAKE);
+    const nRewards = arrStakes.reduce((a, b) => a + b.amount, 0);
+    doms.domStakingRewardsTitle.innerHTML = `${
+        cNet.isHistorySynced ? '' : '≥'
+    }${sanitizeHTML(nRewards)} ${cChainParams.current.TICKER}`;
 
-    // Create and render the Activity List
-    domActivityList.innerHTML = await createActivityListHTML(arrTXs, fStaking);
+    // Create and render the Dashboard Activity
+    doms.domActivityList.innerHTML = await createActivityListHTML(
+        arrTXs,
+        false
+    );
+    // Create and render the Staking History
+    doms.domStakingRewardsList.innerHTML = await createActivityListHTML(
+        arrStakes,
+        true
+    );
 }
 
 /**
