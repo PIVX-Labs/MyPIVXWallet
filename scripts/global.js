@@ -628,6 +628,9 @@ export async function createActivityListHTML(arrTXs, fRewards = false) {
         hour12: true,
     };
 
+    // Keep a map of our own address(es) found within Txs, to improve speed of deciphering the Send type
+    const mapOurAddresses = new Map();
+
     // Generate the TX list
     for (const cTx of arrTXs) {
         const dateTime = new Date(cTx.time * 1000);
@@ -656,14 +659,14 @@ export async function createActivityListHTML(arrTXs, fRewards = false) {
 
         // Check if this is a send-to-self transaction
         let fSendToSelf = true;
-        const arrOurAddresses = [];
         for (const strAddr of cTx.receivers.concat(cTx.senders)) {
-            if (!(await isYourAddress(strAddr))[0]) {
+            // If a previous Tx checked this address, skip it, otherwise, check it against our own address(es)
+            if (!mapOurAddresses.has(strAddr) && !(await isYourAddress(strAddr))[0]) {
                 // External address, this is not a self-only Tx
                 fSendToSelf = false;
             } else {
                 // Internal address, remember this for later use
-                arrOurAddresses.push(strAddr);
+                mapOurAddresses.set(strAddr);
             }
         }
 
@@ -682,7 +685,7 @@ export async function createActivityListHTML(arrTXs, fRewards = false) {
                     } else {
                         // Otherwise, anything to us is likely change, so filter it away
                         const arrExternalAddresses = cTx.receivers.filter(
-                            (addr) => !arrOurAddresses.includes(addr)
+                            (addr) => !mapOurAddresses.has(addr)
                         );
                         txContent =
                             'Sent to ' +
@@ -705,7 +708,7 @@ export async function createActivityListHTML(arrTXs, fRewards = false) {
                     // Figure out WHO this was sent from, and focus on them contextually
                     // Filter away any of our own addresses
                     const arrExternalAddresses = cTx.senders.filter(
-                        (addr) => !arrOurAddresses.includes(addr)
+                        (addr) => !mapOurAddresses.has(addr)
                     );
                     if (cTx.shieldedOutputs) {
                         txContent = 'Received from Shielded address';
