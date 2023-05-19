@@ -16,6 +16,7 @@ import {
     arrActiveLangs,
 } from './i18n.js';
 import { CoinGecko, refreshPriceDisplay } from './prices.js';
+import { Database } from './database.js';
 
 // --- Default Settings
 /** A mode that emits verbose console info for internal MPW operations */
@@ -36,6 +37,43 @@ export let cExplorer = cChainParams.current.Explorers[0];
 export let cNode = cChainParams.current.Nodes[0];
 
 let transparencyReport;
+
+export class Settings {
+    /**
+     * @type {String} analytics level
+     */
+    analytics;
+    /**
+     * @type {String} Explorer url to use
+     */
+    explorer;
+    /**
+     * @type {String} Node url to use
+     */
+    node;
+    /**
+     * @type {String} translation to use
+     */
+    translation;
+    /**
+     * @type {String} Currency to display
+     */
+    displayCurrency;
+    constructor({
+        analytics = '',
+        explorer = '',
+        node = '',
+        translation = 'en',
+        displayCurrency = 'usd',
+    } = {}) {
+        this.analytics = analytics;
+        this.explorer = explorer;
+        this.node = node;
+        this.translation = translation;
+        this.displayCurrency = displayCurrency;
+    }
+}
+
 // A list of statistic keys and their descriptions
 export let STATS = {
     // Stat key   // Description of the stat, it's data, and it's purpose
@@ -65,7 +103,7 @@ export let cAnalyticsLevel = arrAnalytics[2];
 // Global Keystore / Wallet Information
 
 // --- DOM Cache
-export function start() {
+export async function start() {
     //TRANSLATIONS
     //to make translations work we need to change it so that we just enable or disable the visibility of the text
     doms.domTestnet.style.display = cChainParams.current.isTestnet
@@ -76,7 +114,11 @@ export function start() {
     // Hook up the 'currency' select UI
     document.getElementById('currency').onchange = function (evt) {
         // @ts-ignore
-        setCurrency(evt.target.value);
+        setCurrency(evt.target.value)
+            .then(() => {})
+            .catch((e) => {
+                throw e;
+            });
     };
 
     // Hook up the 'explorer' select UI
@@ -86,24 +128,38 @@ export function start() {
                 // @ts-ignore
                 (a) => a.url === evt.target.value
             )
-        );
+        )
+            .then(() => {})
+            .catch((e) => {
+                throw e;
+            });
     };
 
     // Hook up the 'translation' select UI
     document.getElementById('translation').onchange = function (evt) {
         // @ts-ignore
-        setTranslation(evt.target.value);
+        setTranslation(evt.target.value)
+            .then(() => {})
+            .catch((e) => {
+                throw e;
+            });
     };
 
     // Hook up the 'analytics' select UI
     document.getElementById('analytics').onchange = function (evt) {
         // @ts-ignore
-        setAnalytics(arrAnalytics.find((a) => a.name === evt.target.value));
+        setAnalytics(arrAnalytics.find((a) => a.name === evt.target.value))
+            .then(() => {})
+            .catch((e) => {
+                throw e;
+            });
     };
 
-    fillExplorerSelect();
-    fillNodeSelect();
-    fillTranslationSelect();
+    await Promise.all([
+        fillExplorerSelect(),
+        fillNodeSelect(),
+        fillTranslationSelect(),
+    ]);
 
     // Fetch price data, then fetch chain data
     if (getNetwork().enabled) {
@@ -120,8 +176,9 @@ export function start() {
         domAnalyticsSelect.appendChild(opt);
     }
 
-    // Fetch settings from LocalStorage
-    const strSettingAnalytics = localStorage.getItem('analytics');
+    const database = await Database.getInstance();
+    // Fetch settings from Database
+    const { analytics: strSettingAnalytics } = await database.getSettings();
 
     // Apply translations to the transparency report
     STATS = {
@@ -150,12 +207,12 @@ export function start() {
     // Honour the "Do Not Track" header by default
     if (!strSettingAnalytics && navigator.doNotTrack === '1') {
         // Disabled
-        setAnalytics(arrAnalytics[0], true);
+        await setAnalytics(arrAnalytics[0], true);
         doms.domAnalyticsDescriptor.innerHTML =
             '<h6 style="color:#dcdf6b;font-family:mono !important;"><pre style="color: inherit;">Analytics disabled to honour "Do Not Track" browser setting, you may manually enable if desired, though!</pre></h6>';
     } else {
         // Load from storage, or use defaults
-        setAnalytics(
+        await setAnalytics(
             (cAnalyticsLevel =
                 arrAnalytics.find((a) => a.name === strSettingAnalytics) ||
                 cAnalyticsLevel),
@@ -168,12 +225,10 @@ export function start() {
     domAnalyticsSelect.value = cAnalyticsLevel.name;
 }
 // --- Settings Functions
-function setExplorer(explorer, fSilent = false) {
+async function setExplorer(explorer, fSilent = false) {
+    const database = await Database.getInstance();
+    await database.setSettings({ explorer: explorer.url });
     cExplorer = explorer;
-    localStorage.setItem(
-        'explorer' + (cChainParams.current.isTestnet ? '-testnet' : ''),
-        explorer.url
-    );
 
     // Enable networking + notify if allowed
     const network = new ExplorerNetwork(cExplorer.url, masterKey);
@@ -188,12 +243,10 @@ function setExplorer(explorer, fSilent = false) {
         );
 }
 
-function setNode(node, fSilent = false) {
+async function setNode(node, fSilent = false) {
     cNode = node;
-    localStorage.setItem(
-        'node' + (cChainParams.current.isTestnet ? '-testnet' : ''),
-        node.url
-    );
+    const database = await Database.getInstance();
+    await database.setSettings({ node: node.url });
 
     // Enable networking + notify if allowed
     getNetwork().enable();
@@ -208,21 +261,23 @@ function setNode(node, fSilent = false) {
 
 //TRANSLATION
 /**
- * Switches the translation and sets the translation preference to local storage
+ * Switches the translation and sets the translation preference to database
  * @param {string} lang
  */
-function setTranslation(lang) {
+async function setTranslation(lang) {
     switchTranslation(lang);
-    localStorage.setItem('translation', lang);
+    const database = await Database.getInstance();
+    await database.setSettings({ translation: lang });
 }
 
 /**
- * Sets and saves the display currency setting in runtime and localStorage
+ * Sets and saves the display currency setting in runtime and database
  * @param {string} currency - The currency string name
  */
-function setCurrency(currency) {
+async function setCurrency(currency) {
     strCurrency = currency;
-    localStorage.setItem('displayCurrency', strCurrency);
+    const database = await Database.getInstance();
+    await database.setSettings({ displayCurrency: strCurrency });
     // Update the UI to reflect the new currency
     getBalance(true);
 }
@@ -230,7 +285,7 @@ function setCurrency(currency) {
 /**
  * Fills the translation dropbox on the settings page
  */
-function fillTranslationSelect() {
+async function fillTranslationSelect() {
     while (doms.domTranslationSelect.options.length > 0) {
         doms.domTranslationSelect.remove(0);
     }
@@ -242,9 +297,10 @@ function fillTranslationSelect() {
         doms.domTranslationSelect.appendChild(opt);
     }
 
+    const database = await Database.getInstance();
+    const { translation } = await database.getSettings();
     // And update the UI to reflect them
-    doms.domTranslationSelect.value =
-        localStorage.getItem('translation') || 'en';
+    doms.domTranslationSelect.value = translation;
 }
 
 /**
@@ -263,14 +319,18 @@ export async function fillCurrencySelect() {
         doms.domCurrencySelect.appendChild(opt);
     }
 
+    const database = await Database.getInstance();
+    const { displayCurrency } = await database.getSettings();
+
     // And update the UI to reflect them
-    strCurrency = doms.domCurrencySelect.value =
-        localStorage.getItem('displayCurrency') || strCurrency;
+    strCurrency = doms.domCurrencySelect.value = displayCurrency;
 }
 
-function setAnalytics(level, fSilent = false) {
+async function setAnalytics(level, fSilent = false) {
     cAnalyticsLevel = level;
-    localStorage.setItem('analytics', level.name);
+    const database = await Database.getInstance();
+    await database.setSettings({ analytics: level.name });
+
     // For total transparency, we'll 'describe' the various analytic keys of this chosen level
     let strDesc = '<center>--- ' + transparencyReport + ' ---</center><br>',
         i = 0;
@@ -323,8 +383,16 @@ export function toggleTestnet() {
     doms.domGuiBalanceStakingTicker.innerText = cChainParams.current.TICKER;
     doms.domPrefixNetwork.innerText =
         cChainParams.current.PUBKEY_PREFIX.join(' or ');
-    fillExplorerSelect();
-    fillNodeSelect();
+    fillExplorerSelect()
+        .then(() => {})
+        .catch((e) => {
+            throw e;
+        });
+    fillNodeSelect()
+        .then(() => {})
+        .catch((e) => {
+            throw e;
+        });
     getBalance(true);
     getStakingBalance(true);
     updateStakingRewardsGUI()
@@ -339,7 +407,7 @@ export function toggleDebug() {
     doms.domDebug.style.display = debug ? '' : 'none';
 }
 
-function fillExplorerSelect() {
+async function fillExplorerSelect() {
     cExplorer = cChainParams.current.Explorers[0];
 
     while (doms.domExplorerSelect.options.length > 0) {
@@ -355,13 +423,12 @@ function fillExplorerSelect() {
         doms.domExplorerSelect.appendChild(opt);
     }
 
-    // Fetch settings from LocalStorage
-    const strSettingExplorer = localStorage.getItem(
-        'explorer' + (cChainParams.current.isTestnet ? '-testnet' : '')
-    );
+    // Fetch settings from Database
+    const database = await Database.getInstance();
+    const { explorer: strSettingExplorer } = await database.getSettings();
 
     // For any that exist: load them, or use the defaults
-    setExplorer(
+    await setExplorer(
         cChainParams.current.Explorers.find(
             (a) => a.url === strSettingExplorer
         ) || cExplorer,
@@ -372,7 +439,7 @@ function fillExplorerSelect() {
     doms.domExplorerSelect.value = cExplorer.url;
 }
 
-function fillNodeSelect() {
+async function fillNodeSelect() {
     cNode = cChainParams.current.Nodes[0];
 
     while (doms.domNodeSelect.options.length > 0) {
@@ -388,13 +455,12 @@ function fillNodeSelect() {
         doms.domNodeSelect.appendChild(opt);
     }
 
-    // Fetch settings from LocalStorage
-    const strSettingNode = localStorage.getItem(
-        'node' + (cChainParams.current.isTestnet ? '-testnet' : '')
-    );
+    // Fetch settings from Database
+    const database = await Database.getInstance();
+    const { node: strSettingNode } = await database.getSettings();
 
     // For any that exist: load them, or use the defaults
-    setNode(
+    await setNode(
         cChainParams.current.Nodes.find((a) => a.url === strSettingNode) ||
             cNode,
         true

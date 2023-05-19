@@ -315,7 +315,7 @@ export class Mempool {
     getBalance() {
         // Fetch 'standard' balances: the sum of all Confirmed or Unconfirmed transactions (excluding Masternode collaterals)
         return this.getStandardUTXOs()
-            .filter((cUTXO) => !isMasternodeUTXO(cUTXO))
+            .filter((cUTXO) => !isMasternodeUTXO(cUTXO)) // TODO: add masternode
             .reduce((a, b) => a + b.sats, 0);
     }
 

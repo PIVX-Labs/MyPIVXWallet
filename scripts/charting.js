@@ -9,6 +9,7 @@ import {
 } from 'chart.js';
 import { cChainParams, COIN } from './chain_params';
 import { doms, isMasternodeUTXO, mempool } from './global';
+import { Database } from './database.js';
 
 Chart.register(
     Colors,
@@ -35,9 +36,9 @@ let chartWalletBreakdown = null;
 
 /**
  * Generate an array of pie/doughnut charting data from the wallet's totals
- * @returns {Array<WalletDatasetPoint>} - The charting data
+ * @returns {Promise<Array<WalletDatasetPoint>>} - The charting data
  */
-export function getWalletDataset() {
+async function getWalletDataset() {
     const arrBreakdown = [];
 
     // Public (Available)
@@ -58,17 +59,27 @@ export function getWalletDataset() {
         });
     }
 
+    const masternode = await (await Database.getInstance()).getMasternode();
+
     // Masternode (Locked)
-    const cMasternodeUTXO = mempool
-        .getConfirmed()
-        .find((cUTXO) => isMasternodeUTXO(cUTXO));
-    if (cMasternodeUTXO) {
-        arrBreakdown.push({
-            type: 'Masternode',
-            balance: cMasternodeUTXO.sats / COIN,
-            colour: 'rgba(19, 13, 30, 1)',
-        });
-    }
+    (
+        await Promise.all(
+            mempool.getConfirmed().map(async (cUTXO) => {
+                return {
+                    UTXO: cUTXO,
+                    isMnUTXO: isMasternodeUTXO(cUTXO, masternode),
+                };
+            })
+        )
+    )
+        .filter(({ isMnUTXO }) => isMnUTXO)
+        .forEach(({ UTXO }) =>
+            arrBreakdown.push({
+                type: 'Masternode',
+                balance: UTXO.sats / COIN,
+                colour: 'rgba(19, 13, 30, 1)',
+            })
+        );
 
     return arrBreakdown;
 }
@@ -149,7 +160,7 @@ export async function renderWalletBreakdown() {
     // if (doms.domModalWalletBreakdown.style.display !== 'block') return;
 
     // Update the chart data with the new dataset
-    const arrBreakdown = getWalletDataset();
+    const arrBreakdown = await getWalletDataset();
 
     // If no chart exists, create it
     if (!chartWalletBreakdown)
