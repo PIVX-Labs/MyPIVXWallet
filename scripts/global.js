@@ -420,8 +420,8 @@ function subscribeToNetworkEvents() {
 
     // Save shield data every time it finishes syncing
     getEventEmitter().on('shield-sync-done', async (shield) => {
-	const database = await Database.getInstance();
-	database.addAccount({shieldData: await shield.save()});
+        const database = await Database.getInstance();
+        database.addAccount({ shieldData: await shield.save() });
     });
 
     // Update the UI the first time the shield is synced.

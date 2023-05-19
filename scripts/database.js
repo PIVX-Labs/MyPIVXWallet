@@ -60,7 +60,12 @@ export class Database {
      * @param {Array<any>} o.localProposals - Local proposals awaiting to be finalized
      * @param {Object} [o.shieldData] - Shield data
      */
-    async addAccount({ publicKey, encWif, localProposals = [], shieldData = null }) {
+    async addAccount({
+        publicKey,
+        encWif,
+        localProposals = [],
+        shieldData = null,
+    }) {
         const oldAccount = await this.getAccount();
         const newAccount = { publicKey, encWif, localProposals, shieldData };
         const store = this.#db

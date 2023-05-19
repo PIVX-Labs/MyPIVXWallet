@@ -162,8 +162,7 @@ export class HdMasterKey extends MasterKey {
     constructor({ seed, xpriv, xpub, shield }) {
         super();
         // Generate the HDKey
-	if (seed)
-        this._hdKey = HDKey.fromMasterSeed(seed);
+        if (seed) this._hdKey = HDKey.fromMasterSeed(seed);
         if (xpriv) this._hdKey = HDKey.fromExtendedKey(xpriv);
         if (xpub) this._hdKey = HDKey.fromExtendedKey(xpub);
         this._isViewOnly = !!xpub;
@@ -182,10 +181,10 @@ export class HdMasterKey extends MasterKey {
         // to remove this. If this is removed, it will be automatically
         // downloaded when needed
         this._shield?.loadSaplingProver();
-	if (this._shield) {
+        if (this._shield) {
             getNetwork().syncShield(this._shield);
             console.log(this._shield);
-	}
+        }
     }
 
     async getPrivateKeyBytes(path) {
@@ -609,7 +608,7 @@ export async function importWallet({
                     privateImportValue,
                     passphrase
                 );
-		const database = await Database.getInstance();
+                const database = await Database.getInstance();
                 const { shieldData } = database.getAccount();
                 const shield = await Shield.create({
                     data: shieldData,
@@ -748,8 +747,8 @@ export async function generateWallet(noUI = false) {
         const seed = await mnemonicToSeed(mnemonic, passphrase);
 
         // Prompt the user to encrypt the seed
-	const database = await Database.getInstance();
-	
+        const database = await Database.getInstance();
+
         const { shieldData } = database.getAccount();
         const shield = await Shield.create({
             data: shieldData,
