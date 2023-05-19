@@ -38,6 +38,7 @@ import { refreshPriceDisplay } from './prices.js';
 import { Address6 } from 'ip-address';
 import { getEventEmitter } from './event_bus.js';
 import { scanQRCode } from './scanner.js';
+import { Database } from './database.js';
 
 /** A flag showing if base MPW is fully loaded or not */
 export let fIsLoaded = false;
@@ -49,7 +50,7 @@ export function isLoaded() {
 
 export let doms = {};
 
-export function start() {
+export async function start() {
     doms = {
         domNavbarToggler: document.getElementById('navbarToggler'),
         domDashboard: document.getElementById('dashboard'),
@@ -229,8 +230,8 @@ export function start() {
         domTranslationSelect: document.getElementById('translation'),
         domBlackBack: document.getElementById('blackBack'),
     };
-    i18nStart();
-    loadImages();
+    await i18nStart();
+    await loadImages();
 
     // Enable all Bootstrap Tooltips
     $(function () {
@@ -306,21 +307,22 @@ export function start() {
     const reqAmount = urlParams.has('amount')
         ? parseFloat(urlParams.get('amount'))
         : 0;
+    await settingsStart();
 
     // Customise the UI if a saved wallet exists
-    if (hasEncryptedWallet()) {
+    if (await hasEncryptedWallet()) {
         // Hide the 'Generate wallet' buttons
         doms.domGenerateWallet.style.display = 'none';
         doms.domGenVanityWallet.style.display = 'none';
-
-        const publicKey = localStorage.getItem('publicKey');
+        const database = await Database.getInstance();
+        const { publicKey } = await database.getAccount();
 
         // Import the wallet, and toggle the startup flag, which delegates the chain data refresh to settingsStart();
         if (publicKey) {
             importWallet({ newWif: publicKey, fStartup: true });
         } else {
             // Display the password unlock upfront
-            accessOrImportWallet();
+            await accessOrImportWallet();
         }
     }
 
@@ -339,7 +341,6 @@ export function start() {
     doms.domPrefix.value = '';
     doms.domPrefixNetwork.innerText =
         cChainParams.current.PUBKEY_PREFIX.join(' or ');
-    settingsStart();
     // If allowed by settings: submit a simple 'hit' (app load) to Labs Analytics
     getNetwork().submitAnalytics('hit');
     setInterval(() => {
@@ -407,7 +408,7 @@ function subscribeToNetworkEvents() {
             doms.domSendAmountCoins.innerHTML = '';
             createAlert(
                 'success',
-                `Transaction sent!<br>${result}`,
+                `Transaction sent!<br>${sanitizeHTML(result)}`,
                 result ? 1250 + result.length * 50 : 3000
             );
             // If allowed by settings: submit a simple 'tx' ping to Labs Analytics
@@ -419,10 +420,8 @@ function subscribeToNetworkEvents() {
 
     // Save shield data every time it finishes syncing
     getEventEmitter().on('shield-sync-done', async (shield) => {
-        localStorage.setItem(
-            'shieldData' + (cChainParams.current.isTestnet ? '-testnet' : ''),
-            await shield.save()
-        );
+	const database = await Database.getInstance();
+	database.addAccount({shieldData: await shield.save()});
     });
 
     // Update the UI the first time the shield is synced.
@@ -640,9 +639,8 @@ export async function openSendQRScanner() {
     // No idea what this is...
     createAlert(
         'warning',
-        `"${cScan.data.substring(
-            0,
-            Math.min(cScan.data.length, 6)
+        `"${sanitizeHTML(
+            cScan.data.substring(0, Math.min(cScan.data.length, 6))
         )}…" is not a valid payment receiver`,
         [],
         7500
@@ -710,18 +708,18 @@ export function createActivityListHTML(arrTXs, fRewards = false) {
                     </i>
                 </td>
                 <td class="align-middle pr-10px txcode">
-                    <a href="${cExplorer.url}/tx/${
+                    <a href="${cExplorer.url}/tx/${sanitizeHTML(
             cTx.id
-        }" target="_blank" rel="noopener noreferrer">
-                        <code class="wallet-code text-center active ptr" style="padding: 4px 9px;">${
+        )}" target="_blank" rel="noopener noreferrer">
+                        <code class="wallet-code text-center active ptr" style="padding: 4px 9px;">${sanitizeHTML(
                             cTx.id
-                        }</code>
+                        )}</code>
                     </a>
                 </td>
                 <td class="align-middle pr-10px">
-                    <b><i class="fa-solid fa-gift"></i> ${cTx.amount} ${
-            cChainParams.current.TICKER
-        }</b>
+                    <b><i class="fa-solid fa-gift"></i> ${sanitizeHTML(
+                        cTx.amount
+                    )} ${cChainParams.current.TICKER}</b>
                 </td>
                 <td class="text-right pr-10px align-middle">
                     <span class="badge ${
@@ -766,7 +764,7 @@ export async function updateStakingRewardsGUI() {
     const nRewards = arrRewards.reduce((a, b) => a + b.amount, 0);
     doms.domStakingRewardsTitle.innerHTML = `${
         cNet.areRewardsComplete ? '' : '≥'
-    }${nRewards} ${cChainParams.current.TICKER}`;
+    }${sanitizeHTML(nRewards)} ${cChainParams.current.TICKER}`;
 
     // Create and render the Activity List
     doms.domStakingRewardsList.innerHTML = createActivityListHTML(arrRewards);
@@ -968,10 +966,9 @@ async function govVote(hash, voteCode) {
             html: ALERTS.CONFIRM_POPUP_VOTE_HTML,
         })) == true
     ) {
-        if (localStorage.getItem('masternode')) {
-            const cMasternode = new Masternode(
-                JSON.parse(localStorage.getItem('masternode'))
-            );
+        const database = await Database.getInstance();
+        const cMasternode = await database.getMasternode();
+        if (cMasternode) {
             if ((await cMasternode.getStatus()) !== 'ENABLED') {
                 createAlert(
                     'warning',
@@ -1020,15 +1017,14 @@ async function govVote(hash, voteCode) {
  * @param {boolean} fRestart - Whether this is a Restart or a first Start
  */
 export async function startMasternode(fRestart = false) {
-    if (localStorage.getItem('masternode')) {
+    const database = await Database.getInstance();
+    const cMasternode = await database.getMasternode(masterKey);
+    if (cMasternode) {
         if (
             masterKey.isViewOnly &&
             !(await restoreWallet('Unlock to start your Masternode!'))
         )
             return;
-        const cMasternode = new Masternode(
-            JSON.parse(localStorage.getItem('masternode'))
-        );
         if (await cMasternode.start()) {
             createAlert(
                 'success',
@@ -1047,9 +1043,11 @@ export async function startMasternode(fRestart = false) {
     }
 }
 
-export function destroyMasternode() {
-    if (localStorage.getItem('masternode')) {
-        localStorage.removeItem('masternode');
+export async function destroyMasternode() {
+    const database = await Database.getInstance();
+
+    if (await database.getMasternode(masterKey)) {
+        database.removeMasternode(masterKey);
         createAlert(
             'success',
             '<b>Masternode destroyed!</b><br>Your coins are now spendable.',
@@ -1177,7 +1175,7 @@ export async function importMasternode() {
     await updateMasternodeTab();
 }
 
-export function accessOrImportWallet() {
+export async function accessOrImportWallet() {
     // Hide and Reset the Vanity address input
     doms.domPrefix.value = '';
     doms.domPrefix.style.display = 'none';
@@ -1194,7 +1192,7 @@ export function accessOrImportWallet() {
     // mode when logging in, however if the user locked the wallet before
     // #52 there would be no way to recover the public key without getting
     // The password from the user
-    if (hasEncryptedWallet()) {
+    if (await hasEncryptedWallet()) {
         doms.domPrivKey.placeholder = 'Enter your wallet password';
         doms.domImportWalletText.innerText = 'Unlock Wallet';
         doms.domPrivKey.focus();
@@ -1205,8 +1203,8 @@ export function accessOrImportWallet() {
  *
  * Useful for adjusting the input types or displaying password prompts depending on the import scheme
  */
-export function onPrivateKeyChanged() {
-    if (hasEncryptedWallet()) return;
+export async function onPrivateKeyChanged() {
+    if (await hasEncryptedWallet()) return;
     // Check whether the string is Base64 (would likely be an MPW-encrypted import)
     // and it doesn't have any spaces (would be a mnemonic seed)
     const fContainsSpaces = doms.domPrivKey.value.includes(' ');
@@ -1233,22 +1231,29 @@ export async function guiImportWallet() {
     if (cChainParams.current.isTestnet) return importWallet();
 
     // If we don't have a DB wallet and the input is plain: prompt an import
-    if (!hasEncryptedWallet() && !fEncrypted) return importWallet();
+    if (!(await hasEncryptedWallet()) && !fEncrypted) return importWallet();
 
     // If we don't have a DB wallet and the input is ciphered:
     const strPrivKey = doms.domPrivKey.value;
     const strPassword = doms.domPrivKeyPassword.value;
-    if (!hasEncryptedWallet() && fEncrypted) {
+    if (!(await hasEncryptedWallet()) && fEncrypted) {
         const strDecWIF = await decrypt(strPrivKey, strPassword);
         if (!strDecWIF || strDecWIF === 'decryption failed!') {
             return createAlert('warning', ALERTS.FAILED_TO_IMPORT, [], 6000);
         } else {
-            localStorage.setItem('encwif', strPrivKey);
-            return importWallet({
+            await importWallet({
                 newWif: strDecWIF,
                 // Save the public key to disk for future View Only mode post-decryption
                 fSavePublicKey: true,
             });
+            const database = await Database.getInstance();
+            if (masterKey) {
+                database.addAccount({
+                    publicKey: await masterKey.keyToExport,
+                    encWif: strPrivKey,
+                });
+            }
+            return;
         }
     }
     // Prompt for decryption of the existing wallet
@@ -1290,8 +1295,11 @@ export function guiEncryptWallet() {
 
 export async function toggleExportUI() {
     if (!exportHidden) {
-        if (hasEncryptedWallet()) {
-            doms.domExportPrivateKey.innerHTML = localStorage.getItem('encwif');
+        if (await hasEncryptedWallet()) {
+            const { encWif } = await (
+                await Database.getInstance()
+            ).getAccount();
+            doms.domExportPrivateKey.innerHTML = encWif;
             exportHidden = true;
         } else {
             if (masterKey.isViewOnly) {
@@ -1451,10 +1459,8 @@ export function askForCSAddr(force = false) {
     return false;
 }
 
-export function isMasternodeUTXO(cUTXO, masternode = null) {
-    const cMasternode =
-        masternode || JSON.parse(localStorage.getItem('masternode') || '{}');
-    if (cMasternode && cMasternode.collateralTxId) {
+export function isMasternodeUTXO(cUTXO, cMasternode) {
+    if (cMasternode?.collateralTxId) {
         const { collateralTxId, outidx } = cMasternode;
         return collateralTxId === cUTXO.id && cUTXO.vout === outidx;
     } else {
@@ -1463,10 +1469,11 @@ export function isMasternodeUTXO(cUTXO, masternode = null) {
 }
 
 export async function wipePrivateData() {
-    const title = hasEncryptedWallet()
+    const isEncrypted = await hasEncryptedWallet();
+    const title = isEncrypted
         ? 'Do you want to lock your wallet?'
         : 'Do you want to wipe your wallet private data?';
-    const html = hasEncryptedWallet()
+    const html = isEncrypted
         ? 'You will need to enter your password to access your funds'
         : "You will lose access to your funds if you haven't backed up your private key or seed phrase";
     if (
@@ -1477,7 +1484,7 @@ export async function wipePrivateData() {
     ) {
         masterKey.wipePrivateData();
         doms.domWipeWallet.hidden = true;
-        if (hasEncryptedWallet()) {
+        if (isEncrypted) {
             doms.domRestoreWallet.hidden = false;
         }
     }
@@ -1542,8 +1549,10 @@ async function updateGovernanceTab() {
     );
 
     // Render Proposals
-    await renderProposals(arrStandard, false);
-    await renderProposals(arrContested, true);
+    await Promise.all([
+        renderProposals(arrStandard, false),
+        renderProposals(arrContested, true),
+    ]);
 }
 
 /**
@@ -1563,22 +1572,23 @@ async function renderProposals(arrProposals, fContested) {
         ? new Masternode(JSON.parse(localStorage.getItem('masternode')))
         : null;
     if (!fContested) {
-        const localProposals = JSON.parse(
-            localStorage.getItem('localProposals') || '[]'
-        ).map((p) => {
-            return {
-                Name: p.name,
-                URL: p.url,
-                MonthlyPayment: p.monthlyPayment / COIN,
-                RemainingPaymentCount: p.nPayments,
-                TotalPayment: p.nPayments * (p.monthlyPayment / COIN),
-                Yeas: 0,
-                Nays: 0,
-                local: true,
-                Ratio: 0,
-                mpw: p,
-            };
-        });
+        const database = await Database.getInstance();
+
+        const localProposals =
+            (await database.getAccount())?.localProposals?.map((p) => {
+                return {
+                    Name: p.name,
+                    URL: p.url,
+                    MonthlyPayment: p.monthlyPayment / COIN,
+                    RemainingPaymentCount: p.nPayments,
+                    TotalPayment: p.nPayments * (p.monthlyPayment / COIN),
+                    Yeas: 0,
+                    Nays: 0,
+                    local: true,
+                    Ratio: 0,
+                    mpw: p,
+                };
+            }) || [];
         arrProposals = localProposals.concat(arrProposals);
     }
     arrProposals = await Promise.all(
@@ -1621,8 +1631,12 @@ async function renderProposals(arrProposals, fContested) {
         const nPercent = cProposal.Ratio * 100;
 
         domVoteCounters.innerHTML = `<b>${nPercent.toFixed(2)}%</b> <br>
-      <small> <b><div class="text-success" style="display:inline;"> ${Yeas} </div></b> /
-	  <b><div class="text-danger" style="display:inline;"> ${Nays} </div></b>
+      <small> <b><div class="text-success" style="display:inline;"> ${sanitizeHTML(
+          Yeas
+      )} </div></b> /
+	  <b><div class="text-danger" style="display:inline;"> ${sanitizeHTML(
+          Nays
+      )} </div></b>
       `;
 
         // Voting Buttons for Masternode owners (MNOs)
@@ -1634,19 +1648,16 @@ async function renderProposals(arrProposals, fContested) {
             finalizeButton.innerHTML = '<i class="fas fa-check"></i>';
             finalizeButton.onclick = async () => {
                 const result = await Masternode.finalizeProposal(cProposal.mpw);
-                const deleteProposal = () => {
+                const deleteProposal = async () => {
                     // Remove local Proposal from local storage
-                    const localProposals = JSON.parse(
-                        localStorage.getItem('localProposals')
-                    );
-                    localStorage.setItem(
-                        'localProposals',
-                        JSON.stringify(
-                            localProposals.filter(
-                                (p) => p.txId != cProposal.mpw.txId
-                            )
-                        )
-                    );
+                    const database = await Database.getInstance();
+                    const account = await database.getAccount();
+                    const localProposals = account?.localProposals || [];
+                    await database.addAccount({
+                        localProposals: localProposals.filter(
+                            (p) => p.txId !== cProposal.mpw.txId
+                        ),
+                    });
                 };
                 if (result.ok) {
                     createAlert('success', 'Proposal finalized!');
@@ -1713,7 +1724,7 @@ export async function updateMasternodeTab() {
     if (!masterKey) {
         doms.domMnTextErrors.innerHTML =
             'Please ' +
-            (hasEncryptedWallet() ? 'unlock' : 'import') +
+            ((await hasEncryptedWallet()) ? 'unlock' : 'import') +
             ' your <b>COLLATERAL WALLET</b> first.';
         return;
     }
@@ -1724,23 +1735,22 @@ export async function updateMasternodeTab() {
         return;
     }
 
-    let strMasternodeJSON = localStorage.getItem('masternode');
+    const database = await Database.getInstance();
+
+    let cMasternode = await database.getMasternode();
     // If the collateral is missing (spent, or switched wallet) then remove the current MN
-    if (strMasternodeJSON) {
-        const cMasternode = JSON.parse(strMasternodeJSON);
+    if (cMasternode) {
         if (
             !mempool
                 .getConfirmed()
                 .find((utxo) => isMasternodeUTXO(utxo, cMasternode))
         ) {
-            localStorage.removeItem('masternode');
-            strMasternodeJSON = null;
+            database.removeMasternode();
+            cMasternode = null;
         }
     }
 
-    doms.domControlMasternode.style.display = strMasternodeJSON
-        ? 'block'
-        : 'none';
+    doms.domControlMasternode.style.display = cMasternode ? 'block' : 'none';
 
     // first case: the wallet is not HD and it is not hardware, so in case the wallet has collateral the user can check its status and do simple stuff like voting
     if (!masterKey.isHD) {
@@ -1755,10 +1765,7 @@ export async function updateMasternodeTab() {
             );
         const balance = getBalance(false);
         if (cCollaUTXO) {
-            if (strMasternodeJSON) {
-                const cMasternode = new Masternode(
-                    JSON.parse(localStorage.getItem('masternode'))
-                );
+            if (cMasternode) {
                 await refreshMasternodeData(cMasternode);
                 doms.domMnDashboard.style.display = '';
             } else {
@@ -1795,7 +1802,7 @@ export async function updateMasternodeTab() {
         const fHasCollateral = mapCollateralAddresses.size > 0;
 
         // If there's no loaded MN, but valid collaterals, display the configuration screen
-        if (!strMasternodeJSON && fHasCollateral) {
+        if (!cMasternode && fHasCollateral) {
             doms.domMnTxId.style.display = 'block';
             doms.domAccessMasternode.style.display = 'block';
 
@@ -1811,8 +1818,7 @@ export async function updateMasternodeTab() {
         if (!fHasCollateral) doms.domCreateMasternode.style.display = 'block';
 
         // If we have a collateral and a loaded Masternode, display the Dashboard
-        if (fHasCollateral && strMasternodeJSON) {
-            const cMasternode = new Masternode(JSON.parse(strMasternodeJSON));
+        if (fHasCollateral && cMasternode) {
             // Refresh the display
             refreshMasternodeData(cMasternode);
             doms.domMnDashboard.style.display = '';
@@ -1859,7 +1865,8 @@ async function refreshMasternodeData(cMasternode, fAlert = false) {
                     'Masternode successfully started!, it will be soon online',
                     6000
                 );
-                localStorage.setItem('masternode', JSON.stringify(cMasternode));
+                const database = await Database.getInstance();
+                await database.addMasternode(cMasternode);
             } else {
                 doms.domMnTextErrors.innerHTML =
                     "We couldn't start your masternode";
@@ -1882,7 +1889,8 @@ async function refreshMasternodeData(cMasternode, fAlert = false) {
                 )} </b>`,
                 6000
             );
-        localStorage.setItem('masternode', JSON.stringify(cMasternode));
+        const database = await Database.getInstance();
+        await database.addMasternode(cMasternode);
     } else if (cMasternodeData.status === 'REMOVED') {
         doms.domMnTextErrors.innerHTML =
             'Masternode is currently <b>REMOVED</b>';
@@ -1955,7 +1963,6 @@ export async function createProposal() {
     };
 
     const isValid = Masternode.isValidProposal(proposal);
-    console.log(isValid);
     if (!isValid.ok) {
         createAlert(
             'warning',
@@ -1973,11 +1980,11 @@ export async function createProposal() {
     });
     if (ok) {
         proposal.txid = txid;
-        const localProposals = JSON.parse(
-            localStorage.getItem('localProposals') || '[]'
-        );
+        const database = await Database.getInstance();
+        const account = await database.getAccount();
+        const localProposals = account?.localProposals || [];
         localProposals.push(proposal);
-        localStorage.setItem('localProposals', JSON.stringify(localProposals));
+        await database.addAccount({ localProposals });
         createAlert('success', 'Proposal created! Please finalize it.');
         updateGovernanceTab();
     }

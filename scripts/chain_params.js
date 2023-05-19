@@ -20,6 +20,7 @@ export const BIP21_PREFIX = 'pivx';
 export const cChainParams = {
     current: null,
     main: {
+        name: 'mainnet',
         collateralInSats: 10000 * COIN,
         isTestnet: false,
         TICKER: 'PIV',
@@ -51,6 +52,7 @@ export const cChainParams = {
         maxPayment: 10 * 43200 * COIN, // 43200 blocks of 10 PIV
     },
     testnet: {
+        name: 'testnet',
         collateralInSats: 10000 * COIN,
         isTestnet: true,
         TICKER: 'tPIV',
