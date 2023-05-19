@@ -631,9 +631,38 @@ export async function createActivityListHTML(arrTXs, fRewards = false) {
     // Keep a map of our own address(es) found within Txs, to improve speed of deciphering the Send type
     const mapOurAddresses = new Map();
 
+    // And also keep track of our last Tx's timestamp, to re-use a cache, which is much faster than the slow `.toLocaleDateString`
+    let prevDateString = '';
+    let prevTimestamp = 0;
+
     // Generate the TX list
     for (const cTx of arrTXs) {
         const dateTime = new Date(cTx.time * 1000);
+
+        // If this Tx is older than 24h, then hit the `Date` cache logic, otherwise, use a `Time` and skip it
+        let strDate =
+            Date.now() / 1000 - cTx.time > 86400
+                ? ''
+                : dateTime.toLocaleTimeString(undefined, timeOptions);
+        if (!strDate) {
+            if (
+                prevDateString &&
+                prevTimestamp - cTx.time * 1000 < 12 * 60 * 60 * 1000
+            ) {
+                // Use our date cache
+                strDate = prevDateString;
+            } else {
+                // Create a new date, this Tx is too old to use the cache
+                prevDateString = dateTime.toLocaleDateString(
+                    undefined,
+                    dateOptions
+                );
+                strDate = prevDateString;
+            }
+        }
+
+        // Update the time cache
+        prevTimestamp = cTx.time * 1000;
 
         // Coinbase Transactions (rewards) require 100 confs
         const fConfirmed =
@@ -661,7 +690,10 @@ export async function createActivityListHTML(arrTXs, fRewards = false) {
         let fSendToSelf = true;
         for (const strAddr of cTx.receivers.concat(cTx.senders)) {
             // If a previous Tx checked this address, skip it, otherwise, check it against our own address(es)
-            if (!mapOurAddresses.has(strAddr) && !(await isYourAddress(strAddr))[0]) {
+            if (
+                !mapOurAddresses.has(strAddr) &&
+                !(await isYourAddress(strAddr))[0]
+            ) {
                 // External address, this is not a self-only Tx
                 fSendToSelf = false;
             } else {
@@ -749,19 +781,7 @@ export async function createActivityListHTML(arrTXs, fRewards = false) {
         strList += `
             <tr>
                 <td class="align-middle pr-10px" style="font-size:12px;">
-                    <i style="opacity: 0.75;">
-                        ${
-                            Date.now() / 1000 - cTx.time > 86400
-                                ? dateTime.toLocaleDateString(
-                                      undefined,
-                                      dateOptions
-                                  )
-                                : dateTime.toLocaleTimeString(
-                                      undefined,
-                                      timeOptions
-                                  )
-                        }
-                    </i>
+                    <i style="opacity: 0.75;">${strDate}</i>
                 </td>
                 <td class="align-middle pr-10px txcode">
                     <a href="${cExplorer.url}/tx/${sanitizeHTML(
