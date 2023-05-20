@@ -686,9 +686,12 @@ export async function createActivityListHTML(arrTXs, fRewards = false) {
             formattedAmt = cTx.amount.toFixed(2);
         }
 
-        // For 'Send' TXs: Check if this is a send-to-self transaction
+        // For 'Send' or 'Receive' TXs: Check if this is a send-to-self transaction
         let fSendToSelf = true;
-        if (cTx.type === HistoricalTxType.SENT) {
+        if (
+            cTx.type === HistoricalTxType.SENT ||
+            cTx.type === HistoricalTxType.RECEIVED
+        ) {
             // Check all addresses to find our own, caching them for performance
             for (const strAddr of cTx.receivers.concat(cTx.senders)) {
                 // If a previous Tx checked this address, skip it, otherwise, check it against our own address(es)
