@@ -1655,11 +1655,6 @@ a {
         padding: 12px 10px;
     }
 
-    /* Settings page */
-    #Settings {
-        text-align: center;
-    }
-
     #icon-box-piv {
         display: none;
     }
@@ -2707,4 +2702,73 @@ input {
 
 ::-webkit-scrollbar-thumb:hover {
     background: #696969; 
+}
+
+select.form-control {
+    color: #ffffff;
+    background-color: rgba(255, 255, 255, 18%);
+    border: 1px solid rgba(255, 255, 255, 22%);
+}
+
+select.form-control:focus {
+    color: #ffffff;
+    background-color: rgba(255, 255, 255, 18%);
+    border: 1px solid rgba(255, 255, 255, 40%);
+    box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 22%);
+}
+
+select.form-control option {
+    background-color: hsl(274 37% 43% / 1);
+}
+
+.settingsMenu {
+    background-color:hsl(272deg 23% 51% / 14%);
+    border-radius:9px;
+    padding-left: 0;
+    margin-bottom: 0;
+    list-style: none;
+}
+
+.settingsMenu li {
+    border-radius: 9px;
+    margin-top: 1px;
+    padding-left: 11px;
+    padding-top: 9px;
+    padding-bottom: 9px;
+    transition: all 0.125s ease-in-out;
+}
+
+.settingsMenu li:hover {
+    background-color:hsl(272deg 23% 51% / 35%);
+    cursor:pointer;
+    color:#fff!important;
+}
+
+.settingsMenu .active {
+    color:hsl(272 62% 81% / 1)!important;
+    background-color: hsl(272deg 23% 51% / 19%);
+}
+
+.settingsContent {
+    background-color:hsl(272deg 23% 51% / 14%);
+    border-radius: 9px;
+    padding-top:13px;
+    padding-bottom:20px;
+    padding-left:17px;
+    padding-right:17px;
+    font-size:15px;
+}
+
+.settingsContent .header-title {
+    font-size:17px;
+    font-weight: 600;
+    display: block;
+    margin-bottom:12px;
+}
+
+.settingsContent hr {
+    background-color: hsl(272deg 23% 51% / 37%);
+    margin-left: -17px;
+    margin-right: -17px;
+    margin-top: 11px;
 }

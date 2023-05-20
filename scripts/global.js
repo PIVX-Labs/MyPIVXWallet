@@ -224,6 +224,10 @@ export async function start() {
         domNodeSelect: document.getElementById('node'),
         domTranslationSelect: document.getElementById('translation'),
         domBlackBack: document.getElementById('blackBack'),
+        domWalletSettings: document.getElementById('settingsWallet'),
+        domDisplaySettings: document.getElementById('settingsDisplay'),
+        domWalletSettingsBtn: document.getElementById('settingsWalletBtn'),
+        domDisplaySettingsBtn: document.getElementById('settingsDisplayBtn'),
     };
     await i18nStart();
     await loadImages();
@@ -1933,6 +1937,31 @@ export const beforeUnloadListener = (evt) => {
     // Most browsers ignore this nowadays, but still, keep it 'just incase'
     return (evt.returnValue = translation.BACKUP_OR_ENCRYPT_WALLET);
 };
+
+// Function to switch between settings in the settings menu
+export function switchSettings(type) {
+    // Hide all settings sections
+    doms.domWalletSettings.classList.add('d-none');
+    doms.domDisplaySettings.classList.add('d-none');
+
+    // Make all buttons inactive
+    doms.domWalletSettingsBtn.classList.remove('active');
+    doms.domDisplaySettingsBtn.classList.remove('active');
+
+    if(type == 'wallet') {
+        // Show wallet settings
+        doms.domWalletSettings.classList.remove('d-none');
+
+        // Make settings button active
+        doms.domWalletSettingsBtn.classList.add('active');
+    } else if(type == 'display') {
+        // Show display settings
+        doms.domDisplaySettings.classList.remove('d-none');
+
+        // Make settings button active
+        doms.domDisplaySettingsBtn.classList.add('active');
+    }
+}
 
 function errorHandler(e) {
     const message = `Unhandled exception. <br> ${sanitizeHTML(

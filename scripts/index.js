@@ -41,6 +41,7 @@ export {
     toggleBottomMenu,
     createProposal,
     updateStakingRewardsGUI,
+    switchSettings,
 } from './global.js';
 export { generateWallet, getNewAddress, importWallet } from './wallet.js';
 export { toggleTestnet, toggleDebug } from './settings.js';
