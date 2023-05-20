@@ -692,7 +692,8 @@ export async function createActivityListHTML(arrTXs, fRewards = false) {
             // Check all addresses to find our own, caching them for performance
             for (const strAddr of cTx.receivers.concat(cTx.senders)) {
                 // If a previous Tx checked this address, skip it, otherwise, check it against our own address(es)
-                if (!mapOurAddresses.has(strAddr) &&
+                if (
+                    !mapOurAddresses.has(strAddr) &&
                     !(await isYourAddress(strAddr))[0]
                 ) {
                     // External address, this is not a self-only Tx
