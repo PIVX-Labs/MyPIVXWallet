@@ -2071,19 +2071,22 @@ export async function createProposal() {
 }
 
 export function refreshChainData() {
+    const cNet = getNetwork();
     // If in offline mode: don't sync ANY data or connect to the internet
-    if (!getNetwork().enabled)
+    if (!cNet.enabled)
         return console.warn(
             'Offline mode active: For your security, the wallet will avoid ALL internet requests.'
         );
     if (!masterKey) return;
 
     // Fetch block count + UTXOs, update the UI for new transactions
-    getNetwork()
-        .getBlockCount()
-        .then((_) => {
+    const nPrevBlock = cNet.cachedBlockCount;
+    cNet.getBlockCount().then((_) => {
+        // Update the Activity if a new block arrived
+        if (cNet.cachedBlockCount > nPrevBlock) {
             updateActivityGUI(false, true);
-        });
+        }
+    });
     getBalance(true);
 }
 
