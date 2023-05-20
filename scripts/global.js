@@ -686,19 +686,21 @@ export async function createActivityListHTML(arrTXs, fRewards = false) {
             formattedAmt = cTx.amount.toFixed(2);
         }
 
-        // Check if this is a send-to-self transaction
+        // For 'Send' TXs: Check if this is a send-to-self transaction
         let fSendToSelf = true;
-        for (const strAddr of cTx.receivers.concat(cTx.senders)) {
-            // If a previous Tx checked this address, skip it, otherwise, check it against our own address(es)
-            if (
-                !mapOurAddresses.has(strAddr) &&
-                !(await isYourAddress(strAddr))[0]
-            ) {
-                // External address, this is not a self-only Tx
-                fSendToSelf = false;
-            } else {
-                // Internal address, remember this for later use
-                mapOurAddresses.set(strAddr);
+        if (cTx.type === HistoricalTxType.SENT) {
+            // Check all addresses to find our own, caching them for performance
+            for (const strAddr of cTx.receivers.concat(cTx.senders)) {
+                // If a previous Tx checked this address, skip it, otherwise, check it against our own address(es)
+                if (!mapOurAddresses.has(strAddr) &&
+                    !(await isYourAddress(strAddr))[0]
+                ) {
+                    // External address, this is not a self-only Tx
+                    fSendToSelf = false;
+                } else {
+                    // Internal address, remember this for later use
+                    mapOurAddresses.set(strAddr);
+                }
             }
         }
 
