@@ -462,8 +462,7 @@ export class ExplorerNetwork extends Network {
                 let type = HistoricalTxType.UNKNOWN;
                 if (
                     !fShieldOuts &&
-                    tx.vout[0].addresses[0] &&
-                    tx.vout[0].addresses[0].startsWith('CoinStake')
+                    tx?.vout[0]?.addresses[0]?.startsWith('CoinStake')
                 ) {
                     type = HistoricalTxType.STAKE;
                 } else if (nAmount > 0 || (nAmount > 0 && fShieldOuts)) {
