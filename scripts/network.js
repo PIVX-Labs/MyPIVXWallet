@@ -311,7 +311,7 @@ export class ExplorerNetwork extends Network {
             return false;
         }
         try {
-            if (!this.enabled || !this.masterKey || this.isHistorySynced)
+            if (!this.enabled || !this.masterKey)
                 return this.arrTxHistory;
             this.historySyncing = true;
             const nHeight = this.arrTxHistory.length
@@ -342,17 +342,26 @@ export class ExplorerNetwork extends Network {
                       ).json()
                     : {};
 
-            // Now load historical TXs in a slice
-            const cData = !fNewOnly
+            // If we do not have full history, then load more historical TXs in a slice
+            const cData = (!fNewOnly && !this.isHistorySynced)
                 ? await (
                       await fetch(`${strAPI}&to=${nHeight ? nHeight - 1 : 0}`)
                   ).json()
                 : {};
-            if (fHD && cData.tokens) {
+            if (fHD && (cData.tokens || cRecentTXs.tokens)) {
                 // Map all address <--> derivation paths
-                cData.tokens.forEach((cAddrPath) =>
-                    mapPaths.set(cAddrPath.name, cAddrPath.path)
-                );
+                // - From historical transactions
+                if (cData.tokens) {
+                    cData.tokens.forEach((cAddrPath) =>
+                        mapPaths.set(cAddrPath.name, cAddrPath.path)
+                    );
+                }
+                // - From new transactions
+                if (cRecentTXs.tokens) {
+                    cRecentTXs.tokens.forEach((cAddrPath) =>
+                        mapPaths.set(cAddrPath.name, cAddrPath.path)
+                    );
+                }
             } else {
                 mapPaths.set(strKey, ':)');
             }
