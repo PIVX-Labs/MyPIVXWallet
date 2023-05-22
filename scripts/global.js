@@ -1938,8 +1938,11 @@ export const beforeUnloadListener = (evt) => {
     return (evt.returnValue = translation.BACKUP_OR_ENCRYPT_WALLET);
 };
 
-// Function to switch between settings in the settings menu
-export function switchSettings(type) {
+/**
+ * Switch between screens in the settings menu
+ * @param {'wallet'|'display'} strType - The menu to switch to
+ */
+export function switchSettings(strType) {
     // Hide all settings sections
     doms.domWalletSettings.classList.add('d-none');
     doms.domDisplaySettings.classList.add('d-none');
@@ -1948,13 +1951,13 @@ export function switchSettings(type) {
     doms.domWalletSettingsBtn.classList.remove('active');
     doms.domDisplaySettingsBtn.classList.remove('active');
 
-    if(type == 'wallet') {
+    if (strType == 'wallet') {
         // Show wallet settings
         doms.domWalletSettings.classList.remove('d-none');
 
         // Make settings button active
         doms.domWalletSettingsBtn.classList.add('active');
-    } else if(type == 'display') {
+    } else if (strType == 'display') {
         // Show display settings
         doms.domDisplaySettings.classList.remove('d-none');
 
