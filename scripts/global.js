@@ -793,7 +793,9 @@ export async function createActivityListHTML(arrTXs, fRewards = false) {
                     <a href="${cExplorer.url}/tx/${sanitizeHTML(
             cTx.id
         )}" target="_blank" rel="noopener noreferrer">
-                        <code class="wallet-code text-center active ptr" style="padding: 4px 9px;">${sanitizeHTML(txContent)}</code>
+                        <code class="wallet-code text-center active ptr" style="padding: 4px 9px;">${sanitizeHTML(
+                            txContent
+                        )}</code>
                     </a>
                 </td>
                 <td class="align-middle pr-10px">
@@ -1667,7 +1669,7 @@ async function renderProposals(arrProposals, fContested) {
     domTable.innerHTML = '';
     const database = await Database.getInstance();
     const cMasternode = await database.getMasternode();
-    
+
     if (!fContested) {
         const database = await Database.getInstance();
 
