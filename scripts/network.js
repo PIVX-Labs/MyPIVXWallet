@@ -415,9 +415,13 @@ export class ExplorerNetwork extends Network {
      * Convert a list of Blockbook transactions to HistoricalTxs
      * @param {Array<object>} arrTXs - An array of the Blockbook TXs
      * @param {Map<String, String>} mapPaths - A map of the derivation paths for involved addresses
-     * @returns {Array<HistoricalTx>}
+     * @returns {Array<HistoricalTx>} - A new array of `HistoricalTx`-formatted transactions
      */
     toHistoricalTXs(arrTXs, mapPaths) {
+        /**
+         * A function to sum a list of inputs (vin) or outputs (vout)
+         * @type {(v: Array<{addresses: String[], value: Number}>) => Number}
+         */
         const txSum = (v) =>
             v.reduce(
                 (t, s) =>
