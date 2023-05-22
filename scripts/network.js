@@ -303,7 +303,7 @@ export class ExplorerNetwork extends Network {
 
     /**
      * Synchronise a partial chunk of our TX history
-     * @param {boolean} fNewOnly - Whether to sync ONLY new transactions
+     * @param {boolean} [fNewOnly] - Whether to sync ONLY new transactions
      */
     async syncTxHistoryChunk(fNewOnly = false) {
         // Do not allow multiple calls at once
