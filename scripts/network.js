@@ -414,7 +414,7 @@ export class ExplorerNetwork extends Network {
     /**
      * Convert a list of Blockbook transactions to HistoricalTxs
      * @param {Array<object>} arrTXs - An array of the Blockbook TXs
-     * @param {Map} mapPaths - A map of the derivation paths for involved addresses
+     * @param {Map<String, String>} mapPaths - A map of the derivation paths for involved addresses
      * @returns {Array<HistoricalTx>}
      */
     toHistoricalTXs(arrTXs, mapPaths) {
