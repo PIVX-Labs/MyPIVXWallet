@@ -331,7 +331,7 @@ export class ExplorerNetwork extends Network {
                 : await this.masterKey.getAddress();
             const strRoot = `/api/v2/${fHD ? 'xpub/' : 'address/'}${strKey}`;
             const strCoreParams = `?details=txs&tokens=derived&pageSize=200`;
-            const strAPI = `${this.strUrl + strRoot + strCoreParams}`;
+            const strAPI = this.strUrl + strRoot + strCoreParams;
 
             // If we have a known block height, check for incoming transactions within the last 60 blocks
             const cRecentTXs =
