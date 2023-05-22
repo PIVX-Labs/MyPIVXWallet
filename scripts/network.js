@@ -330,7 +330,7 @@ export class ExplorerNetwork extends Network {
                 this.arrRewards = this.arrRewards.concat(
                     cData.transactions
                         .filter(
-                            (tx) => tx.vout[0].addresses[0] === 'CoinStake TX'
+                            (tx) => tx?.vout[0]?.addresses[0] === 'CoinStake TX'
                         )
                         .map((tx) => {
                             return {
