@@ -756,7 +756,7 @@ export async function createActivityListHTML(arrTXs, fRewards = false) {
                             [
                                 ...new Set(
                                     arrExternalAddresses.map((addr) =>
-                                        addr.length >= 32
+                                        addr?.length >= 32
                                             ? addr.substring(0, 6)
                                             : addr
                                     )
