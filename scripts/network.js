@@ -427,9 +427,7 @@ export class ExplorerNetwork extends Network {
                 (t, s) =>
                     t +
                     (s.addresses &&
-                    s.addresses
-                        .map((strAddr) => mapPaths.get(strAddr))
-                        .filter((v) => v).length
+                    s.addresses.some((strAddr) => mapPaths.has(strAddr))
                         ? parseInt(s.value)
                         : 0),
                 0
