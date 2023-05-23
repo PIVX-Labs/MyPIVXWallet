@@ -2009,9 +2009,9 @@ async function renderProposals(arrProposals, fContested) {
 
     // Render the proposals in the relevent table
     domTable.innerHTML = '';
-    const cMasternode = localStorage.getItem('masternode')
-        ? new Masternode(JSON.parse(localStorage.getItem('masternode')))
-        : null;
+    const database = await Database.getInstance();
+    const cMasternode = await database.getMasternode();
+    
     if (!fContested) {
         const database = await Database.getInstance();
 
