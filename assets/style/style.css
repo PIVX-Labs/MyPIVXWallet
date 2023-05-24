@@ -382,7 +382,6 @@ button {
 
 #guiWallet {
     width: 100%;
-    height: 300px;
 }
 
 #bcg-wallet-box {
@@ -708,7 +707,7 @@ button {
 
 #foot {
     display: block;
-    position: absolute;
+    position: fixed;
     left: 0;
     bottom: 0;
     width: 100%;
@@ -1510,7 +1509,7 @@ a {
 
     /* Tables */
     table td {
-        max-width: 80px;
+        max-width: 130px;
     }
 
     table td a {
