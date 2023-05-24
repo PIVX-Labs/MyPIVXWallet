@@ -3,6 +3,10 @@ import Masternode from './masternode.js';
 import { Settings } from './settings.js';
 import { cChainParams } from './chain_params.js';
 import { confirmPopup, sanitizeHTML, createAlert } from './misc.js';
+import { PromoWallet } from './global.js';
+
+/** The current version of the DB - increasing this will prompt the Upgrade process for clients with an older version */
+export const DB_VERSION = 2;
 
 /**
  *
@@ -50,6 +54,28 @@ export class Database {
             .transaction('masternodes', 'readwrite')
             .objectStore('masternodes');
         await store.delete('masternode');
+    }
+
+    /**
+     * Add Promo Code to the database for tracking and management
+     * @param {PromoWallet} promo
+     */
+    async addPromo(promo) {
+        const store = this.#db
+            .transaction('promos', 'readwrite')
+            .objectStore('promos');
+        // The plaintext code is our key, since codes are unique and deterministic anyway
+        await store.put(promo, promo.code);
+    }
+    /**
+     * Removes a Promo Code from the Promo management system
+     * @param {string} promo - the promo code to remove
+     */
+    async removePromo(promo) {
+        const store = this.#db
+            .transaction('promos', 'readwrite')
+            .objectStore('promos');
+        await store.delete(promo);
     }
 
     /**
@@ -101,6 +127,17 @@ export class Database {
             .transaction('masternodes', 'readonly')
             .objectStore('masternodes');
         return new Masternode(await store.get('masternode'));
+    }
+
+    /**
+     * @returns {Promise<Array<PromoWallet>>} all Promo Codes stored in the db
+     */
+    async getAllPromos() {
+        const store = this.#db
+            .transaction('promos', 'readonly')
+            .objectStore('promos');
+        // Convert all promo objects in to their Class and return them as a new array
+        return (await store.getAll()).map((promo) => new PromoWallet(promo));
     }
 
     /**
@@ -190,13 +227,21 @@ export class Database {
     static async create(name) {
         let migrate = false;
         const database = new Database({ db: null });
-        const db = await openDB(`MPW-${name}`, 1, {
+        const db = await openDB(`MPW-${name}`, DB_VERSION, {
             upgrade: (db, oldVersion) => {
+                console.log(
+                    'DB: Upgrading from ' + oldVersion + ' to ' + DB_VERSION
+                );
                 if (oldVersion == 0) {
                     db.createObjectStore('masternodes');
                     db.createObjectStore('accounts');
                     db.createObjectStore('settings');
                     migrate = true;
+                }
+
+                // The introduction of PIVXPromos (safely added during <v2 upgrades)
+                if (oldVersion <= 1) {
+                    db.createObjectStore('promos');
                 }
             },
             blocking: () => {

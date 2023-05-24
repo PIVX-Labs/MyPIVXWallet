@@ -1425,7 +1425,7 @@ let fPromoRedeem = true;
  * Sets the mode of the PIVX Promos UI
  * @param {boolean} fMode - `true` to redeem, `false` to create
  */
-export function setPromoMode(fMode) {
+export async function setPromoMode(fMode) {
     fPromoRedeem = fMode;
 
     // Modify the UI to match the mode
@@ -1466,8 +1466,11 @@ export function setPromoMode(fMode) {
         doms.domRedeemTitle.innerText = 'Create Code';
         doms.domRedeemCodeConfirmBtn.innerText = 'Create';
 
+        // Render saved codes
+        const nCodes = await renderSavedPromos();
+
         // Show animation when promo creation thread has 1 or more items
-        if (arrPromoCreationThreads.length > 0) {
+        if (arrPromoCreationThreads.length || nCodes) {
             // Show table
             doms.domPromoTable.classList.remove('d-none');
 
@@ -1551,6 +1554,55 @@ export async function createPromoCode(strCode, nAmount) {
         promoCreationInterval = setInterval(updatePromoCreation, 1000);
 }
 
+export async function deletePromoCode(strCode) {
+    // Delete any ongoing threads
+    const nThread = arrPromoCreationThreads.findIndex(
+        (a) => a.code === strCode
+    );
+    if (nThread >= 0) {
+        // Terminate the Web Worker
+        arrPromoCreationThreads[nThread].thread.terminate();
+        // Remove the thread from memory
+        arrPromoCreationThreads.splice(nThread, 1);
+    }
+
+    // Delete the database entry, if it exists
+    const db = await Database.getInstance();
+    await db.removePromo(strCode);
+
+    // Re-render promos
+    await updatePromoCreation();
+}
+
+/**
+ * Render locally-saved Promo Codes in the created list
+ * @returns {Promise<number>} - The amount of codes rendered
+ */
+export async function renderSavedPromos() {
+    // Begin rendering our list of codes
+    let strHTML = '';
+
+    // Finished or 'Saved' codes are hoisted to the top, static
+    const db = await Database.getInstance();
+    const arrCodes = await db.getAllPromos();
+    for (const cCode of arrCodes) {
+        strHTML += `
+            <tr>
+                <td><i class="fa-solid fa-ban ptr" onclick="MPW.deletePromoCode('${cCode.code}')"></i></td>
+                <td>${cCode.code}</td>
+                <td>??? ${cChainParams.current.TICKER}</td>
+                <td>Unclaimed</td>
+            </tr>
+        `;
+    }
+
+    // Render
+    doms.domRedeemCodeCreatePendingList.innerHTML = strHTML;
+
+    // Return how many codes were rendered
+    return arrCodes.length;
+}
+
 /**
  * Handle the Promo Workers and update or prompt the UI appropriately
  */
@@ -1568,10 +1620,24 @@ export async function updatePromoCreation() {
         }
     }
 
-    // Loop all threads, displaying their progress
+    // Begin rendering our list of codes
     let strHTML = '';
-    let oldPercentage = 0;
 
+    // Finished or 'Saved' codes are hoisted to the top, static
+    const db = await Database.getInstance();
+    for (const cCode of await db.getAllPromos()) {
+        strHTML += `
+            <tr>
+                <td><i class="fa-solid fa-ban ptr" onclick="MPW.deletePromoCode('${cCode.code}')"></i></td>
+                <td>${cCode.code}</td>
+                <td>??? ${cChainParams.current.TICKER}</td>
+                <td>Unclaimed</td>
+            </tr>
+        `;
+    }
+
+    // Loop all threads, displaying their progress
+    let oldPercentage = 0;
     for (const cThread of arrPromoCreationThreads) {
         // Check if the code is derived, if so, fill it with it's balance
         if (cThread.thread.key && !cThread.end_state) {
@@ -1631,6 +1697,7 @@ export async function updatePromoCreation() {
         // Render the table row
         strHTML += `
             <tr>
+                <td><i class="fa-solid fa-ban ptr" onclick="MPW.deletePromoCode('${cThread.code}')"></i></td>
                 <td>${cThread.code}</td>
                 <td>${cThread.amount} ${cChainParams.current.TICKER}</td>
                 <td>${strState}</td>
@@ -1650,7 +1717,26 @@ export async function updatePromoCreation() {
 
     for (const cThread of arrPromoCreationThreads) {
         if (cThread.thread.progress === 100) {
-            // TODO: destroy thread, move to 'read-only' list and possibly Local Storage w/ redeem tracking
+            // Convert to PromoWallet
+            const cPromo = new PromoWallet({
+                code: cThread.code,
+                address: deriveAddress({ pkBytes: cThread.thread.key }),
+                pkBytes: cThread.thread.key,
+                // For storage, UTXOs are not necessary, so are left empty
+                utxos: [],
+            });
+
+            // Save to DB
+            await db.addPromo(cPromo);
+
+            // Terminate and destroy the thread
+            cThread.thread.terminate();
+            arrPromoCreationThreads.splice(
+                arrPromoCreationThreads.findIndex(
+                    (a) => a.code === cThread.code
+                ),
+                1
+            );
         } else {
             progressAnimateTick(
                 oldPercentage,
@@ -1661,12 +1747,25 @@ export async function updatePromoCreation() {
     }
 }
 
-/**
- * @typedef {object} PromoWallet
- * @property {string} address - The public key associated with the Promo Code
- * @property {string} pkBytes - The private key bytes derived from the Promo Code
- * @property {Array<BlockbookUTXO>} utxos - UTXOs associated with the Promo Code
- */
+export class PromoWallet {
+    /**
+     * @param {object} data - An object containing the PromoWallet data
+     * @param {string} data.code - The human-readable Promo Code
+     * @param {string} data.address - The public key associated with the Promo Code
+     * @param {Uint8Array} data.pkBytes - The private key bytes derived from the Promo Code
+     * @param {Array<object>} data.utxos - UTXOs associated with the Promo Code
+     */
+    constructor({ code, address, pkBytes, utxos }) {
+        /** @type {string} The human-readable Promo Code */
+        this.code = code;
+        /** @type {string} The public key associated with the Promo Code */
+        this.address = address;
+        /** @type {Uint8Array} The private key bytes derived from the Promo Code */
+        this.pkBytes = pkBytes;
+        /** @type {Array<object>} UTXOs associated with the Promo Code */
+        this.utxos = utxos;
+    }
+}
 
 /**
  * The global storage for temporary Promo Code wallets, this is used for sweeping funds
@@ -1826,11 +1925,12 @@ export async function redeemPromoCode(strCode) {
             doms.domRedeemCodeETA.innerHTML = '<br><br>Final checks...';
 
             // Prepare the global Promo Wallet
-            cPromoWallet = {
+            cPromoWallet = new PromoWallet({
+                code: strCode,
                 address: '',
                 pkBytes: evt.data.res.bytes,
                 utxos: [],
-            };
+            });
 
             // Derive the public key from the promo code's WIF
             cPromoWallet.address = deriveAddress({
@@ -2011,7 +2111,7 @@ async function renderProposals(arrProposals, fContested) {
     domTable.innerHTML = '';
     const database = await Database.getInstance();
     const cMasternode = await database.getMasternode();
-    
+
     if (!fContested) {
         const database = await Database.getInstance();
 

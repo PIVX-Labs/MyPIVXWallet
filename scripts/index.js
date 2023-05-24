@@ -39,6 +39,7 @@ export {
     promoConfirm,
     setPromoMode,
     sweepPromoCode,
+    deletePromoCode,
     openPromoQRScanner,
     toggleDropDown,
     unblurPrivKey,
