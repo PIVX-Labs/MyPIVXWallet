@@ -500,7 +500,15 @@
                       <div class="col-12 mb-5">
                         <center><span class="dcWallet-activityLbl">Activity</span></center>
                         <div class="dcWallet-activity">
-                          <center>Coming soon</center>
+                          <div class="scrollTable">
+                            <div id="activity-list-content"></div>
+                            <center>
+                              <button class="pivx-button-medium" id="activityLoadMore" onclick="MPW.updateActivityGUI(false)">
+                                <span class="buttoni-icon"><i class="fas fa-sync fa-tiny-margin" id="activityLoadMoreIcon"></i></span>
+                                <span class="buttoni-text" data-i18n="loadMore">Load more</span>
+                              </button>
+                            </center>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -830,9 +838,9 @@
                       <div class="scrollTable">
                         <div id="staking-rewards-content"></div>
                         <center>
-                          <button class="pivx-button-medium" id="stakingLoadMore" onclick="MPW.updateStakingRewardsGUI()">
+                          <button class="pivx-button-medium" id="stakingLoadMore" onclick="MPW.updateActivityGUI(true)">
                             <span class="buttoni-icon"><i class="fas fa-sync fa-tiny-margin" id="stakingLoadMoreIcon"></i></span>
-                            <span class="buttoni-text" data-i18n="stakeLoadMore">Load more</span>
+                            <span class="buttoni-text" data-i18n="loadMore">Load more</span>
                           </button>
                         </center>
                       </div>

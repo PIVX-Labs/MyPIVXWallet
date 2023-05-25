@@ -3,7 +3,7 @@ import {
     getBalance,
     getStakingBalance,
     refreshChainData,
-    updateStakingRewardsGUI,
+    updateActivityGUI,
 } from './global.js';
 import { fWalletLoaded, masterKey } from './wallet.js';
 import { cChainParams } from './chain_params.js';
@@ -365,7 +365,7 @@ export function toggleTestnet() {
     fillNodeSelect();
     getBalance(true);
     getStakingBalance(true);
-    updateStakingRewardsGUI();
+    updateActivityGUI();
 }
 
 export function toggleDebug() {

@@ -87,7 +87,7 @@ export const uwu_translation = {
         'Coins dat you Stake are "Locked" sepawately from ur Avaiwable bwalance, and havs a chance to genewwate rewawrds. <br> Da more coins you stake, da more frequwuntly you\'ll receive rewawrds.', // Coins that you Stake are \"Locked\" separately from your Available balance, and have a chance to generate rewards. <br> The more coins you stake, the more frequently you'll receive rewards.
     stake: '', //Stake
     stakeUnstake: '', //Unstake
-    stakeLoadMore: 'Lowoad Mowore', //Load more
+    loadMore: 'Lowoad Mowore', //Load more
 
     // Governance
     contestedProposalsTitle: 'Contwested Pwoposals',
