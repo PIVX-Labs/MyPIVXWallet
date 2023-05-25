@@ -1775,13 +1775,21 @@ export async function renderSavedPromos() {
                 <td><i class="fa-solid fa-ban ptr" onclick="MPW.deletePromoCode('${
                     cCode.code
                 }')"></i></td>
-                <td>${cCode.code}</td>
+                <td><i onclick="MPW.toClipboard('copy${
+                    cCode.address
+                }', this)" class="fas fa-clipboard" style="cursor: pointer; margin-right: 10px;"></i><code id="copy${
+            cCode.address
+        }" class="wallet-code" style="display: inline !important; color: purple;">${
+            cCode.code
+        }</code></td>
                 <td>${
                     fNew ? '...' : nBal + ' ' + cChainParams.current.TICKER
                 }</td>
-                <td>${
-                    fNew ? 'Confirming...' : nBal > 0 ? 'Unclaimed' : 'Claimed'
-                }</td>
+                <td><a class="ptr active" style="margin-right: 10px;" href="${
+                    getNetwork().strUrl + '/address/' + cCode.address
+                }" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-up-right-from-square"></i></a>${
+            fNew ? 'Confirming...' : nBal > 0 ? 'Unclaimed' : 'Claimed'
+        }</td>
             </tr>
         `;
     }
@@ -1873,7 +1881,7 @@ export async function updatePromoCreationTick() {
         strHTML += `
             <tr>
                 <td><i class="fa-solid fa-ban ptr" onclick="MPW.deletePromoCode('${cThread.code}')"></i></td>
-                <td>${cThread.code}</td>
+                <td><code class="wallet-code active" style="display: inline !important;">${cThread.code}</code></td>
                 <td>${cThread.amount} ${cChainParams.current.TICKER}</td>
                 <td>${strState}</td>
             </tr>
