@@ -1467,12 +1467,16 @@ export async function setPromoMode(fMode) {
         doms.domRedeemCodeConfirmBtn.innerText = 'Create';
 
         // Render saved codes
-        const nCodes = await renderSavedPromos();
+        const cCodes = await renderSavedPromos();
 
         // Show animation when promo creation thread has 1 or more items
-        if (arrPromoCreationThreads.length || nCodes) {
+        if (arrPromoCreationThreads.length || cCodes.codes) {
             // Show table
+            doms.domRedeemCodeCreatePendingList.innerHTML = cCodes.html;
             doms.domPromoTable.classList.remove('d-none');
+
+            // Refresh the Promo UI
+            await updatePromoCreationTick();
 
             // Show smooth table animation
             setTimeout(() => {
@@ -1511,9 +1515,9 @@ export function promoConfirm() {
 const arrPromoCreationThreads = [];
 
 /**
- * An interval timer for updating promo-creation related UI and threads
+ * A lock for updating promo-creation related UI and threads
  */
-let promoCreationInterval = null;
+let fPromoIntervalStarted = false;
 
 /**
  * Create a new 'PIVX Promos' code with a webworker
@@ -1549,9 +1553,8 @@ export async function createPromoCode(strCode, nAmount) {
     // Push to the global threads list
     arrPromoCreationThreads.push(cThread);
 
-    // If no creation interval exists, create one
-    if (!promoCreationInterval)
-        promoCreationInterval = setInterval(updatePromoCreation, 1000);
+    // Refresh the promo UI
+    await updatePromoCreationTick();
 }
 
 export async function deletePromoCode(strCode) {
@@ -1571,12 +1574,19 @@ export async function deletePromoCode(strCode) {
     await db.removePromo(strCode);
 
     // Re-render promos
-    await updatePromoCreation();
+    await updatePromoCreationTick();
 }
 
 /**
+ * A pair of code quantity and HTML
+ * @typedef {Object} RenderedPromoPair
+ * @property {number} codes - The number of codes returned in the response.
+ * @property {string} html - The HTML string returned in the response.
+ */
+
+/**
  * Render locally-saved Promo Codes in the created list
- * @returns {Promise<number>} - The amount of codes rendered
+ * @type {Promise<RenderedPromoPair>} - The code count and HTML pair
  */
 export async function renderSavedPromos() {
     // Begin rendering our list of codes
@@ -1586,27 +1596,37 @@ export async function renderSavedPromos() {
     const db = await Database.getInstance();
     const arrCodes = await db.getAllPromos();
     for (const cCode of arrCodes) {
+        // Sync only the balance of the code (not full data)
+        await cCode.getUTXOs(false);
+        const nBal = (await cCode.getBalance(true)) / COIN;
+
+        // A code younger than ~2 minutes without a balance will just say 'confirming', since Blockbook does not return a balance for NEW codes
+        const fNew = cCode.time.getTime() > Date.now() - 120000;
+
         strHTML += `
             <tr>
-                <td><i class="fa-solid fa-ban ptr" onclick="MPW.deletePromoCode('${cCode.code}')"></i></td>
+                <td><i class="fa-solid fa-ban ptr" onclick="MPW.deletePromoCode('${
+                    cCode.code
+                }')"></i></td>
                 <td>${cCode.code}</td>
-                <td>??? ${cChainParams.current.TICKER}</td>
-                <td>Unclaimed</td>
+                <td>${
+                    fNew ? '...' : nBal + ' ' + cChainParams.current.TICKER
+                }</td>
+                <td>${
+                    fNew ? 'Confirming...' : nBal > 0 ? 'Unclaimed' : 'Claimed'
+                }</td>
             </tr>
         `;
     }
 
-    // Render
-    doms.domRedeemCodeCreatePendingList.innerHTML = strHTML;
-
     // Return how many codes were rendered
-    return arrCodes.length;
+    return { codes: arrCodes.length, html: strHTML };
 }
 
 /**
- * Handle the Promo Workers and update or prompt the UI appropriately
+ * Handle the Promo Workers, Code Rendering, and update or prompt the UI appropriately
  */
-export async function updatePromoCreation() {
+export async function updatePromoCreationTick() {
     /* Animated counter function */
     function progressAnimateTick(i, target, el) {
         if (i <= target) {
@@ -1621,20 +1641,8 @@ export async function updatePromoCreation() {
     }
 
     // Begin rendering our list of codes
-    let strHTML = '';
-
-    // Finished or 'Saved' codes are hoisted to the top, static
-    const db = await Database.getInstance();
-    for (const cCode of await db.getAllPromos()) {
-        strHTML += `
-            <tr>
-                <td><i class="fa-solid fa-ban ptr" onclick="MPW.deletePromoCode('${cCode.code}')"></i></td>
-                <td>${cCode.code}</td>
-                <td>??? ${cChainParams.current.TICKER}</td>
-                <td>Unclaimed</td>
-            </tr>
-        `;
-    }
+    const cSavedCodes = await renderSavedPromos();
+    let strHTML = cSavedCodes.html;
 
     // Loop all threads, displaying their progress
     let oldPercentage = 0;
@@ -1680,7 +1688,7 @@ export async function updatePromoCreation() {
         let strState = '';
         if (cThread.txid) {
             // Complete state
-            strState = 'Ready! (' + cThread.txid.substring(0, 5) + ')';
+            strState = 'Confirming...';
         } else if (cThread.end_state) {
             // Errored state (failed to broadcast, etc)
             strState = cThread.end_state;
@@ -1690,7 +1698,7 @@ export async function updatePromoCreation() {
                 '<span id="c' +
                 cThread.code +
                 '">' +
-                cThread.thread.progress +
+                (cThread.thread.progress || 0) +
                 '</span>%';
         }
 
@@ -1715,8 +1723,9 @@ export async function updatePromoCreation() {
     // Render the compiled HTML
     doms.domRedeemCodeCreatePendingList.innerHTML = strHTML;
 
+    const db = await Database.getInstance();
     for (const cThread of arrPromoCreationThreads) {
-        if (cThread.thread.progress === 100) {
+        if (cThread.end_state === 'Done') {
             // Convert to PromoWallet
             const cPromo = new PromoWallet({
                 code: cThread.code,
@@ -1724,6 +1733,7 @@ export async function updatePromoCreation() {
                 pkBytes: cThread.thread.key,
                 // For storage, UTXOs are not necessary, so are left empty
                 utxos: [],
+                time: Date.now(),
             });
 
             // Save to DB
@@ -1745,6 +1755,12 @@ export async function updatePromoCreation() {
             );
         }
     }
+
+    // After the update completes, await another update in one second
+    if (!fPromoIntervalStarted) {
+        fPromoIntervalStarted = true;
+        setTimeout(updatePromoCreationTick, 1000);
+    }
 }
 
 export class PromoWallet {
@@ -1753,9 +1769,10 @@ export class PromoWallet {
      * @param {string} data.code - The human-readable Promo Code
      * @param {string} data.address - The public key associated with the Promo Code
      * @param {Uint8Array} data.pkBytes - The private key bytes derived from the Promo Code
+     * @param {Date|number} data.time - The Date or timestamp the code was created
      * @param {Array<object>} data.utxos - UTXOs associated with the Promo Code
      */
-    constructor({ code, address, pkBytes, utxos }) {
+    constructor({ code, address, pkBytes, utxos, time }) {
         /** @type {string} The human-readable Promo Code */
         this.code = code;
         /** @type {string} The public key associated with the Promo Code */
@@ -1764,6 +1781,55 @@ export class PromoWallet {
         this.pkBytes = pkBytes;
         /** @type {Array<object>} UTXOs associated with the Promo Code */
         this.utxos = utxos;
+        /** @type {Date|number} The Date or timestamp the code was created */
+        this.time = time instanceof Date ? time : new Date(time);
+    }
+
+    /**
+     * Synchronise UTXOs and return the balance of the Promo Code
+     * @param {boolean} - Whether to use UTXO Cache, or sync from network
+     * @returns {Promise<number>} - The Promo Wallet balance in sats
+     */
+    async getBalance(fCacheOnly = false) {
+        // Refresh our UTXO set
+        if (!fCacheOnly) {
+            await this.getUTXOs();
+        }
+
+        // Return the sum of the set
+        return this.utxos.reduce((a, b) => a + b.sats, 0);
+    }
+
+    /**
+     * Synchronise UTXOs and return them
+     * @param {boolean} - Whether to sync simple UTXOs or full UTXOs
+     * @returns {Promise<Array<object>>}
+     */
+    async getUTXOs(fFull = false) {
+        // If we don't have it, derive the public key from the promo code's WIF
+        if (!this.address) {
+            this.address = deriveAddress({ pkBytes: this.pkBytes });
+        }
+
+        // Check for UTXOs on the explorer
+        const arrSimpleUTXOs = await getNetwork().getUTXOs(this.address);
+
+        // Either format the simple UTXOs, or additionally sync the full UTXOs with scripts
+        this.utxos = [];
+        for (const cUTXO of arrSimpleUTXOs) {
+            if (fFull) {
+                this.utxos.push(await getNetwork().getUTXOFullInfo(cUTXO));
+            } else {
+                this.utxos.push({
+                    id: cUTXO.txid,
+                    sats: parseInt(cUTXO.value),
+                    vout: cUTXO.vout,
+                });
+            }
+        }
+
+        // Return the UTXO set
+        return this.utxos;
     }
 }
 
@@ -1823,7 +1889,7 @@ export async function sweepPromoCode() {
 
     // Perform sweep
     const strTXID = await sweepAddress(
-        cPromoWallet.utxos,
+        await cPromoWallet.getUTXOs(true),
         cSweepMasterkey,
         10000
     );
@@ -1831,8 +1897,7 @@ export async function sweepPromoCode() {
     // Display the promo redeem results, then schedule a reset of the UI
     if (strTXID) {
         // Coins were redeemed!
-        const nAmt =
-            (cPromoWallet.utxos.reduce((a, b) => a + b.sats, 0) - 10000) / COIN;
+        const nAmt = ((await cPromoWallet.getBalance(true)) - 10000) / COIN;
         doms.domRedeemCodeETA.innerHTML =
             '<br><br>You redeemed <b>' +
             nAmt.toLocaleString('en-GB') +
@@ -1930,26 +1995,14 @@ export async function redeemPromoCode(strCode) {
                 address: '',
                 pkBytes: evt.data.res.bytes,
                 utxos: [],
+                time: 0,
             });
 
-            // Derive the public key from the promo code's WIF
-            cPromoWallet.address = deriveAddress({
-                pkBytes: cPromoWallet.pkBytes,
-            });
-
-            // Check for UTXOs on the explorer, fetch their full datasets
-            const arrSimpleUTXOs = await getNetwork().getUTXOs(
-                cPromoWallet.address
-            );
-            cPromoWallet.utxos = [];
-            for (const cUTXO of arrSimpleUTXOs) {
-                cPromoWallet.utxos.push(
-                    await getNetwork().getUTXOFullInfo(cUTXO)
-                );
-            }
+            // Derive the Public Key and synchronise UTXOs from the network
+            const nBalance = await cPromoWallet.getBalance();
 
             // Display if the code is Valid (has coins) or is empty
-            if (cPromoWallet.utxos.length) {
+            if (nBalance > 0) {
                 doms.domRedeemCodeGiftIcon.classList.add('fa-shake');
                 doms.domRedeemCodeETA.innerHTML =
                     '<br><br>This code is <b>verified!</b> Tap the gift to open it!';
