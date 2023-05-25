@@ -45,7 +45,7 @@ export {
     unblurPrivKey,
     toggleBottomMenu,
     createProposal,
-    updateStakingRewardsGUI,
+    updateActivityGUI,
 } from './global.js';
 export { generateWallet, getNewAddress, importWallet } from './wallet.js';
 export { toggleTestnet, toggleDebug } from './settings.js';
