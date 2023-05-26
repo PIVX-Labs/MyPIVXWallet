@@ -2113,31 +2113,52 @@ export const beforeUnloadListener = (evt) => {
 };
 
 /**
- * Switch between screens in the settings menu
- * @param {'wallet'|'display'} strType - The menu to switch to
+ * @typedef {Object} SettingsDOM - An object that contains the DOM elements for settings pages.
+ * @property {HTMLElement} btn - The button to switch to this setting type.
+ * @property {HTMLElement} section - The container for this setting type.
  */
-export function switchSettings(strType) {
-    // Hide all settings sections
-    doms.domWalletSettings.classList.add('d-none');
-    doms.domDisplaySettings.classList.add('d-none');
 
-    // Make all buttons inactive
-    doms.domWalletSettingsBtn.classList.remove('active');
-    doms.domDisplaySettingsBtn.classList.remove('active');
-
-    if (strType == 'wallet') {
-        // Show wallet settings
-        doms.domWalletSettings.classList.remove('d-none');
-
-        // Make settings button active
-        doms.domWalletSettingsBtn.classList.add('active');
-    } else if (strType == 'display') {
-        // Show display settings
-        doms.domDisplaySettings.classList.remove('d-none');
-
-        // Make settings button active
-        doms.domDisplaySettingsBtn.classList.add('active');
+/**
+ * Returns a list of all pages and their DOM elements.
+ *
+ * This must be a function, since, the DOM elements are `undefined` until
+ * after the startup sequence.
+ * 
+ * Types are inferred.
+ */
+function getSettingsPages() {
+    return {
+        /** @type {SettingsDOM} */
+        'wallet': {
+            btn: doms.domWalletSettingsBtn,
+            section: doms.domWalletSettings
+        },
+        /** @type {SettingsDOM} */
+        'display': {
+            btn: doms.domDisplaySettingsBtn,
+            section: doms.domDisplaySettings
+        }
     }
+}
+
+/**
+ * Switch between screens in the settings menu
+ * @param {string} page - The name of the setting page to switch to
+ */
+ export function switchSettings(page) {
+    const SETTINGS = getSettingsPages();
+    const { btn, section } = SETTINGS[page];
+
+    Object.values(SETTINGS).forEach(({ section, btn }) => {
+        // Hide all settings sections
+        section.classList.add('d-none');
+        // Make all buttons inactive
+        btn.classList.remove('active');
+    });
+
+    // Show selected section and make its button active
+    section.classList.remove('d-none');
+    btn.classList.add('active');
 }
 
 function errorHandler(e) {
