@@ -1638,12 +1638,12 @@ export async function setPromoMode(fMode) {
 
         // Show animation when promo creation thread has 1 or more items
         if (arrPromoCreationThreads.length || cCodes.codes) {
+            // Refresh the Promo UI
+            await updatePromoCreationTick();
+
             // Show table
             doms.domRedeemCodeCreatePendingList.innerHTML = cCodes.html;
             doms.domPromoTable.classList.remove('d-none');
-
-            // Refresh the Promo UI
-            await updatePromoCreationTick();
 
             // Show smooth table animation
             setTimeout(() => {
