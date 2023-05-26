@@ -2123,29 +2123,29 @@ export const beforeUnloadListener = (evt) => {
  *
  * This must be a function, since, the DOM elements are `undefined` until
  * after the startup sequence.
- * 
+ *
  * Types are inferred.
  */
 function getSettingsPages() {
     return {
         /** @type {SettingsDOM} */
-        'wallet': {
+        wallet: {
             btn: doms.domWalletSettingsBtn,
-            section: doms.domWalletSettings
+            section: doms.domWalletSettings,
         },
         /** @type {SettingsDOM} */
-        'display': {
+        display: {
             btn: doms.domDisplaySettingsBtn,
-            section: doms.domDisplaySettings
-        }
-    }
+            section: doms.domDisplaySettings,
+        },
+    };
 }
 
 /**
  * Switch between screens in the settings menu
  * @param {string} page - The name of the setting page to switch to
  */
- export function switchSettings(page) {
+export function switchSettings(page) {
     const SETTINGS = getSettingsPages();
     const { btn, section } = SETTINGS[page];
 
