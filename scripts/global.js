@@ -31,6 +31,7 @@ import {
     parseBIP21Request,
     isValidBech32,
     isBase64,
+    getAlphaNumericRand,
 } from './misc.js';
 import { cChainParams, COIN, MIN_PASS_LENGTH } from './chain_params.js';
 import { decrypt } from './aes-gcm.js';
@@ -1690,14 +1691,63 @@ let fPromoIntervalStarted = false;
  * Create a new 'PIVX Promos' code with a webworker
  * @param {string} strCode - The Promo Code to create
  * @param {number} nAmount - The Promo Code amount in coins
+ * @param {boolean} fAddRandomness - Whether to append Randomness to the code
  */
-export async function createPromoCode(strCode, nAmount) {
+export async function createPromoCode(strCode, nAmount, fAddRandomness = true) {
+    // Determine if we're adding randomness - and if so, if it's appended entropy or full randomness
+    const strFinalCode = fAddRandomness
+        ? strCode
+            ? strCode + '-' + getAlphaNumericRand(5).toUpperCase()
+            : getAlphaNumericRand(10).toUpperCase()
+        : strCode;
+
+    // Ensure the amount is sane
+    if (nAmount < 0.01) {
+        return createAlert(
+            'warning',
+            'Minimum amount is 0.01 ' + cChainParams.current.TICKER + '!'
+        );
+    }
+
     // Ensure there's no more than half the device's cores used
-    if (arrPromoCreationThreads.length >= navigator.hardwareConcurrency) return;
+    if (arrPromoCreationThreads.length >= navigator.hardwareConcurrency)
+        return createAlert(
+            'warning',
+            'Your device can only create ' +
+                navigator.hardwareConcurrency +
+                ' codes at a time!',
+            4000
+        );
+
+    // Ensure the user has enough balance (Code amount + Redeem fee + Blockchain fee buffer)
+    const nReservedBalance = arrPromoCreationThreads.reduce(
+        (a, b) => a + b.amount * COIN,
+        0
+    );
+    if (getBalance() - nReservedBalance < nAmount * COIN + PROMO_FEE * 2) {
+        return createAlert(
+            'warning',
+            "You don't have enough " +
+                cChainParams.current.TICKER +
+                ' to create that code!',
+            4000
+        );
+    }
+
+    // Ensure the user doesn't create the same code twice
+    const db = await Database.getInstance();
+    const arrCodes = (await db.getAllPromos()).concat(arrPromoCreationThreads);
+    if (arrCodes.some((a) => a.code === strFinalCode)) {
+        return createAlert(
+            'warning',
+            "You've already created that code!",
+            3000
+        );
+    }
 
     // Create a new thread
     const cThread = {
-        code: strCode,
+        code: strFinalCode,
         amount: nAmount,
         thread: new Worker(new URL('./promos_worker.js', import.meta.url)),
         txid: '',
@@ -1715,7 +1765,7 @@ export async function createPromoCode(strCode, nAmount) {
     cThread.thread.onmessage = cThread.update;
 
     // Start the thread
-    cThread.thread.postMessage(strCode);
+    cThread.thread.postMessage(strFinalCode);
 
     // Push to the global threads list
     arrPromoCreationThreads.push(cThread);

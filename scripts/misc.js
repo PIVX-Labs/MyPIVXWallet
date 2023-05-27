@@ -22,6 +22,24 @@ export function getSafeRand(nSize = 32) {
     return crypto.getRandomValues(new Uint8Array(nSize));
 }
 
+export const MAP_ALPHANUMERIC =
+    'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+
+/**
+ * Generate a random Alpha-Numeric sequence
+ * @param {number} nSize - The amount of characters to generate
+ * @returns {string} - A random alphanumeric string of nSize length
+ */
+export function getAlphaNumericRand(nSize = 32) {
+    let result = '';
+    const randValues = getSafeRand(nSize);
+    for (const byte of randValues) {
+        const index = byte % MAP_ALPHANUMERIC.length;
+        result += MAP_ALPHANUMERIC.charAt(index);
+    }
+    return result;
+}
+
 // Writes a sequence of Array-like bytes into a location within a Uint8Array
 export function writeToUint8(arr, bytes, pos) {
     const arrLen = arr.length;
