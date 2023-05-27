@@ -2050,6 +2050,9 @@ export async function sweepAddress(arrUTXOs, sweepingMasterKey, nFixedFee = 0) {
     return await getNetwork().sendTransaction(sign);
 }
 
+/** The fee in Sats to use for Creating or Redeeming PIVX Promos */
+const PROMO_FEE = 10000;
+
 /**
  * A sweep wrapper that handles the Promo UI after the sweep completes
  */
@@ -2066,13 +2069,13 @@ export async function sweepPromoCode() {
     const strTXID = await sweepAddress(
         await cPromoWallet.getUTXOs(true),
         cSweepMasterkey,
-        10000
+        PROMO_FEE
     );
 
     // Display the promo redeem results, then schedule a reset of the UI
     if (strTXID) {
         // Coins were redeemed!
-        const nAmt = ((await cPromoWallet.getBalance(true)) - 10000) / COIN;
+        const nAmt = ((await cPromoWallet.getBalance(true)) - PROMO_FEE) / COIN;
         doms.domRedeemCodeETA.innerHTML =
             '<br><br>You redeemed <b>' +
             nAmt.toLocaleString('en-GB') +
