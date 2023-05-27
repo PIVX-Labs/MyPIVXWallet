@@ -1800,8 +1800,9 @@ export async function renderSavedPromos() {
 
 /**
  * Handle the Promo Workers, Code Rendering, and update or prompt the UI appropriately
+ * @param {boolean} fRecursive - Whether this call is self-initiated or not
  */
-export async function updatePromoCreationTick() {
+export async function updatePromoCreationTick(fRecursive = false) {
     /* Animated counter function */
     function progressAnimateTick(i, target, el) {
         if (i <= target) {
@@ -1932,9 +1933,9 @@ export async function updatePromoCreationTick() {
     }
 
     // After the update completes, await another update in one second
-    if (!fPromoIntervalStarted) {
+    if (!fPromoIntervalStarted || fRecursive) {
         fPromoIntervalStarted = true;
-        setTimeout(updatePromoCreationTick, 1000);
+        setTimeout(() => updatePromoCreationTick(true), 1000);
     }
 }
 
