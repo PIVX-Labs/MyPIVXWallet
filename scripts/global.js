@@ -1822,9 +1822,13 @@ export async function renderSavedPromos() {
 
         strHTML += `
             <tr>
-                <td><i class="fa-solid fa-ban ptr" onclick="MPW.deletePromoCode('${
-                    cCode.code
-                }')"></i></td>
+                <td>${
+                    fNew || nBal > 0
+                        ? ''
+                        : '<i class="fa-solid fa-ban ptr" onclick="MPW.deletePromoCode(\'' +
+                          cCode.code +
+                          '\')"></i>'
+                }</td>
                 <td><i onclick="MPW.toClipboard('copy${
                     cCode.address
                 }', this)" class="fas fa-clipboard" style="cursor: pointer; margin-right: 10px;"></i><code id="copy${
