@@ -425,18 +425,6 @@ function subscribeToNetworkEvents() {
 export const mempool = new Mempool();
 let exportHidden = false;
 
-/** The global 'prompt lock', useful for creating custom logic flows using
- *  prompts, or just checking if one is already active */
-export let fPromptActive = false;
-
-/**
- * Set the fPromptActive state
- * @param {boolean} fBool
- */
-export function setPromptLock(fBool) {
-    fPromptActive = fBool;
-}
-
 //                        PIVX Labs' Cold Pool
 export let cachedColdStakeAddr = 'SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy';
 
@@ -1820,15 +1808,19 @@ export async function renderSavedPromos() {
         // A code younger than ~2 minutes without a balance will just say 'confirming', since Blockbook does not return a balance for NEW codes
         const fNew = cCode.time.getTime() > Date.now() - 120000;
 
+        // If this code is allowed to be deleted or not
+        const fCannotDelete = fNew || nBal > 0;
+
         strHTML += `
             <tr>
                 <td>${
-                    fNew || nBal > 0
-                        ? ''
+                    fCannotDelete
+                        ? '<i class="fa-solid fa-ban" style="opacity: 0.4; cursor: default;">'
                         : '<i class="fa-solid fa-ban ptr" onclick="MPW.deletePromoCode(\'' +
                           cCode.code +
                           '\')"></i>'
-                }</td>
+                }
+                </td>
                 <td><i onclick="MPW.toClipboard('copy${
                     cCode.address
                 }', this)" class="fas fa-clipboard" style="cursor: pointer; margin-right: 10px;"></i><code id="copy${
@@ -1859,6 +1851,7 @@ export async function renderSavedPromos() {
 export async function updatePromoCreationTick(fRecursive = false) {
     /* Animated counter function */
     function progressAnimateTick(i, target, el) {
+        if (!el) return;
         if (i <= target) {
             el.innerHTML = i;
             // Cancel once at 100%
@@ -1881,36 +1874,35 @@ export async function updatePromoCreationTick(fRecursive = false) {
         if (cThread.thread.key && !cThread.end_state) {
             const strAddress = deriveAddress({ pkBytes: cThread.thread.key });
 
-            // Ensure no unlock prompt is already active, if it is, hide the promo modal too
-            if (fPromptActive) {
-                return $('#redeemCodeModal').modal('hide');
-            }
-
             // Ensure the wallet is unlocked
             if (masterKey.isViewOnly) {
+                $('#redeemCodeModal').modal('hide');
                 if (await restoreWallet('Unlock to send your transaction!')) {
                     // Unlocked! Re-show the promo UI and continue
                     $('#redeemCodeModal').modal('show');
                 } else {
                     // Failed to unlock, so just mark as cancelled
-                    return (cThread.end_state = 'Cancelled');
+                    cThread.end_state = 'Cancelled';
+                    $('#redeemCodeModal').modal('show');
                 }
             }
 
-            // Send the fill transaction
-            const res = await createAndSendTransaction({
-                address: strAddress,
-                amount: cThread.amount * COIN + 10000,
-            }).catch((_) => {
-                // Failed to create this code - mark it as errored
-                cThread.end_state = 'Errored';
-            });
-            if (res && res.ok) {
-                cThread.txid = res.txid;
-                cThread.end_state = 'Done';
-            } else {
-                // If it looks like it was purposefully cancelled, then mark it as such
-                cThread.end_state = 'Cancelled';
+            // Send the fill transaction if unlocked
+            if (!masterKey.isViewOnly) {
+                const res = await createAndSendTransaction({
+                    address: strAddress,
+                    amount: cThread.amount * COIN + 10000,
+                }).catch((_) => {
+                    // Failed to create this code - mark it as errored
+                    cThread.end_state = 'Errored';
+                });
+                if (res && res.ok) {
+                    cThread.txid = res.txid;
+                    cThread.end_state = 'Done';
+                } else {
+                    // If it looks like it was purposefully cancelled, then mark it as such
+                    cThread.end_state = 'Cancelled';
+                }
             }
         }
 
