@@ -1877,7 +1877,9 @@ export async function updatePromoCreationTick(fRecursive = false) {
             // Ensure the wallet is unlocked
             if (masterKey.isViewOnly) {
                 $('#redeemCodeModal').modal('hide');
-                if (await restoreWallet('Unlock to send your transaction!')) {
+                if (
+                    await restoreWallet('Unlock to finalise your Promo Code!')
+                ) {
                     // Unlocked! Re-show the promo UI and continue
                     $('#redeemCodeModal').modal('show');
                 } else {
