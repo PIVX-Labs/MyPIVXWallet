@@ -36,11 +36,6 @@ export {
     destroyMasternode,
     startMasternode,
     checkVanity,
-    promoConfirm,
-    setPromoMode,
-    sweepPromoCode,
-    deletePromoCode,
-    openPromoQRScanner,
     toggleDropDown,
     unblurPrivKey,
     toggleBottomMenu,
@@ -55,6 +50,13 @@ export {
     delegateGUI,
     createMasternode,
 } from './transactions.js';
+export {
+    promoConfirm,
+    setPromoMode,
+    sweepPromoCode,
+    deletePromoCode,
+    openPromoQRScanner,
+} from './promos';
 export { renderWalletBreakdown } from './charting';
 export { hexToBytes, bytesToHex, dSHA256 } from './utils.js';
 

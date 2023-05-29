@@ -3,7 +3,7 @@ import Masternode from './masternode.js';
 import { Settings } from './settings.js';
 import { cChainParams } from './chain_params.js';
 import { confirmPopup, sanitizeHTML, createAlert } from './misc.js';
-import { PromoWallet } from './global.js';
+import { PromoWallet } from './promos.js';
 
 /** The current version of the DB - increasing this will prompt the Upgrade process for clients with an older version */
 export const DB_VERSION = 2;
