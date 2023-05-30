@@ -39,6 +39,7 @@ import { Address6 } from 'ip-address';
 import { getEventEmitter } from './event_bus.js';
 import { scanQRCode } from './scanner.js';
 import { Database } from './database.js';
+import { checkForUpgrades } from './changelog.js';
 
 /** A flag showing if base MPW is fully loaded or not */
 export let fIsLoaded = false;
@@ -230,6 +231,7 @@ export async function start() {
         domNodeSelect: document.getElementById('node'),
         domTranslationSelect: document.getElementById('translation'),
         domBlackBack: document.getElementById('blackBack'),
+        domVersion: document.getElementById('version'),
     };
     await i18nStart();
     await loadImages();
@@ -350,6 +352,9 @@ export async function start() {
 
     // After reaching here; we know MPW's base is fully loaded!
     fIsLoaded = true;
+
+    // Check for recent upgrades, display the changelog
+    checkForUpgrades();
 }
 
 function subscribeToNetworkEvents() {

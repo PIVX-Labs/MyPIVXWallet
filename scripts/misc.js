@@ -78,12 +78,27 @@ export function createAlert(type, message, alertVariables = [], timeout = 0) {
     doms.domAlertPos.appendChild(domAlert);
 }
 
-// Shows the confirm modal with the provided html.
-// If resolvePromise has a value, the popup won't have
-// Confirm/Cancel buttons and will wait for the promise to resolve
-// Returns the awaited value of resolvePromise
-// or true/false if the user confirmed or not the modal
-export async function confirmPopup({ title, html, resolvePromise }) {
+/**
+ * Shows a Confirm popup with custom HTML.
+ *
+ * If `resolvePromise` has a value, the popup won't have
+ * Confirm/Cancel buttons and will wait for the promise to resolve.
+ *
+ * Returns the awaited value of `resolvePromise` or `true/false` if the
+ * user used a Cancel/Confirm button.
+ * @param {object} options
+ * @param {string?} options.title - The optional title of the popup
+ * @param {string} options.html - The HTML of the popup contents
+ * @param {Promise<any>} options.resolvePromise - A promise to resolve before closing the modal
+ * @param {boolean?} options.hideConfirm - Whether to hide the Confirm button or not
+ * @returns {Promise<boolean|any>}
+ */
+export async function confirmPopup({
+    title,
+    html,
+    resolvePromise,
+    hideConfirm,
+}) {
     // If there's a title provided: display the header and text
     doms.domConfirmModalHeader.style.display = title ? 'block' : 'none';
     doms.domConfirmModalTitle.innerHTML = title || '';
@@ -95,6 +110,12 @@ export async function confirmPopup({ title, html, resolvePromise }) {
         resolvePromise ? 'important' : undefined
     );
     $('#confirmModal').modal(resolvePromise ? 'show' : { keyboard: false });
+
+    // Show or hide the confirm button, and replace 'Cancel' with 'Close'
+    doms.domConfirmModalConfirmButton.style.display = hideConfirm ? 'none' : '';
+    doms.domConfirmModalCancelButton.innerText = hideConfirm
+        ? 'Close'
+        : 'Cancel';
 
     // Set content display
     doms.domConfirmModalContent.innerHTML = html;

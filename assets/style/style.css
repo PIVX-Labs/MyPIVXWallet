@@ -147,6 +147,14 @@ button {
     text-align: center;
 }
 
+.changelog {
+    text-align: left;
+}
+
+.changelog p {
+    margin-bottom: 0px;
+    font-family: monospace !important;
+}
 
 .large-box {
     background: rgba(43, 9, 80, 0.55);

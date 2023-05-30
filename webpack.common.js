@@ -7,6 +7,13 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const NodePolyfillPlugin = require('node-polyfill-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const CopyPlugin = require('copy-webpack-plugin');
+const { readFileSync } = require('fs');
+
+// Inject the Changelog and Version to the app
+const changelog = readFileSync('./changelog.md', { encoding: 'utf8' });
+const version = JSON.parse(
+    readFileSync('./package.json', { encoding: 'utf8' })
+).version;
 
 module.exports = {
     entry: './scripts/index.js',
@@ -54,6 +61,11 @@ module.exports = {
             $: 'jquery',
             jQuery: 'jquery',
             'window.jQuery': 'jquery',
+        }),
+        // Make the Changelog available globally
+        new webpack.DefinePlugin({
+            CHANGELOG: JSON.stringify(changelog),
+            VERSION: JSON.stringify(version),
         }),
         // Ignore non english bip39 wordlists
         new webpack.IgnorePlugin({
