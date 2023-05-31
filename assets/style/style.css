@@ -2771,3 +2771,50 @@ select.form-control option {
     margin-right: -17px;
     margin-top: 11px;
 }
+
+.custom-switch {
+    padding-left: 55px;
+}
+
+.custom-switch .custom-control-label {
+    padding-top: 3px;
+}
+
+.custom-switch .custom-control-label::before {
+    width: 45px;
+    border-radius:100px;
+    left: -55px;
+}
+
+.custom-switch .custom-control-label::before {
+    height: 22px;
+}
+
+.custom-switch .custom-control-label::after {
+    width: calc(22px - 4px);
+    height: calc(22px - 4px);
+    left: calc(-55px + 2px);
+}
+
+.custom-switch .custom-control-input:checked~.custom-control-label::after {
+    -webkit-transform: translateX(22px);
+    transform: translateX(22px);
+}
+
+.custom-control-input:checked~.custom-control-label::before {
+    color: #fff;
+    border-color: #9169b5;
+    background-color: #9169b5;
+}
+
+.custom-control-input:focus:not(:checked)~.custom-control-label::before {
+    border-color: #9169b575;
+}
+
+.custom-control-input:focus~.custom-control-label::before {
+    box-shadow: 0 0 0 0.2rem #9169b575;
+}
+
+#analyticsDescriptor {
+    margin-bottom:27px;
+}
