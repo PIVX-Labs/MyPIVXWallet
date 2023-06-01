@@ -946,9 +946,9 @@
                     <td class="text-center"><b> Payment </b></td>
                     <td class="text-center"><b> Votes </b></td>
                     <td class="text-center"><b> Vote </b></td>
-		    <td class="text-center">
-			<div class="pivx-button-small" onclick="MPW.createProposal()"> <i class="fas fa-plus"></i> </div>
-		    </td>
+                    <td class="text-center">
+                      <div class="pivx-button-small" onclick="MPW.createProposal()"> <i class="fas fa-plus"></i> </div>
+                    </td>
                   </thead>
                   <tbody id="proposalsTableBody" style="text-align: center; vertical-align: middle;"></tbody>
                 </table>
@@ -1066,58 +1066,76 @@
               </div>
 
               <div id="Settings" class="tabcontent">
-                <label for="currency" data-i18n="settingsCurrency">Choose a display currency:</label>
-                <br />
-                <select id="currency" class="form-control" name="currency">
-                  <!-- Populated via JS at Price Source data load (prices.js) -->
-                </select>
-                <br />
-                <label for="explorer" data-i18n="settingsExplorer">Choose an explorer:</label>
-                <br />
-                <select id="explorer" class="form-control" name="explorer">
-                  <!-- Populated via JS at DOM load (settings.js) -->
-                </select>
-                <br />
-                <label for="translation" data-i18n="settingsLanguage">Choose a Language:</label>
-                <br />
-                <select id="translation" class="form-control" name="translation">
-                  <!-- Populated via JS at DOM load (settings.js) -->
-                </select>
-                <br />
+                <div class="row">
+                  <div class="col-12 col-md-3 mb-3 mb-md-0">
+                    <ul class="settingsMenu">
+                      <li onclick="MPW.switchSettings('wallet')" id="settingsWalletBtn" class="active">Wallet</li>
+                      <li onclick="MPW.switchSettings('display')" id="settingsDisplayBtn">Display</li>
+                    </ul>
+                  </div>
+                  <div class="col-12 col-md-9">
+                    <div id="settingsWallet" class="settingsContent">
+                      <span class="header-title">Wallet</span>
 
-                <label for="node" data-i18n="settingsPivxNode">Choose a PIVX node:</label>
-                <br />
-                <select id="node" class="form-control" name="node">
-                  <!-- Populated via JS at DOM load (settings.js) -->
-                </select>
-                <br />
+                      <hr />
 
-                <label for="analytics" data-i18n="settingsAnalytics">Choose your analytics contribution level:</label>
-                <br />
-                <select id="analytics" class="form-control" name="analytics">
-                  <!-- Populated via JS at DOM load (settings.js) -->
-                </select>
-                <div id="analyticsDescriptor"></div>
-                <br />
+                      <label for="explorer" data-i18n="settingsExplorer">Choose an explorer:</label>
+                      <br />
+                      <select id="explorer" class="form-control" name="explorer">
+                        <!-- Populated via JS at DOM load (settings.js) -->
+                      </select>
 
-                <button class="pivx-button-big" onclick="MPW.toggleDebug()">
-                  <span class="buttoni-icon"><i class="fas fa-bug fa-tiny-margin"></i></span>
-                  <span class="buttoni-text" data-i18n="settingsToggleDebug">Toggle Debug Mode</span>
-                  <span class="buttoni-arrow">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-                      <path d="M23.328 16.707L13.121 26.914a.5.5 0 01-.707 0l-2.828-2.828a.5.5 0 010-.707L16.964 16 9.586 8.621a.5.5 0 010-.707l2.828-2.828a.5.5 0 01.707 0l10.207 10.207a1 1 0 010 1.414z"></path>
-                    </svg>
-                  </span>
-                </button>
-                <button class="pivx-button-big" onclick="MPW.toggleTestnet()">
-                  <span class="buttoni-icon"><i class="fas fa-network-wired fa-tiny-margin"></i></span>
-                  <span class="buttoni-text" data-i18n="settingsToggleTestnet">Toggle Testnet Mode</span>
-                  <span class="buttoni-arrow">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-                      <path d="M23.328 16.707L13.121 26.914a.5.5 0 01-.707 0l-2.828-2.828a.5.5 0 010-.707L16.964 16 9.586 8.621a.5.5 0 010-.707l2.828-2.828a.5.5 0 01.707 0l10.207 10.207a1 1 0 010 1.414z"></path>
-                    </svg>
-                  </span>
-                </button>
+                      <br />
+
+                      <label for="node" data-i18n="settingsPivxNode">Choose a PIVX node:</label>
+                      <br />
+                      <select id="node" class="form-control" name="node">
+                        <!-- Populated via JS at DOM load (settings.js) -->
+                      </select>
+
+                      <br />
+
+                      <label for="analytics" data-i18n="settingsAnalytics">Choose your analytics contribution level:</label>
+                      <br />
+                      <select id="analytics" class="form-control" name="analytics">
+                        <!-- Populated via JS at DOM load (settings.js) -->
+                      </select>
+                      <div id="analyticsDescriptor"></div>
+
+                      <!-- Default switch -->
+                      <div class="custom-control custom-switch" style="margin-bottom:15px;">
+                        <input type="checkbox" class="custom-control-input" id="debugToggler" onclick="MPW.toggleDebug()">
+                        <label class="custom-control-label" for="debugToggler">Debug Mode</label>
+                      </div>
+
+                      <div class="custom-control custom-switch">
+                        <input type="checkbox" class="custom-control-input" id="tesnetToggler" onclick="MPW.toggleTestnet()">
+                        <label class="custom-control-label" for="tesnetToggler">Testnet Mode</label>
+                      </div>
+
+                    </div>
+
+                    <div id="settingsDisplay" class="d-none settingsContent">
+                      <span class="header-title">Display</span>
+
+                      <hr />
+
+                      <label for="currency" data-i18n="settingsCurrency">Choose a display currency:</label>
+                      <br />
+                      <select id="currency" class="form-control" name="currency">
+                        <!-- Populated via JS at Price Source data load (prices.js) -->
+                      </select>
+
+                      <br />
+
+                      <label for="translation" data-i18n="settingsLanguage">Choose a Language:</label>
+                      <br />
+                      <select id="translation" class="form-control" name="translation">
+                        <!-- Populated via JS at DOM load (settings.js) -->
+                      </select>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
