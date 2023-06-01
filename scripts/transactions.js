@@ -111,7 +111,11 @@ export async function createTxGUI() {
         );
 
     // Create and send the TX
-    const cRes = await createAndSendTransaction({ address, amount: nValue, isDelegation: false });
+    const cRes = await createAndSendTransaction({
+        address,
+        amount: nValue,
+        isDelegation: false,
+    });
 
     // Wipe any payment request info
     if (cRes.ok && doms.domReqDesc.value) {
