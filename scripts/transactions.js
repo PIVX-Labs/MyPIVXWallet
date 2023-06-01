@@ -109,7 +109,22 @@ export async function createTxGUI() {
             [],
             2500
         );
-    createAndSendTransaction({ address, amount: nValue, isDelegation: false });
+
+    // Create and send the TX
+    const cRes = await createAndSendTransaction({ address, amount: nValue, isDelegation: false });
+
+    // Wipe any payment request info
+    if (cRes.ok && doms.domReqDesc.value) {
+        // Description
+        doms.domReqDesc.value = '';
+        doms.domReqDisplay.style.display = 'none';
+        // Address
+        doms.domAddress1s.value = '';
+        // Amount
+        doms.domSendAmountCoins.value = '';
+        // Price
+        doms.domSendAmountValue.value = '';
+    }
 }
 
 /**

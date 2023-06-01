@@ -318,19 +318,19 @@ export async function start() {
         // Import the wallet, and toggle the startup flag, which delegates the chain data refresh to settingsStart();
         if (publicKey) {
             importWallet({ newWif: publicKey, fStartup: true });
+
+            // Payment processor popup
+            if (reqTo.length || reqAmount > 0) {
+                guiPreparePayment(
+                    reqTo,
+                    reqAmount,
+                    urlParams.has('desc') ? urlParams.get('desc') : ''
+                );
+            }
         } else {
             // Display the password unlock upfront
             await accessOrImportWallet();
         }
-    }
-
-    // Payment processor redirect
-    if (reqTo.length || reqAmount > 0) {
-        guiPreparePayment(
-            reqTo,
-            reqAmount,
-            urlParams.has('desc') ? urlParams.get('desc') : ''
-        );
     }
 
     subscribeToNetworkEvents();
