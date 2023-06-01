@@ -256,12 +256,20 @@ export async function createPromoCode(strCode, nAmount, fAddRandomness = true) {
         update: function (evt) {
             if (evt.data.type === 'progress') {
                 this.progress = evt.data.res.progress;
+                // If the State HTML is available, render it!
+                const cElement = document.getElementById('c' + this.code);
+                if (cElement) {
+                    cElement.innerText = this.progress;
+                }
             } else {
                 this.key = evt.data.res.bytes;
             }
         },
         end_state: '',
     };
+
+    // Inject the promo code in to the thread context
+    cThread.thread.code = strFinalCode;
 
     // Setup it's internal update function
     cThread.thread.onmessage = cThread.update;
@@ -363,26 +371,11 @@ export async function renderSavedPromos() {
  * @param {boolean} fRecursive - Whether this call is self-initiated or not
  */
 export async function updatePromoCreationTick(fRecursive = false) {
-    /* Animated counter function */
-    function progressAnimateTick(i, target, el) {
-        if (!el) return;
-        if (i <= target) {
-            el.innerHTML = i;
-            // Cancel once at 100%
-            if (target === 100) return;
-            // Otherwise, recursively callback
-            setTimeout(() => {
-                progressAnimateTick(i + 1, target, el);
-            }, 100);
-        }
-    }
-
     // Begin rendering our list of codes
     const cSavedCodes = await renderSavedPromos();
     let strHTML = cSavedCodes.html;
 
     // Loop all threads, displaying their progress
-    let oldPercentage = 0;
     for (const cThread of arrPromoCreationThreads) {
         // Check if the code is derived, if so, fill it with it's balance
         if (cThread.thread.key && !cThread.end_state) {
@@ -449,13 +442,6 @@ export async function updatePromoCreationTick(fRecursive = false) {
                  <td>${strState}</td>
              </tr>
          `;
-
-        // Only update after we have a little progress, but not yet complete
-        if (cThread.thread.progress >= 5 && !cThread.end_state) {
-            oldPercentage = Number(
-                document.getElementById(`c${cThread.code}`).innerHTML
-            );
-        }
     }
 
     // Render the compiled HTML
@@ -484,12 +470,6 @@ export async function updatePromoCreationTick(fRecursive = false) {
                     (a) => a.code === cThread.code
                 ),
                 1
-            );
-        } else {
-            progressAnimateTick(
-                oldPercentage,
-                cThread.thread.progress,
-                document.getElementById(`c${cThread.code}`)
             );
         }
     }
