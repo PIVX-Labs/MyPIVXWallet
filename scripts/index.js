@@ -40,6 +40,8 @@ export {
     unblurPrivKey,
     toggleBottomMenu,
     createProposal,
+    updateStakingRewardsGUI,
+    switchSettings,
     updateActivityGUI,
 } from './global.js';
 export { generateWallet, getNewAddress, importWallet } from './wallet.js';

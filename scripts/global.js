@@ -262,6 +262,10 @@ export async function start() {
         domNodeSelect: document.getElementById('node'),
         domTranslationSelect: document.getElementById('translation'),
         domBlackBack: document.getElementById('blackBack'),
+        domWalletSettings: document.getElementById('settingsWallet'),
+        domDisplaySettings: document.getElementById('settingsDisplay'),
+        domWalletSettingsBtn: document.getElementById('settingsWalletBtn'),
+        domDisplaySettingsBtn: document.getElementById('settingsDisplayBtn'),
     };
     await i18nStart();
     await loadImages();
@@ -2173,6 +2177,55 @@ export const beforeUnloadListener = (evt) => {
     // Most browsers ignore this nowadays, but still, keep it 'just incase'
     return (evt.returnValue = translation.BACKUP_OR_ENCRYPT_WALLET);
 };
+
+/**
+ * @typedef {Object} SettingsDOM - An object that contains the DOM elements for settings pages.
+ * @property {HTMLElement} btn - The button to switch to this setting type.
+ * @property {HTMLElement} section - The container for this setting type.
+ */
+
+/**
+ * Returns a list of all pages and their DOM elements.
+ *
+ * This must be a function, since, the DOM elements are `undefined` until
+ * after the startup sequence.
+ *
+ * Types are inferred.
+ */
+function getSettingsPages() {
+    return {
+        /** @type {SettingsDOM} */
+        wallet: {
+            btn: doms.domWalletSettingsBtn,
+            section: doms.domWalletSettings,
+        },
+        /** @type {SettingsDOM} */
+        display: {
+            btn: doms.domDisplaySettingsBtn,
+            section: doms.domDisplaySettings,
+        },
+    };
+}
+
+/**
+ * Switch between screens in the settings menu
+ * @param {string} page - The name of the setting page to switch to
+ */
+export function switchSettings(page) {
+    const SETTINGS = getSettingsPages();
+    const { btn, section } = SETTINGS[page];
+
+    Object.values(SETTINGS).forEach(({ section, btn }) => {
+        // Hide all settings sections
+        section.classList.add('d-none');
+        // Make all buttons inactive
+        btn.classList.remove('active');
+    });
+
+    // Show selected section and make its button active
+    section.classList.remove('d-none');
+    btn.classList.add('active');
+}
 
 function errorHandler(e) {
     const message = `Unhandled exception. <br> ${sanitizeHTML(
