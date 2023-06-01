@@ -231,7 +231,6 @@ export async function start() {
         domNodeSelect: document.getElementById('node'),
         domTranslationSelect: document.getElementById('translation'),
         domBlackBack: document.getElementById('blackBack'),
-        domVersion: document.getElementById('version'),
         domWalletSettings: document.getElementById('settingsWallet'),
         domDisplaySettings: document.getElementById('settingsDisplay'),
         domWalletSettingsBtn: document.getElementById('settingsWalletBtn'),
