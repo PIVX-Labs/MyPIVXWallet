@@ -63,6 +63,7 @@ export { renderWalletBreakdown } from './charting';
 export { hexToBytes, bytesToHex, dSHA256 } from './utils.js';
 
 import Masternode from './masternode.js';
+export { renderChangelog } from './changelog';
 export { Masternode };
 
 export { getNetwork } from './network.js';
