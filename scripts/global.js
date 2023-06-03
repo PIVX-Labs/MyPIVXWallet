@@ -870,6 +870,9 @@ export async function updateActivityGUI(fStaking = false, fNewOnly = false) {
     // Prevent the user from spamming refreshes
     if (cNet.historySyncing) return;
 
+    // Remember how much history we had previously
+    const nPrevHistory = cNet.arrTxHistory.length;
+
     // Choose the Dashboard or Staking UI accordingly
     let domLoadMore = doms.domActivityLoadMore;
     let domLoadMoreIcon = doms.domActivityLoadMoreIcon;
@@ -882,6 +885,9 @@ export async function updateActivityGUI(fStaking = false, fNewOnly = false) {
     domLoadMoreIcon.classList.add('fa-spin');
     const arrTXs = await cNet.syncTxHistoryChunk(fNewOnly);
     domLoadMoreIcon.classList.remove('fa-spin');
+
+    // If there's no change in history size post-sync, then we can cancel here, there's nothing new to render
+    if (nPrevHistory === cNet.arrTxHistory.length) return;
 
     // Check if all transactions are loaded
     if (cNet.isHistorySynced) {
@@ -2163,12 +2169,9 @@ export function refreshChainData() {
     if (!masterKey) return;
 
     // Fetch block count + UTXOs, update the UI for new transactions
-    const nPrevBlock = cNet.cachedBlockCount;
     cNet.getBlockCount().then((_) => {
-        // Update the Activity if a new block arrived
-        if (cNet.cachedBlockCount > nPrevBlock) {
-            updateActivityGUI(false, true);
-        }
+        // Fetch latest Activity
+        updateActivityGUI(false, true);
     });
     getBalance(true);
 }

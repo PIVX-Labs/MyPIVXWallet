@@ -548,7 +548,7 @@ export async function importWallet({
             if (!publicKey) return;
 
             // Derive our hardware address and import!
-            setMasterKey(new HardwareWalletMasterKey());
+            await setMasterKey(new HardwareWalletMasterKey());
 
             // Hide the 'export wallet' button, it's not relevant to hardware wallets
             doms.domExportWallet.hidden = true;
@@ -582,18 +582,18 @@ export async function importWallet({
                     privateImportValue,
                     passphrase
                 );
-                setMasterKey(new HdMasterKey({ seed }));
+                await setMasterKey(new HdMasterKey({ seed }));
             } else {
                 // Public Key Derivation
                 try {
                     if (privateImportValue.startsWith('xpub')) {
-                        setMasterKey(
+                        await setMasterKey(
                             new HdMasterKey({
                                 xpub: privateImportValue,
                             })
                         );
                     } else if (privateImportValue.startsWith('xprv')) {
-                        setMasterKey(
+                        await setMasterKey(
                             new HdMasterKey({
                                 xpriv: privateImportValue,
                             })
@@ -604,7 +604,7 @@ export async function importWallet({
                             privateImportValue[0]
                         )
                     ) {
-                        setMasterKey(
+                        await setMasterKey(
                             new LegacyMasterKey({
                                 address: privateImportValue,
                             })
@@ -614,7 +614,7 @@ export async function importWallet({
                         const pkBytes = parseWIF(privateImportValue);
 
                         // Import the raw private key
-                        setMasterKey(new LegacyMasterKey({ pkBytes }));
+                        await setMasterKey(new LegacyMasterKey({ pkBytes }));
                     }
                 } catch (e) {
                     return createAlert(
@@ -685,10 +685,14 @@ export async function importWallet({
     }
 }
 
-function setMasterKey(mk) {
+/**
+ * Set or replace the active Master Key with a new Master Key
+ * @param {MasterKey} mk - The new Master Key to set active
+ */
+async function setMasterKey(mk) {
     masterKey = mk;
     // Update the network master key
-    getNetwork().setMasterKey(masterKey);
+    await getNetwork().setMasterKey(masterKey);
 }
 
 // Wallet Generation
@@ -708,7 +712,7 @@ export async function generateWallet(noUI = false) {
         const seed = await mnemonicToSeed(mnemonic, passphrase);
 
         // Prompt the user to encrypt the seed
-        setMasterKey(new HdMasterKey({ seed }));
+        await setMasterKey(new HdMasterKey({ seed }));
         fWalletLoaded = true;
 
         if (!cChainParams.current.isTestnet)
