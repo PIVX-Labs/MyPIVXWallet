@@ -42,7 +42,7 @@ export let fWalletLoaded = false;
  * Abstract class masterkey
  * @abstract
  */
-class MasterKey {
+export class MasterKey {
     #addressIndex = 0;
     /**
      * Map our own address -> Path

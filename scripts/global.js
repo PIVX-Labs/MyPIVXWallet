@@ -51,6 +51,7 @@ export function isLoaded() {
 }
 
 export let doms = {};
+const activeMasternode = { txId: null, outId: null };
 
 export async function start() {
     doms = {
@@ -151,6 +152,7 @@ export async function start() {
         domMnTxId: document.getElementById('mnTxId'),
         domMnPrivateKey: document.getElementById('mnPrivateKey'),
         domMnDashboard: document.getElementById('mnDashboard'),
+        domSelectMasternode: document.getElementById('selectMasternode'),
         domMnProtocol: document.getElementById('mnProtocol'),
         domMnStatus: document.getElementById('mnStatus'),
         domMnNetType: document.getElementById('mnNetType'),
@@ -267,6 +269,7 @@ export async function start() {
         domWalletSettingsBtn: document.getElementById('settingsWalletBtn'),
         domDisplaySettingsBtn: document.getElementById('settingsDisplayBtn'),
         domVersion: document.getElementById('version'),
+        domMasternodeTableBody: document.getElementById('masternodeTableBody'),
     };
     await i18nStart();
     await loadImages();
@@ -388,6 +391,16 @@ export async function start() {
 
     // Check for recent upgrades, display the changelog
     checkForUpgrades();
+}
+
+/**
+ * Pick first masternode from list.
+ */
+async function pickMasternode() {
+    const database = await Database.getInstance();
+    const masternode = (await database.getMasternodes())[0];
+    activeMasternode.txId = masternode?.collateralTxId;
+    activeMasternode.outId = masternode?.outidx;
 }
 
 function subscribeToNetworkEvents() {
@@ -1114,8 +1127,8 @@ async function govVote(hash, voteCode) {
         })) == true
     ) {
         const database = await Database.getInstance();
-        const cMasternode = await database.getMasternode();
-        if (cMasternode) {
+        const cMasternodes = await database.getMasternodes();
+        for (const cMasternode of cMasternodes) {
             if ((await cMasternode.getStatus()) !== 'ENABLED') {
                 createAlert(
                     'warning',
@@ -1153,8 +1166,6 @@ async function govVote(hash, voteCode) {
                     6000
                 );
             }
-        } else {
-            createAlert('warning', 'Access a masternode before voting!', 6000);
         }
     }
 }
@@ -1165,7 +1176,7 @@ async function govVote(hash, voteCode) {
  */
 export async function startMasternode(fRestart = false) {
     const database = await Database.getInstance();
-    const cMasternode = await database.getMasternode(masterKey);
+    const cMasternode = await database.getMasternode(activeMasternode);
     if (cMasternode) {
         if (
             masterKey.isViewOnly &&
@@ -1193,7 +1204,7 @@ export async function startMasternode(fRestart = false) {
 export async function destroyMasternode() {
     const database = await Database.getInstance();
 
-    if (await database.getMasternode(masterKey)) {
+    if (await database.getMasternode(activeMasternode)) {
         database.removeMasternode(masterKey);
         createAlert(
             'success',
@@ -1752,7 +1763,7 @@ async function renderProposals(arrProposals, fContested) {
     // Render the proposals in the relevent table
     domTable.innerHTML = '';
     const database = await Database.getInstance();
-    const cMasternode = await database.getMasternode();
+    const cMasternode = await database.getMasternode(activeMasternode);
 
     if (!fContested) {
         const database = await Database.getInstance();
@@ -1896,14 +1907,47 @@ async function renderProposals(arrProposals, fContested) {
     }
 }
 
-export async function updateMasternodeTab() {
-    //TODO: IN A FUTURE ADD MULTI-MASTERNODE SUPPORT BY SAVING MNs with which you logged in the past.
+export async function selectMasternode() {
+    doms.domAccessMasternode.style.display = 'none';
+    doms.domCreateMasternode.style.display = 'none';
+    doms.domMnDashboard.style.display = 'none';
+    doms.domSelectMasternode.style.display = 'block';
+
+    doms.domMasternodeTableBody.innerHTML = '';
+
+    const database = await Database.getInstance();
+    const masternodes = await database.getMasternodes();
+
+    for (const [i, mn] of masternodes.entries()) {
+        const domRow = doms.domMasternodeTableBody.insertRow();
+        domRow.onclick = () => {
+            activeMasternode.outId = mn.outidx;
+            activeMasternode.txId = mn.collateralTxId;
+            updateMasternodeTab()
+                .then(() => {})
+                .catch((e) => {
+                    throw e;
+                });
+        };
+        const number = domRow.insertCell();
+        number.innerHTML = i + 1;
+        const txid = domRow.insertCell();
+        txid.innerHTML = sanitizeHTML(`${mn.collateralTxId}:${mn.outidx}`);
+        domRow.insertCell();
+    }
+}
+
+export async function updateMasternodeTab(createMasternode = false) {
+    if (!activeMasternode.txId) {
+        await pickMasternode();
+    }
+
     // Ensure a wallet is loaded
     doms.domMnTextErrors.innerHTML = '';
     doms.domAccessMasternode.style.display = 'none';
     doms.domCreateMasternode.style.display = 'none';
     doms.domMnDashboard.style.display = 'none';
-
+    doms.domSelectMasternode.style.display = 'none';
     if (!masterKey) {
         doms.domMnTextErrors.innerHTML =
             'Please ' +
@@ -1920,7 +1964,9 @@ export async function updateMasternodeTab() {
 
     const database = await Database.getInstance();
 
-    let cMasternode = await database.getMasternode();
+    const cMasternode = createMasternode
+        ? null
+        : await database.getMasternode(activeMasternode);
     // If the collateral is missing (spent, or switched wallet) then remove the current MN
     if (cMasternode) {
         if (
@@ -1928,21 +1974,29 @@ export async function updateMasternodeTab() {
                 .getConfirmed()
                 .find((utxo) => isMasternodeUTXO(utxo, cMasternode))
         ) {
-            database.removeMasternode();
-            cMasternode = null;
+            database.removeMasternode(activeMasternode);
+            await pickMasternode();
+            return await updateMasternodeTab();
         }
     }
 
     doms.domControlMasternode.style.display = cMasternode ? 'block' : 'none';
-
+    const mnIds = (await database.getMasternodes()).map(
+        (mn) => `${mn.collateralTxId}:${mn.outidx}`
+    );
     // first case: the wallet is not HD and it is not hardware, so in case the wallet has collateral the user can check its status and do simple stuff like voting
     if (!masterKey.isHD) {
         doms.domMnAccessMasternodeText.innerHTML =
             doms.masternodeLegacyAccessText;
         doms.domMnTxId.style.display = 'none';
+
         // Find the first UTXO matching the expected collateral size
         const cCollaUTXO = mempool
             .getConfirmed()
+            .filter(
+                (utxo) =>
+                    !mnIds.some((mnId) => mnId === `${utxo.id}:${utxo.vout}`)
+            )
             .find(
                 (cUTXO) => cUTXO.sats === cChainParams.current.collateralInSats
             );
@@ -1980,6 +2034,8 @@ export async function updateMasternodeTab() {
         // Aggregate all valid Masternode collaterals into a map of Address <--> Collateral
         for (const cUTXO of mempool.getConfirmed()) {
             if (cUTXO.sats !== cChainParams.current.collateralInSats) continue;
+            if (mnIds.some((mnId) => mnId === `${cUTXO.id}:${cUTXO.vout}`))
+                continue;
             mapCollateralAddresses.set(cUTXO.path, cUTXO);
         }
         const fHasCollateral = mapCollateralAddresses.size > 0;
@@ -1998,10 +2054,11 @@ export async function updateMasternodeTab() {
         }
 
         // If there's no collateral found, display the creation UI
-        if (!fHasCollateral) doms.domCreateMasternode.style.display = 'block';
+        if (!cMasternode && !fHasCollateral)
+            doms.domCreateMasternode.style.display = 'block';
 
         // If we have a collateral and a loaded Masternode, display the Dashboard
-        if (fHasCollateral && cMasternode) {
+        if (cMasternode) {
             // Refresh the display
             refreshMasternodeData(cMasternode);
             doms.domMnDashboard.style.display = '';
@@ -2009,6 +2066,11 @@ export async function updateMasternodeTab() {
     }
 }
 
+/**
+ * Refresh masternode data.
+ * @param {Masternode} cMasternode
+ * @param {bool} [fAlert]
+ */
 async function refreshMasternodeData(cMasternode, fAlert = false) {
     const cMasternodeData = await cMasternode.getFullData();
     if (debug) console.log(cMasternodeData);
@@ -2050,6 +2112,8 @@ async function refreshMasternodeData(cMasternode, fAlert = false) {
                 );
                 const database = await Database.getInstance();
                 await database.addMasternode(cMasternode);
+                activeMasternode.txId = cMasternode.collateralTxId;
+                activeMasternode.outId = cMasternode.outidx;
             } else {
                 doms.domMnTextErrors.innerHTML =
                     "We couldn't start your masternode";
@@ -2074,6 +2138,8 @@ async function refreshMasternodeData(cMasternode, fAlert = false) {
             );
         const database = await Database.getInstance();
         await database.addMasternode(cMasternode);
+        activeMasternode.txId = cMasternode.collateralTxId;
+        activeMasternode.outId = cMasternode.outidx;
     } else if (cMasternodeData.status === 'REMOVED') {
         doms.domMnTextErrors.innerHTML =
             'Masternode is currently <b>REMOVED</b>';

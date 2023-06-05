@@ -5,19 +5,18 @@ import { cChainParams } from './chain_params.js';
 import { confirmPopup, sanitizeHTML, createAlert } from './misc.js';
 import { PromoWallet } from './promos.js';
 
-/** The current version of the DB - increasing this will prompt the Upgrade process for clients with an older version */
-export const DB_VERSION = 2;
-
 /**
  *
  */
 export class Database {
     /**
      * Current Database Version.
-     * Version 1 = Add index DB (PR #[FILL])
+     * Version 1 = Add index DB (PR #121)
+     * Version 2 = PIVX Promos integration (PR #124)
+     * Version 3 = Multi masternode support (PR #141? Please remember toactually fill it this time)
      * @type{Number}
      */
-    static version = 1;
+    static version = 3;
 
     /**
      * @type{IDBPDatabase}
@@ -36,24 +35,27 @@ export class Database {
     /**
      * Add masternode to the database
      * @param {Masternode} masternode
-     * @param {Masterkey} _masterKey - Masterkey associated to the masternode. Currently unused
      */
-    async addMasternode(masternode, _masterKey) {
+    async addMasternode(masternode) {
         const store = this.#db
             .transaction('masternodes', 'readwrite')
             .objectStore('masternodes');
-        // For now the key is 'masternode' since we don't support multiple masternodes
-        await store.put(masternode, 'masternode');
+
+        await store.put(masternode, [
+            masternode.collateralTxId,
+            masternode.outidx,
+        ]);
     }
     /**
      * Removes a masternode
-     * @param {Masterkey} _masterKey - Masterkey associated to the masternode. Currently unused
+     * @param {string} txId
+     * @param {number} outId
      */
-    async removeMasternode(_masterKey) {
+    async removeMasternode({ txId, outId }) {
         const store = this.#db
             .transaction('masternodes', 'readwrite')
             .objectStore('masternodes');
-        await store.delete('masternode');
+        await store.delete([txId, outId]);
     }
 
     /**
@@ -120,13 +122,30 @@ export class Database {
     }
 
     /**
-     * @returns {Promise<Masternode?>} the masternode stored in the db
+     * @returns {Promise<Masternode[]>} get all masternodes associated to an account
      */
-    async getMasternode(_masterKey) {
+    async getMasternodes(_masterKey) {
         const store = this.#db
             .transaction('masternodes', 'readonly')
             .objectStore('masternodes');
-        return new Masternode(await store.get('masternode'));
+        return (await store.getAll()).map((m) => new Masternode(m));
+    }
+
+    /**
+     * Get a masternode by txId and outId
+     * @param {string} txId
+     * @param {number} outId
+     */
+    async getMasternode({ txId, outId }) {
+        if (!txId || !outId) return null;
+        const store = this.#db
+            .transaction('masternodes', 'readonly')
+            .objectStore('masternodes');
+        const mn = await store.get([txId, outId]);
+        if (mn) return new Masternode(mn);
+        else {
+            return null;
+        }
     }
 
     /**
@@ -227,10 +246,13 @@ export class Database {
     static async create(name) {
         let migrate = false;
         const database = new Database({ db: null });
-        const db = await openDB(`MPW-${name}`, DB_VERSION, {
-            upgrade: (db, oldVersion) => {
+        const db = await openDB(`MPW-${name}`, Database.version, {
+            upgrade: async (db, oldVersion, _, tx) => {
                 console.log(
-                    'DB: Upgrading from ' + oldVersion + ' to ' + DB_VERSION
+                    'DB: Upgrading from ' +
+                        oldVersion +
+                        ' to ' +
+                        Database.version
                 );
                 if (oldVersion == 0) {
                     db.createObjectStore('masternodes');
@@ -242,6 +264,21 @@ export class Database {
                 // The introduction of PIVXPromos (safely added during <v2 upgrades)
                 if (oldVersion <= 1) {
                     db.createObjectStore('promos');
+                }
+
+                // Introduction of multi masternodes
+                if (oldVersion <= 2) {
+                    const store = tx.objectStore('masternodes');
+                    const masternode = await store.get('masternode');
+                    if (masternode) {
+                        await Promise.all([
+                            store.add(masternode, [
+                                masternode.collateralTxId,
+                                masternode.outidx,
+                            ]),
+                            store.delete('masternode'),
+                        ]);
+                    }
                 }
             },
             blocking: () => {

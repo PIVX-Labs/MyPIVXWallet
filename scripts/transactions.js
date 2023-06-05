@@ -512,7 +512,7 @@ async function chooseUTXOs(
 
     // Select and return UTXO pointers (filters applied)
     const cCoinControl = { nValue: 0, nChange: 0, arrSelectedUTXOs: [] };
-    const masternode = await (await Database.getInstance()).getMasternode();
+    const masternodes = await (await Database.getInstance()).getMasternodes();
 
     for (let i = 0; i < arrUTXOs.length; i++) {
         const cUTXO = arrUTXOs[i];
@@ -520,7 +520,13 @@ async function chooseUTXOs(
             continue;
         }
         // Don't spend locked Masternode collaterals
-        if (isMasternodeUTXO(cUTXO, masternode)) continue; //CHANGE THIS
+        if (
+            masternodes.some(
+                (mn) =>
+                    mn.collateralTxId === cUTXO.id && mn.outidx === cUTXO.vout
+            )
+        )
+            continue;
 
         // Have we met the required sats threshold?
         if (
