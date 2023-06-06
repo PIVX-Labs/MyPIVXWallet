@@ -261,6 +261,7 @@ export async function start() {
         domCurrencySelect: document.getElementById('currency'),
         domExplorerSelect: document.getElementById('explorer'),
         domNodeSelect: document.getElementById('node'),
+        domAutoSwitchToggle: document.getElementById('autoSwitchToggler'),
         domTranslationSelect: document.getElementById('translation'),
         domBlackBack: document.getElementById('blackBack'),
         domWalletSettings: document.getElementById('settingsWallet'),
@@ -423,7 +424,9 @@ function subscribeToNetworkEvents() {
             // If allowed by settings: submit a simple 'tx' ping to Labs Analytics
             getNetwork().submitAnalytics('transaction');
         } else {
-            createAlert('warning', 'Transaction Failed!', 1250);
+            console.error('Error sending transaction:');
+            console.error(result);
+            createAlert('warning', 'Transaction Failed!', 2500);
         }
     });
 }

@@ -45,7 +45,7 @@ export {
     updateActivityGUI,
 } from './global.js';
 export { generateWallet, getNewAddress, importWallet } from './wallet.js';
-export { toggleTestnet, toggleDebug } from './settings.js';
+export { toggleTestnet, toggleDebug, toggleAutoSwitch } from './settings.js';
 export {
     createTxGUI,
     undelegateGUI,
