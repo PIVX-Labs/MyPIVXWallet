@@ -614,7 +614,6 @@ export function getNetwork() {
  * @returns {Promise<Response>} - The unresolved Fetch promise
  */
 export function fetchBlockbook(api, options) {
-    if (_network.strUrl === 'https://explorer.duddino.com') throw new Error('Fake error for testing, heh');
     return fetch(_network.strUrl + api, options);
 }
 
