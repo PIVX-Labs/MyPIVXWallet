@@ -3,7 +3,13 @@ import { cChainParams, COIN } from './chain_params.js';
 import { createAlert } from './misc.js';
 import { Mempool, UTXO } from './mempool.js';
 import { getEventEmitter } from './event_bus.js';
-import { STATS, cStatKeys, cAnalyticsLevel, setExplorer, fAutoSwitch } from './settings.js';
+import {
+    STATS,
+    cStatKeys,
+    cAnalyticsLevel,
+    setExplorer,
+    fAutoSwitch,
+} from './settings.js';
 
 /**
  * A historical transaction type.
@@ -618,7 +624,7 @@ export function fetchBlockbook(api, options) {
 }
 
 /**
- * A wrapper for Blockbook calls which can, in the event of an unresponsive explorer, 
+ * A wrapper for Blockbook calls which can, in the event of an unresponsive explorer,
  * seamlessly attempt the same call on multiple other explorers until success.
  * @param {Function} func - The function to re-attempt with
  * @param  {...any} args - The arguments to pass to the function

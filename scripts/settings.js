@@ -165,7 +165,8 @@ export async function start() {
     const database = await Database.getInstance();
 
     // Fetch settings from Database
-    const { analytics: strSettingAnalytics, autoswitch } = await database.getSettings();
+    const { analytics: strSettingAnalytics, autoswitch } =
+        await database.getSettings();
 
     // Set any Toggles to their default or DB state
     fAutoSwitch = autoswitch;
