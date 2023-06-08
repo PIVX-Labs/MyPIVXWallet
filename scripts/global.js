@@ -133,6 +133,8 @@ export async function start() {
         //GOVERNANCE ELEMENTS
         domGovProposalsTable: document.getElementById('proposalsTable'),
         domGovProposalsTableBody: document.getElementById('proposalsTableBody'),
+        domAllocatedGovernanceBudget: document.getElementById('allocatedGovernanceBudget'),
+        domAllocatedGovernanceBudget2: document.getElementById('allocatedGovernanceBudget2'),
         domGovProposalsContestedTable: document.getElementById(
             'proposalsContestedTable'
         ),
@@ -389,6 +391,9 @@ export async function start() {
 
     // Check for recent upgrades, display the changelog
     checkForUpgrades();
+
+    // Create counter when loading proposalsTableBody
+    new MPW.FlipDown(1687642458).start();
 }
 
 function subscribeToNetworkEvents() {
@@ -1097,7 +1102,7 @@ export function hideAllWalletOptions() {
     doms.domGenHardwareWallet.style.display = 'none';
 }
 
-async function govVote(hash, voteCode) {
+export async function govVote(hash, voteCode) {
     if (
         (await confirmPopup({
             title: ALERTS.CONFIRM_POPUP_VOTE,
@@ -1776,44 +1781,78 @@ async function renderProposals(arrProposals, fContested) {
             };
         })
     );
+
+    let totalAllocatedAmount = 0;
+
+    let i = 0;
     for (const cProposal of arrProposals) {
         const domRow = domTable.insertRow();
+
+        const domStatus = domRow.insertCell();
+        domStatus.classList.add('governStatusCol');
+        if(domTable.id == "proposalsTableBody") {
+            domStatus.setAttribute("onclick",`if(document.getElementById('governMob${i}').classList.contains('d-none')) { document.getElementById('governMob${i}').classList.remove('d-none'); } else { document.getElementById('governMob${i}').classList.add('d-none'); }`);
+        } else if(domTable.id == "proposalsContestedTableBody") {
+            domStatus.setAttribute("onclick",`if(document.getElementById('governMobCon${i}').classList.contains('d-none')) { document.getElementById('governMobCon${i}').classList.remove('d-none'); } else { document.getElementById('governMobCon${i}').classList.add('d-none'); }`);
+        }
+        // Add border radius to last row
+        if(arrProposals.length-1 == i) { domStatus.classList.add('bblr-7p'); }
+        domStatus.innerHTML = `
+        <span style="font-size:12px; line-height: 15px; display: block; margin-bottom:15px;">
+            <span style="color:#fff; font-weight:700;">PASSING</span><br>
+            <span style="color:hsl(265 100% 67% / 1);">(FUNDED)</span><br>
+        </span>
+        <span style="font-size:12px; line-height: 15px; display: block; color:#d1d1d1;">
+            <b>49.2%</b><br>
+            Net Yes
+        </span>
+        <span class="governArrow for-mobile">
+            <i class="fa-solid fa-angle-down"></i>
+        </span>`;
 
         // Name and URL hyperlink
         const domNameAndURL = domRow.insertCell();
         // IMPORTANT: Sanitise all of our HTML or a rogue server or malicious proposal could perform a cross-site scripting attack
-        domNameAndURL.innerHTML = `<a class="active" href="${sanitizeHTML(
+        domNameAndURL.innerHTML = `<a class="active governLink" href="${sanitizeHTML(
             cProposal.URL
         )}" target="_blank" rel="noopener noreferrer"><b>${sanitizeHTML(
             cProposal.Name
-        )}</b></a>`;
+        )} <span class="governLinkIco"><i class="fa-solid fa-arrow-up-right-from-square"></i></b></a></span>`;
+
+        // Count allocated budget
+        if(domTable.id == "proposalsTableBody") {
+            totalAllocatedAmount += cProposal.MonthlyPayment;
+        }
 
         // Payment Schedule and Amounts
         const domPayments = domRow.insertCell();
-        domPayments.innerHTML = `<b>${sanitizeHTML(
-            cProposal.MonthlyPayment
-        )}</b> ${cChainParams.current.TICKER} <br>
-      <small> ${sanitizeHTML(
-          cProposal['RemainingPaymentCount']
-      )} payments remaining of <b>${sanitizeHTML(cProposal.TotalPayment)}</b> ${
-            cChainParams.current.TICKER
-        } total</small>`;
+        domPayments.classList.add('for-desktop');
+        domPayments.innerHTML = `<span class="governValues"><b>${sanitizeHTML(
+            parseInt(cProposal.MonthlyPayment).toLocaleString('en-gb', ',', '.')
+        )}</b> <span class="governMarked">${cChainParams.current.TICKER}</span> <br>
+        <span style="margin-right: 2px;" class="governMarked governFiatSize">$</span><b class="governFiatSize">3,487.46</b></span>
+
+        <span class="governInstallments"> ${sanitizeHTML(
+            cProposal['RemainingPaymentCount']
+        )} installment(s) remaining<br>of <b>${sanitizeHTML(parseInt(cProposal.TotalPayment).toLocaleString('en-gb', ',', '.'))} ${cChainParams.current.TICKER}</b> total</span>`;
 
         // Vote Counts and Consensus Percentages
         const domVoteCounters = domRow.insertCell();
+        domVoteCounters.classList.add('for-desktop');
         const { Yeas, Nays } = cProposal;
         const nPercent = cProposal.Ratio * 100;
-
-        domVoteCounters.innerHTML = `<b>${nPercent.toFixed(2)}%</b> <br>
-      <small> <b><div class="text-success" style="display:inline;"> ${sanitizeHTML(
-          Yeas
-      )} </div></b> /
-	  <b><div class="text-danger" style="display:inline;"> ${sanitizeHTML(
-          Nays
-      )} </div></b>
-      `;
+        
+        domVoteCounters.innerHTML = `<b>${parseFloat(nPercent).toLocaleString('en-gb', { minimumFractionDigits: 0, maximumFractionDigits: 1 }, ',', '.')}%</b> <br>
+        <small class="votesBg"> <b><div class="votesYes" style="display:inline;"> ${sanitizeHTML(
+            Yeas
+        )} </div></b> /
+        <b><div class="votesNo" style="display:inline;"> ${sanitizeHTML(
+            Nays
+        )} </div></b></small>
+        `;
 
         // Voting Buttons for Masternode owners (MNOs)
+        let voteBtn;
         if (cProposal.local) {
             domRow.insertCell(); // Yes/no missing button
             const finalizeRow = domRow.insertCell();
@@ -1857,10 +1896,9 @@ async function renderProposals(arrProposals, fContested) {
                     }
                 }
             };
-            finalizeRow.appendChild(finalizeButton);
         } else {
-            let btnYesClass = 'pivx-button-big';
-            let btnNoClass = 'pivx-button-big';
+            let btnYesClass = 'pivx-button-small';
+            let btnNoClass = 'pivx-button-small';
             if (cProposal.YourVote) {
                 if (cProposal.YourVote === 1) {
                     btnYesClass += ' pivx-button-big-yes-gov';
@@ -1878,12 +1916,78 @@ async function renderProposals(arrProposals, fContested) {
             domYesBtn.className = btnYesClass;
             domYesBtn.innerText = 'Yes';
             domYesBtn.onclick = () => govVote(cProposal.Hash, 1);
+    
+            // Add border radius to last row
+            if(arrProposals.length-1 == i) { domVoteBtns.classList.add('bbrr-7p'); }
 
+            domVoteBtns.classList.add('for-desktop');
             domVoteBtns.appendChild(domNoBtn);
             domVoteBtns.appendChild(domYesBtn);
-
-            domRow.insertCell(); // Finalize proposal missing button
+            
+            domNoBtn.setAttribute("onclick", `MPW.govVote('${cProposal.Hash}', 2)`);
+            domYesBtn.setAttribute("onclick", `MPW.govVote('${cProposal.Hash}', 1);`);
+            voteBtn = domNoBtn.outerHTML + domYesBtn.outerHTML;
         }
+
+        // Create extended row for mobile
+        const mobileDomRow = domTable.insertRow();
+        const mobileExtended = mobileDomRow.insertCell();
+        if(domTable.id == "proposalsTableBody") {
+            mobileExtended.id = `governMob${i}`;
+        } else if(domTable.id == "proposalsContestedTableBody") {
+            mobileExtended.id = `governMobCon${i}`;
+        }
+        mobileExtended.colSpan = '2';
+        mobileExtended.classList.add('text-left');
+        mobileExtended.classList.add('d-none');
+        mobileExtended.classList.add('for-mobile');
+        mobileExtended.innerHTML = `
+        <div class="row pt-2">
+            <div class="col-5 fs-13 fw-600">
+                <div class="governMobDot"></div> PAYMENT
+            </div>
+            <div class="col-7">
+                <span class="governValues"><b>${sanitizeHTML(
+                    parseInt(cProposal.MonthlyPayment).toLocaleString('en-gb', ',', '.')
+                )}</b> <span class="governMarked">${cChainParams.current.TICKER}</span> <span style="margin-left:10px; margin-right: 2px;" class="governMarked governFiatSize">$</span><b class="governFiatSize">3,487.46</b></span>
+        
+                <span class="governInstallments"> ${sanitizeHTML(
+                    cProposal['RemainingPaymentCount']
+                )} installment(s) remaining<br>of <b>${sanitizeHTML(parseInt(cProposal.TotalPayment).toLocaleString('en-gb', ',', '.'))} ${cChainParams.current.TICKER}</b> total</span>
+            </div>
+        </div>
+        <hr class="governHr">
+        <div class="row">
+            <div class="col-5 fs-13 fw-600">
+                <div class="governMobDot"></div> VOTES
+            </div>
+            <div class="col-7">
+                <b>${parseFloat(nPercent).toLocaleString('en-gb', { minimumFractionDigits: 0, maximumFractionDigits: 1 }, ',', '.')}%</b>
+                <small class="votesBg"> <b><div class="votesYes" style="display:inline;"> ${sanitizeHTML(
+                    Yeas
+                )} </div></b> /
+                <b><div class="votesNo" style="display:inline;"> ${sanitizeHTML(
+                    Nays
+                )} </div></b></small>
+            </div>
+        </div>
+        <hr class="governHr">
+        <div class="row pb-2">
+            <div class="col-5 fs-13 fw-600">
+                <div class="governMobDot"></div> VOTE
+            </div>
+            <div class="col-7">
+                ${voteBtn}
+            </div>
+        </div>`;
+        
+        i++;
+    }
+
+    // Show allocated budget
+    if(domTable.id == "proposalsTableBody") {
+        doms.domAllocatedGovernanceBudget.innerHTML = sanitizeHTML(totalAllocatedAmount.toLocaleString('en-gb'));
+        doms.domAllocatedGovernanceBudget2.innerHTML = sanitizeHTML(totalAllocatedAmount.toLocaleString('en-gb'));
     }
 }
 

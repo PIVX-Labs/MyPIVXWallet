@@ -43,6 +43,7 @@ export {
     updateStakingRewardsGUI,
     switchSettings,
     updateActivityGUI,
+    govVote,
 } from './global.js';
 export { generateWallet, getNewAddress, importWallet } from './wallet.js';
 export { toggleTestnet, toggleDebug } from './settings.js';
@@ -69,3 +70,5 @@ export { Masternode };
 export { getNetwork } from './network.js';
 const toggleNetwork = () => getNetwork().toggle();
 export { toggleNetwork };
+
+export { FlipDown } from './flipdown.js';
