@@ -760,7 +760,7 @@ export async function createActivityListHTML(arrTXs, fRewards = false) {
                             )
                         )
                             .filter(([isOwnAddress, _]) => {
-                                return isOwnAddress;
+                                return !isOwnAddress;
                             })
                             .map(([_, addr]) => addr);
                         txContent =
@@ -792,7 +792,7 @@ export async function createActivityListHTML(arrTXs, fRewards = false) {
                         )
                     )
                         .filter(([isOwnAddress, _]) => {
-                            return isOwnAddress;
+                            return !isOwnAddress;
                         })
                         .map(([_, addr]) => addr);
 
