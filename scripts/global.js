@@ -136,11 +136,20 @@ export async function start() {
         domTotalGovernanceBudget: document.getElementById(
             'totalGovernanceBudget'
         ),
+        domTotalGovernanceBudgetValue: document.getElementById(
+            'totalGovernanceBudgetValue'
+        ),
         domAllocatedGovernanceBudget: document.getElementById(
             'allocatedGovernanceBudget'
         ),
+        domAllocatedGovernanceBudgetValue: document.getElementById(
+            'allocatedGovernanceBudgetValue'
+        ),
         domAllocatedGovernanceBudget2: document.getElementById(
             'allocatedGovernanceBudget2'
+        ),
+        domAllocatedGovernanceBudgetValue2: document.getElementById(
+            'allocatedGovernanceBudgetValue2'
         ),
         domGovProposalsContestedTable: document.getElementById(
             'proposalsContestedTable'
@@ -509,6 +518,37 @@ export function updateTicker() {
 }
 
 /**
+ * Return locale settings best for displaying the user-selected currency
+ * @param {Number} nAmount - The amount in Currency
+ */
+export function optimiseCurrencyLocale(nAmount) {
+    // Allow manipulating the value, if necessary
+    let nValue = nAmount;
+
+    // Find the best fitting native-locale
+    const cLocale = Intl.supportedValuesOf('currency').includes(
+        strCurrency.toUpperCase()
+    )
+        ? {
+              style: 'currency',
+              currency: strCurrency,
+              currencyDisplay: 'narrowSymbol',
+          }
+        : { maximumFractionDigits: 8, minimumFractionDigits: 8 };
+
+    // Catch display edge-cases; like Satoshis having decimals.
+    switch (strCurrency) {
+        case 'sats':
+            nValue = Math.round(nValue);
+            cLocale.maximumFractionDigits = 0;
+            cLocale.minimumFractionDigits = 0;
+    }
+
+    // Return display-optimised Value and Locale pair.
+    return { nValue, cLocale };
+}
+
+/**
  * Update a 'price value' DOM display for the given balance type
  * @param {HTMLElement} domValue
  * @param {boolean} fCold
@@ -516,28 +556,12 @@ export function updateTicker() {
 export function updatePriceDisplay(domValue, fCold = false) {
     // Update currency values
     cMarket.getPrice(strCurrency).then((nPrice) => {
-        // Configure locale settings by detecting currency support
-        const cLocale = Intl.supportedValuesOf('currency').includes(
-            strCurrency.toUpperCase()
-        )
-            ? {
-                  style: 'currency',
-                  currency: strCurrency,
-                  currencyDisplay: 'narrowSymbol',
-              }
-            : { maximumFractionDigits: 8, minimumFractionDigits: 8 };
-
         // Calculate the value
-        let nValue =
+        const nCurrencyValue =
             ((fCold ? getStakingBalance() : getBalance()) / COIN) * nPrice;
 
-        // Handle certain edge-cases; like satoshis having decimals.
-        switch (strCurrency) {
-            case 'sats':
-                nValue = Math.round(nValue);
-                cLocale.maximumFractionDigits = 0;
-                cLocale.minimumFractionDigits = 0;
-        }
+        // Handle certain locale display edge-cases; like satoshis having decimals.
+        const { nValue, cLocale } = optimiseCurrencyLocale(nCurrencyValue);
 
         // Update the DOM
         domValue.innerText = nValue.toLocaleString('en-gb', cLocale);
@@ -1767,6 +1791,15 @@ async function renderProposals(arrProposals, fContested) {
         cChainParams.current.maxPayment / COIN
     ).toLocaleString('en-gb');
 
+    // Update total budget in user's currency
+    const nPrice = await cMarket.getPrice(strCurrency);
+    const nCurrencyValue = (cChainParams.current.maxPayment / COIN) * nPrice;
+    const { nValue, cLocale } = optimiseCurrencyLocale(nCurrencyValue);
+    doms.domTotalGovernanceBudgetValue.innerText = nValue.toLocaleString(
+        'en-gb',
+        cLocale
+    );
+
     // Select the table based on the proposal category
     const domTable = fContested
         ? doms.domGovProposalsContestedTableBody
@@ -1847,6 +1880,7 @@ async function renderProposals(arrProposals, fContested) {
 
         // Name and URL hyperlink
         const domNameAndURL = domRow.insertCell();
+
         // IMPORTANT: Sanitise all of our HTML or a rogue server or malicious proposal could perform a cross-site scripting attack
         domNameAndURL.innerHTML = `<a class="active governLink" href="${sanitizeHTML(
             cProposal.URL
@@ -1859,6 +1893,11 @@ async function renderProposals(arrProposals, fContested) {
             totalAllocatedAmount += cProposal.MonthlyPayment;
         }
 
+        // Convert proposal amount to user's currency
+        const nProposalValue = parseInt(cProposal.MonthlyPayment) * nPrice;
+        const { nValue, cLocale } = optimiseCurrencyLocale(nProposalValue);
+        const strProposalCurrency = nValue.toLocaleString('en-gb', cLocale);
+
         // Payment Schedule and Amounts
         const domPayments = domRow.insertCell();
         domPayments.classList.add('for-desktop');
@@ -1867,7 +1906,7 @@ async function renderProposals(arrProposals, fContested) {
         )}</b> <span class="governMarked">${
             cChainParams.current.TICKER
         }</span> <br>
-        <span style="margin-right: 2px;" class="governMarked governFiatSize">$</span><b class="governFiatSize">3,487.46</b></span>
+        <b class="governFiatSize">${strProposalCurrency}</b></span>
 
         <span class="governInstallments"> ${sanitizeHTML(
             cProposal['RemainingPaymentCount']
@@ -2056,6 +2095,13 @@ async function renderProposals(arrProposals, fContested) {
         );
         doms.domAllocatedGovernanceBudget.innerHTML = strAlloc;
         doms.domAllocatedGovernanceBudget2.innerHTML = strAlloc;
+
+        // Update allocated budget in user's currency
+        const nCurrencyValue = totalAllocatedAmount * nPrice;
+        const { nValue, cLocale } = optimiseCurrencyLocale(nCurrencyValue);
+        const strAllocCurrency = nValue.toLocaleString('en-gb', cLocale);
+        doms.domAllocatedGovernanceBudgetValue.innerText = strAllocCurrency;
+        doms.domAllocatedGovernanceBudgetValue2.innerText = strAllocCurrency;
     }
 }
 
