@@ -133,8 +133,15 @@ export async function start() {
         //GOVERNANCE ELEMENTS
         domGovProposalsTable: document.getElementById('proposalsTable'),
         domGovProposalsTableBody: document.getElementById('proposalsTableBody'),
-        domAllocatedGovernanceBudget: document.getElementById('allocatedGovernanceBudget'),
-        domAllocatedGovernanceBudget2: document.getElementById('allocatedGovernanceBudget2'),
+        domTotalGovernanceBudget: document.getElementById(
+            'totalGovernanceBudget'
+        ),
+        domAllocatedGovernanceBudget: document.getElementById(
+            'allocatedGovernanceBudget'
+        ),
+        domAllocatedGovernanceBudget2: document.getElementById(
+            'allocatedGovernanceBudget2'
+        ),
         domGovProposalsContestedTable: document.getElementById(
             'proposalsContestedTable'
         ),
@@ -391,9 +398,6 @@ export async function start() {
 
     // Check for recent upgrades, display the changelog
     checkForUpgrades();
-
-    // Create counter when loading proposalsTableBody
-    new MPW.FlipDown(1687642458).start();
 }
 
 function subscribeToNetworkEvents() {
@@ -436,6 +440,7 @@ function subscribeToNetworkEvents() {
 // WALLET STATE DATA
 export const mempool = new Mempool();
 let exportHidden = false;
+let governanceFlipdown = null;
 
 //                        PIVX Labs' Cold Pool
 export let cachedColdStakeAddr = 'SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy';
@@ -1717,6 +1722,17 @@ export async function restoreWallet(strReason = '') {
  * Fetch Governance data and re-render the Governance UI
  */
 async function updateGovernanceTab() {
+    // Setup the Superblock countdown (if not already done), no need to block thread with await, either.
+    if (!governanceFlipdown) {
+        const cNet = getNetwork();
+        Masternode.getNextSuperblock().then((nSuperblock) => {
+            // The estimated time to the superblock (using the block target and remaining blocks)
+            const nTimestamp =
+                Date.now() / 1000 + (nSuperblock - cNet.cachedBlockCount) * 60;
+            governanceFlipdown = new MPW.FlipDown(nTimestamp).start();
+        });
+    }
+
     // Fetch all proposals from the network
     const arrProposals = await Masternode.getProposals({
         fAllowFinished: false,
@@ -1746,6 +1762,11 @@ async function updateGovernanceTab() {
  * @param {boolean} fContested - The proposal category
  */
 async function renderProposals(arrProposals, fContested) {
+    // Set the total budget
+    doms.domTotalGovernanceBudget.innerText = (
+        cChainParams.current.maxPayment / COIN
+    ).toLocaleString('en-gb');
+
     // Select the table based on the proposal category
     const domTable = fContested
         ? doms.domGovProposalsContestedTableBody
@@ -1796,13 +1817,21 @@ async function renderProposals(arrProposals, fContested) {
 
         const domStatus = domRow.insertCell();
         domStatus.classList.add('governStatusCol');
-        if(domTable.id == "proposalsTableBody") {
-            domStatus.setAttribute("onclick",`if(document.getElementById('governMob${i}').classList.contains('d-none')) { document.getElementById('governMob${i}').classList.remove('d-none'); } else { document.getElementById('governMob${i}').classList.add('d-none'); }`);
-        } else if(domTable.id == "proposalsContestedTableBody") {
-            domStatus.setAttribute("onclick",`if(document.getElementById('governMobCon${i}').classList.contains('d-none')) { document.getElementById('governMobCon${i}').classList.remove('d-none'); } else { document.getElementById('governMobCon${i}').classList.add('d-none'); }`);
+        if (domTable.id == 'proposalsTableBody') {
+            domStatus.setAttribute(
+                'onclick',
+                `if(document.getElementById('governMob${i}').classList.contains('d-none')) { document.getElementById('governMob${i}').classList.remove('d-none'); } else { document.getElementById('governMob${i}').classList.add('d-none'); }`
+            );
+        } else if (domTable.id == 'proposalsContestedTableBody') {
+            domStatus.setAttribute(
+                'onclick',
+                `if(document.getElementById('governMobCon${i}').classList.contains('d-none')) { document.getElementById('governMobCon${i}').classList.remove('d-none'); } else { document.getElementById('governMobCon${i}').classList.add('d-none'); }`
+            );
         }
         // Add border radius to last row
-        if(arrProposals.length-1 == i) { domStatus.classList.add('bblr-7p'); }
+        if (arrProposals.length - 1 == i) {
+            domStatus.classList.add('bblr-7p');
+        }
         domStatus.innerHTML = `
         <span style="font-size:12px; line-height: 15px; display: block; margin-bottom:15px;">
             <span style="color:#fff; font-weight:700;">PASSING</span><br>
@@ -1826,7 +1855,7 @@ async function renderProposals(arrProposals, fContested) {
         )} <span class="governLinkIco"><i class="fa-solid fa-arrow-up-right-from-square"></i></b></a></span>`;
 
         // Count allocated budget
-        if(domTable.id == "proposalsTableBody") {
+        if (domTable.id == 'proposalsTableBody') {
             totalAllocatedAmount += cProposal.MonthlyPayment;
         }
 
@@ -1835,20 +1864,29 @@ async function renderProposals(arrProposals, fContested) {
         domPayments.classList.add('for-desktop');
         domPayments.innerHTML = `<span class="governValues"><b>${sanitizeHTML(
             parseInt(cProposal.MonthlyPayment).toLocaleString('en-gb', ',', '.')
-        )}</b> <span class="governMarked">${cChainParams.current.TICKER}</span> <br>
+        )}</b> <span class="governMarked">${
+            cChainParams.current.TICKER
+        }</span> <br>
         <span style="margin-right: 2px;" class="governMarked governFiatSize">$</span><b class="governFiatSize">3,487.46</b></span>
 
         <span class="governInstallments"> ${sanitizeHTML(
             cProposal['RemainingPaymentCount']
-        )} installment(s) remaining<br>of <b>${sanitizeHTML(parseInt(cProposal.TotalPayment).toLocaleString('en-gb', ',', '.'))} ${cChainParams.current.TICKER}</b> total</span>`;
+        )} installment(s) remaining<br>of <b>${sanitizeHTML(
+            parseInt(cProposal.TotalPayment).toLocaleString('en-gb', ',', '.')
+        )} ${cChainParams.current.TICKER}</b> total</span>`;
 
         // Vote Counts and Consensus Percentages
         const domVoteCounters = domRow.insertCell();
         domVoteCounters.classList.add('for-desktop');
         const { Yeas, Nays } = cProposal;
         const nPercent = cProposal.Ratio * 100;
-        
-        domVoteCounters.innerHTML = `<b>${parseFloat(nPercent).toLocaleString('en-gb', { minimumFractionDigits: 0, maximumFractionDigits: 1 }, ',', '.')}%</b> <br>
+
+        domVoteCounters.innerHTML = `<b>${parseFloat(nPercent).toLocaleString(
+            'en-gb',
+            { minimumFractionDigits: 0, maximumFractionDigits: 1 },
+            ',',
+            '.'
+        )}%</b> <br>
         <small class="votesBg"> <b><div class="votesYes" style="display:inline;"> ${sanitizeHTML(
             Yeas
         )} </div></b> /
@@ -1922,25 +1960,33 @@ async function renderProposals(arrProposals, fContested) {
             domYesBtn.className = btnYesClass;
             domYesBtn.innerText = 'Yes';
             domYesBtn.onclick = () => govVote(cProposal.Hash, 1);
-    
+
             // Add border radius to last row
-            if(arrProposals.length-1 == i) { domVoteBtns.classList.add('bbrr-7p'); }
+            if (arrProposals.length - 1 == i) {
+                domVoteBtns.classList.add('bbrr-7p');
+            }
 
             domVoteBtns.classList.add('for-desktop');
             domVoteBtns.appendChild(domNoBtn);
             domVoteBtns.appendChild(domYesBtn);
-            
-            domNoBtn.setAttribute("onclick", `MPW.govVote('${cProposal.Hash}', 2)`);
-            domYesBtn.setAttribute("onclick", `MPW.govVote('${cProposal.Hash}', 1);`);
+
+            domNoBtn.setAttribute(
+                'onclick',
+                `MPW.govVote('${cProposal.Hash}', 2)`
+            );
+            domYesBtn.setAttribute(
+                'onclick',
+                `MPW.govVote('${cProposal.Hash}', 1);`
+            );
             voteBtn = domNoBtn.outerHTML + domYesBtn.outerHTML;
         }
 
         // Create extended row for mobile
         const mobileDomRow = domTable.insertRow();
         const mobileExtended = mobileDomRow.insertCell();
-        if(domTable.id == "proposalsTableBody") {
+        if (domTable.id == 'proposalsTableBody') {
             mobileExtended.id = `governMob${i}`;
-        } else if(domTable.id == "proposalsContestedTableBody") {
+        } else if (domTable.id == 'proposalsContestedTableBody') {
             mobileExtended.id = `governMobCon${i}`;
         }
         mobileExtended.colSpan = '2';
@@ -1954,12 +2000,20 @@ async function renderProposals(arrProposals, fContested) {
             </div>
             <div class="col-7">
                 <span class="governValues"><b>${sanitizeHTML(
-                    parseInt(cProposal.MonthlyPayment).toLocaleString('en-gb', ',', '.')
-                )}</b> <span class="governMarked">${cChainParams.current.TICKER}</span> <span style="margin-left:10px; margin-right: 2px;" class="governMarked governFiatSize">$</span><b class="governFiatSize">3,487.46</b></span>
+                    parseInt(cProposal.MonthlyPayment).toLocaleString(
+                        'en-gb',
+                        ',',
+                        '.'
+                    )
+                )}</b> <span class="governMarked">${
+            cChainParams.current.TICKER
+        }</span> <span style="margin-left:10px; margin-right: 2px;" class="governMarked governFiatSize">$</span><b class="governFiatSize">3,487.46</b></span>
         
                 <span class="governInstallments"> ${sanitizeHTML(
                     cProposal['RemainingPaymentCount']
-                )} installment(s) remaining<br>of <b>${sanitizeHTML(parseInt(cProposal.TotalPayment).toLocaleString('en-gb', ',', '.'))} ${cChainParams.current.TICKER}</b> total</span>
+                )} installment(s) remaining<br>of <b>${sanitizeHTML(
+            parseInt(cProposal.TotalPayment).toLocaleString('en-gb', ',', '.')
+        )} ${cChainParams.current.TICKER}</b> total</span>
             </div>
         </div>
         <hr class="governHr">
@@ -1968,7 +2022,12 @@ async function renderProposals(arrProposals, fContested) {
                 <div class="governMobDot"></div> VOTES
             </div>
             <div class="col-7">
-                <b>${parseFloat(nPercent).toLocaleString('en-gb', { minimumFractionDigits: 0, maximumFractionDigits: 1 }, ',', '.')}%</b>
+                <b>${parseFloat(nPercent).toLocaleString(
+                    'en-gb',
+                    { minimumFractionDigits: 0, maximumFractionDigits: 1 },
+                    ',',
+                    '.'
+                )}%</b>
                 <small class="votesBg"> <b><div class="votesYes" style="display:inline;"> ${sanitizeHTML(
                     Yeas
                 )} </div></b> /
@@ -1986,14 +2045,17 @@ async function renderProposals(arrProposals, fContested) {
                 ${voteBtn}
             </div>
         </div>`;
-        
+
         i++;
     }
 
     // Show allocated budget
-    if(domTable.id == "proposalsTableBody") {
-        doms.domAllocatedGovernanceBudget.innerHTML = sanitizeHTML(totalAllocatedAmount.toLocaleString('en-gb'));
-        doms.domAllocatedGovernanceBudget2.innerHTML = sanitizeHTML(totalAllocatedAmount.toLocaleString('en-gb'));
+    if (domTable.id == 'proposalsTableBody') {
+        const strAlloc = sanitizeHTML(
+            totalAllocatedAmount.toLocaleString('en-gb')
+        );
+        doms.domAllocatedGovernanceBudget.innerHTML = strAlloc;
+        doms.domAllocatedGovernanceBudget2.innerHTML = strAlloc;
     }
 }
 
