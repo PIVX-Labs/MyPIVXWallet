@@ -2071,7 +2071,7 @@ async function renderProposals(arrProposals, fContested) {
                     )
                 )}</b> <span class="governMarked">${
             cChainParams.current.TICKER
-        }</span> <span style="margin-left:10px; margin-right: 2px;" class="governMarked governFiatSize">$</span><b class="governFiatSize">3,487.46</b></span>
+        }</span> <span style="margin-left:10px; margin-right: 2px;" class="governMarked governFiatSize">${strProposalCurrency}</span></b></span>
         
                 <span class="governInstallments"> ${sanitizeHTML(
                     cProposal['RemainingPaymentCount']
