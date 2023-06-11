@@ -1903,7 +1903,7 @@ async function renderProposals(arrProposals, fContested) {
             <b>${nNetYesPercent.toFixed(1)}%</b><br>
             Net Yes
         </span>
-        <span class="governArrow for-mobile">
+        <span class="governArrow for-mobile ptr">
             <i class="fa-solid fa-angle-down"></i>
         </span>`;
 
