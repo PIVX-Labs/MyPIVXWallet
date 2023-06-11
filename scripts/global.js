@@ -1865,6 +1865,7 @@ async function renderProposals(arrProposals, fContested) {
                 `if(document.getElementById('governMobCon${i}').classList.contains('d-none')) { document.getElementById('governMobCon${i}').classList.remove('d-none'); } else { document.getElementById('governMobCon${i}').classList.add('d-none'); }`
             );
         }
+
         // Add border radius to last row
         if (arrProposals.length - 1 == i) {
             domStatus.classList.add('bblr-7p');
@@ -1878,11 +1879,21 @@ async function renderProposals(arrProposals, fContested) {
         // Proposal Status calculation
         const nRequiredVotes = Math.round(cMasternodes.enabled * 0.1);
         const strStatus = nNetYes >= nRequiredVotes ? 'PASSING' : 'FAILING';
+        let strFundingStatus = 'NOT FUNDED';
+
+        // Funding Status and allocation calculations
+        if (domTable.id == 'proposalsTableBody') {
+            if (nNetYes >= nRequiredVotes && (totalAllocatedAmount + cProposal.MonthlyPayment <= (cChainParams.current.maxPayment / COIN))) {
+                // Not enough budget or Net Yes votes for this proposal :(
+                strFundingStatus = 'FUNDED';
+                totalAllocatedAmount += cProposal.MonthlyPayment;
+            }
+        }
 
         domStatus.innerHTML = `
         <span style="font-size:12px; line-height: 15px; display: block; margin-bottom:15px;">
             <span style="color:#fff; font-weight:700;">${strStatus}</span><br>
-            <span style="color:hsl(265 100% 67% / 1);">(FUNDED)</span><br>
+            <span style="color:hsl(265 100% 67% / 1);">(${strFundingStatus})</span><br>
         </span>
         <span style="font-size:12px; line-height: 15px; display: block; color:#d1d1d1;">
             <b>${nNetYesPercent.toFixed(1)}%</b><br>
@@ -1901,11 +1912,6 @@ async function renderProposals(arrProposals, fContested) {
         )}" target="_blank" rel="noopener noreferrer"><b>${sanitizeHTML(
             cProposal.Name
         )} <span class="governLinkIco"><i class="fa-solid fa-arrow-up-right-from-square"></i></b></a></span>`;
-
-        // Count allocated budget
-        if (domTable.id == 'proposalsTableBody') {
-            totalAllocatedAmount += cProposal.MonthlyPayment;
-        }
 
         // Convert proposal amount to user's currency
         const nProposalValue = parseInt(cProposal.MonthlyPayment) * nPrice;
