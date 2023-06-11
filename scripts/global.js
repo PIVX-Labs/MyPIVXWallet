@@ -385,6 +385,9 @@ export async function start() {
             // Display the password unlock upfront
             await accessOrImportWallet();
         }
+    } else {
+        // Just load the block count, for use in non-wallet areas
+        getNetwork().getBlockCount();
     }
 
     subscribeToNetworkEvents();
