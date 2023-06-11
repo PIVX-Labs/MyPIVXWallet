@@ -529,6 +529,14 @@ export default class Masternode {
     }
 
     /**
+     * Fetches the masternode count object, containing each status and network.
+     * @returns {Promise<{total:number, stable:number, enabled:number, inqueue:number, ipv4:number, ipv6:number, onion:number}>} - The masternode count object
+     */
+    static async getMasternodeCount() {
+        return await (await fetch(`${cNode.url}/getmasternodecount`)).json();
+    }
+
+    /**
      * @param {Object} options
      * @param {String} options.name - Name of the proposal
      * @param {String} options.url - Url of the proposal

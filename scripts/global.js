@@ -1747,8 +1747,8 @@ export async function restoreWallet(strReason = '') {
  */
 async function updateGovernanceTab() {
     // Setup the Superblock countdown (if not already done), no need to block thread with await, either.
-    if (!governanceFlipdown) {
-        const cNet = getNetwork();
+    const cNet = getNetwork();
+    if (!governanceFlipdown && cNet.cachedBlockCount > 0) {
         Masternode.getNextSuperblock().then((nSuperblock) => {
             // The estimated time to the superblock (using the block target and remaining blocks)
             const nTimestamp =
@@ -1795,10 +1795,11 @@ async function renderProposals(arrProposals, fContested) {
     const nPrice = await cMarket.getPrice(strCurrency);
     const nCurrencyValue = (cChainParams.current.maxPayment / COIN) * nPrice;
     const { nValue, cLocale } = optimiseCurrencyLocale(nCurrencyValue);
-    doms.domTotalGovernanceBudgetValue.innerText = nValue.toLocaleString(
-        'en-gb',
-        cLocale
-    );
+    doms.domTotalGovernanceBudgetValue.innerHTML =
+        nValue.toLocaleString('en-gb', cLocale) +
+        ' <span style="color:#8b38ff;">' +
+        strCurrency.toUpperCase() +
+        '</span>';
 
     // Select the table based on the proposal category
     const domTable = fContested
@@ -1842,6 +1843,9 @@ async function renderProposals(arrProposals, fContested) {
         })
     );
 
+    // Fetch the Masternode count for proposal status calculations
+    const cMasternodes = await Masternode.getMasternodeCount();
+
     let totalAllocatedAmount = 0;
 
     let i = 0;
@@ -1865,13 +1869,23 @@ async function renderProposals(arrProposals, fContested) {
         if (arrProposals.length - 1 == i) {
             domStatus.classList.add('bblr-7p');
         }
+
+        // Net Yes calculation
+        const { Yeas, Nays } = cProposal;
+        const nNetYes = Yeas - Nays;
+        const nNetYesPercent = (nNetYes / cMasternodes.enabled) * 100;
+
+        // Proposal Status calculation
+        const nRequiredVotes = Math.round(cMasternodes.enabled * 0.1);
+        const strStatus = nNetYes >= nRequiredVotes ? 'PASSING' : 'FAILING';
+
         domStatus.innerHTML = `
         <span style="font-size:12px; line-height: 15px; display: block; margin-bottom:15px;">
-            <span style="color:#fff; font-weight:700;">PASSING</span><br>
+            <span style="color:#fff; font-weight:700;">${strStatus}</span><br>
             <span style="color:hsl(265 100% 67% / 1);">(FUNDED)</span><br>
         </span>
         <span style="font-size:12px; line-height: 15px; display: block; color:#d1d1d1;">
-            <b>49.2%</b><br>
+            <b>${nNetYesPercent.toFixed(1)}%</b><br>
             Net Yes
         </span>
         <span class="governArrow for-mobile">
@@ -1895,7 +1909,7 @@ async function renderProposals(arrProposals, fContested) {
 
         // Convert proposal amount to user's currency
         const nProposalValue = parseInt(cProposal.MonthlyPayment) * nPrice;
-        const { nValue, cLocale } = optimiseCurrencyLocale(nProposalValue);
+        const { nValue } = optimiseCurrencyLocale(nProposalValue);
         const strProposalCurrency = nValue.toLocaleString('en-gb', cLocale);
 
         // Payment Schedule and Amounts
@@ -1906,7 +1920,7 @@ async function renderProposals(arrProposals, fContested) {
         )}</b> <span class="governMarked">${
             cChainParams.current.TICKER
         }</span> <br>
-        <b class="governFiatSize">${strProposalCurrency}</b></span>
+        <b class="governFiatSize">${strProposalCurrency} <span style="color:#8b38ff;">${strCurrency.toUpperCase()}</span></b></span>
 
         <span class="governInstallments"> ${sanitizeHTML(
             cProposal['RemainingPaymentCount']
@@ -1917,10 +1931,11 @@ async function renderProposals(arrProposals, fContested) {
         // Vote Counts and Consensus Percentages
         const domVoteCounters = domRow.insertCell();
         domVoteCounters.classList.add('for-desktop');
-        const { Yeas, Nays } = cProposal;
-        const nPercent = cProposal.Ratio * 100;
 
-        domVoteCounters.innerHTML = `<b>${parseFloat(nPercent).toLocaleString(
+        const nLocalPercent = cProposal.Ratio * 100;
+        domVoteCounters.innerHTML = `<b>${parseFloat(
+            nLocalPercent
+        ).toLocaleString(
             'en-gb',
             { minimumFractionDigits: 0, maximumFractionDigits: 1 },
             ',',
@@ -2061,7 +2076,7 @@ async function renderProposals(arrProposals, fContested) {
                 <div class="governMobDot"></div> VOTES
             </div>
             <div class="col-7">
-                <b>${parseFloat(nPercent).toLocaleString(
+                <b>${parseFloat(nLocalPercent).toLocaleString(
                     'en-gb',
                     { minimumFractionDigits: 0, maximumFractionDigits: 1 },
                     ',',
@@ -2098,10 +2113,14 @@ async function renderProposals(arrProposals, fContested) {
 
         // Update allocated budget in user's currency
         const nCurrencyValue = totalAllocatedAmount * nPrice;
-        const { nValue, cLocale } = optimiseCurrencyLocale(nCurrencyValue);
-        const strAllocCurrency = nValue.toLocaleString('en-gb', cLocale);
-        doms.domAllocatedGovernanceBudgetValue.innerText = strAllocCurrency;
-        doms.domAllocatedGovernanceBudgetValue2.innerText = strAllocCurrency;
+        const { nValue } = optimiseCurrencyLocale(nCurrencyValue);
+        const strAllocCurrency =
+            nValue.toLocaleString('en-gb', cLocale) +
+            ' <span style="color:#8b38ff;">' +
+            strCurrency.toUpperCase() +
+            '</span>';
+        doms.domAllocatedGovernanceBudgetValue.innerHTML = strAllocCurrency;
+        doms.domAllocatedGovernanceBudgetValue2.innerHTML = strAllocCurrency;
     }
 }
 
