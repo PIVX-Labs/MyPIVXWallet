@@ -1883,7 +1883,11 @@ async function renderProposals(arrProposals, fContested) {
 
         // Funding Status and allocation calculations
         if (domTable.id == 'proposalsTableBody') {
-            if (nNetYes >= nRequiredVotes && (totalAllocatedAmount + cProposal.MonthlyPayment <= (cChainParams.current.maxPayment / COIN))) {
+            if (
+                nNetYes >= nRequiredVotes &&
+                totalAllocatedAmount + cProposal.MonthlyPayment <=
+                    cChainParams.current.maxPayment / COIN
+            ) {
                 // Not enough budget or Net Yes votes for this proposal :(
                 strFundingStatus = 'FUNDED';
                 totalAllocatedAmount += cProposal.MonthlyPayment;
