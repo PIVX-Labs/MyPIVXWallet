@@ -10,7 +10,6 @@ import {
     decryptWallet,
     getNewAddress,
     getDerivationPath,
-    isYourAddress,
     LegacyMasterKey,
 } from './wallet.js';
 import { getNetwork, HistoricalTxType } from './network.js';
@@ -670,9 +669,6 @@ export async function createActivityListHTML(arrTXs, fRewards = false) {
         hour12: true,
     };
 
-    // Keep a map of our own address(es) found within Txs, to improve speed of deciphering the Send type
-    const mapOurAddresses = new Map();
-
     // And also keep track of our last Tx's timestamp, to re-use a cache, which is much faster than the slow `.toLocaleDateString`
     let prevDateString = '';
     let prevTimestamp = 0;
@@ -737,15 +733,9 @@ export async function createActivityListHTML(arrTXs, fRewards = false) {
             // Check all addresses to find our own, caching them for performance
             for (const strAddr of cTx.receivers.concat(cTx.senders)) {
                 // If a previous Tx checked this address, skip it, otherwise, check it against our own address(es)
-                if (
-                    !mapOurAddresses.has(strAddr) &&
-                    !(await isYourAddress(strAddr))[0]
-                ) {
+                if (!(await masterKey.isOwnAddress(strAddr))) {
                     // External address, this is not a self-only Tx
                     fSendToSelf = false;
-                } else {
-                    // Internal address, remember this for later use
-                    mapOurAddresses.set(strAddr);
                 }
             }
         }
@@ -764,9 +754,18 @@ export async function createActivityListHTML(arrTXs, fRewards = false) {
                         txContent = 'Sent to self';
                     } else {
                         // Otherwise, anything to us is likely change, so filter it away
-                        const arrExternalAddresses = cTx.receivers.filter(
-                            (addr) => !mapOurAddresses.has(addr)
-                        );
+                        const arrExternalAddresses = (
+                            await Promise.all(
+                                cTx.receivers.map(async (addr) => [
+                                    await masterKey.isOwnAddress(addr),
+                                    addr,
+                                ])
+                            )
+                        )
+                            .filter(([isOwnAddress, _]) => {
+                                return !isOwnAddress;
+                            })
+                            .map(([_, addr]) => addr);
                         txContent =
                             'Sent to ' +
                             (cTx.shieldedOutputs
@@ -787,9 +786,19 @@ export async function createActivityListHTML(arrTXs, fRewards = false) {
                     colour = '#5cff5c';
                     // Figure out WHO this was sent from, and focus on them contextually
                     // Filter away any of our own addresses
-                    const arrExternalAddresses = cTx.senders.filter(
-                        (addr) => !mapOurAddresses.has(addr)
-                    );
+                    const arrExternalAddresses = (
+                        await Promise.all(
+                            cTx.senders.map(async (addr) => [
+                                await masterKey.isOwnAddress(addr),
+                                addr,
+                            ])
+                        )
+                    )
+                        .filter(([isOwnAddress, _]) => {
+                            return !isOwnAddress;
+                        })
+                        .map(([_, addr]) => addr);
+
                     if (cTx.shieldedOutputs) {
                         txContent = 'Received from Shielded address';
                     } else {

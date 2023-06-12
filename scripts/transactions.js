@@ -384,15 +384,15 @@ export async function createAndSendTransaction({
         }
 
         if (!isDelegation && !isProposal) {
-            const [isYours, yourPath] = await isYourAddress(address);
+            const path = await masterKey.isOwnAddress(address);
 
             // If the tx was sent to yourself, add it to the mempool
-            if (isYours) {
+            if (path) {
                 const vout = nChange > 0 ? 1 : 0;
                 mempool.addUTXO(
                     new UTXO({
                         id: futureTxid,
-                        path: yourPath,
+                        path,
                         sats: amount,
                         vout,
                         script: bytesToHex(cTx.outputs[vout].script),
