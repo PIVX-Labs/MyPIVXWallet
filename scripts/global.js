@@ -785,7 +785,7 @@ export async function createActivityListHTML(arrTXs, fRewards = false) {
                     // Filter away any of our own addresses
                     const arrExternalAddresses = (
                         await Promise.all(
-                            cTx.receivers.map(async (addr) => [
+                            cTx.senders.map(async (addr) => [
                                 await masterKey.isOwnAddress(addr),
                                 addr,
                             ])
