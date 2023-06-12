@@ -40,7 +40,6 @@ export {
     unblurPrivKey,
     toggleBottomMenu,
     createProposal,
-    updateStakingRewardsGUI,
     switchSettings,
     updateActivityGUI,
 } from './global.js';

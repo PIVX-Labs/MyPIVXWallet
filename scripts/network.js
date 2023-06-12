@@ -545,9 +545,17 @@ export class ExplorerNetwork extends Network {
             .filter((tx) => tx.amount != 0);
     }
 
-    setMasterKey(masterKey) {
+    async setMasterKey(masterKey) {
+        // If the public Master Key (xpub, address...) is different, then wipe TX history
+        if (
+            (await this.masterKey?.keyToExport) !==
+            (await masterKey.keyToExport)
+        ) {
+            this.arrTxHistory = [];
+        }
+
+        // Set the key
         this.masterKey = masterKey;
-        this.arrTxHistory = [];
     }
 
     async getTxInfo(txHash) {
