@@ -6,16 +6,15 @@ import {
     getBalance,
     mempool,
     isMasternodeUTXO,
-    askForCSAddr,
     cachedColdStakeAddr,
     restoreWallet,
     toggleBottomMenu,
+    guiSetColdStakingAddress,
 } from './global.js';
 import {
     hasWalletUnlocked,
     masterKey,
     getNewAddress,
-    isYourAddress,
     cHardwareWallet,
     strHardwareName,
 } from './wallet.js';
@@ -149,16 +148,12 @@ export async function delegateGUI() {
     if (!validateAmount(nAmount, COIN)) return;
 
     // Ensure the user has an address set - if not, request one!
-    if (!askForCSAddr()) return;
-
-    // Sanity
     if (
-        cachedColdStakeAddr.length !== 34 ||
-        !cachedColdStakeAddr.startsWith(cChainParams.current.STAKING_PREFIX)
-    ) {
-        askForCSAddr(true);
-        return createAlert('success', ALERTS.SUCCESS_STAKING_ADDR_SET, []);
-    }
+        (!cachedColdStakeAddr ||
+            cachedColdStakeAddr[0] !== cChainParams.current.STAKING_PREFIX) &&
+        (await guiSetColdStakingAddress()) === false
+    )
+        return;
 
     // Perform the TX
     const cTxRes = await createAndSendTransaction({
@@ -215,7 +210,7 @@ export async function undelegateGUI() {
     });
 
     if (!cTxRes.ok && cTxRes.err === 'No change addr') {
-        askForCSAddr(true);
+        await guiSetColdStakingAddress();
         await undelegateGUI();
     } else {
         // If successful, reset the inputs

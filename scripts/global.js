@@ -19,6 +19,8 @@ import {
     debug,
     cMarket,
     strCurrency,
+    setColdStakingAddress,
+    cachedColdStakeAddr,
 } from './settings.js';
 import { createAndSendTransaction, signTransaction } from './transactions.js';
 import {
@@ -433,9 +435,6 @@ function subscribeToNetworkEvents() {
 // WALLET STATE DATA
 export const mempool = new Mempool();
 let exportHidden = false;
-
-//                        PIVX Labs' Cold Pool
-export let cachedColdStakeAddr = 'SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy';
 
 /**
  * Open a UI 'tab' menu, and close all other tabs, intended for frontend use
@@ -1638,23 +1637,51 @@ export function toggleDropDown(id) {
     domID.style.display = domID.style.display === 'block' ? 'none' : 'block';
 }
 
-export function askForCSAddr(force = false) {
-    if (force) cachedColdStakeAddr = null;
-    if (cachedColdStakeAddr === '' || cachedColdStakeAddr === null) {
-        cachedColdStakeAddr = prompt(
-            'Please provide a Cold Staking address (either from your own node, or a 3rd-party!)'
-        ).trim();
-        if (cachedColdStakeAddr) return true;
-    } else {
-        return true;
-    }
-    return false;
-}
-
 export function isMasternodeUTXO(cUTXO, cMasternode) {
     if (cMasternode?.collateralTxId) {
         const { collateralTxId, outidx } = cMasternode;
         return collateralTxId === cUTXO.id && cUTXO.vout === outidx;
+    } else {
+        return false;
+    }
+}
+
+/**
+ * Creates a GUI popup for the user to check or customise their Cold Address
+ */
+export async function guiSetColdStakingAddress() {
+    if (
+        await confirmPopup({
+            title: 'Set your Cold Staking address',
+            html: `<p>Current address:<br><span class="mono">${cachedColdStakeAddr}</span><br><br><span style="opacity: 0.65; margin: 10px;">A Cold Address stakes coins on your behalf, it cannot spend coins, so it's even safe to use a stranger's Cold Address!</span></p><br><input type="text" id="newColdAddress" placeholder="Example: ${cachedColdStakeAddr.substring(
+                0,
+                6
+            )}..." style="text-align: center;">`,
+        })
+    ) {
+        // Fetch address from the popup input
+        const strColdAddress = document.getElementById('newColdAddress').value;
+
+        // If it's empty, just return false
+        if (!strColdAddress) return false;
+
+        // Sanity-check, and set!
+        if (
+            strColdAddress[0] === cChainParams.current.STAKING_PREFIX &&
+            strColdAddress.length === 34
+        ) {
+            await setColdStakingAddress(strColdAddress);
+            createAlert(
+                'info',
+                '<b>Cold Address set!</b><br>Future stakes will use this address.',
+                [],
+                5000
+            );
+            return true;
+        } else {
+            createAlert('warning', 'Invalid Cold Staking address!', [], 2500);
+            return false;
+        }
     } else {
         return false;
     }

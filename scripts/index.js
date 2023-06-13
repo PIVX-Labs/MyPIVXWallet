@@ -18,6 +18,7 @@ export {
     openTab,
     accessOrImportWallet,
     guiImportWallet,
+    guiSetColdStakingAddress,
     onPrivateKeyChanged,
     toClipboard,
     toggleExportUI,

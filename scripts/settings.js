@@ -37,6 +37,8 @@ export let cExplorer = cChainParams.current.Explorers[0];
 export let cNode = cChainParams.current.Nodes[0];
 /** A mode which allows MPW to automatically select it's data sources */
 export let fAutoSwitch = true;
+/** The active Cold Staking address: default is the PIVX Labs address */
+export let cachedColdStakeAddr = 'SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy';
 
 let transparencyReport;
 
@@ -58,6 +60,10 @@ export class Settings {
      */
     autoswitch;
     /**
+     * @type {String} The user's active Cold Staking address
+     */
+    coldAddress;
+    /**
      * @type {String} translation to use
      */
     translation;
@@ -70,6 +76,7 @@ export class Settings {
         explorer,
         node,
         autoswitch = true,
+        coldAddress = cachedColdStakeAddr,
         translation = 'en',
         displayCurrency = 'usd',
     } = {}) {
@@ -77,6 +84,7 @@ export class Settings {
         this.explorer = explorer;
         this.node = node;
         this.autoswitch = autoswitch;
+        this.coldAddress = coldAddress;
         this.translation = translation;
         this.displayCurrency = displayCurrency;
     }
@@ -165,8 +173,14 @@ export async function start() {
     const database = await Database.getInstance();
 
     // Fetch settings from Database
-    const { analytics: strSettingAnalytics, autoswitch } =
-        await database.getSettings();
+    const {
+        analytics: strSettingAnalytics,
+        autoswitch,
+        coldAddress,
+    } = await database.getSettings();
+
+    // Set the Cold Staking address
+    cachedColdStakeAddr = coldAddress;
 
     // Set any Toggles to their default or DB state
     fAutoSwitch = autoswitch;
@@ -275,6 +289,16 @@ async function setCurrency(currency) {
     database.setSettings({ displayCurrency: strCurrency });
     // Update the UI to reflect the new currency
     getBalance(true);
+}
+
+/**
+ * Sets and saves the active Cold Staking address
+ * @param {string} strColdAddress - The Cold Staking address
+ */
+export async function setColdStakingAddress(strColdAddress) {
+    cachedColdStakeAddr = strColdAddress;
+    const database = await Database.getInstance();
+    database.setSettings({ coldAddress: strColdAddress });
 }
 
 /**
