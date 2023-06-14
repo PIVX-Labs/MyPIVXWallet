@@ -20,7 +20,7 @@ import {
     cMarket,
     strCurrency,
     setColdStakingAddress,
-    cachedColdStakeAddr,
+    strColdStakingAddress,
 } from './settings.js';
 import { createAndSendTransaction, signTransaction } from './transactions.js';
 import {
@@ -1653,7 +1653,7 @@ export async function guiSetColdStakingAddress() {
     if (
         await confirmPopup({
             title: 'Set your Cold Staking address',
-            html: `<p>Current address:<br><span class="mono">${cachedColdStakeAddr}</span><br><br><span style="opacity: 0.65; margin: 10px;">A Cold Address stakes coins on your behalf, it cannot spend coins, so it's even safe to use a stranger's Cold Address!</span></p><br><input type="text" id="newColdAddress" placeholder="Example: ${cachedColdStakeAddr.substring(
+            html: `<p>Current address:<br><span class="mono">${strColdStakingAddress}</span><br><br><span style="opacity: 0.65; margin: 10px;">A Cold Address stakes coins on your behalf, it cannot spend coins, so it's even safe to use a stranger's Cold Address!</span></p><br><input type="text" id="newColdAddress" placeholder="Example: ${strColdStakingAddress.substring(
                 0,
                 6
             )}..." style="text-align: center;">`,

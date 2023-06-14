@@ -1,5 +1,5 @@
 import bitjs from './bitTrx.js';
-import { debug, cachedColdStakeAddr } from './settings.js';
+import { debug, strColdStakingAddress } from './settings.js';
 import { ALERTS } from './i18n.js';
 import {
     doms,
@@ -148,8 +148,8 @@ export async function delegateGUI() {
 
     // Ensure the user has an address set - if not, request one!
     if (
-        (!cachedColdStakeAddr ||
-            cachedColdStakeAddr[0] !== cChainParams.current.STAKING_PREFIX) &&
+        (!strColdStakingAddress ||
+            strColdStakingAddress[0] !== cChainParams.current.STAKING_PREFIX) &&
         (await guiSetColdStakingAddress()) === false
     )
         return;
@@ -157,7 +157,7 @@ export async function delegateGUI() {
     // Perform the TX
     const cTxRes = await createAndSendTransaction({
         amount: nAmount,
-        address: cachedColdStakeAddr,
+        address: strColdStakingAddress,
         isDelegation: true,
         useDelegatedInputs: false,
     });
@@ -205,7 +205,7 @@ export async function undelegateGUI() {
         isDelegation: false,
         useDelegatedInputs: true,
         delegateChange: true,
-        changeDelegationAddress: cachedColdStakeAddr,
+        changeDelegationAddress: strColdStakingAddress,
     });
 
     if (!cTxRes.ok && cTxRes.err === 'No change addr') {

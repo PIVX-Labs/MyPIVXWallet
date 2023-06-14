@@ -38,7 +38,7 @@ export let cNode = cChainParams.current.Nodes[0];
 /** A mode which allows MPW to automatically select it's data sources */
 export let fAutoSwitch = true;
 /** The active Cold Staking address: default is the PIVX Labs address */
-export let cachedColdStakeAddr = 'SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy';
+export let strColdStakingAddress = 'SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy';
 
 let transparencyReport;
 
@@ -76,7 +76,7 @@ export class Settings {
         explorer,
         node,
         autoswitch = true,
-        coldAddress = cachedColdStakeAddr,
+        coldAddress = strColdStakingAddress,
         translation = 'en',
         displayCurrency = 'usd',
     } = {}) {
@@ -180,7 +180,7 @@ export async function start() {
     } = await database.getSettings();
 
     // Set the Cold Staking address
-    cachedColdStakeAddr = coldAddress;
+    strColdStakingAddress = coldAddress;
 
     // Set any Toggles to their default or DB state
     fAutoSwitch = autoswitch;
@@ -296,7 +296,7 @@ async function setCurrency(currency) {
  * @param {string} strColdAddress - The Cold Staking address
  */
 export async function setColdStakingAddress(strColdAddress) {
-    cachedColdStakeAddr = strColdAddress;
+    strColdStakingAddress = strColdAddress;
     const database = await Database.getInstance();
     database.setSettings({ coldAddress: strColdAddress });
 }
