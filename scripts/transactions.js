@@ -1,12 +1,11 @@
 import bitjs from './bitTrx.js';
-import { debug } from './settings.js';
+import { debug, cachedColdStakeAddr } from './settings.js';
 import { ALERTS } from './i18n.js';
 import {
     doms,
     getBalance,
     mempool,
     isMasternodeUTXO,
-    cachedColdStakeAddr,
     restoreWallet,
     toggleBottomMenu,
     guiSetColdStakingAddress,
@@ -285,7 +284,7 @@ export async function createAndSendTransaction({
     if (nChange > 0) {
         if (delegateChange && nChange > 1.01 * COIN) {
             if (!changeDelegationAddress)
-                return { ok: false, error: 'No change addr' };
+                return { ok: false, err: 'No change addr' };
             cTx.addcoldstakingoutput(
                 changeAddress,
                 changeDelegationAddress,
