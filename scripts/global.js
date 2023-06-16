@@ -262,6 +262,7 @@ export async function start() {
         domCurrencySelect: document.getElementById('currency'),
         domExplorerSelect: document.getElementById('explorer'),
         domNodeSelect: document.getElementById('node'),
+        domAutoSwitchToggle: document.getElementById('autoSwitchToggler'),
         domTranslationSelect: document.getElementById('translation'),
         domBlackBack: document.getElementById('blackBack'),
         domWalletSettings: document.getElementById('settingsWallet'),
@@ -435,7 +436,9 @@ function subscribeToNetworkEvents() {
             // If allowed by settings: submit a simple 'tx' ping to Labs Analytics
             getNetwork().submitAnalytics('transaction');
         } else {
-            createAlert('warning', 'Transaction Failed!', 1250);
+            console.error('Error sending transaction:');
+            console.error(result);
+            createAlert('warning', 'Transaction Failed!', 2500);
         }
     });
 }
@@ -773,7 +776,7 @@ export async function createActivityListHTML(arrTXs, fRewards = false) {
                             )
                         )
                             .filter(([isOwnAddress, _]) => {
-                                return isOwnAddress;
+                                return !isOwnAddress;
                             })
                             .map(([_, addr]) => addr);
                         txContent =
@@ -798,14 +801,14 @@ export async function createActivityListHTML(arrTXs, fRewards = false) {
                     // Filter away any of our own addresses
                     const arrExternalAddresses = (
                         await Promise.all(
-                            cTx.receivers.map(async (addr) => [
+                            cTx.senders.map(async (addr) => [
                                 await masterKey.isOwnAddress(addr),
                                 addr,
                             ])
                         )
                     )
                         .filter(([isOwnAddress, _]) => {
-                            return isOwnAddress;
+                            return !isOwnAddress;
                         })
                         .map(([_, addr]) => addr);
 
@@ -892,6 +895,9 @@ export async function updateActivityGUI(fStaking = false, fNewOnly = false) {
     // Prevent the user from spamming refreshes
     if (cNet.historySyncing) return;
 
+    // Remember how much history we had previously
+    const nPrevHistory = cNet.arrTxHistory.length;
+
     // Choose the Dashboard or Staking UI accordingly
     let domLoadMore = doms.domActivityLoadMore;
     let domLoadMoreIcon = doms.domActivityLoadMoreIcon;
@@ -904,6 +910,9 @@ export async function updateActivityGUI(fStaking = false, fNewOnly = false) {
     domLoadMoreIcon.classList.add('fa-spin');
     const arrTXs = await cNet.syncTxHistoryChunk(fNewOnly);
     domLoadMoreIcon.classList.remove('fa-spin');
+
+    // If there's no change in history size post-sync, then we can cancel here, there's nothing new to render
+    if (nPrevHistory === cNet.arrTxHistory.length) return;
 
     // Check if all transactions are loaded
     if (cNet.isHistorySynced) {
@@ -2238,12 +2247,9 @@ export function refreshChainData() {
     if (!masterKey) return;
 
     // Fetch block count + UTXOs, update the UI for new transactions
-    const nPrevBlock = cNet.cachedBlockCount;
     cNet.getBlockCount().then((_) => {
-        // Update the Activity if a new block arrived
-        if (cNet.cachedBlockCount > nPrevBlock) {
-            updateActivityGUI(false, true);
-        }
+        // Fetch latest Activity
+        updateActivityGUI(false, true);
     });
     getBalance(true);
 }

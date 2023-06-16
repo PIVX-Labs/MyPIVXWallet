@@ -35,6 +35,8 @@ export let cMarket = new CoinGecko();
 export let cExplorer = cChainParams.current.Explorers[0];
 /** The user-selected MPW node, used for alternative blockchain data */
 export let cNode = cChainParams.current.Nodes[0];
+/** A mode which allows MPW to automatically select it's data sources */
+export let fAutoSwitch = true;
 
 let transparencyReport;
 
@@ -52,6 +54,10 @@ export class Settings {
      */
     node;
     /**
+     * @type {Boolean} The Auto-Switch mode state
+     */
+    autoswitch;
+    /**
      * @type {String} translation to use
      */
     translation;
@@ -63,12 +69,14 @@ export class Settings {
         analytics,
         explorer,
         node,
+        autoswitch = true,
         translation = 'en',
         displayCurrency = 'usd',
     } = {}) {
         this.analytics = analytics;
         this.explorer = explorer;
         this.node = node;
+        this.autoswitch = autoswitch;
         this.translation = translation;
         this.displayCurrency = displayCurrency;
     }
@@ -155,8 +163,14 @@ export async function start() {
     }
 
     const database = await Database.getInstance();
+
     // Fetch settings from Database
-    const { analytics: strSettingAnalytics } = await database.getSettings();
+    const { analytics: strSettingAnalytics, autoswitch } =
+        await database.getSettings();
+
+    // Set any Toggles to their default or DB state
+    fAutoSwitch = autoswitch;
+    doms.domAutoSwitchToggle.checked = fAutoSwitch;
 
     // Apply translations to the transparency report
     STATS = {
@@ -202,7 +216,7 @@ export async function start() {
     domAnalyticsSelect.value = cAnalyticsLevel.name;
 }
 // --- Settings Functions
-async function setExplorer(explorer, fSilent = false) {
+export async function setExplorer(explorer, fSilent = false) {
     const database = await Database.getInstance();
     database.setSettings({ explorer: explorer.url });
     cExplorer = explorer;
@@ -210,6 +224,9 @@ async function setExplorer(explorer, fSilent = false) {
     // Enable networking + notify if allowed
     const network = new ExplorerNetwork(cExplorer.url, masterKey);
     setNetwork(network);
+
+    // Update the selector UI
+    doms.domExplorerSelect.value = cExplorer.url;
 
     if (!fSilent)
         createAlert(
@@ -371,6 +388,17 @@ export function toggleTestnet() {
 export function toggleDebug() {
     debug = !debug;
     doms.domDebug.style.display = debug ? '' : 'none';
+}
+
+/**
+ * Toggle the Auto-Switch mode at runtime and in DB
+ */
+export async function toggleAutoSwitch() {
+    fAutoSwitch = !fAutoSwitch;
+
+    // Update the setting in the DB
+    const database = await Database.getInstance();
+    await database.setSettings({ autoswitch: fAutoSwitch });
 }
 
 async function fillExplorerSelect() {
