@@ -563,7 +563,6 @@ export function updatePriceDisplay(domValue, fCold = false) {
         const nCurrencyValue =
             ((fCold ? getStakingBalance() : getBalance()) / COIN) * nPrice;
 
-        // Handle certain locale display edge-cases; like satoshis having decimals.
         const { nValue, cLocale } = optimiseCurrencyLocale(nCurrencyValue);
 
         // Update the DOM
