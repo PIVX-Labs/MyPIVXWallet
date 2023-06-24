@@ -81,15 +81,18 @@ export function createAlert(type, message, alertVariables = [], timeout = 0) {
 
     // Colors for types
     let typeIcon;
-    if (type == 'warning') {
-        typeIcon = 'fa-exclamation';
-    } else if (type == 'info') {
-        typeIcon = 'fa-info';
-    } else {
-        // If no valid type is set, default to success
-        type == 'success';
-
-        typeIcon = 'fa-check';
+    switch (type) {
+        case 'warning':
+            typeIcon = 'fa-exclamation';
+            break;
+        case 'info': 
+            typeIcon = 'fa-info';
+            break;
+        default:
+            // If no valid type is set, default to success
+            type == 'success';
+            typeIcon = 'fa-check';
+            break;
     }
 
     // Message
