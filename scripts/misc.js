@@ -85,7 +85,7 @@ export function createAlert(type, message, alertVariables = [], timeout = 0) {
         case 'warning':
             typeIcon = 'fa-exclamation';
             break;
-        case 'info': 
+        case 'info':
             typeIcon = 'fa-info';
             break;
         default:
