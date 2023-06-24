@@ -2884,3 +2884,56 @@ select.form-control option {
 #foot {
     z-index: 200;
 }
+
+.notifyWrapper {
+    opacity: 1;
+    z-index: 999999;
+    background-color:#320044;
+    border-radius:5px;
+    display: inline-flex;
+    align-items: stretch;
+    border:1px solid #9F00F9;
+    cursor:pointer;
+    margin-bottom: 15px;
+    opacity:0;
+    transition: all 0.250s ease-in-out;
+}
+
+.notifyWrapper .notifyIcon {
+    padding: 20px 11px;
+    border-top-left-radius:5px;
+    border-bottom-left-radius:5px;
+    margin-top:-1px;
+    margin-left:-1px;
+    margin-bottom:-1px;
+    display: flex;
+    align-items: center;
+}
+
+.notifyWrapper .notify-warning {
+    background-color:#630808;
+    border-top:1px solid #FF0000;
+    border-left:1px solid #FF0000;
+    border-bottom:1px solid #FF0000;
+}
+
+.notifyWrapper .notify-info {
+    background-color:#084363;
+    border-top:1px solid #0095ff;
+    border-left:1px solid #0095ff;
+    border-bottom:1px solid #0095ff;
+}
+
+.notifyWrapper .notify-success {
+    background-color:#1c6308;
+    border-top:1px solid #1aff00;
+    border-left:1px solid #1aff00;
+    border-bottom:1px solid #1aff00;
+}
+
+.notifyWrapper .notifyText {
+    padding-left:11px;
+    padding-right:17px;
+    padding-top: 14px;
+    padding-bottom: 14px;
+}
