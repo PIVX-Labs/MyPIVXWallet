@@ -2051,8 +2051,10 @@ a {
 .alertPositioning {
     position: fixed;
     z-index: 2000;
-    right: 10px;
-    bottom: 10px;
+    right: 15px;
+    bottom: 0px;
+    display: flex;
+    flex-direction: column;
 }
 
 .alertpop {
