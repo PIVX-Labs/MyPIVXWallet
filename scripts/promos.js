@@ -34,13 +34,13 @@ export class PromoWallet {
         this.pkBytes = pkBytes;
         /** @type {Array<object>} UTXOs associated with the Promo Code */
         this.utxos = utxos;
-        /** @type {Date|number} The Date or timestamp the code was created */
+        /** @type {Date} The Date or timestamp the code was created */
         this.time = time instanceof Date ? time : new Date(time);
     }
 
     /**
      * Synchronise UTXOs and return the balance of the Promo Code
-     * @param {boolean} - Whether to use UTXO Cache, or sync from network
+     * @param {boolean} [fCacheOnly] - Whether to use UTXO Cache, or sync from network
      * @returns {Promise<number>} - The Promo Wallet balance in sats
      */
     async getBalance(fCacheOnly = false) {
@@ -55,7 +55,7 @@ export class PromoWallet {
 
     /**
      * Synchronise UTXOs and return them
-     * @param {boolean} - Whether to sync simple UTXOs or full UTXOs
+     * @param {boolean} [fFull] - Whether to sync simple UTXOs or full UTXOs
      * @returns {Promise<Array<object>>}
      */
     async getUTXOs(fFull = false) {
@@ -159,9 +159,9 @@ export async function setPromoMode(fMode) {
 /**
  * The GUI handler function for hitting the promo modal 'Confirm' button
  */
-export function promoConfirm() {
+export async function promoConfirm() {
     if (fPromoRedeem) {
-        redeemPromoCode(doms.domRedeemCodeInput.value);
+        await redeemPromoCode(doms.domRedeemCodeInput.value);
     } else {
         // Show table
         doms.domPromoTable.classList.remove('d-none');
@@ -171,7 +171,7 @@ export function promoConfirm() {
             doms.domPromoTable.style.maxHeight = '600px';
         }, 100);
 
-        createPromoCode(
+        await createPromoCode(
             doms.domRedeemCodeCreateInput.value,
             Number(doms.domRedeemCodeCreateAmountInput.value)
         );
@@ -180,7 +180,7 @@ export function promoConfirm() {
 
 /**
  * A list of promo creation threads, each thread works on a unique code
- * @type {Array<Worker>}
+ * @type {import('./promo-types').PromoThread[]}
  */
 const arrPromoCreationThreads = [];
 
@@ -238,8 +238,10 @@ export async function createPromoCode(strCode, nAmount, fAddRandomness = true) {
 
     // Ensure the user doesn't create the same code twice
     const db = await Database.getInstance();
-    const arrCodes = (await db.getAllPromos()).concat(arrPromoCreationThreads);
-    if (arrCodes.some((a) => a.code === strFinalCode)) {
+    const arrCodes = (await db.getAllPromos())
+        .map((w) => w.code)
+        .concat(arrPromoCreationThreads.map((t) => t.code));
+    if (arrCodes.some((code) => code === strFinalCode)) {
         return createAlert(
             'warning',
             "You've already created that code!",
@@ -248,9 +250,13 @@ export async function createPromoCode(strCode, nAmount, fAddRandomness = true) {
     }
 
     // Create a new thread
+    /**
+     * @type {import('./promo-types').PromoThread}
+     */
     const cThread = {
         code: strFinalCode,
         amount: nAmount,
+        // @ts-ignore
         thread: new Worker(new URL('./promos_worker.js', import.meta.url)),
         txid: '',
         update: function (evt) {
@@ -272,6 +278,7 @@ export async function createPromoCode(strCode, nAmount, fAddRandomness = true) {
     cThread.thread.code = strFinalCode;
 
     // Setup it's internal update function
+    // @ts-ignore
     cThread.thread.onmessage = cThread.update;
 
     // Start the thread
@@ -313,7 +320,7 @@ export async function deletePromoCode(strCode) {
 
 /**
  * Render locally-saved Promo Codes in the created list
- * @type {Promise<RenderedPromoPair>} - The code count and HTML pair
+ * @return {Promise<RenderedPromoPair>} - The code count and HTML pair
  */
 export async function renderSavedPromos() {
     // Begin rendering our list of codes
@@ -383,15 +390,18 @@ export async function updatePromoCreationTick(fRecursive = false) {
 
             // Ensure the wallet is unlocked
             if (masterKey.isViewOnly) {
+                // @ts-ignore
                 $('#redeemCodeModal').modal('hide');
                 if (
                     await restoreWallet('Unlock to finalise your Promo Code!')
                 ) {
                     // Unlocked! Re-show the promo UI and continue
+                    // @ts-ignore
                     $('#redeemCodeModal').modal('show');
                 } else {
                     // Failed to unlock, so just mark as cancelled
                     cThread.end_state = 'Cancelled';
+                    // @ts-ignore
                     $('#redeemCodeModal').modal('show');
                 }
             }
@@ -550,7 +560,7 @@ export function resetRedeemPromo(nSeconds = 5) {
 }
 
 /**
- * @type {Worker?} - The thread used for the PIVX Promos redeem process
+ * @type {import('./promo-types').PromoWorker?} - The thread used for the PIVX Promos redeem process
  */
 export let promoThread = null;
 
@@ -563,6 +573,7 @@ export async function redeemPromoCode(strCode) {
     if (promoThread) return;
 
     // Create a new thread
+    // @ts-ignore
     promoThread = new Worker(new URL('./promos_worker.js', import.meta.url));
 
     // Hide unnecessary UI components

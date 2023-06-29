@@ -126,7 +126,6 @@ export async function createTxGUI() {
         // Price
         doms.domSendAmountValue.value = '';
     }
-
 }
 
 /**
@@ -387,6 +386,7 @@ export async function createAndSendTransaction({
             if (path) {
                 const vout = nChange > 0 ? 1 : 0;
                 mempool.addUTXO(
+                    // @ts-ignore
                     new UTXO({
                         id: futureTxid,
                         path,

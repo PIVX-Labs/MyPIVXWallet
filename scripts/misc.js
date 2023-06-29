@@ -138,10 +138,10 @@ export function createAlert(type, message, alertVariables = [], timeout = 0) {
  * Returns the awaited value of `resolvePromise` or `true/false` if the
  * user used a Cancel/Confirm button.
  * @param {object} options
- * @param {string?} options.title - The optional title of the popup
+ * @param {string} options.title - The optional title of the popup
  * @param {string} options.html - The HTML of the popup contents
- * @param {Promise<any>} options.resolvePromise - A promise to resolve before closing the modal
- * @param {boolean?} options.hideConfirm - Whether to hide the Confirm button or not
+ * @param {Promise<any>?} [options.resolvePromise] - A promise to resolve before closing the modal
+ * @param {boolean?} [options.hideConfirm] - Whether to hide the Confirm button or not
  * @returns {Promise<boolean|any>}
  */
 export async function confirmPopup({

@@ -384,7 +384,7 @@ export async function start() {
 
         // Import the wallet, and toggle the startup flag, which delegates the chain data refresh to settingsStart();
         if (publicKey) {
-            importWallet({ newWif: publicKey, fStartup: true });
+            await importWallet({ newWif: publicKey, fStartup: true });
 
             // Payment processor popup
             if (reqTo.length || reqAmount > 0) {
@@ -419,7 +419,7 @@ export async function start() {
     fIsLoaded = true;
 
     // Check for recent upgrades, display the changelog
-    checkForUpgrades();
+    await checkForUpgrades();
 }
 
 function subscribeToNetworkEvents() {
@@ -1680,6 +1680,9 @@ export function generateVanityWallet() {
  * @returns {Promise<string|false>} - TXID on success, false or error on failure
  */
 export async function sweepAddress(arrUTXOs, sweepingMasterKey, nFixedFee = 0) {
+    /**
+     * @type {any}
+     */
     const cTx = new bitjs.transaction();
 
     // Load all UTXOs as inputs
@@ -1698,7 +1701,9 @@ export async function sweepAddress(arrUTXOs, sweepingMasterKey, nFixedFee = 0) {
     const nFee = nFixedFee || getNetwork().getFee(cTx.serialize().length);
 
     // Use a new address from our wallet to sweep the UTXOs in to
-    const strAddress = (await getNewAddress(true, false))[0];
+    const strAddress = (
+        await getNewAddress({ updateGUI: true, verify: false })
+    )[0];
 
     // Sweep the full funds amount, minus the fee, leaving no change from any sweeped UTXOs
     cTx.addoutput(strAddress, (nTotal - nFee) / COIN);
@@ -1735,7 +1740,11 @@ export async function guiSetColdStakingAddress() {
             )}..." style="text-align: center;">`,
         })
     ) {
-        // Fetch address from the popup input
+        /**
+         *  Fetch address from the popup input
+         * @type {string}
+         */
+        // @ts-ignore
         const strColdAddress = document.getElementById('newColdAddress').value;
 
         // If it's empty, just return false
@@ -2291,10 +2300,14 @@ export function refreshChainData() {
 
     // Fetch block count + UTXOs, update the UI for new transactions
 
-    cNet.getBlockCount().then((_) => {
-        // Fetch latest Activity
-        updateActivityGUI(false, true);
-    }).catch(e=>{throw e});
+    cNet.getBlockCount()
+        .then((_) => {
+            // Fetch latest Activity
+            return updateActivityGUI(false, true);
+        })
+        .catch((e) => {
+            throw e;
+        });
     getBalance(true);
 }
 

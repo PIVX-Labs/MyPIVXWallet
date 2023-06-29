@@ -42,13 +42,25 @@ export let fWalletLoaded = false;
  * Abstract class masterkey
  * @abstract
  */
-class MasterKey {
+export class MasterKey {
     #addressIndex = 0;
     /**
      * Map our own address -> Path
      * @type {Map<String, String?>}
      */
     #ownAddresses = new Map();
+    /**
+     * @type {boolean}
+     */
+    _isHD;
+    /**
+     * @type {boolean}
+     */
+    _isHardwareWallet;
+    /**
+     * @type {boolean}
+     */
+    _isViewOnly;
 
     constructor() {
         if (this.constructor === MasterKey) {
@@ -360,7 +372,7 @@ export class LegacyMasterKey extends MasterKey {
     }
 
     get keyToBackup() {
-        return generateOrEncodePrivkey(this._pkBytes).strWIF;
+        return generateOrEncodePrivkey(new Uint8Array(this._pkBytes)).strWIF;
     }
 
     /**
@@ -662,6 +674,7 @@ export async function importWallet({
         } else {
             // If raw bytes: purely encode the given bytes rather than generating our own bytes
             if (fRaw) {
+                // @ts-ignore
                 newWif = generateOrEncodePrivkey(newWif).strWIF;
 
                 // A raw import likely means non-user owned key (i.e: created via VanityGen), thus, we assume safety first and add an exit blocking listener

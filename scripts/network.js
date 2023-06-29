@@ -675,7 +675,7 @@ async function retryWrapper(func, ...args) {
             // Set the explorer at Network-class level, then as a hacky workaround for the current callback; we
             // ... adjust the internal URL to the new explorer.
             getNetwork().strUrl = cNewExplorer.url;
-            setExplorer(cNewExplorer, true);
+            await setExplorer(cNewExplorer, true);
 
             // Bump the attempts, and re-try next loop
             retries++;

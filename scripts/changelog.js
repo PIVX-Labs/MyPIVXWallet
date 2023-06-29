@@ -1,5 +1,6 @@
 import { doms } from './global';
 import { confirmPopup, sanitizeHTML } from './misc';
+import 'types.ts';
 
 // ESLint error-skipping for webpack-injected globals
 /* global VERSION */
@@ -8,13 +9,13 @@ import { confirmPopup, sanitizeHTML } from './misc';
 /**
  * Check for recent local app updates
  */
-export function checkForUpgrades() {
+export async function checkForUpgrades() {
     // Check if the last used version doesn't match the current version.
     // Note: it's intended to skip if `lastVersion` is null, as this stops the popups for NEW users.
     const lastVersion = localStorage.getItem('version');
     if (lastVersion && lastVersion !== VERSION) {
         // Old user's first time on this update; display the changelog
-        renderChangelog();
+        await renderChangelog();
     }
 
     // Update the footer with our version
@@ -27,7 +28,7 @@ export function checkForUpgrades() {
 /**
  * Render the Changelog from app versioning data, displaying it to the user
  */
-export function renderChangelog() {
+export async function renderChangelog() {
     let strHTML = '';
 
     // Loop every line of the markdown
@@ -61,10 +62,10 @@ export function renderChangelog() {
     // Enclose the Changelog in a body with a Changelog class
     const strFinalHTML = `<div class="changelog">${strHTML}</div>`;
 
-    confirmPopup({
+    await confirmPopup({
         title: "What's New in " + VERSION + '?',
         html: strFinalHTML,
-        resolvePromise: false,
+        resolvePromise: null,
         hideConfirm: true,
     });
 }

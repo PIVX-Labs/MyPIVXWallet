@@ -320,7 +320,7 @@ async function setCurrency(currency) {
 export async function setColdStakingAddress(strColdAddress) {
     strColdStakingAddress = strColdAddress;
     const database = await Database.getInstance();
-    database.setSettings({ coldAddress: strColdAddress });
+    await database.setSettings({ coldAddress: strColdAddress });
 }
 
 /**
