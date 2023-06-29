@@ -35,6 +35,12 @@ module.exports = {
                 test: /\.(jpe?g|png|gif|svg|mp3|svg)$/i,
                 type: 'asset/resource',
             },
+
+            {
+                test: /\.tsx?$/,
+                use: 'ts-loader',
+                exclude: /node_modules/,
+            },
         ],
     },
     resolve: {

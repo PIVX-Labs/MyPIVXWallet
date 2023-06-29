@@ -11,6 +11,7 @@
     "deploy": "gh-pages -d dist",
     "prettier": "prettier --write --cache scripts locale/ *.js",
     "lint": "eslint scripts/ *.js",
+    "tsc": "tsc --noEmit",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -46,6 +47,7 @@
     "node-polyfill-webpack-plugin": "^2.0.1",
     "prettier": "^2.8.1",
     "resource-loader": "^4.0.0-rc4",
+    "ts-loader": "^9.4.4",
     "webpack": "^5.75.0",
     "webpack-cli": "^5.0.1",
     "webpack-dev-server": "^4.11.1",

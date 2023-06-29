@@ -1,6 +1,6 @@
 import { doms } from './global';
 import { confirmPopup, sanitizeHTML } from './misc';
-import 'types.ts';
+import './types.ts';
 
 // ESLint error-skipping for webpack-injected globals
 /* global VERSION */
