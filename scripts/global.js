@@ -10,7 +10,7 @@ import {
     decryptWallet,
     getNewAddress,
     getDerivationPath,
-    isYourAddress,
+    LegacyMasterKey,
 } from './wallet.js';
 import { getNetwork, HistoricalTxType } from './network.js';
 import {
@@ -19,8 +19,10 @@ import {
     debug,
     cMarket,
     strCurrency,
+    setColdStakingAddress,
+    strColdStakingAddress,
 } from './settings.js';
-import { createAndSendTransaction } from './transactions.js';
+import { createAndSendTransaction, signTransaction } from './transactions.js';
 import {
     createAlert,
     confirmPopup,
@@ -39,6 +41,8 @@ import { Address6 } from 'ip-address';
 import { getEventEmitter } from './event_bus.js';
 import { scanQRCode } from './scanner.js';
 import { Database } from './database.js';
+import bitjs from './bitTrx.js';
+import { checkForUpgrades } from './changelog.js';
 
 /** A flag showing if base MPW is fully loaded or not */
 export let fIsLoaded = false;
@@ -200,6 +204,36 @@ export async function start() {
         domWipeWallet: document.getElementById('guiWipeWallet'),
         domRestoreWallet: document.getElementById('guiRestoreWallet'),
         domNewAddress: document.getElementById('guiNewAddress'),
+        domRedeemTitle: document.getElementById('redeemCodeModalTitle'),
+        domRedeemCodeUse: document.getElementById('redeemCodeUse'),
+        domRedeemCodeCreate: document.getElementById('redeemCodeCreate'),
+        domRedeemCodeGiftIconBox: document.getElementById(
+            'redeemCodeGiftIconBox'
+        ),
+        domRedeemCodeGiftIcon: document.getElementById('redeemCodeGiftIcon'),
+        domRedeemCodeETA: document.getElementById('redeemCodeETA'),
+        domRedeemCodeProgress: document.getElementById('redeemCodeProgress'),
+        domRedeemCodeInputBox: document.getElementById('redeemCodeInputBox'),
+        domRedeemCodeInput: document.getElementById('redeemCodeInput'),
+        domRedeemCodeConfirmBtn: document.getElementById(
+            'redeemCodeModalConfirmButton'
+        ),
+        domRedeemCodeModeRedeemBtn: document.getElementById(
+            'redeemCodeModeRedeem'
+        ),
+        domRedeemCodeModeCreateBtn: document.getElementById(
+            'redeemCodeModeCreate'
+        ),
+        domRedeemCodeCreateInput: document.getElementById(
+            'redeemCodeCreateInput'
+        ),
+        domRedeemCodeCreateAmountInput: document.getElementById(
+            'redeemCodeCreateAmountInput'
+        ),
+        domRedeemCodeCreatePendingList: document.getElementById(
+            'redeemCodeCreatePendingList'
+        ),
+        domPromoTable: document.getElementById('promo-table'),
         domActivityList: document.getElementById('activity-list-content'),
         domActivityLoadMore: document.getElementById('activityLoadMore'),
         domActivityLoadMoreIcon: document.getElementById(
@@ -231,8 +265,14 @@ export async function start() {
         domCurrencySelect: document.getElementById('currency'),
         domExplorerSelect: document.getElementById('explorer'),
         domNodeSelect: document.getElementById('node'),
+        domAutoSwitchToggle: document.getElementById('autoSwitchToggler'),
         domTranslationSelect: document.getElementById('translation'),
         domBlackBack: document.getElementById('blackBack'),
+        domWalletSettings: document.getElementById('settingsWallet'),
+        domDisplaySettings: document.getElementById('settingsDisplay'),
+        domWalletSettingsBtn: document.getElementById('settingsWalletBtn'),
+        domDisplaySettingsBtn: document.getElementById('settingsDisplayBtn'),
+        domVersion: document.getElementById('version'),
     };
 
     await i18nStart();
@@ -245,8 +285,6 @@ export async function start() {
     });
 
     // Register Input Pair events
-
-    /** Dashboard (Send) */
     doms.domSendAmountCoins.oninput = () => {
         updateAmountInputPair(
             doms.domSendAmountCoins,
@@ -336,13 +374,30 @@ export async function start() {
         : 0;
     await settingsStart();
 
-    // Payment processor redirect
-    if (reqTo.length || reqAmount > 0) {
-        guiPreparePayment(
-            reqTo,
-            reqAmount,
-            urlParams.has('desc') ? urlParams.get('desc') : ''
-        );
+    // Customise the UI if a saved wallet exists
+    if (await hasEncryptedWallet()) {
+        // Hide the 'Generate wallet' buttons
+        doms.domGenerateWallet.style.display = 'none';
+        doms.domGenVanityWallet.style.display = 'none';
+        const database = await Database.getInstance();
+        const { publicKey } = await database.getAccount();
+
+        // Import the wallet, and toggle the startup flag, which delegates the chain data refresh to settingsStart();
+        if (publicKey) {
+            importWallet({ newWif: publicKey, fStartup: true });
+
+            // Payment processor popup
+            if (reqTo.length || reqAmount > 0) {
+                guiPreparePayment(
+                    reqTo,
+                    reqAmount,
+                    urlParams.has('desc') ? urlParams.get('desc') : ''
+                );
+            }
+        } else {
+            // Display the password unlock upfront
+            await accessOrImportWallet();
+        }
     }
 
     subscribeToNetworkEvents();
@@ -363,22 +418,8 @@ export async function start() {
     // After reaching here; we know MPW's base is fully loaded!
     fIsLoaded = true;
 
-    // Customise the UI if a saved wallet exists
-    if (await hasEncryptedWallet()) {
-        // Hide the 'Generate wallet' buttons
-        doms.domGenerateWallet.style.display = 'none';
-        doms.domGenVanityWallet.style.display = 'none';
-
-        const publicKey = localStorage.getItem('publicKey');
-
-        // Import the wallet, and toggle the startup flag, which delegates the chain data refresh to settingsStart();
-        if (publicKey) {
-            await importWallet({ newWif: publicKey, fStartup: true });
-        } else {
-            // Display the password unlock upfront
-            await accessOrImportWallet();
-        }
-    }
+    // Check for recent upgrades, display the changelog
+    checkForUpgrades();
 }
 
 function subscribeToNetworkEvents() {
@@ -413,7 +454,9 @@ function subscribeToNetworkEvents() {
             // If allowed by settings: submit a simple 'tx' ping to Labs Analytics
             getNetwork().submitAnalytics('transaction');
         } else {
-            createAlert('warning', 'Transaction Failed!', 1250);
+            console.error('Error sending transaction:');
+            console.error(result);
+            createAlert('warning', 'Transaction Failed!', 2500);
         }
     });
 }
@@ -421,9 +464,6 @@ function subscribeToNetworkEvents() {
 // WALLET STATE DATA
 export const mempool = new Mempool();
 let exportHidden = false;
-
-//                        PIVX Labs' Cold Pool
-export let cachedColdStakeAddr = 'SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy';
 
 /**
  * Open a UI 'tab' menu, and close all other tabs, intended for frontend use
@@ -675,9 +715,6 @@ export async function createActivityListHTML(arrTXs, fRewards = false) {
         hour12: true,
     };
 
-    // Keep a map of our own address(es) found within Txs, to improve speed of deciphering the Send type
-    const mapOurAddresses = new Map();
-
     // And also keep track of our last Tx's timestamp, to re-use a cache, which is much faster than the slow `.toLocaleDateString`
     let prevDateString = '';
     let prevTimestamp = 0;
@@ -742,15 +779,9 @@ export async function createActivityListHTML(arrTXs, fRewards = false) {
             // Check all addresses to find our own, caching them for performance
             for (const strAddr of cTx.receivers.concat(cTx.senders)) {
                 // If a previous Tx checked this address, skip it, otherwise, check it against our own address(es)
-                if (
-                    !mapOurAddresses.has(strAddr) &&
-                    !(await isYourAddress(strAddr))[0]
-                ) {
+                if (!(await masterKey.isOwnAddress(strAddr))) {
                     // External address, this is not a self-only Tx
                     fSendToSelf = false;
-                } else {
-                    // Internal address, remember this for later use
-                    mapOurAddresses.set(strAddr);
                 }
             }
         }
@@ -769,9 +800,18 @@ export async function createActivityListHTML(arrTXs, fRewards = false) {
                         txContent = 'Sent to self';
                     } else {
                         // Otherwise, anything to us is likely change, so filter it away
-                        const arrExternalAddresses = cTx.receivers.filter(
-                            (addr) => !mapOurAddresses.has(addr)
-                        );
+                        const arrExternalAddresses = (
+                            await Promise.all(
+                                cTx.receivers.map(async (addr) => [
+                                    await masterKey.isOwnAddress(addr),
+                                    addr,
+                                ])
+                            )
+                        )
+                            .filter(([isOwnAddress, _]) => {
+                                return !isOwnAddress;
+                            })
+                            .map(([_, addr]) => addr);
                         txContent =
                             'Sent to ' +
                             (cTx.shieldedOutputs
@@ -792,9 +832,19 @@ export async function createActivityListHTML(arrTXs, fRewards = false) {
                     colour = '#5cff5c';
                     // Figure out WHO this was sent from, and focus on them contextually
                     // Filter away any of our own addresses
-                    const arrExternalAddresses = cTx.senders.filter(
-                        (addr) => !mapOurAddresses.has(addr)
-                    );
+                    const arrExternalAddresses = (
+                        await Promise.all(
+                            cTx.senders.map(async (addr) => [
+                                await masterKey.isOwnAddress(addr),
+                                addr,
+                            ])
+                        )
+                    )
+                        .filter(([isOwnAddress, _]) => {
+                            return !isOwnAddress;
+                        })
+                        .map(([_, addr]) => addr);
+
                     if (cTx.shieldedOutputs) {
                         txContent = 'Received from Shielded address';
                     } else {
@@ -878,6 +928,9 @@ export async function updateActivityGUI(fStaking = false, fNewOnly = false) {
     // Prevent the user from spamming refreshes
     if (cNet.historySyncing) return;
 
+    // Remember how much history we had previously
+    const nPrevHistory = cNet.arrTxHistory.length;
+
     // Choose the Dashboard or Staking UI accordingly
     let domLoadMore = doms.domActivityLoadMore;
     let domLoadMoreIcon = doms.domActivityLoadMoreIcon;
@@ -893,6 +946,9 @@ export async function updateActivityGUI(fStaking = false, fNewOnly = false) {
     if (!arrTXs) {
         return;
     }
+
+    // If there's no change in history size post-sync, then we can cancel here, there's nothing new to render
+    if (nPrevHistory === cNet.arrTxHistory.length) return;
 
     // Check if all transactions are loaded
     if (cNet.isHistorySynced) {
@@ -1616,28 +1672,92 @@ export function generateVanityWallet() {
     }
 }
 
+/**
+ * Sweep an address to our own wallet, spending all it's UTXOs without change
+ * @param {Array<object>} arrUTXOs - The UTXOs belonging to the address to sweep
+ * @param {LegacyMasterKey} sweepingMasterKey - The address to sweep from
+ * @param {number} nFixedFee - An optional fixed satoshi fee
+ * @returns {Promise<string|false>} - TXID on success, false or error on failure
+ */
+export async function sweepAddress(arrUTXOs, sweepingMasterKey, nFixedFee = 0) {
+    const cTx = new bitjs.transaction();
+
+    // Load all UTXOs as inputs
+    let nTotal = 0;
+    for (const cUTXO of arrUTXOs) {
+        nTotal += cUTXO.sats;
+        cTx.addinput({
+            txid: cUTXO.id,
+            index: cUTXO.vout,
+            script: cUTXO.script,
+            path: cUTXO.path,
+        });
+    }
+
+    // Use a given fixed fee, or use the network fee if unspecified
+    const nFee = nFixedFee || getNetwork().getFee(cTx.serialize().length);
+
+    // Use a new address from our wallet to sweep the UTXOs in to
+    const strAddress = (await getNewAddress(true, false))[0];
+
+    // Sweep the full funds amount, minus the fee, leaving no change from any sweeped UTXOs
+    cTx.addoutput(strAddress, (nTotal - nFee) / COIN);
+
+    // Sign using the given Master Key, then broadcast the sweep, returning the TXID (or a failure)
+    const sign = await signTransaction(cTx, sweepingMasterKey);
+    return await getNetwork().sendTransaction(sign);
+}
+
 export function toggleDropDown(id) {
     const domID = document.getElementById(id);
     domID.style.display = domID.style.display === 'block' ? 'none' : 'block';
-}
-
-export function askForCSAddr(force = false) {
-    if (force) cachedColdStakeAddr = null;
-    if (cachedColdStakeAddr === '' || cachedColdStakeAddr === null) {
-        cachedColdStakeAddr = prompt(
-            'Please provide a Cold Staking address (either from your own node, or a 3rd-party!)'
-        ).trim();
-        if (cachedColdStakeAddr) return true;
-    } else {
-        return true;
-    }
-    return false;
 }
 
 export function isMasternodeUTXO(cUTXO, cMasternode) {
     if (cMasternode?.collateralTxId) {
         const { collateralTxId, outidx } = cMasternode;
         return collateralTxId === cUTXO.id && cUTXO.vout === outidx;
+    } else {
+        return false;
+    }
+}
+
+/**
+ * Creates a GUI popup for the user to check or customise their Cold Address
+ */
+export async function guiSetColdStakingAddress() {
+    if (
+        await confirmPopup({
+            title: 'Set your Cold Staking address',
+            html: `<p>Current address:<br><span class="mono">${strColdStakingAddress}</span><br><br><span style="opacity: 0.65; margin: 10px;">A Cold Address stakes coins on your behalf, it cannot spend coins, so it's even safe to use a stranger's Cold Address!</span></p><br><input type="text" id="newColdAddress" placeholder="Example: ${strColdStakingAddress.substring(
+                0,
+                6
+            )}..." style="text-align: center;">`,
+        })
+    ) {
+        // Fetch address from the popup input
+        const strColdAddress = document.getElementById('newColdAddress').value;
+
+        // If it's empty, just return false
+        if (!strColdAddress) return false;
+
+        // Sanity-check, and set!
+        if (
+            strColdAddress[0] === cChainParams.current.STAKING_PREFIX &&
+            strColdAddress.length === 34
+        ) {
+            await setColdStakingAddress(strColdAddress);
+            createAlert(
+                'info',
+                '<b>Cold Address set!</b><br>Future stakes will use this address.',
+                [],
+                5000
+            );
+            return true;
+        } else {
+            createAlert('warning', 'Invalid Cold Staking address!', [], 2500);
+            return false;
+        }
     } else {
         return false;
     }
@@ -2170,21 +2290,11 @@ export function refreshChainData() {
     if (!masterKey) return;
 
     // Fetch block count + UTXOs, update the UI for new transactions
-    const nPrevBlock = cNet.cachedBlockCount;
-    cNet.getBlockCount()
-        .then((_) => {
-            // Update the Activity if a new block arrived
-            if (cNet.cachedBlockCount > nPrevBlock) {
-                updateActivityGUI(false, true)
-                    .then(() => {})
-                    .catch((e) => {
-                        throw e;
-                    });
-            }
-        })
-        .catch((e) => {
-            throw e;
-        });
+
+    cNet.getBlockCount().then((_) => {
+        // Fetch latest Activity
+        updateActivityGUI(false, true);
+    }).catch(e=>{throw e});
     getBalance(true);
 }
 
@@ -2197,6 +2307,55 @@ export const beforeUnloadListener = (evt) => {
     // Most browsers ignore this nowadays, but still, keep it 'just incase'
     return (evt.returnValue = translation.BACKUP_OR_ENCRYPT_WALLET);
 };
+
+/**
+ * @typedef {Object} SettingsDOM - An object that contains the DOM elements for settings pages.
+ * @property {HTMLElement} btn - The button to switch to this setting type.
+ * @property {HTMLElement} section - The container for this setting type.
+ */
+
+/**
+ * Returns a list of all pages and their DOM elements.
+ *
+ * This must be a function, since, the DOM elements are `undefined` until
+ * after the startup sequence.
+ *
+ * Types are inferred.
+ */
+function getSettingsPages() {
+    return {
+        /** @type {SettingsDOM} */
+        wallet: {
+            btn: doms.domWalletSettingsBtn,
+            section: doms.domWalletSettings,
+        },
+        /** @type {SettingsDOM} */
+        display: {
+            btn: doms.domDisplaySettingsBtn,
+            section: doms.domDisplaySettings,
+        },
+    };
+}
+
+/**
+ * Switch between screens in the settings menu
+ * @param {string} page - The name of the setting page to switch to
+ */
+export function switchSettings(page) {
+    const SETTINGS = getSettingsPages();
+    const { btn, section } = SETTINGS[page];
+
+    Object.values(SETTINGS).forEach(({ section, btn }) => {
+        // Hide all settings sections
+        section.classList.add('d-none');
+        // Make all buttons inactive
+        btn.classList.remove('active');
+    });
+
+    // Show selected section and make its button active
+    section.classList.remove('d-none');
+    btn.classList.add('active');
+}
 
 function errorHandler(e) {
     const message = `Unhandled exception. <br> ${sanitizeHTML(

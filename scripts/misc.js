@@ -22,6 +22,24 @@ export function getSafeRand(nSize = 32) {
     return crypto.getRandomValues(new Uint8Array(nSize));
 }
 
+export const MAP_ALPHANUMERIC =
+    'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+
+/**
+ * Generate a random Alpha-Numeric sequence
+ * @param {number} nSize - The amount of characters to generate
+ * @returns {string} - A random alphanumeric string of nSize length
+ */
+export function getAlphaNumericRand(nSize = 32) {
+    let result = '';
+    const randValues = getSafeRand(nSize);
+    for (const byte of randValues) {
+        const index = byte % MAP_ALPHANUMERIC.length;
+        result += MAP_ALPHANUMERIC.charAt(index);
+    }
+    return result;
+}
+
 // Writes a sequence of Array-like bytes into a location within a Uint8Array
 export function writeToUint8(arr, bytes, pos) {
     const arrLen = arr.length;
@@ -53,7 +71,7 @@ export function createAlert(type, message, alertVariables = [], timeout = 0) {
      * @type {any}
      */
     const domAlert = document.createElement('div');
-    domAlert.classList.add('alertpop');
+    domAlert.classList.add('notifyWrapper');
     domAlert.classList.add(type);
     setTimeout(() => {
         domAlert.style.opacity = '1';
@@ -71,8 +89,30 @@ export function createAlert(type, message, alertVariables = [], timeout = 0) {
     // Apply translations
     const translatedMessage = translateAlerts(message, alertVariables);
 
+    // Colors for types
+    let typeIcon;
+    switch (type) {
+        case 'warning':
+            typeIcon = 'fa-exclamation';
+            break;
+        case 'info':
+            typeIcon = 'fa-info';
+            break;
+        default:
+            // If no valid type is set, default to success
+            type == 'success';
+            typeIcon = 'fa-check';
+            break;
+    }
+
     // Message
-    domAlert.innerHTML = translatedMessage;
+    domAlert.innerHTML = `
+    <div class="notifyIcon notify-${type}">
+        <i class="fas ${typeIcon} fa-xl"></i>
+    </div>
+    <div class="notifyText">
+        ${translatedMessage}
+    </div>`;
     domAlert.destroy = () => {
         // Fully destroy timers + DOM elements, no memory leaks!
         clearTimeout(domAlert.timer);
@@ -90,18 +130,26 @@ export function createAlert(type, message, alertVariables = [], timeout = 0) {
 }
 
 /**
- * Shows the confirm modal with the provided html.
- * If resolvePromise has a value, the popup won't have
- * Confirm/Cancel buttons and will wait for the promise to resolve instead.
- * @template T Promise return value
- * @param {Object} o
- * @param {String} o.title
- * @param {String} o.html
- * @param {Promise<Boolean | T>} [o.resolvePromise]
- * @returns {Promise<Boolean | T>} Returns the awaited value of resolvePromise
- * or a boolean is the user confirmed confirmed the modal or not
+ * Shows a Confirm popup with custom HTML.
+ *
+ * If `resolvePromise` has a value, the popup won't have
+ * Confirm/Cancel buttons and will wait for the promise to resolve.
+ *
+ * Returns the awaited value of `resolvePromise` or `true/false` if the
+ * user used a Cancel/Confirm button.
+ * @param {object} options
+ * @param {string?} options.title - The optional title of the popup
+ * @param {string} options.html - The HTML of the popup contents
+ * @param {Promise<any>} options.resolvePromise - A promise to resolve before closing the modal
+ * @param {boolean?} options.hideConfirm - Whether to hide the Confirm button or not
+ * @returns {Promise<boolean|any>}
  */
-export async function confirmPopup({ title, html, resolvePromise }) {
+export async function confirmPopup({
+    title,
+    html,
+    resolvePromise,
+    hideConfirm,
+}) {
     // If there's a title provided: display the header and text
     doms.domConfirmModalHeader.style.display = title ? 'block' : 'none';
     doms.domConfirmModalTitle.innerHTML = title || '';
@@ -117,6 +165,12 @@ export async function confirmPopup({ title, html, resolvePromise }) {
      */
     const confirmModal = $('#confirmModal');
     confirmModal.modal(resolvePromise ? 'show' : { keyboard: false });
+
+    // Show or hide the confirm button, and replace 'Cancel' with 'Close'
+    doms.domConfirmModalConfirmButton.style.display = hideConfirm ? 'none' : '';
+    doms.domConfirmModalCancelButton.innerText = hideConfirm
+        ? 'Close'
+        : 'Cancel';
 
     // Set content display
     doms.domConfirmModalContent.innerHTML = html;

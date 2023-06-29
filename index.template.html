@@ -166,7 +166,7 @@
         <br />
         <!-- // CONFIRM MODAL -->
         <div class="modal" id="confirmModal" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
-          <div class="modal-dialog modal-dialog-centered" role="document" style="max-width: 600px;">
+          <div class="modal-dialog modal-dialog-centered max-w-600" role="document">
             <div class="modal-content">
               <div class="modal-header" id="confirmModalHeader">
                 <h3 class="modal-title" id="confirmModalTitle" style="text-align: center; width: 100%; color: #8e21ff;"></h3>
@@ -426,6 +426,90 @@
                   </div>
                   <!-- // Lock Wallet -->
 
+                  <!-- Redeem Code (PIVX Promos) -->
+                  <div class="modal" id="redeemCodeModal" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+                    <div class="modal-dialog modal-dialog-centered max-w-600" role="document">
+                      <div class="modal-content">
+                        <div class="modal-header" id="redeemCodeModalHeader">
+                          <h3 class="modal-title" id="redeemCodeModalTitle" style="text-align: center; width: 100%; color: #8e21ff;">Redeem Code</h3>
+                        </div>
+                        <div class="modal-body center-text">
+                          <center>
+                            <p class="mono" style="font-size: small;">
+                              <b>PIVX Promos</b> is a decentralised system for gift codes worth PIV
+                            </p>
+                            <div id="redeemCodeModeBox">
+                              <button type="button" onclick="MPW.setPromoMode(true)" id="redeemCodeModeRedeem" class="pivx-button-big" style="margin: 0;border-top-right-radius: 0;border-bottom-right-radius: 0;opacity: 0.5;">Redeem</button>
+                              <button type="button" onclick="MPW.setPromoMode(false)" id="redeemCodeModeCreate" class="pivx-button-big" style="margin: 0;border-top-left-radius: 0;border-bottom-left-radius: 0;opacity: 0.8;">Create</button>
+                            </div>
+                            <br>
+                            <br>
+                            <div id="redeemCodeUse">
+                              <div class="col-8" id="redeemCodeInputBox">
+                                <div class="input-group" style="border-color: #9121ff;border-style: solid;border-radius: 10px;">
+                                  <input class="btn-group-input mono center-text" type="text" id="redeemCodeInput" placeholder="Enter your 'PIVX Promos' code" autocomplete="nope" />
+                                  <div class="input-group-append">
+                                    <span class="input-group-text ptr" onclick="MPW.openPromoQRScanner()"><i class="fa-solid fa-qrcode fa-2xl"></i></span>
+                                  </div>
+                                </div>
+                              </div>
+                              <center>
+                                <div id="redeemCodeGiftIconBox" style="display: none;">
+                                  <br>
+                                  <br>
+                                  <i id="redeemCodeGiftIcon" onclick="MPW.sweepPromoCode();" class="fa-solid fa-gift fa-2xl" style="color: #813d9c; font-size: 4em;"></i>
+                                </div>
+                                
+                                <p id="redeemCodeETA" style="margin-bottom: 0; display: none;">
+                                  <br><br>
+                                </p>
+                                <progress id="redeemCodeProgress" min="0" max="100" value="50" style="display: none"></progress>
+                              </center>
+                            </div>
+                            <div id="redeemCodeCreate" style="display: none;">
+                              <div class="col-11">
+                                <div class="row">
+                                  <div class="col-6" style="padding-right:3px;">
+                                    <div class="input-group" style="border-color: #9121ff;border-style: solid;border-radius: 10px;">
+                                      <input class="btn-group-input mono center-text" style="border-top-right-radius: 9px; border-bottom-right-radius: 9px;" type="text" id="redeemCodeCreateInput" placeholder="Promo Name (Optional)" autocomplete="nope" />
+                                    </div>
+                                  </div>
+                                  <div class="col-6" style="padding-left:3px;">
+                                    <div class="input-group" style="border-color: #9121ff;border-style: solid;border-radius: 10px;">
+                                      <input class="btn-group-input mono center-text" style="border-top-right-radius: 9px; border-bottom-right-radius: 9px;" type="text" id="redeemCodeCreateAmountInput" placeholder="Promo Amount" autocomplete="nope" />
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                              <div class="table-promo d-none" id="promo-table">
+                                <br>
+                                <table class="table table-hover">
+                                  <thead>
+                                    <tr>
+                                      <td class="text-center"><b> Manage </b></td>
+                                      <td class="text-center"><b> Promo Code </b></td>
+                                      <td class="text-center"><b> Amount </b></td>
+                                      <td class="text-center"><b> State </b></td>
+                                    </tr>
+                                  </thead>
+                                  <tbody id="redeemCodeCreatePendingList" style="text-align: center; vertical-align: middle;">
+                                    
+                                  </tbody>
+                                </table>
+                              </div>
+                            </div>
+                            <br>
+                          </center>
+                        </div>
+                        <div class="modal-footer" hidden="true" id="redeemCodeModalButtons">
+                          <button type="button" onclick="MPW.promoConfirm()" id="redeemCodeModalConfirmButton" class="pivx-button-big" style="float: right;">Redeem</button>
+                          <button type="button" data-dismiss="modal" aria-label="Close" class="pivx-button-big" style="float: right; opacity: 0.7;">Close</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- // Redeem Code (PIVX Promos) -->
+
                   <!-- WALLET FEATURES -->
                   <div id="guiWallet" style="display: none;">
                     <div class="row p-0">
@@ -458,6 +542,9 @@
                                         </a>
                                         <a class="dropdown-item ptr" id="guiNewAddress" data-toggle="modal" data-target="#qrModal" onclick="MPW.getNewAddress({updateGUI: true, verify: true});">
                                           <i class="fas fa-sync-alt"></i> Refresh address
+                                        </a>
+                                        <a class="dropdown-item ptr" data-toggle="modal" data-target="#redeemCodeModal">
+                                          <i class="fa-solid fa-gift"></i> Redeem or Create Code
                                         </a>
                                       </div>
                                     </div>
@@ -806,6 +893,12 @@
                               <span class="reload noselect" onclick="MPW.refreshChainData()"><i id="balanceReloadStaking" class="fa-solid fa-rotate-right cur-pointer"></i></span>
                             </h3>
                           </div>
+
+                          <div class="col-6 d-flex dcWallet-topRightMenu" style="justify-content: flex-end;">
+                            <div class="btn-group dropleft">
+                              <i class="fa-solid fa-gear" style="width: 20px;" onclick="MPW.guiSetColdStakingAddress()"></i>
+                            </div>
+                          </div>
                         </div>
 
                         Staking<br>
@@ -946,9 +1039,9 @@
                     <td class="text-center"><b> Payment </b></td>
                     <td class="text-center"><b> Votes </b></td>
                     <td class="text-center"><b> Vote </b></td>
-		    <td class="text-center">
-			<div class="pivx-button-small" onclick="MPW.createProposal()"> <i class="fas fa-plus"></i> </div>
-		    </td>
+                    <td class="text-center">
+                      <div class="pivx-button-small" onclick="MPW.createProposal()"> <i class="fas fa-plus"></i> </div>
+                    </td>
                   </thead>
                   <tbody id="proposalsTableBody" style="text-align: center; vertical-align: middle;"></tbody>
                 </table>
@@ -1066,58 +1159,83 @@
               </div>
 
               <div id="Settings" class="tabcontent">
-                <label for="currency" data-i18n="settingsCurrency">Choose a display currency:</label>
-                <br />
-                <select id="currency" class="form-control" name="currency">
-                  <!-- Populated via JS at Price Source data load (prices.js) -->
-                </select>
-                <br />
-                <label for="explorer" data-i18n="settingsExplorer">Choose an explorer:</label>
-                <br />
-                <select id="explorer" class="form-control" name="explorer">
-                  <!-- Populated via JS at DOM load (settings.js) -->
-                </select>
-                <br />
-                <label for="translation" data-i18n="settingsLanguage">Choose a Language:</label>
-                <br />
-                <select id="translation" class="form-control" name="translation">
-                  <!-- Populated via JS at DOM load (settings.js) -->
-                </select>
-                <br />
+                <div class="row">
+                  <div class="col-12 col-md-3 mb-3 mb-md-0">
+                    <ul class="settingsMenu">
+                      <li onclick="MPW.switchSettings('wallet')" id="settingsWalletBtn" class="active">Wallet</li>
+                      <li onclick="MPW.switchSettings('display')" id="settingsDisplayBtn">Display</li>
+                    </ul>
+                  </div>
+                  <div class="col-12 col-md-9">
+                    <div id="settingsWallet" class="settingsContent">
+                      <span class="header-title">Wallet</span>
 
-                <label for="node" data-i18n="settingsPivxNode">Choose a PIVX node:</label>
-                <br />
-                <select id="node" class="form-control" name="node">
-                  <!-- Populated via JS at DOM load (settings.js) -->
-                </select>
-                <br />
+                      <hr />
 
-                <label for="analytics" data-i18n="settingsAnalytics">Choose your analytics contribution level:</label>
-                <br />
-                <select id="analytics" class="form-control" name="analytics">
-                  <!-- Populated via JS at DOM load (settings.js) -->
-                </select>
-                <div id="analyticsDescriptor"></div>
-                <br />
+                      <label for="explorer" data-i18n="settingsExplorer">Choose an explorer:</label>
+                      <br />
+                      <select id="explorer" class="form-control" name="explorer">
+                        <!-- Populated via JS at DOM load (settings.js) -->
+                      </select>
 
-                <button class="pivx-button-big" onclick="MPW.toggleDebug()">
-                  <span class="buttoni-icon"><i class="fas fa-bug fa-tiny-margin"></i></span>
-                  <span class="buttoni-text" data-i18n="settingsToggleDebug">Toggle Debug Mode</span>
-                  <span class="buttoni-arrow">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-                      <path d="M23.328 16.707L13.121 26.914a.5.5 0 01-.707 0l-2.828-2.828a.5.5 0 010-.707L16.964 16 9.586 8.621a.5.5 0 010-.707l2.828-2.828a.5.5 0 01.707 0l10.207 10.207a1 1 0 010 1.414z"></path>
-                    </svg>
-                  </span>
-                </button>
-                <button class="pivx-button-big" onclick="MPW.toggleTestnet()">
-                  <span class="buttoni-icon"><i class="fas fa-network-wired fa-tiny-margin"></i></span>
-                  <span class="buttoni-text" data-i18n="settingsToggleTestnet">Toggle Testnet Mode</span>
-                  <span class="buttoni-arrow">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-                      <path d="M23.328 16.707L13.121 26.914a.5.5 0 01-.707 0l-2.828-2.828a.5.5 0 010-.707L16.964 16 9.586 8.621a.5.5 0 010-.707l2.828-2.828a.5.5 0 01.707 0l10.207 10.207a1 1 0 010 1.414z"></path>
-                    </svg>
-                  </span>
-                </button>
+                      <br />
+
+                      <label for="node" data-i18n="settingsPivxNode">Choose a PIVX node:</label>
+                      <br />
+                      <select id="node" class="form-control" name="node">
+                        <!-- Populated via JS at DOM load (settings.js) -->
+                      </select>
+
+                      <br />
+
+                      <div class="custom-control custom-switch" style="margin-bottom:15px;">
+                        <input type="checkbox" class="custom-control-input" id="autoSwitchToggler" onclick="MPW.toggleAutoSwitch()">
+                        <label class="custom-control-label" for="autoSwitchToggler">Auto-select Explorers and Nodes</label>
+                      </div>
+
+                      <br />
+
+                      <label for="analytics" data-i18n="settingsAnalytics">Choose your analytics contribution level:</label>
+                      <br />
+                      <select id="analytics" class="form-control" name="analytics">
+                        <!-- Populated via JS at DOM load (settings.js) -->
+                      </select>
+                      <div id="analyticsDescriptor"></div>
+
+                      <!-- Default switch -->
+                      <div class="custom-control custom-switch" style="margin-bottom:15px;">
+                        <input type="checkbox" class="custom-control-input" id="debugToggler" onclick="MPW.toggleDebug()">
+                        <label class="custom-control-label" for="debugToggler">Debug Mode</label>
+                      </div>
+
+                      <div class="custom-control custom-switch">
+                        <input type="checkbox" class="custom-control-input" id="tesnetToggler" onclick="MPW.toggleTestnet()">
+                        <label class="custom-control-label" for="tesnetToggler">Testnet Mode</label>
+                      </div>
+
+                    </div>
+
+                    <div id="settingsDisplay" class="d-none settingsContent">
+                      <span class="header-title">Display</span>
+
+                      <hr />
+
+                      <label for="currency" data-i18n="settingsCurrency">Choose a display currency:</label>
+                      <br />
+                      <select id="currency" class="form-control" name="currency">
+                        <!-- Populated via JS at Price Source data load (prices.js) -->
+                      </select>
+
+                      <br />
+
+                      <label for="translation" data-i18n="settingsLanguage">Choose a Language:</label>
+                      <br />
+                      <select id="translation" class="form-control" name="translation">
+                        <!-- Populated via JS at DOM load (settings.js) -->
+                      </select>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -1131,7 +1249,7 @@
         <div class="footer">
           <div>
             <span> © MIT 2023 </span> - <span style="cursor: pointer;" onclick="MPW.playMusic()" data-i18n="footerBuiltWithPivxLabs">Built with 💜 by PIVX Labs</span><br />
-            <a href="https://github.com/PIVX-Labs/MyPIVXWallet" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-github"></i></i> GitHub</a> - <a href="https://discord.gg/zTScGaGtgv" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-discord"></i></i> Discord</a> - <a href="https://medium.com/@pivx-labs" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-medium"></i></i> Medium</a>
+            <a href="https://github.com/PIVX-Labs/MyPIVXWallet" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-github"></i></i></a> - <a href="https://discord.gg/zTScGaGtgv" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-discord"></i></i></a> - <a href="https://medium.com/@pivx-labs" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-medium"></i></i></a> - <span id="version" class="ptr" onclick="MPW.renderChangelog();"></span>
           </div>
         </div>
       </footer>

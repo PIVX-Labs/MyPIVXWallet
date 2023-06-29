@@ -42,10 +42,20 @@ export let fWalletLoaded = false;
  * Abstract class masterkey
  * @abstract
  */
-export class MasterKey {
-    _isHD = false;
-    _isHardwareWallet = false;
-    _isViewOnly = false;
+class MasterKey {
+    #addressIndex = 0;
+    /**
+     * Map our own address -> Path
+     * @type {Map<String, String?>}
+     */
+    #ownAddresses = new Map();
+
+    constructor() {
+        if (this.constructor === MasterKey) {
+            throw new Error('initializing virtual class');
+        }
+    }
+
     /**
      * @param {String} [_path] - BIP32 path pointing to the private key.
      * @return {Promise<Uint8Array>} Array of bytes containing private key
@@ -128,6 +138,57 @@ export class MasterKey {
      */
     get isViewOnly() {
         return this._isViewOnly;
+    }
+
+    /**
+     * @param {string} address - address to check
+     * @return {Promise<String?>} BIP32 path or null if it's not your address
+     */
+    async isOwnAddress(address) {
+        if (this.#ownAddresses.has(address)) {
+            return this.#ownAddresses.get(address);
+        }
+        const last = getNetwork().lastWallet;
+        this.#addressIndex =
+            this.#addressIndex > last ? this.#addressIndex : last;
+        if (this.isHD) {
+            for (let i = 0; i < this.#addressIndex; i++) {
+                const path = getDerivationPath(this.isHardwareWallet, 0, 0, i);
+                const testAddress = await masterKey.getAddress(path);
+                if (address === testAddress) {
+                    this.#ownAddresses.set(address, path);
+                    return path;
+                }
+            }
+        } else {
+            const value = address === (await this.keyToExport) ? ':)' : null;
+            this.#ownAddresses.set(address, value);
+            return value;
+        }
+
+        this.#ownAddresses.set(address, null);
+        return null;
+    }
+
+    /**
+     * @return Promise<[string, string]> Address and its BIP32 derivation path
+     */
+    async getNewAddress() {
+        const last = getNetwork().lastWallet;
+        this.#addressIndex =
+            (this.#addressIndex > last ? this.#addressIndex : last) + 1;
+        if (this.#addressIndex - last > MAX_ACCOUNT_GAP) {
+            // If the user creates more than ${MAX_ACCOUNT_GAP} empty wallets we will not be able to sync them!
+            this.#addressIndex = last;
+        }
+        const path = getDerivationPath(
+            this.isHardwareWallet,
+            0,
+            0,
+            this.#addressIndex
+        );
+        const address = await this.getAddress(path);
+        return [address, path];
     }
 }
 
@@ -417,26 +478,46 @@ export function parseWIF(strWIF, skipVerification = false) {
     return verifyWIF(strWIF, true, skipVerification);
 }
 
-// Generate a new private key OR encode an existing private key from raw bytes
+/**
+ * Private key in Bytes and WIF formats
+ * @typedef {Object} PrivateKey
+ * @property {Uint8Array} pkBytes - The unprocessed Private Key bytes.
+ * @property {string} strWIF - The WIF encoded private key string.
+ */
+
+/**
+ * Network encode 32 bytes for a private key
+ * @param {Uint8Array} pkBytes - 32 Bytes
+ * @returns {Uint8Array} - The network-encoded Private Key bytes
+ */
+export function encodePrivkeyBytes(pkBytes) {
+    const pkNetBytes = new Uint8Array(pkBytes.length + 2);
+    pkNetBytes[0] = cChainParams.current.SECRET_KEY; // Private key prefix (1 byte)
+    writeToUint8(pkNetBytes, pkBytes, 1); // Private key bytes             (32 bytes)
+    pkNetBytes[pkNetBytes.length - 1] = 1; // Leading digit                (1 byte)
+    return pkNetBytes;
+}
+
+/**
+ * Generate a new private key OR encode an existing private key from raw bytes
+ * @param {Uint8Array} pkBytesToEncode - Bytes to encode as a coin private key
+ * @returns {PrivateKey} - The private key
+ */
 export function generateOrEncodePrivkey(pkBytesToEncode) {
     // Private Key Generation
     const pkBytes = pkBytesToEncode || getSafeRand();
-    const pkNetBytesLen = pkBytes.length + 2;
-    const pkNetBytes = new Uint8Array(pkNetBytesLen);
 
     // Network Encoding
-    pkNetBytes[0] = cChainParams.current.SECRET_KEY; // Private key prefix (1 byte)
-    writeToUint8(pkNetBytes, pkBytes, 1); // Private key bytes  (32 bytes)
-    pkNetBytes[pkNetBytesLen - 1] = 1; // Leading digit      (1 byte)
+    const pkNetBytes = encodePrivkeyBytes(pkBytes);
 
     // Double SHA-256 hash
     const shaObj = dSHA256(pkNetBytes);
 
     // WIF Checksum
     const checksum = shaObj.slice(0, 4);
-    const keyWithChecksum = new Uint8Array(pkNetBytesLen + checksum.length);
+    const keyWithChecksum = new Uint8Array(34 + checksum.length);
     writeToUint8(keyWithChecksum, pkNetBytes, 0);
-    writeToUint8(keyWithChecksum, checksum, pkNetBytesLen);
+    writeToUint8(keyWithChecksum, checksum, 34);
 
     // Return both the raw bytes and the WIF format
     return { pkBytes, strWIF: bs58.encode(keyWithChecksum) };
@@ -567,7 +648,7 @@ export async function importWallet({
             if (!publicKey) return;
 
             // Derive our hardware address and import!
-            setMasterKey(new HardwareWalletMasterKey());
+            await setMasterKey(new HardwareWalletMasterKey());
 
             // Hide the 'export wallet' button, it's not relevant to hardware wallets
             doms.domExportWallet.hidden = true;
@@ -601,18 +682,18 @@ export async function importWallet({
                     privateImportValue,
                     passphrase
                 );
-                setMasterKey(new HdMasterKey({ seed }));
+                await setMasterKey(new HdMasterKey({ seed }));
             } else {
                 // Public Key Derivation
                 try {
                     if (privateImportValue.startsWith('xpub')) {
-                        setMasterKey(
+                        await setMasterKey(
                             new HdMasterKey({
                                 xpub: privateImportValue,
                             })
                         );
                     } else if (privateImportValue.startsWith('xprv')) {
-                        setMasterKey(
+                        await setMasterKey(
                             new HdMasterKey({
                                 xpriv: privateImportValue,
                             })
@@ -623,7 +704,7 @@ export async function importWallet({
                             privateImportValue[0]
                         )
                     ) {
-                        setMasterKey(
+                        await setMasterKey(
                             new LegacyMasterKey({
                                 address: privateImportValue,
                             })
@@ -633,7 +714,7 @@ export async function importWallet({
                         const pkBytes = parseWIF(privateImportValue);
 
                         // Import the raw private key
-                        setMasterKey(new LegacyMasterKey({ pkBytes }));
+                        await setMasterKey(new LegacyMasterKey({ pkBytes }));
                     }
                 } catch (e) {
                     return createAlert(
@@ -704,10 +785,14 @@ export async function importWallet({
     }
 }
 
-function setMasterKey(mk) {
+/**
+ * Set or replace the active Master Key with a new Master Key
+ * @param {MasterKey} mk - The new Master Key to set active
+ */
+async function setMasterKey(mk) {
     masterKey = mk;
     // Update the network master key
-    getNetwork().setMasterKey(masterKey);
+    await getNetwork().setMasterKey(masterKey);
 }
 
 // Wallet Generation
@@ -730,7 +815,7 @@ export async function generateWallet(noUI = false) {
         const seed = await mnemonicToSeed(mnemonic, passphrase);
 
         // Prompt the user to encrypt the seed
-        setMasterKey(new HdMasterKey({ seed }));
+        await setMasterKey(new HdMasterKey({ seed }));
         fWalletLoaded = true;
 
         if (!cChainParams.current.isTestnet)
@@ -885,20 +970,6 @@ export async function hasWalletUnlocked(fIncludeNetwork = false) {
     }
 }
 
-let addressIndex = 0;
-export async function isYourAddress(address) {
-    let i = 0;
-    while (i < addressIndex) {
-        const path = getDerivationPath(masterKey.isHardwareWallet, 0, 0, i);
-        const testAddress = await masterKey.getAddress(path);
-        if (address === testAddress) {
-            return [true, path];
-        }
-        i++;
-    }
-    return [false, 0];
-}
-
 function createAddressConfirmation(address) {
     return `Please confirm this is the address you see on your ${strHardwareName}.
               <div class="seed-phrase">${address}</div>`;
@@ -908,20 +979,7 @@ export async function getNewAddress({
     updateGUI = false,
     verify = false,
 } = {}) {
-    const last = getNetwork().lastWallet;
-    addressIndex = addressIndex > last ? addressIndex : last + 1;
-    if (addressIndex - last > MAX_ACCOUNT_GAP) {
-        // If the user creates more than ${MAX_ACCOUNT_GAP} empty wallets we will not be able to sync them!
-        addressIndex = last;
-    }
-    const path = getDerivationPath(
-        masterKey.isHardwareWallet,
-        0,
-        0,
-        addressIndex
-    );
-    // Use Xpub?
-    const address = await masterKey.getAddress(path);
+    const [address, path] = await masterKey.getNewAddress();
     if (verify && masterKey.isHardwareWallet) {
         // Generate address to present to the user without asking to verify
         const confAddress = await confirmPopup({
@@ -946,7 +1004,7 @@ export async function getNewAddress({
         // @ts-ignore
         document.getElementById('clipboard').value = address;
     }
-    addressIndex++;
+
     return [address, path];
 }
 

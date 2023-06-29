@@ -19,6 +19,7 @@ export {
     openTab,
     accessOrImportWallet,
     guiImportWallet,
+    guiSetColdStakingAddress,
     onPrivateKeyChanged,
     toClipboard,
     toggleExportUI,
@@ -41,20 +42,29 @@ export {
     unblurPrivKey,
     toggleBottomMenu,
     createProposal,
+    switchSettings,
     updateActivityGUI,
 } from './global.js';
 export { generateWallet, getNewAddress, importWallet } from './wallet.js';
-export { toggleTestnet, toggleDebug } from './settings.js';
+export { toggleTestnet, toggleDebug, toggleAutoSwitch } from './settings.js';
 export {
     createTxGUI,
     undelegateGUI,
     delegateGUI,
     createMasternode,
 } from './transactions.js';
+export {
+    promoConfirm,
+    setPromoMode,
+    sweepPromoCode,
+    deletePromoCode,
+    openPromoQRScanner,
+} from './promos';
 export { renderWalletBreakdown } from './charting';
 export { hexToBytes, bytesToHex, dSHA256 } from './utils.js';
 
 import Masternode from './masternode.js';
+export { renderChangelog } from './changelog';
 export { Masternode };
 
 export { getNetwork } from './network.js';
