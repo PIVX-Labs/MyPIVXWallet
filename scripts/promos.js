@@ -226,7 +226,10 @@ export async function createPromoCode(strCode, nAmount, fAddRandomness = true) {
         (a, b) => a + b.amount * COIN,
         0
     );
-    if (getBalance() - nReservedBalance < nAmount * COIN + PROMO_FEE * 2) {
+    if (
+        (await getBalance()) - nReservedBalance <
+        nAmount * COIN + PROMO_FEE * 2
+    ) {
         return createAlert(
             'warning',
             "You don't have enough " +

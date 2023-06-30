@@ -5,7 +5,6 @@ import {
     doms,
     getBalance,
     mempool,
-    isMasternodeUTXO,
     askForCSAddr,
     cachedColdStakeAddr,
     restoreWallet,
@@ -15,7 +14,6 @@ import {
     hasWalletUnlocked,
     masterKey,
     getNewAddress,
-    isYourAddress,
     cHardwareWallet,
     strHardwareName,
 } from './wallet.js';
@@ -264,7 +262,7 @@ export async function createAndSendTransaction({
         return;
 
     // Construct a TX and fetch Standard inputs
-    const nBalance = getBalance();
+    const nBalance = await getBalance();
     const cTx = new bitjs.transaction();
     const cCoinControl = await chooseUTXOs(cTx, amount, 0, useDelegatedInputs);
     if (!cCoinControl.success)

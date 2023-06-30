@@ -799,7 +799,7 @@ export async function generateWallet(noUI = false) {
         getNewAddress({ updateGUI: true });
 
         // Refresh the balance UI (why? because it'll also display any 'get some funds!' alerts)
-        getBalance(true);
+        await getBalance(true);
         getStakingBalance(true);
     }
 

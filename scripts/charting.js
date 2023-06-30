@@ -42,10 +42,10 @@ async function getWalletDataset() {
     const arrBreakdown = [];
 
     // Public (Available)
-    if (mempool.getBalance() > 0) {
+    if ((await mempool.getBalance()) > 0) {
         arrBreakdown.push({
             type: 'Public Available',
-            balance: mempool.getBalance() / COIN,
+            balance: (await mempool.getBalance()) / COIN,
             colour: 'rgba(127, 17, 224, 1)',
         });
     }
@@ -59,15 +59,14 @@ async function getWalletDataset() {
         });
     }
 
-    const masternode = await (await Database.getInstance()).getMasternode();
-
+    const masternodes = await (await Database.getInstance()).getMasternodes();
     // Masternode (Locked)
     (
         await Promise.all(
             mempool.getConfirmed().map(async (cUTXO) => {
                 return {
                     UTXO: cUTXO,
-                    isMnUTXO: isMasternodeUTXO(cUTXO, masternode),
+                    isMnUTXO: isMasternodeUTXO(cUTXO, masternodes),
                 };
             })
         )
@@ -80,7 +79,6 @@ async function getWalletDataset() {
                 colour: 'rgba(19, 13, 30, 1)',
             })
         );
-
     return arrBreakdown;
 }
 

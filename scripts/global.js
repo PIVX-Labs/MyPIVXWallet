@@ -518,39 +518,38 @@ export function updateTicker() {
  * @param {HTMLElement} domValue
  * @param {boolean} fCold
  */
-export function updatePriceDisplay(domValue, fCold = false) {
+export async function updatePriceDisplay(domValue, fCold = false) {
     // Update currency values
-    cMarket.getPrice(strCurrency).then((nPrice) => {
-        // Configure locale settings by detecting currency support
-        const cLocale = Intl.supportedValuesOf('currency').includes(
-            strCurrency.toUpperCase()
-        )
-            ? {
-                  style: 'currency',
-                  currency: strCurrency,
-                  currencyDisplay: 'narrowSymbol',
-              }
-            : { maximumFractionDigits: 8, minimumFractionDigits: 8 };
+    const nPrice = await cMarket.getPrice(strCurrency);
+    // Configure locale settings by detecting currency support
+    const cLocale = Intl.supportedValuesOf('currency').includes(
+        strCurrency.toUpperCase()
+    )
+        ? {
+              style: 'currency',
+              currency: strCurrency,
+              currencyDisplay: 'narrowSymbol',
+          }
+        : { maximumFractionDigits: 8, minimumFractionDigits: 8 };
 
-        // Calculate the value
-        let nValue =
-            ((fCold ? getStakingBalance() : getBalance()) / COIN) * nPrice;
+    // Calculate the value
+    let nValue =
+        ((fCold ? getStakingBalance() : await getBalance()) / COIN) * nPrice;
 
-        // Handle certain edge-cases; like satoshis having decimals.
-        switch (strCurrency) {
-            case 'sats':
-                nValue = Math.round(nValue);
-                cLocale.maximumFractionDigits = 0;
-                cLocale.minimumFractionDigits = 0;
-        }
+    // Handle certain edge-cases; like satoshis having decimals.
+    switch (strCurrency) {
+        case 'sats':
+            nValue = Math.round(nValue);
+            cLocale.maximumFractionDigits = 0;
+            cLocale.minimumFractionDigits = 0;
+    }
 
-        // Update the DOM
-        domValue.innerText = nValue.toLocaleString('en-gb', cLocale);
-    });
+    // Update the DOM
+    domValue.innerText = nValue.toLocaleString('en-gb', cLocale);
 }
 
-export function getBalance(updateGUI = false) {
-    const nBalance = mempool.getBalance();
+export async function getBalance(updateGUI = false) {
+    const nBalance = await mempool.getBalance();
     const nCoins = nBalance / COIN;
 
     // Update the GUI too, if chosen
@@ -596,8 +595,8 @@ export function getStakingBalance(updateGUI = false) {
  * @param {HTMLInputElement} domValue - Th 'Coin Value' input element
  * @param {boolean} fCold - Use the Cold Staking balance, or Available balance
  */
-export function selectMaxBalance(domCoin, domValue, fCold = false) {
-    domCoin.value = (fCold ? getStakingBalance() : getBalance()) / COIN;
+export async function selectMaxBalance(domCoin, domValue, fCold = false) {
+    domCoin.value = (fCold ? getStakingBalance() : await getBalance()) / COIN;
     // Update the Send menu's value (assumption: if it's not a Cold balance, it's probably for Sending!)
     updateAmountInputPair(domCoin, domValue, true);
 }
@@ -1281,13 +1280,16 @@ export async function importMasternode() {
 
         // If there's no valid UTXO, exit with a contextual message
         if (!cCollaUTXO) {
-            if (getBalance(false) < cChainParams.current.collateralInSats) {
+            if (
+                (await getBalance(false)) <
+                cChainParams.current.collateralInSats
+            ) {
                 // Not enough balance to create an MN UTXO
                 createAlert(
                     'warning',
                     'You need <b>' +
                         (cChainParams.current.collateralInSats -
-                            getBalance(false)) /
+                            (await getBalance(false))) /
                             COIN +
                         ' more ' +
                         cChainParams.current.TICKER +
@@ -1662,13 +1664,16 @@ export function askForCSAddr(force = false) {
     return false;
 }
 
-export function isMasternodeUTXO(cUTXO, cMasternode) {
-    if (cMasternode?.collateralTxId) {
-        const { collateralTxId, outidx } = cMasternode;
-        return collateralTxId === cUTXO.id && cUTXO.vout === outidx;
-    } else {
-        return false;
-    }
+/**
+ * @param {UTXO} cUTXO
+ * @param {Masternode[]} masternodes - List of masternodes to check against.
+ * @returns {boolean} Whether or not the cUTXO is being locked in a masternode
+ */
+export function isMasternodeUTXO(cUTXO, masternodes) {
+    return masternodes.some(
+        ({ collateralTxId, outidx }) =>
+            collateralTxId === cUTXO.id && cUTXO.vout === outidx
+    );
 }
 
 export async function wipePrivateData() {
@@ -1981,7 +1986,7 @@ export async function updateMasternodeTab(createMasternode = false) {
         if (
             !mempool
                 .getConfirmed()
-                .find((utxo) => isMasternodeUTXO(utxo, cMasternode))
+                .find((utxo) => isMasternodeUTXO(utxo, [cMasternode]))
         ) {
             database.removeMasternode(activeMasternode);
             await pickMasternode();
@@ -2009,7 +2014,7 @@ export async function updateMasternodeTab(createMasternode = false) {
             .find(
                 (cUTXO) => cUTXO.sats === cChainParams.current.collateralInSats
             );
-        const balance = getBalance(false);
+        const balance = await getBalance(false);
         if (cCollaUTXO) {
             if (cMasternode) {
                 await refreshMasternodeData(cMasternode);
@@ -2181,7 +2186,7 @@ export async function createProposal() {
     ) {
         return;
     }
-    if (getBalance() * COIN < cChainParams.current.proposalFee) {
+    if ((await getBalance()) * COIN < cChainParams.current.proposalFee) {
         return createAlert('warning', 'Not enough funds to create a proposal.');
     }
     await confirmPopup({

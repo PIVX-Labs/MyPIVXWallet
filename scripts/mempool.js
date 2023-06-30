@@ -3,6 +3,7 @@ import { getBalance, isMasternodeUTXO, getStakingBalance } from './global.js';
 import { sleep } from './misc.js';
 import { debug } from './settings.js';
 import { getEventEmitter } from './event_bus.js';
+import { Database } from './database.js';
 
 /** An Unspent Transaction Output, used as Inputs of future transactions */
 export class UTXO {
@@ -300,12 +301,15 @@ export class Mempool {
 
     /**
      * Returns the real-time balance of the wallet (all addresses)
-     * @returns {Number} Balance in satoshis
+     * @returns {Promise<number>} Balance in satoshis
      */
-    getBalance() {
+    async getBalance() {
+        const masternodes = await (
+            await Database.getInstance()
+        ).getMasternodes();
         // Fetch 'standard' balances: the sum of all Confirmed or Unconfirmed transactions (excluding Masternode collaterals)
         return this.getStandardUTXOs()
-            .filter((cUTXO) => !isMasternodeUTXO(cUTXO)) // TODO: add masternode
+            .filter((cUTXO) => !isMasternodeUTXO(cUTXO, masternodes))
             .reduce((a, b) => a + b.sats, 0);
     }
 

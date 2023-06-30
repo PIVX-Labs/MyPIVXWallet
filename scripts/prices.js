@@ -78,5 +78,5 @@ export async function refreshPriceDisplay() {
     await fillCurrencySelect();
 
     // Update price values
-    getBalance(true);
+    await getBalance(true);
 }

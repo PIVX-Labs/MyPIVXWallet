@@ -274,7 +274,7 @@ async function setCurrency(currency) {
     const database = await Database.getInstance();
     database.setSettings({ displayCurrency: strCurrency });
     // Update the UI to reflect the new currency
-    getBalance(true);
+    await getBalance(true);
 }
 
 /**
