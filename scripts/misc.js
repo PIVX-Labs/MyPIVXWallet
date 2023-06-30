@@ -61,7 +61,7 @@ export function writeToUint8(arr, bytes, pos) {
 // Supported types: success, info, warning
 export function createAlert(type, message, alertVariables = [], timeout = 0) {
     const domAlert = document.createElement('div');
-    domAlert.classList.add('alertpop');
+    domAlert.classList.add('notifyWrapper');
     domAlert.classList.add(type);
     setTimeout(() => {
         domAlert.style.opacity = '1';
@@ -79,8 +79,30 @@ export function createAlert(type, message, alertVariables = [], timeout = 0) {
     // Apply translations
     const translatedMessage = translateAlerts(message, alertVariables);
 
+    // Colors for types
+    let typeIcon;
+    switch (type) {
+        case 'warning':
+            typeIcon = 'fa-exclamation';
+            break;
+        case 'info':
+            typeIcon = 'fa-info';
+            break;
+        default:
+            // If no valid type is set, default to success
+            type == 'success';
+            typeIcon = 'fa-check';
+            break;
+    }
+
     // Message
-    domAlert.innerHTML = translatedMessage;
+    domAlert.innerHTML = `
+    <div class="notifyIcon notify-${type}">
+        <i class="fas ${typeIcon} fa-xl"></i>
+    </div>
+    <div class="notifyText">
+        ${translatedMessage}
+    </div>`;
     domAlert.destroy = () => {
         // Fully destroy timers + DOM elements, no memory leaks!
         clearTimeout(domAlert.timer);
