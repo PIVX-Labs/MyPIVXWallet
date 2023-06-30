@@ -438,9 +438,6 @@ export async function createMasternode() {
         'success',
         '<b>Masternode Created!<b><br>Wait 15 confirmations to proceed further'
     );
-    // Remove any previous Masternode data, if there were any
-    const database = await Database.getInstance();
-    database.removeMasternode();
 }
 
 export async function signTransaction(cTx, masterKey, outputs, undelegate) {

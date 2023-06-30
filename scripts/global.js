@@ -1213,7 +1213,8 @@ export async function destroyMasternode() {
     const database = await Database.getInstance();
 
     if (await database.getMasternode(activeMasternode)) {
-        database.removeMasternode(masterKey);
+        await database.removeMasternode(activeMasternode);
+        await pickMasternode();
         createAlert(
             'success',
             '<b>Masternode destroyed!</b><br>Your coins are now spendable.',
@@ -1988,7 +1989,7 @@ export async function updateMasternodeTab(createMasternode = false) {
                 .getConfirmed()
                 .find((utxo) => isMasternodeUTXO(utxo, [cMasternode]))
         ) {
-            database.removeMasternode(activeMasternode);
+            await database.removeMasternode(activeMasternode);
             await pickMasternode();
             return await updateMasternodeTab();
         }
