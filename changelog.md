@@ -5,6 +5,7 @@
 - Per-update changelog: You're reading it right now!
 
 # Improvements
+- New Landing: landing replaced with a loader.
 - New Settings screen design, sleek and intuitive.
 - New Explorer: explorer.duddino.com.
 
