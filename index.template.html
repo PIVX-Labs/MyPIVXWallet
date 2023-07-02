@@ -43,7 +43,7 @@
         <!-- NAVBAR -->
         <nav class="navbar navbar-expand-lg sticky-top navbar-dark navbarSpecial">
           <div class="container">
-            <img onclick="MPW.openTab(event, 'home')" style="cursor: pointer;" class="nav-logo navbar-brand noselect" alt="PIVX" id="mpw-main-logo" />
+            <img class="nav-logo navbar-brand noselect" alt="PIVX" id="mpw-main-logo" />
             <button id="navbarToggler" class="navbar-toggler collapsed" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
               <span class="navbar-toggler-icon"></span>
             </button>
@@ -185,109 +185,15 @@
         <div class="container">
           <div class="row no-gutters">
             <div class="col-md-12 rm-pd">
-              <div id="home" class="tabcontent" style="display: block;">
+              <div class="tabcontent" style="display: block;">
                 <!-- PIVX TITLE SECTION -->
                 <div class="col-md-12 title-section float-left rm-pd">
                   <h1 class="pivx-bold-title center-text">
-                    <span data-i18n="title">Welcome to</span>
-                    <div data-i18n="titleName">My PIVX Wallet!</div>
+                    <span data-i18n="loadingTitle">My PIVX Wallet is</span>
+                    <div data-i18n="loading">Loading</div>
                   </h1>
                 </div>
                 <!-- // PIVX TITLE SECTION -->
-
-                <!-- PIVX FEATURE SECTION -->
-                <div class="col-md-12 features-section float-left rm-pd intro-page">
-                  <!-- PIVX FEATURE -->
-                  <div class="col-md-6 float-left pivx-feature-father">
-                    <div class="col-md-11 pivx-feature-interior">
-                      <div class="col-md-12 feature-icon">
-                        <img id="img-governance" alt="PIVX Governance" />
-                      </div>
-
-                      <h4 data-i18n="cardOneTitle">Be your own Bank!</h4>
-                      <h5 data-i18n="cardOneDesc">MyPIVXWallet has <b>no custody</b> over your funds. You are in full ownership of your keys and your PIV.</h5>
-                      <span onclick="window.location.href='https://forum.pivx.org/threads/mypivxwallet-an-easy-open-source-self-sovereign-pivx-wallet.873/'" class="purple-icon-link ptr">
-                        <span data-i18n="cardOneLink">Know more</span>
-                        <span class="link-icon link-icon-suffix">
-                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-                            <path d="M23.328 16.707L13.121 26.914a.5.5 0 01-.707 0l-2.828-2.828a.5.5 0 010-.707L16.964 16 9.586 8.621a.5.5 0 010-.707l2.828-2.828a.5.5 0 01.707 0l10.207 10.207a1 1 0 010 1.414z"></path>
-                          </svg>
-                        </span>
-                      </span>
-                    </div>
-                  </div>
-                  <!-- // PIVX FEATURE -->
-
-                  <!-- PIVX FEATURE -->
-                  <div class="col-md-6 float-left pivx-feature-father">
-                    <div class="col-md-11 pivx-feature-interior">
-                      <div class="col-md-12 feature-icon">
-                        <img id="img-pos" alt="PIVX Proof of Stake (PoS)" />
-                      </div>
-
-                      <h4 data-i18n="cardTwoTitle">Universal and Portable</h4>
-                      <h5 data-i18n="cardTwoDesc">
-                        You can generate cryptographically-secure addresses with your browser and hardware.
-                      </h5>
-                      <span onclick="window.location.href='https://forum.pivx.org/threads/mypivxwallet-an-easy-open-source-self-sovereign-pivx-wallet.873/'" class="purple-icon-link ptr">
-                        <span data-i18n="cardTwoLink">Know more</span>
-                        <span class="link-icon link-icon-suffix">
-                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-                            <path d="M23.328 16.707L13.121 26.914a.5.5 0 01-.707 0l-2.828-2.828a.5.5 0 010-.707L16.964 16 9.586 8.621a.5.5 0 010-.707l2.828-2.828a.5.5 0 01.707 0l10.207 10.207a1 1 0 010 1.414z"></path>
-                          </svg>
-                        </span>
-                      </span>
-                    </div>
-                  </div>
-                  <!-- // PIVX FEATURE -->
-
-                  <!-- PIVX FEATURE -->
-                  <div class="col-md-6 float-left pivx-feature-father">
-                    <div class="col-md-11 pivx-feature-interior">
-                      <div class="col-md-12 feature-icon">
-                        <img id="img-privacy" alt="PIVX Privacy" class="smaller-feature" />
-                      </div>
-
-                      <h4 data-i18n="cardThreeTitle">Don't trust, verify!</h4>
-                      <h5 data-i18n="cardThreeDesc">
-                        MyPIVXWallet is completely open-source, available on the PIVX Labs github.
-                      </h5>
-                      <span onclick="window.location.href='https://forum.pivx.org/threads/mypivxwallet-an-easy-open-source-self-sovereign-pivx-wallet.873/'" class="purple-icon-link ptr">
-                        <span data-i18n="cardThreeLink">Know more</span>
-                        <span class="link-icon link-icon-suffix">
-                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-                            <path d="M23.328 16.707L13.121 26.914a.5.5 0 01-.707 0l-2.828-2.828a.5.5 0 010-.707L16.964 16 9.586 8.621a.5.5 0 010-.707l2.828-2.828a.5.5 0 01.707 0l10.207 10.207a1 1 0 010 1.414z"></path>
-                          </svg>
-                        </span>
-                      </span>
-                    </div>
-                  </div>
-                  <!-- // PIVX FEATURE -->
-
-                  <!-- PIVX FEATURE -->
-                  <div class="col-md-6 float-left pivx-feature-father">
-                    <div class="col-md-11 pivx-feature-interior">
-                      <div class="col-md-12 feature-icon">
-                        <img id="img-slider-bars" alt="PIVX Bar Chart" class="smaller-feature" />
-                      </div>
-
-                      <h4 data-i18n="cardFourTitle">For the community</h4>
-                      <h5 data-i18n="cardFourDesc">
-                        MyPIVXWallet is built with love without any fees, privacy intrusions or advertising.
-                      </h5>
-                      <span onclick="window.location.href='https://forum.pivx.org/threads/mypivxwallet-an-easy-open-source-self-sovereign-pivx-wallet.873/'" class="purple-icon-link ptr">
-                        <span data-i18n="cardFourLink">Know more</span>
-                        <span class="link-icon link-icon-suffix">
-                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-                            <path d="M23.328 16.707L13.121 26.914a.5.5 0 01-.707 0l-2.828-2.828a.5.5 0 010-.707L16.964 16 9.586 8.621a.5.5 0 010-.707l2.828-2.828a.5.5 0 01.707 0l10.207 10.207a1 1 0 010 1.414z"></path>
-                          </svg>
-                        </span>
-                      </span>
-                    </div>
-                  </div>
-                  <!-- // PIVX FEATURE -->
-                </div>
-                <!-- // PIVX FEATURE SECTION -->
               </div>
 
               <!-- KEYPAIR SECTION -->

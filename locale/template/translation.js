@@ -43,8 +43,8 @@ var translation = {
     footerBuiltWithPivxLabs: '', //Built with 💜 by PIVX Labs
 
     // Intro
-    title: '', //Welcome to
-    titleName: '', //My PIVX Wallet!
+    loading: '',      //Loading
+    loadingTitle: '', //My PIVX Wallet is
 
     cardOneTitle: '', //Be your own Bank!
     cardOneDesc: '', //MyPIVXWallet has <b>no custody</b> over your funds. You are in full ownership of your keys and your PIV.
