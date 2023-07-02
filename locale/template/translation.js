@@ -43,7 +43,7 @@ var translation = {
     footerBuiltWithPivxLabs: '', //Built with 💜 by PIVX Labs
 
     // Intro
-    loading: '',      //Loading
+    loading: '', //Loading
     loadingTitle: '', //My PIVX Wallet is
 
     cardOneTitle: '', //Be your own Bank!
