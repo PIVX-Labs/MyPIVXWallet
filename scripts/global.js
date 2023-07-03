@@ -355,7 +355,7 @@ export async function start() {
 
         // Import the wallet, and toggle the startup flag, which delegates the chain data refresh to settingsStart();
         if (publicKey) {
-            importWallet({ newWif: publicKey, fStartup: true });
+            await importWallet({ newWif: publicKey, fStartup: true });
 
             // Payment processor popup
             if (reqTo.length || reqAmount > 0) {
