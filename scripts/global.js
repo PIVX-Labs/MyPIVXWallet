@@ -1142,7 +1142,7 @@ async function govVote(hash, voteCode) {
                     'Your masternode is not enabled yet!',
                     6000
                 );
-                return;
+                continue;
             }
             const result = await cMasternode.vote(hash.toString(), voteCode); //1 yes 2 no
             if (result.includes('Voted successfully')) {
