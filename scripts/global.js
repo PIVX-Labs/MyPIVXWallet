@@ -1975,7 +1975,18 @@ export async function selectMasternode() {
         const number = domRow.insertCell();
         number.innerHTML = i + 1;
         const txid = domRow.insertCell();
-        txid.innerHTML = sanitizeHTML(`${mn.collateralTxId}:${mn.outidx}`);
+        const innerTxid = sanitizeHTML(`${mn.addr}`);
+        txid.innerHTML = `<code>${innerTxid}</code>`;
+        const status = domRow.insertCell();
+        status.innerHTML = `<b>${sanitizeHTML(await mn.getStatus())}</b>`;
+    }
+    const domRow = doms.domMasternodeTableBody.insertRow();
+    domRow.onclick = () => {
+        updateMasternodeTab(true);
+    };
+    const plus = domRow.insertCell();
+    plus.innerHTML = `<b> + </b>`;
+    for (let i = 0; i < 2; i++) {
         domRow.insertCell();
     }
 }
