@@ -1135,8 +1135,8 @@ async function govVote(hash, voteCode) {
     ) {
         const database = await Database.getInstance();
         const cMasternodes = await database.getMasternodes();
-	let successes = 0;
-	let errString = "";
+        let successes = 0;
+        let errString = '';
         for (const cMasternode of cMasternodes) {
             if ((await cMasternode.getStatus()) !== 'ENABLED') {
                 continue;
@@ -1144,30 +1144,37 @@ async function govVote(hash, voteCode) {
             const result = await cMasternode.vote(hash.toString(), voteCode); //1 yes 2 no
             if (result.includes('Voted successfully')) {
                 //good vote
-		successes += 1;
+                successes += 1;
                 cMasternode.storeVote(hash.toString(), voteCode);
             } else if (result.includes('Error voting :')) {
                 //If you already voted return an alert
-		errString = 'You already voted for this proposal! Please wait 1 hour';
+                errString =
+                    'You already voted for this proposal! Please wait 1 hour';
             } else if (result.includes('Failure to verify signature.')) {
                 //wrong masternode private key
-                errString = "Failed to verify signature, please check your masternode's private key";
+                errString =
+                    "Failed to verify signature, please check your masternode's private key";
             } else {
                 console.error(result);
-		errString = 'Internal error, please try again later';
+                errString = 'Internal error, please try again later';
             }
         }
-	if (errString) {
-	    // Only display one error to avoid spamming
-	    createAlert('warning', errString, 6000);
-	}
-	if (successes === 0) {
-	    createAlert('warning', 'All vote attempts failed');
-	} else {
-	    createAlert('success', `Successfully voted with ${successes} masternodes.`);
-	}
+        if (errString) {
+            // Only display one error to avoid spamming
+            createAlert('warning', errString, 6000);
+        }
+        if (successes === 0) {
+            createAlert('warning', 'All vote attempts failed');
+        } else {
+            createAlert(
+                'success',
+                `Successfully voted with ${successes === 1 ? one : successes} ${
+                    successes == 1 ? 'masternode' : 'masternodes'
+                }.`
+            );
+        }
 
-	await updateGovernanceTab();
+        await updateGovernanceTab();
     }
 }
 
