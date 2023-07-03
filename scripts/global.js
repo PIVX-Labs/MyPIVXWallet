@@ -1135,45 +1135,39 @@ async function govVote(hash, voteCode) {
     ) {
         const database = await Database.getInstance();
         const cMasternodes = await database.getMasternodes();
+	let successes = 0;
+	let errString = "";
         for (const cMasternode of cMasternodes) {
             if ((await cMasternode.getStatus()) !== 'ENABLED') {
-                createAlert(
-                    'warning',
-                    'Your masternode is not enabled yet!',
-                    6000
-                );
                 continue;
             }
             const result = await cMasternode.vote(hash.toString(), voteCode); //1 yes 2 no
             if (result.includes('Voted successfully')) {
                 //good vote
+		successes += 1;
                 cMasternode.storeVote(hash.toString(), voteCode);
-                await updateGovernanceTab();
-                createAlert('success', 'Vote submitted!', 6000);
             } else if (result.includes('Error voting :')) {
                 //If you already voted return an alert
-                createAlert(
-                    'warning',
-                    'You already voted for this proposal! Please wait 1 hour',
-                    6000
-                );
+		errString = 'You already voted for this proposal! Please wait 1 hour';
             } else if (result.includes('Failure to verify signature.')) {
                 //wrong masternode private key
-                createAlert(
-                    'warning',
-                    "Failed to verify signature, please check your masternode's private key",
-                    6000
-                );
+                errString = "Failed to verify signature, please check your masternode's private key";
             } else {
-                //this could be everything
                 console.error(result);
-                createAlert(
-                    'warning',
-                    'Internal error, please try again later',
-                    6000
-                );
+		errString = 'Internal error, please try again later';
             }
         }
+	if (errString) {
+	    // Only display one error to avoid spamming
+	    createAlert('warning', errString, 6000);
+	}
+	if (successes === 0) {
+	    createAlert('warning', 'All vote attemps failed');
+	} else {
+	    createAlert('success', `Successfully voted with ${successes} masternodes.`);
+	}
+
+	await updateGovernanceTab();
     }
 }
 
