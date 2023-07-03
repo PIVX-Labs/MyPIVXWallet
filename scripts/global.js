@@ -1162,7 +1162,7 @@ async function govVote(hash, voteCode) {
 	    createAlert('warning', errString, 6000);
 	}
 	if (successes === 0) {
-	    createAlert('warning', 'All vote attemps failed');
+	    createAlert('warning', 'All vote attempts failed');
 	} else {
 	    createAlert('success', `Successfully voted with ${successes} masternodes.`);
 	}
