@@ -1956,6 +1956,7 @@ export async function selectMasternode() {
     doms.domSelectMasternode.style.display = 'block';
 
     doms.domMasternodeTableBody.innerHTML = '';
+    doms.domControlMasternode.style.display = 'none';
 
     const database = await Database.getInstance();
     const masternodes = await database.getMasternodes();
