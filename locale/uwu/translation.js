@@ -25,8 +25,8 @@ export const uwu_translation = {
     footerBuiltWithPivxLabs: 'Built with wuv by PIVX Wabs❣', //Built with 💜 by PIVX Labs
 
     // Intro
-    title: 'Wewcome to', //Welcome to
-    titleName: 'My PIVX Wawwet!', //My PIVX Wallet!
+    loading: 'Loading', //
+    loadingTitle: 'My PIVX Wawwet is', //
 
     cardOneTitle: 'Be da bank!', //Be your own Bank!
     cardOneDesc:

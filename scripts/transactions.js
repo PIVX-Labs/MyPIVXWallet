@@ -1,21 +1,19 @@
 import bitjs from './bitTrx.js';
-import { debug } from './settings.js';
+import { debug, strColdStakingAddress } from './settings.js';
 import { ALERTS } from './i18n.js';
 import {
     doms,
     getBalance,
     mempool,
     isMasternodeUTXO,
-    askForCSAddr,
-    cachedColdStakeAddr,
     restoreWallet,
     toggleBottomMenu,
+    guiSetColdStakingAddress,
 } from './global.js';
 import {
     hasWalletUnlocked,
     masterKey,
     getNewAddress,
-    isYourAddress,
     cHardwareWallet,
     strHardwareName,
 } from './wallet.js';
@@ -149,21 +147,17 @@ export async function delegateGUI() {
     if (!validateAmount(nAmount, COIN)) return;
 
     // Ensure the user has an address set - if not, request one!
-    if (!askForCSAddr()) return;
-
-    // Sanity
     if (
-        cachedColdStakeAddr.length !== 34 ||
-        !cachedColdStakeAddr.startsWith(cChainParams.current.STAKING_PREFIX)
-    ) {
-        askForCSAddr(true);
-        return createAlert('success', ALERTS.SUCCESS_STAKING_ADDR_SET, []);
-    }
+        (!strColdStakingAddress ||
+            strColdStakingAddress[0] !== cChainParams.current.STAKING_PREFIX) &&
+        (await guiSetColdStakingAddress()) === false
+    )
+        return;
 
     // Perform the TX
     const cTxRes = await createAndSendTransaction({
         amount: nAmount,
-        address: cachedColdStakeAddr,
+        address: strColdStakingAddress,
         isDelegation: true,
         useDelegatedInputs: false,
     });
@@ -211,11 +205,11 @@ export async function undelegateGUI() {
         isDelegation: false,
         useDelegatedInputs: true,
         delegateChange: true,
-        changeDelegationAddress: cachedColdStakeAddr,
+        changeDelegationAddress: strColdStakingAddress,
     });
 
     if (!cTxRes.ok && cTxRes.err === 'No change addr') {
-        askForCSAddr(true);
+        await guiSetColdStakingAddress();
         await undelegateGUI();
     } else {
         // If successful, reset the inputs
@@ -290,7 +284,7 @@ export async function createAndSendTransaction({
     if (nChange > 0) {
         if (delegateChange && nChange > 1.01 * COIN) {
             if (!changeDelegationAddress)
-                return { ok: false, error: 'No change addr' };
+                return { ok: false, err: 'No change addr' };
             cTx.addcoldstakingoutput(
                 changeAddress,
                 changeDelegationAddress,
@@ -384,15 +378,15 @@ export async function createAndSendTransaction({
         }
 
         if (!isDelegation && !isProposal) {
-            const [isYours, yourPath] = await isYourAddress(address);
+            const path = await masterKey.isOwnAddress(address);
 
             // If the tx was sent to yourself, add it to the mempool
-            if (isYours) {
+            if (path) {
                 const vout = nChange > 0 ? 1 : 0;
                 mempool.addUTXO(
                     new UTXO({
                         id: futureTxid,
-                        path: yourPath,
+                        path,
                         sats: amount,
                         vout,
                         script: bytesToHex(cTx.outputs[vout].script),

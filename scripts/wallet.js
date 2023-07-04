@@ -43,6 +43,19 @@ export let fWalletLoaded = false;
  * @abstract
  */
 class MasterKey {
+    #addressIndex = 0;
+    /**
+     * Map our own address -> Path
+     * @type {Map<String, String?>}
+     */
+    #ownAddresses = new Map();
+
+    constructor() {
+        if (this.constructor === MasterKey) {
+            throw new Error('initializing virtual class');
+        }
+    }
+
     /**
      * @param {String} [path] - BIP32 path pointing to the private key.
      * @return {Promise<Array<Number>>} Array of bytes containing private key
@@ -124,6 +137,57 @@ class MasterKey {
      */
     get isViewOnly() {
         return this._isViewOnly;
+    }
+
+    /**
+     * @param {string} address - address to check
+     * @return {Promise<String?>} BIP32 path or null if it's not your address
+     */
+    async isOwnAddress(address) {
+        if (this.#ownAddresses.has(address)) {
+            return this.#ownAddresses.get(address);
+        }
+        const last = getNetwork().lastWallet;
+        this.#addressIndex =
+            this.#addressIndex > last ? this.#addressIndex : last;
+        if (this.isHD) {
+            for (let i = 0; i < this.#addressIndex; i++) {
+                const path = getDerivationPath(this.isHardwareWallet, 0, 0, i);
+                const testAddress = await masterKey.getAddress(path);
+                if (address === testAddress) {
+                    this.#ownAddresses.set(address, path);
+                    return path;
+                }
+            }
+        } else {
+            const value = address === (await this.keyToExport) ? ':)' : null;
+            this.#ownAddresses.set(address, value);
+            return value;
+        }
+
+        this.#ownAddresses.set(address, null);
+        return null;
+    }
+
+    /**
+     * @return Promise<[string, string]> Address and its BIP32 derivation path
+     */
+    async getNewAddress() {
+        const last = getNetwork().lastWallet;
+        this.#addressIndex =
+            (this.#addressIndex > last ? this.#addressIndex : last) + 1;
+        if (this.#addressIndex - last > MAX_ACCOUNT_GAP) {
+            // If the user creates more than ${MAX_ACCOUNT_GAP} empty wallets we will not be able to sync them!
+            this.#addressIndex = last;
+        }
+        const path = getDerivationPath(
+            this.isHardwareWallet,
+            0,
+            0,
+            this.#addressIndex
+        );
+        const address = await this.getAddress(path);
+        return [address, path];
     }
 }
 
@@ -864,20 +928,6 @@ export async function hasWalletUnlocked(fIncludeNetwork = false) {
     }
 }
 
-let addressIndex = 0;
-export async function isYourAddress(address) {
-    let i = 0;
-    while (i < addressIndex) {
-        const path = getDerivationPath(masterKey.isHardwareWallet, 0, 0, i);
-        const testAddress = await masterKey.getAddress(path);
-        if (address === testAddress) {
-            return [true, path];
-        }
-        i++;
-    }
-    return [false, 0];
-}
-
 function createAddressConfirmation(address) {
     return `Please confirm this is the address you see on your ${strHardwareName}.
               <div class="seed-phrase">${address}</div>`;
@@ -887,20 +937,7 @@ export async function getNewAddress({
     updateGUI = false,
     verify = false,
 } = {}) {
-    const last = getNetwork().lastWallet;
-    addressIndex = addressIndex > last ? addressIndex : last + 1;
-    if (addressIndex - last > MAX_ACCOUNT_GAP) {
-        // If the user creates more than ${MAX_ACCOUNT_GAP} empty wallets we will not be able to sync them!
-        addressIndex = last;
-    }
-    const path = getDerivationPath(
-        masterKey.isHardwareWallet,
-        0,
-        0,
-        addressIndex
-    );
-    // Use Xpub?
-    const address = await masterKey.getAddress(path);
+    const [address, path] = await masterKey.getNewAddress();
     if (verify && masterKey.isHardwareWallet) {
         // Generate address to present to the user without asking to verify
         const confAddress = await confirmPopup({
@@ -924,7 +961,7 @@ export async function getNewAddress({
         doms.domModalQR.firstChild.classList.add('no-antialias');
         document.getElementById('clipboard').value = address;
     }
-    addressIndex++;
+
     return [address, path];
 }
 

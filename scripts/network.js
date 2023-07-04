@@ -3,7 +3,13 @@ import { cChainParams, COIN } from './chain_params.js';
 import { createAlert } from './misc.js';
 import { Mempool, UTXO } from './mempool.js';
 import { getEventEmitter } from './event_bus.js';
-import { STATS, cStatKeys, cAnalyticsLevel } from './settings.js';
+import {
+    STATS,
+    cStatKeys,
+    cAnalyticsLevel,
+    setExplorer,
+    fAutoSwitch,
+} from './settings.js';
 
 /**
  * A historical transaction type.
@@ -178,7 +184,7 @@ export class ExplorerNetwork extends Network {
         try {
             getEventEmitter().emit('sync-status', 'start');
             const { backend } = await (
-                await fetch(`${this.strUrl}/api/v2/api`)
+                await retryWrapper(fetchBlockbook, `/api/v2/api`)
             ).json();
             if (backend.blocks > this.blocks) {
                 console.log(
@@ -238,7 +244,7 @@ export class ExplorerNetwork extends Network {
 
             // Fetch UTXOs for the key
             const arrUTXOs = await (
-                await fetch(`${this.strUrl}/api/v2/utxo/${publicKey}`)
+                await retryWrapper(fetchBlockbook, `/api/v2/utxo/${publicKey}`)
             ).json();
 
             // If using MPW's wallet, then sync the UTXOs in MPW's state
@@ -260,7 +266,10 @@ export class ExplorerNetwork extends Network {
      */
     async getUTXOFullInfo(cUTXO) {
         const cTx = await (
-            await fetch(`${this.strUrl}/api/v2/tx-specific/${cUTXO.txid}`)
+            await retryWrapper(
+                fetchBlockbook,
+                `/api/v2/tx-specific/${cUTXO.txid}`
+            )
         ).json();
         const cVout = cTx.vout[cUTXO.vout];
 
@@ -299,23 +308,21 @@ export class ExplorerNetwork extends Network {
     async sendTransaction(hex) {
         try {
             const data = await (
-                await fetch(this.strUrl + '/api/v2/sendtx/', {
+                await retryWrapper(fetchBlockbook, '/api/v2/sendtx/', {
                     method: 'post',
                     body: hex,
                 })
             ).json();
-            if (data.result && data.result.length === 64) {
-                console.log('Transaction sent! ' + data.result);
-                getEventEmitter().emit('transaction-sent', true, data.result);
-                return data.result;
-            } else {
-                console.log('Error sending transaction: ' + data.result);
-                getEventEmitter().emit('transaction-sent', false, data.error);
-                return false;
-            }
+
+            // Throw and catch if the data is not a TXID
+            if (!data.result || data.result.length !== 64) throw data;
+
+            console.log('Transaction sent! ' + data.result);
+            getEventEmitter().emit('transaction-sent', true, data.result);
+            return data.result;
         } catch (e) {
-            console.error(e);
-            this.error();
+            getEventEmitter().emit('transaction-sent', false, e);
+            return false;
         }
     }
 
@@ -349,13 +356,16 @@ export class ExplorerNetwork extends Network {
                 : await this.masterKey.getAddress();
             const strRoot = `/api/v2/${fHD ? 'xpub/' : 'address/'}${strKey}`;
             const strCoreParams = `?details=txs&tokens=derived&pageSize=200`;
-            const strAPI = this.strUrl + strRoot + strCoreParams;
+            const strAPI = strRoot + strCoreParams;
 
             // If we have a known block height, check for incoming transactions within the last 60 blocks
             const cRecentTXs =
                 this.blocks > 0
                     ? await (
-                          await fetch(`${strAPI}&from=${this.blocks - 60}`)
+                          await retryWrapper(
+                              fetchBlockbook,
+                              `${strAPI}&from=${this.blocks - 60}`
+                          )
                       ).json()
                     : {};
 
@@ -363,7 +373,8 @@ export class ExplorerNetwork extends Network {
             const cData =
                 !fNewOnly && !this.isHistorySynced
                     ? await (
-                          await fetch(
+                          await retryWrapper(
+                              fetchBlockbook,
                               `${strAPI}&to=${nHeight ? nHeight - 1 : 0}`
                           )
                       ).json()
@@ -559,7 +570,7 @@ export class ExplorerNetwork extends Network {
     }
 
     async getTxInfo(txHash) {
-        const req = await fetch(`${this.strUrl}/api/v2/tx/${txHash}`);
+        const req = await retryWrapper(fetchBlockbook, `/api/v2/tx/${txHash}`);
         return await req.json();
     }
 
@@ -608,4 +619,66 @@ export function setNetwork(network) {
  */
 export function getNetwork() {
     return _network;
+}
+
+/**
+ * A Fetch wrapper which uses the current Blockbook Network's base URL
+ * @param {string} api - The specific Blockbook api to call
+ * @param {RequestInit} options - The Fetch options
+ * @returns {Promise<Response>} - The unresolved Fetch promise
+ */
+export function fetchBlockbook(api, options) {
+    return fetch(_network.strUrl + api, options);
+}
+
+/**
+ * A wrapper for Blockbook calls which can, in the event of an unresponsive explorer,
+ * seamlessly attempt the same call on multiple other explorers until success.
+ * @param {Function} func - The function to re-attempt with
+ * @param  {...any} args - The arguments to pass to the function
+ */
+async function retryWrapper(func, ...args) {
+    // Track internal errors from the wrapper
+    let err;
+
+    // If allowed by the user, Max Tries is ALL MPW-supported explorers, otherwise, restrict to only the current one.
+    let nMaxTries = cChainParams.current.Explorers.length;
+    let retries = 0;
+
+    // The explorer index we started at
+    let nIndex = cChainParams.current.Explorers.findIndex(
+        (a) => a.url === getNetwork().strUrl
+    );
+
+    // Run the call until successful, or all attempts exhausted
+    while (retries < nMaxTries) {
+        try {
+            // Call the passed function with the arguments
+            const res = await func(...args);
+
+            // If the endpoint is non-OK, assume it's an error
+            if (!res.ok) throw res;
+
+            // Return the result if successful
+            return res;
+        } catch (error) {
+            err = error;
+
+            // If allowed, switch explorers
+            if (!fAutoSwitch) throw err;
+            nIndex = (nIndex + 1) % cChainParams.current.Explorers.length;
+            const cNewExplorer = cChainParams.current.Explorers[nIndex];
+
+            // Set the explorer at Network-class level, then as a hacky workaround for the current callback; we
+            // ... adjust the internal URL to the new explorer.
+            getNetwork().strUrl = cNewExplorer.url;
+            setExplorer(cNewExplorer, true);
+
+            // Bump the attempts, and re-try next loop
+            retries++;
+        }
+    }
+
+    // Throw an error so the calling code knows the operation failed
+    throw err;
 }

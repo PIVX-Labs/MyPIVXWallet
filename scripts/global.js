@@ -10,7 +10,6 @@ import {
     decryptWallet,
     getNewAddress,
     getDerivationPath,
-    isYourAddress,
     LegacyMasterKey,
 } from './wallet.js';
 import { getNetwork, HistoricalTxType } from './network.js';
@@ -20,6 +19,8 @@ import {
     debug,
     cMarket,
     strCurrency,
+    setColdStakingAddress,
+    strColdStakingAddress,
 } from './settings.js';
 import { createAndSendTransaction, signTransaction } from './transactions.js';
 import {
@@ -279,6 +280,7 @@ export async function start() {
         domCurrencySelect: document.getElementById('currency'),
         domExplorerSelect: document.getElementById('explorer'),
         domNodeSelect: document.getElementById('node'),
+        domAutoSwitchToggle: document.getElementById('autoSwitchToggler'),
         domTranslationSelect: document.getElementById('translation'),
         domBlackBack: document.getElementById('blackBack'),
         domWalletSettings: document.getElementById('settingsWallet'),
@@ -371,7 +373,7 @@ export async function start() {
 
         // Import the wallet, and toggle the startup flag, which delegates the chain data refresh to settingsStart();
         if (publicKey) {
-            importWallet({ newWif: publicKey, fStartup: true });
+            await importWallet({ newWif: publicKey, fStartup: true });
 
             // Payment processor popup
             if (reqTo.length || reqAmount > 0) {
@@ -410,6 +412,9 @@ export async function start() {
 
     // Check for recent upgrades, display the changelog
     checkForUpgrades();
+
+    // If we haven't already (due to having no wallet, etc), display the Dashboard
+    doms.domDashboard.click();
 }
 
 function subscribeToNetworkEvents() {
@@ -444,7 +449,9 @@ function subscribeToNetworkEvents() {
             // If allowed by settings: submit a simple 'tx' ping to Labs Analytics
             getNetwork().submitAnalytics('transaction');
         } else {
-            createAlert('warning', 'Transaction Failed!', 1250);
+            console.error('Error sending transaction:');
+            console.error(result);
+            createAlert('warning', 'Transaction Failed!', 2500);
         }
     });
 }
@@ -453,9 +460,6 @@ function subscribeToNetworkEvents() {
 export const mempool = new Mempool();
 let exportHidden = false;
 let governanceFlipdown = null;
-
-//                        PIVX Labs' Cold Pool
-export let cachedColdStakeAddr = 'SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy';
 
 /**
  * Open a UI 'tab' menu, and close all other tabs, intended for frontend use
@@ -703,9 +707,6 @@ export async function createActivityListHTML(arrTXs, fRewards = false) {
         hour12: true,
     };
 
-    // Keep a map of our own address(es) found within Txs, to improve speed of deciphering the Send type
-    const mapOurAddresses = new Map();
-
     // And also keep track of our last Tx's timestamp, to re-use a cache, which is much faster than the slow `.toLocaleDateString`
     let prevDateString = '';
     let prevTimestamp = 0;
@@ -770,15 +771,9 @@ export async function createActivityListHTML(arrTXs, fRewards = false) {
             // Check all addresses to find our own, caching them for performance
             for (const strAddr of cTx.receivers.concat(cTx.senders)) {
                 // If a previous Tx checked this address, skip it, otherwise, check it against our own address(es)
-                if (
-                    !mapOurAddresses.has(strAddr) &&
-                    !(await isYourAddress(strAddr))[0]
-                ) {
+                if (!(await masterKey.isOwnAddress(strAddr))) {
                     // External address, this is not a self-only Tx
                     fSendToSelf = false;
-                } else {
-                    // Internal address, remember this for later use
-                    mapOurAddresses.set(strAddr);
                 }
             }
         }
@@ -797,9 +792,18 @@ export async function createActivityListHTML(arrTXs, fRewards = false) {
                         txContent = 'Sent to self';
                     } else {
                         // Otherwise, anything to us is likely change, so filter it away
-                        const arrExternalAddresses = cTx.receivers.filter(
-                            (addr) => !mapOurAddresses.has(addr)
-                        );
+                        const arrExternalAddresses = (
+                            await Promise.all(
+                                cTx.receivers.map(async (addr) => [
+                                    await masterKey.isOwnAddress(addr),
+                                    addr,
+                                ])
+                            )
+                        )
+                            .filter(([isOwnAddress, _]) => {
+                                return !isOwnAddress;
+                            })
+                            .map(([_, addr]) => addr);
                         txContent =
                             'Sent to ' +
                             (cTx.shieldedOutputs
@@ -820,9 +824,19 @@ export async function createActivityListHTML(arrTXs, fRewards = false) {
                     colour = '#5cff5c';
                     // Figure out WHO this was sent from, and focus on them contextually
                     // Filter away any of our own addresses
-                    const arrExternalAddresses = cTx.senders.filter(
-                        (addr) => !mapOurAddresses.has(addr)
-                    );
+                    const arrExternalAddresses = (
+                        await Promise.all(
+                            cTx.senders.map(async (addr) => [
+                                await masterKey.isOwnAddress(addr),
+                                addr,
+                            ])
+                        )
+                    )
+                        .filter(([isOwnAddress, _]) => {
+                            return !isOwnAddress;
+                        })
+                        .map(([_, addr]) => addr);
+
                     if (cTx.shieldedOutputs) {
                         txContent = 'Received from Shielded address';
                     } else {
@@ -971,10 +985,6 @@ async function loadImages() {
     const images = [
         ['mpw-main-logo', import('../assets/logo.png')],
         ['privateKeyImage', import('../assets/key.png')],
-        ['img-governance', import('../assets/img_governance.png')],
-        ['img-pos', import('../assets/img_pos.png')],
-        ['img-privacy', import('../assets/img_privacy.png')],
-        ['img-slider-bars', import('../assets/img_slider_bars.png')],
     ];
 
     const promises = images.map(([id, path]) =>
@@ -1662,23 +1672,51 @@ export function toggleDropDown(id) {
     domID.style.display = domID.style.display === 'block' ? 'none' : 'block';
 }
 
-export function askForCSAddr(force = false) {
-    if (force) cachedColdStakeAddr = null;
-    if (cachedColdStakeAddr === '' || cachedColdStakeAddr === null) {
-        cachedColdStakeAddr = prompt(
-            'Please provide a Cold Staking address (either from your own node, or a 3rd-party!)'
-        ).trim();
-        if (cachedColdStakeAddr) return true;
-    } else {
-        return true;
-    }
-    return false;
-}
-
 export function isMasternodeUTXO(cUTXO, cMasternode) {
     if (cMasternode?.collateralTxId) {
         const { collateralTxId, outidx } = cMasternode;
         return collateralTxId === cUTXO.id && cUTXO.vout === outidx;
+    } else {
+        return false;
+    }
+}
+
+/**
+ * Creates a GUI popup for the user to check or customise their Cold Address
+ */
+export async function guiSetColdStakingAddress() {
+    if (
+        await confirmPopup({
+            title: 'Set your Cold Staking address',
+            html: `<p>Current address:<br><span class="mono">${strColdStakingAddress}</span><br><br><span style="opacity: 0.65; margin: 10px;">A Cold Address stakes coins on your behalf, it cannot spend coins, so it's even safe to use a stranger's Cold Address!</span></p><br><input type="text" id="newColdAddress" placeholder="Example: ${strColdStakingAddress.substring(
+                0,
+                6
+            )}..." style="text-align: center;">`,
+        })
+    ) {
+        // Fetch address from the popup input
+        const strColdAddress = document.getElementById('newColdAddress').value;
+
+        // If it's empty, just return false
+        if (!strColdAddress) return false;
+
+        // Sanity-check, and set!
+        if (
+            strColdAddress[0] === cChainParams.current.STAKING_PREFIX &&
+            strColdAddress.length === 34
+        ) {
+            await setColdStakingAddress(strColdAddress);
+            createAlert(
+                'info',
+                '<b>Cold Address set!</b><br>Future stakes will use this address.',
+                [],
+                5000
+            );
+            return true;
+        } else {
+            createAlert('warning', 'Invalid Cold Staking address!', [], 2500);
+            return false;
+        }
     } else {
         return false;
     }

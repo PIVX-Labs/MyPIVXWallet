@@ -35,6 +35,10 @@ export let cMarket = new CoinGecko();
 export let cExplorer = cChainParams.current.Explorers[0];
 /** The user-selected MPW node, used for alternative blockchain data */
 export let cNode = cChainParams.current.Nodes[0];
+/** A mode which allows MPW to automatically select it's data sources */
+export let fAutoSwitch = true;
+/** The active Cold Staking address: default is the PIVX Labs address */
+export let strColdStakingAddress = 'SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy';
 
 let transparencyReport;
 
@@ -52,6 +56,14 @@ export class Settings {
      */
     node;
     /**
+     * @type {Boolean} The Auto-Switch mode state
+     */
+    autoswitch;
+    /**
+     * @type {String} The user's active Cold Staking address
+     */
+    coldAddress;
+    /**
      * @type {String} translation to use
      */
     translation;
@@ -63,12 +75,16 @@ export class Settings {
         analytics,
         explorer,
         node,
+        autoswitch = true,
+        coldAddress = strColdStakingAddress,
         translation = 'en',
         displayCurrency = 'usd',
     } = {}) {
         this.analytics = analytics;
         this.explorer = explorer;
         this.node = node;
+        this.autoswitch = autoswitch;
+        this.coldAddress = coldAddress;
         this.translation = translation;
         this.displayCurrency = displayCurrency;
     }
@@ -155,8 +171,20 @@ export async function start() {
     }
 
     const database = await Database.getInstance();
+
     // Fetch settings from Database
-    const { analytics: strSettingAnalytics } = await database.getSettings();
+    const {
+        analytics: strSettingAnalytics,
+        autoswitch,
+        coldAddress,
+    } = await database.getSettings();
+
+    // Set the Cold Staking address
+    strColdStakingAddress = coldAddress;
+
+    // Set any Toggles to their default or DB state
+    fAutoSwitch = autoswitch;
+    doms.domAutoSwitchToggle.checked = fAutoSwitch;
 
     // Apply translations to the transparency report
     STATS = {
@@ -202,7 +230,7 @@ export async function start() {
     domAnalyticsSelect.value = cAnalyticsLevel.name;
 }
 // --- Settings Functions
-async function setExplorer(explorer, fSilent = false) {
+export async function setExplorer(explorer, fSilent = false) {
     const database = await Database.getInstance();
     database.setSettings({ explorer: explorer.url });
     cExplorer = explorer;
@@ -210,6 +238,9 @@ async function setExplorer(explorer, fSilent = false) {
     // Enable networking + notify if allowed
     const network = new ExplorerNetwork(cExplorer.url, masterKey);
     setNetwork(network);
+
+    // Update the selector UI
+    doms.domExplorerSelect.value = cExplorer.url;
 
     if (!fSilent)
         createAlert(
@@ -258,6 +289,16 @@ async function setCurrency(currency) {
     database.setSettings({ displayCurrency: strCurrency });
     // Update the UI to reflect the new currency
     getBalance(true);
+}
+
+/**
+ * Sets and saves the active Cold Staking address
+ * @param {string} strColdAddress - The Cold Staking address
+ */
+export async function setColdStakingAddress(strColdAddress) {
+    strColdStakingAddress = strColdAddress;
+    const database = await Database.getInstance();
+    database.setSettings({ coldAddress: strColdAddress });
 }
 
 /**
@@ -371,6 +412,17 @@ export function toggleTestnet() {
 export function toggleDebug() {
     debug = !debug;
     doms.domDebug.style.display = debug ? '' : 'none';
+}
+
+/**
+ * Toggle the Auto-Switch mode at runtime and in DB
+ */
+export async function toggleAutoSwitch() {
+    fAutoSwitch = !fAutoSwitch;
+
+    // Update the setting in the DB
+    const database = await Database.getInstance();
+    await database.setSettings({ autoswitch: fAutoSwitch });
 }
 
 async function fillExplorerSelect() {
