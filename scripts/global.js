@@ -289,6 +289,7 @@ export async function start() {
         domWalletSettingsBtn: document.getElementById('settingsWalletBtn'),
         domDisplaySettingsBtn: document.getElementById('settingsDisplayBtn'),
         domVersion: document.getElementById('version'),
+        domFlipdown: document.getElementById('flipdown'),
     };
     await i18nStart();
     await loadImages();
@@ -460,6 +461,7 @@ function subscribeToNetworkEvents() {
 // WALLET STATE DATA
 export const mempool = new Mempool();
 let exportHidden = false;
+let isTestnetLastState = cChainParams.current.isTestnet;
 
 /**
  * @type {FlipDown | null}
@@ -1790,16 +1792,30 @@ export async function restoreWallet(strReason = '') {
 /**
  * Fetch Governance data and re-render the Governance UI
  */
-async function updateGovernanceTab() {
+export async function updateGovernanceTab() {
     // Setup the Superblock countdown (if not already done), no need to block thread with await, either.
-    const cNet = getNetwork();
+    let cNet = getNetwork();
+
+    // When switching to mainnet from testnet or vise versa, you ned to use an await on getBlockCount() or cNet.cachedBlockCount returns 0
+    if(!isTestnetLastState == cChainParams.current.isTestnet) {
+        // Reset flipdown
+        governanceFlipdown = null;
+        doms.domFlipdown.innerHTML = '';
+        
+        // Get new network blockcount
+        await getNetwork().getBlockCount();
+        cNet = getNetwork();
+    }
+
+    // Update governance counter when testnet/mainnet has been switched
     if (!governanceFlipdown && cNet.cachedBlockCount > 0) {
         Masternode.getNextSuperblock().then((nSuperblock) => {
             // The estimated time to the superblock (using the block target and remaining blocks)
             const nTimestamp =
-                Date.now() / 1000 + (nSuperblock - cNet.cachedBlockCount) * 60;
+            Date.now() / 1000 + (nSuperblock - cNet.cachedBlockCount) * 60;
             governanceFlipdown = new MPW.FlipDown(nTimestamp).start();
         });
+        isTestnetLastState = cChainParams.current.isTestnet;
     }
 
     // Fetch all proposals from the network
