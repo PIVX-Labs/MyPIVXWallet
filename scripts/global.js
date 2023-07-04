@@ -43,6 +43,7 @@ import { scanQRCode } from './scanner.js';
 import { Database } from './database.js';
 import bitjs from './bitTrx.js';
 import { checkForUpgrades } from './changelog.js';
+import { FlipDown } from './flipdown.js';
 
 /** A flag showing if base MPW is fully loaded or not */
 export let fIsLoaded = false;
@@ -459,6 +460,10 @@ function subscribeToNetworkEvents() {
 // WALLET STATE DATA
 export const mempool = new Mempool();
 let exportHidden = false;
+
+/**
+ * @type {FlipDown | null}
+ */
 let governanceFlipdown = null;
 
 /**
