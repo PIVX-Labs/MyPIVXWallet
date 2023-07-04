@@ -1213,7 +1213,7 @@ export async function destroyMasternode() {
 
 /**
  * Takes an ip address and adds the port.
- * If it's a tor address, ip.onion will be used (e.g. expyuzz4wqqyqhjn.onion)
+ * If it's a tor address, ip.onion:port will be used (e.g. expyuzz4wqqyqhjn.onion:12345)
  * If it's an IPv4 address, ip:port will be used, (e.g. 127.0.0.1:12345)
  * If it's an IPv6 address, [ip]:port will be used, (e.g. [::1]:12345)
  * @param {String} ip - Ip address with or without port
