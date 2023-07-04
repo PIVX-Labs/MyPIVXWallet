@@ -1964,7 +1964,6 @@ async function renderProposals(arrProposals, fContested) {
         // Voting Buttons for Masternode owners (MNOs)
         let voteBtn;
         if (cProposal.local) {
-            domRow.insertCell(); // Yes/no missing button
             const finalizeRow = domRow.insertCell();
             const finalizeButton = document.createElement('button');
             finalizeButton.className = 'pivx-button-small';
@@ -2006,6 +2005,7 @@ async function renderProposals(arrProposals, fContested) {
                     }
                 }
             };
+            finalizeRow.appendChild(finalizeButton);
         } else {
             let btnYesClass = 'pivx-button-small';
             let btnNoClass = 'pivx-button-small';
