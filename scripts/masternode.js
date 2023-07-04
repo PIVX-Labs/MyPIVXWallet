@@ -12,6 +12,7 @@ import { Address6 } from 'ip-address';
 import * as nobleSecp256k1 from '@noble/secp256k1';
 import { OP } from './script.js';
 import bs58 from 'bs58';
+import base32 from 'base32';
 
 /**
  * Construct a Masternode
@@ -74,15 +75,38 @@ export default class Masternode {
     }
 
     /**
-     * @param {String} ip
-     * @param {Number} port
+     * @param {string} ip
+     * @param {number} port
      * @returns {string} hex representation of the IP + port pair
      */
     static _decodeIpAddress(ip, port) {
-        const address = ip.includes('.')
-            ? Address6.fromAddress4(ip)
-            : new Address6(ip);
-        const bytes = address.toUnsignedByteArray();
+        /**
+         * @type {Array<Number>?}
+         */
+        let bytes;
+        if (ip.endsWith('.onion')) {
+            bytes = [
+                0xfd,
+                0x87,
+                0xd8,
+                0x7e,
+                0xeb,
+                0x43,
+                ...base32
+                    .decode(ip.slice(0, -6))
+                    .split('')
+                    .map((c) => c.charCodeAt(0)),
+            ];
+            console.log(bytes);
+            if (bytes.length !== 16) {
+                throw new Error('Invalid tor address');
+            }
+        } else {
+            const address = ip.includes('.')
+                ? Address6.fromAddress4(ip)
+                : new Address6(ip);
+            bytes = address.toUnsignedByteArray();
+        }
         const res =
             bytesToHex([...new Array(16 - bytes.length).fill(0), ...bytes]) +
             bytesToHex(Masternode._numToBytes(port, 2, false));

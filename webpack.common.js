@@ -41,6 +41,9 @@ module.exports = {
         alias: {
             'bn.js': path.join(__dirname, 'node_modules/bn.js/lib/bn.js'),
         },
+        fallback: {
+            fs: false,
+        },
     },
     plugins: [
         new HtmlWebpackPlugin({

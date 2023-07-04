@@ -1213,20 +1213,23 @@ export async function destroyMasternode() {
 
 /**
  * Takes an ip address and adds the port.
+ * If it's a tor address, ip.onion will be used (e.g. expyuzz4wqqyqhjn.onion)
  * If it's an IPv4 address, ip:port will be used, (e.g. 127.0.0.1:12345)
  * If it's an IPv6 address, [ip]:port will be used, (e.g. [::1]:12345)
  * @param {String} ip - Ip address with or without port
  * @returns {String}
  */
 function parseIpAddress(ip) {
-    // IPv4 without port
-    if (ip.match(/\d+\.\d+\.\d+\.\d+/)) {
+    // IPv4 or tor without port
+    if (ip.match(/\d+\.\d+\.\d+\.\d+/) || ip.match(/\w+\.onion/)) {
         return `${ip}:${cChainParams.current.MASTERNODE_PORT}`;
     }
-    // IPv4 with port
-    if (ip.match(/\d+\.\d+\.\d+\.\d+:\d+/)) {
+
+    // IPv4 or tor with port
+    if (ip.match(/\d+\.\d+\.\d+\.\d+:\d+/) || ip.match(/\w+\.onion:\d+/)) {
         return ip;
     }
+
     // IPv6 without port
     if (Address6.isValid(ip)) {
         return `[${ip}]:${cChainParams.current.MASTERNODE_PORT}`;
