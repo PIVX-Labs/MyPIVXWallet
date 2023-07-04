@@ -125,10 +125,10 @@ export class Database {
      */
     async getMasternode(_masterKey) {
         const store = this.#db
-              .transaction('masternodes', 'readonly')
-              .objectStore('masternodes');
-	const mnData = await store.get('masternode');
-	return mnData ? new Masternode(mnData) : null;
+            .transaction('masternodes', 'readonly')
+            .objectStore('masternodes');
+        const mnData = await store.get('masternode');
+        return mnData ? new Masternode(mnData) : null;
     }
 
     /**

@@ -420,6 +420,9 @@ export async function start() {
 
     // Check for recent upgrades, display the changelog
     await checkForUpgrades();
+
+    // If we haven't already (due to having no wallet, etc), display the Dashboard
+    doms.domDashboard.click();
 }
 
 function subscribeToNetworkEvents() {
@@ -998,14 +1001,6 @@ async function loadImages() {
         ['mpw-main-logo', import('../assets/logo.png')],
         // @ts-ignore
         ['privateKeyImage', import('../assets/key.png')],
-        // @ts-ignore
-        ['img-governance', import('../assets/img_governance.png')],
-        // @ts-ignore
-        ['img-pos', import('../assets/img_pos.png')],
-        // @ts-ignore
-        ['img-privacy', import('../assets/img_privacy.png')],
-        // @ts-ignore
-        ['img-slider-bars', import('../assets/img_slider_bars.png')],
     ];
 
     const promises = images.map(([id, path]) =>
