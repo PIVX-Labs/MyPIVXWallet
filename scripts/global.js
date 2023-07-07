@@ -1873,8 +1873,6 @@ async function renderProposals(arrProposals, fContested) {
     const cMasternode = await database.getMasternode();
 
     if (!fContested) {
-        const database = await Database.getInstance();
-
         const localProposals =
             (await database.getAccount())?.localProposals?.map((p) => {
                 return {
@@ -1951,7 +1949,6 @@ async function renderProposals(arrProposals, fContested) {
                 const result = await Masternode.finalizeProposal(cProposal.mpw);
                 const deleteProposal = async () => {
                     // Remove local Proposal from local storage
-                    const database = await Database.getInstance();
                     const account = await database.getAccount();
                     const localProposals = account?.localProposals || [];
                     await database.addAccount({
