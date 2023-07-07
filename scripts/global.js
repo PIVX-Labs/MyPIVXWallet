@@ -1797,11 +1797,11 @@ export async function updateGovernanceTab() {
     let cNet = getNetwork();
 
     // When switching to mainnet from testnet or vise versa, you ned to use an await on getBlockCount() or cNet.cachedBlockCount returns 0
-    if(!isTestnetLastState == cChainParams.current.isTestnet) {
+    if (!isTestnetLastState == cChainParams.current.isTestnet) {
         // Reset flipdown
         governanceFlipdown = null;
         doms.domFlipdown.innerHTML = '';
-        
+
         // Get new network blockcount
         await getNetwork().getBlockCount();
         cNet = getNetwork();
@@ -1812,8 +1812,8 @@ export async function updateGovernanceTab() {
         Masternode.getNextSuperblock().then((nSuperblock) => {
             // The estimated time to the superblock (using the block target and remaining blocks)
             const nTimestamp =
-            Date.now() / 1000 + (nSuperblock - cNet.cachedBlockCount) * 60;
-            governanceFlipdown = new MPW.FlipDown(nTimestamp).start();
+                Date.now() / 1000 + (nSuperblock - cNet.cachedBlockCount) * 60;
+            governanceFlipdown = new FlipDown(nTimestamp).start();
         });
         isTestnetLastState = cChainParams.current.isTestnet;
     }
@@ -1943,7 +1943,7 @@ async function renderProposals(arrProposals, fContested) {
         let strFundingStatus = 'NOT FUNDED';
 
         // Funding Status and allocation calculations
-        if(cProposal.local) {
+        if (cProposal.local) {
             const finalizeButton = document.createElement('button');
             finalizeButton.className = 'pivx-button-small';
             finalizeButton.innerHTML = '<i class="fas fa-check"></i>';
