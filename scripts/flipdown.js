@@ -154,7 +154,7 @@ export class FlipDown {
         }
         return {
             // Theme
-            theme: opt.hasOwnProperty('theme') ? opt.theme : 'dark',
+            theme: Object.prototype.hasOwnProperty.call(opt, 'theme') ? opt.theme : 'dark',
             headings,
         };
     }
@@ -194,21 +194,21 @@ export class FlipDown {
 
         // Create day rotor group
         var dayRotors = [];
-        for (var i = 0; i < dayRotorCount; i++) {
-            dayRotors.push(this.rotors[i]);
+        for (var j = 0; j < dayRotorCount; j++) {
+            dayRotors.push(this.rotors[j]);
         }
         this.element.appendChild(this._createRotorGroup(dayRotors, 0));
 
         // Create other rotor groups
         var count = dayRotorCount;
-        for (var i = 0; i < 3; i++) {
+        for (var k = 0; k < 3; k++) {
             var otherRotors = [];
-            for (var j = 0; j < 2; j++) {
+            for (var l = 0; l < 2; l++) {
                 otherRotors.push(this.rotors[count]);
                 count++;
             }
             this.element.appendChild(
-                this._createRotorGroup(otherRotors, i + 1)
+                this._createRotorGroup(otherRotors, k + 1)
             );
         }
 
