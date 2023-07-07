@@ -85,21 +85,19 @@ export default class Masternode {
          */
         let bytes;
         if (ip.endsWith('.onion')) {
-            bytes = [
-                0xfd,
-                0x87,
-                0xd8,
-                0x7e,
-                0xeb,
-                0x43,
-                ...base32
-                    .decode(ip.slice(0, -6))
-                    .split('')
-                    .map((c) => c.charCodeAt(0)),
-            ];
-            console.log(bytes);
-            if (bytes.length !== 16) {
-                throw new Error('Invalid tor address');
+            const onionBytes = base32
+                .decode(ip.slice(0, -6))
+                .split('')
+                .map((c) => c.charCodeAt(0));
+            switch (onionBytes.length) {
+                case 10:
+                    bytes = [0xfd, 0x87, 0xd8, 0x7e, 0xeb, 0x43, ...onionBytes];
+                    break;
+                case 35:
+                    bytes = [0x04, 32, ...onionBytes.slice(0, 32)];
+                    break;
+                default:
+                    throw new Error('Invalid onion address');
             }
         } else {
             const address = ip.includes('.')
@@ -108,8 +106,10 @@ export default class Masternode {
             bytes = address.toUnsignedByteArray();
         }
         const res =
-            bytesToHex([...new Array(16 - bytes.length).fill(0), ...bytes]) +
-            bytesToHex(Masternode._numToBytes(port, 2, false));
+            bytesToHex([
+                ...new Array(Math.max(16 - bytes.length, 0)).fill(0),
+                ...bytes,
+            ]) + bytesToHex(Masternode._numToBytes(port, 2, false));
         return res;
     }
 
