@@ -2421,7 +2421,8 @@ export async function createProposal() {
     if (getBalance() * COIN < cChainParams.current.proposalFee) {
         return createAlert('warning', 'Not enough funds to create a proposal.');
     }
-    await confirmPopup({
+
+    const fConfirmed = await confirmPopup({
         title: `Create Proposal (cost ${
             cChainParams.current.proposalFee / COIN
         } ${cChainParams.current.TICKER})`,
@@ -2430,6 +2431,10 @@ export async function createProposal() {
                <input type="number" id="proposalCycles" placeholder="Duration in cycles" style="text-align: center;"><br>
                <input type="number" id="proposalPayment" placeholder="${cChainParams.current.TICKER} per cycle" style="text-align: center;"><br>`,
     });
+
+    // If the user cancelled, then we return
+    if (!fConfirmed) return;
+
     const strTitle = document.getElementById('proposalTitle').value;
     const strUrl = document.getElementById('proposalUrl').value;
     const numCycles = parseInt(document.getElementById('proposalCycles').value);
