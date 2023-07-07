@@ -154,7 +154,9 @@ export class FlipDown {
         }
         return {
             // Theme
-            theme: Object.prototype.hasOwnProperty.call(opt, 'theme') ? opt.theme : 'dark',
+            theme: Object.prototype.hasOwnProperty.call(opt, 'theme')
+                ? opt.theme
+                : 'dark',
             headings,
         };
     }

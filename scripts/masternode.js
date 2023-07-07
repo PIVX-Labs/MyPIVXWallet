@@ -511,7 +511,10 @@ export default class Masternode {
                 res.includes('requires at least')
             ) {
                 return { ok: false, err: 'unconfirmed' };
-            } else if (res.includes('invalid budget proposal')) {
+            } else if (
+                res.includes('invalid budget proposal') ||
+                res.includes('Invalid block start')
+            ) {
                 return { ok: false, err: 'invalid' };
             } else {
                 return { ok: false, err: 'other' };

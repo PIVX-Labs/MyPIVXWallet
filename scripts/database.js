@@ -91,7 +91,7 @@ export class Database {
         const store = this.#db
             .transaction('accounts', 'readwrite')
             .objectStore('accounts');
-        // When the account system is gonig to be added, the key is gonna be the publicKey
+        // When the account system is going to be added, the key is gonna be the publicKey
         await store.put({ ...oldAccount, ...newAccount }, 'account');
     }
 

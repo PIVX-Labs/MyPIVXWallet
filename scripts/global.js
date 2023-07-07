@@ -31,6 +31,7 @@ import {
     parseBIP21Request,
     isValidBech32,
     isBase64,
+    sleep,
 } from './misc.js';
 import { cChainParams, COIN, MIN_PASS_LENGTH } from './chain_params.js';
 import { decrypt } from './aes-gcm.js';
@@ -133,6 +134,7 @@ export async function start() {
         domGenVanityWallet: document.getElementById('generateVanityWallet'),
         domGenHardwareWallet: document.getElementById('generateHardwareWallet'),
         //GOVERNANCE ELEMENTS
+        domGovTab: document.getElementById('governanceTab'),
         domGovProposalsTable: document.getElementById('proposalsTable'),
         domGovProposalsTableBody: document.getElementById('proposalsTableBody'),
         domTotalGovernanceBudget: document.getElementById(
@@ -1789,10 +1791,16 @@ export async function restoreWallet(strReason = '') {
     }
 }
 
+/** A lock to prevent rendering the Governance Dashboard multiple times */
+let fRenderingGovernance = false;
+
 /**
  * Fetch Governance data and re-render the Governance UI
  */
 export async function updateGovernanceTab() {
+    if (fRenderingGovernance) return;
+    fRenderingGovernance = true;
+
     // Setup the Superblock countdown (if not already done), no need to block thread with await, either.
     let cNet = getNetwork();
 
@@ -1839,6 +1847,104 @@ export async function updateGovernanceTab() {
         renderProposals(arrStandard, false),
         renderProposals(arrContested, true),
     ]);
+
+    // Remove lock
+    fRenderingGovernance = false;
+}
+
+/**
+ * @typedef {Object} ProposalCache
+ * @property {number} nSubmissionHeight - The submission height of the proposal.
+ * @property {string} txid - The transaction ID of the proposal (string).
+ * @property {boolean} fFetching - Indicates whether the proposal is currently being fetched or not.
+ */
+
+/**
+ * An array of Proposal Finalisation caches
+ * @type {Array<ProposalCache>}
+ */
+const arrProposalFinalisationCache = [];
+
+/**
+ * Asynchronously wait for a Proposal Tx to confirm, then cache the height.
+ *
+ * Do NOT await unless you want to lock the thread for a long time.
+ * @param {ProposalCache} cProposalCache - The proposal cache to wait for
+ * @returns {Promise<boolean>} Returns `true` once the block height is cached
+ */
+async function waitForSubmissionBlockHeight(cProposalCache) {
+    let nHeight = null;
+
+    // Wait in a permanent throttled loop until we successfully fetch the block
+    const cNet = getNetwork();
+    while (true) {
+        // If a proposal is already fetching, then consequtive calls will be rejected
+        cProposalCache.fFetching = true;
+
+        // Attempt to fetch the submission Tx (may not exist yet!)
+        let cTx = null;
+        try {
+            cTx = await cNet.getTxInfo(cProposalCache.txid);
+        } catch (_) {}
+
+        if (!cTx || !cTx.blockHeight) {
+            // Didn't get the TX, throttle the thread by sleeping for a bit, then try again.
+            await sleep(30000);
+        } else {
+            nHeight = cTx.blockHeight;
+            break;
+        }
+    }
+
+    // Update the proposal finalisation cache
+    cProposalCache.nSubmissionHeight = nHeight;
+
+    return true;
+}
+
+/**
+ * Create a Status String for a proposal's finalisation status
+ * @param {ProposalCache} cPropCache - The proposal cache to check
+ * @returns {string} The string status, for display purposes
+ */
+function getProposalFinalisationStatus(cPropCache) {
+    const cNet = getNetwork();
+    const nConfsLeft = cPropCache.nSubmissionHeight + 6 - cNet.cachedBlockCount;
+
+    if (cPropCache.nSubmissionHeight === 0 || cNet.cachedBlockCount === 0) {
+        return 'Confirming...';
+    } else if (nConfsLeft > 0) {
+        return nConfsLeft + ' block' + (nConfsLeft === 1 ? '' : 's') + ' left';
+    } else if (Math.abs(nConfsLeft) >= cChainParams.current.budgetCycleBlocks) {
+        return 'Proposal Expired';
+    } else {
+        return 'Ready to submit';
+    }
+}
+
+/**
+ *
+ * @param {Object} cProposal - A local proposal to add to the cache tracker
+ * @returns {ProposalCache} - The finalisation cache object pointer of the local proposal
+ */
+function addProposalToFinalisationCache(cProposal) {
+    // If it exists, return the existing cache
+    /** @type ProposalCache */
+    let cPropCache = arrProposalFinalisationCache.find(
+        (a) => a.txid === cProposal.mpw.txid
+    );
+    if (cPropCache) return cPropCache;
+
+    // Create a new cache
+    cPropCache = {
+        nSubmissionHeight: 0,
+        txid: cProposal.mpw.txid,
+        fFetching: false,
+    };
+    arrProposalFinalisationCache.push(cPropCache);
+
+    // Return the object 'pointer' in the array for further updating
+    return cPropCache;
 }
 
 /**
@@ -1868,7 +1974,6 @@ async function renderProposals(arrProposals, fContested) {
         : doms.domGovProposalsTableBody;
 
     // Render the proposals in the relevent table
-    domTable.innerHTML = '';
     const database = await Database.getInstance();
     const cMasternode = await database.getMasternode();
 
@@ -1907,7 +2012,9 @@ async function renderProposals(arrProposals, fContested) {
 
     let totalAllocatedAmount = 0;
 
+    // Wipe the current table and start rendering proposals
     let i = 0;
+    domTable.innerHTML = '';
     for (const cProposal of arrProposals) {
         const domRow = domTable.insertRow();
 
@@ -1942,49 +2049,71 @@ async function renderProposals(arrProposals, fContested) {
 
         // Funding Status and allocation calculations
         if (cProposal.local) {
+            // Check the finalisation cache
+            const cPropCache = addProposalToFinalisationCache(cProposal);
+            if (!cPropCache.fFetching) {
+                waitForSubmissionBlockHeight(cPropCache).then(
+                    updateGovernanceTab
+                );
+            }
+            const strStatus = getProposalFinalisationStatus(cPropCache);
             const finalizeButton = document.createElement('button');
             finalizeButton.className = 'pivx-button-small';
             finalizeButton.innerHTML = '<i class="fas fa-check"></i>';
-            finalizeButton.addEventListener('click', async () => {
-                const result = await Masternode.finalizeProposal(cProposal.mpw);
-                const deleteProposal = async () => {
-                    // Remove local Proposal from local storage
-                    const account = await database.getAccount();
-                    const localProposals = account?.localProposals || [];
-                    await database.addAccount({
-                        localProposals: localProposals.filter(
-                            (p) => p.txId !== cProposal.mpw.txId
-                        ),
-                    });
-                };
-                if (result.ok) {
-                    createAlert('success', 'Proposal finalized!');
-                    deleteProposal();
-                    updateGovernanceTab();
-                } else {
-                    if (result.err === 'unconfirmed') {
-                        createAlert(
-                            'warning',
-                            "The proposal hasn't been confirmed yet.",
-                            5000
-                        );
-                    } else if (result.err === 'invalid') {
-                        createAlert(
-                            'warning',
-                            'The proposal is no longer valid. Create a new one.',
-                            5000
-                        );
+
+            if (
+                strStatus === 'Ready to submit' ||
+                strStatus === 'Proposal Expired'
+            ) {
+                finalizeButton.addEventListener('click', async () => {
+                    const result = await Masternode.finalizeProposal(
+                        cProposal.mpw
+                    );
+                    const deleteProposal = async () => {
+                        // Remove local Proposal from local storage
+                        const account = await database.getAccount();
+                        const localProposals = account?.localProposals || [];
+                        await database.addAccount({
+                            localProposals: localProposals.filter(
+                                (p) => p.txId !== cProposal.mpw.txId
+                            ),
+                        });
+                    };
+                    if (result.ok) {
+                        createAlert('success', 'Proposal finalized!');
                         deleteProposal();
                         updateGovernanceTab();
                     } else {
-                        createAlert('warning', 'Failed to finalize proposal.');
+                        if (result.err === 'unconfirmed') {
+                            createAlert(
+                                'warning',
+                                "The proposal hasn't been confirmed yet.",
+                                5000
+                            );
+                        } else if (result.err === 'invalid') {
+                            createAlert(
+                                'warning',
+                                'The proposal has expired. Create a new one.',
+                                5000
+                            );
+                            deleteProposal();
+                            updateGovernanceTab();
+                        } else {
+                            createAlert(
+                                'warning',
+                                'Failed to finalize proposal.'
+                            );
+                        }
                     }
-                }
-            });
+                });
+            } else {
+                finalizeButton.style.opacity = 0.5;
+                finalizeButton.style.cursor = 'default';
+            }
 
             domStatus.innerHTML = `
             <span style="font-size:12px; line-height: 15px; display: block; margin-bottom:15px;">
-                <span style="color:#fff; font-weight:700;">UNFINALISED</span><br>
+                <span style="color:#fff; font-weight:700;">${strStatus}</span><br>
             </span>
             <span class="governArrow for-mobile ptr">
                 <i class="fa-solid fa-angle-down"></i>
@@ -2489,6 +2618,11 @@ export function refreshChainData() {
     cNet.getBlockCount().then((_) => {
         // Fetch latest Activity
         updateActivityGUI(false, true);
+
+        // If it's open: update the Governance Dashboard
+        if (doms.domGovTab.classList.contains('active')) {
+            updateGovernanceTab();
+        }
     });
     getBalance(true);
 }
