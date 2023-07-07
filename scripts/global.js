@@ -1943,30 +1943,82 @@ async function renderProposals(arrProposals, fContested) {
         let strFundingStatus = 'NOT FUNDED';
 
         // Funding Status and allocation calculations
-        if (domTable.id == 'proposalsTableBody') {
-            if (
-                nNetYes >= nRequiredVotes &&
-                totalAllocatedAmount + cProposal.MonthlyPayment <=
-                    cChainParams.current.maxPayment / COIN
-            ) {
-                // Not enough budget or Net Yes votes for this proposal :(
-                strFundingStatus = 'FUNDED';
-                totalAllocatedAmount += cProposal.MonthlyPayment;
-            }
-        }
+        if(cProposal.local) {
+            const finalizeButton = document.createElement('button');
+            finalizeButton.className = 'pivx-button-small';
+            finalizeButton.innerHTML = '<i class="fas fa-check"></i>';
+            finalizeButton.addEventListener('click', async () => {
+                const result = await Masternode.finalizeProposal(cProposal.mpw);
+                const deleteProposal = async () => {
+                    // Remove local Proposal from local storage
+                    const database = await Database.getInstance();
+                    const account = await database.getAccount();
+                    const localProposals = account?.localProposals || [];
+                    await database.addAccount({
+                        localProposals: localProposals.filter(
+                            (p) => p.txId !== cProposal.mpw.txId
+                        ),
+                    });
+                };
+                if (result.ok) {
+                    createAlert('success', 'Proposal finalized!');
+                    deleteProposal();
+                    updateGovernanceTab();
+                } else {
+                    if (result.err === 'unconfirmed') {
+                        createAlert(
+                            'warning',
+                            "The proposal hasn't been confirmed yet.",
+                            5000
+                        );
+                    } else if (result.err === 'invalid') {
+                        createAlert(
+                            'warning',
+                            'The proposal is no longer valid. Create a new one.',
+                            5000
+                        );
+                        deleteProposal();
+                        updateGovernanceTab();
+                    } else {
+                        createAlert('warning', 'Failed to finalize proposal.');
+                    }
+                }
+            });
 
-        domStatus.innerHTML = `
-        <span style="font-size:12px; line-height: 15px; display: block; margin-bottom:15px;">
-            <span style="color:#fff; font-weight:700;">${strStatus}</span><br>
-            <span style="color:hsl(265 100% 67% / 1);">(${strFundingStatus})</span><br>
-        </span>
-        <span style="font-size:12px; line-height: 15px; display: block; color:#d1d1d1;">
-            <b>${nNetYesPercent.toFixed(1)}%</b><br>
-            Net Yes
-        </span>
-        <span class="governArrow for-mobile ptr">
-            <i class="fa-solid fa-angle-down"></i>
-        </span>`;
+            domStatus.innerHTML = `
+            <span style="font-size:12px; line-height: 15px; display: block; margin-bottom:15px;">
+                <span style="color:#fff; font-weight:700;">UNFINALISED</span><br>
+            </span>
+            <span class="governArrow for-mobile ptr">
+                <i class="fa-solid fa-angle-down"></i>
+            </span>`;
+            domStatus.appendChild(finalizeButton);
+        } else {
+            if (domTable.id == 'proposalsTableBody') {
+                if (
+                    nNetYes >= nRequiredVotes &&
+                    totalAllocatedAmount + cProposal.MonthlyPayment <=
+                        cChainParams.current.maxPayment / COIN
+                ) {
+                    // Not enough budget or Net Yes votes for this proposal :(
+                    strFundingStatus = 'FUNDED';
+                    totalAllocatedAmount += cProposal.MonthlyPayment;
+                }
+            }
+
+            domStatus.innerHTML = `
+            <span style="font-size:12px; line-height: 15px; display: block; margin-bottom:15px;">
+                <span style="color:#fff; font-weight:700;">${strStatus}</span><br>
+                <span style="color:hsl(265 100% 67% / 1);">(${strFundingStatus})</span><br>
+            </span>
+            <span style="font-size:12px; line-height: 15px; display: block; color:#d1d1d1;">
+                <b>${nNetYesPercent.toFixed(1)}%</b><br>
+                Net Yes
+            </span>
+            <span class="governArrow for-mobile ptr">
+                <i class="fa-solid fa-angle-down"></i>
+            </span>`;
+        }
 
         // Name and URL hyperlink
         const domNameAndURL = domRow.insertCell();
@@ -2023,48 +2075,9 @@ async function renderProposals(arrProposals, fContested) {
         // Voting Buttons for Masternode owners (MNOs)
         let voteBtn;
         if (cProposal.local) {
-            const finalizeRow = domRow.insertCell();
-            const finalizeButton = document.createElement('button');
-            finalizeButton.className = 'pivx-button-small';
-            finalizeButton.innerHTML = '<i class="fas fa-check"></i>';
-            finalizeButton.onclick = async () => {
-                const result = await Masternode.finalizeProposal(cProposal.mpw);
-                const deleteProposal = async () => {
-                    // Remove local Proposal from local storage
-                    const database = await Database.getInstance();
-                    const account = await database.getAccount();
-                    const localProposals = account?.localProposals || [];
-                    await database.addAccount({
-                        localProposals: localProposals.filter(
-                            (p) => p.txId !== cProposal.mpw.txId
-                        ),
-                    });
-                };
-                if (result.ok) {
-                    createAlert('success', 'Proposal finalized!');
-                    deleteProposal();
-                    updateGovernanceTab();
-                } else {
-                    if (result.err === 'unconfirmed') {
-                        createAlert(
-                            'warning',
-                            "The proposal hasn't been confirmed yet.",
-                            5000
-                        );
-                    } else if (result.err === 'invalid') {
-                        createAlert(
-                            'warning',
-                            'The proposal is no longer valid. Create a new one.',
-                            5000
-                        );
-                        deleteProposal();
-                        updateGovernanceTab();
-                    } else {
-                        createAlert('warning', 'Failed to finalize proposal.');
-                    }
-                }
-            };
-            finalizeRow.appendChild(finalizeButton);
+            const domVoteBtns = domRow.insertCell();
+            domVoteBtns.classList.add('for-desktop');
+            voteBtn = '';
         } else {
             let btnYesClass = 'pivx-button-small';
             let btnNoClass = 'pivx-button-small';
