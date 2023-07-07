@@ -4,6 +4,7 @@ import {
     getStakingBalance,
     refreshChainData,
     updateActivityGUI,
+    updateGovernanceTab,
 } from './global.js';
 import { fWalletLoaded, masterKey } from './wallet.js';
 import { cChainParams } from './chain_params.js';
@@ -407,6 +408,7 @@ export function toggleTestnet() {
     getBalance(true);
     getStakingBalance(true);
     updateActivityGUI();
+    updateGovernanceTab();
 }
 
 export function toggleDebug() {
