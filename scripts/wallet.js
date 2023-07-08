@@ -841,6 +841,10 @@ function informUserOfMnemonic(mnemonic) {
         doms.domMnemonicModalButton.onclick = () => {
             res(doms.domMnemonicModalPassphrase.value);
             $('#mnemonicModal').modal('hide');
+
+            // Wipe the mnemonic displays of sensitive data
+            doms.domMnemonicModalContent.innerText = '';
+            doms.domMnemonicModalPassphrase.value = '';
         };
         $('#mnemonicModal').modal('show');
     });
