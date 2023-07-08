@@ -1378,6 +1378,7 @@ export async function onPrivateKeyChanged() {
  * Imports a wallet using the GUI input, handling decryption via UI
  */
 export async function guiImportWallet() {
+    // Important: These fields will be wiped by importWallet();
     const strPrivKey = doms.domPrivKey.value;
     const strPassword = doms.domPrivKeyPassword.value;
     const fEncrypted = strPrivKey.length >= 128 && isBase64(strPrivKey);
@@ -1406,6 +1407,9 @@ export async function guiImportWallet() {
                     encWif: strPrivKey,
                 });
             }
+            // Destroy residue import data
+            doms.domPrivKey.value = '';
+            doms.domPrivKeyPassword.value = '';
             return;
         }
     }
