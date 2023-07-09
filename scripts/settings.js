@@ -386,8 +386,11 @@ async function setAnalytics(level, fSilent = false) {
 }
 
 export function toggleTestnet() {
-    if (fWalletLoaded)
+    if (fWalletLoaded) {
+        // Revert testnet toggle
+        doms.domTesnetToggler.checked = !doms.domTesnetToggler.checked;
         return createAlert('warning', ALERTS.UNABLE_SWITCH_TESTNET, [], 3250);
+    }
 
     // Update current chain config
     cChainParams.current = cChainParams.current.isTestnet
@@ -403,6 +406,14 @@ export function toggleTestnet() {
     doms.domGuiBalanceStakingTicker.innerText = cChainParams.current.TICKER;
     doms.domPrefixNetwork.innerText =
         cChainParams.current.PUBKEY_PREFIX.join(' or ');
+    
+    // Update testnet toggle in settings
+    if(cChainParams.current.isTestnet) {
+        doms.domTesnetToggler.checked = true;
+    } else {
+        doms.domTesnetToggler.checked = false;
+    }
+    
     fillExplorerSelect();
     fillNodeSelect();
     getBalance(true);

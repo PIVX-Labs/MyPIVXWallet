@@ -292,6 +292,7 @@ export async function start() {
         domDisplaySettingsBtn: document.getElementById('settingsDisplayBtn'),
         domVersion: document.getElementById('version'),
         domFlipdown: document.getElementById('flipdown'),
+        domTesnetToggler: document.getElementById('tesnetToggler'),
     };
     await i18nStart();
     await loadImages();
