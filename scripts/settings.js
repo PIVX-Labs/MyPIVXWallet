@@ -406,14 +406,14 @@ export function toggleTestnet() {
     doms.domGuiBalanceStakingTicker.innerText = cChainParams.current.TICKER;
     doms.domPrefixNetwork.innerText =
         cChainParams.current.PUBKEY_PREFIX.join(' or ');
-    
+
     // Update testnet toggle in settings
-    if(cChainParams.current.isTestnet) {
+    if (cChainParams.current.isTestnet) {
         doms.domTesnetToggler.checked = true;
     } else {
         doms.domTesnetToggler.checked = false;
     }
-    
+
     fillExplorerSelect();
     fillNodeSelect();
     getBalance(true);
