@@ -535,7 +535,10 @@ export default class Masternode {
                 res.includes('requires at least')
             ) {
                 return { ok: false, err: 'unconfirmed' };
-            } else if (res.includes('invalid budget proposal')) {
+            } else if (
+                res.includes('invalid budget proposal') ||
+                res.includes('Invalid block start')
+            ) {
                 return { ok: false, err: 'invalid' };
             } else {
                 return { ok: false, err: 'other' };
@@ -550,6 +553,14 @@ export default class Masternode {
         return parseInt(
             await (await fetch(`${cNode.url}/getnextsuperblock`)).text()
         );
+    }
+
+    /**
+     * Fetches the masternode count object, containing each status and network.
+     * @returns {Promise<{total:number, stable:number, enabled:number, inqueue:number, ipv4:number, ipv6:number, onion:number}>} - The masternode count object
+     */
+    static async getMasternodeCount() {
+        return await (await fetch(`${cNode.url}/getmasternodecount`)).json();
     }
 
     /**

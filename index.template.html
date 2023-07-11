@@ -165,7 +165,7 @@
         </div>
         <br />
         <!-- // CONFIRM MODAL -->
-        <div class="modal" id="confirmModal" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+        <div class="modal" id="confirmModal" tabindex="-1" style="z-index: 2000; background-color: #00000063;" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
           <div class="modal-dialog modal-dialog-centered max-w-600" role="document">
             <div class="modal-content">
               <div class="modal-header" id="confirmModalHeader">
@@ -939,15 +939,51 @@
                   <h3 class="pivx-bold-title center-text">Governance</h3>
                   <p class="center-text">From this tab you can check the proposals and, if you have a masternode, be a part of the <b>DAO</b> and vote!</p>
                 </div>
-                <table id="proposalsTable" class="table table-hover table-dark bg-transparent" style="width: 100%;">
+
+
+                <div class="row mb-5">
+                  <div class="col-6 col-lg-3 text-center governBudgetCard">
+                    <span style="font-weight:800; color:#cac9d2;">Monthly Budget</span>
+
+                    <div style="background-color:hsl(273 79% 27% / 1); margin-top:11px; border-radius: 9px; width: fit-content; padding-left: 13px; padding-right: 13px; padding-bottom: 10px; padding-top: 9px;">
+                      <span style="font-size: 23px;"><span id="totalGovernanceBudget">-</span> <span style="color:#8b38ff;">PIV</span></span>
+                      <hr style="background-color:#ffffff33; margin-top:2px; margin-bottom:2px;">
+                      <span style="font-size: 16px;"><span id="totalGovernanceBudgetValue">-</span></span>
+                    </div>
+                  </div>
+                  <div class="col-6 col-lg-3 text-center governBudgetCard for-mobile">
+                    <span style="font-weight:800; color:#cac9d2;">Budget Allocated</span>
+
+                    <div style="background-color:hsl(273 79% 23% / 1); margin-top:11px; border-radius: 9px; width: fit-content; padding-left: 13px; padding-right: 13px; padding-bottom: 10px; padding-top: 9px;">
+                      <span style="font-size: 23px;"><span id="allocatedGovernanceBudget">-</span> <span style="color:#8b38ff;">PIV</span></span>
+                      <hr style="background-color:#ffffff33; margin-top:2px; margin-bottom:2px;">
+                      <span style="font-size: 16px;"><span id="allocatedGovernanceBudgetValue">-</span>
+                    </div>
+                  </div>
+                  <div class="col-12 col-lg-6 text-center governPayoutTime">
+                    <span style="font-weight:800; color:#cac9d2;">Next Treasury Payout</span>
+                    <div id="flipdown" class="flipdown"></div>
+                  </div>
+                  <div class="col-12 col-lg-3 text-center governBudgetCard for-desktop">
+                    <span style="font-weight:800; color:#cac9d2;">Budget Allocated</span>
+
+                    <div style="background-color:hsl(273 79% 23% / 1); margin-top:11px; border-radius: 9px; width: fit-content; padding-left: 13px; padding-right: 13px; padding-bottom: 10px; padding-top: 9px;">
+                      <span style="font-size: 23px;"><span id="allocatedGovernanceBudget2">-</span> <span style="color:#8b38ff;">PIV</span></span>
+                      <hr style="background-color:#ffffff33; margin-top:2px; margin-bottom:2px;">
+                      <span style="font-size: 16px;"><span id="allocatedGovernanceBudgetValue2">-</span>
+                    </div>
+                  </div>
+                </div>
+
+
+                <div class="pivx-button-small governAdd" onclick="MPW.createProposal()"><i class="fas fa-plus"></i></div>
+                <table id="proposalsTable" class="table table-hover table-dark bg-transparent governTable" style="width: 100%;">
                   <thead>
-                    <td class="text-center"><b> Name </b></td>
-                    <td class="text-center"><b> Payment </b></td>
-                    <td class="text-center"><b> Votes </b></td>
-                    <td class="text-center"><b> Vote </b></td>
-                    <td class="text-center">
-                      <div class="pivx-button-small" onclick="MPW.createProposal()"> <i class="fas fa-plus"></i> </div>
-                    </td>
+                    <td class="text-center btlr-7p"><b> STATUS </b></td>
+                    <td class="text-center"><b> NAME </b></td>
+                    <td class="text-center for-desktop"><b> PAYMENT </b></td>
+                    <td class="text-center for-desktop"><b> VOTES </b></td>
+                    <td class="text-center for-desktop btrr-7p"><b> VOTE </b></td>
                   </thead>
                   <tbody id="proposalsTableBody" style="text-align: center; vertical-align: middle;"></tbody>
                 </table>
@@ -956,12 +992,13 @@
                 <h3 data-i18n="contestedProposalsTitle" style="width: 100%;text-align: center;">Contested Proposals</h3>
                 <p data-i18n="contestedProposalsDesc" style="width: 100%;text-align: center;">These are proposals that received an overwhelming amount of downvotes, making it likely spam or a highly contestable proposal.</p>
                 <br>
-                <table id="proposalsContestedTable" class="table table-hover table-dark bg-transparent" style="width: 100%; opacity: 0.8;">
+                <table id="proposalsContestedTable" class="table table-hover table-dark bg-transparent governTable" style="width: 100%; opacity: 0.8;">
                   <thead>
-                    <td class="text-center"><b> Name </b></td>
-                    <td class="text-center"><b> Payment </b></td>
-                    <td class="text-center"><b> Votes </b></td>
-                    <td class="text-center"><b> Vote </b></td>
+                    <td class="text-center btlr-7p"><b> STATUS </b></td>
+                    <td class="text-center"><b> NAME </b></td>
+                    <td class="text-center for-desktop"><b> PAYMENT </b></td>
+                    <td class="text-center for-desktop"><b> VOTES </b></td>
+                    <td class="text-center for-desktop btrr-7p"><b> VOTE </b></td>
                   </thead>
                   <tbody id="proposalsContestedTableBody" style="text-align: center; vertical-align: middle;"></tbody>
                 </table>

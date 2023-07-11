@@ -31,6 +31,7 @@ import {
     parseBIP21Request,
     isValidBech32,
     isBase64,
+    sleep,
 } from './misc.js';
 import { cChainParams, COIN, MIN_PASS_LENGTH } from './chain_params.js';
 import { decrypt } from './aes-gcm.js';
@@ -43,6 +44,7 @@ import { scanQRCode } from './scanner.js';
 import { Database } from './database.js';
 import bitjs from './bitTrx.js';
 import { checkForUpgrades } from './changelog.js';
+import { FlipDown } from './flipdown.js';
 
 /** A flag showing if base MPW is fully loaded or not */
 export let fIsLoaded = false;
@@ -132,8 +134,27 @@ export async function start() {
         domGenVanityWallet: document.getElementById('generateVanityWallet'),
         domGenHardwareWallet: document.getElementById('generateHardwareWallet'),
         //GOVERNANCE ELEMENTS
+        domGovTab: document.getElementById('governanceTab'),
         domGovProposalsTable: document.getElementById('proposalsTable'),
         domGovProposalsTableBody: document.getElementById('proposalsTableBody'),
+        domTotalGovernanceBudget: document.getElementById(
+            'totalGovernanceBudget'
+        ),
+        domTotalGovernanceBudgetValue: document.getElementById(
+            'totalGovernanceBudgetValue'
+        ),
+        domAllocatedGovernanceBudget: document.getElementById(
+            'allocatedGovernanceBudget'
+        ),
+        domAllocatedGovernanceBudgetValue: document.getElementById(
+            'allocatedGovernanceBudgetValue'
+        ),
+        domAllocatedGovernanceBudget2: document.getElementById(
+            'allocatedGovernanceBudget2'
+        ),
+        domAllocatedGovernanceBudgetValue2: document.getElementById(
+            'allocatedGovernanceBudgetValue2'
+        ),
         domGovProposalsContestedTable: document.getElementById(
             'proposalsContestedTable'
         ),
@@ -270,6 +291,7 @@ export async function start() {
         domWalletSettingsBtn: document.getElementById('settingsWalletBtn'),
         domDisplaySettingsBtn: document.getElementById('settingsDisplayBtn'),
         domVersion: document.getElementById('version'),
+        domFlipdown: document.getElementById('flipdown'),
     };
     await i18nStart();
     await loadImages();
@@ -369,6 +391,9 @@ export async function start() {
             // Display the password unlock upfront
             await accessOrImportWallet();
         }
+    } else {
+        // Just load the block count, for use in non-wallet areas
+        getNetwork().getBlockCount();
     }
 
     subscribeToNetworkEvents();
@@ -438,6 +463,12 @@ function subscribeToNetworkEvents() {
 // WALLET STATE DATA
 export const mempool = new Mempool();
 let exportHidden = false;
+let isTestnetLastState = cChainParams.current.isTestnet;
+
+/**
+ * @type {FlipDown | null}
+ */
+let governanceFlipdown = null;
 
 /**
  * Open a UI 'tab' menu, and close all other tabs, intended for frontend use
@@ -503,6 +534,37 @@ export function updateTicker() {
 }
 
 /**
+ * Return locale settings best for displaying the user-selected currency
+ * @param {Number} nAmount - The amount in Currency
+ */
+export function optimiseCurrencyLocale(nAmount) {
+    // Allow manipulating the value, if necessary
+    let nValue = nAmount;
+
+    // Find the best fitting native-locale
+    const cLocale = Intl.supportedValuesOf('currency').includes(
+        strCurrency.toUpperCase()
+    )
+        ? {
+              style: 'currency',
+              currency: strCurrency,
+              currencyDisplay: 'narrowSymbol',
+          }
+        : { maximumFractionDigits: 8, minimumFractionDigits: 8 };
+
+    // Catch display edge-cases; like Satoshis having decimals.
+    switch (strCurrency) {
+        case 'sats':
+            nValue = Math.round(nValue);
+            cLocale.maximumFractionDigits = 0;
+            cLocale.minimumFractionDigits = 0;
+    }
+
+    // Return display-optimised Value and Locale pair.
+    return { nValue, cLocale };
+}
+
+/**
  * Update a 'price value' DOM display for the given balance type
  * @param {HTMLElement} domValue
  * @param {boolean} fCold
@@ -510,28 +572,11 @@ export function updateTicker() {
 export function updatePriceDisplay(domValue, fCold = false) {
     // Update currency values
     cMarket.getPrice(strCurrency).then((nPrice) => {
-        // Configure locale settings by detecting currency support
-        const cLocale = Intl.supportedValuesOf('currency').includes(
-            strCurrency.toUpperCase()
-        )
-            ? {
-                  style: 'currency',
-                  currency: strCurrency,
-                  currencyDisplay: 'narrowSymbol',
-              }
-            : { maximumFractionDigits: 8, minimumFractionDigits: 8 };
-
         // Calculate the value
-        let nValue =
+        const nCurrencyValue =
             ((fCold ? getStakingBalance() : getBalance()) / COIN) * nPrice;
 
-        // Handle certain edge-cases; like satoshis having decimals.
-        switch (strCurrency) {
-            case 'sats':
-                nValue = Math.round(nValue);
-                cLocale.maximumFractionDigits = 0;
-                cLocale.minimumFractionDigits = 0;
-        }
+        const { nValue, cLocale } = optimiseCurrencyLocale(nCurrencyValue);
 
         // Update the DOM
         domValue.innerText = nValue.toLocaleString('en-gb', cLocale);
@@ -1113,7 +1158,7 @@ export function hideAllWalletOptions() {
     doms.domGenHardwareWallet.style.display = 'none';
 }
 
-async function govVote(hash, voteCode) {
+export async function govVote(hash, voteCode) {
     if (
         (await confirmPopup({
             title: ALERTS.CONFIRM_POPUP_VOTE,
@@ -1381,8 +1426,10 @@ export async function onPrivateKeyChanged() {
  * Imports a wallet using the GUI input, handling decryption via UI
  */
 export async function guiImportWallet() {
-    const fEncrypted =
-        doms.domPrivKey.value.length >= 128 && isBase64(doms.domPrivKey.value);
+    // Important: These fields will be wiped by importWallet();
+    const strPrivKey = doms.domPrivKey.value;
+    const strPassword = doms.domPrivKeyPassword.value;
+    const fEncrypted = strPrivKey.length >= 128 && isBase64(strPrivKey);
 
     // If we are in testnet: prompt an import
     if (cChainParams.current.isTestnet) return importWallet();
@@ -1391,8 +1438,6 @@ export async function guiImportWallet() {
     if (!(await hasEncryptedWallet()) && !fEncrypted) return importWallet();
 
     // If we don't have a DB wallet and the input is ciphered:
-    const strPrivKey = doms.domPrivKey.value;
-    const strPassword = doms.domPrivKeyPassword.value;
     if (!(await hasEncryptedWallet()) && fEncrypted) {
         const strDecWIF = await decrypt(strPrivKey, strPassword);
         if (!strDecWIF || strDecWIF === 'decryption failed!') {
@@ -1410,6 +1455,9 @@ export async function guiImportWallet() {
                     encWif: strPrivKey,
                 });
             }
+            // Destroy residue import data
+            doms.domPrivKey.value = '';
+            doms.domPrivKeyPassword.value = '';
             return;
         }
     }
@@ -1446,6 +1494,8 @@ export function guiEncryptWallet() {
     createAlert('success', ALERTS.NEW_PASSWORD_SUCCESS, [], 5500);
 
     $('#encryptWalletModal').modal('hide');
+    doms.domEncryptPasswordFirst.value = '';
+    doms.domEncryptPasswordSecond.value = '';
 
     doms.domWipeWallet.hidden = false;
 }
@@ -1730,10 +1780,12 @@ export async function restoreWallet(strReason = '') {
             html: `${strHTML}<input type="password" id="restoreWalletPassword" placeholder="Wallet password" style="text-align: center;">`,
         })
     ) {
+        // Fetch the password from the prompt, and immediately destroy the prompt input
+        const domPassword = document.getElementById('restoreWalletPassword');
+        const strPassword = domPassword.value;
+        domPassword.value = '';
+
         // Attempt to unlock the wallet with the provided password
-        const strPassword = document.getElementById(
-            'restoreWalletPassword'
-        ).value;
         if (await decryptWallet(strPassword)) {
             doms.domRestoreWallet.hidden = true;
             doms.domWipeWallet.hidden = false;
@@ -1749,10 +1801,41 @@ export async function restoreWallet(strReason = '') {
     }
 }
 
+/** A lock to prevent rendering the Governance Dashboard multiple times */
+let fRenderingGovernance = false;
+
 /**
  * Fetch Governance data and re-render the Governance UI
  */
-async function updateGovernanceTab() {
+export async function updateGovernanceTab() {
+    if (fRenderingGovernance) return;
+    fRenderingGovernance = true;
+
+    // Setup the Superblock countdown (if not already done), no need to block thread with await, either.
+    let cNet = getNetwork();
+
+    // When switching to mainnet from testnet or vise versa, you ned to use an await on getBlockCount() or cNet.cachedBlockCount returns 0
+    if (!isTestnetLastState == cChainParams.current.isTestnet) {
+        // Reset flipdown
+        governanceFlipdown = null;
+        doms.domFlipdown.innerHTML = '';
+
+        // Get new network blockcount
+        await getNetwork().getBlockCount();
+        cNet = getNetwork();
+    }
+
+    // Update governance counter when testnet/mainnet has been switched
+    if (!governanceFlipdown && cNet.cachedBlockCount > 0) {
+        Masternode.getNextSuperblock().then((nSuperblock) => {
+            // The estimated time to the superblock (using the block target and remaining blocks)
+            const nTimestamp =
+                Date.now() / 1000 + (nSuperblock - cNet.cachedBlockCount) * 60;
+            governanceFlipdown = new FlipDown(nTimestamp).start();
+        });
+        isTestnetLastState = cChainParams.current.isTestnet;
+    }
+
     // Fetch all proposals from the network
     const arrProposals = await Masternode.getProposals({
         fAllowFinished: false,
@@ -1774,6 +1857,104 @@ async function updateGovernanceTab() {
         renderProposals(arrStandard, false),
         renderProposals(arrContested, true),
     ]);
+
+    // Remove lock
+    fRenderingGovernance = false;
+}
+
+/**
+ * @typedef {Object} ProposalCache
+ * @property {number} nSubmissionHeight - The submission height of the proposal.
+ * @property {string} txid - The transaction ID of the proposal (string).
+ * @property {boolean} fFetching - Indicates whether the proposal is currently being fetched or not.
+ */
+
+/**
+ * An array of Proposal Finalisation caches
+ * @type {Array<ProposalCache>}
+ */
+const arrProposalFinalisationCache = [];
+
+/**
+ * Asynchronously wait for a Proposal Tx to confirm, then cache the height.
+ *
+ * Do NOT await unless you want to lock the thread for a long time.
+ * @param {ProposalCache} cProposalCache - The proposal cache to wait for
+ * @returns {Promise<boolean>} Returns `true` once the block height is cached
+ */
+async function waitForSubmissionBlockHeight(cProposalCache) {
+    let nHeight = null;
+
+    // Wait in a permanent throttled loop until we successfully fetch the block
+    const cNet = getNetwork();
+    while (true) {
+        // If a proposal is already fetching, then consequtive calls will be rejected
+        cProposalCache.fFetching = true;
+
+        // Attempt to fetch the submission Tx (may not exist yet!)
+        let cTx = null;
+        try {
+            cTx = await cNet.getTxInfo(cProposalCache.txid);
+        } catch (_) {}
+
+        if (!cTx || !cTx.blockHeight) {
+            // Didn't get the TX, throttle the thread by sleeping for a bit, then try again.
+            await sleep(30000);
+        } else {
+            nHeight = cTx.blockHeight;
+            break;
+        }
+    }
+
+    // Update the proposal finalisation cache
+    cProposalCache.nSubmissionHeight = nHeight;
+
+    return true;
+}
+
+/**
+ * Create a Status String for a proposal's finalisation status
+ * @param {ProposalCache} cPropCache - The proposal cache to check
+ * @returns {string} The string status, for display purposes
+ */
+function getProposalFinalisationStatus(cPropCache) {
+    const cNet = getNetwork();
+    const nConfsLeft = cPropCache.nSubmissionHeight + 6 - cNet.cachedBlockCount;
+
+    if (cPropCache.nSubmissionHeight === 0 || cNet.cachedBlockCount === 0) {
+        return 'Confirming...';
+    } else if (nConfsLeft > 0) {
+        return nConfsLeft + ' block' + (nConfsLeft === 1 ? '' : 's') + ' left';
+    } else if (Math.abs(nConfsLeft) >= cChainParams.current.budgetCycleBlocks) {
+        return 'Proposal Expired';
+    } else {
+        return 'Ready to submit';
+    }
+}
+
+/**
+ *
+ * @param {Object} cProposal - A local proposal to add to the cache tracker
+ * @returns {ProposalCache} - The finalisation cache object pointer of the local proposal
+ */
+function addProposalToFinalisationCache(cProposal) {
+    // If it exists, return the existing cache
+    /** @type ProposalCache */
+    let cPropCache = arrProposalFinalisationCache.find(
+        (a) => a.txid === cProposal.mpw.txid
+    );
+    if (cPropCache) return cPropCache;
+
+    // Create a new cache
+    cPropCache = {
+        nSubmissionHeight: 0,
+        txid: cProposal.mpw.txid,
+        fFetching: false,
+    };
+    arrProposalFinalisationCache.push(cPropCache);
+
+    // Return the object 'pointer' in the array for further updating
+    return cPropCache;
 }
 
 /**
@@ -1782,19 +1963,31 @@ async function updateGovernanceTab() {
  * @param {boolean} fContested - The proposal category
  */
 async function renderProposals(arrProposals, fContested) {
+    // Set the total budget
+    doms.domTotalGovernanceBudget.innerText = (
+        cChainParams.current.maxPayment / COIN
+    ).toLocaleString('en-gb');
+
+    // Update total budget in user's currency
+    const nPrice = await cMarket.getPrice(strCurrency);
+    const nCurrencyValue = (cChainParams.current.maxPayment / COIN) * nPrice;
+    const { nValue, cLocale } = optimiseCurrencyLocale(nCurrencyValue);
+    doms.domTotalGovernanceBudgetValue.innerHTML =
+        nValue.toLocaleString('en-gb', cLocale) +
+        ' <span style="color:#8b38ff;">' +
+        strCurrency.toUpperCase() +
+        '</span>';
+
     // Select the table based on the proposal category
     const domTable = fContested
         ? doms.domGovProposalsContestedTableBody
         : doms.domGovProposalsTableBody;
 
     // Render the proposals in the relevent table
-    domTable.innerHTML = '';
     const database = await Database.getInstance();
     const cMasternode = await database.getMasternode();
 
     if (!fContested) {
-        const database = await Database.getInstance();
-
         const localProposals =
             (await database.getAccount())?.localProposals?.map((p) => {
                 return {
@@ -1823,91 +2016,207 @@ async function renderProposals(arrProposals, fContested) {
             };
         })
     );
+
+    // Fetch the Masternode count for proposal status calculations
+    const cMasternodes = await Masternode.getMasternodeCount();
+
+    let totalAllocatedAmount = 0;
+
+    // Wipe the current table and start rendering proposals
+    let i = 0;
+    domTable.innerHTML = '';
     for (const cProposal of arrProposals) {
         const domRow = domTable.insertRow();
 
-        // Name and URL hyperlink
-        const domNameAndURL = domRow.insertCell();
-        // IMPORTANT: Sanitise all of our HTML or a rogue server or malicious proposal could perform a cross-site scripting attack
-        domNameAndURL.innerHTML = `<a class="active" href="${sanitizeHTML(
-            cProposal.URL
-        )}" target="_blank" rel="noopener noreferrer"><b>${sanitizeHTML(
-            cProposal.Name
-        )}</b></a>`;
+        const domStatus = domRow.insertCell();
+        domStatus.classList.add('governStatusCol');
+        if (domTable.id == 'proposalsTableBody') {
+            domStatus.setAttribute(
+                'onclick',
+                `if(document.getElementById('governMob${i}').classList.contains('d-none')) { document.getElementById('governMob${i}').classList.remove('d-none'); } else { document.getElementById('governMob${i}').classList.add('d-none'); }`
+            );
+        } else if (domTable.id == 'proposalsContestedTableBody') {
+            domStatus.setAttribute(
+                'onclick',
+                `if(document.getElementById('governMobCon${i}').classList.contains('d-none')) { document.getElementById('governMobCon${i}').classList.remove('d-none'); } else { document.getElementById('governMobCon${i}').classList.add('d-none'); }`
+            );
+        }
 
-        // Payment Schedule and Amounts
-        const domPayments = domRow.insertCell();
-        domPayments.innerHTML = `<b>${sanitizeHTML(
-            cProposal.MonthlyPayment
-        )}</b> ${cChainParams.current.TICKER} <br>
-      <small> ${sanitizeHTML(
-          cProposal['RemainingPaymentCount']
-      )} payments remaining of <b>${sanitizeHTML(cProposal.TotalPayment)}</b> ${
-            cChainParams.current.TICKER
-        } total</small>`;
+        // Add border radius to last row
+        if (arrProposals.length - 1 == i) {
+            domStatus.classList.add('bblr-7p');
+        }
 
-        // Vote Counts and Consensus Percentages
-        const domVoteCounters = domRow.insertCell();
+        // Net Yes calculation
         const { Yeas, Nays } = cProposal;
-        const nPercent = cProposal.Ratio * 100;
+        const nNetYes = Yeas - Nays;
+        const nNetYesPercent = (nNetYes / cMasternodes.enabled) * 100;
 
-        domVoteCounters.innerHTML = `<b>${nPercent.toFixed(2)}%</b> <br>
-      <small> <b><div class="text-success" style="display:inline;"> ${sanitizeHTML(
-          Yeas
-      )} </div></b> /
-	  <b><div class="text-danger" style="display:inline;"> ${sanitizeHTML(
-          Nays
-      )} </div></b>
-      `;
+        // Proposal Status calculation
+        const nRequiredVotes = Math.round(cMasternodes.enabled * 0.1);
+        const strStatus = nNetYes >= nRequiredVotes ? 'PASSING' : 'FAILING';
+        let strFundingStatus = 'NOT FUNDED';
 
-        // Voting Buttons for Masternode owners (MNOs)
+        // Funding Status and allocation calculations
         if (cProposal.local) {
-            domRow.insertCell(); // Yes/no missing button
-            const finalizeRow = domRow.insertCell();
+            // Check the finalisation cache
+            const cPropCache = addProposalToFinalisationCache(cProposal);
+            if (!cPropCache.fFetching) {
+                waitForSubmissionBlockHeight(cPropCache).then(
+                    updateGovernanceTab
+                );
+            }
+            const strStatus = getProposalFinalisationStatus(cPropCache);
             const finalizeButton = document.createElement('button');
             finalizeButton.className = 'pivx-button-small';
             finalizeButton.innerHTML = '<i class="fas fa-check"></i>';
-            finalizeButton.onclick = async () => {
-                const result = await Masternode.finalizeProposal(cProposal.mpw);
-                const deleteProposal = async () => {
-                    // Remove local Proposal from local storage
-                    const database = await Database.getInstance();
-                    const account = await database.getAccount();
-                    const localProposals = account?.localProposals || [];
-                    await database.addAccount({
-                        localProposals: localProposals.filter(
-                            (p) => p.txId !== cProposal.mpw.txId
-                        ),
-                    });
-                };
-                if (result.ok) {
-                    createAlert('success', 'Proposal finalized!');
-                    deleteProposal();
-                    updateGovernanceTab();
-                } else {
-                    if (result.err === 'unconfirmed') {
-                        createAlert(
-                            'warning',
-                            "The proposal hasn't been confirmed yet.",
-                            5000
-                        );
-                    } else if (result.err === 'invalid') {
-                        createAlert(
-                            'warning',
-                            'The proposal is no longer valid. Create a new one.',
-                            5000
-                        );
+
+            if (
+                strStatus === 'Ready to submit' ||
+                strStatus === 'Proposal Expired'
+            ) {
+                finalizeButton.addEventListener('click', async () => {
+                    const result = await Masternode.finalizeProposal(
+                        cProposal.mpw
+                    );
+                    const deleteProposal = async () => {
+                        // Remove local Proposal from local storage
+                        const account = await database.getAccount();
+                        const localProposals = account?.localProposals || [];
+                        await database.addAccount({
+                            localProposals: localProposals.filter(
+                                (p) => p.txId !== cProposal.mpw.txId
+                            ),
+                        });
+                    };
+                    if (result.ok) {
+                        createAlert('success', 'Proposal finalized!');
                         deleteProposal();
                         updateGovernanceTab();
                     } else {
-                        createAlert('warning', 'Failed to finalize proposal.');
+                        if (result.err === 'unconfirmed') {
+                            createAlert(
+                                'warning',
+                                "The proposal hasn't been confirmed yet.",
+                                5000
+                            );
+                        } else if (result.err === 'invalid') {
+                            createAlert(
+                                'warning',
+                                'The proposal has expired. Create a new one.',
+                                5000
+                            );
+                            deleteProposal();
+                            updateGovernanceTab();
+                        } else {
+                            createAlert(
+                                'warning',
+                                'Failed to finalize proposal.'
+                            );
+                        }
                     }
-                }
-            };
-            finalizeRow.appendChild(finalizeButton);
+                });
+            } else {
+                finalizeButton.style.opacity = 0.5;
+                finalizeButton.style.cursor = 'default';
+            }
+
+            domStatus.innerHTML = `
+            <span style="font-size:12px; line-height: 15px; display: block; margin-bottom:15px;">
+                <span style="color:#fff; font-weight:700;">${strStatus}</span><br>
+            </span>
+            <span class="governArrow for-mobile ptr">
+                <i class="fa-solid fa-angle-down"></i>
+            </span>`;
+            domStatus.appendChild(finalizeButton);
         } else {
-            let btnYesClass = 'pivx-button-big';
-            let btnNoClass = 'pivx-button-big';
+            if (domTable.id == 'proposalsTableBody') {
+                if (
+                    nNetYes >= nRequiredVotes &&
+                    totalAllocatedAmount + cProposal.MonthlyPayment <=
+                        cChainParams.current.maxPayment / COIN
+                ) {
+                    // Not enough budget or Net Yes votes for this proposal :(
+                    strFundingStatus = 'FUNDED';
+                    totalAllocatedAmount += cProposal.MonthlyPayment;
+                }
+            }
+
+            domStatus.innerHTML = `
+            <span style="font-size:12px; line-height: 15px; display: block; margin-bottom:15px;">
+                <span style="color:#fff; font-weight:700;">${strStatus}</span><br>
+                <span style="color:hsl(265 100% 67% / 1);">(${strFundingStatus})</span><br>
+            </span>
+            <span style="font-size:12px; line-height: 15px; display: block; color:#d1d1d1;">
+                <b>${nNetYesPercent.toFixed(1)}%</b><br>
+                Net Yes
+            </span>
+            <span class="governArrow for-mobile ptr">
+                <i class="fa-solid fa-angle-down"></i>
+            </span>`;
+        }
+
+        // Name and URL hyperlink
+        const domNameAndURL = domRow.insertCell();
+
+        // IMPORTANT: Sanitise all of our HTML or a rogue server or malicious proposal could perform a cross-site scripting attack
+        domNameAndURL.innerHTML = `<a class="active governLink" href="${sanitizeHTML(
+            cProposal.URL
+        )}" target="_blank" rel="noopener noreferrer"><b>${sanitizeHTML(
+            cProposal.Name
+        )} <span class="governLinkIco"><i class="fa-solid fa-arrow-up-right-from-square"></i></b></a></span>`;
+
+        // Convert proposal amount to user's currency
+        const nProposalValue = parseInt(cProposal.MonthlyPayment) * nPrice;
+        const { nValue } = optimiseCurrencyLocale(nProposalValue);
+        const strProposalCurrency = nValue.toLocaleString('en-gb', cLocale);
+
+        // Payment Schedule and Amounts
+        const domPayments = domRow.insertCell();
+        domPayments.classList.add('for-desktop');
+        domPayments.innerHTML = `<span class="governValues"><b>${sanitizeHTML(
+            parseInt(cProposal.MonthlyPayment).toLocaleString('en-gb', ',', '.')
+        )}</b> <span class="governMarked">${
+            cChainParams.current.TICKER
+        }</span> <br>
+        <b class="governFiatSize">${strProposalCurrency} <span style="color:#8b38ff;">${strCurrency.toUpperCase()}</span></b></span>
+
+        <span class="governInstallments"> ${sanitizeHTML(
+            cProposal['RemainingPaymentCount']
+        )} installment(s) remaining<br>of <b>${sanitizeHTML(
+            parseInt(cProposal.TotalPayment).toLocaleString('en-gb', ',', '.')
+        )} ${cChainParams.current.TICKER}</b> total</span>`;
+
+        // Vote Counts and Consensus Percentages
+        const domVoteCounters = domRow.insertCell();
+        domVoteCounters.classList.add('for-desktop');
+
+        const nLocalPercent = cProposal.Ratio * 100;
+        domVoteCounters.innerHTML = `<b>${parseFloat(
+            nLocalPercent
+        ).toLocaleString(
+            'en-gb',
+            { minimumFractionDigits: 0, maximumFractionDigits: 1 },
+            ',',
+            '.'
+        )}%</b> <br>
+        <small class="votesBg"> <b><div class="votesYes" style="display:inline;"> ${sanitizeHTML(
+            Yeas
+        )} </div></b> /
+        <b><div class="votesNo" style="display:inline;"> ${sanitizeHTML(
+            Nays
+        )} </div></b></small>
+        `;
+
+        // Voting Buttons for Masternode owners (MNOs)
+        let voteBtn;
+        if (cProposal.local) {
+            const domVoteBtns = domRow.insertCell();
+            domVoteBtns.classList.add('for-desktop');
+            voteBtn = '';
+        } else {
+            let btnYesClass = 'pivx-button-small';
+            let btnNoClass = 'pivx-button-small';
             if (cProposal.YourVote) {
                 if (cProposal.YourVote === 1) {
                     btnYesClass += ' pivx-button-big-yes-gov';
@@ -1926,11 +2235,112 @@ async function renderProposals(arrProposals, fContested) {
             domYesBtn.innerText = 'Yes';
             domYesBtn.onclick = () => govVote(cProposal.Hash, 1);
 
+            // Add border radius to last row
+            if (arrProposals.length - 1 == i) {
+                domVoteBtns.classList.add('bbrr-7p');
+            }
+
+            domVoteBtns.classList.add('for-desktop');
             domVoteBtns.appendChild(domNoBtn);
             domVoteBtns.appendChild(domYesBtn);
 
-            domRow.insertCell(); // Finalize proposal missing button
+            domNoBtn.setAttribute(
+                'onclick',
+                `MPW.govVote('${cProposal.Hash}', 2)`
+            );
+            domYesBtn.setAttribute(
+                'onclick',
+                `MPW.govVote('${cProposal.Hash}', 1);`
+            );
+            voteBtn = domNoBtn.outerHTML + domYesBtn.outerHTML;
         }
+
+        // Create extended row for mobile
+        const mobileDomRow = domTable.insertRow();
+        const mobileExtended = mobileDomRow.insertCell();
+        if (domTable.id == 'proposalsTableBody') {
+            mobileExtended.id = `governMob${i}`;
+        } else if (domTable.id == 'proposalsContestedTableBody') {
+            mobileExtended.id = `governMobCon${i}`;
+        }
+        mobileExtended.colSpan = '2';
+        mobileExtended.classList.add('text-left');
+        mobileExtended.classList.add('d-none');
+        mobileExtended.classList.add('for-mobile');
+        mobileExtended.innerHTML = `
+        <div class="row pt-2">
+            <div class="col-5 fs-13 fw-600">
+                <div class="governMobDot"></div> PAYMENT
+            </div>
+            <div class="col-7">
+                <span class="governValues"><b>${sanitizeHTML(
+                    parseInt(cProposal.MonthlyPayment).toLocaleString(
+                        'en-gb',
+                        ',',
+                        '.'
+                    )
+                )}</b> <span class="governMarked">${
+            cChainParams.current.TICKER
+        }</span> <span style="margin-left:10px; margin-right: 2px;" class="governMarked governFiatSize">${strProposalCurrency}</span></b></span>
+        
+                <span class="governInstallments"> ${sanitizeHTML(
+                    cProposal['RemainingPaymentCount']
+                )} installment(s) remaining<br>of <b>${sanitizeHTML(
+            parseInt(cProposal.TotalPayment).toLocaleString('en-gb', ',', '.')
+        )} ${cChainParams.current.TICKER}</b> total</span>
+            </div>
+        </div>
+        <hr class="governHr">
+        <div class="row">
+            <div class="col-5 fs-13 fw-600">
+                <div class="governMobDot"></div> VOTES
+            </div>
+            <div class="col-7">
+                <b>${parseFloat(nLocalPercent).toLocaleString(
+                    'en-gb',
+                    { minimumFractionDigits: 0, maximumFractionDigits: 1 },
+                    ',',
+                    '.'
+                )}%</b>
+                <small class="votesBg"> <b><div class="votesYes" style="display:inline;"> ${sanitizeHTML(
+                    Yeas
+                )} </div></b> /
+                <b><div class="votesNo" style="display:inline;"> ${sanitizeHTML(
+                    Nays
+                )} </div></b></small>
+            </div>
+        </div>
+        <hr class="governHr">
+        <div class="row pb-2">
+            <div class="col-5 fs-13 fw-600">
+                <div class="governMobDot"></div> VOTE
+            </div>
+            <div class="col-7">
+                ${voteBtn}
+            </div>
+        </div>`;
+
+        i++;
+    }
+
+    // Show allocated budget
+    if (domTable.id == 'proposalsTableBody') {
+        const strAlloc = sanitizeHTML(
+            totalAllocatedAmount.toLocaleString('en-gb')
+        );
+        doms.domAllocatedGovernanceBudget.innerHTML = strAlloc;
+        doms.domAllocatedGovernanceBudget2.innerHTML = strAlloc;
+
+        // Update allocated budget in user's currency
+        const nCurrencyValue = totalAllocatedAmount * nPrice;
+        const { nValue } = optimiseCurrencyLocale(nCurrencyValue);
+        const strAllocCurrency =
+            nValue.toLocaleString('en-gb', cLocale) +
+            ' <span style="color:#8b38ff;">' +
+            strCurrency.toUpperCase() +
+            '</span>';
+        doms.domAllocatedGovernanceBudgetValue.innerHTML = strAllocCurrency;
+        doms.domAllocatedGovernanceBudgetValue2.innerHTML = strAllocCurrency;
     }
 }
 
@@ -2147,7 +2557,8 @@ export async function createProposal() {
     if (getBalance() * COIN < cChainParams.current.proposalFee) {
         return createAlert('warning', 'Not enough funds to create a proposal.');
     }
-    await confirmPopup({
+
+    const fConfirmed = await confirmPopup({
         title: `Create Proposal (cost ${
             cChainParams.current.proposalFee / COIN
         } ${cChainParams.current.TICKER})`,
@@ -2156,6 +2567,10 @@ export async function createProposal() {
                <input type="number" id="proposalCycles" placeholder="Duration in cycles" style="text-align: center;"><br>
                <input type="number" id="proposalPayment" placeholder="${cChainParams.current.TICKER} per cycle" style="text-align: center;"><br>`,
     });
+
+    // If the user cancelled, then we return
+    if (!fConfirmed) return;
+
     const strTitle = document.getElementById('proposalTitle').value;
     const strUrl = document.getElementById('proposalUrl').value;
     const numCycles = parseInt(document.getElementById('proposalCycles').value);
@@ -2213,6 +2628,11 @@ export function refreshChainData() {
     cNet.getBlockCount().then((_) => {
         // Fetch latest Activity
         updateActivityGUI(false, true);
+
+        // If it's open: update the Governance Dashboard
+        if (doms.domGovTab.classList.contains('active')) {
+            updateGovernanceTab();
+        }
     });
     getBalance(true);
 }
