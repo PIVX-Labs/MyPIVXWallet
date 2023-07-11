@@ -388,7 +388,7 @@ async function setAnalytics(level, fSilent = false) {
 export function toggleTestnet() {
     if (fWalletLoaded) {
         // Revert testnet toggle
-        doms.domTesnetToggler.checked = !doms.domTesnetToggler.checked;
+        doms.domTestnetToggler.checked = !doms.domTestnetToggler.checked;
         return createAlert('warning', ALERTS.UNABLE_SWITCH_TESTNET, [], 3250);
     }
 
@@ -408,11 +408,7 @@ export function toggleTestnet() {
         cChainParams.current.PUBKEY_PREFIX.join(' or ');
 
     // Update testnet toggle in settings
-    if (cChainParams.current.isTestnet) {
-        doms.domTesnetToggler.checked = true;
-    } else {
-        doms.domTesnetToggler.checked = false;
-    }
+    doms.domTestnetToggler.checked = cChainParams.current.isTestnet;
 
     fillExplorerSelect();
     fillNodeSelect();
