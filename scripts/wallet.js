@@ -742,7 +742,10 @@ export async function importWallet({
         }
 
         // Fetch state from explorer, if this import was post-startup
-        if (getNetwork().enabled && !fStartup) refreshChainData();
+        if (getNetwork().enabled && !fStartup) {
+            refreshChainData();
+            getNetwork().getUTXOs();
+        }
 
         // Hide all wallet starter options
         hideAllWalletOptions();
