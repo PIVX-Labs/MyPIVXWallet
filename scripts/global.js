@@ -2707,31 +2707,32 @@ export function switchLanding(element) {
     // Animation time in the css
     const aniTime = 300;
 
-    if(landingSwitchCollapsedVal) {
+    if (landingSwitchCollapsedVal) {
         // Hide back button
         document.getElementById('textIconBack').style.opacity = '0';
 
         // Set height to 0 and remove d-none class on selected element after animation
-        selectedElement.style.height = selectedElement.scrollHeight + "px";
+        selectedElement.style.height = selectedElement.scrollHeight + 'px';
         setTimeout(() => {
-            selectedElement.style.height = "0px";
+            selectedElement.style.height = '0px';
             setTimeout(() => {
                 selectedElement.classList.add('d-none');
             }, aniTime);
         }, 100);
-        
+
         // Show walletLanding after selected element has been hidden
         setTimeout(() => {
             // Change walletLanding height to element height for animation
-            doms.domWalletLanding.style.height = walletLanding.scrollHeight + "px";
+            doms.domWalletLanding.style.height =
+                doms.domWalletLanding.scrollHeight + 'px';
 
-            // Set the walletLanding height back to auto after animation for responsiveness 
+            // Set the walletLanding height back to auto after animation for responsiveness
             setTimeout(() => {
-                doms.domWalletLanding.style.height = "auto";
+                doms.domWalletLanding.style.height = 'auto';
             }, aniTime);
 
             // Change collapseVal state to false
-            landingSwitchCollapsedVal = false;  
+            landingSwitchCollapsedVal = false;
         }, aniTime);
     } else {
         // Set back button
@@ -2745,11 +2746,12 @@ export function switchLanding(element) {
         }, 100);
 
         // Set walletLanding height to element height
-        doms.domWalletLanding.style.height = doms.domWalletLanding.scrollHeight + "px";
+        doms.domWalletLanding.style.height =
+            doms.domWalletLanding.scrollHeight + 'px';
 
         // Change walletLanding height to 0 for animation
         setTimeout(() => {
-            doms.domWalletLanding.style.height = "0px";
+            doms.domWalletLanding.style.height = '0px';
         }, 100);
 
         // Set height to 0 and remove d-none class after walletLanding has been hidden
@@ -2759,9 +2761,10 @@ export function switchLanding(element) {
 
             // Show selected element after 100ms
             setTimeout(() => {
-                selectedElement.style.height = selectedElement.scrollHeight + "px";
+                selectedElement.style.height =
+                    selectedElement.scrollHeight + 'px';
                 setTimeout(() => {
-                    selectedElement.style.height = "auto";
+                    selectedElement.style.height = 'auto';
                 }, aniTime);
             }, 100);
         }, aniTime);
@@ -2771,7 +2774,7 @@ export function switchLanding(element) {
     }
 }
 
-/** 
+/**
  * advanceMode: state if advance mode is being used or not
  * switchAdvanceBusy: state if activating advance mode to prevent animations breaking
  */
@@ -2782,93 +2785,93 @@ let switchAdvanceBusy = false;
  * Show the advanced elements on the landing page
  */
 export function showAdvancedLanding() {
-    if(!switchAdvanceBusy) {
-      const createDiv = document.getElementById('createDiv');
+    if (!switchAdvanceBusy) {
+        const createDiv = document.getElementById('createDiv');
 
-      const vanityCol = document.getElementById('vanityCol');
-      const vanityDiv = document.getElementById('vanityDiv');
-      const ledgerCol = document.getElementById('ledgerCol');
-      const ledgerDiv = document.getElementById('ledgerDiv');
-      const textAdvanced = document.getElementById('textAdvanced');
+        const vanityCol = document.getElementById('vanityCol');
+        const vanityDiv = document.getElementById('vanityDiv');
+        const ledgerCol = document.getElementById('ledgerCol');
+        const ledgerDiv = document.getElementById('ledgerDiv');
+        const textAdvanced = document.getElementById('textAdvanced');
 
-      // Animation time in the css
-      const aniTime = 300;
+        // Animation time in the css
+        const aniTime = 300;
 
-      if(advancedMode) {
-        switchAdvanceBusy = true;
-        advancedMode = false;
-        textAdvanced.innerHTML = 'Advanced';
-        
-        vanityDiv.style.opacity = 0;
-        ledgerDiv.style.opacity = 0;
-        
-        setTimeout(() => {
-          vanityDiv.style.width = createDiv.scrollWidth + "px";
-          vanityCol.classList = 'col-auto p-0';
-          vanityDiv.style.height = "0px";
+        if (advancedMode) {
+            switchAdvanceBusy = true;
+            advancedMode = false;
+            textAdvanced.innerHTML = 'Advanced';
 
-          ledgerDiv.style.width = createDiv.scrollWidth + "px";
-          ledgerCol.classList = 'col-auto p-0';
-          ledgerDiv.style.height = "0px";
-          
-          setTimeout(() => {
-            vanityDiv.style.width = '0px';
-            vanityDiv.style.height = '0px';
-            vanityDiv.classList.add('p-0');
-            vanityDiv.classList.add('m-0');
-            
-            ledgerDiv.style.width = '0px';
-            ledgerDiv.style.height = '0px';
-            ledgerDiv.classList.add('m-0');
-            ledgerDiv.classList.add('p-0');
-            
+            vanityDiv.style.opacity = 0;
+            ledgerDiv.style.opacity = 0;
+
             setTimeout(() => {
-              vanityDiv.classList.remove('d-flex');
-              vanityDiv.classList.add('d-none');
+                vanityDiv.style.width = createDiv.scrollWidth + 'px';
+                vanityCol.classList = 'col-auto p-0';
+                vanityDiv.style.height = '0px';
 
-              ledgerDiv.classList.remove('d-flex');
-              ledgerDiv.classList.add('d-none');
-              
-              switchAdvanceBusy = false;
+                ledgerDiv.style.width = createDiv.scrollWidth + 'px';
+                ledgerCol.classList = 'col-auto p-0';
+                ledgerDiv.style.height = '0px';
+
+                setTimeout(() => {
+                    vanityDiv.style.width = '0px';
+                    vanityDiv.style.height = '0px';
+                    vanityDiv.classList.add('p-0');
+                    vanityDiv.classList.add('m-0');
+
+                    ledgerDiv.style.width = '0px';
+                    ledgerDiv.style.height = '0px';
+                    ledgerDiv.classList.add('m-0');
+                    ledgerDiv.classList.add('p-0');
+
+                    setTimeout(() => {
+                        vanityDiv.classList.remove('d-flex');
+                        vanityDiv.classList.add('d-none');
+
+                        ledgerDiv.classList.remove('d-flex');
+                        ledgerDiv.classList.add('d-none');
+
+                        switchAdvanceBusy = false;
+                    }, aniTime);
+                }, 10);
             }, aniTime);
-          }, 10);
-        }, aniTime);
-      } else {
-        switchAdvanceBusy = true;
-        advancedMode = true;
-        textAdvanced.innerHTML = 'Simple';
+        } else {
+            switchAdvanceBusy = true;
+            advancedMode = true;
+            textAdvanced.innerHTML = 'Simple';
 
-        setTimeout(() => {
-          vanityDiv.classList.remove('p-0');
-          ledgerDiv.classList.remove('p-0');
-        }, 225);
+            setTimeout(() => {
+                vanityDiv.classList.remove('p-0');
+                ledgerDiv.classList.remove('p-0');
+            }, 225);
 
-        setTimeout(() => {
-          vanityCol.classList = 'col-12 col-sm-6 col-lg-3 mb-lg-0 p-0';
-          vanityDiv.style.width = "auto";
-          vanityDiv.style.height = "auto";
-          vanityDiv.style.opacity = 1;
+            setTimeout(() => {
+                vanityCol.classList = 'col-12 col-sm-6 col-lg-3 mb-lg-0 p-0';
+                vanityDiv.style.width = 'auto';
+                vanityDiv.style.height = 'auto';
+                vanityDiv.style.opacity = 1;
 
-          ledgerCol.classList = 'col-12 col-sm-6 col-lg-3 mb-sm-0 p-0';
-          ledgerDiv.style.width = "auto";
-          ledgerDiv.style.height = "auto";
-          ledgerDiv.style.opacity = 1;
+                ledgerCol.classList = 'col-12 col-sm-6 col-lg-3 mb-sm-0 p-0';
+                ledgerDiv.style.width = 'auto';
+                ledgerDiv.style.height = 'auto';
+                ledgerDiv.style.opacity = 1;
 
-          switchAdvanceBusy = false;
-        }, aniTime);
+                switchAdvanceBusy = false;
+            }, aniTime);
 
-        vanityDiv.classList.remove('d-none');
-        vanityDiv.classList.add('d-flex');
-        vanityDiv.classList.remove('m-0');
-        vanityDiv.style.width = createDiv.scrollWidth + "px";
-        vanityDiv.style.height = createDiv.scrollHeight + "px";
+            vanityDiv.classList.remove('d-none');
+            vanityDiv.classList.add('d-flex');
+            vanityDiv.classList.remove('m-0');
+            vanityDiv.style.width = createDiv.scrollWidth + 'px';
+            vanityDiv.style.height = createDiv.scrollHeight + 'px';
 
-        ledgerDiv.classList.remove('d-none');
-        ledgerDiv.classList.add('d-flex');
-        ledgerDiv.classList.remove('m-0');
-        ledgerDiv.style.width = createDiv.scrollWidth + "px";
-        ledgerDiv.style.height = createDiv.scrollHeight + "px";
-      }
+            ledgerDiv.classList.remove('d-none');
+            ledgerDiv.classList.add('d-flex');
+            ledgerDiv.classList.remove('m-0');
+            ledgerDiv.style.width = createDiv.scrollWidth + 'px';
+            ledgerDiv.style.height = createDiv.scrollHeight + 'px';
+        }
     }
 }
 
