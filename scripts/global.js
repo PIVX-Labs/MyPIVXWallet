@@ -2776,6 +2776,107 @@ export function switchLanding(element) {
     }
 }
 
+/** 
+ * advanceMode: state if advance mode is being used or not
+ * switchAdvanceBusy: state if activating advance mode to prevent animations breaking
+ */
+let advancedMode = false;
+let switchAdvanceBusy = false;
+
+/**
+ * Show the advanced elements on the landing page
+ */
+export function showAdvancedLanding() {
+    if(!switchAdvanceBusy) {
+      const createDiv = document.getElementById('createDiv');
+
+      const vanityCol = document.getElementById('vanityCol');
+      const vanityDiv = document.getElementById('vanityDiv');
+      const ledgerCol = document.getElementById('ledgerCol');
+      const ledgerDiv = document.getElementById('ledgerDiv');
+      const textAdvanced = document.getElementById('textAdvanced');
+
+      // Animation time in the css
+      const aniTime = 300;
+
+      if(advancedMode) {
+        switchAdvanceBusy = true;
+        advancedMode = false;
+        textAdvanced.innerHTML = 'Advanced';
+        
+        vanityDiv.style.opacity = 0;
+        ledgerDiv.style.opacity = 0;
+        
+        setTimeout(() => {
+          vanityDiv.style.width = createDiv.scrollWidth + "px";
+          vanityCol.classList = 'col-auto p-0';
+          vanityDiv.style.height = "0px";
+
+          ledgerDiv.style.width = createDiv.scrollWidth + "px";
+          ledgerCol.classList = 'col-auto p-0';
+          ledgerDiv.style.height = "0px";
+          
+          setTimeout(() => {
+            vanityDiv.style.width = '0px';
+            vanityDiv.style.height = '0px';
+            vanityDiv.classList.add('p-0');
+            vanityDiv.classList.add('m-0');
+            
+            ledgerDiv.style.width = '0px';
+            ledgerDiv.style.height = '0px';
+            ledgerDiv.classList.add('m-0');
+            ledgerDiv.classList.add('p-0');
+            
+            setTimeout(() => {
+              vanityDiv.classList.remove('d-flex');
+              vanityDiv.classList.add('d-none');
+
+              ledgerDiv.classList.remove('d-flex');
+              ledgerDiv.classList.add('d-none');
+              
+              switchAdvanceBusy = false;
+            }, aniTime);
+          }, 10);
+        }, aniTime);
+      } else {
+        switchAdvanceBusy = true;
+        advancedMode = true;
+        textAdvanced.innerHTML = 'Simple';
+
+        setTimeout(() => {
+          vanityDiv.classList.remove('p-0');
+          ledgerDiv.classList.remove('p-0');
+        }, 225);
+
+        setTimeout(() => {
+          vanityCol.classList = 'col-12 col-sm-6 col-lg-3 mb-lg-0 p-0';
+          vanityDiv.style.width = "auto";
+          vanityDiv.style.height = "auto";
+          vanityDiv.style.opacity = 1;
+
+          ledgerCol.classList = 'col-12 col-sm-6 col-lg-3 mb-sm-0 p-0';
+          ledgerDiv.style.width = "auto";
+          ledgerDiv.style.height = "auto";
+          ledgerDiv.style.opacity = 1;
+
+          switchAdvanceBusy = false;
+        }, aniTime);
+
+        vanityDiv.classList.remove('d-none');
+        vanityDiv.classList.add('d-flex');
+        vanityDiv.classList.remove('m-0');
+        vanityDiv.style.width = createDiv.scrollWidth + "px";
+        vanityDiv.style.height = createDiv.scrollHeight + "px";
+
+        ledgerDiv.classList.remove('d-none');
+        ledgerDiv.classList.add('d-flex');
+        ledgerDiv.classList.remove('m-0');
+        ledgerDiv.style.width = createDiv.scrollWidth + "px";
+        ledgerDiv.style.height = createDiv.scrollHeight + "px";
+      }
+    }
+}
+
 function errorHandler(e) {
     const message = `Unhandled exception. <br> ${sanitizeHTML(
         e.message || e.reason
