@@ -3356,3 +3356,98 @@ select.form-control option {
     padding-top: 14px;
     padding-bottom: 14px;
 }
+
+.walletLanding {
+    transition: all .3s ease-in-out;
+    overflow: hidden;
+}
+
+.walletLanding .landBtn {
+    background-color:rgba(255,255,255,10%);
+    border-radius:10px;
+    aspect-ratio:1/1;
+    flex-direction: column;
+    transition: all 0.125s ease-in-out;
+    font-weight: 800;
+    padding: 10px 20px;
+    margin: 10px;
+}
+
+.walletLanding .landBtn:hover {
+    background-color:rgba(255,255,255,15%);
+    cursor:pointer;
+}
+
+.walletLanding .coinstat-icon {
+    margin-bottom:15px;
+}
+
+.walletLanding span {
+    font-weight:normal;
+    font-size:11px;
+    margin-top:3px;
+}
+
+.importVanity {
+    transition: all .3s ease-in-out;
+    overflow: hidden;
+    padding: 15px 0px;
+}
+
+.advancedLanding {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    margin-top: -10px;
+}
+
+.advancedLanding .textIcon,
+.advancedLanding .textIconBack {
+    height: 35px;
+    font-size: 16px;
+    background-color: #ffffff17;
+    border-radius: 25px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    transition: all 0.125s ease-in-out;
+    padding-right:15px;
+}
+
+.advancedLanding .textIconBack {
+    width: 35px;
+}
+
+.advancedLanding .textIconBack i {
+    top: 9px;
+    left: 8px;
+}
+
+.advancedLanding .textIcon .textAdvanced {
+    position:relative;
+    top:5px;
+    margin-left:12px;
+    font-size: 13px;
+}
+
+.advancedLanding .textIcon:hover {
+    background-color:#ffffff1f;
+}
+
+.advancedLanding span i {
+    position: relative;
+    top: 6px;
+    left: 8px;
+    margin-left:3px;
+}
+
+.vanityLedger {
+    transition: all .3s ease-in-out;
+    opacity: 0;
+    width:0px;
+    height:0px;
+}
+
+.py-3px {
+    padding-bottom: 3px!important;
+    padding-top: 3px!important;
+}
