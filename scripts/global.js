@@ -293,6 +293,8 @@ export async function start() {
         domVersion: document.getElementById('version'),
         domFlipdown: document.getElementById('flipdown'),
         domTestnetToggler: document.getElementById('testnetToggler'),
+        domWalletLanding: document.getElementById('walletLanding'),
+        domLandingBackBtn: document.getElementById('landingBackBtn'),
     };
     await i18nStart();
     await loadImages();
@@ -2695,6 +2697,83 @@ export function switchSettings(page) {
     // Show selected section and make its button active
     section.classList.remove('d-none');
     btn.classList.add('active');
+}
+
+// This will tell the state of the landing page if it collapsed or not
+let landingSwitchCollapsedVal = false;
+
+/**
+ * Switch to a different element on landing page
+ * @param {string} element - The element id of the page to switch to
+ */
+export function switchLanding(element) {
+    const selectedElement = document.getElementById(element);
+
+    // Animation time in the css
+    const aniTime = 300;
+
+    if(landingSwitchCollapsedVal) {
+        // Hide back button
+        document.getElementById('textIconBack').style.opacity = '0';
+
+        // Set height to 0 and remove d-none class on selected element after animation
+        selectedElement.style.height = selectedElement.scrollHeight + "px";
+        setTimeout(() => {
+            selectedElement.style.height = "0px";
+            setTimeout(() => {
+                selectedElement.classList.add('d-none');
+            }, aniTime);
+        }, 100);
+        
+        // Show walletLanding after selected element has been hidden
+        setTimeout(() => {
+            // Change walletLanding height to element height for animation
+            doms.domWalletLanding.style.height = walletLanding.scrollHeight + "px";
+
+            // Set the walletLanding height back to auto after animation for responsiveness 
+            setTimeout(() => {
+                doms.domWalletLanding.style.height = "auto";
+            }, aniTime);
+
+            // Change collapseVal state to false
+            landingSwitchCollapsedVal = false;  
+        }, aniTime);
+    } else {
+        // Set back button
+        doms.domLandingBackBtn.innerHTML = `<span id="textIconBack" style="opacity:0; margin-right: 10px;" class="textIconBack d-flex" onclick="MPW.switchLanding('${element}')" style="margin-right: 11px;">
+        <i class="fa-solid fa-arrow-left"></i>
+        </span>`;
+
+        // Show back button
+        setTimeout(() => {
+            document.getElementById('textIconBack').style.opacity = '1';
+        }, 100);
+
+        // Set walletLanding height to element height
+        doms.domWalletLanding.style.height = doms.domWalletLanding.scrollHeight + "px";
+
+        // Change walletLanding height to 0 for animation
+        setTimeout(() => {
+            doms.domWalletLanding.style.height = "0px";
+        }, 100);
+
+        // Set height to 0 and remove d-none class after walletLanding has been hidden
+        setTimeout(() => {
+            selectedElement.style.height = '0px';
+            selectedElement.classList.remove('d-none');
+
+            // Show selected element after 100ms
+            setTimeout(() => {
+                selectedElement.style.height = selectedElement.scrollHeight + "px";
+                setTimeout(() => {
+                    selectedElement.style.height = "auto";
+                }, aniTime);
+            }, 100);
+        }, aniTime);
+
+        // Change collapseVal state to true
+        landingSwitchCollapsedVal = true;
+    }
 }
 
 function errorHandler(e) {

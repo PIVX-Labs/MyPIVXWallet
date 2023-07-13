@@ -44,6 +44,7 @@ export {
     switchSettings,
     updateActivityGUI,
     govVote,
+    switchLanding,
 } from './global.js';
 export { generateWallet, getNewAddress, importWallet } from './wallet.js';
 export { toggleTestnet, toggleDebug, toggleAutoSwitch } from './settings.js';
