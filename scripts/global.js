@@ -130,7 +130,7 @@ export async function start() {
         domPrefix: document.getElementById('prefix'),
         domPrefixNetwork: document.getElementById('prefixNetwork'),
         domWalletToggle: document.getElementById('wToggle'),
-        domGenerateWallet: document.getElementById('generateWallet'),
+        domWalletLandingDiv: document.getElementById('walletLandingDiv'),
         domGenVanityWallet: document.getElementById('generateVanityWallet'),
         domGenHardwareWallet: document.getElementById('generateHardwareWallet'),
         //GOVERNANCE ELEMENTS
@@ -373,8 +373,7 @@ export async function start() {
     // Customise the UI if a saved wallet exists
     if (await hasEncryptedWallet()) {
         // Hide the 'Generate wallet' buttons
-        doms.domGenerateWallet.style.display = 'none';
-        doms.domGenVanityWallet.style.display = 'none';
+        doms.domWalletLandingDiv.style.display = 'none';
         const database = await Database.getInstance();
         const { publicKey } = await database.getAccount();
 
@@ -1154,11 +1153,7 @@ export function hideAllWalletOptions() {
     doms.domPrefix.style.display = 'none';
 
     // Hide all "*Wallet" buttons
-    doms.domGenerateWallet.style.display = 'none';
-    doms.domImportWallet.style.display = 'none';
-    doms.domGenVanityWallet.style.display = 'none';
-    doms.domAccessWallet.style.display = 'none';
-    doms.domGenHardwareWallet.style.display = 'none';
+    doms.domWalletLandingDiv.style.display = 'none';
 }
 
 export async function govVote(hash, voteCode) {
