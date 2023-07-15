@@ -418,16 +418,20 @@ export async function start() {
     // After reaching here; we know MPW's base is fully loaded!
     fIsLoaded = true;
 
-    // Show navigation and change margins
-    document.getElementById('newNavi').style.opacity = '1';
-    for (const domScreen of doms.arrDomScreens)
-        domScreen.style.marginLeft = '0px';
+    // Add a small delay of 100ms for cleaner animation
+    setTimeout(() => {
+        // Show navigation and change margins
+        document.getElementById('newNavi').style.opacity = '1';
+        for (const domScreen of doms.arrDomScreens)
+            domScreen.style.marginLeft = '0px';
+            navigationSwipe();
 
-    // Check for recent upgrades, display the changelog
-    checkForUpgrades();
+        // Check for recent upgrades, display the changelog
+        checkForUpgrades();
 
-    // If we haven't already (due to having no wallet, etc), display the Dashboard
-    doms.domDashboard.click();
+        // If we haven't already (due to having no wallet, etc), display the Dashboard
+        doms.domDashboard.click();
+    }, 150);
 }
 
 function subscribeToNetworkEvents() {
