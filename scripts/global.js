@@ -501,10 +501,6 @@ export function openTab(evt, tabName) {
     document.getElementById(tabName).style.display = 'block';
     evt.currentTarget.classList.add('active');
 
-    // Close the navbar if it's not already closed
-    if (!doms.domNavbarToggler.className.includes('collapsed'))
-        doms.domNavbarToggler.click();
-
     if (tabName === 'Governance') {
         updateGovernanceTab();
     } else if (tabName === 'Masternode') {
