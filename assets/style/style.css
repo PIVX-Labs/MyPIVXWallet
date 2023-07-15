@@ -236,6 +236,7 @@ progress[value]::-moz-progress-bar {
 
 .modal {
     color: black;
+    padding-left: 75px!important;
 }
 
 .modal-label {
@@ -355,13 +356,11 @@ progress[value]::-moz-progress-bar {
 
 #content-wrap {
     padding-bottom: 4rem;
-    /* Footer height */
-    margin-top: 75px;
 }
 
 @media (max-width: 768px) {
   #content-wrap {
-    margin-top:40px
+    margin-top:-40px
   }
 
   #page-container {
@@ -416,6 +415,7 @@ progress[value]::-moz-progress-bar {
     font-family: sans-serif;
     display: none;
     border-radius: 8px;
+    margin-left:-75px;
 }
 
 #Transaction.tabcontent {
@@ -761,6 +761,7 @@ progress[value]::-moz-progress-bar {
     padding: 10px;
     border-top: solid #521186 1px;
     background-color: #2b09508c;
+    padding-left: 81px;
 }
 
 .footer {
@@ -2534,9 +2535,9 @@ input {
 }
 
 .transferMenu {
-    width: calc(100% - 30px);
+    width: calc(100% - 30px - 75px);
     position: fixed;
-    left: 15px;
+    left: 90px;
     bottom: 0px;
     z-index: 1050;
     border-top-left-radius:10px;
