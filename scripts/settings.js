@@ -421,6 +421,7 @@ export function toggleTestnet() {
 export function toggleDebug() {
     debug = !debug;
     doms.domDebug.style.display = debug ? '' : 'none';
+    document.getElementById('debugToggler').checked = debug ? true : false;
 }
 
 /**
