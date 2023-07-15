@@ -424,7 +424,7 @@ export async function start() {
         document.getElementById('newNavi').style.opacity = '1';
         for (const domScreen of doms.arrDomScreens)
             domScreen.style.marginLeft = '0px';
-            navigationSwipe();
+        navigationSwipe();
 
         // Check for recent upgrades, display the changelog
         checkForUpgrades();
