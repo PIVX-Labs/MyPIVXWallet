@@ -474,8 +474,10 @@ function subscribeToNetworkEvents() {
 
 /**
  * naviState: State of the sidebar. Collapsed = true, retracted = false
+ * naviAni: Tells if the navigation is being animated and busy
  */
 let naviState = true;
+let naviAni = false;
 
 /* Hide or show the sidebar */
 export function hideShowNavi() {
@@ -495,32 +497,139 @@ export function hideShowNavi() {
     const bottomList = document.querySelectorAll('.new-navbar .bottomList')[0];
     const hideShowBtn = document.getElementById('hideShowBtn');
 
-    if (naviState) {
-        // Hide navigation bar
-        navi.style.left = '-160px';
+    if (!naviAni) {
+        if (naviState) {
+            // Sets naviAni to true (busy)
+            naviAni = true;
 
-        // Move logo after 500ms
-        setTimeout(() => {
-            naviLogoHam.style.left = '155px';
+            // Hide navigation bar
+            navi.style.left = '-160px';
+
+            // Move logo after 500ms
+            setTimeout(() => {
+                naviLogoHam.style.left = '155px';
+                document.getElementById('mpw-main-logo').style.clipPath =
+                    'inset(0 103px 0 0)';
+                hideShowBtn
+                    .querySelectorAll('i')[0]
+                    .classList.remove('fa-chevron-left');
+                hideShowBtn
+                    .querySelectorAll('i')[0]
+                    .classList.add('fa-chevron-right');
+
+                // Sets naviAni to false (not busy)
+                naviAni = false;
+            }, 500);
+
+            setTimeout(() => {
+                hideShowBtn.style.left = '-154px';
+            }, 300);
+            setTimeout(() => {
+                hideShowBtn.style.top = '54px';
+            }, 100);
+
+            setTimeout(() => {
+                dashboardHeader.style.opacity = '0';
+
+                // Navigation Items
+                for (let i = 0; i < itemsArray.length; i++) {
+                    const sideItem = document.getElementById(itemsArray[i]);
+                    const itemText =
+                        sideItem.getElementsByClassName('fs-15')[0];
+                    const iconSpan =
+                        sideItem.getElementsByClassName('itemIcon')[0];
+
+                    itemText.style.opacity = '0';
+
+                    setTimeout(() => {
+                        sideItem.style.marginLeft = 'calc(100% - 37px)';
+                        sideItem.style.width = '40px';
+                        sideItem.style.height = '40px';
+                        iconSpan.style.marginTop = '6px';
+                        itemText.classList.add('d-none');
+
+                        if (iconSpan.classList.contains('mar1M')) {
+                            iconSpan.style.marginLeft = '11px';
+                        } else {
+                            iconSpan.style.marginLeft = '10px';
+                        }
+
+                        statusItems.style.marginLeft = '157px';
+                    }, 300);
+                }
+            }, 100);
+
+            // Status icons
+            setTimeout(() => {
+                setTimeout(() => {
+                    // Bottom List height change
+                    bottomList.style.height = 'calc(100% - 271px)';
+                }, 100);
+
+                statusItems.style.flexDirection = '';
+                statusItems.style.width = '40px';
+                for (let j = 0; j < statusItemsArray.length; j++) {
+                    if (statusItemsArray[j].classList.contains('mar2M')) {
+                        statusItemsArray[j].style.marginLeft = '-2px';
+                    } else if (
+                        statusItemsArray[j].classList.contains('mar15M')
+                    ) {
+                        statusItemsArray[j].style.marginLeft = '-1.5px';
+                    } else {
+                        statusItemsArray[j].style.marginLeft = '0px';
+                    }
+                    statusItemsArray[j].style.marginRight = '5px';
+                }
+            }, 300);
+
+            // Bottom Copy
+            const copyItem = document.querySelectorAll(
+                '.new-navbar .walletCopy'
+            )[0];
+            const copyText = copyItem.querySelectorAll('span')[0];
+            const copySpan = copyItem.querySelectorAll('.fas')[0];
+            copyText.style.opacity = '0';
+            setTimeout(() => {
+                copyItem.style.marginLeft = 'calc(100% - 37px)';
+                copyItem.style.width = '40px';
+                copyItem.style.height = '40px';
+                copySpan.style.marginTop = '6px';
+                copyText.classList.add('d-none');
+                copySpan.style.marginLeft = '-3px';
+            }, 300);
+
+            // HR
+            document.querySelectorAll('.new-navbar hr')[0].style.width = '40px';
+            document.querySelectorAll('.new-navbar hr')[0].style.marginLeft =
+                'calc(100% - 38px)';
+
+            naviState = false;
+        } else {
+            // Sets naviAni to true (busy)
+            naviAni = true;
+
+            // Show navigation bar
+            navi.style.left = '0px';
+
+            // Keep logo on the same place
+            naviLogoHam.style.left = '-5px';
             document.getElementById('mpw-main-logo').style.clipPath =
-                'inset(0 103px 0 0)';
-            hideShowBtn
-                .querySelectorAll('i')[0]
-                .classList.remove('fa-chevron-left');
-            hideShowBtn
-                .querySelectorAll('i')[0]
-                .classList.add('fa-chevron-right');
-        }, 500);
+                'inset(0 0 0 0)';
+            setTimeout(() => {
+                hideShowBtn.style.top = '0px';
+                hideShowBtn
+                    .querySelectorAll('i')[0]
+                    .classList.remove('fa-chevron-right');
+                hideShowBtn
+                    .querySelectorAll('i')[0]
+                    .classList.add('fa-chevron-left');
 
-        setTimeout(() => {
-            hideShowBtn.style.left = '-154px';
-        }, 300);
-        setTimeout(() => {
-            hideShowBtn.style.top = '54px';
-        }, 100);
-
-        setTimeout(() => {
-            dashboardHeader.style.opacity = '0';
+                // Sets naviAni to false (not busy)
+                naviAni = false;
+            }, 300);
+            setTimeout(() => {
+                hideShowBtn.style.left = '0px';
+            }, 100);
 
             // Navigation Items
             for (let i = 0; i < itemsArray.length; i++) {
@@ -528,152 +637,64 @@ export function hideShowNavi() {
                 const itemText = sideItem.getElementsByClassName('fs-15')[0];
                 const iconSpan = sideItem.getElementsByClassName('itemIcon')[0];
 
-                itemText.style.opacity = '0';
+                sideItem.style.width = '';
+                sideItem.style.height = '';
+                sideItem.style.marginLeft = '';
+                iconSpan.style.marginLeft = '';
+                iconSpan.style.marginTop = '';
 
                 setTimeout(() => {
-                    sideItem.style.marginLeft = 'calc(100% - 37px)';
-                    sideItem.style.width = '40px';
-                    sideItem.style.height = '40px';
-                    iconSpan.style.marginTop = '6px';
-                    itemText.classList.add('d-none');
+                    setTimeout(() => {
+                        itemText.style.opacity = '1';
+                        dashboardHeader.style.opacity = '1';
+                    }, 50);
+                    itemText.classList.remove('d-none');
+                }, 250);
+            }
 
-                    if (iconSpan.classList.contains('mar1M')) {
-                        iconSpan.style.marginLeft = '11px';
+            // Bottom List height change
+            bottomList.style.height = 'calc(100% - 250px)';
+
+            // Status icons
+            setTimeout(() => {
+                statusItems.style.flexDirection = 'row';
+                statusItems.style.width = '';
+                for (let j = 0; j < statusItemsArray.length; j++) {
+                    if (statusItemsArray[j].classList.contains('mar15M')) {
+                        statusItemsArray[j].style.marginRight = '6px;';
                     } else {
-                        iconSpan.style.marginLeft = '10px';
+                        statusItemsArray[j].style.marginRight = '';
                     }
-
-                    statusItems.style.marginLeft = '157px';
-                }, 300);
-            }
-        }, 100);
-
-        // Status icons
-        setTimeout(() => {
-            setTimeout(() => {
-                // Bottom List height change
-                bottomList.style.height = 'calc(100% - 271px)';
-            }, 100);
-
-            statusItems.style.flexDirection = '';
-            statusItems.style.width = '40px';
-            for (let j = 0; j < statusItemsArray.length; j++) {
-                if (statusItemsArray[j].classList.contains('mar2M')) {
-                    statusItemsArray[j].style.marginLeft = '-2px';
-                } else if (statusItemsArray[j].classList.contains('mar15M')) {
-                    statusItemsArray[j].style.marginLeft = '-1.5px';
-                } else {
-                    statusItemsArray[j].style.marginLeft = '0px';
+                    statusItemsArray[j].style.marginLeft = '';
                 }
-                statusItemsArray[j].style.marginRight = '5px';
-            }
-        }, 300);
+            }, 150);
+            statusItems.style.marginLeft = '';
 
-        // Bottom Copy
-        const copyItem = document.querySelectorAll(
-            '.new-navbar .walletCopy'
-        )[0];
-        const copyText = copyItem.querySelectorAll('span')[0];
-        const copySpan = copyItem.querySelectorAll('.fas')[0];
-        copyText.style.opacity = '0';
-        setTimeout(() => {
-            copyItem.style.marginLeft = 'calc(100% - 37px)';
-            copyItem.style.width = '40px';
-            copyItem.style.height = '40px';
-            copySpan.style.marginTop = '6px';
-            copyText.classList.add('d-none');
-            copySpan.style.marginLeft = '-3px';
-        }, 300);
-
-        // HR
-        document.querySelectorAll('.new-navbar hr')[0].style.width = '40px';
-        document.querySelectorAll('.new-navbar hr')[0].style.marginLeft =
-            'calc(100% - 38px)';
-
-        naviState = false;
-    } else {
-        // Show navigation bar
-        navi.style.left = '0px';
-
-        // Keep logo on the same place
-        naviLogoHam.style.left = '-5px';
-        document.getElementById('mpw-main-logo').style.clipPath =
-            'inset(0 0 0 0)';
-        setTimeout(() => {
-            hideShowBtn.style.top = '0px';
-            hideShowBtn
-                .querySelectorAll('i')[0]
-                .classList.remove('fa-chevron-right');
-            hideShowBtn
-                .querySelectorAll('i')[0]
-                .classList.add('fa-chevron-left');
-        }, 300);
-        setTimeout(() => {
-            hideShowBtn.style.left = '0px';
-        }, 100);
-
-        // Navigation Items
-        for (let i = 0; i < itemsArray.length; i++) {
-            const sideItem = document.getElementById(itemsArray[i]);
-            const itemText = sideItem.getElementsByClassName('fs-15')[0];
-            const iconSpan = sideItem.getElementsByClassName('itemIcon')[0];
-
-            sideItem.style.width = '';
-            sideItem.style.height = '';
-            sideItem.style.marginLeft = '';
-            iconSpan.style.marginLeft = '';
-            iconSpan.style.marginTop = '';
-
+            // Bottom Copy
+            const copyItem = document.querySelectorAll(
+                '.new-navbar .walletCopy'
+            )[0];
+            const copyText = copyItem.querySelectorAll('span')[0];
+            const copySpan = copyItem.querySelectorAll('.fas')[0];
+            copyItem.style.width = '';
+            copyItem.style.height = '';
+            copyItem.style.marginLeft = '';
+            copySpan.style.marginLeft = '';
+            copySpan.style.marginTop = '';
             setTimeout(() => {
                 setTimeout(() => {
-                    itemText.style.opacity = '1';
-                    dashboardHeader.style.opacity = '1';
+                    copyText.style.opacity = '1';
                 }, 50);
-                itemText.classList.remove('d-none');
+                copyText.classList.remove('d-none');
             }, 250);
+
+            // HR
+            document.querySelectorAll('.new-navbar hr')[0].style.width = '';
+            document.querySelectorAll('.new-navbar hr')[0].style.marginLeft =
+                '';
+
+            naviState = true;
         }
-
-        // Bottom List height change
-        bottomList.style.height = 'calc(100% - 250px)';
-
-        // Status icons
-        setTimeout(() => {
-            statusItems.style.flexDirection = 'row';
-            statusItems.style.width = '';
-            for (let j = 0; j < statusItemsArray.length; j++) {
-                if (statusItemsArray[j].classList.contains('mar15M')) {
-                    statusItemsArray[j].style.marginRight = '6px;';
-                } else {
-                    statusItemsArray[j].style.marginRight = '';
-                }
-                statusItemsArray[j].style.marginLeft = '';
-            }
-        }, 150);
-        statusItems.style.marginLeft = '';
-
-        // Bottom Copy
-        const copyItem = document.querySelectorAll(
-            '.new-navbar .walletCopy'
-        )[0];
-        const copyText = copyItem.querySelectorAll('span')[0];
-        const copySpan = copyItem.querySelectorAll('.fas')[0];
-        copyItem.style.width = '';
-        copyItem.style.height = '';
-        copyItem.style.marginLeft = '';
-        copySpan.style.marginLeft = '';
-        copySpan.style.marginTop = '';
-        setTimeout(() => {
-            setTimeout(() => {
-                copyText.style.opacity = '1';
-            }, 50);
-            copyText.classList.remove('d-none');
-        }, 250);
-
-        // HR
-        document.querySelectorAll('.new-navbar hr')[0].style.width = '';
-        document.querySelectorAll('.new-navbar hr')[0].style.marginLeft = '';
-
-        naviState = true;
     }
 }
 
