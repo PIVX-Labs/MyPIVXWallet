@@ -698,6 +698,45 @@ export function hideShowNavi() {
     }
 }
 
+/* Swiping gesture for mobile */
+function navigationSwipe() {
+    // Variables to store touch start and end coordinates
+    let startX = 0;
+    let endX = 0;
+
+    // Minimum swipe distance for detection (sensitivity) is 40% of screen width
+    const minSwipeDistance = Math.round(
+        document.getElementsByTagName('body')[0].scrollWidth * 0.4
+    );
+
+    // Function to handle touch start event
+    function handleTouchStart(event) {
+        startX = event.touches[0].pageX;
+    }
+
+    // Function to handle touch end event
+    function handleTouchEnd(event) {
+        endX = event.changedTouches[0].pageX;
+        const diffX = endX - startX;
+
+        // Check if the horizontal swipe distance is greater than the sensitivity
+        if (Math.abs(diffX) > minSwipeDistance) {
+            if (diffX > 0) {
+                // Right swipe
+                if (!naviState) hideShowNavi();
+            } else {
+                // Left swipe
+                if (naviState) hideShowNavi();
+            }
+        }
+    }
+
+    // Add touch event listeners to the body element
+    const targetElement = document.getElementsByTagName('body')[0];
+    targetElement.addEventListener('touchstart', handleTouchStart, false);
+    targetElement.addEventListener('touchend', handleTouchEnd, false);
+}
+
 // WALLET STATE DATA
 export const mempool = new Mempool();
 let exportHidden = false;
