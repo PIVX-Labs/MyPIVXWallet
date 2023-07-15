@@ -57,9 +57,12 @@ export function isLoaded() {
 export let doms = {};
 
 export async function start() {
+    // Retract navigation
+    hideShowNavi();
+
     doms = {
         domNavbarToggler: document.getElementById('navbarToggler'),
-        domDashboard: document.getElementById('dashboard'),
+        domDashboard: document.getElementById('dashboardSideItem'),
         domGuiStaking: document.getElementById('guiStaking'),
         domGuiWallet: document.getElementById('guiWallet'),
         domGuiBalance: document.getElementById('guiBalance'),
@@ -134,7 +137,7 @@ export async function start() {
         domGenVanityWallet: document.getElementById('generateVanityWallet'),
         domGenHardwareWallet: document.getElementById('generateHardwareWallet'),
         //GOVERNANCE ELEMENTS
-        domGovTab: document.getElementById('governanceTab'),
+        domGovTab: document.getElementById('governanceSideItem'),
         domGovProposalsTable: document.getElementById('proposalsTable'),
         domGovProposalsTableBody: document.getElementById('proposalsTableBody'),
         domTotalGovernanceBudget: document.getElementById(
@@ -415,6 +418,11 @@ export async function start() {
     // After reaching here; we know MPW's base is fully loaded!
     fIsLoaded = true;
 
+    // Show navigation and change margins
+    document.getElementById('newNavi').style.opacity = '1';
+    for (const domScreen of doms.arrDomScreens)
+        domScreen.style.marginLeft = '0px';
+
     // Check for recent upgrades, display the changelog
     checkForUpgrades();
 
@@ -424,6 +432,9 @@ export async function start() {
 
 function subscribeToNetworkEvents() {
     getEventEmitter().on('network-toggle', (value) => {
+        if (value) doms.domNetwork.style.marginLeft = '-1.5px';
+        else doms.domNetwork.style.marginLeft = '-0px';
+
         doms.domNetwork.innerHTML =
             '<i class="fa-solid fa-' + (value ? 'wifi' : 'ban') + '"></i>';
     });
