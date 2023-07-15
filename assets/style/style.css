@@ -3357,3 +3357,143 @@ select.form-control option {
     padding-top: 14px;
     padding-bottom: 14px;
 }
+
+.new-navbar {
+    height: 100%;
+    position: fixed;
+    left: 0px;
+    top: 0px;
+    width: 228px;
+    /*background-color: rgb(0 0 0 / 28%);*/
+    background-color:hsl(270deg 61% 11% / 64%);
+    backdrop-filter: blur(3px);
+    z-index: 5000;
+    border-top-right-radius: 13px;
+    border-bottom-right-radius: 13px;
+    box-shadow: -5px 7px 14px 0px #000;
+    padding: 14px 17px;
+    transition: all .5s ease-in-out;
+    opacity:0;
+}
+
+.new-navbar .logo {
+    width: 150px;
+}
+
+.new-navbar .hamburger {
+    font-size: 22px;
+    display: flex;
+    align-content: center;
+    flex-wrap: wrap;
+    width: 100%;
+    justify-content: flex-end;
+    position:relative;
+    margin-right:10px;
+    cursor:pointer;
+    left:0px;
+    top:0px;
+    z-index: 100;
+}
+
+.new-navbar .naviLogoHam {
+    transition: all .5s ease-in-out;
+    position: relative;
+    left:0px;
+    margin-bottom: 30px;
+}
+
+.new-navbar .bottomList {
+    height: calc(100% - 250px);
+    display: flex;
+    align-items: flex-start;
+    flex-direction: column-reverse;
+}
+
+.new-navbar .itemHeader {
+    color: hsl(195deg 5.34% 73.38%);
+    font-weight: 600;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: flex;
+    transition: all .3s ease-in-out;
+}
+
+.new-navbar .itemChild {
+    padding-top: 5px;
+    padding-bottom: 5px;
+    margin-top: 2px;
+    margin-bottom: 2px;
+    cursor:pointer;
+    transition: all .125s ease-in-out;
+}
+
+.new-navbar .itemChild:hover {
+    background-color:#ffffff14;
+    border-radius:5px;
+}
+
+.new-navbar .itemChild .fs-15 {
+    opacity:1;
+}
+
+.new-navbar .itemChild *,
+.new-navbar .walletCopy *,
+.new-navbar hr,
+.new-navbar .logo,
+.new-navbar .hamburger,
+.new-navbar .hamburger i,
+.tabcontent,
+#copyWalletSide {
+    transition: all .3s ease-in-out;
+}
+
+.new-navbar .navbar-nav {
+    transition: all .125s ease-in-out;
+}
+
+.new-navbar .itemChild#settingsSideItem {
+    width:100%;
+}
+
+.new-navbar .itemIcon {
+    font-size: 16px;
+    margin-right: 6px;
+    margin-left: 15px;
+    width: 19px;
+    display: inline-flex;
+}
+
+.new-navbar hr {
+    border-top:1px solid #ffffff21;
+    width:100%;
+    margin-left:0px;
+}
+
+.new-navbar .walletCopy {
+    width: calc(100% - 0px);
+    word-wrap: break-word;
+    background-color: #ffffff14;
+    padding: 5px 17px;
+    border-radius: 5px;
+}
+
+.new-navbar .walletCopy i {
+    cursor:pointer;
+}
+
+.new-navbar .walletCopy .walletAddrCopy {
+    margin-left: 8px;
+}
+
+.new-navbar .navbar-nav .nav-item span {
+    margin-right: 10px;
+}
+
+.tooltip {
+    z-index: 5001;
+}
+
+.fs-15 {
+    font-size:15px;
+}
