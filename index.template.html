@@ -40,41 +40,67 @@
   <body>
     <div id="page-container" class="home-hero">
       <div id="content-wrap">
-        <!-- NAVBAR -->
-        <nav class="navbar navbar-expand-lg sticky-top navbar-dark navbarSpecial">
-          <div class="container">
-            <img onclick="MPW.openTab(event, 'keypair')" style="cursor: pointer;" class="nav-logo navbar-brand noselect" alt="PIVX" id="mpw-main-logo" />
-            <button id="navbarToggler" class="navbar-toggler collapsed" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-              <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse noselect" id="navbarNav">
-              <!-- MAIN NAVBAR -->
-              <ul class="navbar-nav mr-auto">
-                <li class="nav-item"><span id="dashboard" class="nav-link tablinks" onclick="MPW.openTab(event, 'keypair')" data-i18n="navDashboard">Dashboard</span></li>
-                <li class="nav-item"><span id="stakeTab" class="nav-link tablinks" onclick="MPW.openTab(event, 'StakingTab')" data-i18n="navStake">Stake</span></li>
-                <li class="nav-item"><span id="masternodeTab" class="nav-link tablinks" onclick="MPW.openTab(event, 'Masternode')" data-i18n="navMasternode">Masternode</span></li>
-                <li class="nav-item"><span id="governanceTab" class="nav-link tablinks" onclick="MPW.openTab(event, 'Governance')" data-i18n="navGovernance">Governance</span></li>
-                <li class="nav-item"><span class="nav-link tablinks" onclick="MPW.openTab(event, 'Settings');" data-i18n="navSettings">Settings</span></li>
-              </ul>
-
-              <!-- SIDE NAVBAR -->
-              <div class="form-inline my-2 my-lg-0">
-                <ul class="navbar-nav mr-auto small-dark-bg">
-                  <li class="nav-item">
-                    <span class="nav-link ptr" style="display: none;" id="Debug" onclick="MPW.toggleDebug()" data-toggle="tooltip" data-html="true" data-placement="bottom" title="<b>Debug Mode</b><br>You're in debug mode, which is logging additional verbose data in the console"><i class="fa-solid fa-bug"></i></span>
-                  </li>
-                  <li class="nav-item">
-                    <span class="nav-link ptr" style="display: none;" id="Testnet" onclick="MPW.toggleTestnet()" data-toggle="tooltip" data-html="true" data-placement="bottom" title="<b>Testnet Mode</b><br>You're currently using MPW on the Testnet Network"><i class="fa-solid fa-network-wired"></i></span>
-                  </li>
-                  <li class="nav-item">
-                    <span class="nav-link ptr" id="Network" onclick="MPW.toggleNetwork()" data-toggle="tooltip" data-html="true" data-placement="bottom" title="<b>Internet Access</b><br>Whether or not your node is connected to the internet"><i class="fa-solid fa-wifi"></i></span>
-                  </li>
-                </ul>
-              </div>
+        <!-- NEW NAVIGATION -->
+        <div class="new-navbar" id="newNavi">
+          <div class="d-flex naviLogoHam" id="naviLogoHam">
+            <div>
+              <img onclick="MPW.openTab(event, 'keypair')" style="cursor: pointer;" class="logo" alt="PIVX" id="mpw-main-logo" />  
+            </div>
+            <div class="hamburger" id="hideShowBtn" onclick="MPW.hideShowNavi()">
+              <i class="fas fa-chevron-left"></i>
             </div>
           </div>
-        </nav>
-        <!-- // NAVBAR -->
+
+          <div class="itemList">
+            <span class="itemHeader" id="dashboardHeader">Dashboard</span>
+            <div class="itemChild tablinks" id="dashboardSideItem" onclick="MPW.openTab(event, 'keypair')">
+              <span class="itemIcon"><i class="fas fa-home"></i></span><span class="fs-15"> Dashboard</span>
+            </div>
+            <div class="itemChild tablinks" id="stakeSideItem" onclick="MPW.openTab(event, 'StakingTab')">
+              <span class="itemIcon mar1M"><i class="far fa-snowflake"></i></span><span class="fs-15"> Stake</span>
+            </div>
+            <div class="itemChild tablinks" id="masternodeSideItem" onclick="MPW.openTab(event, 'Masternode')">
+              <span class="itemIcon"><i class="fas fa-network-wired"></i></span><span class="fs-15"> Masternode</span>
+            </div>
+            <div class="itemChild tablinks" id="governanceSideItem" onclick="MPW.openTab(event, 'Governance')">
+              <span class="itemIcon mar1M"><i class="fas fa-landmark"></i></span><span class="fs-15"> Governance</span>
+            </div>
+
+          </div>
+
+          <div class="bottomList">
+            <div class="walletCopy">
+              <i id="copyWalletSide" class="fas fa-minus" onclick=""></i> <span class="walletAddrCopy" id="walletAddrCopy"></span> <!-- clipboard -->
+            </div>
+
+            <hr>
+
+            <div class="" style="margin-top: 10px;">
+              <ul class="navbar-nav mr-auto small-dark-bg" id="statusItems" style="padding: 0px 12px; display: flex; flex-direction: row; background-color: #ffffff12;">
+                <li class="nav-item">
+                  <span class="nav-link ptr" style="display: none;" id="Debug" onclick="MPW.toggleDebug()" data-toggle="tooltip" data-html="true" data-placement="bottom" title="" data-original-title="<b>Debug Mode</b><br>You're in debug mode, which is logging additional verbose data in the console">
+                    <i class="fa-solid fa-bug"></i>
+                  </span>
+                </li>
+                <li class="nav-item">
+                  <span class="nav-link ptr mar2M" style="display: none;" id="Testnet" onclick="MPW.toggleTestnet()" data-toggle="tooltip" data-html="true" data-placement="bottom" title="" data-original-title="<b>Testnet Mode</b><br>You're currently using MPW on the Testnet Network">
+                    <i class="fa-solid fa-network-wired"></i>
+                  </span>
+                </li>
+                <li class="nav-item">
+                  <span class="nav-link ptr mar15M" id="Network" style="margin-right: 6px;" onclick="MPW.toggleNetwork()" data-toggle="tooltip" data-html="true" data-placement="bottom" title="" data-original-title="<b>Internet Access</b><br>Whether or not your node is connected to the internet">
+                    <i class="fa-solid fa-wifi"></i>
+                  </span>
+                </li>
+              </ul>
+            </div>
+
+            <div class="itemChild tablinks" id="settingsSideItem" onclick="MPW.openTab(event, 'Settings');">
+              <span class="itemIcon mar1M"><i class="fas fa-cog"></i></span><span class="fs-15"> Settings</span>
+            </div>
+          </div>
+        </div>
+        <!-- // NEW NAVIGATION -->
 
         <!-- // QR MODAL -->
         <div class="modal fade" id="qrModal" tabindex="-1" role="dialog" aria-labelledby="qrModalLabel" aria-hidden="true">
