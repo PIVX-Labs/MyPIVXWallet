@@ -19,7 +19,6 @@ function addTx(tx) {
 }
 
 async function update(fNewOnly = false) {
-    console.log('Updating');
     const cNet = getNetwork();
 
     // Prevent the user from spamming refreshes
@@ -39,16 +38,17 @@ async function update(fNewOnly = false) {
     isHistorySynced.value = cNet.isHistorySynced;
 
     // For Staking: Filter the list for only Stakes, display total rewards from known history
-    if (false && rewards) {
+    if (props.rewards) {
         const arrStakes = arrTXs.filter(
             (a) => a.type === HistoricalTxType.STAKE
         );
 
         const nRewards = arrStakes.reduce((a, b) => a + b.amount, 0);
+	return await parseTXs(arrStakes);
 
-        doms.domStakingRewardsTitle.innerHTML = `${
+        /*doms.domStakingRewardsTitle.innerHTML = `${
             cNet.isHistorySynced ? '' : '≥'
-        }${sanitizeHTML(nRewards)} ${cChainParams.current.TICKER}`;
+        }${sanitizeHTML(nRewards)} ${cChainParams.current.TICKER}`;*/
     }
 
     await parseTXs(arrTXs);
@@ -58,7 +58,6 @@ async function update(fNewOnly = false) {
  * Parse tx to list syntax
  */
 async function parseTXs(arrTXs) {
-    console.log('Parsing');
     const cNet = getNetwork();
 
     // Prepare time formatting
@@ -233,7 +232,6 @@ async function parseTXs(arrTXs) {
                     txContent = 'Unknown Tx';
             }
         }
-        console.log(icon);
         txs.push({
             date: strDate,
             content: txContent,

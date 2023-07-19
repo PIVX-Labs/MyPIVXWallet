@@ -64,6 +64,11 @@ const activityDashboard = createApp(Activity, {
     title: 'Activity',
     rewards: false,
 }).mount('#activityDashboard');
+
+const stakingDashboard = createApp(Activity, {
+    title: 'Reward History',
+    rewards: true,
+}).mount('#stakeActivity');
 //const stakeActivity = createApp(Activity, {title: "Activity", rewards: true}).mount('#activityStake');
 
 export async function start() {
@@ -930,7 +935,9 @@ export async function createActivityListHTML(arrTXs, fRewards = false) {
 /**
  * Refreshes the specified activity table, charts and related information
  */
-export async function updateActivityGUI(fStaking = false, fNewOnly = false) {}
+export async function updateActivityGUI(fStaking = false, fNewOnly = false) {
+    activityDashboard.update();
+}
 
 /**
  * Open the Explorer in a new tab for the loaded master public key
