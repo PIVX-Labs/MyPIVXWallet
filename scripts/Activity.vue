@@ -255,7 +255,7 @@ defineExpose({ txs, addTx, update });
     </center>
     <div class="dcWallet-activity">
         <div class="scrollTable">
-            <div id="activity-list-content">
+            <div>
                 <table
                     class="table table-responsive table-sm stakingTx table-mobile-scroll"
                 >
@@ -324,7 +324,6 @@ defineExpose({ txs, addTx, update });
                 <button
                     v-if="!isHistorySynced"
                     class="pivx-button-medium"
-                    id="activityLoadMore"
                     @click="update"
                 >
                     <span class="buttoni-icon"
