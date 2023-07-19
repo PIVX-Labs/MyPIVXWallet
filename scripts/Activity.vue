@@ -12,7 +12,9 @@ const props = defineProps({
 const txs = reactive([]);
 const updating = ref(false);
 const isHistorySynced = ref(false);
+const rewardsText = ref('-');
 const ticker = computed(() => cChainParams.current.TICKER);
+const explorerUrl = computed(() => getNetwork().strUrl);
 
 function addTx(tx) {
     txs.push(tx);
@@ -32,6 +34,7 @@ async function update(fNewOnly = false) {
     updating.value = false;
 
     // If there's no change in history size post-sync, then we can cancel here, there's nothing new to render
+    // Disabled will renable later maybe
     //if (nPrevHistory === cNet.arrTxHistory.length) return;
 
     // Check if all transactions are loaded
@@ -44,11 +47,8 @@ async function update(fNewOnly = false) {
         );
 
         const nRewards = arrStakes.reduce((a, b) => a + b.amount, 0);
+        rewardsText.value = `${cNet.isHistorySynced ? '' : '≥'}${nRewards}`;
         return await parseTXs(arrStakes);
-
-        /*doms.domStakingRewardsTitle.innerHTML = `${
-            cNet.isHistorySynced ? '' : '≥'
-        }${sanitizeHTML(nRewards)} ${cChainParams.current.TICKER}`;*/
     }
 
     await parseTXs(arrTXs);
@@ -234,6 +234,7 @@ async function parseTXs(arrTXs) {
         }
         txs.push({
             date: strDate,
+            id: cTx.id,
             content: txContent,
             formattedAmt,
             confirmed: fConfirmed,
@@ -247,7 +248,10 @@ defineExpose({ txs, addTx, update });
 
 <template>
     <center>
-        <span class="dcWallet-activityLbl">{{ title }}</span>
+        <span class="dcWallet-activityLbl"
+            >{{ title }}
+            <span v-if="rewards"> ({{ rewardsText }} {{ ticker }}) </span>
+        </span>
     </center>
     <div class="dcWallet-activity">
         <div class="scrollTable">
@@ -275,7 +279,7 @@ defineExpose({ txs, addTx, update });
                             </td>
                             <td class="align-middle pr-10px txcode">
                                 <a
-                                    href="{{cExplorer.url}}/tx/{{ cTx.id }}"
+                                    :href="explorerUrl + '/tx/' + tx.id"
                                     target="_blank"
                                     rel="noopener noreferrer"
                                 >
