@@ -75,7 +75,6 @@ export async function start() {
     doms = {
         domNavbarToggler: document.getElementById('navbarToggler'),
         domDashboard: document.getElementById('dashboard'),
-        domGuiStaking: document.getElementById('guiStaking'),
         domGuiWallet: document.getElementById('guiWallet'),
         domGuiBalance: document.getElementById('guiBalance'),
         domGuiBalanceTicker: document.getElementById('guiBalanceTicker'),
@@ -87,7 +86,6 @@ export async function start() {
         domGuiStakingValueCurrency: document.getElementById(
             'guiStakingValueCurrency'
         ),
-        domGuiBalanceBox: document.getElementById('guiBalanceBox'),
         domBalanceReload: document.getElementById('balanceReload'),
         domBalanceReloadStaking: document.getElementById(
             'balanceReloadStaking'
@@ -95,13 +93,6 @@ export async function start() {
         domGuiBalanceStaking: document.getElementById('guiBalanceStaking'),
         domGuiBalanceStakingTicker: document.getElementById(
             'guiBalanceStakingTicker'
-        ),
-        domGuiStakingLoadMore: document.getElementById('stakingLoadMore'),
-        domGuiStakingLoadMoreIcon: document.getElementById(
-            'stakingLoadMoreIcon'
-        ),
-        domGuiBalanceBoxStaking: document.getElementById(
-            'guiBalanceBoxStaking'
         ),
         domStakeAmount: document.getElementById('delegateAmount'),
         domUnstakeAmount: document.getElementById('undelegateAmount'),
@@ -130,7 +121,6 @@ export async function start() {
         ),
 
         domUnstakeAmountValue: document.getElementById('unstakeAmountValue'),
-        domGuiViewKey: document.getElementById('guiViewKey'),
         domModalQR: document.getElementById('ModalQR'),
         domModalQrLabel: document.getElementById('ModalQRLabel'),
         domModalQRReader: document.getElementById('qrReaderModal'),
@@ -201,14 +191,9 @@ export async function start() {
         domAccessWalletBtn: document.getElementById('accessWalletBtn'),
         domVanityUiButtonTxt: document.getElementById('vanButtonText'),
         domGenKeyWarning: document.getElementById('genKeyWarning'),
-        domEncryptWarningTxt: document.getElementById('encryptWarningText'),
-        domEncryptBtnTxt: document.getElementById('encryptButton'),
-        domEncryptPasswordBox: document.getElementById('encryptPassword'),
         domEncryptPasswordFirst: document.getElementById('newPassword'),
         domEncryptPasswordSecond: document.getElementById('newPasswordRetype'),
-        domGuiAddress: document.getElementById('guiAddress'),
         domGenIt: document.getElementById('genIt'),
-        domHumanReadable: document.getElementById('HumanReadable'),
         domReqDesc: document.getElementById('reqDesc'),
         domReqDisplay: document.getElementById('reqDescDisplay'),
         domIdenticon: document.getElementById('identicon'),
@@ -217,12 +202,6 @@ export async function start() {
         domAvailToDelegate: document.getElementById('availToDelegate'),
         domAvailToUndelegate: document.getElementById('availToUndelegate'),
         domAnalyticsDescriptor: document.getElementById('analyticsDescriptor'),
-        domStakingRewardsList: document.getElementById(
-            'staking-rewards-content'
-        ),
-        domStakingRewardsTitle: document.getElementById(
-            'staking-rewards-title'
-        ),
         domMnemonicModalContent: document.getElementById(
             'ModalMnemonicContent'
         ),
@@ -304,6 +283,7 @@ export async function start() {
         domFlipdown: document.getElementById('flipdown'),
         domTestnetToggler: document.getElementById('testnetToggler'),
     };
+
     await i18nStart();
     await loadImages();
 

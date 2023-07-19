@@ -44,7 +44,7 @@ async function update(fNewOnly = false) {
         );
 
         const nRewards = arrStakes.reduce((a, b) => a + b.amount, 0);
-	return await parseTXs(arrStakes);
+        return await parseTXs(arrStakes);
 
         /*doms.domStakingRewardsTitle.innerHTML = `${
             cNet.isHistorySynced ? '' : '≥'
