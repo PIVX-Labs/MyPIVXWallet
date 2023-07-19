@@ -675,7 +675,11 @@ export async function openSendQRScanner() {
  * Refreshes the specified activity table, charts and related information
  */
 export async function updateActivityGUI(fStaking = false, fNewOnly = false) {
-    activityDashboard.update();
+    if (fStaking) {
+	stakeActivity.update();
+    } else {
+	activityDashboard.update();
+    }
 }
 
 /**
