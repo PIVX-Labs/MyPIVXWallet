@@ -45,6 +45,8 @@ import { Database } from './database.js';
 import bitjs from './bitTrx.js';
 import { checkForUpgrades } from './changelog.js';
 import { FlipDown } from './flipdown.js';
+import { createApp } from 'vue';
+import Activity from './Activity.vue';
 
 /** A flag showing if base MPW is fully loaded or not */
 export let fIsLoaded = false;
@@ -55,6 +57,14 @@ export function isLoaded() {
 }
 
 export let doms = {};
+
+// For now we'll import the component as a vue app by itself. Later, when the
+// dashboard is rewritten in vue, we can simply add <Activity /> to the dashboard component template.
+const activityDashboard = createApp(Activity, {
+    title: 'Activity',
+    rewards: false,
+}).mount('#activityDashboard');
+//const stakeActivity = createApp(Activity, {title: "Activity", rewards: true}).mount('#activityStake');
 
 export async function start() {
     doms = {
@@ -252,11 +262,6 @@ export async function start() {
             'redeemCodeCreatePendingList'
         ),
         domPromoTable: document.getElementById('promo-table'),
-        domActivityList: document.getElementById('activity-list-content'),
-        domActivityLoadMore: document.getElementById('activityLoadMore'),
-        domActivityLoadMoreIcon: document.getElementById(
-            'activityLoadMoreIcon'
-        ),
         domConfirmModalHeader: document.getElementById('confirmModalHeader'),
         domConfirmModalTitle: document.getElementById('confirmModalTitle'),
         domConfirmModalContent: document.getElementById('confirmModalContent'),
@@ -688,7 +693,7 @@ export async function openSendQRScanner() {
  * @returns {Promise<string>} HTML - The Activity List in HTML string form
  */
 export async function createActivityListHTML(arrTXs, fRewards = false) {
-    const cNet = getNetwork();
+    /*const cNet = getNetwork();
 
     // Prepare the table HTML
     let strList = `
@@ -919,60 +924,13 @@ export async function createActivityListHTML(arrTXs, fRewards = false) {
 
     // Return the HTML string
     return strList;
+    */
 }
 
 /**
  * Refreshes the specified activity table, charts and related information
  */
-export async function updateActivityGUI(fStaking = false, fNewOnly = false) {
-    const cNet = getNetwork();
-
-    // Prevent the user from spamming refreshes
-    if (cNet.historySyncing) return;
-
-    // Remember how much history we had previously
-    const nPrevHistory = cNet.arrTxHistory.length;
-
-    // Choose the Dashboard or Staking UI accordingly
-    let domLoadMore = doms.domActivityLoadMore;
-    let domLoadMoreIcon = doms.domActivityLoadMoreIcon;
-    if (fStaking) {
-        domLoadMore = doms.domGuiStakingLoadMore;
-        domLoadMoreIcon = doms.domGuiStakingLoadMoreIcon;
-    }
-
-    // Load rewards from the network, displaying the sync spin icon until finished
-    domLoadMoreIcon.classList.add('fa-spin');
-    const arrTXs = await cNet.syncTxHistoryChunk(fNewOnly);
-    domLoadMoreIcon.classList.remove('fa-spin');
-
-    // If there's no change in history size post-sync, then we can cancel here, there's nothing new to render
-    if (nPrevHistory === cNet.arrTxHistory.length) return;
-
-    // Check if all transactions are loaded
-    if (cNet.isHistorySynced) {
-        // Hide the load more button
-        domLoadMore.style.display = 'none';
-    }
-
-    // For Staking: Filter the list for only Stakes, display total rewards from known history
-    const arrStakes = arrTXs.filter((a) => a.type === HistoricalTxType.STAKE);
-    const nRewards = arrStakes.reduce((a, b) => a + b.amount, 0);
-    doms.domStakingRewardsTitle.innerHTML = `${
-        cNet.isHistorySynced ? '' : '≥'
-    }${sanitizeHTML(nRewards)} ${cChainParams.current.TICKER}`;
-
-    // Create and render the Dashboard Activity
-    doms.domActivityList.innerHTML = await createActivityListHTML(
-        arrTXs,
-        false
-    );
-    // Create and render the Staking History
-    doms.domStakingRewardsList.innerHTML = await createActivityListHTML(
-        arrStakes,
-        true
-    );
-}
+export async function updateActivityGUI(fStaking = false, fNewOnly = false) {}
 
 /**
  * Open the Explorer in a new tab for the loaded master public key
