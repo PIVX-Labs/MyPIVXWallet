@@ -2785,6 +2785,7 @@ let switchAdvanceBusy = false;
  * Show the advanced elements on the landing page
  */
 export function showAdvancedLanding() {
+    const advancedToggle = document.getElementById('advancedLandingToggler');
     if (!switchAdvanceBusy) {
         const createDiv = document.getElementById('createDiv');
 
@@ -2792,15 +2793,13 @@ export function showAdvancedLanding() {
         const vanityDiv = document.getElementById('vanityDiv');
         const ledgerCol = document.getElementById('ledgerCol');
         const ledgerDiv = document.getElementById('ledgerDiv');
-        const textAdvanced = document.getElementById('textAdvanced');
 
         // Animation time in the css
         const aniTime = 300;
 
         if (advancedMode) {
             switchAdvanceBusy = true;
-            advancedMode = false;
-            textAdvanced.innerHTML = 'Advanced';
+            advancedToggle.checked = advancedMode = false;
 
             vanityDiv.style.opacity = 0;
             ledgerDiv.style.opacity = 0;
@@ -2838,8 +2837,7 @@ export function showAdvancedLanding() {
             }, aniTime);
         } else {
             switchAdvanceBusy = true;
-            advancedMode = true;
-            textAdvanced.innerHTML = 'Simple';
+            advancedToggle.checked = advancedMode = true;
 
             setTimeout(() => {
                 vanityDiv.classList.remove('p-0');
@@ -2872,6 +2870,8 @@ export function showAdvancedLanding() {
             ledgerDiv.style.width = createDiv.scrollWidth + 'px';
             ledgerDiv.style.height = createDiv.scrollHeight + 'px';
         }
+    } else {
+        advancedToggle.checked = advancedMode;
     }
 }
 

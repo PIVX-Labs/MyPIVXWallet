@@ -3363,7 +3363,7 @@ select.form-control option {
 }
 
 .walletLanding .landBtn {
-    background-color:rgba(255,255,255,10%);
+    background-color:rgba(0, 0, 0, 0.45);
     border-radius:10px;
     aspect-ratio:1/1;
     flex-direction: column;
@@ -3373,8 +3373,14 @@ select.form-control option {
     margin: 10px;
 }
 
+@media (max-width: 992px) {
+    .walletLanding .landBtn {
+        aspect-ratio: 1/0.65;
+    }
+}
+
 .walletLanding .landBtn:hover {
-    background-color:rgba(255,255,255,15%);
+    background-color:rgba(0, 0, 0, 0.65);
     cursor:pointer;
 }
 
@@ -3396,13 +3402,12 @@ select.form-control option {
 
 .advancedLanding {
     width: 100%;
-    display: flex;
-    justify-content: flex-end;
     margin-top: -10px;
 }
 
-.advancedLanding .textIcon,
-.advancedLanding .textIconBack {
+.textIcon,
+.textIconBack {
+    display: inline-block;
     height: 35px;
     font-size: 16px;
     background-color: #ffffff17;
@@ -3413,27 +3418,28 @@ select.form-control option {
     padding-right:15px;
 }
 
-.advancedLanding .textIconBack {
+.textIconBack {
     width: 35px;
 }
 
-.advancedLanding .textIconBack i {
-    top: 9px;
+.textIconBack i {
+    top: 9px !important;
     left: 8px;
 }
 
-.advancedLanding .textIcon .textAdvanced {
+.textIcon .textAdvanced {
     position:relative;
     top:5px;
     margin-left:12px;
     font-size: 13px;
 }
 
-.advancedLanding .textIcon:hover {
+.textIcon:hover {
     background-color:#ffffff1f;
 }
 
-.advancedLanding span i {
+.advancedLanding span i,
+.textIcon i {
     position: relative;
     top: 6px;
     left: 8px;
