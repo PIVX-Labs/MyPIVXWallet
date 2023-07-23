@@ -1,4 +1,5 @@
 import { en_translation } from '../locale/en/translation.js';
+import { pt_translation } from '../locale/pt/translation.js';
 import { uwu_translation } from '../locale/uwu/translation.js';
 import { Database } from './database.js';
 
@@ -10,6 +11,7 @@ export let translation = {};
 export const translatableLanguages = {
     en: en_translation,
     uwu: uwu_translation,
+    pt: pt_translation,
 };
 
 /**
@@ -106,7 +108,7 @@ function parseUserAgentLang(strUA, arrLangsWithSubset) {
 }
 
 // When adding a lang remember to add it to the object translatableLanguages as well as here.
-export const arrActiveLangs = ['en', 'uwu'];
+export const arrActiveLangs = ['en', 'uwu', 'pt'];
 
 export async function start() {
     // We use this function to parse the UA lang in a safer way: for example, there's multiple `en` definitions

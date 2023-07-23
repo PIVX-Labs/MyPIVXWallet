@@ -81,7 +81,7 @@
           <div class="modal-dialog" role="document">
             <div class="modal-content exportKeysModalColor">
               <div class="modal-header">
-                <h5 class="modal-title" id="qrModalLabel">Address QR</h5>
+                <h5 class="modal-title" id="qrModalLabel"><span data-i18n="address" >Address</span> QR</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                   <i class="fa-solid fa-xmark closeCross"></i>
                 </button>
@@ -116,7 +116,7 @@
           <div class="modal-dialog" role="document">
             <div class="modal-content exportKeysModalColor">
               <div class="modal-header">
-                <h5 class="modal-title" id="walletBreakdownModalLabel">Wallet Breakdown</h5>
+                <h5 data-i18n="balanceBreakdown" class="modal-title" id="walletBreakdownModalLabel">Balance Breakdown</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                   <span aria-hidden="true">&times;</span>
                 </button>
@@ -136,28 +136,28 @@
               <div class="modal-body center-text">
                 <p id="ModalMnemonicLabel" class="modal-label"></p>
                 <div id="ModalMnemonic" class="auto-fit">
-                  This is your seed phrase:
+                  <span data-i18n="thisIsYourSeed">This is your seed phrase:</span>
                   <b>
-                    <div class="seed-phrase noselect" id="ModalMnemonicContent">
+                    <div translate="no" class="seed-phrase noselect notranslate" id="ModalMnemonicContent">
                     </div>
                   </b>
                   <br />
-                  Write it down somewhere. You'll only see this <b>once!</b>
+                  <span data-i18n="writeDownSeed">Write it down somewhere. You'll only see this <b>once!</b></span>
                   <br />
-                  Anyone with a copy of it can access <b>all</b> of your funds.
+                  <span data-i18n="doNotShareWarning">Anyone with a copy of it can access <b>all</b> of your funds.</span>
                   <br />
-                  <b>Do NOT share it with anybody</b>. <br />
+                  <b data-i18n="doNotShare">Do NOT share it with anybody.</b> <br />
                   <br />
                   <a href="https://www.ledger.com/blog/how-to-protect-your-seed-phrase" target="_blank" rel="noopener noreferrer">
-                    <i>It is <b>NOT</b> advised to store this digitally.</i>
+                    <i data-i18n="digitalStoreNotAdvised">It is <b>NOT</b> advised to store this digitally.</i>
                   </a>
-		  <br />
-		  <br />
-		  <input class="center-text" type="password" id="ModalMnemonicPassphrase" placeholder="Optional Passphrase" />
+                  <br />
+                  <br />
+                  <input data-i18n="optionalPassphrase" class="center-text" type="password" id="ModalMnemonicPassphrase" placeholder="Optional Passphrase" />
                   <br />
                 </div>
                 <div class="modal-footer">
-                  <button type="button" id="modalMnemonicConfirmButton" class="pivx-button-big">I have written down my seed phrase</button>
+                  <button type="button" data-i18n="writtenDown" id="modalMnemonicConfirmButton" class="pivx-button-big">I have written down my seed phrase</button>
                 </div>
               </div>
             </div>
@@ -250,8 +250,8 @@
                           </div>
                         </div>
                         <div>
-                          <span style="color: #dfdfdf; font-size: 12px;">Getting Started</span><br>
-                          Backup your wallet
+                          <span data-i18n="gettingStarted" style="color: #dfdfdf; font-size: 12px;">Getting Started</span><br>
+                          <span data-i18n="secureYourWallet" >Secure your wallet</span>
                         </div>
                       </div>
                     </center>
@@ -305,7 +305,7 @@
                             </span>
                           </div>
                         </div>
-                        <div class="lockUnlock">
+                        <div data-i18n="unlockWallet" class="lockUnlock">
                           Unlock wallet
                         </div>
                       </div>
@@ -324,7 +324,7 @@
                             </span>
                           </div>
                         </div>
-                        <div class="lockUnlock">
+                        <div data-i18n="lockWallet" class="lockUnlock">
                           Lock wallet
                         </div>
                       </div>
@@ -342,7 +342,7 @@
                         <div class="modal-body center-text">
                           <center>
                             <p class="mono" style="font-size: small;">
-                              <b>PIVX Promos</b> is a decentralised system for gift codes worth PIV
+                              <b>PIVX Promos</b> <span style="font-family: inherit !important;" data-i18n="pivxPromos">is a decentralised system for gift codes worth PIV</span>
                             </p>
                             <div id="redeemCodeModeBox">
                               <button type="button" onclick="MPW.setPromoMode(true)" id="redeemCodeModeRedeem" class="pivx-button-big" style="margin: 0;border-top-right-radius: 0;border-bottom-right-radius: 0;opacity: 0.5;">Redeem</button>
@@ -353,7 +353,7 @@
                             <div id="redeemCodeUse">
                               <div class="col-8" id="redeemCodeInputBox">
                                 <div class="input-group" style="border-color: #9121ff;border-style: solid;border-radius: 10px;">
-                                  <input class="btn-group-input mono center-text" type="text" id="redeemCodeInput" placeholder="Enter your 'PIVX Promos' code" autocomplete="nope" />
+                                  <input data-i18n="redeemInput" class="btn-group-input mono center-text" type="text" id="redeemCodeInput" placeholder="Enter your 'PIVX Promos' code" autocomplete="nope" />
                                   <div class="input-group-append">
                                     <span class="input-group-text ptr" onclick="MPW.openPromoQRScanner()"><i class="fa-solid fa-qrcode fa-2xl"></i></span>
                                   </div>
@@ -377,12 +377,12 @@
                                 <div class="row">
                                   <div class="col-6" style="padding-right:3px;">
                                     <div class="input-group" style="border-color: #9121ff;border-style: solid;border-radius: 10px;">
-                                      <input class="btn-group-input mono center-text" style="border-top-right-radius: 9px; border-bottom-right-radius: 9px;" type="text" id="redeemCodeCreateInput" placeholder="Promo Name (Optional)" autocomplete="nope" />
+                                      <input data-i18n="createName" class="btn-group-input mono center-text" style="border-top-right-radius: 9px; border-bottom-right-radius: 9px;" type="text" id="redeemCodeCreateInput" placeholder="Promo Name (Optional)" autocomplete="nope" />
                                     </div>
                                   </div>
                                   <div class="col-6" style="padding-left:3px;">
                                     <div class="input-group" style="border-color: #9121ff;border-style: solid;border-radius: 10px;">
-                                      <input class="btn-group-input mono center-text" style="border-top-right-radius: 9px; border-bottom-right-radius: 9px;" type="text" id="redeemCodeCreateAmountInput" placeholder="Promo Amount" autocomplete="nope" />
+                                      <input data-i18n="createAmount" class="btn-group-input mono center-text" style="border-top-right-radius: 9px; border-bottom-right-radius: 9px;" type="text" id="redeemCodeCreateAmountInput" placeholder="Promo Amount" autocomplete="nope" />
                                     </div>
                                   </div>
                                 </div>
@@ -438,19 +438,19 @@
                                     <div class="dropdown-move">
                                       <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                                         <a class="dropdown-item ptr" onclick="MPW.renderWalletBreakdown()" data-toggle="modal" data-target="#walletBreakdownModal">
-                                          <i class="fa-solid fa-chart-pie"></i> Balance Breakdown
+                                          <i class="fa-solid fa-chart-pie"></i> <span data-i18n="balanceBreakdown">Balance Breakdown</span>
                                         </a>
                                         <a class="dropdown-item ptr" onclick="MPW.openExplorer()">
-                                          <i class="fa-solid fa-magnifying-glass"></i> View on Explorer
+                                          <i class="fa-solid fa-magnifying-glass"></i> <span data-i18n="viewOnExplorer">View on Explorer</span>
                                         </a>
                                         <a id="guiExportWalletItem" class="dropdown-item ptr" data-toggle="modal" data-target="#exportPrivateKeysModal" data-backdrop="static" data-keyboard="false" onclick="MPW.toggleExportUI()">
-                                          <i class="fas fa-key"></i> Export
+                                          <i class="fas fa-key"></i> <span data-i18n="export">Export</span>
                                         </a>
                                         <a class="dropdown-item ptr" id="guiNewAddress" data-toggle="modal" data-target="#qrModal" onclick="MPW.getNewAddress({updateGUI: true, verify: true});">
-                                          <i class="fas fa-sync-alt"></i> Refresh address
+                                          <i class="fas fa-sync-alt"></i> <span data-i18n="refreshAddress">Refresh address</span>
                                         </a>
                                         <a class="dropdown-item ptr" data-toggle="modal" data-target="#redeemCodeModal">
-                                          <i class="fa-solid fa-gift"></i> Redeem or Create Code
+                                          <i class="fa-solid fa-gift"></i> <span data-i18n="redeemOrCreateCode">Redeem or Create Code</span>
                                         </a>
                                       </div>
                                     </div>
@@ -491,7 +491,7 @@
                       </div>
 
                       <div class="col-12 mb-5">
-                        <center><span class="dcWallet-activityLbl">Activity</span></center>
+                        <center><span data-i18n="activity" class="dcWallet-activityLbl">Activity</span></center>
                         <div class="dcWallet-activity">
                           <div class="scrollTable">
                             <div id="activity-list-content"></div>
@@ -511,7 +511,7 @@
                       <div class="modal-dialog modal-full" role="document">
                         <div class="modal-content exportKeysModalColor">
                           <div class="modal-header">
-                            <h5 class="modal-title" id="exportPrivateKeysLabel">Private Key</h5>
+                            <h5 data-i18n="privateKey" class="modal-title" id="exportPrivateKeysLabel">Private Key</h5>
                             <button type="button" class="close" onclick="MPW.toggleExportUI()" data-dismiss="modal" aria-label="Close">
                               <i class="fa-solid fa-xmark closeCross"></i>
                             </button>
@@ -519,15 +519,15 @@
                           <div class="modal-body">
                             <div class="dcWallet-privateKeyDiv text-center">
                               <img id="privateKeyImage" /><br />
-                              <h3>View Private Key?</h3>
-                              <span class="span1">Make sure no one can see your screen.</span>
-                              <span class="span2">Anyone with this key can steal your funds.</span>
+                              <h3 data-i18n="viewPrivateKey">View Private Key?</h3>
+                              <span data-i18n="privateWarning1" class="span1">Make sure no one can see your screen.</span>
+                              <span data-i18n="privateWarning2" class="span2">Anyone with this key can steal your funds.</span>
                               <code class="blurred" id="exportPrivateKeyText"></code>
                             </div>
                           </div>
                           <div class="modal-footer text-center">
                             <button class="pivx-button-big" onclick="MPW.unblurPrivKey()">
-                              <span class="buttoni-text">View key</span>
+                              <span data-i18n="viewKey" class="buttoni-text">View key</span>
                             </button>
                           </div>
                         </div>
@@ -537,12 +537,12 @@
 
                     <div id="transferMenu" class="exportKeysModalColor transferMenu transferAnimation">
                       <div class="transferHeader">
-                        <div class="transferHeaderText">Transfer</div>
+                        <div data-i18n="transfer" class="transferHeaderText">Transfer</div>
                         <div class="transferExit" onclick="MPW.toggleBottomMenu('transferMenu', 'transferAnimation')"><i class="fa-solid fa-xmark"></i></div>
                       </div>
     
                       <div class="transferBody">
-                        <label data-i18n="sendReceiverAddress">Address</label><br />
+                        <label data-i18n="address">Address</label><br />
                         
                         <div class="input-group mb-3">
                           <input class="btn-group-input" style="font-family: monospace; " type="text" id="address1s" placeholder="Receiving address" autocomplete="nope" />
@@ -616,7 +616,7 @@
                         <div class="text-right pb-2">
                           <button class="pivx-button-medium w-100" style="margin:0px;" onclick="MPW.createTxGUI()">
                             <span class="buttoni-icon"><i class="fas fa-paper-plane fa-tiny-margin"></i></span>
-                            <span class="buttoni-text" id="genIt" data-i18n="sendTransaction">Send</span>
+                            <span class="buttoni-text" id="genIt" data-i18n="send">Send</span>
                           </button>
                         </div>
 
@@ -807,7 +807,7 @@
                           </div>
                         </div>
 
-                        Staking<br>
+                        <span data-i18n="staking">Staking</span><br>
                         <span class="dcWallet-pivxBalance" id="guiBalanceStaking">0</span> <span id="guiBalanceStakingTicker" class="dcWallet-pivxTicker">PIVX</span><br />
                         <div class="dcWallet-usdBalance">
                           <span id="guiStakingValue" class="dcWallet-usdValue">$-</span>
@@ -816,13 +816,13 @@
 
                         <div class="row lessTop p-0">
                           <div class="col-6 d-flex" style="justify-content: flex-start;">
-                            <div class="dcWallet-stake" onclick="MPW.toggleBottomMenu('stakingDelegate', 'transferAnimation')">
+                            <div data-i18n="stake" class="dcWallet-stake" onclick="MPW.toggleBottomMenu('stakingDelegate', 'transferAnimation')">
                               Stake
                             </div>
                           </div>
 
                           <div class="col-6 d-flex" style="justify-content: flex-end;">
-                            <div class="dcWallet-unstake" onclick="MPW.toggleBottomMenu('stakingUndelegate', 'transferAnimation')">
+                            <div data-i18n="stakeUnstake" class="dcWallet-unstake" onclick="MPW.toggleBottomMenu('stakingUndelegate', 'transferAnimation')">
                               Unstake  
                             </div>
                           </div>
@@ -832,7 +832,7 @@
                   </div>
 
                   <div class="col-12 mb-5">
-                    <center><span class="dcWallet-activityLbl">Reward History (<span id="staking-rewards-title">-</span>)</span></center>
+                    <center><span class="dcWallet-activityLbl"><span data-i18n="rewardHistory">Reward History</span> (<span id="staking-rewards-title">-</span>)</span></center>
                     <div class="dcWallet-activity">
                       <div class="scrollTable">
                         <div id="staking-rewards-content"></div>
@@ -849,7 +849,7 @@
 
                 <div id="stakingUndelegate" class="exportKeysModalColor transferMenu transferAnimation">
                   <div class="transferHeader">
-                    <div class="transferHeaderText">Unstake</div>
+                    <div data-i18n="stakeUnstake" class="transferHeaderText">Unstake</div>
                     <div class="transferExit" onclick="MPW.toggleBottomMenu('stakingUndelegate', 'transferAnimation')"><i class="fa-solid fa-xmark"></i></div>
                   </div>
 
@@ -884,7 +884,7 @@
                     <div class="text-right pb-2">
                       <button class="pivx-button-medium w-100" style="margin:0px;" onclick="MPW.undelegateGUI()">
                         <span class="buttoni-icon"><i class="fas fa-paper-plane fa-tiny-margin"></i></span>
-                        <span class="buttoni-text">Unstake</span>
+                        <span data-i18n="stakeUnstake" class="buttoni-text">Unstake</span>
                       </button>
                     </div>
 
@@ -893,7 +893,7 @@
 
                 <div id="stakingDelegate" class="exportKeysModalColor transferMenu transferAnimation">
                   <div class="transferHeader">
-                    <div class="transferHeaderText">Stake</div>
+                    <div data-i18n="stake" class="transferHeaderText">Stake</div>
                     <div class="transferExit" onclick="MPW.toggleBottomMenu('stakingDelegate', 'transferAnimation')"><i class="fa-solid fa-xmark"></i></div>
                   </div>
 
@@ -928,7 +928,7 @@
                     <div class="text-right pb-2">
                       <button class="pivx-button-medium w-100" style="margin:0px;" onclick="MPW.delegateGUI()">
                         <span class="buttoni-icon"><i class="fas fa-paper-plane fa-tiny-margin"></i></span>
-                        <span class="buttoni-text">Stake</span>
+                        <span data-i18n="stake" class="buttoni-text">Stake</span>
                       </button>
                     </div>
                   </div>
@@ -1105,13 +1105,13 @@
                 <div class="row">
                   <div class="col-12 col-md-3 mb-3 mb-md-0">
                     <ul class="settingsMenu">
-                      <li onclick="MPW.switchSettings('wallet')" id="settingsWalletBtn" class="active">Wallet</li>
-                      <li onclick="MPW.switchSettings('display')" id="settingsDisplayBtn">Display</li>
+                      <li data-i18n="wallet" onclick="MPW.switchSettings('wallet')" id="settingsWalletBtn" class="active">Wallet</li>
+                      <li data-i18n="display" onclick="MPW.switchSettings('display')" id="settingsDisplayBtn">Display</li>
                     </ul>
                   </div>
                   <div class="col-12 col-md-9">
                     <div id="settingsWallet" class="settingsContent">
-                      <span class="header-title">Wallet</span>
+                      <span data-i18n="wallet" class="header-title">Wallet</span>
 
                       <hr />
 
@@ -1133,7 +1133,7 @@
 
                       <div class="custom-control custom-switch" style="margin-bottom:15px;">
                         <input type="checkbox" class="custom-control-input" id="autoSwitchToggler" onclick="MPW.toggleAutoSwitch()">
-                        <label class="custom-control-label" for="autoSwitchToggler">Auto-select Explorers and Nodes</label>
+                        <label data-i18n="settingsAutoSelectNet" class="custom-control-label" for="autoSwitchToggler">Auto-select Explorers and Nodes</label>
                       </div>
 
                       <br />
@@ -1148,18 +1148,18 @@
                       <!-- Default switch -->
                       <div class="custom-control custom-switch" style="margin-bottom:15px;">
                         <input type="checkbox" class="custom-control-input" id="debugToggler" onclick="MPW.toggleDebug()">
-                        <label class="custom-control-label" for="debugToggler">Debug Mode</label>
+                        <label data-i18n="settingsToggleDebug" class="custom-control-label" for="debugToggler">Debug Mode</label>
                       </div>
 
                       <div class="custom-control custom-switch">
                         <input type="checkbox" class="custom-control-input" id="testnetToggler" onclick="MPW.toggleTestnet()">
-                        <label class="custom-control-label" for="testnetToggler">Testnet Mode</label>
+                        <label data-i18n="settingsToggleTestnet" class="custom-control-label" for="testnetToggler">Testnet Mode</label>
                       </div>
 
                     </div>
 
                     <div id="settingsDisplay" class="d-none settingsContent">
-                      <span class="header-title">Display</span>
+                      <span data-i18n="display" class="header-title">Display</span>
 
                       <hr />
 

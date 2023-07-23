@@ -1,17 +1,14 @@
 export const uwu_translation = {
-    // This document is to be used as a template as all the base code is in English
     // Basic HTML tags are allowed such as <b><i> etc. All data is sanitized https://developer.mozilla.org/en-US/docs/Web/API/Element/innerHTML
 
+    // NOTE: If a section does NOT need translating, leave it empty.
+
     // General words
-    enabled: 'enabwed', //enabled
-    active: '', //Active
-    disabled: 'disabwed', //disabled
-    on: '', //On
-    experimental: 'Oh no! Dangewous!', //Experimental
     amount: 'a<i>meow</i>nt', //Amount
     staking: '', //Staking
-    rewards: 'rewowods', //rewards
-    available: 'Avawable', //Available
+    wallet: 'Wawwet', //Wallet
+    display: 'Dispway', //Display
+    activity: 'Actwivity', //Activity
 
     // Nav Bar
     navDashboard: 'Dashbowed', //Dashboard
@@ -22,33 +19,13 @@ export const uwu_translation = {
     navSettings: '', //Settings
 
     // Footer
-    footerBuiltWithPivxLabs: 'Built with wuv by PIVX Wabs❣', //Built with 💜 by PIVX Labs
+    footerBuiltWithPivxLabs: 'Built with wuv by PIVX Wabs 💜', //Built with 💜 by PIVX Labs
 
     // Intro
     loading: 'Loading', //
     loadingTitle: 'My PIVX Wawwet is', //
 
-    cardOneTitle: 'Be da bank!', //Be your own Bank!
-    cardOneDesc:
-        'MyPIVXWawwet has <b>nowo custody</b> over yowour funds. You are in full owonership of your keys and your PIV.', //MyPIVXWallet has <b>no custody</b> over your funds. You are in full ownership of your keys and your PIV.
-    cardOneLink: 'Knowo mowore', //Know more
-
-    cardTwoTitle: 'Univewsal and Portabwe', //Universal and Portable
-    cardTwoDesc:
-        'Yowou can genewate cwyptogwaphicawwy-secuwe adwesses with yowour bwowoser and hawdware.', //You can generate cryptographically-secure addresses with your browser and hardware.
-    cardTwoLink: 'Knowo mowore', //Know more
-
-    cardThreeTitle: 'Dun trust, vewify!', //Don't trust, verify!
-    cardThreeDesc:
-        'MYPIVXWawwet is compwetewy open-soworce, avawable on da PIVX Wabs Github.', //MyPIVXWallet is completely open-source, available on the PIVX Labs github.
-    cardThreeLink: 'Knowo mowore', //Know more
-
-    cardFourTitle: 'For da Commuwunity', //For the community
-    cardFourDesc:
-        'MyPIVXWawwet is built with wuv without any fees, pwiwacy intruwutions, or adwertizing.', //MyPIVXWallet is built with love without any fees, privacy intrusions or advertising.
-    cardFourLink: 'Knowo mowore', //Know more
-
-    // Dashboard
+    // Onboarding Dashboard
     dashboardTitle: 'Dashbowod', //Dashboard
     dCardOneTitle: 'Cweate a', //Create a
     dCardOneSubTitle: 'New Wawwet!', //New Wallet
@@ -75,18 +52,56 @@ export const uwu_translation = {
     dCardFourButtonI: 'Impowt Wawwet', //Import Wallet
     dCardFourButtonA: 'Access My Wawwet', //Access My Wallet
 
+    // Seed Phrase Creation
+    thisIsYourSeed: 'This is ur seed phrase:', //This is your seed phrase:
+    writeDownSeed: "Write it down, baka! You'll only see this <b>once!</b>", //Write it down somewhere. You'll only see this <b>once!</b>
+    doNotShareWarning:
+        'Anyone with a copy of it can access <b>all</b> of ur funds.', //Anyone with a copy of it can access <b>all</b> of your funds.
+    doNotShare: 'Do NOT share it with anyuwu.', //Do NOT share it with anybody.
+    digitalStoreNotAdvised:
+        'It is <b>NAWT</b> advised to store this digitally.', //It is <b>NOT</b> advised to store this digitally.
+    optionalPassphrase: 'Optional Passphwase', //Optional Passphrase
+    writtenDown: 'I haz written down my seed phrase', //I have written down my seed phrase
+
+    // Wallet Dashboard
+    gettingStarted: 'Getting Stwarted', //Getting Started
+    secureYourWallet: 'Secure ur wawwet', //Secure your wallet
+    unlockWallet: 'Unlock wawwet', //Unlock wallet
+    lockWallet: 'Lock wawwet', //Lock wallet
+
+    // Wallet Dashboard Sub-menu
+    balanceBreakdown: 'Bwalance Bweakdown', //Balance Breakdown
+    viewOnExplorer: 'View on Expwower', //View on Explorer
+    export: 'Expwort', //Export
+    refreshAddress: 'Refwesh address', //Refresh address
+    redeemOrCreateCode: 'Redeem or Cweate Cowode', //Redeem or Create Code
+
     // Send
-    sendReceiverAddress: 'Addwess', //Address
+    transfer: 'Twansfer', //Transfer
+    address: 'Addwess', //Address
     sendAmountCoinsMax: 'MAX♡', //MAX
     paymentRequestMessage: 'Deswiption (fwom da Mewrchant)', //Description (from the merchant)
-    sendTransaction: 'Send', //Send
+    send: 'Send', //Send
+
+    // Export
+    privateKey: 'Pwivate Key', //Private Key
+    viewPrivateKey: 'View Pwivate Key?', //View Private Key?
+    privateWarning1: 'Make sure no one can see ur scween.', //Make sure no one can see your screen.
+    privateWarning2: 'Anyone with dis key can steal ur funds.', //Anyone with this key can steal your funds.
+    viewKey: 'View the secret sauce', //View key
+
+    // PIVX Promos
+    // NOTE: for this below line, continue the sentence "PIVX Promos [...]", since 'PIVX Promos' is a brand, it is not translated.
+    pivxPromos: 'is a decentralised system for gifty cowodes worth PIV', // [...] is a decentralised system for gift codes worth PIV
+    // NOTE: on this line, if possible, leave 'PIVX Promos' untranslated
+    redeemInput: "Enter ur 'PIVX Promos' cowode", //Enter your 'PIVX Promos' code
+    createName: 'Pwomo Name (Optional)', //Promo Name (Optional)
+    createAmount: 'Pwomo Ameownt', //Promo Amount
 
     // Stake
-    stakeTitle: 'Stake ur PIV to genewwate wewards!', //Stake your PIV to generate rewards!
-    stakeSubTitle:
-        'Coins dat you Stake are "Locked" sepawately from ur Avaiwable bwalance, and havs a chance to genewwate rewawrds. <br> Da more coins you stake, da more frequwuntly you\'ll receive rewawrds.', // Coins that you Stake are \"Locked\" separately from your Available balance, and have a chance to generate rewards. <br> The more coins you stake, the more frequently you'll receive rewards.
     stake: '', //Stake
     stakeUnstake: '', //Unstake
+    rewardHistory: 'Rewawrd Histowy', //Reward History
     loadMore: 'Lowoad Mowore', //Load more
 
     // Governance
@@ -100,9 +115,9 @@ export const uwu_translation = {
     settingsLanguage: 'Chowose a Languwuage!', //Choose a Language:
     settingsAnalytics: 'Chowose your anawytics contwibution wevel:', //Choose your analytics contribution level:
     settingsPivxNode: 'Chowose a PIVX nowode pwease:', //Choose a PIVX node:
-    settingsToggleDebug: 'Toggle Debug Mowode', //Toggle Debug Mode
-    settingsToggleSync: 'Toggle Sync Mowode', //Toggle Sync Mode
-    settingsToggleTestnet: 'Toggle Testnet Mowode', //Toggle Testnet Mode
+    settingsAutoSelectNet: 'Auto-select Expwowers and Nowodes', // Auto-select Explorers and Nodes
+    settingsToggleDebug: 'Debug Mowode', //Debug Mode
+    settingsToggleTestnet: 'Testnet Mowode', //Testnet Mode
 
     // Transparency Report
     transparencyReport: 'Twanspawency Repawt',

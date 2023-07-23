@@ -3,15 +3,11 @@ export const en_translation = {
     // Basic HTML tags are allowed such as <b><i> etc. All data is sanitized https://developer.mozilla.org/en-US/docs/Web/API/Element/innerHTML
 
     // General words
-    enabled: 'enabled', //
-    active: 'Active', //
-    disabled: 'disabled', //
-    on: 'On', //
-    experimental: 'Experimental', //
     amount: 'Amount', //
     staking: 'Staking', //
-    rewards: 'rewards', //
-    available: 'Available', //
+    wallet: 'Wallet', //
+    display: 'Display', //
+    activity: 'Activity', //
 
     // Nav Bar
     navDashboard: 'Dashboard', //
@@ -28,27 +24,7 @@ export const en_translation = {
     loading: 'Loading', //
     loadingTitle: 'My PIVX Wallet is', //
 
-    cardOneTitle: 'Be your own Bank!', //
-    cardOneDesc:
-        'MyPIVXWallet has <b>no custody</b> over your funds. You are in full ownership of your keys and your PIV. ', //
-    cardOneLink: 'Know more', //
-
-    cardTwoTitle: 'Universal and Portable', //
-    cardTwoDesc:
-        'You can generate cryptographically-secure addresses with your browser and hardware.', //
-    cardTwoLink: 'Know more', //
-
-    cardThreeTitle: "Don't trust, verify!", //
-    cardThreeDesc:
-        'MyPIVXWallet is completely open-source, available on the PIVX Labs github.', //
-    cardThreeLink: 'Know more', //
-
-    cardFourTitle: 'For the community', //
-    cardFourDesc:
-        'MyPIVXWallet is built with love without any fees, privacy intrusions or advertising. ', //
-    cardFourLink: 'Know more', //
-
-    // Dashboard
+    // Onboarding Dashboard
     dashboardTitle: 'Dashboard', //
     dCardOneTitle: 'Create a', //
     dCardOneSubTitle: 'New Wallet', //
@@ -75,18 +51,55 @@ export const en_translation = {
     dCardFourButtonI: 'Import Wallet', //
     dCardFourButtonA: 'Access My Wallet', //
 
+    // Seed Phrase Creation
+    thisIsYourSeed: 'This is your seed phrase:', //
+    writeDownSeed: "Write it down somewhere. You'll only see this <b>once!</b>", //
+    doNotShareWarning:
+        'Anyone with a copy of it can access <b>all</b> of your funds.', //
+    doNotShare: 'Do NOT share it with anyone.', //
+    digitalStoreNotAdvised: 'It is <b>NOT</b> advised to store this digitally.', //
+    optionalPassphrase: 'Optional Passphrase', //
+    writtenDown: 'I have written down my seed phrase', //
+
+    // Wallet Dashboard
+    gettingStarted: 'Getting Started', //
+    secureYourWallet: 'Secure your wallet', //
+    unlockWallet: 'Unlock wallet', //
+    lockWallet: 'Lock wallet', //
+
+    // Wallet Dashboard Sub-menu
+    balanceBreakdown: 'Balance Breakdown', //
+    viewOnExplorer: 'View on Explorer', //
+    export: 'Export', //
+    refreshAddress: 'Refresh address', //
+    redeemOrCreateCode: 'Redeem or Create Code', //
+
     // Send
-    sendReceiverAddress: 'Address', //
+    transfer: 'Transfer', //
+    address: 'Address', //
     sendAmountCoinsMax: 'MAX', //
     paymentRequestMessage: 'Description (from the merchant)', //
-    sendTransaction: 'Send', //
+    send: 'Send', //
+
+    // Export
+    privateKey: 'Private Key', //
+    viewPrivateKey: 'View Private Key?', //
+    privateWarning1: 'Make sure no one can see your screen.', //
+    privateWarning2: 'Anyone with this key can steal your funds.', //
+    viewKey: 'View key', //
+
+    // PIVX Promos
+    // NOTE: for this below line, continue the sentence "PIVX Promos [...]", since 'PIVX Promos' is a brand, it is not translated.
+    pivxPromos: 'is a decentralised system for gift codes worth PIV', // [...] is a decentralised system for gift codes worth PIV
+    // NOTE: on this line, if possible, leave 'PIVX Promos' untranslated
+    redeemInput: "Enter your 'PIVX Promos' code", //Enter your 'PIVX Promos' code
+    createName: 'Promo Name (Optional)', //Promo Name (Optional)
+    createAmount: 'Promo Amount', //Promo Amount
 
     // Stake
-    stakeTitle: 'Stake your PIV to generate rewards!', //
-    stakeSubTitle:
-        'Coins that you Stake are "Locked" separately from your Available balance, and have a chance to generate rewards. <br> The more coins you stake, the more frequently you\'ll receive rewards.', //
-    stake: 'Stake',
+    stake: 'Stake', //
     stakeUnstake: 'Unstake', //
+    rewardHistory: 'Reward History', //
     loadMore: 'Load more', //
 
     // Governance
@@ -95,14 +108,14 @@ export const en_translation = {
         'These are proposals that received an overwhelming amount of downvotes, making it likely spam or a highly contestable proposal.',
 
     // Settings
-    settingsCurrency: 'Choose a display currency:',
+    settingsCurrency: 'Choose a display currency:', //
     settingsExplorer: 'Choose an explorer:', //
     settingsLanguage: 'Choose a Language:', //
     settingsPivxNode: 'Choose a PIVX node:', //
+    settingsAutoSelectNet: 'Auto-select Explorers and Nodes', //
     settingsAnalytics: 'Choose your analytics contribution level:', //
-    settingsToggleDebug: 'Toggle Debug Mode', //
-    settingsToggleSync: 'Toggle Sync Mode', //
-    settingsToggleTestnet: 'Toggle Testnet Mode', //
+    settingsToggleDebug: 'Debug Mode', //
+    settingsToggleTestnet: 'Testnet Mode', //
 
     // Transparency Report
     transparencyReport: 'Transparency Report',

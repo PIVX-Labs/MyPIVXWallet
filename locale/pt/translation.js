@@ -1,26 +1,7 @@
-var translation = {
-    // This document is to be used as a template as all the base code is in English
-    // Basic HTML tags are allowed such as <b><i> etc. All data is sanitized https://developer.mozilla.org/en-US/docs/Web/API/Element/innerHTML
+export const pt_translation = {
+    // As tags básicas HTML são permitidas como <b><i> etc. Todos os dados são higienizados https://developer.mozilla.org/pt-BR/docs/Web/API/Element/innerHTML
 
-    // When updating the template you must also update the en version. If you don't and a new language with a new setting is used, it
-    // will NOT translate back after switching back to en
-
-    // How to create a new language:
-    //  1) Create a new folder in locale and copy the template, add the locale prefix (en, uwu, etc) to the start of the variable
-    //          (var translation -> var en_translation) then edit the template with your new languages words.
-    //  2) Go into the i18n.js and find `arrActiveLangs` and add the prefix to that array. ['en'] -> ['en', 'uwu']
-    //  3) Go into the i18n.js page and find `translatableLanguages` add your prefix and variable name
-    //              var translatableLanguages = {
-    //                  "en": en_translation
-    //              }
-    //        Turns into:
-    //              var translatableLanguages = {
-    //                  "en": en_translation,
-    //                  "uwu": uwu_translation
-    //              }
-    //  4) Submit a push request to the github
-
-    // NOTE: If a section does NOT need translating, leave it empty.
+    // NOTA: Se uma seção NÃO precisar ser traduzida, deixe-a vazia.
 
     // General words
     amount: '', //Amount
@@ -30,12 +11,12 @@ var translation = {
     activity: '', //Activity
 
     // Nav Bar
-    navDashboard: '', //Dashboard
-    navSend: '', //Send
-    navStake: '', //Stake
-    navMasternode: '', //Masternode
-    navGovernance: '', //Governance
-    navSettings: '', //Settings
+    navDashboard: 'Painel', //Dashboard
+    navSend: 'Enviar', //Send
+    navStake: 'Construção', //Stake
+    navMasternode: 'Masternode', //Masternode
+    navGovernance: 'Governança', //Governance
+    navSettings: 'Configurações', //Settings
 
     // Footer
     footerBuiltWithPivxLabs: '', //Built with 💜 by PIVX Labs
