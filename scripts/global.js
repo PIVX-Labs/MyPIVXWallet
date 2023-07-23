@@ -2694,7 +2694,7 @@ export function switchSettings(page) {
     btn.classList.add('active');
 }
 
-// This will tell the state of the landing page if it collapsed or not
+/** This will tell the state of the landing page if it collapsed or not */
 let landingSwitchCollapsedVal = false;
 
 /**
@@ -2774,16 +2774,13 @@ export function switchLanding(element) {
     }
 }
 
-/**
- * advanceMode: state if advance mode is being used or not
- * switchAdvanceBusy: state if activating advance mode to prevent animations breaking
- */
+/** State if advance mode is being used or not */
 let advancedMode = false;
+
+/** State if activating advance mode to prevent animations breaking */
 let switchAdvanceBusy = false;
 
-/**
- * Show the advanced elements on the landing page
- */
+/** Show the advanced elements on the landing page */
 export function showAdvancedLanding() {
     const advancedToggle = document.getElementById('advancedLandingToggler');
     if (!switchAdvanceBusy) {
