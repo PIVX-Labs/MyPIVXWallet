@@ -773,9 +773,13 @@ export async function generateWallet(noUI = false) {
     if (walletConfirm) {
         const mnemonic = generateMnemonic();
 
-        const passphrase = !noUI
-            ? await informUserOfMnemonic(mnemonic)
-            : undefined;
+        const passphrase = !noUI ? await informUserOfMnemonic(mnemonic) : '';
+
+        // If the Wallet Creation was cancelled, just back out
+        if (typeof passphrase !== 'string' && !passphrase) {
+            return;
+        }
+
         const seed = await mnemonicToSeed(mnemonic, passphrase);
 
         // Prompt the user to encrypt the seed
@@ -841,6 +845,8 @@ function informUserOfMnemonic(mnemonic) {
     return new Promise((res, _) => {
         $('#mnemonicModal').modal({ keyboard: false });
         doms.domMnemonicModalContent.innerText = mnemonic;
+
+        // Confirm the wallet generation and return the Passphrase (if one was provided)
         doms.domMnemonicModalButton.onclick = () => {
             res(doms.domMnemonicModalPassphrase.value);
             $('#mnemonicModal').modal('hide');
@@ -849,6 +855,17 @@ function informUserOfMnemonic(mnemonic) {
             doms.domMnemonicModalContent.innerText = '';
             doms.domMnemonicModalPassphrase.value = '';
         };
+
+        // Cancel the wallet generation and return 'false' to signify to the caller
+        doms.domMnemonicModalBack.onclick = () => {
+            res(false);
+            $('#mnemonicModal').modal('hide');
+
+            // Wipe the mnemonic displays of sensitive data
+            doms.domMnemonicModalContent.innerText = '';
+            doms.domMnemonicModalPassphrase.value = '';
+        };
+
         $('#mnemonicModal').modal('show');
     });
 }

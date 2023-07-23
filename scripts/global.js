@@ -211,6 +211,7 @@ export async function start() {
         domMnemonicModalContent: document.getElementById(
             'ModalMnemonicContent'
         ),
+        domMnemonicModalBack: document.getElementById('ModalMnemonicBack'),
         domMnemonicModalButton: document.getElementById(
             'modalMnemonicConfirmButton'
         ),
