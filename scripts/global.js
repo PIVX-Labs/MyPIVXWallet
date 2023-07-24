@@ -58,9 +58,8 @@ export let doms = {};
 
 export async function start() {
     // Retract navigation when window is smaller than 768px (bootstrap medium (md))
-    if(document.body.clientWidth <= 768)
-        hideShowNavi();
-        document.getElementById('hideShowBtn').style.opacity = '0';
+    if (document.body.clientWidth <= 768) hideShowNavi();
+    document.getElementById('hideShowBtn').style.opacity = '0';
 
     doms = {
         domNavbarToggler: document.getElementById('navbarToggler'),
@@ -436,7 +435,9 @@ export async function start() {
     }, 150);
 
     // Even listener for media query
-    window.matchMedia(`(max-width: 768px)`).addListener(responsiveNavigationTrigger);
+    window
+        .matchMedia(`(max-width: 768px)`)
+        .addListener(responsiveNavigationTrigger);
 }
 
 function subscribeToNetworkEvents() {
@@ -716,7 +717,7 @@ function responsiveNavigationTrigger(e) {
         hideShowNavi();
 
         // Show show/hide button
-          document.getElementById('hideShowBtn').style.opacity = '1';
+        document.getElementById('hideShowBtn').style.opacity = '1';
     } else {
         hideShowNavi();
 
