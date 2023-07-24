@@ -1,7 +1,8 @@
 import { en_translation } from '../locale/en/translation.js';
-import { pt_translation } from '../locale/pt/translation.js';
+import { pt_pt_translation } from '../locale/pt-pt/translation.js';
 import { uwu_translation } from '../locale/uwu/translation.js';
 import { Database } from './database.js';
+import { setTranslation } from './settings.js';
 
 export const ALERTS = {};
 export let translation = {};
@@ -9,9 +10,9 @@ export let translation = {};
 // TRANSLATION
 //Create an object of objects filled with all the translations
 export const translatableLanguages = {
-    en: en_translation,
-    uwu: uwu_translation,
-    pt: pt_translation,
+    'en': en_translation,
+    'uwu': uwu_translation,
+    'pt-pt': pt_pt_translation,
 };
 
 /**
@@ -108,7 +109,7 @@ function parseUserAgentLang(strUA, arrLangsWithSubset) {
 }
 
 // When adding a lang remember to add it to the object translatableLanguages as well as here.
-export const arrActiveLangs = ['en', 'uwu', 'pt'];
+export const arrActiveLangs = ['en', 'uwu', 'pt-pt'];
 
 export async function start() {
     // We use this function to parse the UA lang in a safer way: for example, there's multiple `en` definitions
@@ -117,7 +118,7 @@ export async function start() {
     const arrLangsWithSubset = ['en'];
 
     const strLang = parseUserAgentLang(
-        window.navigator.userLanguage || window.navigator.language,
+        (window?.navigator?.userLanguage || window?.navigator?.language).toLowerCase(),
         arrLangsWithSubset
     );
 
@@ -126,12 +127,12 @@ export async function start() {
     const { translation: localTranslation } = await database.getSettings();
 
     // Check if set in local storage
-    if (localTranslation != null) {
-        switchTranslation(localTranslation);
+    if (localTranslation !== '') {
+        setTranslation(localTranslation);
     } else {
         // Check if we support the user's browser locale
         if (arrActiveLangs.includes(strLang)) {
-            switchTranslation(strLang);
+            setTranslation(strLang);
         } else {
             // Default to EN if the locale isn't supported yet
             console.log(
@@ -139,7 +140,7 @@ export async function start() {
                     strLang +
                     ") is not supported yet, if you'd like to contribute translations (for rewards!) contact us on GitHub or Discord!"
             );
-            switchTranslation('en');
+            setTranslation('en');
         }
     }
     translate(translation);

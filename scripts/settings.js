@@ -78,7 +78,7 @@ export class Settings {
         node,
         autoswitch = true,
         coldAddress = strColdStakingAddress,
-        translation = 'en',
+        translation = '',
         displayCurrency = 'usd',
     } = {}) {
         this.analytics = analytics;
@@ -272,12 +272,12 @@ async function setNode(node, fSilent = false) {
 /**
  * Switches the translation and sets the translation preference to database
  * @param {string} lang
- * @param {bool} fSilent
  */
-async function setTranslation(lang) {
+export async function setTranslation(lang) {
     switchTranslation(lang);
     const database = await Database.getInstance();
     database.setSettings({ translation: lang });
+    doms.domTranslationSelect.value = lang;
 }
 
 /**
@@ -319,8 +319,8 @@ async function fillTranslationSelect() {
 
     const database = await Database.getInstance();
     const { translation } = await database.getSettings();
-    // And update the UI to reflect them
-    doms.domTranslationSelect.value = translation;
+    // And update the UI to reflect them (default to English if none)
+    doms.domTranslationSelect.value = translation || 'en';
 }
 
 /**
