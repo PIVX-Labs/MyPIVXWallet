@@ -4,15 +4,15 @@ export const pt_pt_translation = {
     // NOTA: Se uma seção NÃO precisar ser traduzida, deixe-a vazia.
 
     // General words
-    amount: '', //Amount
-    staking: '', //Staking
-    wallet: '', //Wallet
-    display: '', //Display
-    activity: '', //Activity
+    amount: 'Quantia', //Amount
+    staking: 'Staking', //Staking
+    wallet: 'Carteira', //Wallet
+    display: 'Mostrar', //Display
+    activity: 'Atividade', //Activity
 
     // Nav Bar
     navDashboard: 'Painel', //Dashboard
-    navStake: 'Construção', //Stake
+    navStake: 'Stake', //Stake
     navMasternode: 'Masternode', //Masternode
     navGovernance: 'Governança', //Governance
     navSettings: 'Configurações', //Settings
@@ -21,114 +21,114 @@ export const pt_pt_translation = {
     footerBuiltWithPivxLabs: '', //Built with 💜 by PIVX Labs
 
     // Intro
-    loading: '', //Loading
-    loadingTitle: '', //My PIVX Wallet is
+    loading: 'Carregar', //Loading
+    loadingTitle: 'A Minha Carteira PIVX', //My PIVX Wallet is
 
     // Onboarding Dashboard
-    dashboardTitle: '', //Dashboard
-    dCardOneTitle: '', //Create a
-    dCardOneSubTitle: '', //New Wallet
-    dCardOneDesc: '', //Create a new PIVX wallet, offering the most secure backup & security methods.
-    dCardOneButton: '', //Create A New Wallet
+    dashboardTitle: 'Painel', //Dashboard
+    dCardOneTitle: 'Criar a', //Create a
+    dCardOneSubTitle: 'Nova Carteira', //New Wallet
+    dCardOneDesc: 'Crie uma carteira nova PIVX, oferecendo os métodos de backup e segurança mais seguros.', //Create a new PIVX wallet, offering the most secure backup & security methods.
+    dCardOneButton: 'Crie uma Carteira Nova', //Create A New Wallet
 
-    dCardTwoTitle: '', //Create a new
-    dCardTwoSubTitle: '', //Vanity Wallet
-    dCardTwoDesc: '', //Create a wallet with a custom prefix, this can take a long time!
-    dCardTwoButton: '', //Create A Vanity Wallet
+    dCardTwoTitle: 'Criar Nova', //Create a new
+    dCardTwoSubTitle: 'Carteira Vanity', //Vanity Wallet
+    dCardTwoDesc: 'Criar uma carteira com um prefixo personalizado, isso pode levar muito tempo!', //Create a wallet with a custom prefix, this can take a long time!
+    dCardTwoButton: 'Criar uma Carteira Vanity', //Create A Vanity Wallet
 
-    dCardThreeTitle: '', //Access your
-    dCardThreeSubTitle: '', //Hardware Wallet
-    dCardThreeDesc: '', //Use your Ledger Hardware wallet with MPW's familiar interface.
-    dCardThreeButton: '', //Access my Ledger
+    dCardThreeTitle: 'Acesse a sua', //Access your
+    dCardThreeSubTitle: 'Carteira de hardware', //Hardware Wallet
+    dCardThreeDesc: 'Use a sua carteira Ledger Hardware com a interface familiar do MPW.', //Use your Ledger Hardware wallet with MPW's familiar interface.
+    dCardThreeButton: 'Acessar a minha Ledger', //Access my Ledger
 
-    dCardFourTitle: '', //Go to
-    dCardFourSubTitle: '', //My Wallet
-    dCardFourDesc: '', //Import a PIVX wallet using a Private Key, xpriv, or Seed Phrase.
-    dCardFourButtonI: '', //Import Wallet
-    dCardFourButtonA: '', //Access My Wallet
+    dCardFourTitle: 'Vá para a', //Go to
+    dCardFourSubTitle: 'Minha Carteira', //My Wallet
+    dCardFourDesc: 'Importar uma carteira PIVX usando uma chave privada, xpriv ou Frase Inicial.', //Import a PIVX wallet using a Private Key, xpriv, or Seed Phrase.
+    dCardFourButtonI: 'Importar Carteira', //Import Wallet
+    dCardFourButtonA: 'Acessar a Minha Carteira', //Access My Wallet
 
     // Seed Phrase Creation
-    thisIsYourSeed: '', //This is your seed phrase:
-    writeDownSeed: '', //Write it down somewhere. You'll only see this <b>once!</b>
-    doNotShareWarning: '', //Anyone with a copy of it can access <b>all</b> of your funds.
-    doNotShare: '', //Do NOT share it with anybody.
-    digitalStoreNotAdvised: '', //It is <b>NOT</b> advised to store this digitally.
-    optionalPassphrase: '', //Optional Passphrase
-    writtenDown: '', //I have written down my seed phrase
+    thisIsYourSeed: 'Esta é a sua frase inicial:', //This is your seed phrase:
+    writeDownSeed: 'Escreva em um lugar. Você só vai ver isso <b>uma vez!</b>', //Write it down somewhere. You'll only see this <b>once!</b>
+    doNotShareWarning: 'Qualquer pessoa com uma cópia dela pode acessar <b> a todos</b> os seus fundos', //Anyone with a copy of it can access <b>all</b> of your funds.
+    doNotShare: 'NÃO a compartilhe com ninguém.', //Do NOT share it with anybody.
+    digitalStoreNotAdvised: '<b>NÃO</b> é aconselhável armazená-lo digitalmente.', //It is <b>NOT</b> advised to store this digitally.
+    optionalPassphrase: 'Frase Senha Opcional', //Optional Passphrase
+    writtenDown: 'Eu escrevi a minha frase-inicial', //I have written down my seed phrase
 
     // Wallet Dashboard
-    gettingStarted: '', //Getting Started
-    secureYourWallet: '', //Secure your wallet
-    unlockWallet: '', //Unlock wallet
-    lockWallet: '', //Lock wallet
+    gettingStarted: 'A Começar', //Getting Started
+    secureYourWallet: 'Proteja a sua carteira', //Secure your wallet
+    unlockWallet: 'Desbloquear a carteira', //Unlock wallet
+    lockWallet: 'Fechar a carteira', //Lock wallet
 
     // Wallet Dashboard Sub-menu
-    balanceBreakdown: '', //Balance Breakdown
-    viewOnExplorer: '', //View on Explorer
-    export: '', //Export
-    refreshAddress: '', //Refresh address
-    redeemOrCreateCode: '', //Redeem or Create Code
+    balanceBreakdown: 'Composição do Saldo', //Balance Breakdown
+    viewOnExplorer: 'Ver no Explorador ', //View on Explorer
+    export: 'Exportar', //Export
+    refreshAddress: 'Atualizar endereço', //Refresh address
+    redeemOrCreateCode: 'Resgatar ou Criar Código', //Redeem or Create Code
 
     // Send
-    transfer: '', //Transfer
-    address: '', //Address
-    sendAmountCoinsMax: '', //MAX
-    paymentRequestMessage: '', //Description (from the merchant)
-    send: '', //Send
+    transfer: 'Transferir', //Transfer
+    address: 'Endereço', //Address
+    sendAmountCoinsMax: 'Máximo', //MAX
+    paymentRequestMessage: 'Descrição (do destino)', //Description (from the merchant)
+    send: 'Enviar', //Send
 
     // Export
-    privateKey: '', //Private Key
-    viewPrivateKey: '', //View Private Key?
-    privateWarning1: '', //Make sure no one can see your screen.
-    privateWarning2: '', //Anyone with this key can steal your funds.
-    viewKey: '', //View key
+    privateKey: 'Chave privada', //Private Key
+    viewPrivateKey: 'Mostrar a chave privada?', //View Private Key?
+    privateWarning1: 'Certifique-se de que ninguém está a ver o seu ecra.', //Make sure no one can see your screen.
+    privateWarning2: 'Qualquer pessoa com esta chave pode roubar os seus fundos', //Anyone with this key can steal your funds.
+    viewKey: 'Ver a chave', //View key
 
     // PIVX Promos
     // NOTE: for this below line, continue the sentence "PIVX Promos [...]", since 'PIVX Promos' is a brand, it is not translated.
-    pivxPromos: '', // [...] is a decentralised system for gift codes worth PIV
+    pivxPromos: '[...] um sistema descentralizado de códigos de presente no valor de PIV', // [...] is a decentralised system for gift codes worth PIV
     // NOTE: on this line, if possible, leave 'PIVX Promos' untranslated
-    redeemInput: '', //Enter your 'PIVX Promos' code
-    createName: '', //Promo Name (Optional)
-    createAmount: '', //Promo Amount
+    redeemInput: 'Digite o seu código \'PIVX Promos\'', //Enter your 'PIVX Promos' code
+    createName: 'Nome da promoção (opcional)', //Promo Name (Optional)
+    createAmount: 'Valor promocional', //Promo Amount
 
     // Stake
     stake: '', //Stake
     stakeUnstake: '', //Unstake
-    rewardHistory: '', //Reward History
-    loadMore: '', //Load more
+    rewardHistory: 'Histórico de recompensas', //Reward History
+    loadMore: 'Carregar mais', //Load more
 
     // Masternode
-    mnControlYour: '', //Control your
-    mnSubtext: '', //From this tab you can create and access one or more masternodes
+    mnControlYour: 'Controle o seu', //Control your
+    mnSubtext: 'A partir deste guia, você pode criar e acessar um ou mais masternodes', //From this tab you can create and access one or more masternodes
 
     // Governance
-    govSubtext: '', //From this tab you can check the proposals and, if you have a masternode, be a part of the <b>DAO</b> and vote!
-    govMonthlyBudget: '', //Monthly Budget
-    govAllocBudget: '', //Allocated Budget
-    govNextPayout: '', //Next Treasury Payout
-    govTableStatus: '', //STATUS
-    govTableName: '', //NAME
-    govTablePayment: '', //PAYMENT
-    govTableVotes: '', //VOTES
-    govTableVote: '', //VOTE
-    contestedProposalsTitle: '', //Contested Proposals
-    contestedProposalsDesc: '', //These are proposals that received an overwhelming amount of downvotes, making it likely spam or a highly contestable proposal.
+    govSubtext: 'Nesta aba você pode conferir as propostas e, se tiver um masternode, fazer parte do <b>DAO</b> e votar!', //From this tab you can check the proposals and, if you have a masternode, be a part of the <b>DAO</b> and vote!
+    govMonthlyBudget: 'Orçamento mensal', //Monthly Budget
+    govAllocBudget: 'Orçamento Alocado', //Allocated Budget
+    govNextPayout: 'Próximo Pagamento da  Tesoraria', //Next Treasury Payout
+    govTableStatus: 'ESTADO', //STATUS
+    govTableName: 'NOME', //NAME
+    govTablePayment: 'PAGAMENTO', //PAYMENT
+    govTableVotes: 'VOTOS', //VOTES
+    govTableVote: 'VOTE', //VOTE
+    contestedProposalsTitle: 'Propostas Contestadas', //Contested Proposals
+    contestedProposalsDesc: 'Essas são as propostas que receberam uma quantidade esmagadora de votos negativos, tornando-as provavelmente spam ou uma proposta altamente contestável.', //These are proposals that received an overwhelming amount of downvotes, making it likely spam or a highly contestable proposal.
 
     // Settings
-    settingsCurrency: '', //Choose a display currency:
-    settingsExplorer: '', //Choose an explorer:
-    settingsLanguage: '', //Choose a Language:
-    settingsPivxNode: '', //Choose a PIVX node:
-    settingsAutoSelectNet: '', //Auto-select Explorers and Nodes
-    settingsAnalytics: '', //Choose your analytics contribution level:
-    settingsToggleDebug: '', //Debug Mode
-    settingsToggleTestnet: '', //Testnet Mode
+    settingsCurrency: 'Escolha uma moeda de exibição:', //Choose a display currency:
+    settingsExplorer: 'Escolha um explorador:', //Choose an explorer:
+    settingsLanguage: 'Escolha um Idioma:', //Choose a Language:
+    settingsPivxNode: 'Escolha um node PIVX', //Choose a PIVX node:
+    settingsAutoSelectNet: 'Seleção automática de Exploradores e Nodes', //Auto-select Explorers and Nodes
+    settingsAnalytics: 'Escolha seu nível de contribuição analítica:', //Choose your analytics contribution level:
+    settingsToggleDebug: 'Modo de depuração', //Debug Mode
+    settingsToggleTestnet: 'Modo Testnet', //Testnet Mode
 
     // Transparency Report
-    transparencyReport: '', //"Transparency Report",
-    hit: '', //"A ping indicating an app load, no unique data is sent.",
-    time_to_sync: '', //"The time in seconds it took for MPW to last synchronise.",
-    transaction: '', //"A ping indicating a Tx, no unique data is sent, but may be inferred from on-chain time.",
+    transparencyReport: '"Relatório de Transparência"', //"Transparency Report",
+    hit: '"Um ping a indicar o carregamento de um aplicativo, nenhum dado exclusivo é enviado."', //"A ping indicating an app load, no unique data is sent.",
+    time_to_sync: '"O tempo em segundos que o MPW levou para sincronizar pela última vez."', //"The time in seconds it took for MPW to last synchronise.",
+    transaction: '"Um ping indicando um Tx, nenhum dado exclusivo é enviado, mas pode ser inferido a partir do tempo na rede."', //"A ping indicating a Tx, no unique data is sent, but may be inferred from on-chain time.",
 
     // Alerts
     ALERTS: '<-- DO NOT EDIT! All below entries are for Alert Popups',
