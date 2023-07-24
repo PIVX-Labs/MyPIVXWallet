@@ -239,6 +239,13 @@ progress[value]::-moz-progress-bar {
     padding-left: 75px!important;
 }
 
+@media (max-width: 460px) {
+    #qrModal.modal {
+        width: 100%!important;
+        left: calc(50% - 5px)!important;
+    }
+}
+
 .modal-label {
     position: relative;
     top: 20px;
@@ -351,20 +358,16 @@ progress[value]::-moz-progress-bar {
 
 #page-container {
     position: relative;
-    min-height: calc(100vh - 75px);
+    min-height: 100vh;
 }
 
 #content-wrap {
-    padding-bottom: 4rem;
+    padding-bottom: 111px;
 }
 
 @media (max-width: 768px) {
-  #content-wrap {
-    margin-top:-40px
-  }
-
   #page-container {
-    min-height: calc(100vh - 40px);
+    min-height: 100vh;
   }
 }
 
@@ -1393,10 +1396,6 @@ a {
 
     #big-frame-address {
         padding-top: 20px;
-    }
-
-    #genKeyWarning div {
-        max-width: 100% !important;
     }
 
     #genKeyWarning p {
@@ -2551,7 +2550,7 @@ input {
 @media (min-width: 768px) {
     .transferMenu {
         width: 310px!important;
-        left: calc((100% - 310px) / 2)!important;
+        left: calc((100% - 70px) / 2)!important;
     }
 }
 
@@ -3496,4 +3495,18 @@ select.form-control option {
 
 .fs-15 {
     font-size:15px;
+}
+
+/* Left margin of the container to compensate sidebar */
+.container-margin {
+    margin-left:75px;
+}
+
+@media (min-width: 768px) {
+    .container-margin {
+        margin-left:228px;
+    }
+    #foot {
+        padding-left:234px;
+    }
 }
