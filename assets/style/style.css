@@ -3133,6 +3133,27 @@ select.form-control option {
     }
 }
 
+@media (max-width: 460px) {
+    .flipdown .rotor,
+    .flipdown .rotor-leaf,
+    .flipdown .rotor-leaf-front,
+    .flipdown .rotor-leaf-rear,
+    .flipdown .rotor-top,
+    .flipdown .rotor-bottom,
+    .flipdown .rotor:after {
+        width: 25px;
+    }
+
+    .flipdown {
+        width: 280px;
+    }
+
+    .flipdown .rotor-group:nth-child(n+2):nth-child(-n+3):before,
+    .flipdown .rotor-group:nth-child(n+2):nth-child(-n+3):after {
+        left: 59px;
+    }
+}
+
 .governLink:hover {
     text-decoration: underline!important;
 }
