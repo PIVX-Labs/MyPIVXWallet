@@ -12,11 +12,10 @@ export const uwu_translation = {
 
     // Nav Bar
     navDashboard: 'Dashbowed', //Dashboard
-    navSend: 'Send❣', //Send
-    navStake: '', //Stake
-    navMasternode: '', //Masternode
-    navGovernance: '', //Governance
-    navSettings: '', //Settings
+    navStake: "Stakin'", //Stake
+    navMasternode: 'Masternowode', //Masternode
+    navGovernance: 'Gubernance', //Governance
+    navSettings: 'Configgy', //Settings
 
     // Footer
     footerBuiltWithPivxLabs: 'Built with wuv by PIVX Wabs 💜', //Built with 💜 by PIVX Labs
@@ -105,9 +104,19 @@ export const uwu_translation = {
     loadMore: 'Lowoad Mowore', //Load more
 
     // Governance
-    contestedProposalsTitle: 'Contwested Pwoposals',
+    govSubtext:
+        'Fwom dis tab yew can check the pwoposals and, if you have a masternowode, be a part of the <b>DAO</b> and vwote!', //From this tab you can check the proposals and, if you have a masternode, be a part of the <b>DAO</b> and vote!
+    govMonthlyBudget: 'Monthly Budgey', //Monthly Budget
+    govAllocBudget: 'Allocated Budgey', //Allocated Budget
+    govNextPayout: 'Next Moneybags Rain', //Next Treasury Payout
+    govTableStatus: 'STATUS', //STATUS
+    govTableName: 'NAME', //NAME
+    govTablePayment: 'PAYMENT', //PAYMENT
+    govTableVotes: 'VOWOTES', //VOTES
+    govTableVote: 'VOWOTE', //VOTE
+    contestedProposalsTitle: 'Contwested Pwoposals', //Contested Proposals
     contestedProposalsDesc:
-        'Dees are pwoposals dat received an overwhelming ameownt of downwotes, making it likely spam or a highly contwestable pwoposal.',
+        'Dees are pwoposals dat received an overwhelming ameownt of downwotes, making it likely spam or a highly contwestable pwoposal.', //These are proposals that received an overwhelming amount of downvotes, making it likely spam or a highly contestable proposal.
 
     // Settings
     settingsCurrency: 'Chowose a dispway cuwwency:',
@@ -120,11 +129,11 @@ export const uwu_translation = {
     settingsToggleTestnet: 'Testnet Mowode', //Testnet Mode
 
     // Transparency Report
-    transparencyReport: 'Twanspawency Repawt',
-    hit: 'A ping indicating an app load, no unique data is sent.♡',
-    time_to_sync: 'The time in seconds it took for MPW to last synchronise.♡',
+    transparencyReport: 'Twanspawency Repawt', //Transparency Report
+    hit: 'A ping indicating an app load, no unique data is sent.♡', //A ping indicated an app load, no unique data is sent.
+    time_to_sync: 'The time in seconds it took for MPW to last synchronise.♡', //The time in seconds it took for MPW to last synchronise.
     transaction:
-        'A ping indicating a Tx, no unique data is sent, but may be infewwed from on-chain time.♡',
+        'A ping indicating a Tx, no unique data is sent, but may be infewwed from on-chain time.♡', //A ping indicating a Tx, no unique data is sent, but may be inferred from on-chain time.
 
     // Alerts
     ALERTS: '<-- DO NOT EDIT! All below entries are for Alert Popups',

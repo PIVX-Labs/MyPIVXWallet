@@ -936,14 +936,14 @@
               </div>
               <div id="Governance" class="tabcontent">
                 <div class="col-md-12 title-section float-left rm-pd">
-                  <h3 class="pivx-bold-title center-text">Governance</h3>
-                  <p class="center-text">From this tab you can check the proposals and, if you have a masternode, be a part of the <b>DAO</b> and vote!</p>
+                  <h3 data-i18n="navGovernance" class="pivx-bold-title center-text">Governance</h3>
+                  <p data-i18n="govSubtext" class="center-text">From this tab you can check the proposals and, if you have a masternode, be a part of the <b>DAO</b> and vote!</p>
                 </div>
 
 
                 <div class="row mb-5">
                   <div class="col-6 col-lg-3 text-center governBudgetCard">
-                    <span style="font-weight:800; color:#cac9d2;">Monthly Budget</span>
+                    <span data-i18n="govMonthlyBudget" style="font-weight:800; color:#cac9d2;">Monthly Budget</span>
 
                     <div style="background-color:hsl(273 79% 27% / 1); margin-top:11px; border-radius: 9px; width: fit-content; padding-left: 13px; padding-right: 13px; padding-bottom: 10px; padding-top: 9px;">
                       <span style="font-size: 23px;"><span id="totalGovernanceBudget">-</span> <span style="color:#8b38ff;">PIV</span></span>
@@ -952,7 +952,7 @@
                     </div>
                   </div>
                   <div class="col-6 col-lg-3 text-center governBudgetCard for-mobile">
-                    <span style="font-weight:800; color:#cac9d2;">Budget Allocated</span>
+                    <span data-i18n="govAllocBudget" style="font-weight:800; color:#cac9d2;">Budget Allocated</span>
 
                     <div style="background-color:hsl(273 79% 23% / 1); margin-top:11px; border-radius: 9px; width: fit-content; padding-left: 13px; padding-right: 13px; padding-bottom: 10px; padding-top: 9px;">
                       <span style="font-size: 23px;"><span id="allocatedGovernanceBudget">-</span> <span style="color:#8b38ff;">PIV</span></span>
@@ -961,11 +961,11 @@
                     </div>
                   </div>
                   <div class="col-12 col-lg-6 text-center governPayoutTime">
-                    <span style="font-weight:800; color:#cac9d2;">Next Treasury Payout</span>
+                    <span data-i18n="govNextPayout" style="font-weight:800; color:#cac9d2;">Next Treasury Payout</span>
                     <div id="flipdown" class="flipdown"></div>
                   </div>
                   <div class="col-12 col-lg-3 text-center governBudgetCard for-desktop">
-                    <span style="font-weight:800; color:#cac9d2;">Budget Allocated</span>
+                    <span data-i18n="govAllocBudget" style="font-weight:800; color:#cac9d2;">Budget Allocated</span>
 
                     <div style="background-color:hsl(273 79% 23% / 1); margin-top:11px; border-radius: 9px; width: fit-content; padding-left: 13px; padding-right: 13px; padding-bottom: 10px; padding-top: 9px;">
                       <span style="font-size: 23px;"><span id="allocatedGovernanceBudget2">-</span> <span style="color:#8b38ff;">PIV</span></span>
@@ -979,11 +979,11 @@
                 <div class="pivx-button-small governAdd" onclick="MPW.createProposal()"><i class="fas fa-plus"></i></div>
                 <table id="proposalsTable" class="table table-hover table-dark bg-transparent governTable" style="width: 100%;">
                   <thead>
-                    <td class="text-center btlr-7p"><b> STATUS </b></td>
-                    <td class="text-center"><b> NAME </b></td>
-                    <td class="text-center for-desktop"><b> PAYMENT </b></td>
-                    <td class="text-center for-desktop"><b> VOTES </b></td>
-                    <td class="text-center for-desktop btrr-7p"><b> VOTE </b></td>
+                    <td class="text-center btlr-7p"><b data-i18n="govTableStatus"> STATUS </b></td>
+                    <td class="text-center"><b data-i18n="govTableName"> NAME </b></td>
+                    <td class="text-center for-desktop"><b data-i18n="govTablePayment"> PAYMENT </b></td>
+                    <td class="text-center for-desktop"><b data-i18n="govTableVotes"> VOTES </b></td>
+                    <td class="text-center for-desktop btrr-7p"><b data-i18n="govTableVote"> VOTE </b></td>
                   </thead>
                   <tbody id="proposalsTableBody" style="text-align: center; vertical-align: middle;"></tbody>
                 </table>
@@ -994,11 +994,11 @@
                 <br>
                 <table id="proposalsContestedTable" class="table table-hover table-dark bg-transparent governTable" style="width: 100%; opacity: 0.8;">
                   <thead>
-                    <td class="text-center btlr-7p"><b> STATUS </b></td>
-                    <td class="text-center"><b> NAME </b></td>
-                    <td class="text-center for-desktop"><b> PAYMENT </b></td>
-                    <td class="text-center for-desktop"><b> VOTES </b></td>
-                    <td class="text-center for-desktop btrr-7p"><b> VOTE </b></td>
+                    <td class="text-center btlr-7p"><b data-i18n="govTableStatus"> STATUS </b></td>
+                    <td class="text-center"><b data-i18n="govTableName"> NAME </b></td>
+                    <td class="text-center for-desktop"><b data-i18n="govTablePayment"> PAYMENT </b></td>
+                    <td class="text-center for-desktop"><b data-i18n="govTableVotes"> VOTES </b></td>
+                    <td class="text-center for-desktop btrr-7p"><b data-i18n="govTableVote"> VOTE </b></td>
                   </thead>
                   <tbody id="proposalsContestedTableBody" style="text-align: center; vertical-align: middle;"></tbody>
                 </table>

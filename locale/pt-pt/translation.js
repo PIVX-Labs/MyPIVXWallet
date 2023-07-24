@@ -12,7 +12,6 @@ export const pt_pt_translation = {
 
     // Nav Bar
     navDashboard: 'Painel', //Dashboard
-    navSend: 'Enviar', //Send
     navStake: 'Construção', //Stake
     navMasternode: 'Masternode', //Masternode
     navGovernance: 'Governança', //Governance
@@ -99,6 +98,15 @@ export const pt_pt_translation = {
     loadMore: '', //Load more
 
     // Governance
+    govSubtext: '', //From this tab you can check the proposals and, if you have a masternode, be a part of the <b>DAO</b> and vote!
+    govMonthlyBudget: '', //Monthly Budget
+    govAllocBudget: '', //Allocated Budget
+    govNextPayout: '', //Next Treasury Payout
+    govTableStatus: '', //STATUS
+    govTableName: '', //NAME
+    govTablePayment: '', //PAYMENT
+    govTableVotes: '', //VOTES
+    govTableVote: '', //VOTE
     contestedProposalsTitle: '', //Contested Proposals
     contestedProposalsDesc: '', //These are proposals that received an overwhelming amount of downvotes, making it likely spam or a highly contestable proposal.
 

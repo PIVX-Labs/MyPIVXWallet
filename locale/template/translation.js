@@ -31,7 +31,6 @@ var translation = {
 
     // Nav Bar
     navDashboard: '', //Dashboard
-    navSend: '', //Send
     navStake: '', //Stake
     navMasternode: '', //Masternode
     navGovernance: '', //Governance
@@ -118,7 +117,15 @@ var translation = {
     loadMore: '', //Load more
 
     // Governance
-    contestedProposalsTitle: '', //Contested Proposals
+    govSubtext: '', //From this tab you can check the proposals and, if you have a masternode, be a part of the <b>DAO</b> and vote!
+    govMonthlyBudget: '', //Monthly Budget
+    govAllocBudget: '', //Allocated Budget
+    govNextPayout: '', //Next Treasury Payout
+    govTableStatus: '', //STATUS
+    govTableName: '', //NAME
+    govTablePayment: '', //PAYMENT
+    govTableVotes: '', //VOTES
+    govTableVote: '', //VOTE
     contestedProposalsDesc: '', //These are proposals that received an overwhelming amount of downvotes, making it likely spam or a highly contestable proposal.
 
     // Settings

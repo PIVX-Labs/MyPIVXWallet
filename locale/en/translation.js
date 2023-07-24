@@ -11,7 +11,6 @@ export const en_translation = {
 
     // Nav Bar
     navDashboard: 'Dashboard', //
-    navSend: 'Send', //
     navStake: 'Stake', //
     navMasternode: 'Masternode', //
     navGovernance: 'Governance', //
@@ -103,9 +102,19 @@ export const en_translation = {
     loadMore: 'Load more', //
 
     // Governance
-    contestedProposalsTitle: 'Contested Proposals',
+    govSubtext:
+        'From this tab you can check the proposals and, if you have a masternode, be a part of the <b>DAO</b> and vote!', //
+    govMonthlyBudget: 'Monthly Budget', //
+    govAllocBudget: 'Allocated Budget', //
+    govNextPayout: 'Next Treasury Payout', //
+    govTableStatus: 'STATUS', //
+    govTableName: 'NAME', //
+    govTablePayment: 'PAYMENT', //
+    govTableVotes: 'VOTES', //
+    govTableVote: 'VOTE', //
+    contestedProposalsTitle: 'Contested Proposals', //
     contestedProposalsDesc:
-        'These are proposals that received an overwhelming amount of downvotes, making it likely spam or a highly contestable proposal.',
+        'These are proposals that received an overwhelming amount of downvotes, making it likely spam or a highly contestable proposal.', //
 
     // Settings
     settingsCurrency: 'Choose a display currency:', //
