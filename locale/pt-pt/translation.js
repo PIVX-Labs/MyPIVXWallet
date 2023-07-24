@@ -138,7 +138,7 @@ export const pt_pt_translation = {
     settingsCurrency: 'Escolha uma moeda de exibição:', //Choose a display currency:
     settingsExplorer: 'Escolha um explorador:', //Choose an explorer:
     settingsLanguage: 'Escolha um Idioma:', //Choose a Language:
-    settingsPivxNode: 'Escolha um node PIVX', //Choose a PIVX node:
+    settingsPivxNode: 'Escolha um node PIVX:', //Choose a PIVX node:
     settingsAutoSelectNet: 'Seleção automática de Exploradores e Nodes', //Auto-select Explorers and Nodes
     settingsAnalytics: 'Escolha seu nível de contribuição analítica:', //Choose your analytics contribution level:
     settingsToggleDebug: 'Modo de depuração', //Debug Mode
