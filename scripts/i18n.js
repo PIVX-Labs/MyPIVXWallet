@@ -10,8 +10,8 @@ export let translation = {};
 // TRANSLATION
 //Create an object of objects filled with all the translations
 export const translatableLanguages = {
-    'en': en_translation,
-    'uwu': uwu_translation,
+    en: en_translation,
+    uwu: uwu_translation,
     'pt-pt': pt_pt_translation,
 };
 
@@ -117,10 +117,11 @@ export async function start() {
     // ... This logic may apply to other languages with such subsets as well, so take care of them here!
     const arrLangsWithSubset = ['en'];
 
-    const strLang = parseUserAgentLang(
-        (window?.navigator?.userLanguage || window?.navigator?.language).toLowerCase(),
-        arrLangsWithSubset
-    );
+    const localeLang =
+        window?.navigator?.userLanguage || window?.navigator?.language;
+    const strLang = localeLang
+        ? parseUserAgentLang(localeLang.toLowerCase(), arrLangsWithSubset)
+        : undefined;
 
     // When removing you do not have to remove from translatableLanguages
     const database = await Database.getInstance();
