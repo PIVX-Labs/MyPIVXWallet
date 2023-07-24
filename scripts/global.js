@@ -2228,12 +2228,12 @@ async function renderProposals(arrProposals, fContested) {
             const domVoteBtns = domRow.insertCell();
             const domNoBtn = document.createElement('button');
             domNoBtn.className = btnNoClass;
-            domNoBtn.innerText = 'No';
+            domNoBtn.innerText = translation.no;
             domNoBtn.onclick = () => govVote(cProposal.Hash, 2);
 
             const domYesBtn = document.createElement('button');
             domYesBtn.className = btnYesClass;
-            domYesBtn.innerText = 'Yes';
+            domYesBtn.innerText = translation.yes;
             domYesBtn.onclick = () => govVote(cProposal.Hash, 1);
 
             // Add border radius to last row
@@ -2271,7 +2271,7 @@ async function renderProposals(arrProposals, fContested) {
         mobileExtended.innerHTML = `
         <div class="row pt-2">
             <div class="col-5 fs-13 fw-600">
-                <div class="governMobDot"></div> PAYMENT
+                <div class="governMobDot"></div> ${translation.govTablePayment}
             </div>
             <div class="col-7">
                 <span class="governValues"><b>${sanitizeHTML(
@@ -2294,7 +2294,7 @@ async function renderProposals(arrProposals, fContested) {
         <hr class="governHr">
         <div class="row">
             <div class="col-5 fs-13 fw-600">
-                <div class="governMobDot"></div> VOTES
+                <div class="governMobDot"></div> ${translation.govTableVotes}
             </div>
             <div class="col-7">
                 <b>${parseFloat(nLocalPercent).toLocaleString(
@@ -2314,7 +2314,7 @@ async function renderProposals(arrProposals, fContested) {
         <hr class="governHr">
         <div class="row pb-2">
             <div class="col-5 fs-13 fw-600">
-                <div class="governMobDot"></div> VOTE
+                <div class="governMobDot"></div> ${translation.govTableVote}
             </div>
             <div class="col-7">
                 ${voteBtn}

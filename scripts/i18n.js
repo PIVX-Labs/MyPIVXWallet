@@ -2,7 +2,7 @@ import { en_translation } from '../locale/en/translation.js';
 import { pt_pt_translation } from '../locale/pt-pt/translation.js';
 import { uwu_translation } from '../locale/uwu/translation.js';
 import { Database } from './database.js';
-import { setTranslation } from './settings.js';
+import { fillAnalyticSelect, setTranslation } from './settings.js';
 
 export const ALERTS = {};
 export let translation = {};
@@ -24,6 +24,7 @@ export function switchTranslation(langName) {
         translation = translatableLanguages[langName];
         translate(translation);
         loadAlerts();
+        fillAnalyticSelect();
         return true;
     } else {
         console.log(

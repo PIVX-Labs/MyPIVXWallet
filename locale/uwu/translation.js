@@ -9,6 +9,8 @@ export const uwu_translation = {
     wallet: 'Wawwet', //Wallet
     display: 'Dispway', //Display
     activity: 'Actwivity', //Activity
+    yes: 'Yas', //Yes
+    no: 'Nu', //No
 
     // Nav Bar
     navDashboard: 'Dashbowed', //Dashboard
@@ -68,6 +70,12 @@ export const uwu_translation = {
     unlockWallet: 'Unlock wawwet', //Unlock wallet
     lockWallet: 'Lock wawwet', //Lock wallet
 
+    // Encrypt wallet
+    encryptWallet: 'Encwypt wawwet', //Encrypt wallet
+    encryptPasswordFirst: 'Entwer Password', //Enter Password
+    encryptPasswordSecond: 'Re-entwer Password', //Re-enter Password
+    encrypt: 'Encwypt', //Encrypt
+
     // Wallet Dashboard Sub-menu
     balanceBreakdown: 'Bwalance Bweakdown', //Balance Breakdown
     viewOnExplorer: 'View on Expwower', //View on Explorer
@@ -78,6 +86,7 @@ export const uwu_translation = {
     // Send
     transfer: 'Twansfer', //Transfer
     address: 'Addwess', //Address
+    receivingAddress: 'Receivwing addwess', //Receiving address
     sendAmountCoinsMax: 'MAX♡', //MAX
     paymentRequestMessage: 'Deswiption (fwom da Mewrchant)', //Description (from the merchant)
     send: 'Send', //Send
@@ -139,6 +148,11 @@ export const uwu_translation = {
     time_to_sync: 'The time in seconds it took for MPW to last synchronise.♡', //The time in seconds it took for MPW to last synchronise.
     transaction:
         'A ping indicating a Tx, no unique data is sent, but may be infewwed from on-chain time.♡', //A ping indicating a Tx, no unique data is sent, but may be inferred from on-chain time.
+
+    // Analytics Levels
+    analyticDisabled: 'Disabwed', //Disabled
+    analyticMinimal: 'Minimuwul', //Minimal
+    analyticBalanced: 'Bawanced', //Balanced
 
     // Alerts
     ALERTS: '<-- DO NOT EDIT! All below entries are for Alert Popups',

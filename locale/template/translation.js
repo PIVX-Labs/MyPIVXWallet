@@ -28,6 +28,8 @@ var translation = {
     wallet: '', //Wallet
     display: '', //Display
     activity: '', //Activity
+    yes: '', //Yes
+    no: '', //No
 
     // Nav Bar
     navDashboard: '', //Dashboard
@@ -81,6 +83,12 @@ var translation = {
     unlockWallet: '', //Unlock wallet
     lockWallet: '', //Lock wallet
 
+    // Encrypt wallet
+    encryptWallet: '', //Encrypt wallet
+    encryptPasswordFirst: '', //Enter Password
+    encryptPasswordSecond: '', //Re-enter Password
+    encrypt: '', //Encrypt
+
     // Wallet Dashboard Sub-menu
     balanceBreakdown: '', //Balance Breakdown
     viewOnExplorer: '', //View on Explorer
@@ -91,6 +99,7 @@ var translation = {
     // Send
     transfer: '', //Transfer
     address: '', //Address
+    receivingAddress: '', //Receiving address
     sendAmountCoinsMax: '', //MAX
     paymentRequestMessage: '', //Description (from the merchant)
     send: '', //Send
@@ -143,53 +152,58 @@ var translation = {
     settingsToggleTestnet: '', //Testnet Mode
 
     // Transparency Report
-    transparencyReport: '', //"Transparency Report",
-    hit: '', //"A ping indicating an app load, no unique data is sent.",
-    time_to_sync: '', //"The time in seconds it took for MPW to last synchronise.",
-    transaction: '', //"A ping indicating a Tx, no unique data is sent, but may be inferred from on-chain time.",
+    transparencyReport: '', //Transparency Report
+    hit: '', //A ping indicating an app load, no unique data is sent.
+    time_to_sync: '', //The time in seconds it took for MPW to last synchronise.
+    transaction: '', //A ping indicating a Tx, no unique data is sent, but may be inferred from on-chain time.
+
+    // Analytics Levels
+    analyticDisabled: '', //Disabled
+    analyticMinimal: '', //Minimal
+    analyticBalanced: '', //Balanced
 
     // Alerts
     ALERTS: '<-- DO NOT EDIT! All below entries are for Alert Popups',
 
-    FAILED_TO_IMPORT: '', //<b>Failed to import!</b> Invalid password,
-    UNSUPPORTED_CHARACTER: '', //"The character '{char}' is unsupported in addresses! (Not Base58 compatible)"
+    FAILED_TO_IMPORT: '', //<b>Failed to import!</b> Invalid password
+    UNSUPPORTED_CHARACTER: '', //The character '{char}' is unsupported in addresses! (Not Base58 compatible)
     UNSUPPORTED_WEBWORKERS: '', //This browser doesn\'t support Web Workers (multi-threaded JS), unfortunately you cannot generate Vanity wallets!
     INVALID_ADDRESS: '', //<b>Invalid PIVX address!</b><br> {address}
-    TESTNET_ENCRYPTION_DISABLED: '', //"<b>Testnet Mode is ON!</b><br>Wallet encryption disabled",
-    PASSWORD_TOO_SMALL: '', //"That password is a little short!<br>Use at least <b>{MIN_PASS_LENGTH} characters.</b>",
-    PASSWORD_DOESNT_MATCH: '', //'Your passwords don\'t match!',
-    NEW_PASSWORD_SUCCESS: '', //'<b>You\'re Secured! 🔐</b><br>Nice stuff, Armoured PIVian!',
-    INVALID_AMOUNT: '', //'<b>Invalid amount!</b><br>',
-    VALIDATE_AMOUNT_LOW: '', //'<br>Minimum amount is {minimumAmount} {coinTicker}!',
-    VALIDATE_AMOUNT_DECIMAL: '', //'{coinDecimal} decimal limit exceeded',
-    SUCCESS_STAKING_ADDR: '', //'<b>Staking Address set!</b><br>Now go ahead and unstake!',
-    CONFIRM_UNSTAKE_H_WALLET: '', //"<b>Confirm your Unstake</b><br>Confirm the TX on your {strHardwareName}",
-    CONFIRM_TRANSACTION_H_WALLET: '', //"<b>Confirm your transaction</b><br>Confirm the TX on your {strHardwareName}",
-    SUCCESS_STAKING_ADDR_SET: '', //'<b>Staking Address set!</b><br>Now go ahead and stake!',
-    STAKE_NOT_SEND: '', //'Here, use the <b>Stake</b> screen, not the Send screen!',
-    BAD_ADDR_LENGTH: '', //'<b>Invalid PIVX address!<b><br>Bad length ({addressLength})',
-    BAD_ADDR_PREFIX: '', //'<b>Invalid PIVX address!<b><br>Bad prefix {address} (Should start with {addressPrefix})',
-    SENT_NOTHING: '', //'You can\'t send \'nothing\'!',
-    MORE_THEN_8_DECIMALS: '', //'8 decimal limit exceeded',
-    SAVE_WALLET_PLEASE: '', //<b>Save your wallet!</b><br>Dashboard ➜ Set Password,
+    TESTNET_ENCRYPTION_DISABLED: '', //<b>Testnet Mode is ON!</b><br>Wallet encryption disabled
+    PASSWORD_TOO_SMALL: '', //That password is a little short!<br>Use at least <b>{MIN_PASS_LENGTH} characters.</b>
+    PASSWORD_DOESNT_MATCH: '', //Your passwords don\'t match!
+    NEW_PASSWORD_SUCCESS: '', //<b>You\'re Secured! 🔐</b><br>Nice stuff, Armoured PIVian!
+    INVALID_AMOUNT: '', //<b>Invalid amount!</b><br>
+    VALIDATE_AMOUNT_LOW: '', //<br>Minimum amount is {minimumAmount} {coinTicker}!
+    VALIDATE_AMOUNT_DECIMAL: '', //{coinDecimal} decimal limit exceeded
+    SUCCESS_STAKING_ADDR: '', //<b>Staking Address set!</b><br>Now go ahead and unstake!
+    CONFIRM_UNSTAKE_H_WALLET: '', //<b>Confirm your Unstake</b><br>Confirm the TX on your {strHardwareName}
+    CONFIRM_TRANSACTION_H_WALLET: '', //<b>Confirm your transaction</b><br>Confirm the TX on your {strHardwareName}
+    SUCCESS_STAKING_ADDR_SET: '', //<b>Staking Address set!</b><br>Now go ahead and stake!
+    STAKE_NOT_SEND: '', //Here, use the <b>Stake</b> screen, not the Send screen!
+    BAD_ADDR_LENGTH: '', //<b>Invalid PIVX address!<b><br>Bad length ({addressLength})
+    BAD_ADDR_PREFIX: '', //<b>Invalid PIVX address!<b><br>Bad prefix {address} (Should start with {addressPrefix})
+    SENT_NOTHING: '', //You can\'t send \'nothing\'!
+    MORE_THEN_8_DECIMALS: '', //8 decimal limit exceeded
+    SAVE_WALLET_PLEASE: '', //<b>Save your wallet!</b><br>Dashboard ➜ Set Password
     BACKUP_OR_ENCRYPT_WALLET: '', //Please ENCRYPT and/or BACKUP your keys before leaving, or you may lose them!
     NO_CAMERAS: '', //This device has no camera!
 
-    SWITCHED_EXPLORERS: '', //<b>Switched explorer!</b><br>Now using {explorerName},
-    SWITCHED_NODE: '', //<b>Switched node!</b><br>Now using {node},
-    SWITCHED_ANALYTICS: '', //<b>Switched analytics level!</b><br>Now {level},
-    SWITCHED_SYNC: '', //<b>Switched sync mode!</b><br>Now using {sync} sync,
+    SWITCHED_EXPLORERS: '', //<b>Switched explorer!</b><br>Now using {explorerName}
+    SWITCHED_NODE: '', //<b>Switched node!</b><br>Now using {node}
+    SWITCHED_ANALYTICS: '', //<b>Switched analytics level!</b><br>Now {level}
+    SWITCHED_SYNC: '', //<b>Switched sync mode!</b><br>Now using {sync} sync
     UNABLE_SWITCH_TESTNET: '', //<b>Unable to switch Testnet Mode!</b><br>A wallet is already loaded
 
-    WALLET_OFFLINE_AUTOMATIC: '', //"<b>Offline Mode is active!</b><br>Please disable Offline Mode for automatic transactions",
-    WALLET_UNLOCK_IMPORT: '', //"Please {unlock} your wallet before sending transactions!",
-    WALLET_FIREFOX_UNSUPPORTED: '', //"<b>Firefox doesn't support this!</b><br>Unfortunately, Firefox does not support hardware wallets",
-    WALLET_HARDWARE_WALLET: '', //"<b>Hardware wallet ready!</b><br>Please keep your {hardwareWallet} plugged in, unlocked, and in the PIVX app",
-    WALLET_CONFIRM_L: '', //"Confirm the import on your Ledger",
-    WALLET_NO_HARDWARE: '', //"<b>No device available</b><br>Couldn't find a hardware wallet; please plug it in and unlock!",
-    WALLET_HARDWARE_CONNECTION_LOST: '', // "<b>Lost connection to {hardwareWallet} </b><br>It seems the {hardwareWalletProductionName} was unplugged mid-operation, oops!",
-    WALLET_HARDWARE_BUSY: '', //"<b>{hardwareWallet} is waiting</b><br>Please unlock your {hardwareWalletProductionName} or finish it's current prompt",
-    WALLET_HARDWARE_ERROR: '', //"<b> {hardwareWallet} </b><br> {error}"
+    WALLET_OFFLINE_AUTOMATIC: '', //<b>Offline Mode is active!</b><br>Please disable Offline Mode for automatic transactions
+    WALLET_UNLOCK_IMPORT: '', //Please {unlock} your wallet before sending transactions!
+    WALLET_FIREFOX_UNSUPPORTED: '', //<b>Firefox doesn't support this!</b><br>Unfortunately, Firefox does not support hardware wallets
+    WALLET_HARDWARE_WALLET: '', //<b>Hardware wallet ready!</b><br>Please keep your {hardwareWallet} plugged in, unlocked, and in the PIVX app
+    WALLET_CONFIRM_L: '', //Confirm the import on your Ledger
+    WALLET_NO_HARDWARE: '', //<b>No device available</b><br>Couldn't find a hardware wallet; please plug it in and unlock!
+    WALLET_HARDWARE_CONNECTION_LOST: '', //<b>Lost connection to {hardwareWallet} </b><br>It seems the {hardwareWalletProductionName} was unplugged mid-operation, oops!
+    WALLET_HARDWARE_BUSY: '', //<b>{hardwareWallet} is waiting</b><br>Please unlock your {hardwareWalletProductionName} or finish it's current prompt
+    WALLET_HARDWARE_ERROR: '', //<b> {hardwareWallet} </b><br> {error}
 
     CONFIRM_POPUP_VOTE: '', //Confirm Vote
     CONFIRM_POPUP_VOTE_HTML: '', //Are you sure? It takes 60 minutes to change vote

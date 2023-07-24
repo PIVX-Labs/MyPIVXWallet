@@ -8,6 +8,8 @@ export const en_translation = {
     wallet: 'Wallet', //
     display: 'Display', //
     activity: 'Activity', //
+    yes: 'Yes', //
+    no: 'No', //
 
     // Nav Bar
     navDashboard: 'Dashboard', //
@@ -66,6 +68,12 @@ export const en_translation = {
     unlockWallet: 'Unlock wallet', //
     lockWallet: 'Lock wallet', //
 
+    // Encrypt wallet
+    encryptWallet: 'Encrypt wallet', //
+    encryptPasswordFirst: 'Enter Password', //
+    encryptPasswordSecond: 'Re-enter Password', //
+    encrypt: 'Encrypt', //
+
     // Wallet Dashboard Sub-menu
     balanceBreakdown: 'Balance Breakdown', //
     viewOnExplorer: 'View on Explorer', //
@@ -76,6 +84,7 @@ export const en_translation = {
     // Send
     transfer: 'Transfer', //
     address: 'Address', //
+    receivingAddress: 'Receiving address', //
     sendAmountCoinsMax: 'MAX', //
     paymentRequestMessage: 'Description (from the merchant)', //
     send: 'Send', //
@@ -137,6 +146,11 @@ export const en_translation = {
     time_to_sync: 'The time in seconds it took for MPW to last synchronise.',
     transaction:
         'A ping indicating a Tx, no unique data is sent, but may be inferred from on-chain time.',
+
+    // Analytics Levels
+    analyticDisabled: 'Disabled',
+    analyticMinimal: 'Minimal',
+    analyticBalanced: 'Balanced',
 
     // Alerts
     ALERTS: '<-- DO NOT EDIT! All below entries are for Alert Popups',

@@ -261,7 +261,7 @@
                     <div class="modal-dialog" role="document">
                       <div class="modal-content exportKeysModalColor">
                         <div class="modal-header">
-                          <h5 class="modal-title" id="encryptWalletLabel">Encrypt wallet</h5>
+                          <h5 class="modal-title" data-i18n="encryptWallet" id="encryptWalletLabel">Encrypt wallet</h5>
                           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                             <i class="fa-solid fa-xmark closeCross"></i>
                           </button>
@@ -269,10 +269,10 @@
                         <div class="modal-body">
                           <div class="row m-0">
                             <div class="col-12 col-md-6 p-0 pr-0 pr-md-1">
-                              <input class="center-text textboxTransparency" style="width: 100%; font-family: monospace;" type="password" id="newPassword" placeholder="Enter Password" />
+                              <input class="center-text textboxTransparency" data-i18n="encryptPasswordFirst" style="width: 100%; font-family: monospace;" type="password" id="newPassword" placeholder="Enter Password" />
                             </div>
                             <div class="col-12 col-md-6 p-0 pl-0 pl-md-1">
-                              <input class="center-text textboxTransparency" style="width: 100%; font-family: monospace;" type="password" id="newPasswordRetype" placeholder="Re-type Password" />
+                              <input class="center-text textboxTransparency" data-i18n="encryptPasswordSecond" style="width: 100%; font-family: monospace;" type="password" id="newPasswordRetype" placeholder="Re-enter Password" />
                             </div>
                           </div>
                         </div>
@@ -285,7 +285,7 @@
                                 ></path>
                               </svg>
                             </span>
-                            Encrypt
+                            <span data-i18n="encrypt">Encrypt</span>
                           </button>
                         </div>
                       </div>
@@ -545,7 +545,7 @@
                         <label data-i18n="address">Address</label><br />
                         
                         <div class="input-group mb-3">
-                          <input class="btn-group-input" style="font-family: monospace; " type="text" id="address1s" placeholder="Receiving address" autocomplete="nope" />
+                          <input class="btn-group-input" data-i18n="receivingAddress" style="font-family: monospace;" type="text" id="address1s" placeholder="Receiving address" autocomplete="nope" />
                           <div class="input-group-append">
                             <span class="input-group-text ptr" onclick="MPW.openSendQRScanner()"><i class="fa-solid fa-qrcode fa-2xl"></i></span>
                           </div>
@@ -862,7 +862,7 @@
                           <input class="btn-group-input" style="padding-right: 0px;" type="number" id="undelegateAmount" placeholder="0.00" autocomplete="nope" onkeydown="javascript: return event.keyCode == 69 ? false : true" />
                           <div class="input-group-append">
                             <span class="input-group-text p-0">
-                              <div onclick="MPW.selectMaxBalance(MPW.doms.domUnstakeAmount, MPW.doms.domUnstakeAmountValue, true)" style="cursor: pointer; border: 0px; border-radius: 7px; padding: 3px 6px; margin: 0px 1px; background: linear-gradient(183deg, #9621ff9c, #7d21ffc7); color: #fff; font-weight: bold;">
+                              <div data-i18n="sendAmountCoinsMax" onclick="MPW.selectMaxBalance(MPW.doms.domUnstakeAmount, MPW.doms.domUnstakeAmountValue, true)" style="cursor: pointer; border: 0px; border-radius: 7px; padding: 3px 6px; margin: 0px 1px; background: linear-gradient(183deg, #9621ff9c, #7d21ffc7); color: #fff; font-weight: bold;">
                                 MAX
                               </div>
                             </span>
@@ -906,7 +906,7 @@
                           <input class="btn-group-input" style="padding-right: 0px;" type="number" id="delegateAmount" placeholder="0.00" autocomplete="nope" onkeydown="javascript: return event.keyCode == 69 ? false : true" />
                           <div class="input-group-append">
                             <span class="input-group-text p-0">
-                              <div onclick="MPW.selectMaxBalance(MPW.doms.domStakeAmount, MPW.doms.domStakeAmountValue)" style="cursor: pointer; border: 0px; border-radius: 7px; padding: 3px 6px; margin: 0px 1px; background: linear-gradient(183deg, #9621ff9c, #7d21ffc7); color: #fff; font-weight: bold;">
+                              <div data-i18n="sendAmountCoinsMax" onclick="MPW.selectMaxBalance(MPW.doms.domStakeAmount, MPW.doms.domStakeAmountValue)" style="cursor: pointer; border: 0px; border-radius: 7px; padding: 3px 6px; margin: 0px 1px; background: linear-gradient(183deg, #9621ff9c, #7d21ffc7); color: #fff; font-weight: bold;">
                                 MAX
                               </div>
                             </span>

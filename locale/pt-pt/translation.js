@@ -9,6 +9,8 @@ export const pt_pt_translation = {
     wallet: 'Carteira', //Wallet
     display: 'Mostrar', //Display
     activity: 'Atividade', //Activity
+    yes: 'Sim', //Yes
+    no: 'Não', //No
 
     // Nav Bar
     navDashboard: 'Painel', //Dashboard
@@ -68,6 +70,12 @@ export const pt_pt_translation = {
     unlockWallet: 'Desbloquear a carteira', //Unlock wallet
     lockWallet: 'Fechar a carteira', //Lock wallet
 
+    // Encrypt wallet
+    encryptWallet: 'Criptografar carteira', //Encrypt wallet
+    encryptPasswordFirst: 'Digite a senha', //Enter Password
+    encryptPasswordSecond: 'Digite novamente a senha', //Re-enter Password
+    encrypt: 'Criptografar', //Encrypt
+
     // Wallet Dashboard Sub-menu
     balanceBreakdown: 'Composição do Saldo', //Balance Breakdown
     viewOnExplorer: 'Ver no Explorador ', //View on Explorer
@@ -78,6 +86,7 @@ export const pt_pt_translation = {
     // Send
     transfer: 'Transferir', //Transfer
     address: 'Endereço', //Address
+    receivingAddress: 'Endereço de receber', //Receiving address
     sendAmountCoinsMax: 'Máximo', //MAX
     paymentRequestMessage: 'Descrição (do destino)', //Description (from the merchant)
     send: 'Enviar', //Send
@@ -136,17 +145,22 @@ export const pt_pt_translation = {
     settingsToggleTestnet: 'Modo Testnet', //Testnet Mode
 
     // Transparency Report
-    transparencyReport: '"Relatório de Transparência"', //"Transparency Report",
-    hit: '"Um ping a indicar o carregamento de um aplicativo, nenhum dado exclusivo é enviado."', //"A ping indicating an app load, no unique data is sent.",
+    transparencyReport: '"Relatório de Transparência"', //Transparency Report
+    hit: '"Um ping a indicar o carregamento de um aplicativo, nenhum dado exclusivo é enviado."', //A ping indicating an app load, no unique data is sent.
     time_to_sync:
-        '"O tempo em segundos que o MPW levou para sincronizar pela última vez."', //"The time in seconds it took for MPW to last synchronise.",
+        '"O tempo em segundos que o MPW levou para sincronizar pela última vez."', //The time in seconds it took for MPW to last synchronise.
     transaction:
-        '"Um ping indicando um Tx, nenhum dado exclusivo é enviado, mas pode ser inferido a partir do tempo na rede."', //"A ping indicating a Tx, no unique data is sent, but may be inferred from on-chain time.",
+        '"Um ping indicando um Tx, nenhum dado exclusivo é enviado, mas pode ser inferido a partir do tempo na rede."', //A ping indicating a Tx, no unique data is sent, but may be inferred from on-chain time.
+
+    // Analytics Levels
+    analyticDisabled: 'Desativado', //Disabled
+    analyticMinimal: 'Mínimo', //Minimal
+    analyticBalanced: 'Saldo', //Balanced
 
     // Alerts
     ALERTS: '<-- DO NOT EDIT! All below entries are for Alert Popups',
 
-    FAILED_TO_IMPORT: '<b>Falha ao importar!</b> Senha inválida', //<b>Failed to import!</b> Invalid password,
+    FAILED_TO_IMPORT: '<b>Falha ao importar!</b> Senha inválida', //<b>Failed to import!</b> Invalid password
     UNSUPPORTED_CHARACTER:
         'O caractere {char} não é suportado em endereços! (Não é compatível com Base58)', //The character '{char}' is unsupported in addresses! (Not Base58 compatible)
     UNSUPPORTED_WEBWORKERS:

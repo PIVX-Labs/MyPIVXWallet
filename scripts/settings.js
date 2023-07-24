@@ -103,6 +103,7 @@ export let STATS = {
 export const cStatKeys = Object.keys(STATS);
 
 // A list of Analytics 'levels' at which the user may set depending on their privacy preferences
+// NOTE: When changing Level Names, ensure the i18n system is updated to support them too
 let arrAnalytics = [
     // Statistic level  // Allowed statistics
     { name: 'Disabled', stats: [] },
@@ -163,14 +164,6 @@ export async function start() {
         refreshPriceDisplay().finally(refreshChainData);
     }
 
-    // Add each analytics level into the UI selector
-    const domAnalyticsSelect = document.getElementById('analytics');
-    for (const analLevel of arrAnalytics) {
-        const opt = document.createElement('option');
-        opt.value = opt.innerHTML = analLevel.name;
-        domAnalyticsSelect.appendChild(opt);
-    }
-
     const database = await Database.getInstance();
 
     // Fetch settings from Database
@@ -227,8 +220,8 @@ export async function start() {
         );
     }
 
-    // And update the UI to reflect them
-    domAnalyticsSelect.value = cAnalyticsLevel.name;
+    // Add each analytics level into the UI selector
+    fillAnalyticSelect();
 }
 // --- Settings Functions
 export async function setExplorer(explorer, fSilent = false) {
@@ -346,6 +339,21 @@ export async function fillCurrencySelect() {
     strCurrency = doms.domCurrencySelect.value = displayCurrency;
 }
 
+/**
+ * Fills the Analytics Settings UI
+ */
+export function fillAnalyticSelect() {
+    const domAnalyticsSelect = document.getElementById('analytics');
+    domAnalyticsSelect.innerHTML = '';
+    for (const analLevel of arrAnalytics) {
+        const opt = document.createElement('option');
+        // Apply translation to the display HTML
+        opt.value = analLevel.name;
+        opt.innerHTML = translation['analytic' + analLevel.name];
+        domAnalyticsSelect.appendChild(opt);
+    }
+}
+
 async function setAnalytics(level, fSilent = false) {
     cAnalyticsLevel = level;
     const database = await Database.getInstance();
@@ -380,7 +388,7 @@ async function setAnalytics(level, fSilent = false) {
         createAlert(
             'success',
             ALERTS.SWITCHED_ANALYTICS,
-            [{ level: cAnalyticsLevel.name }],
+            [{ level: translation['analytic' + cAnalyticsLevel.name] }],
             2250
         );
 }
