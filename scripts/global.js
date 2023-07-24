@@ -57,8 +57,10 @@ export function isLoaded() {
 export let doms = {};
 
 export async function start() {
-    // Retract navigation
-    hideShowNavi();
+    // Retract navigation when window is smaller than 768px (bootstrap medium (md))
+    if(document.body.clientWidth <= 768)
+        hideShowNavi();
+        document.getElementById('hideShowBtn').style.opacity = '0';
 
     doms = {
         domNavbarToggler: document.getElementById('navbarToggler'),
@@ -432,6 +434,9 @@ export async function start() {
         // If we haven't already (due to having no wallet, etc), display the Dashboard
         doms.domDashboard.click();
     }, 150);
+
+    // Even listener for media query
+    window.matchMedia(`(max-width: 768px)`).addListener(responsiveNavigationTrigger);
 }
 
 function subscribeToNetworkEvents() {
@@ -699,6 +704,24 @@ export function hideShowNavi() {
 
             naviState = true;
         }
+    }
+}
+
+/**
+ * Function that handles the responsive navigation trigger based on the media query result.
+ * @param {MediaQueryListEvent} e - The MediaQueryListEvent object representing the change in the media query status.
+ */
+function responsiveNavigationTrigger(e) {
+    if (e.matches) {
+        hideShowNavi();
+
+        // Show show/hide button
+          document.getElementById('hideShowBtn').style.opacity = '1';
+    } else {
+        hideShowNavi();
+
+        // Hide show/hide button
+        document.getElementById('hideShowBtn').style.opacity = '0';
     }
 }
 
