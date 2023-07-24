@@ -103,6 +103,11 @@ export const uwu_translation = {
     rewardHistory: 'Rewawrd Histowy', //Reward History
     loadMore: 'Lowoad Mowore', //Load more
 
+    // Masternode
+    mnControlYour: 'Contwol ur', //Control your
+    mnSubtext:
+        'Fwom dis tab you can cweate and access one or more masternowodes', //From this tab you can create and access one or more masternodes
+
     // Governance
     govSubtext:
         'Fwom dis tab yew can check the pwoposals and, if you have a masternowode, be a part of the <b>DAO</b> and vwote!', //From this tab you can check the proposals and, if you have a masternode, be a part of the <b>DAO</b> and vote!

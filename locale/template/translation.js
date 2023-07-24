@@ -116,6 +116,10 @@ var translation = {
     rewardHistory: '', //Reward History
     loadMore: '', //Load more
 
+    // Masternode
+    mnControlYour: '', //Control your
+    mnSubtext: '', //From this tab you can create and access one or more masternodes
+
     // Governance
     govSubtext: '', //From this tab you can check the proposals and, if you have a masternode, be a part of the <b>DAO</b> and vote!
     govMonthlyBudget: '', //Monthly Budget
