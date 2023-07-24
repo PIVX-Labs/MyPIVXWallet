@@ -146,50 +146,73 @@ export const pt_pt_translation = {
     // Alerts
     ALERTS: '<-- DO NOT EDIT! All below entries are for Alert Popups',
 
-    FAILED_TO_IMPORT: '', //<b>Failed to import!</b> Invalid password,
-    UNSUPPORTED_CHARACTER: '', //"The character '{char}' is unsupported in addresses! (Not Base58 compatible)"
-    UNSUPPORTED_WEBWORKERS: '', //This browser doesn\'t support Web Workers (multi-threaded JS), unfortunately you cannot generate Vanity wallets!
-    INVALID_ADDRESS: '', //<b>Invalid PIVX address!</b><br> {address}
-    TESTNET_ENCRYPTION_DISABLED: '', //"<b>Testnet Mode is ON!</b><br>Wallet encryption disabled",
-    PASSWORD_TOO_SMALL: '', //"That password is a little short!<br>Use at least <b>{MIN_PASS_LENGTH} characters.</b>",
-    PASSWORD_DOESNT_MATCH: '', //'Your passwords don\'t match!',
-    NEW_PASSWORD_SUCCESS: '', //'<b>You\'re Secured! 🔐</b><br>Nice stuff, Armoured PIVian!',
-    INVALID_AMOUNT: '', //'<b>Invalid amount!</b><br>',
-    VALIDATE_AMOUNT_LOW: '', //'<br>Minimum amount is {minimumAmount} {coinTicker}!',
-    VALIDATE_AMOUNT_DECIMAL: '', //'{coinDecimal} decimal limit exceeded',
-    SUCCESS_STAKING_ADDR: '', //'<b>Staking Address set!</b><br>Now go ahead and unstake!',
-    CONFIRM_UNSTAKE_H_WALLET: '', //"<b>Confirm your Unstake</b><br>Confirm the TX on your {strHardwareName}",
-    CONFIRM_TRANSACTION_H_WALLET: '', //"<b>Confirm your transaction</b><br>Confirm the TX on your {strHardwareName}",
-    SUCCESS_STAKING_ADDR_SET: '', //'<b>Staking Address set!</b><br>Now go ahead and stake!',
-    STAKE_NOT_SEND: '', //'Here, use the <b>Stake</b> screen, not the Send screen!',
-    BAD_ADDR_LENGTH: '', //'<b>Invalid PIVX address!<b><br>Bad length ({addressLength})',
-    BAD_ADDR_PREFIX: '', //'<b>Invalid PIVX address!<b><br>Bad prefix {address} (Should start with {addressPrefix})',
-    SENT_NOTHING: '', //'You can\'t send \'nothing\'!',
-    MORE_THEN_8_DECIMALS: '', //'8 decimal limit exceeded',
-    SAVE_WALLET_PLEASE: '', //<b>Save your wallet!</b><br>Dashboard ➜ Set Password,
-    BACKUP_OR_ENCRYPT_WALLET: '', //Please ENCRYPT and/or BACKUP your keys before leaving, or you may lose them!
-    NO_CAMERAS: '', //This device has no camera!
+    FAILED_TO_IMPORT: '<b>Falha ao importar!</b> Senha inválida', //<b>Failed to import!</b> Invalid password,
+    UNSUPPORTED_CHARACTER:
+        'O caractere {char} não é suportado em endereços! (Não é compatível com Base58)', //The character '{char}' is unsupported in addresses! (Not Base58 compatible)
+    UNSUPPORTED_WEBWORKERS:
+        'Este navegador não suporta Web Workers (JS multi-threaded), infelizmente você não pode gerar carteiras Vanity!', //This browser doesn\'t support Web Workers (multi-threaded JS), unfortunately you cannot generate Vanity wallets!
+    INVALID_ADDRESS: '<b>Endereço PIVX inválido!</b><br> {address}', //<b>Invalid PIVX address!</b><br> {address}
+    TESTNET_ENCRYPTION_DISABLED:
+        '<b>Modo Testnet ativado!</b><br>Criptografia de carteira desativada', //<b>Testnet Mode is ON!</b><br>Wallet encryption disabled
+    PASSWORD_TOO_SMALL:
+        'Essa senha é um pouco curta!<br>Use pelo menos <b>{MIN_PASS_LENGTH} caracteres.</b>',
+    PASSWORD_DOESNT_MATCH: 'Suas senhas não correspondem!', //Your passwords don\'t match!
+    NEW_PASSWORD_SUCCESS:
+        '<b>Você está protegido! 🔐</b><br>Coisa Boa, PIVian blindado!', //<b>You\'re Secured! 🔐</b><br>Nice stuff, Armoured PIVian!
+    INVALID_AMOUNT: '<b>Valor inválido!</b><br>', //<b>Invalid amount!</b><br>
+    VALIDATE_AMOUNT_LOW: '<br>O valor mínimo é {minimumAmount} {coinTicker}!', //<br>Minimum amount is {minimumAmount} {coinTicker}!
+    VALIDATE_AMOUNT_DECIMAL: '{coinDecimal} limite decimal excedido', //{coinDecimal} decimal limit exceeded
+    SUCCESS_STAKING_ADDR:
+        '<b>Endereço de Staking definido!</b><br>Agora vá em frente e desmarque!', //<b>Staking Address set!</b><br>Now go ahead and unstake!
+    CONFIRM_UNSTAKE_H_WALLET:
+        '<b>Confirme seu Unstake</b><br>Confirme o TX em seu {strHardwareName}', //<b>Confirm your Unstake</b><br>Confirm the TX on your {strHardwareName}
+    CONFIRM_TRANSACTION_H_WALLET:
+        '<b>Confirme sua transação</b><br>Confirme o TX em seu {strHardwareName}', //<b>Confirm your transaction</b><br>Confirm the TX on your {strHardwareName}
+    SUCCESS_STAKING_ADDR_SET:
+        '<b>Endereço de Staking definido!</b><br>Agora vá em frente e stake', //'<b>Staking Address set!</b><br>Now go ahead and stake!
+    STAKE_NOT_SEND: 'Aqui, use a tela <b>Stake</b>, não a tela Send!', //Here, use the <b>Stake</b> screen, not the Send screen!
+    BAD_ADDR_LENGTH:
+        '<b>Endereço PIVX inválido!<b><br>Comprimento incorreto ({addressLength})', //<b>Invalid PIVX address!<b><br>Bad length ({addressLength})
+    BAD_ADDR_PREFIX:
+        '<b>Endereço PIVX inválido!<b><br>Prefixo inválido {address} (Deve começar com {addressPrefix})', //<b>Invalid PIVX address!<b><br>Bad prefix {address} (Should start with {addressPrefix})
+    SENT_NOTHING: "Você não pode enviar 'nada'!", //You can\'t send \'nothing\'!
+    MORE_THEN_8_DECIMALS: '8 limite decimal excedido', //8 decimal limit exceeded
+    SAVE_WALLET_PLEASE: '<b>Salve sua carteira!</b><br>Painel ➜ Definir senha', //<b>Save your wallet!</b><br>Dashboard ➜ Set Password,
+    BACKUP_OR_ENCRYPT_WALLET:
+        'Criptografe e/ou faça backup de suas chaves antes de sair, ou você pode perdê-las!', //Please ENCRYPT and/or BACKUP your keys before leaving, or you may lose them!
+    NO_CAMERAS: 'Este dispositivo não tem câmera!', //This device has no camera!
 
-    SWITCHED_EXPLORERS: '', //<b>Switched explorer!</b><br>Now using {explorerName},
-    SWITCHED_NODE: '', //<b>Switched node!</b><br>Now using {node},
-    SWITCHED_ANALYTICS: '', //<b>Switched analytics level!</b><br>Now {level},
-    SWITCHED_SYNC: '', //<b>Switched sync mode!</b><br>Now using {sync} sync,
-    UNABLE_SWITCH_TESTNET: '', //<b>Unable to switch Testnet Mode!</b><br>A wallet is already loaded
+    SWITCHED_EXPLORERS:
+        '<b>Explorador trocado!</b><br>Agora usando {explorerName}', //<b>Switched explorer!</b><br>Now using {explorerName}
+    SWITCHED_NODE: '<b>Nó trocado!</b><br>Agora usando {node}', //<b>Switched node!</b><br>Now using {node}
+    SWITCHED_ANALYTICS: '<b>Nível de análise alterado!</b><br>Agora {level}', //<b>Switched analytics level!</b><br>Now {level}
+    SWITCHED_SYNC:
+        '<b>Modo de sincronização alternado!</b><br>Agora usando a sincronização {sync}', //<b>Switched sync mode!</b><br>Now using {sync} sync
+    UNABLE_SWITCH_TESTNET:
+        '<b>Não é possível alternar o modo Testnet!</b><br>Uma carteira já está carregada', //<b>Unable to switch Testnet Mode!</b><br>A wallet is already loaded
 
-    WALLET_OFFLINE_AUTOMATIC: '', //"<b>Offline Mode is active!</b><br>Please disable Offline Mode for automatic transactions",
-    WALLET_UNLOCK_IMPORT: '', //"Please {unlock} your wallet before sending transactions!",
-    WALLET_FIREFOX_UNSUPPORTED: '', //"<b>Firefox doesn't support this!</b><br>Unfortunately, Firefox does not support hardware wallets",
-    WALLET_HARDWARE_WALLET: '', //"<b>Hardware wallet ready!</b><br>Please keep your {hardwareWallet} plugged in, unlocked, and in the PIVX app",
-    WALLET_CONFIRM_L: '', //"Confirm the import on your Ledger",
-    WALLET_NO_HARDWARE: '', //"<b>No device available</b><br>Couldn't find a hardware wallet; please plug it in and unlock!",
-    WALLET_HARDWARE_CONNECTION_LOST: '', // "<b>Lost connection to {hardwareWallet} </b><br>It seems the {hardwareWalletProductionName} was unplugged mid-operation, oops!",
-    WALLET_HARDWARE_BUSY: '', //"<b>{hardwareWallet} is waiting</b><br>Please unlock your {hardwareWalletProductionName} or finish it's current prompt",
-    WALLET_HARDWARE_ERROR: '', //"<b> {hardwareWallet} </b><br> {error}"
+    WALLET_OFFLINE_AUTOMATIC:
+        '<b>O modo offline está ativo!</b><br>Desabilite o modo offline para transações automáticas', //<b>Offline Mode is active!</b><br>Please disable Offline Mode for automatic transactions
+    WALLET_UNLOCK_IMPORT:
+        'Please {unlock} your wallet before sending transactions!', //Please {unlock} your wallet before sending transactions!
+    WALLET_FIREFOX_UNSUPPORTED:
+        '<b>O Firefox não suporta isso!</b><br>Infelizmente, o Firefox não suporta carteiras de hardware', //<b>Firefox doesn't support this!</b><br>Unfortunately, Firefox does not support hardware wallets
+    WALLET_HARDWARE_WALLET: '', //<b>Hardware wallet ready!</b><br>Please keep your {hardwareWallet} plugged in, unlocked, and in the PIVX app
+    WALLET_CONFIRM_L: 'Confirme a importação em seu Ledger', //Confirm the import on your Ledger",
+    WALLET_NO_HARDWARE:
+        '<b>Nenhum dispositivo disponível</b><br>Não foi possível encontrar uma carteira de hardware; conecte-a e desbloqueie!', //<b>No device available</b><br>Couldn't find a hardware wallet; please plug it in and unlock!
+    WALLET_HARDWARE_CONNECTION_LOST:
+        '<b>Conexão perdida com {hardwareWallet} </b><br>Parece que {hardwareWalletProductionName} foi desconectado no meio da operação, oops!', //<b>Lost connection to {hardwareWallet} </b><br>It seems the {hardwareWalletProductionName} was unplugged mid-operation, oops!
+    WALLET_HARDWARE_BUSY:
+        '<b>{hardwareWallet} está esperando</b><br>Desbloqueie sua {hardwareWalletProductionName} ou conclua o prompt atual', //<b>{hardwareWallet} is waiting</b><br>Please unlock your {hardwareWalletProductionName} or finish it's current prompt
+    WALLET_HARDWARE_ERROR: '<b> {hardwareWallet} </b><br> {error}', //<b> {hardwareWallet} </b><br> {error}
 
-    CONFIRM_POPUP_VOTE: '', //Confirm Vote
-    CONFIRM_POPUP_VOTE_HTML: '', //Are you sure? It takes 60 minutes to change vote
-    CONFIRM_POPUP_TRANSACTION: '', //Confirm your transaction
-    CONFIRM_POPUP_MN_P_KEY: '', //Your Masternode Private Key
-    CONFIRM_POPUP_MN_P_KEY_HTML: '', // <br> Save this private key and copy it to your VPS config <br>
-    CONFIRM_POPUP_VERIFY_ADDR: '', //Verify your address
+    CONFIRM_POPUP_VOTE: 'Confirmar Voto', //Confirm Vote
+    CONFIRM_POPUP_VOTE_HTML:
+        'Tem certeza? Demora 60 minutos para mudar de voto', //Are you sure? It takes 60 minutes to change vote
+    CONFIRM_POPUP_TRANSACTION: 'Confirme sua transação', //Confirm your transaction
+    CONFIRM_POPUP_MN_P_KEY: 'Sua chave privada Masternode', //Your Masternode Private Key
+    CONFIRM_POPUP_MN_P_KEY_HTML:
+        '<br> Salve esta chave privada e copie-a para sua configuração VPS <br>', // <br> Save this private key and copy it to your VPS config <br>
+    CONFIRM_POPUP_VERIFY_ADDR: 'Verifique seu endereço', //Verify your address
 };
