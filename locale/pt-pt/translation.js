@@ -20,7 +20,7 @@ export const pt_pt_translation = {
     navSettings: 'Configurações', //Settings
 
     // Footer
-    footerBuiltWithPivxLabs: '', //Built with 💜 by PIVX Labs
+    footerBuiltWithPivxLabs: 'Construído com 💜 🇵🇹 por PIVX Labs', //Built with 💜 by PIVX Labs
 
     // Intro
     loading: 'Carregar', //Loading
@@ -158,13 +158,14 @@ export const pt_pt_translation = {
     analyticBalanced: 'Saldo', //Balanced
 
     // Migration System
-    MIGRATION_ACCOUNT_FAILURE_TITLE: '', //Failed to recover account
-    MIGRATION_ACCOUNT_FAILURE_HTML: '', //There was an error recovering your account. <br> Please reimport your wallet using the following key:
+    MIGRATION_ACCOUNT_FAILURE_TITLE: 'Falha ao recuperar conta', //Failed to recover account
+    MIGRATION_ACCOUNT_FAILURE_HTML:
+        'Ocorreu um erro ao recuperar sua conta. <br> Reimporte sua carteira usando a seguinte chave:', //There was an error recovering your account. <br> Please reimport your wallet using the following key:
 
     // Alerts
     ALERTS: '<-- DO NOT EDIT! All below entries are for Alert Popups',
 
-    INTERNAL_ERROR: '', //Internal error, please try again later
+    INTERNAL_ERROR: 'Erro interno, tente novamente mais tarde', //Internal error, please try again later
     FAILED_TO_IMPORT: '<b>Falha ao importar!</b> Senha inválida', //<b>Failed to import!</b> Invalid password
     UNSUPPORTED_CHARACTER:
         'O caractere {char} não é suportado em endereços! (Não é compatível com Base58)', //The character '{char}' is unsupported in addresses! (Not Base58 compatible)
@@ -178,11 +179,11 @@ export const pt_pt_translation = {
     PASSWORD_DOESNT_MATCH: 'Suas senhas não correspondem!', //Your passwords don\'t match!
     NEW_PASSWORD_SUCCESS:
         '<b>Você está protegido! 🔐</b><br>Coisa Boa, PIVian blindado!', //<b>You\'re Secured! 🔐</b><br>Nice stuff, Armoured PIVian!
-    INCORRECT_PASSWORD: '', //Incorrect password!
+    INCORRECT_PASSWORD: 'Senha incorreta!', //Incorrect password!
     INVALID_AMOUNT: '<b>Valor inválido!</b><br>', //<b>Invalid amount!</b><br>
-    TX_SENT: '', //Transaction sent!
-    TX_FAILED: '', //Transaction Failed!
-    QR_SCANNER_BAD_RECEIVER: '', //is not a valid payment receiver
+    TX_SENT: 'Transação enviada!', //Transaction sent!
+    TX_FAILED: 'Falha na transação!', //Transaction Failed!
+    QR_SCANNER_BAD_RECEIVER: 'não é um receptor de pagamento válido', //is not a valid payment receiver
     VALIDATE_AMOUNT_LOW: '<br>O valor mínimo é {minimumAmount} {coinTicker}!', //<br>Minimum amount is {minimumAmount} {coinTicker}!
     VALIDATE_AMOUNT_DECIMAL: '{coinDecimal} limite decimal excedido', //{coinDecimal} decimal limit exceeded
     SUCCESS_STAKING_ADDR:
@@ -193,8 +194,9 @@ export const pt_pt_translation = {
         '<b>Confirme sua transação</b><br>Confirme o TX em seu {strHardwareName}', //<b>Confirm your transaction</b><br>Confirm the TX on your {strHardwareName}
     SUCCESS_STAKING_ADDR_SET:
         '<b>Endereço de Staking definido!</b><br>Agora vá em frente e stake', //'<b>Staking Address set!</b><br>Now go ahead and stake!
-    STAKE_ADDR_SET: '', //<b>Cold Address set!</b><br>Future stakes will use this address.
-    STAKE_ADDR_BAD: '', //Invalid Cold Staking address!
+    STAKE_ADDR_SET:
+        '<b>Endereço frio definido!</b><br>Apostas futuras usarão este endereço.', //<b>Cold Address set!</b><br>Future stakes will use this address.
+    STAKE_ADDR_BAD: 'Endereço de Frio Staking inválido!', //Invalid Cold Staking address!
     STAKE_NOT_SEND: 'Aqui, use a tela <b>Stake</b>, não a tela Send!', //Here, use the <b>Stake</b> screen, not the Send screen!
     BAD_ADDR_LENGTH:
         '<b>Endereço PIVX inválido!<b><br>Comprimento incorreto ({addressLength})', //<b>Invalid PIVX address!<b><br>Bad length ({addressLength})
@@ -202,46 +204,59 @@ export const pt_pt_translation = {
         '<b>Endereço PIVX inválido!<b><br>Prefixo inválido {address} (Deve começar com {addressPrefix})', //<b>Invalid PIVX address!<b><br>Bad prefix {address} (Should start with {addressPrefix})
     SENT_NOTHING: "Você não pode enviar 'nada'!", //You can\'t send \'nothing\'!
     MORE_THEN_8_DECIMALS: '8 limite decimal excedido', //8 decimal limit exceeded
-    SAVE_WALLET_PLEASE: '<b>Salve sua carteira!</b><br>Painel ➜ Definir senha', //<b>Save your wallet!</b><br>Dashboard ➜ Set Password,
+    SAVE_WALLET_PLEASE:
+        '<b>Salve sua carteira!</b><br>Painel ➜ Proteja a sua carteira', //<b>Save your wallet!</b><br>Dashboard ➜ Secure your wallet
     BACKUP_OR_ENCRYPT_WALLET:
         'Criptografe e/ou faça backup de suas chaves antes de sair, ou você pode perdê-las!', //Please ENCRYPT and/or BACKUP your keys before leaving, or you may lose them!
     NO_CAMERAS: 'Este dispositivo não tem câmera!', //This device has no camera!
-    STAKING_LEDGER_NO_SUPPORT: '', //Ledger is not supported for Cold Staking
-    CONNECTION_FAILED: '', //<b>Failed to synchronize!</b> Please try again later.<br>You can attempt re-connect via the Settings.
-    MN_NOT_ENABLED: '', //Your masternode is not enabled yet!
-    VOTE_SUBMITTED: '', //Vote submitted!
-    VOTED_ALREADY: '', //You already voted for this proposal! Please wait 1 hour
-    VOTE_SIG_BAD: '', //Failed to verify signature, please check your masternode\'s private key
-    MN_CREATED_WAIT_CONFS: '', //<b>Masternode Created!<b><br>Wait 15 confirmations to proceed further
-    MN_ACCESS_BEFORE_VOTE: '', //Access a masternode before voting!
-    MN_OFFLINE_STARTING: '', //Your masternode is offline, we will try to start it
-    MN_STARTED: '', //<b>Masternode started!</b>
-    MN_RESTARTED: '', //<b>Masternode restarted!</b>
-    MN_STARTED_ONLINE_SOON: '', //<b>Masternode started!</b><br>It\'ll be online soon
-    MN_START_FAILED: '', //<b>Masternode started!</b>
-    MN_RESTART_FAILED: '', //<b>Masternode restarted!</b>
-    MN_DESTROYED: '', //<b>Masternode destroyed!</b><br>Your coins are now spendable.
-    MN_STATUS_IS: '', //Your masternode status is
-    MN_STATE: '', //Your masternode is in <b>{state}</b> state
-    MN_BAD_IP: '', //The IP address is invalid!
-    MN_NOT_ENOUGH_COLLAT: '', //You need <b>{amount} more {ticker}</b> to create a Masternode!
-    MN_ENOUGH_BUT_NO_COLLAT: '', //You have enough balance for a Masternode, but no valid collateral UTXO of {amount} {ticker}
-    MN_COLLAT_NOT_SUITABLE: '', //This is not a suitable UTXO for a Masternode
-    MN_CANT_CONNECT: '', //Unable to connect to RPC node!
+    STAKING_LEDGER_NO_SUPPORT: 'Ledger não é compatível com Frio Staking', //Ledger is not supported for Cold Staking
+    CONNECTION_FAILED:
+        '<b>Falha ao sincronizar!</b> Tente novamente mais tarde.<br>Você pode tentar reconectar através das Configurações.', //<b>Failed to synchronize!</b> Please try again later.<br>You can attempt re-connect via the Settings.
+    MN_NOT_ENABLED: 'O Seu masternode ainda não está ativado!', //Your masternode is not enabled yet!
+    VOTE_SUBMITTED: 'Voto enviado!', //Vote submitted!
+    VOTED_ALREADY: 'Você já votou nesta proposta! Aguarde 1 hora', //You already voted for this proposal! Please wait 1 hour
+    VOTE_SIG_BAD:
+        'Falha ao verificar a assinatura, verifique a chave privada do seu masternode', //Failed to verify signature, please check your masternode\'s private key
+    MN_CREATED_WAIT_CONFS:
+        '<b>Masternode criado!<b><br>Aguarde 15 confirmações para prosseguir', //<b>Masternode Created!<b><br>Wait 15 confirmations to proceed further
+    MN_ACCESS_BEFORE_VOTE: 'Acesse a um masternode antes de votar!', //Access a masternode before voting!
+    MN_OFFLINE_STARTING: 'O Seu masternode está offline, tentaremos iniciá-lo', //Your masternode is offline, we will try to start it
+    MN_STARTED: '<b>Masternode iniciado!</b>', //<b>Masternode started!</b>
+    MN_RESTARTED: '<b>Masternode reiniciado!</b>', //<b>Masternode restarted!</b>
+    MN_STARTED_ONLINE_SOON:
+        '<b>Masternode iniciado!</b><br>Em breve estará online', //<b>Masternode started!</b><br>It\'ll be online soon
+    MN_START_FAILED: '<b>Masternode está iniciado!</b>', //<b>Masternode started!</b>
+    MN_RESTART_FAILED: '<b>Masternode está reiniciado!</b>', //<b>Masternode restarted!</b>
+    MN_DESTROYED:
+        '<b>Masternode está destruído!</b><br>A suas moedas agora podem ser gastas.', //<b>Masternode destroyed!</b><br>Your coins are now spendable.
+    MN_STATUS_IS: 'O estadado do Seu masternode é', //Your masternode status is
+    MN_STATE: 'O estado do seu masternode está  <b>{state}</b>', //Your masternode is in <b>{state}</b> state
+    MN_BAD_IP: 'O endereço IP é inválido!', //The IP address is invalid!
+    MN_NOT_ENOUGH_COLLAT:
+        'Você precisa de <b>{amount} mais {ticker}</b> para criar um Masternode!', //You need <b>{amount} more {ticker}</b> to create a Masternode!
+    MN_ENOUGH_BUT_NO_COLLAT:
+        'Você tem saldo suficiente para um Masternode, mas nenhum UTXO de garantia válido de {amount} {ticker}', //You have enough balance for a Masternode, but no valid collateral UTXO of {amount} {ticker}
+    MN_COLLAT_NOT_SUITABLE: 'Este não é um UTXO adequado para um Masternode', //This is not a suitable UTXO for a Masternode
+    MN_CANT_CONNECT: 'Não é possível conectar ao nó RPC!', //Unable to connect to RPC node!
 
-    PROPOSAL_FINALISED: '', //Proposal finalized!
-    PROPOSAL_UNCONFIRMED: '', //The proposal hasn\'t been confirmed yet.
-    PROPOSAL_EXPIRED: '', //The proposal has expired. Create a new one.
-    PROPOSAL_FINALISE_FAIL: '', //Failed to finalize proposal.
-    PROPOSAL_IMPORT_FIRST: '', //Create or import your wallet to continue
-    PROPOSAL_NOT_ENOUGH_FUNDS: '', //Not enough funds to create a proposal.
-    PROPOSAL_INVALID_ERROR: '', //Proposal is invalid. Error:
-    PROPOSAL_CREATED: '', //<b>Proposal created!</b><br>Wait 6 confirmations to finalise.
+    PROPOSAL_FINALISED: 'Proposta finalizada!', //Proposal finalized!
+    PROPOSAL_UNCONFIRMED: 'A proposta ainda não foi confirmada.', //The proposal hasn\'t been confirmed yet.
+    PROPOSAL_EXPIRED: 'A proposta expirou. Crie um novo.', //The proposal has expired. Create a new one.
+    PROPOSAL_FINALISE_FAIL: 'Falha ao finalizar a proposta.', //Failed to finalize proposal.
+    PROPOSAL_IMPORT_FIRST: 'Crie ou importe sua carteira para continuar', //Create or import your wallet to continue
+    PROPOSAL_NOT_ENOUGH_FUNDS:
+        'Não há fundos suficientes para criar uma proposta.', //Not enough funds to create a proposal.
+    PROPOSAL_INVALID_ERROR: 'A proposta é inválida. Erro:', //Proposal is invalid. Error:
+    PROPOSAL_CREATED:
+        '<b>Proposta criada!</b><br>Aguarde 6 confirmações para finalizar.', //<b>Proposal created!</b><br>Wait 6 confirmations to finalise.
 
-    PROMO_MIN: '', //Minimum amount is {min} {ticker}!
-    PROMO_MAX_QUANTITY: '', //Your device can only create {quantity} codes at a time!
-    PROMO_NOT_ENOUGH: '', //You don\'t have enough {ticker} to create that code!
-    PROMO_ALREADY_CREATED: '', //You\'ve already created that code!
+    PROMO_MIN: 'Valor mínimo é {min} {ticker}!', //Minimum amount is {min} {ticker}!
+    PROMO_MAX_QUANTITY:
+        'O Seu dispositivo só pode criar códigos {quantidade}  de cada vez!', //Your device can only create {quantity} codes at a time!
+    PROMO_NOT_ENOUGH:
+        'Você não tem {ticker} suficiente para criar esse código!', //You don\'t have enough {ticker} to create that code!
+    PROMO_ALREADY_CREATED:
+        'Você não tem {ticker} suficiente para criar esse código!', //You\'ve already created that code!
 
     SWITCHED_EXPLORERS:
         '<b>Explorador trocado!</b><br>Agora usando {explorerName}', //<b>Switched explorer!</b><br>Now using {explorerName}
@@ -254,10 +269,12 @@ export const pt_pt_translation = {
 
     WALLET_OFFLINE_AUTOMATIC:
         '<b>O modo offline está ativo!</b><br>Desabilite o modo offline para transações automáticas', //<b>Offline Mode is active!</b><br>Please disable Offline Mode for automatic transactions
-    WALLET_UNLOCK_IMPORT: '', //Please {unlock} your wallet before sending transactions!
+    WALLET_UNLOCK_IMPORT:
+        'Por favor, {desbloqueie} a sua carteira antes de enviar transações!', //Please {unlock} your wallet before sending transactions!
     WALLET_FIREFOX_UNSUPPORTED:
         '<b>O Firefox não suporta isso!</b><br>Infelizmente, o Firefox não suporta carteiras de hardware', //<b>Firefox doesn't support this!</b><br>Unfortunately, Firefox does not support hardware wallets
-    WALLET_HARDWARE_WALLET: '', //<b>Hardware wallet ready!</b><br>Please keep your {hardwareWallet} plugged in, unlocked, and in the PIVX app
+    WALLET_HARDWARE_WALLET:
+        '<b>Carteira de hardware pronta!</b><br>Mantenha sua {hardwareWallet} conectada, desbloqueada e no aplicativo PIVX', //<b>Hardware wallet ready!</b><br>Please keep your {hardwareWallet} plugged in, unlocked, and in the PIVX app
     WALLET_CONFIRM_L: 'Confirme a importação em seu Ledger', //Confirm the import on your Ledger",
     WALLET_NO_HARDWARE:
         '<b>Nenhum dispositivo disponível</b><br>Não foi possível encontrar uma carteira de hardware; conecte-a e desbloqueie!', //<b>No device available</b><br>Couldn't find a hardware wallet; please plug it in and unlock!
@@ -276,7 +293,9 @@ export const pt_pt_translation = {
         '<br> Salve esta chave privada e copie-a para sua configuração VPS <br>', // <br> Save this private key and copy it to your VPS config <br>
     CONFIRM_POPUP_VERIFY_ADDR: 'Verifique seu endereço', //Verify your address
 
-    MIGRATION_MASTERNODE_FAILURE: '', //Failed to recover your masternode. Please reimport it.
-    MIGRATION_ACCOUNT_FAILURE: '', //Failed to recover your account. Please reimport it.
-    APP_INSTALLED: '', //App Installed!
+    MIGRATION_MASTERNODE_FAILURE:
+        'Falha ao recuperar o seu masternode. Por favor, reimporte-o.', //Failed to recover your masternode. Please reimport it.
+    MIGRATION_ACCOUNT_FAILURE:
+        'Falha ao recuperar sua conta. Por favor, reimporte-o.', //Failed to recover your account. Please reimport it.
+    APP_INSTALLED: 'Aplicativo instalado!', //App Installed!
 };

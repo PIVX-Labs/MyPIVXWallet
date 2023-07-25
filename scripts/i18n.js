@@ -20,7 +20,7 @@ export const translatableLanguages = {
  * @param {string} langName
  */
 export function switchTranslation(langName) {
-    if (arrActiveLangs.includes(langName)) {
+    if (arrActiveLangs.find((lang) => lang.code === langName)) {
         translation = translatableLanguages[langName];
         translate(translation);
         loadAlerts();
@@ -110,7 +110,11 @@ function parseUserAgentLang(strUA, arrLangsWithSubset) {
 }
 
 // When adding a lang remember to add it to the object translatableLanguages as well as here.
-export const arrActiveLangs = ['en', 'uwu', 'pt-pt'];
+export const arrActiveLangs = [
+    { code: 'en', emoji: '🇬🇧' },
+    { code: 'pt-pt', emoji: '🇵🇹' },
+    { code: 'uwu', emoji: '🐈' },
+];
 
 export async function start() {
     // We use this function to parse the UA lang in a safer way: for example, there's multiple `en` definitions
@@ -133,7 +137,7 @@ export async function start() {
         setTranslation(localTranslation);
     } else {
         // Check if we support the user's browser locale
-        if (arrActiveLangs.includes(strLang)) {
+        if (arrActiveLangs.find((lang) => lang.code === strLang)) {
             setTranslation(strLang);
         } else {
             // Default to EN if the locale isn't supported yet

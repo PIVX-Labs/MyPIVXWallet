@@ -196,7 +196,7 @@ var translation = {
     BAD_ADDR_PREFIX: '', //<b>Invalid PIVX address!<b><br>Bad prefix {address} (Should start with {addressPrefix})
     SENT_NOTHING: '', //You can\'t send \'nothing\'!
     MORE_THEN_8_DECIMALS: '', //8 decimal limit exceeded
-    SAVE_WALLET_PLEASE: '', //<b>Save your wallet!</b><br>Dashboard ➜ Set Password
+    SAVE_WALLET_PLEASE: '', //<b>Save your wallet!</b><br>Dashboard ➜ Secure your wallet
     BACKUP_OR_ENCRYPT_WALLET: '', //Please ENCRYPT and/or BACKUP your keys before leaving, or you may lose them!
     NO_CAMERAS: '', //This device has no camera!
     STAKING_LEDGER_NO_SUPPORT: '', //Ledger is not supported for Cold Staking

@@ -135,7 +135,7 @@ export const uwu_translation = {
     // Settings
     settingsCurrency: 'Chowose a dispway cuwwency:',
     settingsExplorer: 'Chowose an expwower:', //Choose an explorer:
-    settingsLanguage: 'Chowose a Languwuage!', //Choose a Language:
+    settingsLanguage: 'Chowose a Languwuage:', //Choose a Language:
     settingsAnalytics: 'Chowose your anawytics contwibution wevel:', //Choose your analytics contribution level:
     settingsPivxNode: 'Chowose a PIVX nowode pwease:', //Choose a PIVX node:
     settingsAutoSelectNet: 'Auto-select Expwowers and Nowodes', // Auto-select Explorers and Nodes
@@ -202,7 +202,7 @@ export const uwu_translation = {
     SENT_NOTHING: "You can't send nothing!! Baka!", //'You can\'t send \'nothing\'!',
     MORE_THEN_8_DECIMALS: '8 decimal wimit exceeded. Too many nyumbers!!', //'8 decimal limit exceeded',
     SAVE_WALLET_PLEASE:
-        '<b>Save yowour wawwet!</b><br>Dashbowed ➜ Set Password', // "<b>Save your wallet!</b><br>Dashboard ➜ Set Password",
+        '<b>Save yowour wawwet!</b><br>Dashbowed ➜ Secure your wallet', // "<b>Save your wallet!</b><br>Dashboard ➜ Secure your wallet
     BACKUP_OR_ENCRYPT_WALLET:
         'Pwease ENCWYPT and/or BACKUP yowour keys befowe weaving, or you may lose dem! Oh noes!', // "Please ENCRYPT and/or BACKUP your keys before leaving, or you may lose them!"
     NO_CAMERAS: 'Dis device has nwo camwera!', //This device has no camera!

@@ -264,13 +264,13 @@ async function setNode(node, fSilent = false) {
 //TRANSLATION
 /**
  * Switches the translation and sets the translation preference to database
- * @param {string} lang
+ * @param {string} strLang
  */
-export async function setTranslation(lang) {
-    switchTranslation(lang);
+export async function setTranslation(strLang) {
+    switchTranslation(strLang);
     const database = await Database.getInstance();
-    database.setSettings({ translation: lang });
-    doms.domTranslationSelect.value = lang;
+    database.setSettings({ translation: strLang });
+    doms.domTranslationSelect.value = strLang;
 }
 
 /**
@@ -303,17 +303,18 @@ async function fillTranslationSelect() {
         doms.domTranslationSelect.remove(0);
     }
 
-    // Add each trusted explorer into the UI selector
-    for (const lang of arrActiveLangs) {
+    // Add each language into the UI selector
+    for (const cLang of arrActiveLangs) {
         const opt = document.createElement('option');
-        opt.innerHTML = opt.value = lang;
+        opt.innerHTML = `${cLang.emoji} ${cLang.code.toUpperCase()}`;
+        opt.value = cLang.code;
         doms.domTranslationSelect.appendChild(opt);
     }
 
     const database = await Database.getInstance();
-    const { translation } = await database.getSettings();
+    const { translation: strLang } = await database.getSettings();
     // And update the UI to reflect them (default to English if none)
-    doms.domTranslationSelect.value = translation || 'en';
+    doms.domTranslationSelect.value = strLang;
 }
 
 /**
