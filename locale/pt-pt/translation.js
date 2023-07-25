@@ -236,12 +236,10 @@ export const pt_pt_translation = {
     PROPOSAL_IMPORT_FIRST: '', //Create or import your wallet to continue
     PROPOSAL_NOT_ENOUGH_FUNDS: '', //Not enough funds to create a proposal.
     PROPOSAL_INVALID_ERROR: '', //Proposal is invalid. Error:
-    PROPOSAL_CREATED:
-        '', //<b>Proposal created!</b><br>Wait 6 confirmations to finalise.
+    PROPOSAL_CREATED: '', //<b>Proposal created!</b><br>Wait 6 confirmations to finalise.
 
     PROMO_MIN: '', //Minimum amount is {min} {ticker}!
-    PROMO_MAX_QUANTITY:
-        '', //Your device can only create {quantity} codes at a time!
+    PROMO_MAX_QUANTITY: '', //Your device can only create {quantity} codes at a time!
     PROMO_NOT_ENOUGH: '', //You don\'t have enough {ticker} to create that code!
     PROMO_ALREADY_CREATED: '', //You\'ve already created that code!
 
@@ -256,8 +254,7 @@ export const pt_pt_translation = {
 
     WALLET_OFFLINE_AUTOMATIC:
         '<b>O modo offline está ativo!</b><br>Desabilite o modo offline para transações automáticas', //<b>Offline Mode is active!</b><br>Please disable Offline Mode for automatic transactions
-    WALLET_UNLOCK_IMPORT:
-        '', //Please {unlock} your wallet before sending transactions!
+    WALLET_UNLOCK_IMPORT: '', //Please {unlock} your wallet before sending transactions!
     WALLET_FIREFOX_UNSUPPORTED:
         '<b>O Firefox não suporta isso!</b><br>Infelizmente, o Firefox não suporta carteiras de hardware', //<b>Firefox doesn't support this!</b><br>Unfortunately, Firefox does not support hardware wallets
     WALLET_HARDWARE_WALLET: '', //<b>Hardware wallet ready!</b><br>Please keep your {hardwareWallet} plugged in, unlocked, and in the PIVX app
