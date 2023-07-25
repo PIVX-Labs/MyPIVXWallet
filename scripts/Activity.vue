@@ -9,16 +9,12 @@ const props = defineProps({
     rewards: Boolean,
 });
 
-const txs = reactive([]);
+const txs = ref([]);
 const updating = ref(false);
 const isHistorySynced = ref(false);
 const rewardsText = ref('-');
 const ticker = computed(() => cChainParams.current.TICKER);
 const explorerUrl = computed(() => getNetwork().strUrl);
-
-function addTx(tx) {
-    txs.push(tx);
-}
 
 async function update(fNewOnly = false) {
     const cNet = getNetwork();
@@ -41,14 +37,13 @@ async function update(fNewOnly = false) {
         const arrStakes = arrTXs.filter(
             (a) => a.type === HistoricalTxType.STAKE
         );
-        if (arrStakes.length === txs.length) {
-            // No point in parsing txs if there are no new txs
-            return;
-        }
 
-        const nRewards = arrStakes.reduce((a, b) => a + b.amount, 0);
-        rewardsText.value = `${cNet.isHistorySynced ? '' : '≥'}${nRewards}`;
-        return await parseTXs(arrStakes);
+        if (arrStakes.length !== txs.length) {
+            const nRewards = arrStakes.reduce((a, b) => a + b.amount, 0);
+            console.log(arrStakes);
+            rewardsText.value = `${cNet.isHistorySynced ? '' : '≥'}${nRewards}`;
+            return await parseTXs(arrStakes);
+        }
     }
 
     if (arrTXs.length !== txs.length) {
@@ -60,6 +55,7 @@ async function update(fNewOnly = false) {
  * Parse tx to list syntax
  */
 async function parseTXs(arrTXs) {
+    txs.value = [];
     const cNet = getNetwork();
 
     // Prepare time formatting
@@ -234,7 +230,7 @@ async function parseTXs(arrTXs) {
                     txContent = 'Unknown Tx';
             }
         }
-        txs.push({
+        txs.value.push({
             date: strDate,
             id: cTx.id,
             content: txContent,
@@ -245,7 +241,7 @@ async function parseTXs(arrTXs) {
         });
     }
 }
-defineExpose({ txs, addTx, update });
+defineExpose({ txs, update });
 </script>
 
 <template>
@@ -326,7 +322,7 @@ defineExpose({ txs, addTx, update });
                 <button
                     v-if="!isHistorySynced"
                     class="pivx-button-medium"
-                    @click="update"
+                    @click="update(false)"
                 >
                     <span class="buttoni-icon"
                         ><i
