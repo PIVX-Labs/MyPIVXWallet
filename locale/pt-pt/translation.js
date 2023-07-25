@@ -229,21 +229,21 @@ export const pt_pt_translation = {
     MN_COLLAT_NOT_SUITABLE: '', //This is not a suitable UTXO for a Masternode
     MN_CANT_CONNECT: '', //Unable to connect to RPC node!
 
-    PROPOSAL_FINALISED: 'Pwoposal finalized!', //Proposal finalized!
-    PROPOSAL_UNCONFIRMED: "Da pwoposal hasn't been confirmed yet.", //The proposal hasn't been confirmed yet.
-    PROPOSAL_EXPIRED: 'Da pwoposal has expired. Cweate a new one.', //The proposal has expired. Create a new one.
-    PROPOSAL_FINALISE_FAIL: 'Failed to finalize pwoposal.', //Failed to finalize proposal.
-    PROPOSAL_IMPORT_FIRST: 'Cweate or impwort ur wawwet to continue', //Create or import your wallet to continue
-    PROPOSAL_NOT_ENOUGH_FUNDS: 'Not enough funds to cweate a pwoposal.', //Not enough funds to create a proposal.
-    PROPOSAL_INVALID_ERROR: 'Pwoposal is invalid. Error:', //Proposal is invalid. Error:
+    PROPOSAL_FINALISED: '', //Proposal finalized!
+    PROPOSAL_UNCONFIRMED: '', //The proposal hasn\'t been confirmed yet.
+    PROPOSAL_EXPIRED: '', //The proposal has expired. Create a new one.
+    PROPOSAL_FINALISE_FAIL: '', //Failed to finalize proposal.
+    PROPOSAL_IMPORT_FIRST: '', //Create or import your wallet to continue
+    PROPOSAL_NOT_ENOUGH_FUNDS: '', //Not enough funds to create a proposal.
+    PROPOSAL_INVALID_ERROR: '', //Proposal is invalid. Error:
     PROPOSAL_CREATED:
-        '<b>Pwoposal cweated!</b><br>Wait 6 confwirmations to finalise.', //<b>Proposal created!</b><br>Wait 6 confirmations to finalise.
+        '', //<b>Proposal created!</b><br>Wait 6 confirmations to finalise.
 
-    PROMO_MIN: 'Minimum ameownt is {min} {ticker}!', //Minimum amount is {min} {ticker}!
+    PROMO_MIN: '', //Minimum amount is {min} {ticker}!
     PROMO_MAX_QUANTITY:
-        'Ur device can only cweate {quantity} cowodes at a time!', //Your device can only create {quantity} codes at a time!
-    PROMO_NOT_ENOUGH: "Yew don't have enough {ticker} to cweate that code!", //You don\'t have enough {ticker} to create that code!
-    PROMO_ALREADY_CREATED: "You've already created that code!", //You\'ve already created that code!
+        '', //Your device can only create {quantity} codes at a time!
+    PROMO_NOT_ENOUGH: '', //You don\'t have enough {ticker} to create that code!
+    PROMO_ALREADY_CREATED: '', //You\'ve already created that code!
 
     SWITCHED_EXPLORERS:
         '<b>Explorador trocado!</b><br>Agora usando {explorerName}', //<b>Switched explorer!</b><br>Now using {explorerName}
@@ -257,7 +257,7 @@ export const pt_pt_translation = {
     WALLET_OFFLINE_AUTOMATIC:
         '<b>O modo offline está ativo!</b><br>Desabilite o modo offline para transações automáticas', //<b>Offline Mode is active!</b><br>Please disable Offline Mode for automatic transactions
     WALLET_UNLOCK_IMPORT:
-        'Please {unlock} your wallet before sending transactions!', //Please {unlock} your wallet before sending transactions!
+        '', //Please {unlock} your wallet before sending transactions!
     WALLET_FIREFOX_UNSUPPORTED:
         '<b>O Firefox não suporta isso!</b><br>Infelizmente, o Firefox não suporta carteiras de hardware', //<b>Firefox doesn't support this!</b><br>Unfortunately, Firefox does not support hardware wallets
     WALLET_HARDWARE_WALLET: '', //<b>Hardware wallet ready!</b><br>Please keep your {hardwareWallet} plugged in, unlocked, and in the PIVX app
