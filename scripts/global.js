@@ -676,9 +676,9 @@ export async function openSendQRScanner() {
  */
 export async function updateActivityGUI(fStaking = false, fNewOnly = false) {
     if (fStaking) {
-	stakeActivity.update();
+        stakeActivity.update(fNewOnly);
     } else {
-	activityDashboard.update();
+        activityDashboard.update(fNewOnly);
     }
 }
 

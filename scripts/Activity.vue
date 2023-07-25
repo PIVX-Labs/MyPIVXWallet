@@ -30,7 +30,7 @@ async function update(fNewOnly = false) {
     const nPrevHistory = cNet.arrTxHistory.length;
 
     updating.value = true;
-    const arrTXs = await cNet.syncTxHistoryChunk();
+    const arrTXs = await cNet.syncTxHistoryChunk(fNewOnly);
     updating.value = false;
 
     // If there's no change in history size post-sync, then we can cancel here, there's nothing new to render
