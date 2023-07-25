@@ -41,13 +41,19 @@ async function update(fNewOnly = false) {
         const arrStakes = arrTXs.filter(
             (a) => a.type === HistoricalTxType.STAKE
         );
+        if (arrStakes.length === txs.length) {
+            // No point in parsing txs if there are no new txs
+            return;
+        }
 
         const nRewards = arrStakes.reduce((a, b) => a + b.amount, 0);
         rewardsText.value = `${cNet.isHistorySynced ? '' : '≥'}${nRewards}`;
         return await parseTXs(arrStakes);
     }
 
-    await parseTXs(arrTXs);
+    if (arrTXs.length !== txs.length) {
+        await parseTXs(arrTXs);
+    }
 }
 
 /**
