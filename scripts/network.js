@@ -10,6 +10,7 @@ import {
     setExplorer,
     fAutoSwitch,
 } from './settings.js';
+import { ALERTS } from './i18n.js';
 
 /**
  * A historical transaction type.
@@ -167,12 +168,7 @@ export class ExplorerNetwork extends Network {
     error() {
         if (this.enabled) {
             this.disable();
-            createAlert(
-                'warning',
-                '<b>Failed to synchronize!</b> Please try again later.' +
-                    '<br>You can attempt re-connect via the Settings.',
-                []
-            );
+            createAlert('warning', ALERTS.CONNECTION_FAILED, []);
         }
     }
 

@@ -177,7 +177,7 @@ export async function delegateGUI() {
  */
 export async function undelegateGUI() {
     if (masterKey.isHardwareWallet) {
-        return createAlert('warning', 'Ledger not supported', 6000);
+        return createAlert('warning', ALERTS.STAKING_LEDGER_NO_SUPPORT, 6000);
     }
 
     // Ensure the wallet is unlocked
@@ -243,11 +243,7 @@ export async function createAndSendTransaction({
 }) {
     if (!(await hasWalletUnlocked(true))) return;
     if ((isDelegation || useDelegatedInputs) && masterKey.isHardwareWallet) {
-        return createAlert(
-            'warning',
-            'Ledger is currently not supported.',
-            6000
-        );
+        return createAlert('warning', ALERTS.STAKING_LEDGER_NO_SUPPORT, 6000);
     }
 
     // Ensure the wallet is unlocked
@@ -430,10 +426,7 @@ export async function createMasternode() {
                 ALERTS.CONFIRM_POPUP_MN_P_KEY_HTML,
         });
     }
-    createAlert(
-        'success',
-        '<b>Masternode Created!<b><br>Wait 15 confirmations to proceed further'
-    );
+    createAlert('success', ALERTS.MN_CREATED_WAIT_CONFS);
     // Remove any previous Masternode data, if there were any
     const database = await Database.getInstance();
     database.removeMasternode();

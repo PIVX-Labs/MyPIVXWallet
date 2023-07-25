@@ -882,7 +882,7 @@ export async function decryptWallet(strPassword = '') {
     const strDecWIF = await decrypt(strEncWIF, strPassword);
     if (!strDecWIF || strDecWIF === 'decryption failed!') {
         if (strDecWIF)
-            return createAlert('warning', 'Incorrect password!', 6000);
+            return createAlert('warning', ALERTS.INCORRECT_PASSWORD, 6000);
     } else {
         await importWallet({
             newWif: strDecWIF,

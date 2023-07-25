@@ -1,3 +1,4 @@
+import { ALERTS } from './i18n';
 import { createAlert } from './misc';
 
 // Register a service worker, if it's supported
@@ -14,7 +15,7 @@ export function registerWorker() {
         // Listen for successful installs
         window.addEventListener('appinstalled', (_event) => {
             // Notify!
-            return createAlert('success', 'App Installed!', 2500);
+            return createAlert('success', ALERTS.APP_INSTALLED, 2500);
         });
     }
 }

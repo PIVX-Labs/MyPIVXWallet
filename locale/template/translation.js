@@ -162,9 +162,14 @@ var translation = {
     analyticMinimal: '', //Minimal
     analyticBalanced: '', //Balanced
 
+    // Migration System
+    MIGRATION_ACCOUNT_FAILURE_TITLE: '', //Failed to recover account
+    MIGRATION_ACCOUNT_FAILURE_HTML: '', //There was an error recovering your account. <br> Please reimport your wallet using the following key:
+
     // Alerts
     ALERTS: '<-- DO NOT EDIT! All below entries are for Alert Popups',
 
+    INTERNAL_ERROR: '', //Internal error, please try again later
     FAILED_TO_IMPORT: '', //<b>Failed to import!</b> Invalid password
     UNSUPPORTED_CHARACTER: '', //The character '{char}' is unsupported in addresses! (Not Base58 compatible)
     UNSUPPORTED_WEBWORKERS: '', //This browser doesn\'t support Web Workers (multi-threaded JS), unfortunately you cannot generate Vanity wallets!
@@ -173,10 +178,16 @@ var translation = {
     PASSWORD_TOO_SMALL: '', //That password is a little short!<br>Use at least <b>{MIN_PASS_LENGTH} characters.</b>
     PASSWORD_DOESNT_MATCH: '', //Your passwords don\'t match!
     NEW_PASSWORD_SUCCESS: '', //<b>You\'re Secured! 🔐</b><br>Nice stuff, Armoured PIVian!
+    INCORRECT_PASSWORD: '', //Incorrect password!
     INVALID_AMOUNT: '', //<b>Invalid amount!</b><br>
+    TX_SENT: '', //Transaction sent!
+    TX_FAILED: '', //Transaction Failed!
+    QR_SCANNER_BAD_RECEIVER: '', //is not a valid payment receiver
     VALIDATE_AMOUNT_LOW: '', //<br>Minimum amount is {minimumAmount} {coinTicker}!
     VALIDATE_AMOUNT_DECIMAL: '', //{coinDecimal} decimal limit exceeded
     SUCCESS_STAKING_ADDR: '', //<b>Staking Address set!</b><br>Now go ahead and unstake!
+    STAKE_ADDR_SET: '', //<b>Cold Address set!</b><br>Future stakes will use this address.
+    STAKE_ADDR_BAD: '', //Invalid Cold Staking address!
     CONFIRM_UNSTAKE_H_WALLET: '', //<b>Confirm your Unstake</b><br>Confirm the TX on your {strHardwareName}
     CONFIRM_TRANSACTION_H_WALLET: '', //<b>Confirm your transaction</b><br>Confirm the TX on your {strHardwareName}
     SUCCESS_STAKING_ADDR_SET: '', //<b>Staking Address set!</b><br>Now go ahead and stake!
@@ -188,6 +199,28 @@ var translation = {
     SAVE_WALLET_PLEASE: '', //<b>Save your wallet!</b><br>Dashboard ➜ Set Password
     BACKUP_OR_ENCRYPT_WALLET: '', //Please ENCRYPT and/or BACKUP your keys before leaving, or you may lose them!
     NO_CAMERAS: '', //This device has no camera!
+    STAKING_LEDGER_NO_SUPPORT: '', //Ledger is not supported for Cold Staking
+    CONNECTION_FAILED: '', //<b>Failed to synchronize!</b> Please try again later.<br>You can attempt re-connect via the Settings.
+    MN_NOT_ENABLED: '', //Your masternode is not enabled yet!
+    VOTE_SUBMITTED: '', //Vote submitted!
+    VOTED_ALREADY: '', //You already voted for this proposal! Please wait 1 hour
+    VOTE_SIG_BAD: '', //Failed to verify signature, please check your masternode\'s private key
+    MN_CREATED_WAIT_CONFS: '', //<b>Masternode Created!<b><br>Wait 15 confirmations to proceed further
+    MN_ACCESS_BEFORE_VOTE: '', //Access a masternode before voting!
+    MN_OFFLINE_STARTING: '', //Your masternode is offline, we will try to start it
+    MN_STARTED: '', //<b>Masternode started!</b>
+    MN_RESTARTED: '', //<b>Masternode restarted!</b>
+    MN_STARTED_ONLINE_SOON: '', //<b>Masternode started!</b><br>It\'ll be online soon
+    MN_START_FAILED: '', //<b>Masternode started!</b>
+    MN_RESTART_FAILED: '', //<b>Masternode restarted!</b>
+    MN_DESTROYED: '', //<b>Masternode destroyed!</b><br>Your coins are now spendable.
+    MN_STATUS_IS: '', //Your masternode status is
+    MN_STATE: '', //Your masternode is in <b>{state}</b> state
+    MN_BAD_IP: '', //The IP address is invalid!
+    MN_NOT_ENOUGH_COLLAT: '', //You need <b>{amount} more {ticker}</b> to create a Masternode!
+    MN_ENOUGH_BUT_NO_COLLAT: '', //You have enough balance for a Masternode, but no valid collateral UTXO of {amount} {ticker}
+    MN_COLLAT_NOT_SUITABLE: '', //This is not a suitable UTXO for a Masternode
+    MN_CANT_CONNECT: '', //Unable to connect to RPC node!
 
     SWITCHED_EXPLORERS: '', //<b>Switched explorer!</b><br>Now using {explorerName}
     SWITCHED_NODE: '', //<b>Switched node!</b><br>Now using {node}
@@ -211,4 +244,8 @@ var translation = {
     CONFIRM_POPUP_MN_P_KEY: '', //Your Masternode Private Key
     CONFIRM_POPUP_MN_P_KEY_HTML: '', // <br> Save this private key and copy it to your VPS config <br>
     CONFIRM_POPUP_VERIFY_ADDR: '', //Verify your address
+
+    MIGRATION_MASTERNODE_FAILURE: '', //Failed to recover your masternode. Please reimport it.
+    MIGRATION_ACCOUNT_FAILURE: '', //Failed to recover your account. Please reimport it.
+    APP_INSTALLED: '', //App Installed!
 };

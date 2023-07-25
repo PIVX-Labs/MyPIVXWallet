@@ -4,6 +4,7 @@ import { Settings } from './settings.js';
 import { cChainParams } from './chain_params.js';
 import { confirmPopup, sanitizeHTML, createAlert } from './misc.js';
 import { PromoWallet } from './promos.js';
+import { ALERTS, translation } from './i18n.js';
 
 /** The current version of the DB - increasing this will prompt the Upgrade process for clients with an older version */
 export const DB_VERSION = 2;
@@ -189,10 +190,7 @@ export class Database {
                 await this.addMasternode(masternode);
             } catch (e) {
                 console.error(e);
-                createAlert(
-                    'warning',
-                    'Failed to recover your masternode. Please reimport it.'
-                );
+                createAlert('warning', ALERTS.MIGRATION_MASTERNODE_FAILURE);
             }
         }
 
@@ -208,14 +206,13 @@ export class Database {
                 });
             } catch (e) {
                 console.error(e);
-                createAlert(
-                    'warning',
-                    'Failed to recover your account. Please reimport it.'
-                );
+                createAlert('warning', ALERTS.MIGRATION_ACCOUNT_FAILURE);
                 if (localStorage.encwif) {
                     await confirmPopup({
-                        title: 'Failed to recover account',
-                        html: `There was an error recovering your account. <br> Please reimport your wallet using the following key: <code id="exportPrivateKeyText">${sanitizeHTML(
+                        title: translation.MIGRATION_ACCOUNT_FAILURE_TITLE,
+                        html: `${
+                            translation.MIGRATION_ACCOUNT_FAILURE_HTML
+                        } <code id="exportPrivateKeyText">${sanitizeHTML(
                             localStorage.encwif
                         )} </code>`,
                     });

@@ -157,9 +157,14 @@ export const pt_pt_translation = {
     analyticMinimal: 'Mínimo', //Minimal
     analyticBalanced: 'Saldo', //Balanced
 
+    // Migration System
+    MIGRATION_ACCOUNT_FAILURE_TITLE: '', //Failed to recover account
+    MIGRATION_ACCOUNT_FAILURE_HTML: '', //There was an error recovering your account. <br> Please reimport your wallet using the following key:
+
     // Alerts
     ALERTS: '<-- DO NOT EDIT! All below entries are for Alert Popups',
 
+    INTERNAL_ERROR: '', //Internal error, please try again later
     FAILED_TO_IMPORT: '<b>Falha ao importar!</b> Senha inválida', //<b>Failed to import!</b> Invalid password
     UNSUPPORTED_CHARACTER:
         'O caractere {char} não é suportado em endereços! (Não é compatível com Base58)', //The character '{char}' is unsupported in addresses! (Not Base58 compatible)
@@ -173,7 +178,11 @@ export const pt_pt_translation = {
     PASSWORD_DOESNT_MATCH: 'Suas senhas não correspondem!', //Your passwords don\'t match!
     NEW_PASSWORD_SUCCESS:
         '<b>Você está protegido! 🔐</b><br>Coisa Boa, PIVian blindado!', //<b>You\'re Secured! 🔐</b><br>Nice stuff, Armoured PIVian!
+    INCORRECT_PASSWORD: '', //Incorrect password!
     INVALID_AMOUNT: '<b>Valor inválido!</b><br>', //<b>Invalid amount!</b><br>
+    TX_SENT: '', //Transaction sent!
+    TX_FAILED: '', //Transaction Failed!
+    QR_SCANNER_BAD_RECEIVER: '', //is not a valid payment receiver
     VALIDATE_AMOUNT_LOW: '<br>O valor mínimo é {minimumAmount} {coinTicker}!', //<br>Minimum amount is {minimumAmount} {coinTicker}!
     VALIDATE_AMOUNT_DECIMAL: '{coinDecimal} limite decimal excedido', //{coinDecimal} decimal limit exceeded
     SUCCESS_STAKING_ADDR:
@@ -184,6 +193,8 @@ export const pt_pt_translation = {
         '<b>Confirme sua transação</b><br>Confirme o TX em seu {strHardwareName}', //<b>Confirm your transaction</b><br>Confirm the TX on your {strHardwareName}
     SUCCESS_STAKING_ADDR_SET:
         '<b>Endereço de Staking definido!</b><br>Agora vá em frente e stake', //'<b>Staking Address set!</b><br>Now go ahead and stake!
+    STAKE_ADDR_SET: '', //<b>Cold Address set!</b><br>Future stakes will use this address.
+    STAKE_ADDR_BAD: '', //Invalid Cold Staking address!
     STAKE_NOT_SEND: 'Aqui, use a tela <b>Stake</b>, não a tela Send!', //Here, use the <b>Stake</b> screen, not the Send screen!
     BAD_ADDR_LENGTH:
         '<b>Endereço PIVX inválido!<b><br>Comprimento incorreto ({addressLength})', //<b>Invalid PIVX address!<b><br>Bad length ({addressLength})
@@ -195,6 +206,44 @@ export const pt_pt_translation = {
     BACKUP_OR_ENCRYPT_WALLET:
         'Criptografe e/ou faça backup de suas chaves antes de sair, ou você pode perdê-las!', //Please ENCRYPT and/or BACKUP your keys before leaving, or you may lose them!
     NO_CAMERAS: 'Este dispositivo não tem câmera!', //This device has no camera!
+    STAKING_LEDGER_NO_SUPPORT: '', //Ledger is not supported for Cold Staking
+    CONNECTION_FAILED: '', //<b>Failed to synchronize!</b> Please try again later.<br>You can attempt re-connect via the Settings.
+    MN_NOT_ENABLED: '', //Your masternode is not enabled yet!
+    VOTE_SUBMITTED: '', //Vote submitted!
+    VOTED_ALREADY: '', //You already voted for this proposal! Please wait 1 hour
+    VOTE_SIG_BAD: '', //Failed to verify signature, please check your masternode\'s private key
+    MN_CREATED_WAIT_CONFS: '', //<b>Masternode Created!<b><br>Wait 15 confirmations to proceed further
+    MN_ACCESS_BEFORE_VOTE: '', //Access a masternode before voting!
+    MN_OFFLINE_STARTING: '', //Your masternode is offline, we will try to start it
+    MN_STARTED: '', //<b>Masternode started!</b>
+    MN_RESTARTED: '', //<b>Masternode restarted!</b>
+    MN_STARTED_ONLINE_SOON: '', //<b>Masternode started!</b><br>It\'ll be online soon
+    MN_START_FAILED: '', //<b>Masternode started!</b>
+    MN_RESTART_FAILED: '', //<b>Masternode restarted!</b>
+    MN_DESTROYED: '', //<b>Masternode destroyed!</b><br>Your coins are now spendable.
+    MN_STATUS_IS: '', //Your masternode status is
+    MN_STATE: '', //Your masternode is in <b>{state}</b> state
+    MN_BAD_IP: '', //The IP address is invalid!
+    MN_NOT_ENOUGH_COLLAT: '', //You need <b>{amount} more {ticker}</b> to create a Masternode!
+    MN_ENOUGH_BUT_NO_COLLAT: '', //You have enough balance for a Masternode, but no valid collateral UTXO of {amount} {ticker}
+    MN_COLLAT_NOT_SUITABLE: '', //This is not a suitable UTXO for a Masternode
+    MN_CANT_CONNECT: '', //Unable to connect to RPC node!
+
+    PROPOSAL_FINALISED: 'Pwoposal finalized!', //Proposal finalized!
+    PROPOSAL_UNCONFIRMED: "Da pwoposal hasn't been confirmed yet.", //The proposal hasn't been confirmed yet.
+    PROPOSAL_EXPIRED: 'Da pwoposal has expired. Cweate a new one.', //The proposal has expired. Create a new one.
+    PROPOSAL_FINALISE_FAIL: 'Failed to finalize pwoposal.', //Failed to finalize proposal.
+    PROPOSAL_IMPORT_FIRST: 'Cweate or impwort ur wawwet to continue', //Create or import your wallet to continue
+    PROPOSAL_NOT_ENOUGH_FUNDS: 'Not enough funds to cweate a pwoposal.', //Not enough funds to create a proposal.
+    PROPOSAL_INVALID_ERROR: 'Pwoposal is invalid. Error:', //Proposal is invalid. Error:
+    PROPOSAL_CREATED:
+        '<b>Pwoposal cweated!</b><br>Wait 6 confwirmations to finalise.', //<b>Proposal created!</b><br>Wait 6 confirmations to finalise.
+
+    PROMO_MIN: 'Minimum ameownt is {min} {ticker}!', //Minimum amount is {min} {ticker}!
+    PROMO_MAX_QUANTITY:
+        'Ur device can only cweate {quantity} cowodes at a time!', //Your device can only create {quantity} codes at a time!
+    PROMO_NOT_ENOUGH: "Yew don't have enough {ticker} to cweate that code!", //You don\'t have enough {ticker} to create that code!
+    PROMO_ALREADY_CREATED: "You've already created that code!", //You\'ve already created that code!
 
     SWITCHED_EXPLORERS:
         '<b>Explorador trocado!</b><br>Agora usando {explorerName}', //<b>Switched explorer!</b><br>Now using {explorerName}
@@ -229,4 +278,8 @@ export const pt_pt_translation = {
     CONFIRM_POPUP_MN_P_KEY_HTML:
         '<br> Salve esta chave privada e copie-a para sua configuração VPS <br>', // <br> Save this private key and copy it to your VPS config <br>
     CONFIRM_POPUP_VERIFY_ADDR: 'Verifique seu endereço', //Verify your address
+
+    MIGRATION_MASTERNODE_FAILURE: '', //Failed to recover your masternode. Please reimport it.
+    MIGRATION_ACCOUNT_FAILURE: '', //Failed to recover your account. Please reimport it.
+    APP_INSTALLED: '', //App Installed!
 };

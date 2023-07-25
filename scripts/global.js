@@ -448,7 +448,7 @@ function subscribeToNetworkEvents() {
             doms.domSendAmountCoins.innerHTML = '';
             createAlert(
                 'success',
-                `Transaction sent!<br>${sanitizeHTML(result)}`,
+                `${ALERTS.TX_SENT}<br>${sanitizeHTML(result)}`,
                 result ? 1250 + result.length * 50 : 3000
             );
             // If allowed by settings: submit a simple 'tx' ping to Labs Analytics
@@ -456,7 +456,7 @@ function subscribeToNetworkEvents() {
         } else {
             console.error('Error sending transaction:');
             console.error(result);
-            createAlert('warning', 'Transaction Failed!', 2500);
+            createAlert('warning', ALERTS.TX_FAILED, 2500);
         }
     });
 }
@@ -675,7 +675,7 @@ export async function openSendQRScanner() {
         'warning',
         `"${sanitizeHTML(
             cScan.data.substring(0, Math.min(cScan.data.length, 6))
-        )}…" is not a valid payment receiver`,
+        )}…" ${ALERTS.QR_SCANNER_BAD_RECEIVER}`,
         [],
         7500
     );
@@ -1170,11 +1170,7 @@ export async function govVote(hash, voteCode) {
         const cMasternode = await database.getMasternode();
         if (cMasternode) {
             if ((await cMasternode.getStatus()) !== 'ENABLED') {
-                createAlert(
-                    'warning',
-                    'Your masternode is not enabled yet!',
-                    6000
-                );
+                createAlert('warning', ALERTS.MN_NOT_ENABLED, 6000);
                 return;
             }
             const result = await cMasternode.vote(hash.toString(), voteCode); //1 yes 2 no
@@ -1182,32 +1178,20 @@ export async function govVote(hash, voteCode) {
                 //good vote
                 cMasternode.storeVote(hash.toString(), voteCode);
                 await updateGovernanceTab();
-                createAlert('success', 'Vote submitted!', 6000);
+                createAlert('success', ALERTS.VOTE_SUBMITTED, 6000);
             } else if (result.includes('Error voting :')) {
                 //If you already voted return an alert
-                createAlert(
-                    'warning',
-                    'You already voted for this proposal! Please wait 1 hour',
-                    6000
-                );
+                createAlert('warning', ALERTS.VOTED_ALREADY, 6000);
             } else if (result.includes('Failure to verify signature.')) {
                 //wrong masternode private key
-                createAlert(
-                    'warning',
-                    "Failed to verify signature, please check your masternode's private key",
-                    6000
-                );
+                createAlert('warning', ALERTS.VOTE_SIG_BAD, 6000);
             } else {
                 //this could be everything
                 console.error(result);
-                createAlert(
-                    'warning',
-                    'Internal error, please try again later',
-                    6000
-                );
+                createAlert('warning', ALERTS.INTERNAL_ERROR, 6000);
             }
         } else {
-            createAlert('warning', 'Access a masternode before voting!', 6000);
+            createAlert('warning', ALERTS.MN_ACCESS_BEFORE_VOTE, 6000);
         }
     }
 }
@@ -1226,19 +1210,13 @@ export async function startMasternode(fRestart = false) {
         )
             return;
         if (await cMasternode.start()) {
-            createAlert(
-                'success',
-                '<b>Masternode ' + (fRestart ? 're' : '') + 'started!</b>',
-                4000
-            );
+            const strMsg = fRestart ? ALERTS.MN_RESTARTED : ALERTS.MN_STARTED;
+            createAlert('success', strMsg, 4000);
         } else {
-            createAlert(
-                'warning',
-                '<b>Failed to ' +
-                    (fRestart ? 're' : '') +
-                    'start masternode!</b>',
-                4000
-            );
+            const strMsg = fRestart
+                ? ALERTS.MN_RESTART_FAILED
+                : ALERTS.MN_START_FAILED;
+            createAlert('warning', strMsg, 4000);
         }
     }
 }
@@ -1248,11 +1226,7 @@ export async function destroyMasternode() {
 
     if (await database.getMasternode(masterKey)) {
         database.removeMasternode(masterKey);
-        createAlert(
-            'success',
-            '<b>Masternode destroyed!</b><br>Your coins are now spendable.',
-            5000
-        );
+        createAlert('success', ALERTS.MN_DESTROYED, 5000);
         updateMasternodeTab();
     }
 }
@@ -1297,7 +1271,7 @@ export async function importMasternode() {
     const mnPrivKey = doms.domMnPrivateKey.value;
     const address = parseIpAddress(doms.domMnIP.value);
     if (!address) {
-        createAlert('warning', 'The ip address is invalid!', 5000);
+        createAlert('warning', ALERTS.MN_BAD_IP, 5000);
         return;
     }
 
@@ -1319,26 +1293,26 @@ export async function importMasternode() {
         if (!cCollaUTXO) {
             if (getBalance(false) < cChainParams.current.collateralInSats) {
                 // Not enough balance to create an MN UTXO
+                const amount =
+                    (cChainParams.current.collateralInSats -
+                        getBalance(false)) /
+                    COIN;
+                const ticker = cChainParams.current.TICKER;
                 createAlert(
                     'warning',
-                    'You need <b>' +
-                        (cChainParams.current.collateralInSats -
-                            getBalance(false)) /
-                            COIN +
-                        ' more ' +
-                        cChainParams.current.TICKER +
-                        '</b> to create a Masternode!',
+                    ALERTS.MN_NOT_ENOUGH_COLLAT,
+                    [{ amount }, { ticker }],
                     10000
                 );
             } else {
                 // Balance is capable of a masternode, just needs to be created
                 // TODO: this UX flow is weird, is it even possible? perhaps we can re-design this entire function accordingly
+                const amount = cChainParams.current.collateralInSats / COIN;
+                const ticker = cChainParams.current.TICKER;
                 createAlert(
                     'warning',
-                    'You have enough balance for a Masternode, but no valid collateral UTXO of ' +
-                        cChainParams.current.collateralInSats / COIN +
-                        ' ' +
-                        cChainParams.current.TICKER,
+                    ALERTS.MN_ENOUGH_BUT_NO_COLLAT,
+                    [{ amount }, { ticker }],
                     10000
                 );
             }
@@ -1355,11 +1329,7 @@ export async function importMasternode() {
             .findLast((u) => u.path === path); // first UTXO for each address in HD
         // sanity check:
         if (masterUtxo.sats !== cChainParams.current.collateralInSats) {
-            return createAlert(
-                'warning',
-                'This is not a suitable UTXO for a Masternode',
-                10000
-            );
+            return createAlert('warning', ALERTS.MN_COLLAT_NOT_SUITABLE, 10000);
         }
         collateralTxId = masterUtxo.id;
         outidx = masterUtxo.vout;
@@ -1724,15 +1694,10 @@ export async function guiSetColdStakingAddress() {
             strColdAddress.length === 34
         ) {
             await setColdStakingAddress(strColdAddress);
-            createAlert(
-                'info',
-                '<b>Cold Address set!</b><br>Future stakes will use this address.',
-                [],
-                5000
-            );
+            createAlert('info', ALERTS.STAKE_ADDR_SET, [], 5000);
             return true;
         } else {
-            createAlert('warning', 'Invalid Cold Staking address!', [], 2500);
+            createAlert('warning', ALERTS.STAKE_ADDR_BAD, [], 2500);
             return false;
         }
     } else {
@@ -2091,20 +2056,20 @@ async function renderProposals(arrProposals, fContested) {
                         });
                     };
                     if (result.ok) {
-                        createAlert('success', 'Proposal finalized!');
+                        createAlert('success', ALERTS.PROPOSAL_FINALISED);
                         deleteProposal();
                         updateGovernanceTab();
                     } else {
                         if (result.err === 'unconfirmed') {
                             createAlert(
                                 'warning',
-                                "The proposal hasn't been confirmed yet.",
+                                ALERTS.PROPOSAL_UNCONFIRMED,
                                 5000
                             );
                         } else if (result.err === 'invalid') {
                             createAlert(
                                 'warning',
-                                'The proposal has expired. Create a new one.',
+                                ALERTS.PROPOSAL_EXPIRED,
                                 5000
                             );
                             deleteProposal();
@@ -2112,7 +2077,7 @@ async function renderProposals(arrProposals, fContested) {
                         } else {
                             createAlert(
                                 'warning',
-                                'Failed to finalize proposal.'
+                                ALERTS.PROPOSAL_FINALISE_FAIL
                             );
                         }
                     }
@@ -2482,31 +2447,17 @@ async function refreshMasternodeData(cMasternode, fAlert = false) {
         doms.domMnTextErrors.innerHTML =
             'Masternode is currently <b>OFFLINE</b>';
         if (!masterKey.isViewOnly) {
-            createAlert(
-                'warning',
-                'Your masternode is offline, we will try to start it',
-                6000
-            );
+            createAlert('warning', ALERTS.MN_OFFLINE_STARTING, 6000);
             // try to start the masternode
             const started = await cMasternode.start();
             if (started) {
-                doms.domMnTextErrors.innerHTML =
-                    'Masternode successfully started!';
-                createAlert(
-                    'success',
-                    'Masternode successfully started!, it will be soon online',
-                    6000
-                );
+                doms.domMnTextErrors.innerHTML = ALERTS.MN_STARTED;
+                createAlert('success', ALERTS.MN_STARTED_ONLINE_SOON, 6000);
                 const database = await Database.getInstance();
                 await database.addMasternode(cMasternode);
             } else {
-                doms.domMnTextErrors.innerHTML =
-                    "We couldn't start your masternode";
-                createAlert(
-                    'warning',
-                    'We could not start your masternode',
-                    6000
-                );
+                doms.domMnTextErrors.innerHTML = ALERTS.MN_START_FAILED;
+                createAlert('warning', ALERTS.MN_START_FAILED, 6000);
             }
         }
     } else if (
@@ -2516,7 +2467,7 @@ async function refreshMasternodeData(cMasternode, fAlert = false) {
         if (fAlert)
             createAlert(
                 'success',
-                `Your masternode status is <b> ${sanitizeHTML(
+                `${ALERTS.MN_STATUS_IS} <b> ${sanitizeHTML(
                     cMasternodeData.status
                 )} </b>`,
                 6000
@@ -2524,18 +2475,16 @@ async function refreshMasternodeData(cMasternode, fAlert = false) {
         const database = await Database.getInstance();
         await database.addMasternode(cMasternode);
     } else if (cMasternodeData.status === 'REMOVED') {
-        doms.domMnTextErrors.innerHTML =
-            'Masternode is currently <b>REMOVED</b>';
-        if (fAlert)
-            createAlert(
-                'warning',
-                'Your masternode is in <b>REMOVED</b> state',
-                6000
-            );
+        const state = cMasternodeData.status;
+        doms.domMnTextErrors.innerHTML = ALERTS.MN_STATE.replace(
+            '{state}',
+            state
+        );
+        if (fAlert) createAlert('warning', ALERTS.MN_STATE, [{ state }], 6000);
     } else {
         // connection problem
-        doms.domMnTextErrors.innerHTML = 'Unable to connect!';
-        if (fAlert) createAlert('warning', 'Unable to connect!', 6000);
+        doms.domMnTextErrors.innerHTML = ALERTS.MN_CANT_CONNECT;
+        if (fAlert) createAlert('warning', ALERTS.MN_CANT_CONNECT, 6000);
     }
 
     // Return the data in case the caller needs additional context
@@ -2544,10 +2493,7 @@ async function refreshMasternodeData(cMasternode, fAlert = false) {
 
 export async function createProposal() {
     if (!masterKey) {
-        return createAlert(
-            'warning',
-            'Create or import your wallet to continue'
-        );
+        return createAlert('warning', ALERTS.PROPOSAL_IMPORT_FIRST);
     }
     if (
         masterKey.isViewOnly &&
@@ -2556,7 +2502,7 @@ export async function createProposal() {
         return;
     }
     if (getBalance() * COIN < cChainParams.current.proposalFee) {
-        return createAlert('warning', 'Not enough funds to create a proposal.');
+        return createAlert('warning', ALERTS.PROPOSAL_NOT_ENOUGH_FUNDS);
     }
 
     const fConfirmed = await confirmPopup({
@@ -2592,7 +2538,7 @@ export async function createProposal() {
     if (!isValid.ok) {
         createAlert(
             'warning',
-            `Proposal is invalid. Error: ${isValid.err}`,
+            `${ALERTS.PROPOSAL_INVALID_ERROR} ${isValid.err}`,
             5000
         );
         return;
@@ -2611,7 +2557,7 @@ export async function createProposal() {
         const localProposals = account?.localProposals || [];
         localProposals.push(proposal);
         await database.addAccount({ localProposals });
-        createAlert('success', 'Proposal created! Please finalize it.');
+        createAlert('success', ALERTS.PROPOSAL_CREATED, [], 4000);
         updateGovernanceTab();
     }
 }

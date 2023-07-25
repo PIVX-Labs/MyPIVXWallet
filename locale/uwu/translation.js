@@ -154,9 +154,15 @@ export const uwu_translation = {
     analyticMinimal: 'Minimuwul', //Minimal
     analyticBalanced: 'Bawanced', //Balanced
 
+    // Migration System
+    MIGRATION_ACCOUNT_FAILURE_TITLE: 'Failed to recover accowount', //Failed to recover account
+    MIGRATION_ACCOUNT_FAILURE_HTML:
+        'There was an error recovering ur accowount. <br> Pwease reimport ur wawwet using the following key:', //There was an error recovering your account. <br> Please reimport your wallet using the following key:
+
     // Alerts
     ALERTS: '<-- DO NOT EDIT! All below entries are for Alert Popups',
 
+    INTERNAL_ERROR: 'Internal error, pwease try again later', //Internal error, please try again later
     FAILED_TO_IMPORT: '<b>Faiwed to impawt!</b> Invawed password! Baka!', //'<b>Failed to import!</b> Invalid password',
     TESTNET_ENCRYPTION_DISABLED:
         '<b>Testnet Mowode in ON!</b><br>Wawwet encwyption disabwed', //"<b>Testnet Mode is ON!</b><br>Wallet encryption disabled",
@@ -165,7 +171,11 @@ export const uwu_translation = {
     PASSWORD_DOESNT_MATCH: 'Yowour passwords dun match!! baka!!', //'Your passwords don\'t match!',
     NEW_PASSWORD_SUCCESS:
         "<b>Yowou're Secuwed!</b><br>Good Job, PIVX Pogchamp!", //'<b>You\'re Secured! 🔐</b><br>Nice stuff, Armoured PIVian!',
+    INCORRECT_PASSWORD: 'Incowwect password!', //Incorrect password!
     INVALID_AMOUNT: '<b>Invawed a<i>meow</i>nt</b><br>', //'<b>Invalid amount!</b><br>',
+    TX_SENT: 'Twansaction sentu!', //Transaction sent!
+    TX_FAILED: 'Twansaction Failed!', //Transaction Failed!
+    QR_SCANNER_BAD_RECEIVER: 'is not a valid payment receiver', //is not a valid payment receiver
     UNSUPPORTED_CHARACTER:
         "The chawacter '{char}' is unsupurrted in addwesses! (Not Base58 compatible)", //"The character '{char}' is unsupported in addresses! (Not Base58 compatible)"
     UNSUPPORTED_WEBWORKERS: "Dis bwowser doesn't suppurrt web workers", //This browser doesn\'t support Web Workers (multi-threaded JS), unfortunately you cannot generate Vanity wallets!
@@ -174,6 +184,9 @@ export const uwu_translation = {
     VALIDATE_AMOUNT_DECIMAL: ' decimal wimit exceeded. Yowouve gone too fawr!', //' decimal limit exceeded',
     SUCCESS_STAKING_ADDR:
         '<b>Staking Addwess set!</b><br>Now go ahead and unstake senpai❣', //'<b>Staking Address set!</b><br>Now go ahead and unstake!',
+    STAKE_ADDR_SET:
+        '<b>Cold Addwess set!</b><br>Future stakes will use dis addwess.', //<b>Cold Address set!</b><br>Future stakes will use this address.
+    STAKE_ADDR_BAD: 'Invawid Cold Staking addwess!', //Invalid Cold Staking address!
     CONFIRM_UNSTAKE_H_WALLET:
         '<b> Confirm yowour Unstake</b><br>Confirm da TX on yowour {strHardwareName}', //"<b>Confirm your Unstake</b><br>Confirm the TX on your ",
     CONFIRM_TRANSACTION_H_WALLET:
@@ -192,7 +205,52 @@ export const uwu_translation = {
         '<b>Save yowour wawwet!</b><br>Dashbowed ➜ Set Password', // "<b>Save your wallet!</b><br>Dashboard ➜ Set Password",
     BACKUP_OR_ENCRYPT_WALLET:
         'Pwease ENCWYPT and/or BACKUP yowour keys befowe weaving, or you may lose dem! Oh noes!', // "Please ENCRYPT and/or BACKUP your keys before leaving, or you may lose them!"
-    NO_CAMERAS: 'Dis device has nwo camwera!',
+    NO_CAMERAS: 'Dis device has nwo camwera!', //This device has no camera!
+    STAKING_LEDGER_NO_SUPPORT: 'Ledger is not supported for Cold Staking', //Ledger is not supported for Cold Staking
+    CONNECTION_FAILED:
+        '<b>Failed to synchronize!</b> Please try again later.<br>You can attempt re-connect via the Settings.', //<b>Failed to synchronize!</b> Please try again later.<br>You can attempt re-connect via the Settings.
+    MN_NOT_ENABLED: 'Ur masternowode is nawt enabled yet!', //Your masternode is not enabled yet!
+    VOTE_SUBMITTED: 'Vowote submitted!', //Vote submitted!
+    VOTED_ALREADY: 'Yew already vowoted for dis pwoposal! Pwease wait 1 hour', //You already voted for this proposal! Please wait 1 hour
+    VOTE_SIG_BAD:
+        "Failed to vewify signature, pwease check ur masternowode's pwivate key", //Failed to verify signature, please check your masternode\'s private key
+    MN_CREATED_WAIT_CONFS:
+        '<b>Masternowode Created!<b><br>Wait 15 confwirmations to pwoceed further', //<b>Masternode Created!<b><br>Wait 15 confirmations to proceed further
+    MN_ACCESS_BEFORE_VOTE: 'Access a masternowode befwore vowoting!', //Access a masternode before voting!
+    MN_OFFLINE_STARTING: "Ur masternowode is offline, we'll try to start it", //Your masternode is offline, we will try to start it
+    MN_STARTED: '<b>Masternowode started!</b>', //<b>Masternode started!</b>
+    MN_RESTARTED: '<b>Masternowode restarted!</b>', //<b>Masternode restarted!</b>
+    MN_STARTED_ONLINE_SOON:
+        "<b>Masternowode started!</b><br>It'll be online soon", //<b>Masternode started!</b><br>It\'ll be online soon
+    MN_START_FAILED: '<b>Failed to start masternowode!</b>', //<b>Masternode started!</b>
+    MN_RESTART_FAILED: '<b>Failed to restart masternowode!</b>', //<b>Masternode restarted!</b>
+    MN_DESTROYED:
+        '<b>Masternowode destrwoyed!</b><br>Ur coins are now spendable.', //<b>Masternode destroyed!</b><br>Your coins are now spendable.
+    MN_STATUS_IS: 'Ur masternowode status is', //Your masternode status is
+    MN_STATE: 'Ur masternowode is in <b>{state}</b> state', //Your masternode is in <b>{state}</b> state
+    MN_BAD_IP: 'The IP addwess is invalid!', //The IP address is invalid!
+    MN_NOT_ENOUGH_COLLAT:
+        'Yew need <b>{amount} more {ticker}</b> to create a Masternowode!', //You need <b>{amount} more {ticker}</b> to create a Masternode!
+    MN_ENOUGH_BUT_NO_COLLAT:
+        'Yew haz enough balance for a Masternowode, but nu valid collateral UTXO of {amount} {ticker}', //You have enough balance for a Masternode, but no valid collateral UTXO of {amount} {ticker}
+    MN_COLLAT_NOT_SUITABLE: 'Dis is not a suitable UTXO for a Masternowode', //This is not a suitable UTXO for a Masternode
+    MN_CANT_CONNECT: 'Unable to connect to RPC nowode!', //Unable to connect to RPC node!
+
+    PROPOSAL_FINALISED: 'Pwoposal finalized!', //Proposal finalized!
+    PROPOSAL_UNCONFIRMED: "Da pwoposal hasn't been confirmed yet.", //The proposal hasn't been confirmed yet.
+    PROPOSAL_EXPIRED: 'Da pwoposal has expired. Cweate a new one.', //The proposal has expired. Create a new one.
+    PROPOSAL_FINALISE_FAIL: 'Failed to finalize pwoposal.', //Failed to finalize proposal.
+    PROPOSAL_IMPORT_FIRST: 'Cweate or impwort ur wawwet to continue', //Create or import your wallet to continue
+    PROPOSAL_NOT_ENOUGH_FUNDS: 'Not enough funds to cweate a pwoposal.', //Not enough funds to create a proposal.
+    PROPOSAL_INVALID_ERROR: 'Pwoposal is invalid. Error:', //Proposal is invalid. Error:
+    PROPOSAL_CREATED:
+        '<b>Pwoposal cweated!</b><br>Wait 6 confwirmations to finalise.', //<b>Proposal created!</b><br>Wait 6 confirmations to finalise.
+
+    PROMO_MIN: 'Minimum ameownt is {min} {ticker}!', //Minimum amount is {min} {ticker}!
+    PROMO_MAX_QUANTITY:
+        'Ur device can only cweate {quantity} cowodes at a time!', //Your device can only create {quantity} codes at a time!
+    PROMO_NOT_ENOUGH: "Yew don't have enough {ticker} to cweate that code!", //You don\'t have enough {ticker} to create that code!
+    PROMO_ALREADY_CREATED: "You've already created that code!", //You\'ve already created that code!
 
     SWITCHED_EXPLORERS:
         '<b>Switched expwower!</b><br>Nowo using {explorerName}✿', //<b>Switched explorer!</b><br>Now using {explorerName},
@@ -227,4 +285,10 @@ export const uwu_translation = {
     CONFIRM_POPUP_MN_P_KEY_HTML:
         '<br> Save dis pwivate key and copy it to yowour VPS config <br>', // <br> Save this private key and copy it to your VPS config <br>
     CONFIRM_POPUP_VERIFY_ADDR: 'Vewify yowour addwess', //Verify your address
+
+    MIGRATION_MASTERNODE_FAILURE:
+        'Failed to recover ur masternowode. Pwease reimport it.', //Failed to recover your masternode. Please reimport it.
+    MIGRATION_ACCOUNT_FAILURE:
+        'Failed to recover ur account. Pwease reimport it.', //Failed to recover your account. Please reimport it.
+    APP_INSTALLED: 'App Instawlled!', //App Installed!
 };
