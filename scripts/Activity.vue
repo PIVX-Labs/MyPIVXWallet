@@ -33,10 +33,6 @@ async function update(fNewOnly = false) {
     const arrTXs = await cNet.syncTxHistoryChunk(fNewOnly);
     updating.value = false;
 
-    // If there's no change in history size post-sync, then we can cancel here, there's nothing new to render
-    // Disabled will renable later maybe
-    //if (nPrevHistory === cNet.arrTxHistory.length) return;
-
     // Check if all transactions are loaded
     isHistorySynced.value = cNet.isHistorySynced;
 
