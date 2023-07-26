@@ -40,7 +40,6 @@ async function update(fNewOnly = false) {
 
         if (arrStakes.length !== txs.length) {
             const nRewards = arrStakes.reduce((a, b) => a + b.amount, 0);
-            console.log(arrStakes);
             rewardsText.value = `${cNet.isHistorySynced ? '' : '≥'}${nRewards}`;
             return await parseTXs(arrStakes);
         }
