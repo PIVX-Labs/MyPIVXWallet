@@ -695,11 +695,11 @@ export async function createActivityListHTML(arrTXs, fRewards = false) {
     <table class="table table-responsive table-sm stakingTx table-mobile-scroll">
         <thead>
             <tr>
-                <th scope="col" class="tx1">Time</th>
+                <th scope="col" class="tx1">${translation.time}</th>
                 <th scope="col" class="tx2">${
-                    fRewards ? 'ID' : 'Description'
+                    fRewards ? translation.ID : translation.description
                 }</th>
-                <th scope="col" class="tx3">Amount</th>
+                <th scope="col" class="tx3">${translation.amount}</th>
                 <th scope="col" class="tx4 text-right"></th>
             </tr>
         </thead>
@@ -760,7 +760,7 @@ export async function createActivityListHTML(arrTXs, fRewards = false) {
         let colour = 'white';
 
         // Choose the content type, for the Dashboard; use a generative description, otherwise, a TX-ID
-        let txContent = fRewards ? cTx.id : 'Block Reward';
+        let txContent = fRewards ? cTx.id : translation.activityBlockReward;
 
         // Format the amount to reduce text size
         let formattedAmt = '';
@@ -799,7 +799,7 @@ export async function createActivityListHTML(arrTXs, fRewards = false) {
                     colour = '#f93c3c';
                     // Figure out WHO this was sent to, and focus on them contextually
                     if (fSendToSelf) {
-                        txContent = 'Sent to self';
+                        txContent = translation.activitySentToSelf;
                     } else {
                         // Otherwise, anything to us is likely change, so filter it away
                         const arrExternalAddresses = (
@@ -815,9 +815,10 @@ export async function createActivityListHTML(arrTXs, fRewards = false) {
                             })
                             .map(([_, addr]) => addr);
                         txContent =
-                            'Sent to ' +
+                            translation.activitySentTo +
+                            ' ' +
                             (cTx.shieldedOutputs
-                                ? 'Shielded address'
+                                ? translation.activityShieldedAddress
                                 : [
                                       ...new Set(
                                           arrExternalAddresses.map((addr) =>
@@ -848,10 +849,11 @@ export async function createActivityListHTML(arrTXs, fRewards = false) {
                         .map(([_, addr]) => addr);
 
                     if (cTx.shieldedOutputs) {
-                        txContent = 'Received from Shielded address';
+                        txContent = translation.activityReceivedShield;
                     } else {
                         txContent =
-                            'Received from ' +
+                            translation.activityReceivedFrom +
+                            ' ' +
                             [
                                 ...new Set(
                                     arrExternalAddresses.map((addr) =>
@@ -868,17 +870,18 @@ export async function createActivityListHTML(arrTXs, fRewards = false) {
                 case HistoricalTxType.DELEGATION:
                     icon = 'fa-snowflake';
                     txContent =
-                        'Delegated to ' +
+                        translation.activityDelegatedTo +
+                        ' ' +
                         cTx.receivers[0].substring(0, 6) +
                         '...';
                     break;
                 case HistoricalTxType.UNDELEGATION:
                     icon = 'fa-fire';
-                    txContent = 'Undelegated';
+                    txContent = translation.activityUndelegated;
                     break;
                 default:
                     icon = 'fa-question';
-                    txContent = 'Unknown Tx';
+                    txContent = translation.activityUnknown;
             }
         }
 
@@ -1206,7 +1209,7 @@ export async function startMasternode(fRestart = false) {
     if (cMasternode) {
         if (
             masterKey.isViewOnly &&
-            !(await restoreWallet('Unlock to start your Masternode!'))
+            !(await restoreWallet(translation.walletUnlockMNStart))
         )
             return;
         if (await cMasternode.start()) {
@@ -1366,8 +1369,8 @@ export async function accessOrImportWallet() {
     // #52 there would be no way to recover the public key without getting
     // The password from the user
     if (await hasEncryptedWallet()) {
-        doms.domPrivKey.placeholder = 'Enter your wallet password';
-        doms.domImportWalletText.innerText = 'Unlock Wallet';
+        doms.domPrivKey.placeholder = translation.encryptPasswordFirst;
+        doms.domImportWalletText.innerText = translation.unlockWallet;
         doms.domPrivKey.focus();
     }
 }
@@ -1387,8 +1390,8 @@ export async function onPrivateKeyChanged() {
         !fContainsSpaces;
 
     doms.domPrivKeyPassword.placeholder = fContainsSpaces
-        ? 'Optional Passphrase'
-        : 'Password';
+        ? translation.optionalPassphrase
+        : translation.password;
     // Uncloak the private input IF spaces are detected, to make Seed Phrases easier to input and verify
     doms.domPrivKey.setAttribute('type', fContainsSpaces ? 'text' : 'password');
 }
@@ -1523,7 +1526,7 @@ function stopSearch() {
     }
     while (arrWorkers.length) arrWorkers.pop();
     doms.domPrefix.disabled = false;
-    doms.domVanityUiButtonTxt.innerText = 'Create A Vanity Wallet';
+    doms.domVanityUiButtonTxt.innerText = translation.dCardTwoButton;
     clearInterval(vanUiUpdater);
 }
 
@@ -1675,8 +1678,14 @@ export function isMasternodeUTXO(cUTXO, cMasternode) {
 export async function guiSetColdStakingAddress() {
     if (
         await confirmPopup({
-            title: 'Set your Cold Staking address',
-            html: `<p>Current address:<br><span class="mono">${strColdStakingAddress}</span><br><br><span style="opacity: 0.65; margin: 10px;">A Cold Address stakes coins on your behalf, it cannot spend coins, so it's even safe to use a stranger's Cold Address!</span></p><br><input type="text" id="newColdAddress" placeholder="Example: ${strColdStakingAddress.substring(
+            title: translation.popupSetColdAddr,
+            html: `<p>${
+                translation.popupCurrentAddress
+            }<br><span class="mono">${strColdStakingAddress}</span><br><br><span style="opacity: 0.65; margin: 10px;">${
+                translation.popupColdStakeNote
+            }</span></p><br><input type="text" id="newColdAddress" placeholder="${
+                translation.popupExample
+            } ${strColdStakingAddress.substring(
                 0,
                 6
             )}..." style="text-align: center;">`,
@@ -1708,11 +1717,11 @@ export async function guiSetColdStakingAddress() {
 export async function wipePrivateData() {
     const isEncrypted = await hasEncryptedWallet();
     const title = isEncrypted
-        ? 'Do you want to lock your wallet?'
-        : 'Do you want to wipe your wallet private data?';
+        ? translation.popupWalletLock
+        : translation.popupWalletWipe;
     const html = isEncrypted
-        ? 'You will need to enter your password to access your funds'
-        : "You will lose access to your funds if you haven't backed up your private key or seed phrase";
+        ? translation.popupWalletLockNote
+        : translation.popupWalletWipeNote;
     if (
         await confirmPopup({
             title,
@@ -1742,8 +1751,8 @@ export async function restoreWallet(strReason = '') {
     // Prompt the user
     if (
         await confirmPopup({
-            title: 'Unlock your wallet',
-            html: `${strHTML}<input type="password" id="restoreWalletPassword" placeholder="Wallet password" style="text-align: center;">`,
+            title: translation.walletUnlock,
+            html: `${strHTML}<input type="password" id="restoreWalletPassword" placeholder="${translation.walletPassword}" style="text-align: center;">`,
         })
     ) {
         // Fetch the password from the prompt, and immediately destroy the prompt input
@@ -1888,13 +1897,19 @@ function getProposalFinalisationStatus(cPropCache) {
     const nConfsLeft = cPropCache.nSubmissionHeight + 6 - cNet.cachedBlockCount;
 
     if (cPropCache.nSubmissionHeight === 0 || cNet.cachedBlockCount === 0) {
-        return 'Confirming...';
+        return translation.proposalFinalisationConfirming;
     } else if (nConfsLeft > 0) {
-        return nConfsLeft + ' block' + (nConfsLeft === 1 ? '' : 's') + ' left';
+        return (
+            nConfsLeft +
+            ' block' +
+            (nConfsLeft === 1 ? '' : 's') +
+            ' ' +
+            translation.proposalFinalisationRemaining
+        );
     } else if (Math.abs(nConfsLeft) >= cChainParams.current.budgetCycleBlocks) {
-        return 'Proposal Expired';
+        return translation.proposalFinalisationExpired;
     } else {
-        return 'Ready to submit';
+        return translation.proposalFinalisationReady;
     }
 }
 
@@ -2020,8 +2035,11 @@ async function renderProposals(arrProposals, fContested) {
 
         // Proposal Status calculation
         const nRequiredVotes = Math.round(cMasternodes.enabled * 0.1);
-        const strStatus = nNetYes >= nRequiredVotes ? 'PASSING' : 'FAILING';
-        let strFundingStatus = 'NOT FUNDED';
+        const strStatus =
+            nNetYes >= nRequiredVotes
+                ? translation.proposalPassing
+                : translation.proposalFailing;
+        let strFundingStatus = translation.proposalNotFunded;
 
         // Funding Status and allocation calculations
         if (cProposal.local) {
@@ -2038,8 +2056,8 @@ async function renderProposals(arrProposals, fContested) {
             finalizeButton.innerHTML = '<i class="fas fa-check"></i>';
 
             if (
-                strStatus === 'Ready to submit' ||
-                strStatus === 'Proposal Expired'
+                strStatus === translation.proposalFinalisationReady ||
+                strStatus === translation.proposalFinalisationExpired
             ) {
                 finalizeButton.addEventListener('click', async () => {
                     const result = await Masternode.finalizeProposal(
@@ -2102,8 +2120,7 @@ async function renderProposals(arrProposals, fContested) {
                     totalAllocatedAmount + cProposal.MonthlyPayment <=
                         cChainParams.current.maxPayment / COIN
                 ) {
-                    // Not enough budget or Net Yes votes for this proposal :(
-                    strFundingStatus = 'FUNDED';
+                    strFundingStatus = translation.proposalFunded;
                     totalAllocatedAmount += cProposal.MonthlyPayment;
                 }
             }
@@ -2115,7 +2132,7 @@ async function renderProposals(arrProposals, fContested) {
             </span>
             <span style="font-size:12px; line-height: 15px; display: block; color:#d1d1d1;">
                 <b>${nNetYesPercent.toFixed(1)}%</b><br>
-                Net Yes
+                ${translation.proposalNetYes}
             </span>
             <span class="governArrow for-mobile ptr">
                 <i class="fa-solid fa-angle-down"></i>
@@ -2149,9 +2166,11 @@ async function renderProposals(arrProposals, fContested) {
 
         <span class="governInstallments"> ${sanitizeHTML(
             cProposal['RemainingPaymentCount']
-        )} installment(s) remaining<br>of <b>${sanitizeHTML(
+        )} ${translation.proposalPaymentsRemaining} <b>${sanitizeHTML(
             parseInt(cProposal.TotalPayment).toLocaleString('en-gb', ',', '.')
-        )} ${cChainParams.current.TICKER}</b> total</span>`;
+        )} ${cChainParams.current.TICKER}</b> ${
+            translation.proposalPaymentTotal
+        }</span>`;
 
         // Vote Counts and Consensus Percentages
         const domVoteCounters = domRow.insertCell();
@@ -2251,9 +2270,11 @@ async function renderProposals(arrProposals, fContested) {
         
                 <span class="governInstallments"> ${sanitizeHTML(
                     cProposal['RemainingPaymentCount']
-                )} installment(s) remaining<br>of <b>${sanitizeHTML(
+                )} ${translation.proposalPaymentsRemaining} <b>${sanitizeHTML(
             parseInt(cProposal.TotalPayment).toLocaleString('en-gb', ',', '.')
-        )} ${cChainParams.current.TICKER}</b> total</span>
+        )} ${cChainParams.current.TICKER}</b> ${
+            translation.proposalPaymentTotal
+        }</span>
             </div>
         </div>
         <hr class="governHr">
@@ -2497,7 +2518,7 @@ export async function createProposal() {
     }
     if (
         masterKey.isViewOnly &&
-        !(await restoreWallet('Unlock to create a proposal!'))
+        !(await restoreWallet(translation.walletUnlockProposal))
     ) {
         return;
     }
@@ -2506,13 +2527,15 @@ export async function createProposal() {
     }
 
     const fConfirmed = await confirmPopup({
-        title: `Create Proposal (cost ${
-            cChainParams.current.proposalFee / COIN
-        } ${cChainParams.current.TICKER})`,
-        html: `<input id="proposalTitle" maxlength="20" placeholder="Title" style="text-align: center;"><br>
-               <input id="proposalUrl" maxlength="64" placeholder="URL" style="text-align: center;"><br>
-               <input type="number" id="proposalCycles" placeholder="Duration in cycles" style="text-align: center;"><br>
-               <input type="number" id="proposalPayment" placeholder="${cChainParams.current.TICKER} per cycle" style="text-align: center;"><br>`,
+        title: `${translation.popupCreateProposal} (${
+            translation.popupCreateProposalCost
+        } ${cChainParams.current.proposalFee / COIN} ${
+            cChainParams.current.TICKER
+        })`,
+        html: `<input id="proposalTitle" maxlength="20" placeholder="${translation.popupProposalTitle}" style="text-align: center;"><br>
+               <input id="proposalUrl" maxlength="64" placeholder="${translation.popupExample} https://forum.pivx.org/..." style="text-align: center;"><br>
+               <input type="number" id="proposalCycles" placeholder="${translation.popupProposalDuration}" style="text-align: center;"><br>
+               <input type="number" id="proposalPayment" placeholder="${cChainParams.current.TICKER} ${translation.popupProposalPerCycle}" style="text-align: center;"><br>`,
     });
 
     // If the user cancelled, then we return
@@ -2644,7 +2667,7 @@ export function switchSettings(page) {
 }
 
 function errorHandler(e) {
-    const message = `Unhandled exception. <br> ${sanitizeHTML(
+    const message = `${translation.unhandledException} <br> ${sanitizeHTML(
         e.message || e.reason
     )}`;
     try {

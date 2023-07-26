@@ -1,7 +1,7 @@
 import { cChainParams, COIN } from './chain_params';
 import { Database } from './database';
 import { doms, getBalance, restoreWallet, sweepAddress } from './global';
-import { ALERTS } from './i18n';
+import { ALERTS, translation } from './i18n';
 import { createAlert, getAlphaNumericRand } from './misc';
 import { getNetwork } from './network';
 import { scanQRCode } from './scanner';
@@ -380,9 +380,7 @@ export async function updatePromoCreationTick(fRecursive = false) {
             // Ensure the wallet is unlocked
             if (masterKey.isViewOnly) {
                 $('#redeemCodeModal').modal('hide');
-                if (
-                    await restoreWallet('Unlock to finalise your Promo Code!')
-                ) {
+                if (await restoreWallet(translation.walletUnlockPromo)) {
                     // Unlocked! Re-show the promo UI and continue
                     $('#redeemCodeModal').modal('show');
                 } else {

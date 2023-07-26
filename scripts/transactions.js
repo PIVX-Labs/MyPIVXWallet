@@ -1,6 +1,6 @@
 import bitjs from './bitTrx.js';
 import { debug, strColdStakingAddress } from './settings.js';
-import { ALERTS } from './i18n.js';
+import { ALERTS, translation } from './i18n.js';
 import {
     doms,
     getBalance,
@@ -68,7 +68,7 @@ export async function createTxGUI() {
     // Ensure the wallet is unlocked
     if (
         masterKey.isViewOnly &&
-        !(await restoreWallet('Unlock to send your transaction!'))
+        !(await restoreWallet(translation.walletUnlockTx))
     )
         return;
 
@@ -137,7 +137,7 @@ export async function delegateGUI() {
     if (
         masterKey.isViewOnly &&
         !(await restoreWallet(
-            `Unlock to stake your ${cChainParams.current.TICKER}!`
+            `${translation.walletUnlockStake} ${cChainParams.current.TICKER}!`
         ))
     )
         return;
@@ -184,7 +184,7 @@ export async function undelegateGUI() {
     if (
         masterKey.isViewOnly &&
         !(await restoreWallet(
-            `Unlock to unstake your ${cChainParams.current.TICKER}!`
+            `${translation.walletUnlockUnstake} ${cChainParams.current.TICKER}!`
         ))
     )
         return;
@@ -249,7 +249,7 @@ export async function createAndSendTransaction({
     // Ensure the wallet is unlocked
     if (
         masterKey.isViewOnly &&
-        !(await restoreWallet('Unlock to send your transaction!'))
+        !(await restoreWallet(translation.walletUnlockTx))
     )
         return;
 
@@ -402,7 +402,7 @@ export async function createMasternode() {
     // Ensure the wallet is unlocked
     if (
         masterKey.isViewOnly &&
-        !(await restoreWallet('Unlock to create your Masternode!'))
+        !(await restoreWallet(translation.walletUnlockCreateMN))
     )
         return;
 
