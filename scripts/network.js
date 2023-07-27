@@ -239,7 +239,7 @@ export class ExplorerNetwork extends Network {
                 publicKey = await this.masterKey.getxpub(derivationPath);
             } else {
                 // Use the param address if specified, or the Master Key by default
-                publicKey = strAddress || (await this.masterKey.getAddress());
+                publicKey = strAddress ? strAddress : (await this.masterKey.getAddress());
             }
 
             // Fetch UTXOs for the key
@@ -560,7 +560,7 @@ export class ExplorerNetwork extends Network {
         // If the public Master Key (xpub, address...) is different, then wipe TX history
         if (
             (await this.masterKey?.keyToExport) !==
-            (await masterKey.keyToExport)
+            (await masterKey?.keyToExport)
         ) {
             this.arrTxHistory = [];
         }

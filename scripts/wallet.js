@@ -606,7 +606,7 @@ export async function importWallet({
                 );
             }
             const publicKey = await getHardwareWalletKeys(
-                getDerivationPath(true)
+                getDerivationPath(true), true
             );
             // Errors are handled within the above function, so there's no need for an 'else' here, just silent ignore.
             if (!publicKey) return;
