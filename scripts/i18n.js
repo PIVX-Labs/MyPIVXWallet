@@ -1,4 +1,5 @@
 import { en_translation } from '../locale/en/translation.js';
+import { pt_br_translation } from '../locale/pt-br/translation.js';
 import { pt_pt_translation } from '../locale/pt-pt/translation.js';
 import { uwu_translation } from '../locale/uwu/translation.js';
 import { Database } from './database.js';
@@ -13,6 +14,7 @@ export const translatableLanguages = {
     en: en_translation,
     uwu: uwu_translation,
     'pt-pt': pt_pt_translation,
+    'pt-br': pt_br_translation,
 };
 
 /**
@@ -113,6 +115,7 @@ function parseUserAgentLang(strUA, arrLangsWithSubset) {
 export const arrActiveLangs = [
     { code: 'en', emoji: '🇬🇧' },
     { code: 'pt-pt', emoji: '🇵🇹' },
+    { code: 'pt-br', emoji: '🇧🇷' },
     { code: 'uwu', emoji: '🐈' },
 ];
 
