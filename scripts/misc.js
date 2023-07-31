@@ -56,6 +56,32 @@ export function writeToUint8(arr, bytes, pos) {
     while (pos < arrLen) arr[pos++] = bytes[i++];
 }
 
+/** Convert a 2D array into a CSV string */
+export function arrayToCSV(data) {
+    return data
+        .map(
+            (row) =>
+                row
+                    .map(String) // convert every value to String
+                    .map((v) => v.replaceAll('"', '""')) // escape double colons
+                    .map((v) => `"${v}"`) // quote it
+                    .join(',') // comma-separated
+        )
+        .join('\r\n'); // rows starting on new lines
+}
+
+/** Download contents as a file */
+export function downloadBlob(content, filename, contentType) {
+    // Create a blob
+    const blob = new Blob([content], { type: contentType });
+
+    // Create a link to download it
+    const pom = document.createElement('a');
+    pom.href = URL.createObjectURL(blob);
+    pom.setAttribute('download', filename);
+    pom.click();
+}
+
 /* --- NOTIFICATIONS --- */
 // Alert - Do NOT display arbitrary / external errors, the use of `.innerHTML` allows for input styling at this cost.
 // Supported types: success, info, warning

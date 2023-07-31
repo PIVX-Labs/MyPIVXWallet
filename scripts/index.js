@@ -59,6 +59,7 @@ export {
     sweepPromoCode,
     deletePromoCode,
     openPromoQRScanner,
+    promosToCSV,
 } from './promos';
 export { renderWalletBreakdown } from './charting';
 export { hexToBytes, bytesToHex, dSHA256 } from './utils.js';
