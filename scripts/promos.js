@@ -7,6 +7,7 @@ import {
     downloadBlob,
     getAlphaNumericRand,
 } from './misc';
+import { ALERTS, translation } from './i18n';
 import { getNetwork } from './network';
 import { scanQRCode } from './scanner';
 import { createAndSendTransaction } from './transactions';
@@ -221,20 +222,20 @@ export async function createPromoCode(strCode, nAmount, fAddRandomness = true) {
         : strCode;
 
     // Ensure the amount is sane
-    if (nAmount < 0.01) {
-        return createAlert(
-            'warning',
-            'Minimum amount is 0.01 ' + cChainParams.current.TICKER + '!'
-        );
+    const min = 0.01;
+    if (nAmount < min) {
+        return createAlert('warning', ALERTS.PROMO_MIN, [
+            { min },
+            { ticker: cChainParams.current.TICKER },
+        ]);
     }
 
     // Ensure there's no more than half the device's cores used
     if (arrPromoCreationThreads.length >= navigator.hardwareConcurrency)
         return createAlert(
             'warning',
-            'Your device can only create ' +
-                navigator.hardwareConcurrency +
-                ' codes at a time!',
+            ALERTS.PROMO_MAX_QUANTITY,
+            [{ quantity: navigator.hardwareConcurrency }],
             4000
         );
 
@@ -246,9 +247,8 @@ export async function createPromoCode(strCode, nAmount, fAddRandomness = true) {
     if (getBalance() - nReservedBalance < nAmount * COIN + PROMO_FEE * 2) {
         return createAlert(
             'warning',
-            "You don't have enough " +
-                cChainParams.current.TICKER +
-                ' to create that code!',
+            ALERTS.PROMO_NOT_ENOUGH,
+            [{ ticker: cChainParams.current.TICKER }],
             4000
         );
     }
@@ -257,11 +257,7 @@ export async function createPromoCode(strCode, nAmount, fAddRandomness = true) {
     const db = await Database.getInstance();
     const arrCodes = (await db.getAllPromos()).concat(arrPromoCreationThreads);
     if (arrCodes.some((a) => a.code === strFinalCode)) {
-        return createAlert(
-            'warning',
-            "You've already created that code!",
-            3000
-        );
+        return createAlert('warning', ALERTS.PROMO_ALREADY_CREATED, 3000);
     }
 
     // Create a new thread
@@ -457,9 +453,7 @@ export async function updatePromoCreationTick(fRecursive = false) {
             // Ensure the wallet is unlocked
             if (masterKey.isViewOnly) {
                 $('#redeemCodeModal').modal('hide');
-                if (
-                    await restoreWallet('Unlock to finalise your Promo Code!')
-                ) {
+                if (await restoreWallet(translation.walletUnlockPromo)) {
                     // Unlocked! Re-show the promo UI and continue
                     $('#redeemCodeModal').modal('show');
                 } else {

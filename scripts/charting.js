@@ -10,6 +10,7 @@ import {
 import { cChainParams, COIN } from './chain_params';
 import { doms, isMasternodeUTXO, mempool } from './global';
 import { Database } from './database.js';
+import { translation } from './i18n';
 
 Chart.register(
     Colors,
@@ -44,7 +45,7 @@ async function getWalletDataset() {
     // Public (Available)
     if (mempool.getBalance() > 0) {
         arrBreakdown.push({
-            type: 'Public Available',
+            type: translation.chartPublicAvailable,
             balance: mempool.getBalance() / COIN,
             colour: 'rgba(127, 17, 224, 1)',
         });

@@ -448,7 +448,7 @@ function subscribeToNetworkEvents() {
             doms.domSendAmountCoins.innerHTML = '';
             createAlert(
                 'success',
-                `Transaction sent!<br>${sanitizeHTML(result)}`,
+                `${ALERTS.TX_SENT}<br>${sanitizeHTML(result)}`,
                 result ? 1250 + result.length * 50 : 3000
             );
             // If allowed by settings: submit a simple 'tx' ping to Labs Analytics
@@ -456,7 +456,7 @@ function subscribeToNetworkEvents() {
         } else {
             console.error('Error sending transaction:');
             console.error(result);
-            createAlert('warning', 'Transaction Failed!', 2500);
+            createAlert('warning', ALERTS.TX_FAILED, 2500);
         }
     });
 }
@@ -675,7 +675,7 @@ export async function openSendQRScanner() {
         'warning',
         `"${sanitizeHTML(
             cScan.data.substring(0, Math.min(cScan.data.length, 6))
-        )}…" is not a valid payment receiver`,
+        )}…" ${ALERTS.QR_SCANNER_BAD_RECEIVER}`,
         [],
         7500
     );
@@ -695,11 +695,11 @@ export async function createActivityListHTML(arrTXs, fRewards = false) {
     <table class="table table-responsive table-sm stakingTx table-mobile-scroll">
         <thead>
             <tr>
-                <th scope="col" class="tx1">Time</th>
+                <th scope="col" class="tx1">${translation.time}</th>
                 <th scope="col" class="tx2">${
-                    fRewards ? 'ID' : 'Description'
+                    fRewards ? translation.ID : translation.description
                 }</th>
-                <th scope="col" class="tx3">Amount</th>
+                <th scope="col" class="tx3">${translation.amount}</th>
                 <th scope="col" class="tx4 text-right"></th>
             </tr>
         </thead>
@@ -760,7 +760,7 @@ export async function createActivityListHTML(arrTXs, fRewards = false) {
         let colour = 'white';
 
         // Choose the content type, for the Dashboard; use a generative description, otherwise, a TX-ID
-        let txContent = fRewards ? cTx.id : 'Block Reward';
+        let txContent = fRewards ? cTx.id : translation.activityBlockReward;
 
         // Format the amount to reduce text size
         let formattedAmt = '';
@@ -799,7 +799,7 @@ export async function createActivityListHTML(arrTXs, fRewards = false) {
                     colour = '#f93c3c';
                     // Figure out WHO this was sent to, and focus on them contextually
                     if (fSendToSelf) {
-                        txContent = 'Sent to self';
+                        txContent = translation.activitySentToSelf;
                     } else {
                         // Otherwise, anything to us is likely change, so filter it away
                         const arrExternalAddresses = (
@@ -815,9 +815,10 @@ export async function createActivityListHTML(arrTXs, fRewards = false) {
                             })
                             .map(([_, addr]) => addr);
                         txContent =
-                            'Sent to ' +
+                            translation.activitySentTo +
+                            ' ' +
                             (cTx.shieldedOutputs
-                                ? 'Shielded address'
+                                ? translation.activityShieldedAddress
                                 : [
                                       ...new Set(
                                           arrExternalAddresses.map((addr) =>
@@ -848,10 +849,11 @@ export async function createActivityListHTML(arrTXs, fRewards = false) {
                         .map(([_, addr]) => addr);
 
                     if (cTx.shieldedOutputs) {
-                        txContent = 'Received from Shielded address';
+                        txContent = translation.activityReceivedShield;
                     } else {
                         txContent =
-                            'Received from ' +
+                            translation.activityReceivedFrom +
+                            ' ' +
                             [
                                 ...new Set(
                                     arrExternalAddresses.map((addr) =>
@@ -868,17 +870,18 @@ export async function createActivityListHTML(arrTXs, fRewards = false) {
                 case HistoricalTxType.DELEGATION:
                     icon = 'fa-snowflake';
                     txContent =
-                        'Delegated to ' +
+                        translation.activityDelegatedTo +
+                        ' ' +
                         cTx.receivers[0].substring(0, 6) +
                         '...';
                     break;
                 case HistoricalTxType.UNDELEGATION:
                     icon = 'fa-fire';
-                    txContent = 'Undelegated';
+                    txContent = translation.activityUndelegated;
                     break;
                 default:
                     icon = 'fa-question';
-                    txContent = 'Unknown Tx';
+                    txContent = translation.activityUnknown;
             }
         }
 
@@ -1170,11 +1173,7 @@ export async function govVote(hash, voteCode) {
         const cMasternode = await database.getMasternode();
         if (cMasternode) {
             if ((await cMasternode.getStatus()) !== 'ENABLED') {
-                createAlert(
-                    'warning',
-                    'Your masternode is not enabled yet!',
-                    6000
-                );
+                createAlert('warning', ALERTS.MN_NOT_ENABLED, 6000);
                 return;
             }
             const result = await cMasternode.vote(hash.toString(), voteCode); //1 yes 2 no
@@ -1182,32 +1181,20 @@ export async function govVote(hash, voteCode) {
                 //good vote
                 cMasternode.storeVote(hash.toString(), voteCode);
                 await updateGovernanceTab();
-                createAlert('success', 'Vote submitted!', 6000);
+                createAlert('success', ALERTS.VOTE_SUBMITTED, 6000);
             } else if (result.includes('Error voting :')) {
                 //If you already voted return an alert
-                createAlert(
-                    'warning',
-                    'You already voted for this proposal! Please wait 1 hour',
-                    6000
-                );
+                createAlert('warning', ALERTS.VOTED_ALREADY, 6000);
             } else if (result.includes('Failure to verify signature.')) {
                 //wrong masternode private key
-                createAlert(
-                    'warning',
-                    "Failed to verify signature, please check your masternode's private key",
-                    6000
-                );
+                createAlert('warning', ALERTS.VOTE_SIG_BAD, 6000);
             } else {
                 //this could be everything
                 console.error(result);
-                createAlert(
-                    'warning',
-                    'Internal error, please try again later',
-                    6000
-                );
+                createAlert('warning', ALERTS.INTERNAL_ERROR, 6000);
             }
         } else {
-            createAlert('warning', 'Access a masternode before voting!', 6000);
+            createAlert('warning', ALERTS.MN_ACCESS_BEFORE_VOTE, 6000);
         }
     }
 }
@@ -1222,23 +1209,17 @@ export async function startMasternode(fRestart = false) {
     if (cMasternode) {
         if (
             masterKey.isViewOnly &&
-            !(await restoreWallet('Unlock to start your Masternode!'))
+            !(await restoreWallet(translation.walletUnlockMNStart))
         )
             return;
         if (await cMasternode.start()) {
-            createAlert(
-                'success',
-                '<b>Masternode ' + (fRestart ? 're' : '') + 'started!</b>',
-                4000
-            );
+            const strMsg = fRestart ? ALERTS.MN_RESTARTED : ALERTS.MN_STARTED;
+            createAlert('success', strMsg, 4000);
         } else {
-            createAlert(
-                'warning',
-                '<b>Failed to ' +
-                    (fRestart ? 're' : '') +
-                    'start masternode!</b>',
-                4000
-            );
+            const strMsg = fRestart
+                ? ALERTS.MN_RESTART_FAILED
+                : ALERTS.MN_START_FAILED;
+            createAlert('warning', strMsg, 4000);
         }
     }
 }
@@ -1248,11 +1229,7 @@ export async function destroyMasternode() {
 
     if (await database.getMasternode(masterKey)) {
         database.removeMasternode(masterKey);
-        createAlert(
-            'success',
-            '<b>Masternode destroyed!</b><br>Your coins are now spendable.',
-            5000
-        );
+        createAlert('success', ALERTS.MN_DESTROYED, 5000);
         updateMasternodeTab();
     }
 }
@@ -1297,7 +1274,7 @@ export async function importMasternode() {
     const mnPrivKey = doms.domMnPrivateKey.value;
     const address = parseIpAddress(doms.domMnIP.value);
     if (!address) {
-        createAlert('warning', 'The ip address is invalid!', 5000);
+        createAlert('warning', ALERTS.MN_BAD_IP, 5000);
         return;
     }
 
@@ -1319,26 +1296,26 @@ export async function importMasternode() {
         if (!cCollaUTXO) {
             if (getBalance(false) < cChainParams.current.collateralInSats) {
                 // Not enough balance to create an MN UTXO
+                const amount =
+                    (cChainParams.current.collateralInSats -
+                        getBalance(false)) /
+                    COIN;
+                const ticker = cChainParams.current.TICKER;
                 createAlert(
                     'warning',
-                    'You need <b>' +
-                        (cChainParams.current.collateralInSats -
-                            getBalance(false)) /
-                            COIN +
-                        ' more ' +
-                        cChainParams.current.TICKER +
-                        '</b> to create a Masternode!',
+                    ALERTS.MN_NOT_ENOUGH_COLLAT,
+                    [{ amount }, { ticker }],
                     10000
                 );
             } else {
                 // Balance is capable of a masternode, just needs to be created
                 // TODO: this UX flow is weird, is it even possible? perhaps we can re-design this entire function accordingly
+                const amount = cChainParams.current.collateralInSats / COIN;
+                const ticker = cChainParams.current.TICKER;
                 createAlert(
                     'warning',
-                    'You have enough balance for a Masternode, but no valid collateral UTXO of ' +
-                        cChainParams.current.collateralInSats / COIN +
-                        ' ' +
-                        cChainParams.current.TICKER,
+                    ALERTS.MN_ENOUGH_BUT_NO_COLLAT,
+                    [{ amount }, { ticker }],
                     10000
                 );
             }
@@ -1355,11 +1332,7 @@ export async function importMasternode() {
             .findLast((u) => u.path === path); // first UTXO for each address in HD
         // sanity check:
         if (masterUtxo.sats !== cChainParams.current.collateralInSats) {
-            return createAlert(
-                'warning',
-                'This is not a suitable UTXO for a Masternode',
-                10000
-            );
+            return createAlert('warning', ALERTS.MN_COLLAT_NOT_SUITABLE, 10000);
         }
         collateralTxId = masterUtxo.id;
         outidx = masterUtxo.vout;
@@ -1396,8 +1369,8 @@ export async function accessOrImportWallet() {
     // #52 there would be no way to recover the public key without getting
     // The password from the user
     if (await hasEncryptedWallet()) {
-        doms.domPrivKey.placeholder = 'Enter your wallet password';
-        doms.domImportWalletText.innerText = 'Unlock Wallet';
+        doms.domPrivKey.placeholder = translation.encryptPasswordFirst;
+        doms.domImportWalletText.innerText = translation.unlockWallet;
         doms.domPrivKey.focus();
     }
 }
@@ -1417,8 +1390,8 @@ export async function onPrivateKeyChanged() {
         !fContainsSpaces;
 
     doms.domPrivKeyPassword.placeholder = fContainsSpaces
-        ? 'Optional Passphrase'
-        : 'Password';
+        ? translation.optionalPassphrase
+        : translation.password;
     // Uncloak the private input IF spaces are detected, to make Seed Phrases easier to input and verify
     doms.domPrivKey.setAttribute('type', fContainsSpaces ? 'text' : 'password');
 }
@@ -1553,7 +1526,7 @@ function stopSearch() {
     }
     while (arrWorkers.length) arrWorkers.pop();
     doms.domPrefix.disabled = false;
-    doms.domVanityUiButtonTxt.innerText = 'Create A Vanity Wallet';
+    doms.domVanityUiButtonTxt.innerText = translation.dCardTwoButton;
     clearInterval(vanUiUpdater);
 }
 
@@ -1705,8 +1678,14 @@ export function isMasternodeUTXO(cUTXO, cMasternode) {
 export async function guiSetColdStakingAddress() {
     if (
         await confirmPopup({
-            title: 'Set your Cold Staking address',
-            html: `<p>Current address:<br><span class="mono">${strColdStakingAddress}</span><br><br><span style="opacity: 0.65; margin: 10px;">A Cold Address stakes coins on your behalf, it cannot spend coins, so it's even safe to use a stranger's Cold Address!</span></p><br><input type="text" id="newColdAddress" placeholder="Example: ${strColdStakingAddress.substring(
+            title: translation.popupSetColdAddr,
+            html: `<p>${
+                translation.popupCurrentAddress
+            }<br><span class="mono">${strColdStakingAddress}</span><br><br><span style="opacity: 0.65; margin: 10px;">${
+                translation.popupColdStakeNote
+            }</span></p><br><input type="text" id="newColdAddress" placeholder="${
+                translation.popupExample
+            } ${strColdStakingAddress.substring(
                 0,
                 6
             )}..." style="text-align: center;">`,
@@ -1724,15 +1703,10 @@ export async function guiSetColdStakingAddress() {
             strColdAddress.length === 34
         ) {
             await setColdStakingAddress(strColdAddress);
-            createAlert(
-                'info',
-                '<b>Cold Address set!</b><br>Future stakes will use this address.',
-                [],
-                5000
-            );
+            createAlert('info', ALERTS.STAKE_ADDR_SET, [], 5000);
             return true;
         } else {
-            createAlert('warning', 'Invalid Cold Staking address!', [], 2500);
+            createAlert('warning', ALERTS.STAKE_ADDR_BAD, [], 2500);
             return false;
         }
     } else {
@@ -1743,11 +1717,11 @@ export async function guiSetColdStakingAddress() {
 export async function wipePrivateData() {
     const isEncrypted = await hasEncryptedWallet();
     const title = isEncrypted
-        ? 'Do you want to lock your wallet?'
-        : 'Do you want to wipe your wallet private data?';
+        ? translation.popupWalletLock
+        : translation.popupWalletWipe;
     const html = isEncrypted
-        ? 'You will need to enter your password to access your funds'
-        : "You will lose access to your funds if you haven't backed up your private key or seed phrase";
+        ? translation.popupWalletLockNote
+        : translation.popupWalletWipeNote;
     if (
         await confirmPopup({
             title,
@@ -1777,8 +1751,8 @@ export async function restoreWallet(strReason = '') {
     // Prompt the user
     if (
         await confirmPopup({
-            title: 'Unlock your wallet',
-            html: `${strHTML}<input type="password" id="restoreWalletPassword" placeholder="Wallet password" style="text-align: center;">`,
+            title: translation.walletUnlock,
+            html: `${strHTML}<input type="password" id="restoreWalletPassword" placeholder="${translation.walletPassword}" style="text-align: center;">`,
         })
     ) {
         // Fetch the password from the prompt, and immediately destroy the prompt input
@@ -1923,13 +1897,19 @@ function getProposalFinalisationStatus(cPropCache) {
     const nConfsLeft = cPropCache.nSubmissionHeight + 6 - cNet.cachedBlockCount;
 
     if (cPropCache.nSubmissionHeight === 0 || cNet.cachedBlockCount === 0) {
-        return 'Confirming...';
+        return translation.proposalFinalisationConfirming;
     } else if (nConfsLeft > 0) {
-        return nConfsLeft + ' block' + (nConfsLeft === 1 ? '' : 's') + ' left';
+        return (
+            nConfsLeft +
+            ' block' +
+            (nConfsLeft === 1 ? '' : 's') +
+            ' ' +
+            translation.proposalFinalisationRemaining
+        );
     } else if (Math.abs(nConfsLeft) >= cChainParams.current.budgetCycleBlocks) {
-        return 'Proposal Expired';
+        return translation.proposalFinalisationExpired;
     } else {
-        return 'Ready to submit';
+        return translation.proposalFinalisationReady;
     }
 }
 
@@ -2055,8 +2035,11 @@ async function renderProposals(arrProposals, fContested) {
 
         // Proposal Status calculation
         const nRequiredVotes = Math.round(cMasternodes.enabled * 0.1);
-        const strStatus = nNetYes >= nRequiredVotes ? 'PASSING' : 'FAILING';
-        let strFundingStatus = 'NOT FUNDED';
+        const strStatus =
+            nNetYes >= nRequiredVotes
+                ? translation.proposalPassing
+                : translation.proposalFailing;
+        let strFundingStatus = translation.proposalNotFunded;
 
         // Funding Status and allocation calculations
         if (cProposal.local) {
@@ -2073,8 +2056,8 @@ async function renderProposals(arrProposals, fContested) {
             finalizeButton.innerHTML = '<i class="fas fa-check"></i>';
 
             if (
-                strStatus === 'Ready to submit' ||
-                strStatus === 'Proposal Expired'
+                strStatus === translation.proposalFinalisationReady ||
+                strStatus === translation.proposalFinalisationExpired
             ) {
                 finalizeButton.addEventListener('click', async () => {
                     const result = await Masternode.finalizeProposal(
@@ -2091,20 +2074,20 @@ async function renderProposals(arrProposals, fContested) {
                         });
                     };
                     if (result.ok) {
-                        createAlert('success', 'Proposal finalized!');
+                        createAlert('success', ALERTS.PROPOSAL_FINALISED);
                         deleteProposal();
                         updateGovernanceTab();
                     } else {
                         if (result.err === 'unconfirmed') {
                             createAlert(
                                 'warning',
-                                "The proposal hasn't been confirmed yet.",
+                                ALERTS.PROPOSAL_UNCONFIRMED,
                                 5000
                             );
                         } else if (result.err === 'invalid') {
                             createAlert(
                                 'warning',
-                                'The proposal has expired. Create a new one.',
+                                ALERTS.PROPOSAL_EXPIRED,
                                 5000
                             );
                             deleteProposal();
@@ -2112,7 +2095,7 @@ async function renderProposals(arrProposals, fContested) {
                         } else {
                             createAlert(
                                 'warning',
-                                'Failed to finalize proposal.'
+                                ALERTS.PROPOSAL_FINALISE_FAIL
                             );
                         }
                     }
@@ -2137,8 +2120,7 @@ async function renderProposals(arrProposals, fContested) {
                     totalAllocatedAmount + cProposal.MonthlyPayment <=
                         cChainParams.current.maxPayment / COIN
                 ) {
-                    // Not enough budget or Net Yes votes for this proposal :(
-                    strFundingStatus = 'FUNDED';
+                    strFundingStatus = translation.proposalFunded;
                     totalAllocatedAmount += cProposal.MonthlyPayment;
                 }
             }
@@ -2150,7 +2132,7 @@ async function renderProposals(arrProposals, fContested) {
             </span>
             <span style="font-size:12px; line-height: 15px; display: block; color:#d1d1d1;">
                 <b>${nNetYesPercent.toFixed(1)}%</b><br>
-                Net Yes
+                ${translation.proposalNetYes}
             </span>
             <span class="governArrow for-mobile ptr">
                 <i class="fa-solid fa-angle-down"></i>
@@ -2184,9 +2166,11 @@ async function renderProposals(arrProposals, fContested) {
 
         <span class="governInstallments"> ${sanitizeHTML(
             cProposal['RemainingPaymentCount']
-        )} installment(s) remaining<br>of <b>${sanitizeHTML(
+        )} ${translation.proposalPaymentsRemaining} <b>${sanitizeHTML(
             parseInt(cProposal.TotalPayment).toLocaleString('en-gb', ',', '.')
-        )} ${cChainParams.current.TICKER}</b> total</span>`;
+        )} ${cChainParams.current.TICKER}</b> ${
+            translation.proposalPaymentTotal
+        }</span>`;
 
         // Vote Counts and Consensus Percentages
         const domVoteCounters = domRow.insertCell();
@@ -2228,12 +2212,12 @@ async function renderProposals(arrProposals, fContested) {
             const domVoteBtns = domRow.insertCell();
             const domNoBtn = document.createElement('button');
             domNoBtn.className = btnNoClass;
-            domNoBtn.innerText = 'No';
+            domNoBtn.innerText = translation.no;
             domNoBtn.onclick = () => govVote(cProposal.Hash, 2);
 
             const domYesBtn = document.createElement('button');
             domYesBtn.className = btnYesClass;
-            domYesBtn.innerText = 'Yes';
+            domYesBtn.innerText = translation.yes;
             domYesBtn.onclick = () => govVote(cProposal.Hash, 1);
 
             // Add border radius to last row
@@ -2271,7 +2255,7 @@ async function renderProposals(arrProposals, fContested) {
         mobileExtended.innerHTML = `
         <div class="row pt-2">
             <div class="col-5 fs-13 fw-600">
-                <div class="governMobDot"></div> PAYMENT
+                <div class="governMobDot"></div> ${translation.govTablePayment}
             </div>
             <div class="col-7">
                 <span class="governValues"><b>${sanitizeHTML(
@@ -2286,15 +2270,17 @@ async function renderProposals(arrProposals, fContested) {
         
                 <span class="governInstallments"> ${sanitizeHTML(
                     cProposal['RemainingPaymentCount']
-                )} installment(s) remaining<br>of <b>${sanitizeHTML(
+                )} ${translation.proposalPaymentsRemaining} <b>${sanitizeHTML(
             parseInt(cProposal.TotalPayment).toLocaleString('en-gb', ',', '.')
-        )} ${cChainParams.current.TICKER}</b> total</span>
+        )} ${cChainParams.current.TICKER}</b> ${
+            translation.proposalPaymentTotal
+        }</span>
             </div>
         </div>
         <hr class="governHr">
         <div class="row">
             <div class="col-5 fs-13 fw-600">
-                <div class="governMobDot"></div> VOTES
+                <div class="governMobDot"></div> ${translation.govTableVotes}
             </div>
             <div class="col-7">
                 <b>${parseFloat(nLocalPercent).toLocaleString(
@@ -2314,7 +2300,7 @@ async function renderProposals(arrProposals, fContested) {
         <hr class="governHr">
         <div class="row pb-2">
             <div class="col-5 fs-13 fw-600">
-                <div class="governMobDot"></div> VOTE
+                <div class="governMobDot"></div> ${translation.govTableVote}
             </div>
             <div class="col-7">
                 ${voteBtn}
@@ -2482,31 +2468,17 @@ async function refreshMasternodeData(cMasternode, fAlert = false) {
         doms.domMnTextErrors.innerHTML =
             'Masternode is currently <b>OFFLINE</b>';
         if (!masterKey.isViewOnly) {
-            createAlert(
-                'warning',
-                'Your masternode is offline, we will try to start it',
-                6000
-            );
+            createAlert('warning', ALERTS.MN_OFFLINE_STARTING, 6000);
             // try to start the masternode
             const started = await cMasternode.start();
             if (started) {
-                doms.domMnTextErrors.innerHTML =
-                    'Masternode successfully started!';
-                createAlert(
-                    'success',
-                    'Masternode successfully started!, it will be soon online',
-                    6000
-                );
+                doms.domMnTextErrors.innerHTML = ALERTS.MN_STARTED;
+                createAlert('success', ALERTS.MN_STARTED_ONLINE_SOON, 6000);
                 const database = await Database.getInstance();
                 await database.addMasternode(cMasternode);
             } else {
-                doms.domMnTextErrors.innerHTML =
-                    "We couldn't start your masternode";
-                createAlert(
-                    'warning',
-                    'We could not start your masternode',
-                    6000
-                );
+                doms.domMnTextErrors.innerHTML = ALERTS.MN_START_FAILED;
+                createAlert('warning', ALERTS.MN_START_FAILED, 6000);
             }
         }
     } else if (
@@ -2516,7 +2488,7 @@ async function refreshMasternodeData(cMasternode, fAlert = false) {
         if (fAlert)
             createAlert(
                 'success',
-                `Your masternode status is <b> ${sanitizeHTML(
+                `${ALERTS.MN_STATUS_IS} <b> ${sanitizeHTML(
                     cMasternodeData.status
                 )} </b>`,
                 6000
@@ -2524,18 +2496,16 @@ async function refreshMasternodeData(cMasternode, fAlert = false) {
         const database = await Database.getInstance();
         await database.addMasternode(cMasternode);
     } else if (cMasternodeData.status === 'REMOVED') {
-        doms.domMnTextErrors.innerHTML =
-            'Masternode is currently <b>REMOVED</b>';
-        if (fAlert)
-            createAlert(
-                'warning',
-                'Your masternode is in <b>REMOVED</b> state',
-                6000
-            );
+        const state = cMasternodeData.status;
+        doms.domMnTextErrors.innerHTML = ALERTS.MN_STATE.replace(
+            '{state}',
+            state
+        );
+        if (fAlert) createAlert('warning', ALERTS.MN_STATE, [{ state }], 6000);
     } else {
         // connection problem
-        doms.domMnTextErrors.innerHTML = 'Unable to connect!';
-        if (fAlert) createAlert('warning', 'Unable to connect!', 6000);
+        doms.domMnTextErrors.innerHTML = ALERTS.MN_CANT_CONNECT;
+        if (fAlert) createAlert('warning', ALERTS.MN_CANT_CONNECT, 6000);
     }
 
     // Return the data in case the caller needs additional context
@@ -2544,29 +2514,28 @@ async function refreshMasternodeData(cMasternode, fAlert = false) {
 
 export async function createProposal() {
     if (!masterKey) {
-        return createAlert(
-            'warning',
-            'Create or import your wallet to continue'
-        );
+        return createAlert('warning', ALERTS.PROPOSAL_IMPORT_FIRST);
     }
     if (
         masterKey.isViewOnly &&
-        !(await restoreWallet('Unlock to create a proposal!'))
+        !(await restoreWallet(translation.walletUnlockProposal))
     ) {
         return;
     }
     if (getBalance() * COIN < cChainParams.current.proposalFee) {
-        return createAlert('warning', 'Not enough funds to create a proposal.');
+        return createAlert('warning', ALERTS.PROPOSAL_NOT_ENOUGH_FUNDS);
     }
 
     const fConfirmed = await confirmPopup({
-        title: `Create Proposal (cost ${
-            cChainParams.current.proposalFee / COIN
-        } ${cChainParams.current.TICKER})`,
-        html: `<input id="proposalTitle" maxlength="20" placeholder="Title" style="text-align: center;"><br>
-               <input id="proposalUrl" maxlength="64" placeholder="URL" style="text-align: center;"><br>
-               <input type="number" id="proposalCycles" placeholder="Duration in cycles" style="text-align: center;"><br>
-               <input type="number" id="proposalPayment" placeholder="${cChainParams.current.TICKER} per cycle" style="text-align: center;"><br>`,
+        title: `${translation.popupCreateProposal} (${
+            translation.popupCreateProposalCost
+        } ${cChainParams.current.proposalFee / COIN} ${
+            cChainParams.current.TICKER
+        })`,
+        html: `<input id="proposalTitle" maxlength="20" placeholder="${translation.popupProposalTitle}" style="text-align: center;"><br>
+               <input id="proposalUrl" maxlength="64" placeholder="${translation.popupExample} https://forum.pivx.org/..." style="text-align: center;"><br>
+               <input type="number" id="proposalCycles" placeholder="${translation.popupProposalDuration}" style="text-align: center;"><br>
+               <input type="number" id="proposalPayment" placeholder="${cChainParams.current.TICKER} ${translation.popupProposalPerCycle}" style="text-align: center;"><br>`,
     });
 
     // If the user cancelled, then we return
@@ -2592,7 +2561,7 @@ export async function createProposal() {
     if (!isValid.ok) {
         createAlert(
             'warning',
-            `Proposal is invalid. Error: ${isValid.err}`,
+            `${ALERTS.PROPOSAL_INVALID_ERROR} ${isValid.err}`,
             5000
         );
         return;
@@ -2611,7 +2580,7 @@ export async function createProposal() {
         const localProposals = account?.localProposals || [];
         localProposals.push(proposal);
         await database.addAccount({ localProposals });
-        createAlert('success', 'Proposal created! Please finalize it.');
+        createAlert('success', ALERTS.PROPOSAL_CREATED, [], 4000);
         updateGovernanceTab();
     }
 }
@@ -2698,7 +2667,7 @@ export function switchSettings(page) {
 }
 
 function errorHandler(e) {
-    const message = `Unhandled exception. <br> ${sanitizeHTML(
+    const message = `${translation.unhandledException} <br> ${sanitizeHTML(
         e.message || e.reason
     )}`;
     try {

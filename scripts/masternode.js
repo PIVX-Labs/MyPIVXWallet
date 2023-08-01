@@ -587,7 +587,7 @@ export default class Masternode {
         }
 
         if (!isSafeStr.test(name)) {
-            return { ok: false, err: 'invaild_name' };
+            return { ok: false, err: 'invalid_name' };
         }
 
         if (url.length > 64) {
@@ -595,7 +595,7 @@ export default class Masternode {
         }
 
         if (!isSafeStr.test(url)) {
-            return { ok: false, err: 'invaild_url' };
+            return { ok: false, err: 'invalid_url' };
         }
 
         if (

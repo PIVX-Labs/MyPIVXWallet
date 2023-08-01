@@ -78,7 +78,7 @@ export class Settings {
         node,
         autoswitch = true,
         coldAddress = strColdStakingAddress,
-        translation = 'en',
+        translation = '',
         displayCurrency = 'usd',
     } = {}) {
         this.analytics = analytics;
@@ -103,6 +103,7 @@ export let STATS = {
 export const cStatKeys = Object.keys(STATS);
 
 // A list of Analytics 'levels' at which the user may set depending on their privacy preferences
+// NOTE: When changing Level Names, ensure the i18n system is updated to support them too
 let arrAnalytics = [
     // Statistic level  // Allowed statistics
     { name: 'Disabled', stats: [] },
@@ -163,14 +164,6 @@ export async function start() {
         refreshPriceDisplay().finally(refreshChainData);
     }
 
-    // Add each analytics level into the UI selector
-    const domAnalyticsSelect = document.getElementById('analytics');
-    for (const analLevel of arrAnalytics) {
-        const opt = document.createElement('option');
-        opt.value = opt.innerHTML = analLevel.name;
-        domAnalyticsSelect.appendChild(opt);
-    }
-
     const database = await Database.getInstance();
 
     // Fetch settings from Database
@@ -227,8 +220,8 @@ export async function start() {
         );
     }
 
-    // And update the UI to reflect them
-    domAnalyticsSelect.value = cAnalyticsLevel.name;
+    // Add each analytics level into the UI selector
+    fillAnalyticSelect();
 }
 // --- Settings Functions
 export async function setExplorer(explorer, fSilent = false) {
@@ -271,13 +264,13 @@ async function setNode(node, fSilent = false) {
 //TRANSLATION
 /**
  * Switches the translation and sets the translation preference to database
- * @param {string} lang
- * @param {bool} fSilent
+ * @param {string} strLang
  */
-async function setTranslation(lang) {
-    switchTranslation(lang);
+export async function setTranslation(strLang) {
+    switchTranslation(strLang);
     const database = await Database.getInstance();
-    database.setSettings({ translation: lang });
+    database.setSettings({ translation: strLang });
+    doms.domTranslationSelect.value = strLang;
 }
 
 /**
@@ -310,17 +303,18 @@ async function fillTranslationSelect() {
         doms.domTranslationSelect.remove(0);
     }
 
-    // Add each trusted explorer into the UI selector
-    for (const lang of arrActiveLangs) {
+    // Add each language into the UI selector
+    for (const cLang of arrActiveLangs) {
         const opt = document.createElement('option');
-        opt.innerHTML = opt.value = lang;
+        opt.innerHTML = `${cLang.emoji} ${cLang.code.toUpperCase()}`;
+        opt.value = cLang.code;
         doms.domTranslationSelect.appendChild(opt);
     }
 
     const database = await Database.getInstance();
-    const { translation } = await database.getSettings();
-    // And update the UI to reflect them
-    doms.domTranslationSelect.value = translation;
+    const { translation: strLang } = await database.getSettings();
+    // And update the UI to reflect them (default to English if none)
+    doms.domTranslationSelect.value = strLang;
 }
 
 /**
@@ -344,6 +338,21 @@ export async function fillCurrencySelect() {
 
     // And update the UI to reflect them
     strCurrency = doms.domCurrencySelect.value = displayCurrency;
+}
+
+/**
+ * Fills the Analytics Settings UI
+ */
+export function fillAnalyticSelect() {
+    const domAnalyticsSelect = document.getElementById('analytics');
+    domAnalyticsSelect.innerHTML = '';
+    for (const analLevel of arrAnalytics) {
+        const opt = document.createElement('option');
+        // Apply translation to the display HTML
+        opt.value = analLevel.name;
+        opt.innerHTML = translation['analytic' + analLevel.name];
+        domAnalyticsSelect.appendChild(opt);
+    }
 }
 
 async function setAnalytics(level, fSilent = false) {
@@ -380,7 +389,7 @@ async function setAnalytics(level, fSilent = false) {
         createAlert(
             'success',
             ALERTS.SWITCHED_ANALYTICS,
-            [{ level: cAnalyticsLevel.name }],
+            [{ level: translation['analytic' + cAnalyticsLevel.name] }],
             2250
         );
 }

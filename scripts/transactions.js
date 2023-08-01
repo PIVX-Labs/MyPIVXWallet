@@ -1,6 +1,6 @@
 import bitjs from './bitTrx.js';
 import { debug, strColdStakingAddress } from './settings.js';
-import { ALERTS } from './i18n.js';
+import { ALERTS, translation } from './i18n.js';
 import {
     doms,
     getBalance,
@@ -68,7 +68,7 @@ export async function createTxGUI() {
     // Ensure the wallet is unlocked
     if (
         masterKey.isViewOnly &&
-        !(await restoreWallet('Unlock to send your transaction!'))
+        !(await restoreWallet(translation.walletUnlockTx))
     )
         return;
 
@@ -137,7 +137,7 @@ export async function delegateGUI() {
     if (
         masterKey.isViewOnly &&
         !(await restoreWallet(
-            `Unlock to stake your ${cChainParams.current.TICKER}!`
+            `${translation.walletUnlockStake} ${cChainParams.current.TICKER}!`
         ))
     )
         return;
@@ -177,14 +177,14 @@ export async function delegateGUI() {
  */
 export async function undelegateGUI() {
     if (masterKey.isHardwareWallet) {
-        return createAlert('warning', 'Ledger not supported', 6000);
+        return createAlert('warning', ALERTS.STAKING_LEDGER_NO_SUPPORT, 6000);
     }
 
     // Ensure the wallet is unlocked
     if (
         masterKey.isViewOnly &&
         !(await restoreWallet(
-            `Unlock to unstake your ${cChainParams.current.TICKER}!`
+            `${translation.walletUnlockUnstake} ${cChainParams.current.TICKER}!`
         ))
     )
         return;
@@ -243,17 +243,13 @@ export async function createAndSendTransaction({
 }) {
     if (!(await hasWalletUnlocked(true))) return;
     if ((isDelegation || useDelegatedInputs) && masterKey.isHardwareWallet) {
-        return createAlert(
-            'warning',
-            'Ledger is currently not supported.',
-            6000
-        );
+        return createAlert('warning', ALERTS.STAKING_LEDGER_NO_SUPPORT, 6000);
     }
 
     // Ensure the wallet is unlocked
     if (
         masterKey.isViewOnly &&
-        !(await restoreWallet('Unlock to send your transaction!'))
+        !(await restoreWallet(translation.walletUnlockTx))
     )
         return;
 
@@ -406,7 +402,7 @@ export async function createMasternode() {
     // Ensure the wallet is unlocked
     if (
         masterKey.isViewOnly &&
-        !(await restoreWallet('Unlock to create your Masternode!'))
+        !(await restoreWallet(translation.walletUnlockCreateMN))
     )
         return;
 
@@ -430,10 +426,7 @@ export async function createMasternode() {
                 ALERTS.CONFIRM_POPUP_MN_P_KEY_HTML,
         });
     }
-    createAlert(
-        'success',
-        '<b>Masternode Created!<b><br>Wait 15 confirmations to proceed further'
-    );
+    createAlert('success', ALERTS.MN_CREATED_WAIT_CONFS);
     // Remove any previous Masternode data, if there were any
     const database = await Database.getInstance();
     database.removeMasternode();

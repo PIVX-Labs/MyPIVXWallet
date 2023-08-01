@@ -1,3 +1,5 @@
+import { translation } from './i18n';
+
 /**
  * @name FlipDown
  * @description Flip styled countdown clock
@@ -148,7 +150,12 @@ export class FlipDown {
      * @author PButcher
      **/
     _parseOptions(opt) {
-        let headings = ['Days', 'Hours', 'Minutes', 'Seconds'];
+        let headings = [
+            translation.timeDays,
+            translation.timeHours,
+            translation.timeMinutes,
+            translation.timeSeconds,
+        ];
         if (opt.headings && opt.headings.length === 4) {
             headings = opt.headings;
         }

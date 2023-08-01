@@ -3,19 +3,16 @@ export const en_translation = {
     // Basic HTML tags are allowed such as <b><i> etc. All data is sanitized https://developer.mozilla.org/en-US/docs/Web/API/Element/innerHTML
 
     // General words
-    enabled: 'enabled', //
-    active: 'Active', //
-    disabled: 'disabled', //
-    on: 'On', //
-    experimental: 'Experimental', //
     amount: 'Amount', //
     staking: 'Staking', //
-    rewards: 'rewards', //
-    available: 'Available', //
+    wallet: 'Wallet', //
+    display: 'Display', //
+    activity: 'Activity', //
+    yes: 'Yes', //
+    no: 'No', //
 
     // Nav Bar
     navDashboard: 'Dashboard', //
-    navSend: 'Send', //
     navStake: 'Stake', //
     navMasternode: 'Masternode', //
     navGovernance: 'Governance', //
@@ -28,27 +25,7 @@ export const en_translation = {
     loading: 'Loading', //
     loadingTitle: 'My PIVX Wallet is', //
 
-    cardOneTitle: 'Be your own Bank!', //
-    cardOneDesc:
-        'MyPIVXWallet has <b>no custody</b> over your funds. You are in full ownership of your keys and your PIV. ', //
-    cardOneLink: 'Know more', //
-
-    cardTwoTitle: 'Universal and Portable', //
-    cardTwoDesc:
-        'You can generate cryptographically-secure addresses with your browser and hardware.', //
-    cardTwoLink: 'Know more', //
-
-    cardThreeTitle: "Don't trust, verify!", //
-    cardThreeDesc:
-        'MyPIVXWallet is completely open-source, available on the PIVX Labs github.', //
-    cardThreeLink: 'Know more', //
-
-    cardFourTitle: 'For the community', //
-    cardFourDesc:
-        'MyPIVXWallet is built with love without any fees, privacy intrusions or advertising. ', //
-    cardFourLink: 'Know more', //
-
-    // Dashboard
+    // Onboarding Dashboard
     dashboardTitle: 'Dashboard', //
     dCardOneTitle: 'Create a', //
     dCardOneSubTitle: 'New Wallet', //
@@ -75,34 +52,93 @@ export const en_translation = {
     dCardFourButtonI: 'Import Wallet', //
     dCardFourButtonA: 'Access My Wallet', //
 
+    // Seed Phrase Creation
+    thisIsYourSeed: 'This is your seed phrase:', //
+    writeDownSeed: "Write it down somewhere. You'll only see this <b>once!</b>", //
+    doNotShareWarning:
+        'Anyone with a copy of it can access <b>all</b> of your funds.', //
+    doNotShare: 'Do NOT share it with anyone.', //
+    digitalStoreNotAdvised: 'It is <b>NOT</b> advised to store this digitally.', //
+    optionalPassphrase: 'Optional Passphrase', //
+    writtenDown: 'I have written down my seed phrase', //
+
+    // Wallet Dashboard
+    gettingStarted: 'Getting Started', //
+    secureYourWallet: 'Secure your wallet', //
+    unlockWallet: 'Unlock wallet', //
+    lockWallet: 'Lock wallet', //
+
+    // Encrypt wallet
+    encryptWallet: 'Encrypt wallet', //
+    encryptPasswordFirst: 'Enter Password', //
+    encryptPasswordSecond: 'Re-enter Password', //
+    encrypt: 'Encrypt', //
+
+    // Wallet Dashboard Sub-menu
+    balanceBreakdown: 'Balance Breakdown', //
+    viewOnExplorer: 'View on Explorer', //
+    export: 'Export', //
+    refreshAddress: 'Refresh address', //
+    redeemOrCreateCode: 'Redeem or Create Code', //
+
     // Send
-    sendReceiverAddress: 'Address', //
+    transfer: 'Transfer', //
+    address: 'Address', //
+    receivingAddress: 'Receiving address', //
     sendAmountCoinsMax: 'MAX', //
     paymentRequestMessage: 'Description (from the merchant)', //
-    sendTransaction: 'Send', //
+    send: 'Send', //
+
+    // Export
+    privateKey: 'Private Key', //
+    viewPrivateKey: 'View Private Key?', //
+    privateWarning1: 'Make sure no one can see your screen.', //
+    privateWarning2: 'Anyone with this key can steal your funds.', //
+    viewKey: 'View key', //
+
+    // PIVX Promos
+    // NOTE: for this below line, continue the sentence "PIVX Promos [...]", since 'PIVX Promos' is a brand, it is not translated.
+    pivxPromos: 'is a decentralised system for gift codes worth PIV', // [...] is a decentralised system for gift codes worth PIV
+    // NOTE: on this line, if possible, leave 'PIVX Promos' untranslated
+    redeemInput: "Enter your 'PIVX Promos' code", //Enter your 'PIVX Promos' code
+    createName: 'Promo Name (Optional)', //Promo Name (Optional)
+    createAmount: 'Promo Amount', //Promo Amount
 
     // Stake
-    stakeTitle: 'Stake your PIV to generate rewards!', //
-    stakeSubTitle:
-        'Coins that you Stake are "Locked" separately from your Available balance, and have a chance to generate rewards. <br> The more coins you stake, the more frequently you\'ll receive rewards.', //
-    stake: 'Stake',
+    stake: 'Stake', //
     stakeUnstake: 'Unstake', //
+    rewardHistory: 'Reward History', //
     loadMore: 'Load more', //
 
+    // Masternode
+    mnControlYour: 'Control your', //
+    mnSubtext:
+        'From this tab you can create and access one or more masternodes', //
+
     // Governance
-    contestedProposalsTitle: 'Contested Proposals',
+    govSubtext:
+        'From this tab you can check the proposals and, if you have a masternode, be a part of the <b>DAO</b> and vote!', //
+    govMonthlyBudget: 'Monthly Budget', //
+    govAllocBudget: 'Allocated Budget', //
+    govNextPayout: 'Next Treasury Payout', //
+    govTableStatus: 'STATUS', //
+    govTableName: 'NAME', //
+    govTablePayment: 'PAYMENT', //
+    govTableVotes: 'VOTES', //
+    govTableVote: 'VOTE', //
+    contestedProposalsTitle: 'Contested Proposals', //
     contestedProposalsDesc:
-        'These are proposals that received an overwhelming amount of downvotes, making it likely spam or a highly contestable proposal.',
+        'These are proposals that received an overwhelming amount of downvotes, making it likely spam or a highly contestable proposal.', //
 
     // Settings
-    settingsCurrency: 'Choose a display currency:',
+    settingsCurrency: 'Choose a display currency:', //
     settingsExplorer: 'Choose an explorer:', //
     settingsLanguage: 'Choose a Language:', //
     settingsPivxNode: 'Choose a PIVX node:', //
+    settingsAutoSelectNet: 'Auto-select Explorers and Nodes', //
     settingsAnalytics: 'Choose your analytics contribution level:', //
-    settingsToggleDebug: 'Toggle Debug Mode', //
-    settingsToggleSync: 'Toggle Sync Mode', //
-    settingsToggleTestnet: 'Toggle Testnet Mode', //
+    settingsToggleDebug: 'Debug Mode', //
+    settingsToggleTestnet: 'Testnet Mode', //
 
     // Transparency Report
     transparencyReport: 'Transparency Report',
@@ -111,9 +147,86 @@ export const en_translation = {
     transaction:
         'A ping indicating a Tx, no unique data is sent, but may be inferred from on-chain time.',
 
+    // Analytics Levels
+    analyticDisabled: 'Disabled',
+    analyticMinimal: 'Minimal',
+    analyticBalanced: 'Balanced',
+
+    // Migration System
+    MIGRATION_ACCOUNT_FAILURE_TITLE: 'Failed to recover account',
+    MIGRATION_ACCOUNT_FAILURE_HTML:
+        'There was an error recovering your account. <br> Please reimport your wallet using the following key:',
+
+    // Dynamic Elements (Rendered at runtime - TODO in future PR: sort in to above categories for consistency)
+    ID: 'ID',
+    time: 'Time',
+    description: 'Description',
+    activityBlockReward: 'Block Reward',
+    activitySentTo: 'Sent to',
+    activitySentToSelf: 'Sent to self',
+    activityShieldedAddress: 'Shielded address',
+    activityReceivedShield: 'Received from Shielded address',
+    activityReceivedFrom: 'Received from',
+    activityDelegatedTo: 'Delegated to',
+    activityUndelegated: 'Undelegated',
+    activityUnknown: 'Unknown Tx',
+    password: 'Password',
+    walletUnlock: 'Unlock your wallet',
+    walletPassword: 'Wallet password',
+    walletUnlockCreateMN: 'Unlock to create your Masternode!',
+    walletUnlockMNStart: 'Unlock to start your Masternode!',
+    walletUnlockProposal: 'Unlock to create a proposal!',
+    walletUnlockPromo: 'Unlock to finalise your Promo Code!',
+    walletUnlockTx: 'Unlock to send your transaction!',
+    walletUnlockStake: 'Unlock to stake your',
+    walletUnlockUnstake: 'Unlock to unstake your',
+    changelogTitle: "What's New in",
+    popupSetColdAddr: 'Set your Cold Staking address',
+    popupCurrentAddress: 'Current address:',
+    popupColdStakeNote:
+        "A Cold Address stakes coins on your behalf, it cannot spend coins, so it's even safe to use a stranger's Cold Address!",
+    popupExample: 'Example:',
+    popupWalletLock: 'Do you want to lock your wallet?',
+    popupWalletWipe: 'Do you want to wipe your wallet private data?',
+    popupWalletLockNote:
+        'You will need to enter your password to access your funds',
+    popupWalletWipeNote:
+        "You will lose access to your funds if you haven't backed up your private key or seed phrase",
+    popupSeedPhraseBad: 'Unexpected Seed Phrase',
+    popupSeedPhraseBadNote:
+        'The seed phrase is either invalid or was not generated by MPW.<br>Do you still want to proceed?',
+    popupCreateProposal: 'Create Proposal',
+    popupCreateProposalCost: 'Cost',
+    popupProposalTitle: 'Proposal Title',
+    popupProposalDuration: 'Duration in cycles',
+    popupProposalPerCycle: 'per cycle',
+    popupHardwareAddrCheck:
+        'Please confirm this is the address you see on your',
+    proposalFinalisationConfirming: 'Confirming...',
+    proposalFinalisationRemaining: 'remaining',
+    proposalFinalisationExpired: 'Proposal Expired',
+    proposalFinalisationReady: 'Ready to submit',
+    proposalPassing: 'PASSING',
+    proposalFailing: 'FAILING',
+    proposalFunded: 'FUNDED',
+    proposalNotFunded: 'NOT FUNDED',
+    proposalPaymentsRemaining: 'installment(s) remaining<br>of',
+    proposalPaymentTotal: 'total',
+    proposalNetYes: 'Net Yes',
+    popupConfirm: 'Confirm',
+    popupClose: 'Close',
+    popupCancel: 'Cancel',
+    chartPublicAvailable: 'Public Available',
+    timeDays: 'Days',
+    timeHours: 'Hours',
+    timeMinutes: 'Minutes',
+    timeSeconds: 'Seconds',
+    unhandledException: 'Unhandled exception.',
+
     // Alerts
     ALERTS: '<-- DO NOT EDIT! All below entries are for Alert Popups',
 
+    INTERNAL_ERROR: 'Internal error, please try again later',
     FAILED_TO_IMPORT: '<b>Failed to import!</b> Invalid password',
     TESTNET_ENCRYPTION_DISABLED:
         '<b>Testnet Mode is ON!</b><br>Wallet encryption disabled',
@@ -122,7 +235,11 @@ export const en_translation = {
     PASSWORD_DOESNT_MATCH: "Your passwords don't match!",
     NEW_PASSWORD_SUCCESS:
         "<b>You're Secured! 🔐</b><br>Nice stuff, Armoured PIVian!",
+    INCORRECT_PASSWORD: 'Incorrect password!',
     INVALID_AMOUNT: '<b>Invalid amount!</b><br>',
+    TX_SENT: 'Transaction sent!',
+    TX_FAILED: 'Transaction Failed!',
+    QR_SCANNER_BAD_RECEIVER: 'is not a valid payment receiver',
     UNSUPPORTED_CHARACTER:
         "The character '{char}' is unsupported in addresses! (Not Base58 compatible)",
     UNSUPPORTED_WEBWORKERS:
@@ -138,6 +255,9 @@ export const en_translation = {
         '<b>Confirm your transaction</b><br>Confirm the TX on your {strHardwareName}',
     SUCCESS_STAKING_ADDR_SET:
         '<b>Staking Address set!</b><br>Now go ahead and stake!',
+    STAKE_ADDR_SET:
+        '<b>Cold Address set!</b><br>Future stakes will use this address.',
+    STAKE_ADDR_BAD: 'Invalid Cold Staking address!',
     STAKE_NOT_SEND: 'Here, use the <b>Stake</b> screen, not the Send screen!',
     BAD_ADDR_LENGTH:
         '<b>Invalid PIVX address!<b><br>Bad length ({addressLength})',
@@ -145,10 +265,40 @@ export const en_translation = {
         '<b>Invalid PIVX address!<b><br>Bad prefix {address} (Should start with {addressPrefix})',
     SENT_NOTHING: "You can't send 'nothing'!",
     MORE_THEN_8_DECIMALS: '8 decimal limit exceeded',
-    SAVE_WALLET_PLEASE: '<b>Save your wallet!</b><br>Dashboard ➜ Set Password',
+    SAVE_WALLET_PLEASE:
+        '<b>Save your wallet!</b><br>Dashboard ➜ Secure your wallet',
     BACKUP_OR_ENCRYPT_WALLET:
         'Please ENCRYPT and/or BACKUP your keys before leaving, or you may lose them!',
     NO_CAMERAS: 'This device has no camera!',
+    STAKING_LEDGER_NO_SUPPORT: 'Ledger is not supported for Cold Staking',
+    CONNECTION_FAILED:
+        '<b>Failed to synchronize!</b> Please try again later.<br>You can attempt re-connect via the Settings.',
+    MN_NOT_ENABLED: 'Your masternode is not enabled yet!',
+    VOTE_SUBMITTED: 'Vote submitted!',
+    VOTED_ALREADY: 'You already voted for this proposal! Please wait 1 hour',
+    VOTE_SIG_BAD:
+        "Failed to verify signature, please check your masternode's private key",
+    MN_CREATED_WAIT_CONFS:
+        '<b>Masternode Created!<b><br>Wait 15 confirmations to proceed further',
+    MN_ACCESS_BEFORE_VOTE: 'Access a masternode before voting!',
+    MN_OFFLINE_STARTING: 'Your masternode is offline, we will try to start it',
+    MN_STARTED: '<b>Masternode started!</b>',
+    MN_RESTARTED: '<b>Masternode restarted!</b>',
+    MN_STARTED_ONLINE_SOON:
+        "<b>Masternode started!</b><br>It'll be online soon",
+    MN_START_FAILED: '<b>Masternode started!</b>',
+    MN_RESTART_FAILED: '<b>Masternode restarted!</b>',
+    MN_DESTROYED:
+        '<b>Masternode destroyed!</b><br>Your coins are now spendable.',
+    MN_STATUS_IS: 'Your masternode status is',
+    MN_STATE: 'Your masternode is in <b>{state}</b> state',
+    MN_BAD_IP: 'The IP address is invalid!',
+    MN_NOT_ENOUGH_COLLAT:
+        'You need <b>{amount} more {ticker}</b> to create a Masternode!',
+    MN_ENOUGH_BUT_NO_COLLAT:
+        'You have enough balance for a Masternode, but no valid collateral UTXO of {amount} {ticker}',
+    MN_COLLAT_NOT_SUITABLE: 'This is not a suitable UTXO for a Masternode',
+    MN_CANT_CONNECT: 'Unable to connect to RPC node!',
 
     SWITCHED_EXPLORERS: '<b>Switched explorer!</b><br>Now using {explorerName}',
     SWITCHED_NODE: '<b>Switched node!</b><br>Now using {node}',
@@ -181,4 +331,10 @@ export const en_translation = {
     CONFIRM_POPUP_MN_P_KEY_HTML:
         '<br> Save this private key and copy it to your VPS config <br>',
     CONFIRM_POPUP_VERIFY_ADDR: 'Verify your address',
+
+    MIGRATION_MASTERNODE_FAILURE:
+        'Failed to recover your masternode. Please reimport it.',
+    MIGRATION_ACCOUNT_FAILURE:
+        'Failed to recover your account. Please reimport it.',
+    APP_INSTALLED: 'App Installed!',
 };

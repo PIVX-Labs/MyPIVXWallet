@@ -1,6 +1,9 @@
 import { en_translation } from '../locale/en/translation.js';
+import { pt_br_translation } from '../locale/pt-br/translation.js';
+import { pt_pt_translation } from '../locale/pt-pt/translation.js';
 import { uwu_translation } from '../locale/uwu/translation.js';
 import { Database } from './database.js';
+import { fillAnalyticSelect, setTranslation } from './settings.js';
 
 export const ALERTS = {};
 export let translation = {};
@@ -10,6 +13,8 @@ export let translation = {};
 export const translatableLanguages = {
     en: en_translation,
     uwu: uwu_translation,
+    'pt-pt': pt_pt_translation,
+    'pt-br': pt_br_translation,
 };
 
 /**
@@ -17,10 +22,11 @@ export const translatableLanguages = {
  * @param {string} langName
  */
 export function switchTranslation(langName) {
-    if (arrActiveLangs.includes(langName)) {
+    if (arrActiveLangs.find((lang) => lang.code === langName)) {
         translation = translatableLanguages[langName];
         translate(translation);
         loadAlerts();
+        fillAnalyticSelect();
         return true;
     } else {
         console.log(
@@ -106,7 +112,12 @@ function parseUserAgentLang(strUA, arrLangsWithSubset) {
 }
 
 // When adding a lang remember to add it to the object translatableLanguages as well as here.
-export const arrActiveLangs = ['en', 'uwu'];
+export const arrActiveLangs = [
+    { code: 'en', emoji: '🇬🇧' },
+    { code: 'pt-pt', emoji: '🇵🇹' },
+    { code: 'pt-br', emoji: '🇧🇷' },
+    { code: 'uwu', emoji: '🐈' },
+];
 
 export async function start() {
     // We use this function to parse the UA lang in a safer way: for example, there's multiple `en` definitions
@@ -114,22 +125,23 @@ export async function start() {
     // ... This logic may apply to other languages with such subsets as well, so take care of them here!
     const arrLangsWithSubset = ['en'];
 
-    const strLang = parseUserAgentLang(
-        window.navigator.userLanguage || window.navigator.language,
-        arrLangsWithSubset
-    );
+    const localeLang =
+        window?.navigator?.userLanguage || window?.navigator?.language;
+    const strLang = localeLang
+        ? parseUserAgentLang(localeLang.toLowerCase(), arrLangsWithSubset)
+        : undefined;
 
     // When removing you do not have to remove from translatableLanguages
     const database = await Database.getInstance();
     const { translation: localTranslation } = await database.getSettings();
 
     // Check if set in local storage
-    if (localTranslation != null) {
-        switchTranslation(localTranslation);
+    if (localTranslation !== '') {
+        setTranslation(localTranslation);
     } else {
         // Check if we support the user's browser locale
-        if (arrActiveLangs.includes(strLang)) {
-            switchTranslation(strLang);
+        if (arrActiveLangs.find((lang) => lang.code === strLang)) {
+            setTranslation(strLang);
         } else {
             // Default to EN if the locale isn't supported yet
             console.log(
@@ -137,7 +149,7 @@ export async function start() {
                     strLang +
                     ") is not supported yet, if you'd like to contribute translations (for rewards!) contact us on GitHub or Discord!"
             );
-            switchTranslation('en');
+            setTranslation('en');
         }
     }
     translate(translation);

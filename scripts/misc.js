@@ -1,4 +1,4 @@
-import { translateAlerts } from './i18n.js';
+import { translateAlerts, translation } from './i18n.js';
 import { doms } from './global.js';
 import qrcode from 'qrcode-generator';
 import bs58 from 'bs58';
@@ -180,8 +180,8 @@ export async function confirmPopup({
     // Show or hide the confirm button, and replace 'Cancel' with 'Close'
     doms.domConfirmModalConfirmButton.style.display = hideConfirm ? 'none' : '';
     doms.domConfirmModalCancelButton.innerText = hideConfirm
-        ? 'Close'
-        : 'Cancel';
+        ? translation.popupClose
+        : translation.popupCancel;
 
     // Set content display
     doms.domConfirmModalContent.innerHTML = html;
