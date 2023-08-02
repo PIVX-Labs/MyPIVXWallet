@@ -285,7 +285,7 @@ export const ph_translation = {
     STAKING_LEDGER_NO_SUPPORT:
         'Ang ledger ay hindi suportado para sa Cold Staking', //Ledger is not supported for Cold Staking
     CONNECTION_FAILED:
-        '<b>Nabigong i-synchronize! Pakiusap ulitin itong muli.<br> Maaari mo itong i-reconnect via the Settings. ', //<b>Failed to synchronize!</b> Please try again later.<br>You can attempt re-connect via the Settings.
+        '<b>Nabigong i-synchronize! Pakiusap ulitin itong muli.<br> Maaari mo itong i-konektang muli via the Settings. ', //<b>Failed to synchronize!</b> Please try again later.<br>You can attempt re-connect via the Settings.
     MN_NOT_ENABLED: 'Ang iyong masternode ay hindi pa gumagana!', //Your masternode is not enabled yet!
     VOTE_SUBMITTED: 'Naipasa na ang iyong Boto!', //Vote submitted!
     VOTED_ALREADY:
@@ -309,12 +309,12 @@ export const ph_translation = {
     MN_STATE: 'Ang iyong masternode ay nasa <b>{state}</b> kalagayan', //Your masternode is in <b>{state}</b> state
     MN_BAD_IP: 'Ang IP address ay hindi wasto!', //The IP address is invalid!
     MN_NOT_ENOUGH_COLLAT:
-        'Kailangan mo ng <b>{amount} madami {ticker}</b> upang makagawa ng Masternode!', //You need <b>{amount} more {ticker}</b> to create a Masternode!
+        'Kailangan mo ng <b>{amount} pang {ticker}</b> upang makagawa ng Masternode!', //You need <b>{amount} more {ticker}</b> to create a Masternode!
     MN_ENOUGH_BUT_NO_COLLAT:
         'Ikaw ay may sapat na balanse para sa iyong Masternode, subalit walang wastong collateral UTXO ng {amount} {ticker}', //You have enough balance for a Masternode, but no valid collateral UTXO of {amount} {ticker}
     MN_COLLAT_NOT_SUITABLE:
         'Ang UTXO na ito ay hindi angkop para sa Masternode', //This is not a suitable UTXO for a Masternode
-    MN_CANT_CONNECT: 'Hindi maka-connect sa RPC node!', //Unable to connect to RPC node!
+    MN_CANT_CONNECT: 'Hindi maka-konekta sa RPC node!', //Unable to connect to RPC node!
 
     SWITCHED_EXPLORERS:
         '<b>Nagpalit ng explorer!<b></b>Ang gamit ngayon ay {explorerName}', //<b>Switched explorer!</b><br>Now using {explorerName}
