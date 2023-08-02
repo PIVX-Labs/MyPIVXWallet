@@ -140,7 +140,7 @@ export const ph_translation = {
     settingsExplorer: 'Pumili ng explorer:', //Choose an explorer:
     settingsLanguage: 'Pumili ng Wika:', //Choose a Language:
     settingsPivxNode: 'Pumili ng PIVX node:', //Choose a PIVX node:
-    settingsAutoSelectNet: 'Auto-select Explorers and Nodes', //Auto-select Explorers and Nodes
+    settingsAutoSelectNet: 'Automatikong pagpili ng Explorers and Nodes', //Auto-select Explorers and Nodes
     settingsAnalytics: 'Pumili ng iyong analytics contribution level:', //Choose your analytics contribution level:
     settingsToggleDebug: 'Debug Mode', //Debug Mode
     settingsToggleTestnet: 'Testnet Mode', //Testnet Mode
@@ -293,7 +293,7 @@ export const ph_translation = {
     VOTE_SIG_BAD:
         "Ang signature ay nabigong i-verify, Pakiusap suriin mo ang private key ng iyong masternode's", //Failed to verify signature, please check your masternode\'s private key
     MN_CREATED_WAIT_CONFS:
-        "<b>Nagawa na ang Masternode!<b><br>'Mag antay ng 15 na kumpirmasyon upang mag patuloy, //<b>Masternode Created!<b><br>Wait 15 confirmations to proceed further",
+        "<b>Nagawa na ang Masternode!<b><br>'Mag antay ng 15 na kumpirmasyon upang mag patuloy", //<b>Masternode Created!<b><br>Wait 15 confirmations to proceed further
     MN_ACCESS_BEFORE_VOTE: 'I-access ang iyong Masternode bago bumoto!', //Access a masternode before voting!
     MN_OFFLINE_STARTING:
         'Ang iyong Masternode ay offline, Ito ay susubukan naming simulan', //Your masternode is offline, we will try to start it
