@@ -1,6 +1,7 @@
 import { en_translation } from '../locale/en/translation.js';
 import { pt_br_translation } from '../locale/pt-br/translation.js';
 import { pt_pt_translation } from '../locale/pt-pt/translation.js';
+import { tl_translation } from '../locale/tl/translation.js';
 import { uwu_translation } from '../locale/uwu/translation.js';
 import { Database } from './database.js';
 import { fillAnalyticSelect, setTranslation } from './settings.js';
@@ -15,6 +16,7 @@ export const translatableLanguages = {
     uwu: uwu_translation,
     'pt-pt': pt_pt_translation,
     'pt-br': pt_br_translation,
+    tl: tl_translation,
 };
 
 /**
@@ -116,6 +118,7 @@ export const arrActiveLangs = [
     { code: 'en', emoji: '🇬🇧' },
     { code: 'pt-pt', emoji: '🇵🇹' },
     { code: 'pt-br', emoji: '🇧🇷' },
+    { code: 'tl', emoji: '🇵🇭' },
     { code: 'uwu', emoji: '🐈' },
 ];
 
