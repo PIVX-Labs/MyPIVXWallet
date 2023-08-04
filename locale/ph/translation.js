@@ -207,6 +207,9 @@ export const ph_translation = {
     popupProposalTitle: 'Proposal Title', //Proposal Title
     popupProposalDuration: 'Duration in cycles', //Duration in cycles
     popupProposalPerCycle: 'per cycles', //per cycle
+    popupProposalVoteHash: '', //Vote Hash:
+    popupProposalFinalisedNote: '', //<b>Congratulations on launching your proposal!</b><br>Masternode owners can use your Vote Hash to vote from wallets other than MPW, so make sure to add this to your forum post, if applicable!
+    popupProposalFinalisedSignoff: '', //Good luck on your journey through the DAO, PIVian!
     popupHardwareAddrCheck:
         'Pakiusap kumpirmahin na ito ang address na nakikita mo sa iyong', //Please confirm this is the address you see on your
     proposalFinalisationConfirming: 'Kinukumpirma...', //Confirming...

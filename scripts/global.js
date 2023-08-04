@@ -2074,8 +2074,21 @@ async function renderProposals(arrProposals, fContested) {
                         });
                     };
                     if (result.ok) {
-                        createAlert('success', ALERTS.PROPOSAL_FINALISED);
                         deleteProposal();
+                        // Create a prompt showing the finalisation success, vote hash, and further details
+                        confirmPopup({
+                            title: translation.PROPOSAL_FINALISED + ' 🚀',
+                            html: `<p><span style="opacity: 0.65; margin: 10px;">${
+                                translation.popupProposalFinalisedNote
+                            }</span><br><br>${
+                                translation.popupProposalVoteHash
+                            }<br><span class="mono" style="font-size: small;">${sanitizeHTML(
+                                result.hash
+                            )}</span><br><br>${
+                                translation.popupProposalFinalisedSignoff
+                            } 👋</p>`,
+                            hideConfirm: true,
+                        });
                         updateGovernanceTab();
                     } else {
                         if (result.err === 'unconfirmed') {
@@ -2532,7 +2545,7 @@ export async function createProposal() {
         } ${cChainParams.current.proposalFee / COIN} ${
             cChainParams.current.TICKER
         })`,
-        html: `<input id="proposalTitle" maxlength="20" placeholder="${translation.popupProposalTitle}" style="text-align: center;"><br>
+        html: `<input id="proposalTitle" maxlength="20" placeholder="${translation.popupProposalName}" style="text-align: center;"><br>
                <input id="proposalUrl" maxlength="64" placeholder="${translation.popupExample} https://forum.pivx.org/..." style="text-align: center;"><br>
                <input type="number" id="proposalCycles" placeholder="${translation.popupProposalDuration}" style="text-align: center;"><br>
                <input type="number" id="proposalPayment" placeholder="${cChainParams.current.TICKER} ${translation.popupProposalPerCycle}" style="text-align: center;"><br>`,
@@ -2580,7 +2593,7 @@ export async function createProposal() {
         const localProposals = account?.localProposals || [];
         localProposals.push(proposal);
         await database.addAccount({ localProposals });
-        createAlert('success', ALERTS.PROPOSAL_CREATED, [], 4000);
+        createAlert('success', translation.PROPOSAL_CREATED, [], 7500);
         updateGovernanceTab();
     }
 }
