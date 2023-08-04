@@ -2138,9 +2138,13 @@ async function renderProposals(arrProposals, fContested) {
                 }
             }
 
+            // Figure out the colour of the Status, if any (using CSS class `votes[Yes/No]`)
+            const strColourClass =
+                strStatus === translation.proposalPassing ? 'Yes' : 'No';
+
             domStatus.innerHTML = `
             <span style="font-size:12px; line-height: 15px; display: block; margin-bottom:15px;">
-                <span style="color:#fff; font-weight:700;">${strStatus}</span><br>
+                <span style="font-weight:700;" class="votes${strColourClass}">${strStatus}</span><br>
                 <span style="color:hsl(265 100% 67% / 1);">(${strFundingStatus})</span><br>
             </span>
             <span style="font-size:12px; line-height: 15px; display: block; color:#d1d1d1;">

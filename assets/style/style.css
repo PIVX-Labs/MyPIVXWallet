@@ -3224,11 +3224,11 @@ select.form-control option {
     background-color:#ffffff0a!important;
 }
 
-.governTable .votesYes {
+.votesYes {
     color:#5bd376;
 }
 
-.governTable .votesNo {
+.votesNo {
     color:#df4b6c;
 }
 
