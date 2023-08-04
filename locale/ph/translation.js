@@ -104,7 +104,7 @@ export const ph_translation = {
     // PIVX Promos
     // NOTE: for this below line, continue the sentence "PIVX Promos [...]", since 'PIVX Promos' is a brand, it is not translated.
     pivxPromos:
-        '[...] ay isang desentralisadong sistema para sa gift code na nag kakahalaga ng PIV', // [...] is a decentralised system for gift codes worth PIV
+        'ay isang desentralisadong sistema para sa gift code na nag kakahalaga ng PIV', // [...] is a decentralised system for gift codes worth PIV
     // NOTE: on this line, if possible, leave 'PIVX Promos' untranslated
     redeemInput: "Ipasok and iyong 'PIVX Promos'code", //Enter your \'PIVX Promos\' code
     createName: 'Promo Name', //Promo Name (Optional)
