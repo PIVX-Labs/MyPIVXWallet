@@ -462,7 +462,7 @@
                             <canvas id="identicon" class="innerShadow" style="width: 65px; height: 65px;" data-jdenticon-value=""></canvas><br />
                             <span class="ptr" onclick="MPW.renderWalletBreakdown()" data-toggle="modal" data-target="#walletBreakdownModal">
                               <span class="dcWallet-pivxBalance" id="guiBalance"></span>
-                              <span id="guiBalanceTicker" class="dcWallet-pivxTicker">PIVX</span>
+                              <span id="guiBalanceTicker" class="dcWallet-pivxTicker">PIV</span>
                               <i class="fa-solid fa-plus" style="opacity: 0.5; position: relative; left: 2px;"></i>
                             </span>
                             <br />
@@ -808,7 +808,7 @@
                         </div>
 
                         <span data-i18n="staking">Staking</span><br>
-                        <span class="dcWallet-pivxBalance" id="guiBalanceStaking">0</span> <span id="guiBalanceStakingTicker" class="dcWallet-pivxTicker">PIVX</span><br />
+                        <span class="dcWallet-pivxBalance" id="guiBalanceStaking">0</span> <span id="guiBalanceStakingTicker" class="dcWallet-pivxTicker">PIV</span><br />
                         <div class="dcWallet-usdBalance">
                           <span id="guiStakingValue" class="dcWallet-usdValue">$-</span>
                           <span id="guiStakingValueCurrency" class="dcWallet-usdValue">USD</span>
@@ -866,7 +866,7 @@
                                 MAX
                               </div>
                             </span>
-                            <span id="unstakeAmountCoinsTicker" class="input-group-text">PIVX</span>
+                            <span id="unstakeAmountCoinsTicker" class="input-group-text">PIV</span>
                           </div>
                         </div>
                       </div>
@@ -910,7 +910,7 @@
                                 MAX
                               </div>
                             </span>
-                            <span id="stakeAmountCoinsTicker" class="input-group-text">PIVX</span>
+                            <span id="stakeAmountCoinsTicker" class="input-group-text">PIV</span>
                           </div>
                         </div>
                       </div>
@@ -1168,6 +1168,12 @@
                       <select id="currency" class="form-control" name="currency">
                         <!-- Populated via JS at Price Source data load (prices.js) -->
                       </select>
+
+                      <br />
+
+                      <label for="displayDecimals" data-i18n="settingsDecimals">Balance Decimals:</label>
+                      <br />
+                      <input type="range" min="0" max="8" value="2" class="slider" id="displayDecimals" name="displayDecimals" >
 
                       <br />
 

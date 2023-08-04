@@ -137,6 +137,7 @@ export const ph_translation = {
 
     // Settings
     settingsCurrency: 'Pumili ng display currency:', //Choose a display currency:
+    settingsDecimals: '', //Balance Decimals:
     settingsExplorer: 'Pumili ng explorer:', //Choose an explorer:
     settingsLanguage: 'Pumili ng Wika:', //Choose a Language:
     settingsPivxNode: 'Pumili ng PIVX node:', //Choose a PIVX node:

@@ -143,6 +143,7 @@ var translation = {
 
     // Settings
     settingsCurrency: '', //Choose a display currency:
+    settingsDecimals: '', //Balance Decimals:
     settingsExplorer: '', //Choose an explorer:
     settingsLanguage: '', //Choose a Language:
     settingsPivxNode: '', //Choose a PIVX node:

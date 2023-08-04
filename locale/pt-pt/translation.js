@@ -136,6 +136,7 @@ export const pt_pt_translation = {
 
     // Settings
     settingsCurrency: 'Escolha uma moeda de exibição:', //Choose a display currency:
+    settingsDecimals: '', //Balance Decimals:
     settingsExplorer: 'Escolha um explorador:', //Choose an explorer:
     settingsLanguage: 'Escolha um Idioma:', //Choose a Language:
     settingsPivxNode: 'Escolha um node PIVX:', //Choose a PIVX node:

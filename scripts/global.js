@@ -21,6 +21,7 @@ import {
     strCurrency,
     setColdStakingAddress,
     strColdStakingAddress,
+    nDisplayDecimals,
 } from './settings.js';
 import { createAndSendTransaction, signTransaction } from './transactions.js';
 import {
@@ -32,6 +33,7 @@ import {
     isValidBech32,
     isBase64,
     sleep,
+    beautifyNumber,
 } from './misc.js';
 import { cChainParams, COIN, MIN_PASS_LENGTH } from './chain_params.js';
 import { decrypt } from './aes-gcm.js';
@@ -285,6 +287,7 @@ export async function start() {
         domNodeSelect: document.getElementById('node'),
         domAutoSwitchToggle: document.getElementById('autoSwitchToggler'),
         domTranslationSelect: document.getElementById('translation'),
+        domDisplayDecimalsSlider: document.getElementById('displayDecimals'),
         domBlackBack: document.getElementById('blackBack'),
         domWalletSettings: document.getElementById('settingsWallet'),
         domDisplaySettings: document.getElementById('settingsDisplay'),
@@ -591,10 +594,14 @@ export function getBalance(updateGUI = false) {
     // Update the GUI too, if chosen
     if (updateGUI) {
         // Set the balance, and adjust font-size for large balance strings
-        const nLen = nCoins.toFixed(2).length;
-        doms.domGuiBalance.innerText = nCoins.toFixed(nLen >= 6 ? 0 : 2);
+        const strBal = nCoins.toFixed(nDisplayDecimals);
+        const nLen = strBal.length;
+        doms.domGuiBalance.innerHTML = beautifyNumber(
+            strBal,
+            nLen >= 10 ? '17px' : '25px'
+        );
         doms.domAvailToDelegate.innerText =
-            nCoins.toFixed(2) + ' ' + cChainParams.current.TICKER;
+            strBal + ' ' + cChainParams.current.TICKER;
 
         // Update tickers
         updateTicker();
@@ -608,12 +615,18 @@ export function getBalance(updateGUI = false) {
 
 export function getStakingBalance(updateGUI = false) {
     const nBalance = mempool.getDelegatedBalance();
+    const nCoins = nBalance / COIN;
 
     if (updateGUI) {
         // Set the balance, and adjust font-size for large balance strings
-        doms.domGuiBalanceStaking.innerText = Math.floor(nBalance / COIN);
+        const strBal = nCoins.toFixed(nDisplayDecimals);
+        const nLen = strBal.length;
+        doms.domGuiBalanceStaking.innerHTML = beautifyNumber(
+            strBal,
+            nLen >= 10 ? '17px' : '25px'
+        );
         doms.domAvailToUndelegate.innerText =
-            (nBalance / COIN).toFixed(2) + ' ' + cChainParams.current.TICKER;
+            strBal + ' ' + cChainParams.current.TICKER;
 
         // Update tickers
         updateTicker();

@@ -40,6 +40,8 @@ export let cNode = cChainParams.current.Nodes[0];
 export let fAutoSwitch = true;
 /** The active Cold Staking address: default is the PIVX Labs address */
 export let strColdStakingAddress = 'SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy';
+/** The decimals to display for the wallet balance */
+export let nDisplayDecimals = 2;
 
 let transparencyReport;
 
@@ -72,6 +74,10 @@ export class Settings {
      * @type {String} Currency to display
      */
     displayCurrency;
+    /**
+     * @type {number} The decimals to display for the wallet balance
+     */
+    displayDecimals;
     constructor({
         analytics,
         explorer,
@@ -80,6 +86,7 @@ export class Settings {
         coldAddress = strColdStakingAddress,
         translation = '',
         displayCurrency = 'usd',
+        displayDecimals = nDisplayDecimals,
     } = {}) {
         this.analytics = analytics;
         this.explorer = explorer;
@@ -88,6 +95,7 @@ export class Settings {
         this.coldAddress = coldAddress;
         this.translation = translation;
         this.displayCurrency = displayCurrency;
+        this.displayDecimals = displayDecimals;
     }
 }
 
@@ -134,6 +142,11 @@ export async function start() {
         setCurrency(evt.target.value);
     };
 
+    // Hook up the 'display decimals' slider UI
+    doms.domDisplayDecimalsSlider.onchange = function (evt) {
+        setDecimals(Number(evt.target.value));
+    };
+
     // Hook up the 'explorer' select UI
     document.getElementById('explorer').onchange = function (evt) {
         setExplorer(
@@ -171,6 +184,7 @@ export async function start() {
         analytics: strSettingAnalytics,
         autoswitch,
         coldAddress,
+        displayDecimals,
     } = await database.getSettings();
 
     // Set the Cold Staking address
@@ -179,6 +193,10 @@ export async function start() {
     // Set any Toggles to their default or DB state
     fAutoSwitch = autoswitch;
     doms.domAutoSwitchToggle.checked = fAutoSwitch;
+
+    // Set the display decimals
+    nDisplayDecimals = displayDecimals;
+    doms.domDisplayDecimalsSlider.value = nDisplayDecimals;
 
     // Apply translations to the transparency report
     STATS = {
@@ -283,6 +301,20 @@ async function setCurrency(currency) {
     database.setSettings({ displayCurrency: strCurrency });
     // Update the UI to reflect the new currency
     getBalance(true);
+    getStakingBalance(true);
+}
+
+/**
+ * Sets and saves the display decimals setting in runtime and database
+ * @param {number} decimals - The decimals to set for the display
+ */
+async function setDecimals(decimals) {
+    nDisplayDecimals = decimals;
+    const database = await Database.getInstance();
+    database.setSettings({ displayDecimals: nDisplayDecimals });
+    // Update the UI to reflect the new decimals
+    getBalance(true);
+    getStakingBalance(true);
 }
 
 /**
