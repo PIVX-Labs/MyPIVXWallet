@@ -600,8 +600,8 @@ export function getBalance(updateGUI = false) {
             strBal,
             nLen >= 10 ? '17px' : '25px'
         );
-        doms.domAvailToDelegate.innerText =
-            strBal + ' ' + cChainParams.current.TICKER;
+        doms.domAvailToDelegate.innerHTML =
+            beautifyNumber(strBal) + ' ' + cChainParams.current.TICKER;
 
         // Update tickers
         updateTicker();
@@ -625,8 +625,8 @@ export function getStakingBalance(updateGUI = false) {
             strBal,
             nLen >= 10 ? '17px' : '25px'
         );
-        doms.domAvailToUndelegate.innerText =
-            strBal + ' ' + cChainParams.current.TICKER;
+        doms.domAvailToUndelegate.innerHTML =
+            beautifyNumber(strBal) + ' ' + cChainParams.current.TICKER;
 
         // Update tickers
         updateTicker();
