@@ -104,7 +104,7 @@ export const ph_translation = {
     // PIVX Promos
     // NOTE: for this below line, continue the sentence "PIVX Promos [...]", since 'PIVX Promos' is a brand, it is not translated.
     pivxPromos:
-        '[...] ay isang desentralisadong sistema para sa gift code na nag kakahalaga ng PIV', // [...] is a decentralised system for gift codes worth PIV
+        'ay isang desentralisadong sistema para sa gift code na nag kakahalaga ng PIV', // [...] is a decentralised system for gift codes worth PIV
     // NOTE: on this line, if possible, leave 'PIVX Promos' untranslated
     redeemInput: "Ipasok and iyong 'PIVX Promos'code", //Enter your \'PIVX Promos\' code
     createName: 'Promo Name', //Promo Name (Optional)
@@ -208,6 +208,11 @@ export const ph_translation = {
     popupProposalTitle: 'Proposal Title', //Proposal Title
     popupProposalDuration: 'Duration in cycles', //Duration in cycles
     popupProposalPerCycle: 'per cycles', //per cycle
+    popupProposalVoteHash: 'Vote Hash:', //Vote Hash:
+    popupProposalFinalisedNote:
+        '<b>Binabati kita sa paglulunsad ng iyong proposal!</b><br>Ang mga may-ari ng Masternode ay pwedeng gumamit ng Vote Hash upang bumoto mula sa mga wallet maliban sa MPW, kaya siguraduhin idagdag ito sa iyong forum post, kung naaangkop!', //<b>Congratulations on launching your proposal!</b><br>Masternode owners can use your Vote Hash to vote from wallets other than MPW, so make sure to add this to your forum post, if applicable!
+    popupProposalFinalisedSignoff:
+        "Nawa'y ang mabuting kapalaran ay sumasaiyo sa iyong paglalakbay sa DAO. PIVian!", //Good luck on your journey through the DAO, PIVian!
     popupHardwareAddrCheck:
         'Pakiusap kumpirmahin na ito ang address na nakikita mo sa iyong', //Please confirm this is the address you see on your
     proposalFinalisationConfirming: 'Kinukumpirma...', //Confirming...

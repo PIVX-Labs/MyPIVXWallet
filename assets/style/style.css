@@ -3135,6 +3135,7 @@ select.form-control option {
 
 .governLink:hover {
     text-decoration: underline!important;
+    cursor: pointer;
 }
 
 .governInstallments {
@@ -3156,7 +3157,7 @@ select.form-control option {
 }
 
 .governFiatSize {
-    font-size:13px;
+    font-size:12px;
 }
 
 .governLinkIco {
@@ -3224,11 +3225,11 @@ select.form-control option {
     background-color:#ffffff0a!important;
 }
 
-.governTable .votesYes {
+.votesYes {
     color:#5bd376;
 }
 
-.governTable .votesNo {
+.votesNo {
     color:#df4b6c;
 }
 

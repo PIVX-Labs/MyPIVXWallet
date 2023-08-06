@@ -991,10 +991,11 @@ export async function updateActivityGUI(fStaking = false, fNewOnly = false) {
 }
 
 /**
- * Open the Explorer in a new tab for the loaded master public key
+ * Open the Explorer in a new tab for the current wallet, or a specific address
+ * @param {string?} strAddress - Optional address to open, if void, the master key is used
  */
-export async function openExplorer() {
-    if (masterKey.isHD) {
+export async function openExplorer(strAddress = '') {
+    if (masterKey.isHD && !strAddress) {
         const derivationPath = getDerivationPath(masterKey.isHardwareWallet)
             .split('/')
             .slice(0, 4)
@@ -1003,7 +1004,10 @@ export async function openExplorer() {
         window.open(cExplorer.url + '/xpub/' + xpub, '_blank');
     } else {
         const address = await masterKey.getAddress();
-        window.open(cExplorer.url + '/address/' + address, '_blank');
+        window.open(
+            cExplorer.url + '/address/' + (strAddress || address),
+            '_blank'
+        );
     }
 }
 
@@ -2087,8 +2091,21 @@ async function renderProposals(arrProposals, fContested) {
                         });
                     };
                     if (result.ok) {
-                        createAlert('success', ALERTS.PROPOSAL_FINALISED);
                         deleteProposal();
+                        // Create a prompt showing the finalisation success, vote hash, and further details
+                        confirmPopup({
+                            title: translation.PROPOSAL_FINALISED + ' 🚀',
+                            html: `<p><span style="opacity: 0.65; margin: 10px;">${
+                                translation.popupProposalFinalisedNote
+                            }</span><br><br>${
+                                translation.popupProposalVoteHash
+                            }<br><span class="mono" style="font-size: small;">${sanitizeHTML(
+                                result.hash
+                            )}</span><br><br>${
+                                translation.popupProposalFinalisedSignoff
+                            } 👋</p>`,
+                            hideConfirm: true,
+                        });
                         updateGovernanceTab();
                     } else {
                         if (result.err === 'unconfirmed') {
@@ -2138,9 +2155,13 @@ async function renderProposals(arrProposals, fContested) {
                 }
             }
 
+            // Figure out the colour of the Status, if any (using CSS class `votes[Yes/No]`)
+            const strColourClass =
+                strStatus === translation.proposalPassing ? 'Yes' : 'No';
+
             domStatus.innerHTML = `
             <span style="font-size:12px; line-height: 15px; display: block; margin-bottom:15px;">
-                <span style="color:#fff; font-weight:700;">${strStatus}</span><br>
+                <span style="font-weight:700;" class="votes${strColourClass}">${strStatus}</span><br>
                 <span style="color:hsl(265 100% 67% / 1);">(${strFundingStatus})</span><br>
             </span>
             <span style="font-size:12px; line-height: 15px; display: block; color:#d1d1d1;">
@@ -2152,15 +2173,20 @@ async function renderProposals(arrProposals, fContested) {
             </span>`;
         }
 
-        // Name and URL hyperlink
+        // Name, Payment Address and URL hyperlink
         const domNameAndURL = domRow.insertCell();
+        domNameAndURL.style = 'vertical-align: middle;';
 
         // IMPORTANT: Sanitise all of our HTML or a rogue server or malicious proposal could perform a cross-site scripting attack
-        domNameAndURL.innerHTML = `<a class="active governLink" href="${sanitizeHTML(
+        domNameAndURL.innerHTML = `<a class="governLink" style="color: white" href="${sanitizeHTML(
             cProposal.URL
         )}" target="_blank" rel="noopener noreferrer"><b>${sanitizeHTML(
             cProposal.Name
-        )} <span class="governLinkIco"><i class="fa-solid fa-arrow-up-right-from-square"></i></b></a></span>`;
+        )} <span class="governLinkIco"><i class="fa-solid fa-arrow-up-right-from-square"></i></b></a></span><br><a class="governLink" style="font-size: small; color:#8b38ff;" onclick="MPW.openExplorer('${
+            cProposal.PaymentAddress
+        }')"><i class="fa-solid fa-user-large" style="margin-right: 5px"></i><b>${sanitizeHTML(
+            cProposal.PaymentAddress.slice(0, 6) + '...'
+        )}`;
 
         // Convert proposal amount to user's currency
         const nProposalValue = parseInt(cProposal.MonthlyPayment) * nPrice;
@@ -2170,12 +2196,13 @@ async function renderProposals(arrProposals, fContested) {
         // Payment Schedule and Amounts
         const domPayments = domRow.insertCell();
         domPayments.classList.add('for-desktop');
+        domPayments.style = 'vertical-align: middle;';
         domPayments.innerHTML = `<span class="governValues"><b>${sanitizeHTML(
             parseInt(cProposal.MonthlyPayment).toLocaleString('en-gb', ',', '.')
         )}</b> <span class="governMarked">${
             cChainParams.current.TICKER
         }</span> <br>
-        <b class="governFiatSize">${strProposalCurrency} <span style="color:#8b38ff;">${strCurrency.toUpperCase()}</span></b></span>
+        <b class="governFiatSize">(${strProposalCurrency} <span style="color:#8b38ff;">${strCurrency.toUpperCase()}</span>)</b></span>
 
         <span class="governInstallments"> ${sanitizeHTML(
             cProposal['RemainingPaymentCount']
@@ -2188,6 +2215,7 @@ async function renderProposals(arrProposals, fContested) {
         // Vote Counts and Consensus Percentages
         const domVoteCounters = domRow.insertCell();
         domVoteCounters.classList.add('for-desktop');
+        domVoteCounters.style = 'vertical-align: middle;';
 
         const nLocalPercent = cProposal.Ratio * 100;
         domVoteCounters.innerHTML = `<b>${parseFloat(
@@ -2211,6 +2239,7 @@ async function renderProposals(arrProposals, fContested) {
         if (cProposal.local) {
             const domVoteBtns = domRow.insertCell();
             domVoteBtns.classList.add('for-desktop');
+            domVoteBtns.style = 'vertical-align: middle;';
             voteBtn = '';
         } else {
             let btnYesClass = 'pivx-button-small';
@@ -2223,6 +2252,7 @@ async function renderProposals(arrProposals, fContested) {
                 }
             }
             const domVoteBtns = domRow.insertCell();
+            domVoteBtns.style = 'vertical-align: middle;';
             const domNoBtn = document.createElement('button');
             domNoBtn.className = btnNoClass;
             domNoBtn.innerText = translation.no;
@@ -2256,6 +2286,7 @@ async function renderProposals(arrProposals, fContested) {
         // Create extended row for mobile
         const mobileDomRow = domTable.insertRow();
         const mobileExtended = mobileDomRow.insertCell();
+        mobileExtended.style = 'vertical-align: middle;';
         if (domTable.id == 'proposalsTableBody') {
             mobileExtended.id = `governMob${i}`;
         } else if (domTable.id == 'proposalsContestedTableBody') {
@@ -2545,7 +2576,7 @@ export async function createProposal() {
         } ${cChainParams.current.proposalFee / COIN} ${
             cChainParams.current.TICKER
         })`,
-        html: `<input id="proposalTitle" maxlength="20" placeholder="${translation.popupProposalTitle}" style="text-align: center;"><br>
+        html: `<input id="proposalTitle" maxlength="20" placeholder="${translation.popupProposalName}" style="text-align: center;"><br>
                <input id="proposalUrl" maxlength="64" placeholder="${translation.popupExample} https://forum.pivx.org/..." style="text-align: center;"><br>
                <input type="number" id="proposalCycles" placeholder="${translation.popupProposalDuration}" style="text-align: center;"><br>
                <input type="number" id="proposalPayment" placeholder="${cChainParams.current.TICKER} ${translation.popupProposalPerCycle}" style="text-align: center;"><br>`,
@@ -2593,7 +2624,7 @@ export async function createProposal() {
         const localProposals = account?.localProposals || [];
         localProposals.push(proposal);
         await database.addAccount({ localProposals });
-        createAlert('success', ALERTS.PROPOSAL_CREATED, [], 4000);
+        createAlert('success', translation.PROPOSAL_CREATED, [], 7500);
         updateGovernanceTab();
     }
 }
