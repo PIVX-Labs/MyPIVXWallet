@@ -206,9 +206,10 @@ export const pt_br_translation = {
     popupProposalName: 'Título da Proposta', //Proposal Title
     popupProposalDuration: 'Duração em ciclos', //Duration in cycles
     popupProposalPerCycle: 'por ciclo', //per cycle
-    popupProposalVoteHash: '', //Vote Hash:
-    popupProposalFinalisedNote: '', //<b>Congratulations on launching your proposal!</b><br>Masternode owners can use your Vote Hash to vote from wallets other than MPW, so make sure to add this to your forum post, if applicable!
-    popupProposalFinalisedSignoff: '', //Good luck on your journey through the DAO, PIVian!
+    popupProposalVoteHash: 'Votação de Hash:', //Vote Hash:
+    popupProposalFinalisedNote:
+        '<b>Parabéns pelo lançamento da sua proposta!</b><br>Os proprietários do Masternode podem usar a sua votação de hash em outras carteiras que não sejam MPW, então certifique-se de adicionar isso à sua publicação no fórum, se aplicável!', //<b>Congratulations on launching your proposal!</b><br>Masternode owners can use your Vote Hash to vote from wallets other than MPW, so make sure to add this to your forum post, if applicable!
+    popupProposalFinalisedSignoff: 'Boa sorte na sua jornada pelo DAO, PIVian!', //Good luck on your journey through the DAO, PIVian!
     popupHardwareAddrCheck: 'Confirme se este é o seu endereço que você vê', //Please confirm this is the address you see on your
     proposalFinalisationConfirming: 'A Confirmar', //Confirming...
     proposalFinalisationRemaining: 'restante', //remaining
