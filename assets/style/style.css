@@ -3135,6 +3135,7 @@ select.form-control option {
 
 .governLink:hover {
     text-decoration: underline!important;
+    cursor: pointer;
 }
 
 .governInstallments {
