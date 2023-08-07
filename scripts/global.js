@@ -982,7 +982,7 @@ export async function updateActivityGUI(fStaking = false, fNewOnly = false) {
  * @param {string?} strAddress - Optional address to open, if void, the master key is used
  */
 export async function openExplorer(strAddress = '') {
-    if (masterKey.isHD && !strAddress) {
+    if (masterKey?.isHD && !strAddress) {
         const derivationPath = getDerivationPath(masterKey.isHardwareWallet)
             .split('/')
             .slice(0, 4)
@@ -990,11 +990,8 @@ export async function openExplorer(strAddress = '') {
         const xpub = await masterKey.getxpub(derivationPath);
         window.open(cExplorer.url + '/xpub/' + xpub, '_blank');
     } else {
-        const address = await masterKey.getAddress();
-        window.open(
-            cExplorer.url + '/address/' + (strAddress || address),
-            '_blank'
-        );
+        const address = strAddress || (await masterKey.getAddress());
+        window.open(cExplorer.url + '/address/' + address, '_blank');
     }
 }
 
