@@ -302,8 +302,41 @@ export async function start() {
 
     // Enable all Bootstrap Tooltips
     $(function () {
+        $('#displayDecimals').tooltip({
+            template:
+                '<div class="tooltip sliderStyle" role="tooltip"><div class="arrow"></div><div class="tooltip-inner"></div></div>',
+        });
         $('[data-toggle="tooltip"]').tooltip();
     });
+
+    // Set decimal slider event
+    //document.querySelector('.sliderStyle').style.left = `-${Math.round(document.getElementById('displayDecimals').getBoundingClientRect().width / 2)}px`;
+
+    const sliderElement = document.getElementById('displayDecimals');
+    function handleDecimalSlider() {
+        setTimeout(() => {
+            try {
+                if (window.innerWidth > 991) {
+                    const sliderHalf = Math.round(
+                        document
+                            .getElementById('displayDecimals')
+                            .getBoundingClientRect().width / 2
+                    );
+                    const sliderBegin = -sliderHalf + 28;
+                    const stepVal = (sliderHalf * 2) / 8 - 6.45;
+                    const sliderValue = parseInt(sliderElement.value) + 1;
+
+                    document.querySelector('.sliderStyle').style.left = `${
+                        sliderBegin - stepVal + stepVal * sliderValue
+                    }px`;
+                    document.querySelector('.tooltip-inner').innerHTML =
+                        sliderValue - 1;
+                }
+            } catch (e) {}
+        }, 10);
+    }
+    sliderElement.addEventListener('input', handleDecimalSlider);
+    sliderElement.addEventListener('mouseover', handleDecimalSlider);
 
     // Register Input Pair events
     doms.domSendAmountCoins.oninput = () => {
