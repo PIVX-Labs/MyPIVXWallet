@@ -310,8 +310,6 @@ export async function start() {
     });
 
     // Set decimal slider event
-    //document.querySelector('.sliderStyle').style.left = `-${Math.round(document.getElementById('displayDecimals').getBoundingClientRect().width / 2)}px`;
-
     const sliderElement = document.getElementById('displayDecimals');
     function handleDecimalSlider() {
         setTimeout(() => {
