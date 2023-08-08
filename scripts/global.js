@@ -554,6 +554,9 @@ export function updateTicker() {
     // Update the Dashboard currency
     doms.domGuiBalanceValueCurrency.innerText = strCurrency.toUpperCase();
 
+    // Update the Stake Dashboard currency
+    doms.domGuiStakingValueCurrency.innerText = strCurrency.toUpperCase();
+
     // Update the Send menu ticker and currency
     doms.domSendAmountValueCurrency.innerText = strCurrency.toUpperCase();
     doms.domSendAmountCoinsTicker.innerText = cChainParams.current.TICKER;
