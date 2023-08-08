@@ -17,5 +17,6 @@
 - PIVX Promos shows 'syncing' on loading codes.
 
 # Bug Fixes
-- Fixed black 'X' on certain modals.
 - Fixed PIVX Promos 'lag' with high code qty.
+- Fixed 'Staking' balance showing wrong currency.
+- Fixed black 'X' on certain modals.
