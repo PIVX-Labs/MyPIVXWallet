@@ -2743,7 +2743,6 @@ export function switchSettings(page) {
 
                 doms.domDisplayDecimalsSliderDisplay.style.left =
                     val + 26 + 'px';
-                console.log('trigger');
             };
 
             // Triggers the input event
