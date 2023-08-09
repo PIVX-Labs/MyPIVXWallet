@@ -3,6 +3,7 @@ import { pt_br_translation } from '../locale/pt-br/translation.js';
 import { pt_pt_translation } from '../locale/pt-pt/translation.js';
 import { ph_translation } from '../locale/ph/translation.js';
 import { uwu_translation } from '../locale/uwu/translation.js';
+import { de_translation } from '../locale/de/translation.js';
 import { Database } from './database.js';
 import { fillAnalyticSelect, setTranslation } from './settings.js';
 
@@ -17,6 +18,7 @@ export const translatableLanguages = {
     'pt-pt': pt_pt_translation,
     'pt-br': pt_br_translation,
     ph: ph_translation,
+    de: de_translation,
 };
 
 /**
@@ -116,6 +118,7 @@ function parseUserAgentLang(strUA, arrLangsWithSubset) {
 // When adding a lang remember to add it to the object translatableLanguages as well as here.
 export const arrActiveLangs = [
     { code: 'en', emoji: '🇬🇧' },
+    { code: 'de', emoji: '🇩🇪' },
     { code: 'pt-pt', emoji: '🇵🇹' },
     { code: 'pt-br', emoji: '🇧🇷' },
     { code: 'ph', emoji: '🇵🇭' },
