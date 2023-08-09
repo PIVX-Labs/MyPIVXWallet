@@ -288,6 +288,7 @@ export async function start() {
         domAutoSwitchToggle: document.getElementById('autoSwitchToggler'),
         domTranslationSelect: document.getElementById('translation'),
         domDisplayDecimalsSlider: document.getElementById('displayDecimals'),
+        domDisplayDecimalsSliderDisplay: document.getElementById('sliderDisplay'),
         domBlackBack: document.getElementById('blackBack'),
         domWalletSettings: document.getElementById('settingsWallet'),
         domDisplaySettings: document.getElementById('settingsDisplay'),
@@ -2730,6 +2731,21 @@ export function switchSettings(page) {
     const { btn, section } = SETTINGS[page];
 
     Object.values(SETTINGS).forEach(({ section, btn }) => {
+        // Set the slider to the proper location
+        if(page == "display") {
+            doms.domDisplayDecimalsSlider.oninput = function () {
+                doms.domDisplayDecimalsSliderDisplay.textContent = this.value;
+        
+                let val = ((doms.domDisplayDecimalsSlider.offsetWidth - 16) / 9) * parseInt(this.value);
+              
+                doms.domDisplayDecimalsSliderDisplay.style.left = (val + 26) + 'px';
+                console.log('trigger')
+            }
+            
+            // Triggers the input event
+            setTimeout(() => doms.domDisplayDecimalsSlider.dispatchEvent(new Event('input')), 10);
+            
+        }
         // Hide all settings sections
         section.classList.add('d-none');
         // Make all buttons inactive
