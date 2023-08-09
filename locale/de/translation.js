@@ -15,7 +15,7 @@ export const de_translation = {
 
     // Nav Bar
     navDashboard: 'Übersicht', //Dashboard
-    navStake: 'Stake', //Stake
+    navStake: 'Staking', //Stake
     navMasternode: 'Masternode', //Masternode
     navGovernance: 'Regieren', //Governance
     navSettings: 'Einstellungen', //Settings
@@ -29,9 +29,9 @@ export const de_translation = {
 
     // Onboarding Dashboard
     dashboardTitle: 'Übersicht', //Dashboard
-    dCardOneTitle: 'Erstelle', //Create a
-    dCardOneSubTitle: 'eine neue Geldbörse', //New Wallet
-    dCardOneDesc: 'Erstelle eine neue PIVX Gedlbörse, unter verwendung neuester Sicherheits- & Backupmethoden.', //Create a new PIVX wallet, offering the most secure backup & security methods.
+    dCardOneTitle: 'Erstelle eine neue', //Create a
+    dCardOneSubTitle: 'Geldbörse', //New Wallet
+    dCardOneDesc: 'Erstelle eine neue PIVX Geldbörse, unter verwendung neuester Sicherheits- & Backupmethoden.', //Create a new PIVX wallet, offering the most secure backup & security methods.
     dCardOneButton: 'Erstelle eine neue Geldbörse', //Create A New Wallet
 
     dCardTwoTitle: 'Erstelle eine neue', //Create a new
@@ -68,7 +68,7 @@ export const de_translation = {
     // Encrypt wallet
     encryptWallet: 'Verschlüssel deine Brieftasche', //Encrypt wallet
     encryptPasswordFirst: 'Gib dein Passwort ein', //Enter Password
-    encryptPasswordSecond: 'Widerhole dein Passwort', //Re-enter Password
+    encryptPasswordSecond: 'Wiederhole dein Passwort', //Re-enter Password
     encrypt: 'Verschlüsseln', //Encrypt
 
     // Wallet Dashboard Sub-menu
@@ -89,7 +89,7 @@ export const de_translation = {
     // Export
     privateKey: 'Privater Schlüssel', //Private Key
     viewPrivateKey: 'Zeige privaten Schlüssel', //View Private Key?
-    privateWarning1: 'Stelle sicher, dass niemand deinen Bildschrim einsehen kann', //Make sure no one can see your screen.
+    privateWarning1: 'Stelle sicher, dass niemand deinen Bildschirm einsehen kann', //Make sure no one can see your screen.
     privateWarning2: 'Jeder mit diesem Schlüssel kann deine Geldbörse bedienen.', //Anyone with this key can steal your funds.
     viewKey: 'zeige Schlüssel', //View key
 
@@ -102,8 +102,8 @@ export const de_translation = {
     createAmount: 'Promo Anzahl', //Promo Amount
 
     // Stake
-    stake: 'Delegiere zum Staken', //Stake
-    stakeUnstake: 'Vom Staken abberufen', //Unstake
+    stake: 'Delegieren', //Stake
+    stakeUnstake: 'Abberufen', //Unstake
     rewardHistory: 'Vergütungshistorie', //Reward History
     loadMore: 'Zeige mehr', //Load more
 
@@ -172,7 +172,7 @@ export const de_translation = {
     walletUnlockStake: 'Entsperre um zu Staken', //Unlock to stake your
     walletUnlockUnstake: 'Entsperre um abzuberufen', //Unlock to unstake your
     changelogTitle: 'Was gibt es neues bei', //What's New in
-    popupSetColdAddr: 'Gib deine kalte Staking Adresse an', //Set your Cold Staking address
+    popupSetColdAddr: 'Gib eine kalte Staking Adresse an', //Set your Cold Staking address
     popupCurrentAddress: 'Aktuelle Adresse', //Current address:
     popupColdStakeNote: 'Eine kalte Staking Adresse delegiert Münzen für dich. Sie kann nicht für Transaktionen verwendet werden, so kannst du auch fremde kalte Adressen verwenden!', //A Cold Address stakes coins on your behalf, it cannot spend coins, so it's even safe to use a stranger's Cold Address!
     popupExample: 'Beispiel', //Example:
@@ -266,7 +266,21 @@ export const de_translation = {
     MN_NOT_ENOUGH_COLLAT: 'Du benötigst <b>{amount} mehr {ticker}</b> um eine Masternode zu erstellen!', //You need <b>{amount} more {ticker}</b> to create a Masternode!
     MN_ENOUGH_BUT_NO_COLLAT: 'Du hast zwar genug Guthaben für eine Masternode, aber keine gültige UTXO über {amount} {ticker}', //You have enough balance for a Masternode, but no valid collateral UTXO of {amount} {ticker}
     MN_COLLAT_NOT_SUITABLE: 'Dies ist keine gültige UTXO für eine Masternode', //This is not a suitable UTXO for a Masternode
-    MN_CANT_CONNECT: 'Keine Verbindung zur RPC-Konten möglich!', //Unable to connect to RPC node!
+    MN_CANT_CONNECT: 'Keine Verbindung zum RPC-Knoten möglich!', //Unable to connect to RPC node!
+
+    PROPOSAL_FINALISED: 'Antrag finalisiert!', //Proposal finalized!
+    PROPOSAL_UNCONFIRMED: 'Der Antrag wurde noch nicht bestätigt.', //The proposal hasn\'t been confirmed yet.
+    PROPOSAL_EXPIRED: 'Der Antrag ist ausgelaufen. Erstelle einen neuen.', //The proposal has expired. Create a new one.
+    PROPOSAL_FINALISE_FAIL: 'Finalisieren des Antrags fehlgeschlagen.', //Failed to finalize proposal.
+    PROPOSAL_IMPORT_FIRST: 'Erstelle eine oder importiere deine Geldbörse um fortzufahren', //Create or import your wallet to continue
+    PROPOSAL_NOT_ENOUGH_FUNDS: 'Nicht genug Mittel um einen Antrag zu erstellen.', //Not enough funds to create a proposal.
+    PROPOSAL_INVALID_ERROR: 'Der Antrag ist Ungültig. Error:', //Proposal is invalid. Error:
+    PROPOSAL_CREATED: '<b>Antrag eingereicht!</b><br>Warte 6 Bestätigungen um zu finalisieren.', //<b>Proposal created!</b><br>Wait 6 confirmations to finalise.
+
+    PROMO_MIN: 'Minimale Menge ist {min} {ticker}!', //Minimum amount is {min} {ticker}!
+    PROMO_MAX_QUANTITY: 'Dein Gerät kann nur {quantity} auf einmal erstellen!', //Your device can only create {quantity} codes at a time!
+    PROMO_NOT_ENOUGH: 'Du hast nicht genug {ticker} um den Code zu erstellen!', //You don\'t have enough {ticker} to create that code!
+    PROMO_ALREADY_CREATED: 'DU hast diesen Code bereits erstellt!', //You\'ve already created that code!
 
     SWITCHED_EXPLORERS: '<b>Explorer gewechselt!</b><br>In Benutzung: {explorerName}', //<b>Switched explorer!</b><br>Now using {explorerName}
     SWITCHED_NODE: '<b>Knoten gewechselt!</b><br>In Benutzung: {node}', //<b>Switched node!</b><br>Now using {node}
