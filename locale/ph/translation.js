@@ -21,7 +21,7 @@ export const ph_translation = {
     navSettings: 'Settings', //Settings
 
     // Footer
-    footerBuiltWithPivxLabs: 'Binuo nang may 💜 🇵🇭 ng PIVX Labs', //Built with 💜 🇵🇭 by PIVX Labs
+    footerBuiltWithPivxLabs: 'Binuo nang may 💜 ng PIVX Labs 🇵🇭', //Built with 💜 by PIVX Labs
 
     // Intro
     loading: 'Loading', //Loading

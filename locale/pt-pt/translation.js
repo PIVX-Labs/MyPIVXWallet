@@ -20,7 +20,7 @@ export const pt_pt_translation = {
     navSettings: 'Configurações', //Settings
 
     // Footer
-    footerBuiltWithPivxLabs: 'Construido com 💜 🇵🇹 por PIVX Labs', //Built with 💜 by PIVX Labs
+    footerBuiltWithPivxLabs: 'Construido com 💜 por PIVX Labs 🇵🇹', //Built with 💜 by PIVX Labs
 
     // Intro
     loading: 'Carregar', //Loading

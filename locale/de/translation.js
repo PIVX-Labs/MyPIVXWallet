@@ -21,7 +21,7 @@ export const de_translation = {
     navSettings: 'Einstellungen', //Settings
 
     // Footer
-    footerBuiltWithPivxLabs: 'Mit 💜 🇩🇪 erstellt - PIVX Labs', //Built with 💜 by PIVX Labs
+    footerBuiltWithPivxLabs: 'Mit 💜 erstellt - PIVX Labs 🇩🇪', //Built with 💜 by PIVX Labs
 
     // Intro
     loading: '...lädt...', //Loading
