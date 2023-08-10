@@ -4,6 +4,7 @@ import { pt_pt_translation } from '../locale/pt-pt/translation.js';
 import { ph_translation } from '../locale/ph/translation.js';
 import { uwu_translation } from '../locale/uwu/translation.js';
 import { fr_translation } from '../locale/fr/translation.js';
+import { de_translation } from '../locale/de/translation.js';
 import { Database } from './database.js';
 import { fillAnalyticSelect, setTranslation } from './settings.js';
 
@@ -19,6 +20,7 @@ export const translatableLanguages = {
     'pt-br': pt_br_translation,
     ph: ph_translation,
     fr: fr_translation,
+    de: de_translation,
 };
 
 /**
@@ -119,6 +121,7 @@ function parseUserAgentLang(strUA, arrLangsWithSubset) {
 export const arrActiveLangs = [
     { code: 'en', emoji: '🇬🇧' },
     { code: 'fr', emoji: '🇫🇷' },
+    { code: 'de', emoji: '🇩🇪' },
     { code: 'pt-pt', emoji: '🇵🇹' },
     { code: 'pt-br', emoji: '🇧🇷' },
     { code: 'ph', emoji: '🇵🇭' },
@@ -129,7 +132,7 @@ export async function start() {
     // We use this function to parse the UA lang in a safer way: for example, there's multiple `en` definitions
     // ... but we shouldn't duplicate the language files, we can instead cut the affix (US, GB) and simply use 'en'.
     // ... This logic may apply to other languages with such subsets as well, so take care of them here!
-    const arrLangsWithSubset = ['en'];
+    const arrLangsWithSubset = ['en', 'fr', 'de'];
 
     const localeLang =
         window?.navigator?.userLanguage || window?.navigator?.language;
