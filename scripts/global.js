@@ -2735,14 +2735,10 @@ export function switchSettings(page) {
         // Set the slider to the proper location
         if (page == 'display') {
             doms.domDisplayDecimalsSlider.oninput = function () {
-                doms.domDisplayDecimalsSliderDisplay.textContent = this.value;
+                doms.domDisplayDecimalsSliderDisplay.innerHTML = this.value;
+                //let val =  ((((doms.domDisplayDecimalsSlider.offsetWidth - 24) / 9) ) * parseInt(this.value));
 
-                let val =
-                    ((doms.domDisplayDecimalsSlider.offsetWidth - 16) / 9) *
-                    parseInt(this.value);
-
-                doms.domDisplayDecimalsSliderDisplay.style.left =
-                    val + 26 + 'px';
+                //doms.domDisplayDecimalsSliderDisplay.style.marginLeft = (val) + 'px';
             };
 
             // Triggers the input event
