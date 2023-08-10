@@ -133,7 +133,8 @@ export const uwu_translation = {
         'Dees are pwoposals dat received an overwhelming ameownt of downwotes, making it likely spam or a highly contwestable pwoposal.', //These are proposals that received an overwhelming amount of downvotes, making it likely spam or a highly contestable proposal.
 
     // Settings
-    settingsCurrency: 'Chowose a dispway cuwwency:',
+    settingsCurrency: 'Chowose a dispway cuwwency:', //Choose a display currency:
+    settingsDecimals: 'Balance Decimawls:', //Balance Decimals:
     settingsExplorer: 'Chowose an expwower:', //Choose an explorer:
     settingsLanguage: 'Chowose a Languwuage:', //Choose a Language:
     settingsAnalytics: 'Chowose your anawytics contwibution wevel:', //Choose your analytics contribution level:
