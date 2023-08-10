@@ -125,6 +125,7 @@ export const de_translation = {
 
     // Settings
     settingsCurrency: 'Wähle die angezeigte Währung', //Choose a display currency:
+    settingsDecimals: '', //Balance Decimals:
     settingsExplorer: 'Wähle einen Explorer', //Choose an explorer:
     settingsLanguage: 'Wähle eine Sprache', //Choose a Language:
     settingsPivxNode: 'Wähle einen PIVX Knoten', //Choose a PIVX node:
