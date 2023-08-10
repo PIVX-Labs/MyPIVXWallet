@@ -21,6 +21,7 @@ import {
     strCurrency,
     setColdStakingAddress,
     strColdStakingAddress,
+    nDisplayDecimals,
 } from './settings.js';
 import { createAndSendTransaction, signTransaction } from './transactions.js';
 import {
@@ -32,6 +33,7 @@ import {
     isValidBech32,
     isBase64,
     sleep,
+    beautifyNumber,
 } from './misc.js';
 import { cChainParams, COIN, MIN_PASS_LENGTH } from './chain_params.js';
 import { decrypt } from './aes-gcm.js';
@@ -285,6 +287,9 @@ export async function start() {
         domNodeSelect: document.getElementById('node'),
         domAutoSwitchToggle: document.getElementById('autoSwitchToggler'),
         domTranslationSelect: document.getElementById('translation'),
+        domDisplayDecimalsSlider: document.getElementById('displayDecimals'),
+        domDisplayDecimalsSliderDisplay:
+            document.getElementById('sliderDisplay'),
         domBlackBack: document.getElementById('blackBack'),
         domWalletSettings: document.getElementById('settingsWallet'),
         domDisplaySettings: document.getElementById('settingsDisplay'),
@@ -299,8 +304,39 @@ export async function start() {
 
     // Enable all Bootstrap Tooltips
     $(function () {
+        $('#displayDecimals').tooltip({
+            template:
+                '<div class="tooltip sliderStyle" role="tooltip"><div class="arrow"></div><div class="tooltip-inner"></div></div>',
+        });
         $('[data-toggle="tooltip"]').tooltip();
     });
+
+    // Set decimal slider event
+    const sliderElement = document.getElementById('displayDecimals');
+    function handleDecimalSlider() {
+        setTimeout(() => {
+            try {
+                if (window.innerWidth > 991) {
+                    const sliderHalf = Math.round(
+                        document
+                            .getElementById('displayDecimals')
+                            .getBoundingClientRect().width / 2
+                    );
+                    const sliderBegin = -sliderHalf + 28;
+                    const stepVal = (sliderHalf * 2) / 8 - 6.45;
+                    const sliderValue = parseInt(sliderElement.value) + 1;
+
+                    document.querySelector('.sliderStyle').style.left = `${
+                        sliderBegin - stepVal + stepVal * sliderValue
+                    }px`;
+                    document.querySelector('.tooltip-inner').innerHTML =
+                        sliderValue - 1;
+                }
+            } catch (e) {}
+        }, 10);
+    }
+    sliderElement.addEventListener('input', handleDecimalSlider);
+    sliderElement.addEventListener('mouseover', handleDecimalSlider);
 
     // Register Input Pair events
     doms.domSendAmountCoins.oninput = () => {
@@ -520,6 +556,9 @@ export function updateTicker() {
     // Update the Dashboard currency
     doms.domGuiBalanceValueCurrency.innerText = strCurrency.toUpperCase();
 
+    // Update the Stake Dashboard currency
+    doms.domGuiStakingValueCurrency.innerText = strCurrency.toUpperCase();
+
     // Update the Send menu ticker and currency
     doms.domSendAmountValueCurrency.innerText = strCurrency.toUpperCase();
     doms.domSendAmountCoinsTicker.innerText = cChainParams.current.TICKER;
@@ -591,10 +630,14 @@ export function getBalance(updateGUI = false) {
     // Update the GUI too, if chosen
     if (updateGUI) {
         // Set the balance, and adjust font-size for large balance strings
-        const nLen = nCoins.toFixed(2).length;
-        doms.domGuiBalance.innerText = nCoins.toFixed(nLen >= 6 ? 0 : 2);
-        doms.domAvailToDelegate.innerText =
-            nCoins.toFixed(2) + ' ' + cChainParams.current.TICKER;
+        const strBal = nCoins.toFixed(nDisplayDecimals);
+        const nLen = strBal.length;
+        doms.domGuiBalance.innerHTML = beautifyNumber(
+            strBal,
+            nLen >= 10 ? '17px' : '25px'
+        );
+        doms.domAvailToDelegate.innerHTML =
+            beautifyNumber(strBal) + ' ' + cChainParams.current.TICKER;
 
         // Update tickers
         updateTicker();
@@ -608,12 +651,18 @@ export function getBalance(updateGUI = false) {
 
 export function getStakingBalance(updateGUI = false) {
     const nBalance = mempool.getDelegatedBalance();
+    const nCoins = nBalance / COIN;
 
     if (updateGUI) {
         // Set the balance, and adjust font-size for large balance strings
-        doms.domGuiBalanceStaking.innerText = Math.floor(nBalance / COIN);
-        doms.domAvailToUndelegate.innerText =
-            (nBalance / COIN).toFixed(2) + ' ' + cChainParams.current.TICKER;
+        const strBal = nCoins.toFixed(nDisplayDecimals);
+        const nLen = strBal.length;
+        doms.domGuiBalanceStaking.innerHTML = beautifyNumber(
+            strBal,
+            nLen >= 10 ? '17px' : '25px'
+        );
+        doms.domAvailToUndelegate.innerHTML =
+            beautifyNumber(strBal) + ' ' + cChainParams.current.TICKER;
 
         // Update tickers
         updateTicker();
@@ -2683,6 +2732,24 @@ export function switchSettings(page) {
     const { btn, section } = SETTINGS[page];
 
     Object.values(SETTINGS).forEach(({ section, btn }) => {
+        // Set the slider to the proper location
+        if (page == 'display') {
+            doms.domDisplayDecimalsSlider.oninput = function () {
+                doms.domDisplayDecimalsSliderDisplay.innerHTML = this.value;
+                //let val =  ((((doms.domDisplayDecimalsSlider.offsetWidth - 24) / 9) ) * parseInt(this.value));
+
+                //doms.domDisplayDecimalsSliderDisplay.style.marginLeft = (val) + 'px';
+            };
+
+            // Triggers the input event
+            setTimeout(
+                () =>
+                    doms.domDisplayDecimalsSlider.dispatchEvent(
+                        new Event('input')
+                    ),
+                10
+            );
+        }
         // Hide all settings sections
         section.classList.add('d-none');
         // Make all buttons inactive
