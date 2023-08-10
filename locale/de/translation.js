@@ -48,9 +48,9 @@ export const de_translation = {
     dCardThreeButton: 'Öffne meinen Ledger', //Access my Ledger
 
     dCardFourTitle: 'Gehe zu', //Go to
-    dCardFourSubTitle: 'Meine Gedlbörse', //My Wallet
+    dCardFourSubTitle: 'Meine Geldbörse', //My Wallet
     dCardFourDesc:
-        'Importiere eine PIVX Gedlbörse mittels Private Key, xpriv oder einer Seed Phrase', //Import a PIVX wallet using a Private Key, xpriv, or Seed Phrase.
+        'Importiere eine PIVX Geldbörse mittels Private Key, xpriv oder einer Seed Phrase', //Import a PIVX wallet using a Private Key, xpriv, or Seed Phrase.
     dCardFourButtonI: 'Importiere Geldbörse', //Import Wallet
     dCardFourButtonA: 'Öffne meine Geldbörse', //Access My Wallet
 
