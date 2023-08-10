@@ -4,6 +4,8 @@
 - New Setting: customise your balance decimals.
 
 # New Languages
+- 🇫🇷 French (miguelc030, _hellthere77 & sylvain).
+- 🇩🇪 German (by billytheone).
 - 🇵🇹 Portuguese (by miguelc030).
 - 🇧🇷 Brazilian PT (by invic1337 & miguelc030).
 - 🇵🇭 Filipino Tagalog (by clover1221).
