@@ -74,9 +74,11 @@ export const ph_translation = {
 
     // Encrypt wallet
     encryptWallet: 'Encrypt wallet', //Encrypt wallet
+    encryptPasswordCurrent: '', //Current Password
     encryptPasswordFirst: 'Ilagay ang Password', //Enter Password
     encryptPasswordSecond: 'Ilagay ulit ang Password', //Re-enter Password
     encrypt: 'Encrypt', //Encrypt
+    changePassword: '', //Change Password
 
     // Wallet Dashboard Sub-menu
     balanceBreakdown: 'Kabuoang Balanse', //Balance Breakdown

@@ -64,6 +64,7 @@ export async function start() {
         domDashboard: document.getElementById('dashboard'),
         domGuiStaking: document.getElementById('guiStaking'),
         domGuiWallet: document.getElementById('guiWallet'),
+        domGettingStartedBtn: document.getElementById('gettingStartedBtn'),
         domGuiBalance: document.getElementById('guiBalance'),
         domGuiBalanceTicker: document.getElementById('guiBalanceTicker'),
         domGuiBalanceValue: document.getElementById('guiBalanceValue'),
@@ -188,8 +189,10 @@ export async function start() {
         domAccessWalletBtn: document.getElementById('accessWalletBtn'),
         domVanityUiButtonTxt: document.getElementById('vanButtonText'),
         domGenKeyWarning: document.getElementById('genKeyWarning'),
-        domEncryptWarningTxt: document.getElementById('encryptWarningText'),
-        domEncryptBtnTxt: document.getElementById('encryptButton'),
+        domEncryptWalletLabel: document.getElementById('encryptWalletLabel'),
+        domEncryptPasswordCurrent: document.getElementById(
+            'changePassword-current'
+        ),
         domEncryptPasswordBox: document.getElementById('encryptPassword'),
         domEncryptPasswordFirst: document.getElementById('newPassword'),
         domEncryptPasswordSecond: document.getElementById('newPasswordRetype'),
@@ -280,6 +283,9 @@ export async function start() {
         // Alert DOM element
         domAlertPos: document.getElementsByClassName('alertPositioning')[0],
         domNetwork: document.getElementById('Network'),
+        domChangePasswordContainer: document.getElementById(
+            'changePassword-container'
+        ),
         domDebug: document.getElementById('Debug'),
         domTestnet: document.getElementById('Testnet'),
         domCurrencySelect: document.getElementById('currency'),
@@ -456,6 +462,9 @@ export async function start() {
 
     // If we haven't already (due to having no wallet, etc), display the Dashboard
     doms.domDashboard.click();
+
+    // Update the Encryption UI (If the user has a wallet, then it changes to "Change Password" rather than "Encrypt Wallet")
+    await updateEncryptionGUI();
 }
 
 function subscribeToNetworkEvents() {
@@ -1492,7 +1501,7 @@ export async function guiImportWallet() {
     if (fHasWallet) hideAllWalletOptions();
 }
 
-export function guiEncryptWallet() {
+export async function guiEncryptWallet() {
     // Disable wallet encryption in testnet mode
     if (cChainParams.current.isTestnet)
         return createAlert(
@@ -1514,14 +1523,47 @@ export function guiEncryptWallet() {
         );
     if (strPass !== strPassRetype)
         return createAlert('warning', ALERTS.PASSWORD_DOESNT_MATCH, [], 2250);
-    encryptWallet(strPass);
+
+    // If this wallet is already encrypted, then we'll check for the current password and ensure it decrypts properly too
+    if (await hasEncryptedWallet()) {
+        // Grab the pass, and wipe the dialog immediately
+        const strCurrentPass = doms.domEncryptPasswordCurrent.value;
+        doms.domEncryptPasswordCurrent.value = '';
+
+        // If the decryption fails: we don't allow changing the password
+        if (!(await decryptWallet(strCurrentPass))) return;
+    }
+
+    // Encrypt the wallet using the new password
+    await encryptWallet(strPass);
     createAlert('success', ALERTS.NEW_PASSWORD_SUCCESS, [], 5500);
 
+    // Hide and reset the encryption modal
     $('#encryptWalletModal').modal('hide');
     doms.domEncryptPasswordFirst.value = '';
     doms.domEncryptPasswordSecond.value = '';
 
-    doms.domWipeWallet.hidden = false;
+    // Display the 'Unlock/Lock Wallet' buttons accordingly based on state
+    doms.domWipeWallet.hidden = masterKey.isViewOnly;
+    doms.domRestoreWallet.hidden = !masterKey.isViewOnly;
+
+    // Update the encryption UI (changes to "Change Password" now)
+    await updateEncryptionGUI(true);
+}
+
+/** Update the "Encrypt Wallet" / "Change Password" dialog to match the current wallet state */
+export async function updateEncryptionGUI(fEncrypted = null) {
+    // If no param is provided, check if a wallet exists in the database
+    if (fEncrypted === null) {
+        fEncrypted = await hasEncryptedWallet();
+    }
+    // If the wallet is encrypted, we display a "Current Password" input in the Encryption dialog, otherwise, only accept New Passwords
+    doms.domEncryptPasswordCurrent.style.display = fEncrypted ? '' : 'none';
+    // And we adjust the displays to accomodate the mode as well
+    doms.domEncryptWalletLabel.innerText = fEncrypted
+        ? translation.changePassword
+        : translation.encryptWallet;
+    doms.domChangePasswordContainer.style.display = fEncrypted ? '' : 'none';
 }
 
 export async function toggleExportUI() {

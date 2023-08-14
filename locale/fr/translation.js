@@ -73,9 +73,11 @@ export const fr_translation = {
 
     // Encrypt wallet
     encryptWallet: 'Cryptage du portefeuille', //Encrypt wallet
+    encryptPasswordCurrent: '', //Current Password
     encryptPasswordFirst: 'Entrer le mot de passe', //Enter Password
     encryptPasswordSecond: 'Réintroduire le mot de passe', //Re-enter Password
     encrypt: 'Crypter', //Encrypt
+    changePassword: '', //Change Password
 
     // Wallet Dashboard Sub-menu
     balanceBreakdown: 'Composition de la balance', //Balance Breakdown

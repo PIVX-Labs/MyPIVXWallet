@@ -895,7 +895,7 @@ export async function decryptWallet(strPassword = '') {
 }
 
 /**
- * @returns {Promise<bool>} If the wallet is unlocked
+ * @returns {Promise<bool>} If the wallet has an encrypted database backup
  */
 export async function hasEncryptedWallet() {
     const database = await Database.getInstance();

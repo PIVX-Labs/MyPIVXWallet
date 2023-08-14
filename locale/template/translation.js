@@ -85,9 +85,11 @@ var translation = {
 
     // Encrypt wallet
     encryptWallet: '', //Encrypt wallet
+    encryptPasswordCurrent: '', //Current Password
     encryptPasswordFirst: '', //Enter Password
     encryptPasswordSecond: '', //Re-enter Password
     encrypt: '', //Encrypt
+    changePassword: '', //Change Password
 
     // Wallet Dashboard Sub-menu
     balanceBreakdown: '', //Balance Breakdown

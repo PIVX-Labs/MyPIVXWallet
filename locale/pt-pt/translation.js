@@ -72,9 +72,11 @@ export const pt_pt_translation = {
 
     // Encrypt wallet
     encryptWallet: 'Criptografar carteira', //Encrypt wallet
+    encryptPasswordCurrent: '', //Current Password
     encryptPasswordFirst: 'Digite a senha', //Enter Password
     encryptPasswordSecond: 'Digite novamente a senha', //Re-enter Password
     encrypt: 'Criptografar', //Encrypt
+    changePassword: '', //Change Password
 
     // Wallet Dashboard Sub-menu
     balanceBreakdown: 'Composição do Saldo', //Balance Breakdown

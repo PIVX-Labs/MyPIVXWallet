@@ -72,9 +72,11 @@ export const uwu_translation = {
 
     // Encrypt wallet
     encryptWallet: 'Encwypt wawwet', //Encrypt wallet
+    encryptPasswordCurrent: 'Cuwwent Password', //Current Password
     encryptPasswordFirst: 'Entwer Password', //Enter Password
     encryptPasswordSecond: 'Re-entwer Password', //Re-enter Password
     encrypt: 'Encwypt', //Encrypt
+    changePassword: 'Change Passwoword', //Change Password
 
     // Wallet Dashboard Sub-menu
     balanceBreakdown: 'Bwalance Bweakdown', //Balance Breakdown

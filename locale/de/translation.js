@@ -73,9 +73,11 @@ export const de_translation = {
 
     // Encrypt wallet
     encryptWallet: 'Verschlüssel deine Brieftasche', //Encrypt wallet
+    encryptPasswordCurrent: '', //Current Password
     encryptPasswordFirst: 'Gib dein Passwort ein', //Enter Password
     encryptPasswordSecond: 'Wiederhole dein Passwort', //Re-enter Password
     encrypt: 'Verschlüsseln', //Encrypt
+    changePassword: '', //Change Password
 
     // Wallet Dashboard Sub-menu
     balanceBreakdown: 'Aufgeschlüsselter Kontostand', //Balance Breakdown
