@@ -2024,6 +2024,7 @@ async function renderProposals(arrProposals, fContested) {
                 return {
                     Name: p.name,
                     URL: p.url,
+                    PaymentAddress: p.address,
                     MonthlyPayment: p.monthlyPayment / COIN,
                     RemainingPaymentCount: p.nPayments,
                     TotalPayment: p.nPayments * (p.monthlyPayment / COIN),
@@ -2113,16 +2114,24 @@ async function renderProposals(arrProposals, fContested) {
                     const result = await Masternode.finalizeProposal(
                         cProposal.mpw
                     );
+
                     const deleteProposal = async () => {
-                        // Remove local Proposal from local storage
-                        const account = await database.getAccount();
-                        const localProposals = account?.localProposals || [];
-                        await database.addAccount({
-                            localProposals: localProposals.filter(
-                                (p) => p.txId !== cProposal.mpw.txId
-                            ),
-                        });
+                        // Fetch account and its localProposals array (default to [] if none exists)
+                        const { localProposals = [] } =
+                            await database.getAccount();
+
+                        // Find index of proposal to remove
+                        const nProposalIndex = localProposals.findIndex(
+                            (p) => p.txid === cProposal.mpw.txid
+                        );
+
+                        // If found, remove the proposal and update the account with the modified localProposals array
+                        if (nProposalIndex > -1) {
+                            localProposals.splice(nProposalIndex, 1);
+                            await database.addAccount({ localProposals });
+                        }
                     };
+
                     if (result.ok) {
                         deleteProposal();
                         // Create a prompt showing the finalisation success, vote hash, and further details
