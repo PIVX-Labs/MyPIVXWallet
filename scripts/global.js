@@ -195,7 +195,6 @@ export async function start() {
         domEncryptPasswordSecond: document.getElementById('newPasswordRetype'),
         domGuiAddress: document.getElementById('guiAddress'),
         domGenIt: document.getElementById('genIt'),
-        domHumanReadable: document.getElementById('HumanReadable'),
         domReqDesc: document.getElementById('reqDesc'),
         domReqDisplay: document.getElementById('reqDescDisplay'),
         domIdenticon: document.getElementById('identicon'),
@@ -2523,7 +2522,11 @@ export async function updateMasternodeTab() {
 
 async function refreshMasternodeData(cMasternode, fAlert = false) {
     const cMasternodeData = await cMasternode.getFullData();
-    if (debug) console.log(cMasternodeData);
+    if (debug) {
+        console.log('---- NEW MASTERNODE DATA (Debug Mode) ----');
+        console.log(cMasternodeData);
+        console.log('---- END MASTERNODE DATA (Debug Mode) ----');
+    }
 
     // If we have MN data available, update the dashboard
     if (cMasternodeData && cMasternodeData.status !== 'MISSING') {

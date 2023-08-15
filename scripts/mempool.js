@@ -206,7 +206,7 @@ export class Mempool {
         if (debug) {
             console.assert(
                 this.isAlreadyStored({ id, vout }),
-                'updateUTXO must be called with an existing UTXO'
+                'Debug Mode: updateUTXO must be called with an existing UTXO'
             );
         }
         const cUTXO = this.UTXOs.find(

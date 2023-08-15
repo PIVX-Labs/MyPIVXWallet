@@ -337,22 +337,22 @@ export async function createAndSendTransaction({
     }
 
     // Debug-only verbose response
-    if (debug)
-        doms.domHumanReadable.innerHTML =
-            'Balance: ' +
-            nBalance / COIN +
-            '<br>Fee: ' +
-            nFee / COIN +
-            '<br>To: ' +
-            address +
-            '<br>Sent: ' +
-            amount / COIN +
-            (nChange > 0
-                ? '<br>Change Address: ' +
-                  changeAddress +
-                  '<br>Change: ' +
-                  nChange / COIN
-                : '');
+    if (debug) {
+        console.log(`
+            ---- NEW TRANSACTION (Debug Mode) ----
+             Old Balance : ${nBalance / COIN}
+             Fee         : ${nFee / COIN}
+             To          : ${address}
+             Sent        : ${amount / COIN}
+             Inputs Qty  : ${cTx.inputs.length}
+             Outputs Qty : ${outputs.length}
+             Change addr : ${nChange > 0 ? changeAddress : 'N/A (no change)'}
+             Change      : ${nChange > 0 ? nChange / COIN : 'N/A (no change)'}
+             Tx Size (b) : ${cTx.serialize().length}
+            ---- END TRANSACTION (Debug Mode) ----
+        `);
+    }
+
     const sign = await signTransaction(cTx, masterKey, outputs, delegateChange);
     const result = await getNetwork().sendTransaction(sign);
     // Update the mempool
