@@ -576,6 +576,10 @@ export class ExplorerNetwork extends Network {
     submitAnalytics(strType, cData = {}) {
         if (!this.enabled) return;
 
+        // TODO: rebuild Labs Analytics, submitAnalytics() will be disabled at code-level until this is live again
+        /* eslint-disable */
+        return;
+
         // Limit analytics here to prevent 'leakage' even if stats are implemented incorrectly or forced
         let i = 0,
             arrAllowedKeys = [];
