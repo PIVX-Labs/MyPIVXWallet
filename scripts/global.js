@@ -121,6 +121,9 @@ export async function start() {
         domGuiViewKey: document.getElementById('guiViewKey'),
         domModalQR: document.getElementById('ModalQR'),
         domModalQrLabel: document.getElementById('ModalQRLabel'),
+        domModalQrReceiveTypeBtn: document.getElementById(
+            'ModalQRReceiveTypeBtn'
+        ),
         domModalQRReader: document.getElementById('qrReaderModal'),
         domQrReaderStream: document.getElementById('qrReaderStream'),
         domCloseQrReaderBtn: document.getElementById('closeQrReader'),
@@ -2169,8 +2172,15 @@ async function renderProposals(arrProposals, fContested) {
 
                         // If found, remove the proposal and update the account with the modified localProposals array
                         if (nProposalIndex > -1) {
+                            const account = await database.getAccount();
                             localProposals.splice(nProposalIndex, 1);
-                            await database.addAccount({ localProposals });
+                            await database.addAccount({
+                                publicKey: account.publicKey,
+                                encWif: account.encWif,
+                                localProposals,
+                                contacts: account?.contacts || [],
+                                name: account?.name || '',
+                            });
                         }
                     };
 
@@ -2715,7 +2725,8 @@ export async function createProposal() {
             publicKey: account.publicKey,
             encWif: account.encWif,
             localProposals,
-            contacts: account.contacts,
+            contacts: account?.contacts || [],
+            name: account?.name || '',
         });
         createAlert('success', translation.PROPOSAL_CREATED, [], 7500);
         updateGovernanceTab();

@@ -11,7 +11,6 @@ import {
     confirmPopup,
     writeToUint8,
     pubPrebaseLen,
-    createQR,
     createAlert,
     sleep,
     getSafeRand,
@@ -35,6 +34,7 @@ import TransportWebUSB from '@ledgerhq/hw-transport-webusb';
 import createXpub from 'create-xpub';
 import * as jdenticon from 'jdenticon';
 import { Database } from './database.js';
+import { cReceiveType, guiRenderReceiveModal } from './contacts-book.js';
 
 export let fWalletLoaded = false;
 
@@ -67,7 +67,7 @@ class MasterKey {
 
     /**
      * @param {String} [path] - BIP32 path pointing to the private key.
-     * @return {String} encoded private key
+     * @return {Promise<String>} encoded private key
      * @abstract
      */
     async getPrivateKey(path) {
@@ -77,7 +77,7 @@ class MasterKey {
 
     /**
      * @param {String} [path] - BIP32 path pointing to the address
-     * @return {String} Address
+     * @return {Promise<String>} Address
      * @abstract
      */
     async getAddress(path) {
@@ -188,6 +188,17 @@ class MasterKey {
         );
         const address = await this.getAddress(path);
         return [address, path];
+    }
+
+    /**
+     * Derive the current address (by internal index)
+     * @return {Promise<String>} Address
+     * @abstract
+     */
+    async getCurrentAddress() {
+        return await this.getAddress(
+            getDerivationPath(this.isHardwareWallet, 0, 0, this.#addressIndex)
+        );
     }
 }
 
@@ -964,16 +975,9 @@ export async function getNewAddress({
         }
     }
 
+    // If we're generating a new address manually, then render the new address in our Receive Modal
     if (updateGUI) {
-        createQR('pivx:' + address, doms.domModalQR);
-        doms.domModalQrLabel.innerHTML =
-            'pivx:' +
-            address +
-            `<i onclick="MPW.toClipboard('${address}', this)" id="guiAddressCopy" class="fas fa-clipboard" style="cursor: pointer; width: 20px;"></i>`;
-        doms.domModalQR.firstChild.style.width = '100%';
-        doms.domModalQR.firstChild.style.height = 'auto';
-        doms.domModalQR.firstChild.classList.add('no-antialias');
-        document.getElementById('clipboard').value = address;
+        guiRenderReceiveModal(cReceiveType);
     }
 
     return [address, path];

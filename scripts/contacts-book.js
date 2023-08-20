@@ -3,9 +3,11 @@ import { doms } from './global';
 import {
     confirmPopup,
     createAlert,
+    createQR,
     isStandardAddress,
     sanitizeHTML,
 } from './misc';
+import { getDerivationPath, masterKey } from './wallet';
 
 /**
  * Represents an Account contact
@@ -64,7 +66,9 @@ export async function addContact(account, contact) {
     await cDB.addAccount({
         publicKey: account.publicKey,
         encWif: account.encWif,
+        localProposals: account?.localProposals || [],
         contacts: arrContacts,
+        name: account?.name || '',
     });
 }
 
@@ -110,7 +114,9 @@ export async function removeContact(account, pubkey) {
         await cDB.addAccount({
             publicKey: account.publicKey,
             encWif: account.encWif,
-            contacts: arrContacts,
+            localProposals: account?.localProposals || [],
+            contacts: account?.contacts || [],
+            name: account?.name || '',
         });
     }
 }
@@ -286,6 +292,9 @@ export async function promptForContact() {
 export async function guiSelectContact(domInput) {
     // Fill the 'Input box' with a user-chosen Contact
     domInput.value = (await promptForContact()) || '';
+
+    // Run the validity checker for double-safety
+    await guiCheckRecipientInput({ target: domInput });
 }
 
 /**
@@ -295,6 +304,174 @@ export async function guiRenderContacts() {
     const cDB = await Database.getInstance();
     const cAccount = await cDB.getAccount();
     return renderContacts(cAccount);
+}
+
+/**
+ * Set the current Account's Contact name
+ * @param {{publicKey: String, encWif: String?, localProposals: Array<any>, contacts: Array<Contact>, name: String?}} account - The account to add the new Name to
+ * @param {String} name - The name to set
+ */
+export async function setAccountContactName(account, name) {
+    const cDB = await Database.getInstance();
+
+    // Save name to the DB
+    await cDB.addAccount({
+        publicKey: account.publicKey,
+        encWif: account.encWif,
+        localProposals: account?.localProposals || [],
+        contacts: account?.contacts || [],
+        name: name,
+    });
+}
+
+/**
+ * Render the Receive Modal with either our Contact or Address
+ * @param {boolean} fContact - `true` to render our Contact, `false` to render our current Address
+ */
+export async function guiRenderReceiveModal(
+    cReceiveType = RECEIVE_TYPES.CONTACT
+) {
+    if (cReceiveType === RECEIVE_TYPES.CONTACT) {
+        // Fetch Contact info from the current Account
+        const cDB = await Database.getInstance();
+        const cAccount = await cDB.getAccount();
+
+        // Check that a local Contact name was set
+        if (cAccount.name) {
+            // Derive our Public Key
+            let strPubkey = '';
+
+            // If HD: use xpub, otherwise we'll fallback to our single address
+            if (masterKey.isHD) {
+                // Get our current wallet XPub
+                const derivationPath = getDerivationPath(
+                    masterKey.isHardwareWallet
+                )
+                    .split('/')
+                    .slice(0, 4)
+                    .join('/');
+                strPubkey = await masterKey.getxpub(derivationPath);
+            } else {
+                strPubkey = await masterKey.getCurrentAddress();
+            }
+
+            // Render Copy Button
+            doms.domModalQrLabel.innerHTML = `Share Contact URL<i onclick="MPW.toClipboard('${
+                cAccount.name + ':' + strPubkey
+            }', this)" id="guiAddressCopy" class="fas fa-clipboard" style="cursor: pointer; width: 20px;"></i>`;
+
+            // We'll render a short informational text, alongside a QR below for Contact scanning
+            doms.domModalQR.innerHTML = `
+                <p><b>Only</b> share your Contact with trusted people (family, friends)</p>
+                <div id="receiveModalEmbeddedQR"></div>
+            `;
+            const domQR = document.getElementById('receiveModalEmbeddedQR');
+            createQR(cAccount.name + ':' + strPubkey, domQR, 10);
+            domQR.firstChild.style.width = '100%';
+            domQR.firstChild.style.height = 'auto';
+            domQR.firstChild.classList.add('no-antialias');
+            document.getElementById('clipboard').value = strPubkey;
+        } else {
+            // Get our current wallet address
+            const strAddress = await masterKey.getCurrentAddress();
+
+            // Update the QR Label (we'll show the address here for now, user can set Contact "Name" optionally later)
+            doms.domModalQrLabel.innerHTML =
+                strAddress +
+                `<i onclick="MPW.toClipboard('${strAddress}', this)" id="guiAddressCopy" class="fas fa-clipboard" style="cursor: pointer; width: 20px;"></i>`;
+
+            // Update the QR section
+            doms.domModalQR.innerHTML = `
+                <center>
+                    <b>Setup your Contact</b>
+                    <p>Receive using a simple username-based Contact</p>
+                    <input id="setContactName" placeholder="Username" style="text-align: center;"></input><button onclick="MPW.guiSetAccountName('setContactName')">Create Contact</button>
+                </center>
+            `;
+        }
+    } else if (cReceiveType === RECEIVE_TYPES.ADDRESS) {
+        // Get our current wallet address
+        const strAddress = await masterKey.getCurrentAddress();
+        createQR('pivx:' + strAddress, doms.domModalQR);
+        doms.domModalQrLabel.innerHTML =
+            strAddress +
+            `<i onclick="MPW.toClipboard('${strAddress}', this)" id="guiAddressCopy" class="fas fa-clipboard" style="cursor: pointer; width: 20px;"></i>`;
+        doms.domModalQR.firstChild.style.width = '100%';
+        doms.domModalQR.firstChild.style.height = 'auto';
+        doms.domModalQR.firstChild.classList.add('no-antialias');
+        document.getElementById('clipboard').value = strAddress;
+    } else {
+        // Get our current wallet XPub
+        const derivationPath = getDerivationPath(masterKey.isHardwareWallet)
+            .split('/')
+            .slice(0, 4)
+            .join('/');
+        const strXPub = await masterKey.getxpub(derivationPath);
+
+        // Update the QR Label (we'll show the address here for now, user can set Contact "Name" optionally later)
+        doms.domModalQrLabel.innerHTML =
+            strXPub +
+            `<i onclick="MPW.toClipboard('${strXPub}', this)" id="guiAddressCopy" class="fas fa-clipboard" style="cursor: pointer; width: 20px;"></i>`;
+
+        // We'll render a short informational text, alongside a QR below for Contact scanning
+        doms.domModalQR.innerHTML = `
+            <p><b>Only</b> share your XPub with trusted people (family, friends)</p>
+            <div id="receiveModalEmbeddedQR"></div>
+        `;
+
+        // Update the QR section
+        const domQR = document.getElementById('receiveModalEmbeddedQR');
+        createQR(strXPub, domQR, 10);
+        domQR.firstChild.style.width = '100%';
+        domQR.firstChild.style.height = 'auto';
+        domQR.firstChild.classList.add('no-antialias');
+        document.getElementById('clipboard').value = strXPub;
+    }
+}
+
+/**
+ * An enum of Receive Types (i.e: receive by Contact, Address, XPub)
+ */
+export const RECEIVE_TYPES = {
+    CONTACT: 0,
+    ADDRESS: 1,
+    XPUB: 2,
+};
+
+/** The current Receive Type used by Receive UIs */
+export let cReceiveType = RECEIVE_TYPES.CONTACT;
+
+/**
+ * Cycles through the Receive Types with each run
+ */
+export async function guiToggleReceiveType() {
+    // Figure out which Types can be used with this wallet
+    const nTypeMax = masterKey.isHD ? 3 : 2;
+
+    // Loop back to the first if we hit the end
+    cReceiveType = (cReceiveType + 1) % nTypeMax;
+
+    // Convert the *next* Type to text (also runs through i18n system)
+    const nNextType = (cReceiveType + 1) % nTypeMax;
+    let strNextType = '';
+    switch (nNextType) {
+        case RECEIVE_TYPES.CONTACT:
+            strNextType = 'Contact';
+            break;
+        case RECEIVE_TYPES.ADDRESS:
+            strNextType = 'Address';
+            break;
+        case RECEIVE_TYPES.XPUB:
+            strNextType = 'XPub';
+            break;
+    }
+
+    // Render the new UI
+    doms.domModalQrReceiveTypeBtn.innerText = 'Change to ' + strNextType;
+    guiRenderReceiveModal(cReceiveType);
+
+    // Return the new Receive Type index
+    return cReceiveType;
 }
 
 /** A GUI wrapper that adds a contact to the current Account's contacts list */
@@ -343,4 +520,57 @@ export async function guiRemoveContact(index) {
 
     // Render the new list
     return renderContacts(cAccount);
+}
+
+/** A GUI wrapper that sets the name of the current Account */
+export async function guiSetAccountName(strDOM) {
+    const domInput = document.getElementById(strDOM);
+
+    // Fetch the current Account
+    const cDB = await Database.getInstance();
+    const cAccount = await cDB.getAccount();
+
+    // Set the account's name
+    await setAccountContactName(cAccount, domInput.value.trim());
+
+    // Render the new Receive Modal
+    await guiRenderReceiveModal();
+}
+
+/**
+ * Checks the input from the recipient field
+ *
+ * This function should be connected to an `input` as it's `onchange` function
+ * @param {InputEvent} event - The change event from the input
+ */
+export async function guiCheckRecipientInput(event) {
+    const strInput = event.target.value.trim();
+
+    // If the value is empty, we don't do any checks and simply reset the colourcoding
+    if (!strInput) {
+        return (event.target.style.color = '');
+    }
+
+    // Fetch the current Account
+    const cDB = await Database.getInstance();
+    const cAccount = await cDB.getAccount();
+
+    // Check if this is a Contact
+    const cContact = getContactBy(cAccount, {
+        name: strInput,
+        pubkey: strInput,
+    });
+    if (cContact) {
+        // Yep, nice!
+        return (event.target.style.color = 'green');
+    }
+
+    // Not a contact: dig deeper, is this a Standard address or XPub?
+    if (isStandardAddress(strInput) || strInput.startsWith('xpub')) {
+        // Yep!
+        return (event.target.style.color = 'green');
+    } else {
+        // We give up: this appears to be nonsense
+        return (event.target.style.color = '#b20000');
+    }
 }

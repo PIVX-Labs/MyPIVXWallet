@@ -87,15 +87,23 @@ export class Database {
      * @param {String} o.encWif - Encrypted private key associated to the account
      * @param {Array<any>} o.localProposals - Local proposals awaiting to be finalized
      * @param {Array<Contact>} o.contacts - Contacts for the account's contact book
+     * @param {String} o.name - The local Contact name for the account
      */
     async addAccount({
         publicKey,
         encWif,
         localProposals = [],
         contacts = [],
+        name = '',
     }) {
         const oldAccount = await this.getAccount();
-        const newAccount = { publicKey, encWif, localProposals, contacts };
+        const newAccount = {
+            publicKey,
+            encWif,
+            localProposals,
+            contacts,
+            name,
+        };
         const store = this.#db
             .transaction('accounts', 'readwrite')
             .objectStore('accounts');
@@ -118,7 +126,7 @@ export class Database {
 
     /**
      * Gets an account from the database
-     * @returns {Promise<{publicKey: String, encWif: String?, localProposals: Array<any>, contacts: Array<Contact>}?>}
+     * @returns {Promise<{publicKey: String, encWif: String?, localProposals: Array<any>, contacts: Array<Contact>, name: String?}?>}
      */
     async getAccount() {
         const store = this.#db
