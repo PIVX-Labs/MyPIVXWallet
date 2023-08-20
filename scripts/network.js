@@ -13,6 +13,35 @@ import {
 import { ALERTS } from './i18n.js';
 
 /**
+ * @typedef {Object} XPUBAddress
+ * @property {string} type - Type of address (always 'XPUBAddress' for XPUBInfo classes)
+ * @property {string} name - PIVX address string
+ * @property {string} path - BIP44 path of the address derivation
+ * @property {number} transfers - Number of transfers involving the address
+ * @property {number} decimals - Decimal places in the amounts (PIVX has 8 decimals)
+ * @property {string} balance - Current balance of the address (satoshi)
+ * @property {string} totalReceived - Total ever received by the address (satoshi)
+ * @property {string} totalSent - Total ever sent from the address (satoshi)
+ */
+
+/**
+ * @typedef {Object} XPUBInfo
+ * @property {number} page - Current response page in a paginated data
+ * @property {number} totalPages - Total pages in the paginated data
+ * @property {number} itemsOnPage - Number of items on the current page
+ * @property {string} address - XPUB string of the address
+ * @property {string} balance - Current balance of the xpub (satoshi)
+ * @property {string} totalReceived - Total ever received by the xpub (satoshi)
+ * @property {string} totalSent - Total ever sent from the xpub (satoshi)
+ * @property {string} unconfirmedBalance - Unconfirmed balance of the xpub (satoshi)
+ * @property {number} unconfirmedTxs - Number of unconfirmed transactions of the xpub
+ * @property {number} txs - Total number of transactions of the xpub
+ * @property {string[]?} txids - Transaction ids involving the xpub
+ * @property {number?} usedTokens - Number of used token addresses from the xpub
+ * @property {XPUBAddress[]?} tokens - Array of used token addresses
+ */
+
+/**
  * A historical transaction type.
  * @enum {number}
  */
@@ -299,6 +328,17 @@ export class ExplorerNetwork extends Network {
             isDelegate: isColdStake,
             isReward,
         });
+    }
+
+    /**
+     * Fetch an XPub's basic information
+     * @param {string} strXPUB - The xpub to fetch info for
+     * @returns {Promise<XPUBInfo>} - A JSON class of aggregated XPUB info
+     */
+    async getXPubInfo(strXPUB) {
+        return await (
+            await retryWrapper(fetchBlockbook, `/api/v2/xpub/${strXPUB}`)
+        ).json();
     }
 
     async sendTransaction(hex) {

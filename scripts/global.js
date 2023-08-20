@@ -256,6 +256,7 @@ export async function start() {
             'redeemCodeCreatePendingList'
         ),
         domPromoTable: document.getElementById('promo-table'),
+        domContactsTable: document.getElementById('contactsList'),
         domActivityList: document.getElementById('activity-list-content'),
         domActivityLoadMore: document.getElementById('activityLoadMore'),
         domActivityLoadMoreIcon: document.getElementById(
@@ -2710,7 +2711,12 @@ export async function createProposal() {
         const account = await database.getAccount();
         const localProposals = account?.localProposals || [];
         localProposals.push(proposal);
-        await database.addAccount({ localProposals });
+        await database.addAccount({
+            publicKey: account.publicKey,
+            encWif: account.encWif,
+            localProposals,
+            contacts: account.contacts,
+        });
         createAlert('success', translation.PROPOSAL_CREATED, [], 7500);
         updateGovernanceTab();
     }

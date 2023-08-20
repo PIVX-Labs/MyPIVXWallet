@@ -375,13 +375,20 @@ export function getDerivationPath(
     fLedger = false,
     nAccount = 0,
     nReceiving = 0,
-    nIndex = 0
+    nIndex = 0,
+    /**
+     * When `true` will derive based on local wallet properties, when `false` it
+     * will default to only accept given params and ignore the local configuration
+     * @type {boolean}
+     */
+    fLocalWallet = true
 ) {
-    // Coin-Type is different on Ledger, as such, we modify it if we're using a Ledger to derive a key
-    const strCoinType = fLedger
-        ? cChainParams.current.BIP44_TYPE_LEDGER
-        : cChainParams.current.BIP44_TYPE;
-    if (masterKey && !masterKey.isHD && !fLedger) {
+    // Coin-Type is different on Ledger, as such, for local wallets; we modify it if we're using a Ledger to derive a key
+    const strCoinType =
+        fLocalWallet && fLedger
+            ? cChainParams.current.BIP44_TYPE_LEDGER
+            : cChainParams.current.BIP44_TYPE;
+    if (fLocalWallet && masterKey && !masterKey.isHD && !fLedger) {
         return `:)//${strCoinType}'`;
     }
     return `m/44'/${strCoinType}'/${nAccount}'/${nReceiving}/${nIndex}`;

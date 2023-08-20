@@ -224,6 +224,18 @@ export function createQR(strData = '', domImg, size = 4) {
 }
 
 /**
+ * A quick check to see if an address is a Standard (P2PKH) address
+ * @param {string} strAddress - The address to check
+ * @returns {boolean} - `true` if a Standard address, `false` if not
+ */
+export function isStandardAddress(strAddress) {
+    return (
+        strAddress.length === 34 &&
+        cChainParams.current.PUBKEY_PREFIX.includes(strAddress[0])
+    );
+}
+
+/**
  * Attempt to safely parse a BIP21 Payment Request
  * @param {string} strReq - BIP21 Payment Request string
  * @returns {object | false}
@@ -241,8 +253,7 @@ export function parseBIP21Request(strReq) {
     // Ensure the address is valid
     if (
         // Standard address
-        (strAddress.length !== 34 ||
-            !cChainParams.current.PUBKEY_PREFIX.includes(strAddress[0])) &&
+        !isStandardAddress(strAddress) &&
         // Shield address
         !isValidBech32(strAddress).valid
     ) {

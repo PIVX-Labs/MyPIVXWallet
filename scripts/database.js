@@ -5,6 +5,7 @@ import { cChainParams } from './chain_params.js';
 import { confirmPopup, sanitizeHTML, createAlert } from './misc.js';
 import { PromoWallet } from './promos.js';
 import { ALERTS, translation } from './i18n.js';
+import { Contact } from './contacts-book.js';
 
 /** The current version of the DB - increasing this will prompt the Upgrade process for clients with an older version */
 export const DB_VERSION = 2;
@@ -85,10 +86,16 @@ export class Database {
      * @param {String} o.publicKey - Public key associated to the account. Can be an xpub
      * @param {String} o.encWif - Encrypted private key associated to the account
      * @param {Array<any>} o.localProposals - Local proposals awaiting to be finalized
+     * @param {Array<Contact>} o.contacts - Contacts for the account's contact book
      */
-    async addAccount({ publicKey, encWif, localProposals = [] }) {
+    async addAccount({
+        publicKey,
+        encWif,
+        localProposals = [],
+        contacts = [],
+    }) {
         const oldAccount = await this.getAccount();
-        const newAccount = { publicKey, encWif, localProposals };
+        const newAccount = { publicKey, encWif, localProposals, contacts };
         const store = this.#db
             .transaction('accounts', 'readwrite')
             .objectStore('accounts');
@@ -111,7 +118,7 @@ export class Database {
 
     /**
      * Gets an account from the database
-     * @returns {Promise<{publicKey: String, encWif: String?, localProposals: Array<any>}?>}
+     * @returns {Promise<{publicKey: String, encWif: String?, localProposals: Array<any>, contacts: Array<Contact>}?>}
      */
     async getAccount() {
         const store = this.#db

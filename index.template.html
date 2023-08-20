@@ -418,6 +418,45 @@
                   </div>
                   <!-- // Redeem Code (PIVX Promos) -->
 
+                  <!-- Contacts Modal -->
+                  <div class="modal" id="contactsModal" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+                    <div class="modal-dialog modal-dialog-centered max-w-600" role="document">
+                      <div class="modal-content">
+                        <div class="modal-header" id="contactsModalHeader">
+                          <h3 class="modal-title" id="contactsModalTitle" style="text-align: center; width: 100%; color: #8e21ff;">Contacts Book</h3>
+                        </div>
+                        <div class="modal-body center-text">
+                          <center>
+                            <br>
+                            <br>
+                            <div>
+                              <div class="table-promo" style="max-height: fit-content;" id="contacts-table">
+                                <br>
+                                <table class="table table-hover">
+                                  <thead>
+                                    <tr>
+                                      <td class="text-center"><b> Contact </b></td>
+                                      <td class="text-center"><b> Public Key </b></td>
+                                      <td class="text-center"><b> Manage </b></td>
+                                    </tr>
+                                  </thead>
+                                  <tbody id="contactsList" style="text-align: center; vertical-align: middle;">
+
+                                  </tbody>
+                                </table>
+                              </div>
+                            </div>
+                            <br>
+                          </center>
+                        </div>
+                        <div class="modal-footer" hidden="true">
+                          <button type="button" data-dismiss="modal" aria-label="Close" class="pivx-button-big" style="float: right; opacity: 0.7;">Close</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- // Contacts Modal -->
+
                   <!-- WALLET FEATURES -->
                   <div id="guiWallet" style="display: none;">
                     <div class="row p-0">
@@ -444,6 +483,9 @@
                                         </a>
                                         <a class="dropdown-item ptr" onclick="MPW.openExplorer()">
                                           <i class="fa-solid fa-magnifying-glass"></i> <span data-i18n="viewOnExplorer">View on Explorer</span>
+                                        </a>
+                                        <a class="dropdown-item ptr" onclick="MPW.guiRenderContacts()" data-toggle="modal" data-target="#contactsModal">
+                                          <i class="fa-solid fa-address-book"></i> <span data-i18n="contactsBook">Contacts Book</span>
                                         </a>
                                         <a id="guiExportWalletItem" class="dropdown-item ptr" data-toggle="modal" data-target="#exportPrivateKeysModal" data-backdrop="static" data-keyboard="false" onclick="MPW.toggleExportUI()">
                                           <i class="fas fa-key"></i> <span data-i18n="export">Export</span>
@@ -550,6 +592,7 @@
                           <input class="btn-group-input" data-i18n="receivingAddress" style="font-family: monospace;" type="text" id="address1s" placeholder="Receiving address" autocomplete="nope" />
                           <div class="input-group-append">
                             <span class="input-group-text ptr" onclick="MPW.openSendQRScanner()"><i class="fa-solid fa-qrcode fa-2xl"></i></span>
+                            <span class="input-group-text ptr" onclick="MPW.guiSelectContact(MPW.doms.domAddress1s)"><i class="fa-solid fa-address-book fa-2xl"></i></span>
                           </div>
                         </div>
 
