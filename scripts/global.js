@@ -47,6 +47,7 @@ import { Database } from './database.js';
 import bitjs from './bitTrx.js';
 import { checkForUpgrades } from './changelog.js';
 import { FlipDown } from './flipdown.js';
+import { guiAddContactPrompt } from './contacts-book.js';
 
 /** A flag showing if base MPW is fully loaded or not */
 export let fIsLoaded = false;
@@ -425,8 +426,19 @@ export async function start() {
         if (publicKey) {
             await importWallet({ newWif: publicKey, fStartup: true });
 
-            // Payment processor popup
-            if (reqTo.length || reqAmount > 0) {
+            // Check for Add Contact calls
+            if (urlParams.has('addcontact')) {
+                // Quick sanity check
+                const strURI = urlParams.get('addcontact');
+                if (strURI.includes(':')) {
+                    // Split to 'name' and 'pubkey'
+                    const arrParts = strURI.split(':');
+
+                    // Prompt the user to add the Contact
+                    guiAddContactPrompt(sanitizeHTML(arrParts[0]), arrParts[1]);
+                }
+            } else if (reqTo.length || reqAmount > 0) {
+                // Payment processor popup
                 guiPreparePayment(
                     reqTo,
                     reqAmount,

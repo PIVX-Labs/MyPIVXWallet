@@ -355,10 +355,15 @@ export async function guiRenderReceiveModal(
                 strPubkey = await masterKey.getCurrentAddress();
             }
 
-            // Render Copy Button
-            doms.domModalQrLabel.innerHTML = `Share Contact URL<i onclick="MPW.toClipboard('${
+            // Construct the Contact URI
+            const strURL = window.location.origin + window.location.pathname;
+            const strEncodedURI = encodeURIComponent(
                 cAccount.name + ':' + strPubkey
-            }', this)" id="guiAddressCopy" class="fas fa-clipboard" style="cursor: pointer; width: 20px;"></i>`;
+            );
+            const strContactURI = `${strURL}?addcontact=${strEncodedURI}`;
+
+            // Render Copy Button
+            doms.domModalQrLabel.innerHTML = `Share Contact URL<i onclick="MPW.toClipboard('${strContactURI}', this)" id="guiAddressCopy" class="fas fa-clipboard" style="cursor: pointer; width: 20px;"></i>`;
 
             // We'll render a short informational text, alongside a QR below for Contact scanning
             doms.domModalQR.innerHTML = `
@@ -366,7 +371,7 @@ export async function guiRenderReceiveModal(
                 <div id="receiveModalEmbeddedQR"></div>
             `;
             const domQR = document.getElementById('receiveModalEmbeddedQR');
-            createQR(cAccount.name + ':' + strPubkey, domQR, 10);
+            createQR(strContactURI, domQR, 10);
             domQR.firstChild.style.width = '100%';
             domQR.firstChild.style.height = 'auto';
             domQR.firstChild.classList.add('no-antialias');
@@ -507,6 +512,110 @@ export async function guiAddContact() {
 
     // Render the new list
     return renderContacts(cAccount);
+}
+
+/**
+ * Prompt the user to add a new Contact, safely checking for duplicates
+ * @param {String} strName - The Name of the Contact
+ * @param {String} strPubkey - The Public Key of the Contact
+ * @returns {Promise<boolean>} - `true` if accepted, `false` if rejected by the user
+ */
+export async function guiAddContactPrompt(strName, strPubkey) {
+    // Verify the name
+    if (strName.length < 1)
+        return createAlert(
+            'warning',
+            "That contact didn't set a name!",
+            [],
+            2500
+        );
+    if (strName.length > 64)
+        return createAlert(
+            'warning',
+            'That contact name is too long!',
+            [],
+            2500
+        );
+
+    // Verify the address
+    if (!isStandardAddress(strPubkey) && !strPubkey.startsWith('xpub'))
+        return createAlert(
+            'warning',
+            'Contact has an invalid or unsupported address!',
+            [],
+            4000
+        );
+
+    const cDB = await Database.getInstance();
+    const cAccount = await cDB.getAccount();
+
+    // Check this Contact isn't already saved, either fully or partially
+    const cContactByName = getContactBy(cAccount, { name: strName });
+    const cContactByPubkey = getContactBy(cAccount, { pubkey: strPubkey });
+
+    // If both Name and Key are saved, then they just tried re-adding the same Contact twice
+    if (cContactByName && cContactByPubkey)
+        return createAlert(
+            'warning',
+            '<b>Contact already exists!</b><br>You already saved this contact',
+            [],
+            3000
+        );
+
+    // If the Name is saved, but not key, then this *could* be a kind of Username-based phishing attempt
+    if (cContactByName && !cContactByPubkey)
+        return createAlert(
+            'warning',
+            '<b>Contact name already exists!</b><br>This could potentially be a phishing attempt, beware!',
+            [],
+            4000
+        );
+
+    // If the Key is saved, but not the name: perhaps the Contact changed their name?
+    if (!cContactByName && cContactByPubkey)
+        return createAlert(
+            'warning',
+            `<b>Contact already exists, but under a different name!</b><br>You have ${strName} saved as <b>${cContactByPubkey.label}!</b> in your contacts`,
+            [],
+            5000
+        );
+
+    // Render an 'Add to Contacts' UI
+    const strHTML = `
+        <p>
+            Once added you'll be able to send transactions to ${strName} by their name (either typing, or clicking), no more addresses, nice 'n easy.
+            <br>
+            <br>
+            <i style="opacity: 0.75">Ensure that this is the real '${strName}', do not accept Contact requests from unknown sources!</i>
+        </p>
+    `;
+
+    // Hook the Contact Prompt to the Popup UI, which resolves when the user has interacted with the Contact Prompt
+    const fAdd = await confirmPopup({
+        title: `Add ${strName} to Contacts`,
+        html: strHTML,
+    });
+
+    // If accepted, then we add to contacts!
+    if (fAdd) {
+        // Add the Contact to the current account
+        await addContact(cAccount, {
+            label: strName,
+            pubkey: strPubkey,
+            date: Date.now(),
+        });
+
+        // Notify
+        createAlert(
+            'success',
+            `<b>New Contact added!</b><br>${strName} has been added, hurray!`,
+            [],
+            3000
+        );
+    }
+
+    // Return if the user accepted or declined
+    return fAdd;
 }
 
 /** A GUI wrapper that removes a contact from the current Account's contacts list */
