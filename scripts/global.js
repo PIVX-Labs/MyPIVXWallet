@@ -744,12 +744,13 @@ export async function openSendQRScanner() {
     }
 
     // MPW Contact Request URI
-    if (cScan.data.includes('addcontact=') && cScan.data.includes(':')) {
-        // We'll split away the `addcontact`, then we *should* be left with a valid Contact URI
-        const strURI = cScan.data.split('addcontact=')[1];
+    if (cScan.data.includes('addcontact=')) {
+        // Parse as URL Params
+        const urlParams = new URLSearchParams(cScan.data);
+        const strURI = urlParams.get('addcontact');
 
         // Sanity check the URI
-        if (strURI.includes(':')) {
+        if (strURI?.includes(':')) {
             // Split to 'name' and 'pubkey'
             const arrParts = strURI.split(':');
 
