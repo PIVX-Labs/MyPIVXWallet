@@ -138,7 +138,9 @@ export async function renderContacts(account, fPrompt = false) {
         for (const cContact of account.contacts || []) {
             strHTML += `
                 <tr>
-                    <td id="contactsName${i}">${sanitizeHTML(
+                    <td onclick="MPW.guiEditContactNamePrompt('${
+                        cContact.label
+                    }')" class="ptr" id="contactsName${i}">${sanitizeHTML(
                 cContact.label
             )}</td>
                     <td style="word-wrap: anywhere;" id="contactsAddress${i}">${sanitizeHTML(
@@ -557,19 +559,9 @@ export async function guiAddContactPrompt(
 ) {
     // Verify the name
     if (strName.length < 1)
-        return createAlert(
-            'warning',
-            "That contact didn't set a name!",
-            [],
-            2500
-        );
+        return createAlert('warning', 'A name is required!', [], 2500);
     if (strName.length > 64)
-        return createAlert(
-            'warning',
-            'That contact name is too long!',
-            [],
-            2500
-        );
+        return createAlert('warning', 'That name is too long!', [], 2500);
 
     // Verify the address
     if (!isStandardAddress(strPubkey) && !strPubkey.startsWith('xpub'))
@@ -616,9 +608,9 @@ export async function guiAddContactPrompt(
         if (fDuplicateNotif)
             createAlert(
                 'warning',
-                `<b>Contact already exists, but under a different name!</b><br>You have ${strName} saved as <b>${cContactByPubkey.label}!</b> in your contacts`,
+                `<b>Contact already exists, but under a different name!</b><br>You have ${strName} saved as <b>${cContactByPubkey.label}</b> in your contacts`,
                 [],
-                5000
+                7500
             );
         return true;
     }
@@ -659,6 +651,73 @@ export async function guiAddContactPrompt(
 
     // Return if the user accepted or declined
     return fAdd;
+}
+
+/**
+ * Prompt the user to edit a contact by it's original name
+ *
+ * The new name will be taken from the internal prompt input
+ * @param {String} strName - The name to edit
+ * @returns {Promise<boolean>} - `true` if contact was edited, `false` if not
+ */
+export async function guiEditContactNamePrompt(strName) {
+    // Render an 'Add to Contacts' UI
+    const strHTML = `
+        <input type="text" id="contactsNewNameInput" style="text-align: center;" placeholder="New Name">
+    `;
+
+    // Hook the Contact Prompt to the Popup UI, which resolves when the user has interacted with the Contact Prompt
+    const fContinue = await confirmPopup({
+        title: `Change '${strName}' Contact`,
+        html: strHTML,
+    });
+    if (!fContinue) return false;
+
+    // Verify the name
+    const strNewName = document.getElementById('contactsNewNameInput').value;
+    if (strNewName.length < 1) {
+        createAlert('warning', 'You need to set a name!', [], 2500);
+        return false;
+    }
+    if (strNewName.length > 64) {
+        createAlert('warning', 'That name is too long!', [], 2500);
+        return false;
+    }
+
+    // Check this new Name isn't already saved
+    const cDB = await Database.getInstance();
+    const cAccount = await cDB.getAccount();
+    const cContactByNewName = getContactBy(cAccount, { name: strNewName });
+    if (cContactByNewName) {
+        createAlert(
+            'warning',
+            '<b>Contact already exists!</b><br>A contact is already called "' +
+                strNewName +
+                '"!',
+            [],
+            4500
+        );
+        return false;
+    }
+
+    // Fetch the original contact, edit it (since it's a pointer to the Account's Contacts)
+    const cContactByName = getContactBy(cAccount, { name: strName });
+    cContactByName.label = strNewName;
+
+    // Commit to DB
+    await cDB.addAccount({
+        publicKey: cAccount.publicKey,
+        encWif: cAccount.encWif,
+        localProposals: cAccount?.localProposals || [],
+        contacts: cAccount?.contacts || [],
+        name: cAccount?.name,
+    });
+
+    // Re-render the Contacts UI
+    await renderContacts(cAccount);
+
+    // Return if the user accepted or declined
+    return true;
 }
 
 /**
