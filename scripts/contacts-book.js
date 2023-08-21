@@ -691,7 +691,7 @@ export async function guiAddContactQRPrompt() {
 
             // Re-render the list
             await guiRenderContacts();
-            
+
             // Return the status
             return fAdded;
         }
