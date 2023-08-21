@@ -753,12 +753,14 @@ export async function openSendQRScanner() {
             // Split to 'name' and 'pubkey'
             const arrParts = strURI.split(':');
 
-            // Prompt the user to (optionally) add the Contact, before the Tx
-            const fUseName = await guiAddContactPrompt(
-                sanitizeHTML(arrParts[0]),
-                arrParts[1],
-                false
-            );
+            // If the wallet is encrypted, prompt the user to (optionally) add the Contact, before the Tx
+            const fUseName = (await hasEncryptedWallet())
+                ? await guiAddContactPrompt(
+                      sanitizeHTML(arrParts[0]),
+                      arrParts[1],
+                      false
+                  )
+                : false;
 
             // Prompt for payment
             return guiPreparePayment(fUseName ? arrParts[0] : arrParts[1]);
