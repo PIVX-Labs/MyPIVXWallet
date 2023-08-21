@@ -8,6 +8,7 @@ import {
     isStandardAddress,
     sanitizeHTML,
 } from './misc';
+import { scanQRCode } from './scanner';
 import { getDerivationPath, hasEncryptedWallet, masterKey } from './wallet';
 
 /**
@@ -156,8 +157,9 @@ export async function renderContacts(account, fPrompt = false) {
             <tr>
                 <td><input id="contactsNameInput" placeholder="Name"></td>
                 <td><input id="contactsAddressInput" placeholder="Address or XPub"></td>
-                <td>
+                <td style="display: flex;align-items: center;">
                     <button onclick="MPW.guiAddContact()" class="btn btn-primary">Add</button>
+                    <i onclick="MPW.guiAddContactQRPrompt()" style="margin-left: 5px;" class="fa-solid fa-qrcode fa-2xl ptr"></i>
                 </td>
             </tr>
         `;
@@ -647,6 +649,40 @@ export async function guiAddContactPrompt(
 
     // Return if the user accepted or declined
     return fAdd;
+}
+
+/**
+ * A GUI wrapper to open a QR Scanner prompt for Contact imports
+ * @returns {boolean} - `true` if contact was added, `false` if not
+ */
+export async function guiAddContactQRPrompt() {
+    const cScan = await scanQRCode();
+
+    // Empty (i.e: rejected or no camera) can just silently exit
+    if (!cScan) return false;
+
+    // MPW Contact Request URI
+    if (cScan?.data?.includes('addcontact=')) {
+        // Parse as URL Params
+        const cURL = new URL(cScan.data);
+        const urlParams = new URLSearchParams(cURL.search);
+        const strURI = urlParams.get('addcontact');
+
+        // Sanity check the URI
+        if (strURI?.includes(':')) {
+            // Split to 'name' and 'pubkey'
+            const arrParts = strURI.split(':');
+
+            // Prompt the user to add the Contact
+            return await guiAddContactPrompt(
+                sanitizeHTML(arrParts[0]),
+                arrParts[1]
+            );
+        }
+    } else {
+        createAlert('warning', "This isn't a Contact QR!", [], 2500);
+        return false;
+    }
 }
 
 /** A GUI wrapper that removes a contact from the current Account's contacts list */

@@ -70,6 +70,7 @@ export {
     guiSetAccountName,
     guiCheckRecipientInput,
     guiRenderCurrentReceiveModal,
+    guiAddContactQRPrompt,
 } from './contacts-book';
 export { renderWalletBreakdown } from './charting';
 export { hexToBytes, bytesToHex, dSHA256 } from './utils.js';
