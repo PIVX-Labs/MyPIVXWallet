@@ -746,7 +746,8 @@ export async function openSendQRScanner() {
     // MPW Contact Request URI
     if (cScan.data.includes('addcontact=')) {
         // Parse as URL Params
-        const urlParams = new URLSearchParams(cScan.data);
+        const cURL = new URL(cScan.data);
+        const urlParams = new URLSearchParams(cURL.search);
         const strURI = urlParams.get('addcontact');
 
         // Sanity check the URI
