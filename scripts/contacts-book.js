@@ -306,6 +306,16 @@ export async function guiSelectContact(domInput) {
 export async function guiRenderContacts() {
     const cDB = await Database.getInstance();
     const cAccount = await cDB.getAccount();
+
+    if (!cAccount || !cAccount.contacts) {
+        return createAlert(
+            'warning',
+            `You need to hit "${translation.secureYourWallet}" before you can use Contacts!`,
+            [],
+            3500
+        );
+    }
+
     return renderContacts(cAccount);
 }
 
@@ -674,10 +684,16 @@ export async function guiAddContactQRPrompt() {
             const arrParts = strURI.split(':');
 
             // Prompt the user to add the Contact
-            return await guiAddContactPrompt(
+            const fAdded = await guiAddContactPrompt(
                 sanitizeHTML(arrParts[0]),
                 arrParts[1]
             );
+
+            // Re-render the list
+            await guiRenderContacts();
+            
+            // Return the status
+            return fAdded;
         }
     } else {
         createAlert('warning', "This isn't a Contact QR!", [], 2500);
