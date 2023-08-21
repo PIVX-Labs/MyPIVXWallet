@@ -1,5 +1,6 @@
 import { Database } from './database';
 import { doms } from './global';
+import { translation } from './i18n';
 import {
     confirmPopup,
     createAlert,
@@ -7,7 +8,7 @@ import {
     isStandardAddress,
     sanitizeHTML,
 } from './misc';
-import { getDerivationPath, masterKey } from './wallet';
+import { getDerivationPath, hasEncryptedWallet, masterKey } from './wallet';
 
 /**
  * Represents an Account contact
@@ -337,7 +338,7 @@ export async function guiRenderReceiveModal(
         const cAccount = await cDB.getAccount();
 
         // Check that a local Contact name was set
-        if (cAccount.name) {
+        if (cAccount?.name) {
             // Derive our Public Key
             let strPubkey = '';
 
@@ -386,13 +387,22 @@ export async function guiRenderReceiveModal(
                 `<i onclick="MPW.toClipboard('${strAddress}', this)" id="guiAddressCopy" class="fas fa-clipboard" style="cursor: pointer; width: 20px;"></i>`;
 
             // Update the QR section
-            doms.domModalQR.innerHTML = `
-                <center>
-                    <b>Setup your Contact</b>
-                    <p>Receive using a simple username-based Contact</p>
-                    <input id="setContactName" placeholder="Username" style="text-align: center;"></input><button onclick="MPW.guiSetAccountName('setContactName')">Create Contact</button>
-                </center>
-            `;
+            if (await hasEncryptedWallet()) {
+                doms.domModalQR.innerHTML = `
+                    <center>
+                        <b>Setup your Contact</b>
+                        <p>Receive using a simple username-based Contact</p>
+                        <input id="setContactName" placeholder="Username" style="text-align: center;"></input><button onclick="MPW.guiSetAccountName('setContactName')">Create Contact</button>
+                    </center>
+                `;
+            } else {
+                doms.domModalQR.innerHTML = `
+                    <center>
+                        <b>Encrypt your wallet!</b>
+                        <p>Once you hit "${translation.secureYourWallet}" in the Dashboard, you can create a Contact to make receiving PIV easier!</p>
+                    </center>
+                `;
+            }
         }
     } else if (cReceiveType === RECEIVE_TYPES.ADDRESS) {
         // Get our current wallet address
@@ -432,6 +442,13 @@ export async function guiRenderReceiveModal(
         domQR.firstChild.classList.add('no-antialias');
         document.getElementById('clipboard').value = strXPub;
     }
+}
+
+/**
+ * A GUI wrapper to re-render the current Receive Modal configuration
+ */
+export async function guiRenderCurrentReceiveModal() {
+    return guiRenderReceiveModal(cReceiveType);
 }
 
 /**

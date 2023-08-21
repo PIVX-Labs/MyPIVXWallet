@@ -34,7 +34,7 @@ import TransportWebUSB from '@ledgerhq/hw-transport-webusb';
 import createXpub from 'create-xpub';
 import * as jdenticon from 'jdenticon';
 import { Database } from './database.js';
-import { cReceiveType, guiRenderReceiveModal } from './contacts-book.js';
+import { guiRenderCurrentReceiveModal } from './contacts-book.js';
 
 export let fWalletLoaded = false;
 
@@ -977,7 +977,7 @@ export async function getNewAddress({
 
     // If we're generating a new address manually, then render the new address in our Receive Modal
     if (updateGUI) {
-        guiRenderReceiveModal(cReceiveType);
+        guiRenderCurrentReceiveModal();
     }
 
     return [address, path];
