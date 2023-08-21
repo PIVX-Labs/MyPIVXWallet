@@ -5,6 +5,7 @@ import {
     confirmPopup,
     createAlert,
     createQR,
+    getImageFile,
     isStandardAddress,
     sanitizeHTML,
 } from './misc';
@@ -138,6 +139,13 @@ export async function renderContacts(account, fPrompt = false) {
         for (const cContact of account.contacts || []) {
             strHTML += `
                 <tr>
+                    <td>
+                        <img onclick="MPW.guiAddContactImage('${
+                            cContact.label
+                        }')" class="ptr" style="width: 50px; height: 50px; border-radius: 100%; background-color: white; outline: groove;" ${
+                cContact.icon ? 'src="' + cContact.icon + '"' : ''
+            }>
+                    </td>
                     <td onclick="MPW.guiEditContactNamePrompt('${
                         cContact.label
                     }')" class="ptr" id="contactsName${i}">${sanitizeHTML(
@@ -157,6 +165,7 @@ export async function renderContacts(account, fPrompt = false) {
         // Lastly, inject the "Add Account" UI to the table
         strHTML += `
             <tr>
+                <td></td>
                 <td><input id="contactsNameInput" placeholder="Name"></td>
                 <td><input id="contactsAddressInput" placeholder="Address or XPub"></td>
                 <td style="display: flex;align-items: center;">
@@ -172,6 +181,11 @@ export async function renderContacts(account, fPrompt = false) {
         for (const cContact of account.contacts || []) {
             strHTML += `
                 <tr>
+                    <td>
+                        <img style="width: 50px; height: 50px; border-radius: 100%; background-color: white; outline: groove;" ${
+                            cContact.icon ? 'src="' + cContact.icon + '"' : ''
+                        }>
+                    </td>
                     <td> <span id="contactsName${i}">${sanitizeHTML(
                 cContact.label
             )}</span></td>
@@ -191,6 +205,7 @@ export async function renderContacts(account, fPrompt = false) {
             <table class="table table-hover">
                 <thead>
                     <tr>
+                        <td class="text-center"><b> Avatar </b></td>
                         <td class="text-center"><b> Contact </b></td>
                         <td class="text-center"><b> Public Key </b></td>
                         <td class="text-center"><b> Manage </b></td>
@@ -717,6 +732,41 @@ export async function guiEditContactNamePrompt(strName) {
     await renderContacts(cAccount);
 
     // Return if the user accepted or declined
+    return true;
+}
+
+/**
+ * Prompt the user to add an image to a contact by it's original name
+ *
+ * The new image will be taken from the internal system prompt
+ * @param {String} strName - The contact to edit
+ * @returns {Promise<boolean>} - `true` if contact was edited, `false` if not
+ */
+export async function guiAddContactImage(strName) {
+    const cDB = await Database.getInstance();
+    const cAccount = await cDB.getAccount();
+
+    // Prompt for the image
+    const strImage = await getImageFile();
+    if (!strImage) return false;
+
+    // Fetch the original contact, edit it (since it's a pointer to the Account's Contacts)
+    const cContactByName = getContactBy(cAccount, { name: strName });
+    cContactByName.icon = strImage;
+
+    // Commit to DB
+    await cDB.addAccount({
+        publicKey: cAccount.publicKey,
+        encWif: cAccount.encWif,
+        localProposals: cAccount?.localProposals || [],
+        contacts: cAccount?.contacts || [],
+        name: cAccount?.name,
+    });
+
+    // Re-render the Contacts UI
+    await renderContacts(cAccount);
+
+    // Return that the edit was successful
     return true;
 }
 

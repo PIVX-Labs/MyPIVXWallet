@@ -224,6 +224,25 @@ export function createQR(strData = '', domImg, size = 4) {
 }
 
 /**
+ * Prompt image selection, and return base64 of an image file.
+ * @returns {Promise<string>} The base64 string of the selected image file.
+ */
+export async function getImageFile() {
+    return new Promise((resolve) => {
+        let input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        input.onchange = (e) => {
+            let file = e.target.files[0];
+            let reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result);
+            reader.readAsDataURL(file);
+        };
+        input.click();
+    });
+}
+
+/**
  * A quick check to see if an address is a Standard (P2PKH) address
  * @param {string} strAddress - The address to check
  * @returns {boolean} - `true` if a Standard address, `false` if not
