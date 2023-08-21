@@ -518,6 +518,7 @@ export async function guiAddContact() {
  * Prompt the user to add a new Contact, safely checking for duplicates
  * @param {String} strName - The Name of the Contact
  * @param {String} strPubkey - The Public Key of the Contact
+ * @param {boolean} fDuplicateNotif - Notify the user if the incoming Contact is a duplicate
  * @returns {Promise<boolean>} - `true` if contact was added, `false` if not
  */
 export async function guiAddContactPrompt(
