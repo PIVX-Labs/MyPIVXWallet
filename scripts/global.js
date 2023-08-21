@@ -743,6 +743,28 @@ export async function openSendQRScanner() {
         );
     }
 
+    // MPW Contact Request URI
+    if (cScan.data.includes('addcontact=') && cScan.data.includes(':')) {
+        // We'll split away the `addcontact`, then we *should* be left with a valid Contact URI
+        const strURI = cScan.data.split('addcontact=')[1];
+
+        // Sanity check the URI
+        if (strURI.includes(':')) {
+            // Split to 'name' and 'pubkey'
+            const arrParts = strURI.split(':');
+
+            // Prompt the user to (optionally) add the Contact, before the Tx
+            const fUseName = await guiAddContactPrompt(
+                sanitizeHTML(arrParts[0]),
+                arrParts[1],
+                false
+            );
+
+            // Prompt for payment
+            return guiPreparePayment(fUseName ? arrParts[0] : arrParts[1]);
+        }
+    }
+
     // No idea what this is...
     createAlert(
         'warning',

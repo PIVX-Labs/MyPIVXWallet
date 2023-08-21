@@ -518,9 +518,13 @@ export async function guiAddContact() {
  * Prompt the user to add a new Contact, safely checking for duplicates
  * @param {String} strName - The Name of the Contact
  * @param {String} strPubkey - The Public Key of the Contact
- * @returns {Promise<boolean>} - `true` if accepted, `false` if rejected by the user
+ * @returns {Promise<boolean>} - `true` if contact was added, `false` if not
  */
-export async function guiAddContactPrompt(strName, strPubkey) {
+export async function guiAddContactPrompt(
+    strName,
+    strPubkey,
+    fDuplicateNotif = true
+) {
     // Verify the name
     if (strName.length < 1)
         return createAlert(
@@ -554,31 +558,40 @@ export async function guiAddContactPrompt(strName, strPubkey) {
     const cContactByPubkey = getContactBy(cAccount, { pubkey: strPubkey });
 
     // If both Name and Key are saved, then they just tried re-adding the same Contact twice
-    if (cContactByName && cContactByPubkey)
-        return createAlert(
-            'warning',
-            '<b>Contact already exists!</b><br>You already saved this contact',
-            [],
-            3000
-        );
+    if (cContactByName && cContactByPubkey) {
+        if (fDuplicateNotif)
+            createAlert(
+                'warning',
+                '<b>Contact already exists!</b><br>You already saved this contact',
+                [],
+                3000
+            );
+        return true;
+    }
 
     // If the Name is saved, but not key, then this *could* be a kind of Username-based phishing attempt
-    if (cContactByName && !cContactByPubkey)
-        return createAlert(
-            'warning',
-            '<b>Contact name already exists!</b><br>This could potentially be a phishing attempt, beware!',
-            [],
-            4000
-        );
+    if (cContactByName && !cContactByPubkey) {
+        if (fDuplicateNotif)
+            createAlert(
+                'warning',
+                '<b>Contact name already exists!</b><br>This could potentially be a phishing attempt, beware!',
+                [],
+                4000
+            );
+        return true;
+    }
 
     // If the Key is saved, but not the name: perhaps the Contact changed their name?
-    if (!cContactByName && cContactByPubkey)
-        return createAlert(
-            'warning',
-            `<b>Contact already exists, but under a different name!</b><br>You have ${strName} saved as <b>${cContactByPubkey.label}!</b> in your contacts`,
-            [],
-            5000
-        );
+    if (!cContactByName && cContactByPubkey) {
+        if (fDuplicateNotif)
+            createAlert(
+                'warning',
+                `<b>Contact already exists, but under a different name!</b><br>You have ${strName} saved as <b>${cContactByPubkey.label}!</b> in your contacts`,
+                [],
+                5000
+            );
+        return true;
+    }
 
     // Render an 'Add to Contacts' UI
     const strHTML = `
