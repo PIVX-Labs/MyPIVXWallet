@@ -312,7 +312,7 @@ function getUserContactClick() {
 export async function promptForContact() {
     const cDB = await Database.getInstance();
     const cAccount = await cDB.getAccount();
-    if (cAccount.contacts && cAccount.contacts.length === 0)
+    if (!cAccount || (cAccount.contacts && cAccount.contacts.length === 0))
         return createAlert('warning', 'You have no contacts!', [], 2500);
     return renderContacts(cAccount, true);
 }
