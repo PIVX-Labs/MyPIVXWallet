@@ -150,9 +150,7 @@ export async function renderContacts(account, fPrompt = false) {
             }>
                 </div>
                 <div style="width: 100%; line-height: 15px;">
-                    <span id="contactsName${i}" onclick="MPW.guiEditContactNamePrompt('${sanitizeHTML(
-                cContact.label
-            )}')" style="cursor:pointer; color: #d5adff; font-weight: 600; margin-top: 8px; display: block;">${
+                    <span id="contactsName${i}" onclick="MPW.guiEditContactNamePrompt('${i}')" style="cursor:pointer; color: #d5adff; font-weight: 600; margin-top: 8px; display: block;">${
                 cContact.label
             }</span>
                     <span id="contactsAddress${i}" style="word-wrap: anywhere; font-size: 13px; position: relative; top: 3px;">${sanitizeHTML(
@@ -545,7 +543,7 @@ export async function guiAddContact() {
     // Verify the name
     if (strName.length < 1)
         return createAlert('warning', 'A name is required!', [], 2500);
-    if (strName.length > 64)
+    if (strName.length > 32)
         return createAlert('warning', 'That name is too long!', [], 2500);
 
     // Verify the address
@@ -619,7 +617,7 @@ export async function guiAddContactPrompt(
     // Verify the name
     if (strName.length < 1)
         return createAlert('warning', 'A name is required!', [], 2500);
-    if (strName.length > 64)
+    if (strName.length > 32)
         return createAlert('warning', 'That name is too long!', [], 2500);
 
     // Verify the address
@@ -749,10 +747,15 @@ export async function guiAddContactPrompt(
  * Prompt the user to edit a contact by it's original name
  *
  * The new name will be taken from the internal prompt input
- * @param {String} strName - The name to edit
+ * @param {number} nIndex - The DB index of the Contact to edit
  * @returns {Promise<boolean>} - `true` if contact was edited, `false` if not
  */
-export async function guiEditContactNamePrompt(strName) {
+export async function guiEditContactNamePrompt(nIndex) {
+    // Fetch the desired Contact to edit
+    const cDB = await Database.getInstance();
+    const cAccount = await cDB.getAccount();
+    const cContact = cAccount.contacts[nIndex];
+
     // Render an 'Add to Contacts' UI
     const strHTML = `
         <input type="text" id="contactsNewNameInput" style="text-align: center;" placeholder="New Name">
@@ -760,7 +763,7 @@ export async function guiEditContactNamePrompt(strName) {
 
     // Hook the Contact Prompt to the Popup UI, which resolves when the user has interacted with the Contact Prompt
     const fContinue = await confirmPopup({
-        title: `Change '${strName}' Contact`,
+        title: `Change '${cContact.label}' Contact`,
         html: strHTML,
     });
     if (!fContinue) return false;
@@ -771,14 +774,12 @@ export async function guiEditContactNamePrompt(strName) {
         createAlert('warning', 'You need to set a name!', [], 2500);
         return false;
     }
-    if (strNewName.length > 64) {
+    if (strNewName.length > 32) {
         createAlert('warning', 'That name is too long!', [], 2500);
         return false;
     }
 
     // Check this new Name isn't already saved
-    const cDB = await Database.getInstance();
-    const cAccount = await cDB.getAccount();
     const cContactByNewName = getContactBy(cAccount, { name: strNewName });
     if (cContactByNewName) {
         createAlert(
@@ -792,9 +793,8 @@ export async function guiEditContactNamePrompt(strName) {
         return false;
     }
 
-    // Fetch the original contact, edit it (since it's a pointer to the Account's Contacts)
-    const cContactByName = getContactBy(cAccount, { name: strName });
-    cContactByName.label = strNewName;
+    // Edit it (since it's a pointer to the Account's Contacts)
+    cContact.label = strNewName;
 
     // Commit to DB
     await cDB.addAccount({
