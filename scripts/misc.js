@@ -157,6 +157,10 @@ export function createAlert(type, message, alertVariables = [], timeout = 0) {
  * @param {string} options.html - The HTML of the popup contents
  * @param {Promise<any>} options.resolvePromise - A promise to resolve before closing the modal
  * @param {boolean?} options.hideConfirm - Whether to hide the Confirm button or not
+ * @param {boolean?} options.purpleModal - Toggle a Purple modal, or leave as false for White
+ * @param {boolean?} options.textLeft - Toggle to align modal text to the left, or leave as false for center
+ * @param {boolean?} options.noPadding - Toggle zero padding, or leave as false for default padding
+ * @param {number?} options.maxHeight - An optional modal Max Height, omit for default modal max
  * @returns {Promise<boolean|any>}
  */
 export async function confirmPopup({
@@ -191,17 +195,28 @@ export async function confirmPopup({
     doms.domConfirmModalContent.innerHTML = html;
 
     // Set text align to left
-    if (textLeft) doms.domConfirmModalContent.classList.remove('center-text');
+    if (textLeft) {
+        doms.domConfirmModalContent.classList.remove('center-text');
+    } else {
+        doms.domConfirmModalContent.classList.add('center-text');
+    }
 
     // Use the purple modal
-    if (purpleModal)
+    if (purpleModal) {
         doms.domConfirmModalMain.classList.add('exportKeysModalColor');
+    } else {
+        doms.domConfirmModalMain.classList.remove('exportKeysModalColor');
+    }
 
     // Remove padding
-    if (noPadding) doms.domConfirmModalContent.classList.add('px-0');
+    if (noPadding) {
+        doms.domConfirmModalContent.classList.add('px-0');
+    } else {
+        doms.domConfirmModalContent.classList.remove('px-0');
+    }
     doms.domConfirmModalContent.classList.add('pb-0');
 
-    // Set max-height
+    // Set max-height (removed at `.finally` context)
     if (maxHeight)
         doms.domConfirmModalDialog.classList.add(`max-w-${maxHeight}`);
 
@@ -229,6 +244,9 @@ export async function confirmPopup({
     } finally {
         // We want to hide the modal even if an exception occurs
         $('#confirmModal').modal('hide');
+
+        // Reset any modal settings
+        doms.domConfirmModalDialog.classList.remove(`max-w-${maxHeight}`);
     }
 }
 
