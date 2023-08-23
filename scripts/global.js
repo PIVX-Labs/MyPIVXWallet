@@ -47,7 +47,7 @@ import { Database } from './database.js';
 import bitjs from './bitTrx.js';
 import { checkForUpgrades } from './changelog.js';
 import { FlipDown } from './flipdown.js';
-import { guiAddContactPrompt } from './contacts-book.js';
+import { getNameOrAddress, guiAddContactPrompt } from './contacts-book.js';
 
 /** A flag showing if base MPW is fully loaded or not */
 export let fIsLoaded = false;
@@ -790,6 +790,8 @@ export async function openSendQRScanner() {
  */
 export async function createActivityListHTML(arrTXs, fRewards = false) {
     const cNet = getNetwork();
+    const cDB = await Database.getInstance();
+    const cAccount = await cDB.getAccount();
 
     // Prepare the table HTML
     let strList = `
@@ -914,7 +916,9 @@ export async function createActivityListHTML(arrTXs, fRewards = false) {
                             .filter(([isOwnAddress, _]) => {
                                 return !isOwnAddress;
                             })
-                            .map(([_, addr]) => addr);
+                            .map(([_, addr]) =>
+                                getNameOrAddress(cAccount, addr)
+                            );
                         txContent =
                             translation.activitySentTo +
                             ' ' +
@@ -947,7 +951,7 @@ export async function createActivityListHTML(arrTXs, fRewards = false) {
                         .filter(([isOwnAddress, _]) => {
                             return !isOwnAddress;
                         })
-                        .map(([_, addr]) => addr);
+                        .map(([_, addr]) => getNameOrAddress(cAccount, addr));
 
                     if (cTx.shieldedOutputs) {
                         txContent = translation.activityReceivedShield;

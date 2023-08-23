@@ -904,3 +904,15 @@ export async function guiCheckRecipientInput(event) {
         return (event.target.style.color = '#b20000');
     }
 }
+
+/**
+ * Search for a Name of a Contact from a given Account and Address
+ * @param {object} cAccount - The Account to search for the Contact
+ * @param {string} address - The address to search for a Contact with
+ * @returns {string} - The Name of the address Contact, or just the address if none is found
+ */
+export function getNameOrAddress(cAccount, address) {
+    return (
+        cAccount?.contacts?.find((a) => a.pubkey === address)?.label || address
+    );
+}
