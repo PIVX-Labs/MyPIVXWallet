@@ -137,15 +137,24 @@ export async function renderContacts(account, fPrompt = false) {
     if (!fPrompt) {
         // Render an editable Contacts Table
         for (const cContact of account.contacts || []) {
-
             strHTML += `
             <div class="d-flex px-3 py-3 contactItem">
                 <div>
-                    <img onclick="MPW.guiAddContactImage('${sanitizeHTML(cContact.label)}')" class="ptr" style="margin-right:20px; width: 50px; height: 50px; border-radius: 100%; background-color: white; border: 2px solid #d5adff;" ${cContact.icon ? 'src="' + cContact.icon + '"' : ''}>
+                    <img onclick="MPW.guiAddContactImage('${sanitizeHTML(
+                        cContact.label
+                    )}')" class="ptr" style="margin-right:20px; width: 50px; height: 50px; border-radius: 100%; background-color: white; border: 2px solid #d5adff;" ${
+                cContact.icon ? 'src="' + cContact.icon + '"' : ''
+            }>
                 </div>
                 <div style="width: 100%; line-height: 15px;">
-                    <span id="contactsName${i}" onclick="MPW.guiEditContactNamePrompt('${sanitizeHTML(cContact.label)}')" style="cursor:pointer; color: #d5adff; font-weight: 600; margin-top: 8px; display: block;">${cContact.label}</span>
-                    <span id="contactsAddress${i}" style="word-wrap: anywhere; font-size: 13px; position: relative; top: 3px;">${sanitizeHTML(cContact.pubkey)}</span>
+                    <span id="contactsName${i}" onclick="MPW.guiEditContactNamePrompt('${sanitizeHTML(
+                cContact.label
+            )}')" style="cursor:pointer; color: #d5adff; font-weight: 600; margin-top: 8px; display: block;">${
+                cContact.label
+            }</span>
+                    <span id="contactsAddress${i}" style="word-wrap: anywhere; font-size: 13px; position: relative; top: 3px;">${sanitizeHTML(
+                cContact.pubkey
+            )}</span>
                 </div>
                 <div style="display: flex; justify-content: flex-end; align-items: center; padding-right: 6px; padding-left: 15px;">
                     <i style="cursor:pointer;" onclick="MPW.guiRemoveContact(${i})" class="far fa-trash-alt"></i>
@@ -183,11 +192,17 @@ export async function renderContacts(account, fPrompt = false) {
             strHTML += `
             <div class="d-flex px-3 py-3 contactItem" id="contactsSelector${i}">
                 <div>
-                    <img class="ptr" style="margin-right:20px; width: 50px; height: 50px; border-radius: 100%; background-color: white; border: 2px solid #d5adff;" ${cContact.icon ? 'src="' + cContact.icon + '"' : ''}>
+                    <img class="ptr" style="margin-right:20px; width: 50px; height: 50px; border-radius: 100%; background-color: white; border: 2px solid #d5adff;" ${
+                        cContact.icon ? 'src="' + cContact.icon + '"' : ''
+                    }>
                 </div>
                 <div style="width: 100%; line-height: 15px;">
-                    <span id="contactsName${i}" style="color: #d5adff; font-weight: 600; margin-top: 8px; display: block;">${sanitizeHTML(cContact.label)}</span>
-                    <span id="contactsAddress${i}" style="word-wrap: anywhere; font-size: 13px; position: relative; top: 3px;">${sanitizeHTML(cContact.pubkey)}</span>
+                    <span id="contactsName${i}" style="color: #d5adff; font-weight: 600; margin-top: 8px; display: block;">${sanitizeHTML(
+                cContact.label
+            )}</span>
+                    <span id="contactsAddress${i}" style="word-wrap: anywhere; font-size: 13px; position: relative; top: 3px;">${sanitizeHTML(
+                cContact.pubkey
+            )}</span>
                 </div>
             </div>
             `;
@@ -206,7 +221,7 @@ export async function renderContacts(account, fPrompt = false) {
             purpleModal: true,
             textLeft: true,
             noPadding: true,
-            maxHeight: 450
+            maxHeight: 450,
         });
     }
 }
