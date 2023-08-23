@@ -137,85 +137,63 @@ export async function renderContacts(account, fPrompt = false) {
     if (!fPrompt) {
         // Render an editable Contacts Table
         for (const cContact of account.contacts || []) {
+
             strHTML += `
-                <tr>
-                    <td>
-                        <img onclick="MPW.guiAddContactImage('${
-                            cContact.label
-                        }')" class="ptr" style="width: 50px; height: 50px; border-radius: 100%; background-color: white; outline: groove;" ${
-                cContact.icon ? 'src="' + cContact.icon + '"' : ''
-            }>
-                    </td>
-                    <td onclick="MPW.guiEditContactNamePrompt('${
-                        cContact.label
-                    }')" class="ptr" id="contactsName${i}">${sanitizeHTML(
-                cContact.label
-            )}</td>
-                    <td style="word-wrap: anywhere;" id="contactsAddress${i}">${sanitizeHTML(
-                cContact.pubkey
-            )}</td>
-                    <td>
-                        <button onclick="MPW.guiRemoveContact(${i})" class="btn btn-danger">Delete</button>
-                    </td>
-                </tr>
+            <div class="d-flex px-3 py-3 contactItem">
+                <div>
+                    <img onclick="MPW.guiAddContactImage('${sanitizeHTML(cContact.label)}')" class="ptr" style="margin-right:20px; width: 50px; height: 50px; border-radius: 100%; background-color: white; border: 2px solid #d5adff;" ${cContact.icon ? 'src="' + cContact.icon + '"' : ''}>
+                </div>
+                <div style="width: 100%; line-height: 15px;">
+                    <span id="contactsName${i}" onclick="MPW.guiEditContactNamePrompt('${sanitizeHTML(cContact.label)}')" style="cursor:pointer; color: #d5adff; font-weight: 600; margin-top: 8px; display: block;">${cContact.label}</span>
+                    <span id="contactsAddress${i}" style="word-wrap: anywhere; font-size: 13px; position: relative; top: 3px;">${sanitizeHTML(cContact.pubkey)}</span>
+                </div>
+                <div style="display: flex; justify-content: flex-end; align-items: center; padding-right: 6px; padding-left: 15px;">
+                    <i style="cursor:pointer;" onclick="MPW.guiRemoveContact(${i})" class="far fa-trash-alt"></i>
+                </div>
+            </div>
             `;
             i++;
         }
 
         // Lastly, inject the "Add Account" UI to the table
         strHTML += `
-            <tr>
-                <td></td>
-                <td><input id="contactsNameInput" placeholder="Name"></td>
-                <td><input id="contactsAddressInput" placeholder="Address or XPub"></td>
-                <td style="display: flex;align-items: center;">
-                    <button onclick="MPW.guiAddContact()" class="btn btn-primary">Add</button>
-                    <i onclick="MPW.guiAddContactQRPrompt()" style="margin-left: 5px;" class="fa-solid fa-qrcode fa-2xl ptr"></i>
-                </td>
-            </tr>
+        <div class="d-flex px-3 addContact" style="margin-top:20px;">
+            <div class="contactName">
+                <input id="contactsNameInput" class="m-0" placeholder="Name" autocomplete="nope">
+            </div>
+            <div class="contactAddr">
+                <input id="contactsAddressInput" class="m-0" placeholder="Address or XPub" autocomplete="nope">
+            </div>
+            <div class="d-flex" style="align-items: center;">
+                <div onclick="MPW.guiAddContact()" class="addContactBtn">
+                    <i class="fas fa-plus"></i>
+                </div>
+                <div onclick="MPW.guiAddContactQRPrompt()" class="qrContactBtn">
+                    <i class="fa-solid fa-qrcode"></i>
+                </div>
+            </div>
+        </div>
         `;
 
         doms.domContactsTable.innerHTML = strHTML;
     } else {
         // For prompts: the user must click an address (or cancel), and cannot add, edit or delete contacts
+        strHTML += `<div id="contactsList" class="contactsList">`;
         for (const cContact of account.contacts || []) {
             strHTML += `
-                <tr>
-                    <td>
-                        <img style="width: 50px; height: 50px; border-radius: 100%; background-color: white; outline: groove;" ${
-                            cContact.icon ? 'src="' + cContact.icon + '"' : ''
-                        }>
-                    </td>
-                    <td> <span id="contactsName${i}">${sanitizeHTML(
-                cContact.label
-            )}</span></td>
-                    <td> <span style="word-wrap: anywhere;" id="contactsAddress${i}">${sanitizeHTML(
-                cContact.pubkey
-            )}</span></td>
-                    <td>
-                        <button id="contactsSelector${i}" class="btn btn-primary">Use</button>
-                    </td>
-                </tr>
+            <div class="d-flex px-3 py-3 contactItem" id="contactsSelector${i}">
+                <div>
+                    <img class="ptr" style="margin-right:20px; width: 50px; height: 50px; border-radius: 100%; background-color: white; border: 2px solid #d5adff;" ${cContact.icon ? 'src="' + cContact.icon + '"' : ''}>
+                </div>
+                <div style="width: 100%; line-height: 15px;">
+                    <span id="contactsName${i}" style="color: #d5adff; font-weight: 600; margin-top: 8px; display: block;">${sanitizeHTML(cContact.label)}</span>
+                    <span id="contactsAddress${i}" style="word-wrap: anywhere; font-size: 13px; position: relative; top: 3px;">${sanitizeHTML(cContact.pubkey)}</span>
+                </div>
+            </div>
             `;
             i++;
         }
-
-        // Inject the buttons in to the table
-        strHTML = `
-            <table class="table table-hover">
-                <thead>
-                    <tr>
-                        <td class="text-center"><b> Avatar </b></td>
-                        <td class="text-center"><b> Contact </b></td>
-                        <td class="text-center"><b> Public Key </b></td>
-                        <td class="text-center"><b> Manage </b></td>
-                    </tr>
-                </thead>
-                <tbody id="contactsList" style="text-align: center; vertical-align: middle;">
-                    ${strHTML}
-                </tbody>
-            </table>
-        `;
+        strHTML += `</div>`;
 
         // Prepare the Contact list Prompt
         const cPrompt = getUserContactClick();
@@ -225,6 +203,10 @@ export async function renderContacts(account, fPrompt = false) {
             title: 'Choose a Contact',
             html: strHTML,
             resolvePromise: cPrompt(),
+            purpleModal: true,
+            textLeft: true,
+            noPadding: true,
+            maxHeight: 450
         });
     }
 }
@@ -247,14 +229,14 @@ function getUserContactClick() {
                 function handleClick(event) {
                     // Splice the 'Contact Index' from the button clicked
                     const nIndex = event.target.id.replace(
-                        'contactsSelector',
+                        'contactsAddress',
                         ''
                     );
                     // Fetch the associated Contact Name from the table
                     // TODO: maybe don't rely on the table, and just fetch the Contact Index from the DB Contacts?
                     const strName = document.getElementById(
                         `contactsName${nIndex}`
-                    ).innerText;
+                    ).innerHTML;
                     // Resolve the promise with the Contact Name of the button that was clicked first
                     resolve(strName);
                     // Remove all the remaining click listeners
