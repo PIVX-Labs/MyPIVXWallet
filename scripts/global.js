@@ -52,6 +52,7 @@ import {
     guiAddContactPrompt,
     guiCheckRecipientInput,
 } from './contacts-book.js';
+import { Buffer } from 'buffer';
 
 /** A flag showing if base MPW is fully loaded or not */
 export let fIsLoaded = false;
@@ -440,8 +441,14 @@ export async function start() {
                     // Split to 'name' and 'pubkey'
                     const arrParts = strURI.split(':');
 
+                    // Convert Name from HEX to UTF-8
+                    const strName = Buffer.from(arrParts[0], 'hex').toString(
+                        'utf8'
+                    );
+                    const strPubkey = arrParts[1];
+
                     // Prompt the user to add the Contact
-                    guiAddContactPrompt(sanitizeHTML(arrParts[0]), arrParts[1]);
+                    guiAddContactPrompt(sanitizeHTML(strName), strPubkey);
                 }
             } else if (reqTo.length || reqAmount > 0) {
                 // Payment processor popup

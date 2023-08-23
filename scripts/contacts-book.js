@@ -1,3 +1,4 @@
+import { Buffer } from 'buffer';
 import { Database } from './database';
 import { doms, toClipboard } from './global';
 import { translation } from './i18n';
@@ -863,10 +864,14 @@ export async function guiAddContactQRPrompt() {
             // Split to 'name' and 'pubkey'
             const arrParts = strURI.split(':');
 
+            // Convert Name from HEX to UTF-8
+            const strName = Buffer.from(arrParts[0], 'hex').toString('utf8');
+            const strPubkey = arrParts[1];
+
             // Prompt the user to add the Contact
             const fAdded = await guiAddContactPrompt(
-                sanitizeHTML(arrParts[0]),
-                arrParts[1]
+                sanitizeHTML(strName),
+                strPubkey
             );
 
             // Re-render the list
@@ -1005,9 +1010,14 @@ export async function localContactToURI(account, pubkey) {
         }
     }
 
-    // Construct the Contact URI
+    // Construct the Contact URI Root
     const strURL = window.location.origin + window.location.pathname;
-    const strEncodedURI = encodeURIComponent(cAccount.name + ':' + strPubkey);
+
+    // Convert our Name and Pubkey to HEX
+    const strHexName = Buffer.from(cAccount.name).toString('hex');
+
+    // Encode in our URI and return
+    const strEncodedURI = encodeURIComponent(strHexName + ':' + strPubkey);
     return `${strURL}?addcontact=${strEncodedURI}`;
 }
 
