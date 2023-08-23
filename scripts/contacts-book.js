@@ -557,6 +557,38 @@ export async function guiAddContact() {
             3000
         );
 
+    // Ensure we're not adding our own XPub
+    if (strAddr.startsWith('xpub')) {
+        if (masterKey.isHD) {
+            const derivationPath = getDerivationPath(masterKey.isHardwareWallet)
+                .split('/')
+                .slice(0, 4)
+                .join('/');
+            // Compare the XPub against our own
+            const fOurs = strAddr === (await masterKey.getxpub(derivationPath));
+            if (fOurs) {
+                createAlert(
+                    'warning',
+                    'You cannot add yourself as a Contact!',
+                    [],
+                    3500
+                );
+                return false;
+            }
+        }
+    } else {
+        // Ensure we're not adding (one of) our own address(es)
+        if (await masterKey.isOwnAddress(strAddr)) {
+            createAlert(
+                'warning',
+                'You cannot add yourself as a Contact!',
+                [],
+                3500
+            );
+            return false;
+        }
+    }
+
     // Fetch the current Account
     const cDB = await Database.getInstance();
     const cAccount = await cDB.getAccount();
@@ -598,6 +630,39 @@ export async function guiAddContactPrompt(
             [],
             4000
         );
+
+    // Ensure we're not adding our own XPub
+    if (strPubkey.startsWith('xpub')) {
+        if (masterKey.isHD) {
+            const derivationPath = getDerivationPath(masterKey.isHardwareWallet)
+                .split('/')
+                .slice(0, 4)
+                .join('/');
+            // Compare the XPub against our own
+            const fOurs =
+                strPubkey === (await masterKey.getxpub(derivationPath));
+            if (fOurs) {
+                createAlert(
+                    'warning',
+                    'You cannot add yourself as a Contact!',
+                    [],
+                    3500
+                );
+                return false;
+            }
+        }
+    } else {
+        // Ensure we're not adding (one of) our own address(es)
+        if (await masterKey.isOwnAddress(strPubkey)) {
+            createAlert(
+                'warning',
+                'You cannot add yourself as a Contact!',
+                [],
+                3500
+            );
+            return false;
+        }
+    }
 
     const cDB = await Database.getInstance();
     const cAccount = await cDB.getAccount();

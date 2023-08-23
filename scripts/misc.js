@@ -211,10 +211,11 @@ export async function confirmPopup({
     // Remove padding
     if (noPadding) {
         doms.domConfirmModalContent.classList.add('px-0');
+        doms.domConfirmModalContent.classList.add('pb-0');
     } else {
         doms.domConfirmModalContent.classList.remove('px-0');
+        doms.domConfirmModalContent.classList.remove('pb-0');
     }
-    doms.domConfirmModalContent.classList.add('pb-0');
 
     // Set max-height (removed at `.finally` context)
     if (maxHeight)
