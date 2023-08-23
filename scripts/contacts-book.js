@@ -588,6 +588,43 @@ export async function guiAddContact() {
     const cDB = await Database.getInstance();
     const cAccount = await cDB.getAccount();
 
+    // Check this Contact isn't already saved, either fully or partially
+    const cContactByName = getContactBy(cAccount, { name: strName });
+    const cContactByPubkey = getContactBy(cAccount, { pubkey: strAddr });
+
+    // If both Name and Key are saved, then they just tried re-adding the same Contact twice
+    if (cContactByName && cContactByPubkey) {
+        createAlert(
+            'warning',
+            '<b>Contact already exists!</b><br>You already saved this contact',
+            [],
+            3000
+        );
+        return true;
+    }
+
+    // If the Name is saved, but not key, then this *could* be a kind of Username-based phishing attempt
+    if (cContactByName && !cContactByPubkey) {
+        createAlert(
+            'warning',
+            '<b>Contact name already exists!</b><br>This could potentially be a phishing attempt, beware!',
+            [],
+            4000
+        );
+        return true;
+    }
+
+    // If the Key is saved, but not the name: perhaps the Contact changed their name?
+    if (!cContactByName && cContactByPubkey) {
+        createAlert(
+            'warning',
+            `<b>Contact already exists, but under a different name!</b><br>You have ${strName} saved as <b>${cContactByPubkey.label}</b> in your contacts`,
+            [],
+            7500
+        );
+        return true;
+    }
+
     // Add the Contact to it
     await addContact(cAccount, {
         label: strName,
