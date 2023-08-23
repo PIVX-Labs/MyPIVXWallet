@@ -532,8 +532,10 @@ export async function guiToggleReceiveType() {
 
 /** A GUI wrapper that adds a contact to the current Account's contacts list */
 export async function guiAddContact() {
-    const strName = document.getElementById('contactsNameInput').value;
-    const strAddr = document.getElementById('contactsAddressInput').value;
+    const strName = document.getElementById('contactsNameInput').value.trim();
+    const strAddr = document
+        .getElementById('contactsAddressInput')
+        .value.trim();
 
     // Verify the name
     if (strName.length < 1)
@@ -922,12 +924,23 @@ export async function guiRemoveContact(index) {
 export async function guiSetAccountName(strDOM) {
     const domInput = document.getElementById(strDOM);
 
+    // Verify the name
+    const strNewName = domInput.value.trim();
+    if (strNewName.length < 1) {
+        createAlert('warning', 'You need to set a name!', [], 2500);
+        return false;
+    }
+    if (strNewName.length > 32) {
+        createAlert('warning', 'That name is too long!', [], 2500);
+        return false;
+    }
+
     // Fetch the current Account
     const cDB = await Database.getInstance();
     const cAccount = await cDB.getAccount();
 
     // Set the account's name
-    await setAccountContactName(cAccount, domInput.value.trim());
+    await setAccountContactName(cAccount, strNewName);
 
     // Render the new Receive Modal
     await guiRenderReceiveModal();
