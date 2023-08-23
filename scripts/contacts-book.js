@@ -190,13 +190,13 @@ export async function renderContacts(account, fPrompt = false) {
         strHTML += `<div id="contactsList" class="contactsList">`;
         for (const cContact of account.contacts || []) {
             strHTML += `
-            <div class="d-flex px-3 py-3 contactItem" id="contactsSelector${i}">
-                <div>
-                    <img class="ptr" style="margin-right:20px; width: 50px; height: 50px; border-radius: 100%; background-color: white; border: 2px solid #d5adff;" ${
-                        cContact.icon ? 'src="' + cContact.icon + '"' : ''
-                    }>
+            <div class="d-flex px-3 py-3 contactItem ptr" id="contactsSelector${i}">
+                <div id="contactsAvatarContainer${i}">
+                    <img id="contactsAvatar${i}" class="ptr" style="margin-right:20px; width: 50px; height: 50px; border-radius: 100%; background-color: white; border: 2px solid #d5adff;" ${
+                cContact.icon ? 'src="' + cContact.icon + '"' : ''
+            }>
                 </div>
-                <div style="width: 100%; line-height: 15px;">
+                <div id="contactsNameContainer${i}" style="width: 100%; line-height: 15px;">
                     <span id="contactsName${i}" style="color: #d5adff; font-weight: 600; margin-top: 8px; display: block;">${sanitizeHTML(
                 cContact.label
             )}</span>
@@ -208,6 +208,15 @@ export async function renderContacts(account, fPrompt = false) {
             `;
             i++;
         }
+
+        // Add the final "Back" button
+        strHTML += `
+            <span class="d-flex px-3 py-3 contactItem ptr" id="contactsSelector-1">
+                Back
+            </span>
+        `;
+
+        // Finish the display
         strHTML += `</div>`;
 
         // Prepare the Contact list Prompt
@@ -242,16 +251,16 @@ function getUserContactClick() {
             setTimeout(() => {
                 // The function to handle the click
                 function handleClick(event) {
+                    // If this is the Exit button (a -1 index), just silently quit
+                    if (event.target.id.endsWith('-1')) return resolve('');
+
                     // Splice the 'Contact Index' from the button clicked
-                    const nIndex = event.target.id.replace(
-                        'contactsAddress',
-                        ''
-                    );
+                    const nIndex = event.target.id.match(/([0-9]+)$/)[0];
                     // Fetch the associated Contact Name from the table
                     // TODO: maybe don't rely on the table, and just fetch the Contact Index from the DB Contacts?
                     const strName = document.getElementById(
                         `contactsName${nIndex}`
-                    ).innerHTML;
+                    ).innerText;
                     // Resolve the promise with the Contact Name of the button that was clicked first
                     resolve(strName);
                     // Remove all the remaining click listeners
@@ -260,7 +269,7 @@ function getUserContactClick() {
 
                 // The function to iterate over the buttons and remove their listeners
                 function removeRemainingListeners() {
-                    let i = 0;
+                    let i = -1;
                     let button;
                     // This iteration removes the listener from each button
                     // eslint-disable-next-line no-cond-assign
@@ -275,7 +284,7 @@ function getUserContactClick() {
                 }
 
                 // Attach a click listener to each `contactsSelector` button
-                let i = 0;
+                let i = -1;
                 let button;
                 // eslint-disable-next-line no-cond-assign
                 while (
