@@ -143,16 +143,14 @@ export async function renderContacts(account, fPrompt = false) {
             strHTML += `
             <div class="d-flex px-3 py-3 contactItem">
                 <div>
-                    <img onclick="MPW.guiAddContactImage('${sanitizeHTML(
-                        cContact.label
-                    )}')" class="ptr" style="margin-right:20px; width: 50px; height: 50px; border-radius: 100%; background-color: white; border: 2px solid #d5adff;" ${
+                    <img onclick="MPW.guiAddContactImage('${i}')" class="ptr" style="margin-right:20px; width: 50px; height: 50px; border-radius: 100%; background-color: white; border: 2px solid #d5adff;" ${
                 cContact.icon ? 'src="' + cContact.icon + '"' : ''
             }>
                 </div>
                 <div style="width: 100%; line-height: 15px;">
-                    <span id="contactsName${i}" onclick="MPW.guiEditContactNamePrompt('${i}')" style="cursor:pointer; color: #d5adff; font-weight: 600; margin-top: 8px; display: block;">${
+                    <span id="contactsName${i}" onclick="MPW.guiEditContactNamePrompt('${i}')" style="cursor:pointer; color: #d5adff; font-weight: 600; margin-top: 8px; display: block;">${sanitizeHTML(
                 cContact.label
-            }</span>
+            )}</span>
                     <span id="contactsAddress${i}" style="word-wrap: anywhere; font-size: 13px; position: relative; top: 3px;">${sanitizeHTML(
                 strPubkey
             )}</span>
@@ -202,7 +200,7 @@ export async function renderContacts(account, fPrompt = false) {
                 </div>
                 <div id="contactsNameContainer${i}" style="width: 100%; line-height: 15px;">
                     <span id="contactsName${i}" style="color: #d5adff; font-weight: 600; margin-top: 8px; display: block;">${sanitizeHTML(
-                cContact.label
+                sanitizeHTML(cContact.label)
             )}</span>
                     <span id="contactsAddress${i}" style="word-wrap: anywhere; font-size: 13px; position: relative; top: 3px;">${sanitizeHTML(
                 strPubkey
@@ -763,7 +761,7 @@ export async function guiEditContactNamePrompt(nIndex) {
 
     // Hook the Contact Prompt to the Popup UI, which resolves when the user has interacted with the Contact Prompt
     const fContinue = await confirmPopup({
-        title: `Change '${cContact.label}' Contact`,
+        title: `Change '${sanitizeHTML(cContact.label)}' Contact`,
         html: strHTML,
     });
     if (!fContinue) return false;
@@ -813,23 +811,23 @@ export async function guiEditContactNamePrompt(nIndex) {
 }
 
 /**
- * Prompt the user to add an image to a contact by it's original name
+ * Prompt the user to add an image to a contact by it's DB index
  *
  * The new image will be taken from the internal system prompt
- * @param {String} strName - The contact to edit
+ * @param {number} nIndex - The DB index of the Contact to edit
  * @returns {Promise<boolean>} - `true` if contact was edited, `false` if not
  */
-export async function guiAddContactImage(strName) {
+export async function guiAddContactImage(nIndex) {
     const cDB = await Database.getInstance();
     const cAccount = await cDB.getAccount();
+    const cContact = cAccount.contacts[nIndex];
 
     // Prompt for the image
     const strImage = await getImageFile();
     if (!strImage) return false;
 
     // Fetch the original contact, edit it (since it's a pointer to the Account's Contacts)
-    const cContactByName = getContactBy(cAccount, { name: strName });
-    cContactByName.icon = strImage;
+    cContact.icon = strImage;
 
     // Commit to DB
     await cDB.addAccount({
@@ -898,10 +896,12 @@ export async function guiRemoveContact(index) {
 
     // Confirm the deletion
     const fConfirmed = await confirmPopup({
-        title: 'Remove ' + cContact.label + '?',
+        title: 'Remove ' + sanitizeHTML(cContact.label) + '?',
         html: `
             <p>
-                Are you sure you wish to remove ${cContact.label} from your Contacts?
+                Are you sure you wish to remove ${sanitizeHTML(
+                    cContact.label
+                )} from your Contacts?
                 <br>
                 <br>
                 <i style="opacity: 0.65">You can add them again any time in the future.</i>
