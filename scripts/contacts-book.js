@@ -137,6 +137,9 @@ export async function renderContacts(account, fPrompt = false) {
     if (!fPrompt) {
         // Render an editable Contacts Table
         for (const cContact of account.contacts || []) {
+            const strPubkey = cContact.pubkey.startsWith('xpub')
+                ? cContact.pubkey.slice(0, 32) + '…'
+                : cContact.pubkey;
             strHTML += `
             <div class="d-flex px-3 py-3 contactItem">
                 <div>
@@ -153,7 +156,7 @@ export async function renderContacts(account, fPrompt = false) {
                 cContact.label
             }</span>
                     <span id="contactsAddress${i}" style="word-wrap: anywhere; font-size: 13px; position: relative; top: 3px;">${sanitizeHTML(
-                cContact.pubkey
+                strPubkey
             )}</span>
                 </div>
                 <div style="display: flex; justify-content: flex-end; align-items: center; padding-right: 6px; padding-left: 15px;">
@@ -166,22 +169,22 @@ export async function renderContacts(account, fPrompt = false) {
 
         // Lastly, inject the "Add Account" UI to the table
         strHTML += `
-        <div class="d-flex px-3 addContact" style="margin-top:20px;">
-            <div class="contactName">
-                <input id="contactsNameInput" class="m-0" placeholder="Name" autocomplete="nope">
-            </div>
-            <div class="contactAddr">
-                <input id="contactsAddressInput" class="m-0" placeholder="Address or XPub" autocomplete="nope">
-            </div>
-            <div class="d-flex" style="align-items: center;">
-                <div onclick="MPW.guiAddContact()" class="addContactBtn">
-                    <i class="fas fa-plus"></i>
+            <div class="d-flex px-3 addContact" style="margin-top:20px;">
+                <div class="contactName">
+                    <input id="contactsNameInput" class="m-0" placeholder="Name" autocomplete="nope">
                 </div>
-                <div onclick="MPW.guiAddContactQRPrompt()" class="qrContactBtn">
-                    <i class="fa-solid fa-qrcode"></i>
+                <div class="contactAddr">
+                    <input id="contactsAddressInput" class="m-0" placeholder="Address or XPub" autocomplete="nope">
+                </div>
+                <div class="d-flex" style="align-items: center;">
+                    <div onclick="MPW.guiAddContact()" class="addContactBtn">
+                        <i class="fas fa-plus"></i>
+                    </div>
+                    <div onclick="MPW.guiAddContactQRPrompt()" class="qrContactBtn">
+                        <i class="fa-solid fa-qrcode"></i>
+                    </div>
                 </div>
             </div>
-        </div>
         `;
 
         doms.domContactsTable.innerHTML = strHTML;
@@ -189,6 +192,9 @@ export async function renderContacts(account, fPrompt = false) {
         // For prompts: the user must click an address (or cancel), and cannot add, edit or delete contacts
         strHTML += `<div id="contactsList" class="contactsList">`;
         for (const cContact of account.contacts || []) {
+            const strPubkey = cContact.pubkey.startsWith('xpub')
+                ? cContact.pubkey.slice(0, 32) + '…'
+                : cContact.pubkey;
             strHTML += `
             <div class="d-flex px-3 py-3 contactItem ptr" id="contactsSelector${i}">
                 <div id="contactsAvatarContainer${i}">
@@ -201,7 +207,7 @@ export async function renderContacts(account, fPrompt = false) {
                 cContact.label
             )}</span>
                     <span id="contactsAddress${i}" style="word-wrap: anywhere; font-size: 13px; position: relative; top: 3px;">${sanitizeHTML(
-                cContact.pubkey
+                strPubkey
             )}</span>
                 </div>
             </div>
@@ -821,6 +827,23 @@ export async function guiRemoveContact(index) {
     // Fetch the current Account
     const cDB = await Database.getInstance();
     const cAccount = await cDB.getAccount();
+
+    // Fetch the Contact
+    const cContact = cAccount.contacts[index];
+
+    // Confirm the deletion
+    const fConfirmed = await confirmPopup({
+        title: 'Remove ' + cContact.label + '?',
+        html: `
+            <p>
+                Are you sure you wish to remove ${cContact.label} from your Contacts?
+                <br>
+                <br>
+                <i style="opacity: 0.65">You can add them again any time in the future.</i>
+            </p>
+        `,
+    });
+    if (!fConfirmed) return;
 
     // Remove the Contact from it
     await removeContact(cAccount, cAccount.contacts[index].pubkey);
