@@ -1,5 +1,5 @@
 import { Database } from './database';
-import { doms } from './global';
+import { doms, toClipboard } from './global';
 import { translation } from './i18n';
 import {
     confirmPopup,
@@ -393,15 +393,11 @@ export async function guiRenderReceiveModal(
                 strPubkey = await masterKey.getCurrentAddress();
             }
 
-            // Construct the Contact URI
-            const strURL = window.location.origin + window.location.pathname;
-            const strEncodedURI = encodeURIComponent(
-                cAccount.name + ':' + strPubkey
-            );
-            const strContactURI = `${strURL}?addcontact=${strEncodedURI}`;
+            // Construct the Contact Share URI
+            const strContactURI = await localContactToURI(cAccount, strPubkey);
 
             // Render Copy Button
-            doms.domModalQrLabel.innerHTML = `Share Contact URL<i onclick="MPW.toClipboard('${strContactURI}', this)" id="guiAddressCopy" class="fas fa-clipboard" style="cursor: pointer; width: 20px;"></i>`;
+            doms.domModalQrLabel.innerHTML = `Share Contact URL<i onclick="MPW.localContactToClipboard(event)" id="guiAddressCopy" class="fas fa-clipboard" style="cursor: pointer; width: 20px;"></i>`;
 
             // We'll render a short informational text, alongside a QR below for Contact scanning
             doms.domModalQR.innerHTML = `
@@ -980,4 +976,45 @@ export function getNameOrAddress(cAccount, address) {
     return (
         cAccount?.contacts?.find((a) => a.pubkey === address)?.label || address
     );
+}
+
+/**
+ * Convert the current Account's Contact to a Share URI
+ * @param {object?} - An optional Account to construct the Contact URI from, if omitted, the current DB account is used
+ * @param {string?} - An optional Master Public Key to attach to the Contact URI
+ */
+export async function localContactToURI(account, pubkey) {
+    // Fetch the current Account
+    const cDB = await Database.getInstance();
+    const cAccount = account || (await cDB.getAccount());
+
+    // Use the given pubkey; but if none is passed, we'll derive our loaded Public Key
+    let strPubkey = pubkey || '';
+
+    // If HD: use xpub, otherwise we'll fallback to our single address
+    if (!strPubkey) {
+        if (masterKey.isHD) {
+            // Get our current wallet XPub
+            const derivationPath = getDerivationPath(masterKey.isHardwareWallet)
+                .split('/')
+                .slice(0, 4)
+                .join('/');
+            strPubkey = await masterKey.getxpub(derivationPath);
+        } else {
+            strPubkey = await masterKey.getCurrentAddress();
+        }
+    }
+
+    // Construct the Contact URI
+    const strURL = window.location.origin + window.location.pathname;
+    const strEncodedURI = encodeURIComponent(cAccount.name + ':' + strPubkey);
+    return `${strURL}?addcontact=${strEncodedURI}`;
+}
+
+/**
+ * A GUI wrapper for the Contact URI and Clipboard functions
+ * @param {InputEvent} event - The DOM element calling the copy function
+ */
+export async function localContactToClipboard(event) {
+    return toClipboard(await localContactToURI(), event.target);
 }
