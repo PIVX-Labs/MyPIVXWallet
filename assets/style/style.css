@@ -2396,6 +2396,10 @@ a {
   color:#fff;
 }
 
+.exportKeysModalColor h3 {
+    color:#d5adff!important;
+}
+
 .dcWallet-privateKeyDiv {
   display: flex;
   width: 100%;

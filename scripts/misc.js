@@ -164,6 +164,10 @@ export async function confirmPopup({
     html,
     resolvePromise,
     hideConfirm,
+    purpleModal,
+    textLeft,
+    noPadding,
+    maxHeight
 }) {
     // If there's a title provided: display the header and text
     doms.domConfirmModalHeader.style.display = title ? 'block' : 'none';
@@ -185,6 +189,20 @@ export async function confirmPopup({
 
     // Set content display
     doms.domConfirmModalContent.innerHTML = html;
+
+    // Set text align to left
+    if(textLeft) doms.domConfirmModalContent.classList.remove('center-text'); 
+
+    // Use the purple modal
+    if(purpleModal) doms.domConfirmModalMain.classList.add('exportKeysModalColor');
+
+    // Remove padding
+    if(noPadding)
+        doms.domConfirmModalContent.classList.add('px-0');
+        doms.domConfirmModalContent.classList.add('pb-0');
+
+    // Set max-height
+    if(maxHeight) doms.domConfirmModalDialog.classList.add(`max-w-${maxHeight}`);
 
     // If there's an input in the prompt, focus the cursor upon it
     for (const domElement of doms.domConfirmModalContent.children) {

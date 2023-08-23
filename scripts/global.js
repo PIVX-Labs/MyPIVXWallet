@@ -266,6 +266,8 @@ export async function start() {
         domActivityLoadMoreIcon: document.getElementById(
             'activityLoadMoreIcon'
         ),
+        domConfirmModalDialog: document.getElementById('confirmModalDialog'),
+        domConfirmModalMain: document.getElementById('confirmModalMain'),
         domConfirmModalHeader: document.getElementById('confirmModalHeader'),
         domConfirmModalTitle: document.getElementById('confirmModalTitle'),
         domConfirmModalContent: document.getElementById('confirmModalContent'),
