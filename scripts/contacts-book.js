@@ -149,7 +149,7 @@ export async function renderContacts(account, fPrompt = false) {
             }>
                 </div>
                 <div style="width: 100%; line-height: 15px;">
-                    <span id="contactsName${i}" onclick="MPW.guiEditContactNamePrompt('${i}')" style="cursor:pointer; color: #d5adff; font-weight: 600; margin-top: 8px; display: block;">${sanitizeHTML(
+                    <span id="contactsName${i}" onclick="MPW.guiEditContactNamePrompt('${i}')" style="word-wrap: anywhere; cursor:pointer; color: #d5adff; font-weight: 600; margin-top: 8px; display: block;">${sanitizeHTML(
                 cContact.label
             )}</span>
                     <span id="contactsAddress${i}" style="word-wrap: anywhere; font-size: 13px; position: relative; top: 3px;">${sanitizeHTML(
@@ -200,7 +200,7 @@ export async function renderContacts(account, fPrompt = false) {
             }>
                 </div>
                 <div id="contactsNameContainer${i}" style="width: 100%; line-height: 15px;">
-                    <span id="contactsName${i}" style="color: #d5adff; font-weight: 600; margin-top: 8px; display: block;">${sanitizeHTML(
+                    <span id="contactsName${i}" style="word-wrap: anywhere; color: #d5adff; font-weight: 600; margin-top: 8px; display: block;">${sanitizeHTML(
                 sanitizeHTML(cContact.label)
             )}</span>
                     <span id="contactsAddress${i}" style="word-wrap: anywhere; font-size: 13px; position: relative; top: 3px;">${sanitizeHTML(
