@@ -47,7 +47,11 @@ import { Database } from './database.js';
 import bitjs from './bitTrx.js';
 import { checkForUpgrades } from './changelog.js';
 import { FlipDown } from './flipdown.js';
-import { getNameOrAddress, guiAddContactPrompt } from './contacts-book.js';
+import {
+    getNameOrAddress,
+    guiAddContactPrompt,
+    guiCheckRecipientInput,
+} from './contacts-book.js';
 
 /** A flag showing if base MPW is fully loaded or not */
 export let fIsLoaded = false;
@@ -1248,6 +1252,9 @@ export function guiPreparePayment(strTo = '', nAmount = 0, strDesc = '') {
         doms.domSendAmountValue,
         true
     );
+
+    // Run the Input Validity checker
+    guiCheckRecipientInput({ target: doms.domAddress1s });
 
     // Focus on the coin input box (if no pre-fill was specified)
     if (nAmount <= 0) {
