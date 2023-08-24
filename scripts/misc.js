@@ -293,6 +293,26 @@ export function isStandardAddress(strAddress) {
 }
 
 /**
+ * A quick check to see if a string is an XPub key
+ * @param {string} strXPub - The XPub to check
+ * @returns {boolean} - `true` if a valid formatted XPub, `false` if not
+ */
+export function isXPub(strXPub) {
+    if (!strXPub.startsWith('xpub')) return false;
+
+    // Attempt to Base58 decode the XPub
+    try {
+        // Slice away the `xpub` prefix and decode
+        const decoded = bs58.decode(strXPub.slice(4));
+
+        // Then verify the final length too
+        return decoded.length === 78;
+    } catch (e) {
+        return false;
+    }
+}
+
+/**
  * Attempt to safely parse a BIP21 Payment Request
  * @param {string} strReq - BIP21 Payment Request string
  * @returns {object | false}

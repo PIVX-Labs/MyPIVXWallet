@@ -14,6 +14,7 @@ import {
     createAlert,
     sleep,
     getSafeRand,
+    isXPub,
 } from './misc.js';
 import {
     refreshChainData,
@@ -668,7 +669,7 @@ export async function importWallet({
             } else {
                 // Public Key Derivation
                 try {
-                    if (privateImportValue.startsWith('xpub')) {
+                    if (isXPub(privateImportValue)) {
                         await setMasterKey(
                             new HdMasterKey({
                                 xpub: privateImportValue,

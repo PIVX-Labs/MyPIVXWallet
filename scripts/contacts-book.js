@@ -8,6 +8,7 @@ import {
     createQR,
     getImageFile,
     isStandardAddress,
+    isXPub,
     sanitizeHTML,
 } from './misc';
 import { scanQRCode } from './scanner';
@@ -138,7 +139,7 @@ export async function renderContacts(account, fPrompt = false) {
     if (!fPrompt) {
         // Render an editable Contacts Table
         for (const cContact of account.contacts || []) {
-            const strPubkey = cContact.pubkey.startsWith('xpub')
+            const strPubkey = isXPub(cContact.pubkey)
                 ? cContact.pubkey.slice(0, 32) + '…'
                 : cContact.pubkey;
             strHTML += `
@@ -189,7 +190,7 @@ export async function renderContacts(account, fPrompt = false) {
         // For prompts: the user must click an address (or cancel), and cannot add, edit or delete contacts
         strHTML += `<div id="contactsList" class="contactsList">`;
         for (const cContact of account.contacts || []) {
-            const strPubkey = cContact.pubkey.startsWith('xpub')
+            const strPubkey = isXPub(cContact.pubkey)
                 ? cContact.pubkey.slice(0, 32) + '…'
                 : cContact.pubkey;
             strHTML += `
@@ -544,7 +545,7 @@ export async function guiAddContact() {
         return createAlert('warning', 'That name is too long!', [], 2500);
 
     // Verify the address
-    if (!isStandardAddress(strAddr) && !strAddr.startsWith('xpub'))
+    if (!isStandardAddress(strAddr) && !isXPub(strAddr))
         return createAlert(
             'warning',
             'Invalid or unsupported address!',
@@ -553,7 +554,7 @@ export async function guiAddContact() {
         );
 
     // Ensure we're not adding our own XPub
-    if (strAddr.startsWith('xpub')) {
+    if (isXPub(strAddr)) {
         if (masterKey.isHD) {
             const derivationPath = getDerivationPath(masterKey.isHardwareWallet)
                 .split('/')
@@ -655,7 +656,7 @@ export async function guiAddContactPrompt(
         return createAlert('warning', 'That name is too long!', [], 2500);
 
     // Verify the address
-    if (!isStandardAddress(strPubkey) && !strPubkey.startsWith('xpub'))
+    if (!isStandardAddress(strPubkey) && !isXPub(strPubkey))
         return createAlert(
             'warning',
             'Contact has an invalid or unsupported address!',
@@ -664,7 +665,7 @@ export async function guiAddContactPrompt(
         );
 
     // Ensure we're not adding our own XPub
-    if (strPubkey.startsWith('xpub')) {
+    if (isXPub(strPubkey)) {
         if (masterKey.isHD) {
             const derivationPath = getDerivationPath(masterKey.isHardwareWallet)
                 .split('/')
@@ -1012,7 +1013,7 @@ export async function guiCheckRecipientInput(event) {
     }
 
     // Not a contact: dig deeper, is this a Standard address or XPub?
-    if (isStandardAddress(strInput) || strInput.startsWith('xpub')) {
+    if (isStandardAddress(strInput) || isXPub(strInput)) {
         // Yep!
         return (event.target.style.color = 'green');
     } else {

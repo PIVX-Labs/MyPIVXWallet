@@ -26,6 +26,7 @@ import {
     createAlert,
     generateMasternodePrivkey,
     confirmPopup,
+    isXPub,
 } from './misc.js';
 import { bytesToHex, hexToBytes, dSHA256 } from './utils.js';
 import { Database } from './database.js';
@@ -98,7 +99,7 @@ export async function createTxGUI() {
     if (cContact) strReceiverAddress = cContact.pubkey;
 
     // If this is an XPub, we'll fetch their last used 'index', and derive a new public key for enhanced privacy
-    if (strReceiverAddress.startsWith('xpub')) {
+    if (isXPub(strReceiverAddress)) {
         const cNet = getNetwork();
         if (!cNet.enabled)
             return createAlert(
