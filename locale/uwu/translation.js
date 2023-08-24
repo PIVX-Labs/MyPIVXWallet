@@ -113,7 +113,6 @@ export const uwu_translation = {
     /* Context: The "Change to" is used in-app with one of the Three options below it, i.e: "Change to Contact" */
     changeTo: 'Change tew', //Change to
     contact: 'Contactu', //Contact
-    address: 'Addwess', //Address
     xpub: 'XPubby', //XPub
 
     addContactTitle: 'Add {strName} tew Contacts', //Add {strName} to Contacts

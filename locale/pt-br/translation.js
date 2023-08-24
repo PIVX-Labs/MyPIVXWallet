@@ -112,7 +112,6 @@ export const pt_br_translation = {
     /* Context: The "Change to" is used in-app with one of the Three options below it, i.e: "Change to Contact" */
     changeTo: '', //Change to
     contact: '', //Contact
-    address: '', //Address
     xpub: '', //XPub
 
     addContactTitle: '', //Add {strName} to Contacts
