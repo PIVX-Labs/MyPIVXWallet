@@ -105,7 +105,7 @@ export async function createTxGUI() {
         if (!cNet.enabled)
             return createAlert(
                 'warning',
-                'You cannot use this Contact in offline mode!',
+                ALERTS.WALLET_OFFLINE_AUTOMATIC,
                 [],
                 3500
             );

@@ -81,7 +81,7 @@
           <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content exportKeysModalColor">
               <div class="modal-header">
-                <h5 class="modal-title" id="qrModalLabel">Receive</h5>
+                <h5 class="modal-title" data-i18n="receive" id="qrModalLabel">Receive</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                   <i class="fa-solid fa-xmark closeCross"></i>
                 </button>
@@ -135,7 +135,7 @@
 
         <br />
         <!-- // MNEMONIC MODAL -->
-        <div class="modal fade" id="mnemonicModal" tabindex="-1" role="dialog" aria-labelledby="qrModalLabel" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+        <div class="modal fade" id="mnemonicModal" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
           <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
               <div class="modal-body center-text">
@@ -416,7 +416,7 @@
                         </div>
                         <div class="modal-footer" hidden="true" id="redeemCodeModalButtons">
                           <button type="button" onclick="MPW.promoConfirm()" id="redeemCodeModalConfirmButton" class="pivx-button-big" style="float: right;">Redeem</button>
-                          <button type="button" data-dismiss="modal" aria-label="Close" class="pivx-button-big" style="float: right; opacity: 0.7;">Close</button>
+                          <button type="button" data-dismiss="modal" aria-label="Close" data-i18n="popupClose" class="pivx-button-big" style="float: right; opacity: 0.7;">Close</button>
                         </div>
                       </div>
                     </div>
@@ -428,14 +428,14 @@
                     <div class="modal-dialog modal-dialog-centered max-w-450" role="document">
                       <div class="modal-content exportKeysModalColor">
                         <div class="modal-header" id="contactsModalHeader">
-                          <h3 class="modal-title" id="contactsModalTitle" style="text-align: center; width: 100%; color: #d5adff;">Contacts</h3>
+                          <h3 class="modal-title" id="contactsModalTitle" data-i18n="contacts" style="text-align: center; width: 100%; color: #d5adff;">Contacts</h3>
                         </div>
                         <div class="modal-body px-0">
                           <div id="contactsList" class="contactsList">
                           </div>
                         </div>
                         <div class="modal-footer" hidden="true">
-                          <button type="button" data-dismiss="modal" aria-label="Close" class="pivx-button-big" style="color:#fff; float: right; opacity: 0.8;">Close</button>
+                          <button type="button" data-dismiss="modal" aria-label="Close" class="pivx-button-big" data-i18n="popupClose" style="color:#fff; float: right; opacity: 0.8;">Close</button>
                         </div>
                       </div>
                     </div>

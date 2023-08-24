@@ -106,6 +106,38 @@ var translation = {
     paymentRequestMessage: '', //Description (from the merchant)
     send: '', //Send
 
+    // Contacts System
+    receive: '', //Receive
+    contacts: '', //Contacts
+    name: '', //Name
+    username: '', //Username
+    addressOrXPub: '', //Address or XPub
+    back: '', //Back
+    chooseAContact: '', //Choose a Contact
+    createContact: '', //Create Contact
+    encryptFirstForContacts: '', //Once you hit "{button}" in the Dashboard, you can create a Contact to make receiving PIV easier!
+    shareContactURL: '', //Share Contact URL
+    setupYourContact: '', //Setup your Contact
+    receiveWithContact: '', //Receive using a simple username-based Contact
+    onlyShareContactPrivately: '', //<b>Only</b> share your Contact with trusted people (family, friends)
+
+    /* Context: The "Change to" is used in-app with one of the Three options below it, i.e: "Change to Contact" */
+    changeTo: '', //Change to
+    contact: '', //Contact
+    address: '', //Address
+    xpub: '', //XPub
+
+    addContactTitle: '', //Add {strName} to Contacts
+    addContactSubtext: '', //Once added you\'ll be able to send transactions to {strName} by their name (either typing, or clicking), no more addresses, nice \'n easy.
+    addContactWarning: '', //Ensure that this is the real "{strName}", do not accept Contact requests from unknown sources!
+
+    editContactTitle: '', //Change "{strName}" Contact
+    newName: '', //New Name
+
+    removeContactTitle: '', //Remove {strName}?
+    removeContactSubtext: '', //Are you sure you wish to remove {strName} from your Contacts?
+    removeContactNote: '', //You can add them again any time in the future.
+
     // Export
     privateKey: '', //Private Key
     viewPrivateKey: '', //View Private Key?
@@ -288,6 +320,19 @@ var translation = {
     MN_ENOUGH_BUT_NO_COLLAT: '', //You have enough balance for a Masternode, but no valid collateral UTXO of {amount} {ticker}
     MN_COLLAT_NOT_SUITABLE: '', //This is not a suitable UTXO for a Masternode
     MN_CANT_CONNECT: '', //Unable to connect to RPC node!
+
+    /* Contacts System Alerts */
+    CONTACTS_ENCRYPT_FIRST: '', //You need to hit "{button}" before you can use Contacts!
+    CONTACTS_NAME_REQUIRED: '', //A name is required!
+    CONTACTS_NAME_TOO_LONG: '', //That name is too long!
+    CONTACTS_CANNOT_ADD_YOURSELF: '', //You cannot add yourself as a Contact!
+    CONTACTS_ALREADY_EXISTS: '', //<b>Contact already exists!</b><br>You already saved this contact
+    CONTACTS_NAME_ALREADY_EXISTS: '', //<b>Contact name already exists!</b><br>This could potentially be a phishing attempt, beware!
+    CONTACTS_EDIT_NAME_ALREADY_EXISTS: '', //<b>Contact already exists!</b><br>A contact is already called "{strNewName}"!
+    CONTACTS_KEY_ALREADY_EXISTS: '', //<b>Contact already exists, but under a different name!</b><br>You have {newName} saved as <b>{oldName}</b> in your contacts
+    CONTACTS_NOT_A_CONTACT_QR: '', //This isn\'t a Contact QR!
+    CONTACTS_ADDED: '', //<b>New Contact added!</b><br>{strName} has been added, hurray!
+    CONTACTS_YOU_HAVE_NONE: '', //You have no contacts!
 
     SWITCHED_EXPLORERS: '', //<b>Switched explorer!</b><br>Now using {explorerName}
     SWITCHED_NODE: '', //<b>Switched node!</b><br>Now using {node}

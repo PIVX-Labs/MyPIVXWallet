@@ -1,7 +1,7 @@
 import { Buffer } from 'buffer';
 import { Database } from './database';
 import { doms, toClipboard } from './global';
-import { translation } from './i18n';
+import { ALERTS, translation } from './i18n';
 import {
     confirmPopup,
     createAlert,
@@ -169,10 +169,10 @@ export async function renderContacts(account, fPrompt = false) {
         strHTML += `
             <div class="d-flex px-3 addContact" style="margin-top:20px;">
                 <div class="contactName">
-                    <input id="contactsNameInput" class="m-0" placeholder="Name" autocomplete="nope">
+                    <input id="contactsNameInput" class="m-0" placeholder="${translation.name}" autocomplete="nope">
                 </div>
                 <div class="contactAddr">
-                    <input id="contactsAddressInput" class="m-0" placeholder="Address or XPub" autocomplete="nope">
+                    <input id="contactsAddressInput" class="m-0" placeholder="${translation.addressOrXPub}" autocomplete="nope">
                 </div>
                 <div class="d-flex" style="align-items: center;">
                     <div onclick="MPW.guiAddContact()" class="addContactBtn">
@@ -216,7 +216,7 @@ export async function renderContacts(account, fPrompt = false) {
         // Add the final "Back" button
         strHTML += `
             <span class="d-flex px-3 py-3 contactItem ptr" id="contactsSelector-1">
-                Back
+                ${translation.back}
             </span>
         `;
 
@@ -228,7 +228,7 @@ export async function renderContacts(account, fPrompt = false) {
 
         // Hook the Contact Prompt to the Popup UI, which resolves when the user has interacted with the Contact Prompt
         return await confirmPopup({
-            title: 'Choose a Contact',
+            title: translation.chooseAContact,
             html: strHTML,
             resolvePromise: cPrompt(),
             purpleModal: true,
@@ -311,7 +311,7 @@ export async function promptForContact() {
     const cDB = await Database.getInstance();
     const cAccount = await cDB.getAccount();
     if (!cAccount || (cAccount.contacts && cAccount.contacts.length === 0))
-        return createAlert('warning', 'You have no contacts!', [], 2500);
+        return createAlert('warning', ALERTS.CONTACTS_YOU_HAVE_NONE, [], 2500);
     return renderContacts(cAccount, true);
 }
 
@@ -337,8 +337,8 @@ export async function guiRenderContacts() {
     if (!cAccount || !cAccount.contacts) {
         return createAlert(
             'warning',
-            `You need to hit "${translation.secureYourWallet}" before you can use Contacts!`,
-            [],
+            ALERTS.CONTACTS_ENCRYPT_FIRST,
+            [{ button: translation.secureYourWallet }],
             3500
         );
     }
@@ -399,11 +399,11 @@ export async function guiRenderReceiveModal(
             const strContactURI = await localContactToURI(cAccount, strPubkey);
 
             // Render Copy Button
-            doms.domModalQrLabel.innerHTML = `Share Contact URL<i onclick="MPW.localContactToClipboard(event)" id="guiAddressCopy" class="fas fa-clipboard" style="cursor: pointer; width: 20px;"></i>`;
+            doms.domModalQrLabel.innerHTML = `${translation.shareContactURL}<i onclick="MPW.localContactToClipboard(event)" id="guiAddressCopy" class="fas fa-clipboard" style="cursor: pointer; width: 20px;"></i>`;
 
             // We'll render a short informational text, alongside a QR below for Contact scanning
             doms.domModalQR.innerHTML = `
-                <p><b>Only</b> share your Contact with trusted people (family, friends)</p>
+                <p>${translation.onlyShareContactPrivately}</p>
                 <div id="receiveModalEmbeddedQR"></div>
             `;
             const domQR = document.getElementById('receiveModalEmbeddedQR');
@@ -425,16 +425,20 @@ export async function guiRenderReceiveModal(
             if (await hasEncryptedWallet()) {
                 doms.domModalQR.innerHTML = `
                     <center>
-                        <b>Setup your Contact</b>
-                        <p>Receive using a simple username-based Contact</p>
-                        <input id="setContactName" placeholder="Username" style="text-align: center;"></input><button onclick="MPW.guiSetAccountName('setContactName')">Create Contact</button>
+                        <b>${translation.setupYourContact}</b>
+                        <p>${translation.receiveWithContact}</p>
+                        <input id="setContactName" placeholder="${translation.username}" style="text-align: center;"></input>
+                        <button onclick="MPW.guiSetAccountName('setContactName')">${translation.createContact}</button>
                     </center>
                 `;
             } else {
                 doms.domModalQR.innerHTML = `
                     <center>
-                        <b>Encrypt your wallet!</b>
-                        <p>Once you hit "${translation.secureYourWallet}" in the Dashboard, you can create a Contact to make receiving PIV easier!</p>
+                        <b>${translation.secureYourWallet}</b>
+                        <p>${translation.encryptFirstForContacts.replace(
+                            '{button}',
+                            translation.secureYourWallet
+                        )}</p>
                     </center>
                 `;
             }
@@ -465,7 +469,7 @@ export async function guiRenderReceiveModal(
 
         // We'll render a short informational text, alongside a QR below for Contact scanning
         doms.domModalQR.innerHTML = `
-            <p><b>Only</b> share your XPub with trusted people (family, friends)</p>
+            <p>${translation.onlyShareContactPrivately}</p>
             <div id="receiveModalEmbeddedQR"></div>
         `;
 
@@ -513,18 +517,19 @@ export async function guiToggleReceiveType() {
     let strNextType = '';
     switch (nNextType) {
         case RECEIVE_TYPES.CONTACT:
-            strNextType = 'Contact';
+            strNextType = translation.contact;
             break;
         case RECEIVE_TYPES.ADDRESS:
-            strNextType = 'Address';
+            strNextType = translation.address;
             break;
         case RECEIVE_TYPES.XPUB:
-            strNextType = 'XPub';
+            strNextType = translation.xpub;
             break;
     }
 
     // Render the new UI
-    doms.domModalQrReceiveTypeBtn.innerText = 'Change to ' + strNextType;
+    doms.domModalQrReceiveTypeBtn.innerText =
+        translation.changeTo + ' ' + strNextType;
     guiRenderReceiveModal(cReceiveType);
 
     // Return the new Receive Type index
@@ -540,16 +545,16 @@ export async function guiAddContact() {
 
     // Verify the name
     if (strName.length < 1)
-        return createAlert('warning', 'A name is required!', [], 2500);
+        return createAlert('warning', ALERTS.CONTACTS_NAME_REQUIRED, [], 2500);
     if (strName.length > 32)
-        return createAlert('warning', 'That name is too long!', [], 2500);
+        return createAlert('warning', ALERTS.CONTACTS_NAME_TOO_LONG, [], 2500);
 
     // Verify the address
     if (!isStandardAddress(strAddr) && !isXPub(strAddr))
         return createAlert(
             'warning',
-            'Invalid or unsupported address!',
-            [],
+            ALERTS.INVALID_ADDRESS,
+            [{ address: strAddr }],
             3000
         );
 
@@ -565,7 +570,7 @@ export async function guiAddContact() {
             if (fOurs) {
                 createAlert(
                     'warning',
-                    'You cannot add yourself as a Contact!',
+                    ALERTS.CONTACTS_CANNOT_ADD_YOURSELF,
                     [],
                     3500
                 );
@@ -577,7 +582,7 @@ export async function guiAddContact() {
         if (await masterKey.isOwnAddress(strAddr)) {
             createAlert(
                 'warning',
-                'You cannot add yourself as a Contact!',
+                ALERTS.CONTACTS_CANNOT_ADD_YOURSELF,
                 [],
                 3500
             );
@@ -595,23 +600,13 @@ export async function guiAddContact() {
 
     // If both Name and Key are saved, then they just tried re-adding the same Contact twice
     if (cContactByName && cContactByPubkey) {
-        createAlert(
-            'warning',
-            '<b>Contact already exists!</b><br>You already saved this contact',
-            [],
-            3000
-        );
+        createAlert('warning', ALERTS.CONTACTS_ALREADY_EXISTS, [], 3000);
         return true;
     }
 
     // If the Name is saved, but not key, then this *could* be a kind of Username-based phishing attempt
     if (cContactByName && !cContactByPubkey) {
-        createAlert(
-            'warning',
-            '<b>Contact name already exists!</b><br>This could potentially be a phishing attempt, beware!',
-            [],
-            4000
-        );
+        createAlert('warning', ALERTS.CONTACTS_NAME_ALREADY_EXISTS, [], 4000);
         return true;
     }
 
@@ -619,8 +614,8 @@ export async function guiAddContact() {
     if (!cContactByName && cContactByPubkey) {
         createAlert(
             'warning',
-            `<b>Contact already exists, but under a different name!</b><br>You have ${strName} saved as <b>${cContactByPubkey.label}</b> in your contacts`,
-            [],
+            ALERTS.CONTACTS_KEY_ALREADY_EXISTS,
+            [{ newName: strName }, { oldName: cContactByPubkey.label }],
             7500
         );
         return true;
@@ -651,16 +646,16 @@ export async function guiAddContactPrompt(
 ) {
     // Verify the name
     if (strName.length < 1)
-        return createAlert('warning', 'A name is required!', [], 2500);
+        return createAlert('warning', ALERTS.CONTACTS_NAME_REQUIRED, [], 2500);
     if (strName.length > 32)
-        return createAlert('warning', 'That name is too long!', [], 2500);
+        return createAlert('warning', ALERTS.CONTACTS_NAME_TOO_LONG, [], 2500);
 
     // Verify the address
     if (!isStandardAddress(strPubkey) && !isXPub(strPubkey))
         return createAlert(
             'warning',
-            'Contact has an invalid or unsupported address!',
-            [],
+            ALERTS.INVALID_ADDRESS,
+            [{ address: strPubkey }],
             4000
         );
 
@@ -677,7 +672,7 @@ export async function guiAddContactPrompt(
             if (fOurs) {
                 createAlert(
                     'warning',
-                    'You cannot add yourself as a Contact!',
+                    ALERTS.CONTACTS_CANNOT_ADD_YOURSELF,
                     [],
                     3500
                 );
@@ -689,7 +684,7 @@ export async function guiAddContactPrompt(
         if (await masterKey.isOwnAddress(strPubkey)) {
             createAlert(
                 'warning',
-                'You cannot add yourself as a Contact!',
+                ALERTS.CONTACTS_CANNOT_ADD_YOURSELF,
                 [],
                 3500
             );
@@ -707,12 +702,7 @@ export async function guiAddContactPrompt(
     // If both Name and Key are saved, then they just tried re-adding the same Contact twice
     if (cContactByName && cContactByPubkey) {
         if (fDuplicateNotif)
-            createAlert(
-                'warning',
-                '<b>Contact already exists!</b><br>You already saved this contact',
-                [],
-                3000
-            );
+            createAlert('warning', ALERTS.CONTACTS_ALREADY_EXISTS, [], 3000);
         return true;
     }
 
@@ -721,7 +711,7 @@ export async function guiAddContactPrompt(
         if (fDuplicateNotif)
             createAlert(
                 'warning',
-                '<b>Contact name already exists!</b><br>This could potentially be a phishing attempt, beware!',
+                ALERTS.CONTACTS_NAME_ALREADY_EXISTS,
                 [],
                 4000
             );
@@ -733,8 +723,8 @@ export async function guiAddContactPrompt(
         if (fDuplicateNotif)
             createAlert(
                 'warning',
-                `<b>Contact already exists, but under a different name!</b><br>You have ${strName} saved as <b>${cContactByPubkey.label}</b> in your contacts`,
-                [],
+                ALERTS.CONTACTS_KEY_ALREADY_EXISTS,
+                [{ newName: strName }, { oldName: cContactByPubkey.label }],
                 7500
             );
         return true;
@@ -743,16 +733,19 @@ export async function guiAddContactPrompt(
     // Render an 'Add to Contacts' UI
     const strHTML = `
         <p>
-            Once added you'll be able to send transactions to ${strName} by their name (either typing, or clicking), no more addresses, nice 'n easy.
+            ${translation.addContactSubtext.replace('{strName}', strName)}
             <br>
             <br>
-            <i style="opacity: 0.75">Ensure that this is the real '${strName}', do not accept Contact requests from unknown sources!</i>
+            <i style="opacity: 0.75">${translation.addContactWarning.replace(
+                '{strName}',
+                strName
+            )}</i>
         </p>
     `;
 
     // Hook the Contact Prompt to the Popup UI, which resolves when the user has interacted with the Contact Prompt
     const fAdd = await confirmPopup({
-        title: `Add ${strName} to Contacts`,
+        title: translation.addContactTitle.replace('{strName}', strName),
         html: strHTML,
     });
 
@@ -768,8 +761,8 @@ export async function guiAddContactPrompt(
         // Notify
         createAlert(
             'success',
-            `<b>New Contact added!</b><br>${strName} has been added, hurray!`,
-            [],
+            ALERTS.CONTACTS_ADDED,
+            [{ strName: strName }],
             3000
         );
     }
@@ -793,12 +786,15 @@ export async function guiEditContactNamePrompt(nIndex) {
 
     // Render an 'Add to Contacts' UI
     const strHTML = `
-        <input type="text" id="contactsNewNameInput" style="text-align: center;" placeholder="New Name">
+        <input type="text" id="contactsNewNameInput" style="text-align: center;" placeholder="${translation.newName}">
     `;
 
     // Hook the Contact Prompt to the Popup UI, which resolves when the user has interacted with the Contact Prompt
     const fContinue = await confirmPopup({
-        title: `Change '${sanitizeHTML(cContact.label)}' Contact`,
+        title: translation.editContactTitle.replace(
+            '{strName}',
+            sanitizeHTML(cContact.label)
+        ),
         html: strHTML,
     });
     if (!fContinue) return false;
@@ -806,11 +802,11 @@ export async function guiEditContactNamePrompt(nIndex) {
     // Verify the name
     const strNewName = document.getElementById('contactsNewNameInput').value;
     if (strNewName.length < 1) {
-        createAlert('warning', 'You need to set a name!', [], 2500);
+        createAlert('warning', ALERTS.CONTACTS_NAME_REQUIRED, [], 2500);
         return false;
     }
     if (strNewName.length > 32) {
-        createAlert('warning', 'That name is too long!', [], 2500);
+        createAlert('warning', ALERTS.CONTACTS_NAME_TOO_LONG, [], 2500);
         return false;
     }
 
@@ -819,10 +815,8 @@ export async function guiEditContactNamePrompt(nIndex) {
     if (cContactByNewName) {
         createAlert(
             'warning',
-            '<b>Contact already exists!</b><br>A contact is already called "' +
-                strNewName +
-                '"!',
-            [],
+            ALERTS.CONTACTS_EDIT_NAME_ALREADY_EXISTS,
+            [{ strNewName: strNewName }],
             4500
         );
         return false;
@@ -921,7 +915,7 @@ export async function guiAddContactQRPrompt() {
             return fAdded;
         }
     } else {
-        createAlert('warning', "This isn't a Contact QR!", [], 2500);
+        createAlert('warning', ALERTS.CONTACTS_NOT_A_CONTACT_QR, [], 2500);
         return false;
     }
 }
@@ -937,15 +931,19 @@ export async function guiRemoveContact(index) {
 
     // Confirm the deletion
     const fConfirmed = await confirmPopup({
-        title: 'Remove ' + sanitizeHTML(cContact.label) + '?',
+        title: translation.removeContactTitle.replace(
+            '{strName}',
+            sanitizeHTML(cContact.label)
+        ),
         html: `
             <p>
-                Are you sure you wish to remove ${sanitizeHTML(
-                    cContact.label
-                )} from your Contacts?
+                ${translation.removeContactSubtext.replace(
+                    '{strName}',
+                    sanitizeHTML(cContact.label)
+                )}
                 <br>
                 <br>
-                <i style="opacity: 0.65">You can add them again any time in the future.</i>
+                <i style="opacity: 0.65">${translation.removeContactNote}</i>
             </p>
         `,
     });
@@ -965,11 +963,11 @@ export async function guiSetAccountName(strDOM) {
     // Verify the name
     const strNewName = domInput.value.trim();
     if (strNewName.length < 1) {
-        createAlert('warning', 'You need to set a name!', [], 2500);
+        createAlert('warning', ALERTS.CONTACTS_NAME_REQUIRED, [], 2500);
         return false;
     }
     if (strNewName.length > 32) {
-        createAlert('warning', 'That name is too long!', [], 2500);
+        createAlert('warning', ALERTS.CONTACTS_NAME_TOO_LONG, [], 2500);
         return false;
     }
 

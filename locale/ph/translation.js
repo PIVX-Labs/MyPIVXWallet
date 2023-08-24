@@ -95,6 +95,38 @@ export const ph_translation = {
     paymentRequestMessage: 'Description (galing sa merchant)', //Description (from the merchant)
     send: 'Ipadala', //Send
 
+    // Contacts System
+    receive: '', //Receive
+    contacts: '', //Contacts
+    name: '', //Name
+    username: '', //Username
+    addressOrXPub: '', //Address or XPub
+    back: '', //Back
+    chooseAContact: '', //Choose a Contact
+    createContact: '', //Create Contact
+    encryptFirstForContacts: '', //Once you hit "{button}" in the Dashboard, you can create a Contact to make receiving PIV easier!
+    shareContactURL: '', //Share Contact URL
+    setupYourContact: '', //Setup your Contact
+    receiveWithContact: '', //Receive using a simple username-based Contact
+    onlyShareContactPrivately: '', //<b>Only</b> share your Contact with trusted people (family, friends)
+
+    /* Context: The "Change to" is used in-app with one of the Three options below it, i.e: "Change to Contact" */
+    changeTo: '', //Change to
+    contact: '', //Contact
+    address: '', //Address
+    xpub: '', //XPub
+
+    addContactTitle: '', //Add {strName} to Contacts
+    addContactSubtext: '', //Once added you\'ll be able to send transactions to {strName} by their name (either typing, or clicking), no more addresses, nice \'n easy.
+    addContactWarning: '', //Ensure that this is the real "{strName}", do not accept Contact requests from unknown sources!
+
+    editContactTitle: '', //Change "{strName}" Contact
+    newName: '', //New Name
+
+    removeContactTitle: '', //Remove {strName}?
+    removeContactSubtext: '', //Are you sure you wish to remove {strName} from your Contacts?
+    removeContactNote: '', //You can add them again any time in the future.
+
     // Export
     privateKey: 'Private Key', //Private Key
     viewPrivateKey: 'Tignan ang Private Key?', //View Private Key?
@@ -323,6 +355,19 @@ export const ph_translation = {
     MN_COLLAT_NOT_SUITABLE:
         'Ang UTXO na ito ay hindi angkop para sa Masternode', //This is not a suitable UTXO for a Masternode
     MN_CANT_CONNECT: 'Hindi maka-konekta sa RPC node!', //Unable to connect to RPC node!
+
+    /* Contacts System Alerts */
+    CONTACTS_ENCRYPT_FIRST: '', //You need to hit "{button}" before you can use Contacts!
+    CONTACTS_NAME_REQUIRED: '', //A name is required!
+    CONTACTS_NAME_TOO_LONG: '', //That name is too long!
+    CONTACTS_CANNOT_ADD_YOURSELF: '', //You cannot add yourself as a Contact!
+    CONTACTS_ALREADY_EXISTS: '', //<b>Contact already exists!</b><br>You already saved this contact
+    CONTACTS_NAME_ALREADY_EXISTS: '', //<b>Contact name already exists!</b><br>This could potentially be a phishing attempt, beware!
+    CONTACTS_EDIT_NAME_ALREADY_EXISTS: '', //<b>Contact already exists!</b><br>A contact is already called "{strNewName}"!
+    CONTACTS_KEY_ALREADY_EXISTS: '', //<b>Contact already exists, but under a different name!</b><br>You have {newName} saved as <b>{oldName}</b> in your contacts
+    CONTACTS_NOT_A_CONTACT_QR: '', //This isn\'t a Contact QR!
+    CONTACTS_ADDED: '', //<b>New Contact added!</b><br>{strName} has been added, hurray!
+    CONTACTS_YOU_HAVE_NONE: '', //You have no contacts!
 
     SWITCHED_EXPLORERS:
         '<b>Nagpalit ng explorer!<b></b>Ang gamit ngayon ay {explorerName}', //<b>Switched explorer!</b><br>Now using {explorerName}
