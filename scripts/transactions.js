@@ -133,23 +133,10 @@ export async function createTxGUI() {
         );
 
     // Sanity check the amount
-    let nValue = Math.round(
+    const nValue = Math.round(
         Number(doms.domSendAmountCoins.value.trim()) * COIN
     );
-    if (nValue <= 0 || isNaN(nValue))
-        return createAlert(
-            'warning',
-            ALERTS.INVALID_AMOUNT + ALERTS.SENT_NOTHING,
-            [],
-            2500
-        );
-    if (!Number.isSafeInteger(nValue))
-        return createAlert(
-            'warning',
-            ALERTS.INVALID_AMOUNT + ALERTS.MORE_THEN_8_DECIMALS,
-            [],
-            2500
-        );
+    if (!validateAmount(nValue)) return;
 
     // Create and send the TX
     const cRes = await createAndSendTransaction({
@@ -186,7 +173,7 @@ export async function delegateGUI() {
         return;
 
     // Verify the amount; Delegations must be a minimum of 1 PIV, enforced by the network
-    const nAmount = Number(doms.domStakeAmount.value.trim()) * COIN;
+    const nAmount = Math.round(Number(doms.domStakeAmount.value.trim()) * COIN);
     if (!validateAmount(nAmount, COIN)) return;
 
     // Ensure the user has an address set - if not, request one!
