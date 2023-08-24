@@ -27,6 +27,7 @@ import {
     generateMasternodePrivkey,
     confirmPopup,
     isXPub,
+    isStandardAddress,
 } from './misc.js';
 import { bytesToHex, hexToBytes, dSHA256 } from './utils.js';
 import { Database } from './database.js';
@@ -124,12 +125,11 @@ export async function createTxGUI() {
     }
 
     // Check if the Receiver Address is a valid P2PKH address
-    // TODO: this needs obvious improvements, just need to adjust the Translations system too, damnit.
-    if (strReceiverAddress.length !== 34)
+    if (!isStandardAddress(strReceiverAddress))
         return createAlert(
             'warning',
-            ALERTS.BAD_ADDR_LENGTH,
-            [{ addressLength: strReceiverAddress.length }],
+            ALERTS.INVALID_ADDRESS,
+            [{ address: strReceiverAddress }],
             2500
         );
 

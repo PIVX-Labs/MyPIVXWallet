@@ -34,6 +34,7 @@ import {
     isBase64,
     sleep,
     beautifyNumber,
+    isStandardAddress,
 } from './misc.js';
 import { cChainParams, COIN, MIN_PASS_LENGTH } from './chain_params.js';
 import { decrypt } from './aes-gcm.js';
@@ -734,10 +735,7 @@ export async function openSendQRScanner() {
     /* Check what data the scan contains - for the various QR request types */
 
     // Plain address (Length and prefix matches)
-    if (
-        cScan.data.length === 34 &&
-        cChainParams.current.PUBKEY_PREFIX.includes(cScan.data[0])
-    ) {
+    if (isStandardAddress(cScan.data)) {
         return guiPreparePayment(cScan.data);
     }
 

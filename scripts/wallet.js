@@ -15,6 +15,7 @@ import {
     sleep,
     getSafeRand,
     isXPub,
+    isStandardAddress,
 } from './misc.js';
 import {
     refreshChainData,
@@ -681,12 +682,7 @@ export async function importWallet({
                                 xpriv: privateImportValue,
                             })
                         );
-                    } else if (
-                        privateImportValue.length === 34 &&
-                        cChainParams.current.PUBKEY_PREFIX.includes(
-                            privateImportValue[0]
-                        )
-                    ) {
+                    } else if (isStandardAddress(privateImportValue)) {
                         await setMasterKey(
                             new LegacyMasterKey({
                                 address: privateImportValue,
