@@ -7,6 +7,9 @@ import { fr_translation } from '../locale/fr/translation.js';
 import { de_translation } from '../locale/de/translation.js';
 import { Database } from './database.js';
 import { fillAnalyticSelect, setTranslation } from './settings.js';
+import { renderActivityGUI, updateEncryptionGUI } from './global.js';
+import { masterKey } from './wallet.js';
+import { getNetwork } from './network.js';
 
 export const ALERTS = {};
 export let translation = {};
@@ -41,7 +44,16 @@ export function switchTranslation(langName) {
             // Apply the new i18n value to our runtime i18n sheet
             translation[strKey] = arrNewLang[strKey];
         }
+
+        // Translate static`data-i18n` tags
         translateStaticHTML(translation);
+
+        // Translate any dynamic elements necessary
+        const cNet = getNetwork();
+        if (masterKey && cNet) {
+            updateEncryptionGUI();
+            renderActivityGUI(cNet.arrTxHistory);
+        }
         loadAlerts();
         fillAnalyticSelect();
         return true;

@@ -1014,7 +1014,17 @@ export async function updateActivityGUI(fStaking = false, fNewOnly = false) {
         domLoadMore.style.display = 'none';
     }
 
+    // Render the new Activity lists
+    renderActivityGUI(arrTXs);
+}
+
+/**
+ * Renders the Activity GUIs (without syncing or refreshing)
+ * @param {Array<import('./network.js').HistoricalTx>} arrTXs
+ */
+export async function renderActivityGUI(arrTXs) {
     // For Staking: Filter the list for only Stakes, display total rewards from known history
+    const cNet = getNetwork();
     const arrStakes = arrTXs.filter((a) => a.type === HistoricalTxType.STAKE);
     const nRewards = arrStakes.reduce((a, b) => a + b.amount, 0);
     doms.domStakingRewardsTitle.innerHTML = `${
