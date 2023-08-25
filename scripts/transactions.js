@@ -1,6 +1,6 @@
 import bitjs from './bitTrx.js';
 import { debug, strColdStakingAddress } from './settings.js';
-import { ALERTS, translation } from './i18n.js';
+import { ALERTS, translation, tr } from './i18n.js';
 import {
     doms,
     getBalance,
@@ -33,11 +33,10 @@ function validateAmount(nAmountSats, nMinSats = 10000) {
     if (nAmountSats < nMinSats || isNaN(nAmountSats)) {
         createAlert(
             'warning',
-            ALERTS.INVALID_AMOUNT + ALERTS.VALIDATE_AMOUNT_LOW,
-            [
+            tr(ALERTS.INVALID_AMOUNT + ALERTS.VALIDATE_AMOUNT_LOW, [
                 { minimumAmount: nMinSats / COIN },
                 { coinTicker: cChainParams.current.TICKER },
-            ],
+            ]),
             2500
         );
         return false;
@@ -47,8 +46,10 @@ function validateAmount(nAmountSats, nMinSats = 10000) {
     if (!Number.isSafeInteger(nAmountSats)) {
         createAlert(
             'warning',
-            ALERTS.INVALID_AMOUNT + '<br>' + ALERTS.VALIDATE_AMOUNT_DECIMAL,
-            [{ coinDecimal: COIN_DECIMALS }],
+            tr(
+                ALERTS.INVALID_AMOUNT + '<br>' + ALERTS.VALIDATE_AMOUNT_DECIMAL,
+                [{ coinDecimal: COIN_DECIMALS }]
+            ),
             2500
         );
         return false;
@@ -77,15 +78,14 @@ export async function createTxGUI() {
 
     // If Staking address: redirect to staking page
     if (address.startsWith(cChainParams.current.STAKING_PREFIX)) {
-        createAlert('warning', ALERTS.STAKE_NOT_SEND, [], 7500);
+        createAlert('warning', ALERTS.STAKE_NOT_SEND, 7500);
         return doms.domStakeTab.click();
     }
 
     if (address.length !== 34)
         return createAlert(
             'warning',
-            ALERTS.BAD_ADDR_LENGTH,
-            [{ addressLength: address.length }],
+            tr(ALERTS.BAD_ADDR_LENGTH, [{ addressLength: address.length }]),
             2500
         );
 

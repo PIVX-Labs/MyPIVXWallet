@@ -1,4 +1,4 @@
-import { translateAlerts, translation } from './i18n.js';
+import { translation } from './i18n.js';
 import { doms } from './global.js';
 import qrcode from 'qrcode-generator';
 import bs58 from 'bs58';
@@ -82,10 +82,16 @@ export function downloadBlob(content, filename, contentType) {
     pom.click();
 }
 
-/* --- NOTIFICATIONS --- */
-// Alert - Do NOT display arbitrary / external errors, the use of `.innerHTML` allows for input styling at this cost.
-// Supported types: success, info, warning
-export function createAlert(type, message, alertVariables = [], timeout = 0) {
+/**
+ * Create a custom GUI Alert popup
+ *
+ * ### Do NOT display arbitrary / external errors:
+ * - The use of `.innerHTML` allows for input styling at this cost.
+ * @param {'success'|'info'|'warning'} type - The styling type of the alert
+ * @param {string} message - The message to relay to the user
+ * @param {number?} timeout - The time in `ms` until the alert expires (Defaults to never expiring)
+ */
+export function createAlert(type, message, timeout = 0) {
     const domAlert = document.createElement('div');
     domAlert.classList.add('notifyWrapper');
     domAlert.classList.add(type);
@@ -95,15 +101,6 @@ export function createAlert(type, message, alertVariables = [], timeout = 0) {
         domAlert.classList.add('bounce-ani');
         domAlert.classList.add('bounce');
     }, 100);
-
-    // Maintainer QoL adjustment: if `alertVariables` is a number, it is instead assumed to be `timeout`
-    if (typeof alertVariables === 'number') {
-        timeout = alertVariables;
-        alertVariables = [];
-    }
-
-    // Apply translations
-    const translatedMessage = translateAlerts(message, alertVariables);
 
     // Colors for types
     let typeIcon;
@@ -127,7 +124,7 @@ export function createAlert(type, message, alertVariables = [], timeout = 0) {
         <i class="fas ${typeIcon} fa-xl"></i>
     </div>
     <div class="notifyText">
-        ${translatedMessage}
+        ${message}
     </div>`;
     domAlert.destroy = () => {
         // Fully destroy timers + DOM elements, no memory leaks!

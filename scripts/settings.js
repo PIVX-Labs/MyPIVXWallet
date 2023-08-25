@@ -15,6 +15,7 @@ import {
     ALERTS,
     translation,
     arrActiveLangs,
+    tr,
 } from './i18n.js';
 import { CoinGecko, refreshPriceDisplay } from './prices.js';
 import { Database } from './database.js';
@@ -257,8 +258,7 @@ export async function setExplorer(explorer, fSilent = false) {
     if (!fSilent)
         createAlert(
             'success',
-            ALERTS.SWITCHED_EXPLORERS,
-            [{ explorerName: cExplorer.name }],
+            tr(ALERTS.SWITCHED_EXPLORERS, [{ explorerName: cExplorer.name }]),
             2250
         );
 }
@@ -273,8 +273,7 @@ async function setNode(node, fSilent = false) {
     if (!fSilent)
         createAlert(
             'success',
-            ALERTS.SWITCHED_NODE,
-            [{ node: cNode.name }],
+            tr(ALERTS.SWITCHED_NODE, [{ node: cNode.name }]),
             2250
         );
 }
@@ -420,8 +419,9 @@ async function setAnalytics(level, fSilent = false) {
     if (!fSilent)
         createAlert(
             'success',
-            ALERTS.SWITCHED_ANALYTICS,
-            [{ level: translation['analytic' + cAnalyticsLevel.name] }],
+            tr(ALERTS.SWITCHED_ANALYTICS, [
+                { level: translation['analytic' + cAnalyticsLevel.name] },
+            ]),
             2250
         );
 }
@@ -430,7 +430,7 @@ export function toggleTestnet() {
     if (fWalletLoaded) {
         // Revert testnet toggle
         doms.domTestnetToggler.checked = !doms.domTestnetToggler.checked;
-        return createAlert('warning', ALERTS.UNABLE_SWITCH_TESTNET, [], 3250);
+        return createAlert('warning', ALERTS.UNABLE_SWITCH_TESTNET, 3250);
     }
 
     // Update current chain config

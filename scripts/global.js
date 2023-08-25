@@ -1,6 +1,6 @@
 import { Mempool } from './mempool.js';
 import Masternode from './masternode.js';
-import { ALERTS, start as i18nStart, translation } from './i18n.js';
+import { ALERTS, tr, start as i18nStart, translation } from './i18n.js';
 import * as jdenticon from 'jdenticon';
 import {
     masterKey,
@@ -733,7 +733,6 @@ export async function openSendQRScanner() {
         `"${sanitizeHTML(
             cScan.data.substring(0, Math.min(cScan.data.length, 6))
         )}…" ${ALERTS.QR_SCANNER_BAD_RECEIVER}`,
-        [],
         7500
     );
 }
@@ -1361,8 +1360,10 @@ export async function importMasternode() {
                 const ticker = cChainParams.current.TICKER;
                 createAlert(
                     'warning',
-                    ALERTS.MN_NOT_ENOUGH_COLLAT,
-                    [{ amount }, { ticker }],
+                    tr(ALERTS.MN_NOT_ENOUGH_COLLAT, [
+                        { amount: amount },
+                        { ticker: ticker },
+                    ]),
                     10000
                 );
             } else {
@@ -1372,8 +1373,10 @@ export async function importMasternode() {
                 const ticker = cChainParams.current.TICKER;
                 createAlert(
                     'warning',
-                    ALERTS.MN_ENOUGH_BUT_NO_COLLAT,
-                    [{ amount }, { ticker }],
+                    tr(ALERTS.MN_ENOUGH_BUT_NO_COLLAT, [
+                        { amount },
+                        { ticker },
+                    ]),
                     10000
                 );
             }
@@ -1473,7 +1476,7 @@ export async function guiImportWallet() {
     if (!(await hasEncryptedWallet()) && fEncrypted) {
         const strDecWIF = await decrypt(strPrivKey, strPassword);
         if (!strDecWIF || strDecWIF === 'decryption failed!') {
-            return createAlert('warning', ALERTS.FAILED_TO_IMPORT, [], 6000);
+            return createAlert('warning', ALERTS.FAILED_TO_IMPORT, 6000);
         } else {
             await importWallet({
                 newWif: strDecWIF,
@@ -1503,12 +1506,7 @@ export async function guiImportWallet() {
 export async function guiEncryptWallet() {
     // Disable wallet encryption in testnet mode
     if (cChainParams.current.isTestnet)
-        return createAlert(
-            'warning',
-            ALERTS.TESTNET_ENCRYPTION_DISABLED,
-            [],
-            2500
-        );
+        return createAlert('warning', ALERTS.TESTNET_ENCRYPTION_DISABLED, 2500);
 
     // Fetch our inputs, ensure they're of decent entropy + match eachother
     const strPass = doms.domEncryptPasswordFirst.value,
@@ -1516,12 +1514,13 @@ export async function guiEncryptWallet() {
     if (strPass.length < MIN_PASS_LENGTH)
         return createAlert(
             'warning',
-            ALERTS.PASSWORD_TOO_SMALL,
-            [{ MIN_PASS_LENGTH: MIN_PASS_LENGTH }],
+            tr(ALERTS.PASSWORD_TOO_SMALL, [
+                { MIN_PASS_LENGTH: MIN_PASS_LENGTH },
+            ]),
             4000
         );
     if (strPass !== strPassRetype)
-        return createAlert('warning', ALERTS.PASSWORD_DOESNT_MATCH, [], 2250);
+        return createAlert('warning', ALERTS.PASSWORD_DOESNT_MATCH, 2250);
 
     // If this wallet is already encrypted, then we'll check for the current password and ensure it decrypts properly too
     if (await hasEncryptedWallet()) {
@@ -1535,7 +1534,7 @@ export async function guiEncryptWallet() {
 
     // Encrypt the wallet using the new password
     await encryptWallet(strPass);
-    createAlert('success', ALERTS.NEW_PASSWORD_SUCCESS, [], 5500);
+    createAlert('success', ALERTS.NEW_PASSWORD_SUCCESS, 5500);
 
     // Hide and reset the encryption modal
     $('#encryptWalletModal').modal('hide');
@@ -1599,8 +1598,7 @@ export function checkVanity() {
         e.returnValue = false;
         return createAlert(
             'warning',
-            ALERTS.UNSUPPORTED_CHARACTER,
-            [{ char: char }],
+            tr(ALERTS.UNSUPPORTED_CHARACTER, [{ char: char }]),
             3500
         );
     }
@@ -1624,7 +1622,7 @@ function stopSearch() {
 export async function generateVanityWallet() {
     if (isVanityGenerating) return stopSearch();
     if (typeof Worker === 'undefined')
-        return createAlert('error', ALERTS.UNSUPPORTED_WEBWORKERS, [], 7500);
+        return createAlert('error', ALERTS.UNSUPPORTED_WEBWORKERS, 7500);
     // Generate a vanity address with the given prefix
     if (
         doms.domPrefix.value.length === 0 ||
@@ -1649,16 +1647,14 @@ export async function generateVanityWallet() {
             if (!MAP_B58.toLowerCase().includes(char.toLowerCase()))
                 return createAlert(
                     'warning',
-                    ALERTS.UNSUPPORTED_CHARACTER,
-                    [{ char: char }],
+                    tr(ALERTS.UNSUPPORTED_CHARACTER, [{ char: char }]),
                     3500
                 );
             // We also don't want users to be mining addresses for years... so cap the letters to four until the generator is more optimized
             if (doms.domPrefix.value.length > 5)
                 return createAlert(
                     'warning',
-                    ALERTS.UNSUPPORTED_CHARACTER,
-                    [{ char: char }],
+                    tr(ALERTS.UNSUPPORTED_CHARACTER, [{ char: char }]),
                     3500
                 );
         }
@@ -1794,10 +1790,10 @@ export async function guiSetColdStakingAddress() {
             strColdAddress.length === 34
         ) {
             await setColdStakingAddress(strColdAddress);
-            createAlert('info', ALERTS.STAKE_ADDR_SET, [], 5000);
+            createAlert('info', ALERTS.STAKE_ADDR_SET, 5000);
             return true;
         } else {
-            createAlert('warning', ALERTS.STAKE_ADDR_BAD, [], 2500);
+            createAlert('warning', ALERTS.STAKE_ADDR_BAD, 2500);
             return false;
         }
     } else {
@@ -2632,7 +2628,12 @@ async function refreshMasternodeData(cMasternode, fAlert = false) {
             '{state}',
             state
         );
-        if (fAlert) createAlert('warning', ALERTS.MN_STATE, [{ state }], 6000);
+        if (fAlert)
+            createAlert(
+                'warning',
+                tr(ALERTS.MN_STATE, [{ state: state }]),
+                6000
+            );
     } else {
         // connection problem
         doms.domMnTextErrors.innerHTML = ALERTS.MN_CANT_CONNECT;
@@ -2711,7 +2712,7 @@ export async function createProposal() {
         const localProposals = account?.localProposals || [];
         localProposals.push(proposal);
         await database.addAccount({ localProposals });
-        createAlert('success', translation.PROPOSAL_CREATED, [], 7500);
+        createAlert('success', translation.PROPOSAL_CREATED, 7500);
         updateGovernanceTab();
     }
 }
@@ -2743,7 +2744,7 @@ export const beforeUnloadListener = (evt) => {
     evt.preventDefault();
     // Disable Save your wallet warning on unload
     if (!cChainParams.current.isTestnet)
-        createAlert('warning', ALERTS.SAVE_WALLET_PLEASE, [], 10000);
+        createAlert('warning', ALERTS.SAVE_WALLET_PLEASE, 10000);
     // Most browsers ignore this nowadays, but still, keep it 'just incase'
     return (evt.returnValue = translation.BACKUP_OR_ENCRYPT_WALLET);
 };

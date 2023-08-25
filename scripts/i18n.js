@@ -29,8 +29,19 @@ export const translatableLanguages = {
  */
 export function switchTranslation(langName) {
     if (arrActiveLangs.find((lang) => lang.code === langName)) {
-        translation = translatableLanguages[langName];
-        translate(translation);
+        // Load every 'active' key of the language, otherwise, we'll default the key to the EN file
+        const arrNewLang = translatableLanguages[langName];
+        for (const strKey of Object.keys(arrNewLang)) {
+            // Skip empty and/or missing i18n keys, defaulting them to EN
+            if (!arrNewLang[strKey]) {
+                translation[strKey] = translatableLanguages.en[strKey];
+                continue;
+            }
+
+            // Apply the new i18n value to our runtime i18n sheet
+            translation[strKey] = arrNewLang[strKey];
+        }
+        translateStaticHTML(translation);
         loadAlerts();
         fillAnalyticSelect();
         return true;
@@ -46,16 +57,16 @@ export function switchTranslation(langName) {
 }
 
 /**
- * Takes a string that includes {x} and replaces that based on what is in the array of objects
+ * Takes an i18n string that includes `{x}` and replaces that based on what is in the array of objects
  * @param {string} message
- * @param {array<Object>} variables
+ * @param {Array<Object>} variables
  * @returns a string with the variables implemented in the string
  *
  * @example
  * //returns "test this"
- * translateAlerts("test {x}" [x : "this"])
+ * tr("test {x}" [x: "this"])
  */
-export function translateAlerts(message, variables) {
+export function tr(message, variables) {
     variables.forEach((element) => {
         message = message.replaceAll(
             '{' + Object.keys(element)[0] + '}',
@@ -66,11 +77,11 @@ export function translateAlerts(message, variables) {
 }
 
 /**
- * Translates all the static html based on the tag data-i18n
+ * Translates all static HTML based on the `data-i18n` tag
  * @param {Array} i18nLangs
  *
  */
-export function translate(i18nLangs) {
+export function translateStaticHTML(i18nLangs) {
     if (!i18nLangs) return;
 
     document.querySelectorAll('[data-i18n]').forEach(function (element) {
@@ -161,5 +172,5 @@ export async function start() {
             setTranslation('en');
         }
     }
-    translate(translation);
+    translateStaticHTML(translation);
 }

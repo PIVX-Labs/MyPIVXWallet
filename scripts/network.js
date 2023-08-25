@@ -168,7 +168,7 @@ export class ExplorerNetwork extends Network {
     error() {
         if (this.enabled) {
             this.disable();
-            createAlert('warning', ALERTS.CONNECTION_FAILED, []);
+            createAlert('warning', ALERTS.CONNECTION_FAILED);
         }
     }
 

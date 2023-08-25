@@ -27,7 +27,7 @@ import {
     MAX_ACCOUNT_GAP,
     PRIVKEY_BYTE_LENGTH,
 } from './chain_params.js';
-import { ALERTS, translation } from './i18n.js';
+import { ALERTS, tr, translation } from './i18n.js';
 import { encrypt, decrypt } from './aes-gcm.js';
 import bs58 from 'bs58';
 import AppBtc from '@ledgerhq/hw-app-btc';
@@ -601,7 +601,6 @@ export async function importWallet({
                 return createAlert(
                     'warning',
                     ALERTS.WALLET_FIREFOX_UNSUPPORTED,
-                    [],
                     7500
                 );
             }
@@ -619,8 +618,9 @@ export async function importWallet({
 
             createAlert(
                 'info',
-                ALERTS.WALLET_HARDWARE_WALLET,
-                [{ hardwareWallet: strHardwareName }],
+                tr(ALERTS.WALLET_HARDWARE_WALLET, [
+                    { hardwareWallet: strHardwareName },
+                ]),
                 12500
             );
         } else {
@@ -683,8 +683,7 @@ export async function importWallet({
                 } catch (e) {
                     return createAlert(
                         'warning',
-                        ALERTS.FAILED_TO_IMPORT + e.message,
-                        [],
+                        ALERTS.FAILED_TO_IMPORT + '<br>' + e.message,
                         6000
                     );
                 }
@@ -911,23 +910,17 @@ export function hasHardwareWallet() {
 
 export async function hasWalletUnlocked(fIncludeNetwork = false) {
     if (fIncludeNetwork && !getNetwork().enabled)
-        return createAlert(
-            'warning',
-            ALERTS.WALLET_OFFLINE_AUTOMATIC,
-            [],
-            5500
-        );
+        return createAlert('warning', ALERTS.WALLET_OFFLINE_AUTOMATIC, 5500);
     if (!masterKey) {
         return createAlert(
             'warning',
-            ALERTS.WALLET_UNLOCK_IMPORT,
-            [
+            tr(ALERTS.WALLET_UNLOCK_IMPORT, [
                 {
                     unlock: (await hasEncryptedWallet())
                         ? 'unlock '
                         : 'import/create',
                 },
-            ],
+            ]),
             3500
         );
     } else {
@@ -995,7 +988,7 @@ async function getHardwareWalletKeys(
             transport.device.productName;
 
         // Prompt the user in both UIs
-        if (verify) createAlert('info', ALERTS.WALLET_CONFIRM_L, [], 3500);
+        if (verify) createAlert('info', ALERTS.WALLET_CONFIRM_L, 3500);
         const cPubKey = await cHardwareWallet.getWalletPublicKey(path, {
             verify,
             format: 'legacy',
@@ -1019,7 +1012,7 @@ async function getHardwareWalletKeys(
 
         // If there's no device, nudge the user to plug it in.
         if (e.message.toLowerCase().includes('no device selected')) {
-            createAlert('info', ALERTS.WALLET_NO_HARDWARE, [], 10000);
+            createAlert('info', ALERTS.WALLET_NO_HARDWARE, 10000);
             return false;
         }
 
@@ -1027,12 +1020,11 @@ async function getHardwareWalletKeys(
         if (e.message.includes("Failed to execute 'transferIn'")) {
             createAlert(
                 'info',
-                ALERTS.WALLET_HARDWARE_CONNECTION_LOST,
-                [
+                tr(ALERTS.WALLET_HARDWARE_CONNECTION_LOST, [
                     {
                         hardwareWallet: strHardwareName,
                     },
-                ],
+                ]),
                 10000
             );
             return false;
@@ -1054,12 +1046,11 @@ async function getHardwareWalletKeys(
         if (e.message.includes('is busy')) {
             createAlert(
                 'info',
-                ALERTS.WALLET_HARDWARE_BUSY,
-                [
+                tr(ALERTS.WALLET_HARDWARE_BUSY, [
                     {
                         hardwareWallet: strHardwareName,
                     },
-                ],
+                ]),
                 7500
             );
             return false;
@@ -1076,15 +1067,14 @@ async function getHardwareWalletKeys(
         // Translate the error to a user-friendly string (if possible)
         createAlert(
             'warning',
-            ALERTS.WALLET_HARDWARE_ERROR,
-            [
+            tr(ALERTS.WALLET_HARDWARE_ERROR, [
                 {
                     hardwareWallet: strHardwareName,
                 },
                 {
                     error: LEDGER_ERRS.get(e.statusCode),
                 },
-            ],
+            ]),
             5500
         );
 

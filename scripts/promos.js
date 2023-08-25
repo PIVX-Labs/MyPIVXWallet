@@ -7,7 +7,7 @@ import {
     downloadBlob,
     getAlphaNumericRand,
 } from './misc';
-import { ALERTS, translation } from './i18n';
+import { ALERTS, translation, tr } from './i18n';
 import { getNetwork } from './network';
 import { scanQRCode } from './scanner';
 import { createAndSendTransaction } from './transactions';
@@ -224,18 +224,22 @@ export async function createPromoCode(strCode, nAmount, fAddRandomness = true) {
     // Ensure the amount is sane
     const min = 0.01;
     if (nAmount < min) {
-        return createAlert('warning', ALERTS.PROMO_MIN, [
-            { min },
-            { ticker: cChainParams.current.TICKER },
-        ]);
+        return createAlert(
+            'warning',
+            tr(ALERTS.PROMO_MIN, [
+                { min },
+                { ticker: cChainParams.current.TICKER },
+            ])
+        );
     }
 
     // Ensure there's no more than half the device's cores used
     if (arrPromoCreationThreads.length >= navigator.hardwareConcurrency)
         return createAlert(
             'warning',
-            ALERTS.PROMO_MAX_QUANTITY,
-            [{ quantity: navigator.hardwareConcurrency }],
+            tr(ALERTS.PROMO_MAX_QUANTITY, [
+                { quantity: navigator.hardwareConcurrency },
+            ]),
             4000
         );
 
@@ -247,8 +251,9 @@ export async function createPromoCode(strCode, nAmount, fAddRandomness = true) {
     if (getBalance() - nReservedBalance < nAmount * COIN + PROMO_FEE * 2) {
         return createAlert(
             'warning',
-            ALERTS.PROMO_NOT_ENOUGH,
-            [{ ticker: cChainParams.current.TICKER }],
+            tr(ALERTS.PROMO_NOT_ENOUGH, [
+                { ticker: cChainParams.current.TICKER },
+            ]),
             4000
         );
     }
