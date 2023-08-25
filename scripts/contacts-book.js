@@ -504,13 +504,15 @@ export let cReceiveType = RECEIVE_TYPES.CONTACT;
 
 /**
  * Cycles through the Receive Types with each run
+ * @param {number?} nForceType - Optionally force the Receive Type
  */
-export async function guiToggleReceiveType() {
+export async function guiToggleReceiveType(nForceType = null) {
     // Figure out which Types can be used with this wallet
     const nTypeMax = masterKey.isHD ? 3 : 2;
 
     // Loop back to the first if we hit the end
-    cReceiveType = (cReceiveType + 1) % nTypeMax;
+    cReceiveType =
+        nForceType !== null ? nForceType : (cReceiveType + 1) % nTypeMax;
 
     // Convert the *next* Type to text (also runs through i18n system)
     const nNextType = (cReceiveType + 1) % nTypeMax;

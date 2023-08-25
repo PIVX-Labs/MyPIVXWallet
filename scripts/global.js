@@ -49,9 +49,11 @@ import bitjs from './bitTrx.js';
 import { checkForUpgrades } from './changelog.js';
 import { FlipDown } from './flipdown.js';
 import {
+    cReceiveType,
     getNameOrAddress,
     guiAddContactPrompt,
     guiCheckRecipientInput,
+    guiToggleReceiveType,
 } from './contacts-book.js';
 import { Buffer } from 'buffer';
 
@@ -433,6 +435,9 @@ export async function start() {
         // Import the wallet, and toggle the startup flag, which delegates the chain data refresh to settingsStart();
         if (publicKey) {
             await importWallet({ newWif: publicKey, fStartup: true });
+
+            // Update the "Receive" UI to apply Translation and Contacts updates
+            await guiToggleReceiveType(cReceiveType);
 
             // Check for Add Contact calls
             if (urlParams.has('addcontact')) {

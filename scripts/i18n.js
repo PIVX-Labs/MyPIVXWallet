@@ -7,6 +7,8 @@ import { fr_translation } from '../locale/fr/translation.js';
 import { de_translation } from '../locale/de/translation.js';
 import { Database } from './database.js';
 import { fillAnalyticSelect, setTranslation } from './settings.js';
+import { cReceiveType, guiToggleReceiveType } from './contacts-book.js';
+import { masterKey } from './wallet.js';
 
 export const ALERTS = {};
 export let translation = {};
@@ -33,6 +35,9 @@ export function switchTranslation(langName) {
         translate(translation);
         loadAlerts();
         fillAnalyticSelect();
+        if (masterKey) {
+            guiToggleReceiveType(cReceiveType);
+        }
         return true;
     } else {
         console.log(
