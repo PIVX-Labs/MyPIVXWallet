@@ -37,6 +37,7 @@ import createXpub from 'create-xpub';
 import * as jdenticon from 'jdenticon';
 import { Database } from './database.js';
 import { guiRenderCurrentReceiveModal } from './contacts-book.js';
+import { Account } from './accounts.js';
 
 export let fWalletLoaded = false;
 
@@ -876,11 +877,22 @@ export async function encryptWallet(strPassword = '') {
     // Hide the encryption warning
     doms.domGenKeyWarning.style.display = 'none';
 
-    const database = await Database.getInstance();
-    database.addAccount({
+    // Prepare to Add/Update an account in the DB
+    const cAccount = new Account({
         publicKey: await masterKey.keyToExport,
         encWif: strEncWIF,
     });
+
+    // Incase of a "Change Password", we check if an Account already exists
+    const database = await Database.getInstance();
+    if (await database.getAccount()) {
+        // Update the existing Account (new encWif) in the DB
+        await database.updateAccount(cAccount);
+    } else {
+        // Add the new Account to the DB
+        await database.addAccount(cAccount);
+    }
+
     // Remove the exit blocker, we can annoy the user less knowing the key is safe in their database!
     removeEventListener('beforeunload', beforeUnloadListener, {
         capture: true,

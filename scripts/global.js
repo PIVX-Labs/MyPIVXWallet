@@ -56,6 +56,7 @@ import {
     guiToggleReceiveType,
 } from './contacts-book.js';
 import { Buffer } from 'buffer';
+import { Account } from './accounts.js';
 
 /** A flag showing if base MPW is fully loaded or not */
 export let fIsLoaded = false;
@@ -1545,13 +1546,19 @@ export async function guiImportWallet() {
                 // Save the public key to disk for future View Only mode post-decryption
                 fSavePublicKey: true,
             });
-            const database = await Database.getInstance();
+
             if (masterKey) {
-                database.addAccount({
+                // Prepare a new Account to add
+                const cAccount = new Account({
                     publicKey: await masterKey.keyToExport,
                     encWif: strPrivKey,
                 });
+
+                // Add the new Account to the DB
+                const database = await Database.getInstance();
+                database.addAccount(cAccount);
             }
+
             // Destroy residue import data
             doms.domPrivKey.value = '';
             doms.domPrivKeyPassword.value = '';
@@ -2222,26 +2229,21 @@ async function renderProposals(arrProposals, fContested) {
                     );
 
                     const deleteProposal = async () => {
-                        // Fetch account and its localProposals array (default to [] if none exists)
-                        const { localProposals = [] } =
-                            await database.getAccount();
+                        // Fetch Account
+                        const account = await database.getAccount();
 
-                        // Find index of proposal to remove
-                        const nProposalIndex = localProposals.findIndex(
+                        // Find index of Account local proposal to remove
+                        const nProposalIndex = account.localProposals.findIndex(
                             (p) => p.txid === cProposal.mpw.txid
                         );
 
                         // If found, remove the proposal and update the account with the modified localProposals array
                         if (nProposalIndex > -1) {
-                            const account = await database.getAccount();
-                            localProposals.splice(nProposalIndex, 1);
-                            await database.addAccount({
-                                publicKey: account.publicKey,
-                                encWif: account.encWif,
-                                localProposals,
-                                contacts: account?.contacts || [],
-                                name: account?.name || '',
-                            });
+                            // Remove our proposal from it
+                            account.localProposals.splice(nProposalIndex, 1);
+
+                            // Update the DB
+                            await database.updateAccount(account, true);
                         }
                     };
 
@@ -2779,16 +2781,13 @@ export async function createProposal() {
     if (ok) {
         proposal.txid = txid;
         const database = await Database.getInstance();
+
+        // Fetch our Account, add the proposal to it
         const account = await database.getAccount();
-        const localProposals = account?.localProposals || [];
-        localProposals.push(proposal);
-        await database.addAccount({
-            publicKey: account.publicKey,
-            encWif: account.encWif,
-            localProposals,
-            contacts: account?.contacts || [],
-            name: account?.name || '',
-        });
+        account.localProposals.push(proposal);
+
+        // Update the DB
+        await database.updateAccount(account);
         createAlert('success', translation.PROPOSAL_CREATED, [], 7500);
         updateGovernanceTab();
     }

@@ -1,4 +1,5 @@
 import { Buffer } from 'buffer';
+import { Account } from './accounts';
 import { Database } from './database';
 import { doms, toClipboard } from './global';
 import { ALERTS, translation } from './i18n';
@@ -56,7 +57,7 @@ export class Contact {
 
 /**
  * Add a Contact to an Account's contact list
- * @param {{publicKey: String, encWif: String?, localProposals: Array<any>, contacts: Array<Contact>}} account - The account to add the Contact to
+ * @param {Account} account - The account to add the Contact to
  * @param {Contact} contact - The contact object
  */
 export async function addContact(account, contact) {
@@ -64,46 +65,15 @@ export async function addContact(account, contact) {
     const cDB = await Database.getInstance();
 
     // Push contact in to the account
-    const arrContacts = account?.contacts || [];
-    arrContacts.push(contact);
+    account.contacts.push(contact);
 
     // Save to the DB
-    await cDB.addAccount({
-        publicKey: account.publicKey,
-        encWif: account.encWif,
-        localProposals: account?.localProposals || [],
-        contacts: arrContacts,
-        name: account?.name || '',
-    });
-}
-
-/**
- * Search for a Contact in a given Account, by specific properties
- * @param {{publicKey: String, encWif: String?, localProposals: Array<any>, contacts: Array<Contact>}} account - The account to search for a Contact
- * @param {Object} settings
- * @param {string?} settings.name - The Name of the contact to search for
- * @param {string?} settings.pubkey - The Pubkey of the contact to search for
- * @returns {Contact?} - A Contact, if found
- */
-export function getContactBy(account, { name, pubkey }) {
-    if (!name && !pubkey)
-        throw Error(
-            'getContactBy(): At least ONE search parameter MUST be set!'
-        );
-    const arrContacts = account?.contacts || [];
-
-    // Get by Name
-    if (name) return arrContacts.find((a) => a.label === name);
-    // Get by Pubkey
-    if (pubkey) return arrContacts.find((a) => a.pubkey === pubkey);
-
-    // Nothing found
-    return null;
+    await cDB.updateAccount(account);
 }
 
 /**
  * Remove a Contact from an Account's contact list
- * @param {{publicKey: String, encWif: String?, localProposals: Array<any>, contacts: Array<Contact>}} account - The account to remove the Contact from
+ * @param {Account} account - The account to remove the Contact from
  * @param {string} pubkey - The contact pubkey
  */
 export async function removeContact(account, pubkey) {
@@ -111,24 +81,17 @@ export async function removeContact(account, pubkey) {
     const cDB = await Database.getInstance();
 
     // Find the contact by index, if it exists; splice it away
-    const arrContacts = account?.contacts || [];
-    const nIndex = arrContacts.findIndex((a) => a.pubkey === pubkey);
+    const nIndex = account.contacts.findIndex((a) => a.pubkey === pubkey);
     if (nIndex > -1) {
         // Splice out the contact, and save to DB
-        arrContacts.splice(nIndex, 1);
-        await cDB.addAccount({
-            publicKey: account.publicKey,
-            encWif: account.encWif,
-            localProposals: account?.localProposals || [],
-            contacts: account?.contacts || [],
-            name: account?.name || '',
-        });
+        account.contacts.splice(nIndex, 1);
+        await cDB.updateAccount(account, true);
     }
 }
 
 /**
  * Render an Account's contact list
- * @param {{publicKey: String, encWif: String?, localProposals: Array<any>, contacts: Array<Contact>}} account
+ * @param {Account} account
  * @param {boolean} fPrompt - If this is a Contact Selection prompt
  */
 export async function renderContacts(account, fPrompt = false) {
@@ -348,20 +311,17 @@ export async function guiRenderContacts() {
 
 /**
  * Set the current Account's Contact name
- * @param {{publicKey: String, encWif: String?, localProposals: Array<any>, contacts: Array<Contact>, name: String?}} account - The account to add the new Name to
+ * @param {Account} account - The account to add the new Name to
  * @param {String} name - The name to set
  */
 export async function setAccountContactName(account, name) {
     const cDB = await Database.getInstance();
 
+    // Set the name
+    account.name = name;
+
     // Save name to the DB
-    await cDB.addAccount({
-        publicKey: account.publicKey,
-        encWif: account.encWif,
-        localProposals: account?.localProposals || [],
-        contacts: account?.contacts || [],
-        name: name,
-    });
+    await cDB.updateAccount(account);
 }
 
 /**
@@ -597,8 +557,8 @@ export async function guiAddContact() {
     const cAccount = await cDB.getAccount();
 
     // Check this Contact isn't already saved, either fully or partially
-    const cContactByName = getContactBy(cAccount, { name: strName });
-    const cContactByPubkey = getContactBy(cAccount, { pubkey: strAddr });
+    const cContactByName = cAccount.getContactBy({ name: strName });
+    const cContactByPubkey = cAccount.getContactBy({ pubkey: strAddr });
 
     // If both Name and Key are saved, then they just tried re-adding the same Contact twice
     if (cContactByName && cContactByPubkey) {
@@ -698,8 +658,8 @@ export async function guiAddContactPrompt(
     const cAccount = await cDB.getAccount();
 
     // Check this Contact isn't already saved, either fully or partially
-    const cContactByName = getContactBy(cAccount, { name: strName });
-    const cContactByPubkey = getContactBy(cAccount, { pubkey: strPubkey });
+    const cContactByName = cAccount.getContactBy({ name: strName });
+    const cContactByPubkey = cAccount.getContactBy({ pubkey: strPubkey });
 
     // If both Name and Key are saved, then they just tried re-adding the same Contact twice
     if (cContactByName && cContactByPubkey) {
@@ -813,7 +773,7 @@ export async function guiEditContactNamePrompt(nIndex) {
     }
 
     // Check this new Name isn't already saved
-    const cContactByNewName = getContactBy(cAccount, { name: strNewName });
+    const cContactByNewName = cAccount.getContactBy({ name: strNewName });
     if (cContactByNewName) {
         createAlert(
             'warning',
@@ -828,13 +788,7 @@ export async function guiEditContactNamePrompt(nIndex) {
     cContact.label = strNewName;
 
     // Commit to DB
-    await cDB.addAccount({
-        publicKey: cAccount.publicKey,
-        encWif: cAccount.encWif,
-        localProposals: cAccount?.localProposals || [],
-        contacts: cAccount?.contacts || [],
-        name: cAccount?.name,
-    });
+    await cDB.updateAccount(cAccount);
 
     // Re-render the Contacts UI
     await renderContacts(cAccount);
@@ -863,13 +817,7 @@ export async function guiAddContactImage(nIndex) {
     cContact.icon = strImage;
 
     // Commit to DB
-    await cDB.addAccount({
-        publicKey: cAccount.publicKey,
-        encWif: cAccount.encWif,
-        localProposals: cAccount?.localProposals || [],
-        contacts: cAccount?.contacts || [],
-        name: cAccount?.name,
-    });
+    await cDB.updateAccount(cAccount);
 
     // Re-render the Contacts UI
     await renderContacts(cAccount);
@@ -1003,7 +951,7 @@ export async function guiCheckRecipientInput(event) {
     const cAccount = await cDB.getAccount();
 
     // Check if this is a Contact
-    const cContact = getContactBy(cAccount, {
+    const cContact = cAccount.getContactBy({
         name: strInput,
         pubkey: strInput,
     });
@@ -1024,7 +972,7 @@ export async function guiCheckRecipientInput(event) {
 
 /**
  * Search for a Name of a Contact from a given Account and Address
- * @param {object} cAccount - The Account to search for the Contact
+ * @param {Account} cAccount - The Account to search for the Contact
  * @param {string} address - The address to search for a Contact with
  * @returns {string} - The Name of the address Contact, or just the address if none is found
  */
@@ -1036,8 +984,8 @@ export function getNameOrAddress(cAccount, address) {
 
 /**
  * Convert the current Account's Contact to a Share URI
- * @param {object?} - An optional Account to construct the Contact URI from, if omitted, the current DB account is used
- * @param {string?} - An optional Master Public Key to attach to the Contact URI
+ * @param {Account?} account - An optional Account to construct the Contact URI from, if omitted, the current DB account is used
+ * @param {string?} pubkey - An optional Master Public Key to attach to the Contact URI
  */
 export async function localContactToURI(account, pubkey) {
     // Fetch the current Account

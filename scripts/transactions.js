@@ -31,7 +31,6 @@ import {
 } from './misc.js';
 import { bytesToHex, hexToBytes, dSHA256 } from './utils.js';
 import { Database } from './database.js';
-import { getContactBy } from './contacts-book.js';
 
 function validateAmount(nAmountSats, nMinSats = 10000) {
     // Validate the amount is a valid number, and meets the minimum (if any)
@@ -92,7 +91,7 @@ export async function createTxGUI() {
     // Check for any contacts that match the input
     const cDB = await Database.getInstance();
     const cAccount = await cDB.getAccount();
-    const cContact = getContactBy(cAccount, {
+    const cContact = cAccount.getContactBy({
         name: strRawReceiver,
         pubkey: strRawReceiver,
     });

@@ -434,6 +434,44 @@ export function isBase64(str) {
 }
 
 /**
+ * Checks if two values are of the same type.
+ *
+ * @param {any} a - The first value.
+ * @param {any} b - The second value.
+ * @returns {boolean} - `true` if the values are of the same type, `false` if not or if there was an error comparing.
+ */
+export function isSameType(a, b) {
+    try {
+        if (a === null || b === null) return a === b;
+        if (typeof a !== typeof b) return false;
+        if (typeof a === 'object')
+            return Object.getPrototypeOf(a) === Object.getPrototypeOf(b);
+        return true;
+    } catch (e) {
+        return false;
+    }
+}
+
+/**
+ * Checks if a value is 'empty'.
+ *
+ * @param {any} val - The value to check.
+ * @returns {boolean} - `true` if the value is 'empty', `false` otherwise.
+ * ---
+ * Values **considered 'empty'**: `null`, `undefined`, empty strings, empty arrays, empty objects.
+ *
+ * Values **NOT considered 'empty'**: Any non-nullish primitive value: numbers (including `0` and `NaN`), `true`, `false`, `Symbol()`, `BigInt()`.
+ */
+export function isEmpty(val) {
+    return (
+        val == null ||
+        val === '' ||
+        (Array.isArray(val) && val.length === 0) ||
+        (typeof val === 'object' && Object.keys(val).length === 0)
+    );
+}
+
+/**
  * An artificial sleep function to pause code execution
  *
  * @param {Number} ms - The milliseconds to sleep
