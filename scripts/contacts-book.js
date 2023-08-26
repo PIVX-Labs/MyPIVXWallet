@@ -951,7 +951,7 @@ export async function guiCheckRecipientInput(event) {
     const cAccount = await cDB.getAccount();
 
     // Check if this is a Contact
-    const cContact = cAccount.getContactBy({
+    const cContact = cAccount?.getContactBy({
         name: strInput,
         pubkey: strInput,
     });

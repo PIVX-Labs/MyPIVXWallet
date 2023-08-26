@@ -91,7 +91,9 @@ export async function createTxGUI() {
     // Check for any contacts that match the input
     const cDB = await Database.getInstance();
     const cAccount = await cDB.getAccount();
-    const cContact = cAccount.getContactBy({
+
+    // If we have an Account, then check our Contacts for anything matching too
+    const cContact = cAccount?.getContactBy({
         name: strRawReceiver,
         pubkey: strRawReceiver,
     });
