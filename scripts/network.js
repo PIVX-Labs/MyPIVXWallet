@@ -596,7 +596,7 @@ export class ExplorerNetwork extends Network {
         // If the public Master Key (xpub, address...) is different, then wipe TX history
         if (
             (await this.masterKey?.keyToExport) !==
-            (await masterKey.keyToExport)
+            (await masterKey?.keyToExport)
         ) {
             this.arrTxHistory = [];
         }
