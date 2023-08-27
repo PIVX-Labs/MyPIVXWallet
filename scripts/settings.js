@@ -468,6 +468,7 @@ export async function toggleTestnet() {
             setMasterKey(null);
 
             // Hide all Dashboard info, kick the user back to the "Getting Started" area
+            doms.domGenKeyWarning.style.display = 'none';
             doms.domGuiWallet.style.display = 'none';
             doms.domWipeWallet.hidden = true;
             doms.domRestoreWallet.hidden = true;
