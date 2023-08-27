@@ -481,6 +481,16 @@ export async function toggleTestnet() {
         }
     }
 
+    // Reset the "Vanity" and "Import" flows
+    doms.domPrefix.value = '';
+    doms.domPrefix.style.display = 'none';
+
+    // Show "Access Wallet" button
+    doms.domImportWallet.style.display = 'none';
+    doms.domPrivKey.style.opacity = '0';
+    doms.domAccessWallet.style.display = '';
+    doms.domAccessWalletBtn.style.display = '';
+
     mempool.UTXOs = [];
     getBalance(true);
     getStakingBalance(true);
