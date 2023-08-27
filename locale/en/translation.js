@@ -179,6 +179,13 @@ export const en_translation = {
     settingsToggleDebug: 'Debug Mode', //
     settingsToggleTestnet: 'Testnet Mode', //
 
+    // Network switching (mainnet <---> testnet)
+    netSwitchUnsavedWarningTitle: "Your {network} wallet isn't saved!", //
+    netSwitchUnsavedWarningSubtitle: 'Your {network} account is at risk!', //
+    netSwitchUnsavedWarningSubtext:
+        "If you switch to {network} before saving it, you'll lose the account!", //
+    netSwitchUnsavedWarningConfirmation: 'Are you really sure?', //
+
     // Transparency Report
     transparencyReport: 'Transparency Report',
     hit: 'A ping indicating an app load, no unique data is sent.',

@@ -182,6 +182,14 @@ export const uwu_translation = {
     settingsToggleDebug: 'Debug Mowode', //Debug Mode
     settingsToggleTestnet: 'Testnet Mowode', //Testnet Mode
 
+    // Network switching (mainnet <---> testnet)
+    netSwitchUnsavedWarningTitle: "Ur {network} wawwet isn't saved!", //Your {network} wallet isn\'t saved!
+    netSwitchUnsavedWarningSubtitle:
+        'Ur {network} account could get fucky-wuckied!', //Your {network} account is at risk!
+    netSwitchUnsavedWarningSubtext:
+        "If u switch to {network} befwore saving it, you'll lose the account!", //If you switch to {network} before saving it, you\'ll lose the account!
+    netSwitchUnsavedWarningConfirmation: 'Are u reaaaaaaaaally sure?', //Are you really sure?
+
     // Transparency Report
     transparencyReport: 'Twanspawency Repawt', //Transparency Report
     hit: 'A ping indicating an app load, no unique data is sent.♡', //A ping indicated an app load, no unique data is sent.

@@ -10,14 +10,14 @@ import {
     updateGovernanceTab,
 } from './global.js';
 import {
-    fWalletLoaded,
+    hasEncryptedWallet,
     importWallet,
     masterKey,
     setMasterKey,
 } from './wallet.js';
 import { cChainParams } from './chain_params.js';
 import { setNetwork, ExplorerNetwork, getNetwork } from './network.js';
-import { createAlert } from './misc.js';
+import { confirmPopup, createAlert } from './misc.js';
 import {
     switchTranslation,
     ALERTS,
@@ -438,10 +438,44 @@ async function setAnalytics(level, fSilent = false) {
  * Toggle between Mainnet and Testnet
  */
 export async function toggleTestnet() {
-    // Update current chain config
-    cChainParams.current = cChainParams.current.isTestnet
+    const cNextNetwork = cChainParams.current.isTestnet
         ? cChainParams.main
         : cChainParams.testnet;
+
+    // If the current wallet is not saved, we'll ask the user for confirmation, since they'll lose their wallet if they switch with an unsaved wallet!
+    if (masterKey && !(await hasEncryptedWallet())) {
+        const fContinue = await confirmPopup({
+            title: translation.netSwitchUnsavedWarningTitle.replace(
+                '{network}',
+                cChainParams.current.name
+            ),
+            html: `
+            <b>${translation.netSwitchUnsavedWarningSubtitle.replace(
+                '{network}',
+                cChainParams.current.name
+            )}</b>
+            <br>
+            ${translation.netSwitchUnsavedWarningSubtext.replace(
+                '{network}',
+                cNextNetwork.name
+            )}
+            <br>
+            <br>
+            <i style="opacity:0.65">${
+                translation.netSwitchUnsavedWarningConfirmation
+            }</i>
+        `,
+        });
+
+        if (!fContinue) {
+            // Kick back the "toggle" switch
+            doms.domTestnetToggler.checked = cChainParams.current.isTestnet;
+            return;
+        }
+    }
+
+    // Update current chain config
+    cChainParams.current = cNextNetwork;
 
     // Update UI and static tickers
     doms.domTestnet.style.display = cChainParams.current.isTestnet
@@ -455,41 +489,38 @@ export async function toggleTestnet() {
     // Update testnet toggle in settings
     doms.domTestnetToggler.checked = cChainParams.current.isTestnet;
 
-    // Switch over the wallet and keys
-    if (fWalletLoaded) {
-        // Check if the new network has an Account
-        const cDB = await Database.getInstance();
-        const cAccount = await cDB.getAccount();
-        if (cAccount?.publicKey) {
-            // Import the new wallet (overwriting the existing in-memory wallet)
-            await importWallet({ newWif: cAccount.publicKey });
-        } else {
-            // Nuke the Master Key
-            setMasterKey(null);
+    // Check if the new network has an Account
+    const cNewDB = await Database.getInstance();
+    const cNewAccount = await cNewDB.getAccount();
+    if (cNewAccount?.publicKey) {
+        // Import the new wallet (overwriting the existing in-memory wallet)
+        await importWallet({ newWif: cNewAccount.publicKey });
+    } else {
+        // Nuke the Master Key
+        setMasterKey(null);
 
-            // Hide all Dashboard info, kick the user back to the "Getting Started" area
-            doms.domGenKeyWarning.style.display = 'none';
-            doms.domGuiWallet.style.display = 'none';
-            doms.domWipeWallet.hidden = true;
-            doms.domRestoreWallet.hidden = true;
+        // Hide all Dashboard info, kick the user back to the "Getting Started" area
+        doms.domGenKeyWarning.style.display = 'none';
+        doms.domGuiWallet.style.display = 'none';
+        doms.domWipeWallet.hidden = true;
+        doms.domRestoreWallet.hidden = true;
 
-            // Set the "Wallet Options" display CSS to it's Default
-            setDisplayForAllWalletOptions('');
+        // Set the "Wallet Options" display CSS to it's Default
+        setDisplayForAllWalletOptions('');
 
-            // Hide "Import Wallet" so the user has to follow the `accessOrImportWallet()` flow
-            doms.domImportWallet.style.display = 'none';
-        }
+        // Reset the "Vanity" and "Import" flows
+        doms.domPrefix.value = '';
+        doms.domPrefix.style.display = 'none';
+
+        // Show "Access Wallet" button
+        doms.domImportWallet.style.display = 'none';
+        doms.domPrivKey.style.opacity = '0';
+        doms.domAccessWallet.style.display = '';
+        doms.domAccessWalletBtn.style.display = '';
+
+        // Hide "Import Wallet" so the user has to follow the `accessOrImportWallet()` flow
+        doms.domImportWallet.style.display = 'none';
     }
-
-    // Reset the "Vanity" and "Import" flows
-    doms.domPrefix.value = '';
-    doms.domPrefix.style.display = 'none';
-
-    // Show "Access Wallet" button
-    doms.domImportWallet.style.display = 'none';
-    doms.domPrivKey.style.opacity = '0';
-    doms.domAccessWallet.style.display = '';
-    doms.domAccessWalletBtn.style.display = '';
 
     mempool.UTXOs = [];
     getBalance(true);
