@@ -300,8 +300,9 @@ export async function guiRenderContacts() {
     if (!cAccount || !cAccount.contacts) {
         return createAlert(
             'warning',
-            ALERTS.CONTACTS_ENCRYPT_FIRST,
-            [{ button: translation.secureYourWallet }],
+            tr(ALERTS.CONTACTS_ENCRYPT_FIRST, [
+                { button: translation.secureYourWallet },
+            ]),
             3500
         );
     }
