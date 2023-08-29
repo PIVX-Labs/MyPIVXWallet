@@ -2,7 +2,7 @@ import { Buffer } from 'buffer';
 import { Account } from './accounts';
 import { Database } from './database';
 import { doms, toClipboard } from './global';
-import { ALERTS, translation } from './i18n';
+import { ALERTS, tr, translation } from './i18n';
 import {
     confirmPopup,
     createAlert,
@@ -395,10 +395,9 @@ export async function guiRenderReceiveModal(
                 doms.domModalQR.innerHTML = `
                     <center>
                         <b>${translation.secureYourWallet}</b>
-                        <p>${translation.encryptFirstForContacts.replace(
-                            '{button}',
-                            translation.secureYourWallet
-                        )}</p>
+                        <p>${tr(translation.encryptFirstForContacts, [
+                            { button: translation.secureYourWallet },
+                        ])}</p>
                     </center>
                 `;
             }
@@ -695,19 +694,18 @@ export async function guiAddContactPrompt(
     // Render an 'Add to Contacts' UI
     const strHTML = `
         <p>
-            ${translation.addContactSubtext.replace('{strName}', strName)}
+            ${tr(translation.addContactSubtext, [{ strName: strName }])}
             <br>
             <br>
-            <i style="opacity: 0.75">${translation.addContactWarning.replace(
-                '{strName}',
-                strName
-            )}</i>
+            <i style="opacity: 0.75">${tr(translation.addContactWarning, [
+                { strName: strName },
+            ])}</i>
         </p>
     `;
 
     // Hook the Contact Prompt to the Popup UI, which resolves when the user has interacted with the Contact Prompt
     const fAdd = await confirmPopup({
-        title: translation.addContactTitle.replace('{strName}', strName),
+        title: tr(translation.addContactTitle, [{ strName: strName }]),
         html: strHTML,
     });
 
@@ -753,10 +751,9 @@ export async function guiEditContactNamePrompt(nIndex) {
 
     // Hook the Contact Prompt to the Popup UI, which resolves when the user has interacted with the Contact Prompt
     const fContinue = await confirmPopup({
-        title: translation.editContactTitle.replace(
-            '{strName}',
-            sanitizeHTML(cContact.label)
-        ),
+        title: tr(translation.editContactTitle, [
+            { strName: sanitizeHTML(cContact.label) },
+        ]),
         html: strHTML,
     });
     if (!fContinue) return false;
@@ -881,16 +878,14 @@ export async function guiRemoveContact(index) {
 
     // Confirm the deletion
     const fConfirmed = await confirmPopup({
-        title: translation.removeContactTitle.replace(
-            '{strName}',
-            sanitizeHTML(cContact.label)
-        ),
+        title: tr(translation.removeContactTitle, [
+            { strName: sanitizeHTML(cContact.label) },
+        ]),
         html: `
             <p>
-                ${translation.removeContactSubtext.replace(
-                    '{strName}',
-                    sanitizeHTML(cContact.label)
-                )}
+                ${tr(translation.removeContactSubtext, [
+                    { strName: sanitizeHTML(cContact.label) },
+                ])}
                 <br>
                 <br>
                 <i style="opacity: 0.65">${translation.removeContactNote}</i>

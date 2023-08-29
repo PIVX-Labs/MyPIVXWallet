@@ -2711,10 +2711,9 @@ async function refreshMasternodeData(cMasternode, fAlert = false) {
         await database.addMasternode(cMasternode);
     } else if (cMasternodeData.status === 'REMOVED') {
         const state = cMasternodeData.status;
-        doms.domMnTextErrors.innerHTML = ALERTS.MN_STATE.replace(
-            '{state}',
-            state
-        );
+        doms.domMnTextErrors.innerHTML = tr(ALERTS.MN_STATE, [
+            { state: state },
+        ]);
         if (fAlert)
             createAlert(
                 'warning',

@@ -445,20 +445,17 @@ export async function toggleTestnet() {
     // If the current wallet is not saved, we'll ask the user for confirmation, since they'll lose their wallet if they switch with an unsaved wallet!
     if (masterKey && !(await hasEncryptedWallet())) {
         const fContinue = await confirmPopup({
-            title: translation.netSwitchUnsavedWarningTitle.replace(
-                '{network}',
-                cChainParams.current.name
-            ),
+            title: tr(translation.netSwitchUnsavedWarningTitle, [
+                { network: cChainParams.current.name },
+            ]),
             html: `
-            <b>${translation.netSwitchUnsavedWarningSubtitle.replace(
-                '{network}',
-                cChainParams.current.name
-            )}</b>
+            <b>${tr(translation.netSwitchUnsavedWarningSubtitle, [
+                { network: cChainParams.current.name },
+            ])}</b>
             <br>
-            ${translation.netSwitchUnsavedWarningSubtext.replace(
-                '{network}',
-                cNextNetwork.name
-            )}
+            ${tr(translation.netSwitchUnsavedWarningSubtext, [
+                { network: cNextNetwork.name },
+            ])}
             <br>
             <br>
             <i style="opacity:0.65">${
