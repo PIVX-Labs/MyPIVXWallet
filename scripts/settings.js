@@ -4,6 +4,7 @@ import {
     getStakingBalance,
     mempool,
     refreshChainData,
+    renderActivityGUI,
     setDisplayForAllWalletOptions,
     updateActivityGUI,
     updateEncryptionGUI,
@@ -518,6 +519,9 @@ export async function toggleTestnet() {
         // Hide "Import Wallet" so the user has to follow the `accessOrImportWallet()` flow
         doms.domImportWallet.style.display = 'none';
     }
+
+    // Re-render the Activity UI as empty
+    await renderActivityGUI([]);
 
     mempool.UTXOs = [];
     getBalance(true);
