@@ -2,14 +2,22 @@ import {
     doms,
     getBalance,
     getStakingBalance,
+    mempool,
     refreshChainData,
+    setDisplayForAllWalletOptions,
     updateActivityGUI,
+    updateEncryptionGUI,
     updateGovernanceTab,
 } from './global.js';
-import { fWalletLoaded, masterKey } from './wallet.js';
+import {
+    hasEncryptedWallet,
+    importWallet,
+    masterKey,
+    setMasterKey,
+} from './wallet.js';
 import { cChainParams } from './chain_params.js';
 import { setNetwork, ExplorerNetwork, getNetwork } from './network.js';
-import { createAlert } from './misc.js';
+import { confirmPopup, createAlert } from './misc.js';
 import {
     switchTranslation,
     ALERTS,
@@ -426,20 +434,50 @@ async function setAnalytics(level, fSilent = false) {
         );
 }
 
-export function toggleTestnet() {
-    if (fWalletLoaded) {
-        // Revert testnet toggle
-        doms.domTestnetToggler.checked = !doms.domTestnetToggler.checked;
-        return createAlert('warning', ALERTS.UNABLE_SWITCH_TESTNET, 3250);
-    }
-
-    // Update current chain config
-    cChainParams.current = cChainParams.current.isTestnet
+/**
+ * Toggle between Mainnet and Testnet
+ */
+export async function toggleTestnet() {
+    const cNextNetwork = cChainParams.current.isTestnet
         ? cChainParams.main
         : cChainParams.testnet;
 
+    // If the current wallet is not saved, we'll ask the user for confirmation, since they'll lose their wallet if they switch with an unsaved wallet!
+    if (masterKey && !(await hasEncryptedWallet())) {
+        const fContinue = await confirmPopup({
+            title: translation.netSwitchUnsavedWarningTitle.replace(
+                '{network}',
+                cChainParams.current.name
+            ),
+            html: `
+            <b>${translation.netSwitchUnsavedWarningSubtitle.replace(
+                '{network}',
+                cChainParams.current.name
+            )}</b>
+            <br>
+            ${translation.netSwitchUnsavedWarningSubtext.replace(
+                '{network}',
+                cNextNetwork.name
+            )}
+            <br>
+            <br>
+            <i style="opacity:0.65">${
+                translation.netSwitchUnsavedWarningConfirmation
+            }</i>
+        `,
+        });
+
+        if (!fContinue) {
+            // Kick back the "toggle" switch
+            doms.domTestnetToggler.checked = cChainParams.current.isTestnet;
+            return;
+        }
+    }
+
+    // Update current chain config
+    cChainParams.current = cNextNetwork;
+
     // Update UI and static tickers
-    //TRANSLATIONS
     doms.domTestnet.style.display = cChainParams.current.isTestnet
         ? ''
         : 'none';
@@ -451,12 +489,47 @@ export function toggleTestnet() {
     // Update testnet toggle in settings
     doms.domTestnetToggler.checked = cChainParams.current.isTestnet;
 
-    fillExplorerSelect();
-    fillNodeSelect();
+    // Check if the new network has an Account
+    const cNewDB = await Database.getInstance();
+    const cNewAccount = await cNewDB.getAccount();
+    if (cNewAccount?.publicKey) {
+        // Import the new wallet (overwriting the existing in-memory wallet)
+        await importWallet({ newWif: cNewAccount.publicKey });
+    } else {
+        // Nuke the Master Key
+        setMasterKey(null);
+
+        // Hide all Dashboard info, kick the user back to the "Getting Started" area
+        doms.domGenKeyWarning.style.display = 'none';
+        doms.domGuiWallet.style.display = 'none';
+        doms.domWipeWallet.hidden = true;
+        doms.domRestoreWallet.hidden = true;
+
+        // Set the "Wallet Options" display CSS to it's Default
+        setDisplayForAllWalletOptions('');
+
+        // Reset the "Vanity" and "Import" flows
+        doms.domPrefix.value = '';
+        doms.domPrefix.style.display = 'none';
+
+        // Show "Access Wallet" button
+        doms.domImportWallet.style.display = 'none';
+        doms.domPrivKey.style.opacity = '0';
+        doms.domAccessWallet.style.display = '';
+        doms.domAccessWalletBtn.style.display = '';
+
+        // Hide "Import Wallet" so the user has to follow the `accessOrImportWallet()` flow
+        doms.domImportWallet.style.display = 'none';
+    }
+
+    mempool.UTXOs = [];
     getBalance(true);
     getStakingBalance(true);
-    updateActivityGUI();
-    updateGovernanceTab();
+    await updateEncryptionGUI(!!masterKey);
+    await fillExplorerSelect();
+    await fillNodeSelect();
+    await updateActivityGUI();
+    await updateGovernanceTab();
 }
 
 export function toggleDebug() {

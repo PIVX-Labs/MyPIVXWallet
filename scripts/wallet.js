@@ -11,14 +11,15 @@ import {
     confirmPopup,
     writeToUint8,
     pubPrebaseLen,
-    createQR,
     createAlert,
     sleep,
     getSafeRand,
+    isXPub,
+    isStandardAddress,
 } from './misc.js';
 import {
     refreshChainData,
-    hideAllWalletOptions,
+    setDisplayForAllWalletOptions,
     getBalance,
     getStakingBalance,
 } from './global.js';
@@ -35,6 +36,8 @@ import TransportWebUSB from '@ledgerhq/hw-transport-webusb';
 import createXpub from 'create-xpub';
 import * as jdenticon from 'jdenticon';
 import { Database } from './database.js';
+import { guiRenderCurrentReceiveModal } from './contacts-book.js';
+import { Account } from './accounts.js';
 
 export let fWalletLoaded = false;
 
@@ -67,7 +70,7 @@ class MasterKey {
 
     /**
      * @param {String} [path] - BIP32 path pointing to the private key.
-     * @return {String} encoded private key
+     * @return {Promise<String>} encoded private key
      * @abstract
      */
     async getPrivateKey(path) {
@@ -77,7 +80,7 @@ class MasterKey {
 
     /**
      * @param {String} [path] - BIP32 path pointing to the address
-     * @return {String} Address
+     * @return {Promise<String>} Address
      * @abstract
      */
     async getAddress(path) {
@@ -189,6 +192,17 @@ class MasterKey {
         const address = await this.getAddress(path);
         return [address, path];
     }
+
+    /**
+     * Derive the current address (by internal index)
+     * @return {Promise<String>} Address
+     * @abstract
+     */
+    async getCurrentAddress() {
+        return await this.getAddress(
+            getDerivationPath(this.isHardwareWallet, 0, 0, this.#addressIndex)
+        );
+    }
 }
 
 export class HdMasterKey extends MasterKey {
@@ -254,7 +268,10 @@ export class HdMasterKey extends MasterKey {
         if (this._isViewOnly) return this._hdKey.publicExtendedKey;
         // We need the xpub to point at the account level
         return this._hdKey.derive(
-            getDerivationPath(false).split('/').slice(0, 4).join('/')
+            getDerivationPath(false, 0, 0, 0, false)
+                .split('/')
+                .slice(0, 4)
+                .join('/')
         ).publicExtendedKey;
     }
 }
@@ -300,12 +317,11 @@ export class HardwareWalletMasterKey extends MasterKey {
         return false;
     }
     get keyToExport() {
-        return this.getxpub(
-            getDerivationPath(true)
-                .split('/')
-                .filter((v) => !v.includes("'"))
-                .join('/')
-        );
+        const derivationPath = getDerivationPath(masterKey.isHardwareWallet)
+            .split('/')
+            .slice(0, 4)
+            .join('/');
+        return this.getxpub(derivationPath);
     }
 }
 
@@ -375,13 +391,20 @@ export function getDerivationPath(
     fLedger = false,
     nAccount = 0,
     nReceiving = 0,
-    nIndex = 0
+    nIndex = 0,
+    /**
+     * When `true` will derive based on local wallet properties, when `false` it
+     * will default to only accept given params and ignore the local configuration
+     * @type {boolean}
+     */
+    fLocalWallet = true
 ) {
-    // Coin-Type is different on Ledger, as such, we modify it if we're using a Ledger to derive a key
-    const strCoinType = fLedger
-        ? cChainParams.current.BIP44_TYPE_LEDGER
-        : cChainParams.current.BIP44_TYPE;
-    if (masterKey && !masterKey.isHD && !fLedger) {
+    // Coin-Type is different on Ledger, as such, for local wallets; we modify it if we're using a Ledger to derive a key
+    const strCoinType =
+        fLocalWallet && fLedger
+            ? cChainParams.current.BIP44_TYPE_LEDGER
+            : cChainParams.current.BIP44_TYPE;
+    if (fLocalWallet && masterKey && !masterKey.isHD && !fLedger) {
         return `:)//${strCoinType}'`;
     }
     return `m/44'/${strCoinType}'/${nAccount}'/${nReceiving}/${nIndex}`;
@@ -574,7 +597,6 @@ export function deriveAddress({ pkBytes, publicKey, output = 'ENCODED' }) {
  * @param {string | Array<number>} options.newWif - The import data (if omitted, the UI input is accessed)
  * @param {boolean} options.fRaw - Whether the import data is raw bytes or encoded (WIF, xpriv, seed)
  * @param {boolean} options.isHardwareWallet - Whether the import is from a Hardware wallet or not
- * @param {boolean} options.skipConfirmation - Whether to skip the import UI confirmation or not
  * @param {boolean} options.fSavePublicKey - Whether to save the derived public key to disk (for View Only mode)
  * @param {boolean} options.fStartup - Whether the import is at Startup or at Runtime
  * @returns {Promise<void>}
@@ -583,17 +605,12 @@ export async function importWallet({
     newWif = false,
     fRaw = false,
     isHardwareWallet = false,
-    skipConfirmation = false,
     fSavePublicKey = false,
     fStartup = false,
 } = {}) {
-    const strImportConfirm =
-        "Do you really want to import a new address? If you haven't saved the last private key, the wallet will be LOST forever.";
-    const walletConfirm =
-        fWalletLoaded && !skipConfirmation
-            ? await confirmPopup({ html: strImportConfirm })
-            : true;
-
+    // TODO: remove `walletConfirm`, it is useless as Accounts cannot be overriden, and multi-accounts will come soon anyway
+    // ... just didn't want to add a huge whitespace change from removing the `if (walletConfirm) {` line
+    const walletConfirm = true;
     if (walletConfirm) {
         if (isHardwareWallet) {
             // Firefox does NOT support WebUSB, thus cannot work with Hardware wallets out-of-the-box
@@ -650,7 +667,7 @@ export async function importWallet({
             } else {
                 // Public Key Derivation
                 try {
-                    if (privateImportValue.startsWith('xpub')) {
+                    if (isXPub(privateImportValue)) {
                         await setMasterKey(
                             new HdMasterKey({
                                 xpub: privateImportValue,
@@ -662,12 +679,7 @@ export async function importWallet({
                                 xpriv: privateImportValue,
                             })
                         );
-                    } else if (
-                        privateImportValue.length === 34 &&
-                        cChainParams.current.PUBKEY_PREFIX.includes(
-                            privateImportValue[0]
-                        )
-                    ) {
+                    } else if (isStandardAddress(privateImportValue)) {
                         await setMasterKey(
                             new LegacyMasterKey({
                                 address: privateImportValue,
@@ -717,15 +729,9 @@ export async function importWallet({
         );
         jdenticon.update('#identicon');
 
-        // Hide the encryption prompt if the user is in Testnet mode
-        // ... or is using a hardware wallet, or is view-only mode.
-        if (
-            !(
-                cChainParams.current.isTestnet ||
-                isHardwareWallet ||
-                masterKey.isViewOnly
-            )
-        ) {
+        // Hide the encryption prompt if the user is using
+        // a hardware wallet, or is view-only mode.
+        if (!(isHardwareWallet || masterKey.isViewOnly)) {
             if (
                 // If the wallet was internally imported (not UI pasted), like via vanity, display the encryption prompt
                 (((fRaw && newWif.length) || newWif) &&
@@ -738,6 +744,9 @@ export async function importWallet({
                 // If the wallet was pasted and is an encrypted import, display the lock wallet UI
                 doms.domWipeWallet.hidden = false;
             }
+        } else {
+            // Hide the encryption UI
+            doms.domGenKeyWarning.style.display = 'none';
         }
 
         // Fetch state from explorer, if this import was post-startup
@@ -747,7 +756,7 @@ export async function importWallet({
         }
 
         // Hide all wallet starter options
-        hideAllWalletOptions();
+        setDisplayForAllWalletOptions('none');
     }
 }
 
@@ -755,7 +764,7 @@ export async function importWallet({
  * Set or replace the active Master Key with a new Master Key
  * @param {MasterKey} mk - The new Master Key to set active
  */
-async function setMasterKey(mk) {
+export async function setMasterKey(mk) {
     masterKey = mk;
     // Update the network master key
     await getNetwork().setMasterKey(masterKey);
@@ -763,12 +772,9 @@ async function setMasterKey(mk) {
 
 // Wallet Generation
 export async function generateWallet(noUI = false) {
-    const strImportConfirm =
-        "Do you really want to import a new address? If you haven't saved the last private key, the wallet will be LOST forever.";
-    const walletConfirm =
-        fWalletLoaded && !noUI
-            ? await confirmPopup({ html: strImportConfirm })
-            : true;
+    // TODO: remove `walletConfirm`, it is useless as Accounts cannot be overriden, and multi-accounts will come soon anyway
+    // ... just didn't want to add a huge whitespace change from removing the `if (walletConfirm) {` line
+    const walletConfirm = true;
     if (walletConfirm) {
         const mnemonic = generateMnemonic();
 
@@ -781,8 +787,7 @@ export async function generateWallet(noUI = false) {
         await setMasterKey(new HdMasterKey({ seed }));
         fWalletLoaded = true;
 
-        if (!cChainParams.current.isTestnet)
-            doms.domGenKeyWarning.style.display = 'block';
+        doms.domGenKeyWarning.style.display = 'block';
         // Add a listener to block page unloads until we are sure the user has saved their keys, safety first!
         addEventListener('beforeunload', beforeUnloadListener, {
             capture: true,
@@ -790,7 +795,7 @@ export async function generateWallet(noUI = false) {
 
         // Display the dashboard
         doms.domGuiWallet.style.display = 'block';
-        hideAllWalletOptions();
+        setDisplayForAllWalletOptions('none');
 
         // Update identicon
         doms.domIdenticon.dataset.jdenticonValue = masterKey.getAddress(
@@ -860,11 +865,22 @@ export async function encryptWallet(strPassword = '') {
     // Hide the encryption warning
     doms.domGenKeyWarning.style.display = 'none';
 
-    const database = await Database.getInstance();
-    database.addAccount({
+    // Prepare to Add/Update an account in the DB
+    const cAccount = new Account({
         publicKey: await masterKey.keyToExport,
         encWif: strEncWIF,
     });
+
+    // Incase of a "Change Password", we check if an Account already exists
+    const database = await Database.getInstance();
+    if (await database.getAccount()) {
+        // Update the existing Account (new encWif) in the DB
+        await database.updateAccount(cAccount);
+    } else {
+        // Add the new Account to the DB
+        await database.addAccount(cAccount);
+    }
+
     // Remove the exit blocker, we can annoy the user less knowing the key is safe in their database!
     removeEventListener('beforeunload', beforeUnloadListener, {
         capture: true,
@@ -885,7 +901,6 @@ export async function decryptWallet(strPassword = '') {
     } else {
         await importWallet({
             newWif: strDecWIF,
-            skipConfirmation: true,
             // Save the public key to disk for View Only mode
             fSavePublicKey: true,
         });
@@ -950,16 +965,9 @@ export async function getNewAddress({
         }
     }
 
+    // If we're generating a new address manually, then render the new address in our Receive Modal
     if (updateGUI) {
-        createQR('pivx:' + address, doms.domModalQR);
-        doms.domModalQrLabel.innerHTML =
-            'pivx:' +
-            address +
-            `<i onclick="MPW.toClipboard('${address}', this)" id="guiAddressCopy" class="fas fa-clipboard" style="cursor: pointer; width: 20px;"></i>`;
-        doms.domModalQR.firstChild.style.width = '100%';
-        doms.domModalQR.firstChild.style.height = 'auto';
-        doms.domModalQR.firstChild.classList.add('no-antialias');
-        document.getElementById('clipboard').value = address;
+        guiRenderCurrentReceiveModal();
     }
 
     return [address, path];

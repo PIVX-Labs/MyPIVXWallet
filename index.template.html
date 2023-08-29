@@ -77,11 +77,11 @@
         <!-- // NAVBAR -->
 
         <!-- // QR MODAL -->
-        <div class="modal fade" id="qrModal" tabindex="-1" role="dialog" aria-labelledby="qrModalLabel" aria-hidden="true">
+        <div class="modal fade" style="width: 375px;" id="qrModal" tabindex="-1" role="dialog" aria-labelledby="qrModalLabel" aria-hidden="true">
           <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content exportKeysModalColor">
               <div class="modal-header">
-                <h5 class="modal-title" id="qrModalLabel"><span data-i18n="address" >Address</span> QR</h5>
+                <h5 class="modal-title" data-i18n="receive" id="qrModalLabel">Receive</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                   <i class="fa-solid fa-xmark closeCross"></i>
                 </button>
@@ -89,6 +89,11 @@
               <div class="modal-body center-text">
                 <code id="ModalQRLabel" class="wallet-code"></code>
                 <div id="ModalQR" style="padding: 17px 10px 10px 10px;" class="auto-fit"></div>
+                <center>
+                  <div id="ModalQRReceiveTypeBtn" onclick="MPW.guiToggleReceiveType()" style="cursor: pointer; border: 0px; border-radius: 7px; padding: 6px 10px; margin: 0px 1px; background: linear-gradient(183deg, #9621ff9c, #7d21ffc7); color: #fff; font-weight: bold; width: fit-content; margin: 20px 0px;">
+                    Change to Address
+                  </div>
+                </center>
               </div>
             </div>
           </div>
@@ -130,7 +135,7 @@
 
         <br />
         <!-- // MNEMONIC MODAL -->
-        <div class="modal fade" id="mnemonicModal" tabindex="-1" role="dialog" aria-labelledby="qrModalLabel" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+        <div class="modal fade" id="mnemonicModal" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
           <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
               <div class="modal-body center-text">
@@ -166,8 +171,8 @@
         <br />
         <!-- // CONFIRM MODAL -->
         <div class="modal" id="confirmModal" tabindex="-1" style="z-index: 2000; background-color: #00000063;" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
-          <div class="modal-dialog modal-dialog-centered max-w-600" role="document">
-            <div class="modal-content">
+          <div id="confirmModalDialog" class="modal-dialog modal-dialog-centered max-w-600" role="document">
+            <div id="confirmModalMain" class="modal-content">
               <div class="modal-header" id="confirmModalHeader">
                 <h3 class="modal-title" id="confirmModalTitle" style="text-align: center; width: 100%; color: #8e21ff;"></h3>
               </div>
@@ -411,12 +416,31 @@
                         </div>
                         <div class="modal-footer" hidden="true" id="redeemCodeModalButtons">
                           <button type="button" onclick="MPW.promoConfirm()" id="redeemCodeModalConfirmButton" class="pivx-button-big" style="float: right;">Redeem</button>
-                          <button type="button" data-dismiss="modal" aria-label="Close" class="pivx-button-big" style="float: right; opacity: 0.7;">Close</button>
+                          <button type="button" data-dismiss="modal" aria-label="Close" data-i18n="popupClose" class="pivx-button-big" style="float: right; opacity: 0.7;">Close</button>
                         </div>
                       </div>
                     </div>
                   </div>
                   <!-- // Redeem Code (PIVX Promos) -->
+
+                  <!-- Contacts Modal -->
+                  <div class="modal" id="contactsModal" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+                    <div class="modal-dialog modal-dialog-centered max-w-450" role="document">
+                      <div class="modal-content exportKeysModalColor">
+                        <div class="modal-header" id="contactsModalHeader">
+                          <h3 class="modal-title" id="contactsModalTitle" data-i18n="contacts" style="text-align: center; width: 100%; color: #d5adff;">Contacts</h3>
+                        </div>
+                        <div class="modal-body px-0">
+                          <div id="contactsList" class="contactsList">
+                          </div>
+                        </div>
+                        <div class="modal-footer" hidden="true">
+                          <button type="button" data-dismiss="modal" aria-label="Close" class="pivx-button-big" data-i18n="popupClose" style="color:#fff; float: right; opacity: 0.8;">Close</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- // Contacts Modal -->
 
                   <!-- WALLET FEATURES -->
                   <div id="guiWallet" style="display: none;">
@@ -444,6 +468,9 @@
                                         </a>
                                         <a class="dropdown-item ptr" onclick="MPW.openExplorer()">
                                           <i class="fa-solid fa-magnifying-glass"></i> <span data-i18n="viewOnExplorer">View on Explorer</span>
+                                        </a>
+                                        <a class="dropdown-item ptr" onclick="MPW.guiRenderContacts()" data-toggle="modal" data-target="#contactsModal">
+                                          <i class="fa-solid fa-address-book"></i> <span data-i18n="contactsBook">Contacts</span>
                                         </a>
                                         <a id="guiExportWalletItem" class="dropdown-item ptr" data-toggle="modal" data-target="#exportPrivateKeysModal" data-backdrop="static" data-keyboard="false" onclick="MPW.toggleExportUI()">
                                           <i class="fas fa-key"></i> <span data-i18n="export">Export</span>
@@ -481,7 +508,7 @@
                               </div>
 
                               <div class="col-6 d-flex" style="justify-content: flex-end;">
-                                <div class="dcWallet-sDeposit" data-toggle="modal" data-target="#qrModal">
+                                <div class="dcWallet-sDeposit" onclick="MPW.guiRenderCurrentReceiveModal()" data-toggle="modal" data-target="#qrModal">
                                   <i class="fas fa-arrow-down"></i>  
                                 </div>
                               </div>
@@ -547,9 +574,10 @@
                         <label data-i18n="address">Address</label><br />
                         
                         <div class="input-group mb-3">
-                          <input class="btn-group-input" data-i18n="receivingAddress" style="font-family: monospace;" type="text" id="address1s" placeholder="Receiving address" autocomplete="nope" />
+                          <input class="btn-group-input" data-i18n="receivingAddress" oninput='MPW.guiCheckRecipientInput(event)' style="font-family: monospace;" type="text" id="address1s" placeholder="Receiving address" autocomplete="nope" />
                           <div class="input-group-append">
                             <span class="input-group-text ptr" onclick="MPW.openSendQRScanner()"><i class="fa-solid fa-qrcode fa-2xl"></i></span>
+                            <span class="input-group-text ptr" onclick="MPW.guiSelectContact(MPW.doms.domAddress1s)"><i class="fa-solid fa-address-book fa-2xl"></i></span>
                           </div>
                         </div>
 

@@ -2396,6 +2396,10 @@ a {
   color:#fff;
 }
 
+.exportKeysModalColor h3 {
+    color:#d5adff!important;
+}
+
 .dcWallet-privateKeyDiv {
   display: flex;
   width: 100%;
@@ -3434,4 +3438,83 @@ select.form-control option {
     .sliderDisplay {
         display: none;
     }
+}
+
+@media (min-width: 768px) {
+    .max-w-450 {
+        max-width: 450px;
+    }
+}
+
+.contactsList .contactItem {
+    transition: all .25s ease-in-out;
+}
+
+.contactsList .contactItem:hover {
+    background-color:#0000001c!important;
+}
+
+.contactsList .contactItem:nth-child(odd) {
+    background-color:#00000017
+}
+
+.contactsList .contactItem:nth-child(even) {
+    background-color:#00000033
+}
+
+.contactsList .addContact .contactName input,
+.contactsList .addContact .contactAddr input,
+.contactsList .addContactBtn,
+.contactsList .qrContactBtn {
+    color: #ffffff;
+    background-color: #f2f2f233;
+    border: 1px solid #f2f2f224; 
+}
+
+.contactsList .addContact .contactName input::placeholder,
+.contactsList .addContact .contactAddr input::placeholder {
+    color: #dddddd;
+}
+
+.contactsList .addContact .contactName input {
+    border-top-right-radius:0px;
+    border-bottom-right-radius:0px;
+}
+
+.contactsList .addContact .contactAddr input {
+    border-left:none;
+    border-right:none;
+    border-radius:0px;
+}
+
+.contactsList .addContactBtn {
+    cursor: pointer;
+    border-radius: 0px;
+    padding: 0px 10px;
+    font-weight: bold;
+    width: fit-content;
+    height: 43px;
+    display: flex;
+    align-items: center;
+    transition: all .125s ease-in-out;
+    border-right:none;
+}
+
+.contactsList .qrContactBtn {
+    cursor: pointer;
+    border-radius: 7px;
+    padding: 0px 10px;
+    font-weight: bold;
+    width: fit-content;
+    border-top-left-radius: 0px;
+    border-bottom-left-radius: 0px;
+    height: 43px;
+    display: flex;
+    align-items: center;
+    transition: all .125s ease-in-out;
+}
+
+.contactsList .addContactBtn:hover,
+.contactsList .qrContactBtn:hover {
+    background-color: #f2f2f24d;
 }

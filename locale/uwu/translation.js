@@ -93,6 +93,43 @@ export const uwu_translation = {
     paymentRequestMessage: 'Deswiption (fwom da Mewrchant)', //Description (from the merchant)
     send: 'Send', //Send
 
+    // Contacts System
+    receive: 'Receive', //Receive
+    contacts: 'Contactz', //Contacts
+    name: 'Name', //Name
+    username: 'Username', //Username
+    addressOrXPub: 'Addwess or XPubby', //Address or XPub
+    back: 'Backu', //Back
+    chooseAContact: 'Chowose a Contact', //Choose a Contact
+    createContact: 'Cweate Contactu', //Create Contact
+    encryptFirstForContacts:
+        'Once yew hit "{button}" in the Dashboard, yew can cweate a Contact to make receiving PIV easier!', //Once you hit "{button}" in the Dashboard, you can create a Contact to make receiving PIV easier!
+    shareContactURL: 'Share Fren URL', //Share Contact URL
+    setupYourContact: 'Setup ur Contact', //Setup your Contact
+    receiveWithContact: 'Receive using a simp-le username-based Contact', //Receive using a simple username-based Contact
+    onlyShareContactPrivately:
+        '<b>Only</b> share ur Contact with trusted peeps (family, friends)', //<b>Only</b> share your Contact with trusted people (family, friends)
+
+    /* Context: The "Change to" is used in-app with one of the Three options below it, i.e: "Change to Contact" */
+    changeTo: 'Change tew', //Change to
+    contact: 'Contactu', //Contact
+    xpub: 'XPubby', //XPub
+
+    addContactTitle: 'Add {strName} tew Contacts', //Add {strName} to Contacts
+    addContactSubtext:
+        "Once added you'll be ablwe tew send transactions tew {strName} by their name (either typing, or clicking), no more addwesses, nice 'n OwO.", //Once added you\'ll be able to send transactions to {strName} by their name (either typing, or clicking), no more addresses, nice \'n easy.
+    addContactWarning:
+        'Ensure dat dis is da real "{strName}", do not accept Contact requests fwom unknown sources!', //Ensure that this is the real "{strName}", do not accept Contact requests from unknown sources!
+
+    editContactTitle: 'Change "{strName}" Contactu', //Change "{strName}" Contact
+    newName: 'Neww Name', //New Name
+
+    removeContactTitle: 'Unfren {strName}?', //Remove {strName}?
+    removeContactSubtext:
+        'Are u sure u wish to remove {strName} from your Fren list?', //Are you sure you wish to remove {strName} from your Contacts?
+    removeContactNote:
+        'Yew can add dem again any time in the future, but... :(', //You can add them again any time in the future.
+
     // Export
     privateKey: 'Pwivate Key', //Private Key
     viewPrivateKey: 'View Pwivate Key?', //View Private Key?
@@ -144,6 +181,14 @@ export const uwu_translation = {
     settingsAutoSelectNet: 'Auto-select Expwowers and Nowodes', // Auto-select Explorers and Nodes
     settingsToggleDebug: 'Debug Mowode', //Debug Mode
     settingsToggleTestnet: 'Testnet Mowode', //Testnet Mode
+
+    // Network switching (mainnet <---> testnet)
+    netSwitchUnsavedWarningTitle: "Ur {network} wawwet isn't saved!", //Your {network} wallet isn\'t saved!
+    netSwitchUnsavedWarningSubtitle:
+        'Ur {network} account could get fucky-wuckied!', //Your {network} account is at risk!
+    netSwitchUnsavedWarningSubtext:
+        "If u switch to {network} befwore saving it, you'll lose the account!", //If you switch to {network} before saving it, you\'ll lose the account!
+    netSwitchUnsavedWarningConfirmation: 'Are u reaaaaaaaaally sure?', //Are you really sure?
 
     // Transparency Report
     transparencyReport: 'Twanspawency Repawt', //Transparency Report
@@ -308,6 +353,25 @@ export const uwu_translation = {
         'Yew haz enough balance for a Masternowode, but nu valid collateral UTXO of {amount} {ticker}', //You have enough balance for a Masternode, but no valid collateral UTXO of {amount} {ticker}
     MN_COLLAT_NOT_SUITABLE: 'Dis is not a suitable UTXO for a Masternowode', //This is not a suitable UTXO for a Masternode
     MN_CANT_CONNECT: 'Unable to connect to RPC nowode!', //Unable to connect to RPC node!
+
+    /* Contacts System Alerts */
+    CONTACTS_ENCRYPT_FIRST:
+        'Yew need tew hit "{button}" before yew can use Contacts!', //You need to hit "{button}" before you can use Contacts!
+    CONTACTS_NAME_REQUIRED: 'A name iz required!', //A name is required!
+    CONTACTS_NAME_TOO_LONG: 'That name iz teww long!', //That name is too long!
+    CONTACTS_CANNOT_ADD_YOURSELF: 'Yew cannot add urself as a Contact!', //You cannot add yourself as a Contact!
+    CONTACTS_ALREADY_EXISTS:
+        '<b>Contact already exists!</b><br>Yew already saved dis contact', //<b>Contact already exists!</b><br>You already saved this contact
+    CONTACTS_NAME_ALREADY_EXISTS:
+        '<b>Contact name already exists!</b><br>Dis could potentially be a phishing attempt, beware!', //<b>Contact name already exists!</b><br>This could potentially be a phishing attempt, beware!
+    CONTACTS_EDIT_NAME_ALREADY_EXISTS:
+        '<b>Contact already exists!</b><br>A contact iz already cawlled "{strNewName}"!', //<b>Contact already exists!</b><br>A contact is already called "{strNewName}"!
+    CONTACTS_KEY_ALREADY_EXISTS:
+        '<b>Contact already exists, buh under a different name!</b><br>Yew have {newName} saved as <b>{oldName}</b> in ur contacts', //<b>Contact already exists, but under a different name!</b><br>You have {newName} saved as <b>{oldName}</b> in your contacts
+    CONTACTS_NOT_A_CONTACT_QR: "Dis isn't a Contact QR, baka!", //This isn\'t a Contact QR!
+    CONTACTS_ADDED:
+        '<b>New Contact added!</b><br>{strName} haz been added, hurray!', //<b>New Contact added!</b><br>{strName} has been added, hurray!
+    CONTACTS_YOU_HAVE_NONE: 'Yew have no contacts! Lonely!', //You have no contacts!
 
     PROPOSAL_FINALISED: 'Pwoposal finalized!', //Proposal finalized!
     PROPOSAL_UNCONFIRMED: "Da pwoposal hasn't been confirmed yet.", //The proposal hasn't been confirmed yet.

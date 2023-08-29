@@ -16,6 +16,8 @@ import {
     getNewAddress,
     cHardwareWallet,
     strHardwareName,
+    getDerivationPath,
+    HdMasterKey,
 } from './wallet.js';
 import { Mempool, UTXO } from './mempool.js';
 import { getNetwork } from './network.js';
@@ -24,6 +26,8 @@ import {
     createAlert,
     generateMasternodePrivkey,
     confirmPopup,
+    isXPub,
+    isStandardAddress,
 } from './misc.js';
 import { bytesToHex, hexToBytes, dSHA256 } from './utils.js';
 import { Database } from './database.js';
@@ -73,19 +77,60 @@ export async function createTxGUI() {
     )
         return;
 
-    // Sanity check the address
-    const address = doms.domAddress1s.value.trim();
+    // Sanity check the receiver
+    const strRawReceiver = doms.domAddress1s.value.trim();
+
+    // Cache the "end" receiver, which will be an Address
+    let strReceiverAddress = strRawReceiver;
 
     // If Staking address: redirect to staking page
-    if (address.startsWith(cChainParams.current.STAKING_PREFIX)) {
+    if (strRawReceiver.startsWith(cChainParams.current.STAKING_PREFIX)) {
         createAlert('warning', ALERTS.STAKE_NOT_SEND, 7500);
         return doms.domStakeTab.click();
     }
 
-    if (address.length !== 34)
+    // Check for any contacts that match the input
+    const cDB = await Database.getInstance();
+    const cAccount = await cDB.getAccount();
+
+    // If we have an Account, then check our Contacts for anything matching too
+    const cContact = cAccount?.getContactBy({
+        name: strRawReceiver,
+        pubkey: strRawReceiver,
+    });
+    // If a Contact were found, we use it's Pubkey
+    if (cContact) strReceiverAddress = cContact.pubkey;
+
+    // If this is an XPub, we'll fetch their last used 'index', and derive a new public key for enhanced privacy
+    if (isXPub(strReceiverAddress)) {
+        const cNet = getNetwork();
+        if (!cNet.enabled)
+            return createAlert(
+                'warning',
+                ALERTS.WALLET_OFFLINE_AUTOMATIC,
+                [],
+                3500
+            );
+
+        // Fetch the XPub info
+        const cXPub = await cNet.getXPubInfo(strReceiverAddress);
+
+        // Use the latest index plus one (or if the XPub is unused, then the second address)
+        const nIndex = (cXPub.usedTokens || 0) + 1;
+        const strPath = getDerivationPath(false, 0, 0, nIndex, false);
+
+        // Create a receiver master-key
+        const cReceiverWallet = new HdMasterKey({ xpub: strReceiverAddress });
+
+        // Set the 'receiver address' as the unused XPub-derived address
+        strReceiverAddress = cReceiverWallet.getAddress(strPath);
+    }
+
+    // Check if the Receiver Address is a valid P2PKH address
+    if (!isStandardAddress(strReceiverAddress))
         return createAlert(
             'warning',
-            tr(ALERTS.BAD_ADDR_LENGTH, [{ addressLength: address.length }]),
+            tr(ALERTS.INVALID_ADDRESS, [{ address: strReceiverAddress }]),
             2500
         );
 
@@ -97,7 +142,7 @@ export async function createTxGUI() {
 
     // Create and send the TX
     const cRes = await createAndSendTransaction({
-        address,
+        address: strReceiverAddress,
         amount: nValue,
         isDelegation: false,
     });

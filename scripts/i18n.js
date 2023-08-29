@@ -10,6 +10,7 @@ import { fillAnalyticSelect, setTranslation } from './settings.js';
 import { renderActivityGUI, updateEncryptionGUI } from './global.js';
 import { masterKey } from './wallet.js';
 import { getNetwork } from './network.js';
+import { cReceiveType, guiToggleReceiveType } from './contacts-book.js';
 
 export const ALERTS = {};
 export let translation = {};
@@ -56,6 +57,9 @@ export function switchTranslation(langName) {
         }
         loadAlerts();
         fillAnalyticSelect();
+        if (masterKey) {
+            guiToggleReceiveType(cReceiveType);
+        }
         return true;
     } else {
         console.log(

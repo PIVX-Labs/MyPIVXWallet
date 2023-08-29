@@ -94,6 +94,37 @@ export const fr_translation = {
     paymentRequestMessage: "Description (de l'opérateur)", //Description (from the merchant)
     send: 'Envoyer', //Send
 
+    // Contacts System
+    receive: '', //Receive
+    contacts: '', //Contacts
+    name: '', //Name
+    username: '', //Username
+    addressOrXPub: '', //Address or XPub
+    back: '', //Back
+    chooseAContact: '', //Choose a Contact
+    createContact: '', //Create Contact
+    encryptFirstForContacts: '', //Once you hit "{button}" in the Dashboard, you can create a Contact to make receiving PIV easier!
+    shareContactURL: '', //Share Contact URL
+    setupYourContact: '', //Setup your Contact
+    receiveWithContact: '', //Receive using a simple username-based Contact
+    onlyShareContactPrivately: '', //<b>Only</b> share your Contact with trusted people (family, friends)
+
+    /* Context: The "Change to" is used in-app with one of the Three options below it, i.e: "Change to Contact" */
+    changeTo: '', //Change to
+    contact: '', //Contact
+    xpub: '', //XPub
+
+    addContactTitle: '', //Add {strName} to Contacts
+    addContactSubtext: '', //Once added you\'ll be able to send transactions to {strName} by their name (either typing, or clicking), no more addresses, nice \'n easy.
+    addContactWarning: '', //Ensure that this is the real "{strName}", do not accept Contact requests from unknown sources!
+
+    editContactTitle: '', //Change "{strName}" Contact
+    newName: '', //New Name
+
+    removeContactTitle: '', //Remove {strName}?
+    removeContactSubtext: '', //Are you sure you wish to remove {strName} from your Contacts?
+    removeContactNote: '', //You can add them again any time in the future.
+
     // Export
     privateKey: 'Clé privée', //Private Key
     viewPrivateKey: 'Montrer la clé privée ?', //View Private Key?
@@ -146,6 +177,12 @@ export const fr_translation = {
     settingsAnalytics: "Choisissez votre niveau d'analyse :", //Choose your analytics contribution level:
     settingsToggleDebug: 'Mode de débogage', //Debug Mode
     settingsToggleTestnet: 'Mode testnet', //Testnet Mode
+
+    // Network switching (mainnet <---> testnet)
+    netSwitchUnsavedWarningTitle: '', //Your {network} wallet isn\'t saved!
+    netSwitchUnsavedWarningSubtitle: '', //Your {network} account is at risk!
+    netSwitchUnsavedWarningSubtext: '', //If you switch to {network} before saving it, you\'ll lose the account!
+    netSwitchUnsavedWarningConfirmation: '', //Are you really sure?
 
     // Transparency Report
     transparencyReport: 'Rapport de transparence', //Transparency Report
@@ -319,6 +356,19 @@ export const fr_translation = {
     MN_COLLAT_NOT_SUITABLE:
         "Il ne s'agit pas d'une UTXO appropriée pour un Masternode", //This is not a suitable UTXO for a Masternode
     MN_CANT_CONNECT: 'Impossible de se connecter au nœud RPC!', //Unable to connect to RPC node!
+
+    /* Contacts System Alerts */
+    CONTACTS_ENCRYPT_FIRST: '', //You need to hit "{button}" before you can use Contacts!
+    CONTACTS_NAME_REQUIRED: '', //A name is required!
+    CONTACTS_NAME_TOO_LONG: '', //That name is too long!
+    CONTACTS_CANNOT_ADD_YOURSELF: '', //You cannot add yourself as a Contact!
+    CONTACTS_ALREADY_EXISTS: '', //<b>Contact already exists!</b><br>You already saved this contact
+    CONTACTS_NAME_ALREADY_EXISTS: '', //<b>Contact name already exists!</b><br>This could potentially be a phishing attempt, beware!
+    CONTACTS_EDIT_NAME_ALREADY_EXISTS: '', //<b>Contact already exists!</b><br>A contact is already called "{strNewName}"!
+    CONTACTS_KEY_ALREADY_EXISTS: '', //<b>Contact already exists, but under a different name!</b><br>You have {newName} saved as <b>{oldName}</b> in your contacts
+    CONTACTS_NOT_A_CONTACT_QR: '', //This isn\'t a Contact QR!
+    CONTACTS_ADDED: '', //<b>New Contact added!</b><br>{strName} has been added, hurray!
+    CONTACTS_YOU_HAVE_NONE: '', //You have no contacts!
 
     SWITCHED_EXPLORERS:
         '<b>Explorateur échangé!</b><br>En utilisant maintenant le {explorerName}', //<b>Switched explorer!</b><br>Now using {explorerName}

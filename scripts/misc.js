@@ -154,6 +154,10 @@ export function createAlert(type, message, timeout = 0) {
  * @param {string} options.html - The HTML of the popup contents
  * @param {Promise<any>} options.resolvePromise - A promise to resolve before closing the modal
  * @param {boolean?} options.hideConfirm - Whether to hide the Confirm button or not
+ * @param {boolean?} options.purpleModal - Toggle a Purple modal, or leave as false for White
+ * @param {boolean?} options.textLeft - Toggle to align modal text to the left, or leave as false for center
+ * @param {boolean?} options.noPadding - Toggle zero padding, or leave as false for default padding
+ * @param {number?} options.maxHeight - An optional modal Max Height, omit for default modal max
  * @returns {Promise<boolean|any>}
  */
 export async function confirmPopup({
@@ -161,6 +165,10 @@ export async function confirmPopup({
     html,
     resolvePromise,
     hideConfirm,
+    purpleModal,
+    textLeft,
+    noPadding,
+    maxHeight,
 }) {
     // If there's a title provided: display the header and text
     doms.domConfirmModalHeader.style.display = title ? 'block' : 'none';
@@ -182,6 +190,33 @@ export async function confirmPopup({
 
     // Set content display
     doms.domConfirmModalContent.innerHTML = html;
+
+    // Set text align to left
+    if (textLeft) {
+        doms.domConfirmModalContent.classList.remove('center-text');
+    } else {
+        doms.domConfirmModalContent.classList.add('center-text');
+    }
+
+    // Use the purple modal
+    if (purpleModal) {
+        doms.domConfirmModalMain.classList.add('exportKeysModalColor');
+    } else {
+        doms.domConfirmModalMain.classList.remove('exportKeysModalColor');
+    }
+
+    // Remove padding
+    if (noPadding) {
+        doms.domConfirmModalContent.classList.add('px-0');
+        doms.domConfirmModalContent.classList.add('pb-0');
+    } else {
+        doms.domConfirmModalContent.classList.remove('px-0');
+        doms.domConfirmModalContent.classList.remove('pb-0');
+    }
+
+    // Set max-height (removed at `.finally` context)
+    if (maxHeight)
+        doms.domConfirmModalDialog.classList.add(`max-w-${maxHeight}`);
 
     // If there's an input in the prompt, focus the cursor upon it
     for (const domElement of doms.domConfirmModalContent.children) {
@@ -207,6 +242,9 @@ export async function confirmPopup({
     } finally {
         // We want to hide the modal even if an exception occurs
         $('#confirmModal').modal('hide');
+
+        // Reset any modal settings
+        doms.domConfirmModalDialog.classList.remove(`max-w-${maxHeight}`);
     }
 }
 
@@ -218,6 +256,57 @@ export function createQR(strData = '', domImg, size = 4) {
     cQR.make();
     domImg.innerHTML = cQR.createImgTag(2, 2);
     domImg.firstChild.style.borderRadius = '8px';
+}
+
+/**
+ * Prompt image selection, and return base64 of an image file.
+ * @returns {Promise<string>} The base64 string of the selected image file.
+ */
+export async function getImageFile() {
+    return new Promise((resolve) => {
+        let input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        input.onchange = (e) => {
+            let file = e.target.files[0];
+            let reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result);
+            reader.readAsDataURL(file);
+        };
+        input.click();
+    });
+}
+
+/**
+ * A quick check to see if an address is a Standard (P2PKH) address
+ * @param {string} strAddress - The address to check
+ * @returns {boolean} - `true` if a Standard address, `false` if not
+ */
+export function isStandardAddress(strAddress) {
+    return (
+        strAddress.length === 34 &&
+        cChainParams.current.PUBKEY_PREFIX.includes(strAddress[0])
+    );
+}
+
+/**
+ * A quick check to see if a string is an XPub key
+ * @param {string} strXPub - The XPub to check
+ * @returns {boolean} - `true` if a valid formatted XPub, `false` if not
+ */
+export function isXPub(strXPub) {
+    if (!strXPub.startsWith('xpub')) return false;
+
+    // Attempt to Base58 decode the XPub
+    try {
+        // Slice away the `xpub` prefix and decode
+        const decoded = bs58.decode(strXPub.slice(4));
+
+        // Then verify the final length too
+        return decoded.length === 78;
+    } catch (e) {
+        return false;
+    }
 }
 
 /**
@@ -238,8 +327,7 @@ export function parseBIP21Request(strReq) {
     // Ensure the address is valid
     if (
         // Standard address
-        (strAddress.length !== 34 ||
-            !cChainParams.current.PUBKEY_PREFIX.includes(strAddress[0])) &&
+        !isStandardAddress(strAddress) &&
         // Shield address
         !isValidBech32(strAddress).valid
     ) {
@@ -340,6 +428,44 @@ export function isBase64(str) {
 
     // The string is likely Base64-encoded:
     return true;
+}
+
+/**
+ * Checks if two values are of the same type.
+ *
+ * @param {any} a - The first value.
+ * @param {any} b - The second value.
+ * @returns {boolean} - `true` if the values are of the same type, `false` if not or if there was an error comparing.
+ */
+export function isSameType(a, b) {
+    try {
+        if (a === null || b === null) return a === b;
+        if (typeof a !== typeof b) return false;
+        if (typeof a === 'object')
+            return Object.getPrototypeOf(a) === Object.getPrototypeOf(b);
+        return true;
+    } catch (e) {
+        return false;
+    }
+}
+
+/**
+ * Checks if a value is 'empty'.
+ *
+ * @param {any} val - The value to check.
+ * @returns {boolean} - `true` if the value is 'empty', `false` otherwise.
+ * ---
+ * Values **considered 'empty'**: `null`, `undefined`, empty strings, empty arrays, empty objects.
+ *
+ * Values **NOT considered 'empty'**: Any non-nullish primitive value: numbers (including `0` and `NaN`), `true`, `false`, `Symbol()`, `BigInt()`.
+ */
+export function isEmpty(val) {
+    return (
+        val == null ||
+        val === '' ||
+        (Array.isArray(val) && val.length === 0) ||
+        (typeof val === 'object' && Object.keys(val).length === 0)
+    );
 }
 
 /**

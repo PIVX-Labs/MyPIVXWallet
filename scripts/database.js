@@ -2,9 +2,16 @@ import { openDB, IDBPDatabase } from 'idb';
 import Masternode from './masternode.js';
 import { Settings } from './settings.js';
 import { cChainParams } from './chain_params.js';
-import { confirmPopup, sanitizeHTML, createAlert } from './misc.js';
+import {
+    confirmPopup,
+    sanitizeHTML,
+    createAlert,
+    isSameType,
+    isEmpty,
+} from './misc.js';
 import { PromoWallet } from './promos.js';
 import { ALERTS, translation } from './i18n.js';
+import { Account } from './accounts.js';
 
 /** The current version of the DB - increasing this will prompt the Upgrade process for clients with an older version */
 export const DB_VERSION = 2;
@@ -81,19 +88,133 @@ export class Database {
 
     /**
      * Adds an account to the database
-     * @param {Object} o
-     * @param {String} o.publicKey - Public key associated to the account. Can be an xpub
-     * @param {String} o.encWif - Encrypted private key associated to the account
-     * @param {Array<any>} o.localProposals - Local proposals awaiting to be finalized
+     *
+     * This will also apply missing Account keys from the Account class automatically, and check high-level type safety.
+     * @param {Account} account - The Account to add
      */
-    async addAccount({ publicKey, encWif, localProposals = [] }) {
-        const oldAccount = await this.getAccount();
-        const newAccount = { publicKey, encWif, localProposals };
+    async addAccount(account) {
+        // Critical: Ensure the input is an Account instance
+        if (!(account instanceof Account)) {
+            console.error(
+                '---- addAccount() called with invalid input, input dump below ----'
+            );
+            console.error(account);
+            console.error('---- end of account dump ----');
+            createAlert(
+                'warning',
+                '<b>Account Creation Error</b><br>Logs were dumped in your Browser Console<br>Please submit these privately to PIVX Labs Developers!'
+            );
+            return false;
+        }
+
+        // Create an empty DB Account
+        const cDBAccount = new Account();
+
+        // We'll overlay the `account` keys atop the `DB Account` keys:
+        // Note: Since the Account constructor defaults all properties to type-safe defaults, we can already assume `cDBAccount` is safe.
+        // Note: Since `addAccount` could be called with *anything*, we must apply the same type-safety on it's input.
+        for (const strKey of Object.keys(cDBAccount)) {
+            // Ensure the Type is correct for the Key against the Account class
+            if (!isSameType(account[strKey], cDBAccount[strKey])) {
+                console.error(
+                    'DB: addAccount() key "' +
+                        strKey +
+                        '" does NOT match the correct class type, likely data mismatch, please report!'
+                );
+                continue;
+            }
+
+            // Overlay the 'new' keys on top of the DB keys
+            cDBAccount[strKey] = account[strKey];
+        }
+
+        const store = this.#db
+            .transaction('accounts', 'readwrite')
+            .objectStore('accounts');
+
+        // Check this account isn't already added (by pubkey once multi-account)
+        if (await store.get('account'))
+            return console.error(
+                'DB: Ran addAccount() when account already exists!'
+            );
+
+        // When the account system is going to be added, the key is gonna be the publicKey
+        await store.put(cDBAccount, 'account');
+    }
+
+    /**
+     * Update specified keys for an Account in the DB.
+     *
+     * This will also apply new Account keys from MPW updates automatically, and check high-level type safety.
+     *
+     * ---
+     *
+     * To allow "deleting/clearing/resetting" keys, for example, when removing Proposals or Contacts, toggle `allowDeletion`.
+     *
+     * **Do NOT toggle unless otherwise necessary**, to avoid overwriting keys from code errors or misuse.
+     * @param {Account} account - The Account to update, with new data inside
+     * @param {boolean} allowDeletion - Allow setting keys to an "empty" state (`""`, `[]`, `{}`)
+     */
+    async updateAccount(account, allowDeletion = false) {
+        // Critical: Ensure the input is an Account instance
+        if (!(account instanceof Account)) {
+            console.error(
+                '---- updateAccount() called with invalid input, input dump below ----'
+            );
+            console.error(account);
+            console.error('---- end of account dump ----');
+            createAlert(
+                'warning',
+                '<b>DB Update Error</b><br>Your wallet is safe, logs were dumped in your Browser Console<br>Please submit these privately to PIVX Labs Developers!'
+            );
+            return false;
+        }
+
+        // Fetch the DB account
+        const cDBAccount = await this.getAccount();
+
+        // If none exists; we should throw an error, as there's no reason for MPW to call `updateAccount` before an account was added using `addAccount`
+        // Note: This is mainly to force "good standards" in which we don't lazily use `updateAccount` to create NEW accounts.
+        if (!cDBAccount) {
+            console.error(
+                '---- updateAccount() called without an account existing, input dump below ----'
+            );
+            console.error(account);
+            console.error('---- end of input dump ----');
+            createAlert(
+                'warning',
+                '<b>DB Update Error</b><br>Logs were dumped in your Browser Console<br>Please submit these privately to PIVX Labs Developers!'
+            );
+            return false;
+        }
+
+        // We'll overlay the `account` keys atop the `DB Account` keys:
+        // Note: Since `getAccount` already checks type-safety, we can already assume `cDBAccount` is safe.
+        // Note: Since `updateAccount` could be called with *anything*, we must apply the same type-safety on it's input.
+        for (const strKey of Object.keys(cDBAccount)) {
+            // Ensure the Type is correct for the Key against the Account class
+            if (!isSameType(account[strKey], cDBAccount[strKey])) {
+                console.error(
+                    'DB: updateAccount() key "' +
+                        strKey +
+                        '" does NOT match the correct class type, likely data mismatch, please report!'
+                );
+                continue;
+            }
+
+            // Ensure the 'updated' key (which may not exist) is NOT a default or EMPTY value
+            // Note: this can be overriden manually when erasing data such as Contacts, Local Proposals, etc.
+            if (!allowDeletion && isEmpty(account[strKey])) continue;
+
+            // Overlay the 'new' keys on top of the DB keys
+            cDBAccount[strKey] = account[strKey];
+        }
+
         const store = this.#db
             .transaction('accounts', 'readwrite')
             .objectStore('accounts');
         // When the account system is going to be added, the key is gonna be the publicKey
-        await store.put({ ...oldAccount, ...newAccount }, 'account');
+        await store.put(cDBAccount, 'account');
     }
 
     /**
@@ -110,14 +231,39 @@ export class Database {
     }
 
     /**
-     * Gets an account from the database
-     * @returns {Promise<{publicKey: String, encWif: String?, localProposals: Array<any>}?>}
+     * Gets an account from the database.
+     *
+     * This also will apply new keys from MPW updates automatically, and check high-level type safety.
+     * @returns {Promise<Account?>}
      */
     async getAccount() {
         const store = this.#db
             .transaction('accounts', 'readonly')
             .objectStore('accounts');
-        return await store.get('account');
+        const cDBAccount = await store.get('account');
+
+        // If there's no DB Account, we'll return null early
+        if (!cDBAccount) return null;
+
+        // We'll generate an Account Class for up-to-date keys, then layer the 'new' type-checked properties on it one-by-one
+        const cAccount = new Account();
+        for (const strKey of Object.keys(cAccount)) {
+            // Ensure the Type is correct for the Key against the Account class (with instanceof to also check Class validity)
+            if (!isSameType(cDBAccount[strKey], cAccount[strKey])) {
+                console.error(
+                    'DB: getAccount() key "' +
+                        strKey +
+                        '" does NOT match the correct class type, likely bad data saved, please report!'
+                );
+                continue;
+            }
+
+            // Overlay the 'DB' keys on top of the Class Instance keys
+            cAccount[strKey] = cDBAccount[strKey];
+        }
+
+        // Return the Account Class
+        return cAccount;
     }
 
     /**
@@ -199,11 +345,16 @@ export class Database {
                 const localProposals = JSON.parse(
                     localStorage.localProposals || '[]'
                 );
-                await this.addAccount({
+
+                // Update and format the old Account data
+                const cAccount = new Account({
                     publicKey: localStorage.publicKey,
                     encWif: localStorage.encwif,
-                    localProposals,
+                    localProposals: localProposals,
                 });
+
+                // Migrate the old Account data to the new DB
+                await this.addAccount(cAccount);
             } catch (e) {
                 console.error(e);
                 createAlert('warning', ALERTS.MIGRATION_ACCOUNT_FAILURE);
