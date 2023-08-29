@@ -108,7 +108,6 @@ export async function createTxGUI() {
             return createAlert(
                 'warning',
                 ALERTS.WALLET_OFFLINE_AUTOMATIC,
-                [],
                 3500
             );
 
