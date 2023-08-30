@@ -173,6 +173,7 @@ export const uwu_translation = {
 
     // Settings
     settingsCurrency: 'Chowose a dispway cuwwency:', //Choose a display currency:
+    priceProvidedBy: 'Pwice data pwovided by', //Price data provided by
     settingsDecimals: 'Balance Decimawls:', //Balance Decimals:
     settingsExplorer: 'Chowose an expwower:', //Choose an explorer:
     settingsLanguage: 'Chowose a Languwuage:', //Choose a Language:

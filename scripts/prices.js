@@ -1,4 +1,5 @@
 import { getBalance } from './global';
+import { isEmpty } from './misc';
 import { cMarket, fillCurrencySelect } from './settings';
 
 /**
@@ -33,7 +34,13 @@ export class MarketSource {
      * @returns {Promise<object>}
      */
     async fetch() {
-        return (this.cData = await (await fetch(this.strEndpoint)).json());
+        try {
+            return (this.cData = await (await fetch(this.strEndpoint)).json());
+        } catch (e) {
+            console.warn('CoinGecko: Failed to fetch prices!');
+            console.warn(e);
+            return null;
+        }
     }
 }
 
@@ -54,7 +61,7 @@ export class CoinGecko extends MarketSource {
      */
     async getPrice(strCurrency) {
         await this.ensureCacheExists();
-        return this.cData.market_data.current_price[strCurrency];
+        return this.cData?.market_data?.current_price[strCurrency] || 0;
     }
 
     /**
@@ -63,7 +70,9 @@ export class CoinGecko extends MarketSource {
      */
     async getCurrencies() {
         await this.ensureCacheExists();
-        return Object.keys(this.cData.market_data.current_price);
+        return !isEmpty(this.cData)
+            ? Object.keys(this.cData.market_data.current_price)
+            : [];
     }
 }
 
@@ -71,12 +80,12 @@ export class CoinGecko extends MarketSource {
  * Refreshes market data from the user's data source, then re-renders currency options and price displays
  */
 export async function refreshPriceDisplay() {
-    // Refresh our price data
-    await cMarket.fetch();
+    // Refresh our price data, and if successful, update the UI
+    if (!isEmpty(await cMarket.fetch())) {
+        // Update the currency customisation menu from the selected data source
+        await fillCurrencySelect();
 
-    // Update the currency customisation menu from the selected data source
-    await fillCurrencySelect();
-
-    // Update price values
-    getBalance(true);
+        // Update price values
+        getBalance(true);
+    }
 }

@@ -169,6 +169,7 @@ export const de_translation = {
 
     // Settings
     settingsCurrency: 'Wähle die angezeigte Währung', //Choose a display currency:
+    priceProvidedBy: '', //Price data provided by
     settingsDecimals: '', //Balance Decimals:
     settingsExplorer: 'Wähle einen Explorer', //Choose an explorer:
     settingsLanguage: 'Wähle eine Sprache', //Choose a Language:

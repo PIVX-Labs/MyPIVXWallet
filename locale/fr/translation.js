@@ -168,6 +168,7 @@ export const fr_translation = {
 
     // Settings
     settingsCurrency: "Choisissez une devise d'affichage :", //Choose a display currency:
+    priceProvidedBy: '', //Price data provided by
     settingsDecimals: 'Solde Décimales :', //Balance Decimals:
     settingsExplorer: 'Choisissez un explorateur :', //Choose an explorer:
     settingsLanguage: 'Choisissez une langue :', //Choose a Language:

@@ -653,9 +653,11 @@ export function optimiseCurrencyLocale(nAmount) {
  * @param {HTMLElement} domValue
  * @param {boolean} fCold
  */
-export function updatePriceDisplay(domValue, fCold = false) {
+export async function updatePriceDisplay(domValue, fCold = false) {
     // Update currency values
-    cMarket.getPrice(strCurrency).then((nPrice) => {
+    const nPrice = await cMarket.getPrice(strCurrency);
+
+    if (nPrice) {
         // Calculate the value
         const nCurrencyValue =
             ((fCold ? getStakingBalance() : getBalance()) / COIN) * nPrice;
@@ -664,7 +666,7 @@ export function updatePriceDisplay(domValue, fCold = false) {
 
         // Update the DOM
         domValue.innerText = nValue.toLocaleString('en-gb', cLocale);
-    });
+    }
 }
 
 export function getBalance(updateGUI = false) {
@@ -1203,6 +1205,10 @@ export function toggleBottomMenu(dom, ani) {
 export async function updateAmountInputPair(domCoin, domValue, fCoinEdited) {
     // Fetch the price in the user's preferred currency
     const nPrice = await cMarket.getPrice(strCurrency);
+
+    // If there is no price loaded, then we just won't do anything
+    if (!nPrice) return;
+
     if (fCoinEdited) {
         // If the 'Coin' input is edited, then update the 'Value' input with it's converted currency
         const nValue = Number(domCoin.value) * nPrice;

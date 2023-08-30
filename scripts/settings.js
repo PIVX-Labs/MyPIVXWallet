@@ -18,7 +18,7 @@ import {
 } from './wallet.js';
 import { cChainParams } from './chain_params.js';
 import { setNetwork, ExplorerNetwork, getNetwork } from './network.js';
-import { confirmPopup, createAlert } from './misc.js';
+import { confirmPopup, createAlert, isEmpty } from './misc.js';
 import {
     switchTranslation,
     ALERTS,
@@ -194,6 +194,7 @@ export async function start() {
         analytics: strSettingAnalytics,
         autoswitch,
         coldAddress,
+        displayCurrency,
         displayDecimals,
     } = await database.getSettings();
 
@@ -203,6 +204,9 @@ export async function start() {
     // Set any Toggles to their default or DB state
     fAutoSwitch = autoswitch;
     doms.domAutoSwitchToggle.checked = fAutoSwitch;
+
+    // Set the display currency
+    strCurrency = doms.domCurrencySelect.value = displayCurrency;
 
     // Set the display decimals
     nDisplayDecimals = displayDecimals;
@@ -361,16 +365,21 @@ async function fillTranslationSelect() {
  * Fills the display currency dropbox on the settings page
  */
 export async function fillCurrencySelect() {
-    while (doms.domCurrencySelect.options.length > 0) {
-        doms.domCurrencySelect.remove(0);
-    }
+    const arrCurrencies = await cMarket.getCurrencies();
 
-    // Add each data source currency into the UI selector
-    for (const currency of await cMarket.getCurrencies()) {
-        const opt = document.createElement('option');
-        opt.innerHTML = currency.toUpperCase();
-        opt.value = currency;
-        doms.domCurrencySelect.appendChild(opt);
+    // Only update if we have a currency list
+    if (!isEmpty(arrCurrencies)) {
+        while (doms.domCurrencySelect.options.length > 0) {
+            doms.domCurrencySelect.remove(0);
+        }
+
+        // Add each data source currency into the UI selector
+        for (const currency of arrCurrencies) {
+            const opt = document.createElement('option');
+            opt.innerHTML = currency.toUpperCase();
+            opt.value = currency;
+            doms.domCurrencySelect.appendChild(opt);
+        }
     }
 
     const database = await Database.getInstance();

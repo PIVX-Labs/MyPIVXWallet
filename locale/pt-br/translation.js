@@ -170,6 +170,7 @@ export const pt_br_translation = {
 
     // Settings
     settingsCurrency: 'Escolha uma moeda de exibição:', //Choose a display currency:
+    priceProvidedBy: '', //Price data provided by
     settingsDecimals: '', //Balance Decimals:
     settingsExplorer: 'Escolha um explorador:', //Choose an explorer:
     settingsLanguage: 'Escolha um Idioma:', //Choose a Language:

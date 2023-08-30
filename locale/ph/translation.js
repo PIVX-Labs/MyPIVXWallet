@@ -170,6 +170,7 @@ export const ph_translation = {
 
     // Settings
     settingsCurrency: 'Pumili ng display currency:', //Choose a display currency:
+    priceProvidedBy: '', //Price data provided by
     settingsDecimals: '', //Balance Decimals:
     settingsExplorer: 'Pumili ng explorer:', //Choose an explorer:
     settingsLanguage: 'Pumili ng Wika:', //Choose a Language:
