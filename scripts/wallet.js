@@ -38,6 +38,7 @@ import * as jdenticon from 'jdenticon';
 import { Database } from './database.js';
 import { guiRenderCurrentReceiveModal } from './contacts-book.js';
 import { Account } from './accounts.js';
+import { debug, fAdvancedMode } from './settings.js';
 
 export let fWalletLoaded = false;
 
@@ -657,39 +658,57 @@ export async function importWallet({
             doms.domPrivKey.value = '';
             doms.domPrivKeyPassword.value = '';
 
-            if (await verifyMnemonic(privateImportValue)) {
-                // Generate our masterkey via Mnemonic Phrase
+            // Clean and verify the Seed Phrase (if one exists)
+            const cPhraseValidator = await cleanAndVerifySeedPhrase(
+                privateImportValue,
+                true
+            );
+
+            // If Debugging is enabled, show what the validator returned
+            if (debug) {
+                const fnLog = cPhraseValidator.ok ? console.log : console.warn;
+                fnLog('Seed Import Validator: ' + cPhraseValidator.msg);
+            }
+
+            // If the Seed is OK, proceed
+            if (cPhraseValidator.ok) {
+                // Generate our HD MasterKey with the cleaned (Mnemonic) Seed Phrase
                 const seed = await mnemonicToSeed(
-                    privateImportValue,
+                    cPhraseValidator.phrase,
                     passphrase
                 );
                 await setMasterKey(new HdMasterKey({ seed }));
+            } else if (cPhraseValidator.phrase.includes(' ')) {
+                // The Phrase Validator failed, but the input contains at least one space; possibly a Seed Typo?
+                return createAlert('warning', cPhraseValidator.msg, 5000);
             } else {
-                // Public Key Derivation
+                // The input definitely isn't a seed, so we'll try every other import method
                 try {
+                    // XPub import (HD view only)
                     if (isXPub(privateImportValue)) {
                         await setMasterKey(
                             new HdMasterKey({
                                 xpub: privateImportValue,
                             })
                         );
+                        // XPrv import (HD full access)
                     } else if (privateImportValue.startsWith('xprv')) {
                         await setMasterKey(
                             new HdMasterKey({
                                 xpriv: privateImportValue,
                             })
                         );
+                        // Pubkey import (non-HD view only)
                     } else if (isStandardAddress(privateImportValue)) {
                         await setMasterKey(
                             new LegacyMasterKey({
                                 address: privateImportValue,
                             })
                         );
+                        // WIF import (non-HD full access)
                     } else {
-                        // Lastly, attempt to parse as a WIF private key
+                        // Attempt to import a raw WIF private key
                         const pkBytes = parseWIF(privateImportValue);
-
-                        // Import the raw private key
                         await setMasterKey(new LegacyMasterKey({ pkBytes }));
                     }
                 } catch (e) {
@@ -813,37 +832,79 @@ export async function generateWallet(noUI = false) {
     return masterKey;
 }
 
-export async function verifyMnemonic(strMnemonic = '', fPopupConfirm = true) {
-    const nWordCount = strMnemonic.trim().split(/\s+/g).length;
+export async function cleanAndVerifySeedPhrase(
+    strPhraseInput = '',
+    fPopupConfirm = true
+) {
+    // Clean the phrase (removing unnecessary spaces) and force to lowercase
+    const strPhrase = strPhraseInput.trim().replace(/\s+/g, ' ').toLowerCase();
 
-    // Sanity check: Convert to lowercase
-    strMnemonic = strMnemonic.toLowerCase();
+    // Count the Words
+    const nWordCount = strPhrase.trim().split(' ').length;
 
     // Ensure it's a word count that makes sense
-    if (nWordCount >= 12 && nWordCount <= 24) {
-        if (!validateMnemonic(strMnemonic)) {
+    if (nWordCount === 12 || nWordCount === 24) {
+        if (!validateMnemonic(strPhrase)) {
+            // If a popup is allowed and Advanced Mode is enabled, warn the user that the
+            // ... seed phrase is potentially bad, and ask for confirmation to proceed
+            if (!fPopupConfirm || !fAdvancedMode)
+                return {
+                    ok: false,
+                    msg: translation.importSeedErrorTypo,
+                    phrase: strPhrase,
+                };
+
             // The reason we want to ask the user for confirmation is that the mnemonic
-            // Could have been generated with another app that has a different dictionary
-            return (
-                fPopupConfirm &&
-                (await confirmPopup({
-                    title: translation.popupSeedPhraseBad,
-                    html: translation.popupSeedPhraseBadNote,
-                }))
-            );
+            // could have been generated with another app that has a different dictionary
+            const fSkipWarning = await confirmPopup({
+                title: translation.popupSeedPhraseBad,
+                html: translation.popupSeedPhraseBadNote,
+            });
+
+            if (fSkipWarning) {
+                // User is probably an Arch Linux user and used `-f`
+                return {
+                    ok: true,
+                    msg: translation.importSeedErrorSkip,
+                    phrase: strPhrase,
+                };
+            } else {
+                // User heeded the warning and rejected the phrase
+                return {
+                    ok: false,
+                    msg: translation.importSeedError,
+                    phrase: strPhrase,
+                };
+            }
         } else {
             // Valid count and mnemonic
-            return true;
+            return {
+                ok: true,
+                msg: translation.importSeedValid,
+                phrase: strPhrase,
+            };
         }
     } else {
         // Invalid count
-        return false;
+        return {
+            ok: false,
+            msg: translation.importSeedErrorSize,
+            phrase: strPhrase,
+        };
     }
 }
 
+/**
+ * Display a Seed Phrase popup to the user and optionally wait for a Seed Passphrase
+ * @param {String} mnemonic - The Seed Phrase to display to the user
+ * @returns {Promise<String>} - The Mnemonic Passphrase (empty string if omitted by user)
+ */
 function informUserOfMnemonic(mnemonic) {
     return new Promise((res, _) => {
+        // Configure the modal
         $('#mnemonicModal').modal({ keyboard: false });
+
+        // Render the Seed Phrase and configure the button
         doms.domMnemonicModalContent.innerText = mnemonic;
         doms.domMnemonicModalButton.onclick = () => {
             res(doms.domMnemonicModalPassphrase.value);
@@ -853,6 +914,8 @@ function informUserOfMnemonic(mnemonic) {
             doms.domMnemonicModalContent.innerText = '';
             doms.domMnemonicModalPassphrase.value = '';
         };
+
+        // Display the modal
         $('#mnemonicModal').modal('show');
     });
 }

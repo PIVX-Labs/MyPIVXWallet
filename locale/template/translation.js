@@ -74,8 +74,15 @@ var translation = {
     doNotShareWarning: '', //Anyone with a copy of it can access <b>all</b> of your funds.
     doNotShare: '', //Do NOT share it with anybody.
     digitalStoreNotAdvised: '', //It is <b>NOT</b> advised to store this digitally.
-    optionalPassphrase: '', //Optional Passphrase
+    optionalPassphrase: '', //Optional Passphrase (BIP39)
     writtenDown: '', //I have written down my seed phrase
+
+    // Seed Phrase Import
+    importSeedValid: '', //Seed Phrase is valid!
+    importSeedError: '', //Seed Phrase is invalid!
+    importSeedErrorSize: '', //A Seed Phrase should be 12 or 24 words long!
+    importSeedErrorTypo: '', //Seed Phrase contains typing errors! Check your input carefully
+    importSeedErrorSkip: '', //Seed Phrase appears invalid, but the warning was skipped by the user
 
     // Wallet Dashboard
     gettingStarted: '', //Getting Started
@@ -185,6 +192,8 @@ var translation = {
     settingsAnalytics: '', //Choose your analytics contribution level:
     settingsToggleDebug: '', //Debug Mode
     settingsToggleTestnet: '', //Testnet Mode
+    settingsToggleAdvancedMode: '', //Advanced Mode
+    settingsToggleAdvancedModeSubtext: '', //This unlocks deeper functionality and customisation, but may be overwhelming and potentially dangerous for unexperienced users!
 
     // Network switching (mainnet <---> testnet)
     netSwitchUnsavedWarningTitle: '', //Your {network} wallet isn\'t saved!

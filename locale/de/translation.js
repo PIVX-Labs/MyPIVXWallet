@@ -62,8 +62,15 @@ export const de_translation = {
         'Jeder mit einer Kopie der Phrase hat Zugriff auf <b>deine Brieftasche</b>.', //Anyone with a copy of it can access <b>all</b> of your funds.
     doNotShare: 'Teile Sie unter keinen Umständen mit dritten.', //Do NOT share it with anybody.
     digitalStoreNotAdvised: 'Es wird empfohlen diese nicht digital zu sichern', //It is <b>NOT</b> advised to store this digitally.
-    optionalPassphrase: 'Optionale Pass Phrase', //Optional Passphrase
+    optionalPassphrase: 'Optionale Pass Phrase (BIP39)', //Optional Passphrase (BIP39)
     writtenDown: 'Ich bestätige, dass ich die Seed Phrase notiert habe', //I have written down my seed phrase
+
+    // Seed Phrase Import
+    importSeedValid: '', //Seed Phrase is valid!
+    importSeedError: '', //Seed Phrase is invalid!
+    importSeedErrorSize: '', //A Seed Phrase should be 12 or 24 words long!
+    importSeedErrorTypo: '', //Seed Phrase contains typing errors! Check your input carefully
+    importSeedErrorSkip: '', //Seed Phrase appears invalid, but the warning was skipped by the user
 
     // Wallet Dashboard
     gettingStarted: 'Erste Schritte', //Getting Started
@@ -178,6 +185,8 @@ export const de_translation = {
     settingsAnalytics: 'Wähle die verwendeten Analysedaten dieser Sitzung', //Choose your analytics contribution level:
     settingsToggleDebug: 'Debug Modus', //Debug Mode
     settingsToggleTestnet: 'Testnet Modus', //Testnet Mode
+    settingsToggleAdvancedMode: '', //Advanced Mode
+    settingsToggleAdvancedModeSubtext: '', //This unlocks deeper functionality and customisation, but may be overwhelming and potentially dangerous for unexperienced users!
 
     // Transparency Report
     transparencyReport: 'Transparenz-Bericht', //Transparency Report

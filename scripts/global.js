@@ -22,6 +22,7 @@ import {
     setColdStakingAddress,
     strColdStakingAddress,
     nDisplayDecimals,
+    fAdvancedMode,
 } from './settings.js';
 import { createAndSendTransaction, signTransaction } from './transactions.js';
 import {
@@ -319,6 +320,7 @@ export async function start() {
         domVersion: document.getElementById('version'),
         domFlipdown: document.getElementById('flipdown'),
         domTestnetToggler: document.getElementById('testnetToggler'),
+        domAdvancedModeToggler: document.getElementById('advancedModeToggler'),
     };
     await i18nStart();
     await loadImages();
@@ -1529,15 +1531,19 @@ export async function accessOrImportWallet() {
  *
  * Useful for adjusting the input types or displaying password prompts depending on the import scheme
  */
-export async function onPrivateKeyChanged() {
+export async function guiUpdateImportInput() {
     if (await hasEncryptedWallet()) return;
     // Check whether the string is Base64 (would likely be an MPW-encrypted import)
     // and it doesn't have any spaces (would be a mnemonic seed)
-    const fContainsSpaces = doms.domPrivKey.value.includes(' ');
+    const fContainsSpaces = doms.domPrivKey.value.trim().includes(' ');
+
+    // If this could require a Seed Passphrase (BIP39 Passphrase) and Advanced Mode is enabled
+    // ...or if this is an Encrypted Import (Encrypted Base64 MPW key)
+    const fBIP39Passphrase = fContainsSpaces && fAdvancedMode;
     doms.domPrivKeyPassword.hidden =
         (doms.domPrivKey.value.length < 128 ||
             !isBase64(doms.domPrivKey.value)) &&
-        !fContainsSpaces;
+        !fBIP39Passphrase;
 
     doms.domPrivKeyPassword.placeholder = fContainsSpaces
         ? translation.optionalPassphrase

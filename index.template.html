@@ -780,7 +780,7 @@
                         <!-- IMPORT WALLET -->
                         <input class="hide-element" type="text" id="clipboard" />
                         <div id="importWallet" style="display: none;">
-                          <input type="password" class="textbox-opacity-trans" id="privateKey" placeholder="Seed Phrase, XPriv or WIF Private Key" oninput="MPW.onPrivateKeyChanged()" />
+                          <input type="password" class="textbox-opacity-trans" id="privateKey" placeholder="Seed Phrase, XPriv or WIF Private Key" oninput="MPW.guiUpdateImportInput()" />
                           <input hidden type="password" id="privateKeyPassword" placeholder="Password" />
                           <button class="pivx-button-big" onclick="MPW.guiImportWallet()">
                             <span class="buttoni-icon"><i class="fas fa-file-upload fa-tiny-margin"></i></span>
@@ -1184,14 +1184,24 @@
                       </div>
 
                       <!-- Default switch -->
-                      <div class="custom-control custom-switch" style="margin-bottom:15px;">
+                      <div class="custom-control custom-switch">
                         <input type="checkbox" class="custom-control-input" id="debugToggler" onclick="MPW.toggleDebug()">
                         <label data-i18n="settingsToggleDebug" class="custom-control-label" for="debugToggler">Debug Mode</label>
                       </div>
 
+                      <br>
+
                       <div class="custom-control custom-switch">
                         <input type="checkbox" class="custom-control-input" id="testnetToggler" onclick="MPW.toggleTestnet()">
                         <label data-i18n="settingsToggleTestnet" class="custom-control-label" for="testnetToggler">Testnet Mode</label>
+                      </div>
+
+                      <br>
+
+                      <div class="custom-control custom-switch">
+                        <input type="checkbox" class="custom-control-input" id="advancedModeToggler" onclick="MPW.toggleAdvancedMode()">
+                        <label data-i18n="settingsToggleAdvancedMode" class="custom-control-label" for="advancedModeToggler">Advanced Mode</label>
+                        <p style="opacity: 0.6; margin-top: 5px;"><i class="fa-solid fa-triangle-exclamation" style="margin-right: 5px;"></i><span data-i18n="settingsToggleAdvancedModeSubtext">This unlocks deeper functionality and customisation, but may be overwhelming and potentially dangerous for unexperienced users!</p>
                       </div>
 
                     </div>

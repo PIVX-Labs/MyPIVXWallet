@@ -2,6 +2,7 @@ import {
     doms,
     getBalance,
     getStakingBalance,
+    guiUpdateImportInput,
     mempool,
     refreshChainData,
     renderActivityGUI,
@@ -52,6 +53,8 @@ export let fAutoSwitch = true;
 export let strColdStakingAddress = 'SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy';
 /** The decimals to display for the wallet balance */
 export let nDisplayDecimals = 2;
+/** A mode which configures MPW towards Advanced users, with low-level feature access and less restrictions (Potentially dangerous) */
+export let fAdvancedMode = false;
 
 let transparencyReport;
 
@@ -88,6 +91,10 @@ export class Settings {
      * @type {number} The decimals to display for the wallet balance
      */
     displayDecimals;
+    /**
+     * @type {Boolean} Whether Advanced Mode is enabled or disabled
+     */
+    advancedMode;
     constructor({
         analytics,
         explorer,
@@ -97,6 +104,7 @@ export class Settings {
         translation = '',
         displayCurrency = 'usd',
         displayDecimals = nDisplayDecimals,
+        advancedMode = false,
     } = {}) {
         this.analytics = analytics;
         this.explorer = explorer;
@@ -106,6 +114,7 @@ export class Settings {
         this.translation = translation;
         this.displayCurrency = displayCurrency;
         this.displayDecimals = displayDecimals;
+        this.advancedMode = advancedMode;
     }
 }
 
@@ -196,14 +205,21 @@ export async function start() {
         coldAddress,
         displayCurrency,
         displayDecimals,
+        advancedMode,
     } = await database.getSettings();
 
     // Set the Cold Staking address
     strColdStakingAddress = coldAddress;
 
     // Set any Toggles to their default or DB state
+    // Network Auto-Switch
     fAutoSwitch = autoswitch;
     doms.domAutoSwitchToggle.checked = fAutoSwitch;
+
+    // Advanced Mode
+    fAdvancedMode = advancedMode;
+    doms.domAdvancedModeToggler.checked = fAdvancedMode;
+    await configureAdvancedMode();
 
     // Set the display currency
     strCurrency = doms.domCurrencySelect.value = displayCurrency;
@@ -619,4 +635,29 @@ async function fillNodeSelect() {
 
     // And update the UI to reflect them
     doms.domNodeSelect.value = cNode.url;
+}
+
+/**
+ * Toggle Advanced Mode at runtime and in DB
+ */
+export async function toggleAdvancedMode() {
+    fAdvancedMode = !fAdvancedMode;
+
+    // Configure the app accordingly
+    await configureAdvancedMode();
+
+    // Update the setting in the DB
+    const database = await Database.getInstance();
+    await database.setSettings({ advancedMode: fAdvancedMode });
+}
+
+/**
+ * Configure the app functionality and UI for the current mode
+ */
+async function configureAdvancedMode() {
+    // Re-render the Import Input UI
+    await guiUpdateImportInput();
+
+    // Hide or Show the "Mnemonic Passphrase" in the Seed Creation modal
+    doms.domMnemonicModalPassphrase.hidden = !fAdvancedMode;
 }

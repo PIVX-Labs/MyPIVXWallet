@@ -19,7 +19,7 @@ export {
     accessOrImportWallet,
     guiImportWallet,
     guiSetColdStakingAddress,
-    onPrivateKeyChanged,
+    guiUpdateImportInput,
     toClipboard,
     toggleExportUI,
     wipePrivateData,
@@ -46,7 +46,12 @@ export {
     govVote,
 } from './global.js';
 export { generateWallet, getNewAddress, importWallet } from './wallet.js';
-export { toggleTestnet, toggleDebug, toggleAutoSwitch } from './settings.js';
+export {
+    toggleTestnet,
+    toggleDebug,
+    toggleAutoSwitch,
+    toggleAdvancedMode,
+} from './settings.js';
 export {
     createTxGUI,
     undelegateGUI,

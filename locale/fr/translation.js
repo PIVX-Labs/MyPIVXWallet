@@ -62,8 +62,15 @@ export const fr_translation = {
     doNotShare: 'Ne le partagez avec personne.', //Do NOT share it with anybody.
     digitalStoreNotAdvised:
         '<b>NON</b> il est conseillé de les stocker sous forme numérique.', //It is <b>NOT</b> advised to store this digitally.
-    optionalPassphrase: 'Phrase mot de passe Facultatif', //Optional Passphrase
+    optionalPassphrase: 'Phrase mot de passe Facultatif (BIP39)', //Optional Passphrase
     writtenDown: "J'ai écrit ma phrase d'introduction", //I have written down my seed phrase
+
+    // Seed Phrase Import
+    importSeedValid: '', //Seed Phrase is valid!
+    importSeedError: '', //Seed Phrase is invalid!
+    importSeedErrorSize: '', //A Seed Phrase should be 12 or 24 words long!
+    importSeedErrorTypo: '', //Seed Phrase contains typing errors! Check your input carefully
+    importSeedErrorSkip: '', //Seed Phrase appears invalid, but the warning was skipped by the user
 
     // Wallet Dashboard
     gettingStarted: 'Démarrer', //Getting Started
@@ -178,6 +185,8 @@ export const fr_translation = {
     settingsAnalytics: "Choisissez votre niveau d'analyse :", //Choose your analytics contribution level:
     settingsToggleDebug: 'Mode de débogage', //Debug Mode
     settingsToggleTestnet: 'Mode testnet', //Testnet Mode
+    settingsToggleAdvancedMode: '', //Advanced Mode
+    settingsToggleAdvancedModeSubtext: '', //This unlocks deeper functionality and customisation, but may be overwhelming and potentially dangerous for unexperienced users!
 
     // Network switching (mainnet <---> testnet)
     netSwitchUnsavedWarningTitle: '', //Your {network} wallet isn\'t saved!

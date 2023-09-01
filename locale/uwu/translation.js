@@ -61,8 +61,17 @@ export const uwu_translation = {
     doNotShare: 'Do NOT share it with anyuwu.', //Do NOT share it with anybody.
     digitalStoreNotAdvised:
         'It is <b>NAWT</b> advised to store this digitally.', //It is <b>NOT</b> advised to store this digitally.
-    optionalPassphrase: 'Optional Passphwase', //Optional Passphrase
+    optionalPassphrase: 'Optional Passphwase (BIP39)', //Optional Passphrase
     writtenDown: 'I haz written down my seed phrase', //I have written down my seed phrase
+
+    // Seed Phrase Import
+    importSeedValid: 'Seed Phwase iz valid!', //Seed Phrase is valid!
+    importSeedError: 'Seed Phwase iz invalid!', //Seed Phrase is invalid!
+    importSeedErrorSize: 'A Seed Phwase shwould be 12 or 24 words long!', //A Seed Phrase should be 12 or 24 words long!
+    importSeedErrorTypo:
+        'Seed Phwase contains typing ewrrors! Check ur input carefully', //Seed Phrase contains typing errors! Check your input carefully
+    importSeedErrorSkip:
+        'Seed Phwase appears invalid, but da warning was skipped by da user', //Seed Phrase appears invalid, but the warning was skipped by the user
 
     // Wallet Dashboard
     gettingStarted: 'Getting Stwarted', //Getting Started
@@ -182,6 +191,9 @@ export const uwu_translation = {
     settingsAutoSelectNet: 'Auto-select Expwowers and Nowodes', // Auto-select Explorers and Nodes
     settingsToggleDebug: 'Debug Mowode', //Debug Mode
     settingsToggleTestnet: 'Testnet Mowode', //Testnet Mode
+    settingsToggleAdvancedMode: 'Advwanced Mowode', //Advanced Mode
+    settingsToggleAdvancedModeSubtext:
+        'Dis unlocks deeper fwunctionality and cuwustomisatwion, but may be oveuhwhelming and potentially dangerwus for unexperienced bakas!', //This unlocks deeper functionality and customisation, but may be overwhelming and potentially dangerous for unexperienced users!
 
     // Network switching (mainnet <---> testnet)
     netSwitchUnsavedWarningTitle: "Ur {network} wawwet isn't saved!", //Your {network} wallet isn\'t saved!

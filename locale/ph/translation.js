@@ -63,8 +63,15 @@ export const ph_translation = {
     doNotShare: 'WAG mo itong ibibigay kahit kanino', //Do NOT share it with anybody.
     digitalStoreNotAdvised:
         'Ito ay <b>HINDI</b> payo upang itago ito digitally', //It is <b>NOT</b> advised to store this digitally.
-    optionalPassphrase: 'Optional Passphrase', //Optional Passphrase
+    optionalPassphrase: 'Optional Passphrase (BIP39)', //Optional Passphrase
     writtenDown: 'Isinulat ko na ang aking seed phrase', //I have written down my seed phrase
+
+    // Seed Phrase Import
+    importSeedValid: '', //Seed Phrase is valid!
+    importSeedError: '', //Seed Phrase is invalid!
+    importSeedErrorSize: '', //A Seed Phrase should be 12 or 24 words long!
+    importSeedErrorTypo: '', //Seed Phrase contains typing errors! Check your input carefully
+    importSeedErrorSkip: '', //Seed Phrase appears invalid, but the warning was skipped by the user
 
     // Wallet Dashboard
     gettingStarted: 'Magsimula', //Getting Started
@@ -179,6 +186,8 @@ export const ph_translation = {
     settingsAnalytics: 'Pumili ng iyong analytics contribution level:', //Choose your analytics contribution level:
     settingsToggleDebug: 'Debug Mode', //Debug Mode
     settingsToggleTestnet: 'Testnet Mode', //Testnet Mode
+    settingsToggleAdvancedMode: '', //Advanced Mode
+    settingsToggleAdvancedModeSubtext: '', //This unlocks deeper functionality and customisation, but may be overwhelming and potentially dangerous for unexperienced users!
 
     // Network switching (mainnet <---> testnet)
     netSwitchUnsavedWarningTitle: '', //Your {network} wallet isn\'t saved!
