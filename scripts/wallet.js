@@ -832,6 +832,13 @@ export async function generateWallet(noUI = false) {
     return masterKey;
 }
 
+/**
+ * Clean a Seed Phrase string and verify it's integrity
+ *
+ * This returns an object of the validation status and the cleaned Seed Phrase for safe low-level usage.
+ * @param {String} strPhraseInput - The Seed Phrase string
+ * @param {Boolean} fPopupConfirm - Allow a warning bypass popup if the Seed Phrase is unusual
+ */
 export async function cleanAndVerifySeedPhrase(
     strPhraseInput = '',
     fPopupConfirm = true
