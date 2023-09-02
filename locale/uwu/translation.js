@@ -86,7 +86,6 @@ export const uwu_translation = {
     redeemOrCreateCode: 'Redeem or Cweate Cowode', //Redeem or Create Code
 
     // Send
-    transfer: 'Twansfer', //Transfer
     address: 'Addwess', //Address
     receivingAddress: 'Receivwing addwess', //Receiving address
     sendAmountCoinsMax: 'MAX♡', //MAX

@@ -87,7 +87,6 @@ export const fr_translation = {
     redeemOrCreateCode: 'Remplacer ou créer un code', //Redeem or Create Code
 
     // Send
-    transfer: 'Télécharger', //Transfer
     address: 'Adresse', //Address
     receivingAddress: 'Adresse de réception', //Receiving address
     sendAmountCoinsMax: 'Maximum', //MAX

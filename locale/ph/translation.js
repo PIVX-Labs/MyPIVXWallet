@@ -88,7 +88,6 @@ export const ph_translation = {
     redeemOrCreateCode: 'I-redeem o Gumawa ng Code', //Redeem or Create Code
 
     // Send
-    transfer: 'Ilipat', //Transfer
     address: 'Address', //Address
     receivingAddress: 'Address ng tatangap', //Receiving address
     sendAmountCoinsMax: 'MAX', //MAX

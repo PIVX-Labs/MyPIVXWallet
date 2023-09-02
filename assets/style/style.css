@@ -2471,19 +2471,7 @@ input {
   outline-color: rgb(180, 180, 180);
 }
 
-.dcWallet-sWithdraw {
-    background-color: #ffffff29;
-    width: 50px;
-    height: 50px;
-    padding-top: 13px;
-    border-radius: 50%;
-    border-top-left-radius: 7px;
-    border-bottom-right-radius: 7px;
-    background-image: linear-gradient(183deg, #9621ff, #7d21ff);
-    cursor:pointer;
-}
-
-.dcWallet-stake {
+.dcWallet-btn-left {
     background-color: #ffffff29;
     width: 100px;
     height: 43px;
@@ -2496,7 +2484,7 @@ input {
     cursor: pointer;
 }
 
-.dcWallet-unstake {
+.dcWallet-btn-right {
     background-color: #ffffff29;
     width: 100px;
     height: 43px;
@@ -2508,19 +2496,6 @@ input {
     background-image: linear-gradient(183deg, #9621ff, #7d21ff);
     cursor:pointer;
 }
-
-.dcWallet-sDeposit {
-    background-color: #ffffff29;
-    width: 50px;
-    height: 50px;
-    padding-top: 13px;
-    border-radius: 50%;
-    border-top-right-radius: 7px;
-    border-bottom-left-radius: 7px;
-    background-image: linear-gradient(183deg, #9621ff, #7d21ff);
-    cursor:pointer;
-}
-
 
 
 .blackBack {
@@ -2560,8 +2535,9 @@ input {
     }
 }
 
-.transferMenu .transferHeader .transferExit {
-    cursor:pointer;
+.transferExit {
+    position: absolute;
+    right: 15px;
 }
 
 .transferAnimation {
