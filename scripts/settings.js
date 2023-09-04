@@ -658,6 +658,7 @@ async function configureAdvancedMode() {
     // Re-render the Import Input UI
     await guiUpdateImportInput();
 
-    // Hide or Show the "Mnemonic Passphrase" in the Seed Creation modal
+    // Hide or Show the "Mnemonic Passphrase" in the Seed Creation modal, and reset it's input
+    doms.domMnemonicModalPassphrase.value = '';
     doms.domMnemonicModalPassphrase.hidden = !fAdvancedMode;
 }

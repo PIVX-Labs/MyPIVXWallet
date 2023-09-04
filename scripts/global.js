@@ -1548,6 +1548,11 @@ export async function guiUpdateImportInput() {
     doms.domPrivKeyPassword.placeholder = fContainsSpaces
         ? translation.optionalPassphrase
         : translation.password;
+
+    // If the "Import Password/Passphrase" is hidden, we'll also wipe it's input, in the
+    // ... edge-case that a passphrase was entered, then the import key had changed.
+    if (doms.domPrivKeyPassword.hidden) doms.domPrivKeyPassword.value = '';
+
     // Uncloak the private input IF spaces are detected, to make Seed Phrases easier to input and verify
     doms.domPrivKey.setAttribute('type', fContainsSpaces ? 'text' : 'password');
 }
