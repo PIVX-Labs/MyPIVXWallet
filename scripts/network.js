@@ -322,6 +322,7 @@ export class ExplorerNetwork extends Network {
             path,
             sats: Math.round(cVout.value * COIN),
             script: cVout.scriptPubKey.hex,
+            vin: cTx?.vin || [],
             vout: cVout.n,
             height: this.cachedBlockCount - (cTx.confirmations - 1),
             status: cTx.confirmations < 1 ? Mempool.PENDING : Mempool.CONFIRMED,
