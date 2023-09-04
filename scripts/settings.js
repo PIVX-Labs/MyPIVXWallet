@@ -92,7 +92,7 @@ export class Settings {
      */
     displayDecimals;
     /**
-     * @type {Boolean} Whether Advanced Mode is enabled or disabled
+     * @type {boolean} Whether Advanced Mode is enabled or disabled
      */
     advancedMode;
     constructor({
