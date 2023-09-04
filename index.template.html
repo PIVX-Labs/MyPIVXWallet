@@ -677,10 +677,10 @@
                           <p data-i18n="dCardTwoDesc">
                             Create a wallet with a custom prefix, this can take a long time!
                           </p>
-                          <span style="opacity: 0.75; font-size: small;">Note: addresses will always start with: <b id="prefixNetwork">D</b></span>
+                          <span style="opacity: 0.75; font-size: small;"><span data-i18n="vanityPrefixNote">Note: addresses will always start with:</span> <b id="prefixNetwork">D</b></span>
                         </div>
 
-                        <input class="center-text" style="display: none; opacity: 0;" type="text" id="prefix" placeholder="Address Prefix" onkeypress="MPW.checkVanity()" />
+                        <input class="center-text" style="display: none; opacity: 0;" type="text" id="prefix" data-i18n="vanityPrefixInput" placeholder="Address Prefix" onkeypress="MPW.checkVanity()" />
 
                         <button class="pivx-button-big" onclick="MPW.generateVanityWallet()">
                           <span class="buttoni-icon">

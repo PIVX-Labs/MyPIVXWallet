@@ -53,6 +53,10 @@ export const uwu_translation = {
     dCardFourButtonI: 'Impowt Wawwet', //Import Wallet
     dCardFourButtonA: 'Access My Wawwet', //Access My Wallet
 
+    // Vanity Creation
+    vanityPrefixNote: 'Note: addwesses will always start wif:', //Note: addresses will always start with:
+    vanityPrefixInput: 'Addwess Prefix', //Address Prefix
+
     // Seed Phrase Creation
     thisIsYourSeed: 'This is ur seed phrase:', //This is your seed phrase:
     writeDownSeed: "Write it down, baka! You'll only see this <b>once!</b>", //Write it down somewhere. You'll only see this <b>once!</b>

@@ -54,6 +54,10 @@ export const ph_translation = {
     dCardFourButtonI: 'I-import ang Wallet', //Import Wallet
     dCardFourButtonA: 'I-access ang aking Wallet', //Access My Wallet
 
+    // Vanity Creation
+    vanityPrefixNote: '', //Note: addresses will always start with:
+    vanityPrefixInput: '', //Address Prefix
+
     // Seed Phrase Creation
     thisIsYourSeed: 'Ito ang iyong seed phrase:', //This is your seed phrase:
     writeDownSeed:

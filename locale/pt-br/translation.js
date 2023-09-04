@@ -53,6 +53,10 @@ export const pt_br_translation = {
     dCardFourButtonI: 'Importar Carteira', //Import Wallet
     dCardFourButtonA: 'Acessar a Minha Carteira', //Access My Wallet
 
+    // Vanity Creation
+    vanityPrefixNote: '', //Note: addresses will always start with:
+    vanityPrefixInput: '', //Address Prefix
+
     // Seed Phrase Creation
     thisIsYourSeed: 'Esta é a sua Seed Phrase:', //This is your seed phrase:
     writeDownSeed:

@@ -68,6 +68,10 @@ var translation = {
     dCardFourButtonI: '', //Import Wallet
     dCardFourButtonA: '', //Access My Wallet
 
+    // Vanity Creation
+    vanityPrefixNote: '', //Note: addresses will always start with:
+    vanityPrefixInput: '', //Address Prefix
+
     // Seed Phrase Creation
     thisIsYourSeed: '', //This is your seed phrase:
     writeDownSeed: '', //Write it down somewhere. You'll only see this <b>once!</b>
