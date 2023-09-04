@@ -93,7 +93,6 @@ export const pt_pt_translation = {
     redeemOrCreateCode: 'Resgatar ou Criar Código', //Redeem or Create Code
 
     // Send
-    transfer: 'Transferir', //Transfer
     address: 'Endereço', //Address
     receivingAddress: 'Endereço de recepção', //Receiving address
     sendAmountCoinsMax: 'Máximo', //MAX

@@ -93,7 +93,6 @@ export const en_translation = {
     redeemOrCreateCode: 'Redeem or Create Code', //
 
     // Send
-    transfer: 'Transfer', //
     address: 'Address', //
     receivingAddress: 'Receiving address', //
     sendAmountCoinsMax: 'MAX', //

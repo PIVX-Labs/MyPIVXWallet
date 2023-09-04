@@ -94,7 +94,6 @@ export const de_translation = {
     redeemOrCreateCode: 'Erstelle Codes, oder löse Codes ein', //Redeem or Create Code
 
     // Send
-    transfer: 'Verschicken', //Transfer
     address: 'Adresse', //Address
     receivingAddress: 'Empfänger Adresse', //Receiving address
     sendAmountCoinsMax: 'Maximal', //MAX

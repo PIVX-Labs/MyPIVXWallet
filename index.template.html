@@ -502,14 +502,14 @@
 
                             <div class="row lessTop p-0">
                               <div class="col-6 d-flex" style="justify-content: flex-start;">
-                                <div class="dcWallet-sWithdraw" onclick="MPW.toggleBottomMenu('transferMenu', 'transferAnimation')">
-                                  <i class="fas fa-arrow-up"></i>  
+                                <div class="dcWallet-btn-left" data-i18n="send" onclick="MPW.toggleBottomMenu('transferMenu', 'transferAnimation')">
+                                  Send
                                 </div>
                               </div>
 
                               <div class="col-6 d-flex" style="justify-content: flex-end;">
-                                <div class="dcWallet-sDeposit" onclick="MPW.guiRenderCurrentReceiveModal()" data-toggle="modal" data-target="#qrModal">
-                                  <i class="fas fa-arrow-down"></i>  
+                                <div class="dcWallet-btn-right" data-i18n="receive" onclick="MPW.guiRenderCurrentReceiveModal()" data-toggle="modal" data-target="#qrModal">
+                                  Receive
                                 </div>
                               </div>
                             </div>
@@ -565,9 +565,8 @@
                     <!-- // Export Private Keys Modal -->
 
                     <div id="transferMenu" class="exportKeysModalColor transferMenu transferAnimation">
-                      <div class="transferHeader">
-                        <div data-i18n="transfer" class="transferHeaderText">Transfer</div>
-                        <div class="transferExit" onclick="MPW.toggleBottomMenu('transferMenu', 'transferAnimation')"><i class="fa-solid fa-xmark"></i></div>
+                      <div style="padding-top: 5px;">
+                        <div class="transferExit ptr" onclick="MPW.toggleBottomMenu('transferMenu', 'transferAnimation')"><i class="fa-solid fa-xmark"></i></div>
                       </div>
     
                       <div class="transferBody">
@@ -846,13 +845,13 @@
 
                         <div class="row lessTop p-0">
                           <div class="col-6 d-flex" style="justify-content: flex-start;">
-                            <div data-i18n="stake" class="dcWallet-stake" onclick="MPW.toggleBottomMenu('stakingDelegate', 'transferAnimation')">
+                            <div data-i18n="stake" class="dcWallet-btn-left" onclick="MPW.toggleBottomMenu('stakingDelegate', 'transferAnimation')">
                               Stake
                             </div>
                           </div>
 
                           <div class="col-6 d-flex" style="justify-content: flex-end;">
-                            <div data-i18n="stakeUnstake" class="dcWallet-unstake" onclick="MPW.toggleBottomMenu('stakingUndelegate', 'transferAnimation')">
+                            <div data-i18n="stakeUnstake" class="dcWallet-btn-right" onclick="MPW.toggleBottomMenu('stakingUndelegate', 'transferAnimation')">
                               Unstake  
                             </div>
                           </div>
@@ -879,8 +878,8 @@
 
                 <div id="stakingUndelegate" class="exportKeysModalColor transferMenu transferAnimation">
                   <div class="transferHeader">
-                    <div data-i18n="stakeUnstake" class="transferHeaderText">Unstake</div>
-                    <div class="transferExit" onclick="MPW.toggleBottomMenu('stakingUndelegate', 'transferAnimation')"><i class="fa-solid fa-xmark"></i></div>
+                    <div data-i18n="stakeUnstake" class="sendHeaderText">Unstake</div>
+                    <div class="transferExit ptr" onclick="MPW.toggleBottomMenu('stakingUndelegate', 'transferAnimation')"><i class="fa-solid fa-xmark"></i></div>
                   </div>
 
                   <div class="transferBody">
@@ -923,8 +922,8 @@
 
                 <div id="stakingDelegate" class="exportKeysModalColor transferMenu transferAnimation">
                   <div class="transferHeader">
-                    <div data-i18n="stake" class="transferHeaderText">Stake</div>
-                    <div class="transferExit" onclick="MPW.toggleBottomMenu('stakingDelegate', 'transferAnimation')"><i class="fa-solid fa-xmark"></i></div>
+                    <div data-i18n="stake" class="sendHeaderText">Stake</div>
+                    <div class="transferExit ptr" onclick="MPW.toggleBottomMenu('stakingDelegate', 'transferAnimation')"><i class="fa-solid fa-xmark"></i></div>
                   </div>
 
                   <div class="transferBody">
