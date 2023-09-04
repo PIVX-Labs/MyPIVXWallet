@@ -904,7 +904,7 @@ export async function cleanAndVerifySeedPhrase(
 /**
  * Display a Seed Phrase popup to the user and optionally wait for a Seed Passphrase
  * @param {string} mnemonic - The Seed Phrase to display to the user
- * @returns {Promise<String>} - The Mnemonic Passphrase (empty string if omitted by user)
+ * @returns {Promise<string>} - The Mnemonic Passphrase (empty string if omitted by user)
  */
 function informUserOfMnemonic(mnemonic) {
     return new Promise((res, _) => {
