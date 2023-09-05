@@ -7,409 +7,410 @@ export const it_translation = {
     amount: 'Montant', //Amount
     staking: 'Staking', //Staking
     wallet: 'Portafoglio', //Wallet
-    display: 'Afficher', //Display
+    display: 'Schermo', //Display
     activity: 'Attività', //Activity
     yes: 'Sì', //Yes
     no: 'No', //No
 
     // Nav Bar
-    navDashboard: 'Tableau de bBord', //Dashboard
+    navDashboard: 'Dashboard', //Dashboard
     navStake: 'Stake', //Stake
     navMasternode: 'Masternode', //Masternode
     navGovernance: 'Gouvernance', //Governance
-    navSettings: 'Configurations', //Settings
+    navSettings: 'Impostazioni', //Settings
 
     // Footer
-    footerBuiltWithPivxLabs: 'Construit avec 💜 par PIVX Labs FR 🇫🇷', //Built with 💜 by PIVX Labs
+    footerBuiltWithPivxLabs: 'Costruito col 💜 da PIVX Labs ', //Built with 💜 by PIVX Labs
 
     // Intro
-    loading: 'Chargement', //Loading
-    loadingTitle: 'Mon portefeuille PIVX', //My PIVX Wallet is
+    loading: 'Caricamento', //Loading
+    loadingTitle: 'Il mio portafoglio PIVX', //My PIVX Wallet is
 
     // Onboarding Dashboard
     dashboardTitle: 'Tableau de bord', //Dashboard
-    dCardOneTitle: 'Créer le', //Create a
-    dCardOneSubTitle: 'Nouveau portefeuille', //New Wallet
+    dCardOneTitle: 'Creare un', //Create a
+    dCardOneSubTitle: 'Nuovo Wallet', //New Wallet
     dCardOneDesc:
-        'Créer un nouveau portefeuille PIVX, qui offre les méthodes de sauvegarde et de sécurité les plus sûres.', //Create a new PIVX wallet, offering the most secure backup & security methods.
-    dCardOneButton: 'Créer un nouveau portefeuille', //Create A New Wallet
+        'Creare un nuovo Portafoglio PIVX,offre più sicurezza di backup & metodi sicuri.', //Create a new PIVX wallet, offering the most secure backup & security methods.
+    dCardOneButton: 'Creare un Nuovo Wallet', //Create A New Wallet
 
-    dCardTwoTitle: 'Créer un nouveau', //Create a new
-    dCardTwoSubTitle: 'Portefeuille Vanité', //Vanity Wallet
+    dCardTwoTitle: 'Crea un nuovo ', //Create a new
+    dCardTwoSubTitle: 'Portafoglio Vanity', //Vanity Wallet
     dCardTwoDesc:
-        'Créer un portefeuille avec un préfixe personnalisé, cela peut prendre beaucoup de temps !', //Create a wallet with a custom prefix, this can take a long time!
-    dCardTwoButton: 'Créer un portefeuille Vanity', //Create A Vanity Wallet
+        'Creare un portafoglio con un prefisso customizzato,questo lo puoi tenere per un lungo periodo !', //Create a wallet with a custom prefix, this can take a long time!
+    dCardTwoButton: 'Crea un portaflglio vanity', //Create A Vanity Wallet
 
-    dCardThreeTitle: 'Accédez à votre', //Access your
-    dCardThreeSubTitle: 'Portefeuille de hardware', //Hardware Wallet
+    dCardThreeTitle: 'Aceedi al tuo ', //Access your
+    dCardThreeSubTitle: 'Portafoglio hardware', //Hardware Wallet
     dCardThreeDesc:
-        "Utilisez votre portefeuille Ledger Hardware avec l'interface familière de l'application MPW.", //Use your Ledger Hardware wallet with MPW's familiar interface.
-    dCardThreeButton: 'Accéder à mon Ledger', //Access my Ledger
+        "Utilizza il tuo portafoglio Ledger Hardware con l'interfaccia familiare di MPW.", //Use your Ledger Hardware wallet with MPW's familiar interface.
+    dCardThreeButton: 'Accedi alla mia Ledger', //Access my Ledger
 
-    dCardFourTitle: 'Aller à', //Go to
-    dCardFourSubTitle: 'Mon portefeuille', //My Wallet
+    dCardFourTitle: 'Vai al ', //Go to
+    dCardFourSubTitle: 'Mio portafoglio', //My Wallet
     dCardFourDesc:
-        "Importer un portefeuille PIVX à l'aide d'une clé privée, d'un xpriv ou d'une phrase de démarrage.", //Import a PIVX wallet using a Private Key, xpriv, or Seed Phrase.
-    dCardFourButtonI: 'Importer le portefeuille', //Import Wallet
-    dCardFourButtonA: 'Accéder à mon portefeuille', //Access My Wallet
+        "Importa un portafoglio PIVX usando una Chiave Privata, xpriv, o una Seed Phrase  .", //Import a PIVX wallet using a Private Key, xpriv, or Seed Phrase.
+    dCardFourButtonI: 'Importa Portafoglio', //Import Wallet
+    dCardFourButtonA: 'Accedi al mio Portafoglio', //Access My Wallet
 
     // Seed Phrase Creation
-    thisIsYourSeed: "Voici votre phrase d'introduction:", //This is your seed phrase:
+    thisIsYourSeed: "Questa è la tua seed phrase:", //This is your seed phrase:
     writeDownSeed:
-        'Notez-le à un seul endroit. Vous ne verrez que cela <b>une fois!</b>', //Write it down somewhere. You'll only see this <b>once!</b>
+        'Scrivilo da qualche parte. Lo vedrai solo <b>una volta!</b>', //Write it down somewhere. You'll only see this <b>once!</b>
     doNotShareWarning:
-        "Toute personne disposant d'une copie peut accéder à <b> à tous</b>votre fonds", //Anyone with a copy of it can access <b>all</b> of your funds.
-    doNotShare: 'Ne le partagez avec personne.', //Do NOT share it with anybody.
+        "Chiunque ne ha una copia può accedere<b> tutti </b> vostri fondi", //Anyone with a copy of it can access <b>all</b> of your funds.
+    doNotShare: 'NON condividerla con nessuno .', //Do NOT share it with anybody.
     digitalStoreNotAdvised:
-        '<b>NON</b> il est conseillé de les stocker sous forme numérique.', //It is <b>NOT</b> advised to store this digitally.
-    optionalPassphrase: 'Phrase mot de passe Facultatif', //Optional Passphrase
-    writtenDown: "J'ai écrit ma phrase d'introduction", //I have written down my seed phrase
+        ' Si consiglia di <b>NON</b> non memorizzarla digitalmente', //It is <b>NOT</b> advised to store this digitally.
+    optionalPassphrase: 'Passphrase opzionale', //Optional Passphrase
+    writtenDown: "Ho scritto la mia seed phrase", //I have written down my seed phrase
 
     // Wallet Dashboard
-    gettingStarted: 'Démarrer', //Getting Started
-    secureYourWallet: 'Protégez votre portefeuille', //Secure your wallet
-    unlockWallet: 'Déverrouiller le portefeuille', //Unlock wallet
-    lockWallet: 'Fermeture du portefeuille', //Lock wallet
+    gettingStarted: 'Iniziare', //Getting Started
+    secureYourWallet: 'Proteggi il tuo portafoglio', //Secure your wallet
+    unlockWallet: 'Sblocca il portafoglio', //Unlock wallet
+    lockWallet: 'Blocca portafoglio', //Lock wallet
 
     // Encrypt wallet
-    encryptWallet: 'Cryptage du portefeuille', //Encrypt wallet
-    encryptPasswordCurrent: '', //Current Password
-    encryptPasswordFirst: 'Entrer le mot de passe', //Enter Password
-    encryptPasswordSecond: 'Réintroduire le mot de passe', //Re-enter Password
-    encrypt: 'Crypter', //Encrypt
-    changePassword: '', //Change Password
+    encryptWallet: 'Crittografa il portafoglio', //Encrypt wallet
+    encryptPasswordCurrent: 'Password attuale', //Current Password
+    encryptPasswordFirst: 'Inserisci Password', //Enter Password
+    encryptPasswordSecond: 'Reinserisci Password', //Re-enter Password
+    encrypt: 'Cripta', //Encrypt
+    changePassword: 'Cambia Password', //Change Password
 
     // Wallet Dashboard Sub-menu
-    balanceBreakdown: 'Composition de la balance', //Balance Breakdown
-    viewOnExplorer: "Voir dans l'explorateur", //View on Explorer
-    export: 'Exporter', //Export
-    refreshAddress: "Mise à jour de l'adresse", //Refresh address
-    redeemOrCreateCode: 'Remplacer ou créer un code', //Redeem or Create Code
+    balanceBreakdown: 'Scomposizione del saldo', //Balance Breakdown
+    viewOnExplorer: "Visualizza su Explorer", //View on Explorer
+    export: 'Esporta', //Export
+    refreshAddress: "Aggiorna indirizzo", //Refresh address
+    redeemOrCreateCode: 'Riscatta o crea codice', //Redeem or Create Code
 
     // Send
-    transfer: 'Télécharger', //Transfer
-    address: 'Adresse', //Address
-    receivingAddress: 'Adresse de réception', //Receiving address
-    sendAmountCoinsMax: 'Maximum', //MAX
-    paymentRequestMessage: "Description (de l'opérateur)", //Description (from the merchant)
-    send: 'Envoyer', //Send
+    transfer: 'Transferisci', //Transfer
+    address: 'Indirizzo', //Address
+    receivingAddress: 'Indirizzo di ricevimento', //Receiving address
+    sendAmountCoinsMax: 'MASSIMO', //MAX
+    paymentRequestMessage: "Descrizione (dal commerciante)", //Description (from the merchant)
+    send: 'Invia', //Send
 
     // Contacts System
-    receive: '', //Receive
-    contacts: '', //Contacts
-    name: '', //Name
-    username: '', //Username
-    addressOrXPub: '', //Address or XPub
-    back: '', //Back
-    chooseAContact: '', //Choose a Contact
-    createContact: '', //Create Contact
-    encryptFirstForContacts: '', //Once you hit "{button}" in the Dashboard, you can create a Contact to make receiving PIV easier!
-    shareContactURL: '', //Share Contact URL
-    setupYourContact: '', //Setup your Contact
-    receiveWithContact: '', //Receive using a simple username-based Contact
-    onlyShareContactPrivately: '', //<b>Only</b> share your Contact with trusted people (family, friends)
+    receive: 'Ricevi', //Receive
+    contacts: 'Contatti', //Contacts
+    name: 'Nome', //Name
+    username: 'Cognome', //Username
+    addressOrXPub: 'Indirizzo o XPub', //Address or XPub
+    back: 'Indietro', //Back
+    chooseAContact: 'Scegli un contatto', //Choose a Contact
+    createContact: 'Crea un contatto', //Create Contact
+    encryptFirstForContacts: 'Dopo aver premuto "{button}" nella Dashboard, puoi creare un contatto per facilitare la ricezione dei PIV!', //Once you hit "{button}" in the Dashboard, you can create a Contact to make receiving PIV easier!
+    shareContactURL: 'Condividi contatto URL', //Share Contact URL
+    setupYourContact: 'Imposta il tuo contatto', //Setup your Contact
+    receiveWithContact: 'Ricevi utilizzando un semplice contatto basato sul nome utente', //Receive using a simple username-based Contact
+    onlyShareContactPrivately: '<b>Solo</b> condividi i tuoi contatti con persone fidate (familiari, amici)', //<b>Only</b> share your Contact with trusted people (family, friends)
 
     /* Context: The "Change to" is used in-app with one of the Three options below it, i.e: "Change to Contact" */
-    changeTo: '', //Change to
-    contact: '', //Contact
-    xpub: '', //XPub
+    changeTo: 'Cambia in ', //Change to
+    contact: 'Contatto', //Contact
+    xpub: 'XPub', //XPub
 
-    addContactTitle: '', //Add {strName} to Contacts
-    addContactSubtext: '', //Once added you\'ll be able to send transactions to {strName} by their name (either typing, or clicking), no more addresses, nice \'n easy.
-    addContactWarning: '', //Ensure that this is the real "{strName}", do not accept Contact requests from unknown sources!
+    addContactTitle: 'Aggiungi {strName} ai contatti', //Add {strName} to Contacts
+    addContactSubtext: 'Una volta aggiunto, sarai in grado di inviare transazioni a {strName} con il suo nome (digitando o facendo clic), niente più indirizzi, carino e facile.', //Once added you\'ll be able to send transactions to {strName} by their name (either typing, or clicking), no more addresses, nice \'n easy.
+    addContactWarning: 'Assicurati che questo sia il vero "{strName}", non accettare richieste di contatto da fonti sconosciute!', //Ensure that this is the real "{strName}", do not accept Contact requests from unknown sources!
 
-    editContactTitle: '', //Change "{strName}" Contact
-    newName: '', //New Name
+    editContactTitle: 'Cambia contatto "{strName}".', //Change "{strName}" Contact
+    newName: 'Nuovo Nome ', //New Name
 
-    removeContactTitle: '', //Remove {strName}?
-    removeContactSubtext: '', //Are you sure you wish to remove {strName} from your Contacts?
-    removeContactNote: '', //You can add them again any time in the future.
+    removeContactTitle: 'Rimuovi{strName}?', //Remove {strName}?
+    removeContactSubtext: 'Sei sicuro di voler cancellare {strName} dai tuoi contatti?', //Are you sure you wish to remove {strName} from your Contacts?
+    removeContactNote: 'Puoi aggiungerlo di nuovo in qualsiasi momento in futuro.', //You can add them again any time in the future.
 
     // Export
-    privateKey: 'Clé privée', //Private Key
-    viewPrivateKey: 'Montrer la clé privée ?', //View Private Key?
-    privateWarning1: 'Assurez-vous que personne ne regarde votre écran.', //Make sure no one can see your screen.
-    privateWarning2: 'Toute personne possédant cette clé peut voler vos fonds', //Anyone with this key can steal your funds.
-    viewKey: 'Voir la clé', //View key
+    privateKey: 'Chiave Privata', //Private Key
+    viewPrivateKey: ' Visualizzare la chiave privata?', //View Private Key?
+    privateWarning1: 'Assicurati che nessuno possa vedere il tuo schermo.', //Make sure no one can see your screen.
+    privateWarning2: 'Chiunque abbia questa chiave può rubare i tuoi fondi.', //Anyone with this key can steal your funds.
+    viewKey: 'Viasualizza chiave', //View key
 
     // PIVX Promos
     // NOTE: for this below line, continue the sentence "PIVX Promos [...]", since 'PIVX Promos' is a brand, it is not translated.
     pivxPromos:
-        "est un système décentralisé de codes cadeaux d'une valeur de PIV", // [...] is a decentralised system for gift codes worth PIV
+        "[...]è un sistema decentralizzato per codici regalo con valore PIV", // [...] is a decentralised system for gift codes worth PIV
     // NOTE: on this line, if possible, leave 'PIVX Promos' untranslated
-    redeemInput: "Introduisez votre code'PIVX Promos", //Enter your 'PIVX Promos' code
-    createName: 'Nom de la promotion (facultatif)', //Promo Name (Optional)
-    createAmount: 'Valeur promotionnelle', //Promo Amount
+    redeemInput: "Inserisci il tuo codice'PIVX Promos '", //Enter your 'PIVX Promos' code
+    createName: 'Nome della Promo(Facoltativo)', //Promo Name (Optional)
+    createAmount: 'Valore della promozione', //Promo Amount
 
     // Stake
-    stake: '', //Stake
-    stakeUnstake: '', //Unstake
-    rewardHistory: 'Historique des récompenses', //Reward History
-    loadMore: 'Chargez plus', //Load more
+    stake: 'Stake', //Stake
+    stakeUnstake: 'Unstake', //Unstake
+    rewardHistory: 'Cronologia delle ricompense', //Reward History
+    loadMore: 'Carica altro', //Load more
 
     // Masternode
-    mnControlYour: 'Contrôlez votre', //Control your
+    mnControlYour: 'Controlla il tuo', //Control your
     mnSubtext:
-        'À partir de ce guide, vous pouvez créer et accéder à un ou plusieurs masternodes.', //From this tab you can create and access one or more masternodes
+        'Da questa scheda puoi creare e accedere a uno o più masternode.', //From this tab you can create and access one or more masternodes
 
     // Governance
     govSubtext:
-        "Dans cet onglet, vous pouvez consulter les propositions et, si vous disposez d'un masternode, participer au <b>DAO</b> et voter!", //From this tab you can check the proposals and, if you have a masternode, be a part of the <b>DAO</b> and vote!
-    govMonthlyBudget: 'Budget Mensuel', //Monthly Budget
-    govAllocBudget: 'Budget Attribué', //Allocated Budget
-    govNextPayout: 'Prochain paiement du Trésor', //Next Treasury Payout
-    govTableStatus: 'ÉTAT', //STATUS
-    govTableName: 'NOM', //NAME
-    govTablePayment: 'PAIEMENT', //PAYMENT
-    govTableVotes: 'VOTES', //VOTES
-    govTableVote: 'VOTE', //VOTE
+        " Da questa scheda puoi controllare le proposte e se hai un masternode, far parte del <b>DAO</b> e votare!", //From this tab you can check the proposals and, if you have a masternode, be a part of the <b>DAO</b> and vote!
+    govMonthlyBudget: 'Budget Mensile', //Monthly Budget
+    govAllocBudget: 'Budget assegnato', //Allocated Budget
+    govNextPayout: 'Prossimo pagamento del Tesoro', //Next Treasury Payout
+    govTableStatus: 'STATO', //STATUS
+    govTableName: 'NOME', //NAME
+    govTablePayment: 'PAGAMENTO', //PAYMENT
+    govTableVotes: 'VOTI', //VOTES
+    govTableVote: 'VOTAZIONE', //VOTE
     contestedProposalsDesc:
-        " Il s'agit des propositions qui ont reçu un nombre écrasant de votes négatifs, ce qui en fait probablement des spams ou des propositions très contestables.", //These are proposals that received an overwhelming amount of downvotes, making it likely spam or a highly contestable proposal.
+        " Si tratta di proposte che hanno ricevuto un'enorme quantità di voti negativi, rendendole probabilmente spam o una proposta altamente contestabile.", //These are proposals that received an overwhelming amount of downvotes, making it likely spam or a highly contestable proposal.
 
     // Settings
-    settingsCurrency: "Choisissez une devise d'affichage :", //Choose a display currency:
-    priceProvidedBy: '', //Price data provided by
-    settingsDecimals: 'Solde Décimales :', //Balance Decimals:
-    settingsExplorer: 'Choisissez un explorateur :', //Choose an explorer:
-    settingsLanguage: 'Choisissez une langue :', //Choose a Language:
-    settingsPivxNode: 'Choisir un nœud PIVX :', //Choose a PIVX node:
+    settingsCurrency: "Scegli una valuta visualizzata:", //Choose a display currency:
+    priceProvidedBy: 'Dati sui prezzi forniti da', //Price data provided by
+    settingsDecimals: ' Decimali del saldo:', //Balance Decimals:
+    settingsExplorer: ' Scegli un explorer:', //Choose an explorer:
+    settingsLanguage: 'Scegli una lingua', //Choose a Language:
+    settingsPivxNode: 'Scegli un nodo PIVX', //Choose a PIVX node:
     settingsAutoSelectNet:
-        'Sélection Automatique des Explorateurs et des Nœuds', //Auto-select Explorers and Nodes
-    settingsAnalytics: "Choisissez votre niveau d'analyse :", //Choose your analytics contribution level:
-    settingsToggleDebug: 'Mode de débogage', //Debug Mode
+        "Auto selezione dell'Explore e del nodo ", //Auto-select Explorers and Nodes
+    settingsAnalytics: "Scegli il tuo livello di contributo analitico:", //Choose your analytics contribution level:
+    settingsToggleDebug: 'Debug Mode', //Debug Mode
     settingsToggleTestnet: 'Mode testnet', //Testnet Mode
 
     // Network switching (mainnet <---> testnet)
-    netSwitchUnsavedWarningTitle: '', //Your {network} wallet isn\'t saved!
-    netSwitchUnsavedWarningSubtitle: '', //Your {network} account is at risk!
-    netSwitchUnsavedWarningSubtext: '', //If you switch to {network} before saving it, you\'ll lose the account!
-    netSwitchUnsavedWarningConfirmation: '', //Are you really sure?
+    netSwitchUnsavedWarningTitle: 'Il tuo portafoglio {network} non è stato salvato!', //Your {network} wallet isn\'t saved!
+    netSwitchUnsavedWarningSubtitle: 'Il tuo account {network} è a rischio', //Your {network} account is at risk!
+    netSwitchUnsavedWarningSubtext: "Se passi a {network} prima di salvarlo, perderai l'account!", //If you switch to {network} before saving it, you\'ll lose the account!
+    netSwitchUnsavedWarningConfirmation: 'Ne sei veramente sicuro?', //Are you really sure?
 
     // Transparency Report
-    transparencyReport: 'Rapport de transparence', //Transparency Report
-    hit: "Un ping indiquant le chargement d'une application, aucune donnée unique n'est envoyée.", //A ping indicating an app load, no unique data is sent.
+    transparencyReport: 'Rapporto sulla trasparenza', //Transparency Report
+    hit: "Un ping che indica il caricamento dell'app, non vengono inviati dati univoci.", //A ping indicating an app load, no unique data is sent.
     time_to_sync:
-        'Le temps en secondes que le MPW a pris pour se synchroniser pour la dernière fois.', //The time in seconds it took for MPW to last synchronise.
+        "Il tempo in secondi impiegato da MPW per l'ultima sincronizzazione.", //The time in seconds it took for MPW to last synchronise.
     transaction:
-        "Un ping indiquant un Tx, aucune donnée unique n'est envoyée mais peut être déduite de l'heure sur le réseau.", //A ping indicating a Tx, no unique data is sent, but may be inferred from on-chain time.
+        "Un ping che indica un Tx, non vengono inviati dati univoci, ma possono essere dedotti dal tempo in catena.", //A ping indicating a Tx, no unique data is sent, but may be inferred from on-chain time.
 
     // Analytics Levels
-    analyticDisabled: 'Désactivé', //Disabled
-    analyticMinimal: 'Minimum', //Minimal
-    analyticBalanced: 'Solde', //Balanced
+    analyticDisabled: 'Disattivato', //Disabled
+    analyticMinimal: 'Minimo', //Minimal
+    analyticBalanced: 'Saldo', //Balanced
 
     // Migration System
-    MIGRATION_ACCOUNT_FAILURE_TITLE: 'Échec de la récupération du compte', //Failed to recover account
+    MIGRATION_ACCOUNT_FAILURE_TITLE: '', //Failed to recover account
     MIGRATION_ACCOUNT_FAILURE_HTML:
-        "Une erreur s'est produite lors de la récupération de votre compte. <br> Veuillez réimporter votre portefeuille en utilisant la clé suivante :", //There was an error recovering your account. <br> Please reimport your wallet using the following key:
+        "", //There was an error recovering your account. <br> Please reimport your wallet using the following key:
 
     // Dynamic Elements (Rendered at runtime - TODO in future PR: sort in to above categories for consistency)
     ID: 'ID', //ID
-    time: 'Heure', //Time
-    description: 'Description', //Description
-    activityBlockReward: 'Récompense en bloc', //Block Reward
-    activitySentTo: 'Envoyé à', //Sent to
-    activitySentToSelf: 'Envoyé à soi-même', //Sent to self
-    activityShieldedAddress: 'Adresse protégée', //Shielded address
-    activityReceivedShield: "Reçu d'une adresse protégée", //Received from Shielded address
-    activityReceivedFrom: 'Reçu de', //Received from
-    activityDelegatedTo: 'Délégué à', //Delegated to
-    activityUndelegated: 'Non délégué', //Undelegated
-    activityUnknown: 'Transaction inconnu', //Unknown Tx
-    password: 'Mot de passe', //Password
-    walletUnlock: 'Déverrouillez votre portefeuille', //Unlock your wallet
-    walletPassword: 'Mot de passe du portefeuille', //Wallet password
-    walletUnlockCreateMN: 'Débloquez pour créer votre Masternode!', //Unlock to create your Masternode!
-    walletUnlockMNStart: 'Débloquez pour démarrer votre Masternode!', //Unlock to start your Masternode!
+    time: 'Tempo', //Time
+    description: 'Descrizione', //Description
+    activityBlockReward: 'Block Reward', //Block Reward
+    activitySentTo: 'Invia a ', //Sent to
+    activitySentToSelf: 'Invia a te stesso', //Sent to self
+    activityShieldedAddress: 'Indirizzo protetto', //Shielded address
+    activityReceivedShield: "Ricevi tramite indirizzo protetto", //Received from Shielded address
+    activityReceivedFrom: 'Ricevuto da ', //Received from
+    activityDelegatedTo: 'Delegato a ', //Delegated to
+    activityUndelegated: 'Non delegato', //Undelegated
+    activityUnknown: 'Tx sconosciuto', //Unknown Tx
+    password: 'Password', //Password
+    walletUnlock: 'Sblocca il tuo portafoglio', //Unlock your wallet
+    walletPassword: 'Password del portafoglio', //Wallet password
+    walletUnlockCreateMN: 'Sblocca per creare il tuo Masternode!', //Unlock to create your Masternode!
+    walletUnlockMNStart: 'Sblocca per avviare il tuo Masternode! ', //Unlock to start your Masternode!
     walletUnlockProposal:
-        'Débloquez pour créer une proposition! Débloquez pour démarrer votre Masternode !', //Unlock to create a proposal!
-    walletUnlockPromo: 'Déverrouillez pour finaliser votre code promo!', //Unlock to finalise your Promo Code!
-    walletUnlockTx: 'Déverrouillez pour envoyer votre transaction!', //Unlock to send your transaction!
-    walletUnlockStake: 'Déverrouillez pour Staker votre', //Unlock to stake your
-    walletUnlockUnstake: 'Débloquer pour Unstake votre', //Unlock to unstake your
-    changelogTitle: 'Quoi de neuf en', //What's New in
-    popupSetColdAddr: 'Définissez votre adresse de Cold Staking', //Set your Cold Staking address
-    popupCurrentAddress: 'Adresse actuelle :', //Current address:
+        'Sblocca per creare la tua proposta!', //Unlock to create a proposal!
+    walletUnlockPromo: 'Sblocca per finalizzare il tuo Promo Code!', //Unlock to finalise your Promo Code!
+    walletUnlockTx: 'Sblocca per inviare la tua transizione! ', //Unlock to send your transaction!
+    walletUnlockStake: 'Sblocca per lo stake del tuo ', //Unlock to stake your
+    walletUnlockUnstake: 'Sblocca per sbloccare il tuo ', //Unlock to unstake your
+    changelogTitle: 'Novita in ', //What's New in
+    popupSetColdAddr: 'Configura il tuo indirizzo di Cold Staking', //Set your Cold Staking address
+    popupCurrentAddress: 'Indirizzo attuale:', //Current address:
     popupColdStakeNote:
-        "Une Cold Address mise des pièces en votre nom, mais ne peut pas en dépenser. Il est donc possible d'utiliser Cold Address d'un inconnu en toute sécurité !", //A Cold Address stakes coins on your behalf, it cannot spend coins, so it's even safe to use a stranger's Cold Address!
-    popupExample: 'Exemple :', //Example:
-    popupWalletLock: 'Voulez-vous verrouiller votre portefeuille ?', //Do you want to lock your wallet?
+        "Con un Cold Address puoi puntare monete per conto tuo, non puoi spendere monete, quindi è sicuro anche usare il Cold Address di uno sconosciuto!", //A Cold Address stakes coins on your behalf, it cannot spend coins, so it's even safe to use a stranger's Cold Address!
+    popupExample: 'Esempio:', //Example:
+    popupWalletLock: 'Vuoi bloccare il tuo portafoglio?', //Do you want to lock your wallet?
     popupWalletWipe:
-        'Voulez-vous effacer les données privées de votre portefeuille ?', //Do you want to wipe your wallet private data?
+        'Vuoi cancellare i dati privati ​​del tuo portafoglio?', //Do you want to wipe your wallet private data?
     popupWalletLockNote:
-        'Vous devrez saisir votre mot de passe pour accéder à vos fonds.', //You will need to enter your password to access your funds
+        'Dovrai inserire la tua password per accedere ai tuoi fondi', //You will need to enter your password to access your funds
     popupWalletWipeNote:
-        "Vous perdrez l'accès à vos fonds si vous n'avez pas sauvegardé votre clé privée ou votre phrase de base.", //You will lose access to your funds if you haven't backed up your private key or seed phrase
-    popupSeedPhraseBad: 'Phrase semence inattendue', //Unexpected Seed Phrase
+        "Perderai l'accesso ai tuoi fondi se non hai eseguito il backup della chiave privata o della frase seed", //You will lose access to your funds if you haven't backed up your private key or seed phrase
+    popupSeedPhraseBad: 'Seed Phrase inaspetto', //Unexpected Seed Phrase
     popupSeedPhraseBadNote:
-        "La phrase de semence est soit invalide, soit n'a pas été généré par MPW.<br>Voulez-vous toujours continuer ?", //The seed phrase is either invalid or was not generated by MPW.<br>Do you still want to proceed?
-    popupCreateProposal: 'Créer une proposition', //Create Proposal
-    popupCreateProposalCost: 'Coût', //Cost
-    popupProposalName: 'Nom de la proposition', //Proposal Name
-    popupProposalDuration: 'Durée en cycles', //Duration in cycles
-    popupProposalPerCycle: 'par cycle', //per cycle
-    popupProposalVoteHash: 'Vote Hash :', //Vote Hash:
+        "La frase seed non è valida o non è stata generata da MPW.<br>Vuoi comunque procedere?", //The seed phrase is either invalid or was not generated by MPW.<br>Do you still want to proceed?
+    popupCreateProposal: 'Crea proposta', //Create Proposal
+    popupCreateProposalCost: 'Costo', //Cost
+    popupProposalName: 'Nome della proposta', //Proposal Name
+    popupProposalDuration: 'Durata del ciclo', //Duration in cycles
+    popupProposalPerCycle: 'per ciclo', //per cycle
+    popupProposalVoteHash: 'Voto hash:', //Vote Hash:
     popupProposalFinalisedNote:
-        "<b>Félicitations pour le lancement de votre proposition!</b><br>Les propriétaires de Masternodes peuvent utiliser votre Hash de vote pour voter à partir de portefeuilles autres que MPW, alors assurez-vous d'ajouter ceci à votre message sur le forum, le cas échéant!", //<b>Congratulations on launching your proposal!</b><br>Masternode owners can use your Vote Hash to vote from wallets other than MPW, so make sure to add this to your forum post, if applicable!
+        "
+        <b>Congratulazioni per aver lanciato la tua proposta!</b><br>I proprietari di Masternode possono utilizzare il tuo Hash di voto per votare da portafogli diversi da MPW, quindi assicurati di aggiungerlo al tuo post sul forum, se applicabile!", //<b>Congratulations on launching your proposal!</b><br>Masternode owners can use your Vote Hash to vote from wallets other than MPW, so make sure to add this to your forum post, if applicable!
     popupProposalFinalisedSignoff:
-        'Bonne chance dans votre voyage à travers le DAO, PIVian!', //Good luck on your journey through the DAO, PIVian!
+        'Buona fortuna per il tuo viaggio attraverso il DAO, PIVian', //Good luck on your journey through the DAO, PIVian!
     popupHardwareAddrCheck:
-        "Veuillez confirmer qu'il s'agit bien de l'adresse figurant sur votre", //Please confirm this is the address you see on your
-    proposalFinalisationConfirming: 'Confirmant...', //Confirming...
-    proposalFinalisationRemaining: 'restants', //remaining
-    proposalFinalisationExpired: 'Proposition expirée', //Proposal Expired
-    proposalFinalisationReady: 'Prêt à soumettre', //Ready to submit
-    proposalPassing: 'PASSANT', //PASSING
-    proposalFailing: 'ÉCHOUANT', //FAILING
-    proposalFunded: 'FINANCÉE', //FUNDED
-    proposalNotFunded: 'NON FINANCÉE', //NOT FUNDED
-    proposalPaymentsRemaining: "l'installation(s) restants<br>de", //installment(s) remaining<br>of
+        "Conferma che questo è l'indirizzo che vedi sul tuo", //Please confirm this is the address you see on your
+    proposalFinalisationConfirming: 'Conferme...', //Confirming...
+    proposalFinalisationRemaining: 'rimanenti', //remaining
+    proposalFinalisationExpired: 'Proposta scaduta', //Proposal Expired
+    proposalFinalisationReady: "Pronto per l'invio", //Ready to submit
+    proposalPassing: 'Passata', //PASSING
+    proposalFailing: 'Fallita', //FAILING
+    proposalFunded: 'Finanziata', //FUNDED
+    proposalNotFunded: 'Non finanziata', //NOT FUNDED
+    proposalPaymentsRemaining: "rata/i rimanente<br>di", //installment(s) remaining<br>of
     proposalPaymentTotal: 'totale', //total
-    proposalNetYes: 'Net Oui', //Net Yes
-    popupConfirm: 'Confirmer', //Confirm
-    popupClose: 'Fermer', //Close
-    popupCancel: 'Annuler', //Cancel
-    chartPublicAvailable: 'Disponible au public', //Public Available
-    timeDays: 'Jours', //Days
-    timeHours: 'Heures', //Hours
-    timeMinutes: 'Minutes', //Minutes
-    timeSeconds: 'Secondes', //Seconds
-    unhandledException: 'Exception non traitée.', //Unhandled exception.
+    proposalNetYes: 'NEtto si', //Net Yes
+    popupConfirm: 'Confermata', //Confirm
+    popupClose: 'Chiusa', //Close
+    popupCancel: 'Cancellata', //Cancel
+    chartPublicAvailable: 'Disponibile pubblicamente', //Public Available
+    timeDays: 'Giorni', //Days
+    timeHours: 'Ore', //Hours
+    timeMinutes: 'Minuti', //Minutes
+    timeSeconds: 'Secondi', //Seconds
+    unhandledException: 'Eccezione non gestita', //Unhandled exception.
 
     // Alerts
     ALERTS: '<-- DO NOT EDIT! All below entries are for Alert Popups',
 
-    INTERNAL_ERROR: 'Erreur interne, veuillez réessayer plus tard', //Internal error, please try again later
-    FAILED_TO_IMPORT: "<b>Échec de l'importation !</b> Mot de passe invalide", //<b>Failed to import!</b> Invalid password
+    INTERNAL_ERROR: 'Errore interno,rirova più tardi', //Internal error, please try again later
+    FAILED_TO_IMPORT: "<b>Impossibile importare!</b> Password non valida", //<b>Failed to import!</b> Invalid password
     UNSUPPORTED_CHARACTER:
-        "Le caractère {char} n'est pas pris en charge dans les adresses ! (Non compatible avec Base58)", //The character '{char}' is unsupported in addresses! (Not Base58 compatible)
+        "Il carattere '{char}' non è supportato negli indirizzi! (Non compatibile con Base58)", //The character '{char}' is unsupported in addresses! (Not Base58 compatible)
     UNSUPPORTED_WEBWORKERS:
-        "Ce navigateur ne prend pas en charge Web Workers (JS multi-threaded), Malheureusement, il n'est pas possible de générer des portefeuilles Vanity!", //This browser doesn\'t support Web Workers (multi-threaded JS), unfortunately you cannot generate Vanity wallets!
-    INVALID_ADDRESS: '<b>Adresse PIVX non valide !</b><br> {address}', //<b>Invalid PIVX address!</b><br> {address}
+        "Questo browser non supporta i Web Worker (JS multi-thread), sfortunatamente non puoi generare portafogli Vanity!", //This browser doesn\'t support Web Workers (multi-threaded JS), unfortunately you cannot generate Vanity wallets!
+    INVALID_ADDRESS: '<b>Indirizzo PIVX non valido!</b><br> {addres}', //<b>Invalid PIVX address!</b><br> {address}
     TESTNET_ENCRYPTION_DISABLED:
-        '<b>Modo Testnet activé !</b><br>Cryptage du portefeuille désactivé', //<b>Testnet Mode is ON!</b><br>Wallet encryption disabled
+        '<b>La modalità Testnet è attiva!</b><br>Crittografia del portafoglio disabilitata', //<b>Testnet Mode is ON!</b><br>Wallet encryption disabled
     PASSWORD_TOO_SMALL:
-        'Ce mot de passe est un peu court !<br>Utiliser au moins <b>{MIN_PASS_LENGTH} caractères.</b>', //That password is a little short!<br>Use at least <b>{MIN_PASS_LENGTH} characters.</b>
-    PASSWORD_DOESNT_MATCH: 'Vos mots de passe ne correspondent pas!', //Your passwords don\'t match!
+        "La password è un po' corta.<br>Utilizza almeno <b>{MIN_PASS_LENGTH} caratteri.</b>", //That password is a little short!<br>Use at least <b>{MIN_PASS_LENGTH} characters.</b>
+    PASSWORD_DOESNT_MATCH: 'La passeord non corrisponde', //Your passwords don\'t match!
     NEW_PASSWORD_SUCCESS:
-        '<b>Vous êtes protégé ! 🔐</b><br>Bravo, PIVian blindé !', //<b>You\'re Secured! 🔐</b><br>Nice stuff, Armoured PIVian!
-    INCORRECT_PASSWORD: 'Mot de passe incorrect!', //Incorrect password!
-    INVALID_AMOUNT: '<b>Valeur non valide!</b><br>', //<b>Invalid amount!</b><br>
-    TX_SENT: 'Transaction envoyée!', //Transaction sent!
-    TX_FAILED: 'Échec de la Transaction!', //Transaction Failed!
-    QR_SCANNER_BAD_RECEIVER: "n'est pas un récepteur de paiement valide", //is not a valid payment receiver
+        '<b>Sei protetto! 🔐</b><br>Bella roba, PIVian corazzato!', //<b>You\'re Secured! 🔐</b><br>Nice stuff, Armoured PIVian!
+    INCORRECT_PASSWORD: 'Password sbagliata', //Incorrect password!
+    INVALID_AMOUNT: '<b>Importo non valido!</b><br>', //<b>Invalid amount!</b><br>
+    TX_SENT:  'Transizione inviata!' //Transaction sent!
+    TX_FAILED: 'Transizione fallita!', //Transaction Failed!
+    QR_SCANNER_BAD_RECEIVER: "Il destinatario del pagamento non è valido", //is not a valid payment receiver
     VALIDATE_AMOUNT_LOW:
-        '<br>La valeur minimale est de {minimumAmount} {coinTicker}!', //<br>Minimum amount is {minimumAmount} {coinTicker}!
+        "<br>L'imimporto minimo è di {minimumAmount} {coinTicker}!", //<br>Minimum amount is {minimumAmount} {coinTicker}!
     VALIDATE_AMOUNT_DECIMAL: '{coinDecimal} limite décimale dépassée', //{coinDecimal} decimal limit exceeded
     SUCCESS_STAKING_ADDR:
-        '<b>Adresse de Staking défini!</b><br>Poursuivre avec le unstake!', //<b>Staking Address set!</b><br>Now go ahead and unstake!
+        '<b>Indirizzo di staking impostato!</b><br>Ora vai avanti e annulla lo staking!', //<b>Staking Address set!</b><br>Now go ahead and unstake!
     STAKE_ADDR_SET:
-        "<b>Adresse du Cold Staking défini!</b><br>Cette adresse sera utilisée à l'avenir pour la réalisation de Stake..", //<b>Cold Address set!</b><br>Future stakes will use this address.
-    STAKE_ADDR_BAD: "L'adresse du Cold Staking n'est pas valide !", //Invalid Cold Staking address!
+        "<b> Cold Address impostato!</b><br>Le puntate future utilizzeranno questo indirizzo.", //<b>Cold Address set!</b><br>Future stakes will use this address.
+    STAKE_ADDR_BAD: "L'indirizzo del Cold Staking non è valido", //Invalid Cold Staking address!
     CONFIRM_UNSTAKE_H_WALLET:
-        '<b>Confirmer votre Unstake</b><br>Confirmez le TX dans votre {strHardwareName}', //<b>Confirm your Unstake</b><br>Confirm the TX on your {strHardwareName}
+        '<b>Conferma il tuo Unstake</b><br>Conferma la TX sul tuo {strHardwareName}', //<b>Confirm your Unstake</b><br>Confirm the TX on your {strHardwareName}
     CONFIRM_TRANSACTION_H_WALLET:
-        '<b>Confirmez votre transaction</b><br>Confirmez le TX dans votre {strHardwareName}', //<b>Confirm your transaction</b><br>Confirm the TX on your {strHardwareName}
+        '<b>Conferma la tua transazione</b><br>Conferma la TX sul tuo {strHardwareName}', //<b>Confirm your transaction</b><br>Confirm the TX on your {strHardwareName}
     SUCCESS_STAKING_ADDR_SET:
-        '<b>Adresse de Staking définie!</b><br>>Poursuivre avec la stake', //<b>Staking Address set!</b><br>Now go ahead and stake!
+        '<b>Indirizzo di staking impostato!</b><br>Ora vai avanti e inizia lo staking!', //<b>Staking Address set!</b><br>Now go ahead and stake!
     STAKE_NOT_SEND:
-        "Dans ce cas, utilisez l'écran <b>Stake</b>, et non l'écran d'envoi!", //Here, use the <b>Stake</b> screen, not the Send screen!
+        "In questo caso, utilizza la schermata <b>Stake</b>, NON la schermata Invia!", //Here, use the <b>Stake</b> screen, not the Send screen!
     BAD_ADDR_LENGTH:
-        '<b>Adresse PIVX non valide!<b><br>Préfixe non valide {address} (Vous devez commencer par{addressPrefix})', //<b>Invalid PIVX address!<b><br>Bad length ({addressLength})
+        '<b>Indirizzo PIVX non valido!<b><br>Lunghezza errata ({addressLength})', //<b>Invalid PIVX address!<b><br>Bad length ({addressLength})
     BAD_ADDR_PREFIX:
-        '<b>Adresse PIVX non valide!<b><br>Préfixe non valide {address} (Vous devez commencer par{addressPrefix})', //<b>Invalid PIVX address!<b><br>Bad prefix {address} (Should start with {addressPrefix})
-    SENT_NOTHING: "Vous ne pouvez pas envoyer 'rien", //You can\'t send \'nothing\'!
-    MORE_THEN_8_DECIMALS: 'limite de 8 décimales dépassée', //8 decimal limit exceeded
+        '<b>Indirizzo PIVX non valido!<b><br>Prefisso {address} errato (dovrebbe iniziare con {addressPrefix})', //<b>Invalid PIVX address!<b><br>Bad prefix {address} (Should start with {addressPrefix})
+    SENT_NOTHING: "Non puoi inviare \'niente\'!", //You can\'t send \'nothing\'!
+    MORE_THEN_8_DECIMALS: 'limite di 8 decimali', //8 decimal limit exceeded
     SAVE_WALLET_PLEASE:
-        '<b>Gardez votre portefeuille!</b><br>Tableau de bord ➜ Définir le mot de passe', //<b>Save your wallet!</b><br>Dashboard ➜ Secure your wallet
+        '<b>Salva il tuo portafoglio!</b><br>Dashboard ➜ Proteggi il tuo portafoglio', //<b>Save your wallet!</b><br>Dashboard ➜ Secure your wallet
     BACKUP_OR_ENCRYPT_WALLET:
-        'Cryptez et/ou sauvegardez vos clés avant de partir, car vous risquez de les perdre!', //Please ENCRYPT and/or BACKUP your keys before leaving, or you may lose them!
-    NO_CAMERAS: "Cet appareil n'est pas équipé d'une caméra!", //This device has no camera!
-    STAKING_LEDGER_NO_SUPPORT: "Ledger n'est pas compatible avec Cold Staking", //Ledger is not supported for Cold Staking
+        'Ti preghiamo di crittografare e/o eseguire il backup delle tue chiavi prima di partire, altrimenti potresti perderle!', //Please ENCRYPT and/or BACKUP your keys before leaving, or you may lose them!
+    NO_CAMERAS: "Questo dispositivo non ha una fotocamera!", //This device has no camera!
+    STAKING_LEDGER_NO_SUPPORT: "Il Ledger non è supportato per il Cold Staking", //Ledger is not supported for Cold Staking
     CONNECTION_FAILED:
-        '<b>Échec de la synchronisation!</b> Réessayer plus tard.<br>Vous pouvez essayer de vous reconnecter via Paramètres.', //<b>Failed to synchronize!</b> Please try again later.<br>You can attempt re-connect via the Settings.
-    MN_NOT_ENABLED: "Votre masternode n'est pas encore activé!", //Your masternode is not enabled yet!
-    VOTE_SUBMITTED: 'Vote envoyé!', //Vote submitted!
+        '<b>Impossibile sincronizzare!</b> Riprova più tardi.<br>Puoi provare a riconnetterti tramite le Impostazioni.', //<b>Failed to synchronize!</b> Please try again later.<br>You can attempt re-connect via the Settings.
+    MN_NOT_ENABLED: "Il tuo masternode non è ancora abilitato!", //Your masternode is not enabled yet!
+    VOTE_SUBMITTED: 'Voto inviato!', //Vote submitted!
     VOTED_ALREADY:
-        'Vous avez déjà voté sur cette proposition ! Attendre 1 heure', //You already voted for this proposal! Please wait 1 hour
+        'Hai già votato per questa proposta! Si prega di attendere 1 ora', //You already voted for this proposal! Please wait 1 hour
     VOTE_SIG_BAD:
-        'Échec de la vérification de la signature, vérifiez la clé privée de votre masternode maître.', //Failed to verify signature, please check your masternode\'s private key
+        'Impossibile verificare la firma, controlla la chiave privata del tuo masternode', //Failed to verify signature, please check your masternode\'s private key
     MN_CREATED_WAIT_CONFS:
-        '<b>Masternode créé!<b><br>Attendre 15 confirmations pour continuer', //<b>Masternode Created!<b><br>Wait 15 confirmations to proceed further
-    MN_ACCESS_BEFORE_VOTE: 'Accéder à un masternode avant de voter!', //Access a masternode before voting!
+        '<b>Masternode creato!<b><br>Attendere 15 conferme per procedere ulteriormente', //<b>Masternode Created!<b><br>Wait 15 confirmations to proceed further
+    MN_ACCESS_BEFORE_VOTE: 'Accedi a un masternode prima di votare!', //Access a masternode before voting!
     MN_OFFLINE_STARTING:
-        'Votre masternode est hors ligne, essayons de le démarrer', //Your masternode is offline, we will try to start it
-    MN_STARTED: '<b>Masternode a débuté!</b>', //<b>Masternode started!</b>
-    MN_RESTARTED: '<b>Masternode redémarré!</b>', //<b>Masternode restarted!</b>
+        'Il tuo masternode è offline, proveremo ad avviarlo', //Your masternode is offline, we will try to start it
+    MN_STARTED: '<b> Il Masternode è avviato!</b>', //<b>Masternode started!</b>
+    MN_RESTARTED: '<b>Il Masternode è stato riavviato<b/>', //<b>Masternode restarted!</b>
     MN_STARTED_ONLINE_SOON:
-        '<b>Masternode initié!</b><br>Il sera bientôt en ligne', //<b>Masternode started!</b><br>It\'ll be online soon
-    MN_START_FAILED: '<b>Masternode initié !</b>', //<b>Masternode started!</b>
-    MN_RESTART_FAILED: '<b>Masternode redémarré!', //<b>Masternode restarted!</b>
+        '<b>Masternode è iniziato!</b><br>Sarà presto online', //<b>Masternode started!</b><br>It\'ll be online soon
+    MN_START_FAILED: '<b>Masternode è iniziato!</b>', //<b>Masternode started!</b>
+    MN_RESTART_FAILED: '<b>Masternode riavviato!</b>', //<b>Masternode restarted!</b>
     MN_DESTROYED:
-        '<b>Masternode détruit!</b><br>Vous pouvez maintenant dépenser vos pièces.', //<b>Masternode destroyed!</b><br>Your coins are now spendable.
-    MN_STATUS_IS: "L'état de votre masternode est", //Your masternode status is
-    MN_STATE: "L'état de votre masternode est  <b>{state}</b>", //Your masternode is in <b>{state}</b> state
-    MN_BAD_IP: "L'adresse IP n'est pas valide!", //The IP address is invalid!
+        '<b>Masternode distrutto!</b><br>Le tue monete ora sono spendibili.', //<b>Masternode destroyed!</b><br>Your coins are now spendable.
+    MN_STATUS_IS: "Lo stato del tuo Masternode è ", //Your masternode status is
+    MN_STATE: "Il tuo masternode è  <b>{state}</b>", //Your masternode is in <b>{state}</b> state
+    MN_BAD_IP: "L'indirizzo IP non è valido!", //The IP address is invalid!
     MN_NOT_ENOUGH_COLLAT:
-        'Vous avez besoin <b>{amount} plus {ticker}</b> pour créer un Masternode!', //You need <b>{amount} more {ticker}</b> to create a Masternode!
+        'Hai bisogno di <b>{amount} altri {ticker}</b> per creare un Masternode!', //You need <b>{amount} more {ticker}</b> to create a Masternode!
     MN_ENOUGH_BUT_NO_COLLAT:
-        "Vous disposez d'un solde suffisant pour un Masternode, mais pas d'UTXO comme garantie valide de {amount} {ticker}", //You have enough balance for a Masternode, but no valid collateral UTXO of {amount} {ticker}
+        "Hai saldo sufficiente per un Masternode, ma nessun UTXO collaterale valido di {amount} {ticker}", //You have enough balance for a Masternode, but no valid collateral UTXO of {amount} {ticker}
     MN_COLLAT_NOT_SUITABLE:
-        "Il ne s'agit pas d'une UTXO appropriée pour un Masternode", //This is not a suitable UTXO for a Masternode
-    MN_CANT_CONNECT: 'Impossible de se connecter au nœud RPC!', //Unable to connect to RPC node!
+        "Questo non è un UTXO adatto per un Masternode", //This is not a suitable UTXO for a Masternode
+    MN_CANT_CONNECT: 'Impossibile connettersi al nodo RPC!', //Unable to connect to RPC node!
 
     /* Contacts System Alerts */
-    CONTACTS_ENCRYPT_FIRST: '', //You need to hit "{button}" before you can use Contacts!
-    CONTACTS_NAME_REQUIRED: '', //A name is required!
-    CONTACTS_NAME_TOO_LONG: '', //That name is too long!
-    CONTACTS_CANNOT_ADD_YOURSELF: '', //You cannot add yourself as a Contact!
-    CONTACTS_ALREADY_EXISTS: '', //<b>Contact already exists!</b><br>You already saved this contact
-    CONTACTS_NAME_ALREADY_EXISTS: '', //<b>Contact name already exists!</b><br>This could potentially be a phishing attempt, beware!
-    CONTACTS_EDIT_NAME_ALREADY_EXISTS: '', //<b>Contact already exists!</b><br>A contact is already called "{strNewName}"!
-    CONTACTS_KEY_ALREADY_EXISTS: '', //<b>Contact already exists, but under a different name!</b><br>You have {newName} saved as <b>{oldName}</b> in your contacts
-    CONTACTS_NOT_A_CONTACT_QR: '', //This isn\'t a Contact QR!
-    CONTACTS_ADDED: '', //<b>New Contact added!</b><br>{strName} has been added, hurray!
-    CONTACTS_YOU_HAVE_NONE: '', //You have no contacts!
+    CONTACTS_ENCRYPT_FIRST: 'Devi premere "{button}" prima di poter utilizzare i Contatti!', //You need to hit "{button}" before you can use Contacts!
+    CONTACTS_NAME_REQUIRED: 'Nome richiesto', //A name is required!
+    CONTACTS_NAME_TOO_LONG: 'Questo nome é troppo lungo', //That name is too long!
+    CONTACTS_CANNOT_ADD_YOURSELF: 'Non puoi aggiungerti come contatto', //You cannot add yourself as a Contact!
+    CONTACTS_ALREADY_EXISTS: '<b>Il contatto esiste già!</b><br>Hai già salvato questo contatto', //<b>Contact already exists!</b><br>You already saved this contact
+    CONTACTS_NAME_ALREADY_EXISTS: '<b>Il nome del contatto esiste già!</b><br>Potrebbe trattarsi di un tentativo di phishing, attenzione!', //<b>Contact name already exists!</b><br>This could potentially be a phishing attempt, beware!
+    CONTACTS_EDIT_NAME_ALREADY_EXISTS: '<b>Il contatto esiste già!</b><br>Un contatto si chiama già "{strNewName}"!', //<b>Contact already exists!</b><br>A contact is already called "{strNewName}"!
+    CONTACTS_KEY_ALREADY_EXISTS: '<b>Il contatto esiste già, ma con un nome diverso!</b><br>Hai {newName} salvato come <b>{oldName}</b> nei tuoi contatti', //<b>Contact already exists, but under a different name!</b><br>You have {newName} saved as <b>{oldName}</b> in your contacts
+    CONTACTS_NOT_A_CONTACT_QR: 'questo non è un Contatto QR!', //This isn\'t a Contact QR!
+    CONTACTS_ADDED: '<b>Nuovo contatto aggiunto!</b><br>{strName} è stato aggiunto, evviva!', //<b>New Contact added!</b><br>{strName} has been added, hurray!
+    CONTACTS_YOU_HAVE_NONE: 'Non hai contatti', //You have no contacts!
 
     SWITCHED_EXPLORERS:
-        '<b>Explorateur échangé!</b><br>En utilisant maintenant le {explorerName}', //<b>Switched explorer!</b><br>Now using {explorerName}
-    SWITCHED_NODE: "<b>Nœud commuté!</b><br>L'utilisation de la {node}", //<b>Switched node!</b><br>Now using {node}
+        '<b>Cambiato esploratore!</b><br>Stai utilizzando {explorerName}', //<b>Switched explorer!</b><br>Now using {explorerName}
+    SWITCHED_NODE: "<b>Nodo cambiato!</b><br>Stai usando {node}", //<b>Switched node!</b><br>Now using {node}
     SWITCHED_ANALYTICS:
-        "<b>Niveau d'analyse modifié!</b><br>Il est maintenant {level}", //<b>Switched analytics level!</b><br>Now {level}
+        "Livello di analisi cambiato!</b><br>Ora {level}", //<b>Switched analytics level!</b><br>Now {level}
     SWITCHED_SYNC:
-        '<b>Changement de mode de synchronisation !</b><br>Utiliser la synchronisation maintenant {sync}', //<b>Switched sync mode!</b><br>Now using {sync} sync
+        '<b>Modalità di sincronizzazione cambiata!</b><br>Ora stai utilizzando la sincronizzazione {sync}, //<b>Switched sync mode!</b><br>Now using {sync} sync
     UNABLE_SWITCH_TESTNET:
-        "<b>Il n'est pas possible de passer en mode Testnet !</b><br>Un portefeuille est déjà chargé.", //<b>Unable to switch Testnet Mode!</b><br>A wallet is already loaded
+        "<b>Impossibile cambiare la modalità Testnet!</b><br>Un portafoglio è già caricato", //<b>Unable to switch Testnet Mode!</b><br>A wallet is already loaded
 
     WALLET_OFFLINE_AUTOMATIC:
-        '<b>Le mode hors-ligne est actif !</b><br>Veuillez désactiver le mode hors connexion pour les transactions automatiques', //<b>Offline Mode is active!</b><br>Please disable Offline Mode for automatic transactions
+        '<b>La modalità offline è attiva!</b><br>Disattiva la modalità offline per le transazioni automatiche,' //<b>Offline Mode is active!</b><br>Please disable Offline Mode for automatic transactions
     WALLET_UNLOCK_IMPORT:
-        " //S'il vous plaît, {unlock} votre portefeuille avant d'envoyer des transactions !", //Please {unlock} your wallet before sending transactions!
+        " //Per favore ,{sblocca} il tuo portafoglio prima di conpiere transizioni di invio!", //Please {unlock} your wallet before sending transactions!
     WALLET_FIREFOX_UNSUPPORTED:
-        '<b>O Firefox ne supporte pas cela !</b><br>Malheureusement, Firefox ne prend pas en charge les portefeuilles hardware', //<b>Firefox doesn't support this!</b><br>Unfortunately, Firefox does not support hardware wallets
+        '<b>O Firefox non lo supporta!</b><br>Malheureusement, Firefox sfortunatamnete non supporta portafogli hardware ', //<b>Firefox doesn't support this!</b><br>Unfortunately, Firefox does not support hardware wallets
     WALLET_HARDWARE_WALLET:
-        " //<b>Portefeuille de Hardware prêt!</b><br>Gardez votre {hardwareWallet} connecté, déverrouillé et dans l'application PIVX", //<b>Hardware wallet ready!</b><br>Please keep your {hardwareWallet} plugged in, unlocked, and in the PIVX app
-    WALLET_CONFIRM_L: "Confirmez l'importation dans votre Ledger", //Confirm the import on your Ledger
+        " //<b>Portafoglio hardware pronto!</b><br>Tieni il tuo {hardwareWallet} collegato, sbloccato e nell'app PIVX", //<b>Hardware wallet ready!</b><br>Please keep your {hardwareWallet} plugged in, unlocked, and in the PIVX app
+    WALLET_CONFIRM_L: "Conferma l'importo sulla tua Ledger", //Confirm the import on your Ledger
     WALLET_NO_HARDWARE:
-        "<b>Aucun dispositif disponible</b><br>Il n'a pas été possible de trouver un portefeuille de hardware; brancher et déverrouiller!", //<b>No device available</b><br>Couldn't find a hardware wallet; please plug it in and unlock!
+        "<b>Nessun dispositivo disponibile</b><br>Impossibile trovare un portafoglio hardware; per favore collegalo e sbloccalo!", //<b>No device available</b><br>Couldn't find a hardware wallet; please plug it in and unlock!
     WALLET_HARDWARE_CONNECTION_LOST:
-        "<b>Perte de connexion avec le {hardwareWallet} </b><br>Oops! Il semble que {hardwareWalletProductionName} a été déconnecté au milieu de l'opération.", //<b>Lost connection to {hardwareWallet} </b><br>It seems the {hardwareWalletProductionName} was unplugged mid-operation, oops!
+        "<b>Connessione a {hardwareWallet} persa </b><br>Sembra che {hardwareWalletProductionName} sia stato scollegato durante l'operazione, oops!", //<b>Lost connection to {hardwareWallet} </b><br>It seems the {hardwareWalletProductionName} was unplugged mid-operation, oops!
     WALLET_HARDWARE_BUSY:
-        "<b>{hardwareWallet} est en mode veille</b><br>Veuillez débloquer le vôtre {hardwareWalletProductionName} ou compléter l'introduction actuelle", //<b>{hardwareWallet} is waiting</b><br>Please unlock your {hardwareWalletProductionName} or finish it's current prompt
-    WALLET_HARDWARE_ERROR: 'b> {hardwareWallet} </b><br> {error}', //<b> {hardwareWallet} </b><br> {error}
+        "<b>{hardwareWallet} è in attesa</b><br>Sblocca il tuo {hardwareWalletProductionName} o completa la richiesta corrente", //<b>{hardwareWallet} is waiting</b><br>Please unlock your {hardwareWalletProductionName} or finish it's current prompt
+    WALLET_HARDWARE_ERROR: 'b> {hardwareWallet} </b><br> {errore}', //<b> {hardwareWallet} </b><br> {error}
 
-    CONFIRM_POPUP_VOTE: 'Confirmer le vote', //Confirm Vote
+    CONFIRM_POPUP_VOTE: 'Conferma voto', //Confirm Vote
     CONFIRM_POPUP_VOTE_HTML:
-        'Êtes-vous sûr ? Il faut 60 minutes pour changer de vote', //Are you sure? It takes 60 minutes to change vote
-    CONFIRM_POPUP_TRANSACTION: 'Confirmez votre transaction', //Confirm your transaction
-    CONFIRM_POPUP_MN_P_KEY: 'Clé privée de votre Masternode', //Your Masternode Private Key
+        'Ne sei sicuro? Hai 60 minuti per cambiare il tuo voto', //Are you sure? It takes 60 minutes to change vote
+    CONFIRM_POPUP_TRANSACTION: 'Conferma la transizione', //Confirm your transaction
+    CONFIRM_POPUP_MN_P_KEY: 'Chiave private del tuo Masternode', //Your Masternode Private Key
     CONFIRM_POPUP_MN_P_KEY_HTML:
-        '<br> Enregistrez cette clé privée et copiez-la dans votre configuration VPS. <br>', // <br> Save this private key and copy it to your VPS config <br>
-    CONFIRM_POPUP_VERIFY_ADDR: 'Vérifiez votre adresse', //Verify your address
+        '<br>Salva questa chiave privata e copiala nella configurazione VPS<br>', // <br> Save this private key and copy it to your VPS config <br>
+    CONFIRM_POPUP_VERIFY_ADDR: 'Verifica il tuo indirizzo', //Verify your address
 
     MIGRATION_MASTERNODE_FAILURE:
-        "//Échec de la récupération de votre masternode. S'il vous plaît, le réimporter.", //Failed to recover your masternode. Please reimport it.
+        "//Impossibile recuperare il tuo masternode. Per favore reimportalo", //Failed to recover your masternode. Please reimport it.
     MIGRATION_ACCOUNT_FAILURE:
-        "//Échec de la récupération de votre compte.  S'il vous plaît, le réimporter.", //Failed to recover your account. Please reimport it.
-    APP_INSTALLED: '//Application installée!', //App Installed!
+        "//Impossibile recuperare il tuo account. Per favore reimportalo.", //Failed to recover your account. Please reimport it.
+    APP_INSTALLED: '//Applicazione installata!', //App Installed!
 };
