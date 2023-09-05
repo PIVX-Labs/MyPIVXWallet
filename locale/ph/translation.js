@@ -55,8 +55,8 @@ export const ph_translation = {
     dCardFourButtonA: 'I-access ang aking Wallet', //Access My Wallet
 
     // Vanity Creation
-    vanityPrefixNote: '', //Note: addresses will always start with:
-    vanityPrefixInput: '', //Address Prefix
+    vanityPrefixNote: 'Tandaan: Ang mga address ay laging naguumpisa sa:', //Note: addresses will always start with:
+    vanityPrefixInput: 'Prefix ng Address', //Address Prefix
 
     // Seed Phrase Creation
     thisIsYourSeed: 'Ito ang iyong seed phrase:', //This is your seed phrase:
@@ -71,11 +71,11 @@ export const ph_translation = {
     writtenDown: 'Isinulat ko na ang aking seed phrase', //I have written down my seed phrase
 
     // Seed Phrase Import
-    importSeedValid: '', //Seed Phrase is valid!
-    importSeedError: '', //Seed Phrase is invalid!
-    importSeedErrorSize: '', //A Seed Phrase should be 12 or 24 words long!
-    importSeedErrorTypo: '', //Seed Phrase contains typing errors! Check your input carefully
-    importSeedErrorSkip: '', //Seed Phrase appears invalid, but the warning was skipped by the user
+    importSeedValid: 'Ang Seed Phrase ay wasto!', //Seed Phrase is valid!
+    importSeedError: 'Ang Seed Phrase ay hindi wasto!', //Seed Phrase is invalid!
+    importSeedErrorSize: 'Ang Seed Phrase dapat ay 12 o 24 na mga salita ang haba!', //A Seed Phrase should be 12 or 24 words long!
+    importSeedErrorTypo: 'Ang Seed Phrase ay naglalaman ng mga error sa pag-type! Suriin itong mabuti sa iyong input', //Seed Phrase contains typing errors! Check your input carefully
+    importSeedErrorSkip: 'Ang Seed Phrase ay lumalabas na hindi wasto, ngunit ang babala ay nilaktawan ng user', //Seed Phrase appears invalid, but the warning was skipped by the user
 
     // Wallet Dashboard
     gettingStarted: 'Magsimula', //Getting Started
@@ -85,11 +85,11 @@ export const ph_translation = {
 
     // Encrypt wallet
     encryptWallet: 'Encrypt wallet', //Encrypt wallet
-    encryptPasswordCurrent: '', //Current Password
+    encryptPasswordCurrent: 'Kasalukuyang Password', //Current Password
     encryptPasswordFirst: 'Ilagay ang Password', //Enter Password
     encryptPasswordSecond: 'Ilagay ulit ang Password', //Re-enter Password
     encrypt: 'Encrypt', //Encrypt
-    changePassword: '', //Change Password
+    changePassword: 'Mag palit ng Password', //Change Password
 
     // Wallet Dashboard Sub-menu
     balanceBreakdown: 'Kabuoang Balanse', //Balance Breakdown
@@ -106,35 +106,35 @@ export const ph_translation = {
     send: 'Ipadala', //Send
 
     // Contacts System
-    receive: '', //Receive
-    contacts: '', //Contacts
-    name: '', //Name
-    username: '', //Username
-    addressOrXPub: '', //Address or XPub
-    back: '', //Back
-    chooseAContact: '', //Choose a Contact
-    createContact: '', //Create Contact
-    encryptFirstForContacts: '', //Once you hit "{button}" in the Dashboard, you can create a Contact to make receiving PIV easier!
-    shareContactURL: '', //Share Contact URL
-    setupYourContact: '', //Setup your Contact
-    receiveWithContact: '', //Receive using a simple username-based Contact
-    onlyShareContactPrivately: '', //<b>Only</b> share your Contact with trusted people (family, friends)
+    receive: 'Tanggapin', //Receive
+    contacts: 'Mga Contact', //Contacts
+    name: 'Pangalan', //Name
+    username: 'Username', //Username
+    addressOrXPub: 'Address o XPub', //Address or XPub
+    back: 'Bumalik', //Back
+    chooseAContact: 'Pumili ng Contact', //Choose a Contact
+    createContact: 'Lumikha ng Contact', //Create Contact
+    encryptFirstForContacts: 'Sa sandaling mapindot mo ang "{button}" sa Dashboard, maaari kang lumikha ng Contact upang gawing mas madali ang pagtanggap ng PIV!', //Once you hit "{button}" in the Dashboard, you can create a Contact to make receiving PIV easier!
+    shareContactURL: 'Magbahagi ng Contact URL', //Share Contact URL
+    setupYourContact: 'I-set up ang iyong Contact', //Setup your Contact
+    receiveWithContact: 'Tumanggap gamit ang simpleng Contact na nakabase sa username', //Receive using a simple username-based Contact
+    onlyShareContactPrivately: '<b>Pinakamabuting</b> ibahagi ang iyong contact sa mga pinagkakatiwalaang tao (pamilya, kaibigan)', //<b>Only</b> share your Contact with trusted people (family, friends)
 
     /* Context: The "Change to" is used in-app with one of the Three options below it, i.e: "Change to Contact" */
-    changeTo: '', //Change to
-    contact: '', //Contact
-    xpub: '', //XPub
+    changeTo: 'Baguhin sa', //Change to
+    contact: 'Contact', //Contact
+    xpub: 'XPub', //XPub
 
-    addContactTitle: '', //Add {strName} to Contacts
-    addContactSubtext: '', //Once added you\'ll be able to send transactions to {strName} by their name (either typing, or clicking), no more addresses, nice \'n easy.
-    addContactWarning: '', //Ensure that this is the real "{strName}", do not accept Contact requests from unknown sources!
+    addContactTitle: 'Idagdag {strName} sa mga Contact', //Add {strName} to Contacts
+    addContactSubtext: 'Kapag naidagdag na maaari ka ng makapag padala ng transaksyon sa {strName} kanilang pangalan (kahit alin sa pagta-type o pag click), wala nang mga address, maganda at madali. ', //Once added you\'ll be able to send transactions to {strName} by their name (either typing, or clicking), no more addresses, nice \'n easy.
+    addContactWarning: 'Siguraduhin na ito ay tunay na "{strName}", Wag tumanggap ng mga Contact request galing sa mga hindi kilalang pinagmulan! ', //Ensure that this is the real "{strName}", do not accept Contact requests from unknown sources!
 
-    editContactTitle: '', //Change "{strName}" Contact
-    newName: '', //New Name
+    editContactTitle: 'Baguhin ang "{strName}" Contact', //Change "{strName}" Contact
+    newName: 'Bagong Pangalan', //New Name
 
-    removeContactTitle: '', //Remove {strName}?
-    removeContactSubtext: '', //Are you sure you wish to remove {strName} from your Contacts?
-    removeContactNote: '', //You can add them again any time in the future.
+    removeContactTitle: 'Tanggalin {strName}?', //Remove {strName}?
+    removeContactSubtext: 'Sigurado na ba ang hiling mo na tanggalin si {strName} sa iyong mga Contact?', //Are you sure you wish to remove {strName} from your Contacts?
+    removeContactNote: 'Maaari mong maidagdag ang mga ito kahit anong oras sa hinaharap', //You can add them again any time in the future.
 
     // Export
     privateKey: 'Private Key', //Private Key
@@ -180,8 +180,8 @@ export const ph_translation = {
 
     // Settings
     settingsCurrency: 'Pumili ng display currency:', //Choose a display currency:
-    priceProvidedBy: '', //Price data provided by
-    settingsDecimals: '', //Balance Decimals:
+    priceProvidedBy: 'Datos ng presyo na ibinigay ng', //Price data provided by
+    settingsDecimals: 'Balance Decimals:', //Balance Decimals:
     settingsExplorer: 'Pumili ng explorer:', //Choose an explorer:
     settingsLanguage: 'Pumili ng Wika:', //Choose a Language:
     settingsPivxNode: 'Pumili ng PIVX node:', //Choose a PIVX node:
@@ -189,14 +189,14 @@ export const ph_translation = {
     settingsAnalytics: 'Pumili ng iyong analytics contribution level:', //Choose your analytics contribution level:
     settingsToggleDebug: 'Debug Mode', //Debug Mode
     settingsToggleTestnet: 'Testnet Mode', //Testnet Mode
-    settingsToggleAdvancedMode: '', //Advanced Mode
-    settingsToggleAdvancedModeSubtext: '', //This unlocks deeper functionality and customisation, but may be overwhelming and potentially dangerous for unexperienced users!
+    settingsToggleAdvancedMode: 'Advance Mode', //Advanced Mode
+    settingsToggleAdvancedModeSubtext: 'Ito ay nagbubukas ng mas malalim na functionality at pagpapasadya ngunit napapalaki at maaaring mapanganib sa mga user na wala pang karanasan!', //This unlocks deeper functionality and customisation, but may be overwhelming and potentially dangerous for unexperienced users!
 
     // Network switching (mainnet <---> testnet)
-    netSwitchUnsavedWarningTitle: '', //Your {network} wallet isn\'t saved!
-    netSwitchUnsavedWarningSubtitle: '', //Your {network} account is at risk!
-    netSwitchUnsavedWarningSubtext: '', //If you switch to {network} before saving it, you\'ll lose the account!
-    netSwitchUnsavedWarningConfirmation: '', //Are you really sure?
+    netSwitchUnsavedWarningTitle: 'Ang iyong {network} wallet ay hind na-save!', //Your {network} wallet isn\'t saved!
+    netSwitchUnsavedWarningSubtitle: 'Ang iyong {network} account ay nanganganib!', //Your {network} account is at risk!
+    netSwitchUnsavedWarningSubtext: 'Kung ikaw ay mag papalit ng {network} bago mo ito i-save, mawawalan ka ng account!', //If you switch to {network} before saving it, you\'ll lose the account!
+    netSwitchUnsavedWarningConfirmation: 'Sigurado ka na ba talaga dito?', //Are you really sure?
 
     // Transparency Report
     transparencyReport: 'Transparency Report', //Transparency Report
@@ -375,17 +375,17 @@ export const ph_translation = {
     MN_CANT_CONNECT: 'Hindi maka-konekta sa RPC node!', //Unable to connect to RPC node!
 
     /* Contacts System Alerts */
-    CONTACTS_ENCRYPT_FIRST: '', //You need to hit "{button}" before you can use Contacts!
-    CONTACTS_NAME_REQUIRED: '', //A name is required!
-    CONTACTS_NAME_TOO_LONG: '', //That name is too long!
-    CONTACTS_CANNOT_ADD_YOURSELF: '', //You cannot add yourself as a Contact!
-    CONTACTS_ALREADY_EXISTS: '', //<b>Contact already exists!</b><br>You already saved this contact
-    CONTACTS_NAME_ALREADY_EXISTS: '', //<b>Contact name already exists!</b><br>This could potentially be a phishing attempt, beware!
-    CONTACTS_EDIT_NAME_ALREADY_EXISTS: '', //<b>Contact already exists!</b><br>A contact is already called "{strNewName}"!
-    CONTACTS_KEY_ALREADY_EXISTS: '', //<b>Contact already exists, but under a different name!</b><br>You have {newName} saved as <b>{oldName}</b> in your contacts
-    CONTACTS_NOT_A_CONTACT_QR: '', //This isn\'t a Contact QR!
-    CONTACTS_ADDED: '', //<b>New Contact added!</b><br>{strName} has been added, hurray!
-    CONTACTS_YOU_HAVE_NONE: '', //You have no contacts!
+    CONTACTS_ENCRYPT_FIRST: 'Kailangan mong pindutin ang "{button}" bago mo magamit ang mga Contact', //You need to hit "{button}" before you can use Contacts!
+    CONTACTS_NAME_REQUIRED: 'Kailangan ng pangalan!', //A name is required!
+    CONTACTS_NAME_TOO_LONG: 'Ang pangalan na ito ay masyadong mahaba!', //That name is too long!
+    CONTACTS_CANNOT_ADD_YOURSELF: 'Hindi mo maaaring maidagdag ang iyong sarili bilang Contact!', //You cannot add yourself as a Contact!
+    CONTACTS_ALREADY_EXISTS: '<b>Mayroon na ang Contact na ito!</b><br>Na i-save mo na ang contact na ito', //<b>Contact already exists!</b><br>You already saved this contact
+    CONTACTS_NAME_ALREADY_EXISTS: '<b>Mayroon na ang Contact na ito!</b><br>Maaari itong isang phishing attempt, mag ingat!', //<b>Contact name already exists!</b><br>This could potentially be a phishing attempt, beware!
+    CONTACTS_EDIT_NAME_ALREADY_EXISTS: '<b>Mayroon na ang Contact na ito!</b><br> Natawagan na ang Contact na ito "{strNewName}"!', //<b>Contact already exists!</b><br>A contact is already called "{strNewName}"!
+    CONTACTS_KEY_ALREADY_EXISTS: '<b>Mayroon na ang Contact na ito, ngunit sa ibang pangalan!</b><br> Mayroon kang {newName} bilang <b>{oldName}</b> sa iyong mga contact', //<b>Contact already exists, but under a different name!</b><br>You have {newName} saved as <b>{oldName}</b> in your contacts
+    CONTACTS_NOT_A_CONTACT_QR: 'Ito ay hindi isang Contact QR! ', //This isn\'t a Contact QR!
+    CONTACTS_ADDED: '<b>Naidagdag na ang bagong Contact!</b><br>{strName} ay naidagdag na, mabuhay!', //<b>New Contact added!</b><br>{strName} has been added, hurray!
+    CONTACTS_YOU_HAVE_NONE: 'Ikaw ay walang mga contact', //You have no contacts!
 
     SWITCHED_EXPLORERS:
         '<b>Nagpalit ng explorer!<b></b>Ang gamit ngayon ay {explorerName}', //<b>Switched explorer!</b><br>Now using {explorerName}
