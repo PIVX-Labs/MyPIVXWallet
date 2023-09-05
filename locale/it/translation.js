@@ -250,8 +250,7 @@ export const it_translation = {
     popupProposalPerCycle: 'per ciclo', //per cycle
     popupProposalVoteHash: 'Voto hash:', //Vote Hash:
     popupProposalFinalisedNote:
-        "
-        <b>Congratulazioni per aver lanciato la tua proposta!</b><br>I proprietari di Masternode possono utilizzare il tuo Hash di voto per votare da portafogli diversi da MPW, quindi assicurati di aggiungerlo al tuo post sul forum, se applicabile!", //<b>Congratulations on launching your proposal!</b><br>Masternode owners can use your Vote Hash to vote from wallets other than MPW, so make sure to add this to your forum post, if applicable!
+        "<b>Congratulazioni per aver lanciato la tua proposta!</b><br>I proprietari di Masternode possono utilizzare il tuo Hash di voto per votare da portafogli diversi da MPW, quindi assicurati di aggiungerlo al tuo post sul forum, se applicabile!", //<b>Congratulations on launching your proposal!</b><br>Masternode owners can use your Vote Hash to vote from wallets other than MPW, so make sure to add this to your forum post, if applicable!
     popupProposalFinalisedSignoff:
         'Buona fortuna per il tuo viaggio attraverso il DAO, PIVian', //Good luck on your journey through the DAO, PIVian!
     popupHardwareAddrCheck:
@@ -296,7 +295,7 @@ export const it_translation = {
         '<b>Sei protetto! 🔐</b><br>Bella roba, PIVian corazzato!', //<b>You\'re Secured! 🔐</b><br>Nice stuff, Armoured PIVian!
     INCORRECT_PASSWORD: 'Password sbagliata', //Incorrect password!
     INVALID_AMOUNT: '<b>Importo non valido!</b><br>', //<b>Invalid amount!</b><br>
-    TX_SENT:  'Transizione inviata!' //Transaction sent!
+    TX_SENT:  'Transizione inviata!', //Transaction sent!
     TX_FAILED: 'Transizione fallita!', //Transaction Failed!
     QR_SCANNER_BAD_RECEIVER: "Il destinatario del pagamento non è valido", //is not a valid payment receiver
     VALIDATE_AMOUNT_LOW:
@@ -378,18 +377,18 @@ export const it_translation = {
     SWITCHED_ANALYTICS:
         "Livello di analisi cambiato!</b><br>Ora {level}", //<b>Switched analytics level!</b><br>Now {level}
     SWITCHED_SYNC:
-        '<b>Modalità di sincronizzazione cambiata!</b><br>Ora stai utilizzando la sincronizzazione {sync}, //<b>Switched sync mode!</b><br>Now using {sync} sync
+        "<b>Modalità di sincronizzazione cambiata!</b><br>Ora stai utilizzando la sincronizzazione {sync}", //<b>Switched sync mode!</b><br>Now using {sync} sync
     UNABLE_SWITCH_TESTNET:
         "<b>Impossibile cambiare la modalità Testnet!</b><br>Un portafoglio è già caricato", //<b>Unable to switch Testnet Mode!</b><br>A wallet is already loaded
 
     WALLET_OFFLINE_AUTOMATIC:
-        '<b>La modalità offline è attiva!</b><br>Disattiva la modalità offline per le transazioni automatiche,' //<b>Offline Mode is active!</b><br>Please disable Offline Mode for automatic transactions
+        '<b>La modalità offline è attiva!</b><br>Disattiva la modalità offline per le transazioni automatiche', //<b>Offline Mode is active!</b><br>Please disable Offline Mode for automatic transactions
     WALLET_UNLOCK_IMPORT:
-        " //Per favore ,{sblocca} il tuo portafoglio prima di conpiere transizioni di invio!", //Please {unlock} your wallet before sending transactions!
+        "Per favore ,{sblocca} il tuo portafoglio prima di conpiere transizioni di invio!", //Please {unlock} your wallet before sending transactions!
     WALLET_FIREFOX_UNSUPPORTED:
         '<b>O Firefox non lo supporta!</b><br>Malheureusement, Firefox sfortunatamnete non supporta portafogli hardware ', //<b>Firefox doesn't support this!</b><br>Unfortunately, Firefox does not support hardware wallets
     WALLET_HARDWARE_WALLET:
-        " //<b>Portafoglio hardware pronto!</b><br>Tieni il tuo {hardwareWallet} collegato, sbloccato e nell'app PIVX", //<b>Hardware wallet ready!</b><br>Please keep your {hardwareWallet} plugged in, unlocked, and in the PIVX app
+        "<b>Portafoglio hardware pronto!</b><br>Tieni il tuo {hardwareWallet} collegato, sbloccato e nell'app PIVX", //<b>Hardware wallet ready!</b><br>Please keep your {hardwareWallet} plugged in, unlocked, and in the PIVX app
     WALLET_CONFIRM_L: "Conferma l'importo sulla tua Ledger", //Confirm the import on your Ledger
     WALLET_NO_HARDWARE:
         "<b>Nessun dispositivo disponibile</b><br>Impossibile trovare un portafoglio hardware; per favore collegalo e sbloccalo!", //<b>No device available</b><br>Couldn't find a hardware wallet; please plug it in and unlock!
