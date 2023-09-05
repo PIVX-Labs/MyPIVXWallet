@@ -447,7 +447,7 @@ export async function guiRenderReceiveModal(
  * A GUI wrapper to re-render the current Receive Modal configuration
  */
 export async function guiRenderCurrentReceiveModal() {
-    return guiRenderReceiveModal(cReceiveType);
+    return guiToggleReceiveType(cReceiveType);
 }
 
 /**
