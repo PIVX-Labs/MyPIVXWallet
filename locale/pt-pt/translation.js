@@ -54,8 +54,8 @@ export const pt_pt_translation = {
     dCardFourButtonA: 'Aceder à Minha Carteira', //Access My Wallet
 
     // Vanity Creation
-    vanityPrefixNote: '', //Note: addresses will always start with:
-    vanityPrefixInput: '', //Address Prefix
+    vanityPrefixNote: 'Nota: os endereços começarão sempre por', //Note: addresses will always start with:
+    vanityPrefixInput: 'Prefixo do endereço', //Address Prefix
 
     // Seed Phrase Creation
     thisIsYourSeed: 'Esta é a sua frase inicial:', //This is your seed phrase:
@@ -69,11 +69,11 @@ export const pt_pt_translation = {
     writtenDown: 'Eu escrevi a minha frase-inicial', //I have written down my seed phrase
 
     // Seed Phrase Import
-    importSeedValid: '', //Seed Phrase is valid!
-    importSeedError: '', //Seed Phrase is invalid!
-    importSeedErrorSize: '', //A Seed Phrase should be 12 or 24 words long!
-    importSeedErrorTypo: '', //Seed Phrase contains typing errors! Check your input carefully
-    importSeedErrorSkip: '', //Seed Phrase appears invalid, but the warning was skipped by the user
+    importSeedValid: 'A frase-semente é válida!', //Seed Phrase is valid!
+    importSeedError: 'A frase-semente é válida!', //Seed Phrase is invalid!
+    importSeedErrorSize: 'Uma frase-semente deve ter 12 ou 24 palavras!', //A Seed Phrase should be 12 or 24 words long!
+    importSeedErrorTypo: 'A frase-semente contém erros de digitação! Verifique cuidadosamente a sua introdução', //Seed Phrase contains typing errors! Check your input carefully
+    importSeedErrorSkip: 'A frase-semente parece inválida, mas o aviso foi ignorado pelo utilizador', //Seed Phrase appears invalid, but the warning was skipped by the user
 
     // Wallet Dashboard
     gettingStarted: 'A Começar', //Getting Started
@@ -83,11 +83,11 @@ export const pt_pt_translation = {
 
     // Encrypt wallet
     encryptWallet: 'Criptografar carteira', //Encrypt wallet
-    encryptPasswordCurrent: '', //Current Password
+    encryptPasswordCurrent: 'Palavra-passe atual', //Current Password
     encryptPasswordFirst: 'Digite a senha', //Enter Password
     encryptPasswordSecond: 'Digite novamente a senha', //Re-enter Password
     encrypt: 'Criptografar', //Encrypt
-    changePassword: '', //Change Password
+    changePassword: 'Alterar a palavra-passe', //Change Password
 
     // Wallet Dashboard Sub-menu
     balanceBreakdown: 'Composição do Saldo', //Balance Breakdown
@@ -99,40 +99,40 @@ export const pt_pt_translation = {
     // Send
     address: 'Endereço', //Address
     receivingAddress: 'Endereço de recepção', //Receiving address
-    sendAmountCoinsMax: 'Máximo', //MAX
+    sendAmountCoinsMax: 'MAX', //MAX
     paymentRequestMessage: 'Descrição (do comerciante)', //Description (from the merchant)
     send: 'Enviar', //Send
 
     // Contacts System
-    receive: '', //Receive
-    contacts: '', //Contacts
-    name: '', //Name
-    username: '', //Username
-    addressOrXPub: '', //Address or XPub
-    back: '', //Back
-    chooseAContact: '', //Choose a Contact
-    createContact: '', //Create Contact
-    encryptFirstForContacts: '', //Once you hit "{button}" in the Dashboard, you can create a Contact to make receiving PIV easier!
-    shareContactURL: '', //Share Contact URL
-    setupYourContact: '', //Setup your Contact
-    receiveWithContact: '', //Receive using a simple username-based Contact
-    onlyShareContactPrivately: '', //<b>Only</b> share your Contact with trusted people (family, friends)
+    receive: 'Receber', //Receive
+    contacts: 'Contactos', //Contacts
+    name: 'Nome', //Name
+    username: 'Nome de utilizador', //Username
+    addressOrXPub: 'Endereço ou XPub', //Address or XPub
+    back: 'Voltar', //Back
+    chooseAContact: 'Escolha um contacto', //Choose a Contact
+    createContact: 'Criar contacto', //Create Contact
+    encryptFirstForContacts: 'Depois de clicar no "{button}" no Painel de Controlo, pode criar um Contacto para facilitar a receção de PIV!', //Once you hit "{button}" in the Dashboard, you can create a Contact to make receiving PIV easier!
+    shareContactURL: 'Partilhar URL de contacto', //Share Contact URL
+    setupYourContact: 'Configurar o seu contacto', //Setup your Contact
+    receiveWithContact: 'Receber através de um simples contacto baseado no nome de utilizador', //Receive using a simple username-based Contact
+    onlyShareContactPrivately: '<b>Só</b> partilhe o seu contacto com pessoas de confiança (família, amigos)', //<b>Only</b> share your Contact with trusted people (family, friends)
 
     /* Context: The "Change to" is used in-app with one of the Three options below it, i.e: "Change to Contact" */
-    changeTo: '', //Change to
-    contact: '', //Contact
-    xpub: '', //XPub
+    changeTo: 'Alterar para', //Change to
+    contact: 'Contacto', //Contact
+    xpub: ' XPub', //XPub
 
-    addContactTitle: '', //Add {strName} to Contacts
-    addContactSubtext: '', //Once added you\'ll be able to send transactions to {strName} by their name (either typing, or clicking), no more addresses, nice \'n easy.
-    addContactWarning: '', //Ensure that this is the real "{strName}", do not accept Contact requests from unknown sources!
+    addContactTitle: 'Adicionar {strName} aos contactos', //Add {strName} to Contacts
+    addContactSubtext: 'Uma vez adicionado, será capaz de enviar transacções para {strName} pelo seu nome (quer digitando, quer clicando), sem mais endereços, fácil e agradável.', //Once added you\'ll be able to send transactions to {strName} by their name (either typing, or clicking), no more addresses, nice \'n easy.
+    addContactWarning: 'Certifica-te de que este é o verdadeiro "{strName}", não aceites pedidos de contacto de fontes desconhecidas!', //Ensure that this is the real "{strName}", do not accept Contact requests from unknown sources!
 
-    editContactTitle: '', //Change "{strName}" Contact
-    newName: '', //New Name
+    editContactTitle: 'Alterar "{strName}" Contacto', //Change "{strName}" Contact
+    newName: 'Novo nome', //New Name
 
-    removeContactTitle: '', //Remove {strName}?
-    removeContactSubtext: '', //Are you sure you wish to remove {strName} from your Contacts?
-    removeContactNote: '', //You can add them again any time in the future.
+    removeContactTitle: 'Remover {strName}?', //Remove {strName}?
+    removeContactSubtext: 'Tem a certeza de que pretende remover {strName} dos seus Contactos?', //Are you sure you wish to remove {strName} from your Contacts?
+    removeContactNote: 'Pode voltar a adicioná-los em qualquer altura no futuro.', //You can add them again any time in the future.
 
     // Export
     privateKey: 'Chave privada', //Private Key
@@ -179,8 +179,8 @@ export const pt_pt_translation = {
 
     // Settings
     settingsCurrency: 'Escolha uma moeda de exibição:', //Choose a display currency:
-    priceProvidedBy: '', //Price data provided by
-    settingsDecimals: '', //Balance Decimals:
+    priceProvidedBy: 'Dados sobre preços fornecidos por', //Price data provided by
+    settingsDecimals: 'Balanço de decimais:', //Balance Decimals:
     settingsExplorer: 'Escolha um explorador:', //Choose an explorer:
     settingsLanguage: 'Escolha um Idioma:', //Choose a Language:
     settingsPivxNode: 'Escolha um node PIVX:', //Choose a PIVX node:
@@ -188,14 +188,14 @@ export const pt_pt_translation = {
     settingsAnalytics: 'Escolha o seu nível de contribuição analítica:', //Choose your analytics contribution level:
     settingsToggleDebug: 'Modo de depuração', //Debug Mode
     settingsToggleTestnet: 'Modo Testnet', //Testnet Mode
-    settingsToggleAdvancedMode: '', //Advanced Mode
-    settingsToggleAdvancedModeSubtext: '', //This unlocks deeper functionality and customisation, but may be overwhelming and potentially dangerous for unexperienced users!
+    settingsToggleAdvancedMode: 'Modo avançado', //Advanced Mode
+    settingsToggleAdvancedModeSubtext: 'Isto desbloqueia uma funcionalidade e personalização mais profundas, mas pode ser demasiado complicado e potencialmente perigoso para utilizadores inexperientes!', //This unlocks deeper functionality and customisation, but may be overwhelming and potentially dangerous for unexperienced users!
 
     // Network switching (mainnet <---> testnet)
-    netSwitchUnsavedWarningTitle: '', //Your {network} wallet isn\'t saved!
-    netSwitchUnsavedWarningSubtitle: '', //Your {network} account is at risk!
-    netSwitchUnsavedWarningSubtext: '', //If you switch to {network} before saving it, you\'ll lose the account!
-    netSwitchUnsavedWarningConfirmation: '', //Are you really sure?
+    netSwitchUnsavedWarningTitle: 'A tua carteira não está guardada!', //Your {network} wallet isn\'t saved!
+    netSwitchUnsavedWarningSubtitle: 'A tua carteira não está guardada!', //Your {network} account is at risk!
+    netSwitchUnsavedWarningSubtext: 'Se mudares para {network} antes de a guardares, perdes a conta!', //If you switch to {network} before saving it, you\'ll lose the account!
+    netSwitchUnsavedWarningConfirmation: 'Tens mesmo a certeza?', //Are you really sure?
 
     // Transparency Report
     transparencyReport: '"Relatório de Transparência"', //Transparency Report
@@ -363,17 +363,17 @@ export const pt_pt_translation = {
     MN_CANT_CONNECT: 'Não é possível conectar ao nó RPC!', //Unable to connect to RPC node!
 
     /* Contacts System Alerts */
-    CONTACTS_ENCRYPT_FIRST: '', //You need to hit "{button}" before you can use Contacts!
-    CONTACTS_NAME_REQUIRED: '', //A name is required!
-    CONTACTS_NAME_TOO_LONG: '', //That name is too long!
-    CONTACTS_CANNOT_ADD_YOURSELF: '', //You cannot add yourself as a Contact!
-    CONTACTS_ALREADY_EXISTS: '', //<b>Contact already exists!</b><br>You already saved this contact
-    CONTACTS_NAME_ALREADY_EXISTS: '', //<b>Contact name already exists!</b><br>This could potentially be a phishing attempt, beware!
-    CONTACTS_EDIT_NAME_ALREADY_EXISTS: '', //<b>Contact already exists!</b><br>A contact is already called "{strNewName}"!
-    CONTACTS_KEY_ALREADY_EXISTS: '', //<b>Contact already exists, but under a different name!</b><br>You have {newName} saved as <b>{oldName}</b> in your contacts
-    CONTACTS_NOT_A_CONTACT_QR: '', //This isn\'t a Contact QR!
-    CONTACTS_ADDED: '', //<b>New Contact added!</b><br>{strName} has been added, hurray!
-    CONTACTS_YOU_HAVE_NONE: '', //You have no contacts!
+    CONTACTS_ENCRYPT_FIRST: ' É necessário carregar em "{button}" antes de poder utilizar Contactos!', //You need to hit "{button}" before you can use Contacts!
+    CONTACTS_NAME_REQUIRED: '/É necessário um nome!', //A name is required!
+    CONTACTS_NAME_TOO_LONG: 'Esse nome é demasiado longo!', //That name is too long!
+    CONTACTS_CANNOT_ADD_YOURSELF: 'Não se pode adicionar a si próprio como contacto!', //You cannot add yourself as a Contact!
+    CONTACTS_ALREADY_EXISTS: ' O contacto já existe!</b><br>Já guardou este contacto', //<b>Contact already exists!</b><br>You already saved this contact
+    CONTACTS_NAME_ALREADY_EXISTS: '//<b>O nome do contacto já existe!</b><br>Pode tratar-se de uma tentativa de phishing. Cuidado!', //<b>Contact name already exists!</b><br>This could potentially be a phishing attempt, beware!
+    CONTACTS_EDIT_NAME_ALREADY_EXISTS: '//<b>O contacto já existe!</b><br>Já existe um contacto com o nome "{strNewName}"!', //<b>Contact already exists!</b><br>A contact is already called "{strNewName}"!
+    CONTACTS_KEY_ALREADY_EXISTS: ' //<b>O contacto já existe, mas com um nome diferente!</b><br>Tem {newName} guardado como <b>{oldName}</b> nos seus contactos', //<b>Contact already exists, but under a different name!</b><br>You have {newName} saved as <b>{oldName}</b> in your contacts
+    CONTACTS_NOT_A_CONTACT_QR: 'Isto não é um QR de contacto!', //This isn\'t a Contact QR!
+    CONTACTS_ADDED: '//<b>Novo contacto adicionado!</b><br>{strName} foi adicionado, viva!', //<b>New Contact added!</b><br>{strName} has been added, hurray!
+    CONTACTS_YOU_HAVE_NONE: ' Não tem contactos!', //You have no contacts!
 
     PROPOSAL_FINALISED: 'Proposta finalizada!', //Proposal finalized!
     PROPOSAL_UNCONFIRMED: 'A proposta ainda não foi confirmada.', //The proposal hasn\'t been confirmed yet.
