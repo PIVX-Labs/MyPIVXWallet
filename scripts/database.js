@@ -248,6 +248,10 @@ export class Database {
         // We'll generate an Account Class for up-to-date keys, then layer the 'new' type-checked properties on it one-by-one
         const cAccount = new Account();
         for (const strKey of Object.keys(cAccount)) {
+            // If the key is missing: this is fine, `cAccount` will auto-fill it with the default blank Account Class type and value
+            if (!Object.prototype.hasOwnProperty.call(cDBAccount, strKey))
+                continue;
+
             // Ensure the Type is correct for the Key against the Account class (with instanceof to also check Class validity)
             if (!isSameType(cDBAccount[strKey], cAccount[strKey])) {
                 console.error(
