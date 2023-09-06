@@ -16,7 +16,7 @@ export const it_translation = {
     navDashboard: 'Dashboard', //Dashboard
     navStake: 'Stake', //Stake
     navMasternode: 'Masternode', //Masternode
-    navGovernance: 'Gouvernance', //Governance
+    navGovernance: 'Governance', //Governance
     navSettings: 'Impostazioni', //Settings
 
     // Footer
@@ -24,30 +24,30 @@ export const it_translation = {
 
     // Intro
     loading: 'Caricamento', //Loading
-    loadingTitle: 'Il mio portafoglio PIVX', //My PIVX Wallet is
+    loadingTitle: 'Il mio Wallet PIVX', //My PIVX Wallet is
 
     // Onboarding Dashboard
-    dashboardTitle: 'Tableau de bord', //Dashboard
-    dCardOneTitle: 'Creare un', //Create a
+    dashboardTitle: 'Dashboard', //Dashboard
+    dCardOneTitle: 'Crea un ', //Create a
     dCardOneSubTitle: 'Nuovo Wallet', //New Wallet
     dCardOneDesc:
-        'Creare un nuovo Portafoglio PIVX,offre più sicurezza di backup & metodi sicuri.', //Create a new PIVX wallet, offering the most secure backup & security methods.
-    dCardOneButton: 'Creare un Nuovo Wallet', //Create A New Wallet
+        'Creare un nuovo Wallet PIVX, offre metodi di sicurezza & di backup più sicuri .', //Create a new PIVX wallet, offering the most secure backup & security methods.
+    dCardOneButton: 'Crea un Nuovo Wallet', //Create A New Wallet
 
     dCardTwoTitle: 'Crea un nuovo ', //Create a new
-    dCardTwoSubTitle: 'Portafoglio Vanity', //Vanity Wallet
+    dCardTwoSubTitle: 'Wallet Vanity', //Vanity Wallet
     dCardTwoDesc:
-        'Creare un portafoglio con un prefisso customizzato,questo lo puoi tenere per un lungo periodo !', //Create a wallet with a custom prefix, this can take a long time!
-    dCardTwoButton: 'Crea un portaflglio vanity', //Create A Vanity Wallet
+        'Creare un portafoglio con un prefisso personalizzato, ti permette di tenerlo più a lungo !', //Create a wallet with a custom prefix, this can take a long time!
+    dCardTwoButton: 'Crea un Wallet vanity', //Create A Vanity Wallet
 
-    dCardThreeTitle: 'Aceedi al tuo ', //Access your
+    dCardThreeTitle: 'Accedi al tuo ', //Access your
     dCardThreeSubTitle: 'Portafoglio hardware', //Hardware Wallet
     dCardThreeDesc:
-        "Utilizza il tuo portafoglio Ledger Hardware con l'interfaccia familiare di MPW.", //Use your Ledger Hardware wallet with MPW's familiar interface.
+        "Utilizza il tuo portafoglio Ledger con un'interfaccia più familiare.", //Use your Ledger Hardware wallet with MPW's familiar interface.
     dCardThreeButton: 'Accedi alla mia Ledger', //Access my Ledger
 
     dCardFourTitle: 'Vai al ', //Go to
-    dCardFourSubTitle: 'Mio portafoglio', //My Wallet
+    dCardFourSubTitle: 'Mio Wallet', //My Wallet
     dCardFourDesc:
         "Importa un portafoglio PIVX usando una Chiave Privata, xpriv, o una Seed Phrase  .", //Import a PIVX wallet using a Private Key, xpriv, or Seed Phrase.
     dCardFourButtonI: 'Importa Portafoglio', //Import Wallet
@@ -56,14 +56,14 @@ export const it_translation = {
     // Seed Phrase Creation
     thisIsYourSeed: "Questa è la tua seed phrase:", //This is your seed phrase:
     writeDownSeed:
-        'Scrivilo da qualche parte. Lo vedrai solo <b>una volta!</b>', //Write it down somewhere. You'll only see this <b>once!</b>
+        'Scrivila da qualche parte. La vedrai solo <b>una volta!</b>', //Write it down somewhere. You'll only see this <b>once!</b>
     doNotShareWarning:
-        "Chiunque ne ha una copia può accedere<b> tutti </b> vostri fondi", //Anyone with a copy of it can access <b>all</b> of your funds.
+        "Chiunque ne ha una copia può accedere a <b> tutti </b> vostri fondi", //Anyone with a copy of it can access <b>all</b> of your funds.
     doNotShare: 'NON condividerla con nessuno .', //Do NOT share it with anybody.
     digitalStoreNotAdvised:
-        ' Si consiglia di <b>NON</b> non memorizzarla digitalmente', //It is <b>NOT</b> advised to store this digitally.
+        ' Si consiglia di <b>NON</b> non salvarla online', //It is <b>NOT</b> advised to store this digitally.
     optionalPassphrase: 'Passphrase opzionale', //Optional Passphrase
-    writtenDown: "Ho scritto la mia seed phrase", //I have written down my seed phrase
+    writtenDown: "Ho segnato la mia seed phrase", //I have written down my seed phrase
 
     // Wallet Dashboard
     gettingStarted: 'Iniziare', //Getting Started
@@ -154,9 +154,9 @@ export const it_translation = {
 
     // Governance
     govSubtext:
-        " Da questa scheda puoi controllare le proposte e se hai un masternode, far parte del <b>DAO</b> e votare!", //From this tab you can check the proposals and, if you have a masternode, be a part of the <b>DAO</b> and vote!
+        " Da questa scheda puoi controllare le proposte, se hai un masternode puoi far parte del <b>DAO</b> e votare!", //From this tab you can check the proposals and, if you have a masternode, be a part of the <b>DAO</b> and vote!
     govMonthlyBudget: 'Budget Mensile', //Monthly Budget
-    govAllocBudget: 'Budget assegnato', //Allocated Budget
+    govAllocBudget: 'Budget Assegnato', //Allocated Budget
     govNextPayout: 'Prossimo pagamento del Tesoro', //Next Treasury Payout
     govTableStatus: 'STATO', //STATUS
     govTableName: 'NOME', //NAME
@@ -164,7 +164,7 @@ export const it_translation = {
     govTableVotes: 'VOTI', //VOTES
     govTableVote: 'VOTAZIONE', //VOTE
     contestedProposalsDesc:
-        " Si tratta di proposte che hanno ricevuto un'enorme quantità di voti negativi, rendendole probabilmente spam o una proposta altamente contestabile.", //These are proposals that received an overwhelming amount of downvotes, making it likely spam or a highly contestable proposal.
+        " Si tratta di proposte che hanno ricevuto tanti voti negativi, rendendole probabilmente spam o una proposta altamente contestabile.", //These are proposals that received an overwhelming amount of downvotes, making it likely spam or a highly contestable proposal.
 
     // Settings
     settingsCurrency: "Scegli una valuta visualizzata:", //Choose a display currency:
@@ -231,7 +231,7 @@ export const it_translation = {
     popupSetColdAddr: 'Configura il tuo indirizzo di Cold Staking', //Set your Cold Staking address
     popupCurrentAddress: 'Indirizzo attuale:', //Current address:
     popupColdStakeNote:
-        "Con un Cold Address puoi puntare monete per conto tuo, non puoi spendere monete, quindi è sicuro anche usare il Cold Address di uno sconosciuto!", //A Cold Address stakes coins on your behalf, it cannot spend coins, so it's even safe to use a stranger's Cold Address!
+        "Con un Cold Address puoi mettere in stake monete per conto tuo, non puoi spendere monete, quindi è sicuro anche usare il Cold Address di uno sconosciuto!", //A Cold Address stakes coins on your behalf, it cannot spend coins, so it's even safe to use a stranger's Cold Address!
     popupExample: 'Esempio:', //Example:
     popupWalletLock: 'Vuoi bloccare il tuo portafoglio?', //Do you want to lock your wallet?
     popupWalletWipe:
