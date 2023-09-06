@@ -3,6 +3,7 @@ export const ph_translation = {
     // Basic HTML tags are allowed such as <b><i> etc. All data is sanitized https://developer.mozilla.org/en-US/docs/Web/API/Element/innerHTML
 
     // NOTE: If a section does NOT need translating, leave it empty.
+    // NOTE: Variables that MPW insert are denoted by brackets {}, for example, {button}, do NOT translate variables, but place them where it makes the most sense.
 
     // General words
     amount: 'Halaga', //Amount

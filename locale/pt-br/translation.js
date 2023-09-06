@@ -2,6 +2,7 @@ export const pt_br_translation = {
     // As tags básicas HTML são permitidas como <b><i> etc. Todos os dados são higienizados https://developer.mozilla.org/pt-BR/docs/Web/API/Element/innerHTML
 
     // NOTA: Se uma seção NÃO precisar ser traduzida, deixe-a vazia.
+    // NOTE: Variables that MPW insert are denoted by brackets {}, for example, {button}, do NOT translate variables, but place them where it makes the most sense.
 
     // General words
     amount: 'Quantidade', //Amount
