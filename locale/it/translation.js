@@ -339,37 +339,37 @@ export const it_translation = {
     MN_ACCESS_BEFORE_VOTE: 'Accedi a un masternode prima di votare!', //Access a masternode before voting!
     MN_OFFLINE_STARTING:
         'Il tuo masternode è offline, proviamo ad avviarlo', //Your masternode is offline, we will try to start it
-    MN_STARTED: '<b> Il Masternode è avviato!</b>', //<b>Masternode started!</b>
+    MN_STARTED: '<b>Il Masternode è stato avviato!</b>', //<b>Masternode started!</b>
     MN_RESTARTED: '<b>Il Masternode è stato riavviato<b/>', //<b>Masternode restarted!</b>
     MN_STARTED_ONLINE_SOON:
-        '<b>Masternode è iniziato!</b><br>Sarà presto online', //<b>Masternode started!</b><br>It\'ll be online soon
-    MN_START_FAILED: '<b>Masternode è iniziato!</b>', //<b>Masternode started!</b>
+        '<b>Il Masternode è stato avviato!</b><br>Sarà presto online', //<b>Masternode started!</b><br>It\'ll be online soon
+    MN_START_FAILED: '<b>Il Masternode è stato avviato!</b>', //<b>Masternode started!</b>
     MN_RESTART_FAILED: '<b>Masternode riavviato!</b>', //<b>Masternode restarted!</b>
     MN_DESTROYED:
-        '<b>Masternode distrutto!</b><br>Le tue monete ora sono spendibili.', //<b>Masternode destroyed!</b><br>Your coins are now spendable.
+        '<b>Il distrutto!</b><br>Le tue monete ora sono spendibili.', //<b>Masternode destroyed!</b><br>Your coins are now spendable.
     MN_STATUS_IS: "Lo stato del tuo Masternode è ", //Your masternode status is
-    MN_STATE: "Il tuo masternode è  <b>{state}</b>", //Your masternode is in <b>{state}</b> state
+    MN_STATE: "Il tuo masternode è <b>{state}</b>", //Your masternode is in <b>{state}</b> state
     MN_BAD_IP: "L'indirizzo IP non è valido!", //The IP address is invalid!
     MN_NOT_ENOUGH_COLLAT:
         'Hai bisogno di <b>{amount} altri {ticker}</b> per creare un Masternode!', //You need <b>{amount} more {ticker}</b> to create a Masternode!
     MN_ENOUGH_BUT_NO_COLLAT:
         "Hai un saldo sufficiente per un Masternode, ma nessun UTXO collaterale valido di {amount} {ticker}", //You have enough balance for a Masternode, but no valid collateral UTXO of {amount} {ticker}
     MN_COLLAT_NOT_SUITABLE:
-        "Questo non è un UTXO adatto per un Masternode", //This is not a suitable UTXO for a Masternode
+        "Questo UTXO non è adatto per un Masternode", //This is not a suitable UTXO for a Masternode
     MN_CANT_CONNECT: 'Impossibile connettersi al nodo RPC!', //Unable to connect to RPC node!
 
     /* Contacts System Alerts */
     CONTACTS_ENCRYPT_FIRST: 'Devi premere "{button}" prima di poter utilizzare i Contatti!', //You need to hit "{button}"before you can use Contacts!
-    CONTACTS_NAME_REQUIRED: 'Nome richiesto', //A name is required!
-    CONTACTS_NAME_TOO_LONG: 'Questo nome è troppo lungo', //That name is too long!
-    CONTACTS_CANNOT_ADD_YOURSELF: 'Non puoi aggiungerti come contatto', //You cannot add yourself as a Contact!
+    CONTACTS_NAME_REQUIRED: 'Nome richiesto!', //A name is required!
+    CONTACTS_NAME_TOO_LONG: 'Questo nome è troppo lungo!', //That name is too long!
+    CONTACTS_CANNOT_ADD_YOURSELF: 'Non puoi aggiungerti come contatto!', //You cannot add yourself as a Contact!
     CONTACTS_ALREADY_EXISTS: '<b>Il contatto esiste già!</b><br>Hai già salvato questo contatto', //<b>Contact already exists!</b><br>You already saved this contact
     CONTACTS_NAME_ALREADY_EXISTS: '<b>Il nome del contatto esiste già!</b><br>Potrebbe trattarsi di un tentativo di phishing, attenzione!', //<b>Contact name already exists!</b><br>This could potentially be a phishing attempt, beware!
     CONTACTS_EDIT_NAME_ALREADY_EXISTS: '<b>Il contatto esiste già!</b><br>Un contatto si chiama già "{strNewName}"!', //<b>Contact already exists!</b><br>A contact is already called "{strNewName}"!
     CONTACTS_KEY_ALREADY_EXISTS: '<b>Il contatto esiste già, ma con un nome diverso!</b><br>Hai {newName} salvato come <b>{oldName}</b> nei tuoi contatti', //<b>Contact already exists, but under a different name!</b><br>You have {newName} saved as <b>{oldName}</b> in your contacts
     CONTACTS_NOT_A_CONTACT_QR: 'Questo non è un Contatto QR!', //This isn\'t a Contact QR!
     CONTACTS_ADDED: '<b>Nuovo contatto aggiunto!</b><br>{strName} è stato aggiunto, evviva!', //<b>New Contact added!</b><br>{strName} has been added, hurray!
-    CONTACTS_YOU_HAVE_NONE: 'Non hai contatti', //You have no contacts!
+    CONTACTS_YOU_HAVE_NONE: 'Non hai contatti!', //You have no contacts!
 
     SWITCHED_EXPLORERS:
         '<b>Explorer cambiato!</b><br>Stai utilizzando {explorerName}', //<b>Switched explorer!</b><br>Now using {explorerName}
@@ -393,7 +393,7 @@ export const it_translation = {
     WALLET_NO_HARDWARE:
         "<b>Nessun dispositivo disponibile</b><br>Impossibile trovare un portafoglio hardware; per favore collegalo e sbloccalo!", //<b>No device available</b><br>Couldn't find a hardware wallet; please plug it in and unlock!
     WALLET_HARDWARE_CONNECTION_LOST:
-        "<b>Connessione a {hardwareWallet} persa </b><br>Sembra che {hardwareWalletProductionName} sia stato scollegato durante l'operazione, oops!", //<b>Lost connection to {hardwareWallet} </b><br>It seems the {hardwareWalletProductionName} was unplugged mid-operation, oops!
+        "<b>Connessione a {hardwareWallet} persa </b><br>Sembra che {hardwareWalletProductionName} sia stato scollegato durante l'operazione, ops!", //<b>Lost connection to {hardwareWallet} </b><br>It seems the {hardwareWalletProductionName} was unplugged mid-operation, oops!
     WALLET_HARDWARE_BUSY:
         "<b>{hardwareWallet} è in attesa</b><br>Sblocca il tuo {hardwareWalletProductionName} o completa la richiesta corrente", //<b>{hardwareWallet} is waiting</b><br>Please unlock your {hardwareWalletProductionName} or finish it's current prompt
     WALLET_HARDWARE_ERROR: 'b> {hardwareWallet} </b><br> {errore}', //<b> {hardwareWallet} </b><br> {error}
@@ -404,11 +404,11 @@ export const it_translation = {
     CONFIRM_POPUP_TRANSACTION: 'Conferma la transazione', //Confirm your transaction
     CONFIRM_POPUP_MN_P_KEY: 'Chiave privata del tuo Masternode', //Your Masternode Private Key
     CONFIRM_POPUP_MN_P_KEY_HTML:
-        '<br>Salva questa chiave privata e copiala nella configurazione VPS<br>', // <br> Save this private key and copy it to your VPS config <br>
+        '<br> Salva questa chiave privata e copiala nella configurazione VPS <br>', // <br> Save this private key and copy it to your VPS config <br>
     CONFIRM_POPUP_VERIFY_ADDR: 'Verifica il tuo indirizzo', //Verify your address
 
     MIGRATION_MASTERNODE_FAILURE:
-        "Impossibile recuperare il tuo masternode. Per favore reimportalo", //Failed to recover your masternode. Please reimport it.
+        "Impossibile recuperare il tuo masternode. Per favore reimportalo.", //Failed to recover your masternode. Please reimport it.
     MIGRATION_ACCOUNT_FAILURE:
         "Impossibile recuperare il tuo account. Per favore reimportalo.", //Failed to recover your account. Please reimport it.
     APP_INSTALLED: 'Applicazione installata!', //App Installed!
