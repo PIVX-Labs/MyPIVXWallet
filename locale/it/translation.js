@@ -103,7 +103,7 @@ export const it_translation = {
     back: 'Indietro', //Back
     chooseAContact: 'Scegli un contatto', //Choose a Contact
     createContact: 'Crea un contatto', //Create Contact
-    encryptFirstForContacts: 'Dopo aver premuto "{button}"nella Dashboard, puoi creare un contatto per facilitare la ricezione dei PIV!', //Once you hit "{button}"in the Dashboard, you can create a Contact to make receiving PIV easier!
+    encryptFirstForContacts: 'Dopo aver premuto "{button}" nella Dashboard, puoi creare un contatto per facilitare la ricezione dei PIV!', //Once you hit "{button}"in the Dashboard, you can create a Contact to make receiving PIV easier!
     shareContactURL: 'Condividi contatto URL', //Share Contact URL
     setupYourContact: 'Imposta il tuo contatto', //Setup your Contact
     receiveWithContact: 'Ricevi utilizzando un semplice contatto basato sul nome utente', //Receive using a simple username-based Contact
@@ -167,7 +167,7 @@ export const it_translation = {
         "Si tratta di proposte che hanno ricevuto tanti voti negativi, rendendole probabilmente spam o una proposta altamente contestabile.", //These are proposals that received an overwhelming amount of downvotes, making it likely spam or a highly contestable proposal.
 
     // Settings
-    settingsCurrency: "Scegli una valuta visualizzata:", //Choose a display currency:
+    settingsCurrency: "Scegli una valuta da visualizzare:", //Choose a display currency:
     priceProvidedBy: 'Dati sui prezzi forniti da', //Price data provided by
     settingsDecimals: 'Decimali del saldo:', //Balance Decimals:
     settingsExplorer: 'Scegli un explorer:', //Choose an explorer:
@@ -201,7 +201,7 @@ export const it_translation = {
     // Migration System
     MIGRATION_ACCOUNT_FAILURE_TITLE: "Impossibile recuperare l'account", //Failed to recover account
     MIGRATION_ACCOUNT_FAILURE_HTML:
-        "", //There was an error recovering your account. <br> Please reimport your wallet using the following key:
+        "Si è verificato un errore durante il recupero del tuo account. <b> Reimporta il tuo portafoglio utilizzando la seguente chiave:", //There was an error recovering your account. <br> Please reimport your wallet using the following key:
 
     // Dynamic Elements (Rendered at runtime - TODO in future PR: sort in to above categories for consistency)
     ID: 'ID', //ID
@@ -227,7 +227,7 @@ export const it_translation = {
     walletUnlockTx: 'Sblocca per inviare la tua transazione! ', //Unlock to send your transaction!
     walletUnlockStake: 'Sblocca per mettere in stake i tuoi', //Unlock to stake your
     walletUnlockUnstake: 'Sblocca per togliere dallo stake i tuoi', //Unlock to unstake your
-    changelogTitle: 'Novita nella ', //What's New in
+    changelogTitle: 'Novità nella ', //What's New in
     popupSetColdAddr: 'Configura il tuo indirizzo di Cold Staking', //Set your Cold Staking address
     popupCurrentAddress: 'Indirizzo attuale:', //Current address:
     popupColdStakeNote:
@@ -290,7 +290,7 @@ export const it_translation = {
         '<b>La modalità Testnet è attiva!</b><br>Crittografia del portafoglio disabilitata', //<b>Testnet Mode is ON!</b><br>Wallet encryption disabled
     PASSWORD_TOO_SMALL:
         "La password è un po' corta.<br>Utilizza almeno <b>{MIN_PASS_LENGTH} caratteri.</b>", //That password is a little short!<br>Use at least <b>{MIN_PASS_LENGTH} characters.</b>
-    PASSWORD_DOESNT_MATCH: 'La passeord non corrisponde', //Your passwords don\'t match!
+    PASSWORD_DOESNT_MATCH: 'La password non corrisponde', //Your passwords don\'t match!
     NEW_PASSWORD_SUCCESS:
         '<b>Sei protetto! 🔐</b><br>Bel lavoro, PIVian corazzato!', //<b>You\'re Secured! 🔐</b><br>Nice stuff, Armoured PIVian!
     INCORRECT_PASSWORD: 'Password sbagliata', //Incorrect password!
@@ -300,7 +300,7 @@ export const it_translation = {
     QR_SCANNER_BAD_RECEIVER: "Il destinatario del pagamento non è valido", //is not a valid payment receiver
     VALIDATE_AMOUNT_LOW:
         "L'importo minimo è di {minimumAmount} {coinTicker}!", //<br>Minimum amount is {minimumAmount} {coinTicker}!
-    VALIDATE_AMOUNT_DECIMAL: '{coinDecimal} limite décimale dépassée', //{coinDecimal} decimal limit exceeded
+    VALIDATE_AMOUNT_DECIMAL: '{coinDecimal} limite decimale superato', //{coinDecimal} decimal limit exceeded
     SUCCESS_STAKING_ADDR:
         '<b>Indirizzo di staking impostato!</b><br>Ora vai avanti e annulla lo staking!', //<b>Staking Address set!</b><br>Now go ahead and unstake!
     STAKE_ADDR_SET:
@@ -359,7 +359,7 @@ export const it_translation = {
     MN_CANT_CONNECT: 'Impossibile connettersi al nodo RPC!', //Unable to connect to RPC node!
 
     /* Contacts System Alerts */
-    CONTACTS_ENCRYPT_FIRST: 'Devi premere "{button}"prima di poter utilizzare i Contatti!', //You need to hit "{button}"before you can use Contacts!
+    CONTACTS_ENCRYPT_FIRST: 'Devi premere "{button}" prima di poter utilizzare i Contatti!', //You need to hit "{button}"before you can use Contacts!
     CONTACTS_NAME_REQUIRED: 'Nome richiesto', //A name is required!
     CONTACTS_NAME_TOO_LONG: 'Questo nome è troppo lungo', //That name is too long!
     CONTACTS_CANNOT_ADD_YOURSELF: 'Non puoi aggiungerti come contatto', //You cannot add yourself as a Contact!
@@ -372,7 +372,7 @@ export const it_translation = {
     CONTACTS_YOU_HAVE_NONE: 'Non hai contatti', //You have no contacts!
 
     SWITCHED_EXPLORERS:
-        '<b>Cambiato explorer!</b><br>Stai utilizzando {explorerName}', //<b>Switched explorer!</b><br>Now using {explorerName}
+        '<b>Explorer cambiato!</b><br>Stai utilizzando {explorerName}', //<b>Switched explorer!</b><br>Now using {explorerName}
     SWITCHED_NODE: "<b>Nodo cambiato!</b><br>Stai usando {node}", //<b>Switched node!</b><br>Now using {node}
     SWITCHED_ANALYTICS:
         "Livello di analisi cambiato!</b><br>Ora {level}", //<b>Switched analytics level!</b><br>Now {level}
