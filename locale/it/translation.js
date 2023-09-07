@@ -367,7 +367,7 @@ export const it_translation = {
     CONTACTS_NAME_ALREADY_EXISTS: '<b>Il nome del contatto esiste già!</b><br>Potrebbe trattarsi di un tentativo di phishing, attenzione!', //<b>Contact name already exists!</b><br>This could potentially be a phishing attempt, beware!
     CONTACTS_EDIT_NAME_ALREADY_EXISTS: '<b>Il contatto esiste già!</b><br>Un contatto si chiama già "{strNewName}"!', //<b>Contact already exists!</b><br>A contact is already called "{strNewName}"!
     CONTACTS_KEY_ALREADY_EXISTS: '<b>Il contatto esiste già, ma con un nome diverso!</b><br>Hai {newName} salvato come <b>{oldName}</b> nei tuoi contatti', //<b>Contact already exists, but under a different name!</b><br>You have {newName} saved as <b>{oldName}</b> in your contacts
-    CONTACTS_NOT_A_CONTACT_QR: 'questo non è un Contatto QR!', //This isn\'t a Contact QR!
+    CONTACTS_NOT_A_CONTACT_QR: 'Questo non è un Contatto QR!', //This isn\'t a Contact QR!
     CONTACTS_ADDED: '<b>Nuovo contatto aggiunto!</b><br>{strName} è stato aggiunto, evviva!', //<b>New Contact added!</b><br>{strName} has been added, hurray!
     CONTACTS_YOU_HAVE_NONE: 'Non hai contatti', //You have no contacts!
 
