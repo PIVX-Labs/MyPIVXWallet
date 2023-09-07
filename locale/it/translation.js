@@ -6,7 +6,7 @@ export const it_translation = {
     // General words
     amount: 'Quantità', //Amount
     staking: 'Staking', //Staking
-    wallet: 'Portafoglio', //Wallet
+    wallet: 'Wallet', //Wallet
     display: 'Display', //Display
     activity: 'Attività', //Activity
     yes: 'Sì', //Yes
@@ -37,21 +37,21 @@ export const it_translation = {
     dCardTwoTitle: 'Crea un nuovo ', //Create a new
     dCardTwoSubTitle: 'Wallet Vanity', //Vanity Wallet
     dCardTwoDesc:
-        'Crea un portafoglio con un prefisso personalizzato, potrebbe impiegarci molto tempo!', //Create a wallet with a custom prefix, this can take a long time!
+        'Crea un wallet con un prefisso personalizzato, potrebbe impiegarci molto tempo!', //Create a wallet with a custom prefix, this can take a long time!
     dCardTwoButton: 'Crea un Wallet vanity', //Create A Vanity Wallet
 
     dCardThreeTitle: 'Accedi al tuo ', //Access your
-    dCardThreeSubTitle: 'Portafoglio hardware', //Hardware Wallet
+    dCardThreeSubTitle: 'Hardware wallet', //Hardware Wallet
     dCardThreeDesc:
-        "Utilizza il tuo portafoglio Ledger con un'interfaccia più familiare.", //Use your Ledger Hardware wallet with MPW's familiar interface.
-    dCardThreeButton: 'Accedi alla mia Ledger', //Access my Ledger
+        "Utilizza il tuo wallet Ledger con la solita interfaccia di MPW.", //Use your Ledger Hardware wallet with MPW's familiar interface.
+    dCardThreeButton: 'Accedi al mio Ledger', //Access my Ledger
 
     dCardFourTitle: 'Vai al ', //Go to
     dCardFourSubTitle: 'Mio Wallet', //My Wallet
     dCardFourDesc:
-        "Importa un portafoglio PIVX usando una Chiave Privata, xpriv, o una Seed Phrase.", //Import a PIVX wallet using a Private Key, xpriv, or Seed Phrase.
-    dCardFourButtonI: 'Importa Portafoglio', //Import Wallet
-    dCardFourButtonA: 'Accedi al mio Portafoglio', //Access My Wallet
+        "Importa un wallet PIVX usando una Chiave Privata, xpriv, o una Seed Phrase.", //Import a PIVX wallet using a Private Key, xpriv, or Seed Phrase.
+    dCardFourButtonI: 'Importa Wallet', //Import Wallet
+    dCardFourButtonA: 'Accedi al mio Wallet', //Access My Wallet
 
     // Seed Phrase Creation
     thisIsYourSeed: "Questa è la tua seed phrase:", //This is your seed phrase:
@@ -67,12 +67,12 @@ export const it_translation = {
 
     // Wallet Dashboard
     gettingStarted: 'Iniziamo', //Getting Started
-    secureYourWallet: 'Proteggi il tuo portafoglio', //Secure your wallet
-    unlockWallet: 'Sblocca il portafoglio', //Unlock wallet
-    lockWallet: 'Blocca portafoglio', //Lock wallet
+    secureYourWallet: 'Proteggi il tuo wallet', //Secure your wallet
+    unlockWallet: 'Sblocca il wallet', //Unlock wallet
+    lockWallet: 'Blocca wallet', //Lock wallet
 
     // Encrypt wallet
-    encryptWallet: 'Cripta il portafoglio', //Encrypt wallet
+    encryptWallet: 'Cripta il wallet', //Encrypt wallet
     encryptPasswordCurrent: 'Password attuale', //Current Password
     encryptPasswordFirst: 'Inserisci Password', //Enter Password
     encryptPasswordSecond: 'Reinserisci Password', //Re-enter Password
@@ -154,7 +154,7 @@ export const it_translation = {
 
     // Governance
     govSubtext:
-        "Da questa scheda puoi controllare le proposte, se hai un masternode puoi far parte del <b>DAO</b> e votare!", //From this tab you can check the proposals and, if you have a masternode, be a part of the <b>DAO</b> and vote!
+        "Da questa scheda puoi controllare le proposte, se hai un masternode puoi far parte della <b>DAO</b> e votare!", //From this tab you can check the proposals and, if you have a masternode, be a part of the <b>DAO</b> and vote!
     govMonthlyBudget: 'Budget Mensile', //Monthly Budget
     govAllocBudget: 'Budget Assegnato', //Allocated Budget
     govNextPayout: 'Prossimo pagamento della Tesoriera', //Next Treasury Payout
@@ -164,12 +164,12 @@ export const it_translation = {
     govTableVotes: 'VOTI', //VOTES
     govTableVote: 'VOTAZIONE', //VOTE
     contestedProposalsDesc:
-        "Si tratta di proposte che hanno ricevuto tanti voti negativi, rendendole probabilmente spam o una proposta altamente contestabile.", //These are proposals that received an overwhelming amount of downvotes, making it likely spam or a highly contestable proposal.
+        "Si tratta di proposte che hanno ricevuto tanti voti negativi, rendendole probabilmente spam o altamente contestabili.", //These are proposals that received an overwhelming amount of downvotes, making it likely spam or a highly contestable proposal.
 
     // Settings
     settingsCurrency: "Scegli una valuta da visualizzare:", //Choose a display currency:
     priceProvidedBy: 'Dati sui prezzi forniti da', //Price data provided by
-    settingsDecimals: 'Decimali del saldo:', //Balance Decimals:
+    settingsDecimals: 'Cifre decimali del saldo:', //Balance Decimals:
     settingsExplorer: 'Scegli un explorer:', //Choose an explorer:
     settingsLanguage: 'Scegli una lingua', //Choose a Language:
     settingsPivxNode: 'Scegli un nodo PIVX', //Choose a PIVX node:
@@ -180,7 +180,7 @@ export const it_translation = {
     settingsToggleTestnet: 'Modalità testnet', //Testnet Mode
 
     // Network switching (mainnet <---> testnet)
-    netSwitchUnsavedWarningTitle: 'Il tuo portafoglio {network} non è salvato!', //Your {network} wallet isn\'t saved!
+    netSwitchUnsavedWarningTitle: 'Il tuo wallet {network} non è salvato!', //Your {network} wallet isn\'t saved!
     netSwitchUnsavedWarningSubtitle: 'Il tuo account {network} è a rischio', //Your {network} account is at risk!
     netSwitchUnsavedWarningSubtext: "Se passi a {network} prima di salvarlo, perderai l'account!", //If you switch to {network} before saving it, you\'ll lose the account!
     netSwitchUnsavedWarningConfirmation: 'Ne sei veramente sicuro?', //Are you really sure?
@@ -201,7 +201,7 @@ export const it_translation = {
     // Migration System
     MIGRATION_ACCOUNT_FAILURE_TITLE: "Impossibile recuperare l'account", //Failed to recover account
     MIGRATION_ACCOUNT_FAILURE_HTML:
-        "Si è verificato un errore durante il recupero del tuo account. <b> Reimporta il tuo portafoglio utilizzando la seguente chiave:", //There was an error recovering your account. <br> Please reimport your wallet using the following key:
+        "Si è verificato un errore durante il recupero del tuo account. <b> Reimporta il tuo wallet utilizzando la seguente chiave:", //There was an error recovering your account. <br> Please reimport your wallet using the following key:
 
     // Dynamic Elements (Rendered at runtime - TODO in future PR: sort in to above categories for consistency)
     ID: 'ID', //ID
@@ -217,8 +217,8 @@ export const it_translation = {
     activityUndelegated: 'Non delegato', //Undelegated
     activityUnknown: 'Tx sconosciuta', //Unknown Tx
     password: 'Password', //Password
-    walletUnlock: 'Sblocca il tuo portafoglio', //Unlock your wallet
-    walletPassword: 'Password del portafoglio', //Wallet password
+    walletUnlock: 'Sblocca il tuo wallet', //Unlock your wallet
+    walletPassword: 'Password del wallet', //Wallet password
     walletUnlockCreateMN: 'Sblocca per creare il tuo Masternode!', //Unlock to create your Masternode!
     walletUnlockMNStart: 'Sblocca per avviare il tuo Masternode! ', //Unlock to start your Masternode!
     walletUnlockProposal:
@@ -231,11 +231,11 @@ export const it_translation = {
     popupSetColdAddr: 'Configura il tuo indirizzo di Cold Staking', //Set your Cold Staking address
     popupCurrentAddress: 'Indirizzo attuale:', //Current address:
     popupColdStakeNote:
-        "Con un Cold Address puoi mettere in stake monete per conto tuo, non puoi spendere monete, quindi è sicuro anche usare il Cold Address di uno sconosciuto!", //A Cold Address stakes coins on your behalf, it cannot spend coins, so it's even safe to use a stranger's Cold Address!
+        "Con un Cold Address puoi mettere in stake i tuoi PIVs anche usando l'address di uno sconosciuto, che non potrà spenderli!", //A Cold Address stakes coins on your behalf, it cannot spend coins, so it's even safe to use a stranger's Cold Address!
     popupExample: 'Esempio:', //Example:
-    popupWalletLock: 'Vuoi bloccare il tuo portafoglio?', //Do you want to lock your wallet?
+    popupWalletLock: 'Vuoi bloccare il tuo wallet?', //Do you want to lock your wallet?
     popupWalletWipe:
-        'Vuoi cancellare i dati privati ​​del tuo portafoglio?', //Do you want to wipe your wallet private data?
+        'Vuoi cancellare i dati privati ​​del tuo wallet?', //Do you want to wipe your wallet private data?
     popupWalletLockNote:
         'Dovrai inserire la tua password per accedere ai tuoi fondi', //You will need to enter your password to access your funds
     popupWalletWipeNote:
@@ -252,7 +252,7 @@ export const it_translation = {
     popupProposalFinalisedNote:
     "<b>Congratulazioni per aver pubblicato la tua proposta!</b><br>I proprietari di Masternode possono utilizzare il tuo Hash di voto per votare da portafogli diversi da MPW, quindi assicurati di aggiungerlo al tuo post sul forum, se applicabile!", //<b>Congratulations on launching your proposal!</b><br>Masternode owners can use your Vote Hash to vote from wallets other than MPW, so make sure to add this to your forum post, if applicable!
     popupProposalFinalisedSignoff:
-        'Buona fortuna per il tuo viaggio attraverso il DAO, PIVian', //Good luck on your journey through the DAO, PIVian!
+        'Buona fortuna per il tuo viaggio attraverso la DAO, PIVian', //Good luck on your journey through the DAO, PIVian!
     popupHardwareAddrCheck:
         "Conferma che questo è l'indirizzo che vedi sul tuo", //Please confirm this is the address you see on your
     proposalFinalisationConfirming: 'Confermando...', //Confirming...
@@ -287,7 +287,7 @@ export const it_translation = {
         "Questo browser non supporta i Web Worker (JS multi-thread), sfortunatamente non puoi generare portafogli Vanity!", //This browser doesn\'t support Web Workers (multi-threaded JS), unfortunately you cannot generate Vanity wallets!
     INVALID_ADDRESS: '<b>Indirizzo PIVX non valido!</b><br> {address}', //<b>Invalid PIVX address!</b><br> {address}
     TESTNET_ENCRYPTION_DISABLED:
-        '<b>La modalità Testnet è attiva!</b><br>Crittografia del portafoglio disabilitata', //<b>Testnet Mode is ON!</b><br>Wallet encryption disabled
+        '<b>La modalità Testnet è attiva!</b><br>Crittografia del wallet disabilitata', //<b>Testnet Mode is ON!</b><br>Wallet encryption disabled
     PASSWORD_TOO_SMALL:
         "La password è un po' corta.<br>Utilizza almeno <b>{MIN_PASS_LENGTH} caratteri.</b>", //That password is a little short!<br>Use at least <b>{MIN_PASS_LENGTH} characters.</b>
     PASSWORD_DOESNT_MATCH: 'La password non corrisponde', //Your passwords don\'t match!
@@ -321,9 +321,9 @@ export const it_translation = {
     SENT_NOTHING: "Non puoi inviare \'niente\'!", //You can\'t send \'nothing\'!
     MORE_THEN_8_DECIMALS: 'limite di 8 decimali superato', //8 decimal limit exceeded
     SAVE_WALLET_PLEASE:
-        '<b>Salva il tuo portafoglio!</b><br>Dashboard ➜ Proteggi il tuo portafoglio', //<b>Save your wallet!</b><br>Dashboard ➜ Secure your wallet
+        '<b>Salva il tuo wallet!</b><br>Dashboard ➜ Proteggi il tuo wallet', //<b>Save your wallet!</b><br>Dashboard ➜ Secure your wallet
     BACKUP_OR_ENCRYPT_WALLET:
-        'Ti preghiamo di crittografare e/o eseguire il backup delle tue chiavi prima di partire, altrimenti potresti perderle!', //Please ENCRYPT and/or BACKUP your keys before leaving, or you may lose them!
+        'Ti preghiamo di crittografare e/o eseguire il backup delle tue chiavi prima di chiudere, altrimenti potresti perderle!', //Please ENCRYPT and/or BACKUP your keys before leaving, or you may lose them!
     NO_CAMERAS: "Questo dispositivo non ha una fotocamera!", //This device has no camera!
     STAKING_LEDGER_NO_SUPPORT: "Il Ledger non è supportato per il Cold Staking", //Ledger is not supported for Cold Staking
     CONNECTION_FAILED:
@@ -379,19 +379,19 @@ export const it_translation = {
     SWITCHED_SYNC:
         "<b>Modalità di sincronizzazione cambiata!</b><br>Ora stai utilizzando la sincronizzazione {sync}", //<b>Switched sync mode!</b><br>Now using {sync} sync
     UNABLE_SWITCH_TESTNET:
-        "<b>Impossibile cambiare la modalità Testnet!</b><br>Un portafoglio è già caricato", //<b>Unable to switch Testnet Mode!</b><br>A wallet is already loaded
+        "<b>Impossibile cambiare la modalità Testnet!</b><br>Un wallet è già caricato", //<b>Unable to switch Testnet Mode!</b><br>A wallet is already loaded
 
     WALLET_OFFLINE_AUTOMATIC:
         '<b>La modalità offline è attiva!</b><br>Disattiva la modalità offline per le transazioni automatiche', //<b>Offline Mode is active!</b><br>Please disable Offline Mode for automatic transactions
     WALLET_UNLOCK_IMPORT:
-        "Per favore, {unlock} il tuo portafoglio prima di compiere transazioni di invio!", //Please {unlock} your wallet before sending transactions!
+        "Per favore, {unlock} il tuo wallet prima di compiere transazioni di invio!", //Please {unlock} your wallet before sending transactions!
     WALLET_FIREFOX_UNSUPPORTED:
         '<b>Firefox non lo supporta!</b><br>, Firefox sfortunatamnete non supporta portafogli hardware ', //<b>Firefox doesn't support this!</b><br>Unfortunately, Firefox does not support hardware wallets
     WALLET_HARDWARE_WALLET:
-        "<b>Portafoglio hardware pronto!</b><br>Tieni il tuo {hardwareWallet} collegato, sbloccato e nell'app PIVX", //<b>Hardware wallet ready!</b><br>Please keep your {hardwareWallet} plugged in, unlocked, and in the PIVX app
+        "<b>Wallet hardware pronto!</b><br>Tieni il tuo {hardwareWallet} collegato, sbloccato e nell'app PIVX", //<b>Hardware wallet ready!</b><br>Please keep your {hardwareWallet} plugged in, unlocked, and in the PIVX app
     WALLET_CONFIRM_L: "Conferma l'importo sulla tua Ledger", //Confirm the import on your Ledger
     WALLET_NO_HARDWARE:
-        "<b>Nessun dispositivo disponibile</b><br>Impossibile trovare un portafoglio hardware; per favore collegalo e sbloccalo!", //<b>No device available</b><br>Couldn't find a hardware wallet; please plug it in and unlock!
+        "<b>Nessun dispositivo disponibile</b><br>Impossibile trovare un wallet hardware; per favore collegalo e sbloccalo!", //<b>No device available</b><br>Couldn't find a hardware wallet; please plug it in and unlock!
     WALLET_HARDWARE_CONNECTION_LOST:
         "<b>Connessione a {hardwareWallet} persa </b><br>Sembra che {hardwareWalletProductionName} sia stato scollegato durante l'operazione, ops!", //<b>Lost connection to {hardwareWallet} </b><br>It seems the {hardwareWalletProductionName} was unplugged mid-operation, oops!
     WALLET_HARDWARE_BUSY:
