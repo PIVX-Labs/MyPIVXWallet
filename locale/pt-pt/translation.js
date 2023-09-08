@@ -73,8 +73,10 @@ export const pt_pt_translation = {
     importSeedValid: 'A frase-semente é válida!', //Seed Phrase is valid!
     importSeedError: 'A frase-semente é válida!', //Seed Phrase is invalid!
     importSeedErrorSize: 'Uma frase-semente deve ter 12 ou 24 palavras!', //A Seed Phrase should be 12 or 24 words long!
-    importSeedErrorTypo: 'A frase-semente contém erros de digitação! Verifique cuidadosamente a sua introdução', //Seed Phrase contains typing errors! Check your input carefully
-    importSeedErrorSkip: 'A frase-semente parece inválida, mas o aviso foi ignorado pelo utilizador', //Seed Phrase appears invalid, but the warning was skipped by the user
+    importSeedErrorTypo:
+        'A frase-semente contém erros de digitação! Verifique cuidadosamente a sua introdução', //Seed Phrase contains typing errors! Check your input carefully
+    importSeedErrorSkip:
+        'A frase-semente parece inválida, mas o aviso foi ignorado pelo utilizador', //Seed Phrase appears invalid, but the warning was skipped by the user
 
     // Wallet Dashboard
     gettingStarted: 'A Começar', //Getting Started
@@ -113,11 +115,14 @@ export const pt_pt_translation = {
     back: 'Voltar', //Back
     chooseAContact: 'Escolha um contacto', //Choose a Contact
     createContact: 'Criar contacto', //Create Contact
-    encryptFirstForContacts: 'Depois de clicar no "{button}" no Painel de Controlo, pode criar um Contacto para facilitar a receção de PIV!', //Once you hit "{button}" in the Dashboard, you can create a Contact to make receiving PIV easier!
+    encryptFirstForContacts:
+        'Depois de clicar no "{button}" no Painel de Controlo, pode criar um Contacto para facilitar a receção de PIV!', //Once you hit "{button}" in the Dashboard, you can create a Contact to make receiving PIV easier!
     shareContactURL: 'Partilhar URL de contacto', //Share Contact URL
     setupYourContact: 'Configurar o seu contacto', //Setup your Contact
-    receiveWithContact: 'Receber através de um simples contacto baseado no nome de utilizador', //Receive using a simple username-based Contact
-    onlyShareContactPrivately: '<b>Só</b> partilhe o seu contacto com pessoas de confiança (família, amigos)', //<b>Only</b> share your Contact with trusted people (family, friends)
+    receiveWithContact:
+        'Receber através de um simples contacto baseado no nome de utilizador', //Receive using a simple username-based Contact
+    onlyShareContactPrivately:
+        '<b>Só</b> partilhe o seu contacto com pessoas de confiança (família, amigos)', //<b>Only</b> share your Contact with trusted people (family, friends)
 
     /* Context: The "Change to" is used in-app with one of the Three options below it, i.e: "Change to Contact" */
     changeTo: 'Alterar para', //Change to
@@ -125,15 +130,19 @@ export const pt_pt_translation = {
     xpub: ' XPub', //XPub
 
     addContactTitle: 'Adicionar {strName} aos contactos', //Add {strName} to Contacts
-    addContactSubtext: 'Uma vez adicionado, será capaz de enviar transacções para {strName} pelo seu nome (quer digitando, quer clicando), sem mais endereços, fácil e agradável.', //Once added you\'ll be able to send transactions to {strName} by their name (either typing, or clicking), no more addresses, nice \'n easy.
-    addContactWarning: 'Certifica-te de que este é o verdadeiro "{strName}", não aceites pedidos de contacto de fontes desconhecidas!', //Ensure that this is the real "{strName}", do not accept Contact requests from unknown sources!
+    addContactSubtext:
+        'Uma vez adicionado, será capaz de enviar transacções para {strName} pelo seu nome (quer digitando, quer clicando), sem mais endereços, fácil e agradável.', //Once added you\'ll be able to send transactions to {strName} by their name (either typing, or clicking), no more addresses, nice \'n easy.
+    addContactWarning:
+        'Certifica-te de que este é o verdadeiro "{strName}", não aceites pedidos de contacto de fontes desconhecidas!', //Ensure that this is the real "{strName}", do not accept Contact requests from unknown sources!
 
     editContactTitle: 'Alterar "{strName}" Contacto', //Change "{strName}" Contact
     newName: 'Novo nome', //New Name
 
     removeContactTitle: 'Remover {strName}?', //Remove {strName}?
-    removeContactSubtext: 'Tem a certeza de que pretende remover {strName} dos seus Contactos?', //Are you sure you wish to remove {strName} from your Contacts?
-    removeContactNote: 'Pode voltar a adicioná-los em qualquer altura no futuro.', //You can add them again any time in the future.
+    removeContactSubtext:
+        'Tem a certeza de que pretende remover {strName} dos seus Contactos?', //Are you sure you wish to remove {strName} from your Contacts?
+    removeContactNote:
+        'Pode voltar a adicioná-los em qualquer altura no futuro.', //You can add them again any time in the future.
 
     // Export
     privateKey: 'Chave privada', //Private Key
@@ -190,12 +199,14 @@ export const pt_pt_translation = {
     settingsToggleDebug: 'Modo de depuração', //Debug Mode
     settingsToggleTestnet: 'Modo Testnet', //Testnet Mode
     settingsToggleAdvancedMode: 'Modo avançado', //Advanced Mode
-    settingsToggleAdvancedModeSubtext: 'Isto desbloqueia uma funcionalidade e personalização mais profundas, mas pode ser demasiado complicado e potencialmente perigoso para utilizadores inexperientes!', //This unlocks deeper functionality and customisation, but may be overwhelming and potentially dangerous for unexperienced users!
+    settingsToggleAdvancedModeSubtext:
+        'Isto desbloqueia uma funcionalidade e personalização mais profundas, mas pode ser demasiado complicado e potencialmente perigoso para utilizadores inexperientes!', //This unlocks deeper functionality and customisation, but may be overwhelming and potentially dangerous for unexperienced users!
 
     // Network switching (mainnet <---> testnet)
     netSwitchUnsavedWarningTitle: 'A tua carteira não está guardada!', //Your {network} wallet isn\'t saved!
     netSwitchUnsavedWarningSubtitle: 'A tua carteira não está guardada!', //Your {network} account is at risk!
-    netSwitchUnsavedWarningSubtext: 'Se mudares para {network} antes de a guardares, perdes a conta!', //If you switch to {network} before saving it, you\'ll lose the account!
+    netSwitchUnsavedWarningSubtext:
+        'Se mudares para {network} antes de a guardares, perdes a conta!', //If you switch to {network} before saving it, you\'ll lose the account!
     netSwitchUnsavedWarningConfirmation: 'Tens mesmo a certeza?', //Are you really sure?
 
     // Transparency Report
@@ -364,16 +375,23 @@ export const pt_pt_translation = {
     MN_CANT_CONNECT: 'Não é possível conectar ao nó RPC!', //Unable to connect to RPC node!
 
     /* Contacts System Alerts */
-    CONTACTS_ENCRYPT_FIRST: ' É necessário carregar em "{button}" antes de poder utilizar Contactos!', //You need to hit "{button}" before you can use Contacts!
+    CONTACTS_ENCRYPT_FIRST:
+        ' É necessário carregar em "{button}" antes de poder utilizar Contactos!', //You need to hit "{button}" before you can use Contacts!
     CONTACTS_NAME_REQUIRED: '/É necessário um nome!', //A name is required!
     CONTACTS_NAME_TOO_LONG: 'Esse nome é demasiado longo!', //That name is too long!
-    CONTACTS_CANNOT_ADD_YOURSELF: 'Não se pode adicionar a si próprio como contacto!', //You cannot add yourself as a Contact!
-    CONTACTS_ALREADY_EXISTS: ' O contacto já existe!</b><br>Já guardou este contacto', //<b>Contact already exists!</b><br>You already saved this contact
-    CONTACTS_NAME_ALREADY_EXISTS: '//<b>O nome do contacto já existe!</b><br>Pode tratar-se de uma tentativa de phishing. Cuidado!', //<b>Contact name already exists!</b><br>This could potentially be a phishing attempt, beware!
-    CONTACTS_EDIT_NAME_ALREADY_EXISTS: '//<b>O contacto já existe!</b><br>Já existe um contacto com o nome "{strNewName}"!', //<b>Contact already exists!</b><br>A contact is already called "{strNewName}"!
-    CONTACTS_KEY_ALREADY_EXISTS: ' //<b>O contacto já existe, mas com um nome diferente!</b><br>Tem {newName} guardado como <b>{oldName}</b> nos seus contactos', //<b>Contact already exists, but under a different name!</b><br>You have {newName} saved as <b>{oldName}</b> in your contacts
+    CONTACTS_CANNOT_ADD_YOURSELF:
+        'Não se pode adicionar a si próprio como contacto!', //You cannot add yourself as a Contact!
+    CONTACTS_ALREADY_EXISTS:
+        ' O contacto já existe!</b><br>Já guardou este contacto', //<b>Contact already exists!</b><br>You already saved this contact
+    CONTACTS_NAME_ALREADY_EXISTS:
+        '//<b>O nome do contacto já existe!</b><br>Pode tratar-se de uma tentativa de phishing. Cuidado!', //<b>Contact name already exists!</b><br>This could potentially be a phishing attempt, beware!
+    CONTACTS_EDIT_NAME_ALREADY_EXISTS:
+        '//<b>O contacto já existe!</b><br>Já existe um contacto com o nome "{strNewName}"!', //<b>Contact already exists!</b><br>A contact is already called "{strNewName}"!
+    CONTACTS_KEY_ALREADY_EXISTS:
+        ' //<b>O contacto já existe, mas com um nome diferente!</b><br>Tem {newName} guardado como <b>{oldName}</b> nos seus contactos', //<b>Contact already exists, but under a different name!</b><br>You have {newName} saved as <b>{oldName}</b> in your contacts
     CONTACTS_NOT_A_CONTACT_QR: 'Isto não é um QR de contacto!', //This isn\'t a Contact QR!
-    CONTACTS_ADDED: '//<b>Novo contacto adicionado!</b><br>{strName} foi adicionado, viva!', //<b>New Contact added!</b><br>{strName} has been added, hurray!
+    CONTACTS_ADDED:
+        '//<b>Novo contacto adicionado!</b><br>{strName} foi adicionado, viva!', //<b>New Contact added!</b><br>{strName} has been added, hurray!
     CONTACTS_YOU_HAVE_NONE: ' Não tem contactos!', //You have no contacts!
 
     PROPOSAL_FINALISED: 'Proposta finalizada!', //Proposal finalized!

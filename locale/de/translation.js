@@ -66,16 +66,20 @@ export const de_translation = {
     doNotShareWarning:
         'Jeder mit einer Kopie der Phrase hat Zugriff auf <b>deine Brieftasche</b>.', //Anyone with a copy of it can access <b>all</b> of your funds.
     doNotShare: 'Teile Sie unter keinen Umständen mit dritten.', //Do NOT share it with anybody.
-    digitalStoreNotAdvised: 'Es wird empfohlen diese <b>nicht</b> digital zu sichern', //It is <b>NOT</b> advised to store this digitally.
+    digitalStoreNotAdvised:
+        'Es wird empfohlen diese <b>nicht</b> digital zu sichern', //It is <b>NOT</b> advised to store this digitally.
     optionalPassphrase: 'Optionale Pass Phrase (BIP39)', //Optional Passphrase (BIP39)
     writtenDown: 'Ich bestätige, dass ich die Seed Phrase notiert habe', //I have written down my seed phrase
 
     // Seed Phrase Import
     importSeedValid: 'Seed Phrase ist gültig!', //Seed Phrase is valid!
     importSeedError: 'Seed Phrase ist ungültig!', //Seed Phrase is invalid!
-    importSeedErrorSize: 'Eine Seed Phrase sollte zwischen 12 und 24 Zeichen lang sein!', //A Seed Phrase should be 12 or 24 words long!
-    importSeedErrorTypo: 'Die Seed Phrase enthält fehlerhafte Eingaben! Überprüfe deine Eingaben sorgfältig', //Seed Phrase contains typing errors! Check your input carefully
-    importSeedErrorSkip: 'Die Seed Phrase erscheint ungültig, die Warnung wurde durch den Benutzer übergangen.', //Seed Phrase appears invalid, but the warning was skipped by the user
+    importSeedErrorSize:
+        'Eine Seed Phrase sollte zwischen 12 und 24 Zeichen lang sein!', //A Seed Phrase should be 12 or 24 words long!
+    importSeedErrorTypo:
+        'Die Seed Phrase enthält fehlerhafte Eingaben! Überprüfe deine Eingaben sorgfältig', //Seed Phrase contains typing errors! Check your input carefully
+    importSeedErrorSkip:
+        'Die Seed Phrase erscheint ungültig, die Warnung wurde durch den Benutzer übergangen.', //Seed Phrase appears invalid, but the warning was skipped by the user
 
     // Wallet Dashboard
     gettingStarted: 'Erste Schritte', //Getting Started
@@ -114,11 +118,13 @@ export const de_translation = {
     back: 'Zurück', //Back
     chooseAContact: 'Wähle einen Kontakt', //Choose a Contact
     createContact: 'Erstelle einen Kontakt', //Create Contact
-    encryptFirstForContacts: 'Nachdem du auf "{button}" in der Übersicht gedrückt hast, kannst du Kontakte erstellen um das Senden und Empfangen von PIV einfacher zu machen.', //Once you hit "{button}" in the Dashboard, you can create a Contact to make receiving PIV easier!
+    encryptFirstForContacts:
+        'Nachdem du auf "{button}" in der Übersicht gedrückt hast, kannst du Kontakte erstellen um das Senden und Empfangen von PIV einfacher zu machen.', //Once you hit "{button}" in the Dashboard, you can create a Contact to make receiving PIV easier!
     shareContactURL: 'Teile deine Kontakt-URL', //Share Contact URL
     setupYourContact: 'Erstelle deinen Kontakt', //Setup your Contact
     receiveWithContact: 'Empfangen mittels einfachen Benutzernamens', //Receive using a simple username-based Contact
-    onlyShareContactPrivately: 'Teile deine Kontakte nur mit <b>vertrauenswürdigen Personen</b> (Familie, Freunde)', //<b>Only</b> share your Contact with trusted people (family, friends)
+    onlyShareContactPrivately:
+        'Teile deine Kontakte nur mit <b>vertrauenswürdigen Personen</b> (Familie, Freunde)', //<b>Only</b> share your Contact with trusted people (family, friends)
 
     /* Context: The "Change to" is used in-app with one of the Three options below it, i.e: "Change to Contact" */
     changeTo: 'Ändere zu', //Change to
@@ -126,15 +132,19 @@ export const de_translation = {
     xpub: 'XPub', //XPub
 
     addContactTitle: 'Füge {strName} zu Kontakten zu', //Add {strName} to Contacts
-    addContactSubtext: 'Einmal hinzugefügt kannst du Transaktionen zu {strName} über den Kontakt (eingeben oder anklicken) erledigen. Keine komplexen Adressen mehr - einfach einfach!', //Once added you\'ll be able to send transactions to {strName} by their name (either typing, or clicking), no more addresses, nice \'n easy.
-    addContactWarning: 'Bitte prüfe ob die Exhtheit von "{strName}". Niemals Kontakt-Anfragen von unbekannten annehmen!', //Ensure that this is the real "{strName}", do not accept Contact requests from unknown sources!
+    addContactSubtext:
+        'Einmal hinzugefügt kannst du Transaktionen zu {strName} über den Kontakt (eingeben oder anklicken) erledigen. Keine komplexen Adressen mehr - einfach einfach!', //Once added you\'ll be able to send transactions to {strName} by their name (either typing, or clicking), no more addresses, nice \'n easy.
+    addContactWarning:
+        'Bitte prüfe ob die Exhtheit von "{strName}". Niemals Kontakt-Anfragen von unbekannten annehmen!', //Ensure that this is the real "{strName}", do not accept Contact requests from unknown sources!
 
     editContactTitle: 'Ändere Kontakt "{strName}"', //Change "{strName}" Contact
     newName: 'Neuer Name', //New Name
 
     removeContactTitle: 'Entferne {strName}?', //Remove {strName}?
-    removeContactSubtext: 'Willst du wirklich {strName} aus deinen Kontakten entfernen?', //Are you sure you wish to remove {strName} from your Contacts?
-    removeContactNote: 'Du kannst den Kontakt später zu jeder Zeit wieder hinzufügen.', //You can add them again any time in the future.
+    removeContactSubtext:
+        'Willst du wirklich {strName} aus deinen Kontakten entfernen?', //Are you sure you wish to remove {strName} from your Contacts?
+    removeContactNote:
+        'Du kannst den Kontakt später zu jeder Zeit wieder hinzufügen.', //You can add them again any time in the future.
 
     // Export
     privateKey: 'Privater Schlüssel', //Private Key
@@ -190,7 +200,8 @@ export const de_translation = {
     settingsToggleDebug: 'Debug Modus', //Debug Mode
     settingsToggleTestnet: 'Testnet Modus', //Testnet Mode
     settingsToggleAdvancedMode: 'Erweiterte Ansicht', //Advanced Mode
-    settingsToggleAdvancedModeSubtext: 'Dies aktiviert tiefere Funktionen und Anpassungen, welche für unerfahrene Nutzer potentiell gefährlich sein können.', //This unlocks deeper functionality and customisation, but may be overwhelming and potentially dangerous for unexperienced users!
+    settingsToggleAdvancedModeSubtext:
+        'Dies aktiviert tiefere Funktionen und Anpassungen, welche für unerfahrene Nutzer potentiell gefährlich sein können.', //This unlocks deeper functionality and customisation, but may be overwhelming and potentially dangerous for unexperienced users!
 
     // Transparency Report
     transparencyReport: 'Transparenz-Bericht', //Transparency Report
@@ -364,16 +375,23 @@ export const de_translation = {
     MN_CANT_CONNECT: 'Keine Verbindung zum RPC-Knoten möglich!', //Unable to connect to RPC node!
 
     /* Contacts System Alerts */
-    CONTACTS_ENCRYPT_FIRST: 'Du musst erst "{button}" drücken bevor du Kontakt hinzufügen kannst!', //You need to hit "{button}" before you can use Contacts!
+    CONTACTS_ENCRYPT_FIRST:
+        'Du musst erst "{button}" drücken bevor du Kontakt hinzufügen kannst!', //You need to hit "{button}" before you can use Contacts!
     CONTACTS_NAME_REQUIRED: 'Ein Name ist bnötigt!', //A name is required!
     CONTACTS_NAME_TOO_LONG: 'Der Name ist zu lang!', //That name is too long!
-    CONTACTS_CANNOT_ADD_YOURSELF: 'Du kannst dich nicht selbst als Kontakt hinzufügen!', //You cannot add yourself as a Contact!
-    CONTACTS_ALREADY_EXISTS: '<b>Kontakt existiert bereits!</b><br>Er ist bereits gespeichert', //<b>Contact already exists!</b><br>You already saved this contact
-    CONTACTS_NAME_ALREADY_EXISTS: '<b>Ein Kontakt mit diesem Namen existiert bereits!</b>Dies könnte ein Phishing-Versuch sein, sei Vorsichtig!', //<b>Contact name already exists!</b><br>This could potentially be a phishing attempt, beware!
-    CONTACTS_EDIT_NAME_ALREADY_EXISTS: '<b>Der Kontakt existiert bereits!</b><br>Ein Kontakt heißt bereits "{strNewName}"!', //<b>Contact already exists!</b><br>A contact is already called "{strNewName}"!
-    CONTACTS_KEY_ALREADY_EXISTS: '<b>Der Kontakt existiert bereits, aber unter einem anderen Namen!</b><br>{newName} existiert bereits als <b>{oldName}</b>.', //<b>Contact already exists, but under a different name!</b><br>You have {newName} saved as <b>{oldName}</b> in your contacts
+    CONTACTS_CANNOT_ADD_YOURSELF:
+        'Du kannst dich nicht selbst als Kontakt hinzufügen!', //You cannot add yourself as a Contact!
+    CONTACTS_ALREADY_EXISTS:
+        '<b>Kontakt existiert bereits!</b><br>Er ist bereits gespeichert', //<b>Contact already exists!</b><br>You already saved this contact
+    CONTACTS_NAME_ALREADY_EXISTS:
+        '<b>Ein Kontakt mit diesem Namen existiert bereits!</b>Dies könnte ein Phishing-Versuch sein, sei Vorsichtig!', //<b>Contact name already exists!</b><br>This could potentially be a phishing attempt, beware!
+    CONTACTS_EDIT_NAME_ALREADY_EXISTS:
+        '<b>Der Kontakt existiert bereits!</b><br>Ein Kontakt heißt bereits "{strNewName}"!', //<b>Contact already exists!</b><br>A contact is already called "{strNewName}"!
+    CONTACTS_KEY_ALREADY_EXISTS:
+        '<b>Der Kontakt existiert bereits, aber unter einem anderen Namen!</b><br>{newName} existiert bereits als <b>{oldName}</b>.', //<b>Contact already exists, but under a different name!</b><br>You have {newName} saved as <b>{oldName}</b> in your contacts
     CONTACTS_NOT_A_CONTACT_QR: 'Dies ist kein Kontakt-QR Code!', //This isn\'t a Contact QR!
-    CONTACTS_ADDED: '<b>Neuer Kontakt hinzugefügt!</b><br>{strName} ist jetzt einer deiner Kontakte, Juhuu!', //<b>New Contact added!</b><br>{strName} has been added, hurray!
+    CONTACTS_ADDED:
+        '<b>Neuer Kontakt hinzugefügt!</b><br>{strName} ist jetzt einer deiner Kontakte, Juhuu!', //<b>New Contact added!</b><br>{strName} has been added, hurray!
     CONTACTS_YOU_HAVE_NONE: 'Du hast noch keine Kontakte!', //You have no contacts!
 
     PROPOSAL_FINALISED: 'Antrag finalisiert!', //Proposal finalized!
