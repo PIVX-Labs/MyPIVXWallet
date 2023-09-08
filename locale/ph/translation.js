@@ -110,7 +110,7 @@ export const ph_translation = {
     send: 'Ipadala', //Send
 
     // Contacts System
-    receive: 'Tanggapin', //Receive
+    receive: 'Tumanggap', //Receive
     contacts: 'Mga Contact', //Contacts
     name: 'Pangalan', //Name
     username: 'Username', //Username
@@ -132,16 +132,16 @@ export const ph_translation = {
     contact: 'Contact', //Contact
     xpub: 'XPub', //XPub
 
-    addContactTitle: 'Idagdag {strName} sa mga Contact', //Add {strName} to Contacts
+    addContactTitle: 'Idagdag si {strName} sa mga Contact', //Add {strName} to Contacts
     addContactSubtext:
-        'Kapag naidagdag na maaari ka ng makapag padala ng transaksyon sa {strName} kanilang pangalan (kahit alin sa pagta-type o pag click), wala nang mga address, maganda at madali. ', //Once added you\'ll be able to send transactions to {strName} by their name (either typing, or clicking), no more addresses, nice \'n easy.
+        'Kapag naidagdag na, maaari ka ng makapag padala ng transaksyon sa {strName} sa pamamagitan ng kanilang pangalan (kahit alin sa pagta-type o pag-click), wala nang mga address, maganda at madali. ', //Once added you\'ll be able to send transactions to {strName} by their name (either typing, or clicking), no more addresses, nice \'n easy.
     addContactWarning:
         'Siguraduhin na ito ay tunay na "{strName}", Wag tumanggap ng mga Contact request galing sa mga hindi kilalang pinagmulan! ', //Ensure that this is the real "{strName}", do not accept Contact requests from unknown sources!
 
     editContactTitle: 'Baguhin ang "{strName}" Contact', //Change "{strName}" Contact
     newName: 'Bagong Pangalan', //New Name
 
-    removeContactTitle: 'Tanggalin {strName}?', //Remove {strName}?
+    removeContactTitle: 'Tanggalin si {strName}?', //Remove {strName}?
     removeContactSubtext:
         'Sigurado na ba ang hiling mo na tanggalin si {strName} sa iyong mga Contact?', //Are you sure you wish to remove {strName} from your Contacts?
     removeContactNote:
@@ -196,7 +196,7 @@ export const ph_translation = {
     settingsExplorer: 'Pumili ng explorer:', //Choose an explorer:
     settingsLanguage: 'Pumili ng Wika:', //Choose a Language:
     settingsPivxNode: 'Pumili ng PIVX node:', //Choose a PIVX node:
-    settingsAutoSelectNet: 'Automatikong pagpili ng Explorers and Nodes', //Auto-select Explorers and Nodes
+    settingsAutoSelectNet: 'Automatikong pagpili ng Explorers at Nodes', //Auto-select Explorers and Nodes
     settingsAnalytics: 'Pumili ng iyong analytics contribution level:', //Choose your analytics contribution level:
     settingsToggleDebug: 'Debug Mode', //Debug Mode
     settingsToggleTestnet: 'Testnet Mode', //Testnet Mode
@@ -294,7 +294,7 @@ export const ph_translation = {
     proposalNetYes: 'Net Yes', //Net Yes
     popupConfirm: 'Kumpirmahin', //Confirm
     popupClose: 'Isara', //Close
-    popupCancel: 'I-cancel', //Cancel
+    popupCancel: 'Kanselahin', //Cancel
     chartPublicAvailable: 'Public Available', //Public Available
     timeDays: 'Mga araw', //Days
     timeHours: 'Mga oras', //Hours
