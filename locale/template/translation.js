@@ -285,7 +285,7 @@ var translation = {
     unhandledException: '', //Unhandled exception.
 
     // Alerts
-    ALERTS: '<-- DO NOT EDIT! All below entries are for Alert Popups',
+    ALERTS: '<-- DO NOT EDIT THIS LINE! All below entries are for Alert Popups',
 
     INTERNAL_ERROR: '', //Internal error, please try again later
     FAILED_TO_IMPORT: '', //<b>Failed to import!</b> Invalid password

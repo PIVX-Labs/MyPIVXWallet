@@ -297,7 +297,7 @@ export const pt_br_translation = {
     unhandledException: 'Exceção não tratada', //Unhandled exception.
 
     // Alerts
-    ALERTS: '<-- DO NOT EDIT! All below entries are for Alert Popups',
+    ALERTS: '<-- DO NOT EDIT THIS LINE! All below entries are for Alert Popups',
 
     INTERNAL_ERROR: 'Erro interno, por favor tente novamente mais tarde', //Internal error, please try again later
     FAILED_TO_IMPORT: '<b>Falha ao importar!</b> Senha inválida', //<b>Failed to import!</b> Invalid password

@@ -301,7 +301,7 @@ export const fr_translation = {
     unhandledException: 'Exception non traitée.', //Unhandled exception.
 
     // Alerts
-    ALERTS: '<-- DO NOT EDIT! All below entries are for Alert Popups',
+    ALERTS: '<-- DO NOT EDIT THIS LINE! All below entries are for Alert Popups',
 
     INTERNAL_ERROR: 'Erreur interne, veuillez réessayer plus tard', //Internal error, please try again later
     FAILED_TO_IMPORT: "<b>Échec de l'importation !</b> Mot de passe invalide", //<b>Failed to import!</b> Invalid password

@@ -294,7 +294,7 @@ export const de_translation = {
     unhandledException: 'Unerwarteter Sonderfall', //Unhandled exception.
 
     // Alerts
-    ALERTS: '<-- DO NOT EDIT! All below entries are for Alert Popups',
+    ALERTS: '<-- DO NOT EDIT THIS LINE! All below entries are for Alert Popups',
 
     INTERNAL_ERROR: 'Interner Fehler, bitte versuche es später erneut', //Internal error, please try again later
     FAILED_TO_IMPORT: '<b>Import fehlgeschlagen!</b> Falsches Passwort', //<b>Failed to import!</b> Invalid password
