@@ -2,6 +2,7 @@ export const fr_translation = {
     // Les balises HTML de base sont autorisées, comme <b><i>, etc. Toutes les données sont nettoyées https://developer.mozilla.org/fr/docs/Web/API/Element/innerHTML
 
     // NOTA: Si une section n'a PAS besoin d'être traduite, laissez-la vide..
+    // NOTE : Les variables que MPW insère sont indiquées par des accolades {}, par exemple, {button}, NE traduisez PAS les variables, mais placez-les là où cela a le plus de sens.
 
     // General words
     amount: 'Montant', //Amount
