@@ -182,7 +182,7 @@ export const pt_br_translation = {
     // Settings
     settingsCurrency: 'Escolha uma moeda de exibição:', //Choose a display currency:
     priceProvidedBy: 'Dados de preço fornecidos por', //Price data provided by
-    settingsDecimals: 'Decimais do saldo', //Balance Decimals:
+    settingsDecimals: 'Decimais do saldo:', //Balance Decimals:
     settingsExplorer: 'Escolha um explorador:', //Choose an explorer:
     settingsLanguage: 'Escolha um Idioma:', //Choose a Language:
     settingsPivxNode: 'Escolha um node PIVX:', //Choose a PIVX node:
