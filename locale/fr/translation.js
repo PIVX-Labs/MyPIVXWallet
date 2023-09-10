@@ -2,6 +2,7 @@ export const fr_translation = {
     // Les balises HTML de base sont autorisées, comme <b><i>, etc. Toutes les données sont nettoyées https://developer.mozilla.org/fr/docs/Web/API/Element/innerHTML
 
     // NOTA: Si une section n'a PAS besoin d'être traduite, laissez-la vide..
+    // NOTE : Les variables que MPW insère sont indiquées par des accolades {}, par exemple, {button}, NE traduisez PAS les variables, mais placez-les là où cela a le plus de sens.
 
     // General words
     amount: 'Montant', //Amount
@@ -13,14 +14,14 @@ export const fr_translation = {
     no: 'Non', //No
 
     // Nav Bar
-    navDashboard: 'Tableau de bBord', //Dashboard
+    navDashboard: 'Tableau de Bord', //Dashboard
     navStake: 'Stake', //Stake
     navMasternode: 'Masternode', //Masternode
     navGovernance: 'Gouvernance', //Governance
-    navSettings: 'Configurations', //Settings
+    navSettings: 'Paramètres', //Settings
 
     // Footer
-    footerBuiltWithPivxLabs: 'Construit avec 💜 par PIVX Labs FR 🇫🇷', //Built with 💜 by PIVX Labs
+    footerBuiltWithPivxLabs: 'Construit avec 💜 par PIVX Labs 🇫🇷', //Built with 💜 by PIVX Labs
 
     // Intro
     loading: 'Chargement', //Loading
@@ -54,8 +55,8 @@ export const fr_translation = {
     dCardFourButtonA: 'Accéder à mon portefeuille', //Access My Wallet
 
     // Vanity Creation
-    vanityPrefixNote: '', //Note: addresses will always start with:
-    vanityPrefixInput: '', //Address Prefix
+    vanityPrefixNote: 'Remarque : les adresses commencent toujours par :', //Note: addresses will always start with:
+    vanityPrefixInput: 'Adresse Préfixe', //Address Prefix
 
     // Seed Phrase Creation
     thisIsYourSeed: "Voici votre phrase d'introduction:", //This is your seed phrase:
@@ -70,11 +71,13 @@ export const fr_translation = {
     writtenDown: "J'ai écrit ma phrase d'introduction", //I have written down my seed phrase
 
     // Seed Phrase Import
-    importSeedValid: '', //Seed Phrase is valid!
-    importSeedError: '', //Seed Phrase is invalid!
-    importSeedErrorSize: '', //A Seed Phrase should be 12 or 24 words long!
-    importSeedErrorTypo: '', //Seed Phrase contains typing errors! Check your input carefully
-    importSeedErrorSkip: '', //Seed Phrase appears invalid, but the warning was skipped by the user
+    importSeedValid: 'La phrase source est valide !', //Seed Phrase is valid!
+    importSeedError: "La phrase source n'est pas valide !", //Seed Phrase is invalid!
+    importSeedErrorSize: 'Une phrase clé doit comporter entre 12 et 24 mots !', //A Seed Phrase should be 12 or 24 words long!
+    importSeedErrorTypo:
+        'Seed Phrase contient des fautes de frappe ! Vérifiez soigneusement votre saisie', //Seed Phrase contains typing errors! Check your input carefully
+    importSeedErrorSkip:
+        "La phrase de semence semble invalide, mais l'utilisateur n'a pas tenu compte de l'avertissement.", //Seed Phrase appears invalid, but the warning was skipped by the user
 
     // Wallet Dashboard
     gettingStarted: 'Démarrer', //Getting Started
@@ -84,56 +87,62 @@ export const fr_translation = {
 
     // Encrypt wallet
     encryptWallet: 'Cryptage du portefeuille', //Encrypt wallet
-    encryptPasswordCurrent: '', //Current Password
+    encryptPasswordCurrent: 'Mot de passe actuel', //Current Password
     encryptPasswordFirst: 'Entrer le mot de passe', //Enter Password
     encryptPasswordSecond: 'Réintroduire le mot de passe', //Re-enter Password
     encrypt: 'Crypter', //Encrypt
-    changePassword: '', //Change Password
+    changePassword: 'Changer le mot de passe', //Change Password
 
     // Wallet Dashboard Sub-menu
     balanceBreakdown: 'Composition de la balance', //Balance Breakdown
     viewOnExplorer: "Voir dans l'explorateur", //View on Explorer
     export: 'Exporter', //Export
-    refreshAddress: "Mise à jour de l'adresse", //Refresh address
-    redeemOrCreateCode: 'Remplacer ou créer un code', //Redeem or Create Code
+    refreshAddress: "Mise à jour de l'Adresse", //Refresh address
+    redeemOrCreateCode: 'Ouvrir ou Créer un Code', //Redeem or Create Code
 
     // Send
     address: 'Adresse', //Address
     receivingAddress: 'Adresse de réception', //Receiving address
-    sendAmountCoinsMax: 'Maximum', //MAX
+    sendAmountCoinsMax: 'Max', //MAX
     paymentRequestMessage: "Description (de l'opérateur)", //Description (from the merchant)
     send: 'Envoyer', //Send
 
     // Contacts System
-    receive: '', //Receive
-    contacts: '', //Contacts
-    name: '', //Name
-    username: '', //Username
-    addressOrXPub: '', //Address or XPub
-    back: '', //Back
-    chooseAContact: '', //Choose a Contact
-    createContact: '', //Create Contact
-    encryptFirstForContacts: '', //Once you hit "{button}" in the Dashboard, you can create a Contact to make receiving PIV easier!
-    shareContactURL: '', //Share Contact URL
-    setupYourContact: '', //Setup your Contact
-    receiveWithContact: '', //Receive using a simple username-based Contact
-    onlyShareContactPrivately: '', //<b>Only</b> share your Contact with trusted people (family, friends)
+    receive: 'Recevoir', //Receive
+    contacts: 'Contacts', //Contacts
+    name: 'Nom', //Name
+    username: "Nom d'utilisateur", //Username
+    addressOrXPub: 'Adresse ou XPub', //Address or XPub
+    back: 'Retour', //Back
+    chooseAContact: 'Sélectionner un contact', //Choose a Contact
+    createContact: "Création d'un contact", //Create Contact
+    encryptFirstForContacts:
+        'Une fois que vous avez touché "{button}" dans le tableau de bord, vous pouvez créer un contact pour faciliter la réception des PIV !', //Once you hit "{button}" in the Dashboard, you can create a Contact to make receiving PIV easier!
+    shareContactURL: "Partager l'URL du contact", //Share Contact URL
+    setupYourContact: 'Configurez votre contact', //Setup your Contact
+    receiveWithContact:
+        "Recevoir par un simple contact basé sur le nom d'utilisateur", //Receive using a simple username-based Contact
+    onlyShareContactPrivately:
+        '<b>Seul</b> partager votre contact avec des personnes de confiance (famille, amis)', //<b>Only</b> share your Contact with trusted people (family, friends)
 
     /* Context: The "Change to" is used in-app with one of the Three options below it, i.e: "Change to Contact" */
-    changeTo: '', //Change to
-    contact: '', //Contact
-    xpub: '', //XPub
+    changeTo: 'Modifier pour', //Change to
+    contact: 'Contact', //Contact
+    xpub: 'XPub', //XPub
 
-    addContactTitle: '', //Add {strName} to Contacts
-    addContactSubtext: '', //Once added you\'ll be able to send transactions to {strName} by their name (either typing, or clicking), no more addresses, nice \'n easy.
-    addContactWarning: '', //Ensure that this is the real "{strName}", do not accept Contact requests from unknown sources!
+    addContactTitle: 'Ajouter {strName} aux contacts', //Add {strName} to Contacts
+    addContactSubtext:
+        "Une fois ajouté, vous pourrez envoyer des transactions à {strName} par leur nom (en tapant ou en cliquant), plus d'adresses, c'est facile.", //Once added you\'ll be able to send transactions to {strName} by their name (either typing, or clicking), no more addresses, nice \'n easy.
+    addContactWarning:
+        "S'assurer qu'il s'agit bien d'un produit authentique \"{strName}\", n'acceptez pas de demandes de contact provenant de sources inconnues ! ", //Ensure that this is the real "{strName}", do not accept Contact requests from unknown sources!
 
-    editContactTitle: '', //Change "{strName}" Contact
-    newName: '', //New Name
+    editContactTitle: 'Changer "{strName}" Contact', //Change "{strName}" Contact
+    newName: 'Nouvelle dénomination', //New Name
 
-    removeContactTitle: '', //Remove {strName}?
-    removeContactSubtext: '', //Are you sure you wish to remove {strName} from your Contacts?
-    removeContactNote: '', //You can add them again any time in the future.
+    removeContactTitle: 'Supprimer {strName}?', //Remove {strName}?
+    removeContactSubtext:
+        'Êtes-vous sûr de vouloir supprimer {strName}  de vos contacts ?', //Are you sure you wish to remove {strName} from your Contacts?
+    removeContactNote: "Vous pouvez les ajouter à tout moment à l'avenir.", //You can add them again any time in the future.
 
     // Export
     privateKey: 'Clé privée', //Private Key
@@ -152,8 +161,8 @@ export const fr_translation = {
     createAmount: 'Valeur promotionnelle', //Promo Amount
 
     // Stake
-    stake: '', //Stake
-    stakeUnstake: '', //Unstake
+    stake: 'Stake', //Stake
+    stakeUnstake: 'Unstake', //Unstake
     rewardHistory: 'Historique des récompenses', //Reward History
     loadMore: 'Chargez plus', //Load more
 
@@ -178,24 +187,27 @@ export const fr_translation = {
 
     // Settings
     settingsCurrency: "Choisissez une devise d'affichage :", //Choose a display currency:
-    priceProvidedBy: '', //Price data provided by
+    priceProvidedBy: 'Les prix sont fournis par', //Price data provided by
     settingsDecimals: 'Solde Décimales :', //Balance Decimals:
     settingsExplorer: 'Choisissez un explorateur :', //Choose an explorer:
     settingsLanguage: 'Choisissez une langue :', //Choose a Language:
-    settingsPivxNode: 'Choisir un nœud PIVX :', //Choose a PIVX node:
+    settingsPivxNode: 'Choisir un node PIVX :', //Choose a PIVX node:
     settingsAutoSelectNet:
-        'Sélection Automatique des Explorateurs et des Nœuds', //Auto-select Explorers and Nodes
+        'Sélection Automatique des Explorateurs et des Nodes', //Auto-select Explorers and Nodes
     settingsAnalytics: "Choisissez votre niveau d'analyse :", //Choose your analytics contribution level:
     settingsToggleDebug: 'Mode de débogage', //Debug Mode
     settingsToggleTestnet: 'Mode testnet', //Testnet Mode
-    settingsToggleAdvancedMode: '', //Advanced Mode
-    settingsToggleAdvancedModeSubtext: '', //This unlocks deeper functionality and customisation, but may be overwhelming and potentially dangerous for unexperienced users!
+    settingsToggleAdvancedMode: 'Mode avancé', //Advanced Mode
+    settingsToggleAdvancedModeSubtext:
+        "Cela permet d'accéder à des fonctionnalités et à une personnalisation plus poussées, mais peut s'avérer difficile et potentiellement dangereux pour les utilisateurs inexpérimentés !", //This unlocks deeper functionality and customisation, but may be overwhelming and potentially dangerous for unexperienced users!
 
     // Network switching (mainnet <---> testnet)
-    netSwitchUnsavedWarningTitle: '', //Your {network} wallet isn\'t saved!
-    netSwitchUnsavedWarningSubtitle: '', //Your {network} account is at risk!
-    netSwitchUnsavedWarningSubtext: '', //If you switch to {network} before saving it, you\'ll lose the account!
-    netSwitchUnsavedWarningConfirmation: '', //Are you really sure?
+    netSwitchUnsavedWarningTitle:
+        "Votre {network} portefeuille n'est pas sauvé !", //Your {network} wallet isn\'t saved!
+    netSwitchUnsavedWarningSubtitle: 'Votre {network} compte est en danger !', //Your {network} account is at risk!
+    netSwitchUnsavedWarningSubtext:
+        "Si vous changez de compte {network} avant de l'avoir sauvegardé, vous perdrez le compte! ", //If you switch to {network} before saving it, you\'ll lose the account!
+    netSwitchUnsavedWarningConfirmation: 'Êtes-vous vraiment sûr ?', //Are you really sure?
 
     // Transparency Report
     transparencyReport: 'Rapport de transparence', //Transparency Report
@@ -289,7 +301,7 @@ export const fr_translation = {
     unhandledException: 'Exception non traitée.', //Unhandled exception.
 
     // Alerts
-    ALERTS: '<-- DO NOT EDIT! All below entries are for Alert Popups',
+    ALERTS: '<-- DO NOT EDIT THIS LINE! All below entries are for Alert Popups',
 
     INTERNAL_ERROR: 'Erreur interne, veuillez réessayer plus tard', //Internal error, please try again later
     FAILED_TO_IMPORT: "<b>Échec de l'importation !</b> Mot de passe invalide", //<b>Failed to import!</b> Invalid password
@@ -371,17 +383,24 @@ export const fr_translation = {
     MN_CANT_CONNECT: 'Impossible de se connecter au nœud RPC!', //Unable to connect to RPC node!
 
     /* Contacts System Alerts */
-    CONTACTS_ENCRYPT_FIRST: '', //You need to hit "{button}" before you can use Contacts!
-    CONTACTS_NAME_REQUIRED: '', //A name is required!
-    CONTACTS_NAME_TOO_LONG: '', //That name is too long!
-    CONTACTS_CANNOT_ADD_YOURSELF: '', //You cannot add yourself as a Contact!
-    CONTACTS_ALREADY_EXISTS: '', //<b>Contact already exists!</b><br>You already saved this contact
-    CONTACTS_NAME_ALREADY_EXISTS: '', //<b>Contact name already exists!</b><br>This could potentially be a phishing attempt, beware!
-    CONTACTS_EDIT_NAME_ALREADY_EXISTS: '', //<b>Contact already exists!</b><br>A contact is already called "{strNewName}"!
-    CONTACTS_KEY_ALREADY_EXISTS: '', //<b>Contact already exists, but under a different name!</b><br>You have {newName} saved as <b>{oldName}</b> in your contacts
-    CONTACTS_NOT_A_CONTACT_QR: '', //This isn\'t a Contact QR!
-    CONTACTS_ADDED: '', //<b>New Contact added!</b><br>{strName} has been added, hurray!
-    CONTACTS_YOU_HAVE_NONE: '', //You have no contacts!
+    CONTACTS_ENCRYPT_FIRST:
+        'Vous devez appuyer sur "{button}" avant de pouvoir utiliser les contacts !', //You need to hit "{button}" before you can use Contacts!
+    CONTACTS_NAME_REQUIRED: 'Un nom est nécessaire !', //A name is required!
+    CONTACTS_NAME_TOO_LONG: 'Le nom est trop long !', //That name is too long!
+    CONTACTS_CANNOT_ADD_YOURSELF:
+        'Vous ne pouvez pas vous ajouter comme contact !', //You cannot add yourself as a Contact!
+    CONTACTS_ALREADY_EXISTS:
+        '<b>Le contact existe déjà!</b><br>Vous avez déjà enregistré ce contact', //<b>Contact already exists!</b><br>You already saved this contact
+    CONTACTS_NAME_ALREADY_EXISTS:
+        "<b>Le nom du contact existe déjà!</b><br>Il pourrait s'agir d'une tentative d'hameçonnage, attention!", //<b>Contact name already exists!</b><br>This could potentially be a phishing attempt, beware!
+    CONTACTS_EDIT_NAME_ALREADY_EXISTS:
+        '<b>Le contact existe déjà!</b><br>Un contact est déjà appelé "{strNewName}"!', //<b>Contact already exists!</b><br>A contact is already called "{strNewName}"!
+    CONTACTS_KEY_ALREADY_EXISTS:
+        '<b>Le contact existe déjà, mais sous un nom différent!</b><br>Vous avez {newName} sauvegardé comme <b>{oldName}</b> dans vos contacts', //<b>Contact already exists, but under a different name!</b><br>You have {newName} saved as <b>{oldName}</b> in your contacts
+    CONTACTS_NOT_A_CONTACT_QR: "Ce n'est pas un QR de contact!", //This isn\'t a Contact QR!
+    CONTACTS_ADDED:
+        '<b>Nouveau contact ajouté!</b><br>{strName}  a été ajouté, bravo!', //<b>New Contact added!</b><br>{strName} has been added, hurray!
+    CONTACTS_YOU_HAVE_NONE: "Vous n'avez pas de contacts!", //You have no contacts!
 
     SWITCHED_EXPLORERS:
         '<b>Explorateur échangé!</b><br>En utilisant maintenant le {explorerName}', //<b>Switched explorer!</b><br>Now using {explorerName}
@@ -396,11 +415,11 @@ export const fr_translation = {
     WALLET_OFFLINE_AUTOMATIC:
         '<b>Le mode hors-ligne est actif !</b><br>Veuillez désactiver le mode hors connexion pour les transactions automatiques', //<b>Offline Mode is active!</b><br>Please disable Offline Mode for automatic transactions
     WALLET_UNLOCK_IMPORT:
-        " //S'il vous plaît, {unlock} votre portefeuille avant d'envoyer des transactions !", //Please {unlock} your wallet before sending transactions!
+        "S'il vous plaît, {unlock} votre portefeuille avant d'envoyer des transactions !", //Please {unlock} your wallet before sending transactions!
     WALLET_FIREFOX_UNSUPPORTED:
         '<b>O Firefox ne supporte pas cela !</b><br>Malheureusement, Firefox ne prend pas en charge les portefeuilles hardware', //<b>Firefox doesn't support this!</b><br>Unfortunately, Firefox does not support hardware wallets
     WALLET_HARDWARE_WALLET:
-        " //<b>Portefeuille de Hardware prêt!</b><br>Gardez votre {hardwareWallet} connecté, déverrouillé et dans l'application PIVX", //<b>Hardware wallet ready!</b><br>Please keep your {hardwareWallet} plugged in, unlocked, and in the PIVX app
+        "<b>Portefeuille de Hardware prêt!</b><br>Gardez votre {hardwareWallet} connecté, déverrouillé et dans l'application PIVX", //<b>Hardware wallet ready!</b><br>Please keep your {hardwareWallet} plugged in, unlocked, and in the PIVX app
     WALLET_CONFIRM_L: "Confirmez l'importation dans votre Ledger", //Confirm the import on your Ledger
     WALLET_NO_HARDWARE:
         "<b>Aucun dispositif disponible</b><br>Il n'a pas été possible de trouver un portefeuille de hardware; brancher et déverrouiller!", //<b>No device available</b><br>Couldn't find a hardware wallet; please plug it in and unlock!
@@ -420,8 +439,8 @@ export const fr_translation = {
     CONFIRM_POPUP_VERIFY_ADDR: 'Vérifiez votre adresse', //Verify your address
 
     MIGRATION_MASTERNODE_FAILURE:
-        "//Échec de la récupération de votre masternode. S'il vous plaît, le réimporter.", //Failed to recover your masternode. Please reimport it.
+        "Échec de la récupération de votre masternode. S'il vous plaît, le réimporter.", //Failed to recover your masternode. Please reimport it.
     MIGRATION_ACCOUNT_FAILURE:
-        "//Échec de la récupération de votre compte.  S'il vous plaît, le réimporter.", //Failed to recover your account. Please reimport it.
-    APP_INSTALLED: '//Application installée!', //App Installed!
+        "Échec de la récupération de votre compte.  S'il vous plaît, le réimporter.", //Failed to recover your account. Please reimport it.
+    APP_INSTALLED: 'Application installée!', //App Installed!
 };

@@ -21,6 +21,7 @@ var translation = {
     //  4) Submit a push request to the github
 
     // NOTE: If a section does NOT need translating, leave it empty.
+    // NOTE: Variables that MPW insert are denoted by brackets {}, for example, {button}, do NOT translate variables, but place them where it makes the most sense.
 
     // General words
     amount: '', //Amount
@@ -284,7 +285,7 @@ var translation = {
     unhandledException: '', //Unhandled exception.
 
     // Alerts
-    ALERTS: '<-- DO NOT EDIT! All below entries are for Alert Popups',
+    ALERTS: '<-- DO NOT EDIT THIS LINE! All below entries are for Alert Popups',
 
     INTERNAL_ERROR: '', //Internal error, please try again later
     FAILED_TO_IMPORT: '', //<b>Failed to import!</b> Invalid password

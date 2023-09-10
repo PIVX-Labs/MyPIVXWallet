@@ -2,6 +2,7 @@ export const it_translation = {
     // Sono consentiti tag HTML di base, come <b><i> ecc. Tutti i dati vengono puliti https://developer.mozilla.org/fr/docs/Web/API/Element/innerHTML
 
     // NOTA: Se una sezione NON necessita di traduzione , lasciala vuota.
+    // NOTA: Le variabili che MPW inserisce sono indicate da parentesi {}, ad esempio, {button}, NON tradurre le variabili, ma posizionale dove ha più senso.
 
     // General words
     amount: 'Quantità', //Amount
@@ -20,7 +21,7 @@ export const it_translation = {
     navSettings: 'Impostazioni', //Settings
 
     // Footer
-    footerBuiltWithPivxLabs: 'Costruito col 💜 da PIVX Labs ', //Built with 💜 by PIVX Labs
+    footerBuiltWithPivxLabs: 'Costruito col 💜 da PIVX Labs 🇮🇹', //Built with 💜 by PIVX Labs
 
     // Intro
     loading: 'Caricamento', //Loading
@@ -280,7 +281,7 @@ export const it_translation = {
     unhandledException: 'Eccezione non gestita', //Unhandled exception.
 
     // Alerts
-    ALERTS: '<-- DO NOT EDIT! All below entries are for Alert Popups',
+    ALERTS: '<-- DO NOT EDIT THIS LINE! All below entries are for Alert Popups',
 
     INTERNAL_ERROR: 'Errore interno, rirova più tardi', //Internal error, please try again later
     FAILED_TO_IMPORT: '<b>Impossibile importare!</b> Password non valida', //<b>Failed to import!</b> Invalid password

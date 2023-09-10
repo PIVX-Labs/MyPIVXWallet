@@ -294,7 +294,7 @@ export const uwu_translation = {
     unhandledException: 'Unhandled exception.', //Unhandled exception.
 
     // Alerts
-    ALERTS: '<-- DO NOT EDIT! All below entries are for Alert Popups',
+    ALERTS: '<-- DO NOT EDIT THIS LINE! All below entries are for Alert Popups',
 
     INTERNAL_ERROR: 'Internal error, pwease try again later', //Internal error, please try again later
     FAILED_TO_IMPORT: '<b>Faiwed to impawt!</b> Invawed password! Baka!', //'<b>Failed to import!</b> Invalid password',

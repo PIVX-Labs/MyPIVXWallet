@@ -3,6 +3,7 @@ export const de_translation = {
     // Basic HTML tags are allowed such as <b><i> etc. All data is sanitized https://developer.mozilla.org/en-US/docs/Web/API/Element/innerHTML
 
     // NOTE: If a section does NOT need translating, leave it empty.
+    // NOTE: Variables that MPW insert are denoted by brackets {}, for example, {button}, do NOT translate variables, but place them where it makes the most sense.
 
     // General words
     amount: 'Menge', //Amount
@@ -44,7 +45,7 @@ export const de_translation = {
     dCardThreeTitle: 'Öffne deine', //Access your
     dCardThreeSubTitle: 'Hardware Geldbörse', //Hardware Wallet
     dCardThreeDesc:
-        'Benutze deine Ledger Hardware Geldbörse via MPWs benutzerfreundlichen Schnittstelle.', //Use your Ledger Hardware wallet with MPW's familiar interface.
+        'Benutze deine Ledger Hardware Geldbörse mit MPW als benutzerfreundliche Schnittstelle.', //Use your Ledger Hardware wallet with MPW's familiar interface.
     dCardThreeButton: 'Öffne meinen Ledger', //Access my Ledger
 
     dCardFourTitle: 'Gehe zu', //Go to
@@ -55,8 +56,8 @@ export const de_translation = {
     dCardFourButtonA: 'Öffne meine Geldbörse', //Access My Wallet
 
     // Vanity Creation
-    vanityPrefixNote: '', //Note: addresses will always start with:
-    vanityPrefixInput: '', //Address Prefix
+    vanityPrefixNote: 'Hinweis: Adressen starten immer mit:', //Note: addresses will always start with:
+    vanityPrefixInput: 'Adress-Prefix', //Address Prefix
 
     // Seed Phrase Creation
     thisIsYourSeed: 'Dies ist deine Seed Phrase', //This is your seed phrase:
@@ -65,16 +66,20 @@ export const de_translation = {
     doNotShareWarning:
         'Jeder mit einer Kopie der Phrase hat Zugriff auf <b>deine Brieftasche</b>.', //Anyone with a copy of it can access <b>all</b> of your funds.
     doNotShare: 'Teile Sie unter keinen Umständen mit dritten.', //Do NOT share it with anybody.
-    digitalStoreNotAdvised: 'Es wird empfohlen diese nicht digital zu sichern', //It is <b>NOT</b> advised to store this digitally.
+    digitalStoreNotAdvised:
+        'Es wird empfohlen diese <b>nicht</b> digital zu sichern', //It is <b>NOT</b> advised to store this digitally.
     optionalPassphrase: 'Optionale Pass Phrase (BIP39)', //Optional Passphrase (BIP39)
     writtenDown: 'Ich bestätige, dass ich die Seed Phrase notiert habe', //I have written down my seed phrase
 
     // Seed Phrase Import
-    importSeedValid: '', //Seed Phrase is valid!
-    importSeedError: '', //Seed Phrase is invalid!
-    importSeedErrorSize: '', //A Seed Phrase should be 12 or 24 words long!
-    importSeedErrorTypo: '', //Seed Phrase contains typing errors! Check your input carefully
-    importSeedErrorSkip: '', //Seed Phrase appears invalid, but the warning was skipped by the user
+    importSeedValid: 'Seed Phrase ist gültig!', //Seed Phrase is valid!
+    importSeedError: 'Seed Phrase ist ungültig!', //Seed Phrase is invalid!
+    importSeedErrorSize:
+        'Eine Seed Phrase sollte zwischen 12 und 24 Zeichen lang sein!', //A Seed Phrase should be 12 or 24 words long!
+    importSeedErrorTypo:
+        'Die Seed Phrase enthält fehlerhafte Eingaben! Überprüfe deine Eingaben sorgfältig', //Seed Phrase contains typing errors! Check your input carefully
+    importSeedErrorSkip:
+        'Die Seed Phrase erscheint ungültig, die Warnung wurde durch den Benutzer übergangen.', //Seed Phrase appears invalid, but the warning was skipped by the user
 
     // Wallet Dashboard
     gettingStarted: 'Erste Schritte', //Getting Started
@@ -83,12 +88,12 @@ export const de_translation = {
     lockWallet: 'Sperre deine Geldbörse', //Lock wallet
 
     // Encrypt wallet
-    encryptWallet: 'Verschlüssel deine Brieftasche', //Encrypt wallet
-    encryptPasswordCurrent: '', //Current Password
+    encryptWallet: 'Verschlüssel deine Geldbörse', //Encrypt wallet
+    encryptPasswordCurrent: 'Aktuelles Passwort', //Current Password
     encryptPasswordFirst: 'Gib dein Passwort ein', //Enter Password
     encryptPasswordSecond: 'Wiederhole dein Passwort', //Re-enter Password
     encrypt: 'Verschlüsseln', //Encrypt
-    changePassword: '', //Change Password
+    changePassword: 'Passwort ändern', //Change Password
 
     // Wallet Dashboard Sub-menu
     balanceBreakdown: 'Aufgeschlüsselter Kontostand', //Balance Breakdown
@@ -105,35 +110,41 @@ export const de_translation = {
     send: 'Senden', //Send
 
     // Contacts System
-    receive: '', //Receive
-    contacts: '', //Contacts
-    name: '', //Name
-    username: '', //Username
-    addressOrXPub: '', //Address or XPub
-    back: '', //Back
-    chooseAContact: '', //Choose a Contact
-    createContact: '', //Create Contact
-    encryptFirstForContacts: '', //Once you hit "{button}" in the Dashboard, you can create a Contact to make receiving PIV easier!
-    shareContactURL: '', //Share Contact URL
-    setupYourContact: '', //Setup your Contact
-    receiveWithContact: '', //Receive using a simple username-based Contact
-    onlyShareContactPrivately: '', //<b>Only</b> share your Contact with trusted people (family, friends)
+    receive: 'Erhalten', //Receive
+    contacts: 'Kontakte', //Contacts
+    name: 'Name', //Name
+    username: 'Benutzername', //Username
+    addressOrXPub: 'Adresse oder XPub', //Address or XPub
+    back: 'Zurück', //Back
+    chooseAContact: 'Wähle einen Kontakt', //Choose a Contact
+    createContact: 'Erstelle einen Kontakt', //Create Contact
+    encryptFirstForContacts:
+        'Nachdem du auf "{button}" in der Übersicht gedrückt hast, kannst du Kontakte erstellen um das Senden und Empfangen von PIV einfacher zu machen.', //Once you hit "{button}" in the Dashboard, you can create a Contact to make receiving PIV easier!
+    shareContactURL: 'Teile deine Kontakt-URL', //Share Contact URL
+    setupYourContact: 'Erstelle deinen Kontakt', //Setup your Contact
+    receiveWithContact: 'Empfangen mittels einfachen Benutzernamens', //Receive using a simple username-based Contact
+    onlyShareContactPrivately:
+        'Teile deine Kontakte nur mit <b>vertrauenswürdigen Personen</b> (Familie, Freunde)', //<b>Only</b> share your Contact with trusted people (family, friends)
 
     /* Context: The "Change to" is used in-app with one of the Three options below it, i.e: "Change to Contact" */
-    changeTo: '', //Change to
-    contact: '', //Contact
-    xpub: '', //XPub
+    changeTo: 'Ändere zu', //Change to
+    contact: 'Kontakt', //Contact
+    xpub: 'XPub', //XPub
 
-    addContactTitle: '', //Add {strName} to Contacts
-    addContactSubtext: '', //Once added you\'ll be able to send transactions to {strName} by their name (either typing, or clicking), no more addresses, nice \'n easy.
-    addContactWarning: '', //Ensure that this is the real "{strName}", do not accept Contact requests from unknown sources!
+    addContactTitle: 'Füge {strName} zu Kontakten zu', //Add {strName} to Contacts
+    addContactSubtext:
+        'Einmal hinzugefügt kannst du Transaktionen zu {strName} über den Kontakt (eingeben oder anklicken) erledigen. Keine komplexen Adressen mehr - einfach einfach!', //Once added you\'ll be able to send transactions to {strName} by their name (either typing, or clicking), no more addresses, nice \'n easy.
+    addContactWarning:
+        'Bitte prüfe ob die Exhtheit von "{strName}". Niemals Kontakt-Anfragen von unbekannten annehmen!', //Ensure that this is the real "{strName}", do not accept Contact requests from unknown sources!
 
-    editContactTitle: '', //Change "{strName}" Contact
-    newName: '', //New Name
+    editContactTitle: 'Ändere Kontakt "{strName}"', //Change "{strName}" Contact
+    newName: 'Neuer Name', //New Name
 
-    removeContactTitle: '', //Remove {strName}?
-    removeContactSubtext: '', //Are you sure you wish to remove {strName} from your Contacts?
-    removeContactNote: '', //You can add them again any time in the future.
+    removeContactTitle: 'Entferne {strName}?', //Remove {strName}?
+    removeContactSubtext:
+        'Willst du wirklich {strName} aus deinen Kontakten entfernen?', //Are you sure you wish to remove {strName} from your Contacts?
+    removeContactNote:
+        'Du kannst den Kontakt später zu jeder Zeit wieder hinzufügen.', //You can add them again any time in the future.
 
     // Export
     privateKey: 'Privater Schlüssel', //Private Key
@@ -142,14 +153,14 @@ export const de_translation = {
         'Stelle sicher, dass niemand deinen Bildschirm einsehen kann', //Make sure no one can see your screen.
     privateWarning2:
         'Jeder mit diesem Schlüssel kann deine Geldbörse bedienen.', //Anyone with this key can steal your funds.
-    viewKey: 'zeige Schlüssel', //View key
+    viewKey: 'Zeige Schlüssel', //View key
 
     // PIVX Promos
     // NOTE: for this below line, continue the sentence "PIVX Promos [...]", since 'PIVX Promos' is a brand, it is not translated.
     pivxPromos: 'ist ein dezentrales System für PIVX Geschenk-Gutscheine', // [...] is a decentralised system for gift codes worth PIV
     // NOTE: on this line, if possible, leave 'PIVX Promos' untranslated
     redeemInput: 'Gib deinen PIVX Promos Code ein', //Enter your 'PIVX Promos' code
-    createName: 'Promo Name', //Promo Name (Optional)
+    createName: 'Promo Name (Optional)', //Promo Name (Optional)
     createAmount: 'Promo Anzahl', //Promo Amount
 
     // Stake
@@ -179,8 +190,8 @@ export const de_translation = {
 
     // Settings
     settingsCurrency: 'Wähle die angezeigte Währung', //Choose a display currency:
-    priceProvidedBy: '', //Price data provided by
-    settingsDecimals: '', //Balance Decimals:
+    priceProvidedBy: 'Preisinformationen von', //Price data provided by
+    settingsDecimals: 'Nachkommastellen', //Balance Decimals:
     settingsExplorer: 'Wähle einen Explorer', //Choose an explorer:
     settingsLanguage: 'Wähle eine Sprache', //Choose a Language:
     settingsPivxNode: 'Wähle einen PIVX Knoten', //Choose a PIVX node:
@@ -188,8 +199,9 @@ export const de_translation = {
     settingsAnalytics: 'Wähle die verwendeten Analysedaten dieser Sitzung', //Choose your analytics contribution level:
     settingsToggleDebug: 'Debug Modus', //Debug Mode
     settingsToggleTestnet: 'Testnet Modus', //Testnet Mode
-    settingsToggleAdvancedMode: '', //Advanced Mode
-    settingsToggleAdvancedModeSubtext: '', //This unlocks deeper functionality and customisation, but may be overwhelming and potentially dangerous for unexperienced users!
+    settingsToggleAdvancedMode: 'Erweiterte Ansicht', //Advanced Mode
+    settingsToggleAdvancedModeSubtext:
+        'Dies aktiviert tiefere Funktionen und Anpassungen, welche für unerfahrene Nutzer potentiell gefährlich sein können.', //This unlocks deeper functionality and customisation, but may be overwhelming and potentially dangerous for unexperienced users!
 
     // Transparency Report
     transparencyReport: 'Transparenz-Bericht', //Transparency Report
@@ -282,7 +294,7 @@ export const de_translation = {
     unhandledException: 'Unerwarteter Sonderfall', //Unhandled exception.
 
     // Alerts
-    ALERTS: '<-- DO NOT EDIT! All below entries are for Alert Popups',
+    ALERTS: '<-- DO NOT EDIT THIS LINE! All below entries are for Alert Popups',
 
     INTERNAL_ERROR: 'Interner Fehler, bitte versuche es später erneut', //Internal error, please try again later
     FAILED_TO_IMPORT: '<b>Import fehlgeschlagen!</b> Falsches Passwort', //<b>Failed to import!</b> Invalid password
@@ -363,17 +375,24 @@ export const de_translation = {
     MN_CANT_CONNECT: 'Keine Verbindung zum RPC-Knoten möglich!', //Unable to connect to RPC node!
 
     /* Contacts System Alerts */
-    CONTACTS_ENCRYPT_FIRST: '', //You need to hit "{button}" before you can use Contacts!
-    CONTACTS_NAME_REQUIRED: '', //A name is required!
-    CONTACTS_NAME_TOO_LONG: '', //That name is too long!
-    CONTACTS_CANNOT_ADD_YOURSELF: '', //You cannot add yourself as a Contact!
-    CONTACTS_ALREADY_EXISTS: '', //<b>Contact already exists!</b><br>You already saved this contact
-    CONTACTS_NAME_ALREADY_EXISTS: '', //<b>Contact name already exists!</b><br>This could potentially be a phishing attempt, beware!
-    CONTACTS_EDIT_NAME_ALREADY_EXISTS: '', //<b>Contact already exists!</b><br>A contact is already called "{strNewName}"!
-    CONTACTS_KEY_ALREADY_EXISTS: '', //<b>Contact already exists, but under a different name!</b><br>You have {newName} saved as <b>{oldName}</b> in your contacts
-    CONTACTS_NOT_A_CONTACT_QR: '', //This isn\'t a Contact QR!
-    CONTACTS_ADDED: '', //<b>New Contact added!</b><br>{strName} has been added, hurray!
-    CONTACTS_YOU_HAVE_NONE: '', //You have no contacts!
+    CONTACTS_ENCRYPT_FIRST:
+        'Du musst erst "{button}" drücken bevor du Kontakt hinzufügen kannst!', //You need to hit "{button}" before you can use Contacts!
+    CONTACTS_NAME_REQUIRED: 'Ein Name ist bnötigt!', //A name is required!
+    CONTACTS_NAME_TOO_LONG: 'Der Name ist zu lang!', //That name is too long!
+    CONTACTS_CANNOT_ADD_YOURSELF:
+        'Du kannst dich nicht selbst als Kontakt hinzufügen!', //You cannot add yourself as a Contact!
+    CONTACTS_ALREADY_EXISTS:
+        '<b>Kontakt existiert bereits!</b><br>Er ist bereits gespeichert', //<b>Contact already exists!</b><br>You already saved this contact
+    CONTACTS_NAME_ALREADY_EXISTS:
+        '<b>Ein Kontakt mit diesem Namen existiert bereits!</b>Dies könnte ein Phishing-Versuch sein, sei Vorsichtig!', //<b>Contact name already exists!</b><br>This could potentially be a phishing attempt, beware!
+    CONTACTS_EDIT_NAME_ALREADY_EXISTS:
+        '<b>Der Kontakt existiert bereits!</b><br>Ein Kontakt heißt bereits "{strNewName}"!', //<b>Contact already exists!</b><br>A contact is already called "{strNewName}"!
+    CONTACTS_KEY_ALREADY_EXISTS:
+        '<b>Der Kontakt existiert bereits, aber unter einem anderen Namen!</b><br>{newName} existiert bereits als <b>{oldName}</b>.', //<b>Contact already exists, but under a different name!</b><br>You have {newName} saved as <b>{oldName}</b> in your contacts
+    CONTACTS_NOT_A_CONTACT_QR: 'Dies ist kein Kontakt-QR Code!', //This isn\'t a Contact QR!
+    CONTACTS_ADDED:
+        '<b>Neuer Kontakt hinzugefügt!</b><br>{strName} ist jetzt einer deiner Kontakte, Juhuu!', //<b>New Contact added!</b><br>{strName} has been added, hurray!
+    CONTACTS_YOU_HAVE_NONE: 'Du hast noch keine Kontakte!', //You have no contacts!
 
     PROPOSAL_FINALISED: 'Antrag finalisiert!', //Proposal finalized!
     PROPOSAL_UNCONFIRMED: 'Der Antrag wurde noch nicht bestätigt.', //The proposal hasn\'t been confirmed yet.
