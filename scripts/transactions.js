@@ -120,8 +120,14 @@ export async function createTxGUI() {
     }
 
     // If Staking address: redirect to staking page
-    if (strReceiverAddress.startsWith(cChainParams.current.STAKING_PREFIX)) {
+    if (
+        strReceiverAddress.startsWith(cChainParams.current.STAKING_PREFIX) &&
+        strRawReceiver.length === 34
+    ) {
         createAlert('warning', ALERTS.STAKE_NOT_SEND, 7500);
+        // Close the current Send Popup
+        toggleBottomMenu('transferMenu', 'transferAnimation');
+        // Open the Staking Dashboard
         return doms.domStakeTab.click();
     }
 
