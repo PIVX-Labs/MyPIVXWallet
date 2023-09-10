@@ -146,17 +146,21 @@ export async function createTxGUI() {
         isDelegation: false,
     });
 
-    // Wipe any payment request info
-    if (cRes.ok && doms.domReqDesc.value) {
-        // Description
-        doms.domReqDesc.value = '';
-        doms.domReqDisplay.style.display = 'none';
+    // If successful, wipe Tx input
+    if (cRes.ok) {
         // Address
         doms.domAddress1s.value = '';
         // Amount
         doms.domSendAmountCoins.value = '';
         // Price
         doms.domSendAmountValue.value = '';
+
+        // Wipe any Payment Request info
+        if (doms.domReqDesc.value) {
+            // Description
+            doms.domReqDesc.value = '';
+            doms.domReqDisplay.style.display = 'none';
+        }
     }
 }
 
