@@ -6,9 +6,11 @@
 
 # New Languages
 - 🇮🇹 Italian (by Valerio, Duddino).
+- 🇲🇽 Mexican Spanish (by ONeZetty).
 
 # Improvements
 - A full Account DB rewrite for improved safety.
+- Added colour-coded recipient validation.
 - Send & Receive now uses Text instead of Icons.
 - i18n will fallback to English when missing text.
 - Hidden 'BIP39 Passphrase' behind Advanced Mode.

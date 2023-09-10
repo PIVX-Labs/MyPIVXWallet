@@ -193,6 +193,14 @@ progress[value]::-moz-progress-bar {
 .changelog p {
     margin-bottom: 0px;
     font-family: monospace !important;
+    opacity: 0.75;
+}
+
+.changelog h3 {
+    padding-left: 5px;
+    border-left-style: solid;
+    border-left-width: 5px;
+    border-left-color: #763acf;
 }
 
 .large-box {
