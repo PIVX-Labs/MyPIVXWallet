@@ -83,12 +83,6 @@ export async function createTxGUI() {
     // Cache the "end" receiver, which will be an Address
     let strReceiverAddress = strRawReceiver;
 
-    // If Staking address: redirect to staking page
-    if (strRawReceiver.startsWith(cChainParams.current.STAKING_PREFIX)) {
-        createAlert('warning', ALERTS.STAKE_NOT_SEND, 7500);
-        return doms.domStakeTab.click();
-    }
-
     // Check for any contacts that match the input
     const cDB = await Database.getInstance();
     const cAccount = await cDB.getAccount();
@@ -123,6 +117,12 @@ export async function createTxGUI() {
 
         // Set the 'receiver address' as the unused XPub-derived address
         strReceiverAddress = cReceiverWallet.getAddress(strPath);
+    }
+
+    // If Staking address: redirect to staking page
+    if (strReceiverAddress.startsWith(cChainParams.current.STAKING_PREFIX)) {
+        createAlert('warning', ALERTS.STAKE_NOT_SEND, 7500);
+        return doms.domStakeTab.click();
     }
 
     // Check if the Receiver Address is a valid P2PKH address
