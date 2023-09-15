@@ -506,7 +506,7 @@ export default class Masternode {
      * @param {String} options.address - Base58 encoded PIVX address
      * @param {Number} options.monthlyPayment - Payment amount per cycle in satoshi
      * @param {String} options.txid - Transaction id of the proposal fee
-     * @returns {Promise<boolean>} If the finalization happened without errors
+     * @returns {Promise<{ ok: boolean, err: string | undefined, hash: string | undefined }>} The Vote Hash, if the finalization happened without errors
      */
     static async finalizeProposal({
         name,
@@ -529,7 +529,7 @@ export default class Masternode {
             ).text();
 
             if (/^"[a-f0-9]"$/ && res.length == 64 + 2) {
-                return { ok: true };
+                return { ok: true, hash: res };
             } else if (
                 res.includes('is unconfirmed') ||
                 res.includes('requires at least')
@@ -587,7 +587,7 @@ export default class Masternode {
         }
 
         if (!isSafeStr.test(name)) {
-            return { ok: false, err: 'invaild_name' };
+            return { ok: false, err: 'invalid_name' };
         }
 
         if (url.length > 64) {
@@ -595,7 +595,7 @@ export default class Masternode {
         }
 
         if (!isSafeStr.test(url)) {
-            return { ok: false, err: 'invaild_url' };
+            return { ok: false, err: 'invalid_url' };
         }
 
         if (

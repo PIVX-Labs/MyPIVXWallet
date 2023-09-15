@@ -20,7 +20,7 @@ export async function scanQRCode() {
 
     // Check for Camera support
     if (!QrScanner.hasCamera()) {
-        createAlert('warning', ALERTS.NO_CAMERAS, [], 3000);
+        createAlert('warning', ALERTS.NO_CAMERAS, 3000);
         return false;
     }
 

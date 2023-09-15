@@ -193,6 +193,14 @@ progress[value]::-moz-progress-bar {
 .changelog p {
     margin-bottom: 0px;
     font-family: monospace !important;
+    opacity: 0.75;
+}
+
+.changelog h3 {
+    padding-left: 5px;
+    border-left-style: solid;
+    border-left-width: 5px;
+    border-left-color: #763acf;
 }
 
 .large-box {
@@ -761,6 +769,7 @@ progress[value]::-moz-progress-bar {
     padding: 10px;
     border-top: solid #521186 1px;
     background-color: #2b09508c;
+    backdrop-filter: blur(4px);
 }
 
 .footer {
@@ -786,6 +795,7 @@ progress[value]::-moz-progress-bar {
     border-bottom-width: 1px;
     position: fixed;
     width: 100%;
+    min-height: 77px;
 }
 
 /* New styling */
@@ -2396,6 +2406,10 @@ a {
   color:#fff;
 }
 
+.exportKeysModalColor h3 {
+    color:#d5adff!important;
+}
+
 .dcWallet-privateKeyDiv {
   display: flex;
   width: 100%;
@@ -2465,19 +2479,7 @@ input {
   outline-color: rgb(180, 180, 180);
 }
 
-.dcWallet-sWithdraw {
-    background-color: #ffffff29;
-    width: 50px;
-    height: 50px;
-    padding-top: 13px;
-    border-radius: 50%;
-    border-top-left-radius: 7px;
-    border-bottom-right-radius: 7px;
-    background-image: linear-gradient(183deg, #9621ff, #7d21ff);
-    cursor:pointer;
-}
-
-.dcWallet-stake {
+.dcWallet-btn-left {
     background-color: #ffffff29;
     width: 100px;
     height: 43px;
@@ -2490,7 +2492,7 @@ input {
     cursor: pointer;
 }
 
-.dcWallet-unstake {
+.dcWallet-btn-right {
     background-color: #ffffff29;
     width: 100px;
     height: 43px;
@@ -2502,19 +2504,6 @@ input {
     background-image: linear-gradient(183deg, #9621ff, #7d21ff);
     cursor:pointer;
 }
-
-.dcWallet-sDeposit {
-    background-color: #ffffff29;
-    width: 50px;
-    height: 50px;
-    padding-top: 13px;
-    border-radius: 50%;
-    border-top-right-radius: 7px;
-    border-bottom-left-radius: 7px;
-    background-image: linear-gradient(183deg, #9621ff, #7d21ff);
-    cursor:pointer;
-}
-
 
 
 .blackBack {
@@ -2554,8 +2543,9 @@ input {
     }
 }
 
-.transferMenu .transferHeader .transferExit {
-    cursor:pointer;
+.transferExit {
+    position: absolute;
+    right: 15px;
 }
 
 .transferAnimation {
@@ -3135,6 +3125,7 @@ select.form-control option {
 
 .governLink:hover {
     text-decoration: underline!important;
+    cursor: pointer;
 }
 
 .governInstallments {
@@ -3156,7 +3147,7 @@ select.form-control option {
 }
 
 .governFiatSize {
-    font-size:13px;
+    font-size:12px;
 }
 
 .governLinkIco {
@@ -3224,11 +3215,11 @@ select.form-control option {
     background-color:#ffffff0a!important;
 }
 
-.governTable .votesYes {
+.votesYes {
     color:#5bd376;
 }
 
-.governTable .votesNo {
+.votesNo {
     color:#df4b6c;
 }
 
@@ -3355,4 +3346,161 @@ select.form-control option {
     padding-right:17px;
     padding-top: 14px;
     padding-bottom: 14px;
+}
+
+.sliderStyle .arrow {
+    display:none;
+}
+
+.tooltip.sliderStyle {
+    top:-10px!important;
+}
+
+.sliderStyle .tooltip-inner {
+    width: 30px;
+    height: 30px;
+    background-color: #ffffffb3;
+    border-radius: 25%;
+    color: #000;
+    font-weight: 500;
+}
+
+.slider {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 15px;
+    border-radius: 7.5px;
+    border-color: rgba(255, 255, 255, 0%);
+    background: rgba(255, 255, 255, 22%);
+    outline: none;
+    opacity: 0.7;
+    -webkit-transition: .2s;
+    transition: opacity .2s;
+}
+
+.slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%; 
+    background: #b988e1;
+    cursor: pointer;
+}
+
+.slider::-moz-range-thumb {
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    background: #b988e1;
+    cursor: pointer;
+}
+
+.sliderContainer {
+    position: relative;
+    width: 100%;
+    padding-left:12px;
+    padding-right:12px;
+}
+
+.slider {
+    width: 100%;
+}
+
+.sliderDisplay {
+    /*position: absolute;
+    top: 50%;
+    margin-left: 0px;
+    transform: translate(-50%, -50%);
+    margin-top: -6px;
+    z-index: 40;
+    pointer-events: none;*/
+    
+    /*text-align: center;*/
+    /*width: 2em;*/
+}
+
+@media (min-width:768px) {
+    .sliderDisplay {
+        display: none;
+    }
+}
+
+@media (min-width: 768px) {
+    .max-w-450 {
+        max-width: 450px;
+    }
+}
+
+.contactsList .contactItem {
+    transition: all .25s ease-in-out;
+}
+
+.contactsList .contactItem:hover {
+    background-color:#0000001c!important;
+}
+
+.contactsList .contactItem:nth-child(odd) {
+    background-color:#00000017
+}
+
+.contactsList .contactItem:nth-child(even) {
+    background-color:#00000033
+}
+
+.contactsList .addContact .contactName input,
+.contactsList .addContact .contactAddr input,
+.contactsList .addContactBtn,
+.contactsList .qrContactBtn {
+    color: #ffffff;
+    background-color: #f2f2f233;
+    border: 1px solid #f2f2f224; 
+}
+
+.contactsList .addContact .contactName input::placeholder,
+.contactsList .addContact .contactAddr input::placeholder {
+    color: #dddddd;
+}
+
+.contactsList .addContact .contactName input {
+    border-top-right-radius:0px;
+    border-bottom-right-radius:0px;
+}
+
+.contactsList .addContact .contactAddr input {
+    border-left:none;
+    border-right:none;
+    border-radius:0px;
+}
+
+.contactsList .addContactBtn {
+    cursor: pointer;
+    border-radius: 0px;
+    padding: 0px 10px;
+    font-weight: bold;
+    width: fit-content;
+    height: 43px;
+    display: flex;
+    align-items: center;
+    transition: all .125s ease-in-out;
+    border-right:none;
+}
+
+.contactsList .qrContactBtn {
+    cursor: pointer;
+    border-radius: 7px;
+    padding: 0px 10px;
+    font-weight: bold;
+    width: fit-content;
+    border-top-left-radius: 0px;
+    border-bottom-left-radius: 0px;
+    height: 43px;
+    display: flex;
+    align-items: center;
+    transition: all .125s ease-in-out;
+}
+
+.contactsList .addContactBtn:hover,
+.contactsList .qrContactBtn:hover {
+    background-color: #f2f2f24d;
 }

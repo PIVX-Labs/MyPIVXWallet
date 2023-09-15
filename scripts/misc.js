@@ -1,4 +1,4 @@
-import { translateAlerts } from './i18n.js';
+import { translation } from './i18n.js';
 import { doms } from './global.js';
 import qrcode from 'qrcode-generator';
 import bs58 from 'bs58';
@@ -56,10 +56,42 @@ export function writeToUint8(arr, bytes, pos) {
     while (pos < arrLen) arr[pos++] = bytes[i++];
 }
 
-/* --- NOTIFICATIONS --- */
-// Alert - Do NOT display arbitrary / external errors, the use of `.innerHTML` allows for input styling at this cost.
-// Supported types: success, info, warning
-export function createAlert(type, message, alertVariables = [], timeout = 0) {
+/** Convert a 2D array into a CSV string */
+export function arrayToCSV(data) {
+    return data
+        .map(
+            (row) =>
+                row
+                    .map(String) // convert every value to String
+                    .map((v) => v.replaceAll('"', '""')) // escape double colons
+                    .map((v) => `"${v}"`) // quote it
+                    .join(',') // comma-separated
+        )
+        .join('\r\n'); // rows starting on new lines
+}
+
+/** Download contents as a file */
+export function downloadBlob(content, filename, contentType) {
+    // Create a blob
+    const blob = new Blob([content], { type: contentType });
+
+    // Create a link to download it
+    const pom = document.createElement('a');
+    pom.href = URL.createObjectURL(blob);
+    pom.setAttribute('download', filename);
+    pom.click();
+}
+
+/**
+ * Create a custom GUI Alert popup
+ *
+ * ### Do NOT display arbitrary / external errors:
+ * - The use of `.innerHTML` allows for input styling at this cost.
+ * @param {'success'|'info'|'warning'} type - The styling type of the alert
+ * @param {string} message - The message to relay to the user
+ * @param {number?} timeout - The time in `ms` until the alert expires (Defaults to never expiring)
+ */
+export function createAlert(type, message, timeout = 0) {
     const domAlert = document.createElement('div');
     domAlert.classList.add('notifyWrapper');
     domAlert.classList.add(type);
@@ -69,15 +101,6 @@ export function createAlert(type, message, alertVariables = [], timeout = 0) {
         domAlert.classList.add('bounce-ani');
         domAlert.classList.add('bounce');
     }, 100);
-
-    // Maintainer QoL adjustment: if `alertVariables` is a number, it is instead assumed to be `timeout`
-    if (typeof alertVariables === 'number') {
-        timeout = alertVariables;
-        alertVariables = [];
-    }
-
-    // Apply translations
-    const translatedMessage = translateAlerts(message, alertVariables);
 
     // Colors for types
     let typeIcon;
@@ -101,7 +124,7 @@ export function createAlert(type, message, alertVariables = [], timeout = 0) {
         <i class="fas ${typeIcon} fa-xl"></i>
     </div>
     <div class="notifyText">
-        ${translatedMessage}
+        ${message}
     </div>`;
     domAlert.destroy = () => {
         // Fully destroy timers + DOM elements, no memory leaks!
@@ -131,6 +154,10 @@ export function createAlert(type, message, alertVariables = [], timeout = 0) {
  * @param {string} options.html - The HTML of the popup contents
  * @param {Promise<any>} options.resolvePromise - A promise to resolve before closing the modal
  * @param {boolean?} options.hideConfirm - Whether to hide the Confirm button or not
+ * @param {boolean?} options.purpleModal - Toggle a Purple modal, or leave as false for White
+ * @param {boolean?} options.textLeft - Toggle to align modal text to the left, or leave as false for center
+ * @param {boolean?} options.noPadding - Toggle zero padding, or leave as false for default padding
+ * @param {number?} options.maxHeight - An optional modal Max Height, omit for default modal max
  * @returns {Promise<boolean|any>}
  */
 export async function confirmPopup({
@@ -138,6 +165,10 @@ export async function confirmPopup({
     html,
     resolvePromise,
     hideConfirm,
+    purpleModal,
+    textLeft,
+    noPadding,
+    maxHeight,
 }) {
     // If there's a title provided: display the header and text
     doms.domConfirmModalHeader.style.display = title ? 'block' : 'none';
@@ -154,11 +185,38 @@ export async function confirmPopup({
     // Show or hide the confirm button, and replace 'Cancel' with 'Close'
     doms.domConfirmModalConfirmButton.style.display = hideConfirm ? 'none' : '';
     doms.domConfirmModalCancelButton.innerText = hideConfirm
-        ? 'Close'
-        : 'Cancel';
+        ? translation.popupClose
+        : translation.popupCancel;
 
     // Set content display
     doms.domConfirmModalContent.innerHTML = html;
+
+    // Set text align to left
+    if (textLeft) {
+        doms.domConfirmModalContent.classList.remove('center-text');
+    } else {
+        doms.domConfirmModalContent.classList.add('center-text');
+    }
+
+    // Use the purple modal
+    if (purpleModal) {
+        doms.domConfirmModalMain.classList.add('exportKeysModalColor');
+    } else {
+        doms.domConfirmModalMain.classList.remove('exportKeysModalColor');
+    }
+
+    // Remove padding
+    if (noPadding) {
+        doms.domConfirmModalContent.classList.add('px-0');
+        doms.domConfirmModalContent.classList.add('pb-0');
+    } else {
+        doms.domConfirmModalContent.classList.remove('px-0');
+        doms.domConfirmModalContent.classList.remove('pb-0');
+    }
+
+    // Set max-height (removed at `.finally` context)
+    if (maxHeight)
+        doms.domConfirmModalDialog.classList.add(`max-w-${maxHeight}`);
 
     // If there's an input in the prompt, focus the cursor upon it
     for (const domElement of doms.domConfirmModalContent.children) {
@@ -184,6 +242,9 @@ export async function confirmPopup({
     } finally {
         // We want to hide the modal even if an exception occurs
         $('#confirmModal').modal('hide');
+
+        // Reset any modal settings
+        doms.domConfirmModalDialog.classList.remove(`max-w-${maxHeight}`);
     }
 }
 
@@ -195,6 +256,57 @@ export function createQR(strData = '', domImg, size = 4) {
     cQR.make();
     domImg.innerHTML = cQR.createImgTag(2, 2);
     domImg.firstChild.style.borderRadius = '8px';
+}
+
+/**
+ * Prompt image selection, and return base64 of an image file.
+ * @returns {Promise<string>} The base64 string of the selected image file.
+ */
+export async function getImageFile() {
+    return new Promise((resolve) => {
+        let input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        input.onchange = (e) => {
+            let file = e.target.files[0];
+            let reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result);
+            reader.readAsDataURL(file);
+        };
+        input.click();
+    });
+}
+
+/**
+ * A quick check to see if an address is a Standard (P2PKH) address
+ * @param {string} strAddress - The address to check
+ * @returns {boolean} - `true` if a Standard address, `false` if not
+ */
+export function isStandardAddress(strAddress) {
+    return (
+        strAddress.length === 34 &&
+        cChainParams.current.PUBKEY_PREFIX.includes(strAddress[0])
+    );
+}
+
+/**
+ * A quick check to see if a string is an XPub key
+ * @param {string} strXPub - The XPub to check
+ * @returns {boolean} - `true` if a valid formatted XPub, `false` if not
+ */
+export function isXPub(strXPub) {
+    if (!strXPub.startsWith('xpub')) return false;
+
+    // Attempt to Base58 decode the XPub
+    try {
+        // Slice away the `xpub` prefix and decode
+        const decoded = bs58.decode(strXPub.slice(4));
+
+        // Then verify the final length too
+        return decoded.length === 78;
+    } catch (e) {
+        return false;
+    }
 }
 
 /**
@@ -215,8 +327,7 @@ export function parseBIP21Request(strReq) {
     // Ensure the address is valid
     if (
         // Standard address
-        (strAddress.length !== 34 ||
-            !cChainParams.current.PUBKEY_PREFIX.includes(strAddress[0])) &&
+        !isStandardAddress(strAddress) &&
         // Shield address
         !isValidBech32(strAddress).valid
     ) {
@@ -271,6 +382,26 @@ export function sanitizeHTML(text) {
 }
 
 /**
+ * "Beautifies" a number with HTML, by displaying decimals in a lower opacity
+ * @param {string} strNumber - The number in String form to beautify
+ * @param {string?} strDecFontSize - The optional font size to display decimals in
+ * @returns {string} - A HTML string with beautified number handling
+ */
+export function beautifyNumber(strNumber, strDecFontSize = '') {
+    if (typeof strNumber === 'number') strNumber = strNumber.toString();
+
+    // Only run this for numbers with decimals
+    if (!strNumber.includes('.')) return strNumber;
+
+    // Split the number in to Full and Decimal parts
+    const arrNumParts = strNumber.split('.');
+
+    // Return a HTML that renders the decimal in a lower opacity
+    const strFontSize = strDecFontSize ? 'font-size: ' + strDecFontSize : '';
+    return `${arrNumParts[0]}<span style="opacity: 0.55; ${strFontSize}">.${arrNumParts[1]}</span>`;
+}
+
+/**
  * Check if a string is valid Base64 encoding
  * @param {string} str - String to check
  * @returns {boolean}
@@ -297,6 +428,44 @@ export function isBase64(str) {
 
     // The string is likely Base64-encoded:
     return true;
+}
+
+/**
+ * Checks if two values are of the same type.
+ *
+ * @param {any} a - The first value.
+ * @param {any} b - The second value.
+ * @returns {boolean} - `true` if the values are of the same type, `false` if not or if there was an error comparing.
+ */
+export function isSameType(a, b) {
+    try {
+        if (a === null || b === null) return a === b;
+        if (typeof a !== typeof b) return false;
+        if (typeof a === 'object')
+            return Object.getPrototypeOf(a) === Object.getPrototypeOf(b);
+        return true;
+    } catch (e) {
+        return false;
+    }
+}
+
+/**
+ * Checks if a value is 'empty'.
+ *
+ * @param {any} val - The value to check.
+ * @returns {boolean} - `true` if the value is 'empty', `false` otherwise.
+ * ---
+ * Values **considered 'empty'**: `null`, `undefined`, empty strings, empty arrays, empty objects.
+ *
+ * Values **NOT considered 'empty'**: Any non-nullish primitive value: numbers (including `0` and `NaN`), `true`, `false`, `Symbol()`, `BigInt()`.
+ */
+export function isEmpty(val) {
+    return (
+        val == null ||
+        val === '' ||
+        (Array.isArray(val) && val.length === 0) ||
+        (typeof val === 'object' && Object.keys(val).length === 0)
+    );
 }
 
 /**

@@ -1,7 +1,13 @@
 import { cChainParams, COIN } from './chain_params';
 import { Database } from './database';
 import { doms, getBalance, restoreWallet, sweepAddress } from './global';
-import { createAlert, getAlphaNumericRand } from './misc';
+import {
+    arrayToCSV,
+    createAlert,
+    downloadBlob,
+    getAlphaNumericRand,
+} from './misc';
+import { ALERTS, translation, tr } from './i18n';
 import { getNetwork } from './network';
 import { scanQRCode } from './scanner';
 import { createAndSendTransaction } from './transactions';
@@ -38,6 +44,12 @@ export class PromoWallet {
         this.time = time instanceof Date ? time : new Date(time);
     }
 
+    /** A flag to show if this UTXO has successfully synced UTXOs previously */
+    fSynced = false;
+
+    /** A lock to prevent this Promo from synchronisation races */
+    fLock = false;
+
     /**
      * Synchronise UTXOs and return the balance of the Promo Code
      * @param {boolean} - Whether to use UTXO Cache, or sync from network
@@ -59,6 +71,10 @@ export class PromoWallet {
      * @returns {Promise<Array<object>>}
      */
     async getUTXOs(fFull = false) {
+        // For shallow syncs, don't allow racing: but Full syncs are allowed to bypass for Tx creation
+        if (!fFull && this.fLock) return this.utxos;
+        this.fLock = true;
+
         // If we don't have it, derive the public key from the promo code's WIF
         if (!this.address) {
             this.address = deriveAddress({ pkBytes: this.pkBytes });
@@ -81,7 +97,9 @@ export class PromoWallet {
             }
         }
 
-        // Return the UTXO set
+        // Unlock, mark as synced and return the UTXO set
+        this.fLock = false;
+        this.fSynced = true;
         return this.utxos;
     }
 }
@@ -150,7 +168,7 @@ export async function setPromoMode(fMode) {
 
             // Show smooth table animation
             setTimeout(() => {
-                doms.domPromoTable.style.maxHeight = '600px';
+                doms.domPromoTable.style.maxHeight = 'min-content';
             }, 100);
         }
     }
@@ -168,7 +186,7 @@ export function promoConfirm() {
 
         // Show smooth table animation
         setTimeout(() => {
-            doms.domPromoTable.style.maxHeight = '600px';
+            doms.domPromoTable.style.maxHeight = 'min-content';
         }, 100);
 
         createPromoCode(
@@ -204,10 +222,14 @@ export async function createPromoCode(strCode, nAmount, fAddRandomness = true) {
         : strCode;
 
     // Ensure the amount is sane
-    if (nAmount < 0.01) {
+    const min = 0.01;
+    if (nAmount < min) {
         return createAlert(
             'warning',
-            'Minimum amount is 0.01 ' + cChainParams.current.TICKER + '!'
+            tr(ALERTS.PROMO_MIN, [
+                { min },
+                { ticker: cChainParams.current.TICKER },
+            ])
         );
     }
 
@@ -215,9 +237,9 @@ export async function createPromoCode(strCode, nAmount, fAddRandomness = true) {
     if (arrPromoCreationThreads.length >= navigator.hardwareConcurrency)
         return createAlert(
             'warning',
-            'Your device can only create ' +
-                navigator.hardwareConcurrency +
-                ' codes at a time!',
+            tr(ALERTS.PROMO_MAX_QUANTITY, [
+                { quantity: navigator.hardwareConcurrency },
+            ]),
             4000
         );
 
@@ -229,9 +251,9 @@ export async function createPromoCode(strCode, nAmount, fAddRandomness = true) {
     if (getBalance() - nReservedBalance < nAmount * COIN + PROMO_FEE * 2) {
         return createAlert(
             'warning',
-            "You don't have enough " +
-                cChainParams.current.TICKER +
-                ' to create that code!',
+            tr(ALERTS.PROMO_NOT_ENOUGH, [
+                { ticker: cChainParams.current.TICKER },
+            ]),
             4000
         );
     }
@@ -240,11 +262,7 @@ export async function createPromoCode(strCode, nAmount, fAddRandomness = true) {
     const db = await Database.getInstance();
     const arrCodes = (await db.getAllPromos()).concat(arrPromoCreationThreads);
     if (arrCodes.some((a) => a.code === strFinalCode)) {
-        return createAlert(
-            'warning',
-            "You've already created that code!",
-            3000
-        );
+        return createAlert('warning', ALERTS.PROMO_ALREADY_CREATED, 3000);
     }
 
     // Create a new thread
@@ -300,6 +318,14 @@ export async function deletePromoCode(strCode) {
     const db = await Database.getInstance();
     await db.removePromo(strCode);
 
+    // And splice from post-creation memory too, if it exists
+    const nMemIndex = arrPromoCodes.findIndex(
+        (cCode) => cCode.code === strCode
+    );
+    if (nMemIndex >= 0) {
+        arrPromoCodes.splice(nMemIndex, 1);
+    }
+
     // Re-render promos
     await updatePromoCreationTick();
 }
@@ -310,6 +336,11 @@ export async function deletePromoCode(strCode) {
  * @property {number} codes - The number of codes returned in the response.
  * @property {string} html - The HTML string returned in the response.
  */
+
+/** An in-memory representation of all created Promo Wallets
+ * @type {Array<PromoWallet>}
+ */
+let arrPromoCodes = [];
 
 /**
  * Render locally-saved Promo Codes in the created list
@@ -322,17 +353,36 @@ export async function renderSavedPromos() {
     // Finished or 'Saved' codes are hoisted to the top, static
     const db = await Database.getInstance();
     const arrCodes = await db.getAllPromos();
-    for (const cCode of arrCodes) {
+
+    // Render each code; sorted by Newest First, Oldest Last.
+    for (const cDiskCode of arrCodes.sort((a, b) => b.time - a.time)) {
+        // Move on-disk promos to a memory representation for quick state computation
+        let cCode = arrPromoCodes.find((code) => code.code === cDiskCode.code);
+        if (!cCode) {
+            // Push this disk promo to memory
+            cCode = cDiskCode;
+            arrPromoCodes.push(cCode);
+        }
+
         // Sync only the balance of the code (not full data)
-        await cCode.getUTXOs(false);
+        cCode.getUTXOs(false);
         const nBal = (await cCode.getBalance(true)) / COIN;
 
-        // A code younger than ~2 minutes without a balance will just say 'confirming', since Blockbook does not return a balance for NEW codes
-        const fNew = cCode.time.getTime() > Date.now() - 120000;
+        // A code younger than ~3 minutes without a balance will just say 'confirming', since Blockbook does not return a balance for NEW codes
+        const fNew = cCode.time.getTime() > Date.now() - 60000 * 3;
 
         // If this code is allowed to be deleted or not
-        const fCannotDelete = fNew || nBal > 0;
+        const fCannotDelete = !cCode.fSynced || fNew || nBal > 0;
 
+        // Status calculation (defaults to 'fNew' condition)
+        let strStatus = 'Confirming...';
+        if (!fNew) {
+            if (cCode.fSynced) {
+                strStatus = nBal > 0 ? 'Unclaimed' : 'Claimed';
+            } else {
+                strStatus = 'Syncing';
+            }
+        }
         strHTML += `
              <tr>
                  <td>${
@@ -351,19 +401,43 @@ export async function renderSavedPromos() {
             cCode.code
         }</code></td>
                  <td>${
-                     fNew ? '...' : nBal + ' ' + cChainParams.current.TICKER
+                     fNew || !cCode.fSynced
+                         ? '...'
+                         : nBal + ' ' + cChainParams.current.TICKER
                  }</td>
                  <td><a class="ptr active" style="margin-right: 10px;" href="${
                      getNetwork().strUrl + '/address/' + cCode.address
-                 }" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-up-right-from-square"></i></a>${
-            fNew ? 'Confirming...' : nBal > 0 ? 'Unclaimed' : 'Claimed'
-        }</td>
+                 }" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-up-right-from-square"></i></a>${strStatus}</td>
              </tr>
          `;
     }
 
     // Return how many codes were rendered
     return { codes: arrCodes.length, html: strHTML };
+}
+
+/** Export and download all PIVX Promos data in to a CSV format */
+export async function promosToCSV() {
+    const arrCSV = [
+        // Titles
+        ['Promo Code', 'PIV (Remaining)', 'Funding Address'],
+        // Content
+    ];
+
+    // Push each code in to the CSV
+    for (const cCode of arrPromoCodes) {
+        arrCSV.push([
+            cCode.code,
+            (await cCode.getBalance(true)) / COIN,
+            cCode.address,
+        ]);
+    }
+
+    // Encode it
+    const cCSV = arrayToCSV(arrCSV);
+
+    // Download it
+    downloadBlob(cCSV, 'promos.csv', 'text/csv;charset=utf-8;');
 }
 
 /**
@@ -384,9 +458,7 @@ export async function updatePromoCreationTick(fRecursive = false) {
             // Ensure the wallet is unlocked
             if (masterKey.isViewOnly) {
                 $('#redeemCodeModal').modal('hide');
-                if (
-                    await restoreWallet('Unlock to finalise your Promo Code!')
-                ) {
+                if (await restoreWallet(translation.walletUnlockPromo)) {
                     // Unlocked! Re-show the promo UI and continue
                     $('#redeemCodeModal').modal('show');
                 } else {
@@ -434,14 +506,15 @@ export async function updatePromoCreationTick(fRecursive = false) {
         }
 
         // Render the table row
-        strHTML += `
+        strHTML =
+            `
              <tr>
                  <td><i class="fa-solid fa-ban ptr" onclick="MPW.deletePromoCode('${cThread.code}')"></i></td>
                  <td><code class="wallet-code active" style="display: inline !important;">${cThread.code}</code></td>
                  <td>${cThread.amount} ${cChainParams.current.TICKER}</td>
                  <td>${strState}</td>
              </tr>
-         `;
+         ` + strHTML;
     }
 
     // Render the compiled HTML

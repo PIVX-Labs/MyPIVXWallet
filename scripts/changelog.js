@@ -1,4 +1,5 @@
 import { doms } from './global';
+import { translation } from './i18n';
 import { confirmPopup, sanitizeHTML } from './misc';
 
 // ESLint error-skipping for webpack-injected globals
@@ -62,7 +63,7 @@ export function renderChangelog() {
     const strFinalHTML = `<div class="changelog">${strHTML}</div>`;
 
     confirmPopup({
-        title: "What's New in " + VERSION + '?',
+        title: translation.changelogTitle + ' ' + VERSION + '?',
         html: strFinalHTML,
         resolvePromise: false,
         hideConfirm: true,

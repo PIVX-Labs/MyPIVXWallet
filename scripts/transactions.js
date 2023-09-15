@@ -1,6 +1,6 @@
 import bitjs from './bitTrx.js';
 import { debug, strColdStakingAddress } from './settings.js';
-import { ALERTS } from './i18n.js';
+import { ALERTS, translation, tr } from './i18n.js';
 import {
     doms,
     getBalance,
@@ -16,6 +16,8 @@ import {
     getNewAddress,
     cHardwareWallet,
     strHardwareName,
+    getDerivationPath,
+    HdMasterKey,
 } from './wallet.js';
 import { Mempool, UTXO } from './mempool.js';
 import { getNetwork } from './network.js';
@@ -24,6 +26,8 @@ import {
     createAlert,
     generateMasternodePrivkey,
     confirmPopup,
+    isXPub,
+    isStandardAddress,
 } from './misc.js';
 import { bytesToHex, hexToBytes, dSHA256 } from './utils.js';
 import { Database } from './database.js';
@@ -33,11 +37,10 @@ function validateAmount(nAmountSats, nMinSats = 10000) {
     if (nAmountSats < nMinSats || isNaN(nAmountSats)) {
         createAlert(
             'warning',
-            ALERTS.INVALID_AMOUNT + ALERTS.VALIDATE_AMOUNT_LOW,
-            [
+            tr(ALERTS.INVALID_AMOUNT + ALERTS.VALIDATE_AMOUNT_LOW, [
                 { minimumAmount: nMinSats / COIN },
                 { coinTicker: cChainParams.current.TICKER },
-            ],
+            ]),
             2500
         );
         return false;
@@ -47,8 +50,10 @@ function validateAmount(nAmountSats, nMinSats = 10000) {
     if (!Number.isSafeInteger(nAmountSats)) {
         createAlert(
             'warning',
-            ALERTS.INVALID_AMOUNT + '<br>' + ALERTS.VALIDATE_AMOUNT_DECIMAL,
-            [{ coinDecimal: COIN_DECIMALS }],
+            tr(
+                ALERTS.INVALID_AMOUNT + '<br>' + ALERTS.VALIDATE_AMOUNT_DECIMAL,
+                [{ coinDecimal: COIN_DECIMALS }]
+            ),
             2500
         );
         return false;
@@ -68,64 +73,100 @@ export async function createTxGUI() {
     // Ensure the wallet is unlocked
     if (
         masterKey.isViewOnly &&
-        !(await restoreWallet('Unlock to send your transaction!'))
+        !(await restoreWallet(translation.walletUnlockTx))
     )
         return;
 
-    // Sanity check the address
-    const address = doms.domAddress1s.value.trim();
+    // Sanity check the receiver
+    const strRawReceiver = doms.domAddress1s.value.trim();
+
+    // Cache the "end" receiver, which will be an Address
+    let strReceiverAddress = strRawReceiver;
+
+    // Check for any contacts that match the input
+    const cDB = await Database.getInstance();
+    const cAccount = await cDB.getAccount();
+
+    // If we have an Account, then check our Contacts for anything matching too
+    const cContact = cAccount?.getContactBy({
+        name: strRawReceiver,
+        pubkey: strRawReceiver,
+    });
+    // If a Contact were found, we use it's Pubkey
+    if (cContact) strReceiverAddress = cContact.pubkey;
+
+    // If this is an XPub, we'll fetch their last used 'index', and derive a new public key for enhanced privacy
+    if (isXPub(strReceiverAddress)) {
+        const cNet = getNetwork();
+        if (!cNet.enabled)
+            return createAlert(
+                'warning',
+                ALERTS.WALLET_OFFLINE_AUTOMATIC,
+                3500
+            );
+
+        // Fetch the XPub info
+        const cXPub = await cNet.getXPubInfo(strReceiverAddress);
+
+        // Use the latest index plus one (or if the XPub is unused, then the second address)
+        const nIndex = (cXPub.usedTokens || 0) + 1;
+        const strPath = getDerivationPath(false, 0, 0, nIndex, false);
+
+        // Create a receiver master-key
+        const cReceiverWallet = new HdMasterKey({ xpub: strReceiverAddress });
+
+        // Set the 'receiver address' as the unused XPub-derived address
+        strReceiverAddress = cReceiverWallet.getAddress(strPath);
+    }
 
     // If Staking address: redirect to staking page
-    if (address.startsWith(cChainParams.current.STAKING_PREFIX)) {
-        createAlert('warning', ALERTS.STAKE_NOT_SEND, [], 7500);
+    if (
+        strReceiverAddress.startsWith(cChainParams.current.STAKING_PREFIX) &&
+        strRawReceiver.length === 34
+    ) {
+        createAlert('warning', ALERTS.STAKE_NOT_SEND, 7500);
+        // Close the current Send Popup
+        toggleBottomMenu('transferMenu', 'transferAnimation');
+        // Open the Staking Dashboard
         return doms.domStakeTab.click();
     }
 
-    if (address.length !== 34)
+    // Check if the Receiver Address is a valid P2PKH address
+    if (!isStandardAddress(strReceiverAddress))
         return createAlert(
             'warning',
-            ALERTS.BAD_ADDR_LENGTH,
-            [{ addressLength: address.length }],
+            tr(ALERTS.INVALID_ADDRESS, [{ address: strReceiverAddress }]),
             2500
         );
 
     // Sanity check the amount
-    let nValue = Math.round(
+    const nValue = Math.round(
         Number(doms.domSendAmountCoins.value.trim()) * COIN
     );
-    if (nValue <= 0 || isNaN(nValue))
-        return createAlert(
-            'warning',
-            ALERTS.INVALID_AMOUNT + ALERTS.SENT_NOTHING,
-            [],
-            2500
-        );
-    if (!Number.isSafeInteger(nValue))
-        return createAlert(
-            'warning',
-            ALERTS.INVALID_AMOUNT + ALERTS.MORE_THEN_8_DECIMALS,
-            [],
-            2500
-        );
+    if (!validateAmount(nValue)) return;
 
     // Create and send the TX
     const cRes = await createAndSendTransaction({
-        address,
+        address: strReceiverAddress,
         amount: nValue,
         isDelegation: false,
     });
 
-    // Wipe any payment request info
-    if (cRes.ok && doms.domReqDesc.value) {
-        // Description
-        doms.domReqDesc.value = '';
-        doms.domReqDisplay.style.display = 'none';
+    // If successful, wipe Tx input
+    if (cRes.ok) {
         // Address
         doms.domAddress1s.value = '';
         // Amount
         doms.domSendAmountCoins.value = '';
         // Price
         doms.domSendAmountValue.value = '';
+
+        // Wipe any Payment Request info
+        if (doms.domReqDesc.value) {
+            // Description
+            doms.domReqDesc.value = '';
+            doms.domReqDisplay.style.display = 'none';
+        }
     }
 }
 
@@ -137,13 +178,13 @@ export async function delegateGUI() {
     if (
         masterKey.isViewOnly &&
         !(await restoreWallet(
-            `Unlock to stake your ${cChainParams.current.TICKER}!`
+            `${translation.walletUnlockStake} ${cChainParams.current.TICKER}!`
         ))
     )
         return;
 
     // Verify the amount; Delegations must be a minimum of 1 PIV, enforced by the network
-    const nAmount = Number(doms.domStakeAmount.value.trim()) * COIN;
+    const nAmount = Math.round(Number(doms.domStakeAmount.value.trim()) * COIN);
     if (!validateAmount(nAmount, COIN)) return;
 
     // Ensure the user has an address set - if not, request one!
@@ -177,14 +218,14 @@ export async function delegateGUI() {
  */
 export async function undelegateGUI() {
     if (masterKey.isHardwareWallet) {
-        return createAlert('warning', 'Ledger not supported', 6000);
+        return createAlert('warning', ALERTS.STAKING_LEDGER_NO_SUPPORT, 6000);
     }
 
     // Ensure the wallet is unlocked
     if (
         masterKey.isViewOnly &&
         !(await restoreWallet(
-            `Unlock to unstake your ${cChainParams.current.TICKER}!`
+            `${translation.walletUnlockUnstake} ${cChainParams.current.TICKER}!`
         ))
     )
         return;
@@ -243,17 +284,13 @@ export async function createAndSendTransaction({
 }) {
     if (!(await hasWalletUnlocked(true))) return;
     if ((isDelegation || useDelegatedInputs) && masterKey.isHardwareWallet) {
-        return createAlert(
-            'warning',
-            'Ledger is currently not supported.',
-            6000
-        );
+        return createAlert('warning', ALERTS.STAKING_LEDGER_NO_SUPPORT, 6000);
     }
 
     // Ensure the wallet is unlocked
     if (
         masterKey.isViewOnly &&
-        !(await restoreWallet('Unlock to send your transaction!'))
+        !(await restoreWallet(translation.walletUnlockTx))
     )
         return;
 
@@ -341,22 +378,22 @@ export async function createAndSendTransaction({
     }
 
     // Debug-only verbose response
-    if (debug)
-        doms.domHumanReadable.innerHTML =
-            'Balance: ' +
-            nBalance / COIN +
-            '<br>Fee: ' +
-            nFee / COIN +
-            '<br>To: ' +
-            address +
-            '<br>Sent: ' +
-            amount / COIN +
-            (nChange > 0
-                ? '<br>Change Address: ' +
-                  changeAddress +
-                  '<br>Change: ' +
-                  nChange / COIN
-                : '');
+    if (debug) {
+        console.log(`
+            ---- NEW TRANSACTION (Debug Mode) ----
+             Old Balance : ${nBalance / COIN}
+             Fee         : ${nFee / COIN}
+             To          : ${address}
+             Sent        : ${amount / COIN}
+             Inputs Qty  : ${cTx.inputs.length}
+             Outputs Qty : ${outputs.length}
+             Change addr : ${nChange > 0 ? changeAddress : 'N/A (no change)'}
+             Change      : ${nChange > 0 ? nChange / COIN : 'N/A (no change)'}
+             Tx Size (b) : ${cTx.serialize().length}
+            ---- END TRANSACTION (Debug Mode) ----
+        `);
+    }
+
     const sign = await signTransaction(cTx, masterKey, outputs, delegateChange);
     const result = await getNetwork().sendTransaction(sign);
     // Update the mempool
@@ -406,7 +443,7 @@ export async function createMasternode() {
     // Ensure the wallet is unlocked
     if (
         masterKey.isViewOnly &&
-        !(await restoreWallet('Unlock to create your Masternode!'))
+        !(await restoreWallet(translation.walletUnlockCreateMN))
     )
         return;
 
@@ -430,10 +467,7 @@ export async function createMasternode() {
                 ALERTS.CONFIRM_POPUP_MN_P_KEY_HTML,
         });
     }
-    createAlert(
-        'success',
-        '<b>Masternode Created!<b><br>Wait 15 confirmations to proceed further'
-    );
+    createAlert('success', ALERTS.MN_CREATED_WAIT_CONFS);
     // Remove any previous Masternode data, if there were any
     const database = await Database.getInstance();
     database.removeMasternode();

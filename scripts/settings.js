@@ -2,19 +2,30 @@ import {
     doms,
     getBalance,
     getStakingBalance,
+    guiUpdateImportInput,
+    mempool,
     refreshChainData,
+    renderActivityGUI,
+    setDisplayForAllWalletOptions,
     updateActivityGUI,
+    updateEncryptionGUI,
     updateGovernanceTab,
 } from './global.js';
-import { fWalletLoaded, masterKey } from './wallet.js';
+import {
+    hasEncryptedWallet,
+    importWallet,
+    masterKey,
+    setMasterKey,
+} from './wallet.js';
 import { cChainParams } from './chain_params.js';
 import { setNetwork, ExplorerNetwork, getNetwork } from './network.js';
-import { createAlert } from './misc.js';
+import { confirmPopup, createAlert, isEmpty } from './misc.js';
 import {
     switchTranslation,
     ALERTS,
     translation,
     arrActiveLangs,
+    tr,
 } from './i18n.js';
 import { CoinGecko, refreshPriceDisplay } from './prices.js';
 import { Database } from './database.js';
@@ -40,6 +51,10 @@ export let cNode = cChainParams.current.Nodes[0];
 export let fAutoSwitch = true;
 /** The active Cold Staking address: default is the PIVX Labs address */
 export let strColdStakingAddress = 'SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy';
+/** The decimals to display for the wallet balance */
+export let nDisplayDecimals = 2;
+/** A mode which configures MPW towards Advanced users, with low-level feature access and less restrictions (Potentially dangerous) */
+export let fAdvancedMode = false;
 
 let transparencyReport;
 
@@ -72,14 +87,24 @@ export class Settings {
      * @type {String} Currency to display
      */
     displayCurrency;
+    /**
+     * @type {number} The decimals to display for the wallet balance
+     */
+    displayDecimals;
+    /**
+     * @type {boolean} Whether Advanced Mode is enabled or disabled
+     */
+    advancedMode;
     constructor({
         analytics,
         explorer,
         node,
         autoswitch = true,
         coldAddress = strColdStakingAddress,
-        translation = 'en',
+        translation = '',
         displayCurrency = 'usd',
+        displayDecimals = nDisplayDecimals,
+        advancedMode = false,
     } = {}) {
         this.analytics = analytics;
         this.explorer = explorer;
@@ -88,6 +113,8 @@ export class Settings {
         this.coldAddress = coldAddress;
         this.translation = translation;
         this.displayCurrency = displayCurrency;
+        this.displayDecimals = displayDecimals;
+        this.advancedMode = advancedMode;
     }
 }
 
@@ -103,6 +130,7 @@ export let STATS = {
 export const cStatKeys = Object.keys(STATS);
 
 // A list of Analytics 'levels' at which the user may set depending on their privacy preferences
+// NOTE: When changing Level Names, ensure the i18n system is updated to support them too
 let arrAnalytics = [
     // Statistic level  // Allowed statistics
     { name: 'Disabled', stats: [] },
@@ -131,6 +159,11 @@ export async function start() {
     // Hook up the 'currency' select UI
     document.getElementById('currency').onchange = function (evt) {
         setCurrency(evt.target.value);
+    };
+
+    // Hook up the 'display decimals' slider UI
+    doms.domDisplayDecimalsSlider.onchange = function (evt) {
+        setDecimals(Number(evt.target.value));
     };
 
     // Hook up the 'explorer' select UI
@@ -163,14 +196,6 @@ export async function start() {
         refreshPriceDisplay().finally(refreshChainData);
     }
 
-    // Add each analytics level into the UI selector
-    const domAnalyticsSelect = document.getElementById('analytics');
-    for (const analLevel of arrAnalytics) {
-        const opt = document.createElement('option');
-        opt.value = opt.innerHTML = analLevel.name;
-        domAnalyticsSelect.appendChild(opt);
-    }
-
     const database = await Database.getInstance();
 
     // Fetch settings from Database
@@ -178,14 +203,30 @@ export async function start() {
         analytics: strSettingAnalytics,
         autoswitch,
         coldAddress,
+        displayCurrency,
+        displayDecimals,
+        advancedMode,
     } = await database.getSettings();
 
     // Set the Cold Staking address
     strColdStakingAddress = coldAddress;
 
     // Set any Toggles to their default or DB state
+    // Network Auto-Switch
     fAutoSwitch = autoswitch;
     doms.domAutoSwitchToggle.checked = fAutoSwitch;
+
+    // Advanced Mode
+    fAdvancedMode = advancedMode;
+    doms.domAdvancedModeToggler.checked = fAdvancedMode;
+    await configureAdvancedMode();
+
+    // Set the display currency
+    strCurrency = doms.domCurrencySelect.value = displayCurrency;
+
+    // Set the display decimals
+    nDisplayDecimals = displayDecimals;
+    doms.domDisplayDecimalsSlider.value = nDisplayDecimals;
 
     // Apply translations to the transparency report
     STATS = {
@@ -227,8 +268,8 @@ export async function start() {
         );
     }
 
-    // And update the UI to reflect them
-    domAnalyticsSelect.value = cAnalyticsLevel.name;
+    // Add each analytics level into the UI selector
+    fillAnalyticSelect();
 }
 // --- Settings Functions
 export async function setExplorer(explorer, fSilent = false) {
@@ -246,8 +287,7 @@ export async function setExplorer(explorer, fSilent = false) {
     if (!fSilent)
         createAlert(
             'success',
-            ALERTS.SWITCHED_EXPLORERS,
-            [{ explorerName: cExplorer.name }],
+            tr(ALERTS.SWITCHED_EXPLORERS, [{ explorerName: cExplorer.name }]),
             2250
         );
 }
@@ -262,8 +302,7 @@ async function setNode(node, fSilent = false) {
     if (!fSilent)
         createAlert(
             'success',
-            ALERTS.SWITCHED_NODE,
-            [{ node: cNode.name }],
+            tr(ALERTS.SWITCHED_NODE, [{ node: cNode.name }]),
             2250
         );
 }
@@ -271,13 +310,13 @@ async function setNode(node, fSilent = false) {
 //TRANSLATION
 /**
  * Switches the translation and sets the translation preference to database
- * @param {string} lang
- * @param {bool} fSilent
+ * @param {string} strLang
  */
-async function setTranslation(lang) {
-    switchTranslation(lang);
+export async function setTranslation(strLang) {
+    switchTranslation(strLang);
     const database = await Database.getInstance();
-    database.setSettings({ translation: lang });
+    database.setSettings({ translation: strLang });
+    doms.domTranslationSelect.value = strLang;
 }
 
 /**
@@ -290,6 +329,20 @@ async function setCurrency(currency) {
     database.setSettings({ displayCurrency: strCurrency });
     // Update the UI to reflect the new currency
     getBalance(true);
+    getStakingBalance(true);
+}
+
+/**
+ * Sets and saves the display decimals setting in runtime and database
+ * @param {number} decimals - The decimals to set for the display
+ */
+async function setDecimals(decimals) {
+    nDisplayDecimals = decimals;
+    const database = await Database.getInstance();
+    database.setSettings({ displayDecimals: nDisplayDecimals });
+    // Update the UI to reflect the new decimals
+    getBalance(true);
+    getStakingBalance(true);
 }
 
 /**
@@ -310,33 +363,39 @@ async function fillTranslationSelect() {
         doms.domTranslationSelect.remove(0);
     }
 
-    // Add each trusted explorer into the UI selector
-    for (const lang of arrActiveLangs) {
+    // Add each language into the UI selector
+    for (const cLang of arrActiveLangs) {
         const opt = document.createElement('option');
-        opt.innerHTML = opt.value = lang;
+        opt.innerHTML = `${cLang.emoji} ${cLang.code.toUpperCase()}`;
+        opt.value = cLang.code;
         doms.domTranslationSelect.appendChild(opt);
     }
 
     const database = await Database.getInstance();
-    const { translation } = await database.getSettings();
-    // And update the UI to reflect them
-    doms.domTranslationSelect.value = translation;
+    const { translation: strLang } = await database.getSettings();
+    // And update the UI to reflect them (default to English if none)
+    doms.domTranslationSelect.value = strLang;
 }
 
 /**
  * Fills the display currency dropbox on the settings page
  */
 export async function fillCurrencySelect() {
-    while (doms.domCurrencySelect.options.length > 0) {
-        doms.domCurrencySelect.remove(0);
-    }
+    const arrCurrencies = await cMarket.getCurrencies();
 
-    // Add each data source currency into the UI selector
-    for (const currency of await cMarket.getCurrencies()) {
-        const opt = document.createElement('option');
-        opt.innerHTML = currency.toUpperCase();
-        opt.value = currency;
-        doms.domCurrencySelect.appendChild(opt);
+    // Only update if we have a currency list
+    if (!isEmpty(arrCurrencies)) {
+        while (doms.domCurrencySelect.options.length > 0) {
+            doms.domCurrencySelect.remove(0);
+        }
+
+        // Add each data source currency into the UI selector
+        for (const currency of arrCurrencies) {
+            const opt = document.createElement('option');
+            opt.innerHTML = currency.toUpperCase();
+            opt.value = currency;
+            doms.domCurrencySelect.appendChild(opt);
+        }
     }
 
     const database = await Database.getInstance();
@@ -344,6 +403,21 @@ export async function fillCurrencySelect() {
 
     // And update the UI to reflect them
     strCurrency = doms.domCurrencySelect.value = displayCurrency;
+}
+
+/**
+ * Fills the Analytics Settings UI
+ */
+export function fillAnalyticSelect() {
+    const domAnalyticsSelect = document.getElementById('analytics');
+    domAnalyticsSelect.innerHTML = '';
+    for (const analLevel of arrAnalytics) {
+        const opt = document.createElement('option');
+        // Apply translation to the display HTML
+        opt.value = analLevel.name;
+        opt.innerHTML = translation['analytic' + analLevel.name];
+        domAnalyticsSelect.appendChild(opt);
+    }
 }
 
 async function setAnalytics(level, fSilent = false) {
@@ -379,26 +453,54 @@ async function setAnalytics(level, fSilent = false) {
     if (!fSilent)
         createAlert(
             'success',
-            ALERTS.SWITCHED_ANALYTICS,
-            [{ level: cAnalyticsLevel.name }],
+            tr(ALERTS.SWITCHED_ANALYTICS, [
+                { level: translation['analytic' + cAnalyticsLevel.name] },
+            ]),
             2250
         );
 }
 
-export function toggleTestnet() {
-    if (fWalletLoaded) {
-        // Revert testnet toggle
-        doms.domTestnetToggler.checked = !doms.domTestnetToggler.checked;
-        return createAlert('warning', ALERTS.UNABLE_SWITCH_TESTNET, [], 3250);
-    }
-
-    // Update current chain config
-    cChainParams.current = cChainParams.current.isTestnet
+/**
+ * Toggle between Mainnet and Testnet
+ */
+export async function toggleTestnet() {
+    const cNextNetwork = cChainParams.current.isTestnet
         ? cChainParams.main
         : cChainParams.testnet;
 
+    // If the current wallet is not saved, we'll ask the user for confirmation, since they'll lose their wallet if they switch with an unsaved wallet!
+    if (masterKey && !(await hasEncryptedWallet())) {
+        const fContinue = await confirmPopup({
+            title: tr(translation.netSwitchUnsavedWarningTitle, [
+                { network: cChainParams.current.name },
+            ]),
+            html: `
+            <b>${tr(translation.netSwitchUnsavedWarningSubtitle, [
+                { network: cChainParams.current.name },
+            ])}</b>
+            <br>
+            ${tr(translation.netSwitchUnsavedWarningSubtext, [
+                { network: cNextNetwork.name },
+            ])}
+            <br>
+            <br>
+            <i style="opacity:0.65">${
+                translation.netSwitchUnsavedWarningConfirmation
+            }</i>
+        `,
+        });
+
+        if (!fContinue) {
+            // Kick back the "toggle" switch
+            doms.domTestnetToggler.checked = cChainParams.current.isTestnet;
+            return;
+        }
+    }
+
+    // Update current chain config
+    cChainParams.current = cNextNetwork;
+
     // Update UI and static tickers
-    //TRANSLATIONS
     doms.domTestnet.style.display = cChainParams.current.isTestnet
         ? ''
         : 'none';
@@ -410,12 +512,50 @@ export function toggleTestnet() {
     // Update testnet toggle in settings
     doms.domTestnetToggler.checked = cChainParams.current.isTestnet;
 
-    fillExplorerSelect();
-    fillNodeSelect();
+    // Check if the new network has an Account
+    const cNewDB = await Database.getInstance();
+    const cNewAccount = await cNewDB.getAccount();
+    if (cNewAccount?.publicKey) {
+        // Import the new wallet (overwriting the existing in-memory wallet)
+        await importWallet({ newWif: cNewAccount.publicKey });
+    } else {
+        // Nuke the Master Key
+        setMasterKey(null);
+
+        // Hide all Dashboard info, kick the user back to the "Getting Started" area
+        doms.domGenKeyWarning.style.display = 'none';
+        doms.domGuiWallet.style.display = 'none';
+        doms.domWipeWallet.hidden = true;
+        doms.domRestoreWallet.hidden = true;
+
+        // Set the "Wallet Options" display CSS to it's Default
+        setDisplayForAllWalletOptions('');
+
+        // Reset the "Vanity" and "Import" flows
+        doms.domPrefix.value = '';
+        doms.domPrefix.style.display = 'none';
+
+        // Show "Access Wallet" button
+        doms.domImportWallet.style.display = 'none';
+        doms.domPrivKey.style.opacity = '0';
+        doms.domAccessWallet.style.display = '';
+        doms.domAccessWalletBtn.style.display = '';
+
+        // Hide "Import Wallet" so the user has to follow the `accessOrImportWallet()` flow
+        doms.domImportWallet.style.display = 'none';
+    }
+
+    // Re-render the Activity UI as empty
+    await renderActivityGUI([]);
+
+    mempool.UTXOs = [];
     getBalance(true);
     getStakingBalance(true);
-    updateActivityGUI();
-    updateGovernanceTab();
+    await updateEncryptionGUI(!!masterKey);
+    await fillExplorerSelect();
+    await fillNodeSelect();
+    await updateActivityGUI();
+    await updateGovernanceTab();
 }
 
 export function toggleDebug() {
@@ -495,4 +635,30 @@ async function fillNodeSelect() {
 
     // And update the UI to reflect them
     doms.domNodeSelect.value = cNode.url;
+}
+
+/**
+ * Toggle Advanced Mode at runtime and in DB
+ */
+export async function toggleAdvancedMode() {
+    fAdvancedMode = !fAdvancedMode;
+
+    // Configure the app accordingly
+    await configureAdvancedMode();
+
+    // Update the setting in the DB
+    const database = await Database.getInstance();
+    await database.setSettings({ advancedMode: fAdvancedMode });
+}
+
+/**
+ * Configure the app functionality and UI for the current mode
+ */
+async function configureAdvancedMode() {
+    // Re-render the Import Input UI
+    await guiUpdateImportInput();
+
+    // Hide or Show the "Mnemonic Passphrase" in the Seed Creation modal, and reset it's input
+    doms.domMnemonicModalPassphrase.value = '';
+    doms.domMnemonicModalPassphrase.hidden = !fAdvancedMode;
 }

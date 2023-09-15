@@ -11,14 +11,15 @@ import {
     confirmPopup,
     writeToUint8,
     pubPrebaseLen,
-    createQR,
     createAlert,
     sleep,
     getSafeRand,
+    isXPub,
+    isStandardAddress,
 } from './misc.js';
 import {
     refreshChainData,
-    hideAllWalletOptions,
+    setDisplayForAllWalletOptions,
     getBalance,
     getStakingBalance,
 } from './global.js';
@@ -27,7 +28,7 @@ import {
     MAX_ACCOUNT_GAP,
     PRIVKEY_BYTE_LENGTH,
 } from './chain_params.js';
-import { ALERTS } from './i18n.js';
+import { ALERTS, tr, translation } from './i18n.js';
 import { encrypt, decrypt } from './aes-gcm.js';
 import bs58 from 'bs58';
 import AppBtc from '@ledgerhq/hw-app-btc';
@@ -35,6 +36,9 @@ import TransportWebUSB from '@ledgerhq/hw-transport-webusb';
 import createXpub from 'create-xpub';
 import * as jdenticon from 'jdenticon';
 import { Database } from './database.js';
+import { guiRenderCurrentReceiveModal } from './contacts-book.js';
+import { Account } from './accounts.js';
+import { debug, fAdvancedMode } from './settings.js';
 
 export let fWalletLoaded = false;
 
@@ -67,7 +71,7 @@ class MasterKey {
 
     /**
      * @param {String} [path] - BIP32 path pointing to the private key.
-     * @return {String} encoded private key
+     * @return {Promise<String>} encoded private key
      * @abstract
      */
     async getPrivateKey(path) {
@@ -77,7 +81,7 @@ class MasterKey {
 
     /**
      * @param {String} [path] - BIP32 path pointing to the address
-     * @return {String} Address
+     * @return {Promise<String>} Address
      * @abstract
      */
     async getAddress(path) {
@@ -189,6 +193,17 @@ class MasterKey {
         const address = await this.getAddress(path);
         return [address, path];
     }
+
+    /**
+     * Derive the current address (by internal index)
+     * @return {Promise<String>} Address
+     * @abstract
+     */
+    async getCurrentAddress() {
+        return await this.getAddress(
+            getDerivationPath(this.isHardwareWallet, 0, 0, this.#addressIndex)
+        );
+    }
 }
 
 export class HdMasterKey extends MasterKey {
@@ -254,7 +269,10 @@ export class HdMasterKey extends MasterKey {
         if (this._isViewOnly) return this._hdKey.publicExtendedKey;
         // We need the xpub to point at the account level
         return this._hdKey.derive(
-            getDerivationPath(false).split('/').slice(0, 4).join('/')
+            getDerivationPath(false, 0, 0, 0, false)
+                .split('/')
+                .slice(0, 4)
+                .join('/')
         ).publicExtendedKey;
     }
 }
@@ -300,12 +318,11 @@ export class HardwareWalletMasterKey extends MasterKey {
         return false;
     }
     get keyToExport() {
-        return this.getxpub(
-            getDerivationPath(true)
-                .split('/')
-                .filter((v) => !v.includes("'"))
-                .join('/')
-        );
+        const derivationPath = getDerivationPath(masterKey.isHardwareWallet)
+            .split('/')
+            .slice(0, 4)
+            .join('/');
+        return this.getxpub(derivationPath);
     }
 }
 
@@ -375,13 +392,20 @@ export function getDerivationPath(
     fLedger = false,
     nAccount = 0,
     nReceiving = 0,
-    nIndex = 0
+    nIndex = 0,
+    /**
+     * When `true` will derive based on local wallet properties, when `false` it
+     * will default to only accept given params and ignore the local configuration
+     * @type {boolean}
+     */
+    fLocalWallet = true
 ) {
-    // Coin-Type is different on Ledger, as such, we modify it if we're using a Ledger to derive a key
-    const strCoinType = fLedger
-        ? cChainParams.current.BIP44_TYPE_LEDGER
-        : cChainParams.current.BIP44_TYPE;
-    if (masterKey && !masterKey.isHD && !fLedger) {
+    // Coin-Type is different on Ledger, as such, for local wallets; we modify it if we're using a Ledger to derive a key
+    const strCoinType =
+        fLocalWallet && fLedger
+            ? cChainParams.current.BIP44_TYPE_LEDGER
+            : cChainParams.current.BIP44_TYPE;
+    if (fLocalWallet && masterKey && !masterKey.isHD && !fLedger) {
         return `:)//${strCoinType}'`;
     }
     return `m/44'/${strCoinType}'/${nAccount}'/${nReceiving}/${nIndex}`;
@@ -574,7 +598,6 @@ export function deriveAddress({ pkBytes, publicKey, output = 'ENCODED' }) {
  * @param {string | Array<number>} options.newWif - The import data (if omitted, the UI input is accessed)
  * @param {boolean} options.fRaw - Whether the import data is raw bytes or encoded (WIF, xpriv, seed)
  * @param {boolean} options.isHardwareWallet - Whether the import is from a Hardware wallet or not
- * @param {boolean} options.skipConfirmation - Whether to skip the import UI confirmation or not
  * @param {boolean} options.fSavePublicKey - Whether to save the derived public key to disk (for View Only mode)
  * @param {boolean} options.fStartup - Whether the import is at Startup or at Runtime
  * @returns {Promise<void>}
@@ -583,17 +606,12 @@ export async function importWallet({
     newWif = false,
     fRaw = false,
     isHardwareWallet = false,
-    skipConfirmation = false,
     fSavePublicKey = false,
     fStartup = false,
 } = {}) {
-    const strImportConfirm =
-        "Do you really want to import a new address? If you haven't saved the last private key, the wallet will be LOST forever.";
-    const walletConfirm =
-        fWalletLoaded && !skipConfirmation
-            ? await confirmPopup({ html: strImportConfirm })
-            : true;
-
+    // TODO: remove `walletConfirm`, it is useless as Accounts cannot be overriden, and multi-accounts will come soon anyway
+    // ... just didn't want to add a huge whitespace change from removing the `if (walletConfirm) {` line
+    const walletConfirm = true;
     if (walletConfirm) {
         if (isHardwareWallet) {
             // Firefox does NOT support WebUSB, thus cannot work with Hardware wallets out-of-the-box
@@ -601,7 +619,6 @@ export async function importWallet({
                 return createAlert(
                     'warning',
                     ALERTS.WALLET_FIREFOX_UNSUPPORTED,
-                    [],
                     7500
                 );
             }
@@ -619,8 +636,9 @@ export async function importWallet({
 
             createAlert(
                 'info',
-                ALERTS.WALLET_HARDWARE_WALLET,
-                [{ hardwareWallet: strHardwareName }],
+                tr(ALERTS.WALLET_HARDWARE_WALLET, [
+                    { hardwareWallet: strHardwareName },
+                ]),
                 12500
             );
         } else {
@@ -640,51 +658,63 @@ export async function importWallet({
             doms.domPrivKey.value = '';
             doms.domPrivKeyPassword.value = '';
 
-            if (await verifyMnemonic(privateImportValue)) {
-                // Generate our masterkey via Mnemonic Phrase
+            // Clean and verify the Seed Phrase (if one exists)
+            const cPhraseValidator = await cleanAndVerifySeedPhrase(
+                privateImportValue,
+                true
+            );
+
+            // If Debugging is enabled, show what the validator returned
+            if (debug) {
+                const fnLog = cPhraseValidator.ok ? console.log : console.warn;
+                fnLog('Seed Import Validator: ' + cPhraseValidator.msg);
+            }
+
+            // If the Seed is OK, proceed
+            if (cPhraseValidator.ok) {
+                // Generate our HD MasterKey with the cleaned (Mnemonic) Seed Phrase
                 const seed = await mnemonicToSeed(
-                    privateImportValue,
+                    cPhraseValidator.phrase,
                     passphrase
                 );
                 await setMasterKey(new HdMasterKey({ seed }));
+            } else if (cPhraseValidator.phrase.includes(' ')) {
+                // The Phrase Validator failed, but the input contains at least one space; possibly a Seed Typo?
+                return createAlert('warning', cPhraseValidator.msg, 5000);
             } else {
-                // Public Key Derivation
+                // The input definitely isn't a seed, so we'll try every other import method
                 try {
-                    if (privateImportValue.startsWith('xpub')) {
+                    // XPub import (HD view only)
+                    if (isXPub(privateImportValue)) {
                         await setMasterKey(
                             new HdMasterKey({
                                 xpub: privateImportValue,
                             })
                         );
+                        // XPrv import (HD full access)
                     } else if (privateImportValue.startsWith('xprv')) {
                         await setMasterKey(
                             new HdMasterKey({
                                 xpriv: privateImportValue,
                             })
                         );
-                    } else if (
-                        privateImportValue.length === 34 &&
-                        cChainParams.current.PUBKEY_PREFIX.includes(
-                            privateImportValue[0]
-                        )
-                    ) {
+                        // Pubkey import (non-HD view only)
+                    } else if (isStandardAddress(privateImportValue)) {
                         await setMasterKey(
                             new LegacyMasterKey({
                                 address: privateImportValue,
                             })
                         );
+                        // WIF import (non-HD full access)
                     } else {
-                        // Lastly, attempt to parse as a WIF private key
+                        // Attempt to import a raw WIF private key
                         const pkBytes = parseWIF(privateImportValue);
-
-                        // Import the raw private key
                         await setMasterKey(new LegacyMasterKey({ pkBytes }));
                     }
                 } catch (e) {
                     return createAlert(
                         'warning',
-                        ALERTS.FAILED_TO_IMPORT + e.message,
-                        [],
+                        ALERTS.FAILED_TO_IMPORT + '<br>' + e.message,
                         6000
                     );
                 }
@@ -718,15 +748,9 @@ export async function importWallet({
         );
         jdenticon.update('#identicon');
 
-        // Hide the encryption prompt if the user is in Testnet mode
-        // ... or is using a hardware wallet, or is view-only mode.
-        if (
-            !(
-                cChainParams.current.isTestnet ||
-                isHardwareWallet ||
-                masterKey.isViewOnly
-            )
-        ) {
+        // Hide the encryption prompt if the user is using
+        // a hardware wallet, or is view-only mode.
+        if (!(isHardwareWallet || masterKey.isViewOnly)) {
             if (
                 // If the wallet was internally imported (not UI pasted), like via vanity, display the encryption prompt
                 (((fRaw && newWif.length) || newWif) &&
@@ -739,6 +763,9 @@ export async function importWallet({
                 // If the wallet was pasted and is an encrypted import, display the lock wallet UI
                 doms.domWipeWallet.hidden = false;
             }
+        } else {
+            // Hide the encryption UI
+            doms.domGenKeyWarning.style.display = 'none';
         }
 
         // Fetch state from explorer, if this import was post-startup
@@ -748,7 +775,7 @@ export async function importWallet({
         }
 
         // Hide all wallet starter options
-        hideAllWalletOptions();
+        setDisplayForAllWalletOptions('none');
     }
 }
 
@@ -756,7 +783,7 @@ export async function importWallet({
  * Set or replace the active Master Key with a new Master Key
  * @param {MasterKey} mk - The new Master Key to set active
  */
-async function setMasterKey(mk) {
+export async function setMasterKey(mk) {
     masterKey = mk;
     // Update the network master key
     await getNetwork().setMasterKey(masterKey);
@@ -764,12 +791,9 @@ async function setMasterKey(mk) {
 
 // Wallet Generation
 export async function generateWallet(noUI = false) {
-    const strImportConfirm =
-        "Do you really want to import a new address? If you haven't saved the last private key, the wallet will be LOST forever.";
-    const walletConfirm =
-        fWalletLoaded && !noUI
-            ? await confirmPopup({ html: strImportConfirm })
-            : true;
+    // TODO: remove `walletConfirm`, it is useless as Accounts cannot be overriden, and multi-accounts will come soon anyway
+    // ... just didn't want to add a huge whitespace change from removing the `if (walletConfirm) {` line
+    const walletConfirm = true;
     if (walletConfirm) {
         const mnemonic = generateMnemonic();
 
@@ -782,8 +806,7 @@ export async function generateWallet(noUI = false) {
         await setMasterKey(new HdMasterKey({ seed }));
         fWalletLoaded = true;
 
-        if (!cChainParams.current.isTestnet)
-            doms.domGenKeyWarning.style.display = 'block';
+        doms.domGenKeyWarning.style.display = 'block';
         // Add a listener to block page unloads until we are sure the user has saved their keys, safety first!
         addEventListener('beforeunload', beforeUnloadListener, {
             capture: true,
@@ -791,7 +814,7 @@ export async function generateWallet(noUI = false) {
 
         // Display the dashboard
         doms.domGuiWallet.style.display = 'block';
-        hideAllWalletOptions();
+        setDisplayForAllWalletOptions('none');
 
         // Update identicon
         doms.domIdenticon.dataset.jdenticonValue = masterKey.getAddress(
@@ -809,37 +832,86 @@ export async function generateWallet(noUI = false) {
     return masterKey;
 }
 
-export async function verifyMnemonic(strMnemonic = '', fPopupConfirm = true) {
-    const nWordCount = strMnemonic.trim().split(/\s+/g).length;
+/**
+ * Clean a Seed Phrase string and verify it's integrity
+ *
+ * This returns an object of the validation status and the cleaned Seed Phrase for safe low-level usage.
+ * @param {String} strPhraseInput - The Seed Phrase string
+ * @param {Boolean} fPopupConfirm - Allow a warning bypass popup if the Seed Phrase is unusual
+ */
+export async function cleanAndVerifySeedPhrase(
+    strPhraseInput = '',
+    fPopupConfirm = true
+) {
+    // Clean the phrase (removing unnecessary spaces) and force to lowercase
+    const strPhrase = strPhraseInput.trim().replace(/\s+/g, ' ').toLowerCase();
 
-    // Sanity check: Convert to lowercase
-    strMnemonic = strMnemonic.toLowerCase();
+    // Count the Words
+    const nWordCount = strPhrase.trim().split(' ').length;
 
     // Ensure it's a word count that makes sense
-    if (nWordCount >= 12 && nWordCount <= 24) {
-        if (!validateMnemonic(strMnemonic)) {
+    if (nWordCount === 12 || nWordCount === 24) {
+        if (!validateMnemonic(strPhrase)) {
+            // If a popup is allowed and Advanced Mode is enabled, warn the user that the
+            // ... seed phrase is potentially bad, and ask for confirmation to proceed
+            if (!fPopupConfirm || !fAdvancedMode)
+                return {
+                    ok: false,
+                    msg: translation.importSeedErrorTypo,
+                    phrase: strPhrase,
+                };
+
             // The reason we want to ask the user for confirmation is that the mnemonic
-            // Could have been generated with another app that has a different dictionary
-            return (
-                fPopupConfirm &&
-                (await confirmPopup({
-                    title: 'Unexpected Seed Phrase',
-                    html: 'The seed phrase is either invalid, or was not generated by MPW.<br>Do you still want to proceed?',
-                }))
-            );
+            // could have been generated with another app that has a different dictionary
+            const fSkipWarning = await confirmPopup({
+                title: translation.popupSeedPhraseBad,
+                html: translation.popupSeedPhraseBadNote,
+            });
+
+            if (fSkipWarning) {
+                // User is probably an Arch Linux user and used `-f`
+                return {
+                    ok: true,
+                    msg: translation.importSeedErrorSkip,
+                    phrase: strPhrase,
+                };
+            } else {
+                // User heeded the warning and rejected the phrase
+                return {
+                    ok: false,
+                    msg: translation.importSeedError,
+                    phrase: strPhrase,
+                };
+            }
         } else {
             // Valid count and mnemonic
-            return true;
+            return {
+                ok: true,
+                msg: translation.importSeedValid,
+                phrase: strPhrase,
+            };
         }
     } else {
         // Invalid count
-        return false;
+        return {
+            ok: false,
+            msg: translation.importSeedErrorSize,
+            phrase: strPhrase,
+        };
     }
 }
 
+/**
+ * Display a Seed Phrase popup to the user and optionally wait for a Seed Passphrase
+ * @param {string} mnemonic - The Seed Phrase to display to the user
+ * @returns {Promise<string>} - The Mnemonic Passphrase (empty string if omitted by user)
+ */
 function informUserOfMnemonic(mnemonic) {
     return new Promise((res, _) => {
+        // Configure the modal
         $('#mnemonicModal').modal({ keyboard: false });
+
+        // Render the Seed Phrase and configure the button
         doms.domMnemonicModalContent.innerText = mnemonic;
         doms.domMnemonicModalButton.onclick = () => {
             res(doms.domMnemonicModalPassphrase.value);
@@ -849,6 +921,8 @@ function informUserOfMnemonic(mnemonic) {
             doms.domMnemonicModalContent.innerText = '';
             doms.domMnemonicModalPassphrase.value = '';
         };
+
+        // Display the modal
         $('#mnemonicModal').modal('show');
     });
 }
@@ -861,11 +935,22 @@ export async function encryptWallet(strPassword = '') {
     // Hide the encryption warning
     doms.domGenKeyWarning.style.display = 'none';
 
-    const database = await Database.getInstance();
-    database.addAccount({
+    // Prepare to Add/Update an account in the DB
+    const cAccount = new Account({
         publicKey: await masterKey.keyToExport,
         encWif: strEncWIF,
     });
+
+    // Incase of a "Change Password", we check if an Account already exists
+    const database = await Database.getInstance();
+    if (await database.getAccount()) {
+        // Update the existing Account (new encWif) in the DB
+        await database.updateAccount(cAccount);
+    } else {
+        // Add the new Account to the DB
+        await database.addAccount(cAccount);
+    }
+
     // Remove the exit blocker, we can annoy the user less knowing the key is safe in their database!
     removeEventListener('beforeunload', beforeUnloadListener, {
         capture: true,
@@ -882,11 +967,10 @@ export async function decryptWallet(strPassword = '') {
     const strDecWIF = await decrypt(strEncWIF, strPassword);
     if (!strDecWIF || strDecWIF === 'decryption failed!') {
         if (strDecWIF)
-            return createAlert('warning', 'Incorrect password!', 6000);
+            return createAlert('warning', ALERTS.INCORRECT_PASSWORD, 6000);
     } else {
         await importWallet({
             newWif: strDecWIF,
-            skipConfirmation: true,
             // Save the public key to disk for View Only mode
             fSavePublicKey: true,
         });
@@ -895,7 +979,7 @@ export async function decryptWallet(strPassword = '') {
 }
 
 /**
- * @returns {Promise<bool>} If the wallet is unlocked
+ * @returns {Promise<bool>} If the wallet has an encrypted database backup
  */
 export async function hasEncryptedWallet() {
     const database = await Database.getInstance();
@@ -911,23 +995,17 @@ export function hasHardwareWallet() {
 
 export async function hasWalletUnlocked(fIncludeNetwork = false) {
     if (fIncludeNetwork && !getNetwork().enabled)
-        return createAlert(
-            'warning',
-            ALERTS.WALLET_OFFLINE_AUTOMATIC,
-            [],
-            5500
-        );
+        return createAlert('warning', ALERTS.WALLET_OFFLINE_AUTOMATIC, 5500);
     if (!masterKey) {
         return createAlert(
             'warning',
-            ALERTS.WALLET_UNLOCK_IMPORT,
-            [
+            tr(ALERTS.WALLET_UNLOCK_IMPORT, [
                 {
                     unlock: (await hasEncryptedWallet())
                         ? 'unlock '
                         : 'import/create',
                 },
-            ],
+            ]),
             3500
         );
     } else {
@@ -936,7 +1014,7 @@ export async function hasWalletUnlocked(fIncludeNetwork = false) {
 }
 
 function createAddressConfirmation(address) {
-    return `Please confirm this is the address you see on your ${strHardwareName}.
+    return `${translation.popupHardwareAddrCheck} ${strHardwareName}.
               <div class="seed-phrase">${address}</div>`;
 }
 
@@ -957,16 +1035,9 @@ export async function getNewAddress({
         }
     }
 
+    // If we're generating a new address manually, then render the new address in our Receive Modal
     if (updateGUI) {
-        createQR('pivx:' + address, doms.domModalQR);
-        doms.domModalQrLabel.innerHTML =
-            'pivx:' +
-            address +
-            `<i onclick="MPW.toClipboard('${address}', this)" id="guiAddressCopy" class="fas fa-clipboard" style="cursor: pointer; width: 20px;"></i>`;
-        doms.domModalQR.firstChild.style.width = '100%';
-        doms.domModalQR.firstChild.style.height = 'auto';
-        doms.domModalQR.firstChild.classList.add('no-antialias');
-        document.getElementById('clipboard').value = address;
+        guiRenderCurrentReceiveModal();
     }
 
     return [address, path];
@@ -995,7 +1066,7 @@ async function getHardwareWalletKeys(
             transport.device.productName;
 
         // Prompt the user in both UIs
-        if (verify) createAlert('info', ALERTS.WALLET_CONFIRM_L, [], 3500);
+        if (verify) createAlert('info', ALERTS.WALLET_CONFIRM_L, 3500);
         const cPubKey = await cHardwareWallet.getWalletPublicKey(path, {
             verify,
             format: 'legacy',
@@ -1019,7 +1090,7 @@ async function getHardwareWalletKeys(
 
         // If there's no device, nudge the user to plug it in.
         if (e.message.toLowerCase().includes('no device selected')) {
-            createAlert('info', ALERTS.WALLET_NO_HARDWARE, [], 10000);
+            createAlert('info', ALERTS.WALLET_NO_HARDWARE, 10000);
             return false;
         }
 
@@ -1027,12 +1098,11 @@ async function getHardwareWalletKeys(
         if (e.message.includes("Failed to execute 'transferIn'")) {
             createAlert(
                 'info',
-                ALERTS.WALLET_HARDWARE_CONNECTION_LOST,
-                [
+                tr(ALERTS.WALLET_HARDWARE_CONNECTION_LOST, [
                     {
                         hardwareWallet: strHardwareName,
                     },
-                ],
+                ]),
                 10000
             );
             return false;
@@ -1054,12 +1124,11 @@ async function getHardwareWalletKeys(
         if (e.message.includes('is busy')) {
             createAlert(
                 'info',
-                ALERTS.WALLET_HARDWARE_BUSY,
-                [
+                tr(ALERTS.WALLET_HARDWARE_BUSY, [
                     {
                         hardwareWallet: strHardwareName,
                     },
-                ],
+                ]),
                 7500
             );
             return false;
@@ -1076,15 +1145,14 @@ async function getHardwareWalletKeys(
         // Translate the error to a user-friendly string (if possible)
         createAlert(
             'warning',
-            ALERTS.WALLET_HARDWARE_ERROR,
-            [
+            tr(ALERTS.WALLET_HARDWARE_ERROR, [
                 {
                     hardwareWallet: strHardwareName,
                 },
                 {
                     error: LEDGER_ERRS.get(e.statusCode),
                 },
-            ],
+            ]),
             5500
         );
 

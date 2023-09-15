@@ -10,6 +10,36 @@ import {
     setExplorer,
     fAutoSwitch,
 } from './settings.js';
+import { ALERTS } from './i18n.js';
+
+/**
+ * @typedef {Object} XPUBAddress
+ * @property {string} type - Type of address (always 'XPUBAddress' for XPUBInfo classes)
+ * @property {string} name - PIVX address string
+ * @property {string} path - BIP44 path of the address derivation
+ * @property {number} transfers - Number of transfers involving the address
+ * @property {number} decimals - Decimal places in the amounts (PIVX has 8 decimals)
+ * @property {string} balance - Current balance of the address (satoshi)
+ * @property {string} totalReceived - Total ever received by the address (satoshi)
+ * @property {string} totalSent - Total ever sent from the address (satoshi)
+ */
+
+/**
+ * @typedef {Object} XPUBInfo
+ * @property {number} page - Current response page in a paginated data
+ * @property {number} totalPages - Total pages in the paginated data
+ * @property {number} itemsOnPage - Number of items on the current page
+ * @property {string} address - XPUB string of the address
+ * @property {string} balance - Current balance of the xpub (satoshi)
+ * @property {string} totalReceived - Total ever received by the xpub (satoshi)
+ * @property {string} totalSent - Total ever sent from the xpub (satoshi)
+ * @property {string} unconfirmedBalance - Unconfirmed balance of the xpub (satoshi)
+ * @property {number} unconfirmedTxs - Number of unconfirmed transactions of the xpub
+ * @property {number} txs - Total number of transactions of the xpub
+ * @property {string[]?} txids - Transaction ids involving the xpub
+ * @property {number?} usedTokens - Number of used token addresses from the xpub
+ * @property {XPUBAddress[]?} tokens - Array of used token addresses
+ */
 
 /**
  * A historical transaction type.
@@ -167,12 +197,7 @@ export class ExplorerNetwork extends Network {
     error() {
         if (this.enabled) {
             this.disable();
-            createAlert(
-                'warning',
-                '<b>Failed to synchronize!</b> Please try again later.' +
-                    '<br>You can attempt re-connect via the Settings.',
-                []
-            );
+            createAlert('warning', ALERTS.CONNECTION_FAILED);
         }
     }
 
@@ -297,12 +322,24 @@ export class ExplorerNetwork extends Network {
             path,
             sats: Math.round(cVout.value * COIN),
             script: cVout.scriptPubKey.hex,
+            vin: cTx?.vin || [],
             vout: cVout.n,
             height: this.cachedBlockCount - (cTx.confirmations - 1),
             status: cTx.confirmations < 1 ? Mempool.PENDING : Mempool.CONFIRMED,
             isDelegate: isColdStake,
             isReward,
         });
+    }
+
+    /**
+     * Fetch an XPub's basic information
+     * @param {string} strXPUB - The xpub to fetch info for
+     * @returns {Promise<XPUBInfo>} - A JSON class of aggregated XPUB info
+     */
+    async getXPubInfo(strXPUB) {
+        return await (
+            await retryWrapper(fetchBlockbook, `/api/v2/xpub/${strXPUB}`)
+        ).json();
     }
 
     async sendTransaction(hex) {
@@ -560,7 +597,7 @@ export class ExplorerNetwork extends Network {
         // If the public Master Key (xpub, address...) is different, then wipe TX history
         if (
             (await this.masterKey?.keyToExport) !==
-            (await masterKey.keyToExport)
+            (await masterKey?.keyToExport)
         ) {
             this.arrTxHistory = [];
         }
@@ -579,6 +616,10 @@ export class ExplorerNetwork extends Network {
     // ... but you are free to completely strip MPW of any analytics, if you wish, no hard feelings.
     submitAnalytics(strType, cData = {}) {
         if (!this.enabled) return;
+
+        // TODO: rebuild Labs Analytics, submitAnalytics() will be disabled at code-level until this is live again
+        /* eslint-disable */
+        return;
 
         // Limit analytics here to prevent 'leakage' even if stats are implemented incorrectly or forced
         let i = 0,
@@ -614,7 +655,7 @@ export function setNetwork(network) {
 }
 
 /**
- * Sets the network in use by MPW.
+ * Gets the network in use by MPW.
  * @returns {ExplorerNetwork?} Returns the network in use, may be null if MPW hasn't properly loaded yet.
  */
 export function getNetwork() {

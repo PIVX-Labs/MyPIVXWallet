@@ -1,54 +1,32 @@
 export const uwu_translation = {
-    // This document is to be used as a template as all the base code is in English
     // Basic HTML tags are allowed such as <b><i> etc. All data is sanitized https://developer.mozilla.org/en-US/docs/Web/API/Element/innerHTML
 
+    // NOTE: If a section does NOT need translating, leave it empty.
+
     // General words
-    enabled: 'enabwed', //enabled
-    active: '', //Active
-    disabled: 'disabwed', //disabled
-    on: '', //On
-    experimental: 'Oh no! Dangewous!', //Experimental
     amount: 'a<i>meow</i>nt', //Amount
     staking: '', //Staking
-    rewards: 'rewowods', //rewards
-    available: 'Avawable', //Available
+    wallet: 'Wawwet', //Wallet
+    display: 'Dispway', //Display
+    activity: 'Actwivity', //Activity
+    yes: 'Yas', //Yes
+    no: 'Nu', //No
 
     // Nav Bar
     navDashboard: 'Dashbowed', //Dashboard
-    navSend: 'Send❣', //Send
-    navStake: '', //Stake
-    navMasternode: '', //Masternode
-    navGovernance: '', //Governance
-    navSettings: '', //Settings
+    navStake: "Stakin'", //Stake
+    navMasternode: 'Masternowode', //Masternode
+    navGovernance: 'Gubernance', //Governance
+    navSettings: 'Configgy', //Settings
 
     // Footer
-    footerBuiltWithPivxLabs: 'Built with wuv by PIVX Wabs❣', //Built with 💜 by PIVX Labs
+    footerBuiltWithPivxLabs: 'Built with wuv by PIVX Wabs 💜', //Built with 💜 by PIVX Labs
 
     // Intro
     loading: 'Loading', //
     loadingTitle: 'My PIVX Wawwet is', //
 
-    cardOneTitle: 'Be da bank!', //Be your own Bank!
-    cardOneDesc:
-        'MyPIVXWawwet has <b>nowo custody</b> over yowour funds. You are in full owonership of your keys and your PIV.', //MyPIVXWallet has <b>no custody</b> over your funds. You are in full ownership of your keys and your PIV.
-    cardOneLink: 'Knowo mowore', //Know more
-
-    cardTwoTitle: 'Univewsal and Portabwe', //Universal and Portable
-    cardTwoDesc:
-        'Yowou can genewate cwyptogwaphicawwy-secuwe adwesses with yowour bwowoser and hawdware.', //You can generate cryptographically-secure addresses with your browser and hardware.
-    cardTwoLink: 'Knowo mowore', //Know more
-
-    cardThreeTitle: 'Dun trust, vewify!', //Don't trust, verify!
-    cardThreeDesc:
-        'MYPIVXWawwet is compwetewy open-soworce, avawable on da PIVX Wabs Github.', //MyPIVXWallet is completely open-source, available on the PIVX Labs github.
-    cardThreeLink: 'Knowo mowore', //Know more
-
-    cardFourTitle: 'For da Commuwunity', //For the community
-    cardFourDesc:
-        'MyPIVXWawwet is built with wuv without any fees, pwiwacy intruwutions, or adwertizing.', //MyPIVXWallet is built with love without any fees, privacy intrusions or advertising.
-    cardFourLink: 'Knowo mowore', //Know more
-
-    // Dashboard
+    // Onboarding Dashboard
     dashboardTitle: 'Dashbowod', //Dashboard
     dCardOneTitle: 'Cweate a', //Create a
     dCardOneSubTitle: 'New Wawwet!', //New Wallet
@@ -75,45 +53,250 @@ export const uwu_translation = {
     dCardFourButtonI: 'Impowt Wawwet', //Import Wallet
     dCardFourButtonA: 'Access My Wawwet', //Access My Wallet
 
+    // Vanity Creation
+    vanityPrefixNote: 'Note: addwesses will always start wif:', //Note: addresses will always start with:
+    vanityPrefixInput: 'Addwess Prefix', //Address Prefix
+
+    // Seed Phrase Creation
+    thisIsYourSeed: 'This is ur seed phrase:', //This is your seed phrase:
+    writeDownSeed: "Write it down, baka! You'll only see this <b>once!</b>", //Write it down somewhere. You'll only see this <b>once!</b>
+    doNotShareWarning:
+        'Anyone with a copy of it can access <b>all</b> of ur funds.', //Anyone with a copy of it can access <b>all</b> of your funds.
+    doNotShare: 'Do NOT share it with anyuwu.', //Do NOT share it with anybody.
+    digitalStoreNotAdvised:
+        'It is <b>NAWT</b> advised to store this digitally.', //It is <b>NOT</b> advised to store this digitally.
+    optionalPassphrase: 'Optional Passphwase (BIP39)', //Optional Passphrase
+    writtenDown: 'I haz written down my seed phrase', //I have written down my seed phrase
+
+    // Seed Phrase Import
+    importSeedValid: 'Seed Phwase iz valid!', //Seed Phrase is valid!
+    importSeedError: 'Seed Phwase iz invalid!', //Seed Phrase is invalid!
+    importSeedErrorSize: 'A Seed Phwase shwould be 12 or 24 words long!', //A Seed Phrase should be 12 or 24 words long!
+    importSeedErrorTypo:
+        'Seed Phwase contains typing ewrrors! Check ur input carefully', //Seed Phrase contains typing errors! Check your input carefully
+    importSeedErrorSkip:
+        'Seed Phwase appears invalid, but da warning was skipped by da user', //Seed Phrase appears invalid, but the warning was skipped by the user
+
+    // Wallet Dashboard
+    gettingStarted: 'Getting Stwarted', //Getting Started
+    secureYourWallet: 'Secure ur wawwet', //Secure your wallet
+    unlockWallet: 'Unlock wawwet', //Unlock wallet
+    lockWallet: 'Lock wawwet', //Lock wallet
+
+    // Encrypt wallet
+    encryptWallet: 'Encwypt wawwet', //Encrypt wallet
+    encryptPasswordCurrent: 'Cuwwent Password', //Current Password
+    encryptPasswordFirst: 'Entwer Password', //Enter Password
+    encryptPasswordSecond: 'Re-entwer Password', //Re-enter Password
+    encrypt: 'Encwypt', //Encrypt
+    changePassword: 'Change Passwoword', //Change Password
+
+    // Wallet Dashboard Sub-menu
+    balanceBreakdown: 'Bwalance Bweakdown', //Balance Breakdown
+    viewOnExplorer: 'View on Expwower', //View on Explorer
+    export: 'Expwort', //Export
+    refreshAddress: 'Refwesh address', //Refresh address
+    redeemOrCreateCode: 'Redeem or Cweate Cowode', //Redeem or Create Code
+
     // Send
-    sendReceiverAddress: 'Addwess', //Address
+    address: 'Addwess', //Address
+    receivingAddress: 'Receivwing addwess', //Receiving address
     sendAmountCoinsMax: 'MAX♡', //MAX
     paymentRequestMessage: 'Deswiption (fwom da Mewrchant)', //Description (from the merchant)
-    sendTransaction: 'Send', //Send
+    send: 'Send', //Send
+
+    // Contacts System
+    receive: 'Receive', //Receive
+    contacts: 'Contactz', //Contacts
+    name: 'Name', //Name
+    username: 'Username', //Username
+    addressOrXPub: 'Addwess or XPubby', //Address or XPub
+    back: 'Backu', //Back
+    chooseAContact: 'Chowose a Contact', //Choose a Contact
+    createContact: 'Cweate Contactu', //Create Contact
+    encryptFirstForContacts:
+        'Once yew hit "{button}" in the Dashboard, yew can cweate a Contact to make receiving PIV easier!', //Once you hit "{button}" in the Dashboard, you can create a Contact to make receiving PIV easier!
+    shareContactURL: 'Share Fren URL', //Share Contact URL
+    setupYourContact: 'Setup ur Contact', //Setup your Contact
+    receiveWithContact: 'Receive using a simp-le username-based Contact', //Receive using a simple username-based Contact
+    onlyShareContactPrivately:
+        '<b>Only</b> share ur Contact with trusted peeps (family, friends)', //<b>Only</b> share your Contact with trusted people (family, friends)
+
+    /* Context: The "Change to" is used in-app with one of the Three options below it, i.e: "Change to Contact" */
+    changeTo: 'Change tew', //Change to
+    contact: 'Contactu', //Contact
+    xpub: 'XPubby', //XPub
+
+    addContactTitle: 'Add {strName} tew Contacts', //Add {strName} to Contacts
+    addContactSubtext:
+        "Once added you'll be ablwe tew send transactions tew {strName} by their name (either typing, or clicking), no more addwesses, nice 'n OwO.", //Once added you\'ll be able to send transactions to {strName} by their name (either typing, or clicking), no more addresses, nice \'n easy.
+    addContactWarning:
+        'Ensure dat dis is da real "{strName}", do not accept Contact requests fwom unknown sources!', //Ensure that this is the real "{strName}", do not accept Contact requests from unknown sources!
+
+    editContactTitle: 'Change "{strName}" Contactu', //Change "{strName}" Contact
+    newName: 'Neww Name', //New Name
+
+    removeContactTitle: 'Unfren {strName}?', //Remove {strName}?
+    removeContactSubtext:
+        'Are u sure u wish to remove {strName} from your Fren list?', //Are you sure you wish to remove {strName} from your Contacts?
+    removeContactNote:
+        'Yew can add dem again any time in the future, but... :(', //You can add them again any time in the future.
+
+    // Export
+    privateKey: 'Pwivate Key', //Private Key
+    viewPrivateKey: 'View Pwivate Key?', //View Private Key?
+    privateWarning1: 'Make sure no one can see ur scween.', //Make sure no one can see your screen.
+    privateWarning2: 'Anyone with dis key can steal ur funds.', //Anyone with this key can steal your funds.
+    viewKey: 'View the secret sauce', //View key
+
+    // PIVX Promos
+    // NOTE: for this below line, continue the sentence "PIVX Promos [...]", since 'PIVX Promos' is a brand, it is not translated.
+    pivxPromos: 'is a decentralised system for gifty cowodes worth PIV', // [...] is a decentralised system for gift codes worth PIV
+    // NOTE: on this line, if possible, leave 'PIVX Promos' untranslated
+    redeemInput: "Enter ur 'PIVX Promos' cowode", //Enter your 'PIVX Promos' code
+    createName: 'Pwomo Name (Optional)', //Promo Name (Optional)
+    createAmount: 'Pwomo Ameownt', //Promo Amount
 
     // Stake
-    stakeTitle: 'Stake ur PIV to genewwate wewards!', //Stake your PIV to generate rewards!
-    stakeSubTitle:
-        'Coins dat you Stake are "Locked" sepawately from ur Avaiwable bwalance, and havs a chance to genewwate rewawrds. <br> Da more coins you stake, da more frequwuntly you\'ll receive rewawrds.', // Coins that you Stake are \"Locked\" separately from your Available balance, and have a chance to generate rewards. <br> The more coins you stake, the more frequently you'll receive rewards.
     stake: '', //Stake
     stakeUnstake: '', //Unstake
+    rewardHistory: 'Rewawrd Histowy', //Reward History
     loadMore: 'Lowoad Mowore', //Load more
 
+    // Masternode
+    mnControlYour: 'Contwol ur', //Control your
+    mnSubtext:
+        'Fwom dis tab you can cweate and access one or more masternowodes', //From this tab you can create and access one or more masternodes
+
     // Governance
-    contestedProposalsTitle: 'Contwested Pwoposals',
+    govSubtext:
+        'Fwom dis tab yew can check the pwoposals and, if you have a masternowode, be a part of the <b>DAO</b> and vwote!', //From this tab you can check the proposals and, if you have a masternode, be a part of the <b>DAO</b> and vote!
+    govMonthlyBudget: 'Monthly Budgey', //Monthly Budget
+    govAllocBudget: 'Allocated Budgey', //Allocated Budget
+    govNextPayout: 'Next Moneybags Rain', //Next Treasury Payout
+    govTableStatus: 'STATUS', //STATUS
+    govTableName: 'NAME', //NAME
+    govTablePayment: 'PAYMENT', //PAYMENT
+    govTableVotes: 'VOWOTES', //VOTES
+    govTableVote: 'VOWOTE', //VOTE
+    contestedProposalsTitle: 'Contwested Pwoposals', //Contested Proposals
     contestedProposalsDesc:
-        'Dees are pwoposals dat received an overwhelming ameownt of downwotes, making it likely spam or a highly contwestable pwoposal.',
+        'Dees are pwoposals dat received an overwhelming ameownt of downwotes, making it likely spam or a highly contwestable pwoposal.', //These are proposals that received an overwhelming amount of downvotes, making it likely spam or a highly contestable proposal.
 
     // Settings
-    settingsCurrency: 'Chowose a dispway cuwwency:',
+    settingsCurrency: 'Chowose a dispway cuwwency:', //Choose a display currency:
+    priceProvidedBy: 'Pwice data pwovided by', //Price data provided by
+    settingsDecimals: 'Balance Decimawls:', //Balance Decimals:
     settingsExplorer: 'Chowose an expwower:', //Choose an explorer:
-    settingsLanguage: 'Chowose a Languwuage!', //Choose a Language:
+    settingsLanguage: 'Chowose a Languwuage:', //Choose a Language:
     settingsAnalytics: 'Chowose your anawytics contwibution wevel:', //Choose your analytics contribution level:
     settingsPivxNode: 'Chowose a PIVX nowode pwease:', //Choose a PIVX node:
-    settingsToggleDebug: 'Toggle Debug Mowode', //Toggle Debug Mode
-    settingsToggleSync: 'Toggle Sync Mowode', //Toggle Sync Mode
-    settingsToggleTestnet: 'Toggle Testnet Mowode', //Toggle Testnet Mode
+    settingsAutoSelectNet: 'Auto-select Expwowers and Nowodes', // Auto-select Explorers and Nodes
+    settingsToggleDebug: 'Debug Mowode', //Debug Mode
+    settingsToggleTestnet: 'Testnet Mowode', //Testnet Mode
+    settingsToggleAdvancedMode: 'Advwanced Mowode', //Advanced Mode
+    settingsToggleAdvancedModeSubtext:
+        'Dis unlocks deeper fwunctionality and cuwustomisatwion, but may be oveuhwhelming and potentially dangerwus for unexperienced bakas!', //This unlocks deeper functionality and customisation, but may be overwhelming and potentially dangerous for unexperienced users!
+
+    // Network switching (mainnet <---> testnet)
+    netSwitchUnsavedWarningTitle: "Ur {network} wawwet isn't saved!", //Your {network} wallet isn\'t saved!
+    netSwitchUnsavedWarningSubtitle:
+        'Ur {network} account could get fucky-wuckied!', //Your {network} account is at risk!
+    netSwitchUnsavedWarningSubtext:
+        "If u switch to {network} befwore saving it, you'll lose the account!", //If you switch to {network} before saving it, you\'ll lose the account!
+    netSwitchUnsavedWarningConfirmation: 'Are u reaaaaaaaaally sure?', //Are you really sure?
 
     // Transparency Report
-    transparencyReport: 'Twanspawency Repawt',
-    hit: 'A ping indicating an app load, no unique data is sent.♡',
-    time_to_sync: 'The time in seconds it took for MPW to last synchronise.♡',
+    transparencyReport: 'Twanspawency Repawt', //Transparency Report
+    hit: 'A ping indicating an app load, no unique data is sent.♡', //A ping indicated an app load, no unique data is sent.
+    time_to_sync: 'The time in seconds it took for MPW to last synchronise.♡', //The time in seconds it took for MPW to last synchronise.
     transaction:
-        'A ping indicating a Tx, no unique data is sent, but may be infewwed from on-chain time.♡',
+        'A ping indicating a Tx, no unique data is sent, but may be infewwed from on-chain time.♡', //A ping indicating a Tx, no unique data is sent, but may be inferred from on-chain time.
+
+    // Analytics Levels
+    analyticDisabled: 'Disabwed', //Disabled
+    analyticMinimal: 'Minimuwul', //Minimal
+    analyticBalanced: 'Bawanced', //Balanced
+
+    // Migration System
+    MIGRATION_ACCOUNT_FAILURE_TITLE: 'Failed to recover accowount', //Failed to recover account
+    MIGRATION_ACCOUNT_FAILURE_HTML:
+        'There was an error recovering ur accowount. <br> Pwease reimport ur wawwet using the following key:', //There was an error recovering your account. <br> Please reimport your wallet using the following key:
+
+    // Dynamic Elements (Rendered at runtime - TODO in future PR: sort in to above categories for consistency)
+    ID: 'ID', //ID
+    time: 'Time', //Time
+    description: 'Descwiption', //Description
+    activityBlockReward: 'Bwock Rewawrd', //Block Reward
+    activitySentTo: 'Sentu to', //Sent to
+    activitySentToSelf: 'Sentu to selfu', //Sent to self
+    activityShieldedAddress: 'Shielded addwess', //Shielded address
+    activityReceivedShield: 'Recewived fwom Shielded addwess', //Received from Shielded address
+    activityReceivedFrom: 'Recewived fwom', //Received from
+    activityDelegatedTo: 'Delegwated to', //Delegated to
+    activityUndelegated: 'Undelegwated', //Undelegated
+    activityUnknown: 'Unknown Tx', //Unknown Tx
+    password: 'Password', //Password
+    walletUnlock: 'Unlock ur wawwet', //Unlock your wallet
+    walletPassword: 'Wawwet password', //Wallet password
+    walletUnlockCreateMN: 'Unlock to cweate ur Masternowode!', //Unlock to create your Masternode!
+    walletUnlockMNStart: 'Unlock to start ur Masternowode!', //Unlock to start your Masternode!
+    walletUnlockProposal: 'Unlock to cweate a pwoposal!', //Unlock to create a proposal!
+    walletUnlockPromo: 'Unlock to finalise ur Pwomo Cowode!', //Unlock to finalise your Promo Code!
+    walletUnlockTx: 'Unlock to send ur twansaction!', //Unlock to send your transaction!
+    walletUnlockStake: 'Unlock to stake ur', //Unlock to stake your
+    walletUnlockUnstake: 'Unlock to unstake ur', //Unlock to unstake your
+    changelogTitle: "What's Newu in", //What's New in
+    popupSetColdAddr: 'Set ur Cold Staking addwess', //Set your Cold Staking address
+    popupCurrentAddress: 'Current addwess:', //Current address:
+    popupColdStakeNote:
+        "A Cold Addwess stakes coins on ur behalf, it cannot spend coins, so it's even safe to uwuse a stwanger's Cold Addwess!", //A Cold Address stakes coins on your behalf, it cannot spend coins, so it\'s even safe to use a stranger\'s Cold Address!
+    popupExample: 'Examplez:', //Example:
+    popupWalletLock: 'Do yew want to lock ur wawwet?', //Do you want to lock your wallet?
+    popupWalletWipe: 'Do yew want to wipe ur wawwet pwivate data?', //Do you want to wipe your wallet private data?
+    popupWalletLockNote:
+        'Yew will need to enter ur password to access ur funds', //You will need to enter your password to access your funds
+    popupWalletWipeNote:
+        "Yew will lose access to ur funds if yew haven't backed up ur pwivate key or seed phwase", //You will lose access to your funds if you haven\'t backed up your private key or seed phrase
+    popupSeedPhraseBad: 'Unexpectwed Seed Phwase', //Unexpected Seed Phrase
+    popupSeedPhraseBadNote:
+        'The seed phwase iz either invalid, or was nawt generated by MPW.<br>Do yew still want to pwroceed?', //The seed phrase is either invalid, or was not generated by MPW.<br>Do you still want to proceed?
+    popupCreateProposal: 'Cweate Pwoposal', //Create Proposal
+    popupCreateProposalCost: 'Cost', //Cost
+    popupProposalName: 'Pwoposal Name', //Proposal Name
+    popupProposalDuration: 'Duwration in cycles', //Duration in cycles
+    popupProposalPerCycle: 'per cycle', //per cycle
+    popupProposalVoteHash: 'Vowote Hash:', //Vote Hash:
+    popupProposalFinalisedNote:
+        '<b>Congratsu on launching ur pwoposal DAO senpai!</b><br>Masternowode owners can use ur Vowote Hash to vowote from wawwets other than MPW, so make sure to add dis to ur forum post, if applicable!', //<b>Congratulations on launching your proposal!</b><br>Masternode owners can use your Vote Hash to vote from wallets other than MPW, so make sure to add this to your forum post, if applicable!
+    popupProposalFinalisedSignoff:
+        'Good lucky on ur journey through the DAO, Senpai!', //Good luck on your journey through the DAO, PIVian!
+    popupHardwareAddrCheck: 'Pwease confwirm dis is the addwess you see on ur', //Please confirm this is the address you see on your
+    proposalFinalisationConfirming: 'Confwirming...', //Confirming...
+    proposalFinalisationRemaining: 'left', //remaining
+    proposalFinalisationExpired: 'Pwoposal Expired', //Proposal Expired
+    proposalFinalisationReady: 'Ready tew submit', //Ready to submit
+    proposalPassing: 'PASSING, YAY!', //PASSING
+    proposalFailing: 'FAILING, NAY!', //FAILING
+    proposalFunded: 'FUNDED!', //FUNDED
+    proposalNotFunded: 'NO MONIES', //NOT FUNDED
+    proposalPaymentsRemaining: 'payment(s) remainingz<br>of', //installment(s) remaining<br>of
+    proposalPaymentTotal: 'totalz', //total
+    proposalNetYes: "Net Yasss'es", //Net Yes
+    popupConfirm: 'Confirm-u', //Confirm
+    popupClose: 'Close-u', //Close
+    popupCancel: 'Cancel-u', //Cancel
+    chartPublicAvailable: 'Public Avaiwable', //Public Available
+    timeDays: 'Dayz', //Days
+    timeHours: 'Hourz', //Hours
+    timeMinutes: 'Minutez', //Minutes
+    timeSeconds: 'Secondz', //Seconds
+    unhandledException: 'Unhandled exception.', //Unhandled exception.
 
     // Alerts
-    ALERTS: '<-- DO NOT EDIT! All below entries are for Alert Popups',
+    ALERTS: '<-- DO NOT EDIT THIS LINE! All below entries are for Alert Popups',
 
+    INTERNAL_ERROR: 'Internal error, pwease try again later', //Internal error, please try again later
     FAILED_TO_IMPORT: '<b>Faiwed to impawt!</b> Invawed password! Baka!', //'<b>Failed to import!</b> Invalid password',
     TESTNET_ENCRYPTION_DISABLED:
         '<b>Testnet Mowode in ON!</b><br>Wawwet encwyption disabwed', //"<b>Testnet Mode is ON!</b><br>Wallet encryption disabled",
@@ -122,7 +305,11 @@ export const uwu_translation = {
     PASSWORD_DOESNT_MATCH: 'Yowour passwords dun match!! baka!!', //'Your passwords don\'t match!',
     NEW_PASSWORD_SUCCESS:
         "<b>Yowou're Secuwed!</b><br>Good Job, PIVX Pogchamp!", //'<b>You\'re Secured! 🔐</b><br>Nice stuff, Armoured PIVian!',
+    INCORRECT_PASSWORD: 'Incowwect password!', //Incorrect password!
     INVALID_AMOUNT: '<b>Invawed a<i>meow</i>nt</b><br>', //'<b>Invalid amount!</b><br>',
+    TX_SENT: 'Twansaction sentu!', //Transaction sent!
+    TX_FAILED: 'Twansaction Failed!', //Transaction Failed!
+    QR_SCANNER_BAD_RECEIVER: 'is not a valid payment receiver', //is not a valid payment receiver
     UNSUPPORTED_CHARACTER:
         "The chawacter '{char}' is unsupurrted in addwesses! (Not Base58 compatible)", //"The character '{char}' is unsupported in addresses! (Not Base58 compatible)"
     UNSUPPORTED_WEBWORKERS: "Dis bwowser doesn't suppurrt web workers", //This browser doesn\'t support Web Workers (multi-threaded JS), unfortunately you cannot generate Vanity wallets!
@@ -131,6 +318,9 @@ export const uwu_translation = {
     VALIDATE_AMOUNT_DECIMAL: ' decimal wimit exceeded. Yowouve gone too fawr!', //' decimal limit exceeded',
     SUCCESS_STAKING_ADDR:
         '<b>Staking Addwess set!</b><br>Now go ahead and unstake senpai❣', //'<b>Staking Address set!</b><br>Now go ahead and unstake!',
+    STAKE_ADDR_SET:
+        '<b>Cold Addwess set!</b><br>Future stakes will use dis addwess.', //<b>Cold Address set!</b><br>Future stakes will use this address.
+    STAKE_ADDR_BAD: 'Invawid Cold Staking addwess!', //Invalid Cold Staking address!
     CONFIRM_UNSTAKE_H_WALLET:
         '<b> Confirm yowour Unstake</b><br>Confirm da TX on yowour {strHardwareName}', //"<b>Confirm your Unstake</b><br>Confirm the TX on your ",
     CONFIRM_TRANSACTION_H_WALLET:
@@ -146,10 +336,74 @@ export const uwu_translation = {
     SENT_NOTHING: "You can't send nothing!! Baka!", //'You can\'t send \'nothing\'!',
     MORE_THEN_8_DECIMALS: '8 decimal wimit exceeded. Too many nyumbers!!', //'8 decimal limit exceeded',
     SAVE_WALLET_PLEASE:
-        '<b>Save yowour wawwet!</b><br>Dashbowed ➜ Set Password', // "<b>Save your wallet!</b><br>Dashboard ➜ Set Password",
+        '<b>Save yowour wawwet!</b><br>Dashbowed ➜ Secure your wallet', // "<b>Save your wallet!</b><br>Dashboard ➜ Secure your wallet
     BACKUP_OR_ENCRYPT_WALLET:
         'Pwease ENCWYPT and/or BACKUP yowour keys befowe weaving, or you may lose dem! Oh noes!', // "Please ENCRYPT and/or BACKUP your keys before leaving, or you may lose them!"
-    NO_CAMERAS: 'Dis device has nwo camwera!',
+    NO_CAMERAS: 'Dis device has nwo camwera!', //This device has no camera!
+    STAKING_LEDGER_NO_SUPPORT: 'Ledger is not supported for Cold Staking', //Ledger is not supported for Cold Staking
+    CONNECTION_FAILED:
+        '<b>Failed to synchronize!</b> Please try again later.<br>You can attempt re-connect via the Settings.', //<b>Failed to synchronize!</b> Please try again later.<br>You can attempt re-connect via the Settings.
+    MN_NOT_ENABLED: 'Ur masternowode is nawt enabled yet!', //Your masternode is not enabled yet!
+    VOTE_SUBMITTED: 'Vowote submitted!', //Vote submitted!
+    VOTED_ALREADY: 'Yew already vowoted for dis pwoposal! Pwease wait 1 hour', //You already voted for this proposal! Please wait 1 hour
+    VOTE_SIG_BAD:
+        "Failed to vewify signature, pwease check ur masternowode's pwivate key", //Failed to verify signature, please check your masternode\'s private key
+    MN_CREATED_WAIT_CONFS:
+        '<b>Masternowode Created!<b><br>Wait 15 confwirmations to pwoceed further', //<b>Masternode Created!<b><br>Wait 15 confirmations to proceed further
+    MN_ACCESS_BEFORE_VOTE: 'Access a masternowode befwore vowoting!', //Access a masternode before voting!
+    MN_OFFLINE_STARTING: "Ur masternowode is offline, we'll try to start it", //Your masternode is offline, we will try to start it
+    MN_STARTED: '<b>Masternowode started!</b>', //<b>Masternode started!</b>
+    MN_RESTARTED: '<b>Masternowode restarted!</b>', //<b>Masternode restarted!</b>
+    MN_STARTED_ONLINE_SOON:
+        "<b>Masternowode started!</b><br>It'll be online soon", //<b>Masternode started!</b><br>It\'ll be online soon
+    MN_START_FAILED: '<b>Failed to start masternowode!</b>', //<b>Masternode started!</b>
+    MN_RESTART_FAILED: '<b>Failed to restart masternowode!</b>', //<b>Masternode restarted!</b>
+    MN_DESTROYED:
+        '<b>Masternowode destrwoyed!</b><br>Ur coins are now spendable.', //<b>Masternode destroyed!</b><br>Your coins are now spendable.
+    MN_STATUS_IS: 'Ur masternowode status is', //Your masternode status is
+    MN_STATE: 'Ur masternowode is in <b>{state}</b> state', //Your masternode is in <b>{state}</b> state
+    MN_BAD_IP: 'The IP addwess is invalid!', //The IP address is invalid!
+    MN_NOT_ENOUGH_COLLAT:
+        'Yew need <b>{amount} more {ticker}</b> to create a Masternowode!', //You need <b>{amount} more {ticker}</b> to create a Masternode!
+    MN_ENOUGH_BUT_NO_COLLAT:
+        'Yew haz enough balance for a Masternowode, but nu valid collateral UTXO of {amount} {ticker}', //You have enough balance for a Masternode, but no valid collateral UTXO of {amount} {ticker}
+    MN_COLLAT_NOT_SUITABLE: 'Dis is not a suitable UTXO for a Masternowode', //This is not a suitable UTXO for a Masternode
+    MN_CANT_CONNECT: 'Unable to connect to RPC nowode!', //Unable to connect to RPC node!
+
+    /* Contacts System Alerts */
+    CONTACTS_ENCRYPT_FIRST:
+        'Yew need tew hit "{button}" before yew can use Contacts!', //You need to hit "{button}" before you can use Contacts!
+    CONTACTS_NAME_REQUIRED: 'A name iz required!', //A name is required!
+    CONTACTS_NAME_TOO_LONG: 'That name iz teww long!', //That name is too long!
+    CONTACTS_CANNOT_ADD_YOURSELF: 'Yew cannot add urself as a Contact!', //You cannot add yourself as a Contact!
+    CONTACTS_ALREADY_EXISTS:
+        '<b>Contact already exists!</b><br>Yew already saved dis contact', //<b>Contact already exists!</b><br>You already saved this contact
+    CONTACTS_NAME_ALREADY_EXISTS:
+        '<b>Contact name already exists!</b><br>Dis could potentially be a phishing attempt, beware!', //<b>Contact name already exists!</b><br>This could potentially be a phishing attempt, beware!
+    CONTACTS_EDIT_NAME_ALREADY_EXISTS:
+        '<b>Contact already exists!</b><br>A contact iz already cawlled "{strNewName}"!', //<b>Contact already exists!</b><br>A contact is already called "{strNewName}"!
+    CONTACTS_KEY_ALREADY_EXISTS:
+        '<b>Contact already exists, buh under a different name!</b><br>Yew have {newName} saved as <b>{oldName}</b> in ur contacts', //<b>Contact already exists, but under a different name!</b><br>You have {newName} saved as <b>{oldName}</b> in your contacts
+    CONTACTS_NOT_A_CONTACT_QR: "Dis isn't a Contact QR, baka!", //This isn\'t a Contact QR!
+    CONTACTS_ADDED:
+        '<b>New Contact added!</b><br>{strName} haz been added, hurray!', //<b>New Contact added!</b><br>{strName} has been added, hurray!
+    CONTACTS_YOU_HAVE_NONE: 'Yew have no contacts! Lonely!', //You have no contacts!
+
+    PROPOSAL_FINALISED: 'Pwoposal finalized!', //Proposal finalized!
+    PROPOSAL_UNCONFIRMED: "Da pwoposal hasn't been confirmed yet.", //The proposal hasn't been confirmed yet.
+    PROPOSAL_EXPIRED: 'Da pwoposal has expired. Cweate a new one.', //The proposal has expired. Create a new one.
+    PROPOSAL_FINALISE_FAIL: 'Failed to finalize pwoposal.', //Failed to finalize proposal.
+    PROPOSAL_IMPORT_FIRST: 'Cweate or impwort ur wawwet to continue', //Create or import your wallet to continue
+    PROPOSAL_NOT_ENOUGH_FUNDS: 'Not enough funds to cweate a pwoposal.', //Not enough funds to create a proposal.
+    PROPOSAL_INVALID_ERROR: 'Pwoposal is invalid. Error:', //Proposal is invalid. Error:
+    PROPOSAL_CREATED:
+        '<b>Pwoposal cweated!</b><br>Wait 6 confwirmations to finalise.', //<b>Proposal created!</b><br>Wait 6 confirmations to finalise.
+
+    PROMO_MIN: 'Minimum ameownt is {min} {ticker}!', //Minimum amount is {min} {ticker}!
+    PROMO_MAX_QUANTITY:
+        'Ur device can only cweate {quantity} cowodes at a time!', //Your device can only create {quantity} codes at a time!
+    PROMO_NOT_ENOUGH: "Yew don't have enough {ticker} to cweate that code!", //You don\'t have enough {ticker} to create that code!
+    PROMO_ALREADY_CREATED: "You've already created that code!", //You\'ve already created that code!
 
     SWITCHED_EXPLORERS:
         '<b>Switched expwower!</b><br>Nowo using {explorerName}✿', //<b>Switched explorer!</b><br>Now using {explorerName},
@@ -184,4 +438,10 @@ export const uwu_translation = {
     CONFIRM_POPUP_MN_P_KEY_HTML:
         '<br> Save dis pwivate key and copy it to yowour VPS config <br>', // <br> Save this private key and copy it to your VPS config <br>
     CONFIRM_POPUP_VERIFY_ADDR: 'Vewify yowour addwess', //Verify your address
+
+    MIGRATION_MASTERNODE_FAILURE:
+        'Failed to recover ur masternowode. Pwease reimport it.', //Failed to recover your masternode. Please reimport it.
+    MIGRATION_ACCOUNT_FAILURE:
+        'Failed to recover ur account. Pwease reimport it.', //Failed to recover your account. Please reimport it.
+    APP_INSTALLED: 'App Instawlled!', //App Installed!
 };
