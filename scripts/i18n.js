@@ -1,3 +1,4 @@
+import { translation_template } from '../locale/template/translation.js';
 import { en_translation } from '../locale/en/translation.js';
 import { pt_br_translation } from '../locale/pt-br/translation.js';
 import { pt_pt_translation } from '../locale/pt-pt/translation.js';
@@ -15,11 +16,12 @@ import { getNetwork } from './network.js';
 import { cReceiveType, guiToggleReceiveType } from './contacts-book.js';
 
 /**
- * @type{Record<string, string>}
+ * @type {translation_template}
  */
 export const ALERTS = {};
+
 /**
- * @type{Record<string, string>}
+ * @type {translation_template}
  */
 export let translation = {};
 
