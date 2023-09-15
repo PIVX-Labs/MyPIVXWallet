@@ -14,7 +14,13 @@ import { masterKey } from './wallet.js';
 import { getNetwork } from './network.js';
 import { cReceiveType, guiToggleReceiveType } from './contacts-book.js';
 
+/**
+ * @type{Record<string, string>}
+ */
 export const ALERTS = {};
+/**
+ * @type{Record<string, string>}
+ */
 export let translation = {};
 
 // TRANSLATION
@@ -99,7 +105,6 @@ export function tr(message, variables) {
 /**
  * Translates all static HTML based on the `data-i18n` tag
  * @param {Array} i18nLangs
- *
  */
 export function translateStaticHTML(i18nLangs) {
     if (!i18nLangs) return;
