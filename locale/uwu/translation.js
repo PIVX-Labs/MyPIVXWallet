@@ -278,6 +278,7 @@ export const uwu_translation = {
     proposalFinalisationReady: 'Ready tew submit', //Ready to submit
     proposalPassing: 'PASSING, YAY!', //PASSING
     proposalFailing: 'FAILING, NAY!', //FAILING
+    proposalTooYoung: 'TOO YOUNG, BAKA!', //TOO YOUNG
     proposalFunded: 'FUNDED!', //FUNDED
     proposalNotFunded: 'NO MONIES', //NOT FUNDED
     proposalPaymentsRemaining: 'payment(s) remainingz<br>of', //installment(s) remaining<br>of
