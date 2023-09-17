@@ -2234,19 +2234,18 @@ async function renderProposals(arrProposals, fContested) {
         let strFundingStatus = '';
 
         // Proposal Status calculations
-        if (cProposal.IsEstablished) {
-            // Scenario 1: Proposal is established and is or is not funded
-            if (nNetYes >= nRequiredVotes) {
-                strStatus = translation.proposalPassing;
-                strFundingStatus = translation.proposalFunded;
-            } else {
-                strStatus = translation.proposalFailing;
-                strFundingStatus = translation.proposalNotFunded;
-            }
-        } else {
-            // Scenario 2: Proposal is not established (nor funded)
+        if (nNetYes < nRequiredVotes) {
+            // Scenario 1: Not enough votes
+            strStatus = translation.proposalFailing;
+            strFundingStatus = translation.proposalNotFunded;
+        } else if (!cProposal.IsEstablished) {
+            // Scenario 2: Enough votes, but not established
             strStatus = translation.proposalFailing;
             strFundingStatus = translation.proposalTooYoung;
+        } else {
+            // Scenario 3: Enough votes, and established
+            strStatus = translation.proposalPassing;
+            strFundingStatus = translation.proposalFunded;
         }
 
         // Funding Status and allocation calculations
