@@ -232,12 +232,11 @@ export const fr_translation = {
     time: 'Heure', //Time
     description: 'Description', //Description
     activityBlockReward: 'Récompense en bloc', //Block Reward
-    activitySentTo: 'Envoyé à', //Sent to
-    activitySentToSelf: 'Envoyé à soi-même', //Sent to self
+    activitySentTo: 'Envoyé à {r}', //Sent to
+    activitySelf: 'soi-même', //Sent to self
     activityShieldedAddress: 'Adresse protégée', //Shielded address
-    activityReceivedShield: "Reçu d'une adresse protégée", //Received from Shielded address
-    activityReceivedFrom: 'Reçu de', //Received from
-    activityDelegatedTo: 'Délégué à', //Delegated to
+    activityReceivedFrom: 'Reçu de {s}', //Received from
+    activityDelegatedTo: 'Délégué à {r}', //Delegated to
     activityUndelegated: 'Non délégué', //Undelegated
     activityUnknown: 'Transaction inconnu', //Unknown Tx
     password: 'Mot de passe', //Password
