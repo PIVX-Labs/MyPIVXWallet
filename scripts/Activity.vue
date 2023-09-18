@@ -62,11 +62,11 @@ async function update(fNewOnly = false, txs = []) {
     let arrTXs;
 
     if (newTxs.value.length !== cNet.arrTxHistory.length) {
-	arrTXs = cNet.arrTxHistory;
+        arrTXs = cNet.arrTxHistory;
     } else {
-	arrTXs = await cNet.syncTxHistoryChunk(fNewOnly);
+        arrTXs = await cNet.syncTxHistoryChunk(fNewOnly);
     }
-    
+
     updating.value = false;
     if (!arrTXs) return;
 
