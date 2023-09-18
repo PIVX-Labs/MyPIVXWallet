@@ -1,3 +1,4 @@
+import { translation_template } from '../locale/template/translation.js';
 import { en_translation } from '../locale/en/translation.js';
 import { pt_br_translation } from '../locale/pt-br/translation.js';
 import { pt_pt_translation } from '../locale/pt-pt/translation.js';
@@ -14,7 +15,14 @@ import { masterKey } from './wallet.js';
 import { getNetwork } from './network.js';
 import { cReceiveType, guiToggleReceiveType } from './contacts-book.js';
 
+/**
+ * @type {translation_template}
+ */
 export const ALERTS = {};
+
+/**
+ * @type {translation_template}
+ */
 export let translation = {};
 
 // TRANSLATION
@@ -99,7 +107,6 @@ export function tr(message, variables) {
 /**
  * Translates all static HTML based on the `data-i18n` tag
  * @param {Array} i18nLangs
- *
  */
 export function translateStaticHTML(i18nLangs) {
     if (!i18nLangs) return;
