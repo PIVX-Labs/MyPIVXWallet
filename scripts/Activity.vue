@@ -1,8 +1,9 @@
 <script setup>
-import { reactive, ref, computed } from 'vue';
+import { reactive, ref, computed, watchEffect } from 'vue';
 import { getNetwork, HistoricalTxType } from './network.js';
 import { masterKey } from './wallet.js';
 import { cChainParams } from './chain_params.js';
+import { translation } from './i18n.js';
 
 const props = defineProps({
     title: String,
@@ -10,11 +11,46 @@ const props = defineProps({
 });
 
 const txs = ref([]);
+const newTxs = ref([]);
 const updating = ref(false);
 const isHistorySynced = ref(false);
 const rewardsText = ref('-');
 const ticker = computed(() => cChainParams.current.TICKER);
 const explorerUrl = computed(() => getNetwork().strUrl);
+const txMap = computed(() => {
+    return {
+        [HistoricalTxType.STAKE]: {
+            icon: 'fa-gift',
+            colour: 'white',
+            content: translation.activityBlockReward,
+        },
+        [HistoricalTxType.SENT]: {
+            icon: 'fa-minus',
+            colour: '#f93c4c',
+            content: translation.activitySentTo,
+        },
+        [HistoricalTxType.RECEIVED]: {
+            icon: 'fa-plus',
+            colour: '#5cff5c',
+            content: translation.activityReceivedFrom,
+        },
+        [HistoricalTxType.DELEGATION]: {
+            icon: 'fa-snowflake',
+            colour: 'white',
+            content: translation.activityDelegatedTo,
+        },
+        [HistoricalTxType.UNDELEGATION]: {
+            icon: 'fa-fire',
+            colour: 'white',
+            content: translation.activityUndelegated,
+        },
+        [HistoricalTxType.UNKNOWN]: {
+            icon: 'fa-question',
+            colour: 'white',
+            content: translation.activityUnknown,
+        },
+    };
+});
 
 async function update(fNewOnly = false) {
     const cNet = getNetwork();
@@ -28,6 +64,7 @@ async function update(fNewOnly = false) {
     updating.value = true;
     const arrTXs = await cNet.syncTxHistoryChunk(fNewOnly);
     updating.value = false;
+    if (!arrTXs) return;
 
     // Check if all transactions are loaded
     isHistorySynced.value = cNet.isHistorySynced;
@@ -41,19 +78,18 @@ async function update(fNewOnly = false) {
         if (arrStakes.length !== txs.length) {
             const nRewards = arrStakes.reduce((a, b) => a + b.amount, 0);
             rewardsText.value = `${cNet.isHistorySynced ? '' : '≥'}${nRewards}`;
-            return await parseTXs(arrStakes);
+            newTxs.value = arrStakes;
+            return;
         }
     }
-
-    if (arrTXs.length !== txs.length) {
-        await parseTXs(arrTXs);
-    }
+    if (newTxs.length !== arrTXs) newTxs.value = arrTXs;
 }
+watchEffect(async () => await parseTXs());
 
 /**
  * Parse tx to list syntax
  */
-async function parseTXs(arrTXs) {
+async function parseTXs() {
     txs.value = [];
     const cNet = getNetwork();
 
@@ -72,7 +108,7 @@ async function parseTXs(arrTXs) {
     let prevDateString = '';
     let prevTimestamp = 0;
 
-    for (const cTx of arrTXs) {
+    for (const cTx of newTxs.value) {
         const dateTime = new Date(cTx.time * 1000);
         // If this Tx is older than 24h, then hit the `Date` cache logic, otherwise, use a `Time` and skip it
         let strDate =
@@ -102,13 +138,8 @@ async function parseTXs(arrTXs) {
         const fConfirmed =
             cNet.cachedBlockCount - cTx.blockHeight >= props.rewards ? 100 : 6;
 
-        // Choose the correct icon and colour for the Tx type, or a question mark if the type is unknown
-        // Defaults: Reward Activity
-        let icon = 'fa-gift';
-        let colour = 'white';
-
         // Choose the content type, for the Dashboard; use a generative description, otherwise, a TX-ID
-        let txContent = props.rewards ? cTx.id : 'Block Reward';
+        // let txContent = props.rewards ? cTx.id : 'Block Reward';
 
         // Format the amount to reduce text size
         let formattedAmt = '';
@@ -121,11 +152,12 @@ async function parseTXs(arrTXs) {
         }
 
         // For 'Send' or 'Receive' TXs: Check if this is a send-to-self transaction
-        let fSendToSelf = true;
+        let fSendToSelf = false;
         if (
             cTx.type === HistoricalTxType.SENT ||
             cTx.type === HistoricalTxType.RECEIVED
         ) {
+            fSendToSelf = true;
             // Check all addresses to find our own, caching them for performance
             for (const strAddr of cTx.receivers.concat(cTx.senders)) {
                 // If a previous Tx checked this address, skip it, otherwise, check it against our own address(es)
@@ -135,104 +167,48 @@ async function parseTXs(arrTXs) {
                 }
             }
         }
+        let { icon, colour, content } = txMap.value[cTx.type];
+        const match = content.match(/{(.)}/);
+        if (match) {
+            const where = {
+                r: 'receivers',
+                s: 'senders',
+            }[match[1]];
 
-        // Generate an icon, colour and description for the Tx
-        if (!props.rewards) {
-            switch (cTx.type) {
-                case HistoricalTxType.STAKE:
-                    icon = 'fa-gift';
-                    break;
-                case HistoricalTxType.SENT:
-                    icon = 'fa-minus';
-                    colour = '#f93c3c';
-                    // Figure out WHO this was sent to, and focus on them contextually
-                    if (fSendToSelf) {
-                        txContent = 'Sent to self';
-                    } else {
-                        // Otherwise, anything to us is likely change, so filter it away
-                        const arrExternalAddresses = (
-                            await Promise.all(
-                                cTx.receivers.map(async (addr) => [
-                                    await masterKey.isOwnAddress(addr),
-                                    addr,
-                                ])
-                            )
-                        )
-                            .filter(([isOwnAddress, _]) => {
-                                return !isOwnAddress;
-                            })
-                            .map(([_, addr]) => addr);
-                        txContent =
-                            'Sent to ' +
-                            (cTx.shieldedOutputs
-                                ? 'Shielded address'
-                                : [
-                                      ...new Set(
-                                          arrExternalAddresses.map((addr) =>
-                                              addr.length >= 32
-                                                  ? addr.substring(0, 6)
-                                                  : addr
-                                          )
-                                      ),
-                                  ].join(', ') + '...');
-                    }
-                    break;
-                case HistoricalTxType.RECEIVED: {
-                    icon = 'fa-plus';
-                    colour = '#5cff5c';
-                    // Figure out WHO this was sent from, and focus on them contextually
-                    // Filter away any of our own addresses
-                    const arrExternalAddresses = (
-                        await Promise.all(
-                            cTx.senders.map(async (addr) => [
-                                await masterKey.isOwnAddress(addr),
-                                addr,
-                            ])
-                        )
+            let who = '';
+            if (fSendToSelf) {
+                who = translation.activitySelf;
+            } else if (cTx.shieldedOutputs) {
+                who = translation.activityShieldedAddress;
+            } else {
+                const arrExternalAddresses = (
+                    await Promise.all(
+                        cTx[where].map(async (addr) => [
+                            await masterKey.isOwnAddress(addr),
+                            addr,
+                        ])
                     )
-                        .filter(([isOwnAddress, _]) => {
-                            return !isOwnAddress;
-                        })
-                        .map(([_, addr]) => addr);
-
-                    if (cTx.shieldedOutputs) {
-                        txContent = 'Received from Shielded address';
-                    } else {
-                        txContent =
-                            'Received from ' +
-                            [
-                                ...new Set(
-                                    arrExternalAddresses.map((addr) =>
-                                        addr?.length >= 32
-                                            ? addr.substring(0, 6)
-                                            : addr
-                                    )
-                                ),
-                            ].join(', ') +
-                            '...';
-                    }
-                    break;
-                }
-                case HistoricalTxType.DELEGATION:
-                    icon = 'fa-snowflake';
-                    txContent =
-                        'Delegated to ' +
-                        cTx.receivers[0].substring(0, 6) +
-                        '...';
-                    break;
-                case HistoricalTxType.UNDELEGATION:
-                    icon = 'fa-fire';
-                    txContent = 'Undelegated';
-                    break;
-                default:
-                    icon = 'fa-question';
-                    txContent = 'Unknown Tx';
+                )
+                    .filter(([isOwnAddress, _]) => {
+                        return !isOwnAddress;
+                    })
+                    .map(([_, addr]) => addr);
+                who =
+                    [
+                        ...new Set(
+                            arrExternalAddresses.map((addr) =>
+                                addr.length >= 32 ? addr.substring(0, 6) : addr
+                            )
+                        ),
+                    ].join(', ') + '...';
             }
+            content = content.replace(/{.}/, who);
         }
+
         txs.value.push({
             date: strDate,
             id: cTx.id,
-            content: txContent,
+            content: props.rewards ? cTx.id : content,
             formattedAmt,
             confirmed: fConfirmed,
             icon,
@@ -240,6 +216,7 @@ async function parseTXs(arrTXs) {
         });
     }
 }
+
 defineExpose({ txs, update });
 </script>
 
@@ -258,9 +235,15 @@ defineExpose({ txs, update });
                 >
                     <thead>
                         <tr>
-                            <th scope="col" class="tx1">Time</th>
+                            <th scope="col" class="tx1">
+                                {{ translation.time }}
+                            </th>
                             <th scope="col" class="tx2">
-                                {{ rewards ? 'ID' : 'Description' }}
+                                {{
+                                    rewards
+                                        ? translation.ID
+                                        : translation.description
+                                }}
                             </th>
                             <th scope="col" class="tx3">Amount</th>
                             <th scope="col" class="tx4 text-right"></th>
