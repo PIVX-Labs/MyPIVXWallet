@@ -372,6 +372,7 @@ export class ExplorerNetwork extends Network {
         if (this.historySyncing) {
             return false;
         }
+
         try {
             if (!this.enabled || !this.masterKey) return this.arrTxHistory;
             this.historySyncing = true;

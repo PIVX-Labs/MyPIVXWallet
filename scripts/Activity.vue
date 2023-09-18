@@ -52,17 +52,21 @@ const txMap = computed(() => {
     };
 });
 
-async function update(fNewOnly = false) {
+async function update(fNewOnly = false, txs = []) {
     const cNet = getNetwork();
 
     // Prevent the user from spamming refreshes
     if (cNet.historySyncing) return;
 
-    // Remember how much history we had previously
-    const nPrevHistory = cNet.arrTxHistory.length;
-
     updating.value = true;
-    const arrTXs = await cNet.syncTxHistoryChunk(fNewOnly);
+    let arrTXs;
+
+    if (newTxs.value.length !== cNet.arrTxHistory.length) {
+	arrTXs = cNet.arrTxHistory;
+    } else {
+	arrTXs = await cNet.syncTxHistoryChunk(fNewOnly);
+    }
+    
     updating.value = false;
     if (!arrTXs) return;
 
@@ -217,7 +221,7 @@ async function parseTXs() {
     }
 }
 
-defineExpose({ txs, update });
+defineExpose({ update });
 </script>
 
 <template>
