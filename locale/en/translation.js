@@ -260,8 +260,11 @@ export const en_translation = {
     popupCreateProposal: 'Create Proposal',
     popupCreateProposalCost: 'Cost',
     popupProposalName: 'Proposal Name',
+    popupProposalAddress: 'Proposal Address (Optional)',
     popupProposalDuration: 'Duration in cycles',
     popupProposalPerCycle: 'per cycle',
+    popupProposalEncryptFirst:
+        'You need to hit "{button}" before you can create proposals!',
     popupProposalVoteHash: 'Vote Hash:',
     popupProposalFinalisedNote:
         '<b>Congratulations on launching your proposal!</b><br>Masternode owners can use your Vote Hash to vote from wallets other than MPW, so make sure to add this to your forum post, if applicable!',

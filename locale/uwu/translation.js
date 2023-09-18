@@ -264,8 +264,11 @@ export const uwu_translation = {
     popupCreateProposal: 'Cweate Pwoposal', //Create Proposal
     popupCreateProposalCost: 'Cost', //Cost
     popupProposalName: 'Pwoposal Name', //Proposal Name
+    popupProposalAddress: 'Pwoposal Addwess (Optional)', //Proposal Address (Optional)
     popupProposalDuration: 'Duwration in cycles', //Duration in cycles
     popupProposalPerCycle: 'per cycle', //per cycle
+    popupProposalEncryptFirst:
+        'Yew need tew hit "{button}" before yew can cweate pwoposals!', //You need to hit "{button}" before you can create proposals!
     popupProposalVoteHash: 'Vowote Hash:', //Vote Hash:
     popupProposalFinalisedNote:
         '<b>Congratsu on launching ur pwoposal DAO senpai!</b><br>Masternowode owners can use ur Vowote Hash to vowote from wawwets other than MPW, so make sure to add dis to ur forum post, if applicable!', //<b>Congratulations on launching your proposal!</b><br>Masternode owners can use your Vote Hash to vote from wallets other than MPW, so make sure to add this to your forum post, if applicable!

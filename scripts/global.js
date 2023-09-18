@@ -2748,47 +2748,85 @@ async function refreshMasternodeData(cMasternode, fAlert = false) {
 }
 
 export async function createProposal() {
+    // Must have a wallet
     if (!masterKey) {
-        return createAlert('warning', ALERTS.PROPOSAL_IMPORT_FIRST);
+        return createAlert('warning', ALERTS.PROPOSAL_IMPORT_FIRST, 4500);
     }
+    // Wallet must be encrypted
+    if (!(await hasEncryptedWallet())) {
+        return createAlert(
+            'warning',
+            tr(translation.popupProposalEncryptFirst, [
+                { button: translation.secureYourWallet },
+            ]),
+            4500
+        );
+    }
+    // Wallet must be unlocked
     if (
         masterKey.isViewOnly &&
         !(await restoreWallet(translation.walletUnlockProposal))
     ) {
         return;
     }
+    // Must have enough funds
     if (getBalance() * COIN < cChainParams.current.proposalFee) {
-        return createAlert('warning', ALERTS.PROPOSAL_NOT_ENOUGH_FUNDS);
+        return createAlert('warning', ALERTS.PROPOSAL_NOT_ENOUGH_FUNDS, 4500);
     }
 
+    // Create the popup, wait for the user to confirm or cancel
     const fConfirmed = await confirmPopup({
         title: `${translation.popupCreateProposal} (${
             translation.popupCreateProposalCost
         } ${cChainParams.current.proposalFee / COIN} ${
             cChainParams.current.TICKER
         })`,
-        html: `<input id="proposalTitle" maxlength="20" placeholder="${translation.popupProposalName}" style="text-align: center;"><br>
-               <input id="proposalUrl" maxlength="64" placeholder="${translation.popupExample} https://forum.pivx.org/..." style="text-align: center;"><br>
-               <input type="number" id="proposalCycles" placeholder="${translation.popupProposalDuration}" style="text-align: center;"><br>
-               <input type="number" id="proposalPayment" placeholder="${cChainParams.current.TICKER} ${translation.popupProposalPerCycle}" style="text-align: center;"><br>`,
+        html: `<input id="proposalTitle" maxlength="20" placeholder="${
+            translation.popupProposalName
+        }" style="text-align: center;"><br>
+               <input id="proposalUrl" maxlength="64" placeholder="${
+                   translation.popupExample
+               } https://forum.pivx.org/..." style="text-align: center;"><br>
+               <input type="number" id="proposalCycles" min="1" max="${
+                   cChainParams.current.maxPaymentCycles
+               }" placeholder="${
+            translation.popupProposalDuration
+        }" style="text-align: center;"><br>
+               <input type="number" id="proposalPayment" min="10" max="${
+                   cChainParams.current.maxPayment / COIN
+               }" placeholder="${cChainParams.current.TICKER} ${
+            translation.popupProposalPerCycle
+        }" style="text-align: center;"><br>
+               <input id="proposalAddress" maxlength="34" placeholder="${
+                   translation.popupProposalAddress
+               }" style="text-align: center; ${
+            !fAdvancedMode ? 'display: none' : ''
+        }"><br>`,
     });
 
     // If the user cancelled, then we return
     if (!fConfirmed) return;
 
-    const strTitle = document.getElementById('proposalTitle').value;
-    const strUrl = document.getElementById('proposalUrl').value;
-    const numCycles = parseInt(document.getElementById('proposalCycles').value);
-    const numPayment = parseInt(
-        document.getElementById('proposalPayment').value
+    const strTitle = document.getElementById('proposalTitle').value.trim();
+    const strUrl = document.getElementById('proposalUrl').value.trim();
+    const numCycles = parseInt(
+        document.getElementById('proposalCycles').value.trim()
     );
+    const numPayment = parseInt(
+        document.getElementById('proposalPayment').value.trim()
+    );
+
+    // If Advanced Mode is enabled and an address is given, use the provided address, otherwise, generate a new one
+    const strAddress =
+        document.getElementById('proposalAddress').value.trim() ||
+        (await getNewAddress())[0];
     const nextSuperblock = await Masternode.getNextSuperblock();
     const proposal = {
         name: strTitle,
         url: strUrl,
         nPayments: numCycles,
         start: nextSuperblock,
-        address: (await getNewAddress())[0],
+        address: strAddress,
         monthlyPayment: numPayment * COIN,
     };
 
@@ -2797,7 +2835,7 @@ export async function createProposal() {
         createAlert(
             'warning',
             `${ALERTS.PROPOSAL_INVALID_ERROR} ${isValid.err}`,
-            5000
+            7500
         );
         return;
     }
@@ -2818,7 +2856,7 @@ export async function createProposal() {
 
         // Update the DB
         await database.updateAccount(account);
-        createAlert('success', translation.PROPOSAL_CREATED, 7500);
+        createAlert('success', translation.PROPOSAL_CREATED, 10000);
         updateGovernanceTab();
     }
 }

@@ -250,8 +250,10 @@ export const it_translation = {
     popupCreateProposal: 'Crea proposta', //Create Proposal
     popupCreateProposalCost: 'Costo', //Cost
     popupProposalName: 'Nome della proposta', //Proposal Name
+    popupProposalAddress: '', //Proposal Address (Optional)
     popupProposalDuration: 'Durata in cicli', //Duration in cycles
     popupProposalPerCycle: 'per ciclo', //per cycle
+    popupProposalEncryptFirst: '', //You need to hit "{button}" before you can create proposals!
     popupProposalVoteHash: 'Hash del voto:', //Vote Hash:
     popupProposalFinalisedNote:
         '<b>Congratulazioni per aver pubblicato la tua proposta!</b><br>I proprietari di Masternode possono utilizzare il tuo Hash di voto per votare da portafogli diversi da MPW, quindi assicurati di aggiungerlo al tuo post sul forum, se applicabile!', //<b>Congratulations on launching your proposal!</b><br>Masternode owners can use your Vote Hash to vote from wallets other than MPW, so make sure to add this to your forum post, if applicable!

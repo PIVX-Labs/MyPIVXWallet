@@ -264,8 +264,10 @@ export const de_translation = {
     popupCreateProposal: 'Erstelle Antrag', //Create Proposal
     popupCreateProposalCost: 'Kosten', //Cost
     popupProposalName: 'Name des Antrags', //Proposal Name
+    popupProposalAddress: '', //Proposal Address (Optional)
     popupProposalDuration: 'Dauer in Zyklen', //Duration in cycles
     popupProposalPerCycle: 'pro Zyklus', //per cycle
+    popupProposalEncryptFirst: '', //You need to hit "{button}" before you can create proposals!
     popupProposalVoteHash: 'Hash zum Wählen', //Vote Hash:
     popupProposalFinalisedNote:
         '<b>Glückwünsche zum einreichen des Antrags!</b><br>Besitzer einer Masternote können nun den Wahl-Hash benutzen, um aus ihren Geldbörsen heraus (auch andere als MPW) zu wählen. Es ist darum sinnvoll einen Beitrag dazu im Form zun hinterlassen - wenn Anwendbar', //<b>Congratulations on launching your proposal!</b><br>Masternode owners can use your Vote Hash to vote from wallets other than MPW, so make sure to add this to your forum post, if applicable!
