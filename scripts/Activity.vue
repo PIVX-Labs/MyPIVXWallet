@@ -1,9 +1,11 @@
 <script setup>
-import { reactive, ref, computed, watchEffect } from 'vue';
+import { ref, computed, watchEffect } from 'vue';
 import { getNetwork, HistoricalTxType } from './network.js';
-import { masterKey } from './wallet.js';
+import { wallet } from './wallet.js';
 import { cChainParams } from './chain_params.js';
 import { translation } from './i18n.js';
+import { Database } from './database.js';
+import { getNameOrAddress } from './contacts-book.js';
 
 const props = defineProps({
     title: String,
@@ -111,6 +113,8 @@ async function parseTXs() {
     // And also keep track of our last Tx's timestamp, to re-use a cache, which is much faster than the slow `.toLocaleDateString`
     let prevDateString = '';
     let prevTimestamp = 0;
+    const cDB = await Database.getInstance();
+    const cAccount = await cDB.getAccount();
 
     for (const cTx of newTxs.value) {
         const dateTime = new Date(cTx.time * 1000);
@@ -165,7 +169,7 @@ async function parseTXs() {
             // Check all addresses to find our own, caching them for performance
             for (const strAddr of cTx.receivers.concat(cTx.senders)) {
                 // If a previous Tx checked this address, skip it, otherwise, check it against our own address(es)
-                if (!(await masterKey.isOwnAddress(strAddr))) {
+                if (!(await wallet.getMasterKey().isOwnAddress(strAddr))) {
                     // External address, this is not a self-only Tx
                     fSendToSelf = false;
                 }
@@ -188,7 +192,7 @@ async function parseTXs() {
                 const arrExternalAddresses = (
                     await Promise.all(
                         cTx[where].map(async (addr) => [
-                            await masterKey.isOwnAddress(addr),
+                            await wallet.getMasterKey().isOwnAddress(addr),
                             addr,
                         ])
                     )
@@ -196,7 +200,7 @@ async function parseTXs() {
                     .filter(([isOwnAddress, _]) => {
                         return !isOwnAddress;
                     })
-                    .map(([_, addr]) => addr);
+                    .map(([_, addr]) => getNameOrAddress(cAccount, addr));
                 who =
                     [
                         ...new Set(

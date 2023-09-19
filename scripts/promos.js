@@ -11,7 +11,9 @@ import { ALERTS, translation, tr } from './i18n';
 import { getNetwork } from './network';
 import { scanQRCode } from './scanner';
 import { createAndSendTransaction } from './transactions';
-import { deriveAddress, LegacyMasterKey, masterKey } from './wallet';
+import { wallet } from './wallet';
+import { LegacyMasterKey } from './masterkey';
+import { deriveAddress } from './encoding';
 
 /** The fee in Sats to use for Creating or Redeeming PIVX Promos */
 export const PROMO_FEE = 10000;
@@ -456,7 +458,7 @@ export async function updatePromoCreationTick(fRecursive = false) {
             const strAddress = deriveAddress({ pkBytes: cThread.thread.key });
 
             // Ensure the wallet is unlocked
-            if (masterKey.isViewOnly) {
+            if (wallet.isViewOnly()) {
                 $('#redeemCodeModal').modal('hide');
                 if (await restoreWallet(translation.walletUnlockPromo)) {
                     // Unlocked! Re-show the promo UI and continue
@@ -469,7 +471,7 @@ export async function updatePromoCreationTick(fRecursive = false) {
             }
 
             // Send the fill transaction if unlocked
-            if (!masterKey.isViewOnly) {
+            if (!wallet.isViewOnly()) {
                 const res = await createAndSendTransaction({
                     address: strAddress,
                     amount: cThread.amount * COIN + 10000,

@@ -45,7 +45,7 @@ export {
     updateActivityGUI,
     govVote,
 } from './global.js';
-export { generateWallet, getNewAddress, importWallet } from './wallet.js';
+export { wallet, generateWallet, importWallet } from './wallet.js';
 export {
     toggleTestnet,
     toggleDebug,

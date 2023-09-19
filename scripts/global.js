@@ -3,15 +3,12 @@ import Masternode from './masternode.js';
 import { ALERTS, tr, start as i18nStart, translation } from './i18n.js';
 import * as jdenticon from 'jdenticon';
 import {
-    masterKey,
+    wallet,
     hasEncryptedWallet,
     importWallet,
-    encryptWallet,
     decryptWallet,
-    getNewAddress,
-    getDerivationPath,
-    LegacyMasterKey,
 } from './wallet.js';
+import { LegacyMasterKey } from './masterkey.js';
 import { getNetwork, HistoricalTxType } from './network.js';
 import {
     start as settingsStart,
@@ -815,15 +812,17 @@ export async function updateActivityGUI(fStaking = false, fNewOnly = false) {
  * @param {string?} strAddress - Optional address to open, if void, the master key is used
  */
 export async function openExplorer(strAddress = '') {
-    if (masterKey?.isHD && !strAddress) {
-        const derivationPath = getDerivationPath(masterKey.isHardwareWallet)
+    if (wallet.isLoaded() && wallet.isHD() && !strAddress) {
+        const derivationPath = wallet
+            .getDerivationPath()
             .split('/')
             .slice(0, 4)
             .join('/');
-        const xpub = await masterKey.getxpub(derivationPath);
+        const xpub = await wallet.getMasterKey().getxpub(derivationPath);
         window.open(cExplorer.url + '/xpub/' + xpub, '_blank');
     } else {
-        const address = strAddress || (await masterKey.getAddress());
+        const address =
+            strAddress || (await wallet.getMasterKey().getAddress());
         window.open(cExplorer.url + '/address/' + address, '_blank');
     }
 }
@@ -1050,10 +1049,10 @@ export async function govVote(hash, voteCode) {
  */
 export async function startMasternode(fRestart = false) {
     const database = await Database.getInstance();
-    const cMasternode = await database.getMasternode(masterKey);
+    const cMasternode = await database.getMasternode(wallet.getMasterKey());
     if (cMasternode) {
         if (
-            masterKey.isViewOnly &&
+            wallet.isViewOnly() &&
             !(await restoreWallet(translation.walletUnlockMNStart))
         )
             return;
@@ -1072,8 +1071,8 @@ export async function startMasternode(fRestart = false) {
 export async function destroyMasternode() {
     const database = await Database.getInstance();
 
-    if (await database.getMasternode(masterKey)) {
-        database.removeMasternode(masterKey);
+    if (await database.getMasternode(wallet.getMasterKey())) {
+        database.removeMasternode(wallet.getMasterKey());
         createAlert('success', ALERTS.MN_DESTROYED, 5000);
         updateMasternodeTab();
     }
@@ -1129,7 +1128,7 @@ export async function importMasternode() {
     doms.domMnIP.value = '';
     doms.domMnPrivateKey.value = '';
 
-    if (!masterKey.isHD) {
+    if (!wallet.isHD()) {
         // Find the first UTXO matching the expected collateral size
         const cCollaUTXO = mempool
             .getConfirmed()
@@ -1281,10 +1280,10 @@ export async function guiImportWallet() {
                 fSavePublicKey: true,
             });
 
-            if (masterKey) {
+            if (wallet.isLoaded()) {
                 // Prepare a new Account to add
                 const cAccount = new Account({
-                    publicKey: await masterKey.keyToExport,
+                    publicKey: await wallet.getMasterKey().keyToExport,
                     encWif: strPrivKey,
                 });
 
@@ -1332,7 +1331,7 @@ export async function guiEncryptWallet() {
     }
 
     // Encrypt the wallet using the new password
-    await encryptWallet(strPass);
+    await wallet.encryptWallet(strPass);
     createAlert('success', ALERTS.NEW_PASSWORD_SUCCESS, 5500);
 
     // Hide and reset the encryption modal
@@ -1341,8 +1340,8 @@ export async function guiEncryptWallet() {
     doms.domEncryptPasswordSecond.value = '';
 
     // Display the 'Unlock/Lock Wallet' buttons accordingly based on state
-    doms.domWipeWallet.hidden = masterKey.isViewOnly;
-    doms.domRestoreWallet.hidden = !masterKey.isViewOnly;
+    doms.domWipeWallet.hidden = wallet.isViewOnly();
+    doms.domRestoreWallet.hidden = !wallet.isViewOnly();
 
     // Update the encryption UI (changes to "Change Password" now)
     await updateEncryptionGUI(true);
@@ -1372,10 +1371,11 @@ export async function toggleExportUI() {
             doms.domExportPrivateKey.innerHTML = encWif;
             exportHidden = true;
         } else {
-            if (masterKey.isViewOnly) {
+            if (wallet.isViewOnly()) {
                 exportHidden = false;
             } else {
-                doms.domExportPrivateKey.innerHTML = masterKey.keyToBackup;
+                doms.domExportPrivateKey.innerHTML =
+                    wallet.getMasterKey().keyToBackup;
                 exportHidden = true;
             }
         }
@@ -1534,7 +1534,7 @@ export async function sweepAddress(arrUTXOs, sweepingMasterKey, nFixedFee = 0) {
     const nFee = nFixedFee || getNetwork().getFee(cTx.serialize().length);
 
     // Use a new address from our wallet to sweep the UTXOs in to
-    const strAddress = (await getNewAddress(true, false))[0];
+    const strAddress = (await wallet.getNewAddress(true, false))[0];
 
     // Sweep the full funds amount, minus the fee, leaving no change from any sweeped UTXOs
     cTx.addoutput(strAddress, (nTotal - nFee) / COIN);
@@ -1614,7 +1614,7 @@ export async function wipePrivateData() {
             html,
         })
     ) {
-        masterKey.wipePrivateData();
+        wallet.getMasterKey().wipePrivateData();
         doms.domWipeWallet.hidden = true;
         if (isEncrypted) {
             doms.domRestoreWallet.hidden = false;
@@ -2281,7 +2281,7 @@ export async function updateMasternodeTab() {
     doms.domCreateMasternode.style.display = 'none';
     doms.domMnDashboard.style.display = 'none';
 
-    if (!masterKey) {
+    if (!wallet.isLoaded()) {
         doms.domMnTextErrors.innerHTML =
             'Please ' +
             ((await hasEncryptedWallet()) ? 'unlock' : 'import') +
@@ -2313,7 +2313,7 @@ export async function updateMasternodeTab() {
     doms.domControlMasternode.style.display = cMasternode ? 'block' : 'none';
 
     // first case: the wallet is not HD and it is not hardware, so in case the wallet has collateral the user can check its status and do simple stuff like voting
-    if (!masterKey.isHD) {
+    if (!wallet.isHD()) {
         doms.domMnAccessMasternodeText.innerHTML =
             doms.masternodeLegacyAccessText;
         doms.domMnTxId.style.display = 'none';
@@ -2369,7 +2369,7 @@ export async function updateMasternodeTab() {
             for (const [key] of mapCollateralAddresses) {
                 const option = document.createElement('option');
                 option.value = key;
-                option.innerText = await masterKey.getAddress(key);
+                option.innerText = await wallet.getMasterKey().getAddress(key);
                 doms.domMnTxId.appendChild(option);
             }
         }
@@ -2413,7 +2413,7 @@ async function refreshMasternodeData(cMasternode, fAlert = false) {
     if (cMasternodeData.status === 'MISSING') {
         doms.domMnTextErrors.innerHTML =
             'Masternode is currently <b>OFFLINE</b>';
-        if (!masterKey.isViewOnly) {
+        if (!wallet.isViewOnly()) {
             createAlert('warning', ALERTS.MN_OFFLINE_STARTING, 6000);
             // try to start the masternode
             const started = await cMasternode.start();
@@ -2463,11 +2463,11 @@ async function refreshMasternodeData(cMasternode, fAlert = false) {
 }
 
 export async function createProposal() {
-    if (!masterKey) {
+    if (!wallet.isLoaded()) {
         return createAlert('warning', ALERTS.PROPOSAL_IMPORT_FIRST);
     }
     if (
-        masterKey.isViewOnly &&
+        wallet.isViewOnly() &&
         !(await restoreWallet(translation.walletUnlockProposal))
     ) {
         return;
@@ -2503,7 +2503,7 @@ export async function createProposal() {
         url: strUrl,
         nPayments: numCycles,
         start: nextSuperblock,
-        address: (await getNewAddress())[0],
+        address: (await wallet.getNewAddress())[0],
         monthlyPayment: numPayment * COIN,
     };
 
@@ -2545,7 +2545,7 @@ export function refreshChainData() {
         return console.warn(
             'Offline mode active: For your security, the wallet will avoid ALL internet requests.'
         );
-    if (!masterKey) return;
+    if (!wallet.isLoaded()) return;
 
     // Fetch block count + UTXOs, update the UI for new transactions
     cNet.getBlockCount().then((_) => {

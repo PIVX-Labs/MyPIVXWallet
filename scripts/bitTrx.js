@@ -3,7 +3,8 @@ import * as nobleSecp256k1 from '@noble/secp256k1';
 import { BigInteger } from 'biginteger';
 import bs58 from 'bs58';
 import { OP } from './script.js';
-import { deriveAddress, parseWIF, getDerivationPath } from './wallet.js';
+import { wallet } from './wallet.js';
+import { parseWIF, deriveAddress } from './encoding.js';
 import { sha256 } from '@noble/hashes/sha256';
 import { getNetwork } from './network.js';
 import { cChainParams } from './chain_params.js';
@@ -30,7 +31,7 @@ export default class bitjs {
             index,
             script,
             sequence,
-            path = getDerivationPath(),
+            path = wallet.getDerivationPath(),
         }) {
             const o = {};
             o.outpoint = { hash: txid, index: index };

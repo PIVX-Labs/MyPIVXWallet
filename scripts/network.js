@@ -1,4 +1,3 @@
-import { getDerivationPath } from './wallet.js';
 import { cChainParams, COIN } from './chain_params.js';
 import { createAlert } from './misc.js';
 import { Mempool, UTXO } from './mempool.js';
@@ -255,9 +254,8 @@ export class ExplorerNetwork extends Network {
             let publicKey;
             // Derive our XPub, or fetch a single pubkey
             if (this.masterKey.isHD && !strAddress) {
-                const derivationPath = getDerivationPath(
-                    this.masterKey.isHardwareWallet
-                )
+                const derivationPath = this.masterKey
+                    .getDerivationPath()
                     .split('/')
                     .slice(0, 4)
                     .join('/');
@@ -383,9 +381,8 @@ export class ExplorerNetwork extends Network {
 
             // Form the API call using our wallet information
             const fHD = this.masterKey.isHD;
-            const strDerivPath = getDerivationPath(
-                this.masterKey.isHardwareWallet
-            )
+            const strDerivPath = this.masterKey
+                .getDerivationPath()
                 .split('/')
                 .slice(0, 4)
                 .join('/');

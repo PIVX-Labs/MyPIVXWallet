@@ -5,18 +5,12 @@ import {
     guiUpdateImportInput,
     mempool,
     refreshChainData,
-    renderActivityGUI,
     setDisplayForAllWalletOptions,
     updateActivityGUI,
     updateEncryptionGUI,
     updateGovernanceTab,
 } from './global.js';
-import {
-    hasEncryptedWallet,
-    importWallet,
-    masterKey,
-    setMasterKey,
-} from './wallet.js';
+import { wallet, hasEncryptedWallet, importWallet } from './wallet.js';
 import { cChainParams } from './chain_params.js';
 import { setNetwork, ExplorerNetwork, getNetwork } from './network.js';
 import { confirmPopup, createAlert, isEmpty } from './misc.js';
@@ -278,7 +272,7 @@ export async function setExplorer(explorer, fSilent = false) {
     cExplorer = explorer;
 
     // Enable networking + notify if allowed
-    const network = new ExplorerNetwork(cExplorer.url, masterKey);
+    const network = new ExplorerNetwork(cExplorer.url, wallet.getMasterKey());
     setNetwork(network);
 
     // Update the selector UI
@@ -469,7 +463,7 @@ export async function toggleTestnet() {
         : cChainParams.testnet;
 
     // If the current wallet is not saved, we'll ask the user for confirmation, since they'll lose their wallet if they switch with an unsaved wallet!
-    if (masterKey && !(await hasEncryptedWallet())) {
+    if (wallet.isLoaded() && !(await hasEncryptedWallet())) {
         const fContinue = await confirmPopup({
             title: tr(translation.netSwitchUnsavedWarningTitle, [
                 { network: cChainParams.current.name },
@@ -520,7 +514,7 @@ export async function toggleTestnet() {
         await importWallet({ newWif: cNewAccount.publicKey });
     } else {
         // Nuke the Master Key
-        setMasterKey(null);
+        wallet.setMasterKey(null);
 
         // Hide all Dashboard info, kick the user back to the "Getting Started" area
         doms.domGenKeyWarning.style.display = 'none';
@@ -551,7 +545,7 @@ export async function toggleTestnet() {
     mempool.UTXOs = [];
     getBalance(true);
     getStakingBalance(true);
-    await updateEncryptionGUI(!!masterKey);
+    await updateEncryptionGUI(!!wallet.getMasterKey());
     await fillExplorerSelect();
     await fillNodeSelect();
     await updateActivityGUI();
