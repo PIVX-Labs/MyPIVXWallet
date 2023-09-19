@@ -79,7 +79,6 @@ const stakingDashboard = createApp(Activity, {
     title: 'Reward History',
     rewards: true,
 }).mount('#stakeActivity');
-//const stakeActivity = createApp(Activity, {title: "Activity", rewards: true}).mount('#activityStake');
 
 export async function start() {
     doms = {
@@ -578,16 +577,16 @@ export function openTab(evt, tabName) {
         updateMasternodeTab();
     } else if (
         tabName === 'StakingTab' &&
-        getNetwork().arrTxHistory.length === 0
+            stakingDashboard.getTxCount() === 0
     ) {
         // Refresh the TX list
-        updateActivityGUI(true, false);
+		stakingDashboard.update(false);
     } else if (
         tabName === 'keypair' &&
         getNetwork().arrTxHistory.length === 0
     ) {
         // Refresh the TX list
-        updateActivityGUI(false, false);
+	activityDashboard.update(false);
     }
 }
 
@@ -794,17 +793,6 @@ export async function openSendQRScanner() {
         )}…" ${ALERTS.QR_SCANNER_BAD_RECEIVER}`,
         7500
     );
-}
-
-/**
- * Refreshes the specified activity table, charts and related information
- */
-export async function updateActivityGUI(fStaking = false, fNewOnly = false) {
-    if (fStaking) {
-        stakeActivity.update(fNewOnly);
-    } else {
-        activityDashboard.update(fNewOnly);
-    }
 }
 
 /**
@@ -2550,7 +2538,7 @@ export function refreshChainData() {
     // Fetch block count + UTXOs, update the UI for new transactions
     cNet.getBlockCount().then((_) => {
         // Fetch latest Activity
-        updateActivityGUI(false, true);
+	activityDashboard.update(true);
 
         // If it's open: update the Governance Dashboard
         if (doms.domGovTab.classList.contains('active')) {

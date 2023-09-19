@@ -6,7 +6,6 @@ import {
     mempool,
     refreshChainData,
     setDisplayForAllWalletOptions,
-    updateActivityGUI,
     updateEncryptionGUI,
     updateGovernanceTab,
 } from './global.js';
@@ -539,16 +538,12 @@ export async function toggleTestnet() {
         doms.domImportWallet.style.display = 'none';
     }
 
-    // Re-render the Activity UI as empty
-    await renderActivityGUI([]);
-
     mempool.UTXOs = [];
     getBalance(true);
     getStakingBalance(true);
     await updateEncryptionGUI(!!wallet.getMasterKey());
     await fillExplorerSelect();
     await fillNodeSelect();
-    await updateActivityGUI();
     await updateGovernanceTab();
 }
 

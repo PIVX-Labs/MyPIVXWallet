@@ -235,7 +235,11 @@ function reset() {
     newTxs.value = [];
 }
 
-defineExpose({ update, reset });
+function getTxCount() {
+    return txCount;
+}
+
+defineExpose({ update, reset, getTxCount });
 </script>
 
 <template>

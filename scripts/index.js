@@ -42,7 +42,6 @@ export {
     toggleBottomMenu,
     createProposal,
     switchSettings,
-    updateActivityGUI,
     govVote,
 } from './global.js';
 export { wallet, generateWallet, importWallet } from './wallet.js';
