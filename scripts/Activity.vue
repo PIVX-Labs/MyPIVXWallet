@@ -58,7 +58,7 @@ async function update(fNewOnly = false, sync = true) {
     const cNet = getNetwork();
 
     if (!cNet) return;
-    
+
     // Prevent the user from spamming refreshes
     if (cNet.historySyncing) return;
 
@@ -209,7 +209,9 @@ async function parseTXs(arrTXs) {
                     [
                         ...new Set(
                             arrExternalAddresses.map((addr) =>
-                                addr?.length >= 32 ? addr?.substring(0, 6) : addr
+                                addr?.length >= 32
+                                    ? addr?.substring(0, 6)
+                                    : addr
                             )
                         ),
                     ].join(', ') + '...';
@@ -334,9 +336,7 @@ defineExpose({ update, reset, getTxCount });
                             :class="{ 'fa-spin': updating }"
                         ></i
                     ></span>
-                    <span class="buttoni-text"
-                        >{{ translation.loadMore }}</span
-                    >
+                    <span class="buttoni-text">{{ translation.loadMore }}</span>
                 </button>
             </center>
         </div>

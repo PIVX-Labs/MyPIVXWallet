@@ -50,7 +50,6 @@ import { createApp } from 'vue';
 import Activity from './Activity.vue';
 import {
     cReceiveType,
-    getNameOrAddress,
     guiAddContactPrompt,
     guiCheckRecipientInput,
     guiToggleReceiveType,
@@ -577,16 +576,16 @@ export function openTab(evt, tabName) {
         updateMasternodeTab();
     } else if (
         tabName === 'StakingTab' &&
-            stakingDashboard.getTxCount() === 0
+        stakingDashboard.getTxCount() === 0
     ) {
         // Refresh the TX list
-		stakingDashboard.update(false);
+        stakingDashboard.update(false);
     } else if (
         tabName === 'keypair' &&
         getNetwork().arrTxHistory.length === 0
     ) {
         // Refresh the TX list
-	activityDashboard.update(false);
+        activityDashboard.update(false);
     }
 }
 
@@ -2538,7 +2537,7 @@ export function refreshChainData() {
     // Fetch block count + UTXOs, update the UI for new transactions
     cNet.getBlockCount().then((_) => {
         // Fetch latest Activity
-	activityDashboard.update(true);
+        activityDashboard.update(true);
 
         // If it's open: update the Governance Dashboard
         if (doms.domGovTab.classList.contains('active')) {
