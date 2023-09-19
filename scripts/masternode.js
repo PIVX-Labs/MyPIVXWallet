@@ -1,11 +1,8 @@
 import { cNode, cExplorer } from './settings.js';
 import { cChainParams, COIN } from './chain_params.js';
-import {
-    masterKey,
-    parseWIF,
-    deriveAddress,
-    cHardwareWallet,
-} from './wallet.js';
+import { wallet } from './wallet.js';
+import { parseWIF, deriveAddress } from './encoding.js';
+import { cHardwareWallet } from './ledger.js';
 import { dSHA256, bytesToHex, hexToBytes } from './utils.js';
 import { Buffer } from 'buffer';
 import { Address6 } from 'ip-address';
@@ -43,7 +40,9 @@ export default class Masternode {
     static sessionVotes = [];
 
     async _getWalletPrivateKey() {
-        return await masterKey.getPrivateKey(this.walletPrivateKeyPath);
+        return await wallet
+            .getMasterKey()
+            .getPrivateKey(this.walletPrivateKeyPath);
     }
 
     /**
@@ -206,7 +205,7 @@ export default class Masternode {
             sigTime,
         });
 
-        if (masterKey.isHardwareWallet) {
+        if (wallet.isHardwareWallet()) {
             const { r, s, v } = await cHardwareWallet.signMessage(
                 this.walletPrivateKeyPath,
                 bytesToHex(toSign)
@@ -251,9 +250,11 @@ export default class Masternode {
     }
 
     async getWalletPublicKey() {
-        if (masterKey.isHardwareWallet) {
+        if (wallet.isHardwareWallet()) {
             return hexToBytes(
-                await masterKey.getPublicKey(this.walletPrivateKeyPath)
+                await wallet
+                    .getMasterKey()
+                    .getPublicKey(this.walletPrivateKeyPath)
             );
         } else {
             const walletPrivateKey = await this._getWalletPrivateKey();

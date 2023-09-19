@@ -287,6 +287,7 @@ export const fr_translation = {
     proposalFinalisationReady: 'Prêt à soumettre', //Ready to submit
     proposalPassing: 'PASSANT', //PASSING
     proposalFailing: 'ÉCHOUANT', //FAILING
+    proposalTooYoung: '', //TOO YOUNG
     proposalFunded: 'FINANCÉE', //FUNDED
     proposalNotFunded: 'NON FINANCÉE', //NOT FUNDED
     proposalPaymentsRemaining: "l'installation(s) restants<br>de", //installment(s) remaining<br>of

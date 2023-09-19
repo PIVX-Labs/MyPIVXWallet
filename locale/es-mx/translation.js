@@ -285,6 +285,7 @@ export const es_mx_translation = {
     proposalFinalisationReady: 'Listo para enviarla', //Ready to submit
     proposalPassing: 'PASANDO', //PASSING
     proposalFailing: 'FRACASANDO', //FAILING
+    proposalTooYoung: '', //TOO YOUNG
     proposalFunded: 'FINANCIADA', //FUNDED
     proposalNotFunded: 'NO FINANCIADA', //NOT FUNDED
     proposalPaymentsRemaining: 'plazo(s) restante(s)<br>de', //installment(s) remaining<br>of

@@ -278,6 +278,7 @@ export const en_translation = {
     proposalFinalisationReady: 'Ready to submit',
     proposalPassing: 'PASSING',
     proposalFailing: 'FAILING',
+    proposalTooYoung: 'TOO YOUNG',
     proposalFunded: 'FUNDED',
     proposalNotFunded: 'NOT FUNDED',
     proposalPaymentsRemaining: 'installment(s) remaining<br>of',

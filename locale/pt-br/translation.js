@@ -283,6 +283,7 @@ export const pt_br_translation = {
     proposalFinalisationReady: 'Pronto para enviar', //Ready to submit
     proposalPassing: 'PASSAGEM', //PASSING
     proposalFailing: 'FALHA', //FAILING
+    proposalTooYoung: '', //TOO YOUNG
     proposalFunded: 'FINANCIADO/A', //FUNDED
     proposalNotFunded: 'NÃO FINANCIADO/A', //NOT FUNDED
     proposalPaymentsRemaining: 'parcela(s) restante(s)<br>de', //installment(s) remaining<br>of

@@ -10,15 +10,9 @@ import {
     toggleBottomMenu,
     guiSetColdStakingAddress,
 } from './global.js';
-import {
-    hasWalletUnlocked,
-    masterKey,
-    getNewAddress,
-    cHardwareWallet,
-    strHardwareName,
-    getDerivationPath,
-    HdMasterKey,
-} from './wallet.js';
+import { cHardwareWallet, strHardwareName } from './ledger.js';
+import { wallet } from './wallet.js';
+import { HdMasterKey } from './masterkey.js';
 import { Mempool, UTXO } from './mempool.js';
 import { getNetwork } from './network.js';
 import { cChainParams, COIN, COIN_DECIMALS } from './chain_params.js';
@@ -68,11 +62,11 @@ function validateAmount(nAmountSats, nMinSats = 10000) {
  */
 export async function createTxGUI() {
     // Ensure a wallet is loaded
-    if (!(await hasWalletUnlocked(true))) return;
+    if (!(await wallet.hasWalletUnlocked(true))) return;
 
     // Ensure the wallet is unlocked
     if (
-        masterKey.isViewOnly &&
+        wallet.isViewOnly() &&
         !(await restoreWallet(translation.walletUnlockTx))
     )
         return;
@@ -110,10 +104,10 @@ export async function createTxGUI() {
 
         // Use the latest index plus one (or if the XPub is unused, then the second address)
         const nIndex = (cXPub.usedTokens || 0) + 1;
-        const strPath = getDerivationPath(false, 0, 0, nIndex, false);
 
         // Create a receiver master-key
         const cReceiverWallet = new HdMasterKey({ xpub: strReceiverAddress });
+        const strPath = cReceiverWallet.getDerivationPath(0, 0, nIndex);
 
         // Set the 'receiver address' as the unused XPub-derived address
         strReceiverAddress = cReceiverWallet.getAddress(strPath);
@@ -176,7 +170,7 @@ export async function createTxGUI() {
 export async function delegateGUI() {
     // Ensure the wallet is unlocked
     if (
-        masterKey.isViewOnly &&
+        wallet.isViewOnly() &&
         !(await restoreWallet(
             `${translation.walletUnlockStake} ${cChainParams.current.TICKER}!`
         ))
@@ -217,13 +211,13 @@ export async function delegateGUI() {
  * Create a Cold Staking undelegation transaction
  */
 export async function undelegateGUI() {
-    if (masterKey.isHardwareWallet) {
+    if (wallet.isHardwareWallet()) {
         return createAlert('warning', ALERTS.STAKING_LEDGER_NO_SUPPORT, 6000);
     }
 
     // Ensure the wallet is unlocked
     if (
-        masterKey.isViewOnly &&
+        wallet.isViewOnly() &&
         !(await restoreWallet(
             `${translation.walletUnlockUnstake} ${cChainParams.current.TICKER}!`
         ))
@@ -237,7 +231,7 @@ export async function undelegateGUI() {
     if (!validateAmount(nAmount)) return;
 
     // Generate a new address to undelegate towards
-    const [address] = await getNewAddress();
+    const [address] = await wallet.getNewAddress();
 
     // Perform the TX
     const cTxRes = await createAndSendTransaction({
@@ -282,14 +276,14 @@ export async function createAndSendTransaction({
     changeDelegationAddress = null,
     isProposal = false,
 }) {
-    if (!(await hasWalletUnlocked(true))) return;
-    if ((isDelegation || useDelegatedInputs) && masterKey.isHardwareWallet) {
+    if (!(await wallet.hasWalletUnlocked(true))) return;
+    if ((isDelegation || useDelegatedInputs) && wallet.isHardwareWallet()) {
         return createAlert('warning', ALERTS.STAKING_LEDGER_NO_SUPPORT, 6000);
     }
 
     // Ensure the wallet is unlocked
     if (
-        masterKey.isViewOnly &&
+        wallet.isViewOnly() &&
         !(await restoreWallet(translation.walletUnlockTx))
     )
         return;
@@ -305,8 +299,8 @@ export async function createAndSendTransaction({
 
     // Compute change (or lack thereof)
     const nChange = cCoinControl.nValue - (nFee + amount);
-    const [changeAddress, changeAddressPath] = await getNewAddress({
-        verify: masterKey.isHardwareWallet,
+    const [changeAddress, changeAddressPath] = await wallet.getNewAddress({
+        verify: wallet.isHardwareWallet(),
     });
 
     /**
@@ -355,7 +349,8 @@ export async function createAndSendTransaction({
 
     // Primary output (receiver)
     if (isDelegation) {
-        const [primaryAddress, primaryAddressPath] = await getNewAddress();
+        const [primaryAddress, primaryAddressPath] =
+            await wallet.getNewAddress();
         cTx.addcoldstakingoutput(primaryAddress, address, amount / COIN);
         outputs.push([primaryAddress, address, amount / COIN]);
 
@@ -394,7 +389,7 @@ export async function createAndSendTransaction({
         `);
     }
 
-    const sign = await signTransaction(cTx, masterKey, outputs, delegateChange);
+    const sign = await signTransaction(cTx, wallet, outputs, delegateChange);
     const result = await getNetwork().sendTransaction(sign);
     // Update the mempool
     if (result) {
@@ -415,7 +410,7 @@ export async function createAndSendTransaction({
         }
 
         if (!isDelegation && !isProposal) {
-            const path = await masterKey.isOwnAddress(address);
+            const path = await wallet.isOwnAddress(address);
 
             // If the tx was sent to yourself, add it to the mempool
             if (path) {
@@ -442,13 +437,13 @@ export async function createAndSendTransaction({
 export async function createMasternode() {
     // Ensure the wallet is unlocked
     if (
-        masterKey.isViewOnly &&
+        wallet.isViewOnly() &&
         !(await restoreWallet(translation.walletUnlockCreateMN))
     )
         return;
 
     // Generate the Masternode collateral
-    const [address] = await getNewAddress();
+    const [address] = await wallet.getNewAddress();
     const result = await createAndSendTransaction({
         amount: cChainParams.current.collateralInSats,
         address,
@@ -473,10 +468,10 @@ export async function createMasternode() {
     database.removeMasternode();
 }
 
-export async function signTransaction(cTx, masterKey, outputs, undelegate) {
-    if (!masterKey.isHardwareWallet) {
+export async function signTransaction(cTx, wallet, outputs, undelegate) {
+    if (!wallet.isHardwareWallet()) {
         return await cTx.sign(
-            masterKey,
+            wallet.getMasterKey(),
             1,
             undelegate ? 'coldstake' : undefined
         );

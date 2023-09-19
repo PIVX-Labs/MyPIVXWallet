@@ -13,7 +13,7 @@ import {
     sanitizeHTML,
 } from './misc';
 import { scanQRCode } from './scanner';
-import { getDerivationPath, hasEncryptedWallet, masterKey } from './wallet';
+import { wallet, hasEncryptedWallet } from './wallet';
 
 /**
  * Represents an Account contact
@@ -343,17 +343,16 @@ export async function guiRenderReceiveModal(
             let strPubkey = '';
 
             // If HD: use xpub, otherwise we'll fallback to our single address
-            if (masterKey.isHD) {
+            if (wallet.isHD()) {
                 // Get our current wallet XPub
-                const derivationPath = getDerivationPath(
-                    masterKey.isHardwareWallet
-                )
+                const derivationPath = wallet
+                    .getDerivationPath()
                     .split('/')
                     .slice(0, 4)
                     .join('/');
-                strPubkey = await masterKey.getxpub(derivationPath);
+                strPubkey = await wallet.getMasterKey().getxpub(derivationPath);
             } else {
-                strPubkey = await masterKey.getCurrentAddress();
+                strPubkey = await wallet.getMasterKey().getCurrentAddress();
             }
 
             // Construct the Contact Share URI
@@ -375,7 +374,7 @@ export async function guiRenderReceiveModal(
             document.getElementById('clipboard').value = strPubkey;
         } else {
             // Get our current wallet address
-            const strAddress = await masterKey.getCurrentAddress();
+            const strAddress = await wallet.getMasterKey().getCurrentAddress();
 
             // Update the QR Label (we'll show the address here for now, user can set Contact "Name" optionally later)
             doms.domModalQrLabel.innerHTML =
@@ -405,7 +404,7 @@ export async function guiRenderReceiveModal(
         }
     } else if (cReceiveType === RECEIVE_TYPES.ADDRESS) {
         // Get our current wallet address
-        const strAddress = await masterKey.getCurrentAddress();
+        const strAddress = await wallet.getMasterKey().getCurrentAddress();
         createQR('pivx:' + strAddress, doms.domModalQR);
         doms.domModalQrLabel.innerHTML =
             strAddress +
@@ -416,11 +415,12 @@ export async function guiRenderReceiveModal(
         document.getElementById('clipboard').value = strAddress;
     } else {
         // Get our current wallet XPub
-        const derivationPath = getDerivationPath(masterKey.isHardwareWallet)
+        const derivationPath = wallet
+            .getDerivationPath()
             .split('/')
             .slice(0, 4)
             .join('/');
-        const strXPub = await masterKey.getxpub(derivationPath);
+        const strXPub = await wallet.getMasterKey().getxpub(derivationPath);
 
         // Update the QR Label (we'll show the address here for now, user can set Contact "Name" optionally later)
         doms.domModalQrLabel.innerHTML =
@@ -468,7 +468,7 @@ export let cReceiveType = RECEIVE_TYPES.CONTACT;
  */
 export async function guiToggleReceiveType(nForceType = null) {
     // Figure out which Types can be used with this wallet
-    const nTypeMax = masterKey.isHD ? 3 : 2;
+    const nTypeMax = wallet.isHD() ? 3 : 2;
 
     // Loop back to the first if we hit the end
     cReceiveType =
@@ -521,13 +521,16 @@ export async function guiAddContact() {
 
     // Ensure we're not adding our own XPub
     if (isXPub(strAddr)) {
-        if (masterKey.isHD) {
-            const derivationPath = getDerivationPath(masterKey.isHardwareWallet)
+        if (wallet.isHD()) {
+            const derivationPath = wallet
+                .getDerivationPath()
                 .split('/')
                 .slice(0, 4)
                 .join('/');
             // Compare the XPub against our own
-            const fOurs = strAddr === (await masterKey.getxpub(derivationPath));
+            const fOurs =
+                strAddr ===
+                (await wallet.getMasterKey().getxpub(derivationPath));
             if (fOurs) {
                 createAlert(
                     'warning',
@@ -539,7 +542,7 @@ export async function guiAddContact() {
         }
     } else {
         // Ensure we're not adding (one of) our own address(es)
-        if (await masterKey.isOwnAddress(strAddr)) {
+        if (await wallet.isOwnAddress(strAddr)) {
             createAlert('warning', ALERTS.CONTACTS_CANNOT_ADD_YOURSELF, 3500);
             return false;
         }
@@ -617,14 +620,16 @@ export async function guiAddContactPrompt(
 
     // Ensure we're not adding our own XPub
     if (isXPub(strPubkey)) {
-        if (masterKey.isHD) {
-            const derivationPath = getDerivationPath(masterKey.isHardwareWallet)
+        if (wallet.isHD()) {
+            const derivationPath = wallet
+                .getDerivationPath()
                 .split('/')
                 .slice(0, 4)
                 .join('/');
             // Compare the XPub against our own
             const fOurs =
-                strPubkey === (await masterKey.getxpub(derivationPath));
+                strPubkey ===
+                (await wallet.getMasterKey().getxpub(derivationPath));
             if (fOurs) {
                 createAlert(
                     'warning',
@@ -636,7 +641,7 @@ export async function guiAddContactPrompt(
         }
     } else {
         // Ensure we're not adding (one of) our own address(es)
-        if (await masterKey.isOwnAddress(strPubkey)) {
+        if (await wallet.isOwnAddress(strPubkey)) {
             createAlert('warning', ALERTS.CONTACTS_CANNOT_ADD_YOURSELF, 3500);
             return false;
         }
@@ -978,15 +983,16 @@ export async function localContactToURI(account, pubkey) {
 
     // If HD: use xpub, otherwise we'll fallback to our single address
     if (!strPubkey) {
-        if (masterKey.isHD) {
+        if (wallet.isHD()) {
             // Get our current wallet XPub
-            const derivationPath = getDerivationPath(masterKey.isHardwareWallet)
+            const derivationPath = wallet
+                .getDerivationPath()
                 .split('/')
                 .slice(0, 4)
                 .join('/');
-            strPubkey = await masterKey.getxpub(derivationPath);
+            strPubkey = await wallet.getMasterKey().getxpub(derivationPath);
         } else {
-            strPubkey = await masterKey.getCurrentAddress();
+            strPubkey = await wallet.getMasterKey().getCurrentAddress();
         }
     }
 

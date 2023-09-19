@@ -1,4 +1,4 @@
-import { deriveAddress } from './wallet.js';
+import { deriveAddress } from './encoding';
 import { getSafeRand } from './misc.js';
 
 onmessage = function (_evt) {

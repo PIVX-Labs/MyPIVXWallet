@@ -289,6 +289,7 @@ export const ph_translation = {
     proposalFinalisationReady: 'Handa ng ipasa', //Ready to submit
     proposalPassing: 'PASSING', //PASSING
     proposalFailing: 'FAILING', //FAILING
+    proposalTooYoung: '', //TOO YOUNG
     proposalFunded: 'FUNDED', //FUNDED
     proposalNotFunded: 'NOT FUNDED', //NOT FUNDED
     proposalPaymentsRemaining: 'installment(s) remaining<br>of', //installment(s) remaining<br>of
