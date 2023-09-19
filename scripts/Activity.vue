@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, watchEffect } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { getNetwork, HistoricalTxType } from './network.js';
 import { wallet } from './wallet.js';
 import { cChainParams } from './chain_params.js';
@@ -13,7 +13,7 @@ const props = defineProps({
 });
 
 const txs = ref([]);
-const newTxs = ref([]);
+let txCount = 0;
 const updating = ref(false);
 const isHistorySynced = ref(false);
 const rewardsText = ref('-');
@@ -54,20 +54,23 @@ const txMap = computed(() => {
     };
 });
 
-async function update(fNewOnly = false, txs = []) {
+async function update(fNewOnly = false, sync = true) {
     const cNet = getNetwork();
 
+    if (!cNet) return;
+    
     // Prevent the user from spamming refreshes
     if (cNet.historySyncing) return;
 
     updating.value = true;
     let arrTXs;
 
-    if (newTxs.value.length !== cNet.arrTxHistory.length) {
+    if (txCount !== cNet.arrTxHistory.length || !sync) {
         arrTXs = cNet.arrTxHistory;
     } else {
         arrTXs = await cNet.syncTxHistoryChunk(fNewOnly);
     }
+    txCount = arrTXs.length;
 
     updating.value = false;
     if (!arrTXs) return;
@@ -84,19 +87,20 @@ async function update(fNewOnly = false, txs = []) {
         if (arrStakes.length !== txs.length) {
             const nRewards = arrStakes.reduce((a, b) => a + b.amount, 0);
             rewardsText.value = `${cNet.isHistorySynced ? '' : '≥'}${nRewards}`;
-            newTxs.value = arrStakes;
+            parseTXs(arrStakes);
             return;
         }
     }
-    if (newTxs.length !== arrTXs) newTxs.value = arrTXs;
+    if (txs.length !== arrTXs.length) parseTXs(arrTXs);
 }
-watchEffect(async () => await parseTXs());
+
+watch(translation, async () => await update(false, false));
 
 /**
  * Parse tx to list syntax
  */
-async function parseTXs() {
-    txs.value = [];
+async function parseTXs(arrTXs) {
+    const newTxs = [];
     const cNet = getNetwork();
 
     // Prepare time formatting
@@ -116,7 +120,7 @@ async function parseTXs() {
     const cDB = await Database.getInstance();
     const cAccount = await cDB.getAccount();
 
-    for (const cTx of newTxs.value) {
+    for (const cTx of arrTXs) {
         const dateTime = new Date(cTx.time * 1000);
         // If this Tx is older than 24h, then hit the `Date` cache logic, otherwise, use a `Time` and skip it
         let strDate =
@@ -205,7 +209,7 @@ async function parseTXs() {
                     [
                         ...new Set(
                             arrExternalAddresses.map((addr) =>
-                                addr.length >= 32 ? addr.substring(0, 6) : addr
+                                addr?.length >= 32 ? addr?.substring(0, 6) : addr
                             )
                         ),
                     ].join(', ') + '...';
@@ -213,7 +217,7 @@ async function parseTXs() {
             content = content.replace(/{.}/, who);
         }
 
-        txs.value.push({
+        newTxs.push({
             date: strDate,
             id: cTx.id,
             content: props.rewards ? cTx.id : content,
@@ -223,9 +227,15 @@ async function parseTXs() {
             colour,
         });
     }
+    txs.value = newTxs;
 }
 
-defineExpose({ update });
+function reset() {
+    txs.value = [];
+    newTxs.value = [];
+}
+
+defineExpose({ update, reset });
 </script>
 
 <template>
@@ -312,7 +322,7 @@ defineExpose({ update });
                 <button
                     v-if="!isHistorySynced"
                     class="pivx-button-medium"
-                    @click="update(false)"
+                    @click="update()"
                 >
                     <span class="buttoni-icon"
                         ><i
@@ -320,8 +330,8 @@ defineExpose({ update });
                             :class="{ 'fa-spin': updating }"
                         ></i
                     ></span>
-                    <span class="buttoni-text" data-i18n="loadMore"
-                        >Load more</span
+                    <span class="buttoni-text"
+                        >{{ translation.loadMore }}</span
                     >
                 </button>
             </center>
