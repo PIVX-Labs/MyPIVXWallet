@@ -215,7 +215,7 @@ export const it_translation = {
     description: 'Descrizione', //Description
     activityBlockReward: 'Ricompensa del blocco', //Block Reward
     activitySentTo: 'Inviato a {r}', //Sent to
-    activitySelf: 'te stesso', //Sent to self
+    activitySelf: 'te stesso', //Self
     activityShieldedAddress: 'Indirizzo protetto', //Shielded address
     activityReceivedFrom: 'Ricevuto da {s}', //Received from
     activityDelegatedTo: 'Delegato a {r}', //Delegated to

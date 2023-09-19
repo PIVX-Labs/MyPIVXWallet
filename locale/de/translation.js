@@ -228,7 +228,7 @@ export const de_translation = {
     description: 'Beschreibung', //Description
     activityBlockReward: 'Block-Erlös', //Block Reward
     activitySentTo: 'Gesendet an', //Sent to
-    activitySentToSelf: 'Umbuchung', //Sent to self
+    activitySentToSelf: 'Umbuchung', //Self
     activityShieldedAddress: 'Geschützte Adresse', //Shielded address
     activityReceivedShield: 'Erhalten von geschützter Adresse', //Received from Shielded address
     activityReceivedFrom: 'Erhalten von', //Received from

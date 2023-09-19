@@ -233,7 +233,7 @@ export const fr_translation = {
     description: 'Description', //Description
     activityBlockReward: 'Récompense en bloc', //Block Reward
     activitySentTo: 'Envoyé à {r}', //Sent to
-    activitySelf: 'soi-même', //Sent to self
+    activitySelf: 'soi-même', //Self
     activityShieldedAddress: 'Adresse protégée', //Shielded address
     activityReceivedFrom: 'Reçu de {s}', //Received from
     activityDelegatedTo: 'Délégué à {r}', //Delegated to

@@ -233,7 +233,7 @@ export const es_mx_translation = {
     description: 'Descripción', //Description
     activityBlockReward: 'Recompensa del Bloque', //Block Reward
     activitySentTo: 'Enviar a {r}', //Sent to
-    activitySelf: 'ti mismo', //Sent to self
+    activitySelf: 'ti mismo', //Self
     activityShieldedAddress: 'Dirección Shielded', //Shielded address
     activityReceivedFrom: 'Recibido de {s}', //Received from
     activityDelegatedTo: 'Delegado a {r}', //Delegated to

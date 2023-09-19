@@ -236,7 +236,7 @@ export const ph_translation = {
     description: 'Description', //Description
     activityBlockReward: 'Block Reward', //Block Reward
     activitySentTo: 'Naipadala sa {r}', //Sent to
-    activitySelf: 'sarili', //Sent to self
+    activitySelf: 'sarili', //Self
     activityShieldedAddress: 'Shielded address', //Shielded address
     activityReceivedFrom: 'Natanggap mula sa {s}', //Received from
     activityDelegatedTo: 'Delegated to {r}', //Delegated to

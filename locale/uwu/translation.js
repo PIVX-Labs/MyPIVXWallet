@@ -229,7 +229,7 @@ export const uwu_translation = {
     description: 'Descwiption', //Description
     activityBlockReward: 'Bwock Rewawrd', //Block Reward
     activitySentTo: 'Sentu to {r}', //Sent to
-    activitySelf: 'selfu', //Sent to self
+    activitySelf: 'selfu', //Self
     activityReceivedShield: 'Shielded addwess', //Received from Shielded address
     activityReceivedFrom: 'Recewived fwom {s}', //Received from
     activityDelegatedTo: 'Delegwated to {r}', //Delegated to
