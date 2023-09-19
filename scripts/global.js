@@ -69,12 +69,12 @@ export let doms = {};
 
 // For now we'll import the component as a vue app by itself. Later, when the
 // dashboard is rewritten in vue, we can simply add <Activity /> to the dashboard component template.
-const activityDashboard = createApp(Activity, {
+export const activityDashboard = createApp(Activity, {
     title: 'Activity',
     rewards: false,
 }).mount('#activityDashboard');
 
-const stakingDashboard = createApp(Activity, {
+export const stakingDashboard = createApp(Activity, {
     title: 'Reward History',
     rewards: true,
 }).mount('#stakeActivity');

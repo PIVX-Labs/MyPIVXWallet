@@ -61,19 +61,20 @@ async function update(fNewOnly = false, sync = true) {
 
     // Prevent the user from spamming refreshes
     if (cNet.historySyncing) return;
-
-    updating.value = true;
     let arrTXs;
-
-    if (txCount !== cNet.arrTxHistory.length || !sync) {
-        arrTXs = cNet.arrTxHistory;
-    } else {
-        arrTXs = await cNet.syncTxHistoryChunk(fNewOnly);
+    try {
+	updating.value = true;
+	
+	if (txCount !== cNet.arrTxHistory.length || !sync) {
+            arrTXs = cNet.arrTxHistory;
+	} else {
+            arrTXs = await cNet.syncTxHistoryChunk(fNewOnly);
+	}
+	txCount = arrTXs.length;
+	if (!arrTXs || cNet !== getNetwork()) return;
+    } finally {
+	updating.value = false;
     }
-    txCount = arrTXs.length;
-
-    updating.value = false;
-    if (!arrTXs) return;
 
     // Check if all transactions are loaded
     isHistorySynced.value = cNet.isHistorySynced;
@@ -234,7 +235,8 @@ async function parseTXs(arrTXs) {
 
 function reset() {
     txs.value = [];
-    newTxs.value = [];
+    txCount = 0;
+    update(false);
 }
 
 function getTxCount() {

@@ -8,6 +8,8 @@ import {
     setDisplayForAllWalletOptions,
     updateEncryptionGUI,
     updateGovernanceTab,
+    activityDashboard,
+    stakingDashboard,
 } from './global.js';
 import { wallet, hasEncryptedWallet, importWallet } from './wallet.js';
 import { cChainParams } from './chain_params.js';
@@ -545,6 +547,9 @@ export async function toggleTestnet() {
     await fillExplorerSelect();
     await fillNodeSelect();
     await updateGovernanceTab();
+    activityDashboard.reset();
+    stakingDashboard.reset();
+
 }
 
 export function toggleDebug() {
