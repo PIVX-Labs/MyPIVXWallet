@@ -46,6 +46,7 @@ export const cChainParams = {
         },
         budgetCycleBlocks: 43200,
         proposalFee: 50 * COIN,
+        proposalFeeConfirmRequirement: 6,
         maxPaymentCycles: 6,
         maxPayment: 10 * 43200 * COIN, // 43200 blocks of 10 PIV
     },
@@ -74,6 +75,7 @@ export const cChainParams = {
         },
         budgetCycleBlocks: 144,
         proposalFee: 50 * COIN,
+        proposalFeeConfirmRequirement: 3,
         maxPaymentCycles: 20,
         maxPayment: 10 * 144 * COIN, // 144 blocks of 10 tPIV
     },

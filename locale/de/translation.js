@@ -278,6 +278,7 @@ export const de_translation = {
     proposalFinalisationReady: 'Bereit zum Einreichen', //Ready to submit
     proposalPassing: 'Bestehend', //PASSING
     proposalFailing: 'Scheiternd', //FAILING
+    proposalTooYoung: '', //TOO YOUNG
     proposalFunded: 'Finanziert', //FUNDED
     proposalNotFunded: 'nicht Finanziert', //NOT FUNDED
     proposalPaymentsRemaining: 'Ausstehende Transaktionen<br>', //installment(s) remaining<br>of
