@@ -549,7 +549,6 @@ export async function toggleTestnet() {
     await updateGovernanceTab();
     activityDashboard.reset();
     stakingDashboard.reset();
-
 }
 
 export function toggleDebug() {

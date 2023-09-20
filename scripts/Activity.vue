@@ -63,17 +63,17 @@ async function update(fNewOnly = false, sync = true) {
     if (cNet.historySyncing) return;
     let arrTXs;
     try {
-	updating.value = true;
-	
-	if (txCount !== cNet.arrTxHistory.length || !sync) {
+        updating.value = true;
+
+        if (txCount !== cNet.arrTxHistory.length || !sync) {
             arrTXs = cNet.arrTxHistory;
-	} else {
+        } else {
             arrTXs = await cNet.syncTxHistoryChunk(fNewOnly);
-	}
-	txCount = arrTXs.length;
-	if (!arrTXs || cNet !== getNetwork()) return;
+        }
+        txCount = arrTXs.length;
+        if (!arrTXs || cNet !== getNetwork()) return;
     } finally {
-	updating.value = false;
+        updating.value = false;
     }
 
     // Check if all transactions are loaded
