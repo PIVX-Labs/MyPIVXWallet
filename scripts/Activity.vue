@@ -60,7 +60,8 @@ async function update(fNewOnly = false, sync = true) {
     if (!cNet) return;
 
     // Prevent the user from spamming refreshes
-    if (cNet.historySyncing) return;
+    if (updating.value) return;
+
     let arrTXs;
     try {
         // Set the updating animation

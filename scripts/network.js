@@ -368,7 +368,7 @@ export class ExplorerNetwork extends Network {
     async syncTxHistoryChunk(fNewOnly = false) {
         // Do not allow multiple calls at once
         if (this.historySyncing) {
-            return false;
+            return this.arrTxHistory;
         }
 
         try {
