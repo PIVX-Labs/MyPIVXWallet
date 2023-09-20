@@ -275,7 +275,7 @@ export async function setExplorer(explorer, fSilent = false) {
     // Enable networking + notify if allowed
     const network = new ExplorerNetwork(cExplorer.url, wallet.getMasterKey());
     setNetwork(network);
-    
+
     activityDashboard.reset();
     stakingDashboard.reset();
 
