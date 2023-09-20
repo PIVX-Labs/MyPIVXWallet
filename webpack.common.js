@@ -38,7 +38,14 @@ module.exports = {
             },
             {
                 test: /\.vue/i,
-                use: 'vue-loader',
+                use: {
+                    loader: 'vue-loader',
+                    options: {
+                        compilerOptions: {
+                            isCustomElement: (tag) => tag === 'center',
+                        },
+                    },
+                },
             },
         ],
     },
