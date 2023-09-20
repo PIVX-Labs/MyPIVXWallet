@@ -271,8 +271,10 @@ export const ph_translation = {
     popupCreateProposal: 'Gumawa ng Proposal', //Create Proposal
     popupCreateProposalCost: 'Gastos', //Cost
     popupProposalTitle: 'Proposal Title', //Proposal Title
+    popupProposalAddress: '', //Proposal Address (Optional)
     popupProposalDuration: 'Duration in cycles', //Duration in cycles
     popupProposalPerCycle: 'per cycles', //per cycle
+    popupProposalEncryptFirst: '', //You need to hit "{button}" before you can create proposals!
     popupProposalVoteHash: 'Vote Hash:', //Vote Hash:
     popupProposalFinalisedNote:
         '<b>Binabati kita sa paglulunsad ng iyong proposal!</b><br>Ang mga may-ari ng Masternode ay pwedeng gumamit ng Vote Hash upang bumoto mula sa mga wallet maliban sa MPW, kaya siguraduhin idagdag ito sa iyong forum post, kung naaangkop!', //<b>Congratulations on launching your proposal!</b><br>Masternode owners can use your Vote Hash to vote from wallets other than MPW, so make sure to add this to your forum post, if applicable!
