@@ -63,15 +63,21 @@ async function update(fNewOnly = false, sync = true) {
     if (cNet.historySyncing) return;
     let arrTXs;
     try {
+        // Set the updating animation
         updating.value = true;
 
+        // If our txCount is lower than the tx history loaded
+        // Use the txhistory array, otherwise sync more
         if (txCount !== cNet.arrTxHistory.length || !sync) {
             arrTXs = cNet.arrTxHistory;
         } else {
             arrTXs = await cNet.syncTxHistoryChunk(fNewOnly);
         }
-        txCount = arrTXs.length;
+        // If the network has changed, or the sync has failed
+        // Ignore the array
         if (!arrTXs || cNet !== getNetwork()) return;
+
+        txCount = arrTXs.length;
     } finally {
         updating.value = false;
     }
@@ -180,9 +186,13 @@ async function parseTXs(arrTXs) {
                 }
             }
         }
+
+        // Take the icon, colour and content based on the type of the transaction
         let { icon, colour, content } = txMap.value[cTx.type];
         const match = content.match(/{(.)}/);
         if (match) {
+            // Use the senders array if `s` was provided in the template
+            // Use the receivers array if `r` was provided
             const where = {
                 r: 'receivers',
                 s: 'senders',
@@ -230,6 +240,7 @@ async function parseTXs(arrTXs) {
             colour,
         });
     }
+
     txs.value = newTxs;
 }
 
