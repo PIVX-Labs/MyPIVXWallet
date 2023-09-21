@@ -1,5 +1,9 @@
 import bitjs from './bitTrx.js';
-import { debug, strColdStakingAddress } from './settings.js';
+import {
+    debug,
+    strColdStakeOwnerAddress,
+    strColdStakingAddress,
+} from './settings.js';
 import { ALERTS, translation, tr } from './i18n.js';
 import {
     doms,
@@ -22,6 +26,7 @@ import {
     confirmPopup,
     isXPub,
     isStandardAddress,
+    isColdAddress,
 } from './misc.js';
 import { bytesToHex, hexToBytes, dSHA256 } from './utils.js';
 import { Database } from './database.js';
@@ -114,10 +119,7 @@ export async function createTxGUI() {
     }
 
     // If Staking address: redirect to staking page
-    if (
-        strReceiverAddress.startsWith(cChainParams.current.STAKING_PREFIX) &&
-        strRawReceiver.length === 34
-    ) {
+    if (isColdAddress(strReceiverAddress)) {
         createAlert('warning', ALERTS.STAKE_NOT_SEND, 7500);
         // Close the current Send Popup
         toggleBottomMenu('transferMenu', 'transferAnimation');
@@ -183,8 +185,7 @@ export async function delegateGUI() {
 
     // Ensure the user has an address set - if not, request one!
     if (
-        (!strColdStakingAddress ||
-            strColdStakingAddress[0] !== cChainParams.current.STAKING_PREFIX) &&
+        !isColdAddress(strColdStakingAddress) &&
         (await guiSetColdStakingAddress()) === false
     )
         return;
@@ -349,22 +350,34 @@ export async function createAndSendTransaction({
 
     // Primary output (receiver)
     if (isDelegation) {
-        const [primaryAddress, primaryAddressPath] =
-            await wallet.getNewAddress();
-        cTx.addcoldstakingoutput(primaryAddress, address, amount / COIN);
-        outputs.push([primaryAddress, address, amount / COIN]);
+        // Check if we're using a custom Cold Stake Owner Address
+        const fCustomColdOwner = !!strColdStakeOwnerAddress;
 
-        knownUTXOs.push(
-            new UTXO({
-                id: null,
-                path: primaryAddressPath,
-                script: cTx.outputs[cTx.outputs.length - 1].script,
-                sats: amount,
-                vout: cTx.outputs.length - 1,
-                status: Mempool.PENDING,
-                isDelegate: true,
-            })
-        );
+        // For custom Cold Owner Addresses, it could be an external address, so we need the mempool to class it as an 'external send'
+        const strOwnerAddress = fCustomColdOwner
+            ? strColdStakeOwnerAddress
+            : (await wallet.getNewAddress())[0];
+        const strOwnerPath = await wallet.isOwnAddress(strOwnerAddress);
+
+        // Create the Delegation output
+        cTx.addcoldstakingoutput(strOwnerAddress, address, amount / COIN);
+        outputs.push([strOwnerAddress, address, amount / COIN]);
+
+        // If the owner address is internal, then we add it to our mempool to be instantly re-spendable and show in our balance
+        // ... otherwise, it is considered an outgoing (external) transaction
+        if (strOwnerPath) {
+            knownUTXOs.push(
+                new UTXO({
+                    id: null,
+                    path: strOwnerPath,
+                    script: cTx.outputs[cTx.outputs.length - 1].script,
+                    sats: amount,
+                    vout: cTx.outputs.length - 1,
+                    status: Mempool.PENDING,
+                    isDelegate: true,
+                })
+            );
+        }
     } else if (isProposal) {
         cTx.addproposaloutput(address, amount / COIN);
     } else {

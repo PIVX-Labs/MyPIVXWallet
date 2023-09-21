@@ -44,8 +44,11 @@ export let cExplorer = cChainParams.current.Explorers[0];
 export let cNode = cChainParams.current.Nodes[0];
 /** A mode which allows MPW to automatically select it's data sources */
 export let fAutoSwitch = true;
-/** The active Cold Staking address: default is the PIVX Labs address */
-export let strColdStakingAddress = 'SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy';
+/** The active Cold Staking address: default is set via chainparams */
+export let strColdStakingAddress =
+    cChainParams.current.defaultColdStakingAddress;
+/** The primary Owner Address for Cold Staking: default is a new address each delegation */
+export let strColdStakeOwnerAddress = '';
 /** The decimals to display for the wallet balance */
 export let nDisplayDecimals = 2;
 /** A mode which configures MPW towards Advanced users, with low-level feature access and less restrictions (Potentially dangerous) */
@@ -75,6 +78,10 @@ export class Settings {
      */
     coldAddress;
     /**
+     * @type {string} The user's primary Owner Address for Cold Delegations
+     */
+    coldOwnerAddress;
+    /**
      * @type {String} translation to use
      */
     translation;
@@ -96,6 +103,7 @@ export class Settings {
         node,
         autoswitch = true,
         coldAddress = strColdStakingAddress,
+        coldOwnerAddress = strColdStakeOwnerAddress,
         translation = '',
         displayCurrency = 'usd',
         displayDecimals = nDisplayDecimals,
@@ -106,6 +114,7 @@ export class Settings {
         this.node = node;
         this.autoswitch = autoswitch;
         this.coldAddress = coldAddress;
+        this.coldOwnerAddress = coldOwnerAddress;
         this.translation = translation;
         this.displayCurrency = displayCurrency;
         this.displayDecimals = displayDecimals;
@@ -198,13 +207,15 @@ export async function start() {
         analytics: strSettingAnalytics,
         autoswitch,
         coldAddress,
+        coldOwnerAddress,
         displayCurrency,
         displayDecimals,
         advancedMode,
     } = await database.getSettings();
 
-    // Set the Cold Staking address
+    // Set the Cold Staking and Owner addresses
     strColdStakingAddress = coldAddress;
+    strColdStakeOwnerAddress = coldOwnerAddress;
 
     // Set any Toggles to their default or DB state
     // Network Auto-Switch
@@ -351,6 +362,16 @@ export async function setColdStakingAddress(strColdAddress) {
     strColdStakingAddress = strColdAddress;
     const database = await Database.getInstance();
     database.setSettings({ coldAddress: strColdAddress });
+}
+
+/**
+ * Sets and saves the primary Owner address for Delegations
+ * @param {string} strOwnerAddress - The Owner address
+ */
+export async function setColdStakingOwnerAddress(strOwnerAddress) {
+    strColdStakeOwnerAddress = strOwnerAddress;
+    const database = await Database.getInstance();
+    database.setSettings({ coldOwnerAddress: strOwnerAddress });
 }
 
 /**

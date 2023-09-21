@@ -1,5 +1,5 @@
 import { cChainParams, COIN } from './chain_params.js';
-import { createAlert } from './misc.js';
+import { createAlert, isColdAddress } from './misc.js';
 import { Mempool, UTXO } from './mempool.js';
 import { getEventEmitter } from './event_bus.js';
 import {
@@ -526,7 +526,7 @@ export class ExplorerNetwork extends Network {
                     // Check vins for undelegations
                     for (const vin of tx.vin) {
                         const fDelegation = vin.addresses?.some((addr) =>
-                            addr.startsWith(cChainParams.current.STAKING_PREFIX)
+                            isColdAddress(addr)
                         );
                         if (fDelegation) {
                             nDelegated -= parseInt(vin.value);
@@ -537,9 +537,7 @@ export class ExplorerNetwork extends Network {
                     for (const out of tx.vout) {
                         strDelegatedAddr =
                             out.addresses?.find((addr) =>
-                                addr.startsWith(
-                                    cChainParams.current.STAKING_PREFIX
-                                )
+                                isColdAddress(addr)
                             ) || strDelegatedAddr;
 
                         const fDelegation = !!strDelegatedAddr;
