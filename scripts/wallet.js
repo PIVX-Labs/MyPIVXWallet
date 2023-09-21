@@ -300,9 +300,6 @@ export async function importWallet({
                 return;
             }
 
-            // Hide the 'export wallet' button, it's not relevant to hardware wallets
-            doms.domExportWallet.hidden = true;
-
             createAlert(
                 'info',
                 tr(ALERTS.WALLET_HARDWARE_WALLET, [

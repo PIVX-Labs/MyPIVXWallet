@@ -502,7 +502,6 @@ export async function toggleTestnet() {
     doms.domTestnet.style.display = cChainParams.current.isTestnet
         ? ''
         : 'none';
-    doms.domGuiBalanceTicker.innerText = cChainParams.current.TICKER;
     doms.domGuiBalanceStakingTicker.innerText = cChainParams.current.TICKER;
     doms.domPrefixNetwork.innerText =
         cChainParams.current.PUBKEY_PREFIX.join(' or ');
