@@ -1,7 +1,7 @@
 <script setup>
 import { cChainParams, COIN } from './chain_params.js';
 import { translation } from './i18n';
-import { ref, toRef, computed, watch, reactive } from 'vue';
+import { ref, computed } from 'vue';
 
 import { nDisplayDecimals } from './settings';
 import { beautifyNumber } from './misc';
