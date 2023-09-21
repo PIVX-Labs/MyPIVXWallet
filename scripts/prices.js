@@ -1,3 +1,4 @@
+import { getEventEmitter } from './event_bus';
 import { getBalance } from './global';
 import { isEmpty } from './misc';
 import { cMarket, fillCurrencySelect } from './settings';
@@ -86,6 +87,6 @@ export async function refreshPriceDisplay() {
         await fillCurrencySelect();
 
         // Update price values
-        getBalance(true);
+        getEventEmitter().emit('balance-update');
     }
 }

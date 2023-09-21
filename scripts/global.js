@@ -67,6 +67,7 @@ export function isLoaded() {
 }
 
 export let doms = {};
+export const mempool = new Mempool();
 
 // For now we'll import the component as a vue app by itself. Later, when the
 // dashboard is rewritten in vue, we can simply add <Activity /> to the dashboard component template.
@@ -88,17 +89,10 @@ export async function start() {
         domDashboard: document.getElementById('dashboard'),
         domGuiWallet: document.getElementById('guiWallet'),
         domGettingStartedBtn: document.getElementById('gettingStartedBtn'),
-        domGuiBalance: document.getElementById('guiBalance'),
-        domGuiBalanceTicker: document.getElementById('guiBalanceTicker'),
-        domGuiBalanceValue: document.getElementById('guiBalanceValue'),
-        domGuiBalanceValueCurrency: document.getElementById(
-            'guiBalanceValueCurrency'
-        ),
         domGuiStakingValue: document.getElementById('guiStakingValue'),
         domGuiStakingValueCurrency: document.getElementById(
             'guiStakingValueCurrency'
         ),
-        domBalanceReload: document.getElementById('balanceReload'),
         domBalanceReloadStaking: document.getElementById(
             'balanceReloadStaking'
         ),
@@ -210,7 +204,6 @@ export async function start() {
         domEncryptPasswordCurrent: document.getElementById(
             'changePassword-current'
         ),
-        domEncryptPasswordBox: document.getElementById('encryptPassword'),
         domEncryptPasswordFirst: document.getElementById('newPassword'),
         domEncryptPasswordSecond: document.getElementById('newPasswordRetype'),
         domGenIt: document.getElementById('genIt'),
@@ -232,10 +225,8 @@ export async function start() {
             'ModalMnemonicPassphrase'
         ),
         domExportPrivateKey: document.getElementById('exportPrivateKeyText'),
-        domExportWallet: document.getElementById('guiExportWalletItem'),
         domWipeWallet: document.getElementById('guiWipeWallet'),
         domRestoreWallet: document.getElementById('guiRestoreWallet'),
-        domNewAddress: document.getElementById('guiNewAddress'),
         domRedeemTitle: document.getElementById('redeemCodeModalTitle'),
         domRedeemCodeUse: document.getElementById('redeemCodeUse'),
         domRedeemCodeCreate: document.getElementById('redeemCodeCreate'),
@@ -267,11 +258,6 @@ export async function start() {
         ),
         domPromoTable: document.getElementById('promo-table'),
         domContactsTable: document.getElementById('contactsList'),
-        domActivityList: document.getElementById('activity-list-content'),
-        domActivityLoadMore: document.getElementById('activityLoadMore'),
-        domActivityLoadMoreIcon: document.getElementById(
-            'activityLoadMoreIcon'
-        ),
         domConfirmModalDialog: document.getElementById('confirmModalDialog'),
         domConfirmModalMain: document.getElementById('confirmModalMain'),
         domConfirmModalHeader: document.getElementById('confirmModalHeader'),
@@ -318,6 +304,10 @@ export async function start() {
         domTestnetToggler: document.getElementById('testnetToggler'),
         domAdvancedModeToggler: document.getElementById('advancedModeToggler'),
     };
+
+    for (const d in doms) {
+        if (!doms[d]) console.log(d);
+    }
 
     await i18nStart();
     await loadImages();
@@ -510,12 +500,9 @@ function subscribeToNetworkEvents() {
     getEventEmitter().on('sync-status', (value) => {
         switch (value) {
             case 'start':
-                // Play reload anim
-                doms.domBalanceReload.classList.add('playAnim');
                 doms.domBalanceReloadStaking.classList.add('playAnim');
                 break;
             case 'stop':
-                doms.domBalanceReload.classList.remove('playAnim');
                 doms.domBalanceReloadStaking.classList.remove('playAnim');
                 break;
         }
@@ -541,7 +528,7 @@ function subscribeToNetworkEvents() {
 }
 
 // WALLET STATE DATA
-export const mempool = new Mempool();
+
 let exportHidden = false;
 let isTestnetLastState = cChainParams.current.isTestnet;
 
@@ -596,9 +583,6 @@ export function openTab(evt, tabName) {
  * Updates the GUI ticker among all elements; useful for Network Switching
  */
 export function updateTicker() {
-    // Update the Dashboard currency
-    doms.domGuiBalanceValueCurrency.innerText = strCurrency.toUpperCase();
-
     // Update the Stake Dashboard currency
     doms.domGuiStakingValueCurrency.innerText = strCurrency.toUpperCase();
 
@@ -676,19 +660,11 @@ export function getBalance(updateGUI = false) {
     if (updateGUI) {
         // Set the balance, and adjust font-size for large balance strings
         const strBal = nCoins.toFixed(nDisplayDecimals);
-        const nLen = strBal.length;
-        doms.domGuiBalance.innerHTML = beautifyNumber(
-            strBal,
-            nLen >= 10 ? '17px' : '25px'
-        );
         doms.domAvailToDelegate.innerHTML =
             beautifyNumber(strBal) + ' ' + cChainParams.current.TICKER;
 
         // Update tickers
         updateTicker();
-
-        // Update price displays
-        updatePriceDisplay(doms.domGuiBalanceValue);
     }
 
     return nBalance;
@@ -1472,7 +1448,6 @@ export async function generateVanityWallet() {
                         fRaw: true,
                     });
                     stopSearch();
-                    doms.domGuiBalance.innerHTML = '0';
                     return console.log(
                         'VANITY: Found an address after ' +
                             attempts +
@@ -1819,7 +1794,7 @@ function addProposalToFinalisationCache(cProposal) {
 }
 
 /**
- * Render Governance proposal objects to a given Proposal category
+ * Render Governance proosal objects to a given Proposal category
  * @param {Array<object>} arrProposals - The proposals to render
  * @param {boolean} fContested - The proposal category
  */
@@ -2566,7 +2541,7 @@ export async function createProposal() {
     }
 }
 
-export function refreshChainData() {
+export async function refreshChainData() {
     const cNet = getNetwork();
     // If in offline mode: don't sync ANY data or connect to the internet
     if (!cNet.enabled)
@@ -2576,16 +2551,14 @@ export function refreshChainData() {
     if (!wallet.isLoaded()) return;
 
     // Fetch block count + UTXOs, update the UI for new transactions
-    cNet.getBlockCount().then((_) => {
-        // Fetch latest Activity
-        activityDashboard.update(true);
+    await cNet.getBlockCount();
+    // Fetch latest Activity
+    activityDashboard.update(true);
 
-        // If it's open: update the Governance Dashboard
-        if (doms.domGovTab.classList.contains('active')) {
-            updateGovernanceTab();
-        }
-    });
-    getBalance(true);
+    // If it's open: update the Governance Dashboard
+    if (doms.domGovTab.classList.contains('active')) {
+        updateGovernanceTab();
+    }
 }
 
 // A safety mechanism enabled if the user attempts to leave without encrypting/saving their keys

@@ -1,192 +1,233 @@
 <script setup>
-import { cChainParams } from './chain_params.js';
-import { ref, computed } from 'vue';
+import { cChainParams, COIN } from './chain_params.js';
+import { translation } from './i18n';
+import { ref, toRef, computed, watch, reactive } from 'vue';
+
+import { nDisplayDecimals } from './settings';
+import { beautifyNumber } from './misc';
+import { getEventEmitter } from './event_bus';
+import { cMarket, strCurrency } from './settings.js';
+import {
+    mempool,
+    optimiseCurrencyLocale,
+    refreshChainData,
+    openExplorer,
+    toggleExportUI,
+    toggleBottomMenu,
+} from './global';
+import { renderWalletBreakdown } from './charting';
+import {
+    guiRenderCurrentReceiveModal,
+    guiRenderContacts,
+} from './contacts-book';
+import { wallet } from './wallet';
 
 const balance = ref(0);
+const price = ref(0.0);
+const updating = ref(false);
+const currency = ref('USD');
+const balanceStr = computed(() => {
+    const nCoins = balance.value / COIN;
+    const strBal = nCoins.toFixed(nDisplayDecimals);
+    const nLen = strBal.length;
+    return beautifyNumber(strBal, nLen >= 10 ? '17px' : '25px');
+});
+const balanceValue = computed(() => {
+    const { nValue, cLocale } = optimiseCurrencyLocale(
+        (balance.value / COIN) * price.value
+    );
+
+    return nValue.toLocaleString('en-gb', cLocale);
+});
+
 const ticker = computed(() => cChainParams.current.TICKER);
 
-function reload() {}
+async function reload() {
+    if (updating.value) return;
+    try {
+        updating.value = true;
+        await refreshChainData();
+    } finally {
+        updating.value = false;
+    }
+}
 
+getEventEmitter().on('balance-update', async () => {
+    balance.value = mempool.getBalance();
+    currency.value = strCurrency.toUpperCase();
+    price.value = await cMarket.getPrice(strCurrency);
+});
+
+getEventEmitter().on('sync-status', (value) => {
+    updating.value = value === 'start';
+});
 </script>
 
 <template>
-    <div class="col-12 p-0 mb-5">
-        <center>
-            <div class="dcWallet-balances mb-4">
-                <div class="row lessBot p-0">
-                    <div
-                        class="col-6 d-flex dcWallet-topLeftMenu"
-                        style="justify-content: flex-start"
-                    >
-                        <h3 class="noselect balance-title">
-                            <span
-                                class="reload noselect"
-                                onclick="MPW.refreshChainData()"
-                                ><i
-                                    id="balanceReload"
-                                    class="fa-solid fa-rotate-right"
-                                ></i
-                            ></span>
-                        </h3>
-                    </div>
+    <center>
+        <div class="dcWallet-balances mb-4">
+            <div class="row lessBot p-0">
+                <div
+                    class="col-6 d-flex dcWallet-topLeftMenu"
+                    style="justify-content: flex-start"
+                >
+                    <h3 class="noselect balance-title">
+                        <span class="reload noselect" @click="reload()"
+                            ><i
+                                class="fa-solid fa-rotate-right"
+                                :class="{ playAnim: updating }"
+                            ></i
+                        ></span>
+                    </h3>
+                </div>
 
-                    <div
-                        class="col-6 d-flex dcWallet-topRightMenu"
-                        style="justify-content: flex-end"
-                    >
-                        <div class="btn-group dropleft">
-                            <i
-                                class="fa-solid fa-ellipsis-vertical"
-                                style="width: 20px"
-                                data-toggle="dropdown"
-                                aria-haspopup="true"
-                                aria-expanded="false"
-                            ></i>
-                            <div class="dropdown">
-                                <div class="dropdown-move">
-                                    <div
-                                        class="dropdown-menu"
-                                        aria-labelledby="dropdownMenuButton"
+                <div
+                    class="col-6 d-flex dcWallet-topRightMenu"
+                    style="justify-content: flex-end"
+                >
+                    <div class="btn-group dropleft">
+                        <i
+                            class="fa-solid fa-ellipsis-vertical"
+                            style="width: 20px"
+                            data-toggle="dropdown"
+                            aria-haspopup="true"
+                            aria-expanded="false"
+                        ></i>
+                        <div class="dropdown">
+                            <div class="dropdown-move">
+                                <div
+                                    class="dropdown-menu"
+                                    aria-labelledby="dropdownMenuButton"
+                                >
+                                    <a
+                                        class="dropdown-item ptr"
+                                        @click="renderWalletBreakdown()"
+                                        data-toggle="modal"
+                                        data-target="#walletBreakdownModal"
                                     >
-                                        <a
-                                            class="dropdown-item ptr"
-                                            onclick="MPW.renderWalletBreakdown()"
-                                            data-toggle="modal"
-                                            data-target="#walletBreakdownModal"
-                                        >
-                                            <i
-                                                class="fa-solid fa-chart-pie"
-                                            ></i>
-                                            <span data-i18n="balanceBreakdown"
-                                                >Balance Breakdown</span
-                                            >
-                                        </a>
-                                        <a
-                                            class="dropdown-item ptr"
-                                            onclick="MPW.openExplorer()"
-                                        >
-                                            <i
-                                                class="fa-solid fa-magnifying-glass"
-                                            ></i>
-                                            <span data-i18n="viewOnExplorer"
-                                                >View on Explorer</span
-                                            >
-                                        </a>
-                                        <a
-                                            class="dropdown-item ptr"
-                                            onclick="MPW.guiRenderContacts()"
-                                            data-toggle="modal"
-                                            data-target="#contactsModal"
-                                        >
-                                            <i
-                                                class="fa-solid fa-address-book"
-                                            ></i>
-                                            <span data-i18n="contactsBook"
-                                                >Contacts</span
-                                            >
-                                        </a>
-                                        <a
-                                            id="guiExportWalletItem"
-                                            class="dropdown-item ptr"
-                                            data-toggle="modal"
-                                            data-target="#exportPrivateKeysModal"
-                                            data-backdrop="static"
-                                            data-keyboard="false"
-                                            onclick="MPW.toggleExportUI()"
-                                        >
-                                            <i class="fas fa-key"></i>
-                                            <span data-i18n="export"
-                                                >Export</span
-                                            >
-                                        </a>
-                                        <a
-                                            class="dropdown-item ptr"
-                                            id="guiNewAddress"
-                                            data-toggle="modal"
-                                            data-target="#qrModal"
-                                            onclick="MPW.wallet.getNewAddress({updateGUI: true, verify: true});"
-                                        >
-                                            <i class="fas fa-sync-alt"></i>
-                                            <span data-i18n="refreshAddress"
-                                                >Refresh address</span
-                                            >
-                                        </a>
-                                        <a
-                                            class="dropdown-item ptr"
-                                            data-toggle="modal"
-                                            data-target="#redeemCodeModal"
-                                        >
-                                            <i class="fa-solid fa-gift"></i>
-                                            <span data-i18n="redeemOrCreateCode"
-                                                >Redeem or Create Code</span
-                                            >
-                                        </a>
-                                    </div>
+                                        <i class="fa-solid fa-chart-pie"></i>
+                                        <span>{{
+                                            translation.balanceBreakdown
+                                        }}</span>
+                                    </a>
+                                    <a
+                                        class="dropdown-item ptr"
+                                        @click="openExplorer()"
+                                    >
+                                        <i
+                                            class="fa-solid fa-magnifying-glass"
+                                        ></i>
+                                        <span>{{
+                                            translation.viewOnExplorer
+                                        }}</span>
+                                    </a>
+                                    <a
+                                        class="dropdown-item ptr"
+                                        @click="guiRenderContacts()"
+                                        data-toggle="modal"
+                                        data-target="#contactsModal"
+                                    >
+                                        <i class="fa-solid fa-address-book"></i>
+                                        <span>{{ translation.contacts }}</span>
+                                    </a>
+                                    <a
+                                        class="dropdown-item ptr"
+                                        data-toggle="modal"
+                                        data-target="#exportPrivateKeysModal"
+                                        data-backdrop="static"
+                                        data-keyboard="false"
+                                        @click="toggleExportUI()"
+                                    >
+                                        <i class="fas fa-key"></i>
+                                        <span>{{ translation.export }}</span>
+                                    </a>
+                                    <!--  TODO!!! doesn't work!!! -->
+                                    <a
+                                        class="dropdown-item ptr"
+                                        v-if="wallet.isHD()"
+                                        data-toggle="modal"
+                                        data-target="#qrModal"
+                                        @click="
+                                            wallet.getNewAddress({
+                                                updateGUI: true,
+                                                verify: true,
+                                            })
+                                        "
+                                    >
+                                        <i class="fas fa-sync-alt"></i>
+                                        <span>{{
+                                            translation.refreshAddress
+                                        }}</span>
+                                    </a>
+                                    <a
+                                        class="dropdown-item ptr"
+                                        data-toggle="modal"
+                                        data-target="#redeemCodeModal"
+                                    >
+                                        <i class="fa-solid fa-gift"></i>
+                                        <span>{{
+                                            translation.redeemOrCreateCode
+                                        }}</span>
+                                    </a>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <canvas
-                    id="identicon"
-                    class="innerShadow"
-                    style="width: 65px; height: 65px"
-                    data-jdenticon-value=""
-                ></canvas
-                ><br />
-                <span
-                    class="ptr"
-                    onclick="MPW.renderWalletBreakdown()"
-                    data-toggle="modal"
-                    data-target="#walletBreakdownModal"
-                >
-                    <span class="dcWallet-pivxBalance" id="guiBalance"></span>
-                    <span id="guiBalanceTicker" class="dcWallet-pivxTicker"
-                        >PIV</span
+            <canvas
+                id="identicon"
+                class="innerShadow"
+                style="width: 65px; height: 65px"
+                data-jdenticon-value=""
+            ></canvas
+            ><br />
+            <span
+                class="ptr"
+                @click="renderWalletBreakdown()"
+                data-toggle="modal"
+                data-target="#walletBreakdownModal"
+            >
+                <span class="dcWallet-pivxBalance" v-html="balanceStr"> </span>
+                <span class="dcWallet-pivxTicker">{{ ticker }}</span>
+                <i
+                    class="fa-solid fa-plus"
+                    style="opacity: 0.5; position: relative; left: 2px"
+                ></i>
+            </span>
+            <br />
+            <div class="dcWallet-usdBalance">
+                <span class="dcWallet-usdValue">{{ balanceValue }}</span>
+                <span class="dcWallet-usdValue"> {{ currency }}</span>
+            </div>
+
+            <div class="row lessTop p-0">
+                <div class="col-6 d-flex" style="justify-content: flex-start">
+                    <div
+                        class="dcWallet-btn-left"
+                        @click="
+                            toggleBottomMenu(
+                                'transferMenu',
+                                'transferAnimation'
+                            )
+                        "
                     >
-                    <i
-                        class="fa-solid fa-plus"
-                        style="opacity: 0.5; position: relative; left: 2px"
-                    ></i>
-                </span>
-                <br />
-                <div class="dcWallet-usdBalance">
-                    <span id="guiBalanceValue" class="dcWallet-usdValue"
-                        >$-</span
-                    >
-                    <span id="guiBalanceValueCurrency" class="dcWallet-usdValue"
-                        >USD</span
-                    >
+                        {{ translation.send }}
+                    </div>
                 </div>
 
-                <div class="row lessTop p-0">
+                <div class="col-6 d-flex" style="justify-content: flex-end">
                     <div
-                        class="col-6 d-flex"
-                        style="justify-content: flex-start"
+                        class="dcWallet-btn-right"
+                        @click="guiRenderCurrentReceiveModal()"
+                        data-toggle="modal"
+                        data-target="#qrModal"
                     >
-                        <div
-                            class="dcWallet-btn-left"
-                            data-i18n="send"
-                            onclick="MPW.toggleBottomMenu('transferMenu', 'transferAnimation')"
-                        >
-                            Send
-                        </div>
-                    </div>
-
-                    <div class="col-6 d-flex" style="justify-content: flex-end">
-                        <div
-                            class="dcWallet-btn-right"
-                            data-i18n="receive"
-                            onclick="MPW.guiRenderCurrentReceiveModal()"
-                            data-toggle="modal"
-                            data-target="#qrModal"
-                        >
-                            Receive
-                        </div>
+                        {{ translation.receive }}
                     </div>
                 </div>
             </div>
-        </center>
-    </div>
+        </div>
+    </center>
 </template>
