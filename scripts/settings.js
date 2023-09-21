@@ -273,7 +273,7 @@ export async function setExplorer(explorer, fSilent = false) {
     cExplorer = explorer;
 
     // Enable networking + notify if allowed
-    const network = new ExplorerNetwork(cExplorer.url, wallet.getMasterKey());
+    const network = new ExplorerNetwork(cExplorer.url, wallet);
     setNetwork(network);
 
     activityDashboard.reset();
@@ -546,7 +546,7 @@ export async function toggleTestnet() {
     mempool.UTXOs = [];
     getBalance(true);
     getStakingBalance(true);
-    await updateEncryptionGUI(!!wallet.getMasterKey());
+    await updateEncryptionGUI(wallet.isLoaded());
     await fillExplorerSelect();
     await fillNodeSelect();
     await updateGovernanceTab();

@@ -7,6 +7,7 @@ import {
     hasEncryptedWallet,
     importWallet,
     decryptWallet,
+    getNewAddress,
 } from './wallet.js';
 import { LegacyMasterKey } from './masterkey.js';
 import { getNetwork, HistoricalTxType } from './network.js';
@@ -779,16 +780,10 @@ export async function openSendQRScanner() {
  */
 export async function openExplorer(strAddress = '') {
     if (wallet.isLoaded() && wallet.isHD() && !strAddress) {
-        const derivationPath = wallet
-            .getDerivationPath()
-            .split('/')
-            .slice(0, 4)
-            .join('/');
-        const xpub = await wallet.getMasterKey().getxpub(derivationPath);
+        const xpub = await wallet.getxpub();
         window.open(cExplorer.url + '/xpub/' + xpub, '_blank');
     } else {
-        const address =
-            strAddress || (await wallet.getMasterKey().getAddress());
+        const address = strAddress || (await wallet.getAddress());
         window.open(cExplorer.url + '/address/' + address, '_blank');
     }
 }
@@ -1249,7 +1244,7 @@ export async function guiImportWallet() {
             if (wallet.isLoaded()) {
                 // Prepare a new Account to add
                 const cAccount = new Account({
-                    publicKey: await wallet.getMasterKey().keyToExport,
+                    publicKey: await wallet.getKeyToExport(),
                     encWif: strPrivKey,
                 });
 
@@ -1499,7 +1494,7 @@ export async function sweepAddress(arrUTXOs, sweepingMasterKey, nFixedFee = 0) {
     const nFee = nFixedFee || getNetwork().getFee(cTx.serialize().length);
 
     // Use a new address from our wallet to sweep the UTXOs in to
-    const strAddress = (await wallet.getNewAddress(true, false))[0];
+    const strAddress = (await getNewAddress(true, false))[0];
 
     // Sweep the full funds amount, minus the fee, leaving no change from any sweeped UTXOs
     cTx.addoutput(strAddress, (nTotal - nFee) / COIN);
@@ -1579,7 +1574,7 @@ export async function wipePrivateData() {
             html,
         })
     ) {
-        wallet.getMasterKey().wipePrivateData();
+        wallet.wipePrivateData();
         doms.domWipeWallet.hidden = true;
         if (isEncrypted) {
             doms.domRestoreWallet.hidden = false;
@@ -2334,7 +2329,7 @@ export async function updateMasternodeTab() {
             for (const [key] of mapCollateralAddresses) {
                 const option = document.createElement('option');
                 option.value = key;
-                option.innerText = await wallet.getMasterKey().getAddress(key);
+                option.innerText = await wallet.getAddress(key);
                 doms.domMnTxId.appendChild(option);
             }
         }
