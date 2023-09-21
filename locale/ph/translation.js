@@ -257,6 +257,7 @@ export const ph_translation = {
     popupCurrentAddress: 'Kasalukuyang Address:', //Current address:
     popupColdStakeNote:
         "Ang Cold Address stakes coins sa iyong ngalan, ay hindi makakagastos ng coins, kaya mas ligtas itong gumamit ng stranger's cold address!", //A Cold Address stakes coins on your behalf, it cannot spend coins, so it\'s even safe to use a stranger's Cold Address!
+    popupColdStakeOwnerNote: '', //You can set a static Owner Address, or leave it empty to let MPW handle it, <b>do not use a stranger's Owner Address!</b>
     popupExample: 'Halimbawa', //Example:
     popupWalletLock: 'Gusto mo bang i-lock ang iyong wallet?', //Do you want to lock your wallet?
     popupWalletWipe:

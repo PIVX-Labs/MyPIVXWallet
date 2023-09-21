@@ -236,6 +236,7 @@ export const it_translation = {
     popupCurrentAddress: 'Indirizzo attuale:', //Current address:
     popupColdStakeNote:
         "Con un Cold Address puoi mettere in stake i tuoi PIVs anche usando l'address di uno sconosciuto, che non potrà spenderli!", //A Cold Address stakes coins on your behalf, it cannot spend coins, so it's even safe to use a stranger's Cold Address!
+    popupColdStakeOwnerNote: '', //You can set a static Owner Address, or leave it empty to let MPW handle it, <b>do not use a stranger's Owner Address!</b>
     popupExample: 'Esempio:', //Example:
     popupWalletLock: 'Vuoi bloccare il tuo wallet?', //Do you want to lock your wallet?
     popupWalletWipe: 'Vuoi cancellare i dati privati ​​del tuo wallet?', //Do you want to wipe your wallet private data?

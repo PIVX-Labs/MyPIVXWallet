@@ -254,6 +254,7 @@ export const pt_br_translation = {
     popupCurrentAddress: 'Endereço atual', //Current address:
     popupColdStakeNote:
         'Um Endereço de Cold Staking faz staking de moedas em seu nome, não pode gastar moedas, então é seguro até usar o Cold Address de um estranho!', //A Cold Address stakes coins on your behalf, it cannot spend coins, so it's even safe to use a stranger's Cold Address!
+    popupColdStakeOwnerNote: '', //You can set a static Owner Address, or leave it empty to let MPW handle it, <b>do not use a stranger's Owner Address!</b>
     popupExample: 'Exemplo:', //Example:
     popupWalletLock: 'Você quer bloquear a sua carteira', //Do you want to lock your wallet?
     popupWalletWipe: 'Deseja limpar os dados privados da sua carteira', //Do you want to wipe your wallet private data?
