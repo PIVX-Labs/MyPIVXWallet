@@ -181,7 +181,7 @@ async function parseTXs(arrTXs) {
             // Check all addresses to find our own, caching them for performance
             for (const strAddr of cTx.receivers.concat(cTx.senders)) {
                 // If a previous Tx checked this address, skip it, otherwise, check it against our own address(es)
-                if (!(await wallet.getMasterKey().isOwnAddress(strAddr))) {
+                if (!(await wallet.isOwnAddress(strAddr))) {
                     // External address, this is not a self-only Tx
                     fSendToSelf = false;
                 }
@@ -208,7 +208,7 @@ async function parseTXs(arrTXs) {
                 const arrExternalAddresses = (
                     await Promise.all(
                         cTx[where].map(async (addr) => [
-                            await wallet.getMasterKey().isOwnAddress(addr),
+                            await wallet.isOwnAddress(addr),
                             addr,
                         ])
                     )
