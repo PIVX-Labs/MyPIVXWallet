@@ -61,6 +61,14 @@ getEventEmitter().on('balance-update', async () => {
 getEventEmitter().on('sync-status', (value) => {
     updating.value = value === 'start';
 });
+
+const isHdWallet = ref(false);
+const isHardwareWallet = ref(false);
+
+getEventEmitter().on('wallet-import', () => {
+    isHdWallet.value = wallet.isHD();
+    isHardwareWallet.value = wallet.isHardwareWallet();
+});
 </script>
 
 <template>
@@ -136,15 +144,16 @@ getEventEmitter().on('sync-status', (value) => {
                                         data-target="#exportPrivateKeysModal"
                                         data-backdrop="static"
                                         data-keyboard="false"
+					v-if="!isHardwareWallet"
                                         @click="toggleExportUI()"
                                     >
                                         <i class="fas fa-key"></i>
                                         <span>{{ translation.export }}</span>
                                     </a>
-                                    <!--  TODO!!! doesn't work!!! -->
+
                                     <a
                                         class="dropdown-item ptr"
-                                        v-if="wallet.isHD()"
+                                        v-if="isHdWallet"
                                         data-toggle="modal"
                                         data-target="#qrModal"
                                         @click="

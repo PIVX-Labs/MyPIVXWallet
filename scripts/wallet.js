@@ -29,6 +29,7 @@ import { guiRenderCurrentReceiveModal } from './contacts-book.js';
 import { Account } from './accounts.js';
 import { debug, fAdvancedMode } from './settings.js';
 import { strHardwareName, getHardwareWalletKeys } from './ledger.js';
+import { getEventEmitter } from './event_bus';
 export let fWalletLoaded = false;
 
 /**
@@ -441,6 +442,7 @@ export async function importWallet({
 
         // Hide all wallet starter options
         setDisplayForAllWalletOptions('none');
+	getEventEmitter().emit('wallet-import');
     }
 }
 
