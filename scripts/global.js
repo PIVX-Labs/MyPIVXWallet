@@ -48,6 +48,7 @@ import { checkForUpgrades } from './changelog.js';
 import { FlipDown } from './flipdown.js';
 import { createApp } from 'vue';
 import Activity from './Activity.vue';
+import WalletBalance from './WalletBalance.vue';
 import {
     cReceiveType,
     guiAddContactPrompt,
@@ -78,6 +79,8 @@ export const stakingDashboard = createApp(Activity, {
     title: 'Reward History',
     rewards: true,
 }).mount('#stakeActivity');
+
+export const walletBalance = createApp(WalletBalance).mount('#walletBalance');
 
 export async function start() {
     doms = {
