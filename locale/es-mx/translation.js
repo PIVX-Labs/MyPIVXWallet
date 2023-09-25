@@ -232,11 +232,12 @@ export const es_mx_translation = {
     time: 'Hora', //Time
     description: 'Descripción', //Description
     activityBlockReward: 'Recompensa del Bloque', //Block Reward
-    activitySentTo: 'Enviar a {r}', //Sent to
-    activitySelf: 'ti mismo', //Self
+    activitySentTo: 'Enviar a', //Sent to
+    activitySentToSelf: 'Enviar a ti mismo', //Sent to self
     activityShieldedAddress: 'Dirección Shielded', //Shielded address
-    activityReceivedFrom: 'Recibido de {s}', //Received from
-    activityDelegatedTo: 'Delegado a {r}', //Delegated to
+    activityReceivedShield: 'Recibido desde dirección Shielded', //Received from Shielded address
+    activityReceivedFrom: 'Recibido de', //Received from
+    activityDelegatedTo: 'Delegado a', //Delegated to
     activityUndelegated: 'No delegado', //Undelegated
     activityUnknown: 'Tx desconocido', //Unknown Tx
     password: 'Contraseña', //Password

@@ -90,19 +90,15 @@ export class HistoricalTx {
 
 /**
  * Virtual class rapresenting any network backend
- *
  */
 export class Network {
-    wallet;
-    /**
-     * @param {import('./wallet.js').Wallet} wallet
-     */
-    constructor(wallet) {
+    constructor(masterKey) {
         if (this.constructor === Network) {
             throw new Error('Initializing virtual class');
         }
         this._enabled = true;
-        this.wallet = wallet;
+
+        this.masterKey = masterKey;
 
         this.lastWallet = 0;
         this.isHistorySynced = false;
@@ -159,8 +155,8 @@ export class Network {
         throw new Error('submitAnalytics must be implemented');
     }
 
-    setWallet(wallet) {
-        this.wallet = wallet;
+    setMasterKey(masterKey) {
+        this.masterKey = masterKey;
     }
 
     async getTxInfo(_txHash) {
@@ -175,8 +171,8 @@ export class ExplorerNetwork extends Network {
     /**
      * @param {string} strUrl - Url pointing to the blockbook explorer
      */
-    constructor(strUrl, wallet) {
-        super(wallet);
+    constructor(strUrl, masterKey) {
+        super(masterKey);
         /**
          * @type{string}
          * @public
@@ -250,12 +246,25 @@ export class ExplorerNetwork extends Network {
     async getUTXOs(strAddress = '') {
         // Don't fetch UTXOs if we're already scanning for them!
         if (!strAddress) {
-            if (!this.wallet || !this.wallet.isLoaded()) return;
+            if (!this.masterKey) return;
             if (this.isSyncing) return;
             this.isSyncing = true;
         }
         try {
-            let publicKey = strAddress || (await this.wallet.getKeyToExport());
+            let publicKey;
+            // Derive our XPub, or fetch a single pubkey
+            if (this.masterKey.isHD && !strAddress) {
+                const derivationPath = this.masterKey
+                    .getDerivationPath()
+                    .split('/')
+                    .slice(0, 4)
+                    .join('/');
+                publicKey = await this.masterKey.getxpub(derivationPath);
+            } else {
+                // Use the param address if specified, or the Master Key by default
+                publicKey = strAddress || (await this.masterKey.getAddress());
+            }
+
             // Fetch UTXOs for the key
             const arrUTXOs = await (
                 await retryWrapper(fetchBlockbook, `/api/v2/utxo/${publicKey}`)
@@ -291,7 +300,7 @@ export class ExplorerNetwork extends Network {
         if (cUTXO.path) {
             path = cUTXO.path.split('/');
             path[2] =
-                (this.wallet.isHardwareWallet()
+                (this.masterKey.isHardwareWallet
                     ? cChainParams.current.BIP44_TYPE_LEDGER
                     : cChainParams.current.BIP44_TYPE) + "'";
             this.lastWallet = Math.max(parseInt(path[5]), this.lastWallet);
@@ -359,12 +368,10 @@ export class ExplorerNetwork extends Network {
     async syncTxHistoryChunk(fNewOnly = false) {
         // Do not allow multiple calls at once
         if (this.historySyncing) {
-            return this.arrTxHistory;
+            return false;
         }
-
         try {
-            if (!this.enabled || !this.wallet || !this.wallet.isLoaded())
-                return this.arrTxHistory;
+            if (!this.enabled || !this.masterKey) return this.arrTxHistory;
             this.historySyncing = true;
             const nHeight = this.arrTxHistory.length
                 ? this.arrTxHistory[this.arrTxHistory.length - 1].blockHeight
@@ -372,10 +379,16 @@ export class ExplorerNetwork extends Network {
             const mapPaths = new Map();
 
             // Form the API call using our wallet information
-            const strKey = await this.wallet.getKeyToExport();
-            const strRoot = `/api/v2/${
-                this.wallet.isHD() ? 'xpub/' : 'address/'
-            }${strKey}`;
+            const fHD = this.masterKey.isHD;
+            const strDerivPath = this.masterKey
+                .getDerivationPath()
+                .split('/')
+                .slice(0, 4)
+                .join('/');
+            const strKey = fHD
+                ? await this.masterKey.getxpub(strDerivPath)
+                : await this.masterKey.getAddress();
+            const strRoot = `/api/v2/${fHD ? 'xpub/' : 'address/'}${strKey}`;
             const strCoreParams = `?details=txs&tokens=derived&pageSize=200`;
             const strAPI = strRoot + strCoreParams;
 
@@ -400,7 +413,7 @@ export class ExplorerNetwork extends Network {
                           )
                       ).json()
                     : {};
-            if (this.wallet.isHD() && (cData.tokens || cRecentTXs.tokens)) {
+            if (fHD && (cData.tokens || cRecentTXs.tokens)) {
                 // Map all address <--> derivation paths
                 // - From historical transactions
                 if (cData.tokens) {
@@ -577,17 +590,17 @@ export class ExplorerNetwork extends Network {
             .filter((tx) => tx.amount != 0);
     }
 
-    async setWallet(wallet) {
+    async setMasterKey(masterKey) {
         // If the public Master Key (xpub, address...) is different, then wipe TX history
         if (
-            (await this.wallet?.getKeyToExport()) !==
-            (await wallet?.getKeyToExport())
+            (await this.masterKey?.keyToExport) !==
+            (await masterKey?.keyToExport)
         ) {
             this.arrTxHistory = [];
         }
 
         // Set the key
-        this.wallet = wallet;
+        this.masterKey = masterKey;
     }
 
     async getTxInfo(txHash) {
