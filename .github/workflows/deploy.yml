@@ -1,36 +1,22 @@
+# .github/workflows/preview.yml
+name: Deploy PR previews
+concurrency: preview-${{ github.ref }}
 on:
-  # Trigger the workflow on push or pull request,
-  # but only for the main branch
-  push:
-    branches:
-      - master
-    paths-ignore:
-    - "*.md"
-    - LICENSE
-    - "*.yaml"
   pull_request:
-    branches:
-      - master
-    paths-ignore:
-      - "*.md"
-      - LICENSE
-      - "*.yaml"
-
-
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - closed
 jobs:
-  test-deploy:
+  deploy-preview:
     runs-on: ubuntu-latest
-    name: A job to test the action-deploy action by deploying a test site
     steps:
-      - uses: actions/checkout@v2
-      - name: Setup Node
-        uses: actions/setup-node@v1
+      - uses: actions/checkout@v3
+      - run: npm ci && npm run build
+      - uses: rossjrw/pr-preview-action@v1
         with:
-          node-version: '18.x'
-      - run: npm ci
-      - run: npm run build
-      - name: deploy preview
-        uses: rossjrw/pr-preview-action@v1
-        with:
-          source-dir: ./dist/
-          
+          source-dir: .
+          preview-branch: gh-pages
+          umbrella-dir: pr-preview
+          action: auto
