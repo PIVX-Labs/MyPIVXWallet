@@ -38,7 +38,7 @@ export async function switchTranslation(langName) {
             if (!arrNewLang[strKey]) {
                 // It's fine if we import a language multiple times
                 // Webpack will fetch it once from the server
-                translation[strKey] = await getLanguage('en')[strKey];
+                translation[strKey] = (await getLanguage('en'))[strKey];
                 continue;
             }
 
