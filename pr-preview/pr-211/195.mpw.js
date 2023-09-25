@@ -1,1 +1,0 @@
-"use strict";(self.webpackChunkMPW=self.webpackChunkMPW||[]).push([[195],{52195:(e,s,a)=>{e.exports=a.p+"1f711aafe8419ae192fe.svg"}}]);
