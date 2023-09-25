@@ -11,6 +11,8 @@ on:
 jobs:
   deploy-preview:
     runs-on: ubuntu-latest
+    permissions: write-all
+      
     steps:
       - uses: actions/checkout@v3
       - run: npm ci && npm run build
