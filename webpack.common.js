@@ -7,6 +7,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const NodePolyfillPlugin = require('node-polyfill-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const CopyPlugin = require('copy-webpack-plugin');
+const { VueLoaderPlugin } = require('vue-loader');
 const { readFileSync } = require('fs');
 
 // Inject the Changelog and Version to the app
@@ -35,6 +36,17 @@ module.exports = {
                 test: /\.(jpe?g|png|gif|svg|mp3|svg)$/i,
                 type: 'asset/resource',
             },
+            {
+                test: /\.vue/i,
+                use: {
+                    loader: 'vue-loader',
+                    options: {
+                        compilerOptions: {
+                            isCustomElement: (tag) => tag === 'center',
+                        },
+                    },
+                },
+            },
         ],
     },
     resolve: {
@@ -55,6 +67,7 @@ module.exports = {
                     'width=device-width, initial-scale=1, shrink-to-fit=no',
             },
         }),
+        new VueLoaderPlugin(),
         // Polyfill for non web libraries
         new NodePolyfillPlugin(),
         // Prevents non styled flashing on load

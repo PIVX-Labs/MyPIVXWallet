@@ -475,7 +475,7 @@
                                         <a id="guiExportWalletItem" class="dropdown-item ptr" data-toggle="modal" data-target="#exportPrivateKeysModal" data-backdrop="static" data-keyboard="false" onclick="MPW.toggleExportUI()">
                                           <i class="fas fa-key"></i> <span data-i18n="export">Export</span>
                                         </a>
-                                        <a class="dropdown-item ptr" id="guiNewAddress" data-toggle="modal" data-target="#qrModal" onclick="MPW.wallet.getNewAddress({updateGUI: true, verify: true});">
+                                        <a class="dropdown-item ptr" id="guiNewAddress" data-toggle="modal" data-target="#qrModal" onclick="MPW.getNewAddress({updateGUI: true, verify: true});">
                                           <i class="fas fa-sync-alt"></i> <span data-i18n="refreshAddress">Refresh address</span>
                                         </a>
                                         <a class="dropdown-item ptr" data-toggle="modal" data-target="#redeemCodeModal">
@@ -519,19 +519,8 @@
                         </center>
                       </div>
 
-                      <div class="col-12 mb-5">
-                        <center><span data-i18n="activity" class="dcWallet-activityLbl">Activity</span></center>
-                        <div class="dcWallet-activity">
-                          <div class="scrollTable">
-                            <div id="activity-list-content"></div>
-                            <center>
-                              <button class="pivx-button-medium" id="activityLoadMore" onclick="MPW.updateActivityGUI(false)">
-                                <span class="buttoni-icon"><i class="fas fa-sync fa-tiny-margin" id="activityLoadMoreIcon"></i></span>
-                                <span class="buttoni-text" data-i18n="loadMore">Load more</span>
-                              </button>
-                            </center>
-                          </div>
-                        </div>
+                      <div id="activityDashboard" class="col-12 mb-5">
+
                       </div>
                     </div>
 
@@ -861,18 +850,7 @@
                   </div>
 
                   <div class="col-12 mb-5">
-                    <center><span class="dcWallet-activityLbl"><span data-i18n="rewardHistory">Reward History</span> (<span id="staking-rewards-title">-</span>)</span></center>
-                    <div class="dcWallet-activity">
-                      <div class="scrollTable">
-                        <div id="staking-rewards-content"></div>
-                        <center>
-                          <button class="pivx-button-medium" id="stakingLoadMore" onclick="MPW.updateActivityGUI(true)">
-                            <span class="buttoni-icon"><i class="fas fa-sync fa-tiny-margin" id="stakingLoadMoreIcon"></i></span>
-                            <span class="buttoni-text" data-i18n="loadMore">Load more</span>
-                          </button>
-                        </center>
-                      </div>
-                    </div>
+		      <div id="stakeActivity"> </div>
                   </div>
                 </div>
 
@@ -1257,6 +1235,6 @@
     </div>
 
     <div class="blackBack blackBackHide d-none" id="blackBack"></div>
-    
+    <div id="app"></div>
   </body>
 </html>
