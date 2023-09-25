@@ -235,12 +235,11 @@ export const ph_translation = {
     time: 'Oras', //Time
     description: 'Description', //Description
     activityBlockReward: 'Block Reward', //Block Reward
-    activitySentTo: 'Naipadala sa ', //Sent to
-    activitySentToSelf: 'Naipadala sa sarili', //Sent to self
+    activitySentTo: 'Naipadala sa {r}', //Sent to
+    activitySelf: 'sarili', //Self
     activityShieldedAddress: 'Shielded address', //Shielded address
-    activityReceivedShield: 'Natanggap mula sa Shielded address', //Received from Shielded address
-    activityReceivedFrom: 'Natanggap mula sa', //Received from
-    activityDelegatedTo: 'Delegated to', //Delegated to
+    activityReceivedFrom: 'Natanggap mula sa {s}', //Received from
+    activityDelegatedTo: 'Delegated to {r}', //Delegated to
     activityUndelegated: 'Undeligated', //Undelegated
     activityUnknown: 'Unknown Tx', //Unknown Tx
     password: 'Password', //Password

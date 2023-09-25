@@ -1,23 +1,18 @@
 import HDKey from 'hdkey';
-import { getNetwork } from './network.js';
 import { bytesToHex } from './utils.js';
 import { getHardwareWalletKeys } from './ledger.js';
-import { cChainParams, MAX_ACCOUNT_GAP } from './chain_params.js';
+import { cChainParams } from './chain_params.js';
 
 import { deriveAddress, generateOrEncodePrivkey } from './encoding.js';
 
 /**
- * Abstract class masterkey
+ * Abstract class masterkey, it handles address generation
+ * this class must not know anything about the wallet it self
+ * so for example don't take for granted nAccount when generating.
+ * Ideally the only class having access to those functions is the wallet itself.
  * @abstract
  */
 export class MasterKey {
-    #addressIndex = 0;
-    /**
-     * Map our own address -> Path
-     * @type {Map<String, String?>}
-     */
-    #ownAddresses = new Map();
-
     constructor() {
         if (this.constructor === MasterKey) {
             throw new Error('initializing virtual class');
@@ -66,7 +61,7 @@ export class MasterKey {
      * @return {void}
      * @abstract
      */
-    wipePrivateData() {
+    wipePrivateData(_nAccount) {
         throw new Error('Not implemented');
     }
 
@@ -82,7 +77,7 @@ export class MasterKey {
      * @return {Promise<String>} public key to export. Only suitable for monitoring balance.
      * @abstract
      */
-    get keyToExport() {
+    getKeyToExport(_nAccount) {
         throw new Error('Not implemented');
     }
 
@@ -108,7 +103,7 @@ export class MasterKey {
     }
 
     // Construct a full BIP44 pubkey derivation path from it's parts
-    getDerivationPath(nAccount = 0, nReceiving = 0, nIndex = 0) {
+    getDerivationPath(nAccount, nReceiving, nIndex) {
         // Coin-Type is different on Ledger, as such, for local wallets; we modify it if we're using a Ledger to derive a key
         const strCoinType = this.isHardwareWallet
             ? cChainParams.current.BIP44_TYPE_LEDGER
@@ -117,63 +112,6 @@ export class MasterKey {
             return `:)//${strCoinType}'`;
         }
         return `m/44'/${strCoinType}'/${nAccount}'/${nReceiving}/${nIndex}`;
-    }
-
-    /**
-     * @param {string} address - address to check
-     * @return {Promise<String?>} BIP32 path or null if it's not your address
-     */
-    async isOwnAddress(address) {
-        if (this.#ownAddresses.has(address)) {
-            return this.#ownAddresses.get(address);
-        }
-        const last = getNetwork().lastWallet;
-        this.#addressIndex =
-            this.#addressIndex > last ? this.#addressIndex : last;
-        if (this.isHD) {
-            for (let i = 0; i < this.#addressIndex; i++) {
-                const path = this.getDerivationPath(0, 0, i);
-                const testAddress = await this.getAddress(path);
-                if (address === testAddress) {
-                    this.#ownAddresses.set(address, path);
-                    return path;
-                }
-            }
-        } else {
-            const value = address === (await this.keyToExport) ? ':)' : null;
-            this.#ownAddresses.set(address, value);
-            return value;
-        }
-
-        this.#ownAddresses.set(address, null);
-        return null;
-    }
-
-    /**
-     * @return Promise<[string, string]> Address and its BIP32 derivation path
-     */
-    async getNewAddress() {
-        const last = getNetwork().lastWallet;
-        this.#addressIndex =
-            (this.#addressIndex > last ? this.#addressIndex : last) + 1;
-        if (this.#addressIndex - last > MAX_ACCOUNT_GAP) {
-            // If the user creates more than ${MAX_ACCOUNT_GAP} empty wallets we will not be able to sync them!
-            this.#addressIndex = last;
-        }
-        const path = this.getDerivationPath(0, 0, this.#addressIndex);
-        const address = await this.getAddress(path);
-        return [address, path];
-    }
-
-    /**
-     * Derive the current address (by internal index)
-     * @return {Promise<String>} Address
-     * @abstract
-     */
-    async getCurrentAddress() {
-        return await this.getAddress(
-            this.getDerivationPath(0, 0, this.#addressIndex)
-        );
     }
 }
 
@@ -229,18 +167,20 @@ export class HdMasterKey extends MasterKey {
         return deriveAddress({ publicKey: bytesToHex(child.publicKey) });
     }
 
-    wipePrivateData() {
+    wipePrivateData(nAccount) {
         if (this._isViewOnly) return;
 
-        this._hdKey = HDKey.fromExtendedKey(this.keyToExport);
+        this._hdKey = HDKey.fromExtendedKey(this.getKeyToExport(nAccount));
         this._isViewOnly = true;
     }
-
-    get keyToExport() {
+    getKeyToExport(nAccount) {
         if (this._isViewOnly) return this._hdKey.publicExtendedKey;
         // We need the xpub to point at the account level
         return this._hdKey.derive(
-            this.getDerivationPath(0, 0, 0).split('/').slice(0, 4).join('/')
+            this.getDerivationPath(nAccount, 0, 0)
+                .split('/')
+                .slice(0, 4)
+                .join('/')
         ).publicExtendedKey;
     }
 }
@@ -280,13 +220,13 @@ export class HardwareWalletMasterKey extends MasterKey {
     }
 
     // Hardware Wallets don't have exposed private data
-    wipePrivateData() {}
+    wipePrivateData(_nAccount) {}
 
     get isViewOnly() {
         return false;
     }
-    get keyToExport() {
-        const derivationPath = this.getDerivationPath()
+    getKeyToExport(nAccount) {
+        const derivationPath = this.getDerivationPath(nAccount, 0, 0)
             .split('/')
             .slice(0, 4)
             .join('/');
@@ -308,7 +248,7 @@ export class LegacyMasterKey extends MasterKey {
         return this._address;
     }
 
-    get keyToExport() {
+    getKeyToExport(_nAccount) {
         return this._address;
     }
 
@@ -331,7 +271,7 @@ export class LegacyMasterKey extends MasterKey {
         );
     }
 
-    wipePrivateData() {
+    wipePrivateData(_nAccount) {
         this._pkBytes = null;
         this._isViewOnly = true;
     }

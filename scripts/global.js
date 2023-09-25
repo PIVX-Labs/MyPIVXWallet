@@ -7,6 +7,7 @@ import {
     hasEncryptedWallet,
     importWallet,
     decryptWallet,
+    getNewAddress,
 } from './wallet.js';
 import { LegacyMasterKey } from './masterkey.js';
 import { getNetwork, HistoricalTxType } from './network.js';
@@ -46,9 +47,10 @@ import { Database } from './database.js';
 import bitjs from './bitTrx.js';
 import { checkForUpgrades } from './changelog.js';
 import { FlipDown } from './flipdown.js';
+import { createApp } from 'vue';
+import Activity from './Activity.vue';
 import {
     cReceiveType,
-    getNameOrAddress,
     guiAddContactPrompt,
     guiCheckRecipientInput,
     guiToggleReceiveType,
@@ -66,11 +68,22 @@ export function isLoaded() {
 
 export let doms = {};
 
+// For now we'll import the component as a vue app by itself. Later, when the
+// dashboard is rewritten in vue, we can simply add <Activity /> to the dashboard component template.
+export const activityDashboard = createApp(Activity, {
+    title: 'Activity',
+    rewards: false,
+}).mount('#activityDashboard');
+
+export const stakingDashboard = createApp(Activity, {
+    title: 'Reward History',
+    rewards: true,
+}).mount('#stakeActivity');
+
 export async function start() {
     doms = {
         domNavbarToggler: document.getElementById('navbarToggler'),
         domDashboard: document.getElementById('dashboard'),
-        domGuiStaking: document.getElementById('guiStaking'),
         domGuiWallet: document.getElementById('guiWallet'),
         domGettingStartedBtn: document.getElementById('gettingStartedBtn'),
         domGuiBalance: document.getElementById('guiBalance'),
@@ -83,7 +96,6 @@ export async function start() {
         domGuiStakingValueCurrency: document.getElementById(
             'guiStakingValueCurrency'
         ),
-        domGuiBalanceBox: document.getElementById('guiBalanceBox'),
         domBalanceReload: document.getElementById('balanceReload'),
         domBalanceReloadStaking: document.getElementById(
             'balanceReloadStaking'
@@ -91,13 +103,6 @@ export async function start() {
         domGuiBalanceStaking: document.getElementById('guiBalanceStaking'),
         domGuiBalanceStakingTicker: document.getElementById(
             'guiBalanceStakingTicker'
-        ),
-        domGuiStakingLoadMore: document.getElementById('stakingLoadMore'),
-        domGuiStakingLoadMoreIcon: document.getElementById(
-            'stakingLoadMoreIcon'
-        ),
-        domGuiBalanceBoxStaking: document.getElementById(
-            'guiBalanceBoxStaking'
         ),
         domStakeAmount: document.getElementById('delegateAmount'),
         domUnstakeAmount: document.getElementById('undelegateAmount'),
@@ -126,7 +131,6 @@ export async function start() {
         ),
 
         domUnstakeAmountValue: document.getElementById('unstakeAmountValue'),
-        domGuiViewKey: document.getElementById('guiViewKey'),
         domModalQR: document.getElementById('ModalQR'),
         domModalQrLabel: document.getElementById('ModalQRLabel'),
         domModalQrReceiveTypeBtn: document.getElementById(
@@ -207,7 +211,6 @@ export async function start() {
         domEncryptPasswordBox: document.getElementById('encryptPassword'),
         domEncryptPasswordFirst: document.getElementById('newPassword'),
         domEncryptPasswordSecond: document.getElementById('newPasswordRetype'),
-        domGuiAddress: document.getElementById('guiAddress'),
         domGenIt: document.getElementById('genIt'),
         domReqDesc: document.getElementById('reqDesc'),
         domReqDisplay: document.getElementById('reqDescDisplay'),
@@ -217,12 +220,6 @@ export async function start() {
         domAvailToDelegate: document.getElementById('availToDelegate'),
         domAvailToUndelegate: document.getElementById('availToUndelegate'),
         domAnalyticsDescriptor: document.getElementById('analyticsDescriptor'),
-        domStakingRewardsList: document.getElementById(
-            'staking-rewards-content'
-        ),
-        domStakingRewardsTitle: document.getElementById(
-            'staking-rewards-title'
-        ),
         domMnemonicModalContent: document.getElementById(
             'ModalMnemonicContent'
         ),
@@ -319,6 +316,7 @@ export async function start() {
         domTestnetToggler: document.getElementById('testnetToggler'),
         domAdvancedModeToggler: document.getElementById('advancedModeToggler'),
     };
+
     await i18nStart();
     await loadImages();
 
@@ -579,16 +577,16 @@ export function openTab(evt, tabName) {
         updateMasternodeTab();
     } else if (
         tabName === 'StakingTab' &&
-        getNetwork().arrTxHistory.length === 0
+        stakingDashboard.getTxCount() === 0
     ) {
         // Refresh the TX list
-        updateActivityGUI(true, false);
+        stakingDashboard.update(false);
     } else if (
         tabName === 'keypair' &&
         getNetwork().arrTxHistory.length === 0
     ) {
         // Refresh the TX list
-        updateActivityGUI(false, false);
+        activityDashboard.update(false);
     }
 }
 
@@ -798,334 +796,15 @@ export async function openSendQRScanner() {
 }
 
 /**
- * Generate a DOM-optimised activity list
- * @param {Array<import('./network.js').HistoricalTx>} arrTXs - The TX array to compute the list from
- * @param {boolean} fRewards - If this list is for Reward transactions
- * @returns {Promise<string>} HTML - The Activity List in HTML string form
- */
-export async function createActivityListHTML(arrTXs, fRewards = false) {
-    const cNet = getNetwork();
-    const cDB = await Database.getInstance();
-    const cAccount = await cDB.getAccount();
-
-    // Prepare the table HTML
-    let strList = `
-    <table class="table table-responsive table-sm stakingTx table-mobile-scroll">
-        <thead>
-            <tr>
-                <th scope="col" class="tx1">${translation.time}</th>
-                <th scope="col" class="tx2">${
-                    fRewards ? translation.ID : translation.description
-                }</th>
-                <th scope="col" class="tx3">${translation.amount}</th>
-                <th scope="col" class="tx4 text-right"></th>
-            </tr>
-        </thead>
-        <tbody>`;
-
-    // Prepare time formatting
-    const dateOptions = {
-        year: '2-digit',
-        month: '2-digit',
-        day: '2-digit',
-    };
-    const timeOptions = {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true,
-    };
-
-    // And also keep track of our last Tx's timestamp, to re-use a cache, which is much faster than the slow `.toLocaleDateString`
-    let prevDateString = '';
-    let prevTimestamp = 0;
-
-    // Generate the TX list
-    for (const cTx of arrTXs) {
-        // If no account is loaded, we render nothing!
-        if (!wallet.isLoaded()) break;
-
-        const dateTime = new Date(cTx.time * 1000);
-
-        // If this Tx is older than 24h, then hit the `Date` cache logic, otherwise, use a `Time` and skip it
-        let strDate =
-            Date.now() / 1000 - cTx.time > 86400
-                ? ''
-                : dateTime.toLocaleTimeString(undefined, timeOptions);
-        if (!strDate) {
-            if (
-                prevDateString &&
-                prevTimestamp - cTx.time * 1000 < 12 * 60 * 60 * 1000
-            ) {
-                // Use our date cache
-                strDate = prevDateString;
-            } else {
-                // Create a new date, this Tx is too old to use the cache
-                prevDateString = dateTime.toLocaleDateString(
-                    undefined,
-                    dateOptions
-                );
-                strDate = prevDateString;
-            }
-        }
-
-        // Update the time cache
-        prevTimestamp = cTx.time * 1000;
-
-        // Coinbase Transactions (rewards) require 100 confs
-        const fConfirmed =
-            cNet.cachedBlockCount - cTx.blockHeight >= fRewards ? 100 : 6;
-
-        // Choose the correct icon and colour for the Tx type, or a question mark if the type is unknown
-        // Defaults: Reward Activity
-        let icon = 'fa-gift';
-        let colour = 'white';
-
-        // Choose the content type, for the Dashboard; use a generative description, otherwise, a TX-ID
-        let txContent = fRewards ? cTx.id : translation.activityBlockReward;
-
-        // Format the amount to reduce text size
-        let formattedAmt = '';
-        if (cTx.amount < 0.01) {
-            formattedAmt = '<0.01';
-        } else if (cTx.amount >= 100) {
-            formattedAmt = Math.round(cTx.amount).toString();
-        } else {
-            formattedAmt = cTx.amount.toFixed(2);
-        }
-
-        // For 'Send' or 'Receive' TXs: Check if this is a send-to-self transaction
-        let fSendToSelf = true;
-        if (
-            cTx.type === HistoricalTxType.SENT ||
-            cTx.type === HistoricalTxType.RECEIVED
-        ) {
-            // Check all addresses to find our own, caching them for performance
-            for (const strAddr of cTx.receivers.concat(cTx.senders)) {
-                // If a previous Tx checked this address, skip it, otherwise, check it against our own address(es)
-                if (!(await wallet.isOwnAddress(strAddr))) {
-                    // External address, this is not a self-only Tx
-                    fSendToSelf = false;
-                }
-            }
-        }
-
-        // Generate an icon, colour and description for the Tx
-        if (!fRewards) {
-            switch (cTx.type) {
-                case HistoricalTxType.STAKE:
-                    icon = 'fa-gift';
-                    break;
-                case HistoricalTxType.SENT:
-                    icon = 'fa-minus';
-                    colour = '#f93c3c';
-                    // Figure out WHO this was sent to, and focus on them contextually
-                    if (fSendToSelf) {
-                        txContent = translation.activitySentToSelf;
-                    } else {
-                        // Otherwise, anything to us is likely change, so filter it away
-                        const arrExternalAddresses = (
-                            await Promise.all(
-                                cTx.receivers.map(async (addr) => [
-                                    await wallet.isOwnAddress(addr),
-                                    addr,
-                                ])
-                            )
-                        )
-                            .filter(([isOwnAddress, _]) => {
-                                return !isOwnAddress;
-                            })
-                            .map(([_, addr]) =>
-                                getNameOrAddress(cAccount, addr)
-                            );
-                        txContent =
-                            translation.activitySentTo +
-                            ' ' +
-                            (cTx.shieldedOutputs
-                                ? translation.activityShieldedAddress
-                                : [
-                                      ...new Set(
-                                          arrExternalAddresses.map((addr) =>
-                                              addr.length >= 32
-                                                  ? addr.substring(0, 6)
-                                                  : addr
-                                          )
-                                      ),
-                                  ].join(', ') + '...');
-                    }
-                    break;
-                case HistoricalTxType.RECEIVED: {
-                    icon = 'fa-plus';
-                    colour = '#5cff5c';
-                    // Figure out WHO this was sent from, and focus on them contextually
-                    // Filter away any of our own addresses
-                    const arrExternalAddresses = (
-                        await Promise.all(
-                            cTx.senders.map(async (addr) => [
-                                await wallet.isOwnAddress(addr),
-                                addr,
-                            ])
-                        )
-                    )
-                        .filter(([isOwnAddress, _]) => {
-                            return !isOwnAddress;
-                        })
-                        .map(([_, addr]) => getNameOrAddress(cAccount, addr));
-
-                    if (cTx.shieldedOutputs) {
-                        txContent = translation.activityReceivedShield;
-                    } else {
-                        txContent =
-                            translation.activityReceivedFrom +
-                            ' ' +
-                            [
-                                ...new Set(
-                                    arrExternalAddresses.map((addr) =>
-                                        addr?.length >= 32
-                                            ? addr.substring(0, 6)
-                                            : addr
-                                    )
-                                ),
-                            ].join(', ') +
-                            '...';
-                    }
-                    break;
-                }
-                case HistoricalTxType.DELEGATION:
-                    icon = 'fa-snowflake';
-                    txContent =
-                        translation.activityDelegatedTo +
-                        ' ' +
-                        cTx.receivers[0].substring(0, 6) +
-                        '...';
-                    break;
-                case HistoricalTxType.UNDELEGATION:
-                    icon = 'fa-fire';
-                    txContent = translation.activityUndelegated;
-                    break;
-                default:
-                    icon = 'fa-question';
-                    txContent = translation.activityUnknown;
-            }
-        }
-
-        // Render the list element from Tx data
-        strList += `
-            <tr>
-                <td class="align-middle pr-10px" style="font-size:12px;">
-                    <i style="opacity: 0.75;">${strDate}</i>
-                </td>
-                <td class="align-middle pr-10px txcode">
-                    <a href="${cExplorer.url}/tx/${sanitizeHTML(
-            cTx.id
-        )}" target="_blank" rel="noopener noreferrer">
-                        <code class="wallet-code text-center active ptr" style="padding: 4px 9px;">${sanitizeHTML(
-                            txContent
-                        )}</code>
-                    </a>
-                </td>
-                <td class="align-middle pr-10px">
-                    <b style="font-family: monospace;"><i class="fa-solid ${icon}" style="color: ${colour}; padding-right: 3px;"></i> ${formattedAmt} ${
-            cChainParams.current.TICKER
-        }</b>
-                </td>
-                <td class="text-right pr-10px align-middle">
-                    <span class="badge ${
-                        fConfirmed ? 'badge-purple' : 'bg-danger'
-                    } mb-0">${
-            fConfirmed
-                ? '<i class="fas fa-check"></i>'
-                : `<i class="fas fa-hourglass-end"></i>`
-        }</span>
-                </td>
-            </tr>`;
-    }
-
-    // End the table
-    strList += `</tbody></table>`;
-
-    // Return the HTML string
-    return strList;
-}
-
-/**
- * Refreshes the specified activity table, charts and related information
- */
-export async function updateActivityGUI(fStaking = false, fNewOnly = false) {
-    const cNet = getNetwork();
-
-    // Prevent the user from spamming refreshes
-    if (cNet.historySyncing) return;
-
-    // Remember how much history we had previously
-    const nPrevHistory = cNet.arrTxHistory.length;
-
-    // Choose the Dashboard or Staking UI accordingly
-    let domLoadMore = doms.domActivityLoadMore;
-    let domLoadMoreIcon = doms.domActivityLoadMoreIcon;
-    if (fStaking) {
-        domLoadMore = doms.domGuiStakingLoadMore;
-        domLoadMoreIcon = doms.domGuiStakingLoadMoreIcon;
-    }
-
-    // Load rewards from the network, displaying the sync spin icon until finished
-    domLoadMoreIcon.classList.add('fa-spin');
-    const arrTXs = await cNet.syncTxHistoryChunk(fNewOnly);
-    domLoadMoreIcon.classList.remove('fa-spin');
-
-    // If there's no change in history size post-sync, then we can cancel here, there's nothing new to render
-    if (nPrevHistory === cNet.arrTxHistory.length) return;
-
-    // Check if all transactions are loaded
-    if (cNet.isHistorySynced) {
-        // Hide the load more button
-        domLoadMore.style.display = 'none';
-    }
-
-    // Render the new Activity lists
-    renderActivityGUI(arrTXs);
-}
-
-/**
- * Renders the Activity GUIs (without syncing or refreshing)
- * @param {Array<import('./network.js').HistoricalTx>} arrTXs
- */
-export async function renderActivityGUI(arrTXs) {
-    // For Staking: Filter the list for only Stakes, display total rewards from known history
-    const cNet = getNetwork();
-    const arrStakes = arrTXs.filter((a) => a.type === HistoricalTxType.STAKE);
-    const nRewards = arrStakes.reduce((a, b) => a + b.amount, 0);
-    doms.domStakingRewardsTitle.innerHTML = `${
-        cNet.isHistorySynced ? '' : '≥'
-    }${sanitizeHTML(nRewards)} ${cChainParams.current.TICKER}`;
-
-    // Create and render the Dashboard Activity
-    doms.domActivityList.innerHTML = await createActivityListHTML(
-        arrTXs,
-        false
-    );
-    // Create and render the Staking History
-    doms.domStakingRewardsList.innerHTML = await createActivityListHTML(
-        arrStakes,
-        true
-    );
-}
-
-/**
  * Open the Explorer in a new tab for the current wallet, or a specific address
  * @param {string?} strAddress - Optional address to open, if void, the master key is used
  */
 export async function openExplorer(strAddress = '') {
     if (wallet.isLoaded() && wallet.isHD() && !strAddress) {
-        const derivationPath = wallet
-            .getDerivationPath()
-            .split('/')
-            .slice(0, 4)
-            .join('/');
-        const xpub = await wallet.getMasterKey().getxpub(derivationPath);
+        const xpub = await wallet.getXPub();
         window.open(cExplorer.url + '/xpub/' + xpub, '_blank');
     } else {
-        const address =
-            strAddress || (await wallet.getMasterKey().getAddress());
+        const address = strAddress || (await wallet.getAddress());
         window.open(cExplorer.url + '/address/' + address, '_blank');
     }
 }
@@ -1586,7 +1265,7 @@ export async function guiImportWallet() {
             if (wallet.isLoaded()) {
                 // Prepare a new Account to add
                 const cAccount = new Account({
-                    publicKey: await wallet.getMasterKey().keyToExport,
+                    publicKey: await wallet.getKeyToExport(),
                     encWif: strPrivKey,
                 });
 
@@ -1837,7 +1516,7 @@ export async function sweepAddress(arrUTXOs, sweepingMasterKey, nFixedFee = 0) {
     const nFee = nFixedFee || getNetwork().getFee(cTx.serialize().length);
 
     // Use a new address from our wallet to sweep the UTXOs in to
-    const strAddress = (await wallet.getNewAddress(true, false))[0];
+    const strAddress = (await getNewAddress(true, false))[0];
 
     // Sweep the full funds amount, minus the fee, leaving no change from any sweeped UTXOs
     cTx.addoutput(strAddress, (nTotal - nFee) / COIN);
@@ -1917,7 +1596,7 @@ export async function wipePrivateData() {
             html,
         })
     ) {
-        wallet.getMasterKey().wipePrivateData();
+        wallet.wipePrivateData();
         doms.domWipeWallet.hidden = true;
         if (isEncrypted) {
             doms.domRestoreWallet.hidden = false;
@@ -2672,7 +2351,7 @@ export async function updateMasternodeTab() {
             for (const [key] of mapCollateralAddresses) {
                 const option = document.createElement('option');
                 option.value = key;
-                option.innerText = await wallet.getMasterKey().getAddress(key);
+                option.innerText = await wallet.getAddress(key);
                 doms.domMnTxId.appendChild(option);
             }
         }
@@ -2891,7 +2570,7 @@ export function refreshChainData() {
     // Fetch block count + UTXOs, update the UI for new transactions
     cNet.getBlockCount().then((_) => {
         // Fetch latest Activity
-        updateActivityGUI(false, true);
+        activityDashboard.update(true);
 
         // If it's open: update the Governance Dashboard
         if (doms.domGovTab.classList.contains('active')) {
