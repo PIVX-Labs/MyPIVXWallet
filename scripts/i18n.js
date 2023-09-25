@@ -32,13 +32,13 @@ async function getLanguage(code) {
 export async function switchTranslation(langName) {
     if (arrActiveLangs.find((lang) => lang.code === langName)) {
         // Load every 'active' key of the language, otherwise, we'll default the key to the EN file
-	const arrNewLang = await getLanguage(langName);
+        const arrNewLang = await getLanguage(langName);
         for (const strKey of Object.keys(arrNewLang)) {
             // Skip empty and/or missing i18n keys, defaulting them to EN
             if (!arrNewLang[strKey]) {
-		// It's fine if we import a language multiple times
-		// Webpack will fetch it once from the server
-                translation[strKey] = await getLanguage("en")[strKey];
+                // It's fine if we import a language multiple times
+                // Webpack will fetch it once from the server
+                translation[strKey] = await getLanguage('en')[strKey];
                 continue;
             }
 
