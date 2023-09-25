@@ -230,6 +230,7 @@ export class ExplorerNetwork extends Network {
         } finally {
             getEventEmitter().emit('sync-status', 'stop');
         }
+	return this.blocks;
     }
 
     /**
