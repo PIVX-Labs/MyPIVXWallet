@@ -42,10 +42,14 @@ export {
     toggleBottomMenu,
     createProposal,
     switchSettings,
-    updateActivityGUI,
     govVote,
 } from './global.js';
-export { wallet, generateWallet, importWallet } from './wallet.js';
+export {
+    wallet,
+    getNewAddress,
+    generateWallet,
+    importWallet,
+} from './wallet.js';
 export {
     toggleTestnet,
     toggleDebug,

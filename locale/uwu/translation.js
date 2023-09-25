@@ -228,12 +228,11 @@ export const uwu_translation = {
     time: 'Time', //Time
     description: 'Descwiption', //Description
     activityBlockReward: 'Bwock Rewawrd', //Block Reward
-    activitySentTo: 'Sentu to', //Sent to
-    activitySentToSelf: 'Sentu to selfu', //Sent to self
-    activityShieldedAddress: 'Shielded addwess', //Shielded address
-    activityReceivedShield: 'Recewived fwom Shielded addwess', //Received from Shielded address
-    activityReceivedFrom: 'Recewived fwom', //Received from
-    activityDelegatedTo: 'Delegwated to', //Delegated to
+    activitySentTo: 'Sentu to {r}', //Sent to
+    activitySelf: 'selfu', //Self
+    activityReceivedShield: 'Shielded addwess', //Received from Shielded address
+    activityReceivedFrom: 'Recewived fwom {s}', //Received from
+    activityDelegatedTo: 'Delegwated to {r}', //Delegated to
     activityUndelegated: 'Undelegwated', //Undelegated
     activityUnknown: 'Unknown Tx', //Unknown Tx
     password: 'Password', //Password

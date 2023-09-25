@@ -10,10 +10,11 @@ import { it_translation } from '../locale/it/translation.js';
 import { de_translation } from '../locale/de/translation.js';
 import { Database } from './database.js';
 import { fillAnalyticSelect, setTranslation } from './settings.js';
-import { renderActivityGUI, updateEncryptionGUI } from './global.js';
+import { updateEncryptionGUI } from './global.js';
 import { wallet } from './wallet.js';
 import { getNetwork } from './network.js';
 import { cReceiveType, guiToggleReceiveType } from './contacts-book.js';
+import { reactive } from 'vue';
 
 /**
  * @type {translation_template}
@@ -23,7 +24,7 @@ export const ALERTS = {};
 /**
  * @type {translation_template}
  */
-export let translation = {};
+export const translation = reactive({});
 
 // TRANSLATION
 //Create an object of objects filled with all the translations
@@ -65,7 +66,6 @@ export function switchTranslation(langName) {
         const cNet = getNetwork();
         if (wallet.isLoaded() && cNet) {
             updateEncryptionGUI();
-            renderActivityGUI(cNet.arrTxHistory);
         }
         loadAlerts();
         fillAnalyticSelect();
@@ -79,7 +79,7 @@ export function switchTranslation(langName) {
                 langName +
                 ") is not supported yet, if you'd like to contribute translations (for rewards!) contact us on GitHub or Discord!"
         );
-        translation = translatableLanguages.en_translation;
+        switchTranslation('en');
         return false;
     }
 }
