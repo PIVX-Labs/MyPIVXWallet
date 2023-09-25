@@ -780,7 +780,7 @@ export async function openSendQRScanner() {
  */
 export async function openExplorer(strAddress = '') {
     if (wallet.isLoaded() && wallet.isHD() && !strAddress) {
-        const xpub = await wallet.getxpub();
+        const xpub = await wallet.getXPub();
         window.open(cExplorer.url + '/xpub/' + xpub, '_blank');
     } else {
         const address = strAddress || (await wallet.getAddress());
