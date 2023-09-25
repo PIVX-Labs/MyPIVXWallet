@@ -1,0 +1,36 @@
+on:
+  # Trigger the workflow on push or pull request,
+  # but only for the main branch
+  push:
+    branches:
+      - master
+    paths-ignore:
+    - "*.md"
+    - LICENSE
+    - "*.yaml"
+  pull_request:
+    branches:
+      - master
+    paths-ignore:
+      - "*.md"
+      - LICENSE
+      - "*.yaml"
+
+
+jobs:
+  test-deploy:
+    runs-on: ubuntu-latest
+    name: A job to test the action-deploy action by deploying a test site
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup Node
+        uses: actions/setup-node@v1
+        with:
+          node-version: '18.x'
+      - run: npm ci
+      - run: npm run build
+      - name: deploy preview
+        uses: rossjrw/pr-preview-action@v1
+        with:
+          source-dir: ./dist/
+          
