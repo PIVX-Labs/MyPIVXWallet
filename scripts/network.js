@@ -215,11 +215,10 @@ export class ExplorerNetwork extends Network {
                 await retryWrapper(fetchBlockbook, `/api/v2/api`)
             ).json();
             if (backend.blocks > this.blocks) {
-                console.log(
-                    'New block detected! ' +
-                        this.blocks +
-                        ' --> ' +
-                        backend.blocks
+                getEventEmitter().emit(
+                    'new-block',
+                    backend.blocks,
+                    this.blocks
                 );
                 this.blocks = backend.blocks;
 
