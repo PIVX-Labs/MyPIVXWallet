@@ -2,8 +2,8 @@ import { parseWIF } from './encoding.js';
 import { generateMnemonic, mnemonicToSeed, validateMnemonic } from 'bip39';
 import { doms, beforeUnloadListener } from './global.js';
 import { getNetwork } from './network.js';
+import { MAX_ACCOUNT_GAP } from './chain_params.js';
 import {
-    MasterKey,
     LegacyMasterKey,
     HdMasterKey,
     HardwareWalletMasterKey,
@@ -31,21 +31,50 @@ import { debug, fAdvancedMode } from './settings.js';
 import { strHardwareName, getHardwareWalletKeys } from './ledger.js';
 export let fWalletLoaded = false;
 
-class Wallet {
+/**
+ * Class Wallet, at the moment it is just a "realization" of Masterkey with a given nAccount
+ * it also remembers which addresses we generated.
+ * in future PRs this class will manage balance, UTXOs, masternode etc...
+ */
+export class Wallet {
     /**
-     * @type {MasterKey}
+     * @type {import('./masterkey.js').MasterKey}
      */
     #masterKey;
-    constructor() {}
+    /**
+     * @type {number}
+     */
+    #nAccount;
+    /**
+     * @type {number}
+     */
+    #addressIndex = 0;
+    /**
+     * Map our own address -> Path
+     * @type {Map<String, String?>}
+     */
+    #ownAddresses = new Map();
+    constructor(nAccount) {
+        this.#nAccount = nAccount;
+    }
 
     getMasterKey() {
         return this.#masterKey;
+    }
+
+    get nAccount() {
+        return this.#nAccount;
+    }
+
+    wipePrivateData() {
+        this.#masterKey.wipePrivateData(this.#nAccount);
     }
 
     isViewOnly() {
         if (!this.#masterKey) return false;
         return this.#masterKey.isViewOnly;
     }
+
     isHD() {
         if (!this.#masterKey) return false;
         return this.#masterKey.isHD;
@@ -82,13 +111,47 @@ class Wallet {
     async setMasterKey(mk) {
         this.#masterKey = mk;
         // Update the network master key
-        await getNetwork().setMasterKey(this.#masterKey);
+        await getNetwork().setWallet(this);
     }
 
-    getDefaultAddress() {
-        return this.#masterKey.getAddress(this.#masterKey.getDerivationPath());
+    /**
+     * Derive the current address (by internal index)
+     * @return {Promise<String>} Address
+     *
+     */
+    async getCurrentAddress() {
+        return await this.getAddress(0, this.#addressIndex);
     }
 
+    /**
+     * Derive a generic address (given nReceiving and nIndex)
+     * @return {Promise<String>} Address
+     */
+    async getAddress(nReceiving = 0, nIndex = 0) {
+        const path = this.getDerivationPath(nReceiving, nIndex);
+        return await this.#masterKey.getAddress(path);
+    }
+
+    /**
+     * Derive xpub (given nReceiving and nIndex)
+     * @return {Promise<String>} Address
+     */
+    async getXPub(nReceiving = 0, nIndex = 0) {
+        if (this.isHD()) {
+            // Get our current wallet XPub
+            const derivationPath = this.getDerivationPath(nReceiving, nIndex)
+                .split('/')
+                .slice(0, 4)
+                .join('/');
+            return await this.#masterKey.getxpub(derivationPath);
+        }
+        throw new Error('Legacy wallet does not have a xpub');
+    }
+
+    /**
+     * Derive xpub (given nReceiving and nIndex)
+     * @return {bool} Return true if a masterKey has been loaded in the wallet
+     */
     isLoaded() {
         return !!this.#masterKey;
     }
@@ -103,7 +166,7 @@ class Wallet {
 
         // Prepare to Add/Update an account in the DB
         const cAccount = new Account({
-            publicKey: await this.#masterKey.keyToExport,
+            publicKey: await this.getKeyToExport(),
             encWif: strEncWIF,
         });
 
@@ -122,25 +185,20 @@ class Wallet {
             capture: true,
         });
     }
-    async getNewAddress({ updateGUI = false, verify = false } = {}) {
-        const [address, path] = await this.#masterKey.getNewAddress();
-        if (verify && this.#masterKey.isHardwareWallet) {
-            // Generate address to present to the user without asking to verify
-            const confAddress = await confirmPopup({
-                title: ALERTS.CONFIRM_POPUP_VERIFY_ADDR,
-                html: createAddressConfirmation(address),
-                resolvePromise: this.#masterKey.getAddress(path, { verify }),
-            });
-            if (address !== confAddress) {
-                throw new Error('User did not verify address');
-            }
-        }
 
-        // If we're generating a new address manually, then render the new address in our Receive Modal
-        if (updateGUI) {
-            guiRenderCurrentReceiveModal();
+    /**
+     * @return Promise<[string, string]> Address and its BIP32 derivation path
+     */
+    async getNewAddress() {
+        const last = getNetwork().lastWallet;
+        this.#addressIndex =
+            (this.#addressIndex > last ? this.#addressIndex : last) + 1;
+        if (this.#addressIndex - last > MAX_ACCOUNT_GAP) {
+            // If the user creates more than ${MAX_ACCOUNT_GAP} empty wallets we will not be able to sync them!
+            this.#addressIndex = last;
         }
-
+        const path = this.getDerivationPath(0, this.#addressIndex);
+        const address = await this.getAddress(0, this.#addressIndex);
         return [address, path];
     }
     // If the privateKey is null then the user connected a hardware wallet
@@ -148,18 +206,58 @@ class Wallet {
         if (!this.#masterKey) return false;
         return this.#masterKey.isHardwareWallet == true;
     }
+
+    /**
+     * @param {string} address - address to check
+     * @return {Promise<String?>} BIP32 path or null if it's not your address
+     */
     async isOwnAddress(address) {
-        return await this.#masterKey.isOwnAddress(address);
+        if (this.#ownAddresses.has(address)) {
+            return this.#ownAddresses.get(address);
+        }
+        const last = getNetwork().lastWallet;
+        this.#addressIndex =
+            this.#addressIndex > last ? this.#addressIndex : last;
+        if (this.isHD()) {
+            for (let i = 0; i < this.#addressIndex; i++) {
+                const path = this.getDerivationPath(0, i);
+                const testAddress = await this.#masterKey.getAddress(path);
+                if (address === testAddress) {
+                    this.#ownAddresses.set(address, path);
+                    return path;
+                }
+            }
+        } else {
+            const value =
+                address === (await this.getKeyToExport()) ? ':)' : null;
+            this.#ownAddresses.set(address, value);
+            return value;
+        }
+
+        this.#ownAddresses.set(address, null);
+        return null;
     }
-    getDerivationPath(nAccount = 0, nReceiving = 0, nIndex = 0) {
-        return this.#masterKey.getDerivationPath(nAccount, nReceiving, nIndex);
+
+    /**
+     * @return {String} BIP32 path or null if it's not your address
+     */
+    getDerivationPath(nReceiving = 0, nIndex = 0) {
+        return this.#masterKey.getDerivationPath(
+            this.#nAccount,
+            nReceiving,
+            nIndex
+        );
+    }
+
+    async getKeyToExport() {
+        return await this.#masterKey?.getKeyToExport(this.#nAccount);
     }
 }
 
 /**
  * @type{Wallet}
  */
-export const wallet = new Wallet();
+export const wallet = new Wallet(0); // For now we are using only the 0-th account, (TODO: update once account system is done)
 
 /**
  * Import a wallet (with it's private, public or encrypted data)
@@ -316,7 +414,7 @@ export async function importWallet({
         doms.domDashboard.click();
 
         // Update identicon
-        doms.domIdenticon.dataset.jdenticonValue = wallet.getDefaultAddress();
+        doms.domIdenticon.dataset.jdenticonValue = await wallet.getAddress();
         jdenticon.update('#identicon');
 
         // Hide the encryption prompt if the user is using
@@ -378,10 +476,10 @@ export async function generateWallet(noUI = false) {
         setDisplayForAllWalletOptions('none');
 
         // Update identicon
-        doms.domIdenticon.dataset.jdenticonValue = wallet.getDefaultAddress();
+        doms.domIdenticon.dataset.jdenticonValue = await wallet.getAddress();
         jdenticon.update('#identicon');
 
-        wallet.getNewAddress({ updateGUI: true });
+        await getNewAddress({ updateGUI: true });
 
         // Refresh the balance UI (why? because it'll also display any 'get some funds!' alerts)
         getBalance(true);
@@ -514,6 +612,31 @@ export async function hasEncryptedWallet() {
     const database = await Database.getInstance();
     const account = await database.getAccount();
     return !!account?.encWif;
+}
+
+export async function getNewAddress({
+    updateGUI = false,
+    verify = false,
+} = {}) {
+    const [address, path] = await wallet.getNewAddress();
+    if (verify && wallet.isHardwareWallet()) {
+        // Generate address to present to the user without asking to verify
+        const confAddress = await confirmPopup({
+            title: ALERTS.CONFIRM_POPUP_VERIFY_ADDR,
+            html: createAddressConfirmation(address),
+            resolvePromise: wallet.getMasterKey().getAddress(path, { verify }),
+        });
+        if (address !== confAddress) {
+            throw new Error('User did not verify address');
+        }
+    }
+
+    // If we're generating a new address manually, then render the new address in our Receive Modal
+    if (updateGUI) {
+        guiRenderCurrentReceiveModal();
+    }
+
+    return [address, path];
 }
 
 function createAddressConfirmation(address) {
