@@ -5,11 +5,11 @@ import {
     guiUpdateImportInput,
     mempool,
     refreshChainData,
+    renderActivityGUI,
     setDisplayForAllWalletOptions,
+    updateActivityGUI,
     updateEncryptionGUI,
     updateGovernanceTab,
-    activityDashboard,
-    stakingDashboard,
 } from './global.js';
 import { wallet, hasEncryptedWallet, importWallet } from './wallet.js';
 import { cChainParams } from './chain_params.js';
@@ -273,11 +273,8 @@ export async function setExplorer(explorer, fSilent = false) {
     cExplorer = explorer;
 
     // Enable networking + notify if allowed
-    const network = new ExplorerNetwork(cExplorer.url, wallet);
+    const network = new ExplorerNetwork(cExplorer.url, wallet.getMasterKey());
     setNetwork(network);
-
-    activityDashboard.reset();
-    stakingDashboard.reset();
 
     // Update the selector UI
     doms.domExplorerSelect.value = cExplorer.url;
@@ -543,15 +540,17 @@ export async function toggleTestnet() {
         doms.domImportWallet.style.display = 'none';
     }
 
+    // Re-render the Activity UI as empty
+    await renderActivityGUI([]);
+
     mempool.UTXOs = [];
     getBalance(true);
     getStakingBalance(true);
-    await updateEncryptionGUI(wallet.isLoaded());
+    await updateEncryptionGUI(!!wallet.getMasterKey());
     await fillExplorerSelect();
     await fillNodeSelect();
+    await updateActivityGUI();
     await updateGovernanceTab();
-    activityDashboard.reset();
-    stakingDashboard.reset();
 }
 
 export function toggleDebug() {

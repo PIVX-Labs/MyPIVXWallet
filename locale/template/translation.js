@@ -225,11 +225,12 @@ export const translation_template = {
     time: '', //Time
     description: '', //Description
     activityBlockReward: '', //Block Reward
-    activitySentTo: '', //Sent to {}
-    activitySelf: '', // self
+    activitySentTo: '', //Sent to
+    activitySentToSelf: '', //Sent to self
     activityShieldedAddress: '', //Shielded address
-    activityReceivedFrom: '', //Received from {}
-    activityDelegatedTo: '', // Delegated to {}
+    activityReceivedShield: '', //Received from Shielded address
+    activityReceivedFrom: '', //Received from
+    activityDelegatedTo: '', //Delegated to
     activityUndelegated: '', //Undelegated
     activityUnknown: '', //Unknown Tx
     password: '', //Password

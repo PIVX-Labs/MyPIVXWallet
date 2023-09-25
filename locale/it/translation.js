@@ -214,11 +214,12 @@ export const it_translation = {
     time: 'Tempo', //Time
     description: 'Descrizione', //Description
     activityBlockReward: 'Ricompensa del blocco', //Block Reward
-    activitySentTo: 'Inviato a {r}', //Sent to
-    activitySelf: 'te stesso', //Self
+    activitySentTo: 'Invia a ', //Sent to
+    activitySentToSelf: 'Invia a te stesso', //Sent to self
     activityShieldedAddress: 'Indirizzo protetto', //Shielded address
-    activityReceivedFrom: 'Ricevuto da {s}', //Received from
-    activityDelegatedTo: 'Delegato a {r}', //Delegated to
+    activityReceivedShield: 'Ricevi tramite indirizzo protetto', //Received from Shielded address
+    activityReceivedFrom: 'Ricevuto da ', //Received from
+    activityDelegatedTo: 'Delegato a ', //Delegated to
     activityUndelegated: 'Non delegato', //Undelegated
     activityUnknown: 'Tx sconosciuta', //Unknown Tx
     password: 'Password', //Password
