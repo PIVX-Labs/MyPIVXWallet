@@ -219,7 +219,7 @@ export class Wallet {
         this.#addressIndex =
             this.#addressIndex > last ? this.#addressIndex : last;
         if (this.isHD()) {
-            for (let i = 0; i < this.#addressIndex; i++) {
+            for (let i = 0; i <= this.#addressIndex; i++) {
                 const path = this.getDerivationPath(0, i);
                 const testAddress = await this.#masterKey.getAddress(path);
                 if (address === testAddress) {
