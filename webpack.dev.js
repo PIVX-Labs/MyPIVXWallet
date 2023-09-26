@@ -1,12 +1,16 @@
 /* eslint-env node */
 /* eslint @typescript-eslint/no-var-requires: "off" */
 
-const path = require('path');
-const { merge } = require('webpack-merge');
-const common = require('./webpack.common.js');
-const webpack = require('webpack');
+import path from 'path';
+import { merge } from 'webpack-merge';
+import common from './webpack.common.js';
+import webpack from 'webpack';
+import { dirname } from 'path';
+import { fileURLToPath } from 'url';
 
-module.exports = merge(common, {
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+export default merge(common, {
     mode: 'development',
     devServer: {
         static: {

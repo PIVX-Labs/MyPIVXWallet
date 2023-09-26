@@ -1,12 +1,12 @@
 /* eslint-env node */
 /* eslint @typescript-eslint/no-var-requires: "off" */
 
-const { merge } = require('webpack-merge');
-const common = require('./webpack.common.js');
-const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
-const webpack = require('webpack');
+import { merge } from 'webpack-merge';
+import common from './webpack.common.js';
+import CssMinimizerPlugin from 'css-minimizer-webpack-plugin';
+import webpack from 'webpack';
 
-module.exports = merge(common, {
+export default merge(common, {
     mode: 'production',
     optimization: {
         // Inject a CSS minimizer alongside the default JS minimizer (the '...' is the inclusion of the default webpack JS minimizer!)

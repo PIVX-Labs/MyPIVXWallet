@@ -7,7 +7,7 @@ import {
     LegacyMasterKey,
     HdMasterKey,
     HardwareWalletMasterKey,
-} from './masterkey';
+} from './masterkey.js';
 import { generateOrEncodePrivkey } from './encoding.js';
 import {
     confirmPopup,

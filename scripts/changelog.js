@@ -1,6 +1,6 @@
-import { doms } from './global';
-import { translation } from './i18n';
-import { confirmPopup, sanitizeHTML } from './misc';
+import { doms } from './global.js';
+import { translation } from './i18n.js';
+import { confirmPopup, sanitizeHTML } from './misc.js';
 
 // ESLint error-skipping for webpack-injected globals
 /* global VERSION */

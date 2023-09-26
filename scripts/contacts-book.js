@@ -1,8 +1,8 @@
 import { Buffer } from 'buffer';
-import { Account } from './accounts';
-import { Database } from './database';
-import { doms, toClipboard } from './global';
-import { ALERTS, tr, translation } from './i18n';
+import { Account } from './accounts.js';
+import { Database } from './database.js';
+import { doms, toClipboard } from './global.js';
+import { ALERTS, tr, translation } from './i18n.js';
 import {
     confirmPopup,
     createAlert,
@@ -11,9 +11,9 @@ import {
     isStandardAddress,
     isXPub,
     sanitizeHTML,
-} from './misc';
-import { scanQRCode } from './scanner';
-import { wallet, hasEncryptedWallet } from './wallet';
+} from './misc.js';
+import { scanQRCode } from './scanner.js';
+import { wallet, hasEncryptedWallet } from './wallet.js';
 
 /**
  * Represents an Account contact
