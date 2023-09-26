@@ -1,4 +1,4 @@
-export const pt_pt_translation = {
+export default {
     // As tags básicas HTML são permitidas como <b><i> etc. Todos os dados são higienizados https://developer.mozilla.org/pt-BR/docs/Web/API/Element/innerHTML
 
     // NOTA: Se uma seção NÃO precisar ser traduzida, deixe-a vazia.
