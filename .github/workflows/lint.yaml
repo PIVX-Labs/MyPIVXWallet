@@ -42,3 +42,5 @@ jobs:
         with:
           eslint: true
           prettier: true
+      - name: Run tests
+        run: npm test
