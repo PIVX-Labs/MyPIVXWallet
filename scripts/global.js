@@ -509,6 +509,18 @@ function subscribeToNetworkEvents() {
         }
     });
 
+    getEventEmitter().on('new-block', (block, oldBlock) => {
+        console.log(`New block detected! ${oldBlock} --> ${block}`);
+        // Fetch latest Activity
+        activityDashboard.update(true);
+        stakingDashboard.update(true);
+
+        // If it's open: update the Governance Dashboard
+        if (doms.domGovTab.classList.contains('active')) {
+            updateGovernanceTab();
+        }
+    });
+
     getEventEmitter().on('transaction-sent', (success, result) => {
         if (success) {
             doms.domAddress1s.value = '';
@@ -2545,15 +2557,8 @@ export async function refreshChainData() {
         );
     if (!wallet.isLoaded()) return;
 
-    // Fetch block count + UTXOs, update the UI for new transactions
-    await cNet.getBlockCount();
-    // Fetch latest Activity
-    activityDashboard.update(true);
-
-    // If it's open: update the Governance Dashboard
-    if (doms.domGovTab.classList.contains('active')) {
-        updateGovernanceTab();
-    }
+    // Fetch block count
+    cNet.getBlockCount().then(() => {});
 }
 
 // A safety mechanism enabled if the user attempts to leave without encrypting/saving their keys

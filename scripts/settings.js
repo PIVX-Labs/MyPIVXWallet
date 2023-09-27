@@ -24,6 +24,7 @@ import {
 } from './i18n.js';
 import { CoinGecko, refreshPriceDisplay } from './prices.js';
 import { Database } from './database.js';
+import { getEventEmitter } from './event_bus';
 
 // --- Default Settings
 /** A mode that emits verbose console info for internal MPW operations */
@@ -326,7 +327,7 @@ async function setCurrency(currency) {
     const database = await Database.getInstance();
     database.setSettings({ displayCurrency: strCurrency });
     // Update the UI to reflect the new currency
-    getBalance(true);
+    getEventEmitter().emit('balance-update');
     getStakingBalance(true);
 }
 
