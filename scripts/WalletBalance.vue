@@ -144,7 +144,7 @@ getEventEmitter().on('wallet-import', () => {
                                         data-target="#exportPrivateKeysModal"
                                         data-backdrop="static"
                                         data-keyboard="false"
-					v-if="!isHardwareWallet"
+                                        v-if="!isHardwareWallet"
                                         @click="toggleExportUI()"
                                     >
                                         <i class="fas fa-key"></i>

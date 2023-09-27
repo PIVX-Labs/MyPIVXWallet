@@ -442,7 +442,7 @@ export async function importWallet({
 
         // Hide all wallet starter options
         setDisplayForAllWalletOptions('none');
-	getEventEmitter().emit('wallet-import');
+        getEventEmitter().emit('wallet-import');
     }
 }
 
