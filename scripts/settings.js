@@ -340,7 +340,7 @@ async function setDecimals(decimals) {
     const database = await Database.getInstance();
     database.setSettings({ displayDecimals: nDisplayDecimals });
     // Update the UI to reflect the new decimals
-    getBalance(true);
+    getEventEmitter().emit('new-balance');
     getStakingBalance(true);
 }
 
@@ -544,7 +544,8 @@ export async function toggleTestnet() {
     }
 
     mempool.UTXOs = [];
-    getBalance(true);
+
+    getEventEmitter().emit('new-balance');
     getStakingBalance(true);
     await updateEncryptionGUI(wallet.isLoaded());
     await fillExplorerSelect();
