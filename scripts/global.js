@@ -2325,7 +2325,7 @@ export async function updateMasternodeTab() {
                 doms.domMnDashboard.style.display = '';
             } else {
                 doms.domMnTxId.style.display = 'none';
-                doms.domccessMasternode.style.display = 'block';
+                doms.domAccessMasternode.style.display = 'block';
             }
         } else if (balance < cChainParams.current.collateralInSats) {
             // The user needs more funds
