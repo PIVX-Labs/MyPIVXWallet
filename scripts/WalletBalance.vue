@@ -24,11 +24,12 @@ import { wallet, getNewAddress } from './wallet';
 
 const balance = ref(0);
 const price = ref(0.0);
+const displayDecimals = ref(0);
 const updating = ref(false);
 const currency = ref('USD');
 const balanceStr = computed(() => {
     const nCoins = balance.value / COIN;
-    const strBal = nCoins.toFixed(nDisplayDecimals);
+    const strBal = nCoins.toFixed(displayDecimals.value);
     const nLen = strBal.length;
     return beautifyNumber(strBal, nLen >= 10 ? '17px' : '25px');
 });
@@ -56,6 +57,7 @@ getEventEmitter().on('balance-update', async () => {
     balance.value = mempool.getBalance();
     currency.value = strCurrency.toUpperCase();
     price.value = await cMarket.getPrice(strCurrency);
+    displayDecimals.value = nDisplayDecimals;
 });
 
 getEventEmitter().on('sync-status', (value) => {

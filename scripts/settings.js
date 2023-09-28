@@ -340,7 +340,7 @@ async function setDecimals(decimals) {
     const database = await Database.getInstance();
     database.setSettings({ displayDecimals: nDisplayDecimals });
     // Update the UI to reflect the new decimals
-    getEventEmitter().emit('new-balance');
+    getEventEmitter().emit('balance-update');
     getStakingBalance(true);
 }
 
