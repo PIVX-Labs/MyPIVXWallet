@@ -545,7 +545,7 @@ export async function toggleTestnet() {
 
     mempool.UTXOs = [];
 
-    getEventEmitter().emit('new-balance');
+    getEventEmitter().emit('balance-update');
     getStakingBalance(true);
     await updateEncryptionGUI(wallet.isLoaded());
     await fillExplorerSelect();
