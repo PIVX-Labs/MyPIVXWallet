@@ -306,10 +306,6 @@ export async function start() {
         domAdvancedModeToggler: document.getElementById('advancedModeToggler'),
     };
 
-    for (const d in doms) {
-        if (!doms[d]) console.log(d);
-    }
-
     await i18nStart();
     await loadImages();
 
