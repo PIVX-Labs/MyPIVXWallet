@@ -1,4 +1,4 @@
-export const fr_translation = {
+export default {
     // Les balises HTML de base sont autorisées, comme <b><i>, etc. Toutes les données sont nettoyées https://developer.mozilla.org/fr/docs/Web/API/Element/innerHTML
 
     // NOTA: Si une section n'a PAS besoin d'être traduite, laissez-la vide..

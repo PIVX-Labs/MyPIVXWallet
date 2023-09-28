@@ -1,4 +1,4 @@
-export const es_mx_translation = {
+export default {
     // Este documento se debe usar como una plantilla ya que todo el código base está en inglés
     // Se permiten etiquetas HTML básicas como <b><i> etc. Todos los datos están saneados https://developer.mozilla.org/es/docs/Web/API/Element/innerHTML
 

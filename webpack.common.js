@@ -1,14 +1,18 @@
 /* eslint-env node */
 /* eslint @typescript-eslint/no-var-requires: "off" */
 
-const path = require('path');
-const webpack = require('webpack');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const NodePolyfillPlugin = require('node-polyfill-webpack-plugin');
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const CopyPlugin = require('copy-webpack-plugin');
-const { VueLoaderPlugin } = require('vue-loader');
-const { readFileSync } = require('fs');
+import path from 'path';
+import webpack from 'webpack';
+import HtmlWebpackPlugin from 'html-webpack-plugin';
+import NodePolyfillPlugin from 'node-polyfill-webpack-plugin';
+import MiniCssExtractPlugin from 'mini-css-extract-plugin';
+import CopyPlugin from 'copy-webpack-plugin';
+import { VueLoaderPlugin } from 'vue-loader';
+import { readFileSync } from 'fs';
+import { dirname } from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 // Inject the Changelog and Version to the app
 const changelog = readFileSync('./changelog.md', { encoding: 'utf8' });
@@ -16,7 +20,7 @@ const version = JSON.parse(
     readFileSync('./package.json', { encoding: 'utf8' })
 ).version;
 
-module.exports = {
+export default {
     entry: './scripts/index.js',
     output: {
         path: path.resolve(__dirname, './dist'),

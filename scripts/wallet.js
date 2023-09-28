@@ -7,7 +7,7 @@ import {
     LegacyMasterKey,
     HdMasterKey,
     HardwareWalletMasterKey,
-} from './masterkey';
+} from './masterkey.js';
 import { generateOrEncodePrivkey } from './encoding.js';
 import {
     confirmPopup,
@@ -219,18 +219,13 @@ export class Wallet {
 
         // Otherwise, we need to derive any missing addresses, and look ahead by MAX_ACCOUNT_GAP to be extra sure we don't miss it
         if (this.isHD()) {
-            // We'll check ahead our last used index by MAX_ACCOUNT_GAP addresses
-            const nRange = this.#addressIndex + MAX_ACCOUNT_GAP;
-            for (let i = 0; i < nRange; i++) {
-                // Derive the address by index
-                const strPath = this.getDerivationPath(0, i);
-                const strDerivAddr = await this.#masterKey.getAddress(strPath);
-
-                // Set it in cache
-                this.#ownAddresses.set(strDerivAddr, strPath);
-
-                // If it matches what we're looking for, bingo! Return the path
-                if (address === strDerivAddr) return strPath;
+            for (let i = 0; i <= this.#addressIndex + MAX_ACCOUNT_GAP; i++) {
+                const path = this.getDerivationPath(0, i);
+                const testAddress = await this.#masterKey.getAddress(path);
+                if (address === testAddress) {
+                    this.#ownAddresses.set(address, path);
+                    return path;
+                }
             }
         } else {
             // For non-HD, simply check the Public Key matches

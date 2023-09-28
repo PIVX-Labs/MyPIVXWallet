@@ -3,7 +3,7 @@ import { doms } from './global.js';
 import qrcode from 'qrcode-generator';
 import bs58 from 'bs58';
 import { bech32 } from 'bech32';
-import { BIP21_PREFIX, cChainParams } from './chain_params';
+import { BIP21_PREFIX, cChainParams } from './chain_params.js';
 import { dSHA256 } from './utils.js';
 
 /* MPW constants */

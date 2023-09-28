@@ -4,4 +4,5 @@ index.template.html
 *.yaml
 LICENSE
 *.md
-*.json
+package-lock.json
+dist/

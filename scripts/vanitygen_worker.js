@@ -1,4 +1,4 @@
-import { deriveAddress } from './encoding';
+import { deriveAddress } from './encoding.js';
 import { getSafeRand } from './misc.js';
 
 onmessage = function (_evt) {

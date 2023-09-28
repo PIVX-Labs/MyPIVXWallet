@@ -1,8 +1,8 @@
 import QrScanner from 'qr-scanner';
 
-import { doms } from './global';
-import { ALERTS } from './i18n';
-import { createAlert } from './misc';
+import { doms } from './global.js';
+import { ALERTS } from './i18n.js';
+import { createAlert } from './misc.js';
 
 /**
  * The active QR scanner (if one exists)
