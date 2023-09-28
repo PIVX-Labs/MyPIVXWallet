@@ -404,7 +404,7 @@ export async function importWallet({
         // For non-HD wallets: hide the 'new address' button, since these are essentially single-address MPW wallets
 
         // Update the loaded address in the Dashboard
-        wallet.getNewAddress({ updateGUI: true });
+        getNewAddress({ updateGUI: true });
 
         // Display Text
         doms.domGuiWallet.style.display = 'block';

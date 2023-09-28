@@ -20,7 +20,7 @@ import {
     guiRenderCurrentReceiveModal,
     guiRenderContacts,
 } from './contacts-book';
-import { wallet } from './wallet';
+import { wallet, getNewAddress } from './wallet';
 
 const balance = ref(0);
 const price = ref(0.0);
@@ -157,7 +157,7 @@ getEventEmitter().on('wallet-import', () => {
                                         data-toggle="modal"
                                         data-target="#qrModal"
                                         @click="
-                                            wallet.getNewAddress({
+                                            getNewAddress({
                                                 updateGUI: true,
                                                 verify: true,
                                             })
