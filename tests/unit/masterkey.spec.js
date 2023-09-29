@@ -220,8 +220,6 @@ describe('testnet tests', () => {
                     if (a !== 0 && key.isViewOnly) {
                         continue;
                     }
-                    console.log(key);
-                    console.log(key.getDerivationPath(a, 0, i));
                     expect(key.getAddress(key.getDerivationPath(a, 0, i))).toBe(
                         address
                     );
