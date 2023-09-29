@@ -24,7 +24,7 @@ import {
 } from './i18n.js';
 import { CoinGecko, refreshPriceDisplay } from './prices.js';
 import { Database } from './database.js';
-import { getEventEmitter } from './event_bus';
+import { getEventEmitter } from './event_bus.js';
 
 // --- Default Settings
 /** A mode that emits verbose console info for internal MPW operations */

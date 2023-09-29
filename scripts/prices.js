@@ -1,8 +1,6 @@
 import { getEventEmitter } from './event_bus.js';
-import { getBalance } from './global.js';
 import { isEmpty } from './misc.js';
 import { cMarket, fillCurrencySelect } from './settings.js';
-
 
 /**
  * CoinGecko's endpoint for PIVX data, optimised for least bandwidth

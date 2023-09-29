@@ -29,7 +29,7 @@ import { guiRenderCurrentReceiveModal } from './contacts-book.js';
 import { Account } from './accounts.js';
 import { debug, fAdvancedMode } from './settings.js';
 import { strHardwareName, getHardwareWalletKeys } from './ledger.js';
-import { getEventEmitter } from './event_bus';
+import { getEventEmitter } from './event_bus.js';
 export let fWalletLoaded = false;
 
 /**
