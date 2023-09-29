@@ -7,10 +7,15 @@ import { createAlert, sleep } from './misc.js';
 let transport;
 export let cHardwareWallet = null;
 export let strHardwareName = '';
+/**
+ * Get hardware wallet keys.
+ * @param {string} path - bip32 path to the key
+ * @returns {Promise<string?>}
+ */
 export async function getHardwareWalletKeys(
     path,
     xpub = false,
-    verify = false,
+    verify = true,
     _attempts = 0
 ) {
     try {
@@ -46,13 +51,13 @@ export async function getHardwareWalletKeys(
     } catch (e) {
         if (e.message.includes('denied by the user')) {
             // User denied an operation
-            return false;
+            return null;
         }
 
         // If there's no device, nudge the user to plug it in.
         if (e.message.toLowerCase().includes('no device selected')) {
             createAlert('info', ALERTS.WALLET_NO_HARDWARE, 10000);
-            return false;
+            return null;
         }
 
         // If the device is unplugged, or connection lost through other means (such as spontanious device explosion)
@@ -66,9 +71,9 @@ export async function getHardwareWalletKeys(
                 ]),
                 10000
             );
-            return false;
+            return null;
         }
-        if (_attempts < 10) {
+        if (false && _attempts < 10) {
             // This is an ugly hack :(
             // in the event where multiple parts of the code decide to ask for an address, just
             // Retry at most 10 times waiting 200ms each time
@@ -92,7 +97,7 @@ export async function getHardwareWalletKeys(
                 ]),
                 7500
             );
-            return false;
+            return null;
         }
 
         // Check if this is an expected error
@@ -117,7 +122,7 @@ export async function getHardwareWalletKeys(
             5500
         );
 
-        return false;
+        return null;
     }
 }
 

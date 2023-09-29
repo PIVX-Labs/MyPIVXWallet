@@ -1623,6 +1623,7 @@ export async function wipePrivateData() {
  * @returns {Promise<boolean>} - If the unlock was successful or rejected
  */
 export async function restoreWallet(strReason = '') {
+    if (wallet.isHardwareWallet()) return true;
     // Build up the UI elements based upon conditions for the unlock prompt
     let strHTML = '';
 
