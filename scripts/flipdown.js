@@ -1,4 +1,4 @@
-import { translation } from './i18n';
+import { translation } from './i18n.js';
 
 /**
  * @name FlipDown

@@ -5,8 +5,10 @@ import '../assets/style/style.css';
 import 'bootstrap';
 
 // Import all montserrat font weights
-/* eslint-disable */
-require.context('@fontsource/montserrat/', false, /\.css$/);
+import.meta.webpackContext('@fontsource/montserrat/', {
+    recursive: false,
+    regExp: /\.css$/,
+});
 
 import { start } from './global.js';
 import { getNetwork } from './network.js';
@@ -69,7 +71,7 @@ export {
     deletePromoCode,
     openPromoQRScanner,
     promosToCSV,
-} from './promos';
+} from './promos.js';
 export {
     guiRenderContacts,
     guiAddContact,
@@ -83,12 +85,12 @@ export {
     guiEditContactNamePrompt,
     guiAddContactImage,
     localContactToClipboard,
-} from './contacts-book';
-export { renderWalletBreakdown } from './charting';
+} from './contacts-book.js';
+export { renderWalletBreakdown } from './charting.js';
 export { hexToBytes, bytesToHex, dSHA256 } from './utils.js';
 
 import Masternode from './masternode.js';
-export { renderChangelog } from './changelog';
+export { renderChangelog } from './changelog.js';
 export { Masternode };
 
 export { getNetwork } from './network.js';
