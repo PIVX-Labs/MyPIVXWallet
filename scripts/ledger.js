@@ -12,12 +12,7 @@ export let strHardwareName = '';
  * @param {string} path - bip32 path to the key
  * @returns {Promise<string?>}
  */
-export async function getHardwareWalletKeys(
-    path,
-    xpub = false,
-    verify = true,
-    _attempts = 0
-) {
+export async function getHardwareWalletKeys(path, xpub = false, verify = true) {
     try {
         // Check if we haven't setup a connection yet OR the previous connection disconnected
         if (!cHardwareWallet || transport._disconnectEmitted) {
@@ -72,18 +67,6 @@ export async function getHardwareWalletKeys(
                 10000
             );
             return null;
-        }
-        if (false && _attempts < 10) {
-            // This is an ugly hack :(
-            // in the event where multiple parts of the code decide to ask for an address, just
-            // Retry at most 10 times waiting 200ms each time
-            await sleep(200);
-            return await getHardwareWalletKeys(
-                path,
-                xpub,
-                verify,
-                _attempts + 1
-            );
         }
 
         // If the ledger is busy, just nudge the user.
