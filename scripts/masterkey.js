@@ -231,7 +231,11 @@ export class HardwareWalletMasterKey extends HdMasterKey {
     }
 
     getDerivationPath(nAccount, nReceiving, nIndex) {
-        return `m/44'/${cChainParams.current.BIP44_TYPE_LEDGER}'/${nAccount}'/${nReceiving}/${nIndex}`;
+        return HardwareWalletMasterKey.getDerivationPath(
+            nAccount,
+            nReceiving,
+            nIndex
+        );
     }
 
     static getDerivationPath(nAccount, nReceiving, nIndex) {
