@@ -17,12 +17,8 @@ import {
     debug,
     cMarket,
     strCurrency,
-    setColdStakingAddress,
-    strColdStakingAddress,
     nDisplayDecimals,
     fAdvancedMode,
-    strColdStakeOwnerAddress,
-    setColdStakingOwnerAddress,
 } from './settings.js';
 import { createAndSendTransaction, signTransaction } from './transactions.js';
 import {
@@ -108,6 +104,10 @@ export async function start() {
             'guiBalanceStakingTicker'
         ),
         domStakeAmount: document.getElementById('delegateAmount'),
+        domStakeOwnerAddressContainer: document.getElementById(
+            'ownerAddressContainer'
+        ),
+        domStakeOwnerAddress: document.getElementById('delegateOwnerAddress'),
         domUnstakeAmount: document.getElementById('undelegateAmount'),
         domStakeTab: document.getElementById('stakeTab'),
         domAddress1s: document.getElementById('address1s'),
@@ -1560,25 +1560,8 @@ export function isMasternodeUTXO(cUTXO, cMasternode) {
  * Creates a GUI popup for the user to check or customise their Cold Address
  */
 export async function guiSetColdStakingAddress() {
-    // Advanced mode: populate the popup with further options the user can access
-    const strHTMLOwnerAddress = !fAdvancedMode
-        ? ''
-        : `
-        <hr>
-        <p>
-            <span style="opacity: 0.65; margin: 10px;">
-                ${translation.popupColdStakeOwnerNote}
-            </span>
-        </p>
-        <input type="text" id="newOwnerAddress" placeholder="${
-            translation.popupExample
-        } ${(
-              strColdStakeOwnerAddress || (await wallet.getCurrentAddress())
-          ).substring(
-              0,
-              6
-          )}..." value="${strColdStakeOwnerAddress}" style="text-align: center;">
-    `;
+    // Use the Account's cold address, otherwise use the network's default Cold Staking address
+    const strColdAddress = await wallet.getColdStakingAddress();
 
     // Display the popup and await a response
     if (
@@ -1592,61 +1575,35 @@ export async function guiSetColdStakingAddress() {
             </p>
             <input type="text" id="newColdAddress" placeholder="${
                 translation.popupExample
-            } ${strColdStakingAddress.substring(
+            } ${strColdAddress.substring(
                 0,
                 6
-            )}..." value="${strColdStakingAddress}" style="text-align: center;">
-            ${strHTMLOwnerAddress}`,
+            )}..." value="${strColdAddress}" style="text-align: center;">`,
         })
     ) {
-        // Keep track of our return value, which is `true` if something changed or `false` if not
-        let fChanged = false;
-
         // Check the Cold Address input
-        const strColdAddress = document
+        const strNewColdAddress = document
             .getElementById('newColdAddress')
             .value.trim();
-        const fValidCold = isColdAddress(strColdAddress);
+        const fValidCold = isColdAddress(strNewColdAddress);
         if (
-            !strColdAddress ||
-            (strColdAddress !== strColdStakingAddress && fValidCold)
+            !strNewColdAddress ||
+            (strNewColdAddress !== strColdAddress && fValidCold)
         ) {
             // If the input is empty: we'll default back to this network's Cold Staking address (effectively a 'reset')
-            await setColdStakingAddress(
-                strColdAddress || cChainParams.current.defaultColdStakingAddress
-            );
-            fChanged = true;
+            const cDB = await Database.getInstance();
+            const cAccount = await cDB.getAccount();
+
+            // Save to DB (allowDeletion enabled to allow for resetting the Cold Address)
+            cAccount.coldAddress = strNewColdAddress;
+            await cDB.updateAccount(cAccount, true);
+
+            createAlert('info', ALERTS.STAKE_ADDR_SET, 5000);
+            return true;
         } else if (!fValidCold) {
             createAlert('warning', ALERTS.STAKE_ADDR_BAD, 2500);
+            return false;
         }
-
-        // Advanced Mode: Check the Owner Address input (it can be empty, to let MPW handle Owner Addresses again)
-        if (fAdvancedMode) {
-            const strOwnerAddress = document
-                .getElementById('newOwnerAddress')
-                .value.trim();
-            const fValidOwner =
-                isStandardAddress(strOwnerAddress) || !strOwnerAddress;
-            // Check if the input is empty, or if it's a valid address and not an address that's already set
-            if (fValidOwner && strColdStakeOwnerAddress !== strOwnerAddress) {
-                await setColdStakingOwnerAddress(strOwnerAddress);
-                fChanged = true;
-            } else if (!fValidOwner) {
-                createAlert(
-                    'warning',
-                    tr(ALERTS.INVALID_ADDRESS, [{ address: strOwnerAddress }]),
-                    2500
-                );
-            }
-        }
-
-        // If something was changed, notify the user
-        if (fChanged) {
-            createAlert('info', ALERTS.STAKE_ADDR_SET, 5000);
-        }
-
-        // Return if something was changed
-        return fChanged;
     } else {
         return false;
     }

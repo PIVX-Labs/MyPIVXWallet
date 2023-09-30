@@ -1,9 +1,5 @@
 import bitjs from './bitTrx.js';
-import {
-    debug,
-    strColdStakeOwnerAddress,
-    strColdStakingAddress,
-} from './settings.js';
+import { debug } from './settings.js';
 import { ALERTS, translation, tr } from './i18n.js';
 import {
     doms,
@@ -183,25 +179,23 @@ export async function delegateGUI() {
     const nAmount = Math.round(Number(doms.domStakeAmount.value.trim()) * COIN);
     if (!validateAmount(nAmount, COIN)) return;
 
-    // Ensure the user has an address set - if not, request one!
-    if (
-        !isColdAddress(strColdStakingAddress) &&
-        (await guiSetColdStakingAddress()) === false
-    )
-        return;
+    // (Advanced Mode) Verify the Owner Address, if any was provided
+    const strOwnerAddress = doms.domStakeOwnerAddress.value.trim();
 
     // Perform the TX
     const cTxRes = await createAndSendTransaction({
         amount: nAmount,
-        address: strColdStakingAddress,
+        address: await wallet.getColdStakingAddress(),
         isDelegation: true,
         useDelegatedInputs: false,
+        delegationOwnerAddress: strOwnerAddress,
     });
 
     // If successful, reset the inputs
     if (cTxRes.ok) {
         doms.domStakeAmount.value = '';
         doms.domStakeAmountValue.value = '';
+        doms.domStakeOwnerAddress.value = '';
 
         // And close the modal
         toggleBottomMenu('stakingDelegate', 'transferAnimation');
@@ -241,7 +235,7 @@ export async function undelegateGUI() {
         isDelegation: false,
         useDelegatedInputs: true,
         delegateChange: true,
-        changeDelegationAddress: strColdStakingAddress,
+        changeDelegationAddress: await wallet.getColdStakingAddress(),
     });
 
     if (!cTxRes.ok && cTxRes.err === 'No change addr') {
@@ -266,6 +260,7 @@ export async function undelegateGUI() {
  * @param {boolean} options.useDelegatedInputs - If true, only delegated coins will be used in the transaction
  * @param {delegateChange} options.delegateChange - If there is at least 1.01 PIV of change, the change will be delegated to options.changeDelegationAddress
  * @param {string|null} options.changeDelegationAddress - See options.delegateChange
+ * @param {string|null} options.delegationOwnerAddress - An optional Owner Address to use for the delegation
  * @returns {Promise<{ok: boolean, err: string?}>}
  */
 export async function createAndSendTransaction({
@@ -275,6 +270,7 @@ export async function createAndSendTransaction({
     useDelegatedInputs = false,
     delegateChange = false,
     changeDelegationAddress = null,
+    delegationOwnerAddress = '',
     isProposal = false,
 }) {
     if (!(await wallet.hasWalletUnlocked(true))) return;
@@ -351,11 +347,11 @@ export async function createAndSendTransaction({
     // Primary output (receiver)
     if (isDelegation) {
         // Check if we're using a custom Cold Stake Owner Address
-        const fCustomColdOwner = !!strColdStakeOwnerAddress;
+        const fCustomColdOwner = !!delegationOwnerAddress;
 
         // For custom Cold Owner Addresses, it could be an external address, so we need the mempool to class it as an 'external send'
         const strOwnerAddress = fCustomColdOwner
-            ? strColdStakeOwnerAddress
+            ? delegationOwnerAddress
             : (await wallet.getNewAddress())[0];
         const strOwnerPath = await wallet.isOwnAddress(strOwnerAddress);
 

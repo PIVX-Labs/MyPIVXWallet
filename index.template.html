@@ -932,6 +932,17 @@
                       </div>
                     </div>
 
+                    <div id="ownerAddressContainer">
+                      <label data-i18n="ownerAddress">(Optional) Owner Address</label><br />
+
+                      <div class="input-group mb-3">
+                        <input class="btn-group-input" data-i18n="ownerAddress" oninput='MPW.guiCheckRecipientInput(event)' style="font-family: monospace;" type="text" id="delegateOwnerAddress" placeholder="(Optional) Owner Address" autocomplete="nope" />
+                        <div class="input-group-append">
+                          <span class="input-group-text ptr" onclick="MPW.guiSelectContact(MPW.doms.domStakeOwnerAddress)"><i class="fa-solid fa-address-book fa-2xl"></i></span>
+                        </div>
+                      </div>
+                    </div>
+
                     <div class="text-right pb-2">
                       <button class="pivx-button-medium w-100" style="margin:0px;" onclick="MPW.delegateGUI()">
                         <span class="buttoni-icon"><i class="fas fa-paper-plane fa-tiny-margin"></i></span>

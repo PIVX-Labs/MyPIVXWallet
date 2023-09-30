@@ -2,7 +2,7 @@ import { parseWIF } from './encoding.js';
 import { generateMnemonic, mnemonicToSeed, validateMnemonic } from 'bip39';
 import { doms, beforeUnloadListener } from './global.js';
 import { getNetwork } from './network.js';
-import { MAX_ACCOUNT_GAP } from './chain_params.js';
+import { MAX_ACCOUNT_GAP, cChainParams } from './chain_params.js';
 import {
     LegacyMasterKey,
     HdMasterKey,
@@ -60,6 +60,22 @@ export class Wallet {
 
     getMasterKey() {
         return this.#masterKey;
+    }
+
+    /**
+     * Gets the Cold Staking Address for the current wallet, while considering user settings and network automatically.
+     * @return {Promise<String>} Cold Address
+     */
+    async getColdStakingAddress() {
+        // Check if we have an Account with custom Cold Staking settings
+        const cDB = await Database.getInstance();
+        const cAccount = await cDB.getAccount();
+
+        // If there's an account with a Cold Address, return it, otherwise return the default
+        return (
+            cAccount?.coldAddress ||
+            cChainParams.current.defaultColdStakingAddress
+        );
     }
 
     get nAccount() {

@@ -44,11 +44,6 @@ export let cExplorer = cChainParams.current.Explorers[0];
 export let cNode = cChainParams.current.Nodes[0];
 /** A mode which allows MPW to automatically select it's data sources */
 export let fAutoSwitch = true;
-/** The active Cold Staking address: default is set via chainparams */
-export let strColdStakingAddress =
-    cChainParams.current.defaultColdStakingAddress;
-/** The primary Owner Address for Cold Staking: default is a new address each delegation */
-export let strColdStakeOwnerAddress = '';
 /** The decimals to display for the wallet balance */
 export let nDisplayDecimals = 2;
 /** A mode which configures MPW towards Advanced users, with low-level feature access and less restrictions (Potentially dangerous) */
@@ -78,10 +73,6 @@ export class Settings {
      */
     coldAddress;
     /**
-     * @type {string} The user's primary Owner Address for Cold Delegations
-     */
-    coldOwnerAddress;
-    /**
      * @type {String} translation to use
      */
     translation;
@@ -102,23 +93,22 @@ export class Settings {
         explorer,
         node,
         autoswitch = true,
-        coldAddress = strColdStakingAddress,
-        coldOwnerAddress = strColdStakeOwnerAddress,
         translation = '',
         displayCurrency = 'usd',
         displayDecimals = nDisplayDecimals,
         advancedMode = false,
+        coldAddress = '',
     } = {}) {
         this.analytics = analytics;
         this.explorer = explorer;
         this.node = node;
         this.autoswitch = autoswitch;
-        this.coldAddress = coldAddress;
-        this.coldOwnerAddress = coldOwnerAddress;
         this.translation = translation;
         this.displayCurrency = displayCurrency;
         this.displayDecimals = displayDecimals;
         this.advancedMode = advancedMode;
+        // DEPRECATED: Read-only below here, for migration only
+        this.coldAddress = coldAddress;
     }
 }
 
@@ -206,16 +196,30 @@ export async function start() {
     const {
         analytics: strSettingAnalytics,
         autoswitch,
-        coldAddress,
-        coldOwnerAddress,
         displayCurrency,
         displayDecimals,
         advancedMode,
+        // DEPRECATED: Below here are entries that are read-only due to being moved to a different location in the DB
+        coldAddress,
     } = await database.getSettings();
 
-    // Set the Cold Staking and Owner addresses
-    strColdStakingAddress = coldAddress;
-    strColdStakeOwnerAddress = coldOwnerAddress;
+    // Cold Staking: As of v1.2.1 this was moved to the Account class, if any exists here, we'll migrate it then wipe it
+    // Note: We also only migrate Mainnet addresses, to keep the migration logic simple
+    if (
+        coldAddress &&
+        coldAddress.startsWith(cChainParams.main.STAKING_PREFIX)
+    ) {
+        const cAccount = await database.getAccount();
+        // Ensure an account exists (it is possible that a Cold Address was set without a wallet being encrypted)
+        if (cAccount) {
+            // We'll add the Cold Address to the account
+            cAccount.coldAddress = coldAddress;
+            // Save the changes
+            await database.updateAccount(cAccount);
+            // And wipe the old setting
+            await database.setSettings({ coldAddress: '' });
+        }
+    }
 
     // Set any Toggles to their default or DB state
     // Network Auto-Switch
@@ -352,26 +356,6 @@ async function setDecimals(decimals) {
     // Update the UI to reflect the new decimals
     getBalance(true);
     getStakingBalance(true);
-}
-
-/**
- * Sets and saves the active Cold Staking address
- * @param {string} strColdAddress - The Cold Staking address
- */
-export async function setColdStakingAddress(strColdAddress) {
-    strColdStakingAddress = strColdAddress;
-    const database = await Database.getInstance();
-    database.setSettings({ coldAddress: strColdAddress });
-}
-
-/**
- * Sets and saves the primary Owner address for Delegations
- * @param {string} strOwnerAddress - The Owner address
- */
-export async function setColdStakingOwnerAddress(strOwnerAddress) {
-    strColdStakeOwnerAddress = strOwnerAddress;
-    const database = await Database.getInstance();
-    database.setSettings({ coldOwnerAddress: strOwnerAddress });
 }
 
 /**
@@ -678,4 +662,8 @@ async function configureAdvancedMode() {
     // Hide or Show the "Mnemonic Passphrase" in the Seed Creation modal, and reset it's input
     doms.domMnemonicModalPassphrase.value = '';
     doms.domMnemonicModalPassphrase.hidden = !fAdvancedMode;
+
+    // Hide or Show the "Owner Address" configuration for Staking, and reset it's input
+    doms.domStakeOwnerAddress.value = '';
+    doms.domStakeOwnerAddressContainer.hidden = !fAdvancedMode;
 }
