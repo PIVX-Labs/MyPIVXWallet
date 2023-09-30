@@ -212,12 +212,12 @@ export class Wallet {
      * @return {Promise<String?>} BIP32 path or null if it's not your address
      */
     async isOwnAddress(address) {
-        // First, check our derived-address cache
         if (this.#ownAddresses.has(address)) {
             return this.#ownAddresses.get(address);
         }
-
-        // Otherwise, we need to derive any missing addresses, and look ahead by MAX_ACCOUNT_GAP to be extra sure we don't miss it
+        const last = getNetwork().lastWallet;
+        this.#addressIndex =
+            this.#addressIndex > last ? this.#addressIndex : last;
         if (this.isHD()) {
             for (let i = 0; i <= this.#addressIndex + MAX_ACCOUNT_GAP; i++) {
                 const path = this.getDerivationPath(0, i);
@@ -228,14 +228,12 @@ export class Wallet {
                 }
             }
         } else {
-            // For non-HD, simply check the Public Key matches
-            const strPlaceholderPath =
+            const value =
                 address === (await this.getKeyToExport()) ? ':)' : null;
-            this.#ownAddresses.set(address, strPlaceholderPath);
-            return strPlaceholderPath;
+            this.#ownAddresses.set(address, value);
+            return value;
         }
 
-        // Couldn't find it, so it's likely not ours
         this.#ownAddresses.set(address, null);
         return null;
     }
