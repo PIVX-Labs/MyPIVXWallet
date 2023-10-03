@@ -116,9 +116,11 @@ getEventEmitter().on('wallet-import', () => {
                                         data-target="#walletBreakdownModal"
                                     >
                                         <i class="fa-solid fa-chart-pie"></i>
-                                        <span>{{
-                                            translation.balanceBreakdown
-                                        }}</span>
+                                        <span
+                                            >&nbsp;{{
+                                                translation.balanceBreakdown
+                                            }}</span
+                                        >
                                     </a>
                                     <a
                                         class="dropdown-item ptr"
@@ -127,9 +129,11 @@ getEventEmitter().on('wallet-import', () => {
                                         <i
                                             class="fa-solid fa-magnifying-glass"
                                         ></i>
-                                        <span>{{
-                                            translation.viewOnExplorer
-                                        }}</span>
+                                        <span
+                                            >&nbsp;{{
+                                                translation.viewOnExplorer
+                                            }}</span
+                                        >
                                     </a>
                                     <a
                                         class="dropdown-item ptr"
@@ -138,7 +142,11 @@ getEventEmitter().on('wallet-import', () => {
                                         data-target="#contactsModal"
                                     >
                                         <i class="fa-solid fa-address-book"></i>
-                                        <span>{{ translation.contacts }}</span>
+                                        <span
+                                            >&nbsp;{{
+                                                translation.contacts
+                                            }}</span
+                                        >
                                     </a>
                                     <a
                                         class="dropdown-item ptr"
@@ -150,7 +158,11 @@ getEventEmitter().on('wallet-import', () => {
                                         @click="toggleExportUI()"
                                     >
                                         <i class="fas fa-key"></i>
-                                        <span>{{ translation.export }}</span>
+                                        <span
+                                            >&nbsp;{{
+                                                translation.export
+                                            }}</span
+                                        >
                                     </a>
 
                                     <a
@@ -166,9 +178,11 @@ getEventEmitter().on('wallet-import', () => {
                                         "
                                     >
                                         <i class="fas fa-sync-alt"></i>
-                                        <span>{{
-                                            translation.refreshAddress
-                                        }}</span>
+                                        <span
+                                            >&nbsp;{{
+                                                translation.refreshAddress
+                                            }}</span
+                                        >
                                     </a>
                                     <a
                                         class="dropdown-item ptr"
@@ -176,9 +190,11 @@ getEventEmitter().on('wallet-import', () => {
                                         data-target="#redeemCodeModal"
                                     >
                                         <i class="fa-solid fa-gift"></i>
-                                        <span>{{
-                                            translation.redeemOrCreateCode
-                                        }}</span>
+                                        <span
+                                            >&nbsp;{{
+                                                translation.redeemOrCreateCode
+                                            }}</span
+                                        >
                                     </a>
                                 </div>
                             </div>
@@ -201,7 +217,10 @@ getEventEmitter().on('wallet-import', () => {
                 data-target="#walletBreakdownModal"
             >
                 <span class="dcWallet-pivxBalance" v-html="balanceStr"> </span>
-                <span class="dcWallet-pivxTicker">{{ ticker }}</span>
+                <span class="dcWallet-pivxTicker"
+                    >&nbsp;{{ ticker }}&nbsp;</span
+                >
+
                 <i
                     class="fa-solid fa-plus"
                     style="opacity: 0.5; position: relative; left: 2px"
@@ -210,7 +229,7 @@ getEventEmitter().on('wallet-import', () => {
             <br />
             <div class="dcWallet-usdBalance">
                 <span class="dcWallet-usdValue">{{ balanceValue }}</span>
-                <span class="dcWallet-usdValue"> {{ currency }}</span>
+                <span class="dcWallet-usdValue">&nbsp;{{ currency }}</span>
             </div>
 
             <div class="row lessTop p-0">
