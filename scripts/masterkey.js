@@ -209,7 +209,7 @@ export class HardwareWalletMasterKey extends HdMasterKey {
             .split('/')
             .slice(0, 4)
             .join('/');
-        const xpub = await getHardwareWalletKeys(path, true);
+        const xpub = await getHardwareWalletKeys(path, true, false);
         if (!xpub) throw new Error('Failed to get hardware wallet keys.');
         HardwareWalletMasterKey.#initializing = true;
         return new HardwareWalletMasterKey(xpub);
