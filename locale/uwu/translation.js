@@ -160,6 +160,7 @@ export default {
     // Stake
     stake: '', //Stake
     stakeUnstake: '', //Unstake
+    ownerAddress: '(Optional) Owner Addwess', //(Optional) Owner Address
     rewardHistory: 'Rewawrd Histowy', //Reward History
     loadMore: 'Lowoad Mowore', //Load more
 
@@ -250,8 +251,6 @@ export default {
     popupCurrentAddress: 'Current addwess:', //Current address:
     popupColdStakeNote:
         "A Cold Addwess stakes coins on ur behalf, it cannot spend coins, so it's even safe to uwuse a stwanger's Cold Addwess!", //A Cold Address stakes coins on your behalf, it cannot spend coins, so it\'s even safe to use a stranger\'s Cold Address!
-    popupColdStakeOwnerNote:
-        "Yew can set a static Owner Addwess, or weave it empty to let MPW handlwe it, <b>do NAWT use a stranger's Owner Addwess!</b>", //You can set a static Owner Address, or leave it empty to let MPW handle it, <b>do not use a stranger\'s Owner Address!</b>
     popupExample: 'Examplez:', //Example:
     popupWalletLock: 'Do yew want to lock ur wawwet?', //Do you want to lock your wallet?
     popupWalletWipe: 'Do yew want to wipe ur wawwet pwivate data?', //Do you want to wipe your wallet private data?

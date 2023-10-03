@@ -166,6 +166,7 @@ export default {
     // Stake
     stake: '', //Stake
     stakeUnstake: '', //Unstake
+    ownerAddress: '', //(Optional) Owner Address
     rewardHistory: '', //Reward History
     loadMore: '', //Load more
 
@@ -246,7 +247,6 @@ export default {
     popupSetColdAddr: '', //Set your Cold Staking address
     popupCurrentAddress: '', //Current address:
     popupColdStakeNote: '', //A Cold Address stakes coins on your behalf, it cannot spend coins, so it's even safe to use a stranger's Cold Address!
-    popupColdStakeOwnerNote: '', //You can set a static Owner Address, or leave it empty to let MPW handle it, <b>do not use a stranger's Owner Address!</b>
     popupExample: '', //Example:
     popupWalletLock: '', //Do you want to lock your wallet?
     popupWalletWipe: '', //Do you want to wipe your wallet private data?
