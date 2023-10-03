@@ -51,7 +51,7 @@ export class Wallet {
      * nReceiving = 1 are change addresses
      * @type {Map<number, number>}
      */
-    #addressIndeces = new Map();
+    #addressIndices = new Map();
 
     /**
      * Map our own address -> Path
@@ -125,7 +125,7 @@ export class Wallet {
     async getCurrentAddress(nReceiving = 0) {
         return await this.getAddress(
             nReceiving,
-            this.#addressIndeces.get(nReceiving) ?? 0
+            this.#addressIndices.get(nReceiving) ?? 0
         );
     }
 
@@ -198,12 +198,12 @@ export class Wallet {
     async getNewAddress(nReceiving = 0) {
         const last = getNetwork().getLastWallet(nReceiving);
         let newIndex =
-            Math.max(last, this.#addressIndeces.get(nReceiving) ?? 0) + 1;
+            Math.max(last, this.#addressIndices.get(nReceiving) ?? 0) + 1;
         if (newIndex - last > MAX_ACCOUNT_GAP) {
             // If the user creates more than ${MAX_ACCOUNT_GAP} empty wallets we will not be able to sync them!
             newIndex = last;
         }
-        this.#addressIndeces.set(nReceiving, newIndex);
+        this.#addressIndices.set(nReceiving, newIndex);
         const path = this.getDerivationPath(nReceiving, newIndex);
         const address = await this.getAddress(nReceiving, newIndex);
         return [address, path];
@@ -227,13 +227,12 @@ export class Wallet {
         for (const nReceiving of [0, 1]) {
             const maxIndex = Math.max(
                 getNetwork().getLastWallet(nReceiving),
-                this.#addressIndeces.get(nReceiving) ?? 0
+                this.#addressIndices.get(nReceiving) ?? 0
             );
 
             if (this.isHD()) {
                 for (let i = 0; i <= maxIndex + MAX_ACCOUNT_GAP; i++) {
                     const path = this.getDerivationPath(nReceiving, i);
-                    console.log(nReceiving, path);
                     const testAddress = await this.#masterKey.getAddress(path);
                     if (address === testAddress) {
                         this.#ownAddresses.set(address, path);
