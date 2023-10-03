@@ -285,8 +285,26 @@ export async function importWallet({
                 );
             }
             // Derive our hardware address and import!
-            const key = await HardwareWalletMasterKey.create(0);
-            await wallet.setMasterKey(key);
+            try {
+                const key = await HardwareWalletMasterKey.create(0);
+                await wallet.setMasterKey(key);
+            } catch (e) {
+                // Display a properly translated error if it's a ledger error
+                if (
+                    e instanceof Error &&
+                    e.message === 'Failed to get hardware wallet keys.'
+                ) {
+                    // console.error so we get a backtrace if needed
+                    console.error(e);
+                    return createAlert(
+                        'warning',
+                        translation.FAILED_TO_IMPORT_HARDWARE,
+                        5000
+                    );
+                } else {
+                    throw e;
+                }
+            }
 
             // Hide the 'export wallet' button, it's not relevant to hardware wallets
             doms.domExportWallet.hidden = true;

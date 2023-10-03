@@ -301,6 +301,7 @@ export default {
 
     INTERNAL_ERROR: 'Interner Fehler, bitte versuche es später erneut', //Internal error, please try again later
     FAILED_TO_IMPORT: '<b>Import fehlgeschlagen!</b> Falsches Passwort', //<b>Failed to import!</b> Invalid password
+    FAILED_TO_IMPORT_HARDWARE: '', // <b> Failed to import Hardware Wallet</b>.
     UNSUPPORTED_CHARACTER:
         'Das Zeichen {char} ist nicht erlaubt in der Adresse! (Nicht Base58 kompatibel)', //The character '{char}' is unsupported in addresses! (Not Base58 compatible)
     UNSUPPORTED_WEBWORKERS:

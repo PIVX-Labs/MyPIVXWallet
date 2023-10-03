@@ -298,6 +298,7 @@ export default {
 
     INTERNAL_ERROR: 'Internal error, please try again later',
     FAILED_TO_IMPORT: '<b>Failed to import!</b> Invalid password',
+    FAILED_TO_IMPORT_HARDWARE: '<b> Failed to import Hardware Wallet</b>.',
     TESTNET_ENCRYPTION_DISABLED:
         '<b>Testnet Mode is ON!</b><br>Wallet encryption disabled',
     PASSWORD_TOO_SMALL:

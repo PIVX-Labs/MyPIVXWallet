@@ -305,6 +305,7 @@ export default {
 
     INTERNAL_ERROR: 'Error interno, vuelve a intentarlo más tarde', //Internal error, please try again later
     FAILED_TO_IMPORT: '<b>¡No se ha podido importar!</b> Contraseña inválida', //<b>Failed to import!</b> Invalid password
+    FAILED_TO_IMPORT_HARDWARE: '', // <b> Failed to import Hardware Wallet</b>.
     UNSUPPORTED_CHARACTER:
         '¡El carácter {char} no está soportado en las direcciones! (No compatible con Base58)', //The character '{char}' is unsupported in addresses! (Not Base58 compatible)
     UNSUPPORTED_WEBWORKERS:

@@ -291,6 +291,7 @@ export default {
 
     INTERNAL_ERROR: '', //Internal error, please try again later
     FAILED_TO_IMPORT: '', //<b>Failed to import!</b> Invalid password
+    FAILED_TO_IMPORT_HARDWARE: '', // <b> Failed to import Hardware Wallet</b>.
     UNSUPPORTED_CHARACTER: '', //The character '{char}' is unsupported in addresses! (Not Base58 compatible)
     UNSUPPORTED_WEBWORKERS: '', //This browser doesn\'t support Web Workers (multi-threaded JS), unfortunately you cannot generate Vanity wallets!
     INVALID_ADDRESS: '', //<b>Invalid PIVX address!</b><br> {address}
