@@ -258,7 +258,7 @@ export async function undelegateGUI() {
  * @param {Number} options.amount - Number of satoshi to send
  * @param {boolean} options.isDelegation - Whether to delegate the amount. Address will be the cold staking address
  * @param {boolean} options.useDelegatedInputs - If true, only delegated coins will be used in the transaction
- * @param {delegateChange} options.delegateChange - If there is at least 1.01 PIV of change, the change will be delegated to options.changeDelegationAddress
+ * @param {boolean} options.delegateChange - If there is at least 1.01 PIV of change, the change will be delegated to options.changeDelegationAddress
  * @param {string|null} options.changeDelegationAddress - See options.delegateChange
  * @param {string|null} options.delegationOwnerAddress - An optional Owner Address to use for the delegation
  * @returns {Promise<{ok: boolean, err: string?}>}
