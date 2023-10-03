@@ -95,6 +95,12 @@ export class HistoricalTx {
 export class Network {
     wallet;
     /**
+     * Map last wallet by receiving index
+     * @protected
+     * @type {Map<number, number>}
+     */
+    _lastWallets = new Map();
+    /**
      * @param {import('./wallet.js').Wallet} wallet
      */
     constructor(wallet) {
@@ -104,7 +110,6 @@ export class Network {
         this._enabled = true;
         this.wallet = wallet;
 
-        this.lastWallet = 0;
         this.isHistorySynced = false;
     }
 
@@ -165,6 +170,10 @@ export class Network {
 
     async getTxInfo(_txHash) {
         throw new Error('getTxInfo must be implemented');
+    }
+
+    getLastWallet(nReceiving = 0) {
+        return this._lastWallets.get(nReceiving) ?? 0;
     }
 }
 
@@ -294,7 +303,12 @@ export class ExplorerNetwork extends Network {
                 (this.wallet.isHardwareWallet()
                     ? cChainParams.current.BIP44_TYPE_LEDGER
                     : cChainParams.current.BIP44_TYPE) + "'";
-            this.lastWallet = Math.max(parseInt(path[5]), this.lastWallet);
+
+            const nReceiving = parseInt(path[4]);
+            const nAccount = parseInt(path[5]);
+            const lastWallet = this._lastWallets.get(nReceiving);
+
+            this._lastWallets.set(nReceiving, Math.max(nAccount, lastWallet));
             path = path.join('/');
         }
 

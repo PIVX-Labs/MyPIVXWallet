@@ -46,9 +46,13 @@ export class Wallet {
      */
     #nAccount;
     /**
-     * @type {number}
+     * Maps nReceiving->index of generated address
+     * nReceiving = 0 are regular addresses given to the user
+     * nReceiving = 1 are change addresses
+     * @type {Map<number, number>}
      */
-    #addressIndex = 0;
+    #addressIndeces = new Map();
+
     /**
      * Map our own address -> Path
      * @type {Map<String, String?>}
@@ -117,10 +121,12 @@ export class Wallet {
     /**
      * Derive the current address (by internal index)
      * @return {Promise<String>} Address
-     *
      */
-    async getCurrentAddress() {
-        return await this.getAddress(0, this.#addressIndex);
+    async getCurrentAddress(nReceiving = 0) {
+        return await this.getAddress(
+            nReceiving,
+            this.#addressIndeces.get(nReceiving) ?? 0
+        );
     }
 
     /**
@@ -189,16 +195,17 @@ export class Wallet {
     /**
      * @return Promise<[string, string]> Address and its BIP32 derivation path
      */
-    async getNewAddress() {
-        const last = getNetwork().lastWallet;
-        this.#addressIndex =
-            (this.#addressIndex > last ? this.#addressIndex : last) + 1;
-        if (this.#addressIndex - last > MAX_ACCOUNT_GAP) {
+    async getNewAddress(nReceiving = 0) {
+        const last = getNetwork().getLastWallet(nReceiving);
+        let newIndex =
+            Math.max(last, this.#addressIndeces.get(nReceiving) ?? 0) + 1;
+        if (newIndex - last > MAX_ACCOUNT_GAP) {
             // If the user creates more than ${MAX_ACCOUNT_GAP} empty wallets we will not be able to sync them!
-            this.#addressIndex = last;
+            newIndex = last;
         }
-        const path = this.getDerivationPath(0, this.#addressIndex);
-        const address = await this.getAddress(0, this.#addressIndex);
+        this.#addressIndeces.set(nReceiving, newIndex);
+        const path = this.getDerivationPath(nReceiving, newIndex);
+        const address = await this.getAddress(nReceiving, newIndex);
         return [address, path];
     }
     // If the privateKey is null then the user connected a hardware wallet
@@ -215,27 +222,32 @@ export class Wallet {
         if (this.#ownAddresses.has(address)) {
             return this.#ownAddresses.get(address);
         }
-        const last = getNetwork().lastWallet;
-        this.#addressIndex =
-            this.#addressIndex > last ? this.#addressIndex : last;
-        if (this.isHD()) {
-            for (let i = 0; i <= this.#addressIndex + MAX_ACCOUNT_GAP; i++) {
-                const path = this.getDerivationPath(0, i);
-                const testAddress = await this.#masterKey.getAddress(path);
-                if (address === testAddress) {
-                    this.#ownAddresses.set(address, path);
-                    return path;
+        // We only check 0, 1 because that's what blockbook does too by default
+        // https://github.com/trezor/blockbook/blob/master/docs/api.md#get-xpub
+        for (const nReceiving of [0, 1]) {
+            const maxIndex = Math.max(
+                getNetwork().getLastWallet(nReceiving),
+                this.#addressIndeces.get(nReceiving) ?? 0
+            );
+            if (this.isHD()) {
+                for (let i = 0; i <= maxIndex + MAX_ACCOUNT_GAP; i++) {
+                    const path = this.getDerivationPath(nReceiving, i);
+                    const testAddress = await this.#masterKey.getAddress(path);
+                    if (address === testAddress) {
+                        this.#ownAddresses.set(address, path);
+                        return path;
+                    }
                 }
+            } else {
+                const value =
+                    address === (await this.getKeyToExport()) ? ':)' : null;
+                this.#ownAddresses.set(address, value);
+                return value;
             }
-        } else {
-            const value =
-                address === (await this.getKeyToExport()) ? ':)' : null;
-            this.#ownAddresses.set(address, value);
-            return value;
-        }
 
-        this.#ownAddresses.set(address, null);
-        return null;
+            this.#ownAddresses.set(address, null);
+            return null;
+        }
     }
 
     /**
@@ -407,7 +419,7 @@ export async function importWallet({
         if (!wallet.isHD()) doms.domNewAddress.style.display = 'none';
 
         // Update the loaded address in the Dashboard
-        wallet.getNewAddress({ updateGUI: true });
+        await getNewAddress({ updateGUI: true });
 
         // Display Text
         doms.domGuiWallet.style.display = 'block';
@@ -615,10 +627,11 @@ export async function hasEncryptedWallet() {
 }
 
 export async function getNewAddress({
+    nReceiving = 0,
     updateGUI = false,
     verify = false,
 } = {}) {
-    const [address, path] = await wallet.getNewAddress();
+    const [address, path] = await wallet.getNewAddress(nReceiving);
     if (verify && wallet.isHardwareWallet()) {
         // Generate address to present to the user without asking to verify
         const confAddress = await confirmPopup({
