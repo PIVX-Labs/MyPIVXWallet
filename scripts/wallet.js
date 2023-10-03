@@ -229,9 +229,11 @@ export class Wallet {
                 getNetwork().getLastWallet(nReceiving),
                 this.#addressIndeces.get(nReceiving) ?? 0
             );
+
             if (this.isHD()) {
                 for (let i = 0; i <= maxIndex + MAX_ACCOUNT_GAP; i++) {
                     const path = this.getDerivationPath(nReceiving, i);
+                    console.log(nReceiving, path);
                     const testAddress = await this.#masterKey.getAddress(path);
                     if (address === testAddress) {
                         this.#ownAddresses.set(address, path);
@@ -244,10 +246,9 @@ export class Wallet {
                 this.#ownAddresses.set(address, value);
                 return value;
             }
-
-            this.#ownAddresses.set(address, null);
-            return null;
         }
+        this.#ownAddresses.set(address, null);
+        return null;
     }
 
     /**
