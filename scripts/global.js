@@ -1797,7 +1797,7 @@ function addProposalToFinalisationCache(cProposal) {
 }
 
 /**
- * Render Governance proosal objects to a given Proposal category
+ * Render Governance proposal objects to a given Proposal category
  * @param {Array<object>} arrProposals - The proposals to render
  * @param {boolean} fContested - The proposal category
  */
