@@ -306,7 +306,7 @@ export class ExplorerNetwork extends Network {
 
             const nReceiving = parseInt(path[4]);
             const nAccount = parseInt(path[5]);
-            const lastWallet = this._lastWallets.get(nReceiving);
+            const lastWallet = this.getLastWallet(nReceiving);
 
             this._lastWallets.set(nReceiving, Math.max(nAccount, lastWallet));
             path = path.join('/');
