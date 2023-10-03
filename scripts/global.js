@@ -2554,7 +2554,7 @@ export async function refreshChainData() {
     if (!wallet.isLoaded()) return;
 
     // Fetch block count
-    cNet.getBlockCount().then(() => {});
+    await cNet.getBlockCount();
 }
 
 // A safety mechanism enabled if the user attempts to leave without encrypting/saving their keys

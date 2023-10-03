@@ -45,6 +45,7 @@ const ticker = computed(() => cChainParams.current.TICKER);
 
 async function reload() {
     if (updating.value) return;
+
     try {
         updating.value = true;
         await refreshChainData();
