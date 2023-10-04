@@ -2,9 +2,12 @@ import createXpub from 'create-xpub';
 import { ALERTS, tr } from './i18n.js';
 import AppBtc from '@ledgerhq/hw-app-btc';
 import TransportWebUSB from '@ledgerhq/hw-transport-webusb';
-import { createAlert, sleep } from './misc.js';
+import { createAlert } from './misc.js';
 
 let transport;
+/**
+ * @type {AppBtc?}
+ */
 export let cHardwareWallet = null;
 export let strHardwareName = '';
 /**
