@@ -165,6 +165,7 @@ export default {
     // Stake
     stake: 'Stake', //Stake
     stakeUnstake: 'Unstake', //Unstake
+    ownerAddress: '', //(Optional) Owner Address
     rewardHistory: 'Historial de recompensas', //Reward History
     loadMore: 'Cargar más', //Load more
 

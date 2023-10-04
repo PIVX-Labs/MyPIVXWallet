@@ -11,7 +11,8 @@ export class Account {
      * @param {String} [accountData.encWif] - The encrypted WIF.
      * @param {Array<Object>} [accountData.localProposals] - The local proposals.
      * @param {Array<Contact>} [accountData.contacts] - The Contacts saved in this account.
-     * @param {String} [account.name] - The Contact Name of the account.
+     * @param {String} [accountData.name] - The Contact Name of the account.
+     * @param {String} [accountData.coldAddress] - The Cold Address that this account delegates to.
      */
     constructor(accountData) {
         // Keys take the Constructor as priority, but if missing, default to their "Type" in empty form for type-safety
@@ -20,6 +21,7 @@ export class Account {
         this.localProposals = accountData?.localProposals || [];
         this.contacts = accountData?.contacts || [];
         this.name = accountData?.name || '';
+        this.coldAddress = accountData?.coldAddress || '';
     }
 
     /** @type {String} The public key. */
@@ -36,6 +38,9 @@ export class Account {
 
     /** @type {String} The Contact Name of the account. */
     name = '';
+
+    /** @type {String} The Cold Address that this account delegates to. */
+    coldAddress = '';
 
     /**
      * Search for a Contact in this account, by specific properties

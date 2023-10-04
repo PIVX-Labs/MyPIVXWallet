@@ -222,7 +222,7 @@ export class Mempool {
         }
 
         // Re-render the Balance UIs
-        getBalance(true);
+        getEventEmitter().emit('balance-update', getBalance(true));
         getStakingBalance(true);
     }
 

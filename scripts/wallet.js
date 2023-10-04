@@ -2,7 +2,7 @@ import { parseWIF } from './encoding.js';
 import { generateMnemonic, mnemonicToSeed, validateMnemonic } from 'bip39';
 import { doms, beforeUnloadListener } from './global.js';
 import { getNetwork } from './network.js';
-import { MAX_ACCOUNT_GAP } from './chain_params.js';
+import { MAX_ACCOUNT_GAP, cChainParams } from './chain_params.js';
 import {
     LegacyMasterKey,
     HdMasterKey,
@@ -28,7 +28,9 @@ import { Database } from './database.js';
 import { guiRenderCurrentReceiveModal } from './contacts-book.js';
 import { Account } from './accounts.js';
 import { debug, fAdvancedMode } from './settings.js';
-import { strHardwareName } from './ledger.js';
+
+import { strHardwareName, getHardwareWalletKeys } from './ledger.js';
+import { getEventEmitter } from './event_bus.js';
 export let fWalletLoaded = false;
 
 /**
@@ -60,6 +62,22 @@ export class Wallet {
 
     getMasterKey() {
         return this.#masterKey;
+    }
+
+    /**
+     * Gets the Cold Staking Address for the current wallet, while considering user settings and network automatically.
+     * @return {Promise<String>} Cold Address
+     */
+    async getColdStakingAddress() {
+        // Check if we have an Account with custom Cold Staking settings
+        const cDB = await Database.getInstance();
+        const cAccount = await cDB.getAccount();
+
+        // If there's an account with a Cold Address, return it, otherwise return the default
+        return (
+            cAccount?.coldAddress ||
+            cChainParams.current.defaultColdStakingAddress
+        );
     }
 
     get nAccount() {
@@ -306,9 +324,6 @@ export async function importWallet({
                 }
             }
 
-            // Hide the 'export wallet' button, it's not relevant to hardware wallets
-            doms.domExportWallet.hidden = true;
-
             createAlert(
                 'info',
                 tr(ALERTS.WALLET_HARDWARE_WALLET, [
@@ -410,10 +425,9 @@ export async function importWallet({
         }
 
         // For non-HD wallets: hide the 'new address' button, since these are essentially single-address MPW wallets
-        if (!wallet.isHD()) doms.domNewAddress.style.display = 'none';
 
         // Update the loaded address in the Dashboard
-        wallet.getNewAddress({ updateGUI: true });
+        getNewAddress({ updateGUI: true });
 
         // Display Text
         doms.domGuiWallet.style.display = 'block';
@@ -451,6 +465,7 @@ export async function importWallet({
 
         // Hide all wallet starter options
         setDisplayForAllWalletOptions('none');
+        getEventEmitter().emit('wallet-import');
     }
 }
 
@@ -488,7 +503,6 @@ export async function generateWallet(noUI = false) {
         await getNewAddress({ updateGUI: true });
 
         // Refresh the balance UI (why? because it'll also display any 'get some funds!' alerts)
-        getBalance(true);
         getStakingBalance(true);
     }
 
