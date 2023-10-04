@@ -207,7 +207,8 @@ getEventEmitter().on('wallet-import', () => {
             <canvas
                 id="identicon"
                 class="innerShadow"
-                style="width: 65px; height: 65px"
+                width="65"
+                height="65"
                 data-jdenticon-value=""
             ></canvas
             ><br />
