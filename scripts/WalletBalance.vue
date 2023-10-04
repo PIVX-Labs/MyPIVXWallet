@@ -209,6 +209,7 @@ getEventEmitter().on('wallet-import', () => {
                 class="innerShadow"
                 width="65"
                 height="65"
+                style="width: 65px; height: 65px"
                 data-jdenticon-value=""
             ></canvas
             ><br />
