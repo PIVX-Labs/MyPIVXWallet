@@ -160,6 +160,7 @@ export default {
     // Stake
     stake: '', //Stake
     stakeUnstake: '', //Unstake
+    ownerAddress: '(Optional) Owner Addwess', //(Optional) Owner Address
     rewardHistory: 'Rewawrd Histowy', //Reward History
     loadMore: 'Lowoad Mowore', //Load more
 

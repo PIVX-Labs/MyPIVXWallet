@@ -166,6 +166,7 @@ export default {
     // Stake
     stake: 'Delegieren', //Stake
     stakeUnstake: 'Abberufen', //Unstake
+    ownerAddress: '', //(Optional) Owner Address
     rewardHistory: 'Vergütungshistorie', //Reward History
     loadMore: 'Zeige mehr', //Load more
 
@@ -249,7 +250,7 @@ export default {
     popupSetColdAddr: 'Gib eine kalte Staking Adresse an', //Set your Cold Staking address
     popupCurrentAddress: 'Aktuelle Adresse', //Current address:
     popupColdStakeNote:
-        'Eine kalte Staking Adresse delegiert Münzen für dich. Sie kann nicht für Transaktionen verwendet werden, so kannst du auch fremde kalte Adressen verwenden!', //A Cold Address stakes coins on your behalf, it cannot spend coins, so it's even safe to use a stranger's Cold Address!
+        'Eine kalte Staking Adresse delegiert Münzen für dich. Sie kann nicht für Transaktionen verwendet werden, so kannst du auch fremde kalte Adressen verwenden!', //A Cold Address stakes coins on your behalf, it cannot spend coins, so it's even safe to use a stranger\'s Cold Address!
     popupExample: 'Beispiel', //Example:
     popupWalletLock: 'Möchtest du deine Geldbörse sperren?', //Do you want to lock your wallet?
     popupWalletWipe:

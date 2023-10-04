@@ -290,6 +290,18 @@ export function isStandardAddress(strAddress) {
 }
 
 /**
+ * A quick check to see if an address is a Cold (P2CS) address
+ * @param {string} strAddress - The address to check
+ * @returns {boolean} - `true` if a Cold address, `false` if not
+ */
+export function isColdAddress(strAddress) {
+    return (
+        strAddress.length === 34 &&
+        cChainParams.current.STAKING_PREFIX === strAddress[0]
+    );
+}
+
+/**
  * A quick check to see if a string is an XPub key
  * @param {string} strXPub - The XPub to check
  * @returns {boolean} - `true` if a valid formatted XPub, `false` if not

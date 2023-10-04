@@ -1,4 +1,4 @@
-import { getBalance } from './global.js';
+import { getEventEmitter } from './event_bus.js';
 import { isEmpty } from './misc.js';
 import { cMarket, fillCurrencySelect } from './settings.js';
 
@@ -86,6 +86,6 @@ export async function refreshPriceDisplay() {
         await fillCurrencySelect();
 
         // Update price values
-        getBalance(true);
+        getEventEmitter().emit('balance-update');
     }
 }
