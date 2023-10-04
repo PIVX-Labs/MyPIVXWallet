@@ -4,6 +4,9 @@ import AppBtc from '@ledgerhq/hw-app-btc';
 import TransportWebUSB from '@ledgerhq/hw-transport-webusb';
 import { createAlert } from './misc.js';
 
+/**
+ * @type{TransportWebUSB}
+ */
 let transport;
 /**
  * @type {AppBtc?}
