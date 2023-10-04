@@ -24,6 +24,7 @@ import {
 } from './i18n.js';
 import { CoinGecko, refreshPriceDisplay } from './prices.js';
 import { Database } from './database.js';
+import { getEventEmitter } from './event_bus.js';
 
 // --- Default Settings
 /** A mode that emits verbose console info for internal MPW operations */
@@ -44,8 +45,6 @@ export let cExplorer = cChainParams.current.Explorers[0];
 export let cNode = cChainParams.current.Nodes[0];
 /** A mode which allows MPW to automatically select it's data sources */
 export let fAutoSwitch = true;
-/** The active Cold Staking address: default is the PIVX Labs address */
-export let strColdStakingAddress = 'SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy';
 /** The decimals to display for the wallet balance */
 export let nDisplayDecimals = 2;
 /** A mode which configures MPW towards Advanced users, with low-level feature access and less restrictions (Potentially dangerous) */
@@ -95,21 +94,22 @@ export class Settings {
         explorer,
         node,
         autoswitch = true,
-        coldAddress = strColdStakingAddress,
         translation = '',
         displayCurrency = 'usd',
         displayDecimals = nDisplayDecimals,
         advancedMode = false,
+        coldAddress = '',
     } = {}) {
         this.analytics = analytics;
         this.explorer = explorer;
         this.node = node;
         this.autoswitch = autoswitch;
-        this.coldAddress = coldAddress;
         this.translation = translation;
         this.displayCurrency = displayCurrency;
         this.displayDecimals = displayDecimals;
         this.advancedMode = advancedMode;
+        // DEPRECATED: Read-only below here, for migration only
+        this.coldAddress = coldAddress;
     }
 }
 
@@ -197,14 +197,30 @@ export async function start() {
     const {
         analytics: strSettingAnalytics,
         autoswitch,
-        coldAddress,
         displayCurrency,
         displayDecimals,
         advancedMode,
+        // DEPRECATED: Below here are entries that are read-only due to being moved to a different location in the DB
+        coldAddress,
     } = await database.getSettings();
 
-    // Set the Cold Staking address
-    strColdStakingAddress = coldAddress;
+    // Cold Staking: As of v1.2.1 this was moved to the Account class, if any exists here, we'll migrate it then wipe it
+    // Note: We also only migrate Mainnet addresses, to keep the migration logic simple
+    if (
+        coldAddress &&
+        coldAddress.startsWith(cChainParams.main.STAKING_PREFIX)
+    ) {
+        const cAccount = await database.getAccount();
+        // Ensure an account exists (it is possible that a Cold Address was set without a wallet being encrypted)
+        if (cAccount) {
+            // We'll add the Cold Address to the account
+            cAccount.coldAddress = coldAddress;
+            // Save the changes
+            await database.updateAccount(cAccount);
+            // And wipe the old setting
+            await database.setSettings({ coldAddress: '' });
+        }
+    }
 
     // Set any Toggles to their default or DB state
     // Network Auto-Switch
@@ -326,7 +342,7 @@ async function setCurrency(currency) {
     const database = await Database.getInstance();
     database.setSettings({ displayCurrency: strCurrency });
     // Update the UI to reflect the new currency
-    getBalance(true);
+    getEventEmitter().emit('balance-update');
     getStakingBalance(true);
 }
 
@@ -339,18 +355,8 @@ async function setDecimals(decimals) {
     const database = await Database.getInstance();
     database.setSettings({ displayDecimals: nDisplayDecimals });
     // Update the UI to reflect the new decimals
-    getBalance(true);
+    getEventEmitter().emit('balance-update');
     getStakingBalance(true);
-}
-
-/**
- * Sets and saves the active Cold Staking address
- * @param {string} strColdAddress - The Cold Staking address
- */
-export async function setColdStakingAddress(strColdAddress) {
-    strColdStakingAddress = strColdAddress;
-    const database = await Database.getInstance();
-    database.setSettings({ coldAddress: strColdAddress });
 }
 
 /**
@@ -502,7 +508,6 @@ export async function toggleTestnet() {
     doms.domTestnet.style.display = cChainParams.current.isTestnet
         ? ''
         : 'none';
-    doms.domGuiBalanceTicker.innerText = cChainParams.current.TICKER;
     doms.domGuiBalanceStakingTicker.innerText = cChainParams.current.TICKER;
     doms.domPrefixNetwork.innerText =
         cChainParams.current.PUBKEY_PREFIX.join(' or ');
@@ -544,7 +549,8 @@ export async function toggleTestnet() {
     }
 
     mempool.UTXOs = [];
-    getBalance(true);
+
+    getEventEmitter().emit('balance-update');
     getStakingBalance(true);
     await updateEncryptionGUI(wallet.isLoaded());
     await fillExplorerSelect();
@@ -657,4 +663,8 @@ async function configureAdvancedMode() {
     // Hide or Show the "Mnemonic Passphrase" in the Seed Creation modal, and reset it's input
     doms.domMnemonicModalPassphrase.value = '';
     doms.domMnemonicModalPassphrase.hidden = !fAdvancedMode;
+
+    // Hide or Show the "Owner Address" configuration for Staking, and reset it's input
+    doms.domStakeOwnerAddress.value = '';
+    doms.domStakeOwnerAddressContainer.hidden = !fAdvancedMode;
 }

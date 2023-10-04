@@ -17,8 +17,6 @@ import {
     debug,
     cMarket,
     strCurrency,
-    setColdStakingAddress,
-    strColdStakingAddress,
     nDisplayDecimals,
     fAdvancedMode,
 } from './settings.js';
@@ -34,6 +32,7 @@ import {
     sleep,
     beautifyNumber,
     isStandardAddress,
+    isColdAddress,
 } from './misc.js';
 import { cChainParams, COIN, MIN_PASS_LENGTH } from './chain_params.js';
 import { decrypt } from './aes-gcm.js';
@@ -49,6 +48,7 @@ import { checkForUpgrades } from './changelog.js';
 import { FlipDown } from './flipdown.js';
 import { createApp } from 'vue';
 import Activity from './Activity.vue';
+import WalletBalance from './WalletBalance.vue';
 import {
     cReceiveType,
     guiAddContactPrompt,
@@ -67,6 +67,7 @@ export function isLoaded() {
 }
 
 export let doms = {};
+export const mempool = new Mempool();
 
 // For now we'll import the component as a vue app by itself. Later, when the
 // dashboard is rewritten in vue, we can simply add <Activity /> to the dashboard component template.
@@ -80,23 +81,18 @@ export const stakingDashboard = createApp(Activity, {
     rewards: true,
 }).mount('#stakeActivity');
 
+export const walletBalance = createApp(WalletBalance).mount('#walletBalance');
+
 export async function start() {
     doms = {
         domNavbarToggler: document.getElementById('navbarToggler'),
         domDashboard: document.getElementById('dashboard'),
         domGuiWallet: document.getElementById('guiWallet'),
         domGettingStartedBtn: document.getElementById('gettingStartedBtn'),
-        domGuiBalance: document.getElementById('guiBalance'),
-        domGuiBalanceTicker: document.getElementById('guiBalanceTicker'),
-        domGuiBalanceValue: document.getElementById('guiBalanceValue'),
-        domGuiBalanceValueCurrency: document.getElementById(
-            'guiBalanceValueCurrency'
-        ),
         domGuiStakingValue: document.getElementById('guiStakingValue'),
         domGuiStakingValueCurrency: document.getElementById(
             'guiStakingValueCurrency'
         ),
-        domBalanceReload: document.getElementById('balanceReload'),
         domBalanceReloadStaking: document.getElementById(
             'balanceReloadStaking'
         ),
@@ -105,6 +101,10 @@ export async function start() {
             'guiBalanceStakingTicker'
         ),
         domStakeAmount: document.getElementById('delegateAmount'),
+        domStakeOwnerAddressContainer: document.getElementById(
+            'ownerAddressContainer'
+        ),
+        domStakeOwnerAddress: document.getElementById('delegateOwnerAddress'),
         domUnstakeAmount: document.getElementById('undelegateAmount'),
         domStakeTab: document.getElementById('stakeTab'),
         domAddress1s: document.getElementById('address1s'),
@@ -208,7 +208,6 @@ export async function start() {
         domEncryptPasswordCurrent: document.getElementById(
             'changePassword-current'
         ),
-        domEncryptPasswordBox: document.getElementById('encryptPassword'),
         domEncryptPasswordFirst: document.getElementById('newPassword'),
         domEncryptPasswordSecond: document.getElementById('newPasswordRetype'),
         domGenIt: document.getElementById('genIt'),
@@ -230,10 +229,8 @@ export async function start() {
             'ModalMnemonicPassphrase'
         ),
         domExportPrivateKey: document.getElementById('exportPrivateKeyText'),
-        domExportWallet: document.getElementById('guiExportWalletItem'),
         domWipeWallet: document.getElementById('guiWipeWallet'),
         domRestoreWallet: document.getElementById('guiRestoreWallet'),
-        domNewAddress: document.getElementById('guiNewAddress'),
         domRedeemTitle: document.getElementById('redeemCodeModalTitle'),
         domRedeemCodeUse: document.getElementById('redeemCodeUse'),
         domRedeemCodeCreate: document.getElementById('redeemCodeCreate'),
@@ -265,11 +262,6 @@ export async function start() {
         ),
         domPromoTable: document.getElementById('promo-table'),
         domContactsTable: document.getElementById('contactsList'),
-        domActivityList: document.getElementById('activity-list-content'),
-        domActivityLoadMore: document.getElementById('activityLoadMore'),
-        domActivityLoadMoreIcon: document.getElementById(
-            'activityLoadMoreIcon'
-        ),
         domConfirmModalDialog: document.getElementById('confirmModalDialog'),
         domConfirmModalMain: document.getElementById('confirmModalMain'),
         domConfirmModalHeader: document.getElementById('confirmModalHeader'),
@@ -508,12 +500,9 @@ function subscribeToNetworkEvents() {
     getEventEmitter().on('sync-status', (value) => {
         switch (value) {
             case 'start':
-                // Play reload anim
-                doms.domBalanceReload.classList.add('playAnim');
                 doms.domBalanceReloadStaking.classList.add('playAnim');
                 break;
             case 'stop':
-                doms.domBalanceReload.classList.remove('playAnim');
                 doms.domBalanceReloadStaking.classList.remove('playAnim');
                 break;
         }
@@ -529,7 +518,6 @@ function subscribeToNetworkEvents() {
         if (doms.domGovTab.classList.contains('active')) {
             updateGovernanceTab();
         }
-        getBalance(true);
     });
 
     getEventEmitter().on('transaction-sent', (success, result) => {
@@ -552,7 +540,7 @@ function subscribeToNetworkEvents() {
 }
 
 // WALLET STATE DATA
-export const mempool = new Mempool();
+
 let exportHidden = false;
 let isTestnetLastState = cChainParams.current.isTestnet;
 
@@ -607,9 +595,6 @@ export function openTab(evt, tabName) {
  * Updates the GUI ticker among all elements; useful for Network Switching
  */
 export function updateTicker() {
-    // Update the Dashboard currency
-    doms.domGuiBalanceValueCurrency.innerText = strCurrency.toUpperCase();
-
     // Update the Stake Dashboard currency
     doms.domGuiStakingValueCurrency.innerText = strCurrency.toUpperCase();
 
@@ -687,19 +672,11 @@ export function getBalance(updateGUI = false) {
     if (updateGUI) {
         // Set the balance, and adjust font-size for large balance strings
         const strBal = nCoins.toFixed(nDisplayDecimals);
-        const nLen = strBal.length;
-        doms.domGuiBalance.innerHTML = beautifyNumber(
-            strBal,
-            nLen >= 10 ? '17px' : '25px'
-        );
         doms.domAvailToDelegate.innerHTML =
             beautifyNumber(strBal) + ' ' + cChainParams.current.TICKER;
 
         // Update tickers
         updateTicker();
-
-        // Update price displays
-        updatePriceDisplay(doms.domGuiBalanceValue);
     }
 
     return nBalance;
@@ -1477,7 +1454,6 @@ export async function generateVanityWallet() {
                         fRaw: true,
                     });
                     stopSearch();
-                    doms.domGuiBalance.innerHTML = '0';
                     return console.log(
                         'VANITY: Found an address after ' +
                             attempts +
@@ -1557,36 +1533,47 @@ export function isMasternodeUTXO(cUTXO, cMasternode) {
  * Creates a GUI popup for the user to check or customise their Cold Address
  */
 export async function guiSetColdStakingAddress() {
+    // Use the Account's cold address, otherwise use the network's default Cold Staking address
+    const strColdAddress = await wallet.getColdStakingAddress();
+
+    // Display the popup and await a response
     if (
         await confirmPopup({
             title: translation.popupSetColdAddr,
-            html: `<p>${
-                translation.popupCurrentAddress
-            }<br><span class="mono">${strColdStakingAddress}</span><br><br><span style="opacity: 0.65; margin: 10px;">${
-                translation.popupColdStakeNote
-            }</span></p><br><input type="text" id="newColdAddress" placeholder="${
+            html: `
+            <p>
+                <span style="opacity: 0.65; margin: 10px; margin-buttom: 0px;">
+                    ${translation.popupColdStakeNote}
+                </span>
+            </p>
+            <input type="text" id="newColdAddress" placeholder="${
                 translation.popupExample
-            } ${strColdStakingAddress.substring(
+            } ${strColdAddress.substring(
                 0,
                 6
-            )}..." style="text-align: center;">`,
+            )}..." value="${strColdAddress}" style="text-align: center;">`,
         })
     ) {
-        // Fetch address from the popup input
-        const strColdAddress = document.getElementById('newColdAddress').value;
-
-        // If it's empty, just return false
-        if (!strColdAddress) return false;
-
-        // Sanity-check, and set!
+        // Check the Cold Address input
+        const strNewColdAddress = document
+            .getElementById('newColdAddress')
+            .value.trim();
+        const fValidCold = isColdAddress(strNewColdAddress);
         if (
-            strColdAddress[0] === cChainParams.current.STAKING_PREFIX &&
-            strColdAddress.length === 34
+            !strNewColdAddress ||
+            (strNewColdAddress !== strColdAddress && fValidCold)
         ) {
-            await setColdStakingAddress(strColdAddress);
+            // If the input is empty: we'll default back to this network's Cold Staking address (effectively a 'reset')
+            const cDB = await Database.getInstance();
+            const cAccount = await cDB.getAccount();
+
+            // Save to DB (allowDeletion enabled to allow for resetting the Cold Address)
+            cAccount.coldAddress = strNewColdAddress;
+            await cDB.updateAccount(cAccount, true);
+
             createAlert('info', ALERTS.STAKE_ADDR_SET, 5000);
             return true;
-        } else {
+        } else if (!fValidCold) {
             createAlert('warning', ALERTS.STAKE_ADDR_BAD, 2500);
             return false;
         }
@@ -2571,7 +2558,7 @@ export async function createProposal() {
     }
 }
 
-export function refreshChainData() {
+export async function refreshChainData() {
     const cNet = getNetwork();
     // If in offline mode: don't sync ANY data or connect to the internet
     if (!cNet.enabled)
@@ -2581,7 +2568,7 @@ export function refreshChainData() {
     if (!wallet.isLoaded()) return;
 
     // Fetch block count
-    cNet.getBlockCount().then(() => {});
+    await cNet.getBlockCount();
 }
 
 // A safety mechanism enabled if the user attempts to leave without encrypting/saving their keys
