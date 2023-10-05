@@ -44,6 +44,7 @@
         "mini-css-extract-plugin": "^2.7.2",
         "node-polyfill-webpack-plugin": "^2.0.1",
         "prettier": "^2.8.1",
+        "raw-loader": "^4.0.2",
         "resource-loader": "^4.0.0-rc4",
         "vue-loader": "^17.2.2",
         "webpack": "^5.75.0",

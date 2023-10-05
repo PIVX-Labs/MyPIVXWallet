@@ -1,12 +1,12 @@
 <script setup>
-import { cChainParams, COIN } from './chain_params.js';
-import { translation } from './i18n';
+import { cChainParams, COIN } from '../chain_params.js';
+import { translation } from '../i18n';
 import { ref, computed } from 'vue';
 
-import { nDisplayDecimals } from './settings';
-import { beautifyNumber } from './misc';
-import { getEventEmitter } from './event_bus';
-import { cMarket, strCurrency } from './settings.js';
+import { nDisplayDecimals } from '../settings';
+import { beautifyNumber } from '../misc';
+import { getEventEmitter } from '../event_bus';
+import { cMarket, strCurrency } from '../settings.js';
 import {
     mempool,
     optimiseCurrencyLocale,
@@ -14,13 +14,13 @@ import {
     openExplorer,
     toggleExportUI,
     toggleBottomMenu,
-} from './global';
-import { renderWalletBreakdown } from './charting';
+} from '../global';
+import { renderWalletBreakdown } from '../charting.js';
 import {
     guiRenderCurrentReceiveModal,
     guiRenderContacts,
-} from './contacts-book';
-import { wallet, getNewAddress } from './wallet';
+} from '../contacts-book';
+import { wallet, getNewAddress } from '../wallet.js';
 
 const balance = ref(0);
 const price = ref(0.0);

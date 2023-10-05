@@ -1,11 +1,11 @@
 <script setup>
 import { ref, computed, watch } from 'vue';
-import { getNetwork, HistoricalTxType } from './network.js';
-import { wallet } from './wallet.js';
-import { cChainParams } from './chain_params.js';
-import { translation } from './i18n.js';
-import { Database } from './database.js';
-import { getNameOrAddress } from './contacts-book.js';
+import { getNetwork, HistoricalTxType } from '../network.js';
+import { wallet } from '../wallet.js';
+import { cChainParams } from '../chain_params.js';
+import { translation } from '../i18n.js';
+import { Database } from '../database.js';
+import { getNameOrAddress } from '../contacts-book.js';
 
 const props = defineProps({
     title: String,

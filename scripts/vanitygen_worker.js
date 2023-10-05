@@ -1,5 +1,5 @@
 import { deriveAddress } from './encoding.js';
-import { getSafeRand } from './misc.js';
+import { getSafeRand } from './utils.js';
 
 onmessage = function (_evt) {
     while (true) {

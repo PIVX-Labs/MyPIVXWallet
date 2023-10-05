@@ -462,46 +462,6 @@ export async function importWallet({
     }
 }
 
-// Wallet Generation
-export async function generateWallet(noUI = false) {
-    // TODO: remove `walletConfirm`, it is useless as Accounts cannot be overriden, and multi-accounts will come soon anyway
-    // ... just didn't want to add a huge whitespace change from removing the `if (walletConfirm) {` line
-    const walletConfirm = true;
-    if (walletConfirm) {
-        const mnemonic = generateMnemonic();
-
-        const passphrase = !noUI
-            ? await informUserOfMnemonic(mnemonic)
-            : undefined;
-        const seed = await mnemonicToSeed(mnemonic, passphrase);
-
-        // Prompt the user to encrypt the seed
-        await wallet.setMasterKey(new HdMasterKey({ seed }));
-        fWalletLoaded = true;
-
-        doms.domGenKeyWarning.style.display = 'block';
-        // Add a listener to block page unloads until we are sure the user has saved their keys, safety first!
-        addEventListener('beforeunload', beforeUnloadListener, {
-            capture: true,
-        });
-
-        // Display the dashboard
-        doms.domGuiWallet.style.display = 'block';
-        setDisplayForAllWalletOptions('none');
-
-        // Update identicon
-        doms.domIdenticon.dataset.jdenticonValue = await wallet.getAddress();
-        jdenticon.update('#identicon');
-
-        await getNewAddress({ updateGUI: true });
-
-        // Refresh the balance UI (why? because it'll also display any 'get some funds!' alerts)
-        getStakingBalance(true);
-    }
-
-    return wallet;
-}
-
 /**
  * Clean a Seed Phrase string and verify it's integrity
  *
@@ -569,32 +529,6 @@ export async function cleanAndVerifySeedPhrase(
             phrase: strPhrase,
         };
     }
-}
-
-/**
- * Display a Seed Phrase popup to the user and optionally wait for a Seed Passphrase
- * @param {string} mnemonic - The Seed Phrase to display to the user
- * @returns {Promise<string>} - The Mnemonic Passphrase (empty string if omitted by user)
- */
-function informUserOfMnemonic(mnemonic) {
-    return new Promise((res, _) => {
-        // Configure the modal
-        $('#mnemonicModal').modal({ keyboard: false });
-
-        // Render the Seed Phrase and configure the button
-        doms.domMnemonicModalContent.innerText = mnemonic;
-        doms.domMnemonicModalButton.onclick = () => {
-            res(doms.domMnemonicModalPassphrase.value);
-            $('#mnemonicModal').modal('hide');
-
-            // Wipe the mnemonic displays of sensitive data
-            doms.domMnemonicModalContent.innerText = '';
-            doms.domMnemonicModalPassphrase.value = '';
-        };
-
-        // Display the modal
-        $('#mnemonicModal').modal('show');
-    });
 }
 
 export async function decryptWallet(strPassword = '') {

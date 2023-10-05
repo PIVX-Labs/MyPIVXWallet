@@ -25,7 +25,6 @@ import {
     createAlert,
     confirmPopup,
     sanitizeHTML,
-    MAP_B58,
     parseBIP21Request,
     isValidBech32,
     isBase64,
@@ -47,8 +46,9 @@ import bitjs from './bitTrx.js';
 import { checkForUpgrades } from './changelog.js';
 import { FlipDown } from './flipdown.js';
 import { createApp } from 'vue';
-import Activity from './Activity.vue';
-import WalletBalance from './WalletBalance.vue';
+import Activity from './dashboard/Activity.vue';
+import WalletBalance from './dashboard/WalletBalance.vue';
+import Dashboard from './dashboard/Dashboard.vue';
 import {
     cReceiveType,
     guiAddContactPrompt,
@@ -68,6 +68,8 @@ export function isLoaded() {
 
 export let doms = {};
 export const mempool = new Mempool();
+
+export const dashboard = createApp(Dashboard).mount('#DashboardTab');
 
 // For now we'll import the component as a vue app by itself. Later, when the
 // dashboard is rewritten in vue, we can simply add <Activity /> to the dashboard component template.
@@ -148,7 +150,6 @@ export async function start() {
         domPrefix: document.getElementById('prefix'),
         domPrefixNetwork: document.getElementById('prefixNetwork'),
         domWalletToggle: document.getElementById('wToggle'),
-        domGenerateWallet: document.getElementById('generateWallet'),
         domGenVanityWallet: document.getElementById('generateVanityWallet'),
         domGenHardwareWallet: document.getElementById('generateHardwareWallet'),
         //GOVERNANCE ELEMENTS
@@ -202,7 +203,6 @@ export async function start() {
         domImportWallet: document.getElementById('importWallet'),
         domImportWalletText: document.getElementById('importWalletText'),
         domAccessWalletBtn: document.getElementById('accessWalletBtn'),
-        domVanityUiButtonTxt: document.getElementById('vanButtonText'),
         domGenKeyWarning: document.getElementById('genKeyWarning'),
         domEncryptWalletLabel: document.getElementById('encryptWalletLabel'),
         domEncryptPasswordCurrent: document.getElementById(
@@ -465,9 +465,6 @@ export async function start() {
 
     subscribeToNetworkEvents();
 
-    doms.domPrefix.value = '';
-    doms.domPrefixNetwork.innerText =
-        cChainParams.current.PUBKEY_PREFIX.join(' or ');
     // If allowed by settings: submit a simple 'hit' (app load) to Labs Analytics
     getNetwork().submitAnalytics('hit');
     setInterval(() => {
@@ -1194,36 +1191,6 @@ export async function accessOrImportWallet() {
         doms.domPrivKey.focus();
     }
 }
-/**
- * An event function triggered apon private key UI input changes
- *
- * Useful for adjusting the input types or displaying password prompts depending on the import scheme
- */
-export async function guiUpdateImportInput() {
-    if (await hasEncryptedWallet()) return;
-    // Check whether the string is Base64 (would likely be an MPW-encrypted import)
-    // and it doesn't have any spaces (would be a mnemonic seed)
-    const fContainsSpaces = doms.domPrivKey.value.trim().includes(' ');
-
-    // If this could require a Seed Passphrase (BIP39 Passphrase) and Advanced Mode is enabled
-    // ...or if this is an Encrypted Import (Encrypted Base64 MPW key)
-    const fBIP39Passphrase = fContainsSpaces && fAdvancedMode;
-    doms.domPrivKeyPassword.hidden =
-        (doms.domPrivKey.value.length < 128 ||
-            !isBase64(doms.domPrivKey.value)) &&
-        !fBIP39Passphrase;
-
-    doms.domPrivKeyPassword.placeholder = fContainsSpaces
-        ? translation.optionalPassphrase
-        : translation.password;
-
-    // If the "Import Password/Passphrase" is hidden, we'll also wipe it's input, in the
-    // ... edge-case that a passphrase was entered, then the import key had changed.
-    if (doms.domPrivKeyPassword.hidden) doms.domPrivKeyPassword.value = '';
-
-    // Uncloak the private input IF spaces are detected, to make Seed Phrases easier to input and verify
-    doms.domPrivKey.setAttribute('type', fContainsSpaces ? 'text' : 'password');
-}
 
 /**
  * Imports a wallet using the GUI input, handling decryption via UI
@@ -1354,128 +1321,6 @@ export async function toggleExportUI() {
     } else {
         doms.domExportPrivateKey.innerHTML = '';
         exportHidden = false;
-    }
-}
-
-export function checkVanity() {
-    var e = event || window.event; // get event object
-    var key = e.keyCode || e.which; // get key cross-browser
-    var char = String.fromCharCode(key).trim(); // convert key to char
-    if (char.length == 0) return;
-
-    // Ensure the input is base58 compatible
-    if (!MAP_B58.toLowerCase().includes(char.toLowerCase())) {
-        if (e.preventDefault) e.preventDefault();
-        e.returnValue = false;
-        return createAlert(
-            'warning',
-            tr(ALERTS.UNSUPPORTED_CHARACTER, [{ char: char }]),
-            3500
-        );
-    }
-}
-
-let isVanityGenerating = false;
-const arrWorkers = [];
-let vanUiUpdater;
-
-function stopSearch() {
-    isVanityGenerating = false;
-    for (let thread of arrWorkers) {
-        thread.terminate();
-    }
-    while (arrWorkers.length) arrWorkers.pop();
-    doms.domPrefix.disabled = false;
-    doms.domVanityUiButtonTxt.innerText = translation.dCardTwoButton;
-    clearInterval(vanUiUpdater);
-}
-
-export async function generateVanityWallet() {
-    if (isVanityGenerating) return stopSearch();
-    if (typeof Worker === 'undefined')
-        return createAlert('error', ALERTS.UNSUPPORTED_WEBWORKERS, 7500);
-    // Generate a vanity address with the given prefix
-    if (
-        doms.domPrefix.value.length === 0 ||
-        doms.domPrefix.style.display === 'none'
-    ) {
-        // No prefix, display the intro!
-        doms.domPrefix.style.display = 'block';
-        setTimeout(() => {
-            doms.domPrefix.style.opacity = '1';
-        }, 100);
-        doms.domPrefix.focus();
-    } else {
-        // Remove spaces from prefix
-        doms.domPrefix.value = doms.domPrefix.value.replace(/ /g, '');
-
-        // Cache a lowercase equivilent for lower-entropy comparisons (a case-insensitive search is ALOT faster!) and strip accidental spaces
-        const nInsensitivePrefix = doms.domPrefix.value.toLowerCase();
-        const nPrefixLen = nInsensitivePrefix.length;
-
-        // Ensure the input is base58 compatible
-        for (const char of doms.domPrefix.value) {
-            if (!MAP_B58.toLowerCase().includes(char.toLowerCase()))
-                return createAlert(
-                    'warning',
-                    tr(ALERTS.UNSUPPORTED_CHARACTER, [{ char: char }]),
-                    3500
-                );
-            // We also don't want users to be mining addresses for years... so cap the letters to four until the generator is more optimized
-            if (doms.domPrefix.value.length > 5)
-                return createAlert(
-                    'warning',
-                    tr(ALERTS.UNSUPPORTED_CHARACTER, [{ char: char }]),
-                    3500
-                );
-        }
-        isVanityGenerating = true;
-        doms.domPrefix.disabled = true;
-        let attempts = 0;
-
-        // Setup workers
-        const nThreads = Math.max(
-            Math.floor(window.navigator.hardwareConcurrency * 0.75),
-            1
-        );
-        console.log('Spawning ' + nThreads + ' vanity search threads!');
-        while (arrWorkers.length < nThreads) {
-            arrWorkers.push(
-                new Worker(new URL('./vanitygen_worker.js', import.meta.url))
-            );
-            const checkResult = (data) => {
-                attempts++;
-                if (
-                    data.pub.substr(1, nPrefixLen).toLowerCase() ==
-                    nInsensitivePrefix
-                ) {
-                    importWallet({
-                        newWif: data.priv,
-                        fRaw: true,
-                    });
-                    stopSearch();
-                    return console.log(
-                        'VANITY: Found an address after ' +
-                            attempts +
-                            ' attempts!'
-                    );
-                }
-            };
-
-            arrWorkers[arrWorkers.length - 1].onmessage = (event) =>
-                checkResult(event.data);
-            arrWorkers[arrWorkers.length - 1].postMessage(
-                cChainParams.current.PUBKEY_ADDRESS
-            );
-        }
-
-        // GUI Updater
-        doms.domVanityUiButtonTxt.innerText =
-            'Stop (Searched ' + attempts.toLocaleString('en-GB') + ' keys)';
-        vanUiUpdater = setInterval(() => {
-            doms.domVanityUiButtonTxt.innerText =
-                'Stop (Searched ' + attempts.toLocaleString('en-GB') + ' keys)';
-        }, 200);
     }
 }
 

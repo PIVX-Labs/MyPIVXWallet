@@ -1,7 +1,5 @@
 import createXpub from 'create-xpub';
 import { ALERTS, tr } from './i18n.js';
-import AppBtc from '@ledgerhq/hw-app-btc';
-import TransportWebUSB from '@ledgerhq/hw-transport-webusb';
 import { createAlert, sleep } from './misc.js';
 
 let transport;
@@ -16,6 +14,10 @@ export async function getHardwareWalletKeys(
     try {
         // Check if we haven't setup a connection yet OR the previous connection disconnected
         if (!cHardwareWallet || transport._disconnectEmitted) {
+            const AppBtc = (await import('@ledgerhq/hw-app-btc')).default;
+            const TransportWebUSB = (
+                await import('@ledgerhq/hw-transport-webusb')
+            ).default;
             transport = await TransportWebUSB.create();
             cHardwareWallet = new AppBtc({ transport, currency: 'PIVX' });
         }

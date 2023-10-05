@@ -8,7 +8,7 @@ import {
     writeToUint8,
     getSafeRand,
     pubPrebaseLen,
-} from './misc.js';
+} from './utils.js';
 
 import bs58 from 'bs58';
 

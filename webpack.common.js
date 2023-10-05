@@ -8,6 +8,7 @@ import NodePolyfillPlugin from 'node-polyfill-webpack-plugin';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import CopyPlugin from 'copy-webpack-plugin';
 import { VueLoaderPlugin } from 'vue-loader';
+
 import { readFileSync } from 'fs';
 import { dirname } from 'path';
 import { fileURLToPath } from 'url';
@@ -50,6 +51,10 @@ export default {
                         },
                     },
                 },
+            },
+            {
+                test: /\.svg$/i,
+                type: 'asset/source',
             },
         ],
     },
