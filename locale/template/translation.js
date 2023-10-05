@@ -370,6 +370,8 @@ export default {
     WALLET_CONFIRM_L: '', //Confirm the import on your Ledger
     WALLET_NO_HARDWARE: '', //<b>No device available</b><br>Couldn't find a hardware wallet; please plug it in and unlock!
     WALLET_HARDWARE_CONNECTION_LOST: '', //<b>Lost connection to {hardwareWallet} </b><br>It seems the {hardwareWalletProductionName} was unplugged mid-operation, oops!
+    WALLET_HARDWARE_UDEV: '', // <b>The OS denied access</b> Did you add the udev rules?
+    WALLET_HARDWARE_NO_ACCESS: '', // <b>The OS denied access</b> Please check your Operating System settings.
     WALLET_HARDWARE_BUSY: '', //<b>{hardwareWallet} is waiting</b><br>Please unlock your {hardwareWalletProductionName} or finish it's current prompt
     WALLET_HARDWARE_ERROR: '', //<b> {hardwareWallet} </b><br> {error}
 

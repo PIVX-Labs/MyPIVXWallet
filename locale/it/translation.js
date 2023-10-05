@@ -402,6 +402,11 @@ export default {
     WALLET_CONFIRM_L: "Conferma l'importo sulla tua Ledger", //Confirm the import on your Ledger
     WALLET_NO_HARDWARE:
         '<b>Nessun dispositivo disponibile</b><br>Impossibile trovare un wallet hardware; per favore collegalo e sbloccalo!', //<b>No device available</b><br>Couldn't find a hardware wallet; please plug it in and unlock!
+    WALLET_HARDWARE_UDEV:
+        "<b> Il Sistema operativo ha negato l'accesso </b> Hai aggiunto le regole udev?", // <b>The OS denied access</b> Did you add the udev rules?
+    WALLET_HARDWARE_NO_ACCESS:
+        "<b> Il Sistema Operativo ha negato l'accesso </b> Perfavore, controlla le impostazioni del tuo sistema operativo.", // <b>The OS denied access</b> Please check your Operating System settings.
+
     WALLET_HARDWARE_CONNECTION_LOST:
         "<b>Connessione a {hardwareWallet} persa </b><br>Sembra che {hardwareWalletProductionName} sia stato scollegato durante l'operazione, ops!", //<b>Lost connection to {hardwareWallet} </b><br>It seems the {hardwareWalletProductionName} was unplugged mid-operation, oops!
     WALLET_HARDWARE_BUSY:

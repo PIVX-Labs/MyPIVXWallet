@@ -89,12 +89,25 @@ export async function getHardwareWalletKeys(path, xpub = false, verify = true) {
             return null;
         }
 
+        // This is when the OS denies access to the WebUSB
+        // It's likely caused by faulty udev rules on linux
+        if (e instanceof DOMException && e.message.includes('Access Denied')) {
+            if (navigator.userAgent.toLowerCase().includes('linux')) {
+                createAlert('warning', ALERTS.WALLET_HARDWARE_UDEV, 5500);
+            } else {
+                createAlert('warning', ALERTS.WALLET_HARDWARE_NO_ACCESS, 5500);
+            }
+
+            console.error(e);
+            return;
+        }
+
         // Check if this is an expected error
         if (!e.statusCode || !LEDGER_ERRS.has(e.statusCode)) {
             console.error(
                 'MISSING LEDGER ERROR-CODE TRANSLATION! - Please report this below error on our GitHub so we can handle it more nicely!'
             );
-            console.error(e);
+            throw e;
         }
 
         // Translate the error to a user-friendly string (if possible)
