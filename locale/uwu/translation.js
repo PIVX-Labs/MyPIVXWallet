@@ -433,7 +433,7 @@ export default {
     WALLET_HARDWARE_UDEV:
         '<b>Onii-chan noticed the OS denied access~ OwO Did you add the udev rules? UwU</b>', // <b>The OS denied access</b> Did you add the udev rules?
     WALLET_HARDWARE_NO_ACCESS:
-        '<b>Nyaa~ The OS denied access, nya~ Please purr-retty please check your Operating System settings, nya~ UwU</b>', // <b>The OS denied access</b> Please check your Operating System settings.
+        '<b>Nyaa~ The OS denied access, nya~</b> Please purr-retty please check your Operating System settings, nya~ UwU', // <b>The OS denied access</b> Please check your Operating Sybstem settings.
     WALLET_HARDWARE_BUSY:
         "<b>{hardwareWallet} is waiting!</b><br>Pwease unwock yowour {hardwareWalletProductionName} or finish it's cuwwent pwompt", //"<b>{hardwareWallet} is waiting</b><br>Please unlock your {hardwareWalletProductionName} or finish it's current prompt",
     WALLET_HARDWARE_ERROR: '<b> {hardwareWallet} </b><br> {error}', //"<b> {hardwareWallet} </b><br> {error}"
