@@ -1,7 +1,7 @@
 import { Mempool } from './mempool.js';
 import Masternode from './masternode.js';
 import { ALERTS, tr, start as i18nStart, translation } from './i18n.js';
-import * as jdenticon from 'jdenticon';
+
 import {
     wallet,
     hasEncryptedWallet,
@@ -47,7 +47,6 @@ import { checkForUpgrades } from './changelog.js';
 import { FlipDown } from './flipdown.js';
 import { createApp } from 'vue';
 import Activity from './dashboard/Activity.vue';
-import WalletBalance from './dashboard/WalletBalance.vue';
 import Dashboard from './dashboard/Dashboard.vue';
 import {
     cReceiveType,
@@ -73,17 +72,10 @@ export const dashboard = createApp(Dashboard).mount('#DashboardTab');
 
 // For now we'll import the component as a vue app by itself. Later, when the
 // dashboard is rewritten in vue, we can simply add <Activity /> to the dashboard component template.
-export const activityDashboard = createApp(Activity, {
-    title: 'Activity',
-    rewards: false,
-}).mount('#activityDashboard');
-
 export const stakingDashboard = createApp(Activity, {
     title: 'Reward History',
     rewards: true,
 }).mount('#stakeActivity');
-
-export const walletBalance = createApp(WalletBalance).mount('#walletBalance');
 
 export async function start() {
     doms = {
@@ -348,22 +340,6 @@ export async function start() {
     sliderElement.addEventListener('input', handleDecimalSlider);
     sliderElement.addEventListener('mouseover', handleDecimalSlider);
 
-    // Register Input Pair events
-    doms.domSendAmountCoins.oninput = () => {
-        updateAmountInputPair(
-            doms.domSendAmountCoins,
-            doms.domSendAmountValue,
-            true
-        );
-    };
-    doms.domSendAmountValue.oninput = () => {
-        updateAmountInputPair(
-            doms.domSendAmountCoins,
-            doms.domSendAmountValue,
-            false
-        );
-    };
-
     /** Staking (Stake) */
     doms.domStakeAmount.oninput = () => {
         updateAmountInputPair(
@@ -398,9 +374,6 @@ export async function start() {
 
     // Register native app service
     registerWorker();
-
-    // Configure Identicon
-    jdenticon.configure();
 
     // URL-Query request processing
     const urlParams = new URLSearchParams(window.location.search);
@@ -508,7 +481,7 @@ function subscribeToNetworkEvents() {
     getEventEmitter().on('new-block', (block, oldBlock) => {
         console.log(`New block detected! ${oldBlock} --> ${block}`);
         // Fetch latest Activity
-        activityDashboard.update(true);
+        //activityDashboard.update(true);
         stakingDashboard.update(true);
 
         // If it's open: update the Governance Dashboard
@@ -584,7 +557,7 @@ export function openTab(evt, tabName) {
         getNetwork().arrTxHistory.length === 0
     ) {
         // Refresh the TX list
-        activityDashboard.update(false);
+        //activityDashboard.update(false);
     }
 }
 
@@ -799,7 +772,8 @@ export async function openExplorer(strAddress = '') {
 async function loadImages() {
     const images = [
         ['mpw-main-logo', import('../assets/logo.png')],
-        ['privateKeyImage', import('../assets/key.png')],
+        /*['privateKeyImage', import('../assets/key.png')]*/
+        ,
     ];
 
     const promises = images.map(([id, path]) =>

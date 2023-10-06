@@ -1,12 +1,13 @@
 <script setup>
 import { cChainParams, COIN } from '../chain_params.js';
 import { translation } from '../i18n';
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 
 import { nDisplayDecimals } from '../settings';
 import { beautifyNumber } from '../misc';
 import { getEventEmitter } from '../event_bus';
 import { cMarket, strCurrency } from '../settings.js';
+import * as jdenticon from 'jdenticon';
 import {
     mempool,
     optimiseCurrencyLocale,
@@ -33,6 +34,7 @@ const balanceStr = computed(() => {
     const nLen = strBal.length;
     return beautifyNumber(strBal, nLen >= 10 ? '17px' : '25px');
 });
+const jdenticonValue = ref('');
 const balanceValue = computed(() => {
     const { nValue, cLocale } = optimiseCurrencyLocale(
         (balance.value / COIN) * price.value
@@ -54,12 +56,14 @@ async function reload() {
     }
 }
 
-getEventEmitter().on('balance-update', async () => {
+async function update() {
     balance.value = mempool.getBalance();
     currency.value = strCurrency.toUpperCase();
     price.value = await cMarket.getPrice(strCurrency);
     displayDecimals.value = nDisplayDecimals;
-});
+}
+
+getEventEmitter().on('balance-update', update);
 
 getEventEmitter().on('sync-status', (value) => {
     updating.value = value === 'start';
@@ -71,6 +75,14 @@ const isHardwareWallet = ref(false);
 getEventEmitter().on('wallet-import', () => {
     isHdWallet.value = wallet.isHD();
     isHardwareWallet.value = wallet.isHardwareWallet();
+});
+
+onMounted(async () => {
+    jdenticonValue.value = await wallet.getKeyToExport();
+    jdenticon.configure({
+        replaceMode: 'observe',
+    });
+    await update();
 });
 </script>
 
@@ -210,7 +222,7 @@ getEventEmitter().on('wallet-import', () => {
                 width="65"
                 height="65"
                 style="width: 65px; height: 65px"
-                data-jdenticon-value=""
+                :data-jdenticon-value="jdenticonValue"
             ></canvas
             ><br />
             <span

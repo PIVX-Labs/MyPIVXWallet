@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import { getNetwork, HistoricalTxType } from '../network.js';
 import { wallet } from '../wallet.js';
 import { cChainParams } from '../chain_params.js';
@@ -254,6 +254,8 @@ function reset() {
 function getTxCount() {
     return txCount;
 }
+
+onMounted(() => update());
 
 defineExpose({ update, reset, getTxCount });
 </script>

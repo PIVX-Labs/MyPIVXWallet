@@ -1,14 +1,11 @@
 import {
     doms,
-    getBalance,
     getStakingBalance,
-    guiUpdateImportInput,
     mempool,
     refreshChainData,
     setDisplayForAllWalletOptions,
     updateEncryptionGUI,
     updateGovernanceTab,
-    activityDashboard,
     stakingDashboard,
 } from './global.js';
 import { wallet, hasEncryptedWallet, importWallet } from './wallet.js';
@@ -292,7 +289,7 @@ export async function setExplorer(explorer, fSilent = false) {
     const network = new ExplorerNetwork(cExplorer.url, wallet);
     setNetwork(network);
 
-    activityDashboard.reset();
+    //    activityDashboard.reset();
     stakingDashboard.reset();
 
     // Update the selector UI
@@ -556,7 +553,7 @@ export async function toggleTestnet() {
     await fillExplorerSelect();
     await fillNodeSelect();
     await updateGovernanceTab();
-    activityDashboard.reset();
+    //    activityDashboard.reset();
     stakingDashboard.reset();
 }
 

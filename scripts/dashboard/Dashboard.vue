@@ -1,18 +1,137 @@
 <script setup>
 import Login from './Login.vue';
-import { wallet } from '../wallet.js';
+import WalletBalance from './WalletBalance.vue';
+import Activity from './Activity.vue';
+import { cleanAndVerifySeedPhrase, wallet } from '../wallet.js';
+import { parseWIF, verifyWIF } from '../encoding.js';
+import { createAlert, isBase64 } from '../misc.js';
+import { ALERTS, translation } from '../i18n.js';
+import {
+    LegacyMasterKey,
+    HardwareWalletMasterKey,
+    HdMasterKey,
+} from '../masterkey';
+import { decrypt } from '../aes-gcm.js';
+import { cChainParams } from '../chain_params';
+import { ref } from 'vue';
+import { mnemonicToSeed } from 'bip39';
+
 const isImported = ref(wallet.isLoaded());
+const activity = ref(null);
+const walletBalance = ref(null);
+
 /**
- * @param {string} secret
- * @param {string} [password]
+ * Parses whatever the secret is, to
+ * @param {string|number[]} secret
+ * @returns {Promise<import('../masterkey.js').MasterKey>}
  */
-function importWallet(type, secret, password = '') {}
+async function parseSecret(secret, password = '') {
+    console.log(secret, password);
+    const rules = [
+        {
+            test: (s) => Array.isArray(s) || s instanceof Uint8Array,
+            f: (s) => new LegacyMasterKey({ pkBytes: s }),
+        },
+        {
+            test: (s) => isBase64(s),
+            f: async (s, p) => parseSecret(await decrypt(s, p)),
+        },
+        {
+            test: (s) => s.startsWith('xprv'),
+            f: (s) => new HdMasterKey({ xpriv: s }),
+        },
+        {
+            test: (s) => s.startsWith('xpub'),
+            f: (s) => new HdMasterKey({ xpub: s }),
+        },
+        {
+            test: (s) =>
+                cChainParams.current.PUBKEY_PREFIX.includes(s[0]) &&
+                s.length === 34,
+            f: (s) => new LegacyMasterKey({ address: s }),
+        },
+        {
+            test: (s) => verifyWIF(s),
+            f: (s) => parseSecret(parseWIF(s)),
+        },
+        {
+            test: (s) => s.includes(' '),
+            f: async (s) => {
+                const { ok, msg, phrase } = await cleanAndVerifySeedPhrase(s);
+                if (!ok) throw new Error(msg);
+                return new HdMasterKey({
+                    seed: await mnemonicToSeed(phrase),
+                });
+            },
+        },
+    ];
+
+    for (const rule of rules) {
+        let test;
+        try {
+            test = rule.test(secret, password);
+        } catch (e) {
+            test = false;
+        }
+        if (test) {
+            try {
+                return await rule.f(secret, password);
+            } catch (e) {
+                createAlert('warning', e.message, 5000);
+                return;
+            }
+        }
+    }
+
+    createAlert('warning', 'Wrong key');
+}
+
+/**
+ * @param {Object} o - Options
+ * @param {'legacy'|'hd'|'hardware'} o.type - type of import
+ * @param {string} o.secret
+ * @param {string} [o.password]
+ */
+async function importWallet({ type, secret, password = '' }) {
+    if (type === 'hardware') {
+        if (navigator.userAgent.includes('Firefox')) {
+            return createAlert(
+                'warning',
+                ALERTS.WALLET_FIREFOX_UNSUPPORTED,
+                7500
+            );
+        }
+        await wallet.setMasterKey(new HardwareWalletMasterKey());
+        const publicKey = await getHardwareWalletKeys(
+            wallet.getDerivationPath()
+        );
+        // Errors are handled within the above function, so there's no need for an 'else' here, just silent ignore.
+        if (!publicKey) {
+            await wallet.setMasterKey(null);
+            return;
+        }
+
+        createAlert(
+            'info',
+            tr(ALERTS.WALLET_HARDWARE_WALLET, [
+                { hardwareWallet: strHardwareName },
+            ]),
+            12500
+        );
+    } else {
+        const key = await parseSecret(secret, password);
+        if (key) {
+            await wallet.setMasterKey(key);
+            isImported.value = true;
+        }
+    }
+}
 </script>
 
 <template>
     <div id="keypair" class="tabcontent">
         <div class="row m-0">
-            <Login v-show="isImported" @import-wallet="importWallet" />
+            <Login v-show="!isImported" @import-wallet="importWallet" />
             <!-- WARNING -->
             <div class="col-12" id="genKeyWarning" style="display: none">
                 <center>
@@ -40,14 +159,11 @@ function importWallet(type, secret, password = '') {}
                             </div>
                         </div>
                         <div>
-                            <span
-                                data-i18n="gettingStarted"
-                                style="color: #dfdfdf; font-size: 12px"
-                                >Getting Started</span
+                            <span style="color: #dfdfdf; font-size: 12px">{{
+                                translation.gettingStarted
+                            }}</span
                             ><br />
-                            <span data-i18n="secureYourWallet"
-                                >Secure your wallet</span
-                            >
+                            <span>{{ translation.secureYourWallet }}</span>
                         </div>
                     </div>
                 </center>
@@ -80,8 +196,8 @@ function importWallet(type, secret, password = '') {}
                                 </span>
                             </div>
                         </div>
-                        <div data-i18n="unlockWallet" class="lockUnlock">
-                            Unlock wallet
+                        <div class="lockUnlock">
+                            {{ translation.unlockWallet }}
                         </div>
                     </div>
                 </center>
@@ -112,8 +228,8 @@ function importWallet(type, secret, password = '') {}
                                 </span>
                             </div>
                         </div>
-                        <div data-i18n="lockWallet" class="lockUnlock">
-                            Lock wallet
+                        <div class="lockUnlock">
+                            {{ translation.lockWallet }}
                         </div>
                     </div>
                 </center>
@@ -154,10 +270,9 @@ function importWallet(type, secret, password = '') {}
                                     <b>PIVX Promos</b>
                                     <span
                                         style="font-family: inherit !important"
-                                        data-i18n="pivxPromos"
-                                        >is a decentralised system for gift
-                                        codes worth PIV</span
                                     >
+                                        {{ translation.pivxPromos }}
+                                    </span>
                                 </p>
                                 <div id="redeemCodeModeBox">
                                     <button
@@ -202,11 +317,12 @@ function importWallet(type, secret, password = '') {}
                                             "
                                         >
                                             <input
-                                                data-i18n="redeemInput"
                                                 class="btn-group-input mono center-text"
                                                 type="text"
                                                 id="redeemCodeInput"
-                                                placeholder="Enter your 'PIVX Promos' code"
+                                                :placeholder="
+                                                    translation.redeemInput
+                                                "
                                                 autocomplete="nope"
                                             />
                                             <div class="input-group-append">
@@ -275,7 +391,6 @@ function importWallet(type, secret, password = '') {}
                                                     "
                                                 >
                                                     <input
-                                                        data-i18n="createName"
                                                         class="btn-group-input mono center-text"
                                                         style="
                                                             border-top-right-radius: 9px;
@@ -283,7 +398,9 @@ function importWallet(type, secret, password = '') {}
                                                         "
                                                         type="text"
                                                         id="redeemCodeCreateInput"
-                                                        placeholder="Promo Name (Optional)"
+                                                        :placeholder="
+                                                            translation.createName
+                                                        "
                                                         autocomplete="nope"
                                                     />
                                                 </div>
@@ -301,15 +418,15 @@ function importWallet(type, secret, password = '') {}
                                                     "
                                                 >
                                                     <input
-                                                        data-i18n="createAmount"
                                                         class="btn-group-input mono center-text"
                                                         style="
                                                             border-top-right-radius: 9px;
                                                             border-bottom-right-radius: 9px;
                                                         "
                                                         type="text"
-                                                        id="redeemCodeCreateAmountInput"
-                                                        placeholder="Promo Amount"
+                                                        :placeholder="
+                                                            translation.createAmount
+                                                        "
                                                         autocomplete="nope"
                                                     />
                                                 </div>
@@ -376,11 +493,10 @@ function importWallet(type, secret, password = '') {}
                                 type="button"
                                 data-dismiss="modal"
                                 aria-label="Close"
-                                data-i18n="popupClose"
                                 class="pivx-button-big"
                                 style="float: right; opacity: 0.7"
                             >
-                                Close
+                                {{ translation.popupClose }}
                             </button>
                         </div>
                     </div>
@@ -407,14 +523,13 @@ function importWallet(type, secret, password = '') {}
                             <h3
                                 class="modal-title"
                                 id="contactsModalTitle"
-                                data-i18n="contacts"
                                 style="
                                     text-align: center;
                                     width: 100%;
                                     color: #d5adff;
                                 "
                             >
-                                Contacts
+                                {{ translation.contacts }}
                             </h3>
                         </div>
                         <div class="modal-body px-0">
@@ -438,12 +553,19 @@ function importWallet(type, secret, password = '') {}
             <!-- // Contacts Modal -->
 
             <!-- WALLET FEATURES -->
-            <div id="guiWallet" style="display: none">
+            <div v-if="isImported">
                 <div class="row p-0">
                     <!-- Balance in PIVX & USD-->
-                    <div id="walletBalance" class="col-12 p-0 mb-5"></div>
-
-                    <div id="activityDashboard" class="col-12 mb-5"></div>
+                    <WalletBalance
+                        ref="walletBalance"
+                        class="col-12 p-0 mb-5"
+                    />
+                    <Activity
+                        ref="activity"
+                        class="col-12 mb-5"
+                        title="Activity"
+                        :rewards="false"
+                    />
                 </div>
 
                 <!-- Export Private Key Modal -->
@@ -533,17 +655,17 @@ function importWallet(type, secret, password = '') {}
                     </div>
 
                     <div class="transferBody">
-                        <label data-i18n="address">Address</label><br />
+                        <label>{{ translation.address }}</label
+                        ><br />
 
                         <div class="input-group mb-3">
                             <input
                                 class="btn-group-input"
-                                data-i18n="receivingAddress"
                                 oninput="MPW.guiCheckRecipientInput(event)"
                                 style="font-family: monospace"
                                 type="text"
                                 id="address1s"
-                                placeholder="Receiving address"
+                                :placeholder="translation.receivingAddress"
                                 autocomplete="nope"
                             />
                             <div class="input-group-append">
@@ -564,9 +686,9 @@ function importWallet(type, secret, password = '') {}
 
                         <div id="reqDescDisplay" style="display: none">
                             <label
-                                ><span data-i18n="paymentRequestMessage"
-                                    >Description (from the merchant)</span
-                                ></label
+                                ><span>{{
+                                    translation.paymentRequestMessage
+                                }}</span></label
                             ><br />
                             <div class="input-group">
                                 <input
@@ -581,7 +703,8 @@ function importWallet(type, secret, password = '') {}
                             </div>
                         </div>
 
-                        <label><span data-i18n="amount">Amount</span></label
+                        <label
+                            ><span>{{ translation.amount }}</span></label
                         ><br />
 
                         <div class="row">
@@ -599,7 +722,6 @@ function importWallet(type, secret, password = '') {}
                                     <div class="input-group-append">
                                         <span class="input-group-text p-0">
                                             <div
-                                                data-i18n="sendAmountCoinsMax"
                                                 onclick="MPW.selectMaxBalance(MPW.doms.domSendAmountCoins, MPW.doms.domSendAmountValue)"
                                                 style="
                                                     cursor: pointer;
@@ -616,7 +738,9 @@ function importWallet(type, secret, password = '') {}
                                                     font-weight: bold;
                                                 "
                                             >
-                                                MAX
+                                                {{
+                                                    translation.sendAmountCoinsMax
+                                                }}
                                             </div>
                                         </span>
                                         <span
@@ -650,7 +774,8 @@ function importWallet(type, secret, password = '') {}
                         </div>
 
                         <div id="advMode1" class="d-none">
-                            <label><span data-i18n="fee">Fee</span></label
+                            <label
+                                ><span>{{ translation.fee }}</span></label
                             ><br />
 
                             <div class="row text-center">
@@ -701,12 +826,9 @@ function importWallet(type, secret, password = '') {}
                                         class="fas fa-paper-plane fa-tiny-margin"
                                     ></i
                                 ></span>
-                                <span
-                                    class="buttoni-text"
-                                    id="genIt"
-                                    data-i18n="send"
-                                    >Send</span
-                                >
+                                <span class="buttoni-text" id="genIt">{{
+                                    translation.send
+                                }}</span>
                             </button>
                         </div>
                     </div>

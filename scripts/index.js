@@ -21,7 +21,6 @@ export {
     accessOrImportWallet,
     guiImportWallet,
     guiSetColdStakingAddress,
-    guiUpdateImportInput,
     toClipboard,
     toggleExportUI,
     wipePrivateData,
@@ -34,11 +33,9 @@ export {
     guiPreparePayment,
     openSendQRScanner,
     doms,
-    generateVanityWallet,
     importMasternode,
     destroyMasternode,
     startMasternode,
-    checkVanity,
     toggleDropDown,
     unblurPrivKey,
     toggleBottomMenu,
@@ -46,12 +43,7 @@ export {
     switchSettings,
     govVote,
 } from './global.js';
-export {
-    wallet,
-    getNewAddress,
-    generateWallet,
-    importWallet,
-} from './wallet.js';
+export { wallet, getNewAddress, importWallet } from './wallet.js';
 export {
     toggleTestnet,
     toggleDebug,

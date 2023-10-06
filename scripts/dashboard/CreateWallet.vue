@@ -2,7 +2,7 @@
 import phone from '../../assets/phone.svg';
 import pLogo from '../../assets/p_logo.svg';
 import Modal from '../Modal.vue';
-import { generateMnemonic, mnemonicToSeed } from 'bip39';
+import { generateMnemonic } from 'bip39';
 import { translation } from '../i18n.js';
 import { ref, watch } from 'vue';
 import { fAdvancedMode } from '../settings';
@@ -28,10 +28,10 @@ async function generateWallet() {
     mnemonic.value = generateMnemonic();
 
     await informUserOfMnemonic();
-    const seed = await mnemonicToSeed(mnemonic.value, passphrase.value);
-    // Erase mnemonic from memory, just in case
+    emit('importWallet', mnemonic.value, passphrase.value);
+    // Erase mnemonic and passphrase from memory, just in case
     mnemonic.value = '';
-    emit('importWallet', seed);
+    passphrase.value = '';
 }
 </script>
 
@@ -57,7 +57,7 @@ async function generateWallet() {
             </button>
         </div>
     </div>
-    <Teleport to="bbody">
+    <Teleport to="body">
         <modal :show="showModal" @close="showModal = false" class="black-text">
             <template #body>
                 <p class="modal-label"></p>
