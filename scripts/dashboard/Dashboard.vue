@@ -2,7 +2,13 @@
 import Login from './Login.vue';
 import WalletBalance from './WalletBalance.vue';
 import Activity from './Activity.vue';
-import { cleanAndVerifySeedPhrase, wallet } from '../wallet.js';
+import GenKeyWarning from './GenKeyWarning.vue';
+import {
+    cleanAndVerifySeedPhrase,
+    decryptWallet,
+    hasEncryptedWallet,
+    wallet,
+} from '../wallet.js';
 import { parseWIF, verifyWIF } from '../encoding.js';
 import { createAlert, isBase64 } from '../misc.js';
 import { ALERTS, translation } from '../i18n.js';
@@ -13,27 +19,30 @@ import {
 } from '../masterkey';
 import { decrypt } from '../aes-gcm.js';
 import { cChainParams } from '../chain_params';
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import { mnemonicToSeed } from 'bip39';
+import { getEventEmitter } from '../event_bus';
+import { Database } from '../database';
+import { start } from '../global';
 
 const isImported = ref(wallet.isLoaded());
 const activity = ref(null);
 const walletBalance = ref(null);
+const needsToEncrypt = ref(true);
 
 /**
- * Parses whatever the secret is, to
- * @param {string|number[]} secret
+ * Parses whatever the secret is to a MasterKey
+ * @param {string|number[]|Uint8Array} secret
  * @returns {Promise<import('../masterkey.js').MasterKey>}
  */
 async function parseSecret(secret, password = '') {
-    console.log(secret, password);
     const rules = [
         {
             test: (s) => Array.isArray(s) || s instanceof Uint8Array,
             f: (s) => new LegacyMasterKey({ pkBytes: s }),
         },
         {
-            test: (s) => isBase64(s),
+            test: (s) => isBase64(s) && s.length >= 128,
             f: async (s, p) => parseSecret(await decrypt(s, p)),
         },
         {
@@ -82,8 +91,7 @@ async function parseSecret(secret, password = '') {
             }
         }
     }
-
-    createAlert('warning', 'Wrong key');
+    createAlert('warning', ALERTS.FAILED_TO_IMPORT + '<br>', 6000);
 }
 
 /**
@@ -111,6 +119,9 @@ async function importWallet({ type, secret, password = '' }) {
             return;
         }
 
+        isImported.value = true;
+        getEventEmitter().emit('wallet-import');
+
         createAlert(
             'info',
             tr(ALERTS.WALLET_HARDWARE_WALLET, [
@@ -123,53 +134,42 @@ async function importWallet({ type, secret, password = '' }) {
         if (key) {
             await wallet.setMasterKey(key);
             isImported.value = true;
+            getEventEmitter().emit('wallet-import');
         }
     }
 }
+
+/**
+ * Encrypt wallet
+ * @param {string} password - Password to encrypt wallet with
+ * @param {string} [currentPassword] - Current password with which the wallet is encrypted with, if any
+ */
+async function encryptWallet(password, currentPassword = '') {
+    if (await hasEncryptedWallet()) {
+        if (!(await decryptWallet(currentPassword))) return;
+    }
+    const res = await wallet.encryptWallet(password);
+    if (res) {
+        createAlert('success', ALERTS.NEW_PASSWORD_SUCCESS, 5500);
+    }
+    needsToEncrypt.value = false;
+}
+
+onMounted(async () => {
+    await start();
+    if (await hasEncryptedWallet()) {
+        const database = await Database.getInstance();
+        const account = await database.getAccount();
+        await importWallet({ type: 'hd', secret: account.publicKey });
+    }
+});
 </script>
 
 <template>
     <div id="keypair" class="tabcontent">
         <div class="row m-0">
             <Login v-show="!isImported" @import-wallet="importWallet" />
-            <!-- WARNING -->
-            <div class="col-12" id="genKeyWarning" style="display: none">
-                <center>
-                    <div
-                        id="gettingStartedBtn"
-                        class="dcWallet-warningMessage"
-                        data-toggle="modal"
-                        data-target="#encryptWalletModal"
-                    >
-                        <div class="shieldLogo">
-                            <div class="shieldBackground">
-                                <span
-                                    class="dcWallet-svgIconPurple"
-                                    style="top: 14px; left: 7px"
-                                >
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        viewBox="0 0 100 100"
-                                    >
-                                        <path
-                                            d="M85.967 10.65l-32.15-9.481a13.466 13.466 0 00-7.632 0l-32.15 9.48C11.661 11.351 10 13.567 10 16.042v26.623c0 12.321 3.67 24.186 10.609 34.31 6.774 9.885 16.204 17.49 27.264 21.99a5.612 5.612 0 004.251 0c11.061-4.5 20.491-12.104 27.266-21.99C86.329 66.85 90 54.985 90 42.664V16.042a5.656 5.656 0 00-4.033-5.392zM69 68.522C69 70.907 67.03 72 64.584 72H34.092C31.646 72 30 70.907 30 68.522v-23.49C30 42.647 31.646 41 34.092 41H37v-9.828C37 24.524 41.354 18.5 49.406 18.5 57.37 18.5 62 24.066 62 31.172V41h2.584C67.03 41 69 42.647 69 45.032v23.49zM58 41v-9.828c0-4.671-3.708-8.472-8.5-8.472-4.791 0-8.5 3.8-8.5 8.472V41h17z"
-                                        ></path>
-                                    </svg>
-                                </span>
-                            </div>
-                        </div>
-                        <div>
-                            <span style="color: #dfdfdf; font-size: 12px">{{
-                                translation.gettingStarted
-                            }}</span
-                            ><br />
-                            <span>{{ translation.secureYourWallet }}</span>
-                        </div>
-                    </div>
-                </center>
-            </div>
 
-            <!-- // WARNING -->
             <br />
 
             <!-- Unlock wallet -->
@@ -554,6 +554,10 @@ async function importWallet({ type, secret, password = '' }) {
 
             <!-- WALLET FEATURES -->
             <div v-if="isImported">
+                <GenKeyWarning
+                    v-if="needsToEncrypt"
+                    @onEncrypt="encryptWallet"
+                />
                 <div class="row p-0">
                     <!-- Balance in PIVX & USD-->
                     <WalletBalance
@@ -836,5 +840,4 @@ async function importWallet({ type, secret, password = '' }) {
             </div>
         </div>
     </div>
-    <!-- // KEYPAIR SECTION -->
 </template>

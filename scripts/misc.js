@@ -138,7 +138,7 @@ export function createAlert(type, message, timeout = 0) {
     domAlert.addEventListener('click', domAlert.destroy);
     // On Timeout: Delete alert from DOM after a period of inactive time.
     if (timeout > 0) domAlert.timer = setTimeout(domAlert.destroy, timeout);
-    doms.domAlertPos.appendChild(domAlert);
+    //doms.domAlertPos.appendChild(domAlert);
 }
 
 /**

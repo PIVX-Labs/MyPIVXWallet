@@ -6,13 +6,16 @@ const props = defineProps({
 
 <template>
     <Transition name="modal">
-        <div v-if="show" class="modal-mask">
+        <div v-if="show" class="modal-mask black-text">
             <div class="modal-dialog modal-dialog-centered" role="document">
                 <div class="modal-content">
+                    <div class="modal-header" v-if="!!$slots.header">
+                        <slot name="header"></slot>
+                    </div>
                     <div class="modal-body center-text">
                         <slot name="body"></slot>
                     </div>
-                    <div class="modal-footer">
+                    <div class="modal-footer" v-if="!!$slots.footer">
                         <slot name="footer"> </slot>
                     </div>
                 </div>
@@ -46,5 +49,18 @@ const props = defineProps({
 .modal-leave-to .modal-container {
     -webkit-transform: scale(1.1);
     transform: scale(1.1);
+}
+.black-text {
+    color: black;
+}
+input,
+select,
+textarea {
+    color: #000000;
+}
+
+textarea:focus,
+input:focus {
+    color: #000000;
 }
 </style>

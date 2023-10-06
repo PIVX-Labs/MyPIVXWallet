@@ -5,7 +5,6 @@ import { ALERTS, tr, start as i18nStart, translation } from './i18n.js';
 import {
     wallet,
     hasEncryptedWallet,
-    importWallet,
     decryptWallet,
     getNewAddress,
 } from './wallet.js';
@@ -192,8 +191,6 @@ export async function start() {
         domMnLastSeen: document.getElementById('mnLastSeen'),
 
         domAccessWallet: document.getElementById('accessWallet'),
-        domImportWallet: document.getElementById('importWallet'),
-        domImportWalletText: document.getElementById('importWalletText'),
         domAccessWalletBtn: document.getElementById('accessWalletBtn'),
         domGenKeyWarning: document.getElementById('genKeyWarning'),
         domEncryptWalletLabel: document.getElementById('encryptWalletLabel'),
@@ -390,15 +387,11 @@ export async function start() {
     // Customise the UI if a saved wallet exists
     if (await hasEncryptedWallet()) {
         // Hide the 'Generate wallet' buttons
-        doms.domGenerateWallet.style.display = 'none';
-        doms.domGenVanityWallet.style.display = 'none';
         const database = await Database.getInstance();
         const { publicKey } = await database.getAccount();
 
         // Import the wallet, and toggle the startup flag, which delegates the chain data refresh to settingsStart();
         if (publicKey) {
-            await importWallet({ newWif: publicKey, fStartup: true });
-
             // Update the "Receive" UI to apply Translation and Contacts updates
             await guiToggleReceiveType(cReceiveType);
 
@@ -1164,100 +1157,6 @@ export async function accessOrImportWallet() {
         doms.domImportWalletText.innerText = translation.unlockWallet;
         doms.domPrivKey.focus();
     }
-}
-
-/**
- * Imports a wallet using the GUI input, handling decryption via UI
- */
-export async function guiImportWallet() {
-    // Important: These fields will be wiped by importWallet();
-    const strPrivKey = doms.domPrivKey.value;
-    const strPassword = doms.domPrivKeyPassword.value;
-    const fEncrypted = strPrivKey.length >= 128 && isBase64(strPrivKey);
-
-    // If we are in testnet: prompt an import
-    if (cChainParams.current.isTestnet) return importWallet();
-
-    // If we don't have a DB wallet and the input is plain: prompt an import
-    if (!(await hasEncryptedWallet()) && !fEncrypted) return importWallet();
-
-    // If we don't have a DB wallet and the input is ciphered:
-    if (!(await hasEncryptedWallet()) && fEncrypted) {
-        const strDecWIF = await decrypt(strPrivKey, strPassword);
-        if (!strDecWIF || strDecWIF === 'decryption failed!') {
-            return createAlert('warning', ALERTS.FAILED_TO_IMPORT, 6000);
-        } else {
-            await importWallet({
-                newWif: strDecWIF,
-                // Save the public key to disk for future View Only mode post-decryption
-                fSavePublicKey: true,
-            });
-
-            if (wallet.isLoaded()) {
-                // Prepare a new Account to add
-                const cAccount = new Account({
-                    publicKey: await wallet.getKeyToExport(),
-                    encWif: strPrivKey,
-                });
-
-                // Add the new Account to the DB
-                const database = await Database.getInstance();
-                database.addAccount(cAccount);
-            }
-
-            // Destroy residue import data
-            doms.domPrivKey.value = '';
-            doms.domPrivKeyPassword.value = '';
-            return;
-        }
-    }
-    // Prompt for decryption of the existing wallet
-    const fHasWallet = await decryptWallet(doms.domPrivKey.value);
-
-    // If the wallet was successfully loaded, hide all options and load the dash!
-    if (fHasWallet) setDisplayForAllWalletOptions('none');
-}
-
-export async function guiEncryptWallet() {
-    // Fetch our inputs, ensure they're of decent entropy + match eachother
-    const strPass = doms.domEncryptPasswordFirst.value,
-        strPassRetype = doms.domEncryptPasswordSecond.value;
-    if (strPass.length < MIN_PASS_LENGTH)
-        return createAlert(
-            'warning',
-            tr(ALERTS.PASSWORD_TOO_SMALL, [
-                { MIN_PASS_LENGTH: MIN_PASS_LENGTH },
-            ]),
-            4000
-        );
-    if (strPass !== strPassRetype)
-        return createAlert('warning', ALERTS.PASSWORD_DOESNT_MATCH, 2250);
-
-    // If this wallet is already encrypted, then we'll check for the current password and ensure it decrypts properly too
-    if (await hasEncryptedWallet()) {
-        // Grab the pass, and wipe the dialog immediately
-        const strCurrentPass = doms.domEncryptPasswordCurrent.value;
-        doms.domEncryptPasswordCurrent.value = '';
-
-        // If the decryption fails: we don't allow changing the password
-        if (!(await decryptWallet(strCurrentPass))) return;
-    }
-
-    // Encrypt the wallet using the new password
-    await wallet.encryptWallet(strPass);
-    createAlert('success', ALERTS.NEW_PASSWORD_SUCCESS, 5500);
-
-    // Hide and reset the encryption modal
-    $('#encryptWalletModal').modal('hide');
-    doms.domEncryptPasswordFirst.value = '';
-    doms.domEncryptPasswordSecond.value = '';
-
-    // Display the 'Unlock/Lock Wallet' buttons accordingly based on state
-    doms.domWipeWallet.hidden = wallet.isViewOnly();
-    doms.domRestoreWallet.hidden = !wallet.isViewOnly();
-
-    // Update the encryption UI (changes to "Change Password" now)
-    await updateEncryptionGUI(true);
 }
 
 /** Update the "Encrypt Wallet" / "Change Password" dialog to match the current wallet state */
