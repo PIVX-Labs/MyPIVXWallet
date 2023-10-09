@@ -1167,6 +1167,7 @@ export async function importMasternode() {
         outidx: outidx,
         addr: address,
     });
+
     await refreshMasternodeData(cMasternode, true);
     await updateMasternodeTab();
 }
@@ -2352,7 +2353,8 @@ export async function updateMasternodeTab() {
             for (const [key] of mapCollateralAddresses) {
                 const option = document.createElement('option');
                 option.value = key;
-                option.innerText = await wallet.getAddress(key);
+                const [nReceiving, nIndex] = key.split('/').splice(4);
+                option.innerText = wallet.getAddress(nReceiving, nIndex);
                 doms.domMnTxId.appendChild(option);
             }
         }
@@ -2371,6 +2373,7 @@ export async function updateMasternodeTab() {
 
 async function refreshMasternodeData(cMasternode, fAlert = false) {
     const cMasternodeData = await cMasternode.getFullData();
+
     if (debug) {
         console.log('---- NEW MASTERNODE DATA (Debug Mode) ----');
         console.log(cMasternodeData);
@@ -2396,7 +2399,10 @@ async function refreshMasternodeData(cMasternode, fAlert = false) {
     if (cMasternodeData.status === 'MISSING') {
         doms.domMnTextErrors.innerHTML =
             'Masternode is currently <b>OFFLINE</b>';
-        if (!wallet.isViewOnly()) {
+        if (
+            !wallet.isViewOnly() ||
+            (await restoreWallet(translation.walletUnlockCreateMN))
+        ) {
             createAlert('warning', ALERTS.MN_OFFLINE_STARTING, 6000);
             // try to start the masternode
             const started = await cMasternode.start();
