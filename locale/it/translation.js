@@ -184,7 +184,9 @@ export default {
     settingsAnalytics: 'Scegli il tuo livello di contributo analitico:', //Choose your analytics contribution level:
     settingsToggleDebug: 'Modalità Debug', //Debug Mode
     settingsToggleTestnet: 'Modalità testnet', //Testnet Mode
-
+    settingsToggleAdvancedMode: 'Modalità Avanzata', //Advanced Mode
+    settingsToggleAdvancedModeSubtext:
+        'Questo sblocca funzionalità e personalizzazioni più radicali, ma può essere eccessivo e potenzialmente pericoloso per gli utenti inesperti!', //This unlocks deeper functionality and customisation, but may be overwhelming and potentially dangerous for unexperienced users!
     // Network switching (mainnet <---> testnet)
     netSwitchUnsavedWarningTitle: 'Il tuo wallet {network} non è salvato!', //Your {network} wallet isn\'t saved!
     netSwitchUnsavedWarningSubtitle: 'Il tuo account {network} è a rischio', //Your {network} account is at risk!
