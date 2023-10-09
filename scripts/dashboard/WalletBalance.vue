@@ -1,17 +1,13 @@
 <script setup>
 import { cChainParams, COIN } from '../chain_params.js';
 import { translation } from '../i18n';
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, toRefs, onMounted, watch } from 'vue';
 
-import { nDisplayDecimals } from '../settings';
 import { beautifyNumber } from '../misc';
 import { getEventEmitter } from '../event_bus';
-import { cMarket, strCurrency } from '../settings.js';
 import * as jdenticon from 'jdenticon';
 import {
-    mempool,
     optimiseCurrencyLocale,
-    refreshChainData,
     openExplorer,
     toggleExportUI,
     toggleBottomMenu,
@@ -21,20 +17,48 @@ import {
     guiRenderCurrentReceiveModal,
     guiRenderContacts,
 } from '../contacts-book';
-import { wallet, getNewAddress } from '../wallet.js';
+import { getNewAddress } from '../wallet.js';
 
-const balance = ref(0);
-const price = ref(0.0);
-const displayDecimals = ref(0);
+const props = defineProps({
+    jdenticonValue: String,
+    balance: Number,
+    isHdWallet: Boolean,
+    isHardwareWallet: Boolean,
+    currency: String,
+    price: Number,
+    displayDecimals: Number,
+});
+const {
+    jdenticonValue,
+    balance,
+    isHdWallet,
+    isHardwareWallet,
+    currency,
+    price,
+    displayDecimals,
+} = toRefs(props);
+
+onMounted(() => {
+    jdenticon.configure();
+    watch(
+        jdenticonValue,
+        () => {
+            jdenticon.update('#identicon', jdenticonValue.value);
+        },
+        {
+            immediate: true,
+        }
+    );
+});
+
 const updating = ref(false);
-const currency = ref('USD');
 const balanceStr = computed(() => {
     const nCoins = balance.value / COIN;
     const strBal = nCoins.toFixed(displayDecimals.value);
     const nLen = strBal.length;
     return beautifyNumber(strBal, nLen >= 10 ? '17px' : '25px');
 });
-const jdenticonValue = ref('');
+
 const balanceValue = computed(() => {
     const { nValue, cLocale } = optimiseCurrencyLocale(
         (balance.value / COIN) * price.value
@@ -45,45 +69,18 @@ const balanceValue = computed(() => {
 
 const ticker = computed(() => cChainParams.current.TICKER);
 
-async function reload() {
-    if (updating.value) return;
-
-    try {
-        updating.value = true;
-        await refreshChainData();
-    } finally {
-        updating.value = false;
-    }
-}
-
-async function update() {
-    balance.value = mempool.getBalance();
-    currency.value = strCurrency.toUpperCase();
-    price.value = await cMarket.getPrice(strCurrency);
-    displayDecimals.value = nDisplayDecimals;
-}
-
-getEventEmitter().on('balance-update', update);
-
 getEventEmitter().on('sync-status', (value) => {
     updating.value = value === 'start';
 });
 
-const isHdWallet = ref(false);
-const isHardwareWallet = ref(false);
+const emit = defineEmits(['reload']);
 
-getEventEmitter().on('wallet-import', () => {
-    isHdWallet.value = wallet.isHD();
-    isHardwareWallet.value = wallet.isHardwareWallet();
-});
-
-onMounted(async () => {
-    jdenticonValue.value = await wallet.getKeyToExport();
-    jdenticon.configure({
-        replaceMode: 'observe',
-    });
-    await update();
-});
+function reload() {
+    if (!updating) {
+        updating.value = true;
+        emit('reload');
+    }
+}
 </script>
 
 <template>
@@ -222,7 +219,6 @@ onMounted(async () => {
                 width="65"
                 height="65"
                 style="width: 65px; height: 65px"
-                :data-jdenticon-value="jdenticonValue"
             ></canvas
             ><br />
             <span

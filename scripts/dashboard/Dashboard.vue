@@ -24,10 +24,11 @@ import { mnemonicToSeed } from 'bip39';
 import { getEventEmitter } from '../event_bus';
 import { Database } from '../database';
 import { start } from '../global';
+import { cMarket, nDisplayDecimals, strCurrency } from '../settings.js';
+import { mempool, refreshChainData } from '../global.js';
 
 const isImported = ref(wallet.isLoaded());
 const activity = ref(null);
-const walletBalance = ref(null);
 const needsToEncrypt = ref(true);
 
 /**
@@ -134,6 +135,8 @@ async function importWallet({ type, secret, password = '' }) {
         if (key) {
             await wallet.setMasterKey(key);
             isImported.value = true;
+            needsToEncrypt.value =
+                !key.isViewOnly && !(await hasEncryptedWallet());
             getEventEmitter().emit('wallet-import');
         }
     }
@@ -162,6 +165,18 @@ onMounted(async () => {
         const account = await database.getAccount();
         await importWallet({ type: 'hd', secret: account.publicKey });
     }
+});
+
+const balance = ref(0);
+const currency = ref('USD');
+const price = ref(0.0);
+const displayDecimals = ref(0);
+
+getEventEmitter().on('balance-update', async () => {
+    balance.value = mempool.getBalance();
+    currency.value = strCurrency.toUpperCase();
+    price.value = await cMarket.getPrice(strCurrency);
+    displayDecimals.value = nDisplayDecimals;
 });
 </script>
 
@@ -561,7 +576,14 @@ onMounted(async () => {
                 <div class="row p-0">
                     <!-- Balance in PIVX & USD-->
                     <WalletBalance
-                        ref="walletBalance"
+                        :balance="balance"
+                        jdenticonValue="hi"
+                        :isHdWallet="false"
+                        :isHardwareWallet="false"
+                        :currency="currency"
+                        :price="price"
+                        :displayDecimals="displayDecimals"
+                        @reload="refreshChainData()"
                         class="col-12 p-0 mb-5"
                     />
                     <Activity
