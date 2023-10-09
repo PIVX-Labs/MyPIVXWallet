@@ -273,9 +273,11 @@ export async function createAndSendTransaction({
     delegationOwnerAddress = '',
     isProposal = false,
 }) {
-    if (!(await wallet.hasWalletUnlocked(true))) return;
+    if (!(await wallet.hasWalletUnlocked(true)))
+        return { ok: false, err: 'Wallet locked' };
     if ((isDelegation || useDelegatedInputs) && wallet.isHardwareWallet()) {
-        return createAlert('warning', ALERTS.STAKING_LEDGER_NO_SUPPORT, 6000);
+        createAlert('warning', ALERTS.STAKING_LEDGER_NO_SUPPORT, 6000);
+        return { ok: false, err: 'No ledger cold stake' };
     }
 
     // Ensure the wallet is unlocked
@@ -283,14 +285,16 @@ export async function createAndSendTransaction({
         wallet.isViewOnly() &&
         !(await restoreWallet(translation.walletUnlockTx))
     )
-        return;
+        return { ok: false, err: 'Wallet locked' };
 
     // Construct a TX and fetch Standard inputs
     const nBalance = getBalance();
     const cTx = new bitjs.transaction();
     const cCoinControl = await chooseUTXOs(cTx, amount, 0, useDelegatedInputs);
-    if (!cCoinControl.success)
-        return createAlert('warning', cCoinControl.msg, 5000);
+    if (!cCoinControl.success) {
+        createAlert('warning', cCoinControl.msg, 5000);
+        return { ok: false, err: cCoinControl.msg };
+    }
     // Compute fee
     const nFee = getNetwork().getFee(cTx.serialize().length);
 
@@ -398,7 +402,12 @@ export async function createAndSendTransaction({
         `);
     }
 
-    const sign = await signTransaction(cTx, wallet, outputs, delegateChange);
+    const sign = await signTransaction(
+        cTx,
+        wallet.getMasterKey(),
+        outputs,
+        delegateChange
+    );
     const result = await getNetwork().sendTransaction(sign);
     // Update the mempool
     if (result) {
@@ -477,10 +486,17 @@ export async function createMasternode() {
     database.removeMasternode();
 }
 
-export async function signTransaction(cTx, wallet, outputs, undelegate) {
-    if (!wallet.isHardwareWallet()) {
+/**
+ * Sign transaction
+ * @param {bitjs.transaction} cTx - transaction
+ * @param {import('./masterkey.js').MasterKey} masterKey to sign transaction with
+ * @param {any[]} outputs - Outputs to display if masterKey is a hardware key
+ * @returns {Promise<string>} Hex encoded signed transaction
+ */
+export async function signTransaction(cTx, masterKey, outputs, undelegate) {
+    if (!masterKey.isHardwareWallet) {
         return await cTx.sign(
-            wallet.getMasterKey(),
+            masterKey,
             1,
             undelegate ? 'coldstake' : undefined
         );
@@ -491,13 +507,13 @@ export async function signTransaction(cTx, wallet, outputs, undelegate) {
     for (const cInput of cTx.inputs) {
         const cInputFull = await getNetwork().getTxInfo(cInput.outpoint.hash);
         arrInputs.push([
-            await cHardwareWallet.splitTransaction(cInputFull.hex),
+            cHardwareWallet.splitTransaction(cInputFull.hex),
             cInput.outpoint.index,
         ]);
         arrAssociatedKeysets.push(cInput.path);
     }
-    const cLedgerTx = await cHardwareWallet.splitTransaction(cTx.serialize());
-    const strOutputScriptHex = await cHardwareWallet
+    const cLedgerTx = cHardwareWallet.splitTransaction(cTx.serialize());
+    const strOutputScriptHex = cHardwareWallet
         .serializeTransactionOutputs(cLedgerTx)
         .toString('hex');
 
