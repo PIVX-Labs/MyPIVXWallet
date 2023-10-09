@@ -383,6 +383,7 @@ export default {
     MN_STATUS_IS: 'Ang kalagayan ng iyong Masternode ay', //Your masternode status is
     MN_STATE: 'Ang iyong masternode ay nasa <b>{state}</b> kalagayan', //Your masternode is in <b>{state}</b> state
     MN_BAD_IP: 'Ang IP address ay hindi wasto!', //The IP address is invalid!
+    MN_BAD_PRIVKEY: '', //The private key is invalid
     MN_NOT_ENOUGH_COLLAT:
         'Kailangan mo ng <b>{amount} pang {ticker}</b> upang makagawa ng Masternode!', //You need <b>{amount} more {ticker}</b> to create a Masternode!
     MN_ENOUGH_BUT_NO_COLLAT:
@@ -431,6 +432,8 @@ export default {
     WALLET_CONFIRM_L: 'Kumpirmahin ang import sa iyong Ledger', //Confirm the import on your Ledger
     WALLET_NO_HARDWARE:
         '<b>Walang pwedeng magamit na device</b><br>Hindi makahanap ng hardware wallet; pakiusap i-plug in ito at buksan!', //<b>No device available</b><br>Couldn't find a hardware wallet; please plug it in and unlock!
+    WALLET_HARDWARE_UDEV: '', // <b>The OS denied access</b> Did you add the udev rules?
+    WALLET_HARDWARE_NO_ACCESS: '', // <b>The OS denied access</b> Please check your Operating System settings.
     WALLET_HARDWARE_CONNECTION_LOST:
         '<b>Nawala ang koneksyon sa {hardwareWallet} </b><br>Parang ang {hardwareWalletProductionName} ay na-unplug sa kalagitnaan ng operasyon, oops!', //<b>Lost connection to {hardwareWallet} </b><br>It seems the {hardwareWalletProductionName} was unplugged mid-operation, oops!
     WALLET_HARDWARE_BUSY:

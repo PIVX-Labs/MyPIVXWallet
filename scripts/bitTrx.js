@@ -26,18 +26,11 @@ export default class bitjs {
         inputs = [];
         outputs = [];
         locktime = 0;
-        addinput({
-            txid,
-            index,
-            script,
-            sequence,
-            path = wallet.getDerivationPath(),
-        }) {
+        addinput({ txid, index, script, sequence }) {
             const o = {};
             o.outpoint = { hash: txid, index: index };
             o.script = hexToBytes(script); //push previous output pubkey script
             o.sequence = sequence || (this.locktime == 0 ? 4294967295 : 0);
-            o.path = path;
             return this.inputs.push(o);
         }
 
@@ -199,10 +192,13 @@ export default class bitjs {
         }
 
         /* sign an input */
-        async signinput(index, masterKey, sigHashType, txType = 'pubkey') {
-            const strWIF = await masterKey.getPrivateKey(
-                this.inputs[index].path
-            );
+        async signinput(index, wallet, sigHashType, txType = 'pubkey') {
+            const masterKey = wallet.getMasterKey();
+            const path = wallet.getPath(this.inputs[index].script);
+            if (path === null) {
+                throw new Error('Path not found');
+            }
+            const strWIF = await masterKey.getPrivateKey(path);
             const bPubkeyBytes = hexToBytes(
                 deriveAddress({
                     pkBytes: parseWIF(strWIF),
@@ -240,12 +236,12 @@ export default class bitjs {
         }
 
         /* sign inputs */
-        async sign(masterKey, sigHashType, txType) {
+        async sign(wallet, sigHashType, txType) {
             const shType = sigHashType || 1;
             let i;
             const len = this.inputs.length;
             for (i = 0; i < len; i++) {
-                await this.signinput(i, masterKey, shType, txType);
+                await this.signinput(i, wallet, shType, txType);
             }
             return this.serialize();
         }

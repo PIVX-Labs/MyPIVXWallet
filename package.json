@@ -42,6 +42,7 @@
         "html-loader": "^4.2.0",
         "html-webpack-plugin": "^5.5.0",
         "mini-css-extract-plugin": "^2.7.2",
+        "multimap": "^1.1.0",
         "node-polyfill-webpack-plugin": "^2.0.1",
         "prettier": "^2.8.1",
         "raw-loader": "^4.0.2",

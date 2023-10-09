@@ -515,6 +515,7 @@ export async function toggleTestnet() {
     // Check if the new network has an Account
     const cNewDB = await Database.getInstance();
     const cNewAccount = await cNewDB.getAccount();
+    mempool.reset();
     if (cNewAccount?.publicKey) {
         // Import the new wallet (overwriting the existing in-memory wallet)
         await importWallet({ newWif: cNewAccount.publicKey });
@@ -544,8 +545,6 @@ export async function toggleTestnet() {
         // Hide "Import Wallet" so the user has to follow the `accessOrImportWallet()` flow
         doms.domImportWallet.style.display = 'none';
     }
-
-    mempool.UTXOs = [];
 
     getEventEmitter().emit('balance-update');
     getStakingBalance(true);

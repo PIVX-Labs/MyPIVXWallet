@@ -11,9 +11,15 @@ import {
     guiSetColdStakingAddress,
 } from './global.js';
 import { cHardwareWallet, strHardwareName } from './ledger.js';
-import { wallet } from './wallet.js';
+import { wallet, getNewAddress } from './wallet.js';
 import { HdMasterKey } from './masterkey.js';
-import { Mempool, UTXO } from './mempool.js';
+import {
+    COutpoint,
+    CTxIn,
+    CTxOut,
+    Transaction,
+    UTXO_WALLET_STATE,
+} from './mempool.js';
 import { getNetwork } from './network.js';
 import { cChainParams, COIN, COIN_DECIMALS } from './chain_params.js';
 import {
@@ -226,7 +232,7 @@ export async function undelegateGUI() {
     if (!validateAmount(nAmount)) return;
 
     // Generate a new address to undelegate towards
-    const [address] = await wallet.getNewAddress();
+    const [address] = wallet.getNewAddress();
 
     // Perform the TX
     const cTxRes = await createAndSendTransaction({
@@ -296,15 +302,10 @@ export async function createAndSendTransaction({
 
     // Compute change (or lack thereof)
     const nChange = cCoinControl.nValue - (nFee + amount);
-    const [changeAddress, changeAddressPath] = await wallet.getNewAddress({
+    const [changeAddress, _] = await getNewAddress({
         verify: wallet.isHardwareWallet(),
     });
 
-    /**
-     * Array containing known UTXOs we can spend after the transaction is complete
-     * @type{Array<UTXO>}
-     */
-    const knownUTXOs = [];
     /**
      * Array containing the transaction outputs, useful for showing confirmation screen
      */
@@ -328,17 +329,6 @@ export async function createAndSendTransaction({
             cTx.addoutput(changeAddress, nChange / COIN);
             outputs.push([changeAddress, nChange / COIN]);
         }
-        knownUTXOs.push(
-            new UTXO({
-                id: null, // We still don't know the txid
-                path: changeAddressPath,
-                script: cTx.outputs[0].script,
-                sats: nChange,
-                vout: 0,
-                status: Mempool.PENDING,
-                isDelegate: delegateChange && nChange > 1.01 * COIN,
-            })
-        );
     } else {
         // We're sending alot! So we deduct the fee from the send amount. There's not enough change to pay it with!
         amount -= nFee;
@@ -358,22 +348,6 @@ export async function createAndSendTransaction({
         // Create the Delegation output
         cTx.addcoldstakingoutput(strOwnerAddress, address, amount / COIN);
         outputs.push([strOwnerAddress, address, amount / COIN]);
-
-        // If the owner address is internal, then we add it to our mempool to be instantly re-spendable and show in our balance
-        // ... otherwise, it is considered an outgoing (external) transaction
-        if (strOwnerPath) {
-            knownUTXOs.push(
-                new UTXO({
-                    id: null,
-                    path: strOwnerPath,
-                    script: cTx.outputs[cTx.outputs.length - 1].script,
-                    sats: amount,
-                    vout: cTx.outputs.length - 1,
-                    status: Mempool.PENDING,
-                    isDelegate: true,
-                })
-            );
-        }
     } else if (isProposal) {
         cTx.addproposaloutput(address, amount / COIN);
     } else {
@@ -402,40 +376,36 @@ export async function createAndSendTransaction({
     const result = await getNetwork().sendTransaction(sign);
     // Update the mempool
     if (result) {
-        // Remove spent inputs
-        for (const tx of cTx.inputs) {
-            mempool.autoRemoveUTXO({
-                id: tx.outpoint.hash,
-                path: tx.path,
-                vout: tx.outpoint.index,
-            });
-        }
-
         const futureTxid = bytesToHex(dSHA256(hexToBytes(sign)).reverse());
-
-        for (const utxo of knownUTXOs) {
-            utxo.id = futureTxid;
-            mempool.addUTXO(utxo);
-        }
-
-        if (!isDelegation && !isProposal) {
-            const path = await wallet.isOwnAddress(address);
-
-            // If the tx was sent to yourself, add it to the mempool
-            if (path) {
-                const vout = nChange > 0 ? 1 : 0;
-                mempool.addUTXO(
-                    new UTXO({
-                        id: futureTxid,
-                        path,
-                        sats: amount,
-                        vout,
-                        script: bytesToHex(cTx.outputs[vout].script),
-                        status: Mempool.PENDING,
-                    })
-                );
-            }
-        }
+        // Build Transaction object
+        const vin = cTx.inputs.map(
+            (inp) =>
+                new CTxIn({
+                    outpoint: new COutpoint({
+                        txid: inp.outpoint.hash,
+                        n: inp.outpoint.index,
+                    }),
+                    scriptSig: bytesToHex(inp.script),
+                })
+        );
+        const vout = cTx.outputs.map(
+            (out, i) =>
+                new CTxOut({
+                    outpoint: new COutpoint({
+                        txid: futureTxid,
+                        n: i,
+                    }),
+                    script: bytesToHex(out.script),
+                    value: Number(out.value),
+                })
+        );
+        const parsedTx = new Transaction({
+            txid: futureTxid,
+            blockHeight: -1,
+            vin: vin,
+            vout: vout,
+        });
+        mempool.updateMempool(parsedTx);
     }
     return { ok: !!result, txid: result };
 }
@@ -452,7 +422,7 @@ export async function createMasternode() {
         return;
 
     // Generate the Masternode collateral
-    const [address] = await wallet.getNewAddress();
+    const [address] = getNewAddress({ verify: wallet.isHardwareWallet() });
     const result = await createAndSendTransaction({
         amount: cChainParams.current.collateralInSats,
         address,
@@ -479,11 +449,7 @@ export async function createMasternode() {
 
 export async function signTransaction(cTx, wallet, outputs, undelegate) {
     if (!wallet.isHardwareWallet()) {
-        return await cTx.sign(
-            wallet.getMasterKey(),
-            1,
-            undelegate ? 'coldstake' : undefined
-        );
+        return await cTx.sign(wallet, 1, undelegate ? 'coldstake' : undefined);
     }
     // Format the inputs how the Ledger SDK prefers
     const arrInputs = [];
@@ -494,7 +460,11 @@ export async function signTransaction(cTx, wallet, outputs, undelegate) {
             await cHardwareWallet.splitTransaction(cInputFull.hex),
             cInput.outpoint.index,
         ]);
-        arrAssociatedKeysets.push(cInput.path);
+        const path = wallet.getPath(cInput.script);
+        if (path === null) {
+            console.error('ERROR: PATH IS NULL');
+        }
+        arrAssociatedKeysets.push(path);
     }
     const cLedgerTx = await cHardwareWallet.splitTransaction(cTx.serialize());
     const strOutputScriptHex = await cHardwareWallet
@@ -538,9 +508,13 @@ async function chooseUTXOs(
     // Select the UTXO type bucket
 
     //const arrUTXOs
-    const arrUTXOs = fColdOnly
-        ? mempool.getDelegatedUTXOs()
-        : mempool.getStandardUTXOs();
+    const filter = fColdOnly
+        ? UTXO_WALLET_STATE.SPENDABLE_COLD
+        : UTXO_WALLET_STATE.SPENDABLE;
+    const arrUTXOs = mempool.getUTXOs({
+        filter: filter,
+        target: nTotalSatsRequired,
+    });
 
     // Select and return UTXO pointers (filters applied)
     const cCoinControl = { nValue: 0, nChange: 0, arrSelectedUTXOs: [] };
@@ -548,9 +522,6 @@ async function chooseUTXOs(
 
     for (let i = 0; i < arrUTXOs.length; i++) {
         const cUTXO = arrUTXOs[i];
-        if (!Mempool.isValidUTXO(cUTXO)) {
-            continue;
-        }
         // Don't spend locked Masternode collaterals
         if (isMasternodeUTXO(cUTXO, masternode)) continue; //CHANGE THIS
 
@@ -573,18 +544,18 @@ async function chooseUTXOs(
         }
 
         // Does the UTXO meet size requirements?
-        if (cUTXO.sats < nMinInputSize) continue;
+        if (cUTXO.value < nMinInputSize) continue;
 
         // Push UTXO and cache new total value
         cCoinControl.arrSelectedUTXOs.push(cUTXO);
-        cCoinControl.nValue += cUTXO.sats;
+        cCoinControl.nValue += cUTXO.value;
         console.log(
             'Coin Control: Selected input ' +
-                cUTXO.id.substr(0, 6) +
+                cUTXO.outpoint.txid.substr(0, 6) +
                 '(' +
-                cUTXO.vout +
+                cUTXO.outpoint.n +
                 ')... (Added ' +
-                cUTXO.sats / COIN +
+                cUTXO.value / COIN +
                 ' ' +
                 cChainParams.current.TICKER +
                 ' - Total: ' +
@@ -594,10 +565,9 @@ async function chooseUTXOs(
 
         // Stuff UTXO into the TX
         cTx.addinput({
-            txid: cUTXO.id,
-            index: cUTXO.vout,
+            txid: cUTXO.outpoint.txid,
+            index: cUTXO.outpoint.n,
             script: cUTXO.script,
-            path: cUTXO.path,
         });
     }
 

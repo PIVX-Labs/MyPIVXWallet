@@ -18,7 +18,6 @@ import {
 import {
     refreshChainData,
     setDisplayForAllWalletOptions,
-    getBalance,
     getStakingBalance,
 } from './global.js';
 import { ALERTS, tr, translation } from './i18n.js';
@@ -28,7 +27,17 @@ import { Database } from './database.js';
 import { guiRenderCurrentReceiveModal } from './contacts-book.js';
 import { Account } from './accounts.js';
 import { debug, fAdvancedMode } from './settings.js';
+import { bytesToHex, hexToBytes } from './utils.js';
 import { strHardwareName, getHardwareWalletKeys } from './ledger.js';
+import { UTXO_WALLET_STATE } from './mempool.js';
+import {
+    isP2CS,
+    isP2PKH,
+    getAddressFromPKH,
+    COLD_START_INDEX,
+    P2PK_START_INDEX,
+    OWNER_START_INDEX,
+} from './script.js';
 import { getEventEmitter } from './event_bus.js';
 export let fWalletLoaded = false;
 
@@ -55,8 +64,19 @@ export class Wallet {
      * @type {Map<String, String?>}
      */
     #ownAddresses = new Map();
-    constructor(nAccount) {
+    /**
+     * Map public key hash -> Address
+     * @type {Map<String,String>}
+     */
+    #knownPKH = new Map();
+    /**
+     * True if this is the global wallet, false otherwise
+     * @type {Boolean}
+     */
+    #isMainWallet;
+    constructor(nAccount, isMainWallet) {
         this.#nAccount = nAccount;
+        this.#isMainWallet = isMainWallet;
     }
 
     getMasterKey() {
@@ -123,46 +143,45 @@ export class Wallet {
 
     /**
      * Set or replace the active Master Key with a new Master Key
-     * @param {Promise<MasterKey>} mk - The new Master Key to set active
+     * @param {import('./masterkey.js').MasterKey} mk - The new Master Key to set active
      */
     async setMasterKey(mk) {
         this.#masterKey = mk;
-        // Update the network master key
-        await getNetwork().setWallet(this);
+        // If this is the global wallet update the network master key
+        if (this.#isMainWallet) {
+            await getNetwork().setWallet(this);
+        }
     }
 
     /**
      * Derive the current address (by internal index)
-     * @return {Promise<String>} Address
+     * @return {string} Address
      *
      */
-    async getCurrentAddress() {
-        return await this.getAddress(0, this.#addressIndex);
+    getCurrentAddress() {
+        return this.getAddress(0, this.#addressIndex);
     }
 
     /**
      * Derive a generic address (given nReceiving and nIndex)
-     * @return {Promise<String>} Address
+     * @return {string} Address
      */
-    async getAddress(nReceiving = 0, nIndex = 0) {
+    getAddress(nReceiving = 0, nIndex = 0) {
         const path = this.getDerivationPath(nReceiving, nIndex);
-        return await this.#masterKey.getAddress(path);
+        return this.#masterKey.getAddress(path);
     }
 
     /**
      * Derive xpub (given nReceiving and nIndex)
-     * @return {Promise<String>} Address
+     * @return {string} Address
      */
-    async getXPub(nReceiving = 0, nIndex = 0) {
-        if (this.isHD()) {
-            // Get our current wallet XPub
-            const derivationPath = this.getDerivationPath(nReceiving, nIndex)
-                .split('/')
-                .slice(0, 4)
-                .join('/');
-            return await this.#masterKey.getxpub(derivationPath);
-        }
-        throw new Error('Legacy wallet does not have a xpub');
+    getXPub(nReceiving = 0, nIndex = 0) {
+        // Get our current wallet XPub
+        const derivationPath = this.getDerivationPath(nReceiving, nIndex)
+            .split('/')
+            .slice(0, 4)
+            .join('/');
+        return this.#masterKey.getxpub(derivationPath);
     }
 
     /**
@@ -180,7 +199,7 @@ export class Wallet {
 
         // Prepare to Add/Update an account in the DB
         const cAccount = new Account({
-            publicKey: await this.getKeyToExport(),
+            publicKey: this.getKeyToExport(),
             encWif: strEncWIF,
         });
 
@@ -201,9 +220,9 @@ export class Wallet {
     }
 
     /**
-     * @return Promise<[string, string]> Address and its BIP32 derivation path
+     * @return [string, string] Address and its BIP32 derivation path
      */
-    async getNewAddress() {
+    getNewAddress() {
         const last = getNetwork().lastWallet;
         this.#addressIndex =
             (this.#addressIndex > last ? this.#addressIndex : last) + 1;
@@ -212,20 +231,19 @@ export class Wallet {
             this.#addressIndex = last;
         }
         const path = this.getDerivationPath(0, this.#addressIndex);
-        const address = await this.getAddress(0, this.#addressIndex);
+        const address = this.getAddress(0, this.#addressIndex);
         return [address, path];
     }
-    // If the privateKey is null then the user connected a hardware wallet
+
     isHardwareWallet() {
-        if (!this.#masterKey) return false;
-        return this.#masterKey.isHardwareWallet == true;
+        return this.#masterKey?.isHardwareWallet === true;
     }
 
     /**
      * @param {string} address - address to check
-     * @return {Promise<String?>} BIP32 path or null if it's not your address
+     * @return {string?} BIP32 path or null if it's not your address
      */
-    async isOwnAddress(address) {
+    isOwnAddress(address) {
         if (this.#ownAddresses.has(address)) {
             return this.#ownAddresses.get(address);
         }
@@ -235,19 +253,17 @@ export class Wallet {
         if (this.isHD()) {
             for (let i = 0; i <= this.#addressIndex + MAX_ACCOUNT_GAP; i++) {
                 const path = this.getDerivationPath(0, i);
-                const testAddress = await this.#masterKey.getAddress(path);
+                const testAddress = this.#masterKey.getAddress(path);
                 if (address === testAddress) {
                     this.#ownAddresses.set(address, path);
                     return path;
                 }
             }
         } else {
-            const value =
-                address === (await this.getKeyToExport()) ? ':)' : null;
+            const value = address === this.getKeyToExport() ? ':)' : null;
             this.#ownAddresses.set(address, value);
             return value;
         }
-
         this.#ownAddresses.set(address, null);
         return null;
     }
@@ -263,15 +279,61 @@ export class Wallet {
         );
     }
 
-    async getKeyToExport() {
-        return await this.#masterKey?.getKeyToExport(this.#nAccount);
+    getKeyToExport() {
+        return this.#masterKey?.getKeyToExport(this.#nAccount);
+    }
+
+    //Get path from a script
+    getPath(script) {
+        const dataBytes = hexToBytes(script);
+        // At the moment we support only P2PKH and P2CS
+        const iStart = isP2PKH(dataBytes) ? P2PK_START_INDEX : COLD_START_INDEX;
+        const address = this.getAddressFromPKHCache(
+            bytesToHex(dataBytes.slice(iStart, iStart + 20))
+        );
+        return this.isOwnAddress(address);
+    }
+
+    isMyVout(script) {
+        let address;
+        const dataBytes = hexToBytes(script);
+        if (isP2PKH(dataBytes)) {
+            address = this.getAddressFromPKHCache(
+                bytesToHex(
+                    dataBytes.slice(P2PK_START_INDEX, P2PK_START_INDEX + 20)
+                )
+            );
+            if (this.isOwnAddress(address)) {
+                return UTXO_WALLET_STATE.SPENDABLE;
+            }
+        } else if (isP2CS(dataBytes)) {
+            for (let i = 0; i < 2; i++) {
+                const iStart = i == 0 ? OWNER_START_INDEX : COLD_START_INDEX;
+                address = this.getAddressFromPKHCache(
+                    bytesToHex(dataBytes.slice(iStart, iStart + 20))
+                );
+                if (this.isOwnAddress(address)) {
+                    return i == 0
+                        ? UTXO_WALLET_STATE.COLD_RECEIVED
+                        : UTXO_WALLET_STATE.SPENDABLE_COLD;
+                }
+            }
+        }
+        return UTXO_WALLET_STATE.NOT_MINE;
+    }
+    // Avoid calculating over and over the same getAddressFromPKH by saving the result in a map
+    getAddressFromPKHCache(pkh_hex) {
+        if (!this.#knownPKH.has(pkh_hex)) {
+            this.#knownPKH.set(pkh_hex, getAddressFromPKH(hexToBytes(pkh_hex)));
+        }
+        return this.#knownPKH.get(pkh_hex);
     }
 }
 
 /**
  * @type{Wallet}
  */
-export const wallet = new Wallet(0); // For now we are using only the 0-th account, (TODO: update once account system is done)
+export const wallet = new Wallet(0, true); // For now we are using only the 0-th account, (TODO: update once account system is done)
 
 /**
  * Clean a Seed Phrase string and verify it's integrity
@@ -376,14 +438,15 @@ export async function getNewAddress({
     updateGUI = false,
     verify = false,
 } = {}) {
-    const [address, path] = await wallet.getNewAddress();
+    const [address, path] = wallet.getNewAddress();
     if (verify && wallet.isHardwareWallet()) {
         // Generate address to present to the user without asking to verify
         const confAddress = await confirmPopup({
             title: ALERTS.CONFIRM_POPUP_VERIFY_ADDR,
             html: createAddressConfirmation(address),
-            resolvePromise: wallet.getMasterKey().getAddress(path, { verify }),
+            resolvePromise: wallet.getMasterKey().verifyAddress(path),
         });
+        console.log(address, confAddress);
         if (address !== confAddress) {
             throw new Error('User did not verify address');
         }

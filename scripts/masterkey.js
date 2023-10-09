@@ -21,38 +21,37 @@ export class MasterKey {
 
     /**
      * @param {String} [path] - BIP32 path pointing to the private key.
-     * @return {Promise<Array<Number>>} Array of bytes containing private key
+     * @return {number[]} array of bytes containing private key
      * @abstract
      */
-    async getPrivateKeyBytes(_path) {
+    getPrivateKeyBytes(_path) {
         throw new Error('Not implemented');
     }
 
     /**
      * @param {String} [path] - BIP32 path pointing to the private key.
-     * @return {Promise<String>} encoded private key
+     * @return {string} encoded private key
      * @abstract
      */
-    async getPrivateKey(path) {
-        return generateOrEncodePrivkey(await this.getPrivateKeyBytes(path))
-            .strWIF;
+    getPrivateKey(path) {
+        return generateOrEncodePrivkey(this.getPrivateKeyBytes(path)).strWIF;
     }
 
     /**
      * @param {String} [path] - BIP32 path pointing to the address
-     * @return {Promise<String>} Address
+     * @return {string} Address
      * @abstract
      */
-    async getAddress(path) {
-        return deriveAddress({ pkBytes: await this.getPrivateKeyBytes(path) });
+    getAddress(path) {
+        return deriveAddress({ pkBytes: this.getPrivateKeyBytes(path) });
     }
 
     /**
      * @param {String} path - BIP32 path pointing to the xpub
-     * @return {Promise<String>} xpub
+     * @return {string} xpub
      * @abstract
      */
-    async getxpub(_path) {
+    getxpub(_path) {
         throw new Error('Not implemented');
     }
 
@@ -103,15 +102,8 @@ export class MasterKey {
     }
 
     // Construct a full BIP44 pubkey derivation path from it's parts
-    getDerivationPath(nAccount, nReceiving, nIndex) {
-        // Coin-Type is different on Ledger, as such, for local wallets; we modify it if we're using a Ledger to derive a key
-        const strCoinType = this.isHardwareWallet
-            ? cChainParams.current.BIP44_TYPE_LEDGER
-            : cChainParams.current.BIP44_TYPE;
-        if (!this.isHD && !this.isHardwareWallet) {
-            return `:)//${strCoinType}'`;
-        }
-        return `m/44'/${strCoinType}'/${nAccount}'/${nReceiving}/${nIndex}`;
+    getDerivationPath(_nAccount, _nReceiving, _nIndex) {
+        throw new Error('Not implemented');
     }
 }
 
@@ -129,7 +121,7 @@ export class HdMasterKey extends MasterKey {
         this._isHardwareWallet = false;
     }
 
-    async getPrivateKeyBytes(path) {
+    getPrivateKeyBytes(path) {
         if (this.isViewOnly) {
             throw new Error(
                 'Trying to get private key bytes from a view only key'
@@ -145,7 +137,7 @@ export class HdMasterKey extends MasterKey {
         return this._hdKey.privateExtendedKey;
     }
 
-    async getxpub(path) {
+    getxpub(path) {
         if (this.isViewOnly) return this._hdKey.publicExtendedKey;
         return this._hdKey.derive(path).publicExtendedKey;
     }
@@ -183,54 +175,71 @@ export class HdMasterKey extends MasterKey {
                 .join('/')
         ).publicExtendedKey;
     }
+
+    getDerivationPath(nAccount, nReceiving, nIndex) {
+        return `m/44'/${cChainParams.current.BIP44_TYPE}'/${nAccount}'/${nReceiving}/${nIndex}`;
+    }
 }
 
-export class HardwareWalletMasterKey extends MasterKey {
-    constructor() {
-        super();
-        this._isHD = true;
-        this._isHardwareWallet = true;
-    }
-    async getPrivateKeyBytes(_path) {
-        throw new Error('Hardware wallets cannot export private keys');
-    }
-
-    async getAddress(path, { verify } = {}) {
-        return deriveAddress({
-            publicKey: await this.getPublicKey(path, { verify }),
-        });
-    }
-
-    async getPublicKey(path, { verify } = {}) {
-        return deriveAddress({
-            publicKey: await getHardwareWalletKeys(path, false, verify),
-            output: 'COMPRESSED_HEX',
-        });
-    }
-
-    get keyToBackup() {
-        throw new Error("Hardware wallets don't have keys to backup");
-    }
-
-    async getxpub(path) {
-        if (!this.xpub) {
-            this.xpub = await getHardwareWalletKeys(path, true);
+export class HardwareWalletMasterKey extends HdMasterKey {
+    /**
+     * Trick to get private constructors
+     */
+    static #initializing = false;
+    constructor(xpub) {
+        if (!HardwareWalletMasterKey.#initializing) {
+            throw new Error(
+                'Hardware wallet master keys must be created with create'
+            );
         }
-        return this.xpub;
+        HardwareWalletMasterKey.#initializing = false;
+        super({
+            xpub,
+        });
+        this._isHardwareWallet = true;
+        this._isViewOnly = true;
     }
 
-    // Hardware Wallets don't have exposed private data
-    wipePrivateData(_nAccount) {}
-
-    get isViewOnly() {
-        return false;
-    }
-    getKeyToExport(nAccount) {
-        const derivationPath = this.getDerivationPath(nAccount, 0, 0)
+    /**
+     * @param {number} nAccount
+     * @returns {Promise<HardwareWalletMasterKey>}
+     */
+    static async create(nAccount = 0) {
+        const path = this.getDerivationPath(nAccount, 0, 0)
             .split('/')
             .slice(0, 4)
             .join('/');
-        return this.getxpub(derivationPath);
+        const xpub = await getHardwareWalletKeys(path, true, false);
+        if (!xpub) throw new Error('Failed to get hardware wallet keys.');
+        HardwareWalletMasterKey.#initializing = true;
+        return new HardwareWalletMasterKey(xpub);
+    }
+
+    /**
+     * Verifies that the address is correct by asking the ledger
+     * directly and then the user.
+     * This is considerably slower than deriving the key ourselves
+     * with `getAddress`, but should be used every time we want to be sure
+     * the address cannot be tampered with
+     * @param {string} path - bip32 path
+     * @returns {Promise<string?>} address or null if the user rejected the verification
+     */
+    async verifyAddress(path) {
+        const publicKey = await getHardwareWalletKeys(path);
+
+        return deriveAddress({ publicKey });
+    }
+
+    getDerivationPath(nAccount, nReceiving, nIndex) {
+        return HardwareWalletMasterKey.getDerivationPath(
+            nAccount,
+            nReceiving,
+            nIndex
+        );
+    }
+
+    static getDerivationPath(nAccount, nReceiving, nIndex) {
+        return `m/44'/${cChainParams.current.BIP44_TYPE_LEDGER}'/${nAccount}'/${nReceiving}/${nIndex}`;
     }
 }
 
@@ -252,7 +261,7 @@ export class LegacyMasterKey extends MasterKey {
         return this._address;
     }
 
-    async getPrivateKeyBytes(_path) {
+    getPrivateKeyBytes(_path) {
         if (this.isViewOnly) {
             throw new Error(
                 'Trying to get private key bytes from a view only key'
@@ -265,7 +274,7 @@ export class LegacyMasterKey extends MasterKey {
         return generateOrEncodePrivkey(this._pkBytes).strWIF;
     }
 
-    async getxpub(_path) {
+    getxpub(_path) {
         throw new Error(
             'Trying to get an extended public key from a legacy address'
         );
@@ -274,5 +283,14 @@ export class LegacyMasterKey extends MasterKey {
     wipePrivateData(_nAccount) {
         this._pkBytes = null;
         this._isViewOnly = true;
+    }
+
+    /**
+     * This is a bit of a hack:
+     * Legacy master keys don't need derivation paths.
+     * We're going to make one nonetheless, to generalize things a bit
+     */
+    getDerivationPath(_nAccount, _nReceiving, _nIndex) {
+        return `:)//${cChainParams.current.BIP44_TYPE}'`;
     }
 }
