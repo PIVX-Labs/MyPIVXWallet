@@ -386,11 +386,10 @@ export async function start() {
 
     // Customise the UI if a saved wallet exists
     if (await hasEncryptedWallet()) {
-        // Hide the 'Generate wallet' buttons
         const database = await Database.getInstance();
         const { publicKey } = await database.getAccount();
 
-        // Import the wallet, and toggle the startup flag, which delegates the chain data refresh to settingsStart();
+        /* TODO: readd contacts thingy
         if (publicKey) {
             // Update the "Receive" UI to apply Translation and Contacts updates
             await guiToggleReceiveType(cReceiveType);
@@ -419,11 +418,9 @@ export async function start() {
                     reqAmount,
                     urlParams.has('desc') ? urlParams.get('desc') : ''
                 );
-            }
-        } else {
-            // Display the password unlock upfront
-            await accessOrImportWallet();
-        }
+		}
+		
+        }*/
     } else {
         // Just load the block count, for use in non-wallet areas
         getNetwork().getBlockCount();
