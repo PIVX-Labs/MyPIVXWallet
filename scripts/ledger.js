@@ -91,7 +91,6 @@ export async function getHardwareWalletKeys(path, xpub = false, verify = true) {
 
         // This is when the OS denies access to the WebUSB
         // It's likely caused by faulty udev rules on linux
-        console.log(e.message);
         if (e instanceof DOMException && e.message.match(/access denied/i)) {
             if (navigator.userAgent.toLowerCase().includes('linux')) {
                 createAlert('warning', ALERTS.WALLET_HARDWARE_UDEV, 5500);
