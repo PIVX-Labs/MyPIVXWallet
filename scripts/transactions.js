@@ -461,7 +461,9 @@ export async function createMasternode() {
         return;
 
     // Generate the Masternode collateral
-    const [address] = getNewAddress({ verify: wallet.isHardwareWallet() });
+    const [address] = await getNewAddress({
+        verify: wallet.isHardwareWallet(),
+    });
     const result = await createAndSendTransaction({
         amount: cChainParams.current.collateralInSats,
         address,
