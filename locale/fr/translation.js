@@ -163,7 +163,7 @@ export default {
     // Stake
     stake: 'Stake', //Stake
     stakeUnstake: 'Unstake', //Unstake
-    ownerAddress: '', //(Optional) Owner Address
+    ownerAddress: '(Optionnel) Adresse du propriétaire', //(Optional) Owner Address
     rewardHistory: 'Historique des récompenses', //Reward History
     loadMore: 'Chargez plus', //Load more
 
@@ -270,10 +270,11 @@ export default {
     popupCreateProposal: 'Créer une proposition', //Create Proposal
     popupCreateProposalCost: 'Coût', //Cost
     popupProposalName: 'Nom de la proposition', //Proposal Name
-    popupProposalAddress: '', //Proposal Address (Optional)
+    popupProposalAddress: 'Adresse de la proposition (optionnel)', //Proposal Address (Optional)
     popupProposalDuration: 'Durée en cycles', //Duration in cycles
     popupProposalPerCycle: 'par cycle', //per cycle
-    popupProposalEncryptFirst: '', //You need to hit "{button}" before you can create proposals!
+    popupProposalEncryptFirst:
+        'Vous devez appuyer sur "{button}" avant de pouvoir créer des propositions !', //You need to hit "{button}" before you can create proposals!
     popupProposalVoteHash: 'Vote Hash :', //Vote Hash:
     popupProposalFinalisedNote:
         "<b>Félicitations pour le lancement de votre proposition!</b><br>Les propriétaires de Masternodes peuvent utiliser votre Hash de vote pour voter à partir de portefeuilles autres que MPW, alors assurez-vous d'ajouter ceci à votre message sur le forum, le cas échéant!", //<b>Congratulations on launching your proposal!</b><br>Masternode owners can use your Vote Hash to vote from wallets other than MPW, so make sure to add this to your forum post, if applicable!
@@ -287,7 +288,7 @@ export default {
     proposalFinalisationReady: 'Prêt à soumettre', //Ready to submit
     proposalPassing: 'PASSANT', //PASSING
     proposalFailing: 'ÉCHOUANT', //FAILING
-    proposalTooYoung: '', //TOO YOUNG
+    proposalTooYoung: 'TROP JEUNE', //TOO YOUNG
     proposalFunded: 'FINANCÉE', //FUNDED
     proposalNotFunded: 'NON FINANCÉE', //NOT FUNDED
     proposalPaymentsRemaining: "l'installation(s) restants<br>de", //installment(s) remaining<br>of
@@ -308,7 +309,8 @@ export default {
 
     INTERNAL_ERROR: 'Erreur interne, veuillez réessayer plus tard', //Internal error, please try again later
     FAILED_TO_IMPORT: "<b>Échec de l'importation !</b> Mot de passe invalide", //<b>Failed to import!</b> Invalid password
-    FAILED_TO_IMPORT_HARDWARE: '', // <b> Failed to import Hardware Wallet</b>.
+    FAILED_TO_IMPORT_HARDWARE:
+        "<b>Erreur d'importation du Hardware Wallet</b>.", // <b> Failed to import Hardware Wallet</b>.
     UNSUPPORTED_CHARACTER:
         "Le caractère {char} n'est pas pris en charge dans les adresses ! (Non compatible avec Base58)", //The character '{char}' is unsupported in addresses! (Not Base58 compatible)
     UNSUPPORTED_WEBWORKERS:
@@ -429,7 +431,8 @@ export default {
     WALLET_NO_HARDWARE:
         "<b>Aucun dispositif disponible</b><br>Il n'a pas été possible de trouver un portefeuille de hardware; brancher et déverrouiller!", //<b>No device available</b><br>Couldn't find a hardware wallet; please plug it in and unlock!
     WALLET_HARDWARE_UDEV: '', // <b>The OS denied access</b> Did you add the udev rules?
-    WALLET_HARDWARE_NO_ACCESS: '', // <b>The OS denied access</b> Please check your Operating System settings.
+    WALLET_HARDWARE_NO_ACCESS:
+        "<b>Le système d'exploitation refuse l'accès</b> Veuillez vérifier les paramètres de votre système d'exploitation.", // <b>The OS denied access</b> Please check your Operating System settings.
     WALLET_HARDWARE_CONNECTION_LOST:
         "<b>Perte de connexion avec le {hardwareWallet} </b><br>Oops! Il semble que {hardwareWalletProductionName} a été déconnecté au milieu de l'opération.", //<b>Lost connection to {hardwareWallet} </b><br>It seems the {hardwareWalletProductionName} was unplugged mid-operation, oops!
     WALLET_HARDWARE_BUSY:

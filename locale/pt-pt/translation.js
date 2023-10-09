@@ -164,7 +164,7 @@ export default {
     // Stake
     stake: 'Stake', //Stake
     stakeUnstake: 'Unstake', //Unstake
-    ownerAddress: '', //(Optional) Owner Address
+    ownerAddress: '(Facultativo) Endereço do proprietário', //(Optional) Owner Address
     rewardHistory: 'Histórico de recompensas', //Reward History
     loadMore: 'Carregar mais', //Load more
 
@@ -268,10 +268,11 @@ export default {
     popupCreateProposal: 'Criar Proposta', //Create Proposal
     popupCreateProposalCost: 'Custo', //Cost
     popupProposalName: 'Título da Proposta', //Proposal Title
-    popupProposalAddress: '', //Proposal Address (Optional)
+    popupProposalAddress: 'Endereço da proposta (facultativo)', //Proposal Address (Optional)
     popupProposalDuration: 'Duração em ciclos', //Duration in cycles
     popupProposalPerCycle: 'por ciclo', //per cycle
-    popupProposalEncryptFirst: '', //You need to hit "{button}" before you can create proposals!
+    popupProposalEncryptFirst:
+        'É necessário premir o botão "{button}" antes de poder criar propostas!', //You need to hit "{button}" before you can create proposals!
     popupProposalVoteHash: 'Votação de Hash:', //Vote Hash:
     popupProposalFinalisedNote:
         '<b>Parabéns pelo lançamento da sua proposta!</b><br>Os proprietários do Masternode podem usar a sua votação de hash em outras carteiras que não sejam MPW, então certifique-se de adicionar isso à sua publicação no fórum, se aplicável!', //<b>Congratulations on launching your proposal!</b><br>Masternode owners can use your Vote Hash to vote from wallets other than MPW, so make sure to add this to your forum post, if applicable!
@@ -283,7 +284,7 @@ export default {
     proposalFinalisationReady: 'Pronto para enviar', //Ready to submit
     proposalPassing: 'PASSAGEM', //PASSING
     proposalFailing: 'FALHA', //FAILING
-    proposalTooYoung: '', //TOO YOUNG
+    proposalTooYoung: 'DEMASIADO JOVEM', //TOO YOUNG
     proposalFunded: 'FINANCIADO/A', //FUNDED
     proposalNotFunded: 'NÃO FINANCIADO/A', //NOT FUNDED
     proposalPaymentsRemaining: 'parcela(s) restante(s)<br>de', //installment(s) remaining<br>of
@@ -435,8 +436,10 @@ export default {
     WALLET_CONFIRM_L: 'Confirme a importação na sua Ledger', //Confirm the import on your Ledger",
     WALLET_NO_HARDWARE:
         '<b>Nenhum dispositivo disponível</b><br>Não foi possível encontrar uma carteira de hardware; conecte-a e desbloqueie-a!', //<b>No device available</b><br>Couldn't find a hardware wallet; please plug it in and unlock!
-    WALLET_HARDWARE_UDEV: '', // <b>The OS denied access</b> Did you add the udev rules?
-    WALLET_HARDWARE_NO_ACCESS: '', // <b>The OS denied access</b> Please check your Operating System settings.
+    WALLET_HARDWARE_UDEV:
+        '<b>O SO negou acesso</b> Você adicionou as regras do udev?', // <b>The OS denied access</b> Did you add the udev rules?
+    WALLET_HARDWARE_NO_ACCESS:
+        '<b>O sistema operativo negou o acesso</b> Verifique as definições do seu sistema operativo.', // <b>The OS denied access</b> Please check your Operating System settings.
     WALLET_HARDWARE_CONNECTION_LOST:
         '<b>Conexão perdida com a {hardwareWallet} </b><br>Oops! Parece que a {hardwareWalletProductionName} foi desconectado no meio da operação.', //<b>Lost connection to {hardwareWallet} </b><br>It seems the {hardwareWalletProductionName} was unplugged mid-operation, oops!
     WALLET_HARDWARE_BUSY:
