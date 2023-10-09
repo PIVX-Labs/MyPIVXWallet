@@ -150,7 +150,7 @@ export default {
     // Stake
     stake: 'Stake', //Stake
     stakeUnstake: 'Unstake', //Unstake
-    ownerAddress: '', //(Optional) Owner Address
+    ownerAddress: '(Opzionale) Indirizzo del Proprietario', //(Optional) Owner Address
     rewardHistory: 'Cronologia delle ricompense', //Reward History
     loadMore: 'Carica altro', //Load more
 
@@ -250,10 +250,11 @@ export default {
     popupCreateProposal: 'Crea proposta', //Create Proposal
     popupCreateProposalCost: 'Costo', //Cost
     popupProposalName: 'Nome della proposta', //Proposal Name
-    popupProposalAddress: '', //Proposal Address (Optional)
+    popupProposalAddress: 'Indirizzo della Proposta (Opzionale)', //Proposal Address (Optional)
     popupProposalDuration: 'Durata in cicli', //Duration in cycles
     popupProposalPerCycle: 'per ciclo', //per cycle
-    popupProposalEncryptFirst: '', //You need to hit "{button}" before you can create proposals!
+    popupProposalEncryptFirst:
+        'È necessario premere "{button}" prima di poter creare proposte!" ', //You need to hit "{button}" before you can create proposals!
     popupProposalVoteHash: 'Hash del voto:', //Vote Hash:
     popupProposalFinalisedNote:
         '<b>Congratulazioni per aver pubblicato la tua proposta!</b><br>I proprietari di Masternode possono utilizzare il tuo Hash di voto per votare da portafogli diversi da MPW, quindi assicurati di aggiungerlo al tuo post sul forum, se applicabile!', //<b>Congratulations on launching your proposal!</b><br>Masternode owners can use your Vote Hash to vote from wallets other than MPW, so make sure to add this to your forum post, if applicable!
@@ -267,7 +268,7 @@ export default {
     proposalFinalisationReady: "Pronto per l'invio", //Ready to submit
     proposalPassing: 'Passata', //PASSING
     proposalFailing: 'Fallita', //FAILING
-    proposalTooYoung: '', //TOO YOUNG
+    proposalTooYoung: 'TROPPO RECENTE', //TOO YOUNG
     proposalFunded: 'Finanziata', //FUNDED
     proposalNotFunded: 'Non finanziata', //NOT FUNDED
     proposalPaymentsRemaining: 'rata/i rimanente<br>di', //installment(s) remaining<br>of
@@ -356,7 +357,7 @@ export default {
     MN_STATUS_IS: 'Lo stato del tuo Masternode è ', //Your masternode status is
     MN_STATE: 'Il tuo masternode è <b>{state}</b>', //Your masternode is in <b>{state}</b> state
     MN_BAD_IP: "L'indirizzo IP non è valido!", //The IP address is invalid!
-    MN_BAD_PRIVKEY: '', //The private key is invalid
+    MN_BAD_PRIVKEY: 'La chiave privata non è valida ', //The private key is invalid
     MN_NOT_ENOUGH_COLLAT:
         'Hai bisogno di <b>{amount} altri {ticker}</b> per creare un Masternode!', //You need <b>{amount} more {ticker}</b> to create a Masternode!
     MN_ENOUGH_BUT_NO_COLLAT:
