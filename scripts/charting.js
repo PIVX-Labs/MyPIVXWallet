@@ -89,7 +89,9 @@ async function getWalletDataset() {
 export async function generateWalletBreakdown(arrBreakdown) {
     // Render the PIVX logo in the centre of the "Wallet Doughnut"
     const image = new Image();
-    image.src = (await import('../assets/logo-circle.svg')).default;
+    const svg = (await import('../assets/logo-circle.svg')).default;
+    const url = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' }));
+    image.src = url;
     const logo_plugin = {
         id: 'centreLogo',
         beforeDraw: (chart) => {
