@@ -2,6 +2,7 @@
 import Modal from '../Modal.vue';
 import { ref } from 'vue';
 import { translation } from '../i18n.js';
+import KeyPng from '../../assets/key.png';
 const props = defineProps({
     privateKey: String,
     show: Boolean,
@@ -34,7 +35,7 @@ function close() {
             </template>
             <template #body>
                 <div class="dcWallet-privateKeyDiv text-center">
-                    <img id="privateKeyImage" /><br />
+                    <img :src="KeyPng" /><br />
                     <h3>{{ translation.viewPrivateKey }}</h3>
                     <span class="span1">{{ translation.privateWarning1 }}</span>
                     <span class="span2">{{ translation.privateWarning2 }}</span>
