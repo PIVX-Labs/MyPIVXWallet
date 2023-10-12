@@ -34,7 +34,6 @@ export {
     destroyMasternode,
     startMasternode,
     toggleDropDown,
-    unblurPrivKey,
     toggleBottomMenu,
     createProposal,
     switchSettings,

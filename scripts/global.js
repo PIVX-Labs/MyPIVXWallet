@@ -2,13 +2,7 @@ import { COutpoint, Mempool, UTXO_WALLET_STATE } from './mempool.js';
 import Masternode from './masternode.js';
 import { ALERTS, tr, start as i18nStart, translation } from './i18n.js';
 
-import {
-    wallet,
-    hasEncryptedWallet,
-    decryptWallet,
-    getNewAddress,
-    Wallet,
-} from './wallet.js';
+import { wallet, hasEncryptedWallet, getNewAddress, Wallet } from './wallet.js';
 import { LegacyMasterKey } from './masterkey.js';
 import { getNetwork, HistoricalTxType } from './network.js';
 import {
@@ -32,8 +26,7 @@ import {
     isStandardAddress,
     isColdAddress,
 } from './misc.js';
-import { cChainParams, COIN, MIN_PASS_LENGTH } from './chain_params.js';
-import { decrypt } from './aes-gcm.js';
+import { cChainParams, COIN } from './chain_params.js';
 
 import { registerWorker } from './native.js';
 import { refreshPriceDisplay } from './prices.js';
@@ -48,13 +41,9 @@ import { createApp } from 'vue';
 import Activity from './dashboard/Activity.vue';
 import Dashboard from './dashboard/Dashboard.vue';
 import {
-    cReceiveType,
     guiAddContactPrompt,
     guiCheckRecipientInput,
-    guiToggleReceiveType,
 } from './contacts-book.js';
-import { Buffer } from 'buffer';
-import { Account } from './accounts.js';
 
 /** A flag showing if base MPW is fully loaded or not */
 export let fIsLoaded = false;
@@ -473,7 +462,6 @@ function subscribeToNetworkEvents() {
 
 // WALLET STATE DATA
 
-let exportHidden = false;
 let isTestnetLastState = cChainParams.current.isTestnet;
 
 /**
@@ -719,20 +707,16 @@ export async function openSendQRScanner() {
  */
 export async function openExplorer(strAddress = '') {
     if (wallet.isLoaded() && wallet.isHD() && !strAddress) {
-        const xpub = await wallet.getXPub();
+        const xpub = wallet.getXPub();
         window.open(cExplorer.url + '/xpub/' + xpub, '_blank');
     } else {
-        const address = strAddress || (await wallet.getAddress());
+        const address = strAddress || wallet.getAddress();
         window.open(cExplorer.url + '/address/' + address, '_blank');
     }
 }
 
 async function loadImages() {
-    const images = [
-        ['mpw-main-logo', import('../assets/logo.png')],
-        /*['privateKeyImage', import('../assets/key.png')]*/
-        ,
-    ];
+    const images = [['mpw-main-logo', import('../assets/logo.png')]];
 
     const promises = images.map(([id, path]) =>
         (async () => {
@@ -759,22 +743,6 @@ export async function playMusic() {
         audio.pause();
         for (const domImg of document.getElementsByTagName('img'))
             domImg.classList.remove('discoFilter');
-    }
-}
-
-export function unblurPrivKey() {
-    if (
-        document
-            .getElementById('exportPrivateKeyText')
-            .classList.contains('blurred')
-    ) {
-        document
-            .getElementById('exportPrivateKeyText')
-            .classList.remove('blurred');
-    } else {
-        document
-            .getElementById('exportPrivateKeyText')
-            .classList.add('blurred');
     }
 }
 
