@@ -138,8 +138,6 @@ export async function start() {
         domWalletBreakdownCanvas: document.getElementById(
             'walletBreakdownCanvas'
         ),
-        domPrefix: document.getElementById('prefix'),
-        domPrefixNetwork: document.getElementById('prefixNetwork'),
         domWalletToggle: document.getElementById('wToggle'),
         domGenVanityWallet: document.getElementById('generateVanityWallet'),
         domGenHardwareWallet: document.getElementById('generateHardwareWallet'),
@@ -918,23 +916,6 @@ export function guiPreparePayment(strTo = '', nAmount = 0, strDesc = '') {
     }
 }
 
-/**
- * Set the "Wallet Options" menu visibility
- * @param {String} strDisplayCSS - The `display` CSS option to set the Wallet Options to
- */
-export function setDisplayForAllWalletOptions(strDisplayCSS) {
-    // Set the display and Reset the Vanity address input
-    doms.domPrefix.value = '';
-    doms.domPrefix.style.display = strDisplayCSS;
-
-    // Set all "*Wallet" buttons
-    doms.domGenerateWallet.style.display = strDisplayCSS;
-    doms.domImportWallet.style.display = strDisplayCSS;
-    doms.domGenVanityWallet.style.display = strDisplayCSS;
-    doms.domAccessWallet.style.display = strDisplayCSS;
-    doms.domGenHardwareWallet.style.display = strDisplayCSS;
-}
-
 export async function govVote(hash, voteCode) {
     if (
         (await confirmPopup({
@@ -1143,8 +1124,6 @@ export async function importMasternode() {
 
 export async function accessOrImportWallet() {
     // Hide and Reset the Vanity address input
-    doms.domPrefix.value = '';
-    doms.domPrefix.style.display = 'none';
 
     // Show Import button, hide access button
     doms.domImportWallet.style.display = 'block';

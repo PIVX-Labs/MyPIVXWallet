@@ -300,6 +300,18 @@ async function send(address, amount) {
     });
 }
 
+getEventEmitter().on('toggle-network', async () => {
+    const database = await Database.getInstance();
+    const account = await database.getAccount();
+    if (account) {
+        await importWallet({ type: 'hd', secret: account.publicKey });
+    } else {
+        isImported.value = false;
+    }
+    // TODO: When tab component is written, simply emit an event
+    doms.domDashboard.click();
+});
+
 onMounted(async () => {
     await start();
     if (await hasEncryptedWallet()) {
