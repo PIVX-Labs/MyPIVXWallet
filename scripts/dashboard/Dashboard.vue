@@ -36,6 +36,7 @@ import {
 } from '../misc.js';
 import { getNetwork } from '../network.js';
 import { validateAmount, createAndSendTransaction } from '../transactions.js';
+import { strHardwareName } from '../ledger';
 
 const isImported = ref(wallet.isLoaded());
 const activity = ref(null);
