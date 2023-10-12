@@ -19,7 +19,6 @@ import { getNetwork } from './network.js';
 export {
     openTab,
     accessOrImportWallet,
-    guiImportWallet,
     guiSetColdStakingAddress,
     toClipboard,
     toggleExportUI,
@@ -29,7 +28,6 @@ export {
     playMusic,
     selectMaxBalance,
     openExplorer,
-    guiEncryptWallet,
     guiPreparePayment,
     openSendQRScanner,
     doms,
@@ -43,7 +41,7 @@ export {
     switchSettings,
     govVote,
 } from './global.js';
-export { wallet, getNewAddress, importWallet } from './wallet.js';
+export { wallet, getNewAddress } from './wallet.js';
 export {
     toggleTestnet,
     toggleDebug,
