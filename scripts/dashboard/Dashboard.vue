@@ -326,14 +326,15 @@ const currency = ref('USD');
 const price = ref(0.0);
 const displayDecimals = ref(0);
 
+getEventEmitter().on('mempool-loaded', () => {
+    activity?.value?.update();
+});
+
 getEventEmitter().on('balance-update', async () => {
-    balance.value = mempool.getBalance();
+    balance.value = mempool.balance;
     currency.value = strCurrency.toUpperCase();
     price.value = await cMarket.getPrice(strCurrency);
     displayDecimals.value = nDisplayDecimals;
-
-    // TODO: move this
-    // activity.value.update();
 });
 
 defineExpose({

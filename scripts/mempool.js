@@ -178,11 +178,12 @@ export class Mempool {
                     }
                 }
             }
-            this.#isLoaded = true;
             this.#balance = this.getBalance(UTXO_WALLET_STATE.SPENDABLE);
             this.#coldBalance = this.getBalance(
                 UTXO_WALLET_STATE.SPENDABLE_COLD
             );
+            this.#isLoaded = true;
+            getEventEmitter().emit('mempool-loaded');
             getEventEmitter().emit('balance-update');
             getStakingBalance(true);
             stakingDashboard.update();
@@ -206,7 +207,7 @@ export class Mempool {
                     const fullTx = this.parseTransaction(
                         await getNetwork().getTxFullInfo(tx.txid)
                     );
-                    await this.updateMempool(fullTx);
+                    this.updateMempool(fullTx);
                 }
             }
             getEventEmitter().emit('sync-status', 'stop');
