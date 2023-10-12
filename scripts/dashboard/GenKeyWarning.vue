@@ -71,7 +71,11 @@ onMounted(async () => {
     </div>
 
     <Teleport to="body">
-        <Modal :show="showModal" @close="showModal = false">
+        <Modal
+            :show="showModal"
+            @close="showModal = false"
+            modalClass="exportKeysModalColor"
+        >
             <template #header>
                 <h5 class="modal-title">Encrypt wallet</h5>
                 <button

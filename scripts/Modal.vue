@@ -1,6 +1,7 @@
 <script setup>
 const props = defineProps({
     show: Boolean,
+    modalClass: String,
 });
 </script>
 
@@ -8,7 +9,7 @@ const props = defineProps({
     <Transition name="modal">
         <div v-if="show" class="modal-mask black-text">
             <div class="modal-dialog modal-dialog-centered" role="document">
-                <div class="modal-content">
+                <div class="modal-content" :class="modalClass">
                     <div class="modal-header" v-if="!!$slots.header">
                         <slot name="header"></slot>
                     </div>
