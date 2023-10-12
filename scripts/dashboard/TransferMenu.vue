@@ -2,6 +2,7 @@
 import { translation } from '../i18n.js';
 import { ref, watch } from 'vue';
 import { getAddressColor } from '../contacts-book';
+import { promptForContact } from '../contacts-book';
 
 const emit = defineEmits(['send', 'close']);
 const address = ref('');
@@ -27,6 +28,10 @@ function syncAmountCurrency() {
 
 function syncAmount() {
     amount.value = amountCurrency.value / props.price;
+}
+
+async function selectContact() {
+    address.value = (await promptForContact()) || '';
 }
 </script>
 
@@ -68,7 +73,7 @@ function syncAmount() {
                             ></span>
                             <span
                                 class="input-group-text ptr"
-                                onclick="MPW.guiSelectContact(MPW.doms.domAddress1s)"
+                                @click="selectContact()"
                                 ><i class="fa-solid fa-address-book fa-2xl"></i
                             ></span>
                         </div>
