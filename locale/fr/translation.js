@@ -380,6 +380,7 @@ export default {
     MN_STATUS_IS: "L'état de votre masternode est", //Your masternode status is
     MN_STATE: "L'état de votre masternode est  <b>{state}</b>", //Your masternode is in <b>{state}</b> state
     MN_BAD_IP: "L'adresse IP n'est pas valide!", //The IP address is invalid!
+    MN_BAD_PRIVKEY: '', //The private key is invalid
     MN_NOT_ENOUGH_COLLAT:
         'Vous avez besoin <b>{amount} plus {ticker}</b> pour créer un Masternode!', //You need <b>{amount} more {ticker}</b> to create a Masternode!
     MN_ENOUGH_BUT_NO_COLLAT:

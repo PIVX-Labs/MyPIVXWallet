@@ -384,6 +384,7 @@ export default {
     MN_STATUS_IS: 'Ang kalagayan ng iyong Masternode ay', //Your masternode status is
     MN_STATE: 'Ang iyong masternode ay nasa <b>{state}</b> kalagayan', //Your masternode is in <b>{state}</b> state
     MN_BAD_IP: 'Ang IP address ay hindi wasto!', //The IP address is invalid!
+    MN_BAD_PRIVKEY: '', //The private key is invalid
     MN_NOT_ENOUGH_COLLAT:
         'Kailangan mo ng <b>{amount} pang {ticker}</b> upang makagawa ng Masternode!', //You need <b>{amount} more {ticker}</b> to create a Masternode!
     MN_ENOUGH_BUT_NO_COLLAT:

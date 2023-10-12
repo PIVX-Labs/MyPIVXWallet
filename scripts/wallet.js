@@ -18,7 +18,6 @@ import {
 import {
     refreshChainData,
     setDisplayForAllWalletOptions,
-    getBalance,
     getStakingBalance,
 } from './global.js';
 import { ALERTS, tr, translation } from './i18n.js';
@@ -28,8 +27,17 @@ import { Database } from './database.js';
 import { guiRenderCurrentReceiveModal } from './contacts-book.js';
 import { Account } from './accounts.js';
 import { debug, fAdvancedMode } from './settings.js';
-
+import { bytesToHex, hexToBytes } from './utils.js';
 import { strHardwareName, getHardwareWalletKeys } from './ledger.js';
+import { UTXO_WALLET_STATE } from './mempool.js';
+import {
+    isP2CS,
+    isP2PKH,
+    getAddressFromPKH,
+    COLD_START_INDEX,
+    P2PK_START_INDEX,
+    OWNER_START_INDEX,
+} from './script.js';
 import { getEventEmitter } from './event_bus.js';
 export let fWalletLoaded = false;
 
@@ -56,8 +64,19 @@ export class Wallet {
      * @type {Map<String, String?>}
      */
     #ownAddresses = new Map();
-    constructor(nAccount) {
+    /**
+     * Map public key hash -> Address
+     * @type {Map<String,String>}
+     */
+    #knownPKH = new Map();
+    /**
+     * True if this is the global wallet, false otherwise
+     * @type {Boolean}
+     */
+    #isMainWallet;
+    constructor(nAccount, isMainWallet) {
         this.#nAccount = nAccount;
+        this.#isMainWallet = isMainWallet;
     }
 
     getMasterKey() {
@@ -128,8 +147,10 @@ export class Wallet {
      */
     async setMasterKey(mk) {
         this.#masterKey = mk;
-        // Update the network master key
-        await getNetwork().setWallet(this);
+        // If this is the global wallet update the network master key
+        if (this.#isMainWallet) {
+            await getNetwork().setWallet(this);
+        }
     }
 
     /**
@@ -246,7 +267,6 @@ export class Wallet {
             this.#ownAddresses.set(address, value);
             return value;
         }
-
         this.#ownAddresses.set(address, null);
         return null;
     }
@@ -265,12 +285,58 @@ export class Wallet {
     getKeyToExport() {
         return this.#masterKey?.getKeyToExport(this.#nAccount);
     }
+
+    //Get path from a script
+    getPath(script) {
+        const dataBytes = hexToBytes(script);
+        // At the moment we support only P2PKH and P2CS
+        const iStart = isP2PKH(dataBytes) ? P2PK_START_INDEX : COLD_START_INDEX;
+        const address = this.getAddressFromPKHCache(
+            bytesToHex(dataBytes.slice(iStart, iStart + 20))
+        );
+        return this.isOwnAddress(address);
+    }
+
+    isMyVout(script) {
+        let address;
+        const dataBytes = hexToBytes(script);
+        if (isP2PKH(dataBytes)) {
+            address = this.getAddressFromPKHCache(
+                bytesToHex(
+                    dataBytes.slice(P2PK_START_INDEX, P2PK_START_INDEX + 20)
+                )
+            );
+            if (this.isOwnAddress(address)) {
+                return UTXO_WALLET_STATE.SPENDABLE;
+            }
+        } else if (isP2CS(dataBytes)) {
+            for (let i = 0; i < 2; i++) {
+                const iStart = i == 0 ? OWNER_START_INDEX : COLD_START_INDEX;
+                address = this.getAddressFromPKHCache(
+                    bytesToHex(dataBytes.slice(iStart, iStart + 20))
+                );
+                if (this.isOwnAddress(address)) {
+                    return i == 0
+                        ? UTXO_WALLET_STATE.COLD_RECEIVED
+                        : UTXO_WALLET_STATE.SPENDABLE_COLD;
+                }
+            }
+        }
+        return UTXO_WALLET_STATE.NOT_MINE;
+    }
+    // Avoid calculating over and over the same getAddressFromPKH by saving the result in a map
+    getAddressFromPKHCache(pkh_hex) {
+        if (!this.#knownPKH.has(pkh_hex)) {
+            this.#knownPKH.set(pkh_hex, getAddressFromPKH(hexToBytes(pkh_hex)));
+        }
+        return this.#knownPKH.get(pkh_hex);
+    }
 }
 
 /**
  * @type{Wallet}
  */
-export const wallet = new Wallet(0); // For now we are using only the 0-th account, (TODO: update once account system is done)
+export const wallet = new Wallet(0, true); // For now we are using only the 0-th account, (TODO: update once account system is done)
 
 /**
  * Import a wallet (with it's private, public or encrypted data)

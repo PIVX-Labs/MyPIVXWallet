@@ -339,6 +339,7 @@ export default {
     MN_STATUS_IS: '', //Your masternode status is
     MN_STATE: '', //Your masternode is in <b>{state}</b> state
     MN_BAD_IP: '', //The IP address is invalid!
+    MN_BAD_PRIVKEY: '', //The private key is invalid!
     MN_NOT_ENOUGH_COLLAT: '', //You need <b>{amount} more {ticker}</b> to create a Masternode!
     MN_ENOUGH_BUT_NO_COLLAT: '', //You have enough balance for a Masternode, but no valid collateral UTXO of {amount} {ticker}
     MN_COLLAT_NOT_SUITABLE: '', //This is not a suitable UTXO for a Masternode
