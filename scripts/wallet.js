@@ -1,6 +1,5 @@
-import { parseWIF } from './encoding.js';
-import { generateMnemonic, mnemonicToSeed, validateMnemonic } from 'bip39';
-import { doms, beforeUnloadListener } from './global.js';
+import { validateMnemonic } from 'bip39';
+import { beforeUnloadListener } from './global.js';
 import { getNetwork } from './network.js';
 import { MAX_ACCOUNT_GAP, cChainParams } from './chain_params.js';
 import {
@@ -8,13 +7,7 @@ import {
     HdMasterKey,
     HardwareWalletMasterKey,
 } from './masterkey.js';
-import { generateOrEncodePrivkey } from './encoding.js';
-import {
-    confirmPopup,
-    createAlert,
-    isXPub,
-    isStandardAddress,
-} from './misc.js';
+import { confirmPopup, createAlert } from './misc.js';
 import {
     refreshChainData,
     setDisplayForAllWalletOptions,
@@ -22,13 +15,12 @@ import {
 } from './global.js';
 import { ALERTS, tr, translation } from './i18n.js';
 import { encrypt, decrypt } from './aes-gcm.js';
-import * as jdenticon from 'jdenticon';
 import { Database } from './database.js';
 import { guiRenderCurrentReceiveModal } from './contacts-book.js';
 import { Account } from './accounts.js';
-import { debug, fAdvancedMode } from './settings.js';
+import { fAdvancedMode } from './settings.js';
 import { bytesToHex, hexToBytes } from './utils.js';
-import { strHardwareName, getHardwareWalletKeys } from './ledger.js';
+import { strHardwareName } from './ledger.js';
 import { UTXO_WALLET_STATE } from './mempool.js';
 import {
     isP2CS,
@@ -38,7 +30,6 @@ import {
     P2PK_START_INDEX,
     OWNER_START_INDEX,
 } from './script.js';
-import { getEventEmitter } from './event_bus.js';
 export let fWalletLoaded = false;
 
 /**

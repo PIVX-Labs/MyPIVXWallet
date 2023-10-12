@@ -3,6 +3,7 @@ import Login from './Login.vue';
 import WalletBalance from './WalletBalance.vue';
 import Activity from './Activity.vue';
 import GenKeyWarning from './GenKeyWarning.vue';
+import TransferMenu from './TransferMenu.vue';
 import {
     cleanAndVerifySeedPhrase,
     decryptWallet,
@@ -11,25 +12,39 @@ import {
 } from '../wallet.js';
 import { parseWIF, verifyWIF } from '../encoding.js';
 import { createAlert, isBase64 } from '../misc.js';
-import { ALERTS, translation } from '../i18n.js';
+import { ALERTS, translation, tr } from '../i18n.js';
 import {
     LegacyMasterKey,
     HardwareWalletMasterKey,
     HdMasterKey,
 } from '../masterkey';
 import { decrypt } from '../aes-gcm.js';
-import { cChainParams } from '../chain_params';
+import { cChainParams, COIN } from '../chain_params';
 import { onMounted, ref } from 'vue';
 import { mnemonicToSeed } from 'bip39';
 import { getEventEmitter } from '../event_bus';
 import { Database } from '../database';
-import { start } from '../global';
+import { start, doms } from '../global';
 import { cMarket, nDisplayDecimals, strCurrency } from '../settings.js';
 import { mempool, refreshChainData } from '../global.js';
+import {
+    confirmPopup,
+    isXPub,
+    isColdAddress,
+    isStandardAddress,
+} from '../misc.js';
+import { getNetwork } from '../network.js';
+import { validateAmount, createAndSendTransaction } from '../transactions.js';
 
 const isImported = ref(wallet.isLoaded());
 const activity = ref(null);
 const needsToEncrypt = ref(true);
+const showTransferMenu = ref(false);
+const advancedMode = ref(false);
+getEventEmitter().on(
+    'advanced-mode',
+    (fAdvancedMode) => (advancedMode.value = fAdvancedMode)
+);
 
 /**
  * Parses whatever the secret is to a MasterKey
@@ -104,11 +119,8 @@ async function parseSecret(secret, password = '') {
 async function importWallet({ type, secret, password = '' }) {
     if (type === 'hardware') {
         if (navigator.userAgent.includes('Firefox')) {
-            return createAlert(
-                'warning',
-                ALERTS.WALLET_FIREFOX_UNSUPPORTED,
-                7500
-            );
+            createAlert('warning', ALERTS.WALLET_FIREFOX_UNSUPPORTED, 7500);
+            return false;
         }
         await wallet.setMasterKey(new HardwareWalletMasterKey());
         const publicKey = await getHardwareWalletKeys(
@@ -117,7 +129,7 @@ async function importWallet({ type, secret, password = '' }) {
         // Errors are handled within the above function, so there's no need for an 'else' here, just silent ignore.
         if (!publicKey) {
             await wallet.setMasterKey(null);
-            return;
+            return false;
         }
 
         isImported.value = true;
@@ -138,8 +150,10 @@ async function importWallet({ type, secret, password = '' }) {
             needsToEncrypt.value =
                 !key.isViewOnly && !(await hasEncryptedWallet());
             getEventEmitter().emit('wallet-import');
+            return true;
         }
     }
+    return false;
 }
 
 /**
@@ -156,6 +170,134 @@ async function encryptWallet(password, currentPassword = '') {
         createAlert('success', ALERTS.NEW_PASSWORD_SUCCESS, 5500);
     }
     needsToEncrypt.value = false;
+}
+
+// TODO: This needs to be vueeifed a bit
+async function restoreWallet(strReason) {
+    if (wallet.isHardwareWallet()) return true;
+    // Build up the UI elements based upon conditions for the unlock prompt
+    let strHTML = '';
+
+    // If there's a reason given; display it as a sub-text
+    strHTML += `<p style="opacity: 0.75">${strReason}</p>`;
+
+    // Prompt the user
+    if (
+        await confirmPopup({
+            title: translation.walletUnlock,
+            html: `${strHTML}<input type="password" id="restoreWalletPassword" placeholder="${translation.walletPassword}" style="text-align: center;">`,
+        })
+    ) {
+        // Fetch the password from the prompt, and immediately destroy the prompt input
+        const domPassword = document.getElementById('restoreWalletPassword');
+        const strPassword = domPassword.value;
+        domPassword.value = '';
+        const database = await Database.getInstance();
+        const { encWif } = await database.getAccount();
+
+        // Attempt to unlock the wallet with the provided password
+        if (
+            await importWallet({
+                type: 'hd',
+                secret: encWif,
+                password: strPassword,
+            })
+        ) {
+            // Wallet is unlocked!
+            return true;
+        } else {
+            // Password is invalid
+            return false;
+        }
+    } else {
+        // User rejected the unlock
+        return false;
+    }
+}
+
+/**
+ * Sends a transaction
+ * @param {string} address - Address or contact to send to
+ * @param {number} amount - Amount of PIVs to send
+ */
+async function send(address, amount) {
+    // Ensure a wallet is loaded
+    if (!(await wallet.hasWalletUnlocked(true))) return;
+
+    // Ensure the wallet is unlocked
+    if (
+        wallet.isViewOnly() &&
+        !(await restoreWallet(translation.walletUnlockTx))
+    )
+        return;
+
+    // Sanity check the receiver
+    address = address.trim();
+
+    // Check for any contacts that match the input
+    const cDB = await Database.getInstance();
+    const cAccount = await cDB.getAccount();
+
+    // If we have an Account, then check our Contacts for anything matching too
+    const cContact = cAccount?.getContactBy({
+        name: address,
+        pubkey: address,
+    });
+    // If a Contact were found, we use it's Pubkey
+    if (cContact) address = cContact.pubkey;
+
+    // If this is an XPub, we'll fetch their last used 'index', and derive a new public key for enhanced privacy
+    if (isXPub(address)) {
+        const cNet = getNetwork();
+        if (!cNet.enabled)
+            return createAlert(
+                'warning',
+                ALERTS.WALLET_OFFLINE_AUTOMATIC,
+                3500
+            );
+
+        // Fetch the XPub info
+        const cXPub = await cNet.getXPubInfo(address);
+
+        // Use the latest index plus one (or if the XPub is unused, then the second address)
+        const nIndex = (cXPub.usedTokens || 0) + 1;
+
+        // Create a receiver master-key
+        const cReceiverWallet = new HdMasterKey({ xpub: address });
+        const strPath = cReceiverWallet.getDerivationPath(0, 0, nIndex);
+
+        // Set the 'receiver address' as the unused XPub-derived address
+        address = cReceiverWallet.getAddress(strPath);
+    }
+
+    // If Staking address: redirect to staking page
+    if (isColdAddress(address)) {
+        createAlert('warning', ALERTS.STAKE_NOT_SEND, 7500);
+        // Close the current Send Popup
+        showTransferMenu.value = false;
+        // Open the Staking Dashboard
+        // TODO: when write stake page rewrite this as an event
+        return doms.domStakeTab.click();
+    }
+
+    // Check if the Receiver Address is a valid P2PKH address
+    if (!isStandardAddress(address))
+        return createAlert(
+            'warning',
+            tr(ALERTS.INVALID_ADDRESS, [{ address }]),
+            2500
+        );
+
+    // Sanity check the amount
+    const nValue = Math.round(amount * COIN);
+    if (!validateAmount(nValue)) return;
+
+    // Create and send the TX
+    await createAndSendTransaction({
+        address,
+        amount: nValue,
+        isDelegation: false,
+    });
 }
 
 onMounted(async () => {
@@ -177,6 +319,13 @@ getEventEmitter().on('balance-update', async () => {
     currency.value = strCurrency.toUpperCase();
     price.value = await cMarket.getPrice(strCurrency);
     displayDecimals.value = nDisplayDecimals;
+
+    // TODO: move this
+    // activity.value.update();
+});
+
+defineExpose({
+    restoreWallet,
 });
 </script>
 
@@ -584,6 +733,7 @@ getEventEmitter().on('balance-update', async () => {
                         :price="price"
                         :displayDecimals="displayDecimals"
                         @reload="refreshChainData()"
+                        @send="showTransferMenu = true"
                         class="col-12 p-0 mb-5"
                     />
                     <Activity
@@ -666,200 +816,14 @@ getEventEmitter().on('balance-update', async () => {
                     </div>
                 </div>
                 <!-- // Export Private Keys Modal -->
-
-                <div
-                    id="transferMenu"
-                    class="exportKeysModalColor transferMenu transferAnimation"
-                >
-                    <div style="padding-top: 5px">
-                        <div
-                            class="transferExit ptr"
-                            onclick="MPW.toggleBottomMenu('transferMenu', 'transferAnimation')"
-                        >
-                            <i class="fa-solid fa-xmark"></i>
-                        </div>
-                    </div>
-
-                    <div class="transferBody">
-                        <label>{{ translation.address }}</label
-                        ><br />
-
-                        <div class="input-group mb-3">
-                            <input
-                                class="btn-group-input"
-                                oninput="MPW.guiCheckRecipientInput(event)"
-                                style="font-family: monospace"
-                                type="text"
-                                id="address1s"
-                                :placeholder="translation.receivingAddress"
-                                autocomplete="nope"
-                            />
-                            <div class="input-group-append">
-                                <span
-                                    class="input-group-text ptr"
-                                    onclick="MPW.openSendQRScanner()"
-                                    ><i class="fa-solid fa-qrcode fa-2xl"></i
-                                ></span>
-                                <span
-                                    class="input-group-text ptr"
-                                    onclick="MPW.guiSelectContact(MPW.doms.domAddress1s)"
-                                    ><i
-                                        class="fa-solid fa-address-book fa-2xl"
-                                    ></i
-                                ></span>
-                            </div>
-                        </div>
-
-                        <div id="reqDescDisplay" style="display: none">
-                            <label
-                                ><span>{{
-                                    translation.paymentRequestMessage
-                                }}</span></label
-                            ><br />
-                            <div class="input-group">
-                                <input
-                                    class="btn-input"
-                                    style="font-family: monospace"
-                                    type="text"
-                                    disabled
-                                    id="reqDesc"
-                                    placeholder="Payment Request Description"
-                                    autocomplete="nope"
-                                />
-                            </div>
-                        </div>
-
-                        <label
-                            ><span>{{ translation.amount }}</span></label
-                        ><br />
-
-                        <div class="row">
-                            <div class="col-7 pr-2">
-                                <div class="input-group mb-3">
-                                    <input
-                                        class="btn-group-input"
-                                        style="padding-right: 0px"
-                                        type="number"
-                                        id="sendAmountCoins"
-                                        placeholder="0.00"
-                                        autocomplete="nope"
-                                        onkeydown="javascript: return event.keyCode == 69 ? false : true"
-                                    />
-                                    <div class="input-group-append">
-                                        <span class="input-group-text p-0">
-                                            <div
-                                                onclick="MPW.selectMaxBalance(MPW.doms.domSendAmountCoins, MPW.doms.domSendAmountValue)"
-                                                style="
-                                                    cursor: pointer;
-                                                    border: 0px;
-                                                    border-radius: 7px;
-                                                    padding: 3px 6px;
-                                                    margin: 0px 1px;
-                                                    background: linear-gradient(
-                                                        183deg,
-                                                        #9621ff9c,
-                                                        #7d21ffc7
-                                                    );
-                                                    color: #fff;
-                                                    font-weight: bold;
-                                                "
-                                            >
-                                                {{
-                                                    translation.sendAmountCoinsMax
-                                                }}
-                                            </div>
-                                        </span>
-                                        <span
-                                            id="sendAmountCoinsTicker"
-                                            class="input-group-text"
-                                            >PIVX</span
-                                        >
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col-5 pl-2">
-                                <div class="input-group mb-3">
-                                    <input
-                                        class="btn-group-input"
-                                        type="text"
-                                        id="sendAmountValue"
-                                        placeholder="0.00"
-                                        autocomplete="nope"
-                                        onkeydown="javascript: return event.keyCode == 69 ? false : true"
-                                    />
-                                    <div class="input-group-append">
-                                        <span
-                                            id="sendAmountValueCurrency"
-                                            class="input-group-text pl-0"
-                                            >USD</span
-                                        >
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div id="advMode1" class="d-none">
-                            <label
-                                ><span>{{ translation.fee }}</span></label
-                            ><br />
-
-                            <div class="row text-center">
-                                <div class="col-4 pr-1">
-                                    <div
-                                        id="lowFee"
-                                        onclick="switchFee(this)"
-                                        class="feeButton"
-                                    >
-                                        Low<br />
-                                        9 sat/B
-                                    </div>
-                                </div>
-
-                                <div class="col-4 pl-2 pr-2">
-                                    <div
-                                        id="mediumFee"
-                                        onclick="switchFee(this)"
-                                        class="feeButton feeButtonSelected"
-                                    >
-                                        Medium<br />
-                                        11 sat/B
-                                    </div>
-                                </div>
-
-                                <div class="col-4 pl-1">
-                                    <div
-                                        id="highFee"
-                                        onclick="switchFee(this)"
-                                        class="feeButton"
-                                    >
-                                        High<br />
-                                        14 sat/B
-                                    </div>
-                                </div>
-                            </div>
-                            <br />
-                        </div>
-
-                        <div class="text-right pb-2">
-                            <button
-                                class="pivx-button-medium w-100"
-                                style="margin: 0px"
-                                onclick="MPW.createTxGUI()"
-                            >
-                                <span class="buttoni-icon"
-                                    ><i
-                                        class="fas fa-paper-plane fa-tiny-margin"
-                                    ></i
-                                ></span>
-                                <span class="buttoni-text" id="genIt">{{
-                                    translation.send
-                                }}</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
+        <TransferMenu
+            :show="showTransferMenu"
+            :price="price"
+            :currency="currency"
+            @close="showTransferMenu = false"
+            @send="send"
+        />
     </div>
 </template>

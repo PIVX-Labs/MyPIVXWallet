@@ -27,7 +27,6 @@ import {
     sanitizeHTML,
     parseBIP21Request,
     isValidBech32,
-    isBase64,
     sleep,
     beautifyNumber,
     isStandardAddress,
@@ -71,7 +70,7 @@ export const mempool = new Mempool();
 export const dashboard = createApp(Dashboard).mount('#DashboardTab');
 
 // For now we'll import the component as a vue app by itself. Later, when the
-// dashboard is rewritten in vue, we can simply add <Activity /> to the dashboard component template.
+// stake tab is rewritten in vue, we can simply add <Activity /> to the stake tab component template.
 export const stakingDashboard = createApp(Activity, {
     title: 'Reward History',
     rewards: true,
@@ -558,10 +557,6 @@ export function openTab(evt, tabName) {
 export function updateTicker() {
     // Update the Stake Dashboard currency
     doms.domGuiStakingValueCurrency.innerText = strCurrency.toUpperCase();
-
-    // Update the Send menu ticker and currency
-    doms.domSendAmountValueCurrency.innerText = strCurrency.toUpperCase();
-    doms.domSendAmountCoinsTicker.innerText = cChainParams.current.TICKER;
 
     // Update the Stake/Unstake menu ticker and currency
     // Stake
@@ -1340,39 +1335,10 @@ export async function wipePrivateData() {
  * @returns {Promise<boolean>} - If the unlock was successful or rejected
  */
 export async function restoreWallet(strReason = '') {
-    if (wallet.isHardwareWallet()) return true;
-    // Build up the UI elements based upon conditions for the unlock prompt
-    let strHTML = '';
-
-    // If there's a reason given; display it as a sub-text
-    strHTML += `<p style="opacity: 0.75">${strReason}</p>`;
-
-    // Prompt the user
-    if (
-        await confirmPopup({
-            title: translation.walletUnlock,
-            html: `${strHTML}<input type="password" id="restoreWalletPassword" placeholder="${translation.walletPassword}" style="text-align: center;">`,
-        })
-    ) {
-        // Fetch the password from the prompt, and immediately destroy the prompt input
-        const domPassword = document.getElementById('restoreWalletPassword');
-        const strPassword = domPassword.value;
-        domPassword.value = '';
-
-        // Attempt to unlock the wallet with the provided password
-        if (await decryptWallet(strPassword)) {
-            doms.domRestoreWallet.hidden = true;
-            doms.domWipeWallet.hidden = false;
-            // Wallet is unlocked!
-            return true;
-        } else {
-            // Password is invalid
-            return false;
-        }
-    } else {
-        // User rejected the unlock
-        return false;
-    }
+    // TODO: This needs to be vueified quite a bit
+    // This will be done after #225 since it's already
+    // way bigger than I would have liked
+    return await dashboard.restoreWallet(strReason);
 }
 
 /** A lock to prevent rendering the Governance Dashboard multiple times */

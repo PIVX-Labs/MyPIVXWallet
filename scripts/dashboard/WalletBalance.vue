@@ -73,7 +73,7 @@ getEventEmitter().on('sync-status', (value) => {
     updating.value = value === 'start';
 });
 
-const emit = defineEmits(['reload']);
+const emit = defineEmits(['reload', 'send']);
 
 function reload() {
     if (!updating) {
@@ -245,15 +245,7 @@ function reload() {
 
             <div class="row lessTop p-0">
                 <div class="col-6 d-flex" style="justify-content: flex-start">
-                    <div
-                        class="dcWallet-btn-left"
-                        @click="
-                            toggleBottomMenu(
-                                'transferMenu',
-                                'transferAnimation'
-                            )
-                        "
-                    >
+                    <div class="dcWallet-btn-left" @click="$emit('send')">
                         {{ translation.send }}
                     </div>
                 </div>

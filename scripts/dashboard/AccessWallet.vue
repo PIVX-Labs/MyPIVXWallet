@@ -9,8 +9,12 @@ const showInput = ref(false);
 const showPassword = ref(false);
 const cloakSecret = ref(true);
 const passwordPlaceholder = ref(translation.password);
-// TODO: change
-const fAdvancedMode = true;
+
+const props = defineProps({
+    advancedMode: Boolean,
+});
+const advancedMode = ref(props.advancedMode);
+
 /**
  * Secret is the thing being imported:
  * seed phrase, xpub, address, ...
@@ -28,7 +32,7 @@ watch(secret, (secret) => {
     console.log(secret, secret.trim().includes(' '));
 
     // Show password input if it's a bip39 seed and we're in advanced mode
-    if (fContainsSpaces && fAdvancedMode) {
+    if (fContainsSpaces && advancedMode.value) {
         showPassword.value = true;
     }
     // If it's a Base64 secret, it's likely an MPW encrypted import,

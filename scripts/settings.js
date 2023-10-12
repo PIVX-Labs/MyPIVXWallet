@@ -653,10 +653,7 @@ export async function toggleAdvancedMode() {
  * Configure the app functionality and UI for the current mode
  */
 async function configureAdvancedMode() {
-    // Hide or Show the "Mnemonic Passphrase" in the Seed Creation modal, and reset it's input
-    doms.domMnemonicModalPassphrase.value = '';
-    doms.domMnemonicModalPassphrase.hidden = !fAdvancedMode;
-
+    getEventEmitter().emit('advanced-mode', fAdvancedMode);
     // Hide or Show the "Owner Address" configuration for Staking, and reset it's input
     doms.domStakeOwnerAddress.value = '';
     doms.domStakeOwnerAddressContainer.hidden = !fAdvancedMode;

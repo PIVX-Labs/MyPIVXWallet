@@ -1,12 +1,8 @@
 import { cChainParams, COIN } from './chain_params.js';
 import { Database } from './database.js';
 import { doms, getBalance, restoreWallet, sweepAddress } from './global.js';
-import {
-    arrayToCSV,
-    createAlert,
-    downloadBlob,
-    getAlphaNumericRand,
-} from './misc.js';
+import { arrayToCSV, createAlert, downloadBlob } from './misc.js';
+import { getAlphaNumericRand } from './utils.js';
 import { ALERTS, translation, tr } from './i18n.js';
 import { getNetwork } from './network.js';
 import { scanQRCode } from './scanner.js';

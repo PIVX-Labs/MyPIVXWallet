@@ -185,7 +185,6 @@ export class Mempool {
             );
             getEventEmitter().emit('balance-update');
             getStakingBalance(true);
-            activityDashboard.update();
             stakingDashboard.update();
             getEventEmitter().emit('sync-status', 'stop');
         });
