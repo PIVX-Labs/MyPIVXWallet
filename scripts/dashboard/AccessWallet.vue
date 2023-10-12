@@ -29,7 +29,6 @@ const password = ref('');
 watch(secret, (secret) => {
     // If it cointains spaces, it's likely a bip39 seed
     const fContainsSpaces = secret.trim().includes(' ');
-    console.log(secret, secret.trim().includes(' '));
 
     // Show password input if it's a bip39 seed and we're in advanced mode
     if (fContainsSpaces && advancedMode.value) {
