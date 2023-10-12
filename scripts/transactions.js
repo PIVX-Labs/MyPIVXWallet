@@ -468,7 +468,7 @@ export async function createMasternode() {
 export async function signTransaction(cTx, masterKey, outputs, undelegate) {
     if (!masterKey.isHardwareWallet) {
         return await cTx.sign(
-            masterKey,
+            wallet,
             1,
             undelegate ? 'coldstake' : undefined
         );
