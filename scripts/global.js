@@ -80,8 +80,6 @@ export async function start() {
     doms = {
         domNavbarToggler: document.getElementById('navbarToggler'),
         domDashboard: document.getElementById('dashboard'),
-        domGuiWallet: document.getElementById('guiWallet'),
-        domGettingStartedBtn: document.getElementById('gettingStartedBtn'),
         domGuiStakingValue: document.getElementById('guiStakingValue'),
         domGuiStakingValueCurrency: document.getElementById(
             'guiStakingValueCurrency'
@@ -100,15 +98,6 @@ export async function start() {
         domStakeOwnerAddress: document.getElementById('delegateOwnerAddress'),
         domUnstakeAmount: document.getElementById('undelegateAmount'),
         domStakeTab: document.getElementById('stakeTab'),
-        domAddress1s: document.getElementById('address1s'),
-        domSendAmountCoins: document.getElementById('sendAmountCoins'),
-        domSendAmountCoinsTicker: document.getElementById(
-            'sendAmountCoinsTicker'
-        ),
-        domSendAmountValue: document.getElementById('sendAmountValue'),
-        domSendAmountValueCurrency: document.getElementById(
-            'sendAmountValueCurrency'
-        ),
         domStakeAmountCoinsTicker: document.getElementById(
             'stakeAmountCoinsTicker'
         ),
@@ -138,8 +127,6 @@ export async function start() {
         domWalletBreakdownCanvas: document.getElementById(
             'walletBreakdownCanvas'
         ),
-        domWalletToggle: document.getElementById('wToggle'),
-        domGenVanityWallet: document.getElementById('generateVanityWallet'),
         domGenHardwareWallet: document.getElementById('generateHardwareWallet'),
         //GOVERNANCE ELEMENTS
         domGovTab: document.getElementById('governanceTab'),
@@ -188,21 +175,12 @@ export async function start() {
         domMnNetIP: document.getElementById('mnNetIP'),
         domMnLastSeen: document.getElementById('mnLastSeen'),
 
-        domAccessWallet: document.getElementById('accessWallet'),
-        domAccessWalletBtn: document.getElementById('accessWalletBtn'),
-        domGenKeyWarning: document.getElementById('genKeyWarning'),
         domEncryptWalletLabel: document.getElementById('encryptWalletLabel'),
         domEncryptPasswordCurrent: document.getElementById(
             'changePassword-current'
         ),
         domEncryptPasswordFirst: document.getElementById('newPassword'),
         domEncryptPasswordSecond: document.getElementById('newPasswordRetype'),
-        domGenIt: document.getElementById('genIt'),
-        domReqDesc: document.getElementById('reqDesc'),
-        domReqDisplay: document.getElementById('reqDescDisplay'),
-        domIdenticon: document.getElementById('identicon'),
-        domPrivKey: document.getElementById('privateKey'),
-        domPrivKeyPassword: document.getElementById('privateKeyPassword'),
         domAvailToDelegate: document.getElementById('availToDelegate'),
         domAvailToUndelegate: document.getElementById('availToUndelegate'),
         domAnalyticsDescriptor: document.getElementById('analyticsDescriptor'),
@@ -215,7 +193,6 @@ export async function start() {
         domMnemonicModalPassphrase: document.getElementById(
             'ModalMnemonicPassphrase'
         ),
-        domExportPrivateKey: document.getElementById('exportPrivateKeyText'),
         domWipeWallet: document.getElementById('guiWipeWallet'),
         domRestoreWallet: document.getElementById('guiRestoreWallet'),
         domRedeemTitle: document.getElementById('redeemCodeModalTitle'),
@@ -240,9 +217,6 @@ export async function start() {
         ),
         domRedeemCodeCreateInput: document.getElementById(
             'redeemCodeCreateInput'
-        ),
-        domRedeemCodeCreateAmountInput: document.getElementById(
-            'redeemCodeCreateAmountInput'
         ),
         domRedeemCodeCreatePendingList: document.getElementById(
             'redeemCodeCreatePendingList'

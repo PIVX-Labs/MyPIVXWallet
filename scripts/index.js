@@ -21,7 +21,6 @@ export {
     accessOrImportWallet,
     guiSetColdStakingAddress,
     toClipboard,
-    toggleExportUI,
     wipePrivateData,
     restoreWallet,
     refreshChainData,
