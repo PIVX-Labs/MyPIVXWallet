@@ -4,6 +4,7 @@ import WalletBalance from './WalletBalance.vue';
 import Activity from './Activity.vue';
 import GenKeyWarning from './GenKeyWarning.vue';
 import TransferMenu from './TransferMenu.vue';
+import ExportPrivKey from './ExportPrivKey.vue';
 import {
     cleanAndVerifySeedPhrase,
     decryptWallet,
@@ -20,7 +21,7 @@ import {
 } from '../masterkey';
 import { decrypt } from '../aes-gcm.js';
 import { cChainParams, COIN } from '../chain_params';
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import { mnemonicToSeed } from 'bip39';
 import { getEventEmitter } from '../event_bus';
 import { Database } from '../database';
@@ -41,6 +42,17 @@ const activity = ref(null);
 const needsToEncrypt = ref(true);
 const showTransferMenu = ref(false);
 const advancedMode = ref(false);
+const showExportModal = ref(false);
+const keyToBackup = ref('');
+const jdenticonValue = ref('');
+watch(showExportModal, async (showExportModal) => {
+    if (showExportModal) {
+        keyToBackup.value = await wallet.getKeyToBackup();
+    } else {
+        // Wipe key to backup, just in case
+        keyToBackup.value = '';
+    }
+});
 getEventEmitter().on(
     'advanced-mode',
     (fAdvancedMode) => (advancedMode.value = fAdvancedMode)
@@ -117,23 +129,16 @@ async function parseSecret(secret, password = '') {
  * @param {string} [o.password]
  */
 async function importWallet({ type, secret, password = '' }) {
+    /**
+     * @type{import('../masterkey.js').MasterKey}
+     */
+    let key;
     if (type === 'hardware') {
         if (navigator.userAgent.includes('Firefox')) {
             createAlert('warning', ALERTS.WALLET_FIREFOX_UNSUPPORTED, 7500);
             return false;
         }
-        await wallet.setMasterKey(new HardwareWalletMasterKey());
-        const publicKey = await getHardwareWalletKeys(
-            wallet.getDerivationPath()
-        );
-        // Errors are handled within the above function, so there's no need for an 'else' here, just silent ignore.
-        if (!publicKey) {
-            await wallet.setMasterKey(null);
-            return false;
-        }
-
-        isImported.value = true;
-        getEventEmitter().emit('wallet-import');
+        key = await HardwareWalletMasterKey.create();
 
         createAlert(
             'info',
@@ -143,15 +148,20 @@ async function importWallet({ type, secret, password = '' }) {
             12500
         );
     } else {
-        const key = await parseSecret(secret, password);
-        if (key) {
-            await wallet.setMasterKey(key);
-            isImported.value = true;
+        key = await parseSecret(secret, password);
+    }
+    if (key) {
+        await wallet.setMasterKey(key);
+        isImported.value = true;
+        jdenticonValue.value = wallet.getAddress();
+        if (!wallet.isHardwareWallet()) {
             needsToEncrypt.value =
-                !key.isViewOnly && !(await hasEncryptedWallet());
-            getEventEmitter().emit('wallet-import');
-            return true;
+                !wallet.isViewOnly() && !(await hasEncryptedWallet());
+        } else {
+            needsToEncrypt.value = false;
         }
+        getEventEmitter().emit('wallet-import');
+        return true;
     }
     return false;
 }
@@ -728,7 +738,11 @@ defineExpose({
                 </div>
             </div>
             <!-- // Contacts Modal -->
-
+            <ExportPrivKey
+                :show="showExportModal"
+                :privateKey="keyToBackup"
+                @close="showExportModal = false"
+            />
             <!-- WALLET FEATURES -->
             <div v-if="isImported">
                 <GenKeyWarning
@@ -739,7 +753,7 @@ defineExpose({
                     <!-- Balance in PIVX & USD-->
                     <WalletBalance
                         :balance="balance"
-                        jdenticonValue="hi"
+                        :jdenticonValue="jdenticonValue"
                         :isHdWallet="false"
                         :isHardwareWallet="false"
                         :currency="currency"
@@ -747,6 +761,7 @@ defineExpose({
                         :displayDecimals="displayDecimals"
                         @reload="refreshChainData()"
                         @send="showTransferMenu = true"
+                        @exportPrivKeyOpen="showExportModal = true"
                         class="col-12 p-0 mb-5"
                     />
                     <Activity
@@ -756,79 +771,6 @@ defineExpose({
                         :rewards="false"
                     />
                 </div>
-
-                <!-- Export Private Key Modal -->
-                <div
-                    class="modal fade"
-                    id="exportPrivateKeysModal"
-                    tabindex="-1"
-                    role="dialog"
-                    aria-labelledby="exportPrivateKeysLabel"
-                    aria-hidden="true"
-                >
-                    <div
-                        class="modal-dialog modal-dialog-centered modal-full"
-                        role="document"
-                    >
-                        <div class="modal-content exportKeysModalColor">
-                            <div class="modal-header">
-                                <h5
-                                    data-i18n="privateKey"
-                                    class="modal-title"
-                                    id="exportPrivateKeysLabel"
-                                >
-                                    Private Key
-                                </h5>
-                                <button
-                                    type="button"
-                                    class="close"
-                                    onclick="MPW.toggleExportUI()"
-                                    data-dismiss="modal"
-                                    aria-label="Close"
-                                >
-                                    <i class="fa-solid fa-xmark closeCross"></i>
-                                </button>
-                            </div>
-                            <div class="modal-body">
-                                <div class="dcWallet-privateKeyDiv text-center">
-                                    <img id="privateKeyImage" /><br />
-                                    <h3 data-i18n="viewPrivateKey">
-                                        View Private Key?
-                                    </h3>
-                                    <span
-                                        data-i18n="privateWarning1"
-                                        class="span1"
-                                        >Make sure no one can see your
-                                        screen.</span
-                                    >
-                                    <span
-                                        data-i18n="privateWarning2"
-                                        class="span2"
-                                        >Anyone with this key can steal your
-                                        funds.</span
-                                    >
-                                    <code
-                                        class="blurred"
-                                        id="exportPrivateKeyText"
-                                    ></code>
-                                </div>
-                            </div>
-                            <div class="modal-footer text-center">
-                                <button
-                                    class="pivx-button-big"
-                                    onclick="MPW.unblurPrivKey()"
-                                >
-                                    <span
-                                        data-i18n="viewKey"
-                                        class="buttoni-text"
-                                        >View key</span
-                                    >
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <!-- // Export Private Keys Modal -->
             </div>
         </div>
         <TransferMenu

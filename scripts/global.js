@@ -1159,29 +1159,6 @@ export async function updateEncryptionGUI(fEncrypted = null) {
     doms.domChangePasswordContainer.style.display = fEncrypted ? '' : 'none';
 }
 
-export async function toggleExportUI() {
-    if (!exportHidden) {
-        if (await hasEncryptedWallet()) {
-            const { encWif } = await (
-                await Database.getInstance()
-            ).getAccount();
-            doms.domExportPrivateKey.innerHTML = encWif;
-            exportHidden = true;
-        } else {
-            if (wallet.isViewOnly()) {
-                exportHidden = false;
-            } else {
-                doms.domExportPrivateKey.innerHTML =
-                    wallet.getMasterKey().keyToBackup;
-                exportHidden = true;
-            }
-        }
-    } else {
-        doms.domExportPrivateKey.innerHTML = '';
-        exportHidden = false;
-    }
-}
-
 /**
  * Sweep an address to our own wallet, spending all it's UTXOs without change
  * @param {Array<object>} arrUTXOs - The UTXOs belonging to the address to sweep

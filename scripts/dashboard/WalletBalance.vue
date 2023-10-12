@@ -73,7 +73,7 @@ getEventEmitter().on('sync-status', (value) => {
     updating.value = value === 'start';
 });
 
-const emit = defineEmits(['reload', 'send']);
+const emit = defineEmits(['reload', 'send', 'exportPrivKeyOpen']);
 
 function reload() {
     if (!updating) {
@@ -165,7 +165,7 @@ function reload() {
                                         data-backdrop="static"
                                         data-keyboard="false"
                                         v-if="!isHardwareWallet"
-                                        @click="toggleExportUI()"
+                                        @click="$emit('exportPrivKeyOpen')"
                                     >
                                         <i class="fas fa-key"></i>
                                         <span

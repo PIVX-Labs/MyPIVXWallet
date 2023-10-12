@@ -274,6 +274,15 @@ export class Wallet {
         return this.#masterKey?.getKeyToExport(this.#nAccount);
     }
 
+    async getKeyToBackup() {
+        if (await hasEncryptedWallet()) {
+            const account = await (await Database.getInstance()).getAccount();
+            return account.encWif;
+        } else {
+            return this.getMasterKey().keyToBackup;
+        }
+    }
+
     //Get path from a script
     getPath(script) {
         const dataBytes = hexToBytes(script);
