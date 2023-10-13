@@ -299,6 +299,7 @@ export default {
 
     INTERNAL_ERROR: 'Internal error, please try again later',
     FAILED_TO_IMPORT: '<b>Failed to import!</b> Invalid password',
+    FAILED_TO_IMPORT_HARDWARE: '<b> Failed to import Hardware Wallet</b>.',
     TESTNET_ENCRYPTION_DISABLED:
         '<b>Testnet Mode is ON!</b><br>Wallet encryption disabled',
     PASSWORD_TOO_SMALL:
@@ -364,6 +365,7 @@ export default {
     MN_STATUS_IS: 'Your masternode status is',
     MN_STATE: 'Your masternode is in <b>{state}</b> state',
     MN_BAD_IP: 'The IP address is invalid!',
+    MN_BAD_PRIVKEY: 'The private key is invalid',
     MN_NOT_ENOUGH_COLLAT:
         'You need <b>{amount} more {ticker}</b> to create a Masternode!',
     MN_ENOUGH_BUT_NO_COLLAT:
@@ -424,6 +426,10 @@ export default {
     WALLET_CONFIRM_L: 'Confirm the import on your Ledger',
     WALLET_NO_HARDWARE:
         "<b>No device available</b><br>Couldn't find a hardware wallet; please plug it in and unlock!",
+    WALLET_HARDWARE_UDEV:
+        '<b>The OS denied access</b> Did you add the udev rules?',
+    WALLET_HARDWARE_NO_ACCESS:
+        '<b>The OS denied access</b> Please check your Operating System settings.',
     WALLET_HARDWARE_CONNECTION_LOST:
         '<b>Lost connection to {hardwareWallet} </b><br>It seems the {hardwareWallet} was unplugged mid-operation, oops!',
     WALLET_HARDWARE_BUSY:

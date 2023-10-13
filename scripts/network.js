@@ -10,6 +10,7 @@ import {
     fAutoSwitch,
 } from './settings.js';
 import { ALERTS } from './i18n.js';
+import { mempool } from './global.js';
 
 /**
  * @typedef {Object} XPUBAddress
@@ -204,6 +205,7 @@ export class ExplorerNetwork extends Network {
         this.arrTxHistory = [];
 
         this.historySyncing = false;
+        this.utxoFetched = false;
     }
 
     error() {
@@ -219,7 +221,6 @@ export class ExplorerNetwork extends Network {
 
     async getBlockCount() {
         try {
-            getEventEmitter().emit('sync-status', 'start');
             const { backend } = await (
                 await retryWrapper(fetchBlockbook, `/api/v2/api`)
             ).json();
@@ -236,8 +237,6 @@ export class ExplorerNetwork extends Network {
         } catch (e) {
             this.error();
             throw e;
-        } finally {
-            getEventEmitter().emit('sync-status', 'stop');
         }
         return this.blocks;
     }
@@ -257,6 +256,10 @@ export class ExplorerNetwork extends Network {
      * @returns {Promise<Array<BlockbookUTXO>>} Resolves when it has finished fetching UTXOs
      */
     async getUTXOs(strAddress = '') {
+        // If getUTXOs has been already called return
+        if (this.utxoFetched && !strAddress) {
+            return;
+        }
         // Don't fetch UTXOs if we're already scanning for them!
         if (!strAddress) {
             if (!this.wallet || !this.wallet.isLoaded()) return;
@@ -269,9 +272,22 @@ export class ExplorerNetwork extends Network {
             const arrUTXOs = await (
                 await retryWrapper(fetchBlockbook, `/api/v2/utxo/${publicKey}`)
             ).json();
-
+            // Update the maximum path
+            for (const utxo of arrUTXOs) {
+                if (utxo.path) {
+                    this.lastWallet = Math.max(
+                        parseInt(utxo.path.split('/')[5]),
+                        this.lastWallet
+                    );
+                }
+            }
             // If using MPW's wallet, then sync the UTXOs in MPW's state
-            if (!strAddress) getEventEmitter().emit('utxo', arrUTXOs);
+            // This check is a temporary fix to the toggle explorer call
+            if (this === getNetwork())
+                if (!strAddress) {
+                    this.utxoFetched = true;
+                    getEventEmitter().emit('utxo', arrUTXOs);
+                }
 
             // Return the UTXOs for additional utility use
             return arrUTXOs;
@@ -281,57 +297,6 @@ export class ExplorerNetwork extends Network {
         } finally {
             this.isSyncing = false;
         }
-    }
-    /**
-     * Fetches UTXOs full info
-     * @param {Object} cUTXO - object-formatted UTXO
-     * @returns {Promise<UTXO>} Promise that resolves with the full info of the UTXO
-     */
-    async getUTXOFullInfo(cUTXO) {
-        const cTx = await (
-            await retryWrapper(
-                fetchBlockbook,
-                `/api/v2/tx-specific/${cUTXO.txid}`
-            )
-        ).json();
-        const cVout = cTx.vout[cUTXO.vout];
-
-        let path;
-        if (cUTXO.path) {
-            path = cUTXO.path.split('/');
-            path[2] =
-                (this.wallet.isHardwareWallet()
-                    ? cChainParams.current.BIP44_TYPE_LEDGER
-                    : cChainParams.current.BIP44_TYPE) + "'";
-
-            const nReceiving = parseInt(path[4]);
-            const nAccount = parseInt(path[5]);
-            const lastWallet = this.getLastWallet(nReceiving);
-
-            this._lastWallets.set(nReceiving, Math.max(nAccount, lastWallet));
-            path = path.join('/');
-        }
-
-        const isColdStake = cVout.scriptPubKey.type === 'coldstake';
-        const isStandard = cVout.scriptPubKey.type === 'pubkeyhash';
-        const isReward = cTx.vout[0].scriptPubKey.hex === '';
-        // We don't know what this is
-        if (!isColdStake && !isStandard) {
-            return null;
-        }
-
-        return new UTXO({
-            id: cUTXO.txid,
-            path,
-            sats: Math.round(cVout.value * COIN),
-            script: cVout.scriptPubKey.hex,
-            vin: cTx?.vin || [],
-            vout: cVout.n,
-            height: this.cachedBlockCount - (cTx.confirmations - 1),
-            status: cTx.confirmations < 1 ? Mempool.PENDING : Mempool.CONFIRMED,
-            isDelegate: isColdStake,
-            isReward,
-        });
     }
 
     /**
@@ -442,7 +407,11 @@ export class ExplorerNetwork extends Network {
                     cData.transactions || [],
                     mapPaths
                 );
-
+                if (cRecentTXs.transactions)
+                    getEventEmitter().emit(
+                        'recent_txs',
+                        cRecentTXs.transactions
+                    );
                 // Process Recent TXs, then add them manually on the basis that they are NOT already known in history
                 const arrRecentTXs = this.toHistoricalTXs(
                     cRecentTXs.transactions || [],
@@ -604,6 +573,14 @@ export class ExplorerNetwork extends Network {
 
     async getTxInfo(txHash) {
         const req = await retryWrapper(fetchBlockbook, `/api/v2/tx/${txHash}`);
+        return await req.json();
+    }
+
+    async getTxFullInfo(txHash) {
+        const req = await retryWrapper(
+            fetchBlockbook,
+            `/api/v2/tx-specific/${txHash}`
+        );
         return await req.json();
     }
 

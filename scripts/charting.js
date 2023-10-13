@@ -8,9 +8,11 @@ import {
     Tooltip,
 } from 'chart.js';
 import { cChainParams, COIN } from './chain_params.js';
-import { doms, isMasternodeUTXO, mempool } from './global.js';
+import { doms, mempool } from './global.js';
 import { Database } from './database.js';
 import { translation } from './i18n.js';
+import { UTXO_WALLET_STATE } from './mempool.js';
+import { COutpoint } from './mempool.js';
 
 Chart.register(
     Colors,
@@ -43,19 +45,21 @@ async function getWalletDataset() {
     const arrBreakdown = [];
 
     // Public (Available)
-    if (mempool.getBalance() > 0) {
+    const spendable_bal = mempool.balance;
+    if (spendable_bal > 0) {
         arrBreakdown.push({
             type: translation.chartPublicAvailable,
-            balance: mempool.getBalance() / COIN,
+            balance: spendable_bal / COIN,
             colour: 'rgba(127, 17, 224, 1)',
         });
     }
 
     // Staking (Locked)
-    if (mempool.getDelegatedBalance() > 0) {
+    const spendable_cold_bal = mempool.coldBalance;
+    if (spendable_cold_bal > 0) {
         arrBreakdown.push({
             type: 'Staking',
-            balance: mempool.getDelegatedBalance() / COIN,
+            balance: spendable_cold_bal / COIN,
             colour: 'rgba(42, 27, 66, 1)',
         });
     }
@@ -63,25 +67,19 @@ async function getWalletDataset() {
     const masternode = await (await Database.getInstance()).getMasternode();
 
     // Masternode (Locked)
-    (
-        await Promise.all(
-            mempool.getConfirmed().map(async (cUTXO) => {
-                return {
-                    UTXO: cUTXO,
-                    isMnUTXO: isMasternodeUTXO(cUTXO, masternode),
-                };
-            })
-        )
-    )
-        .filter(({ isMnUTXO }) => isMnUTXO)
-        .forEach(({ UTXO }) =>
+    if (masternode) {
+        const mnOp = new COutpoint({
+            txid: masternode.collateralTxId,
+            n: masternode.outidx,
+        });
+        if (mempool.hasUTXO(mnOp, UTXO_WALLET_STATE.SPENDABLE, true)) {
             arrBreakdown.push({
                 type: 'Masternode',
-                balance: UTXO.sats / COIN,
+                balance: cChainParams.current.collateralInSats / COIN,
                 colour: 'rgba(19, 13, 30, 1)',
-            })
-        );
-
+            });
+        }
+    }
     return arrBreakdown;
 }
 

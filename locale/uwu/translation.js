@@ -367,6 +367,7 @@ export default {
     MN_STATUS_IS: 'Ur masternowode status is', //Your masternode status is
     MN_STATE: 'Ur masternowode is in <b>{state}</b> state', //Your masternode is in <b>{state}</b> state
     MN_BAD_IP: 'The IP addwess is invalid!', //The IP address is invalid!
+    MN_BAD_PRIVKEY: '', //The private key is invalid
     MN_NOT_ENOUGH_COLLAT:
         'Yew need <b>{amount} more {ticker}</b> to create a Masternowode!', //You need <b>{amount} more {ticker}</b> to create a Masternode!
     MN_ENOUGH_BUT_NO_COLLAT:
@@ -430,6 +431,10 @@ export default {
         "<b>No device avaiwable ☹</b><br>Couldn't find a hawdware wawwet; pwease pwug it in and unwock!", //"<b>No device available</b><br>Couldn't find a hardware wallet; please plug it in and unlock!",
     WALLET_HARDWARE_CONNECTION_LOST:
         '<b>Wost connection to da {hardwareWallet} </b><br>It seems da {hardwareWalletProductionName} was unpwugged mid-opewation, oops!!', // "<b>Lost connection to {hardwareWallet} </b><br>It seems the {hardwareWalletProductionName} was unplugged mid-operation, oops!",
+    WALLET_HARDWARE_UDEV:
+        '<b>Onii-chan noticed the OS denied access~ OwO Did you add the udev rules? UwU</b>', // <b>The OS denied access</b> Did you add the udev rules?
+    WALLET_HARDWARE_NO_ACCESS:
+        '<b>Nyaa~ The OS denied access, nya~</b> Please purr-retty please check your Operating System settings, nya~ UwU', // <b>The OS denied access</b> Please check your Operating System settings.
     WALLET_HARDWARE_BUSY:
         "<b>{hardwareWallet} is waiting!</b><br>Pwease unwock yowour {hardwareWalletProductionName} or finish it's cuwwent pwompt", //"<b>{hardwareWallet} is waiting</b><br>Please unlock your {hardwareWalletProductionName} or finish it's current prompt",
     WALLET_HARDWARE_ERROR: '<b> {hardwareWallet} </b><br> {error}', //"<b> {hardwareWallet} </b><br> {error}"
