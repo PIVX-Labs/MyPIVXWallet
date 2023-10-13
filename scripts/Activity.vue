@@ -2,6 +2,7 @@
 import { ref, computed, watch } from 'vue';
 import { getNetwork, HistoricalTxType } from './network.js';
 import { wallet } from './wallet.js';
+import { mempool } from './global.js';
 import { cChainParams } from './chain_params.js';
 import { translation } from './i18n.js';
 import { Database } from './database.js';
@@ -56,6 +57,12 @@ const txMap = computed(() => {
 
 async function update(fNewOnly = false, sync = true) {
     const cNet = getNetwork();
+
+    // If mempool is not loaded yet do not update the activity GUI
+    // or we might end up in a state where many of our addresses are considered invalid
+    if (!mempool.isLoaded) {
+        return;
+    }
 
     if (!cNet) return;
 

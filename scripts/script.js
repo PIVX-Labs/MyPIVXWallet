@@ -1,3 +1,11 @@
+import bs58 from 'bs58';
+import { cChainParams } from './chain_params.js';
+import { bytesToHex, dSHA256 } from './utils.js';
+
+export const P2PK_START_INDEX = 3;
+export const OWNER_START_INDEX = 6;
+export const COLD_START_INDEX = 28;
+
 export const OP = {
     // push value
     0: 0x00,
@@ -162,4 +170,75 @@ export function getScriptForBurn(data) {
     }
     // Return the burn script
     return cScript;
+}
+
+/**
+ * Is a given script pay to public key hash?
+ * @param {Uint8Array} dataBytes - script as byte aray
+ * @returns {Boolean} True if the given script is P2PKH
+ */
+export function isP2PKH(dataBytes) {
+    return (
+        dataBytes.length >= 25 &&
+        dataBytes[0] == OP['DUP'] &&
+        dataBytes[1] == OP['HASH160'] &&
+        dataBytes[2] == 0x14 &&
+        dataBytes[23] == OP['EQUALVERIFY'] &&
+        dataBytes[24] == OP['CHECKSIG']
+    );
+}
+
+/**
+ * Is a given script pay to cold stake?
+ * @param {Uint8Array} dataBytes - script as byte aray
+ * @returns {Boolean} True if the given script is P2CS
+ */
+export function isP2CS(dataBytes) {
+    return (
+        dataBytes.length >= 51 &&
+        dataBytes[0] == OP['DUP'] &&
+        dataBytes[1] == OP['HASH160'] &&
+        dataBytes[2] == OP['ROT'] &&
+        dataBytes[3] == OP['IF'] &&
+        (dataBytes[4] == OP['CHECKCOLDSTAKEVERIFY'] ||
+            dataBytes[4] == OP['CHECKCOLDSTAKEVERIFY_LOF']) &&
+        dataBytes[5] == 0x14 &&
+        dataBytes[26] == OP['ELSE'] &&
+        dataBytes[27] == 0x14 &&
+        dataBytes[48] == OP['ENDIF'] &&
+        dataBytes[49] == OP['EQUALVERIFY'] &&
+        dataBytes[50] == OP['CHECKSIG']
+    );
+}
+/**
+ * Generate base58 encoded address from a public key hash
+ * @param {Uint8Array} pkhBytes - public key hash
+ * @returns {String} Base58 encoded address
+ */
+export function getAddressFromPKH(pkhBytes) {
+    const buffer = new Uint8Array([
+        cChainParams.current.PUBKEY_ADDRESS,
+        ...pkhBytes,
+    ]);
+    const checksum = dSHA256(buffer);
+    return bs58.encode([
+        ...Array.from(buffer),
+        ...Array.from(checksum.slice(0, 4)),
+    ]);
+}
+/**
+ * Generate the P2KH Script from the corresponding public key
+ * @param {string} pubKey - public key encoded with base58
+ * @return {string} Script in HEX
+ */
+export function getP2PKHScript(pubKey) {
+    const pkh = Uint8Array.from(bs58.decode(pubKey).slice(1, 21));
+    let dataBytes = [];
+    dataBytes.push(OP['DUP']);
+    dataBytes.push(OP['HASH160']);
+    dataBytes.push(0x14);
+    dataBytes = dataBytes.concat(Array.prototype.slice.call(pkh));
+    dataBytes.push(OP['EQUALVERIFY']);
+    dataBytes.push(OP['CHECKSIG']);
+    return bytesToHex(dataBytes);
 }

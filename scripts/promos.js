@@ -14,6 +14,7 @@ import { createAndSendTransaction } from './transactions.js';
 import { wallet } from './wallet.js';
 import { LegacyMasterKey } from './masterkey.js';
 import { deriveAddress } from './encoding.js';
+import { getP2PKHScript } from './script.js';
 
 /** The fee in Sats to use for Creating or Redeeming PIVX Promos */
 export const PROMO_FEE = 10000;
@@ -85,20 +86,16 @@ export class PromoWallet {
         // Check for UTXOs on the explorer
         const arrSimpleUTXOs = await getNetwork().getUTXOs(this.address);
 
-        // Either format the simple UTXOs, or additionally sync the full UTXOs with scripts
+        // Generate the UTXO with scripts
         this.utxos = [];
         for (const cUTXO of arrSimpleUTXOs) {
-            if (fFull) {
-                this.utxos.push(await getNetwork().getUTXOFullInfo(cUTXO));
-            } else {
-                this.utxos.push({
-                    id: cUTXO.txid,
-                    sats: parseInt(cUTXO.value),
-                    vout: cUTXO.vout,
-                });
-            }
+            this.utxos.push({
+                id: cUTXO.txid,
+                sats: parseInt(cUTXO.value),
+                vout: cUTXO.vout,
+                script: getP2PKHScript(this.address),
+            });
         }
-
         // Unlock, mark as synced and return the UTXO set
         this.fLock = false;
         this.fSynced = true;

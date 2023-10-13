@@ -55,7 +55,7 @@ async function reload() {
 }
 
 getEventEmitter().on('balance-update', async () => {
-    balance.value = mempool.getBalance();
+    balance.value = mempool.balance;
     currency.value = strCurrency.toUpperCase();
     price.value = await cMarket.getPrice(strCurrency);
     displayDecimals.value = nDisplayDecimals;
