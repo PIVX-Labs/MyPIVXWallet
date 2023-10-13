@@ -1,22 +1,17 @@
-# New Features
-- Contacts Book: for friends, family and more.
-- Advanced Mode: a new mode for tech-savvy users.
-- Full Testnet support: 100% Testnet coverage.
-- Added ability to Send or Receive via XPub.
-
-# New Languages
-- 🇮🇹 Italian (by Valerio, Duddino).
-- 🇲🇽 Mexican Spanish (by ONeZetty).
+# New Feature
+Cold Staking: customisable owner addresses for Advanced Mode users.
 
 # Improvements
-- A full Account DB rewrite for improved safety.
-- Added colour-coded recipient validation.
-- Send & Receive now uses Text instead of Icons.
-- i18n will fallback to English when missing text.
-- Hidden 'BIP39 Passphrase' behind Advanced Mode.
+- Ledger stability has been vastly improved.
+- A major under-the-hood wallet refactor.
+- Added a Testnet Explorer (duddino.com).
+- Added a Testnet Cold Pool (Sparrow Pool).
+- Ported Balance and Activity GUI to Vue.
+- i18n now only loads languages at runtime.
 
 # Bug Fixes
-- Fixed Stakes 'duplicating' coins when MPW is open.
-- Fixed random network errors from CoinGecko.
-- Fixed certain delegations from failing.
-- Fixed seeds failing to import with whitespace.
+- Fixed Ledger alert 'spam'.
+- Fixed Identicons being visually squished.
+- Fixed proposals passing when consensus disallows it.
+- Fixed Cold Addresses conflicting between chains.
+- Fixed UI errors for Legacy Key MN collaterals.
