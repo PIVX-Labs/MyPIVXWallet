@@ -3,7 +3,7 @@ jest.mock('../../scripts/global.js', () => jest.fn());
 
 import { LegacyMasterKey, HdMasterKey } from '../../scripts/masterkey.js';
 import { mnemonicToSeed } from 'bip39';
-import { parseWIF } from '../../scripts/encoding.js';
+import { parseWIF, verifyPubkey } from '../../scripts/encoding.js';
 import { cChainParams } from '../../scripts/chain_params.js';
 
 function getLegacyMainnet() {
@@ -140,6 +140,26 @@ describe('mainnet tests', () => {
             }
         }
     });
+    test('Correct Base58Check validation of addresses', async () => {
+        const arrTestAddresses = [
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",   // VALID
+            "tLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",   // BAD
+            "TLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",   // BAD
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4BB",   // BAD
+            "DLabs  zGMnsK5K9uRTMCF6NoYNY6ET4Bb",   // BAD
+            "i55j",                                 // BAD
+            "",                                     // BAD
+            "yJ9zhqrwEj7VAjxJZEWqEEtoWQaHK2NKye",   // BAD (Testnet Address)
+        ];
+
+        // Test verifying each address and expect that each of them follow the above validity table
+        for (let i = 0; i < arrTestAddresses.length; i++) {
+            const address = arrTestAddresses[i];
+            const isValid = verifyPubkey(address);
+            // Only the first address should be valid
+            expect(isValid).toBe(i === 0);
+        }
+    });
 });
 
 describe('testnet tests', () => {
@@ -225,6 +245,26 @@ describe('testnet tests', () => {
                     );
                 }
             }
+        }
+    });
+    test('Correct Base58Check validation of addresses', async () => {
+        const arrTestAddresses = [
+            "yJ9zhqrwEj7VAjxJZEWqEEtoWQaHK2NKye",   // VALID
+            "tJ9zhqrwEj7VAjxJZEWqEEtoWQaHK2NKye",   // BAD
+            "DJ9zhqrwEj7VAjxJZEWqEEtoWQaHK2NKye",   // BAD
+            "yJ9zhqrwEj7VAjxJZEWqEEtoWQaHK2NKyE",   // BAD
+            "yJ9zh  wEj7VAjxJZEWqEEtoWQaHK2NKye",   // BAD
+            "i55j",                                 // BAD
+            "",                                     // BAD
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",   // BAD (Mainnet Address)
+        ];
+
+        // Test verifying each address and expect that each of them follow the above validity table
+        for (let i = 0; i < arrTestAddresses.length; i++) {
+            const address = arrTestAddresses[i];
+            const isValid = verifyPubkey(address);
+            // Only the first address should be valid
+            expect(isValid).toBe(i === 0);
         }
     });
 });
