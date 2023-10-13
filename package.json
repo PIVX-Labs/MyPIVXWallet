@@ -35,7 +35,6 @@
         "@types/lodash-es": "^4.17.6",
         "@typescript-eslint/eslint-plugin": "^5.48.0",
         "@typescript-eslint/parser": "^5.48.0",
-        "@vue/cli-plugin-unit-jest": "^5.0.8",
         "@vue/vue3-jest": "^27.0.0",
         "babel-plugin-transform-import-meta": "^2.2.1",
         "copy-webpack-plugin": "^11.0.0",
