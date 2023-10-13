@@ -142,14 +142,14 @@ describe('mainnet tests', () => {
     });
     test('Correct Base58Check validation of addresses', async () => {
         const arrTestAddresses = [
-            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",   // VALID
-            "tLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",   // BAD
-            "TLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",   // BAD
-            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4BB",   // BAD
-            "DLabs  zGMnsK5K9uRTMCF6NoYNY6ET4Bb",   // BAD
-            "i55j",                                 // BAD
-            "",                                     // BAD
-            "yJ9zhqrwEj7VAjxJZEWqEEtoWQaHK2NKye",   // BAD (Testnet Address)
+            'DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb', // VALID
+            'tLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb', // BAD
+            'TLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb', // BAD
+            'DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4BB', // BAD
+            'DLabs  zGMnsK5K9uRTMCF6NoYNY6ET4Bb', // BAD
+            'i55j', // BAD
+            '', // BAD
+            'yJ9zhqrwEj7VAjxJZEWqEEtoWQaHK2NKye', // BAD (Testnet Address)
         ];
 
         // Test verifying each address and expect that each of them follow the above validity table
@@ -249,14 +249,14 @@ describe('testnet tests', () => {
     });
     test('Correct Base58Check validation of addresses', async () => {
         const arrTestAddresses = [
-            "yJ9zhqrwEj7VAjxJZEWqEEtoWQaHK2NKye",   // VALID
-            "tJ9zhqrwEj7VAjxJZEWqEEtoWQaHK2NKye",   // BAD
-            "DJ9zhqrwEj7VAjxJZEWqEEtoWQaHK2NKye",   // BAD
-            "yJ9zhqrwEj7VAjxJZEWqEEtoWQaHK2NKyE",   // BAD
-            "yJ9zh  wEj7VAjxJZEWqEEtoWQaHK2NKye",   // BAD
-            "i55j",                                 // BAD
-            "",                                     // BAD
-            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",   // BAD (Mainnet Address)
+            'yJ9zhqrwEj7VAjxJZEWqEEtoWQaHK2NKye', // VALID
+            'tJ9zhqrwEj7VAjxJZEWqEEtoWQaHK2NKye', // BAD
+            'DJ9zhqrwEj7VAjxJZEWqEEtoWQaHK2NKye', // BAD
+            'yJ9zhqrwEj7VAjxJZEWqEEtoWQaHK2NKyE', // BAD
+            'yJ9zh  wEj7VAjxJZEWqEEtoWQaHK2NKye', // BAD
+            'i55j', // BAD
+            '', // BAD
+            'DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb', // BAD (Mainnet Address)
         ];
 
         // Test verifying each address and expect that each of them follow the above validity table
