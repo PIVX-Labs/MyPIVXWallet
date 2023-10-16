@@ -11,7 +11,7 @@
         "predeploy": "npm run build",
         "deploy": "gh-pages -d dist",
         "prettier": "prettier --write --cache .",
-        "lint": "eslint scripts/ *.js",
+        "lint": "eslint .",
         "test": "jest"
     },
     "repository": {

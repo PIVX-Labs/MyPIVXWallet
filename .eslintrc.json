@@ -1,5 +1,6 @@
 {
     "env": { "browser": true, "es2021": true, "jquery": true },
+    "ignorePatterns": ["tests/"],
     "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended"],
     "overrides": [],
     "parser": "@typescript-eslint/parser",
