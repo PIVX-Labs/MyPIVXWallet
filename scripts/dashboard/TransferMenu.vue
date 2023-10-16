@@ -1,26 +1,45 @@
 <script setup>
 import { translation } from '../i18n.js';
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
 import { getAddressColor } from '../contacts-book';
 import { promptForContact } from '../contacts-book';
+import { sanitizeHTML } from '../misc';
 
-const emit = defineEmits(['send', 'close']);
-const address = ref('');
-// Amount of PIVs to send in satoshi
-const amount = ref(0);
+const emit = defineEmits(['send', 'close', 'update:amount', 'update:address']);
 // Amount of PIVs to send in the selected currency (e.g. USD)
 const amountCurrency = ref(0);
 const color = ref('');
 
-function send() {
-    emit('send', address.value, amount.value);
-}
-
-const props = defineProps({ show: Boolean, price: Number, currency: String });
-
-watch(address, async () => {
-    color.value = await getAddressColor(address.value);
+const props = defineProps({
+    show: Boolean,
+    price: Number,
+    currency: String,
+    amount: Number,
+    address: String,
 });
+
+const address = computed({
+    get() {
+        return props.address;
+    },
+    set(value) {
+        emit('update:address', value);
+        getAddressColor(value).then((c) => (color.value = c));
+    },
+});
+const amount = computed({
+    get() {
+        return props.amount;
+    },
+    set(value) {
+        syncAmountCurrency();
+        emit('update:amount', value);
+    },
+});
+
+function send() {
+    emit('send', sanitizeHTML(address.value), amount.value);
+}
 
 function syncAmountCurrency() {
     amountCurrency.value = amount.value * props.price;
@@ -112,7 +131,6 @@ async function selectContact() {
                                     autocomplete="nope"
                                     onkeydown="javascript: return event.keyCode == 69 ? false : true"
                                     v-model="amount"
-                                    @input="syncAmountCurrency()"
                                 />
                                 <div class="input-group-append">
                                     <span class="input-group-text p-0">

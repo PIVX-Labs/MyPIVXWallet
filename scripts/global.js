@@ -345,48 +345,8 @@ export async function start() {
         : 0;
     await settingsStart();
 
-    // Customise the UI if a saved wallet exists
-    if (await hasEncryptedWallet()) {
-        const database = await Database.getInstance();
-        const { publicKey } = await database.getAccount();
-
-        /* TODO: readd contacts thingy
-        if (publicKey) {
-            // Update the "Receive" UI to apply Translation and Contacts updates
-            await guiToggleReceiveType(cReceiveType);
-
-            // Check for Add Contact calls
-            if (urlParams.has('addcontact')) {
-                // Quick sanity check
-                const strURI = urlParams.get('addcontact');
-                if (strURI.includes(':')) {
-                    // Split to 'name' and 'pubkey'
-                    const arrParts = strURI.split(':');
-
-                    // Convert Name from HEX to UTF-8
-                    const strName = Buffer.from(arrParts[0], 'hex').toString(
-                        'utf8'
-                    );
-                    const strPubkey = arrParts[1];
-
-                    // Prompt the user to add the Contact
-                    guiAddContactPrompt(sanitizeHTML(strName), strPubkey);
-                }
-            } else if (reqTo.length || reqAmount > 0) {
-                // Payment processor popup
-                guiPreparePayment(
-                    reqTo,
-                    reqAmount,
-                    urlParams.has('desc') ? urlParams.get('desc') : ''
-                );
-		}
-		
-        }*/
-    } else {
-        // Just load the block count, for use in non-wallet areas
-        getNetwork().getBlockCount();
-    }
-
+    // Just load the block count, for use in non-wallet areas
+    await getNetwork().getBlockCount();
     subscribeToNetworkEvents();
 
     // If allowed by settings: submit a simple 'hit' (app load) to Labs Analytics

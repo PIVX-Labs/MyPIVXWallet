@@ -11,7 +11,7 @@ import {
     wallet,
 } from '../wallet.js';
 import { parseWIF, verifyWIF } from '../encoding.js';
-import { createAlert, isBase64 } from '../misc.js';
+import { createAlert, isBase64, sanitizeHTML } from '../misc.js';
 import { ALERTS, translation, tr } from '../i18n.js';
 import {
     LegacyMasterKey,
@@ -36,6 +36,7 @@ import {
 import { getNetwork } from '../network.js';
 import { validateAmount, createAndSendTransaction } from '../transactions.js';
 import { strHardwareName } from '../ledger';
+import { guiAddContactPrompt } from '../contacts-book';
 
 const isImported = ref(wallet.isLoaded());
 const activity = ref(null);
@@ -46,6 +47,8 @@ const showExportModal = ref(false);
 const showEncryptModal = ref(false);
 const keyToBackup = ref('');
 const jdenticonValue = ref('');
+const transferAddress = ref('');
+const transferAmount = ref(0);
 watch(showExportModal, async (showExportModal) => {
     if (showExportModal) {
         keyToBackup.value = await wallet.getKeyToBackup();
@@ -347,8 +350,29 @@ onMounted(async () => {
     await start();
     if (await hasEncryptedWallet()) {
         const database = await Database.getInstance();
-        const account = await database.getAccount();
-        await importWallet({ type: 'hd', secret: account.publicKey });
+        const { publicKey } = await database.getAccount();
+        await importWallet({ type: 'hd', secret: publicKey });
+
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('addcontact')) {
+            const strURI = urlParams.get('addcontact');
+            if (strURI.includes(':')) {
+                // Split 'name' and 'pubkey'
+                let [name, pubKey] = strURI.split(':');
+                // Convert name from hex to utf-8
+                name = Buffer.from(name, 'hex').toString('utf8');
+                await guiAddContactPrompt(
+                    sanitizeHTML(name),
+                    sanitizeHTML(pubKey)
+                );
+            }
+        } else if (urlParams.has('pay')) {
+            const reqAmount = parseFloat(urlParams.get('amount')) ?? 0;
+            const reqTo = urlParams.get('pay') ?? '';
+            transferAddress.value = reqTo;
+            transferAmount.value = reqAmount;
+            showTransferMenu.value = true;
+        }
     }
 });
 
@@ -805,6 +829,8 @@ defineExpose({
             :show="showTransferMenu"
             :price="price"
             :currency="currency"
+            v-model:amount="transferAmount"
+            v-model:address="transferAddress"
             @close="showTransferMenu = false"
             @send="send"
         />

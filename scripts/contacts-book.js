@@ -612,7 +612,7 @@ export async function guiAddContactPrompt(
         }
     } else {
         // Ensure we're not adding (one of) our own address(es)
-        if (await wallet.isOwnAddress(strPubkey)) {
+        if (wallet.isOwnAddress(strPubkey)) {
             createAlert('warning', ALERTS.CONTACTS_CANNOT_ADD_YOURSELF, 3500);
             return false;
         }

@@ -52,12 +52,12 @@ export async function switchTranslation(langName) {
         // Translate any dynamic elements necessary
         const cNet = getNetwork();
         if (wallet.isLoaded() && cNet) {
-            updateEncryptionGUI();
+            await updateEncryptionGUI();
         }
         loadAlerts();
         fillAnalyticSelect();
         if (wallet.isLoaded()) {
-            guiToggleReceiveType(cReceiveType);
+            await guiToggleReceiveType(cReceiveType);
         }
         return true;
     } else {
@@ -171,11 +171,11 @@ export async function start() {
 
     // Check if set in local storage
     if (localTranslation !== '') {
-        setTranslation(localTranslation);
+        await setTranslation(localTranslation);
     } else {
         // Check if we support the user's browser locale
         if (arrActiveLangs.find((lang) => lang.code === strLang)) {
-            setTranslation(strLang);
+            await setTranslation(strLang);
         } else {
             // Default to EN if the locale isn't supported yet
             console.log(
@@ -183,7 +183,7 @@ export async function start() {
                     strLang +
                     ") is not supported yet, if you'd like to contribute translations (for rewards!) contact us on GitHub or Discord!"
             );
-            setTranslation('en');
+            await setTranslation('en');
         }
     }
     translateStaticHTML(translation);
