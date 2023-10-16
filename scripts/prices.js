@@ -14,7 +14,7 @@ export const COINGECKO_ENDPOINT =
  */
 export class MarketSource {
     /** The storage object for raw market data */
-     cData = {};
+    cData = {};
 
     /** The name of the market source */
     strName = '';
