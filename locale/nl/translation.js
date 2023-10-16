@@ -58,11 +58,12 @@ export default {
 
     // Seed Phrase Creation
     thisIsYourSeed: 'Dit is uw seedzin:', //
-    writeDownSeed: "Schrijf het ergens op. U ziet dit <b>maar één keer!</b>", //
+    writeDownSeed: 'Schrijf het ergens op. U ziet dit <b>maar één keer!</b>', //
     doNotShareWarning:
         'Iedereen die er een kopie van heeft, kan <b>al</b> uw geld bekijken.', //
     doNotShare: 'Deel het niet met iemand.', //
-    digitalStoreNotAdvised: 'Het is <b>NIET</b> aan te raden om dit digitaal op te slaan.', //
+    digitalStoreNotAdvised:
+        'Het is <b>NIET</b> aan te raden om dit digitaal op te slaan.', //
     optionalPassphrase: 'Optionele wachtzin (BIP39)', //
     writtenDown: 'Ik heb mijn seedzin opgeschreven', //
 
@@ -116,7 +117,8 @@ export default {
         'Zodra je "{button}" in het Dashboard selecteert, kun je een contact aanmaken om het ontvangen van PIV gemakkelijker te maken!', //
     shareContactURL: 'Deel Contact URL', //
     setupYourContact: 'Stel je contact in', //
-    receiveWithContact: 'Ontvangen met behulp van een eenvoudige gebruikersnaam-gebaseerd contact', //
+    receiveWithContact:
+        'Ontvangen met behulp van een eenvoudige gebruikersnaam-gebaseerd contact', //
     onlyShareContactPrivately:
         '<b>Alleen</b> deel je contact met vertrouwde personen (familie, vrienden)', //
 
@@ -137,7 +139,8 @@ export default {
     removeContactTitle: 'Verwijder {strName}?', //
     removeContactSubtext:
         'Weet je zeker dat je {strName} wilt verwijderen uit je contacten?', //
-    removeContactNote: 'Je kunt ze op elk moment in de toekomst opnieuw toevoegen.', //
+    removeContactNote:
+        'Je kunt ze op elk moment in de toekomst opnieuw toevoegen.', //
 
     // Export
     privateKey: 'Privésleutel', //
@@ -148,7 +151,8 @@ export default {
 
     // PIVX Promos
     // NOTE: for this below line, continue the sentence "PIVX Promos [...]", since 'PIVX Promos' is a brand, it is not translated.
-    pivxPromos: 'is een gedecentraliseerd systeem voor cadeaucodes ter waarde van PIV', // [...] is a decentralised system for gift codes worth PIV
+    pivxPromos:
+        'is een gedecentraliseerd systeem voor cadeaucodes ter waarde van PIV', // [...] is a decentralised system for gift codes worth PIV
     // NOTE: on this line, if possible, leave 'PIVX Promos' untranslated
     redeemInput: 'Voer uw "PIVX Promos" code in', //Enter your 'PIVX Promos' code
     createName: 'Naam Promo (Optioneel)', //Promo Name (Optional)
@@ -180,7 +184,7 @@ export default {
     contestedProposalsTitle: 'Omstreden Voorstellen', //
     contestedProposalsDesc:
         'Dit zijn voorstellen die een overweldigend aantal negatieve stemmen hebben gekregen, waardoor het waarschijnlijk spam is of een zeer betwistbaar voorstel.', //
-        
+
     // Settings
     settingsCurrency: 'Kies een weergavevaluta:', //
     priceProvidedBy: 'Prijsgegevens verstrekt door', //
@@ -188,7 +192,8 @@ export default {
     settingsExplorer: 'Kies een verkenner:', //
     settingsLanguage: 'Kies een taal:', //
     settingsPivxNode: 'Kies een PIVX-knooppunt:', //
-    settingsAutoSelectNet: 'Automatisch selecteren van verkenner en knooppunten', //
+    settingsAutoSelectNet:
+        'Automatisch selecteren van verkenner en knooppunten', //
     settingsAnalytics: 'Kies uw niveau van bijdrage aan analytics:', //
     settingsToggleDebug: 'Debugmodus', //
     settingsToggleTestnet: 'Testnet-modus', //
@@ -197,7 +202,8 @@ export default {
         'Dit ontgrendelt diepere functionaliteit en aanpassing, maar kan overweldigend zijn en mogelijk gevaarlijk zijn voor onervaren gebruikers!', //
 
     // Network switching (mainnet <---> testnet)
-    netSwitchUnsavedWarningTitle: 'Uw {network} portemonnee is niet opgeslagen!', //
+    netSwitchUnsavedWarningTitle:
+        'Uw {network} portemonnee is niet opgeslagen!', //
     netSwitchUnsavedWarningSubtitle: 'Uw {network} account loopt gevaar!', //
     netSwitchUnsavedWarningSubtext:
         'Als u naar {network} overschakelt voordat u het opslaat, verliest u de rekening!', //
@@ -206,7 +212,8 @@ export default {
     // Transparency Report
     transparencyReport: 'Transparantierapport',
     hit: 'Een ping die wijst op een app-lading, er worden geen unieke gegevens verzonden.',
-    time_to_sync: 'De tijd in seconden die MPW nodig had om voor het laatst te synchroniseren.',
+    time_to_sync:
+        'De tijd in seconden die MPW nodig had om voor het laatst te synchroniseren.',
     transaction:
         'Een ping die duidt op een transactie, er worden geen unieke gegevens verzonden, maar het kan worden afgeleid uit de on-chain tijd.',
 
@@ -306,7 +313,7 @@ export default {
         'Dat wachtwoord is een beetje kort!<br>Gebruik minstens <b>{MIN_PASS_LENGTH} tekens.</b>',
     PASSWORD_DOESNT_MATCH: 'Je wachtwoorden komen niet overeen!',
     NEW_PASSWORD_SUCCESS:
-        "<b>Je bent beveiligd! 🔐</b><br>Goed gedaan, bepantserde PIVian!",
+        '<b>Je bent beveiligd! 🔐</b><br>Goed gedaan, bepantserde PIVian!',
     INCORRECT_PASSWORD: 'Onjuist wachtwoord!',
     INVALID_AMOUNT: '<b>Ongeldig bedrag!</b><br>',
     TX_SENT: 'Transactie verstuurd!',
@@ -315,7 +322,7 @@ export default {
     UNSUPPORTED_CHARACTER:
         "Het teken '{char}' wordt niet ondersteund in adressen! (Niet compatibel met Base58)",
     UNSUPPORTED_WEBWORKERS:
-        "Deze browser ondersteunt geen web workers (multi-threaded JS), helaas kun je geen Vanity wallets genereren!",
+        'Deze browser ondersteunt geen web workers (multi-threaded JS), helaas kun je geen Vanity wallets genereren!',
     INVALID_ADDRESS: '<b>Ongeldig PIVX-adres!</b><br> {address}',
     VALIDATE_AMOUNT_LOW: '<br>Minimale bedrag is {minimumAmount} {coinTicker}!',
     VALIDATE_AMOUNT_DECIMAL: '{coinDecimal} decimaallimiet overschreden',
@@ -330,7 +337,8 @@ export default {
     STAKE_ADDR_SET:
         '<b>Cold-adres ingesteld!</b><br>Toekomstige inzetten zullen dit adres gebruiken.',
     STAKE_ADDR_BAD: 'Ongeldig Cold Staking-adres!',
-    STAKE_NOT_SEND: 'Gebruik hier het <b>Stake</b> scherm, niet het Verzend scherm!',
+    STAKE_NOT_SEND:
+        'Gebruik hier het <b>Stake</b> scherm, niet het Verzend scherm!',
     BAD_ADDR_LENGTH:
         '<b>Ongeldig PIVX-adres!<b><br>Slechte lengte ({addressLength})',
     BAD_ADDR_PREFIX:
@@ -342,22 +350,25 @@ export default {
     BACKUP_OR_ENCRYPT_WALLET:
         'Versleutel en/of BACK-UP je sleutels voordat je weggaat, anders kan je ze verliezen!',
     NO_CAMERAS: 'Dit apparaat heeft geen camera!',
-    STAKING_LEDGER_NO_SUPPORT: 'Ledger wordt niet ondersteund voor Cold Staking',
+    STAKING_LEDGER_NO_SUPPORT:
+        'Ledger wordt niet ondersteund voor Cold Staking',
     CONNECTION_FAILED:
         '<b>Synchronisatie mislukt!</b> Probeer het later opnieuw.<br>U kunt opnieuw proberen verbinding te maken via de Instellingen.',
     MN_NOT_ENABLED: 'Je masternode is nog niet ingeschakeld!',
     VOTE_SUBMITTED: 'Stem ingediend!',
-    VOTED_ALREADY: 'Je hebt al gestemd voor dit voorstel! Wacht alsjeblieft 1 uur',
+    VOTED_ALREADY:
+        'Je hebt al gestemd voor dit voorstel! Wacht alsjeblieft 1 uur',
     VOTE_SIG_BAD:
-        "Handtekening kan niet worden geverifieerd, controleer de privésleutel van je masternode",
+        'Handtekening kan niet worden geverifieerd, controleer de privésleutel van je masternode',
     MN_CREATED_WAIT_CONFS:
         '<b>Masternode aangemaakt!<b><br>Wacht 15 bevestigingen om verder te gaan',
     MN_ACCESS_BEFORE_VOTE: 'Toegang tot een masternode vóór het stemmen!',
-    MN_OFFLINE_STARTING: 'Je masternode is offline, we zullen proberen deze te starten',
+    MN_OFFLINE_STARTING:
+        'Je masternode is offline, we zullen proberen deze te starten',
     MN_STARTED: '<b>Masternode gestart!</b>',
     MN_RESTARTED: '<b>Masternode opnieuw gestart!</b>',
     MN_STARTED_ONLINE_SOON:
-        "<b>Masternode gestart!</b><br>Hij zal binnenkort online zijn",
+        '<b>Masternode gestart!</b><br>Hij zal binnenkort online zijn',
     MN_START_FAILED: '<b>Masternode gestart!</b>',
     MN_RESTART_FAILED: '<b>Masternode opnieuw gestart!</b>',
     MN_DESTROYED:
@@ -387,13 +398,13 @@ export default {
         '<b>Contact bestaat al!</b><br>Een contact heet al "{strNewName}"!',
     CONTACTS_KEY_ALREADY_EXISTS:
         '<b>Contact bestaat al, maar onder een andere naam!</b><br>Je hebt {newName} opgeslagen als <b>{oldName}</b> in je contacten',
-    CONTACTS_NOT_A_CONTACT_QR: "Dit is geen Contact QR!",
+    CONTACTS_NOT_A_CONTACT_QR: 'Dit is geen Contact QR!',
     CONTACTS_ADDED:
         '<b>Nieuw contact toegevoegd!</b><br>{strName} is toegevoegd, hoera!',
     CONTACTS_YOU_HAVE_NONE: 'Je hebt geen contacten!',
 
     PROPOSAL_FINALISED: 'Voorstel gelanceerd!',
-    PROPOSAL_UNCONFIRMED: "Het voorstel is nog niet bevestigd",
+    PROPOSAL_UNCONFIRMED: 'Het voorstel is nog niet bevestigd',
     PROPOSAL_EXPIRED: 'Het voorstel is verlopen. Maak een nieuwe aan.',
     PROPOSAL_FINALISE_FAIL: 'Mislukt om het voorstel af te ronden.',
     PROPOSAL_IMPORT_FIRST: 'Maak of importeer je portemonnee om door te gaan',
@@ -408,10 +419,13 @@ export default {
     PROMO_NOT_ENOUGH: 'Je hebt niet genoeg {ticker} om die code te maken!',
     PROMO_ALREADY_CREATED: 'Je hebt die code al gemaakt!',
 
-    SWITCHED_EXPLORERS: '<b>Explorer gewisseld!</b><br>Gebruikt nu {explorerName}',
+    SWITCHED_EXPLORERS:
+        '<b>Explorer gewisseld!</b><br>Gebruikt nu {explorerName}',
     SWITCHED_NODE: '<b>Node gewisseld!</b><br>Gebruikt nu {node}',
-    SWITCHED_ANALYTICS: '<b>Analytics niveau gewisseld!</b><br>Nu niveau {level}',
-    SWITCHED_SYNC: '<b>Synchronisatiemodus gewisseld!</b><br>Gebruikt nu {sync} synchronisatie',
+    SWITCHED_ANALYTICS:
+        '<b>Analytics niveau gewisseld!</b><br>Nu niveau {level}',
+    SWITCHED_SYNC:
+        '<b>Synchronisatiemodus gewisseld!</b><br>Gebruikt nu {sync} synchronisatie',
     UNABLE_SWITCH_TESTNET:
         '<b>Kan de Testnet-modus niet inschakelen!</b><br>Een portemonnee is al geladen',
 
@@ -420,12 +434,12 @@ export default {
     WALLET_UNLOCK_IMPORT:
         'Ontgrendel je portemonnee {unlock} voordat je transacties verstuurt!',
     WALLET_FIREFOX_UNSUPPORTED:
-        "<b>Firefox ondersteunt dit niet!</b><br>Helaas ondersteunt Firefox geen hardware wallets",
+        '<b>Firefox ondersteunt dit niet!</b><br>Helaas ondersteunt Firefox geen hardware wallets',
     WALLET_HARDWARE_WALLET:
         '<b>Hardware wallet klaar!</b><br>Houd je {hardwareWallet} aangesloten, ontgrendeld en in de PIVX-app',
     WALLET_CONFIRM_L: 'Bevestig de import op je Ledger',
     WALLET_NO_HARDWARE:
-        "<b>Geen apparaat beschikbaar</b><br>Kon geen hardware wallet vinden; sluit deze aan en ontgrendel!",
+        '<b>Geen apparaat beschikbaar</b><br>Kon geen hardware wallet vinden; sluit deze aan en ontgrendel!',
     WALLET_HARDWARE_UDEV:
         '<b>De OS heeft toegang geweigerd</b> Heb je de udev-regels toegevoegd?',
     WALLET_HARDWARE_NO_ACCESS:
@@ -433,11 +447,12 @@ export default {
     WALLET_HARDWARE_CONNECTION_LOST:
         '<b>Verbinding verbroken met {hardwareWallet} </b><br>Het lijkt erop dat de {hardwareWallet} tijdens de bewerking is losgekoppeld, oeps!',
     WALLET_HARDWARE_BUSY:
-        "<b>{hardwareWallet} wacht</b><br>Ontgrendel je {hardwareWallet} of voltooi de huidige prompt",
+        '<b>{hardwareWallet} wacht</b><br>Ontgrendel je {hardwareWallet} of voltooi de huidige prompt',
     WALLET_HARDWARE_ERROR: '<b> {hardwareWallet} </b><br> {error}',
 
     CONFIRM_POPUP_VOTE: 'Stem bevestigen',
-    CONFIRM_POPUP_VOTE_HTML: 'Weet je het zeker? Het duurt 60 minuten om je stem te veranderen',
+    CONFIRM_POPUP_VOTE_HTML:
+        'Weet je het zeker? Het duurt 60 minuten om je stem te veranderen',
     CONFIRM_POPUP_TRANSACTION: 'Bevestig je transactie',
     CONFIRM_POPUP_MN_P_KEY: 'Je Masternode privésleutel',
     CONFIRM_POPUP_MN_P_KEY_HTML:

@@ -290,7 +290,9 @@ defineExpose({ update, reset, getTxCount });
                                         : translation.description
                                 }}
                             </th>
-                            <th scope="col" class="tx3">{{translation.amount}}</th>
+                            <th scope="col" class="tx3">
+                                {{ translation.amount }}
+                            </th>
                             <th scope="col" class="tx4 text-right"></th>
                         </tr>
                     </thead>
