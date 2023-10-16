@@ -1,4 +1,3 @@
-aeiprheaouthoeathort;
 import { getEventEmitter } from './event_bus.js';
 import { isEmpty } from './misc.js';
 import { cMarket, fillCurrencySelect } from './settings.js';
@@ -15,7 +14,7 @@ export const COINGECKO_ENDPOINT =
  */
 export class MarketSource {
     /** The storage object for raw market data */
-    cData = {};
+     cData = {};
 
     /** The name of the market source */
     strName = '';
