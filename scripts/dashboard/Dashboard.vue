@@ -11,7 +11,13 @@ import {
     wallet,
 } from '../wallet.js';
 import { parseWIF, verifyWIF } from '../encoding.js';
-import { createAlert, isBase64, sanitizeHTML } from '../misc.js';
+import {
+    createAlert,
+    isBase64,
+    isValidBech32,
+    parseBIP21Request,
+    sanitizeHTML,
+} from '../misc.js';
 import { ALERTS, translation, tr } from '../i18n.js';
 import {
     LegacyMasterKey,
@@ -37,6 +43,7 @@ import { getNetwork } from '../network.js';
 import { validateAmount, createAndSendTransaction } from '../transactions.js';
 import { strHardwareName } from '../ledger';
 import { guiAddContactPrompt } from '../contacts-book';
+import { scanQRCode } from '../scanner';
 
 const isImported = ref(wallet.isLoaded());
 const activity = ref(null);
@@ -355,17 +362,7 @@ onMounted(async () => {
 
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.has('addcontact')) {
-            const strURI = urlParams.get('addcontact');
-            if (strURI.includes(':')) {
-                // Split 'name' and 'pubkey'
-                let [name, pubKey] = strURI.split(':');
-                // Convert name from hex to utf-8
-                name = Buffer.from(name, 'hex').toString('utf8');
-                await guiAddContactPrompt(
-                    sanitizeHTML(name),
-                    sanitizeHTML(pubKey)
-                );
-            }
+            await handleContactRequest(urlParams);
         } else if (urlParams.has('pay')) {
             const reqAmount = parseFloat(urlParams.get('amount')) ?? 0;
             const reqTo = urlParams.get('pay') ?? '';
@@ -394,6 +391,48 @@ getEventEmitter().on('balance-update', async () => {
 
 function changePassword() {
     showEncryptModal.value = true;
+}
+
+async function openSendQRScanner() {
+    const cScan = await scanQRCode();
+    if (cScan) {
+        const { data } = cScan;
+        if (isStandardAddress(data) || isValidBech32(data).valid) {
+            transferAddress.value = data;
+            showTransferMenu.value = true;
+            return;
+        }
+        const cBIP32Req = parseBIP21Request(data);
+        if (cBIP32Req) {
+            transferAddress.value = cBIP32Req.address;
+            transferAmount.value = cBIP32Req.amount ?? 0;
+            showTransferMenu.value = true;
+            return;
+        }
+        if (data.includes('addcontact=')) {
+            const urlParams = new URLSearchParams(data);
+            await handleContactRequest(urlParams);
+            return;
+        }
+    }
+    createAlert(
+        'warning',
+        `"${sanitizeHTML(
+            cScan?.data?.substring(0, Math.min(cScan?.data?.length, 6) ?? '')
+        )}…" ${ALERTS.QR_SCANNER_BAD_RECEIVER}`,
+        7500
+    );
+}
+
+async function handleContactRequest(urlParams) {
+    const strURI = urlParams.get('addcontact');
+    if (strURI.includes(':')) {
+        // Split 'name' and 'pubkey'
+        let [name, pubKey] = strURI.split(':');
+        // Convert name from hex to utf-8
+        name = Buffer.from(name, 'hex').toString('utf8');
+        await guiAddContactPrompt(sanitizeHTML(name), sanitizeHTML(pubKey));
+    }
 }
 
 defineExpose({
@@ -831,6 +870,7 @@ defineExpose({
             :currency="currency"
             v-model:amount="transferAmount"
             v-model:address="transferAddress"
+            @openQrScan="openSendQRScanner()"
             @close="showTransferMenu = false"
             @send="send"
         />

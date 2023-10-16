@@ -12,7 +12,7 @@ let scanner = null;
 
 /**
  * Asynchronously prompt a QR code scan, returning the QR string data on resolve or a `false` rejection on cancel or error
- * @returns {Promise<string> | false} - QR String data | false
+ * @returns {Promise<QrScanner.ScanResult | false>} - QR String data | false
  */
 export async function scanQRCode() {
     // Don't create multiple scanners; in case of button spam
@@ -24,7 +24,7 @@ export async function scanQRCode() {
         return false;
     }
 
-    return new Promise((resolve, _reject) => {
+    return await new Promise((resolve, _reject) => {
         // Create a scanner
         scanner = new QrScanner(
             doms.domQrReaderStream,

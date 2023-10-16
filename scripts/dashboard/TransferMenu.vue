@@ -5,7 +5,13 @@ import { getAddressColor } from '../contacts-book';
 import { promptForContact } from '../contacts-book';
 import { sanitizeHTML } from '../misc';
 
-const emit = defineEmits(['send', 'close', 'update:amount', 'update:address']);
+const emit = defineEmits([
+    'send',
+    'close',
+    'openQrScan',
+    'update:amount',
+    'update:address',
+]);
 // Amount of PIVs to send in the selected currency (e.g. USD)
 const amountCurrency = ref(0);
 const color = ref('');
@@ -87,7 +93,7 @@ async function selectContact() {
                         <div class="input-group-append">
                             <span
                                 class="input-group-text ptr"
-                                onclick="MPW.openSendQRScanner()"
+                                @click="$emit('openQrScan')"
                                 ><i class="fa-solid fa-qrcode fa-2xl"></i
                             ></span>
                             <span

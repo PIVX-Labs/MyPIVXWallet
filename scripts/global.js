@@ -596,72 +596,6 @@ export function selectMaxBalance(domCoin, domValue, fCold = false) {
 }
 
 /**
- * Prompt a QR scan for a Payment (Address or BIP21)
- */
-export async function openSendQRScanner() {
-    const cScan = await scanQRCode();
-
-    if (!cScan || !cScan.data) return;
-
-    /* Check what data the scan contains - for the various QR request types */
-
-    // Plain address (Length and prefix matches)
-    if (isStandardAddress(cScan.data)) {
-        return guiPreparePayment(cScan.data);
-    }
-
-    // Shield address (Valid bech32 string)
-    if (isValidBech32(cScan.data).valid) {
-        return guiPreparePayment(cScan.data);
-    }
-
-    // BIP21 Payment Request (Optional 'amount' and 'label')
-    const cBIP21Req = parseBIP21Request(cScan.data);
-    if (cBIP21Req) {
-        return guiPreparePayment(
-            cBIP21Req.address,
-            cBIP21Req.options.amount || 0,
-            cBIP21Req.options.label || ''
-        );
-    }
-
-    // MPW Contact Request URI
-    if (cScan.data.includes('addcontact=')) {
-        // Parse as URL Params
-        const cURL = new URL(cScan.data);
-        const urlParams = new URLSearchParams(cURL.search);
-        const strURI = urlParams.get('addcontact');
-
-        // Sanity check the URI
-        if (strURI?.includes(':')) {
-            // Split to 'name' and 'pubkey'
-            const arrParts = strURI.split(':');
-
-            // If the wallet is encrypted, prompt the user to (optionally) add the Contact, before the Tx
-            const fUseName = (await hasEncryptedWallet())
-                ? await guiAddContactPrompt(
-                      sanitizeHTML(arrParts[0]),
-                      arrParts[1],
-                      false
-                  )
-                : false;
-
-            // Prompt for payment
-            return guiPreparePayment(fUseName ? arrParts[0] : arrParts[1]);
-        }
-    }
-
-    // No idea what this is...
-    createAlert(
-        'warning',
-        `"${sanitizeHTML(
-            cScan.data.substring(0, Math.min(cScan.data.length, 6))
-        )}…" ${ALERTS.QR_SCANNER_BAD_RECEIVER}`,
-        7500
-    );
-}
-
-/**
  * Open the Explorer in a new tab for the current wallet, or a specific address
  * @param {string?} strAddress - Optional address to open, if void, the master key is used
  */
@@ -773,49 +707,6 @@ export function toClipboard(source, caller) {
         caller.classList.remove('fa-check');
         caller.style.cursor = 'pointer';
     }, 1000);
-}
-
-/**
- * Prompt for a payment in the GUI with pre-filled inputs
- * @param {string} strTo - The address receiving the payment
- * @param {number} nAmount - The payment amount in full coins
- * @param {string} strDesc - The payment message or description
- */
-export function guiPreparePayment(strTo = '', nAmount = 0, strDesc = '') {
-    // Apply values
-    doms.domAddress1s.value = strTo;
-    doms.domSendAmountCoins.value = nAmount;
-    doms.domReqDesc.value = strDesc;
-    doms.domReqDisplay.style.display = strDesc ? 'block' : 'none';
-
-    // Switch to the Dashboard
-    doms.domDashboard.click();
-
-    // Open the Send menu, if not already open (with a small timeout post-load to allow for CSS loading)
-    if (
-        document
-            .getElementById('transferMenu')
-            .classList.contains('transferAnimation')
-    ) {
-        setTimeout(() => {
-            toggleBottomMenu('transferMenu', 'transferAnimation');
-        }, 300);
-    }
-
-    // Update the conversion value
-    updateAmountInputPair(
-        doms.domSendAmountCoins,
-        doms.domSendAmountValue,
-        true
-    );
-
-    // Run the Input Validity checker
-    guiCheckRecipientInput({ target: doms.domAddress1s });
-
-    // Focus on the coin input box (if no pre-fill was specified)
-    if (nAmount <= 0) {
-        doms.domSendAmountCoins.focus();
-    }
 }
 
 export async function govVote(hash, voteCode) {
