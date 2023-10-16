@@ -208,6 +208,7 @@ export class Wallet {
         removeEventListener('beforeunload', beforeUnloadListener, {
             capture: true,
         });
+        return true;
     }
 
     /**
@@ -401,27 +402,6 @@ export async function cleanAndVerifySeedPhrase(
             msg: translation.importSeedErrorSize,
             phrase: strPhrase,
         };
-    }
-}
-
-export async function decryptWallet(strPassword = '') {
-    // Check if there's any encrypted WIF available
-    const database = await Database.getInstance();
-    const { encWif: strEncWIF } = await database.getAccount();
-    if (!strEncWIF || strEncWIF.length < 1) return false;
-
-    // Prompt to decrypt it via password
-    const strDecWIF = await decrypt(strEncWIF, strPassword);
-    if (!strDecWIF || strDecWIF === 'decryption failed!') {
-        if (strDecWIF)
-            return createAlert('warning', ALERTS.INCORRECT_PASSWORD, 6000);
-    } else {
-        await importWallet({
-            newWif: strDecWIF,
-            // Save the public key to disk for View Only mode
-            fSavePublicKey: true,
-        });
-        return true;
     }
 }
 

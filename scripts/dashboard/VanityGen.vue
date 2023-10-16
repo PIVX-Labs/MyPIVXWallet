@@ -5,7 +5,6 @@ import { ALERTS, translation, tr } from '../i18n.js';
 import { ref, computed, watch } from 'vue';
 import { cChainParams } from '../chain_params.js';
 import { MAP_B58, createAlert } from '../misc.js';
-import { importWallet } from '../wallet.js';
 
 const addressPrefix = ref('');
 const addressPrefixShow = ref(false);

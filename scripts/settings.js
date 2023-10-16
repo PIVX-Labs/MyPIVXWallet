@@ -6,6 +6,7 @@ import {
     updateEncryptionGUI,
     updateGovernanceTab,
     stakingDashboard,
+    dashboard,
 } from './global.js';
 import { wallet, hasEncryptedWallet } from './wallet.js';
 import { cChainParams } from './chain_params.js';
@@ -622,4 +623,8 @@ async function configureAdvancedMode() {
     // Hide or Show the "Owner Address" configuration for Staking, and reset it's input
     doms.domStakeOwnerAddress.value = '';
     doms.domStakeOwnerAddressContainer.hidden = !fAdvancedMode;
+}
+
+export function changePassword() {
+    dashboard.changePassword();
 }

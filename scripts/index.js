@@ -45,6 +45,7 @@ export {
     toggleDebug,
     toggleAutoSwitch,
     toggleAdvancedMode,
+    changePassword,
 } from './settings.js';
 export {
     createTxGUI,

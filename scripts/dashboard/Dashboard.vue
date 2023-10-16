@@ -7,7 +7,6 @@ import TransferMenu from './TransferMenu.vue';
 import ExportPrivKey from './ExportPrivKey.vue';
 import {
     cleanAndVerifySeedPhrase,
-    decryptWallet,
     hasEncryptedWallet,
     wallet,
 } from '../wallet.js';
@@ -44,6 +43,7 @@ const needsToEncrypt = ref(true);
 const showTransferMenu = ref(false);
 const advancedMode = ref(false);
 const showExportModal = ref(false);
+const showEncryptModal = ref(false);
 const keyToBackup = ref('');
 const jdenticonValue = ref('');
 watch(showExportModal, async (showExportModal) => {
@@ -167,6 +167,25 @@ async function importWallet({ type, secret, password = '' }) {
     return false;
 }
 
+async function decryptWallet(strPassword = '') {
+    // Check if there's any encrypted WIF available
+    const database = await Database.getInstance();
+    const { encWif: strEncWIF } = await database.getAccount();
+    if (!strEncWIF || strEncWIF.length < 1) return false;
+
+    // Prompt to decrypt it via password
+    const strDecWIF = await decrypt(strEncWIF, strPassword);
+    if (!strDecWIF || strDecWIF === 'decryption failed!') {
+        if (strDecWIF)
+            return createAlert('warning', ALERTS.INCORRECT_PASSWORD, 6000);
+    } else {
+        await importWallet({
+            secret: strDecWIF,
+        });
+        return true;
+    }
+}
+
 /**
  * Encrypt wallet
  * @param {string} password - Password to encrypt wallet with
@@ -177,6 +196,7 @@ async function encryptWallet(password, currentPassword = '') {
         if (!(await decryptWallet(currentPassword))) return;
     }
     const res = await wallet.encryptWallet(password);
+    console.log(res);
     if (res) {
         createAlert('success', ALERTS.NEW_PASSWORD_SUCCESS, 5500);
     }
@@ -348,8 +368,13 @@ getEventEmitter().on('balance-update', async () => {
     displayDecimals.value = nDisplayDecimals;
 });
 
+function changePassword() {
+    showEncryptModal.value = true;
+}
+
 defineExpose({
     restoreWallet,
+    changePassword,
 });
 </script>
 
@@ -747,8 +772,10 @@ defineExpose({
             <!-- WALLET FEATURES -->
             <div v-if="isImported">
                 <GenKeyWarning
-                    v-if="needsToEncrypt"
                     @onEncrypt="encryptWallet"
+                    @close="showEncryptModal = false"
+                    :showModal="showEncryptModal"
+                    :showBox="needsToEncrypt"
                 />
                 <div class="row p-0">
                     <!-- Balance in PIVX & USD-->

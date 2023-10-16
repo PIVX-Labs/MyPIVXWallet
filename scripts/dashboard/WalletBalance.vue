@@ -6,12 +6,7 @@ import { ref, computed, toRefs, onMounted, watch } from 'vue';
 import { beautifyNumber } from '../misc';
 import { getEventEmitter } from '../event_bus';
 import * as jdenticon from 'jdenticon';
-import {
-    optimiseCurrencyLocale,
-    openExplorer,
-    toggleExportUI,
-    toggleBottomMenu,
-} from '../global';
+import { optimiseCurrencyLocale, openExplorer } from '../global';
 import { renderWalletBreakdown } from '../charting.js';
 import {
     guiRenderCurrentReceiveModal,

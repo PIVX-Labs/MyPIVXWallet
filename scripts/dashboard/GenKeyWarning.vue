@@ -1,18 +1,30 @@
 <script setup>
 import { translation, tr, ALERTS } from '../i18n.js';
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, toRefs } from 'vue';
 import Modal from '../Modal.vue';
-import { hasEncryptedWallet as isEncrypt, wallet } from '../wallet.js';
+import { hasEncryptedWallet as isEncrypt } from '../wallet.js';
 import { MIN_PASS_LENGTH } from '../chain_params.js';
+import { createAlert } from '../misc';
 
-const showModal = ref(false);
+const props = defineProps({
+    showModal: Boolean,
+    showBox: Boolean,
+});
+
 const hasEncryptedWallet = ref(false);
 
 const currentPassword = ref('');
 const password = ref('');
 const passwordConfirm = ref('');
 
-const emit = defineEmits(['onEncrypt']);
+const emit = defineEmits(['onEncrypt', 'close']);
+
+function close() {
+    currentPassword.value = '';
+    password.value = '';
+    passwordConfirm.value = '';
+    emit('close');
+}
 
 /**
  * Perform basic checks, then emit the event to our parent
@@ -29,8 +41,8 @@ function submit() {
     if (password.value !== passwordConfirm.value) {
         return createAlert('warning', ALERTS.PASSWORD_DOESNT_MATCH, 2250);
     }
-
     emit('onEncrypt', password.value, currentPassword.value);
+    close();
 }
 
 onMounted(async () => {
@@ -39,7 +51,7 @@ onMounted(async () => {
 </script>
 
 <template>
-    <div class="col-12">
+    <div class="col-12" v-show="showBox">
         <center>
             <div class="dcWallet-warningMessage" @click="showModal = true">
                 <div class="shieldLogo">
@@ -73,7 +85,7 @@ onMounted(async () => {
     <Teleport to="body">
         <Modal
             :show="showModal"
-            @close="showModal = false"
+            @close="close()"
             modalClass="exportKeysModalColor"
         >
             <template #header>
@@ -82,7 +94,7 @@ onMounted(async () => {
                     type="button"
                     class="close"
                     aria-label="Close"
-                    @click="showModal = false"
+                    @click="close()"
                 >
                     <i class="fa-solid fa-xmark closeCross"></i>
                 </button>
