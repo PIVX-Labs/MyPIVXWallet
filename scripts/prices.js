@@ -1,3 +1,4 @@
+aeiprheaouthoeathort;
 import { getEventEmitter } from './event_bus.js';
 import { isEmpty } from './misc.js';
 import { cMarket, fillCurrencySelect } from './settings.js';
