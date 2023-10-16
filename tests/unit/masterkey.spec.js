@@ -140,7 +140,7 @@ describe('mainnet tests', () => {
             }
         }
     });
-    test('Correct Base58Check validation of addresses', async () => {
+    test('Correct Base58Check validation of addresses', () => {
         const arrTestAddresses = [
             'DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb', // VALID
             'tLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb', // BAD
