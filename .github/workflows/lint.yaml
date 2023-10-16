@@ -21,6 +21,9 @@ on:
     - "*.md"
     - LICENSE
     - "*.yaml"
+permissions:
+  checks: write
+  contents: write
 
 
 jobs:
