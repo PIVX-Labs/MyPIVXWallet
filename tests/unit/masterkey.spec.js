@@ -247,7 +247,7 @@ describe('testnet tests', () => {
             }
         }
     });
-    test('Correct Base58Check validation of addresses', async () => {
+    test('Correct Base58Check validation of addresses', () => {
         const arrTestAddresses = [
             'yJ9zhqrwEj7VAjxJZEWqEEtoWQaHK2NKye', // VALID
             'tJ9zhqrwEj7VAjxJZEWqEEtoWQaHK2NKye', // BAD
