@@ -5,6 +5,7 @@ import bs58 from 'bs58';
 import { bech32 } from 'bech32';
 import { BIP21_PREFIX, cChainParams } from './chain_params.js';
 import { dSHA256 } from './utils.js';
+import { verifyPubkey } from './encoding.js';
 
 /* MPW constants */
 export const pubKeyHashNetworkLen = 21;
@@ -283,10 +284,7 @@ export async function getImageFile() {
  * @returns {boolean} - `true` if a Standard address, `false` if not
  */
 export function isStandardAddress(strAddress) {
-    return (
-        strAddress.length === 34 &&
-        cChainParams.current.PUBKEY_PREFIX.includes(strAddress[0])
-    );
+    return verifyPubkey(strAddress);
 }
 
 /**
@@ -295,10 +293,7 @@ export function isStandardAddress(strAddress) {
  * @returns {boolean} - `true` if a Cold address, `false` if not
  */
 export function isColdAddress(strAddress) {
-    return (
-        strAddress.length === 34 &&
-        cChainParams.current.STAKING_PREFIX === strAddress[0]
-    );
+    return verifyPubkey(strAddress, cChainParams.current.STAKING_ADDRESS);
 }
 
 /**

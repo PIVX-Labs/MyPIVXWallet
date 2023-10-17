@@ -304,7 +304,7 @@ export async function createAndSendTransaction({
     const nChange = cCoinControl.nValue - (nFee + amount);
 
     const [changeAddress, _] = await getNewAddress({
-	nReceiving: 1,
+        nReceiving: 1,
         verify: wallet.isHardwareWallet(),
     });
 
@@ -338,7 +338,6 @@ export async function createAndSendTransaction({
 
     // Primary output (receiver)
     if (isDelegation) {
-
         // Check if we're using a custom Cold Stake Owner Address
         const fCustomColdOwner = !!delegationOwnerAddress;
 
@@ -425,7 +424,11 @@ export async function createMasternode() {
         return;
 
     // Generate the Masternode collateral
-    const [address] = getNewAddress({ verify: wallet.isHardwareWallet(), nReceiving?nReceiving});
+    const [address] = await getNewAddress({
+        verify: wallet.isHardwareWallet(),
+        nReceiving: 1,
+    });
+
     const result = await createAndSendTransaction({
         amount: cChainParams.current.collateralInSats,
         address,

@@ -167,7 +167,7 @@ export default {
     // Stake
     stake: 'Stake', //Stake
     stakeUnstake: 'Unstake', //Unstake
-    ownerAddress: '', //(Optional) Owner Address
+    ownerAddress: '(Optional) May-ari ng Address', //(Optional) Owner Address
     rewardHistory: 'History ng iyong Reward', //Reward History
     loadMore: 'Load more', //Load more
 
@@ -272,10 +272,11 @@ export default {
     popupCreateProposal: 'Gumawa ng Proposal', //Create Proposal
     popupCreateProposalCost: 'Gastos', //Cost
     popupProposalTitle: 'Proposal Title', //Proposal Title
-    popupProposalAddress: '', //Proposal Address (Optional)
+    popupProposalAddress: 'Address ng Proposal (Optional)', //Proposal Address (Optional)
     popupProposalDuration: 'Duration in cycles', //Duration in cycles
     popupProposalPerCycle: 'per cycles', //per cycle
-    popupProposalEncryptFirst: '', //You need to hit "{button}" before you can create proposals!
+    popupProposalEncryptFirst:
+        'Kailangan mong pindutin ang "{button}" bago ka gumawa ng proposals!', //You need to hit "{button}" before you can create proposals!
     popupProposalVoteHash: 'Vote Hash:', //Vote Hash:
     popupProposalFinalisedNote:
         '<b>Binabati kita sa paglulunsad ng iyong proposal!</b><br>Ang mga may-ari ng Masternode ay pwedeng gumamit ng Vote Hash upang bumoto mula sa mga wallet maliban sa MPW, kaya siguraduhin idagdag ito sa iyong forum post, kung naaangkop!', //<b>Congratulations on launching your proposal!</b><br>Masternode owners can use your Vote Hash to vote from wallets other than MPW, so make sure to add this to your forum post, if applicable!
@@ -289,7 +290,7 @@ export default {
     proposalFinalisationReady: 'Handa ng ipasa', //Ready to submit
     proposalPassing: 'PASSING', //PASSING
     proposalFailing: 'FAILING', //FAILING
-    proposalTooYoung: '', //TOO YOUNG
+    proposalTooYoung: 'TOO YOUNG', //TOO YOUNG
     proposalFunded: 'FUNDED', //FUNDED
     proposalNotFunded: 'NOT FUNDED', //NOT FUNDED
     proposalPaymentsRemaining: 'installment(s) remaining<br>of', //installment(s) remaining<br>of
@@ -432,8 +433,10 @@ export default {
     WALLET_CONFIRM_L: 'Kumpirmahin ang import sa iyong Ledger', //Confirm the import on your Ledger
     WALLET_NO_HARDWARE:
         '<b>Walang pwedeng magamit na device</b><br>Hindi makahanap ng hardware wallet; pakiusap i-plug in ito at buksan!', //<b>No device available</b><br>Couldn't find a hardware wallet; please plug it in and unlock!
-    WALLET_HARDWARE_UDEV: '', // <b>The OS denied access</b> Did you add the udev rules?
-    WALLET_HARDWARE_NO_ACCESS: '', // <b>The OS denied access</b> Please check your Operating System settings.
+    WALLET_HARDWARE_UDEV:
+        '<b>Tinanggihan ng OS ang pag-access</b> Dinagdag mo ba ang mga panuntunan sa udev?', // <b>The OS denied access</b> Did you add the udev rules?
+    WALLET_HARDWARE_NO_ACCESS:
+        '<b>Tinanggihan ng OS ang pag-access</b> Pakiusap tignan ang settings ng iyong Operating System.', // <b>The OS denied access</b> Please check your Operating System settings.
     WALLET_HARDWARE_CONNECTION_LOST:
         '<b>Nawala ang koneksyon sa {hardwareWallet} </b><br>Parang ang {hardwareWalletProductionName} ay na-unplug sa kalagitnaan ng operasyon, oops!', //<b>Lost connection to {hardwareWallet} </b><br>It seems the {hardwareWalletProductionName} was unplugged mid-operation, oops!
     WALLET_HARDWARE_BUSY:

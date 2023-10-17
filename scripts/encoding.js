@@ -127,6 +127,39 @@ export function deriveAddress({ pkBytes, publicKey, output = 'ENCODED' }) {
     return bs58.encode(pubKeyPreBase);
 }
 
+/**
+ * Verify the integrity of an address
+ * @param {string} strPubkey - A base58 encoded public key
+ * @param {Object} [expectedKey] - The key type to check, defaults to current chain's `PUBKEY_ADDRESS`
+ * @return {boolean|Error} `true` if valid, `false` if invalid
+ */
+export function verifyPubkey(
+    strPubkey,
+    expectedKey = cChainParams.current.PUBKEY_ADDRESS
+) {
+    // Decode base58 and verify basic integrity
+    try {
+        const bDecoded = bs58.decode(strPubkey);
+        if (bDecoded.length !== 25) return false;
+        if (bDecoded[0] !== expectedKey) return false;
+
+        // Sha256d hash the pubkey payload
+        const bDoubleSHA = dSHA256(bDecoded.slice(0, 21));
+
+        // Verify payload integrity via checksum
+        const bChecksum = bDoubleSHA.slice(0, 4);
+        const bChecksumPayload = bDecoded.slice(21);
+        if (!bChecksum.every((byte, i) => byte === bChecksumPayload[i]))
+            return false;
+
+        // All is valid! (base58 format, payload and checksum integrity)
+        return true;
+    } catch (e) {
+        // Definitely not valid (likely a bad base58 string)
+        return false;
+    }
+}
+
 // Verify the integrity of a WIF private key, optionally parsing and returning the key payload
 export function verifyWIF(
     strWIF = '',
