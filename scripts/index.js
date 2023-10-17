@@ -27,8 +27,6 @@ export {
     playMusic,
     selectMaxBalance,
     openExplorer,
-    guiPreparePayment,
-    openSendQRScanner,
     doms,
     importMasternode,
     destroyMasternode,
