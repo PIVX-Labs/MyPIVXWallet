@@ -29,6 +29,7 @@ export const cChainParams = reactive({
         PUBKEY_PREFIX: ['D'],
         STAKING_PREFIX: 'S',
         PUBKEY_ADDRESS: 30,
+        STAKING_ADDRESS: 63,
         SECRET_KEY: 212,
         BIP44_TYPE: 119,
         BIP44_TYPE_LEDGER: 77,
@@ -46,6 +47,7 @@ export const cChainParams = reactive({
             // Network upgrades
             UPGRADE_V6_0: undefined,
         },
+        coinbaseMaturity: 100,
         budgetCycleBlocks: 43200,
         proposalFee: 50 * COIN,
         proposalFeeConfirmRequirement: 6,
@@ -61,6 +63,7 @@ export const cChainParams = reactive({
         PUBKEY_PREFIX: ['x', 'y'],
         STAKING_PREFIX: 'W',
         PUBKEY_ADDRESS: 139,
+        STAKING_ADDRESS: 73,
         SECRET_KEY: 239,
         BIP44_TYPE: 1,
         BIP44_TYPE_LEDGER: 1,
@@ -77,6 +80,7 @@ export const cChainParams = reactive({
             // Network upgrades
             UPGRADE_V6_0: undefined,
         },
+        coinbaseMaturity: 15,
         budgetCycleBlocks: 144,
         proposalFee: 50 * COIN,
         proposalFeeConfirmRequirement: 3,

@@ -7,7 +7,7 @@ import {
 import { getEventEmitter } from './event_bus.js';
 import Multimap from 'multimap';
 import { wallet } from './wallet.js';
-import { COIN } from './chain_params.js';
+import { COIN, cChainParams } from './chain_params.js';
 
 export class CTxOut {
     /**
@@ -26,6 +26,9 @@ export class CTxOut {
         /** Value in satoshi
          *  @type {Number} */
         this.value = value;
+    }
+    isEmpty() {
+        return this.value == 0 && this.script == 'f8';
     }
 }
 export class CTxIn {
@@ -68,6 +71,22 @@ export class Transaction {
     }
     isConfirmed() {
         return this.blockHeight != -1;
+    }
+    isCoinStake() {
+        return this.vout.length >= 2 && this.vout[0].isEmpty();
+    }
+    isCoinBase() {
+        // txid undefined happens only for coinbase inputs
+        return this.vin.length == 1 && !this.vin[0].outpoint.txid;
+    }
+    isMature() {
+        if (!(this.isCoinBase() || this.isCoinStake())) {
+            return true;
+        }
+        return (
+            getNetwork().cachedBlockCount - this.blockHeight >
+            cChainParams.current.coinbaseMaturity
+        );
     }
 }
 /** An Unspent Transaction Output, used as Inputs of future transactions */
@@ -228,6 +247,9 @@ export class Mempool {
     getBalance(filter) {
         let totBalance = 0;
         for (const [_, tx] of this.txmap) {
+            if (!tx.isMature()) {
+                continue;
+            }
             for (const vout of tx.vout) {
                 if (this.isSpent(vout.outpoint)) {
                     continue;
@@ -283,6 +305,9 @@ export class Mempool {
         let utxos = [];
         for (const [_, tx] of this.txmap) {
             if (onlyConfirmed && !tx.isConfirmed()) {
+                continue;
+            }
+            if (!tx.isMature()) {
                 continue;
             }
             for (const vout of tx.vout) {

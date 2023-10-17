@@ -30,8 +30,8 @@ export default {
 
     // Onboarding Dashboard
     dashboardTitle: 'Übersicht', //Dashboard
-    dCardOneTitle: 'Erstelle eine neue', //Create a
-    dCardOneSubTitle: 'Geldbörse', //New Wallet
+    dCardOneTitle: 'Erstelle eine', //Create a
+    dCardOneSubTitle: 'neue Geldbörse', //New Wallet
     dCardOneDesc:
         'Erstelle eine neue PIVX Geldbörse, unter verwendung neuester Sicherheits- & Backupmethoden.', //Create a new PIVX wallet, offering the most secure backup & security methods.
     dCardOneButton: 'Erstelle eine neue Geldbörse', //Create A New Wallet
@@ -65,7 +65,7 @@ export default {
         'Notiere diese an einem sicheren Ort - Sie wird nur <b>einmal</b> angezeigt!', //Write it down somewhere. You'll only see this <b>once!</b>
     doNotShareWarning:
         'Jeder mit einer Kopie der Phrase hat Zugriff auf <b>deine Brieftasche</b>.', //Anyone with a copy of it can access <b>all</b> of your funds.
-    doNotShare: 'Teile Sie unter keinen Umständen mit dritten.', //Do NOT share it with anybody.
+    doNotShare: 'Teile Sie unter keinen Umständen mit Dritten.', //Do NOT share it with anybody.
     digitalStoreNotAdvised:
         'Es wird empfohlen diese <b>nicht</b> digital zu sichern', //It is <b>NOT</b> advised to store this digitally.
     optionalPassphrase: 'Optionale Pass Phrase (BIP39)', //Optional Passphrase (BIP39)
@@ -135,7 +135,7 @@ export default {
     addContactSubtext:
         'Einmal hinzugefügt kannst du Transaktionen zu {strName} über den Kontakt (eingeben oder anklicken) erledigen. Keine komplexen Adressen mehr - einfach einfach!', //Once added you\'ll be able to send transactions to {strName} by their name (either typing, or clicking), no more addresses, nice \'n easy.
     addContactWarning:
-        'Bitte prüfe ob die Exhtheit von "{strName}". Niemals Kontakt-Anfragen von unbekannten annehmen!', //Ensure that this is the real "{strName}", do not accept Contact requests from unknown sources!
+        'Bitte prüfe ob die Echtheit von "{strName}". Niemals Kontakt-Anfragen von unbekannten annehmen!', //Ensure that this is the real "{strName}", do not accept Contact requests from unknown sources!
 
     editContactTitle: 'Ändere Kontakt "{strName}"', //Change "{strName}" Contact
     newName: 'Neuer Name', //New Name
@@ -166,7 +166,7 @@ export default {
     // Stake
     stake: 'Delegieren', //Stake
     stakeUnstake: 'Abberufen', //Unstake
-    ownerAddress: '', //(Optional) Owner Address
+    ownerAddress: '(Optional) Adresse des Besitzers', //(Optional) Owner Address
     rewardHistory: 'Vergütungshistorie', //Reward History
     loadMore: 'Zeige mehr', //Load more
 
@@ -265,10 +265,11 @@ export default {
     popupCreateProposal: 'Erstelle Antrag', //Create Proposal
     popupCreateProposalCost: 'Kosten', //Cost
     popupProposalName: 'Name des Antrags', //Proposal Name
-    popupProposalAddress: '', //Proposal Address (Optional)
+    popupProposalAddress: 'Adresse des Antrags (Optional)', //Proposal Address (Optional)
     popupProposalDuration: 'Dauer in Zyklen', //Duration in cycles
     popupProposalPerCycle: 'pro Zyklus', //per cycle
-    popupProposalEncryptFirst: '', //You need to hit "{button}" before you can create proposals!
+    popupProposalEncryptFirst:
+        'Du musst den "{button}" drücken bevor du einen Antrag erstellen kannst!', //You need to hit "{button}" before you can create proposals!
     popupProposalVoteHash: 'Hash zum Wählen', //Vote Hash:
     popupProposalFinalisedNote:
         '<b>Glückwünsche zum einreichen des Antrags!</b><br>Besitzer einer Masternote können nun den Wahl-Hash benutzen, um aus ihren Geldbörsen heraus (auch andere als MPW) zu wählen. Es ist darum sinnvoll einen Beitrag dazu im Form zun hinterlassen - wenn Anwendbar', //<b>Congratulations on launching your proposal!</b><br>Masternode owners can use your Vote Hash to vote from wallets other than MPW, so make sure to add this to your forum post, if applicable!
@@ -281,7 +282,7 @@ export default {
     proposalFinalisationReady: 'Bereit zum Einreichen', //Ready to submit
     proposalPassing: 'Bestehend', //PASSING
     proposalFailing: 'Scheiternd', //FAILING
-    proposalTooYoung: '', //TOO YOUNG
+    proposalTooYoung: 'noch zu Jung', //TOO YOUNG
     proposalFunded: 'Finanziert', //FUNDED
     proposalNotFunded: 'nicht Finanziert', //NOT FUNDED
     proposalPaymentsRemaining: 'Ausstehende Transaktionen<br>', //installment(s) remaining<br>of
@@ -302,7 +303,8 @@ export default {
 
     INTERNAL_ERROR: 'Interner Fehler, bitte versuche es später erneut', //Internal error, please try again later
     FAILED_TO_IMPORT: '<b>Import fehlgeschlagen!</b> Falsches Passwort', //<b>Failed to import!</b> Invalid password
-    FAILED_TO_IMPORT_HARDWARE: '', // <b> Failed to import Hardware Wallet</b>.
+    FAILED_TO_IMPORT_HARDWARE:
+        '<b>Importieren der Hardware Geldbörse fehlgeschlagen</b>', // <b> Failed to import Hardware Wallet</b>.
     UNSUPPORTED_CHARACTER:
         'Das Zeichen {char} ist nicht erlaubt in der Adresse! (Nicht Base58 kompatibel)', //The character '{char}' is unsupported in addresses! (Not Base58 compatible)
     UNSUPPORTED_WEBWORKERS:
@@ -437,8 +439,10 @@ export default {
     WALLET_CONFIRM_L: 'Bestätige den Import auf deinem Ledger', //Confirm the import on your Ledger
     WALLET_NO_HARDWARE:
         '<b>Kein Gerät verfügbar</b><br>Es wurde keine Hardware-Geldbörse gefunden, bitte stecke es ein und entsperre es!', //<b>No device available</b><br>Couldn't find a hardware wallet; please plug it in and unlock!
-    WALLET_HARDWARE_UDEV: '', // <b>The OS denied access</b> Did you add the udev rules?
-    WALLET_HARDWARE_NO_ACCESS: '', // <b>The OS denied access</b> Please check your Operating System settings.
+    WALLET_HARDWARE_UDEV:
+        '<b>Das Betriebssystem verweigert den Zugriff</b> Wurden die udev Regeln angepasst?', // <b>The OS denied access</b> Did you add the udev rules?
+    WALLET_HARDWARE_NO_ACCESS:
+        '<b>Das Betriebssystem verweigert den Zugriff</b> Bitte überprüfe deine Betriebssystem-Einstellungen', // <b>The OS denied access</b> Please check your Operating System settings.
 
     WALLET_HARDWARE_CONNECTION_LOST:
         '<b>Verbindung zum {hardwareWallet} verloren</b><br>So wie es scheint, wurde das {hardwareWalletProductionName} im Prozess abgezogen, oops!', //<b>Lost connection to {hardwareWallet} </b><br>It seems the {hardwareWalletProductionName} was unplugged mid-operation, oops!
