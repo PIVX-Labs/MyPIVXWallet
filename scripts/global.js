@@ -403,8 +403,6 @@ function subscribeToNetworkEvents() {
 
     getEventEmitter().on('transaction-sent', (success, result) => {
         if (success) {
-            doms.domAddress1s.value = '';
-            doms.domSendAmountCoins.innerHTML = '';
             createAlert(
                 'success',
                 `${ALERTS.TX_SENT}<br>${sanitizeHTML(result)}`,
