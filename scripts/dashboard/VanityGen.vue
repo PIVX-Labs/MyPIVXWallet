@@ -92,7 +92,7 @@ function generate() {
             }
         };
         worker.onmessage = checkResult;
-        worker.postMessage(cChainParams.current.PUBKEY_ADDRESS);
+        worker.postMessage(cChainParams.current.name);
         arrWorkers.push(worker);
     }
 }
