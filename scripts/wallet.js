@@ -316,8 +316,7 @@ export class Wallet {
                     }
                 }
             } else {
-                const value =
-                    address === (await this.getKeyToExport()) ? ':)' : null;
+                const value = address === this.getKeyToExport() ? ':)' : null;
                 this.#ownAddresses.set(address, value);
                 return value;
             }
