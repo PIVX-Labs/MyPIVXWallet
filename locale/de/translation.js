@@ -228,12 +228,12 @@ export default {
     time: 'Zeit', //Time
     description: 'Beschreibung', //Description
     activityBlockReward: 'Block-Erlös', //Block Reward
-    activitySentTo: 'Gesendet an', //Sent to
+    activitySentTo: 'Gesendet an {r}', //Sent to {r}
     activitySentToSelf: 'Umbuchung', //Self
     activityShieldedAddress: 'Geschützte Adresse', //Shielded address
     activityReceivedShield: 'Erhalten von geschützter Adresse', //Received from Shielded address
-    activityReceivedFrom: 'Erhalten von', //Received from
-    activityDelegatedTo: 'Delegiert an', //Delegated to
+    activityReceivedFrom: 'Erhalten von {s}', //Received from {s}
+    activityDelegatedTo: 'Delegiert an {r}', //Delegated to {r}
     activityUndelegated: 'Abberufen', //Undelegated
     activityUnknown: 'Unbekannte Trasaktion', //Unknown Tx
     password: 'Passwort', //Password
