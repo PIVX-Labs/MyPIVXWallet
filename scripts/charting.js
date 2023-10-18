@@ -11,7 +11,7 @@ import { cChainParams, COIN } from './chain_params.js';
 import { doms, mempool } from './global.js';
 import { Database } from './database.js';
 import { translation } from './i18n.js';
-import { UTXO_WALLET_STATE } from './mempool.js';
+import { wallet } from './wallet.js';
 import { COutpoint } from './mempool.js';
 
 Chart.register(
@@ -68,11 +68,14 @@ async function getWalletDataset() {
 
     // Masternode (Locked)
     if (masternode) {
-        const mnOp = new COutpoint({
-            txid: masternode.collateralTxId,
-            n: masternode.outidx,
-        });
-        if (mempool.hasUTXO(mnOp, UTXO_WALLET_STATE.SPENDABLE, true)) {
+        if (
+            wallet.isCoinLocked(
+                new COutpoint({
+                    txid: masternode.collateralTxId,
+                    n: masternode.outidx,
+                })
+            )
+        ) {
             arrBreakdown.push({
                 type: 'Masternode',
                 balance: cChainParams.current.collateralInSats / COIN,

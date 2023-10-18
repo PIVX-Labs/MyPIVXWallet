@@ -773,8 +773,17 @@ export async function startMasternode(fRestart = false) {
 
 export async function destroyMasternode() {
     const database = await Database.getInstance();
+    const cMasternode = await database.getMasternode(wallet.getMasterKey());
+    if (cMasternode) {
+        // Unlock the coin and update the balance
+        wallet.unlockCoin(
+            new COutpoint({
+                txid: cMasternode.collateralTxId,
+                n: cMasternode.outidx,
+            })
+        );
+        mempool.setBalance();
 
-    if (await database.getMasternode(wallet.getMasterKey())) {
         database.removeMasternode(wallet.getMasterKey());
         createAlert('success', ALERTS.MN_DESTROYED, 5000);
         updateMasternodeTab();
@@ -837,14 +846,15 @@ export async function importMasternode() {
 
     if (!wallet.isHD()) {
         // Find the first UTXO matching the expected collateral size
-        const cCollaUTXO = (
-            await mempool.getUTXOs({
+        const cCollaUTXO = mempool
+            .getUTXOs({
                 filter: UTXO_WALLET_STATE.SPENDABLE,
                 onlyConfirmed: true,
+                includeLocked: false,
             })
-        ).find(
-            (cUTXO) => cUTXO.value === cChainParams.current.collateralInSats
-        );
+            .find(
+                (cUTXO) => cUTXO.value === cChainParams.current.collateralInSats
+            );
         const balance = getBalance(false);
         // If there's no valid UTXO, exit with a contextual message
         if (!cCollaUTXO) {
@@ -884,9 +894,10 @@ export async function importMasternode() {
     } else {
         const path = doms.domMnTxId.value;
         let masterUtxo;
-        const utxos = await mempool.getUTXOs({
+        const utxos = mempool.getUTXOs({
             filter: UTXO_WALLET_STATE.SPENDABLE,
             onlyConfirmed: true,
+            includeLocked: false,
         });
         for (const u of utxos) {
             if (wallet.getPath(u.script) === path) {
@@ -1729,11 +1740,14 @@ export async function updateMasternodeTab() {
     let cMasternode = await database.getMasternode();
     // If the collateral is missing (spent, or switched wallet) then remove the current MN
     if (cMasternode) {
-        const op = new COutpoint({
-            txid: cMasternode.collateralTxId,
-            n: cMasternode.outidx,
-        });
-        if (!mempool.hasUTXO(op, UTXO_WALLET_STATE.SPENDABLE, true)) {
+        if (
+            !wallet.isCoinLocked(
+                new COutpoint({
+                    txid: cMasternode.collateralTxId,
+                    n: cMasternode.outidx,
+                })
+            )
+        ) {
             database.removeMasternode();
             cMasternode = null;
         }
@@ -1747,24 +1761,23 @@ export async function updateMasternodeTab() {
             doms.masternodeLegacyAccessText;
         doms.domMnTxId.style.display = 'none';
         // Find the first UTXO matching the expected collateral size
-        const cCollaUTXO = (
-            await mempool.getUTXOs({
+        const cCollaUTXO = mempool
+            .getUTXOs({
                 filter: UTXO_WALLET_STATE.SPENDABLE,
                 onlyConfirmed: true,
+                includeLocked: false,
             })
-        ).find(
-            (cUTXO) => cUTXO.value === cChainParams.current.collateralInSats
-        );
+            .find(
+                (cUTXO) => cUTXO.value === cChainParams.current.collateralInSats
+            );
 
         const balance = getBalance(false);
-        if (cCollaUTXO) {
-            if (cMasternode) {
-                await refreshMasternodeData(cMasternode);
-                doms.domMnDashboard.style.display = '';
-            } else {
-                doms.domMnTxId.style.display = 'none';
-                doms.domAccessMasternode.style.display = 'block';
-            }
+        if (cMasternode) {
+            await refreshMasternodeData(cMasternode);
+            doms.domMnDashboard.style.display = '';
+        } else if (cCollaUTXO) {
+            doms.domMnTxId.style.display = 'none';
+            doms.domAccessMasternode.style.display = 'block';
         } else if (balance < cChainParams.current.collateralInSats) {
             // The user needs more funds
             doms.domMnTextErrors.innerHTML =
@@ -1785,37 +1798,37 @@ export async function updateMasternodeTab() {
         doms.domMnAccessMasternodeText.innerHTML = doms.masternodeHDAccessText;
 
         // First UTXO for each address in HD
-        const mapCollateralAddresses = new Map();
+        const mapCollateralPath = new Map();
 
-        // Aggregate all valid Masternode collaterals into a map of Address <--> Collateral
-        for (const cUTXO of await mempool.getUTXOs({
+        // Aggregate all valid Masternode collaterals into a map of Path <--> Collateral
+        for (const cUTXO of mempool.getUTXOs({
             filter: UTXO_WALLET_STATE.SPENDABLE,
             onlyConfirmed: true,
+            includeLocked: false,
         })) {
             if (cUTXO.value !== cChainParams.current.collateralInSats) continue;
-            mapCollateralAddresses.set(wallet.getPath(cUTXO.script), cUTXO);
+            mapCollateralPath.set(wallet.getPath(cUTXO.script), cUTXO);
         }
-        const fHasCollateral = mapCollateralAddresses.size > 0;
-
+        const fHasCollateral = mapCollateralPath.size > 0;
         // If there's no loaded MN, but valid collaterals, display the configuration screen
         if (!cMasternode && fHasCollateral) {
             doms.domMnTxId.style.display = 'block';
             doms.domAccessMasternode.style.display = 'block';
 
-            for (const [key] of mapCollateralAddresses) {
+            for (const [key] of mapCollateralPath) {
                 const option = document.createElement('option');
                 option.value = key;
-                const [nReceiving, nIndex] = key.split('/').splice(4);
-                option.innerText = wallet.getAddress(nReceiving, nIndex);
+                option.innerText = wallet.getAddressFromPath(key);
                 doms.domMnTxId.appendChild(option);
             }
         }
 
         // If there's no collateral found, display the creation UI
-        if (!fHasCollateral) doms.domCreateMasternode.style.display = 'block';
+        if (!fHasCollateral && !cMasternode)
+            doms.domCreateMasternode.style.display = 'block';
 
-        // If we have a collateral and a loaded Masternode, display the Dashboard
-        if (fHasCollateral && cMasternode) {
+        // If we a loaded Masternode, display the Dashboard
+        if (cMasternode) {
             // Refresh the display
             refreshMasternodeData(cMasternode);
             doms.domMnDashboard.style.display = '';
@@ -1863,6 +1876,12 @@ async function refreshMasternodeData(cMasternode, fAlert = false) {
                 createAlert('success', ALERTS.MN_STARTED_ONLINE_SOON, 6000);
                 const database = await Database.getInstance();
                 await database.addMasternode(cMasternode);
+                wallet.lockCoin(
+                    new COutpoint({
+                        txid: cMasternode.collateralTxId,
+                        n: cMasternode.outidx,
+                    })
+                );
             } else {
                 doms.domMnTextErrors.innerHTML = ALERTS.MN_START_FAILED;
                 createAlert('warning', ALERTS.MN_START_FAILED, 6000);
@@ -1882,6 +1901,12 @@ async function refreshMasternodeData(cMasternode, fAlert = false) {
             );
         const database = await Database.getInstance();
         await database.addMasternode(cMasternode);
+        wallet.lockCoin(
+            new COutpoint({
+                txid: cMasternode.collateralTxId,
+                n: cMasternode.outidx,
+            })
+        );
     } else if (cMasternodeData.status === 'REMOVED') {
         const state = cMasternodeData.status;
         doms.domMnTextErrors.innerHTML = tr(ALERTS.MN_STATE, [
