@@ -272,7 +272,9 @@ defineExpose({ update, reset, getTxCount });
 <template>
     <center>
         <span class="dcWallet-activityLbl"
-            ><span :data-i18n="rewards ? 'rewardHistory' : 'activity'">{{ title }}</span>
+            ><span :data-i18n="rewards ? 'rewardHistory' : 'activity'">{{
+                title
+            }}</span>
             <span v-if="rewards"> ({{ rewardsText }} {{ ticker }}) </span>
         </span>
     </center>
