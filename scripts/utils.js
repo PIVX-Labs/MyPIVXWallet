@@ -1,6 +1,5 @@
 import { Buffer } from 'buffer';
 import { sha256 } from '@noble/hashes/sha256';
-import { createAlert } from './misc.js';
 
 export const pubKeyHashNetworkLen = 21;
 export const pubChksum = 4;
@@ -56,8 +55,7 @@ export function writeToUint8(arr, bytes, pos) {
             'CRITICAL: Overflow detected (' +
             (arrLen - pos - bytes.length) +
             '), possible state corruption, backup and refresh advised.';
-        createAlert('warning', strERR, 5000);
-        throw Error(strERR);
+        throw new Error(strERR);
     }
     let i = 0;
     while (pos < arrLen) arr[pos++] = bytes[i++];
