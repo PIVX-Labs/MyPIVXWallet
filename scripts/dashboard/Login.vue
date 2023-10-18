@@ -5,7 +5,7 @@ import VanityGen from './VanityGen.vue';
 import CreateWallet from './CreateWallet.vue';
 import AccessWallet from './AccessWallet.vue';
 
-defineEmits(['importWallet']);
+defineEmits(['import-wallet']);
 </script>
 
 <template>
@@ -13,7 +13,7 @@ defineEmits(['importWallet']);
         <CreateWallet
             @import-wallet="
                 (mnemonic, password) =>
-                    $emit('importWallet', {
+                    $emit('import-wallet', {
                         type: 'hd',
                         secret: mnemonic,
                         password,
@@ -25,7 +25,7 @@ defineEmits(['importWallet']);
 
         <VanityGen
             @import-wallet="
-                (wif) => $emit('importWallet', { type: 'legacy', secret: wif })
+                (wif) => $emit('import-wallet', { type: 'legacy', secret: wif })
             "
         />
 
