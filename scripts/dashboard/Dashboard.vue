@@ -105,7 +105,10 @@ async function parseSecret(secret, password = '') {
         {
             test: (s) => s.includes(' '),
             f: async (s) => {
-                const { ok, msg, phrase } = await cleanAndVerifySeedPhrase(s);
+                const { ok, msg, phrase } = await cleanAndVerifySeedPhrase(
+                    s,
+                    advancedMode.value
+                );
                 if (!ok) throw new Error(msg);
                 return new HdMasterKey({
                     seed: await mnemonicToSeed(phrase),
