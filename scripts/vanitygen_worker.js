@@ -10,7 +10,7 @@ onmessage = (event) => {
         // Ensure we're using the correct network
         cChainParams.current =
             cChainParams[event.data === 'mainnet' ? 'main' : 'testnet'];
-        Const cKeypair = {};
+        const cKeypair = {};
         cKeypair.priv = getSafeRand();
 
         cKeypair.pub = deriveAddress({ pkBytes: cKeypair.priv });
