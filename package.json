@@ -51,6 +51,7 @@
         "node-polyfill-webpack-plugin": "^2.0.1",
         "prettier": "^2.8.1",
         "resource-loader": "^4.0.0-rc4",
+        "toml": "^3.0.0",
         "vue-loader": "^17.2.2",
         "webpack": "^5.75.0",
         "webpack-cli": "^5.0.1",
