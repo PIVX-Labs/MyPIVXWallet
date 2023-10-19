@@ -1,4 +1,4 @@
-// import { translation_template } from '../locale/template/translation.js';
+import translation_template from '../locale/template/translation.toml';
 import { Database } from './database.js';
 import { fillAnalyticSelect, setTranslation } from './settings.js';
 import { updateEncryptionGUI } from './global.js';
@@ -9,6 +9,8 @@ import { reactive } from 'vue';
 import { negotiateLanguages } from '@fluent/langneg';
 import toml from 'toml';
 
+
+const template = toml.parse(translation_template);
 
 /**
  * @type {translation_template}
@@ -51,11 +53,12 @@ async function getLanguage(code) {
 
 async function setTranslationKey(key, langName) {
     const lang = await getLanguage(langName);
-    // If there's an empty or missing key, use the parent language
+
     if (lang[key]) {
         translation[key] = lang[key];
     } else {
-        setTranslationKey(key, getParentLanguage(langName));
+	// If there's an empty or missing key, use the parent language
+        await setTranslationKey(key, getParentLanguage(langName));
     }
 }
 
@@ -66,8 +69,7 @@ async function setTranslationKey(key, langName) {
 export async function switchTranslation(langName) {
     if (arrActiveLangs.find((lang) => lang.code === langName)) {
         // Load every 'active' key of the language, otherwise, we'll default the key to the EN file
-        const arrNewLang = await getLanguage(langName);
-        for (const strKey of Object.keys(arrNewLang)) {
+        for (const strKey of Object.keys(template)) {
             await setTranslationKey(strKey, langName);
         }
 
