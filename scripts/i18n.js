@@ -165,7 +165,7 @@ export async function start() {
     const db = await Database.getInstance();
     const settings = await db.getSettings();
     const language =
-        settings?.translation ??
+        settings?.translation ||
         negotiateLanguages(
             window.navigator.languages,
             arrActiveLangs.map((l) => l.code),
