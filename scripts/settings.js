@@ -326,10 +326,10 @@ async function setNode(node, fSilent = false) {
  * Switches the translation and sets the translation preference to database
  * @param {string} strLang
  */
-export async function setTranslation(strLang) {
-    switchTranslation(strLang);
+export async function setTranslation(strLang = 'auto') {
+    await switchTranslation(strLang);
     const database = await Database.getInstance();
-    database.setSettings({ translation: strLang });
+    await database.setSettings({ translation: strLang });
     doms.domTranslationSelect.value = strLang;
 }
 

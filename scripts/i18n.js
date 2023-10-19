@@ -54,6 +54,16 @@ async function setTranslationKey(key, langName) {
  * @param {string} langName
  */
 export async function switchTranslation(langName) {
+    if (langName === 'auto' || !langName) {
+        langName = negotiateLanguages(
+            window.navigator.languages,
+            arrActiveLangs.slice(1).map((l) => l.code),
+            {
+                defualtLocale: defaultLang,
+            }
+        )[0];
+    }
+
     if (arrActiveLangs.find((lang) => lang.code === langName)) {
         // Load every 'active' key of the language, otherwise, we'll default the key to the EN file
         for (const strKey of Object.keys(template)) {
@@ -149,6 +159,7 @@ export function loadAlerts() {
 }
 
 export const arrActiveLangs = [
+    { code: 'auto', emoji: '🌐' },
     { code: 'en', emoji: '🇬🇧' },
     { code: 'fr', emoji: '🇫🇷' },
     { code: 'de', emoji: '🇩🇪' },
@@ -164,14 +175,6 @@ export const arrActiveLangs = [
 export async function start() {
     const db = await Database.getInstance();
     const settings = await db.getSettings();
-    const language =
-        settings?.translation ||
-        negotiateLanguages(
-            window.navigator.languages,
-            arrActiveLangs.map((l) => l.code),
-            {
-                defualtLocale: defaultLang,
-            }
-        )[0];
-    await setTranslation(language);
+
+    await setTranslation(settings?.translation || 'auto');
 }
