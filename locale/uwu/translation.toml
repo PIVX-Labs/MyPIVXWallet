@@ -111,7 +111,7 @@ setupYourContact = 'Setup ur Contact' # Setup your Contact
 receiveWithContact = 'Receive using a simp-le username-based Contact' # Receive using a simple username-based Contact
 onlyShareContactPrivately ='<b>Only</b> share ur Contact with trusted peeps (family, friends)' # <b>Only</b> share your Contact with trusted people (family, friends)
 
-/* Context: The "Change to" is used in-app with one of the Three options below it, i.e: "Change to Contact" */
+# Context: The "Change to" is used in-app with one of the Three options below it, i.e: "Change to Contact" */
 changeTo = 'Change tew' # Change to
 contact = 'Contactu' # Contact
 xpub = 'XPubby' # XPub
@@ -268,35 +268,35 @@ timeSeconds = 'Secondz' # Seconds
 unhandledException = 'Unhandled exception.' # Unhandled exception.
 
 # Alerts
-[ALERTS] #  '<-- DO NOT EDIT THIS LINE! All below entries are for Alert Popups',
+[ALERTS] #  '<-- DO NOT EDIT THIS LINE! All below entries are for Alert Popups'
 
 INTERNAL_ERROR = 'Internal error, pwease try again later' # Internal error, please try again later
-FAILED_TO_IMPORT = '<b>Faiwed to impawt!</b> Invawed password! Baka!' # '<b>Failed to import!</b> Invalid password',
-TESTNET_ENCRYPTION_DISABLED ='<b>Testnet Mowode in ON!</b><br>Wawwet encwyption disabwed' # "<b>Testnet Mode is ON!</b><br>Wallet encryption disabled",
-PASSWORD_TOO_SMALL ='Dat password is a wittle short!<br>Pwease use at least<b> {MIN_PASS_LENGTH} chawacters!</b>' # "That password is a little short!<br>Use at least <b>" + MIN_PASS_LENGTH + " characters.</b>",
-PASSWORD_DOESNT_MATCH = 'Yowour passwords dun match!! baka!!' # 'Your passwords don\'t match!',
-NEW_PASSWORD_SUCCESS ="<b>Yowou're Secuwed!</b><br>Good Job, PIVX Pogchamp!" # '<b>You\'re Secured! 🔐</b><br>Nice stuff, Armoured PIVian!',
+FAILED_TO_IMPORT = '<b>Faiwed to impawt!</b> Invawed password! Baka!' # '<b>Failed to import!</b> Invalid password'
+TESTNET_ENCRYPTION_DISABLED ='<b>Testnet Mowode in ON!</b><br>Wawwet encwyption disabwed' # "<b>Testnet Mode is ON!</b><br>Wallet encryption disabled"
+PASSWORD_TOO_SMALL ='Dat password is a wittle short!<br>Pwease use at least<b> {MIN_PASS_LENGTH} chawacters!</b>' # "That password is a little short!<br>Use at least <b>" + MIN_PASS_LENGTH + " characters.</b>"
+PASSWORD_DOESNT_MATCH = 'Yowour passwords dun match!! baka!!' # 'Your passwords don\'t match!'
+NEW_PASSWORD_SUCCESS ="<b>Yowou're Secuwed!</b><br>Good Job, PIVX Pogchamp!" # '<b>You\'re Secured! 🔐</b><br>Nice stuff, Armoured PIVian!'
 INCORRECT_PASSWORD = 'Incowwect password!' # Incorrect password!
-INVALID_AMOUNT = '<b>Invawed a<i>meow</i>nt</b><br>' # '<b>Invalid amount!</b><br>',
+INVALID_AMOUNT = '<b>Invawed a<i>meow</i>nt</b><br>' # '<b>Invalid amount!</b><br>'
 TX_SENT = 'Twansaction sentu!' # Transaction sent!
 TX_FAILED = 'Twansaction Failed!' # Transaction Failed!
 QR_SCANNER_BAD_RECEIVER = 'is not a valid payment receiver' # is not a valid payment receiver
 UNSUPPORTED_CHARACTER ="The chawacter '{char}' is unsupurrted in addwesses! (Not Base58 compatible)" # "The character '{char}' is unsupported in addresses! (Not Base58 compatible)"
 UNSUPPORTED_WEBWORKERS = "Dis bwowser doesn't suppurrt web workers" # This browser doesn\'t support Web Workers (multi-threaded JS), unfortunately you cannot generate Vanity wallets!
 INVALID_ADDRESS = '<b>Invawed PIVX addwess baka</b><br> {address} ' # <b>Invalid PIVX address!<b><br> {address}
-VALIDATE_AMOUNT_LOW = '<br>Minimum ameownt is {minimumAmount} {coinTicker}!' # '<br>Minimum amount is ',
-VALIDATE_AMOUNT_DECIMAL = ' decimal wimit exceeded. Yowouve gone too fawr!' # ' decimal limit exceeded',
-SUCCESS_STAKING_ADDR ='<b>Staking Addwess set!</b><br>Now go ahead and unstake senpai❣' # '<b>Staking Address set!</b><br>Now go ahead and unstake!',
+VALIDATE_AMOUNT_LOW = '<br>Minimum ameownt is {minimumAmount} {coinTicker}!' # '<br>Minimum amount is '
+VALIDATE_AMOUNT_DECIMAL = ' decimal wimit exceeded. Yowouve gone too fawr!' # ' decimal limit exceeded'
+SUCCESS_STAKING_ADDR ='<b>Staking Addwess set!</b><br>Now go ahead and unstake senpai❣' # '<b>Staking Address set!</b><br>Now go ahead and unstake!'
 STAKE_ADDR_SET ='<b>Cold Addwess set!</b><br>Future stakes will use dis addwess.' # <b>Cold Address set!</b><br>Future stakes will use this address.
 STAKE_ADDR_BAD = 'Invawid Cold Staking addwess!' # Invalid Cold Staking address!
-CONFIRM_UNSTAKE_H_WALLET ='<b> Confirm yowour Unstake</b><br>Confirm da TX on yowour {strHardwareName}' # "<b>Confirm your Unstake</b><br>Confirm the TX on your ",
-CONFIRM_TRANSACTION_H_WALLET ='<b>Confirm yowoure twansaction</b><br>Confirm da TX on yowour {strHardwareName}' # "<b>Confirm your transaction</b><br>Confirm the TX on your ",
-SUCCESS_STAKING_ADDR_SET ='<b>Staking Addwess set!~</b><br>Now go ahead and stake senpai❣' # '<b>Staking Address set!</b><br>Now go ahead and stake!',
-STAKE_NOT_SEND ='Here senpai❣ use da <b>Stake</b> scween, Not da send scween, baka!' # 'Here, use the <b>Stake</b> screen, not the Send screen!',
-BAD_ADDR_LENGTH ='<b>Invawed PIVX addwess!</b><br>Bad wength ({addressLength})' # '<b>Invalid PIVX address!<b><br>Bad length ({addressLength})',
-BAD_ADDR_PREFIX ='<b>Invawed PIVX addwess! Baka!</b><br>Bad pwefix {address} (Should start with {addressPrefix})' # '<b>Invalid PIVX address!<b><br>Bad prefix {address} (Should start with {addressPrefix})',
-SENT_NOTHING = "You can't send nothing!! Baka!" # 'You can\'t send \'nothing\'!',
-MORE_THEN_8_DECIMALS = '8 decimal wimit exceeded. Too many nyumbers!!' # '8 decimal limit exceeded',
+CONFIRM_UNSTAKE_H_WALLET ='<b> Confirm yowour Unstake</b><br>Confirm da TX on yowour {strHardwareName}' # "<b>Confirm your Unstake</b><br>Confirm the TX on your "
+CONFIRM_TRANSACTION_H_WALLET ='<b>Confirm yowoure twansaction</b><br>Confirm da TX on yowour {strHardwareName}' # "<b>Confirm your transaction</b><br>Confirm the TX on your "
+SUCCESS_STAKING_ADDR_SET ='<b>Staking Addwess set!~</b><br>Now go ahead and stake senpai❣' # '<b>Staking Address set!</b><br>Now go ahead and stake!'
+STAKE_NOT_SEND ='Here senpai❣ use da <b>Stake</b> scween, Not da send scween, baka!' # 'Here, use the <b>Stake</b> screen, not the Send screen!'
+BAD_ADDR_LENGTH ='<b>Invawed PIVX addwess!</b><br>Bad wength ({addressLength})' # '<b>Invalid PIVX address!<b><br>Bad length ({addressLength})'
+BAD_ADDR_PREFIX ='<b>Invawed PIVX addwess! Baka!</b><br>Bad pwefix {address} (Should start with {addressPrefix})' # '<b>Invalid PIVX address!<b><br>Bad prefix {address} (Should start with {addressPrefix})'
+SENT_NOTHING = "You can't send nothing!! Baka!" # 'You can\'t send \'nothing\'!'
+MORE_THEN_8_DECIMALS = '8 decimal wimit exceeded. Too many nyumbers!!' # '8 decimal limit exceeded'
 SAVE_WALLET_PLEASE ='<b>Save yowour wawwet!</b><br>Dashbowed ➜ Secure your wallet' #  "<b>Save your wallet!</b><br>Dashboard ➜ Secure your wallet
 BACKUP_OR_ENCRYPT_WALLET ='Pwease ENCWYPT and/or BACKUP yowour keys befowe weaving, or you may lose dem! Oh noes!' #  "Please ENCRYPT and/or BACKUP your keys before leaving, or you may lose them!"
 NO_CAMERAS = 'Dis device has nwo camwera!' # This device has no camera!
@@ -324,7 +324,7 @@ MN_ENOUGH_BUT_NO_COLLAT ='Yew haz enough balance for a Masternowode, but nu vali
 MN_COLLAT_NOT_SUITABLE = 'Dis is not a suitable UTXO for a Masternowode' # This is not a suitable UTXO for a Masternode
 MN_CANT_CONNECT = 'Unable to connect to RPC nowode!' # Unable to connect to RPC node!
 
-/* Contacts System Alerts */
+# Contacts System Alerts */
 CONTACTS_ENCRYPT_FIRST ='Yew need tew hit "{button}" before yew can use Contacts!' # You need to hit "{button}" before you can use Contacts!
 CONTACTS_NAME_REQUIRED = 'A name iz required!' # A name is required!
 CONTACTS_NAME_TOO_LONG = 'That name iz teww long!' # That name is too long!
@@ -351,22 +351,22 @@ PROMO_MAX_QUANTITY ='Ur device can only cweate {quantity} cowodes at a time!' # 
 PROMO_NOT_ENOUGH = "Yew don't have enough {ticker} to cweate that code!" # You don\'t have enough {ticker} to create that code!
 PROMO_ALREADY_CREATED = "You've already created that code!" # You\'ve already created that code!
 
-SWITCHED_EXPLORERS ='<b>Switched expwower!</b><br>Nowo using {explorerName}✿' # <b>Switched explorer!</b><br>Now using {explorerName},
-SWITCHED_NODE = '<b>Switched nowode!✿</b><br>Nowo using {node}' # <b>Switched node!</b><br>Now using {node},
-SWITCHED_ANALYTICS = '<b>Switched anawytics wevel!</b><br>Nowo {level}' # <b>Switched analytics level!</b><br>Now {level},
-SWITCHED_SYNC = '<b>Switched sync mowode!✿</b><br>Nowo using {sync} sync' # <b>Switched sync mode!</b><br>Now using {sync} sync,
+SWITCHED_EXPLORERS ='<b>Switched expwower!</b><br>Nowo using {explorerName}✿' # <b>Switched explorer!</b><br>Now using {explorerName}
+SWITCHED_NODE = '<b>Switched nowode!✿</b><br>Nowo using {node}' # <b>Switched node!</b><br>Now using {node}
+SWITCHED_ANALYTICS = '<b>Switched anawytics wevel!</b><br>Nowo {level}' # <b>Switched analytics level!</b><br>Now {level}
+SWITCHED_SYNC = '<b>Switched sync mowode!✿</b><br>Nowo using {sync} sync' # <b>Switched sync mode!</b><br>Now using {sync} sync
 UNABLE_SWITCH_TESTNET ='<b>Unable to switch Testnet Mowode!</b><br>A wawwet is alweady woaded✿' # <b>Unable to switch Testnet Mode!</b><br>A wallet is already loaded
 
-WALLET_OFFLINE_AUTOMATIC ='<b>Offwine Mowode is active!</b><br>Pwease disabwe Offwine Mowode for automatic twansactions' # "<b>Offline Mode is active!</b><br>Please disable Offline Mode for automatic transactions",
-WALLET_UNLOCK_IMPORT ='Pwease {unlock} your wawwet befowore sending twansactions!' # "Please {unlock} your wallet before sending transactions!",
-WALLET_FIREFOX_UNSUPPORTED ="Oh noes!<b>Firefox senpai doesn't sup<i>purr</i>t this!</b><br>Unfortunatewy, Firefox senpai does not sup<i>purr</i>t hawdware wawwets" # "<b>Firefox doesn't support this!</b><br>Unfortunately, Firefox does not support hardware wallets",
-WALLET_HARDWARE_WALLET ='<b>Hawdware wawwet ready!</b><br>Pwease keep your {hardwareWallet} pwugged in, unwocked, and in da PIVX app ♥' # "<b>Hardware wallet ready!</b><br>Please keep your {hardwareWallet} plugged in, unlocked, and in the PIVX app",
-WALLET_CONFIRM_L = 'Confiwm da impowot on your Wedger' # "Confirm the import on your Ledger",
-WALLET_NO_HARDWARE ="<b>No device avaiwable ☹</b><br>Couldn't find a hawdware wawwet; pwease pwug it in and unwock!" # "<b>No device available</b><br>Couldn't find a hardware wallet; please plug it in and unlock!",
-WALLET_HARDWARE_CONNECTION_LOST ='<b>Wost connection to da {hardwareWallet} </b><br>It seems da {hardwareWalletProductionName} was unpwugged mid-opewation, oops!!' #  "<b>Lost connection to {hardwareWallet} </b><br>It seems the {hardwareWalletProductionName} was unplugged mid-operation, oops!",
+WALLET_OFFLINE_AUTOMATIC ='<b>Offwine Mowode is active!</b><br>Pwease disabwe Offwine Mowode for automatic twansactions' # "<b>Offline Mode is active!</b><br>Please disable Offline Mode for automatic transactions"
+WALLET_UNLOCK_IMPORT ='Pwease {unlock} your wawwet befowore sending twansactions!' # "Please {unlock} your wallet before sending transactions!"
+WALLET_FIREFOX_UNSUPPORTED ="Oh noes!<b>Firefox senpai doesn't sup<i>purr</i>t this!</b><br>Unfortunatewy, Firefox senpai does not sup<i>purr</i>t hawdware wawwets" # "<b>Firefox doesn't support this!</b><br>Unfortunately, Firefox does not support hardware wallets"
+WALLET_HARDWARE_WALLET ='<b>Hawdware wawwet ready!</b><br>Pwease keep your {hardwareWallet} pwugged in, unwocked, and in da PIVX app ♥' # "<b>Hardware wallet ready!</b><br>Please keep your {hardwareWallet} plugged in, unlocked, and in the PIVX app"
+WALLET_CONFIRM_L = 'Confiwm da impowot on your Wedger' # "Confirm the import on your Ledger"
+WALLET_NO_HARDWARE ="<b>No device avaiwable ☹</b><br>Couldn't find a hawdware wawwet; pwease pwug it in and unwock!" # "<b>No device available</b><br>Couldn't find a hardware wallet; please plug it in and unlock!"
+WALLET_HARDWARE_CONNECTION_LOST ='<b>Wost connection to da {hardwareWallet} </b><br>It seems da {hardwareWalletProductionName} was unpwugged mid-opewation, oops!!' #  "<b>Lost connection to {hardwareWallet} </b><br>It seems the {hardwareWalletProductionName} was unplugged mid-operation, oops!"
 WALLET_HARDWARE_UDEV ='<b>Onii-chan noticed the OS denied access~ OwO Did you add the udev rules? UwU</b>' #  <b>The OS denied access</b> Did you add the udev rules?
 WALLET_HARDWARE_NO_ACCESS ='<b>Nyaa~ The OS denied access, nya~</b> Please purr-retty please check your Operating System settings, nya~ UwU' #  <b>The OS denied access</b> Please check your Operating System settings.
-WALLET_HARDWARE_BUSY ="<b>{hardwareWallet} is waiting!</b><br>Pwease unwock yowour {hardwareWalletProductionName} or finish it's cuwwent pwompt" # "<b>{hardwareWallet} is waiting</b><br>Please unlock your {hardwareWalletProductionName} or finish it's current prompt",
+WALLET_HARDWARE_BUSY ="<b>{hardwareWallet} is waiting!</b><br>Pwease unwock yowour {hardwareWalletProductionName} or finish it's cuwwent pwompt" # "<b>{hardwareWallet} is waiting</b><br>Please unlock your {hardwareWalletProductionName} or finish it's current prompt"
 WALLET_HARDWARE_ERROR = '<b> {hardwareWallet} </b><br> {error}' # "<b> {hardwareWallet} </b><br> {error}"
 
 CONFIRM_POPUP_VOTE = 'Confiwm Vowote!' # Confirm Vote

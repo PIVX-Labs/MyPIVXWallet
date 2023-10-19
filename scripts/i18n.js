@@ -1,4 +1,4 @@
-import { translation_template } from '../locale/template/translation.js';
+// import { translation_template } from '../locale/template/translation.js';
 import { Database } from './database.js';
 import { fillAnalyticSelect, setTranslation } from './settings.js';
 import { updateEncryptionGUI } from './global.js';
@@ -68,7 +68,7 @@ export async function switchTranslation(langName) {
         // Load every 'active' key of the language, otherwise, we'll default the key to the EN file
         const arrNewLang = await getLanguage(langName);
         for (const strKey of Object.keys(arrNewLang)) {
-            setTranslationKey(strKey, langName);
+            await setTranslationKey(strKey, langName);
         }
 
         // Translate static`data-i18n` tags
@@ -184,5 +184,5 @@ export async function start() {
                 defualtLocale: defaultLang,
             }
         )[0];
-    setTranslation(language);
+    await setTranslation(language);
 }

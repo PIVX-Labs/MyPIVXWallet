@@ -51,6 +51,10 @@ export default {
                     },
                 },
             },
+	    {
+		test: /\.toml$/,
+		type: 'asset/source',
+	    }
         ],
     },
     resolve: {

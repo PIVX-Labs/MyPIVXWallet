@@ -113,7 +113,7 @@ setupYourContact = 'I-set up ang iyong Contact' # Setup your Contact
 receiveWithContact ='Tumanggap gamit ang simpleng Contact na nakabase sa username' # Receive using a simple username-based Contact
 onlyShareContactPrivately ='<b>Pinakamabuting</b> ibahagi ang iyong contact sa mga pinagkakatiwalaang tao (pamilya, kaibigan)' # <b>Only</b> share your Contact with trusted people (family, friends)
 
-/* Context: The "Change to" is used in-app with one of the Three options below it, i.e: "Change to Contact" */
+# Context: The "Change to" is used in-app with one of the Three options below it, i.e: "Change to Contact" */
 changeTo = 'Baguhin sa' # Change to
 contact = 'Contact' # Contact
 xpub = 'XPub' # XPub
@@ -269,7 +269,7 @@ timeSeconds = 'Mga segundo' # Seconds
 unhandledException = 'Unhandled exception.' # Unhandled exception.
 
 # Alerts
-[ALERTS] #  '<-- DO NOT EDIT THIS LINE! All below entries are for Alert Popups',
+[ALERTS] #  '<-- DO NOT EDIT THIS LINE! All below entries are for Alert Popups'
 
 INTERNAL_ERROR = 'Internal error, Pakiusap uliting muli' # Internal error, please try again later
 FAILED_TO_IMPORT ='<b>Nabigong mag import!</b> Ang password na ito ay hindi wasto' # <b>Failed to import!</b> Invalid password
@@ -325,7 +325,7 @@ MN_ENOUGH_BUT_NO_COLLAT ='Ikaw ay may sapat na balanse para sa iyong Masternode,
 MN_COLLAT_NOT_SUITABLE ='Ang UTXO na ito ay hindi angkop para sa Masternode' # This is not a suitable UTXO for a Masternode
 MN_CANT_CONNECT = 'Hindi maka-konekta sa RPC node!' # Unable to connect to RPC node!
 
-/* Contacts System Alerts */
+# Contacts System Alerts */
 CONTACTS_ENCRYPT_FIRST ='Kailangan mong pindutin ang "{button}" bago mo magamit ang mga Contact' # You need to hit "{button}" before you can use Contacts!
 CONTACTS_NAME_REQUIRED = 'Kailangan ng pangalan!' # A name is required!
 CONTACTS_NAME_TOO_LONG = 'Ang pangalan na ito ay masyadong mahaba!' # That name is too long!

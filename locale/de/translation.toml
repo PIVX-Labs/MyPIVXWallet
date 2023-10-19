@@ -113,7 +113,7 @@ setupYourContact = 'Erstelle deinen Kontakt' # Setup your Contact
 receiveWithContact = 'Empfangen mittels einfachen Benutzernamens' # Receive using a simple username-based Contact
 onlyShareContactPrivately ='Teile deine Kontakte nur mit <b>vertrauenswürdigen Personen</b> (Familie, Freunde)' # <b>Only</b> share your Contact with trusted people (family, friends)
 
-/* Context: The "Change to" is used in-app with one of the Three options below it, i.e: "Change to Contact" */
+# Context: The "Change to" is used in-app with one of the Three options below it, i.e: "Change to Contact" */
 changeTo = 'Ändere zu' # Change to
 contact = 'Kontakt' # Contact
 xpub = 'XPub' # XPub
@@ -264,7 +264,7 @@ timeSeconds = 'Sekunden' # Seconds
 unhandledException = 'Unerwarteter Sonderfall' # Unhandled exception.
 
 # Alerts
-[ALERTS] #  '<-- DO NOT EDIT THIS LINE! All below entries are for Alert Popups',
+[ALERTS] #  '<-- DO NOT EDIT THIS LINE! All below entries are for Alert Popups'
 
 INTERNAL_ERROR = 'Interner Fehler, bitte versuche es später erneut' # Internal error, please try again later
 FAILED_TO_IMPORT = '<b>Import fehlgeschlagen!</b> Falsches Passwort' # <b>Failed to import!</b> Invalid password
@@ -321,7 +321,7 @@ MN_ENOUGH_BUT_NO_COLLAT ='Du hast zwar genug Guthaben für eine Masternode, aber
 MN_COLLAT_NOT_SUITABLE = 'Dies ist keine gültige UTXO für eine Masternode' # This is not a suitable UTXO for a Masternode
 MN_CANT_CONNECT = 'Keine Verbindung zum RPC-Knoten möglich!' # Unable to connect to RPC node!
 
-/* Contacts System Alerts */
+# Contacts System Alerts */
 CONTACTS_ENCRYPT_FIRST ='Du musst erst "{button}" drücken bevor du Kontakt hinzufügen kannst!' # You need to hit "{button}" before you can use Contacts!
 CONTACTS_NAME_REQUIRED = 'Ein Name ist bnötigt!' # A name is required!
 CONTACTS_NAME_TOO_LONG = 'Der Name ist zu lang!' # That name is too long!

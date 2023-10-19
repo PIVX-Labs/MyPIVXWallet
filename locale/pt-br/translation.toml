@@ -112,7 +112,7 @@ setupYourContact = 'Configurar o seu contato' # Setup your Contact
 receiveWithContact ='Receber utilizando um contato baseado em nome de usuário simples' # Receive using a simple username-based Contact
 onlyShareContactPrivately ='<b>Somente</b> compartilhe o seu contato com pessoas confiáveis (família e amigos)' # <b>Only</b> share your Contact with trusted people (family, friends)
 
-/* Context: The "Change to" is used in-app with one of the Three options below it, i.e: "Change to Contact" */
+# Context: The "Change to" is used in-app with one of the Three options below it, i.e: "Change to Contact" */
 changeTo = 'Mudar para' # Change to
 contact = 'Contato' # Contact
 xpub = 'XPub' # XPub
@@ -269,7 +269,7 @@ timeSeconds = 'Segundos' # Seconds
 unhandledException = 'Exceção não tratada' # Unhandled exception.
 
 # Alerts
-[ALERTS] #  '<-- DO NOT EDIT THIS LINE! All below entries are for Alert Popups',
+[ALERTS] #  '<-- DO NOT EDIT THIS LINE! All below entries are for Alert Popups'
 
 INTERNAL_ERROR = 'Erro interno, por favor tente novamente mais tarde' # Internal error, please try again later
 FAILED_TO_IMPORT = '<b>Falha ao importar!</b> Senha inválida' # <b>Failed to import!</b> Invalid password
@@ -277,7 +277,7 @@ UNSUPPORTED_CHARACTER ='O caracter {char} não é suportado em endereços! (Não
 UNSUPPORTED_WEBWORKERS ='Este navegador não suporta Web Workers (JS multi-threaded), infelizmente você não pode gerar carteiras Vanity!' # This browser doesn\'t support Web Workers (multi-threaded JS), unfortunately you cannot generate Vanity wallets!
 INVALID_ADDRESS = '<b>Endereço PIVX inválido!</b><br> {address}' # <b>Invalid PIVX address!</b><br> {address}
 TESTNET_ENCRYPTION_DISABLED ='<b>Modo Testnet ativado!</b><br>Encriptação da carteira desativada' # <b>Testnet Mode is ON!</b><br>Wallet encryption disabled
-PASSWORD_TOO_SMALL ='Esta senha é um pouco curta!<br>Use pelo menos <b>{MIN_PASS_LENGTH} caracteres.</b>',
+PASSWORD_TOO_SMALL ='Esta senha é um pouco curta!<br>Use pelo menos <b>{MIN_PASS_LENGTH} caracteres.</b>'
 PASSWORD_DOESNT_MATCH = 'As suas senhas não correspondem!' # Your passwords don\'t match!
 NEW_PASSWORD_SUCCESS ='<b>Você está protegido! 🔐</b><br>Muito bem, PIVian blindado!' # <b>You\'re Secured! 🔐</b><br>Nice stuff, Armoured PIVian!
 INCORRECT_PASSWORD = 'Senha incorreta!' # Incorrect password!
@@ -325,7 +325,7 @@ MN_ENOUGH_BUT_NO_COLLAT ='Você tem saldo suficiente para um Masternode, mas nen
 MN_COLLAT_NOT_SUITABLE = 'Este não é um UTXO adequado para um Masternode' # This is not a suitable UTXO for a Masternode
 MN_CANT_CONNECT = 'Não é possível conectar ao nó RPC!' # Unable to connect to RPC node!
 
-/* Contacts System Alerts */
+# Contacts System Alerts */
 CONTACTS_ENCRYPT_FIRST ='Você precisa pressionar "{button}" antes que possa utilizar os contatos!' # You need to hit "{button}" before you can use Contacts!
 CONTACTS_NAME_REQUIRED = 'Um nome é necessário!' # A name is required!
 CONTACTS_NAME_TOO_LONG = 'Esse nome é muito comprido!' # That name is too long!
@@ -362,7 +362,7 @@ WALLET_OFFLINE_AUTOMATIC ='<b>O modo offline está ativo!</b><br>Por favor desab
 WALLET_UNLOCK_IMPORT ='Por favor, {unlock} a sua carteira antes de enviar transações!' # Please {unlock} your wallet before sending transactions!
 WALLET_FIREFOX_UNSUPPORTED ='<b>O Firefox não tem suporte para isto!</b><br>Infelizmente, o Firefox não suporta carteiras de hardware' # <b>Firefox doesn't support this!</b><br>Unfortunately, Firefox does not support hardware wallets
 WALLET_HARDWARE_WALLET ='<b>Carteira de hardware pronta!</b><br>Mantenha a sua {hardwareWallet} conectada, desbloqueada e na aplicação PIVX' # <b>Hardware wallet ready!</b><br>Please keep your {hardwareWallet} plugged in, unlocked, and in the PIVX app
-WALLET_CONFIRM_L = 'Confirme a importação na sua Ledger' # Confirm the import on your Ledger",
+WALLET_CONFIRM_L = 'Confirme a importação na sua Ledger' # Confirm the import on your Ledger"
 WALLET_NO_HARDWARE ='<b>Nenhum dispositivo disponível</b><br>Não foi possível encontrar uma carteira de hardware; conecte-a e desbloqueie-a!' # <b>No device available</b><br>Couldn't find a hardware wallet; please plug it in and unlock!
 WALLET_HARDWARE_UDEV ='<b> O Sistema operacional recusou o acesso </b> Você adicionou as regras de udev?' #  <b>The OS denied access</b> Did you add the udev rules?
 WALLET_HARDWARE_NO_ACCESS ='<b> O Sistema operacional recusou o acesso </b> Por favor cheque as configurações do seu sistema operacional' #  <b>The OS denied access</b> Please check your Operating System settings.
