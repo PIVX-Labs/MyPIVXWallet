@@ -1,4 +1,4 @@
-import translation_template from '../locale/template/translation.toml';
+import template from '../locale/template/translation.toml';
 import { Database } from './database.js';
 import { fillAnalyticSelect, setTranslation } from './settings.js';
 import { updateEncryptionGUI } from './global.js';
@@ -7,10 +7,6 @@ import { getNetwork } from './network.js';
 import { cReceiveType, guiToggleReceiveType } from './contacts-book.js';
 import { reactive } from 'vue';
 import { negotiateLanguages } from '@fluent/langneg';
-import toml from 'toml';
-
-
-const template = toml.parse(translation_template);
 
 /**
  * @type {translation_template}
@@ -34,21 +30,12 @@ function getParentLanguage(langName) {
     return langName.includes('-') ? langName.split('-')[0] : defaultLang;
 }
 
-const cachedLangs = new Map();
 /**
  * @param {string} code
  * @returns {Promise<translation_template>}
  */
 async function getLanguage(code) {
-    if (cachedLangs.has(code)) {
-        return cachedLangs.get(code);
-    } else {
-        const translation = toml.parse(
-            (await import(`../locale/${code}/translation.toml`)).default
-        );
-        cachedLangs.set(code, translation);
-        return translation;
-    }
+    return (await import(`../locale/${code}/translation.toml`)).default;
 }
 
 async function setTranslationKey(key, langName) {
@@ -57,7 +44,7 @@ async function setTranslationKey(key, langName) {
     if (lang[key]) {
         translation[key] = lang[key];
     } else {
-	// If there's an empty or missing key, use the parent language
+        // If there's an empty or missing key, use the parent language
         await setTranslationKey(key, getParentLanguage(langName));
     }
 }
