@@ -9,10 +9,14 @@ def merge_internal(obj1, obj2, res):
     for (k1, k2) in zip(obj1.copy(), obj2.copy()):
         if k1 != k2:
             print('Files are out of order, aborting.\nKey1 {} != Key2 {}'.format(k1, k2), file=sys.stderr)
+        if k1 == 'ALERTS' or obj1[k1] == '##MERGED##':
+            continue
         if obj1[k1] == obj2[k2]:
             res[k1] = obj1[k1]
-            del obj1[k1]
-            del obj2[k1]
+            obj1[k1] = '##MERGED##'
+            obj2[k1] = '##MERGED##'
+        else:
+            res[k1] = '##MERGED##'
 
 
 def merge(filename1, filename2, output_path):
