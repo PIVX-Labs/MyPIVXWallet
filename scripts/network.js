@@ -560,6 +560,7 @@ export class ExplorerNetwork extends Network {
 
         // Set the key
         this.wallet = wallet;
+        this.getUTXOs().then(() => {});
     }
 
     async getTxInfo(txHash) {
