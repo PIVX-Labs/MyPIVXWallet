@@ -48,7 +48,13 @@ watch(secret, (secret) => {
         ? translation.optionalPassphrase
         : translation.password;
 });
-defineEmits(['import-wallet']);
+const emit = defineEmits(['import-wallet']);
+function importWallet() {
+    emit('import-wallet', secret.value, password.value);
+    // Clear the input fields
+    secret.value = '';
+    password.value = '';
+}
 </script>
 
 <template>
@@ -84,10 +90,7 @@ defineEmits(['import-wallet']);
                         type="password"
                         :placeholder="passwordPlaceholder"
                     />
-                    <button
-                        class="pivx-button-big"
-                        @click="$emit('import-wallet', secret, password)"
-                    >
+                    <button class="pivx-button-big" @click="importWallet()">
                         <span class="buttoni-icon"
                             ><i class="fas fa-file-upload fa-tiny-margin"></i
                         ></span>
