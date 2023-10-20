@@ -30,7 +30,7 @@ import { onMounted, ref, watch } from 'vue';
 import { mnemonicToSeed } from 'bip39';
 import { getEventEmitter } from '../event_bus';
 import { Database } from '../database';
-import { start, doms } from '../global';
+import { start, doms, updateEncryptionGUI } from '../global';
 import { cMarket, nDisplayDecimals, strCurrency } from '../settings.js';
 import { mempool, refreshChainData } from '../global.js';
 import {
@@ -209,11 +209,12 @@ async function encryptWallet(password, currentPassword = '') {
         if (!(await decryptWallet(currentPassword))) return;
     }
     const res = await wallet.encryptWallet(password);
-    console.log(res);
     if (res) {
         createAlert('success', ALERTS.NEW_PASSWORD_SUCCESS, 5500);
     }
     needsToEncrypt.value = false;
+    // TODO: refactor once settings is written
+    await updateEncryptionGUI();
 }
 
 // TODO: This needs to be vueeifed a bit

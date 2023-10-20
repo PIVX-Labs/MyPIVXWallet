@@ -369,6 +369,7 @@ export async function start() {
     doms.domDashboard.click();
 
     // Update the Encryption UI (If the user has a wallet, then it changes to "Change Password" rather than "Encrypt Wallet")
+    getEventEmitter().on('wallet-import', updateEncryptionGUI);
     await updateEncryptionGUI();
 }
 
@@ -956,7 +957,7 @@ export async function updateEncryptionGUI(fEncrypted = null) {
     // If the wallet is encrypted, we display a "Current Password" input in the Encryption dialog, otherwise, only accept New Passwords
     doms.domEncryptPasswordCurrent.style.display = fEncrypted ? '' : 'none';
     // And we adjust the displays to accomodate the mode as well
-    doms.domEncryptWalletLabel.innerText = fEncrypted
+    document.getElementById('changePasswordBtn').innerText = fEncrypted
         ? translation.changePassword
         : translation.encryptWallet;
     doms.domChangePasswordContainer.style.display = fEncrypted ? '' : 'none';

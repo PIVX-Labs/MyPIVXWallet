@@ -10,7 +10,6 @@ const props = defineProps({
     showModal: Boolean,
     showBox: Boolean,
 });
-const showModal = toRef(props.showModal);
 
 const hasEncryptedWallet = ref(false);
 
@@ -21,7 +20,7 @@ const passwordConfirm = ref('');
 const emit = defineEmits(['onEncrypt', 'close']);
 
 function close() {
-    showModal.value = false;
+    props.showModal = false;
     currentPassword.value = '';
     password.value = '';
     passwordConfirm.value = '';
