@@ -1,6 +1,6 @@
 <script setup>
 import { translation, tr, ALERTS } from '../i18n.js';
-import { onMounted, ref, toRefs } from 'vue';
+import { onMounted, ref, toRef } from 'vue';
 import Modal from '../Modal.vue';
 import { hasEncryptedWallet as isEncrypt } from '../wallet.js';
 import { MIN_PASS_LENGTH } from '../chain_params.js';
@@ -10,6 +10,7 @@ const props = defineProps({
     showModal: Boolean,
     showBox: Boolean,
 });
+const showModal = toRef(props.showModal);
 
 const hasEncryptedWallet = ref(false);
 
@@ -20,6 +21,7 @@ const passwordConfirm = ref('');
 const emit = defineEmits(['onEncrypt', 'close']);
 
 function close() {
+    showModal.value = false;
     currentPassword.value = '';
     password.value = '';
     passwordConfirm.value = '';
