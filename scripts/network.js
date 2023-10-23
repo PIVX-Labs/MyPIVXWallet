@@ -253,6 +253,7 @@ export class ExplorerNetwork extends Network {
                     mempool.updateMempool(mempool.parseTransaction(tx));
                 }
             }
+            await mempool.saveOnDisk();
         }
         if (debug) {
             console.log(
@@ -273,7 +274,6 @@ export class ExplorerNetwork extends Network {
     async walletFullSync() {
         if (this.fullSynced) return;
         if (!this.wallet || !this.wallet.isLoaded()) return;
-        getEventEmitter().emit('sync-status', 'start');
         await this.getLatestTxs(0);
         const nBlockHeights = Array.from(mempool.orderedTxmap.keys());
         this.lastBlockSynced =
@@ -281,8 +281,6 @@ export class ExplorerNetwork extends Network {
                 ? 0
                 : nBlockHeights.sort((a, b) => a - b).at(-1);
         this.fullSynced = true;
-        await stakingDashboard.update(50);
-        getEventEmitter().emit('sync-status', 'stop');
     }
 
     /**

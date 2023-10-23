@@ -177,6 +177,7 @@ async function importWallet({ type, secret, password = '' }) {
         getEventEmitter().emit('wallet-import');
         return true;
     }
+
     return false;
 }
 

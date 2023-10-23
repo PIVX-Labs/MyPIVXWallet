@@ -327,6 +327,7 @@ export async function start() {
     await settingsStart();
     // Just load the block count, for use in non-wallet areas
     await getNetwork().getBlockCount();
+
     subscribeToNetworkEvents();
 
     // If allowed by settings: submit a simple 'hit' (app load) to Labs Analytics

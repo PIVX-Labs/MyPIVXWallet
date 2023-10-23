@@ -1,5 +1,6 @@
 import { getNetwork } from './network.js';
 import { getStakingBalance } from './global.js';
+import { Database } from './database.js';
 import { getEventEmitter } from './event_bus.js';
 import Multimap from 'multimap';
 import { wallet } from './wallet.js';
@@ -176,6 +177,11 @@ export class Mempool {
      * @type {number} - Our Cold Staking balance in Satoshis
      */
     #coldBalance = 0;
+    /**
+     * @type {number} - Highest block height saved on disk
+     */
+    #highestSavedHeight = 0;
+
     constructor() {
         /**
          * Multimap txid -> spent Coutpoint
@@ -364,5 +370,57 @@ export class Mempool {
         this.#coldBalance = this.getBalance(UTXO_WALLET_STATE.SPENDABLE_COLD);
         getEventEmitter().emit('balance-update');
         getStakingBalance(true);
+    }
+
+    /**
+     * Save txs on database
+     */
+    async saveOnDisk() {
+        const nBlockHeights = Array.from(this.orderedTxmap.keys())
+            .sort((a, b) => a - b)
+            .reverse();
+        if (nBlockHeights.length == 0) {
+            return;
+        }
+        const database = await Database.getInstance();
+        for (const nHeight of nBlockHeights) {
+            if (this.#highestSavedHeight > nHeight) {
+                break;
+            }
+            await Promise.all(
+                this.orderedTxmap.get(nHeight).map(async function (tx) {
+                    await database.storeTx(tx);
+                })
+            );
+        }
+        this.#highestSavedHeight = nBlockHeights[0];
+    }
+    /**
+     * Load txs from database
+     * @returns {Promise<Boolean>} true if database was non-empty and transaction are loaded successfully
+     */
+    async loadFromDisk() {
+        const database = await Database.getInstance();
+        const txs = await database.getTxs();
+        if (txs.length == 0) {
+            return false;
+        }
+        for (const tx of txs) {
+            this.addToOrderedTxMap(tx);
+        }
+        const nBlockHeights = Array.from(this.orderedTxmap.keys()).sort(
+            (a, b) => a - b
+        );
+        for (const nHeight of nBlockHeights) {
+            for (const tx of this.orderedTxmap.get(nHeight)) {
+                this.updateMempool(tx);
+            }
+        }
+        const cNet = getNetwork();
+        cNet.fullSynced = true;
+        cNet.lastBlockSynced = nBlockHeights.at(-1);
+        this.#highestSavedHeight = nBlockHeights.at(-1);
+        this.setBalance();
+        return true;
     }
 }
