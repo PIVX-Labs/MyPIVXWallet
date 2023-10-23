@@ -5,23 +5,41 @@ import toml
 import sys
 import os
 
+## Unmerges a file
+def unmerge(path):
+    p = path.split('/')
+    print(p)
+    print(p[-2])
+    if '-' not in p[-2]:
+        return toml.load(path)
+    p[-2] = p[-2].split('-')[0]
+    new_path = '/'.join(p)
+    if not os.path.exists(new_path):
+        return toml.load(path)
+    parent = toml.load(new_path)
+    child = toml.load(path)
+    del parent['info']
+    parent.update(child)
+    return parent
+
 def merge_internal(obj1, obj2, res):
     for (k1, k2) in zip(obj1.copy(), obj2.copy()):
         if k1 != k2:
             print('Files are out of order, aborting.\nKey1 {} != Key2 {}'.format(k1, k2), file=sys.stderr)
-        if k1 == 'ALERTS' or obj1[k1] == '##MERGED##':
+        if k1 == 'ALERTS':
             continue
         if obj1[k1] == obj2[k2]:
             res[k1] = obj1[k1]
-            obj1[k1] = '##MERGED##'
-            obj2[k1] = '##MERGED##'
+            del obj1[k1]
+            del obj2[k1]
         else:
-            res[k1] = '##MERGED##'
+            if k1 in res:
+                del res[k1]
 
 
 def merge(filename1, filename2, output_path):
-    f1 = toml.load(filename1)
-    f2 = toml.load(filename2)
+    f1 = unmerge(filename1)
+    f2 = unmerge(filename2)
     try:
         merged = toml.load(output_path)
     except:
@@ -31,6 +49,7 @@ def merge(filename1, filename2, output_path):
     
     merge_internal(f1, f2, merged)
     merge_internal(f1['ALERTS'], f2['ALERTS'], merged['ALERTS'])
+    merged['info']['merged'] = True
     files = [(filename1, f1), (filename2, f2), (output_path, merged)]
     for (path, obj) in files:
         dirPath = os.path.dirname(path)

@@ -3,6 +3,7 @@
 import argparse
 import toml
 from glob import glob
+from merge import unmerge
 
 def copy_template_internal(res, template):
     for key in template:
@@ -13,8 +14,10 @@ def copy_template(template_path, locale_path):
     template = toml.load(template_path)
     for path in glob(locale_path + '/*/*.toml'):
         if 'template' not in path:
-            print(path)
-            locale = toml.load(path)
+            locale = unmerge(path)
+            # If this is a merged file, skip it
+            if 'info' in locale and locale['info']['merged']:
+                continue
             copy_template_internal(locale, template)
             if 'ALERTS' not in locale:
                 locale['ALERTS'] = {}
