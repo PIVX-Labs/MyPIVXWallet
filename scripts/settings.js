@@ -518,7 +518,12 @@ export async function toggleTestnet() {
     // Check if the new network has an Account
     const cNewDB = await Database.getInstance();
     const cNewAccount = await cNewDB.getAccount();
+    await fillExplorerSelect();
+    await fillNodeSelect();
     mempool.reset();
+    wallet.reset();
+    activityDashboard.reset();
+    stakingDashboard.reset();
     if (cNewAccount?.publicKey) {
         // Import the new wallet (overwriting the existing in-memory wallet)
         await importWallet({ newWif: cNewAccount.publicKey });
@@ -552,11 +557,7 @@ export async function toggleTestnet() {
     getEventEmitter().emit('balance-update');
     getStakingBalance(true);
     await updateEncryptionGUI(wallet.isLoaded());
-    await fillExplorerSelect();
-    await fillNodeSelect();
     await updateGovernanceTab();
-    activityDashboard.reset();
-    stakingDashboard.reset();
 }
 
 export function toggleDebug() {

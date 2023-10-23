@@ -206,6 +206,10 @@ timeSeconds = "Mga segundo"
 unhandledException = "Unhandled exception."
 contestedProposalsTitle = "~~Contested Proposals"
 popupProposalName = "~~Proposal Name"
+syncStatusHistoryProgress = "~~Syncing History Chunks {current} of {total}"
+syncStatusStarting = "~~<b>Your wallet is syncing!</b><br>You'll be able to use it fully once this is complete."
+syncStatusFinished = "~~<b>Sync Finished!</b><br>Your wallet is ready to use!"
+activityReceivedWith = "~~Received with {s}"
 
 [ALERTS]
 INTERNAL_ERROR = "Internal error, Pakiusap uliting muli"

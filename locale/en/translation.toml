@@ -205,6 +205,10 @@ timeHours = "Hours"
 timeMinutes = "Minutes"
 timeSeconds = "Seconds"
 unhandledException = "Unhandled exception."
+syncStatusHistoryProgress = "Syncing History Chunks {current} of {total}"
+syncStatusStarting = "<b>Your wallet is syncing!</b><br>You'll be able to use it fully once this is complete."
+syncStatusFinished = "<b>Sync Finished!</b><br>Your wallet is ready to use!"
+activityReceivedWith = "Received with {s}"
 
 [ALERTS]
 INTERNAL_ERROR = "Internal error, please try again later"

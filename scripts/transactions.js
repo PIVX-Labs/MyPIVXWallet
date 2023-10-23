@@ -406,6 +406,7 @@ export async function createAndSendTransaction({
             vout: vout,
         });
         mempool.updateMempool(parsedTx);
+        mempool.setBalance();
     }
     return { ok: !!result, txid: result };
 }

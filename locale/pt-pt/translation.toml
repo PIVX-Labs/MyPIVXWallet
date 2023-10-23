@@ -205,6 +205,10 @@ popupProposalAddress = "Endereço da proposta (facultativo)"
 popupProposalEncryptFirst = "É necessário premir o botão \"{button}\" antes de poder criar propostas!"
 proposalTooYoung = "DEMASIADO JOVEM"
 proposalNetYes = "Sim Líquido"
+syncStatusHistoryProgress = "~~Syncing History Chunks {current} of {total}"
+syncStatusStarting = "~~<b>Your wallet is syncing!</b><br>You'll be able to use it fully once this is complete."
+syncStatusFinished = "~~<b>Sync Finished!</b><br>Your wallet is ready to use!"
+activityReceivedWith = "~~Received with {s}"
 
 [ALERTS]
 STAKE_ADDR_SET = "<b>Endereço de Cold Staking definido!</b><br>Ao fazer Stake no futuro irá ser usado este endereço."

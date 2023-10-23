@@ -1,6 +1,5 @@
-import { cChainParams, COIN } from './chain_params.js';
-import { createAlert, isColdAddress } from './misc.js';
-import { Mempool, UTXO } from './mempool.js';
+import { cChainParams } from './chain_params.js';
+import { createAlert, sleep } from './misc.js';
 import { getEventEmitter } from './event_bus.js';
 import {
     STATS,
@@ -8,9 +7,10 @@ import {
     cAnalyticsLevel,
     setExplorer,
     fAutoSwitch,
+    debug,
 } from './settings.js';
-import { ALERTS } from './i18n.js';
-import { mempool } from './global.js';
+import { ALERTS, translation } from './i18n.js';
+import { activityDashboard, mempool, stakingDashboard } from './global.js';
 
 /**
  * @typedef {Object} XPUBAddress
@@ -42,54 +42,6 @@ import { mempool } from './global.js';
  */
 
 /**
- * A historical transaction type.
- * @enum {number}
- */
-export const HistoricalTxType = {
-    UNKNOWN: 0,
-    STAKE: 1,
-    DELEGATION: 2,
-    UNDELEGATION: 3,
-    RECEIVED: 4,
-    SENT: 5,
-};
-
-/**
- * A historical transaction
- */
-export class HistoricalTx {
-    /**
-     * @param {HistoricalTxType} type - The type of transaction.
-     * @param {string} id - The transaction ID.
-     * @param {Array<string>} senders - The list of 'input addresses'.
-     * @param {Array<string>} receivers - The list of 'output addresses'.
-     * @param {boolean} shieldedOutputs - If this transaction contains Shield outputs.
-     * @param {number} time - The block time of the transaction.
-     * @param {number} blockHeight - The block height of the transaction.
-     * @param {number} amount - The amount transacted, in coins.
-     */
-    constructor(
-        type,
-        id,
-        senders,
-        receivers,
-        shieldedOutputs,
-        time,
-        blockHeight,
-        amount
-    ) {
-        this.type = type;
-        this.id = id;
-        this.senders = senders;
-        this.receivers = receivers;
-        this.shieldedOutputs = shieldedOutputs;
-        this.time = time;
-        this.blockHeight = blockHeight;
-        this.amount = amount;
-    }
-}
-
-/**
  * Virtual class rapresenting any network backend
  *
  */
@@ -104,9 +56,6 @@ export class Network {
         }
         this._enabled = true;
         this.wallet = wallet;
-
-        this.lastWallet = 0;
-        this.isHistorySynced = false;
     }
 
     /**
@@ -190,13 +139,10 @@ export class ExplorerNetwork extends Network {
          */
         this.blocks = 0;
 
-        /**
-         * @type {Array<HistoricalTx>}
-         */
-        this.arrTxHistory = [];
-
         this.historySyncing = false;
         this.utxoFetched = false;
+        this.fullSynced = false;
+        this.lastBlockSynced = 0;
     }
 
     error() {
@@ -222,14 +168,123 @@ export class ExplorerNetwork extends Network {
                     this.blocks
                 );
                 this.blocks = backend.blocks;
-
-                await this.getUTXOs();
+                if (this.fullSynced) {
+                    await this.getLatestTxs(this.lastBlockSynced);
+                    this.lastBlockSynced = this.blocks;
+                    activityDashboard.update(0);
+                    stakingDashboard.update(0);
+                }
             }
         } catch (e) {
             this.error();
             throw e;
         }
         return this.blocks;
+    }
+
+    /**
+     * Sometimes blockbook might return internal error, in this case this function will sleep for 20 seconds and retry
+     * @param {string} strCommand - The specific Blockbook api to call
+     * @returns {Promise<Object>} Explorer result in json
+     */
+    async safeFetchFromExplorer(strCommand) {
+        let trials = 0;
+        const maxTrials = 5;
+        while (trials < maxTrials) {
+            trials += 1;
+            const res = await fetchBlockbook(strCommand);
+            if (!res.ok) {
+                if (debug) {
+                    console.log(
+                        'Blockbook internal error! sleeping for 20 seconds'
+                    );
+                }
+                await sleep(20000);
+                continue;
+            }
+            return await res.json();
+        }
+        throw new Error('Cannot safe fetch from explorer!');
+    }
+    async getLatestTxs(nStartHeight) {
+        // Ask some blocks in the past or blockbock might not return a transaction that has just been mined
+        const blockOffset = 10;
+        nStartHeight =
+            nStartHeight > blockOffset
+                ? nStartHeight - blockOffset
+                : nStartHeight;
+        if (debug) {
+            console.time('getLatestTxsTimer');
+        }
+        // Form the API call using our wallet information
+        const strKey = this.wallet.getKeyToExport();
+        const strRoot = `/api/v2/${
+            this.wallet.isHD() ? 'xpub/' : 'address/'
+        }${strKey}`;
+        const strCoreParams = `?details=txs&from=${nStartHeight}`;
+        const probePage = !this.fullSynced
+            ? await this.safeFetchFromExplorer(
+                  `${strRoot + strCoreParams}&pageSize=1`
+              )
+            : null;
+        //.txs returns the total number of wallet's transaction regardless the startHeight and we use this for first sync
+        // after first sync (so at each new block) we can safely assume that user got less than 1000 new txs
+        const txNumber = !this.fullSynced ? probePage.txs : 1;
+        // Compute the total pages and iterate through them until we've synced everything
+        const totalPages = Math.ceil(txNumber / 1000);
+        for (let i = totalPages; i > 0; i--) {
+            if (!this.fullSynced) {
+                getEventEmitter().emit(
+                    'sync-status-update',
+                    totalPages - i + 1,
+                    totalPages,
+                    false
+                );
+            }
+
+            // Fetch this page of transactions
+            const iPage = await this.safeFetchFromExplorer(
+                `${strRoot + strCoreParams}&page=${i}`
+            );
+
+            // Update the internal mempool if there's new transactions
+            // Note: Extra check since Blockbook sucks and removes `.transactions` instead of an empty array if there's no transactions
+            if (iPage?.transactions?.length > 0) {
+                for (const tx of iPage.transactions.reverse()) {
+                    mempool.updateMempool(mempool.parseTransaction(tx));
+                }
+            }
+        }
+        if (debug) {
+            console.log(
+                'Fetched latest txs: total number of pages was ',
+                totalPages,
+                ' fullSynced? ',
+                this.fullSynced
+            );
+            console.timeEnd('getLatestTxsTimer');
+        }
+        mempool.setBalance();
+        if (!this.fullSynced) {
+            getEventEmitter().emit('sync-status-update', 0, 0, true);
+            createAlert('success', translation.syncStatusFinished, 12500);
+        }
+    }
+
+    async walletFullSync() {
+        if (this.fullSynced) return;
+        if (!this.wallet || !this.wallet.isLoaded()) return;
+        getEventEmitter().emit('sync-status', 'start');
+        await this.getLatestTxs(0);
+        const nBlockHeights = Array.from(mempool.orderedTxmap.keys());
+        this.lastBlockSynced =
+            nBlockHeights.length == 0
+                ? 0
+                : nBlockHeights.sort((a, b) => a - b).at(-1);
+        this.fullSynced = true;
+        await activityDashboard.update(50);
+        await stakingDashboard.update(50);
+        getEventEmitter().emit('sync-status', 'stop');
     }
 
     /**
@@ -258,20 +313,12 @@ export class ExplorerNetwork extends Network {
             this.isSyncing = true;
         }
         try {
-            let publicKey = strAddress || (await this.wallet.getKeyToExport());
+            let publicKey = strAddress || this.wallet.getKeyToExport();
             // Fetch UTXOs for the key
             const arrUTXOs = await (
                 await retryWrapper(fetchBlockbook, `/api/v2/utxo/${publicKey}`)
             ).json();
-            // Update the maximum path
-            for (const utxo of arrUTXOs) {
-                if (utxo.path) {
-                    this.lastWallet = Math.max(
-                        parseInt(utxo.path.split('/')[5]),
-                        this.lastWallet
-                    );
-                }
-            }
+
             // If using MPW's wallet, then sync the UTXOs in MPW's state
             // This check is a temporary fix to the toggle explorer call
             if (this === getNetwork())
@@ -322,256 +369,8 @@ export class ExplorerNetwork extends Network {
         }
     }
 
-    /**
-     * Synchronise a partial chunk of our TX history
-     * @param {boolean} [fNewOnly] - Whether to sync ONLY new transactions
-     */
-    async syncTxHistoryChunk(fNewOnly = false) {
-        // Do not allow multiple calls at once
-        if (this.historySyncing) {
-            return this.arrTxHistory;
-        }
-
-        try {
-            if (!this.enabled || !this.wallet || !this.wallet.isLoaded())
-                return this.arrTxHistory;
-            this.historySyncing = true;
-            const nHeight = this.arrTxHistory.length
-                ? this.arrTxHistory[this.arrTxHistory.length - 1].blockHeight
-                : 0;
-            const mapPaths = new Map();
-
-            // Form the API call using our wallet information
-            const strKey = await this.wallet.getKeyToExport();
-            const strRoot = `/api/v2/${
-                this.wallet.isHD() ? 'xpub/' : 'address/'
-            }${strKey}`;
-            const strCoreParams = `?details=txs&tokens=derived&pageSize=200`;
-            const strAPI = strRoot + strCoreParams;
-
-            // If we have a known block height, check for incoming transactions within the last 60 blocks
-            const cRecentTXs =
-                this.blocks > 0
-                    ? await (
-                          await retryWrapper(
-                              fetchBlockbook,
-                              `${strAPI}&from=${this.blocks - 60}`
-                          )
-                      ).json()
-                    : {};
-
-            // If we do not have full history, then load more historical TXs in a slice
-            const cData =
-                !fNewOnly && !this.isHistorySynced
-                    ? await (
-                          await retryWrapper(
-                              fetchBlockbook,
-                              `${strAPI}&to=${nHeight ? nHeight - 1 : 0}`
-                          )
-                      ).json()
-                    : {};
-            if (this.wallet.isHD() && (cData.tokens || cRecentTXs.tokens)) {
-                // Map all address <--> derivation paths
-                // - From historical transactions
-                if (cData.tokens) {
-                    cData.tokens.forEach((cAddrPath) =>
-                        mapPaths.set(cAddrPath.name, cAddrPath.path)
-                    );
-                }
-                // - From new transactions
-                if (cRecentTXs.tokens) {
-                    cRecentTXs.tokens.forEach((cAddrPath) =>
-                        mapPaths.set(cAddrPath.name, cAddrPath.path)
-                    );
-                }
-            } else {
-                mapPaths.set(strKey, ':)');
-            }
-
-            // Process our aggregated history data
-            if (
-                (cData && cData.transactions) ||
-                (cRecentTXs && cRecentTXs.transactions)
-            ) {
-                // Process Older (historical) TXs
-                const arrOlderTXs = this.toHistoricalTXs(
-                    cData.transactions || [],
-                    mapPaths
-                );
-                if (cRecentTXs.transactions)
-                    getEventEmitter().emit(
-                        'recent_txs',
-                        cRecentTXs.transactions
-                    );
-                // Process Recent TXs, then add them manually on the basis that they are NOT already known in history
-                const arrRecentTXs = this.toHistoricalTXs(
-                    cRecentTXs.transactions || [],
-                    mapPaths
-                );
-                for (const cTx of arrRecentTXs) {
-                    if (
-                        !this.arrTxHistory.find((a) => a.id === cTx.id) &&
-                        !arrOlderTXs.find((a) => a.id === cTx.id)
-                    ) {
-                        // No identical Tx, so prepend it!
-                        this.arrTxHistory.unshift(cTx);
-                    }
-                }
-                this.arrTxHistory = this.arrTxHistory.concat(arrOlderTXs);
-
-                // If the results don't match the full 'max/requested results', then we know the history is complete
-                if (
-                    cData.transactions &&
-                    cData.transactions.length !== cData.itemsOnPage
-                ) {
-                    this.isHistorySynced = true;
-                }
-            }
-            return this.arrTxHistory;
-        } catch (e) {
-            console.error(e);
-        } finally {
-            this.historySyncing = false;
-        }
-    }
-
-    /**
-     * Convert a list of Blockbook transactions to HistoricalTxs
-     * @param {Array<object>} arrTXs - An array of the Blockbook TXs
-     * @param {Map<String, String>} mapPaths - A map of the derivation paths for involved addresses
-     * @returns {Array<HistoricalTx>} - A new array of `HistoricalTx`-formatted transactions
-     */
-    toHistoricalTXs(arrTXs, mapPaths) {
-        /**
-         * A function to sum a list of inputs (vin) or outputs (vout)
-         * @type {(v: Array<{addresses: String[], value: Number}>) => Number}
-         */
-        const txSum = (v) =>
-            v.reduce(
-                (t, s) =>
-                    t +
-                    (s.addresses &&
-                    s.addresses.some((strAddr) => mapPaths.has(strAddr))
-                        ? parseInt(s.value)
-                        : 0),
-                0
-            );
-
-        return arrTXs
-            .map((tx) => {
-                // The total 'delta' or change in balance, from the Tx's sums
-                let nAmount = (txSum(tx.vout) - txSum(tx.vin)) / COIN;
-
-                // If this Tx creates any Shield outputs
-                // Note: shielOuts typo intended, this is a Blockbook error
-                const fShieldOuts = Number.isFinite(tx.shielOuts);
-
-                // (Un)Delegated coins in this transaction, if any
-                let nDelegated = 0;
-
-                // The address(es) delegated to, if any
-                let strDelegatedAddr = '';
-
-                // The sender addresses, if any
-                const arrSenders =
-                    tx.vin?.flatMap((vin) => vin.addresses) || [];
-
-                // The receiver addresses, if any
-                let arrReceivers =
-                    tx.vout?.flatMap((vout) => vout.addresses) || [];
-                // Pretty-fy script addresses
-                arrReceivers = arrReceivers.map((addr) =>
-                    addr.startsWith('OP_') ? 'Contract' : addr
-                );
-
-                // Figure out the type, based on the Tx's properties
-                let type = HistoricalTxType.UNKNOWN;
-                if (
-                    !fShieldOuts &&
-                    tx?.vout[0]?.addresses[0]?.startsWith('CoinStake')
-                ) {
-                    type = HistoricalTxType.STAKE;
-                } else if (nAmount > 0 || (nAmount > 0 && fShieldOuts)) {
-                    type = HistoricalTxType.RECEIVED;
-                    // If this contains Shield outputs, then we received them
-                    if (fShieldOuts)
-                        nAmount = parseInt(tx.valueBalanceSat) / COIN;
-                } else if (nAmount < 0 || (nAmount < 0 && fShieldOuts)) {
-                    // Check vins for undelegations
-                    for (const vin of tx.vin) {
-                        const fDelegation = vin.addresses?.some((addr) =>
-                            isColdAddress(addr)
-                        );
-                        if (fDelegation) {
-                            nDelegated -= parseInt(vin.value);
-                        }
-                    }
-
-                    // Check vouts for delegations
-                    for (const out of tx.vout) {
-                        strDelegatedAddr =
-                            out.addresses?.find((addr) =>
-                                isColdAddress(addr)
-                            ) || strDelegatedAddr;
-
-                        const fDelegation = !!strDelegatedAddr;
-                        if (fDelegation) {
-                            nDelegated += parseInt(out.value);
-                        }
-                    }
-
-                    // If a delegation was made, then display the value delegated
-                    if (nDelegated > 0) {
-                        type = HistoricalTxType.DELEGATION;
-                        nAmount = nDelegated / COIN;
-                    } else if (nDelegated < 0) {
-                        type = HistoricalTxType.UNDELEGATION;
-                        nAmount = nDelegated / COIN;
-                    } else {
-                        type = HistoricalTxType.SENT;
-                        // If this contains Shield outputs, then we sent them
-                        if (fShieldOuts)
-                            nAmount = parseInt(tx.valueBalanceSat) / COIN;
-                    }
-                }
-
-                return new HistoricalTx(
-                    type,
-                    tx.txid,
-                    arrSenders,
-                    nDelegated !== 0 ? [strDelegatedAddr] : arrReceivers,
-                    fShieldOuts,
-                    tx.blockTime,
-                    tx.blockHeight,
-                    Math.abs(nAmount)
-                );
-            })
-            .filter((tx) => tx.amount != 0);
-    }
-
-    async setWallet(wallet) {
-        // If the public Master Key (xpub, address...) is different, then wipe TX history
-        if (
-            (await this.wallet?.getKeyToExport()) !==
-            (await wallet?.getKeyToExport())
-        ) {
-            this.arrTxHistory = [];
-        }
-
-        // Set the key
-        this.wallet = wallet;
-    }
-
     async getTxInfo(txHash) {
         const req = await retryWrapper(fetchBlockbook, `/api/v2/tx/${txHash}`);
-        return await req.json();
-    }
-
-    async getTxFullInfo(txHash) {
-        const req = await retryWrapper(
-            fetchBlockbook,
-            `/api/v2/tx-specific/${txHash}`
-        );
         return await req.json();
     }
 

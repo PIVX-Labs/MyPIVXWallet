@@ -211,15 +211,16 @@ export function isP2CS(dataBytes) {
     );
 }
 /**
- * Generate base58 encoded address from a public key hash
+ * Get address from the corresponding public key hash
  * @param {Uint8Array} pkhBytes - public key hash
- * @returns {String} Base58 encoded address
+ * @param isColdStake true if the hash corresponds to a cold stake owner address
+ * @return {String} Base58 encoded address
  */
-export function getAddressFromPKH(pkhBytes) {
-    const buffer = new Uint8Array([
-        cChainParams.current.PUBKEY_ADDRESS,
-        ...pkhBytes,
-    ]);
+export function getAddressFromHash(pkhBytes, isColdStake) {
+    const prefix = isColdStake
+        ? cChainParams.current.STAKING_ADDRESS
+        : cChainParams.current.PUBKEY_ADDRESS;
+    const buffer = new Uint8Array([prefix, ...pkhBytes]);
     const checksum = dSHA256(buffer);
     return bs58.encode([
         ...Array.from(buffer),

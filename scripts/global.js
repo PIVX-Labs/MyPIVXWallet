@@ -415,6 +415,9 @@ export async function start() {
         : 0;
     await settingsStart();
 
+    // After reaching here; we know MPW's base is fully loaded!
+    fIsLoaded = true;
+
     // Customise the UI if a saved wallet exists
     if (await hasEncryptedWallet()) {
         // Hide the 'Generate wallet' buttons
@@ -479,9 +482,6 @@ export async function start() {
         refreshPriceDisplay();
     }, 15000);
 
-    // After reaching here; we know MPW's base is fully loaded!
-    fIsLoaded = true;
-
     // Check for recent upgrades, display the changelog
     checkForUpgrades();
 
@@ -512,8 +512,8 @@ function subscribeToNetworkEvents() {
     getEventEmitter().on('new-block', (block, oldBlock) => {
         console.log(`New block detected! ${oldBlock} --> ${block}`);
         // Fetch latest Activity
-        activityDashboard.update(true);
-        stakingDashboard.update(true);
+        activityDashboard.update();
+        stakingDashboard.update();
 
         // If it's open: update the Governance Dashboard
         if (doms.domGovTab.classList.contains('active')) {
@@ -582,13 +582,10 @@ export function openTab(evt, tabName) {
         stakingDashboard.getTxCount() === 0
     ) {
         // Refresh the TX list
-        stakingDashboard.update(false);
-    } else if (
-        tabName === 'keypair' &&
-        getNetwork().arrTxHistory.length === 0
-    ) {
+        stakingDashboard.update();
+    } else if (tabName === 'keypair' && activityDashboard.getTxCount() === 0) {
         // Refresh the TX list
-        activityDashboard.update(false);
+        activityDashboard.update();
     }
 }
 
@@ -1538,6 +1535,7 @@ export async function sweepAddress(arrUTXOs, sweepingMasterKey, nFixedFee = 0) {
     // Sign using the given Master Key, then broadcast the sweep, returning the TXID (or a failure)
     const sweepingWallet = new Wallet(0, false);
     await sweepingWallet.setMasterKey(sweepingMasterKey);
+
     const sign = await signTransaction(cTx, sweepingWallet);
     return await getNetwork().sendTransaction(sign);
 }
@@ -2299,7 +2297,8 @@ export async function updateMasternodeTab() {
         return;
     }
 
-    if (!mempool.isLoaded) {
+    const cNet = getNetwork();
+    if (!cNet || !cNet.fullSynced) {
         doms.domMnTextErrors.innerHTML =
             'Your wallet is empty or still loading, re-open the tab in a few seconds!';
         return;

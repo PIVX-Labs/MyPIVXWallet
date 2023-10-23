@@ -206,6 +206,10 @@ importSeedErrorSkip = "~~Seed Phrase appears invalid, but the warning was skippe
 contestedProposalsTitle = "~~Contested Proposals"
 settingsToggleAdvancedMode = "~~Advanced Mode"
 settingsToggleAdvancedModeSubtext = "~~This unlocks deeper functionality and customisation, but may be overwhelming and potentially dangerous for unexperienced users!"
+syncStatusHistoryProgress = "~~Syncing History Chunks {current} of {total}"
+syncStatusStarting = "~~<b>Your wallet is syncing!</b><br>You'll be able to use it fully once this is complete."
+syncStatusFinished = "~~<b>Sync Finished!</b><br>Your wallet is ready to use!"
+activityReceivedWith = "~~Received with {s}"
 
 [ALERTS]
 INTERNAL_ERROR = "Errore interno, rirova più tardi"

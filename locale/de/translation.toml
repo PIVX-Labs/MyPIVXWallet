@@ -207,6 +207,10 @@ netSwitchUnsavedWarningSubtitle = "~~Your {network} account is at risk!"
 netSwitchUnsavedWarningSubtext = "~~If you switch to {network} before saving it, you'll lose the account!"
 netSwitchUnsavedWarningConfirmation = "~~Are you really sure?"
 activitySelf = "~~self"
+syncStatusHistoryProgress = "~~Syncing History Chunks {current} of {total}"
+syncStatusStarting = "~~<b>Your wallet is syncing!</b><br>You'll be able to use it fully once this is complete."
+syncStatusFinished = "~~<b>Sync Finished!</b><br>Your wallet is ready to use!"
+activityReceivedWith = "~~Received with {s}"
 
 [ALERTS]
 INTERNAL_ERROR = "Interner Fehler, bitte versuche es später erneut"
