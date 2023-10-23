@@ -25,7 +25,7 @@ def unmerge(path):
 def merge_internal(obj1, obj2, res):
     for (k1, k2) in zip(obj1.copy(), obj2.copy()):
         if k1 != k2:
-            print('Files are out of order, aborting.\nKey1 {} != Key2 {}'.format(k1, k2), file=sys.stderr)
+            raise ValueError('Files are out of order. \nKey1 {} != Key2 {}'.format(k1, k2))
         if k1 == 'ALERTS':
             continue
         if '~~' in obj1[k1] or '~~' in obj2[k2]:
