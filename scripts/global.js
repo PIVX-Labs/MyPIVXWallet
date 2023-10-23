@@ -463,6 +463,10 @@ export async function start() {
             await accessOrImportWallet();
         }
     } else {
+        // Clear the transaction DB
+        const database = await Database.getInstance();
+        await database.removeAllTxs();
+
         // Just load the block count, for use in non-wallet areas
         getNetwork().getBlockCount();
     }

@@ -12,9 +12,10 @@ import {
 import { PromoWallet } from './promos.js';
 import { ALERTS, translation } from './i18n.js';
 import { Account } from './accounts.js';
+import { COutpoint, CTxIn, CTxOut, Transaction } from './mempool.js';
 
 /** The current version of the DB - increasing this will prompt the Upgrade process for clients with an older version */
-export const DB_VERSION = 2;
+export const DB_VERSION = 3;
 
 /**
  *
@@ -62,6 +63,28 @@ export class Database {
             .transaction('masternodes', 'readwrite')
             .objectStore('masternodes');
         await store.delete('masternode');
+    }
+
+    /**
+     * Store a tx inside the database
+     * @param {Transaction} tx
+     */
+    async storeTx(tx) {
+        const store = this.#db
+            .transaction('txs', 'readwrite')
+            .objectStore('txs');
+        await store.put(tx, tx.txid);
+    }
+
+    /**
+     * Remove a tx from the database
+     * @param {String} txid - transaction id
+     */
+    async removeTx(txid) {
+        const store = this.#db
+            .transaction('txs', 'readwrite')
+            .objectStore('txs');
+        await store.delete(txid);
     }
 
     /**
@@ -293,6 +316,55 @@ export class Database {
     }
 
     /**
+     * Get all txs from the database
+     * @returns {Promise<Transaction>}
+     */
+    async getTxs() {
+        const store = this.#db
+            .transaction('txs', 'readonly')
+            .objectStore('txs');
+        return (await store.getAll()).map((tx) => {
+            const vin = tx.vin.map(
+                (x) =>
+                    new CTxIn({
+                        outpoint: new COutpoint({
+                            txid: x.outpoint.txid,
+                            n: x.outpoint.n,
+                        }),
+                        scriptSig: x.scriptSig,
+                    })
+            );
+            const vout = tx.vout.map(
+                (x) =>
+                    new CTxOut({
+                        outpoint: new COutpoint({
+                            txid: x.outpoint.txid,
+                            n: x.outpoint.n,
+                        }),
+                        script: x.script,
+                        value: x.value,
+                    })
+            );
+            return new Transaction({
+                txid: tx.txid,
+                blockHeight: tx.blockHeight,
+                blockTime: tx.blockTime,
+                vin: vin,
+                vout: vout,
+            });
+        });
+    }
+    /**
+     * Remove all txs from db
+     */
+    async removeAllTxs() {
+        const store = this.#db
+            .transaction('txs', 'readwrite')
+            .objectStore('txs');
+        await store.clear();
+    }
+
+    /**
      * @returns {Promise<Settings>}
      */
     async getSettings() {
@@ -395,6 +467,9 @@ export class Database {
                 // The introduction of PIVXPromos (safely added during <v2 upgrades)
                 if (oldVersion <= 1) {
                     db.createObjectStore('promos');
+                }
+                if (oldVersion <= 2) {
+                    db.createObjectStore('txs');
                 }
             },
             blocking: () => {

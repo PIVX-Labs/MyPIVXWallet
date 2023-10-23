@@ -531,6 +531,10 @@ export async function toggleTestnet() {
         // Nuke the Master Key
         wallet.setMasterKey(null);
 
+        // Clear the transaction DB
+        const database = await Database.getInstance();
+        await database.removeAllTxs();
+
         // Hide all Dashboard info, kick the user back to the "Getting Started" area
         doms.domGenKeyWarning.style.display = 'none';
         doms.domGuiWallet.style.display = 'none';

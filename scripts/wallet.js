@@ -1,9 +1,19 @@
 import { parseWIF } from './encoding.js';
 import { generateMnemonic, mnemonicToSeed, validateMnemonic } from 'bip39';
-import { doms, beforeUnloadListener } from './global.js';
+import {
+    doms,
+    beforeUnloadListener,
+    activityDashboard,
+    stakingDashboard,
+} from './global.js';
 import { getNetwork } from './network.js';
 import { MAX_ACCOUNT_GAP } from './chain_params.js';
-import { Transaction, HistoricalTx, HistoricalTxType } from './mempool.js';
+import {
+    Transaction,
+    HistoricalTx,
+    HistoricalTxType,
+    CTxOut,
+} from './mempool.js';
 import {
     LegacyMasterKey,
     HdMasterKey,
@@ -785,15 +795,20 @@ export async function importWallet({
             // Hide the encryption UI
             doms.domGenKeyWarning.style.display = 'none';
         }
+
         // Hide all wallet starter options
         setDisplayForAllWalletOptions('none');
         getEventEmitter().emit('wallet-import');
 
-        // Fetch state from explorer, if this import was post-startup
-        if (getNetwork().enabled) {
+        getEventEmitter().emit('sync-status', 'start');
+        if (!(await mempool.loadFromDisk()) && getNetwork().enabled) {
             createAlert('info', translation.syncStatusStarting, 12500);
             await getNetwork().walletFullSync();
         }
+        await activityDashboard.update(50);
+        await stakingDashboard.update(50);
+        getEventEmitter().emit('sync-status', 'stop');
+
         if (getNetwork().enabled && !fStartup) {
             refreshChainData();
         }
