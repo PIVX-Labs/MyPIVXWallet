@@ -357,9 +357,9 @@ getEventEmitter().on('toggle-network', async () => {
     doms.domDashboard.click();
 });
 
- onMounted(async () => {
-     await start();
-     if (await hasEncryptedWallet()) {
+onMounted(async () => {
+    await start();
+    if (await hasEncryptedWallet()) {
         const database = await Database.getInstance();
         const { publicKey } = await database.getAccount();
         await importWallet({ type: 'hd', secret: publicKey });
@@ -382,9 +382,8 @@ const currency = ref('USD');
 const price = ref(0.0);
 const displayDecimals = ref(0);
 
- getEventEmitter().on('sync-status', (status) => {
-     if(status === 'stop')
-	 activity?.value?.update();
+getEventEmitter().on('sync-status', (status) => {
+    if (status === 'stop') activity?.value?.update();
 });
 
 getEventEmitter().on('balance-update', async () => {

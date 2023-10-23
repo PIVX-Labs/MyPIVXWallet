@@ -1,7 +1,5 @@
 import { getNetwork } from './network.js';
-import {
-    getStakingBalance,
-} from './global.js';
+import { getStakingBalance } from './global.js';
 import { getEventEmitter } from './event_bus.js';
 import Multimap from 'multimap';
 import { wallet } from './wallet.js';
@@ -200,8 +198,8 @@ export class Mempool {
         this.txmap = new Map();
         this.spent = new Multimap();
         this.orderedTxmap = new Multimap();
-	this.#setBalance();
-	getEventEmitter().emit('balance-update');
+        this.#setBalance();
+        getEventEmitter().emit('balance-update');
     }
     get balance() {
         return this.#balance;
@@ -358,9 +356,9 @@ export class Mempool {
             wallet.updateHighestUsedIndex(vout);
         }
         this.addToOrderedTxMap(tx);
-	this.#setBalance();
+        this.#setBalance();
     }
-    
+
     #setBalance() {
         this.#balance = this.getBalance(UTXO_WALLET_STATE.SPENDABLE);
         this.#coldBalance = this.getBalance(UTXO_WALLET_STATE.SPENDABLE_COLD);

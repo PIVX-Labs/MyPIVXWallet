@@ -3,15 +3,10 @@ import { beforeUnloadListener } from './global.js';
 import { getNetwork } from './network.js';
 import { MAX_ACCOUNT_GAP } from './chain_params.js';
 import { Transaction, HistoricalTx, HistoricalTxType } from './mempool.js';
-import {
-    confirmPopup,
-    createAlert,
-} from './misc.js';
+import { confirmPopup, createAlert } from './misc.js';
 import { cChainParams } from './chain_params.js';
 import { COIN } from './chain_params.js';
-import {
-    mempool,
-} from './global.js';
+import { mempool } from './global.js';
 import { ALERTS, tr, translation } from './i18n.js';
 import { encrypt } from './aes-gcm.js';
 import { Database } from './database.js';
@@ -176,7 +171,7 @@ export class Wallet {
      * @param {import('./masterkey.js').MasterKey} mk - The new Master Key to set active
      */
     async setMasterKey(mk) {
-	this.reset();
+        this.reset();
         this.#masterKey = mk;
         // If this is the global wallet update the network master key
         if (this.#isMainWallet) {

@@ -342,15 +342,14 @@ export async function start() {
     // Check for recent upgrades, display the changelog
     checkForUpgrades();
 
-
     // Update the Encryption UI (If the user has a wallet, then it changes to "Change Password" rather than "Encrypt Wallet")
     getEventEmitter().on('wallet-import', async () => {
-	await updateEncryptionGUI();
-		getNetwork().walletFullSync();
+        await updateEncryptionGUI();
+        getNetwork().walletFullSync();
     });
     await updateEncryptionGUI();
     fIsLoaded = true;
-    
+
     // If we haven't already (due to having no wallet, etc), display the Dashboard
     doms.domDashboard.click();
 }
