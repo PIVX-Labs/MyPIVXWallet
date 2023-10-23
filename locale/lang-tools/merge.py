@@ -28,6 +28,8 @@ def merge_internal(obj1, obj2, res):
             print('Files are out of order, aborting.\nKey1 {} != Key2 {}'.format(k1, k2), file=sys.stderr)
         if k1 == 'ALERTS':
             continue
+        if '~~' in obj1[k1] or '~~' in obj2[k2]:
+            continue
         if obj1[k1] == obj2[k2]:
             res[k1] = obj1[k1]
             del obj1[k1]
