@@ -84,6 +84,9 @@ export default {
     secureYourWallet: 'Protégez votre portefeuille', //Secure your wallet
     unlockWallet: 'Déverrouiller le portefeuille', //Unlock wallet
     lockWallet: 'Fermeture du portefeuille', //Lock wallet
+    syncStatusHistoryProgress: '', //Syncing History Chunks {current} of {total}
+    syncStatusStarting: '', //<b>Your wallet is syncing!</b><br>You\'ll be able to use it fully once this is complete.
+    syncStatusFinished: '', //<b>Sync Finished!</b><br>Your wallet is ready to use!
 
     // Encrypt wallet
     encryptWallet: 'Cryptage du portefeuille', //Encrypt wallet
@@ -236,7 +239,7 @@ export default {
     activitySentTo: 'Envoyé à {r}', //Sent to
     activitySelf: 'soi-même', //Self
     activityShieldedAddress: 'Adresse protégée', //Shielded address
-    activityReceivedFrom: 'Reçu de {s}', //Received from
+    activityReceivedWith: '', //Received with {s}
     activityDelegatedTo: 'Délégué à {r}', //Delegated to
     activityUndelegated: 'Non délégué', //Undelegated
     activityUnknown: 'Transaction inconnu', //Unknown Tx

@@ -86,6 +86,9 @@ export default {
     secureYourWallet: 'I-secure ang iyong wallet', //Secure your wallet
     unlockWallet: 'Buksan ang Wallet', //Unlock wallet
     lockWallet: 'Isara ang wallet', //Lock wallet
+    syncStatusHistoryProgress: '', //Syncing History Chunks {current} of {total}
+    syncStatusStarting: '', //<b>Your wallet is syncing!</b><br>You\'ll be able to use it fully once this is complete.
+    syncStatusFinished: '', //<b>Sync Finished!</b><br>Your wallet is ready to use!
 
     // Encrypt wallet
     encryptWallet: 'Encrypt wallet', //Encrypt wallet
@@ -239,7 +242,7 @@ export default {
     activitySentTo: 'Naipadala sa {r}', //Sent to
     activitySelf: 'sarili', //Self
     activityShieldedAddress: 'Shielded address', //Shielded address
-    activityReceivedFrom: 'Natanggap mula sa {s}', //Received from
+    activityReceivedWith: '', //Received with {s}
     activityDelegatedTo: 'Delegated to {r}', //Delegated to
     activityUndelegated: 'Undeligated', //Undelegated
     activityUnknown: 'Unknown Tx', //Unknown Tx

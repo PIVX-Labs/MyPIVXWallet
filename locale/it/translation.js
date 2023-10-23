@@ -70,6 +70,9 @@ export default {
     secureYourWallet: 'Proteggi il tuo wallet', //Secure your wallet
     unlockWallet: 'Sblocca il wallet', //Unlock wallet
     lockWallet: 'Blocca wallet', //Lock wallet
+    syncStatusHistoryProgress: '', //Syncing History Chunks {current} of {total}
+    syncStatusStarting: '', //<b>Your wallet is syncing!</b><br>You\'ll be able to use it fully once this is complete.
+    syncStatusFinished: '', //<b>Sync Finished!</b><br>Your wallet is ready to use!
 
     // Encrypt wallet
     encryptWallet: 'Cripta il wallet', //Encrypt wallet
@@ -218,7 +221,7 @@ export default {
     activitySentTo: 'Inviato a {r}', //Sent to
     activitySelf: 'te stesso', //Self
     activityShieldedAddress: 'Indirizzo protetto', //Shielded address
-    activityReceivedFrom: 'Ricevuto da {s}', //Received from
+    activityReceivedWith: '', //Received with {s}
     activityDelegatedTo: 'Delegato a {r}', //Delegated to
     activityUndelegated: 'Non delegato', //Undelegated
     activityUnknown: 'Tx sconosciuta', //Unknown Tx

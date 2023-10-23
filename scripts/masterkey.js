@@ -73,7 +73,7 @@ export class MasterKey {
     }
 
     /**
-     * @return {Promise<String>} public key to export. Only suitable for monitoring balance.
+     * @return {string} public key to export. Only suitable for monitoring balance.
      * @abstract
      */
     getKeyToExport(_nAccount) {

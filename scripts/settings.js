@@ -509,16 +509,15 @@ export async function toggleTestnet() {
     // Update testnet toggle in settings
     doms.domTestnetToggler.checked = cChainParams.current.isTestnet;
 
-    // Check if the new network has an Account
+    await fillExplorerSelect();
+    await fillNodeSelect();
     mempool.reset();
+
     getEventEmitter().emit('toggle-network');
     getEventEmitter().emit('balance-update');
     getStakingBalance(true);
     await updateEncryptionGUI(wallet.isLoaded());
-    await fillExplorerSelect();
-    await fillNodeSelect();
     await updateGovernanceTab();
-    //    activityDashboard.reset();
     stakingDashboard.reset();
 }
 

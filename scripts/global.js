@@ -4,7 +4,7 @@ import { ALERTS, tr, start as i18nStart, translation } from './i18n.js';
 
 import { wallet, hasEncryptedWallet, getNewAddress, Wallet } from './wallet.js';
 import { LegacyMasterKey } from './masterkey.js';
-import { getNetwork, HistoricalTxType } from './network.js';
+import { getNetwork } from './network.js';
 import {
     start as settingsStart,
     cExplorer,
@@ -19,11 +19,8 @@ import {
     createAlert,
     confirmPopup,
     sanitizeHTML,
-    parseBIP21Request,
-    isValidBech32,
     sleep,
     beautifyNumber,
-    isStandardAddress,
     isColdAddress,
 } from './misc.js';
 import { cChainParams, COIN } from './chain_params.js';
@@ -32,7 +29,6 @@ import { registerWorker } from './native.js';
 import { refreshPriceDisplay } from './prices.js';
 import { Address6 } from 'ip-address';
 import { getEventEmitter } from './event_bus.js';
-import { scanQRCode } from './scanner.js';
 import { Database } from './database.js';
 import bitjs from './bitTrx.js';
 import { checkForUpgrades } from './changelog.js';
@@ -40,10 +36,6 @@ import { FlipDown } from './flipdown.js';
 import { createApp } from 'vue';
 import Activity from './dashboard/Activity.vue';
 import Dashboard from './dashboard/Dashboard.vue';
-import {
-    guiAddContactPrompt,
-    guiCheckRecipientInput,
-} from './contacts-book.js';
 
 /** A flag showing if base MPW is fully loaded or not */
 export let fIsLoaded = false;
@@ -332,19 +324,7 @@ export async function start() {
 
     // Register native app service
     registerWorker();
-
-    // URL-Query request processing
-    const urlParams = new URLSearchParams(window.location.search);
-
-    // Check for a payment request address
-    const reqTo = urlParams.has('pay') ? urlParams.get('pay') : '';
-
-    // Check for a payment request amount
-    const reqAmount = urlParams.has('amount')
-        ? parseFloat(urlParams.get('amount'))
-        : 0;
     await settingsStart();
-
     // Just load the block count, for use in non-wallet areas
     await getNetwork().getBlockCount();
     subscribeToNetworkEvents();
@@ -359,18 +339,20 @@ export async function start() {
         refreshPriceDisplay();
     }, 15000);
 
-    // After reaching here; we know MPW's base is fully loaded!
-    fIsLoaded = true;
-
     // Check for recent upgrades, display the changelog
     checkForUpgrades();
 
-    // If we haven't already (due to having no wallet, etc), display the Dashboard
-    doms.domDashboard.click();
 
     // Update the Encryption UI (If the user has a wallet, then it changes to "Change Password" rather than "Encrypt Wallet")
-    getEventEmitter().on('wallet-import', updateEncryptionGUI);
+    getEventEmitter().on('wallet-import', async () => {
+	await updateEncryptionGUI();
+		getNetwork().walletFullSync();
+    });
     await updateEncryptionGUI();
+    fIsLoaded = true;
+    
+    // If we haven't already (due to having no wallet, etc), display the Dashboard
+    doms.domDashboard.click();
 }
 
 function subscribeToNetworkEvents() {
@@ -393,8 +375,7 @@ function subscribeToNetworkEvents() {
     getEventEmitter().on('new-block', (block, oldBlock) => {
         console.log(`New block detected! ${oldBlock} --> ${block}`);
         // Fetch latest Activity
-        //activityDashboard.update(true);
-        stakingDashboard.update(true);
+        stakingDashboard.update();
 
         // If it's open: update the Governance Dashboard
         if (doms.domGovTab.classList.contains('active')) {
@@ -460,13 +441,7 @@ export function openTab(evt, tabName) {
         stakingDashboard.getTxCount() === 0
     ) {
         // Refresh the TX list
-        stakingDashboard.update(false);
-    } else if (
-        tabName === 'keypair' &&
-        getNetwork().arrTxHistory.length === 0
-    ) {
-        // Refresh the TX list
-        //activityDashboard.update(false);
+        stakingDashboard.update();
     }
 }
 
@@ -996,6 +971,7 @@ export async function sweepAddress(arrUTXOs, sweepingMasterKey, nFixedFee = 0) {
     // Sign using the given Master Key, then broadcast the sweep, returning the TXID (or a failure)
     const sweepingWallet = new Wallet(0, false);
     await sweepingWallet.setMasterKey(sweepingMasterKey);
+
     const sign = await signTransaction(cTx, sweepingWallet);
     return await getNetwork().sendTransaction(sign);
 }
@@ -1728,7 +1704,8 @@ export async function updateMasternodeTab() {
         return;
     }
 
-    if (!mempool.isLoaded) {
+    const cNet = getNetwork();
+    if (!cNet || !cNet.fullSynced) {
         doms.domMnTextErrors.innerHTML =
             'Your wallet is empty or still loading, re-open the tab in a few seconds!';
         return;

@@ -1,8 +1,7 @@
 <script setup>
 import { cChainParams, COIN } from '../chain_params.js';
-import { translation } from '../i18n';
+import { tr, translation } from '../i18n';
 import { ref, computed, toRefs, onMounted, watch } from 'vue';
-
 import { beautifyNumber } from '../misc';
 import { getEventEmitter } from '../event_bus';
 import * as jdenticon from 'jdenticon';
@@ -46,6 +45,16 @@ onMounted(() => {
     );
 });
 
+const totalSyncPages = ref(0);
+const currentSyncPage = ref(0);
+const isSyncing = ref(false);
+const syncStr = computed(() => {
+    return tr(translation.syncStatusHistoryProgress, [
+        { current: currentSyncPage.value },
+        { total: totalSyncPages.value },
+    ]);
+});
+
 const updating = ref(false);
 const balanceStr = computed(() => {
     const nCoins = balance.value / COIN;
@@ -69,6 +78,15 @@ getEventEmitter().on('sync-status', (value) => {
 });
 
 const emit = defineEmits(['reload', 'send', 'exportPrivKeyOpen']);
+
+getEventEmitter().on(
+    'sync-status-update',
+    (currentPage, totalPages, finished) => {
+        totalSyncPages.value = totalPages;
+        currentSyncPage.value = currentPage;
+        isSyncing.value = finished === false;
+    }
+);
 
 function reload() {
     if (!updating) {
@@ -257,5 +275,18 @@ function reload() {
                 </div>
             </div>
         </div>
+        <center>
+            <div
+                v-if="isSyncing"
+                style="
+                    background-color: #0000002b;
+                    width: fit-content;
+                    padding: 8px;
+                    border-radius: 15px;
+                "
+            >
+                {{ syncStr }}
+            </div>
+        </center>
     </center>
 </template>

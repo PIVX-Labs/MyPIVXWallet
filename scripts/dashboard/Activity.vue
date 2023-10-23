@@ -1,12 +1,13 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
-import { getNetwork, HistoricalTxType } from '../network.js';
+import { getNetwork } from '../network.js';
 import { wallet } from '../wallet.js';
+import { mempool } from '../global.js';
 import { cChainParams } from '../chain_params.js';
 import { translation } from '../i18n.js';
 import { Database } from '../database.js';
+import { HistoricalTx, HistoricalTxType } from '../mempool';
 import { getNameOrAddress } from '../contacts-book.js';
-import { mempool } from '../global.js';
 
 const props = defineProps({
     title: String,
@@ -35,7 +36,7 @@ const txMap = computed(() => {
         [HistoricalTxType.RECEIVED]: {
             icon: 'fa-plus',
             colour: '#5cff5c',
-            content: translation.activityReceivedFrom,
+            content: translation.activityReceivedWith,
         },
         [HistoricalTxType.DELEGATION]: {
             icon: 'fa-snowflake',
@@ -55,65 +56,52 @@ const txMap = computed(() => {
     };
 });
 
-async function update(fNewOnly = false, sync = true) {
+async function update(txToAdd = 0) {
     const cNet = getNetwork();
-
-    // If mempool is not loaded yet do not update the activity GUI
-    // or we might end up in a state where many of our addresses are considered invalid
-    if (!mempool.isLoaded) {
+    // Return if wallet is not synced yet
+    if (!cNet || !cNet.fullSynced) {
         return;
     }
 
-    if (!cNet) return;
     explorerUrl.value = cNet?.strUrl;
 
     // Prevent the user from spamming refreshes
     if (updating.value) return;
+    let newTxs = [];
 
-    let arrTXs;
-    try {
-        // Set the updating animation
-        updating.value = true;
+    // Set the updating animation
+    updating.value = true;
 
-        // If our txCount is lower than the tx history loaded
-        // Use the txhistory array, otherwise sync more
-        if (txCount !== cNet.arrTxHistory.length || !sync) {
-            arrTXs = cNet.arrTxHistory;
-        } else {
-            arrTXs = await cNet.syncTxHistoryChunk(fNewOnly);
+    // If there are less than 10 txs loaded, append rather than update the list
+    if (txCount < 10 && txToAdd == 0) txToAdd = 10;
+
+    let found = 0;
+    const nHeights = Array.from(mempool.orderedTxmap.keys()).sort(
+        (a, b) => a - b
+    );
+    while (found < txCount + txToAdd) {
+        if (nHeights.length == 0) {
+            isHistorySynced.value = true;
+            break;
         }
-        // If the network has changed, or the sync has failed
-        // Ignore the array
-        if (!arrTXs || cNet !== getNetwork()) return;
-
-        txCount = arrTXs.length;
-    } finally {
-        updating.value = false;
+        const nHeight = nHeights.pop();
+        const txsAtnHeight = mempool.orderedTxmap.get(nHeight).filter((tx) => {
+            return props.rewards ? tx.isCoinStake() : true;
+        });
+        newTxs = newTxs.concat(txsAtnHeight);
+        found += txsAtnHeight.length;
     }
-
-    // Check if all transactions are loaded
-    isHistorySynced.value = cNet.isHistorySynced;
-
-    // For Staking: Filter the list for only Stakes, display total rewards from known history
-    if (props.rewards) {
-        const arrStakes = arrTXs.filter(
-            (a) => a.type === HistoricalTxType.STAKE
-        );
-
-        if (arrStakes.length !== txs.length) {
-            const nRewards = arrStakes.reduce((a, b) => a + b.amount, 0);
-            rewardsText.value = `${cNet.isHistorySynced ? '' : '≥'}${nRewards}`;
-            parseTXs(arrStakes);
-            return;
-        }
-    }
-    if (txs.length !== arrTXs.length) parseTXs(arrTXs);
+    const arrTXs = wallet.toHistoricalTXs(newTxs);
+    await parseTXs(arrTXs);
+    txCount = found;
+    updating.value = false;
 }
 
-watch(translation, async () => await update(false, false));
+watch(translation, async () => await update());
 
 /**
  * Parse tx to list syntax
+ * @param {Array<HistoricalTx>} arrTXs
  */
 async function parseTXs(arrTXs) {
     const newTxs = [];
@@ -180,15 +168,12 @@ async function parseTXs(arrTXs) {
             formattedAmt = cTx.amount.toFixed(2);
         }
 
-        // For 'Send' or 'Receive' TXs: Check if this is a send-to-self transaction
+        // For 'Send' TXs: Check if this is a send-to-self transaction
         let fSendToSelf = false;
-        if (
-            cTx.type === HistoricalTxType.SENT ||
-            cTx.type === HistoricalTxType.RECEIVED
-        ) {
+        if (cTx.type === HistoricalTxType.SENT) {
             fSendToSelf = true;
             // Check all addresses to find our own, caching them for performance
-            for (const strAddr of cTx.receivers.concat(cTx.senders)) {
+            for (const strAddr of cTx.receivers) {
                 // If a previous Tx checked this address, skip it, otherwise, check it against our own address(es)
                 if (!wallet.isOwnAddress(strAddr)) {
                     // External address, this is not a self-only Tx
@@ -201,35 +186,24 @@ async function parseTXs(arrTXs) {
         let { icon, colour, content } = txMap.value[cTx.type];
         const match = content.match(/{(.)}/);
         if (match) {
-            // Use the senders array if `s` was provided in the template
-            // Use the receivers array if `r` was provided
-            const where = {
-                r: 'receivers',
-                s: 'senders',
-            }[match[1]];
-
             let who = '';
             if (fSendToSelf) {
                 who = translation.activitySelf;
             } else if (cTx.shieldedOutputs) {
                 who = translation.activityShieldedAddress;
             } else {
-                const arrExternalAddresses = (
-                    await Promise.all(
-                        cTx[where].map(async (addr) => [
-                            wallet.isOwnAddress(addr),
-                            addr,
-                        ])
-                    )
-                )
+                const arrAddresses = cTx.receivers
+                    .map((addr) => [wallet.isOwnAddress(addr), addr])
                     .filter(([isOwnAddress, _]) => {
-                        return !isOwnAddress;
+                        return cTx.type === HistoricalTxType.RECEIVED
+                            ? isOwnAddress
+                            : !isOwnAddress;
                     })
                     .map(([_, addr]) => getNameOrAddress(cAccount, addr));
                 who =
                     [
                         ...new Set(
-                            arrExternalAddresses.map((addr) =>
+                            arrAddresses.map((addr) =>
                                 addr?.length >= 32
                                     ? addr?.substring(0, 6)
                                     : addr
@@ -257,7 +231,7 @@ async function parseTXs(arrTXs) {
 function reset() {
     txs.value = [];
     txCount = 0;
-    update(false);
+    update(0);
 }
 
 function getTxCount() {
@@ -357,7 +331,7 @@ defineExpose({ update, reset, getTxCount });
                 <button
                     v-if="!isHistorySynced"
                     class="pivx-button-medium"
-                    @click="update()"
+                    @click="update(10)"
                 >
                     <span class="buttoni-icon"
                         ><i

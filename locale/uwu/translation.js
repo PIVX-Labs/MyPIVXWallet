@@ -97,6 +97,10 @@ export default {
     export: 'Expwort', //Export
     refreshAddress: 'Refwesh address', //Refresh address
     redeemOrCreateCode: 'Redeem or Cweate Cowode', //Redeem or Create Code
+    syncStatusHistoryProgress: 'Syncing Hwistory Chwunks {current} of {total}', //Syncing History Chunks {current} of {total}
+    syncStatusStarting:
+        '<b>Ur wawwet is syncing!</b><br>u can use it fully once dis iz complete.', //<b>Your wallet is syncing!</b><br>You\'ll be able to use it fully once this is complete.
+    syncStatusFinished: '<b>Sync Fwinished!</b><br>Ur wawwet is weady to use!', //<b>Sync Finished!</b><br>Your wallet is ready to use!
 
     // Send
     address: 'Addwess', //Address
@@ -232,7 +236,7 @@ export default {
     activitySentTo: 'Sentu to {r}', //Sent to
     activitySelf: 'selfu', //Self
     activityReceivedShield: 'Shielded addwess', //Received from Shielded address
-    activityReceivedFrom: 'Recewived fwom {s}', //Received from
+    activityReceivedWith: '', //Received with {s}
     activityDelegatedTo: 'Delegwated to {r}', //Delegated to
     activityUndelegated: 'Undelegwated', //Undelegated
     activityUnknown: 'Unknown Tx', //Unknown Tx

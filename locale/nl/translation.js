@@ -81,6 +81,9 @@ export default {
     secureYourWallet: 'Beveilig uw portemonnee', //
     unlockWallet: 'Ontgrendel portemonnee', //
     lockWallet: 'Vergrendel portemonnee', //
+    syncStatusHistoryProgress: '', //Syncing History Chunks {current} of {total}
+    syncStatusStarting: '', //<b>Your wallet is syncing!</b><br>You\'ll be able to use it fully once this is complete.
+    syncStatusFinished: '', //<b>Sync Finished!</b><br>Your wallet is ready to use!
 
     // Encrypt wallet
     encryptWallet: 'Versleutel portemonnee', //
@@ -235,7 +238,7 @@ export default {
     activitySentTo: 'Verzonden naar {r}',
     activitySelf: 'zelf',
     activityShieldedAddress: 'Afgeschermd adres',
-    activityReceivedFrom: 'Ontvangen van {s}',
+    activityReceivedWith: '', //Received with {s}
     activityDelegatedTo: 'Gedelegeerd aan {r}',
     activityUndelegated: 'Gedelegeerd ongedaan gemaakt',
     activityUnknown: 'Onbekende transactie',
