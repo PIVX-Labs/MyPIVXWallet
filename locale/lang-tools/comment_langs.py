@@ -24,6 +24,8 @@ def comment_file(locale_file, template_path):
                     locale_file.write(line.strip() + ' # {}\n'.format(template[key_name]))
                 elif key_name in template['ALERTS']:
                     locale_file.write(line.strip() + ' # {}\n'.format(template['ALERTS'][key_name]))
+                else:
+                    locale_file.write(line)
             else:
                 locale_file.write(line)
             

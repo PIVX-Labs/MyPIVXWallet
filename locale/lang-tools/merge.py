@@ -48,6 +48,8 @@ def merge(filename1, filename2, output_path):
     
     merge_internal(f1, f2, merged)
     merge_internal(f1['ALERTS'], f2['ALERTS'], merged['ALERTS'])
+    if 'info' not in merged:
+        merged['info'] = {}
     merged['info']['merged'] = True
     files = [(filename1, f1), (filename2, f2), (output_path, merged)]
     for (path, obj) in files:
