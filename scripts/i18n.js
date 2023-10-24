@@ -44,6 +44,11 @@ async function setTranslationKey(key, langName) {
     if (lang[key]) {
         translation[key] = lang[key];
     } else {
+	if (langName === defaultLang) {
+	    // If the default language doens't have a string, then it has never been translated
+	    translation[key] = '';
+	    return;
+	}
         // If there's an empty or missing key, use the parent language
         await setTranslationKey(key, getParentLanguage(langName));
     }
