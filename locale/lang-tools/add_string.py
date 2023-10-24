@@ -47,6 +47,8 @@ def copy_template(template_path, locale_path, comment, merge_files):
                 merge(paths[0], paths[1], new_path)
                 if comment:
                     comment_file(new_path, template_path)
+                    comment_file(paths[0], template_path)
+                    comment_file(paths[1], template_path)
             
 
 
