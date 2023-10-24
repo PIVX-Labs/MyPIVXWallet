@@ -3,16 +3,17 @@
 import argparse
 import toml
 import sys
-import os
+from lang_common import default_template_path, default_locale_path
 from glob import glob
 from merge import unmerge
+from comment_langs import comment_file
 
 def copy_template_internal(res, template):
     for key in template:
         if key not in res and key != 'ALERTS':
             res[key] = '~~'+ template[key]
 
-def copy_template(template_path, locale_path):
+def copy_template(template_path, locale_path, comment):
     template = toml.load(template_path)
     for path in glob(locale_path + '/*/*.toml'):
         if 'template' not in path:
@@ -26,14 +27,9 @@ def copy_template(template_path, locale_path):
                 copy_template_internal(locale['ALERTS'], template['ALERTS'])
             with open(path, 'w') as f:
                 toml.dump(locale, f)
+            if comment:
+                comment_file(path, template_path)
 
-def default_template_path(script_path):
-    # We need to make sure we take the template based on the script path,
-    # Not where the user called the script
-    return os.path.dirname(script_path) + '/../template/translation.toml'
-
-def default_locale_path(script_path):
-    return os.path.dirname(script_path) + '/../'
 
 def main():
     parser = argparse.ArgumentParser(
@@ -41,8 +37,9 @@ def main():
     );
     parser.add_argument('--template-path', '-t', help='Template path', default=default_template_path(sys.argv[0]))
     parser.add_argument('--locale-path', '-l', help='Directory where the locale files are stored', default=default_locale_path(sys.argv[0]))
+    parser.add_argument('--no-comment', help='Don\'t comment the file', action='store_true')
     args = parser.parse_args()
-    copy_template(args.template_path, args.locale_path)
+    copy_template(args.template_path, args.locale_path, not args.no_comment)
 
 if __name__ == '__main__':
     main()

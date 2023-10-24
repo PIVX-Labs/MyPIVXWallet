@@ -62,10 +62,6 @@ export default {
                         toml.parse(
                             str
                                 .split('\n')
-                                // Ignore ##MERGED## lines, they're only for us to keep track
-                                // Of which lines have been merged
-
-                                .filter((l) => !l.includes('##MERGED##'))
                                 // Ignore lines starting with ~~, it means we haven't
                                 // translated them yet
                                 .filter((l) => !l.match(/^[\w\s]+=\s*['"]~~/))
