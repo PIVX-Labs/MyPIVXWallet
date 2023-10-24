@@ -2,6 +2,8 @@
 
 import argparse
 import toml
+import sys
+import os
 from glob import glob
 from merge import unmerge
 
@@ -25,14 +27,20 @@ def copy_template(template_path, locale_path):
             with open(path, 'w') as f:
                 toml.dump(locale, f)
 
-                
+def default_template_path(script_path):
+    # We need to make sure we take the template based on the script path,
+    # Not where the user called the script
+    return os.path.dirname(script_path) + '/../template/translation.toml'
+
+def default_locale_path(script_path):
+    return os.path.dirname(script_path) + '/../'
 
 def main():
     parser = argparse.ArgumentParser(
         description='Sync all locale files with the template'
     );
-    parser.add_argument('--template-path', '-t', help='Template path', default='template/translation.toml')
-    parser.add_argument('--locale-path', '-l', help='Directory where the locale files are stored', default='.')
+    parser.add_argument('--template-path', '-t', help='Template path', default=default_template_path(sys.argv[0]))
+    parser.add_argument('--locale-path', '-l', help='Directory where the locale files are stored', default=default_locale_path(sys.argv[0]))
     args = parser.parse_args()
     copy_template(args.template_path, args.locale_path)
 
