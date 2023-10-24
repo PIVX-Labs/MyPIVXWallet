@@ -2,14 +2,11 @@
 
 import argparse
 import toml
-import sys
 import os
 
 ## Unmerges a file
 def unmerge(path):
     p = path.split('/')
-    print(p)
-    print(p[-2])
     if '-' not in p[-2]:
         return toml.load(path)
     p[-2] = p[-2].split('-')[0]
