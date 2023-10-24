@@ -208,6 +208,7 @@ syncStatusHistoryProgress = "~~Syncing History Chunks {current} of {total}" # Sy
 syncStatusStarting = "~~<b>Your wallet is syncing!</b><br>You'll be able to use it fully once this is complete." # <b>Your wallet is syncing!</b><br>You'll be able to use it fully once this is complete.
 syncStatusFinished = "~~<b>Sync Finished!</b><br>Your wallet is ready to use!" # <b>Sync Finished!</b><br>Your wallet is ready to use!
 activityReceivedWith = "~~Received with {s}" # Received with {s}
+accountDeleted = "~~Your account has been successfully deleted!" # Your account has been successfully deleted!
 
 [ALERTS]
 INTERNAL_ERROR = "Interne fout, probeer het later opnieuw" # Internal error, please try again later

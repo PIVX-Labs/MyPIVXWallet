@@ -53,6 +53,7 @@ export {
     importWallet,
 } from './wallet.js';
 export {
+    logOut,
     toggleTestnet,
     toggleDebug,
     toggleAutoSwitch,

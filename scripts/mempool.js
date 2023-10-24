@@ -206,6 +206,8 @@ export class Mempool {
         this.orderedTxmap = new Multimap();
         this.#balance = 0;
         this.#coldBalance = 0;
+        getEventEmitter().emit('balance-update');
+        getStakingBalance(true);
     }
     get balance() {
         return this.#balance;

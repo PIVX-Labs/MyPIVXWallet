@@ -754,13 +754,16 @@ export async function importWallet({
         }
         // Reaching here: the deserialisation was a full cryptographic success, so a wallet is now imported!
         fWalletLoaded = true;
-
+        doms.domLogOutContainer.style.display = 'block';
         // Hide wipe wallet button if there is no private key
         if (wallet.isViewOnly() || wallet.isHardwareWallet()) {
             doms.domWipeWallet.hidden = true;
             if (await hasEncryptedWallet()) {
                 doms.domRestoreWallet.hidden = false;
             }
+        } else {
+            // Explicitly ask users to encrypt their wallet
+            doms.domGettingStartedBtn.click();
         }
 
         // For non-HD wallets: hide the 'new address' button, since these are essentially single-address MPW wallets
@@ -854,7 +857,9 @@ export async function generateWallet(noUI = false) {
         // Wallet has just been generated: set the network status as full synced
         getNetwork().fullSynced = true;
     }
-
+    doms.domLogOutContainer.style.display = 'block';
+    // Explicitly ask users to encrypt their wallet
+    doms.domGettingStartedBtn.click();
     return wallet;
 }
 

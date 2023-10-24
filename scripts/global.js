@@ -289,6 +289,7 @@ export async function start() {
         domChangePasswordContainer: document.getElementById(
             'changePassword-container'
         ),
+        domLogOutContainer: document.getElementById('logOut-container'),
         domDebug: document.getElementById('Debug'),
         domTestnet: document.getElementById('Testnet'),
         domCurrencySelect: document.getElementById('currency'),
@@ -494,6 +495,7 @@ export async function start() {
 
     // Update the Encryption UI (If the user has a wallet, then it changes to "Change Password" rather than "Encrypt Wallet")
     await updateEncryptionGUI();
+    updateLogOutButton();
 }
 
 function subscribeToNetworkEvents() {
@@ -1345,7 +1347,12 @@ export async function guiEncryptWallet() {
     // Update the encryption UI (changes to "Change Password" now)
     await updateEncryptionGUI(true);
 }
-
+/** Update the log out button to match the current wallet state */
+export function updateLogOutButton() {
+    doms.domLogOutContainer.style.display = wallet.isLoaded()
+        ? 'block'
+        : 'none';
+}
 /** Update the "Encrypt Wallet" / "Change Password" dialog to match the current wallet state */
 export async function updateEncryptionGUI(fEncrypted = null) {
     // If no param is provided, check if a wallet exists in the database

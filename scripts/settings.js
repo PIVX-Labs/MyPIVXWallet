@@ -7,6 +7,7 @@ import {
     refreshChainData,
     setDisplayForAllWalletOptions,
     updateEncryptionGUI,
+    updateLogOutButton,
     updateGovernanceTab,
     activityDashboard,
     stakingDashboard,
@@ -465,6 +466,58 @@ async function setAnalytics(level, fSilent = false) {
 }
 
 /**
+ * Log out from the current wallet
+ */
+export async function logOut() {
+    const fContinue = await confirmPopup({
+        title: `${translation.CONFIRM_POPUP_DELETE_ACCOUNT_TITLE}`,
+        html: `
+        <b>${tr(translation.netSwitchUnsavedWarningSubtitle, [
+            { network: cChainParams.current.name },
+        ])}</b>
+        <br>
+        ${translation.CONFIRM_POPUP_DELETE_ACCOUNT}
+        <br>
+        <br>
+    `,
+    });
+    if (!fContinue) return;
+    const database = await Database.getInstance();
+    await database.removeAllTxs();
+    await database.removeAccount({ publicKey: null });
+    mempool.reset();
+    wallet.reset();
+    wallet.setMasterKey(null);
+    // Hide all Dashboard info, kick the user back to the "Getting Started" area
+    doms.domGenKeyWarning.style.display = 'none';
+    doms.domGuiWallet.style.display = 'none';
+    doms.domWipeWallet.hidden = true;
+    doms.domRestoreWallet.hidden = true;
+
+    // Set the "Wallet Options" display CSS to it's Default
+    setDisplayForAllWalletOptions('');
+
+    // Reset the "Vanity" and "Import" flows
+    doms.domPrefix.value = '';
+    doms.domPrefix.style.display = 'none';
+
+    // Show "Access Wallet" button
+    doms.domImportWallet.style.display = 'none';
+    doms.domPrivKey.style.opacity = '0';
+    doms.domAccessWallet.style.display = '';
+    doms.domAccessWalletBtn.style.display = '';
+
+    // Hide "Import Wallet" so the user has to follow the `accessOrImportWallet()` flow
+    doms.domImportWallet.style.display = 'none';
+    await updateEncryptionGUI(false);
+    updateLogOutButton();
+    activityDashboard.reset();
+    stakingDashboard.reset();
+    await fillExplorerSelect();
+    createAlert('success', translation.accountDeleted, 3000);
+}
+
+/**
  * Toggle between Mainnet and Testnet
  */
 export async function toggleTestnet() {
@@ -558,9 +611,8 @@ export async function toggleTestnet() {
         doms.domImportWallet.style.display = 'none';
     }
 
-    getEventEmitter().emit('balance-update');
-    getStakingBalance(true);
     await updateEncryptionGUI(wallet.isLoaded());
+    updateLogOutButton();
     await updateGovernanceTab();
 }
 
