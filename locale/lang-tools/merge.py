@@ -13,10 +13,10 @@ def unmerge(path):
     if '-' not in p[-2]:
         return toml.load(path)
     p[-2] = p[-2].split('-')[0]
-    new_path = '/'.join(p)
-    if not os.path.exists(new_path):
+    parent_path = '/'.join(p)
+    if not os.path.exists(parent_path):
         return toml.load(path)
-    parent = toml.load(new_path)
+    parent = toml.load(parent_path)
     child = toml.load(path)
     del parent['info']
     parent.update(child)
