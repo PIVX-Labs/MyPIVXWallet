@@ -347,6 +347,7 @@ export async function start() {
     // Update the Encryption UI (If the user has a wallet, then it changes to "Change Password" rather than "Encrypt Wallet")
     getEventEmitter().on('wallet-import', async () => {
         await updateEncryptionGUI();
+        updateLogOutButton();
         getNetwork().walletFullSync();
     });
     await updateEncryptionGUI();

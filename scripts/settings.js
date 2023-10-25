@@ -485,32 +485,9 @@ export async function logOut() {
     mempool.reset();
     wallet.reset();
     wallet.setMasterKey(null);
-    // Hide all Dashboard info, kick the user back to the "Getting Started" area
-    doms.domGenKeyWarning.style.display = 'none';
-    doms.domGuiWallet.style.display = 'none';
-    doms.domWipeWallet.hidden = true;
-    doms.domRestoreWallet.hidden = true;
-
-    // Set the "Wallet Options" display CSS to it's Default
-    setDisplayForAllWalletOptions('');
-
-    // Reset the "Vanity" and "Import" flows
-    doms.domPrefix.value = '';
-    doms.domPrefix.style.display = 'none';
-
-    // Show "Access Wallet" button
-    doms.domImportWallet.style.display = 'none';
-    doms.domPrivKey.style.opacity = '0';
-    doms.domAccessWallet.style.display = '';
-    doms.domAccessWalletBtn.style.display = '';
-
-    // Hide "Import Wallet" so the user has to follow the `accessOrImportWallet()` flow
-    doms.domImportWallet.style.display = 'none';
-    await updateEncryptionGUI(false);
+    getEventEmitter().emit('toggle-network');
     updateLogOutButton();
-    activityDashboard.reset();
-    stakingDashboard.reset();
-    await fillExplorerSelect();
+    await updateEncryptionGUI();
     createAlert('success', translation.accountDeleted, 3000);
 }
 
