@@ -879,6 +879,7 @@ defineExpose({
             @openQrScan="openSendQRScanner()"
             @close="showTransferMenu = false"
             @send="send"
+            @max-balance="transferAmount = mempool.balance"
         />
     </div>
 </template>

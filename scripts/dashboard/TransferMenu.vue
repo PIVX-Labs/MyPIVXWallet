@@ -8,6 +8,7 @@ import { sanitizeHTML } from '../misc';
 const emit = defineEmits([
     'send',
     'close',
+    'max-balance',
     'openQrScan',
     'update:amount',
     'update:address',
@@ -141,7 +142,7 @@ async function selectContact() {
                                 <div class="input-group-append">
                                     <span class="input-group-text p-0">
                                         <div
-                                            onclick="MPW.selectMaxBalance(MPW.doms.domSendAmountCoins, MPW.doms.domSendAmountValue)"
+                                            @click="$emit('max-balance')"
                                             style="
                                                 cursor: pointer;
                                                 border: 0px;
