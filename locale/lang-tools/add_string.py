@@ -20,7 +20,7 @@ def copy_template(file_path, template_path):
     copy_template_internal(locale, template)
     if 'ALERTS' not in locale:
         locale['ALERTS'] = {}
-        copy_template_internal(locale['ALERTS'], template['ALERTS'])
+    copy_template_internal(locale['ALERTS'], template['ALERTS'])
     with open(file_path, 'w') as f:
         toml.dump(locale, f)
 

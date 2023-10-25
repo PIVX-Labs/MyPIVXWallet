@@ -16,7 +16,10 @@ def unmerge(path):
     parent = toml.load(parent_path)
     child = toml.load(path)
     del parent['info']
+    alerts = parent['ALERTS']
+    alerts.update(child['ALERTS'])
     parent.update(child)
+    parent['ALERTS'] = alerts
     return parent
 
 def merge_internal(obj1, obj2, res):
