@@ -403,6 +403,7 @@ async function openSendQRScanner() {
     const cScan = await scanQRCode();
     if (cScan) {
         const { data } = cScan;
+        if (!data) return;
         if (isStandardAddress(data) || isValidBech32(data).valid) {
             transferAddress.value = data;
             showTransferMenu.value = true;
@@ -420,14 +421,17 @@ async function openSendQRScanner() {
             await handleContactRequest(urlParams);
             return;
         }
+        createAlert(
+            'warning',
+            `"${sanitizeHTML(
+                cScan?.data?.substring(
+                    0,
+                    Math.min(cScan?.data?.length, 6) ?? ''
+                )
+            )}…" ${ALERTS.QR_SCANNER_BAD_RECEIVER}`,
+            7500
+        );
     }
-    createAlert(
-        'warning',
-        `"${sanitizeHTML(
-            cScan?.data?.substring(0, Math.min(cScan?.data?.length, 6) ?? '')
-        )}…" ${ALERTS.QR_SCANNER_BAD_RECEIVER}`,
-        7500
-    );
 }
 
 async function handleContactRequest(urlParams) {
