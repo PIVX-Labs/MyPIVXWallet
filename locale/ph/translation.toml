@@ -202,13 +202,13 @@ timeHours = "Mga oras" # Hours
 timeMinutes = "Mga minuto" # Minutes
 timeSeconds = "Mga segundo" # Seconds
 unhandledException = "Unhandled exception." # Unhandled exception.
-contestedProposalsTitle = "~~Contested Proposals" # Contested Proposals
-popupProposalName = "~~Proposal Name" # Proposal Name
-syncStatusHistoryProgress = "~~Syncing History Chunks {current} of {total}" # Syncing History Chunks {current} of {total}
-syncStatusStarting = "~~<b>Your wallet is syncing!</b><br>You'll be able to use it fully once this is complete." # <b>Your wallet is syncing!</b><br>You'll be able to use it fully once this is complete.
-syncStatusFinished = "~~<b>Sync Finished!</b><br>Your wallet is ready to use!" # <b>Sync Finished!</b><br>Your wallet is ready to use!
-activityReceivedWith = "~~Received with {s}" # Received with {s}
-accountDeleted = "~~Your account has been successfully deleted!" # Your account has been successfully deleted!
+syncStatusHistoryProgress = "" # Syncing History Chunks {current} of {total}
+syncStatusStarting = "" # <b>Your wallet is syncing!</b><br>You'll be able to use it fully once this is complete.
+syncStatusFinished = "" # <b>Sync Finished!</b><br>Your wallet is ready to use!
+contestedProposalsTitle = "" # Contested Proposals
+accountDeleted = "" # Your account has been successfully deleted!
+activityReceivedWith = "" # Received with {s}
+popupProposalName = "" # Proposal Name
 
 [ALERTS]
 INTERNAL_ERROR = "Internal error, Pakiusap uliting muli" # Internal error, please try again later

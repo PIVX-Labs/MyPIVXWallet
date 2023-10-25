@@ -203,12 +203,12 @@ timeHours = "Horas" # Hours
 timeMinutes = "Minutos" # Minutes
 timeSeconds = "Segundos" # Seconds
 unhandledException = "Excepción sin resolver." # Unhandled exception.
-contestedProposalsTitle = "~~Contested Proposals" # Contested Proposals
-syncStatusHistoryProgress = "~~Syncing History Chunks {current} of {total}" # Syncing History Chunks {current} of {total}
-syncStatusStarting = "~~<b>Your wallet is syncing!</b><br>You'll be able to use it fully once this is complete." # <b>Your wallet is syncing!</b><br>You'll be able to use it fully once this is complete.
-syncStatusFinished = "~~<b>Sync Finished!</b><br>Your wallet is ready to use!" # <b>Sync Finished!</b><br>Your wallet is ready to use!
-activityReceivedWith = "~~Received with {s}" # Received with {s}
-accountDeleted = "~~Your account has been successfully deleted!" # Your account has been successfully deleted!
+syncStatusHistoryProgress = "" # Syncing History Chunks {current} of {total}
+syncStatusStarting = "" # <b>Your wallet is syncing!</b><br>You'll be able to use it fully once this is complete.
+syncStatusFinished = "" # <b>Sync Finished!</b><br>Your wallet is ready to use!
+contestedProposalsTitle = "" # Contested Proposals
+accountDeleted = "" # Your account has been successfully deleted!
+activityReceivedWith = "" # Received with {s}
 
 [ALERTS]
 INTERNAL_ERROR = "Error interno, vuelve a intentarlo más tarde" # Internal error, please try again later
