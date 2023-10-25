@@ -264,11 +264,6 @@ export class ExplorerNetwork extends Network {
             );
             console.timeEnd('getLatestTxsTimer');
         }
-
-        if (!this.fullSynced) {
-            getEventEmitter().emit('sync-status-update', 0, 0, true);
-            createAlert('success', translation.syncStatusFinished, 12500);
-        }
     }
 
     async walletFullSync() {
@@ -281,6 +276,8 @@ export class ExplorerNetwork extends Network {
                 ? 0
                 : nBlockHeights.sort((a, b) => a - b).at(-1);
         this.fullSynced = true;
+        createAlert('success', translation.syncStatusFinished, 12500);
+        getEventEmitter().emit('sync-status-update', 0, 0, true);
     }
 
     /**

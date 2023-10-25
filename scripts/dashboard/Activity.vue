@@ -8,6 +8,7 @@ import { translation } from '../i18n.js';
 import { Database } from '../database.js';
 import { HistoricalTx, HistoricalTxType } from '../mempool';
 import { getNameOrAddress } from '../contacts-book.js';
+import { getEventEmitter } from '../event_bus';
 
 const props = defineProps({
     title: String,
@@ -238,6 +239,7 @@ function getTxCount() {
     return txCount;
 }
 
+getEventEmitter().on('sync-status-update', (_a, _b, done) => done && update());
 onMounted(() => update());
 
 defineExpose({ update, reset, getTxCount });
