@@ -313,6 +313,5 @@ CONFIRM_POPUP_VERIFY_ADDR = "Überprüfe die Adresse" # Verify your address
 MIGRATION_MASTERNODE_FAILURE = "Wiederherstellen der Masternode fehlgeschlagen. Bitte importiere sie erneut." # Failed to recover your masternode. Please reimport it.
 MIGRATION_ACCOUNT_FAILURE = "Wiederherstellen deines Accounts fehlgeschlagen. Bitte importiere ihn erneut." # Failed to recover your account. Please reimport it.
 APP_INSTALLED = "Anwendung installiert!" # App Installed!
-ET_UNLOCK_IMPORT = ""
 CONFIRM_POPUP_DELETE_ACCOUNT = "" # This will delete all your data, including masternodes contacts and private keys!
 CONFIRM_POPUP_DELETE_ACCOUNT_TITLE = "" # Are you sure?
