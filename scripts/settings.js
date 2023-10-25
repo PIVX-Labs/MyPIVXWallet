@@ -570,6 +570,8 @@ export async function toggleTestnet() {
     updateLogOutButton();
     await updateGovernanceTab();
     stakingDashboard.reset();
+
+    getEventEmitter().emit('toggle-network');
 }
 
 export function toggleDebug() {
