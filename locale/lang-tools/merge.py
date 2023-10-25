@@ -25,7 +25,7 @@ def merge_internal(obj1, obj2, res):
             raise ValueError('Files are out of order. \nKey1 {} != Key2 {}'.format(k1, k2))
         if k1 == 'ALERTS':
             continue
-        if '~~' in obj1[k1] or '~~' in obj2[k2]:
+        if obj1[k1] == "" or obj2[k2] == "":
             continue
         if obj1[k1] == obj2[k2]:
             res[k1] = obj1[k1]

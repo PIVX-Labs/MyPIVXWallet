@@ -12,7 +12,7 @@ from comment_langs import comment_file
 def copy_template_internal(res, template):
     for key in template:
         if key not in res and key != 'ALERTS':
-            res[key] = '~~'+ template[key]
+            res[key] = ''
 
 def copy_template(template_path, locale_path, comment, merge_files):
     template = toml.load(template_path)
