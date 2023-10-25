@@ -175,6 +175,7 @@ async function importWallet({ type, secret, password = '' }) {
             needsToEncrypt.value = false;
         }
         getEventEmitter().emit('wallet-import');
+        if (needsToEncrypt.value) showEncryptModal.value = true;
         return true;
     }
 

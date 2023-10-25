@@ -39,6 +39,7 @@ export {
 } from './global.js';
 export { wallet, getNewAddress } from './wallet.js';
 export {
+    logOut,
     toggleTestnet,
     toggleDebug,
     toggleAutoSwitch,

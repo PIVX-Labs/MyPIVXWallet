@@ -217,6 +217,7 @@ export default {
     ID: 'ID', //ID
     time: 'Tempo', //Time
     description: 'Descrizione', //Description
+    accountDeleted: '', //Your account has been successfully deleted!
     activityBlockReward: 'Ricompensa del blocco', //Block Reward
     activitySentTo: 'Inviato a {r}', //Sent to
     activitySelf: 'te stesso', //Self
@@ -425,6 +426,8 @@ export default {
     CONFIRM_POPUP_MN_P_KEY_HTML:
         '<br> Salva questa chiave privata e copiala nella configurazione VPS <br>', // <br> Save this private key and copy it to your VPS config <br>
     CONFIRM_POPUP_VERIFY_ADDR: 'Verifica il tuo indirizzo', //Verify your address
+    CONFIRM_POPUP_DELETE_ACCOUNT: '', //This will delete all your data, including masternodes contacts and private keys!
+    CONFIRM_POPUP_DELETE_ACCOUNT_TITLE: '', //Are you sure?
 
     MIGRATION_MASTERNODE_FAILURE:
         'Impossibile recuperare il tuo masternode. Per favore reimportalo.', //Failed to recover your masternode. Please reimport it.

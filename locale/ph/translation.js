@@ -238,6 +238,7 @@ export default {
     ID: 'ID', //ID
     time: 'Oras', //Time
     description: 'Description', //Description
+    accountDeleted: '', //Your account has been successfully deleted!
     activityBlockReward: 'Block Reward', //Block Reward
     activitySentTo: 'Naipadala sa {r}', //Sent to
     activitySelf: 'sarili', //Self
@@ -454,6 +455,8 @@ export default {
     CONFIRM_POPUP_MN_P_KEY_HTML:
         '<br> Itago ang private key at kopyahin at kopyahin ito sa iyong VPS config <br>', // <br> Save this private key and copy it to your VPS config <br>
     CONFIRM_POPUP_VERIFY_ADDR: 'I-verify ang iyong address', //Verify your address
+    CONFIRM_POPUP_DELETE_ACCOUNT: '', //This will delete all your data, including masternodes contacts and private keys!
+    CONFIRM_POPUP_DELETE_ACCOUNT_TITLE: '', //Are you sure?
 
     MIGRATION_MASTERNODE_FAILURE:
         'Nabigong marecover ang iyong masternode. Pakiusap i-reimport ito.', //Failed to recover your masternode. Please reimport it.

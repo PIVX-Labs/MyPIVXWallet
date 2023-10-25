@@ -230,6 +230,7 @@ export async function start() {
         domChangePasswordContainer: document.getElementById(
             'changePassword-container'
         ),
+        domLogOutContainer: document.getElementById('logOut-container'),
         domDebug: document.getElementById('Debug'),
         domTestnet: document.getElementById('Testnet'),
         domCurrencySelect: document.getElementById('currency'),
@@ -921,6 +922,13 @@ export async function accessOrImportWallet() {
         doms.domImportWalletText.innerText = translation.unlockWallet;
         doms.domPrivKey.focus();
     }
+}
+
+/** Update the log out button to match the current wallet state */
+export function updateLogOutButton() {
+    doms.domLogOutContainer.style.display = wallet.isLoaded()
+        ? 'block'
+        : 'none';
 }
 
 /** Update the "Encrypt Wallet" / "Change Password" dialog to match the current wallet state */
