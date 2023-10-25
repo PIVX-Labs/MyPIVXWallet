@@ -14,14 +14,14 @@ const emit = defineEmits([
     'update:address',
 ]);
 // Amount of PIVs to send in the selected currency (e.g. USD)
-const amountCurrency = ref(0);
+const amountCurrency = ref('');
 const color = ref('');
 
 const props = defineProps({
     show: Boolean,
     price: Number,
     currency: String,
-    amount: Number,
+    amount: String,
     address: String,
 });
 
@@ -39,21 +39,31 @@ const amount = computed({
         return props.amount;
     },
     set(value) {
-        syncAmountCurrency();
-        emit('update:amount', value);
+        emit('update:amount', value.toString());
     },
 });
 
 function send() {
-    emit('send', sanitizeHTML(address.value), amount.value);
+    // TODO: Maybe in the future do one of those cool animation that set the
+    // Input red
+    if (address.value && amount.value)
+        emit('send', sanitizeHTML(address.value), amount.value);
 }
 
 function syncAmountCurrency() {
-    amountCurrency.value = amount.value * props.price;
+    if (amount.value === '') {
+        amountCurrency.value = '';
+    } else {
+        amountCurrency.value = amount.value * props.price;
+    }
 }
 
 function syncAmount() {
-    amount.value = amountCurrency.value / props.price;
+    if (amountCurrency.value === '') {
+        amount.value = '';
+    } else {
+        amount.value = amountCurrency.value / props.price;
+    }
 }
 
 async function selectContact() {
@@ -137,6 +147,7 @@ async function selectContact() {
                                     placeholder="0.00"
                                     autocomplete="nope"
                                     onkeydown="javascript: return event.keyCode == 69 ? false : true"
+                                    @input="$nextTick(syncAmountCurrency)"
                                     v-model="amount"
                                 />
                                 <div class="input-group-append">
@@ -174,7 +185,7 @@ async function selectContact() {
                                     placeholder="0.00"
                                     autocomplete="nope"
                                     onkeydown="javascript: return event.keyCode == 69 ? false : true"
-                                    @input="syncAmount()"
+                                    @input="syncAmount"
                                     v-model="amountCurrency"
                                 />
                                 <div class="input-group-append">

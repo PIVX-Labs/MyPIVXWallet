@@ -55,7 +55,7 @@ const showEncryptModal = ref(false);
 const keyToBackup = ref('');
 const jdenticonValue = ref('');
 const transferAddress = ref('');
-const transferAmount = ref(0);
+const transferAmount = ref('');
 watch(showExportModal, async (showExportModal) => {
     if (showExportModal) {
         keyToBackup.value = await wallet.getKeyToBackup();
@@ -879,7 +879,7 @@ defineExpose({
             @openQrScan="openSendQRScanner()"
             @close="showTransferMenu = false"
             @send="send"
-            @max-balance="transferAmount = mempool.balance"
+            @max-balance="transferAmount = mempool.balance.toString()"
         />
     </div>
 </template>
