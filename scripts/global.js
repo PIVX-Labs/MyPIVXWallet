@@ -348,7 +348,8 @@ export async function start() {
     getEventEmitter().on('wallet-import', async () => {
         await updateEncryptionGUI();
         updateLogOutButton();
-        getNetwork().walletFullSync();
+        if (!(await mempool.loadFromDisk()))
+            await getNetwork().walletFullSync();
     });
     await updateEncryptionGUI();
     fIsLoaded = true;

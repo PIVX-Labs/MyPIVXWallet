@@ -170,7 +170,7 @@ async function importWallet({ type, secret, password = '' }) {
         key = await parseSecret(secret, password);
     }
     if (key) {
-        await wallet.setMasterKey(key);
+        wallet.setMasterKey(key);
         isImported.value = true;
         jdenticonValue.value = wallet.getAddress();
         if (!wallet.isHardwareWallet()) {

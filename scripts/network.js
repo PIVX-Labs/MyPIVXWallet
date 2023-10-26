@@ -173,6 +173,7 @@ export class ExplorerNetwork extends Network {
                     this.lastBlockSynced = this.blocks;
                     stakingDashboard.update(0);
                 }
+                mempool.setBalance();
             }
         } catch (e) {
             this.error();

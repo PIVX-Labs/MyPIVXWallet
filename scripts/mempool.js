@@ -204,9 +204,10 @@ export class Mempool {
         this.txmap = new Map();
         this.spent = new Multimap();
         this.orderedTxmap = new Multimap();
-        this.#setBalance();
+        this.setBalance();
         getEventEmitter().emit('balance-update');
         getStakingBalance(true);
+        this.#highestSavedHeight = 0;
     }
     get balance() {
         return this.#balance;
@@ -363,10 +364,9 @@ export class Mempool {
             wallet.updateHighestUsedIndex(vout);
         }
         this.addToOrderedTxMap(tx);
-        this.#setBalance();
     }
 
-    #setBalance() {
+    setBalance() {
         this.#balance = this.getBalance(UTXO_WALLET_STATE.SPENDABLE);
         this.#coldBalance = this.getBalance(UTXO_WALLET_STATE.SPENDABLE_COLD);
         getEventEmitter().emit('balance-update');
@@ -380,6 +380,7 @@ export class Mempool {
         const nBlockHeights = Array.from(this.orderedTxmap.keys())
             .sort((a, b) => a - b)
             .reverse();
+        console.log(this.#highestSavedHeight);
         if (nBlockHeights.length == 0) {
             return;
         }
@@ -420,6 +421,7 @@ export class Mempool {
         const cNet = getNetwork();
         cNet.fullSynced = true;
         cNet.lastBlockSynced = nBlockHeights.at(-1);
+        getEventEmitter().emit('sync-status-update', 0, 0, true);
         this.#highestSavedHeight = nBlockHeights.at(-1);
         this.setBalance();
         return true;
