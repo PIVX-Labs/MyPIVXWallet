@@ -541,10 +541,7 @@ export async function toggleTestnet() {
 
     await fillExplorerSelect();
     await fillNodeSelect();
-    mempool.reset();
 
-    await updateEncryptionGUI(wallet.isLoaded());
-    updateLogOutButton();
     await updateGovernanceTab();
     stakingDashboard.reset();
 

@@ -30,7 +30,12 @@ import { onMounted, ref, watch } from 'vue';
 import { mnemonicToSeed } from 'bip39';
 import { getEventEmitter } from '../event_bus';
 import { Database } from '../database';
-import { start, doms, updateEncryptionGUI } from '../global';
+import {
+    start,
+    doms,
+    updateEncryptionGUI,
+    updateLogOutButton,
+} from '../global';
 import { cMarket, nDisplayDecimals, strCurrency } from '../settings.js';
 import { mempool, refreshChainData } from '../global.js';
 import {
@@ -350,17 +355,23 @@ async function send(address, amount) {
 getEventEmitter().on('toggle-network', async () => {
     const database = await Database.getInstance();
     const account = await database.getAccount();
+    wallet.reset();
+    activity.value?.reset();
+
     if (account) {
         await importWallet({ type: 'hd', secret: account.publicKey });
     } else {
         isImported.value = false;
     }
+    await updateEncryptionGUI(wallet.isLoaded());
+    updateLogOutButton();
     // TODO: When tab component is written, simply emit an event
     doms.domDashboard.click();
 });
 
 onMounted(async () => {
     await start();
+
     if (await hasEncryptedWallet()) {
         const database = await Database.getInstance();
         const { publicKey } = await database.getAccount();
@@ -377,6 +388,7 @@ onMounted(async () => {
             showTransferMenu.value = true;
         }
     }
+    updateLogOutButton();
 });
 
 const balance = ref(0);

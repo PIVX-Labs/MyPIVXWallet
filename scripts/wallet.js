@@ -170,7 +170,7 @@ export class Wallet {
      * Set or replace the active Master Key with a new Master Key
      * @param {import('./masterkey.js').MasterKey} mk - The new Master Key to set active
      */
-    async setMasterKey(mk) {
+    setMasterKey(mk) {
         this.reset();
         this.#masterKey = mk;
         // If this is the global wallet update the network master key
@@ -187,6 +187,13 @@ export class Wallet {
         this.#highestUsedIndex = 0;
         this.#loadedIndexes = 0;
         this.#ownAddresses = new Map();
+        // TODO: This needs to be refactored
+        // The wallet could own its own mempool and network?
+        // Instead of having this isMainWallet flag
+        if (this.#isMainWallet) {
+            mempool.reset();
+            getNetwork().reset();
+        }
     }
 
     /**

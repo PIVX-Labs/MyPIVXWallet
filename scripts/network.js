@@ -279,6 +279,9 @@ export class ExplorerNetwork extends Network {
         createAlert('success', translation.syncStatusFinished, 12500);
         getEventEmitter().emit('sync-status-update', 0, 0, true);
     }
+    reset() {
+        this.fullSynced = false;
+    }
 
     /**
      * @typedef {object} BlockbookUTXO
