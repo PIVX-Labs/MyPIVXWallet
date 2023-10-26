@@ -199,6 +199,9 @@ export async function start() {
         domRedeemCodeCreateInput: document.getElementById(
             'redeemCodeCreateInput'
         ),
+        domRedeemCodeCreateAmountInput: document.getElementById(
+            'redeemCodeCreateAmountInput'
+        ),
         domRedeemCodeCreatePendingList: document.getElementById(
             'redeemCodeCreatePendingList'
         ),

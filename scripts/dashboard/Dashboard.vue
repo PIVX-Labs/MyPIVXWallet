@@ -717,6 +717,7 @@ defineExpose({
                                                 >
                                                     <input
                                                         class="btn-group-input mono center-text"
+                                                        id="redeemCodeCreateAmountInput"
                                                         style="
                                                             border-top-right-radius: 9px;
                                                             border-bottom-right-radius: 9px;
