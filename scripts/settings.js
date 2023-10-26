@@ -540,10 +540,10 @@ export async function toggleTestnet() {
     await fillExplorerSelect();
     await fillNodeSelect();
 
-    await updateGovernanceTab();
     stakingDashboard.reset();
 
     getEventEmitter().emit('toggle-network');
+    await updateGovernanceTab();
 }
 
 export function toggleDebug() {
