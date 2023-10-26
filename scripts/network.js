@@ -172,6 +172,7 @@ export class ExplorerNetwork extends Network {
                     await this.getLatestTxs(this.lastBlockSynced);
                     this.lastBlockSynced = this.blocks;
                     stakingDashboard.update(0);
+                    getEventEmitter().emit('new-tx');
                 }
                 mempool.setBalance();
             }

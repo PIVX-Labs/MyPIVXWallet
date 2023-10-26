@@ -405,6 +405,10 @@ getEventEmitter().on('sync-status', (status) => {
     if (status === 'stop') activity?.value?.update();
 });
 
+getEventEmitter().on('new-tx', (status) => {
+    activity?.value?.update();
+});
+
 getEventEmitter().on('balance-update', async () => {
     balance.value = mempool.balance;
     currency.value = strCurrency.toUpperCase();
