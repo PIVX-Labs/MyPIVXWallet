@@ -170,9 +170,14 @@ export class Wallet {
      * Set or replace the active Master Key with a new Master Key
      * @param {import('./masterkey.js').MasterKey} mk - The new Master Key to set active
      */
-    setMasterKey(mk) {
-        this.reset();
+    setMasterKey(mk, nAccount = 0) {
+        if (
+            mk?.getKeyToExport(nAccount) !==
+            this.#masterKey?.getKeyToExport(this.#nAccount)
+        )
+            this.reset();
         this.#masterKey = mk;
+        this.#nAccount = nAccount;
         // If this is the global wallet update the network master key
         if (this.#isMainWallet) {
             getNetwork().setWallet(this);

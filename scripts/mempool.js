@@ -205,8 +205,6 @@ export class Mempool {
         this.spent = new Multimap();
         this.orderedTxmap = new Multimap();
         this.setBalance();
-        getEventEmitter().emit('balance-update');
-        getStakingBalance(true);
         this.#highestSavedHeight = 0;
     }
     get balance() {
@@ -371,6 +369,7 @@ export class Mempool {
         this.#coldBalance = this.getBalance(UTXO_WALLET_STATE.SPENDABLE_COLD);
         getEventEmitter().emit('balance-update');
         getStakingBalance(true);
+        console.log(`Balance set, now ${this.#balance}`);
     }
 
     /**

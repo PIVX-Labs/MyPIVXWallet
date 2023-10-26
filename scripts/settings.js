@@ -482,9 +482,7 @@ export async function logOut() {
     const database = await Database.getInstance();
     await database.removeAllTxs();
     await database.removeAccount({ publicKey: null });
-    mempool.reset();
-    wallet.reset();
-    wallet.setMasterKey(null);
+
     getEventEmitter().emit('toggle-network');
     updateLogOutButton();
     await updateEncryptionGUI();

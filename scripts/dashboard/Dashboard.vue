@@ -179,6 +179,8 @@ async function importWallet({ type, secret, password = '' }) {
         } else {
             needsToEncrypt.value = false;
         }
+        if (!(await mempool.loadFromDisk()))
+            await getNetwork().walletFullSync();
         getEventEmitter().emit('wallet-import');
         if (needsToEncrypt.value) showEncryptModal.value = true;
         return true;
@@ -356,6 +358,7 @@ getEventEmitter().on('toggle-network', async () => {
     const database = await Database.getInstance();
     const account = await database.getAccount();
     wallet.reset();
+    wallet.setMasterKey(null);
     activity.value?.reset();
 
     if (account) {
@@ -387,6 +390,8 @@ onMounted(async () => {
             transferAmount.value = reqAmount;
             showTransferMenu.value = true;
         }
+    } else {
+        await (await Database.getInstance()).removeAllTxs();
     }
     updateLogOutButton();
 });
