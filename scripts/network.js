@@ -174,7 +174,6 @@ export class ExplorerNetwork extends Network {
                     stakingDashboard.update(0);
                     getEventEmitter().emit('new-tx');
                 }
-                mempool.setBalance();
             }
         } catch (e) {
             this.error();
@@ -257,6 +256,8 @@ export class ExplorerNetwork extends Network {
             }
             await mempool.saveOnDisk();
         }
+
+        mempool.setBalance();
         if (debug) {
             console.log(
                 'Fetched latest txs: total number of pages was ',
