@@ -94,6 +94,7 @@ export class Wallet {
      */
     lockCoin(opt) {
         this.#lockedCoins.add(opt.toUnique());
+        mempool.setBalance();
     }
 
     /**
@@ -102,6 +103,7 @@ export class Wallet {
      */
     unlockCoin(opt) {
         this.#lockedCoins.delete(opt.toUnique());
+        mempool.setBalance();
     }
 
     getMasterKey() {

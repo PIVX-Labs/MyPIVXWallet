@@ -284,6 +284,8 @@ export class ExplorerNetwork extends Network {
     }
     reset() {
         this.fullSynced = false;
+        this.blocks = 0;
+        this.lastBlockSynced = 0;
     }
 
     /**

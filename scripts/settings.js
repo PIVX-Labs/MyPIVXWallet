@@ -290,7 +290,6 @@ export async function setExplorer(explorer, fSilent = false) {
     const network = new ExplorerNetwork(cExplorer.url, wallet);
     setNetwork(network);
 
-    //    activityDashboard.reset();
     stakingDashboard.reset();
 
     // Update the selector UI

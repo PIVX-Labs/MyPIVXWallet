@@ -13,8 +13,6 @@ import.meta.webpackContext('@fontsource/montserrat/', {
 import { start } from './global.js';
 import { getNetwork } from './network.js';
 
-//window.onload = start;
-
 // Export global functions to the MPW namespace so we can use them in html
 export {
     openTab,

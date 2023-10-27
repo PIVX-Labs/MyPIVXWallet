@@ -369,7 +369,6 @@ export class Mempool {
         this.#coldBalance = this.getBalance(UTXO_WALLET_STATE.SPENDABLE_COLD);
         getEventEmitter().emit('balance-update');
         getStakingBalance(true);
-        console.log(`Balance set, now ${this.#balance}`);
     }
 
     /**
@@ -379,7 +378,6 @@ export class Mempool {
         const nBlockHeights = Array.from(this.orderedTxmap.keys())
             .sort((a, b) => a - b)
             .reverse();
-        console.log(this.#highestSavedHeight);
         if (nBlockHeights.length == 0) {
             return;
         }
