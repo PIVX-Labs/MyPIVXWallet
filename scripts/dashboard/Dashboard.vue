@@ -49,6 +49,7 @@ import { validateAmount, createAndSendTransaction } from '../transactions.js';
 import { strHardwareName } from '../ledger';
 import { guiAddContactPrompt } from '../contacts-book';
 import { scanQRCode } from '../scanner';
+import { PIVXShield } from 'pivx-shield';
 
 const isImported = ref(wallet.isLoaded());
 const activity = ref(null);
@@ -74,16 +75,30 @@ getEventEmitter().on(
     (fAdvancedMode) => (advancedMode.value = fAdvancedMode)
 );
 
+class ParsedSecret {
+    /**
+     * @type {import('../masterkey.js').MasterKey} masterkey - Masterkey object derived from the secret
+     */
+    masterKey;
+    /**
+     * @type {PIVXShield} shield - Shield object associated with the secret. Only provided if the secret contains a seed
+     */
+    shield;
+    constructor(masterKey, shield = null) {
+        this.masterKey = masterKey;
+        this.shield = shield;
+    }
+}
 /**
  * Parses whatever the secret is to a MasterKey
  * @param {string|number[]|Uint8Array} secret
- * @returns {Promise<import('../masterkey.js').MasterKey>}
+ * @returns {Promise<ParsedSecret?>}
  */
 async function parseSecret(secret, password = '') {
     const rules = [
         {
             test: (s) => Array.isArray(s) || s instanceof Uint8Array,
-            f: (s) => new LegacyMasterKey({ pkBytes: s }),
+            f: (s) => new ParsedSecret(new LegacyMasterKey({ pkBytes: s })),
         },
         {
             test: (s) => isBase64(s) && s.length >= 128,
@@ -91,17 +106,17 @@ async function parseSecret(secret, password = '') {
         },
         {
             test: (s) => s.startsWith('xprv'),
-            f: (s) => new HdMasterKey({ xpriv: s }),
+            f: (s) => new ParsedSecret(new HdMasterKey({ xpriv: s })),
         },
         {
             test: (s) => s.startsWith('xpub'),
-            f: (s) => new HdMasterKey({ xpub: s }),
+            f: (s) => new ParsedSecret(new HdMasterKey({ xpub: s })),
         },
         {
             test: (s) =>
                 cChainParams.current.PUBKEY_PREFIX.includes(s[0]) &&
                 s.length === 34,
-            f: (s) => new LegacyMasterKey({ address: s }),
+            f: (s) => new ParsedSecret(new LegacyMasterKey({ address: s })),
         },
         {
             test: (s) => verifyWIF(s),
@@ -115,9 +130,21 @@ async function parseSecret(secret, password = '') {
                     advancedMode.value
                 );
                 if (!ok) throw new Error(msg);
-                return new HdMasterKey({
-                    seed: await mnemonicToSeed(phrase),
+                const seed = await mnemonicToSeed(phrase);
+                const pivxShield = await PIVXShield.create({
+                    seed,
+                    blockHeight: 0,
+                    coinType: cChainParams.current.BIP44_TYPE,
+                    // TODO: Change account index once account system is made
+                    accountIndex: 0,
+		    loadSaplingData: false,
                 });
+                return new ParsedSecret(
+                    new HdMasterKey({
+                        seed,
+                    }),
+                    pivxShield
+                );
             },
         },
     ];
@@ -149,15 +176,15 @@ async function parseSecret(secret, password = '') {
  */
 async function importWallet({ type, secret, password = '' }) {
     /**
-     * @type{import('../masterkey.js').MasterKey}
+     * @type{ParsedSecret?}
      */
-    let key;
+    let parsedSecret;
     if (type === 'hardware') {
         if (navigator.userAgent.includes('Firefox')) {
             createAlert('warning', ALERTS.WALLET_FIREFOX_UNSUPPORTED, 7500);
             return false;
         }
-        key = await HardwareWalletMasterKey.create();
+        parsedSecret = new ParsedSecret(await HardwareWalletMasterKey.create());
 
         createAlert(
             'info',
@@ -167,10 +194,11 @@ async function importWallet({ type, secret, password = '' }) {
             12500
         );
     } else {
-        key = await parseSecret(secret, password);
+        parsedSecret = await parseSecret(secret, password);
     }
-    if (key) {
-        wallet.setMasterKey(key);
+    if (parsedSecret) {
+        wallet.setMasterKey(parsedSecret.masterKey);
+        wallet.setShield(parsedSecret.shield);
         isImported.value = true;
         jdenticonValue.value = wallet.getAddress();
         if (!wallet.isHardwareWallet()) {
