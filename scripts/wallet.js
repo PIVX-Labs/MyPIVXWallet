@@ -199,6 +199,15 @@ export class Wallet {
     }
 
     /**
+     * This should really be provided with the constructor,
+     * This will be done once `Dashboard.vue` is the owner of the wallet
+     * @param {import('pivx-shield').PIVXShield} shield object to set
+     */
+    setShield(shield) {
+        this.#shield = shield;
+    }
+
+    /**
      * Reset the wallet, indexes address map and so on
      */
     reset() {
