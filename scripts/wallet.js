@@ -32,9 +32,13 @@ import {
  */
 export class Wallet {
     /**
-     * @type {import('./masterkey.js').MasterKey}
+     * @type {import('./masterkey.js').MasterKey?}
      */
     #masterKey;
+    /**
+     * @type {import('pivx-shield').PIVXShield?}
+     */
+    #shield;
     /**
      * @type {number}
      */
@@ -73,10 +77,17 @@ export class Wallet {
      * @type {Set<String>}
      */
     #lockedCoins;
-    constructor(nAccount, isMainWallet) {
+    constructor({
+        nAccount = 0,
+        isMainWallet = true,
+        masterKey = null,
+        shield = null,
+    } = {}) {
         this.#nAccount = nAccount;
         this.#isMainWallet = isMainWallet;
         this.#lockedCoins = new Set();
+        this.#masterKey = masterKey;
+        this.#shield = shield;
     }
 
     /**
@@ -590,7 +601,7 @@ export class Wallet {
 /**
  * @type{Wallet}
  */
-export const wallet = new Wallet(0, true); // For now we are using only the 0-th account, (TODO: update once account system is done)
+export const wallet = new Wallet(); // For now we are using only the 0-th account, (TODO: update once account system is done)
 
 /**
  * Clean a Seed Phrase string and verify it's integrity

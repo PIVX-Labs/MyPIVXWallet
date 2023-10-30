@@ -980,8 +980,8 @@ export async function sweepAddress(arrUTXOs, sweepingMasterKey, nFixedFee = 0) {
     cTx.addoutput(strAddress, (nTotal - nFee) / COIN);
 
     // Sign using the given Master Key, then broadcast the sweep, returning the TXID (or a failure)
-    const sweepingWallet = new Wallet(0, false);
-    await sweepingWallet.setMasterKey(sweepingMasterKey);
+    const sweepingWallet = new Wallet({ nAccount: 0, isMainWallet: false });
+    sweepingWallet.setMasterKey(sweepingMasterKey);
 
     const sign = await signTransaction(cTx, sweepingWallet);
     return await getNetwork().sendTransaction(sign);
