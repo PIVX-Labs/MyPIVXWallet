@@ -168,7 +168,7 @@ export class ExplorerNetwork extends Network {
                 await fetch(`${this.strUrl}/api/v2/block/${blockHeight}`)
             ).json();
             return block;
-        } catch {
+        } catch (e) {
             this.error();
             throw e;
         }
