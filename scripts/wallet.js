@@ -221,6 +221,7 @@ export class Wallet {
         this.#loadedIndexes = 0;
         this.#ownAddresses = new Map();
         this.#isShieldSynced = false;
+        this.#shield = null;
         // TODO: This needs to be refactored
         // The wallet could own its own mempool and network?
         // Instead of having this isMainWallet flag
