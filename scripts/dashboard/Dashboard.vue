@@ -207,6 +207,8 @@ async function importWallet({ type, secret, password = '' }) {
         } else {
             needsToEncrypt.value = false;
         }
+        //TODO: add shield database
+        wallet.syncShield();
         if (!(await mempool.loadFromDisk()))
             await getNetwork().walletFullSync();
         getEventEmitter().emit('wallet-import');

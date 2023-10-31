@@ -1,6 +1,6 @@
 import { validateMnemonic } from 'bip39';
 import { beforeUnloadListener } from './global.js';
-import { getNetwork } from './network.js';
+import { ExplorerNetwork, getNetwork } from './network.js';
 import { MAX_ACCOUNT_GAP } from './chain_params.js';
 import { Transaction, HistoricalTx, HistoricalTxType } from './mempool.js';
 import { confirmPopup, createAlert } from './misc.js';
@@ -77,6 +77,11 @@ export class Wallet {
      * @type {Set<String>}
      */
     #lockedCoins;
+    /**
+     * Whether shielding is ready to use or not
+     * @type {Boolean}
+     */
+    #isShieldSynced = false;
     constructor({
         nAccount = 0,
         isMainWallet = true,
@@ -205,6 +210,7 @@ export class Wallet {
      */
     setShield(shield) {
         this.#shield = shield;
+        console.log(shield);
     }
 
     /**
@@ -214,6 +220,7 @@ export class Wallet {
         this.#highestUsedIndex = 0;
         this.#loadedIndexes = 0;
         this.#ownAddresses = new Map();
+        this.#isShieldSynced = false;
         // TODO: This needs to be refactored
         // The wallet could own its own mempool and network?
         // Instead of having this isMainWallet flag
@@ -604,6 +611,53 @@ export class Wallet {
             );
         }
         return histTXs;
+    }
+    /**
+     * Full sync the shield
+     */
+    async syncShield() {
+        /**
+         * @type {ExplorerNetwork}
+         */
+        const cNet = getNetwork();
+        await this.#shield.loadSaplingProver();
+        try {
+            const blockHeights = (await cNet.getShieldBlockList()).filter(
+                (b) => b > this.#shield.getLastSyncedBlock()
+            );
+            for (const blockHeight of blockHeights) {
+                const block = await cNet.getBlock(blockHeight);
+                await this.#shield.handleBlock(block);
+            }
+
+            // At this point it should be safe to assume that shield is ready to use
+            this.#isShieldSynced = true;
+            while (true) {
+                for (
+                    let blockHeight = this.#shield.getLastSyncedBlock() + 1;
+                    blockHeight < cNet.cachedBlockCount;
+                    blockHeight++
+                ) {
+                    try {
+                        const block = await cNet.getBlock(blockHeight);
+                        if (block.txs) {
+                            await this.#shield.handleBlock(block);
+                        } else {
+                            break;
+                        }
+                    } catch (e) {
+                        console.error(e);
+                        break;
+                    }
+                }
+                await cNet.waitForNextBlock();
+                console.log('Shield updated:', this.#shield);
+            }
+        } catch (e) {
+            console.error(e);
+            await cNet.waitForNextBlock();
+            return this.syncShield();
+        }
     }
 }
 

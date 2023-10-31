@@ -9,6 +9,7 @@ import {
     fAutoSwitch,
     debug,
 } from './settings.js';
+import { cNode } from './settings.js';
 import { ALERTS, translation } from './i18n.js';
 import { mempool, stakingDashboard } from './global.js';
 
@@ -154,6 +155,23 @@ export class ExplorerNetwork extends Network {
 
     get cachedBlockCount() {
         return this.blocks;
+    }
+
+    /**
+     * Fetch a block from the explorer given the height
+     * @param {Number} blockHeight
+     * @returns {Promise<Object>} the block fetched from explorer
+     */
+    async getBlock(blockHeight) {
+        try {
+            const block = await (
+                await fetch(`${this.strUrl}/api/v2/block/${blockHeight}`)
+            ).json();
+            return block;
+        } catch {
+            this.error();
+            throw e;
+        }
     }
 
     async getBlockCount() {
@@ -375,6 +393,34 @@ export class ExplorerNetwork extends Network {
         return await req.json();
     }
 
+    /**
+     * @return {Promise<Number[]>} The list of blocks which have at least one shield transaction
+     */
+    async getShieldBlockList() {
+        /**
+         * @type {Number[]}
+         */
+        const blockCount = await this.getBlockCount(false);
+        const blocks = await (
+            await fetch(`${cNode.url}/getshieldblocks`)
+        ).json();
+        const maxBlock = blocks[blocks.length - 1];
+        //I think
+        if (maxBlock < blockCount - 5) {
+            blocks.push(blockCount - 5);
+        }
+        return blocks;
+    }
+
+    /**
+     * Waits for next block
+     * @returns {Promise<Number>} Resolves when the next block is obtained
+     */
+    waitForNextBlock() {
+        return new Promise((res, _rej) => {
+            getEventEmitter().once('new-block', (block) => res(block));
+        });
+    }
     // PIVX Labs Analytics: if you are a user, you can disable this FULLY via the Settings.
     // ... if you're a developer, we ask you to keep these stats to enhance upstream development,
     // ... but you are free to completely strip MPW of any analytics, if you wish, no hard feelings.
