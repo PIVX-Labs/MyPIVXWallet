@@ -137,7 +137,7 @@ async function parseSecret(secret, password = '') {
                     coinType: cChainParams.current.BIP44_TYPE,
                     // TODO: Change account index once account system is made
                     accountIndex: 0,
-		    loadSaplingData: false,
+                    loadSaplingData: false,
                 });
                 return new ParsedSecret(
                     new HdMasterKey({
