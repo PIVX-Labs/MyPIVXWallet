@@ -146,6 +146,10 @@ export class Wallet {
         return this.#nAccount;
     }
 
+    get isShieldSynced() {
+        return this.#isShieldSynced;
+    }
+
     wipePrivateData() {
         this.#masterKey.wipePrivateData(this.#nAccount);
     }
