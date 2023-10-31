@@ -35,6 +35,7 @@ export const cChainParams = reactive({
         BIP44_TYPE_LEDGER: 77,
         PROTOCOL_VERSION: 70926,
         MASTERNODE_PORT: 51472,
+        SHIELD_PREFIX: 'ps',
         // A list of Labs-trusted explorers
         Explorers: [
             // Display name      Blockbook-compatible API base
@@ -69,6 +70,7 @@ export const cChainParams = reactive({
         BIP44_TYPE_LEDGER: 1,
         PROTOCOL_VERSION: 70926,
         MASTERNODE_PORT: 51474,
+        SHIELD_PREFIX: 'ptestsapling',
         // A list of Labs-trusted explorers
         Explorers: [
             // Display name      Blockbook-compatible API base
