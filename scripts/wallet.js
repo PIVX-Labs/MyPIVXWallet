@@ -616,6 +616,9 @@ export class Wallet {
      * Full sync the shield
      */
     async syncShield() {
+        if (this.#shield == null) {
+            return;
+        }
         /**
          * @type {ExplorerNetwork}
          */
