@@ -32,6 +32,12 @@ import {
  */
 export class Wallet {
     /**
+     * We are using two chains: The external chain, and the internal one (i.e. change addresses)
+     * See https://github.com/bitcoin/bips/blob/master/bip-0048.mediawiki for more info
+     * (Change paragraph)
+     */
+    static chains = 2;
+    /**
      * @type {import('./masterkey.js').MasterKey}
      */
     #masterKey;
@@ -39,16 +45,19 @@ export class Wallet {
      * @type {number}
      */
     #nAccount;
+
     /**
+     * Map bip48 change -> Loaded index
      * Number of loaded indexes, loaded means that they are in the ownAddresses map
-     * @type {number}
+     * @type {Map<number, number>}
      */
-    #loadedIndexes = 0;
+    #loadedIndexes = new Map();
     /**
+     * Map bip48 change -> Highest used index
      * Highest index used, where used means that the corresponding address is on chain (for example in a tx)
-     * @type {number}
+     * @type {Map<number, number>}
      */
-    #highestUsedIndex = 0;
+    #highestUsedIndices = new Map();
     /**
      * @type {number}
      */
@@ -77,6 +86,7 @@ export class Wallet {
         this.#nAccount = nAccount;
         this.#isMainWallet = isMainWallet;
         this.#lockedCoins = new Set();
+        this.reset();
     }
 
     /**
@@ -191,9 +201,13 @@ export class Wallet {
      * Reset the wallet, indexes address map and so on
      */
     reset() {
-        this.#highestUsedIndex = 0;
-        this.#loadedIndexes = 0;
+        this.#highestUsedIndices = new Map();
+        this.#loadedIndexes = new Map();
         this.#ownAddresses = new Map();
+        for (let i = 0; i < Wallet.chains; i++) {
+            this.#highestUsedIndices.set(i, 0);
+            this.#loadedIndexes.set(i, 0);
+        }
         // TODO: This needs to be refactored
         // The wallet could own its own mempool and network?
         // Instead of having this isMainWallet flag
@@ -281,16 +295,16 @@ export class Wallet {
     /**
      * @return [string, string] Address and its BIP32 derivation path
      */
-    getNewAddress() {
-        const last = this.#highestUsedIndex;
+    getNewAddress(nReceiving = 0) {
+        const last = this.#highestUsedIndices.get(nReceiving);
         this.#addressIndex =
             (this.#addressIndex > last ? this.#addressIndex : last) + 1;
         if (this.#addressIndex - last > MAX_ACCOUNT_GAP) {
             // If the user creates more than ${MAX_ACCOUNT_GAP} empty wallets we will not be able to sync them!
             this.#addressIndex = last;
         }
-        const path = this.getDerivationPath(0, this.#addressIndex);
-        const address = this.getAddress(0, this.#addressIndex);
+        const path = this.getDerivationPath(nReceiving, this.#addressIndex);
+        const address = this.getAddress(nReceiving, this.#addressIndex);
         return [address, path];
     }
 
@@ -311,13 +325,17 @@ export class Wallet {
         );
         const path = this.isOwnAddress(address);
         if (path) {
-            this.#highestUsedIndex = Math.max(
-                parseInt(path.split('/')[5]),
-                this.#highestUsedIndex
+            const nReceiving = parseInt(path.split('/')[4]);
+            this.#highestUsedIndices.set(
+                nReceiving,
+                Math.max(
+                    parseInt(path.split('/')[5]),
+                    this.#highestUsedIndices.get(nReceiving)
+                )
             );
             if (
-                this.#highestUsedIndex + MAX_ACCOUNT_GAP >=
-                this.#loadedIndexes
+                this.#highestUsedIndices.get(nReceiving) + MAX_ACCOUNT_GAP >=
+                this.#loadedIndexes.get(nReceiving)
             ) {
                 this.loadAddresses();
             }
@@ -329,16 +347,17 @@ export class Wallet {
      */
     loadAddresses() {
         if (this.isHD()) {
-            for (
-                let i = this.#loadedIndexes;
-                i <= this.#loadedIndexes + MAX_ACCOUNT_GAP;
-                i++
-            ) {
-                const path = this.getDerivationPath(0, i);
-                const address = this.#masterKey.getAddress(path);
-                this.#ownAddresses.set(address, path);
+            for (let c = 0; c < Wallet.chains; c++) {
+                const start = this.#loadedIndexes.get(c);
+                const end = start + MAX_ACCOUNT_GAP;
+                for (let i = start; i <= end; i++) {
+                    const path = this.getDerivationPath(c, i);
+                    const address = this.#masterKey.getAddress(path);
+                    this.#ownAddresses.set(address, path);
+                }
+
+                this.#loadedIndexes.set(c, end);
             }
-            this.#loadedIndexes += MAX_ACCOUNT_GAP;
         } else {
             this.#ownAddresses.set(this.getKeyToExport(), ':)');
         }
@@ -673,8 +692,9 @@ export async function hasEncryptedWallet() {
 export async function getNewAddress({
     updateGUI = false,
     verify = false,
+    nReceiving = 0,
 } = {}) {
-    const [address, path] = wallet.getNewAddress();
+    const [address, path] = wallet.getNewAddress(nReceiving);
     if (verify && wallet.isHardwareWallet()) {
         // Generate address to present to the user without asking to verify
         const confAddress = await confirmPopup({
