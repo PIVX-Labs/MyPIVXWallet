@@ -86,7 +86,10 @@ export class Wallet {
         this.#nAccount = nAccount;
         this.#isMainWallet = isMainWallet;
         this.#lockedCoins = new Set();
-        this.reset();
+	for (let i = 0; i < Wallet.chains; i++) {
+            this.#highestUsedIndices.set(i, 0);
+            this.#loadedIndexes.set(i, 0);
+        }
     }
 
     /**
