@@ -9,6 +9,7 @@ import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import CopyPlugin from 'copy-webpack-plugin';
 import toml from 'toml';
 import { VueLoaderPlugin } from 'vue-loader';
+
 import { readFileSync } from 'fs';
 import { dirname } from 'path';
 import { fileURLToPath } from 'url';
@@ -68,6 +69,10 @@ export default {
                                 .join('\n')
                         ),
                 },
+            },
+            {
+                test: /\.svg$/i,
+                type: 'asset/source',
             },
         ],
     },

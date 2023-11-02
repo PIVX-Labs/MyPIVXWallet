@@ -7,11 +7,6 @@ import { BIP21_PREFIX, cChainParams } from './chain_params.js';
 import { dSHA256 } from './utils.js';
 import { verifyPubkey } from './encoding.js';
 
-/* MPW constants */
-export const pubKeyHashNetworkLen = 21;
-export const pubChksum = 4;
-export const pubPrebaseLen = pubKeyHashNetworkLen + pubChksum;
-
 // Base58 Encoding Map
 export const MAP_B58 =
     '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
@@ -21,54 +16,6 @@ export const LEN_B58 = MAP_B58.length;
 // Cryptographic Random-Gen
 export function getSafeRand(nSize = 32) {
     return crypto.getRandomValues(new Uint8Array(nSize));
-}
-
-export const MAP_ALPHANUMERIC =
-    'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-
-/**
- * Generate a random Alpha-Numeric sequence
- * @param {number} nSize - The amount of characters to generate
- * @returns {string} - A random alphanumeric string of nSize length
- */
-export function getAlphaNumericRand(nSize = 32) {
-    let result = '';
-    const randValues = getSafeRand(nSize);
-    for (const byte of randValues) {
-        const index = byte % MAP_ALPHANUMERIC.length;
-        result += MAP_ALPHANUMERIC.charAt(index);
-    }
-    return result;
-}
-
-// Writes a sequence of Array-like bytes into a location within a Uint8Array
-export function writeToUint8(arr, bytes, pos) {
-    const arrLen = arr.length;
-    // Sanity: ensure an overflow cannot occur, if one is detected, somewhere in MPW's state could be corrupted.
-    if (arrLen - pos - bytes.length < 0) {
-        const strERR =
-            'CRITICAL: Overflow detected (' +
-            (arrLen - pos - bytes.length) +
-            '), possible state corruption, backup and refresh advised.';
-        createAlert('warning', strERR, 5000);
-        throw Error(strERR);
-    }
-    let i = 0;
-    while (pos < arrLen) arr[pos++] = bytes[i++];
-}
-
-/** Convert a 2D array into a CSV string */
-export function arrayToCSV(data) {
-    return data
-        .map(
-            (row) =>
-                row
-                    .map(String) // convert every value to String
-                    .map((v) => v.replaceAll('"', '""')) // escape double colons
-                    .map((v) => `"${v}"`) // quote it
-                    .join(',') // comma-separated
-        )
-        .join('\r\n'); // rows starting on new lines
 }
 
 /** Download contents as a file */

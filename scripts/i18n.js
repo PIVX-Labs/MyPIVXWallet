@@ -81,12 +81,12 @@ export async function switchTranslation(langName) {
         // Translate any dynamic elements necessary
         const cNet = getNetwork();
         if (wallet.isLoaded() && cNet) {
-            updateEncryptionGUI();
+            await updateEncryptionGUI();
         }
         loadAlerts();
         fillAnalyticSelect();
         if (wallet.isLoaded()) {
-            guiToggleReceiveType(cReceiveType);
+            await guiToggleReceiveType(cReceiveType);
         }
         return true;
     } else {

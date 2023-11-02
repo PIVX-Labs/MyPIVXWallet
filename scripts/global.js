@@ -1,17 +1,10 @@
 import { COutpoint, Mempool, UTXO_WALLET_STATE } from './mempool.js';
 import Masternode from './masternode.js';
 import { ALERTS, tr, start as i18nStart, translation } from './i18n.js';
-import * as jdenticon from 'jdenticon';
-import {
-    wallet,
-    hasEncryptedWallet,
-    importWallet,
-    decryptWallet,
-    getNewAddress,
-    Wallet,
-} from './wallet.js';
+
+import { wallet, hasEncryptedWallet, getNewAddress, Wallet } from './wallet.js';
 import { LegacyMasterKey } from './masterkey.js';
-import { getNetwork, HistoricalTxType } from './network.js';
+import { getNetwork } from './network.js';
 import {
     start as settingsStart,
     cExplorer,
@@ -26,38 +19,23 @@ import {
     createAlert,
     confirmPopup,
     sanitizeHTML,
-    MAP_B58,
-    parseBIP21Request,
-    isValidBech32,
-    isBase64,
     sleep,
     beautifyNumber,
-    isStandardAddress,
     isColdAddress,
 } from './misc.js';
-import { cChainParams, COIN, MIN_PASS_LENGTH } from './chain_params.js';
-import { decrypt } from './aes-gcm.js';
+import { cChainParams, COIN } from './chain_params.js';
 
 import { registerWorker } from './native.js';
 import { refreshPriceDisplay } from './prices.js';
 import { Address6 } from 'ip-address';
 import { getEventEmitter } from './event_bus.js';
-import { scanQRCode } from './scanner.js';
 import { Database } from './database.js';
 import bitjs from './bitTrx.js';
 import { checkForUpgrades } from './changelog.js';
 import { FlipDown } from './flipdown.js';
 import { createApp } from 'vue';
-import Activity from './Activity.vue';
-import WalletBalance from './WalletBalance.vue';
-import {
-    cReceiveType,
-    guiAddContactPrompt,
-    guiCheckRecipientInput,
-    guiToggleReceiveType,
-} from './contacts-book.js';
-import { Buffer } from 'buffer';
-import { Account } from './accounts.js';
+import Activity from './dashboard/Activity.vue';
+import Dashboard from './dashboard/Dashboard.vue';
 
 /** A flag showing if base MPW is fully loaded or not */
 export let fIsLoaded = false;
@@ -70,26 +48,19 @@ export function isLoaded() {
 export let doms = {};
 export const mempool = new Mempool();
 
-// For now we'll import the component as a vue app by itself. Later, when the
-// dashboard is rewritten in vue, we can simply add <Activity /> to the dashboard component template.
-export const activityDashboard = createApp(Activity, {
-    title: 'Activity',
-    rewards: false,
-}).mount('#activityDashboard');
+export const dashboard = createApp(Dashboard).mount('#DashboardTab');
 
+// For now we'll import the component as a vue app by itself. Later, when the
+// stake tab is rewritten in vue, we can simply add <Activity /> to the stake tab component template.
 export const stakingDashboard = createApp(Activity, {
     title: 'Reward History',
     rewards: true,
 }).mount('#stakeActivity');
 
-export const walletBalance = createApp(WalletBalance).mount('#walletBalance');
-
 export async function start() {
     doms = {
         domNavbarToggler: document.getElementById('navbarToggler'),
         domDashboard: document.getElementById('dashboard'),
-        domGuiWallet: document.getElementById('guiWallet'),
-        domGettingStartedBtn: document.getElementById('gettingStartedBtn'),
         domGuiStakingValue: document.getElementById('guiStakingValue'),
         domGuiStakingValueCurrency: document.getElementById(
             'guiStakingValueCurrency'
@@ -108,15 +79,6 @@ export async function start() {
         domStakeOwnerAddress: document.getElementById('delegateOwnerAddress'),
         domUnstakeAmount: document.getElementById('undelegateAmount'),
         domStakeTab: document.getElementById('stakeTab'),
-        domAddress1s: document.getElementById('address1s'),
-        domSendAmountCoins: document.getElementById('sendAmountCoins'),
-        domSendAmountCoinsTicker: document.getElementById(
-            'sendAmountCoinsTicker'
-        ),
-        domSendAmountValue: document.getElementById('sendAmountValue'),
-        domSendAmountValueCurrency: document.getElementById(
-            'sendAmountValueCurrency'
-        ),
         domStakeAmountCoinsTicker: document.getElementById(
             'stakeAmountCoinsTicker'
         ),
@@ -146,11 +108,6 @@ export async function start() {
         domWalletBreakdownCanvas: document.getElementById(
             'walletBreakdownCanvas'
         ),
-        domPrefix: document.getElementById('prefix'),
-        domPrefixNetwork: document.getElementById('prefixNetwork'),
-        domWalletToggle: document.getElementById('wToggle'),
-        domGenerateWallet: document.getElementById('generateWallet'),
-        domGenVanityWallet: document.getElementById('generateVanityWallet'),
         domGenHardwareWallet: document.getElementById('generateHardwareWallet'),
         //GOVERNANCE ELEMENTS
         domGovTab: document.getElementById('governanceTab'),
@@ -199,24 +156,12 @@ export async function start() {
         domMnNetIP: document.getElementById('mnNetIP'),
         domMnLastSeen: document.getElementById('mnLastSeen'),
 
-        domAccessWallet: document.getElementById('accessWallet'),
-        domImportWallet: document.getElementById('importWallet'),
-        domImportWalletText: document.getElementById('importWalletText'),
-        domAccessWalletBtn: document.getElementById('accessWalletBtn'),
-        domVanityUiButtonTxt: document.getElementById('vanButtonText'),
-        domGenKeyWarning: document.getElementById('genKeyWarning'),
         domEncryptWalletLabel: document.getElementById('encryptWalletLabel'),
         domEncryptPasswordCurrent: document.getElementById(
             'changePassword-current'
         ),
         domEncryptPasswordFirst: document.getElementById('newPassword'),
         domEncryptPasswordSecond: document.getElementById('newPasswordRetype'),
-        domGenIt: document.getElementById('genIt'),
-        domReqDesc: document.getElementById('reqDesc'),
-        domReqDisplay: document.getElementById('reqDescDisplay'),
-        domIdenticon: document.getElementById('identicon'),
-        domPrivKey: document.getElementById('privateKey'),
-        domPrivKeyPassword: document.getElementById('privateKeyPassword'),
         domAvailToDelegate: document.getElementById('availToDelegate'),
         domAvailToUndelegate: document.getElementById('availToUndelegate'),
         domAnalyticsDescriptor: document.getElementById('analyticsDescriptor'),
@@ -229,7 +174,6 @@ export async function start() {
         domMnemonicModalPassphrase: document.getElementById(
             'ModalMnemonicPassphrase'
         ),
-        domExportPrivateKey: document.getElementById('exportPrivateKeyText'),
         domWipeWallet: document.getElementById('guiWipeWallet'),
         domRestoreWallet: document.getElementById('guiRestoreWallet'),
         domRedeemTitle: document.getElementById('redeemCodeModalTitle'),
@@ -350,22 +294,6 @@ export async function start() {
     sliderElement.addEventListener('input', handleDecimalSlider);
     sliderElement.addEventListener('mouseover', handleDecimalSlider);
 
-    // Register Input Pair events
-    doms.domSendAmountCoins.oninput = () => {
-        updateAmountInputPair(
-            doms.domSendAmountCoins,
-            doms.domSendAmountValue,
-            true
-        );
-    };
-    doms.domSendAmountValue.oninput = () => {
-        updateAmountInputPair(
-            doms.domSendAmountCoins,
-            doms.domSendAmountValue,
-            false
-        );
-    };
-
     /** Staking (Stake) */
     doms.domStakeAmount.oninput = () => {
         updateAmountInputPair(
@@ -400,83 +328,12 @@ export async function start() {
 
     // Register native app service
     registerWorker();
-
-    // Configure Identicon
-    jdenticon.configure();
-
-    // URL-Query request processing
-    const urlParams = new URLSearchParams(window.location.search);
-
-    // Check for a payment request address
-    const reqTo = urlParams.has('pay') ? urlParams.get('pay') : '';
-
-    // Check for a payment request amount
-    const reqAmount = urlParams.has('amount')
-        ? parseFloat(urlParams.get('amount'))
-        : 0;
     await settingsStart();
-
-    // After reaching here; we know MPW's base is fully loaded!
-    fIsLoaded = true;
-
-    // Customise the UI if a saved wallet exists
-    if (await hasEncryptedWallet()) {
-        // Hide the 'Generate wallet' buttons
-        doms.domGenerateWallet.style.display = 'none';
-        doms.domGenVanityWallet.style.display = 'none';
-        const database = await Database.getInstance();
-        const { publicKey } = await database.getAccount();
-
-        // Import the wallet, and toggle the startup flag, which delegates the chain data refresh to settingsStart();
-        if (publicKey) {
-            await importWallet({ newWif: publicKey, fStartup: true });
-
-            // Update the "Receive" UI to apply Translation and Contacts updates
-            await guiToggleReceiveType(cReceiveType);
-
-            // Check for Add Contact calls
-            if (urlParams.has('addcontact')) {
-                // Quick sanity check
-                const strURI = urlParams.get('addcontact');
-                if (strURI.includes(':')) {
-                    // Split to 'name' and 'pubkey'
-                    const arrParts = strURI.split(':');
-
-                    // Convert Name from HEX to UTF-8
-                    const strName = Buffer.from(arrParts[0], 'hex').toString(
-                        'utf8'
-                    );
-                    const strPubkey = arrParts[1];
-
-                    // Prompt the user to add the Contact
-                    guiAddContactPrompt(sanitizeHTML(strName), strPubkey);
-                }
-            } else if (reqTo.length || reqAmount > 0) {
-                // Payment processor popup
-                guiPreparePayment(
-                    reqTo,
-                    reqAmount,
-                    urlParams.has('desc') ? urlParams.get('desc') : ''
-                );
-            }
-        } else {
-            // Display the password unlock upfront
-            await accessOrImportWallet();
-        }
-    } else {
-        // Clear the transaction DB
-        const database = await Database.getInstance();
-        await database.removeAllTxs();
-
-        // Just load the block count, for use in non-wallet areas
-        getNetwork().getBlockCount();
-    }
+    // Just load the block count, for use in non-wallet areas
+    await getNetwork().getBlockCount();
 
     subscribeToNetworkEvents();
 
-    doms.domPrefix.value = '';
-    doms.domPrefixNetwork.innerText =
-        cChainParams.current.PUBKEY_PREFIX.join(' or ');
     // If allowed by settings: submit a simple 'hit' (app load) to Labs Analytics
     getNetwork().submitAnalytics('hit');
     setInterval(() => {
@@ -490,12 +347,16 @@ export async function start() {
     // Check for recent upgrades, display the changelog
     checkForUpgrades();
 
+    // Update the Encryption UI (If the user has a wallet, then it changes to "Change Password" rather than "Encrypt Wallet")
+    getEventEmitter().on('wallet-import', async () => {
+        await updateEncryptionGUI();
+        updateLogOutButton();
+    });
+    await updateEncryptionGUI();
+    fIsLoaded = true;
+
     // If we haven't already (due to having no wallet, etc), display the Dashboard
     doms.domDashboard.click();
-
-    // Update the Encryption UI (If the user has a wallet, then it changes to "Change Password" rather than "Encrypt Wallet")
-    await updateEncryptionGUI();
-    updateLogOutButton();
 }
 
 function subscribeToNetworkEvents() {
@@ -518,7 +379,6 @@ function subscribeToNetworkEvents() {
     getEventEmitter().on('new-block', (block, oldBlock) => {
         console.log(`New block detected! ${oldBlock} --> ${block}`);
         // Fetch latest Activity
-        activityDashboard.update();
         stakingDashboard.update();
 
         // If it's open: update the Governance Dashboard
@@ -529,8 +389,6 @@ function subscribeToNetworkEvents() {
 
     getEventEmitter().on('transaction-sent', (success, result) => {
         if (success) {
-            doms.domAddress1s.value = '';
-            doms.domSendAmountCoins.innerHTML = '';
             createAlert(
                 'success',
                 `${ALERTS.TX_SENT}<br>${sanitizeHTML(result)}`,
@@ -548,7 +406,6 @@ function subscribeToNetworkEvents() {
 
 // WALLET STATE DATA
 
-let exportHidden = false;
 let isTestnetLastState = cChainParams.current.isTestnet;
 
 /**
@@ -589,9 +446,6 @@ export function openTab(evt, tabName) {
     ) {
         // Refresh the TX list
         stakingDashboard.update();
-    } else if (tabName === 'keypair' && activityDashboard.getTxCount() === 0) {
-        // Refresh the TX list
-        activityDashboard.update();
     }
 }
 
@@ -601,10 +455,6 @@ export function openTab(evt, tabName) {
 export function updateTicker() {
     // Update the Stake Dashboard currency
     doms.domGuiStakingValueCurrency.innerText = strCurrency.toUpperCase();
-
-    // Update the Send menu ticker and currency
-    doms.domSendAmountValueCurrency.innerText = strCurrency.toUpperCase();
-    doms.domSendAmountCoinsTicker.innerText = cChainParams.current.TICKER;
 
     // Update the Stake/Unstake menu ticker and currency
     // Stake
@@ -724,90 +574,21 @@ export function selectMaxBalance(domCoin, domValue, fCold = false) {
 }
 
 /**
- * Prompt a QR scan for a Payment (Address or BIP21)
- */
-export async function openSendQRScanner() {
-    const cScan = await scanQRCode();
-
-    if (!cScan || !cScan.data) return;
-
-    /* Check what data the scan contains - for the various QR request types */
-
-    // Plain address (Length and prefix matches)
-    if (isStandardAddress(cScan.data)) {
-        return guiPreparePayment(cScan.data);
-    }
-
-    // Shield address (Valid bech32 string)
-    if (isValidBech32(cScan.data).valid) {
-        return guiPreparePayment(cScan.data);
-    }
-
-    // BIP21 Payment Request (Optional 'amount' and 'label')
-    const cBIP21Req = parseBIP21Request(cScan.data);
-    if (cBIP21Req) {
-        return guiPreparePayment(
-            cBIP21Req.address,
-            cBIP21Req.options.amount || 0,
-            cBIP21Req.options.label || ''
-        );
-    }
-
-    // MPW Contact Request URI
-    if (cScan.data.includes('addcontact=')) {
-        // Parse as URL Params
-        const cURL = new URL(cScan.data);
-        const urlParams = new URLSearchParams(cURL.search);
-        const strURI = urlParams.get('addcontact');
-
-        // Sanity check the URI
-        if (strURI?.includes(':')) {
-            // Split to 'name' and 'pubkey'
-            const arrParts = strURI.split(':');
-
-            // If the wallet is encrypted, prompt the user to (optionally) add the Contact, before the Tx
-            const fUseName = (await hasEncryptedWallet())
-                ? await guiAddContactPrompt(
-                      sanitizeHTML(arrParts[0]),
-                      arrParts[1],
-                      false
-                  )
-                : false;
-
-            // Prompt for payment
-            return guiPreparePayment(fUseName ? arrParts[0] : arrParts[1]);
-        }
-    }
-
-    // No idea what this is...
-    createAlert(
-        'warning',
-        `"${sanitizeHTML(
-            cScan.data.substring(0, Math.min(cScan.data.length, 6))
-        )}…" ${ALERTS.QR_SCANNER_BAD_RECEIVER}`,
-        7500
-    );
-}
-
-/**
  * Open the Explorer in a new tab for the current wallet, or a specific address
  * @param {string?} strAddress - Optional address to open, if void, the master key is used
  */
 export async function openExplorer(strAddress = '') {
     if (wallet.isLoaded() && wallet.isHD() && !strAddress) {
-        const xpub = await wallet.getXPub();
+        const xpub = wallet.getXPub();
         window.open(cExplorer.url + '/xpub/' + xpub, '_blank');
     } else {
-        const address = strAddress || (await wallet.getAddress());
+        const address = strAddress || wallet.getAddress();
         window.open(cExplorer.url + '/address/' + address, '_blank');
     }
 }
 
 async function loadImages() {
-    const images = [
-        ['mpw-main-logo', import('../assets/logo.png')],
-        ['privateKeyImage', import('../assets/key.png')],
-    ];
+    const images = [['mpw-main-logo', import('../assets/logo.png')]];
 
     const promises = images.map(([id, path]) =>
         (async () => {
@@ -834,22 +615,6 @@ export async function playMusic() {
         audio.pause();
         for (const domImg of document.getElementsByTagName('img'))
             domImg.classList.remove('discoFilter');
-    }
-}
-
-export function unblurPrivKey() {
-    if (
-        document
-            .getElementById('exportPrivateKeyText')
-            .classList.contains('blurred')
-    ) {
-        document
-            .getElementById('exportPrivateKeyText')
-            .classList.remove('blurred');
-    } else {
-        document
-            .getElementById('exportPrivateKeyText')
-            .classList.add('blurred');
     }
 }
 
@@ -920,66 +685,6 @@ export function toClipboard(source, caller) {
         caller.classList.remove('fa-check');
         caller.style.cursor = 'pointer';
     }, 1000);
-}
-
-/**
- * Prompt for a payment in the GUI with pre-filled inputs
- * @param {string} strTo - The address receiving the payment
- * @param {number} nAmount - The payment amount in full coins
- * @param {string} strDesc - The payment message or description
- */
-export function guiPreparePayment(strTo = '', nAmount = 0, strDesc = '') {
-    // Apply values
-    doms.domAddress1s.value = strTo;
-    doms.domSendAmountCoins.value = nAmount;
-    doms.domReqDesc.value = strDesc;
-    doms.domReqDisplay.style.display = strDesc ? 'block' : 'none';
-
-    // Switch to the Dashboard
-    doms.domDashboard.click();
-
-    // Open the Send menu, if not already open (with a small timeout post-load to allow for CSS loading)
-    if (
-        document
-            .getElementById('transferMenu')
-            .classList.contains('transferAnimation')
-    ) {
-        setTimeout(() => {
-            toggleBottomMenu('transferMenu', 'transferAnimation');
-        }, 300);
-    }
-
-    // Update the conversion value
-    updateAmountInputPair(
-        doms.domSendAmountCoins,
-        doms.domSendAmountValue,
-        true
-    );
-
-    // Run the Input Validity checker
-    guiCheckRecipientInput({ target: doms.domAddress1s });
-
-    // Focus on the coin input box (if no pre-fill was specified)
-    if (nAmount <= 0) {
-        doms.domSendAmountCoins.focus();
-    }
-}
-
-/**
- * Set the "Wallet Options" menu visibility
- * @param {String} strDisplayCSS - The `display` CSS option to set the Wallet Options to
- */
-export function setDisplayForAllWalletOptions(strDisplayCSS) {
-    // Set the display and Reset the Vanity address input
-    doms.domPrefix.value = '';
-    doms.domPrefix.style.display = strDisplayCSS;
-
-    // Set all "*Wallet" buttons
-    doms.domGenerateWallet.style.display = strDisplayCSS;
-    doms.domImportWallet.style.display = strDisplayCSS;
-    doms.domGenVanityWallet.style.display = strDisplayCSS;
-    doms.domAccessWallet.style.display = strDisplayCSS;
-    doms.domGenHardwareWallet.style.display = strDisplayCSS;
 }
 
 export async function govVote(hash, voteCode) {
@@ -1202,8 +907,6 @@ export async function importMasternode() {
 
 export async function accessOrImportWallet() {
     // Hide and Reset the Vanity address input
-    doms.domPrefix.value = '';
-    doms.domPrefix.style.display = 'none';
 
     // Show Import button, hide access button
     doms.domImportWallet.style.display = 'block';
@@ -1223,136 +926,14 @@ export async function accessOrImportWallet() {
         doms.domPrivKey.focus();
     }
 }
-/**
- * An event function triggered apon private key UI input changes
- *
- * Useful for adjusting the input types or displaying password prompts depending on the import scheme
- */
-export async function guiUpdateImportInput() {
-    if (await hasEncryptedWallet()) return;
-    // Check whether the string is Base64 (would likely be an MPW-encrypted import)
-    // and it doesn't have any spaces (would be a mnemonic seed)
-    const fContainsSpaces = doms.domPrivKey.value.trim().includes(' ');
 
-    // If this could require a Seed Passphrase (BIP39 Passphrase) and Advanced Mode is enabled
-    // ...or if this is an Encrypted Import (Encrypted Base64 MPW key)
-    const fBIP39Passphrase = fContainsSpaces && fAdvancedMode;
-    doms.domPrivKeyPassword.hidden =
-        (doms.domPrivKey.value.length < 128 ||
-            !isBase64(doms.domPrivKey.value)) &&
-        !fBIP39Passphrase;
-
-    doms.domPrivKeyPassword.placeholder = fContainsSpaces
-        ? translation.optionalPassphrase
-        : translation.password;
-
-    // If the "Import Password/Passphrase" is hidden, we'll also wipe it's input, in the
-    // ... edge-case that a passphrase was entered, then the import key had changed.
-    if (doms.domPrivKeyPassword.hidden) doms.domPrivKeyPassword.value = '';
-
-    // Uncloak the private input IF spaces are detected, to make Seed Phrases easier to input and verify
-    doms.domPrivKey.setAttribute('type', fContainsSpaces ? 'text' : 'password');
-}
-
-/**
- * Imports a wallet using the GUI input, handling decryption via UI
- */
-export async function guiImportWallet() {
-    // Important: These fields will be wiped by importWallet();
-    const strPrivKey = doms.domPrivKey.value;
-    const strPassword = doms.domPrivKeyPassword.value;
-    const fEncrypted = strPrivKey.length >= 128 && isBase64(strPrivKey);
-
-    // If we are in testnet: prompt an import
-    if (cChainParams.current.isTestnet) return importWallet();
-
-    // If we don't have a DB wallet and the input is plain: prompt an import
-    if (!(await hasEncryptedWallet()) && !fEncrypted) return importWallet();
-
-    // If we don't have a DB wallet and the input is ciphered:
-    if (!(await hasEncryptedWallet()) && fEncrypted) {
-        const strDecWIF = await decrypt(strPrivKey, strPassword);
-        if (!strDecWIF || strDecWIF === 'decryption failed!') {
-            return createAlert('warning', ALERTS.FAILED_TO_IMPORT, 6000);
-        } else {
-            await importWallet({
-                newWif: strDecWIF,
-                // Save the public key to disk for future View Only mode post-decryption
-                fSavePublicKey: true,
-            });
-
-            if (wallet.isLoaded()) {
-                // Prepare a new Account to add
-                const cAccount = new Account({
-                    publicKey: await wallet.getKeyToExport(),
-                    encWif: strPrivKey,
-                });
-
-                // Add the new Account to the DB
-                const database = await Database.getInstance();
-                database.addAccount(cAccount);
-            }
-
-            // Destroy residue import data
-            doms.domPrivKey.value = '';
-            doms.domPrivKeyPassword.value = '';
-            return;
-        }
-    }
-    // Prompt for decryption of the existing wallet
-    const fHasWallet = await decryptWallet(doms.domPrivKey.value);
-
-    // If the wallet was successfully loaded, hide all options and load the dash!
-    if (fHasWallet) setDisplayForAllWalletOptions('none');
-}
-
-export async function guiEncryptWallet() {
-    // Fetch our inputs, ensure they're of decent entropy + match eachother
-    const strPass = doms.domEncryptPasswordFirst.value,
-        strPassRetype = doms.domEncryptPasswordSecond.value;
-    if (strPass.length < MIN_PASS_LENGTH)
-        return createAlert(
-            'warning',
-            tr(ALERTS.PASSWORD_TOO_SMALL, [
-                { MIN_PASS_LENGTH: MIN_PASS_LENGTH },
-            ]),
-            4000
-        );
-    if (strPass !== strPassRetype)
-        return createAlert('warning', ALERTS.PASSWORD_DOESNT_MATCH, 2250);
-
-    // If this wallet is already encrypted, then we'll check for the current password and ensure it decrypts properly too
-    if (await hasEncryptedWallet()) {
-        // Grab the pass, and wipe the dialog immediately
-        const strCurrentPass = doms.domEncryptPasswordCurrent.value;
-        doms.domEncryptPasswordCurrent.value = '';
-
-        // If the decryption fails: we don't allow changing the password
-        if (!(await decryptWallet(strCurrentPass))) return;
-    }
-
-    // Encrypt the wallet using the new password
-    await wallet.encryptWallet(strPass);
-    createAlert('success', ALERTS.NEW_PASSWORD_SUCCESS, 5500);
-
-    // Hide and reset the encryption modal
-    $('#encryptWalletModal').modal('hide');
-    doms.domEncryptPasswordFirst.value = '';
-    doms.domEncryptPasswordSecond.value = '';
-
-    // Display the 'Unlock/Lock Wallet' buttons accordingly based on state
-    doms.domWipeWallet.hidden = wallet.isViewOnly();
-    doms.domRestoreWallet.hidden = !wallet.isViewOnly();
-
-    // Update the encryption UI (changes to "Change Password" now)
-    await updateEncryptionGUI(true);
-}
 /** Update the log out button to match the current wallet state */
 export function updateLogOutButton() {
     doms.domLogOutContainer.style.display = wallet.isLoaded()
         ? 'block'
         : 'none';
 }
+
 /** Update the "Encrypt Wallet" / "Change Password" dialog to match the current wallet state */
 export async function updateEncryptionGUI(fEncrypted = null) {
     // If no param is provided, check if a wallet exists in the database
@@ -1362,155 +943,10 @@ export async function updateEncryptionGUI(fEncrypted = null) {
     // If the wallet is encrypted, we display a "Current Password" input in the Encryption dialog, otherwise, only accept New Passwords
     doms.domEncryptPasswordCurrent.style.display = fEncrypted ? '' : 'none';
     // And we adjust the displays to accomodate the mode as well
-    doms.domEncryptWalletLabel.innerText = fEncrypted
+    document.getElementById('changePasswordBtn').innerText = fEncrypted
         ? translation.changePassword
         : translation.encryptWallet;
     doms.domChangePasswordContainer.style.display = fEncrypted ? '' : 'none';
-}
-
-export async function toggleExportUI() {
-    if (!exportHidden) {
-        if (await hasEncryptedWallet()) {
-            const { encWif } = await (
-                await Database.getInstance()
-            ).getAccount();
-            doms.domExportPrivateKey.innerHTML = encWif;
-            exportHidden = true;
-        } else {
-            if (wallet.isViewOnly()) {
-                exportHidden = false;
-            } else {
-                doms.domExportPrivateKey.innerHTML =
-                    wallet.getMasterKey().keyToBackup;
-                exportHidden = true;
-            }
-        }
-    } else {
-        doms.domExportPrivateKey.innerHTML = '';
-        exportHidden = false;
-    }
-}
-
-export function checkVanity() {
-    var e = event || window.event; // get event object
-    var key = e.keyCode || e.which; // get key cross-browser
-    var char = String.fromCharCode(key).trim(); // convert key to char
-    if (char.length == 0) return;
-
-    // Ensure the input is base58 compatible
-    if (!MAP_B58.toLowerCase().includes(char.toLowerCase())) {
-        if (e.preventDefault) e.preventDefault();
-        e.returnValue = false;
-        return createAlert(
-            'warning',
-            tr(ALERTS.UNSUPPORTED_CHARACTER, [{ char: char }]),
-            3500
-        );
-    }
-}
-
-let isVanityGenerating = false;
-const arrWorkers = [];
-let vanUiUpdater;
-
-function stopSearch() {
-    isVanityGenerating = false;
-    for (let thread of arrWorkers) {
-        thread.terminate();
-    }
-    while (arrWorkers.length) arrWorkers.pop();
-    doms.domPrefix.disabled = false;
-    doms.domVanityUiButtonTxt.innerText = translation.dCardTwoButton;
-    clearInterval(vanUiUpdater);
-}
-
-export async function generateVanityWallet() {
-    if (isVanityGenerating) return stopSearch();
-    if (typeof Worker === 'undefined')
-        return createAlert('error', ALERTS.UNSUPPORTED_WEBWORKERS, 7500);
-    // Generate a vanity address with the given prefix
-    if (
-        doms.domPrefix.value.length === 0 ||
-        doms.domPrefix.style.display === 'none'
-    ) {
-        // No prefix, display the intro!
-        doms.domPrefix.style.display = 'block';
-        setTimeout(() => {
-            doms.domPrefix.style.opacity = '1';
-        }, 100);
-        doms.domPrefix.focus();
-    } else {
-        // Remove spaces from prefix
-        doms.domPrefix.value = doms.domPrefix.value.replace(/ /g, '');
-
-        // Cache a lowercase equivilent for lower-entropy comparisons (a case-insensitive search is ALOT faster!) and strip accidental spaces
-        const nInsensitivePrefix = doms.domPrefix.value.toLowerCase();
-        const nPrefixLen = nInsensitivePrefix.length;
-
-        // Ensure the input is base58 compatible
-        for (const char of doms.domPrefix.value) {
-            if (!MAP_B58.toLowerCase().includes(char.toLowerCase()))
-                return createAlert(
-                    'warning',
-                    tr(ALERTS.UNSUPPORTED_CHARACTER, [{ char: char }]),
-                    3500
-                );
-            // We also don't want users to be mining addresses for years... so cap the letters to four until the generator is more optimized
-            if (doms.domPrefix.value.length > 5)
-                return createAlert(
-                    'warning',
-                    tr(ALERTS.UNSUPPORTED_CHARACTER, [{ char: char }]),
-                    3500
-                );
-        }
-        isVanityGenerating = true;
-        doms.domPrefix.disabled = true;
-        let attempts = 0;
-
-        // Setup workers
-        const nThreads = Math.max(
-            Math.floor(window.navigator.hardwareConcurrency * 0.75),
-            1
-        );
-        console.log('Spawning ' + nThreads + ' vanity search threads!');
-        while (arrWorkers.length < nThreads) {
-            arrWorkers.push(
-                new Worker(new URL('./vanitygen_worker.js', import.meta.url))
-            );
-            const checkResult = (data) => {
-                attempts++;
-                if (
-                    data.pub.substr(1, nPrefixLen).toLowerCase() ==
-                    nInsensitivePrefix
-                ) {
-                    importWallet({
-                        newWif: data.priv,
-                        fRaw: true,
-                    });
-                    stopSearch();
-                    return console.log(
-                        'VANITY: Found an address after ' +
-                            attempts +
-                            ' attempts!'
-                    );
-                }
-            };
-
-            arrWorkers[arrWorkers.length - 1].onmessage = (event) =>
-                checkResult(event.data);
-            arrWorkers[arrWorkers.length - 1].postMessage(
-                cChainParams.current.PUBKEY_ADDRESS
-            );
-        }
-
-        // GUI Updater
-        doms.domVanityUiButtonTxt.innerText =
-            'Stop (Searched ' + attempts.toLocaleString('en-GB') + ' keys)';
-        vanUiUpdater = setInterval(() => {
-            doms.domVanityUiButtonTxt.innerText =
-                'Stop (Searched ' + attempts.toLocaleString('en-GB') + ' keys)';
-        }, 200);
-    }
 }
 
 /**
@@ -1646,39 +1082,10 @@ export async function wipePrivateData() {
  * @returns {Promise<boolean>} - If the unlock was successful or rejected
  */
 export async function restoreWallet(strReason = '') {
-    if (wallet.isHardwareWallet()) return true;
-    // Build up the UI elements based upon conditions for the unlock prompt
-    let strHTML = '';
-
-    // If there's a reason given; display it as a sub-text
-    strHTML += `<p style="opacity: 0.75">${strReason}</p>`;
-
-    // Prompt the user
-    if (
-        await confirmPopup({
-            title: translation.walletUnlock,
-            html: `${strHTML}<input type="password" id="restoreWalletPassword" placeholder="${translation.walletPassword}" style="text-align: center;">`,
-        })
-    ) {
-        // Fetch the password from the prompt, and immediately destroy the prompt input
-        const domPassword = document.getElementById('restoreWalletPassword');
-        const strPassword = domPassword.value;
-        domPassword.value = '';
-
-        // Attempt to unlock the wallet with the provided password
-        if (await decryptWallet(strPassword)) {
-            doms.domRestoreWallet.hidden = true;
-            doms.domWipeWallet.hidden = false;
-            // Wallet is unlocked!
-            return true;
-        } else {
-            // Password is invalid
-            return false;
-        }
-    } else {
-        // User rejected the unlock
-        return false;
-    }
+    // TODO: This needs to be vueified quite a bit
+    // This will be done after #225 since it's already
+    // way bigger than I would have liked
+    return await dashboard.restoreWallet(strReason);
 }
 
 /** A lock to prevent rendering the Governance Dashboard multiple times */

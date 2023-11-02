@@ -22,6 +22,10 @@ export async function getHardwareWalletKeys(path, xpub = false, verify = true) {
     try {
         // Check if we haven't setup a connection yet OR the previous connection disconnected
         if (!cHardwareWallet || transport._disconnectEmitted) {
+            const AppBtc = (await import('@ledgerhq/hw-app-btc')).default;
+            const TransportWebUSB = (
+                await import('@ledgerhq/hw-transport-webusb')
+            ).default;
             transport = await TransportWebUSB.create();
             cHardwareWallet = new AppBtc({ transport, currency: 'PIVX' });
         }

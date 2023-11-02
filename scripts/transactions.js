@@ -33,7 +33,7 @@ import {
 import { bytesToHex, hexToBytes, dSHA256 } from './utils.js';
 import { Database } from './database.js';
 
-function validateAmount(nAmountSats, nMinSats = 10000) {
+export function validateAmount(nAmountSats, nMinSats = 10000) {
     // Validate the amount is a valid number, and meets the minimum (if any)
     if (nAmountSats < nMinSats || isNaN(nAmountSats)) {
         createAlert(

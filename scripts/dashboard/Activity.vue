@@ -1,13 +1,14 @@
 <script setup>
-import { ref, computed, watch } from 'vue';
-import { getNetwork, Network } from './network.js';
-import { wallet } from './wallet.js';
-import { mempool } from './global.js';
-import { cChainParams } from './chain_params.js';
-import { translation } from './i18n.js';
-import { Database } from './database.js';
-import { HistoricalTx, HistoricalTxType } from './mempool';
-import { getNameOrAddress } from './contacts-book.js';
+import { ref, computed, watch, onMounted } from 'vue';
+import { getNetwork } from '../network.js';
+import { wallet } from '../wallet.js';
+import { mempool } from '../global.js';
+import { cChainParams } from '../chain_params.js';
+import { translation } from '../i18n.js';
+import { Database } from '../database.js';
+import { HistoricalTx, HistoricalTxType } from '../mempool';
+import { getNameOrAddress } from '../contacts-book.js';
+import { getEventEmitter } from '../event_bus';
 
 const props = defineProps({
     title: String,
@@ -238,108 +239,118 @@ function getTxCount() {
     return txCount;
 }
 
+getEventEmitter().on('sync-status-update', (_a, _b, done) => done && update());
+onMounted(() => update());
+
 defineExpose({ update, reset, getTxCount });
 </script>
 
 <template>
-    <center>
-        <span class="dcWallet-activityLbl"
-            ><span :data-i18n="rewards ? 'rewardHistory' : 'activity'">{{
-                title
-            }}</span>
-            <span v-if="rewards"> ({{ rewardsText }} {{ ticker }}) </span>
-        </span>
-    </center>
-    <div class="dcWallet-activity">
-        <div class="scrollTable">
-            <div>
-                <table
-                    class="table table-responsive table-sm stakingTx table-mobile-scroll"
-                >
-                    <thead>
-                        <tr>
-                            <th scope="col" class="tx1">
-                                {{ translation.time }}
-                            </th>
-                            <th scope="col" class="tx2">
-                                {{
-                                    rewards
-                                        ? translation.ID
-                                        : translation.description
-                                }}
-                            </th>
-                            <th scope="col" class="tx3">
-                                {{ translation.amount }}
-                            </th>
-                            <th scope="col" class="tx4 text-right"></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="tx in txs">
-                            <td
-                                class="align-middle pr-10px"
-                                style="font-size: 12px"
-                            >
-                                <i style="opacity: 0.75">{{ tx.date }}</i>
-                            </td>
-                            <td class="align-middle pr-10px txcode">
-                                <a
-                                    :href="explorerUrl + '/tx/' + tx.id"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
+    <div>
+        <center>
+            <span class="dcWallet-activityLbl"
+                ><span :data-i18n="rewards ? 'rewardHistory' : 'activity'">{{
+                    title
+                }}</span>
+                <span v-if="rewards"> ({{ rewardsText }} {{ ticker }}) </span>
+            </span>
+        </center>
+        <div class="dcWallet-activity">
+            <div class="scrollTable">
+                <div>
+                    <table
+                        class="table table-responsive table-sm stakingTx table-mobile-scroll"
+                    >
+                        <thead>
+                            <tr>
+                                <th scope="col" class="tx1">
+                                    {{ translation.time }}
+                                </th>
+                                <th scope="col" class="tx2">
+                                    {{
+                                        rewards
+                                            ? translation.ID
+                                            : translation.description
+                                    }}
+                                </th>
+                                <th scope="col" class="tx3">
+                                    {{ translation.amount }}
+                                </th>
+                                <th scope="col" class="tx4 text-right"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="tx in txs">
+                                <td
+                                    class="align-middle pr-10px"
+                                    style="font-size: 12px"
                                 >
-                                    <code
-                                        class="wallet-code text-center active ptr"
-                                        style="padding: 4px 9px"
-                                        >{{ tx.content }}</code
+                                    <i style="opacity: 0.75">{{ tx.date }}</i>
+                                </td>
+                                <td class="align-middle pr-10px txcode">
+                                    <a
+                                        :href="explorerUrl + '/tx/' + tx.id"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
                                     >
-                                </a>
-                            </td>
-                            <td class="align-middle pr-10px">
-                                <b style="font-family: monospace"
-                                    ><i
-                                        class="fa-solid"
-                                        style="padding-right: 3px"
-                                        :class="[tx.icon]"
-                                        :style="{ color: tx.colour }"
-                                    ></i>
-                                    {{ tx.formattedAmt }} {{ ticker }}</b
-                                >
-                            </td>
-                            <td class="text-right pr-10px align-middle">
-                                <span
-                                    class="badge mb-0"
-                                    :class="{
-                                        'badge-purple': tx.confirmed,
-                                        'bg-danger': !tx.confirmed,
-                                    }"
-                                >
-                                    <i
-                                        v-if="tx.confirmed"
-                                        class="fas fa-check"
-                                    ></i>
-                                    <i v-else class="fas fa-hourglass-end"></i>
-                                </span>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                                        <code
+                                            class="wallet-code text-center active ptr"
+                                            style="padding: 4px 9px"
+                                            >{{ tx.content }}</code
+                                        >
+                                    </a>
+                                </td>
+                                <td class="align-middle pr-10px">
+                                    <b style="font-family: monospace"
+                                        ><i
+                                            class="fa-solid"
+                                            style="padding-right: 3px"
+                                            :class="[tx.icon]"
+                                            :style="{ color: tx.colour }"
+                                        ></i>
+                                        {{ tx.formattedAmt }} {{ ticker }}</b
+                                    >
+                                </td>
+                                <td class="text-right pr-10px align-middle">
+                                    <span
+                                        class="badge mb-0"
+                                        :class="{
+                                            'badge-purple': tx.confirmed,
+                                            'bg-danger': !tx.confirmed,
+                                        }"
+                                    >
+                                        <i
+                                            v-if="tx.confirmed"
+                                            class="fas fa-check"
+                                        ></i>
+                                        <i
+                                            v-else
+                                            class="fas fa-hourglass-end"
+                                        ></i>
+                                    </span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <center>
+                    <button
+                        v-if="!isHistorySynced"
+                        class="pivx-button-medium"
+                        @click="update(10)"
+                    >
+                        <span class="buttoni-icon"
+                            ><i
+                                class="fas fa-sync fa-tiny-margin"
+                                :class="{ 'fa-spin': updating }"
+                            ></i
+                        ></span>
+                        <span class="buttoni-text">{{
+                            translation.loadMore
+                        }}</span>
+                    </button>
+                </center>
             </div>
-            <center>
-                <button
-                    v-if="!isHistorySynced"
-                    class="pivx-button-medium"
-                    @click="update(10)"
-                >
-                    <span class="buttoni-icon"
-                        ><i
-                            class="fas fa-sync fa-tiny-margin"
-                            :class="{ 'fa-spin': updating }"
-                        ></i
-                    ></span>
-                    <span class="buttoni-text">{{ translation.loadMore }}</span>
-                </button>
-            </center>
         </div>
     </div>
 </template>

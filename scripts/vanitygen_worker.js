@@ -1,8 +1,15 @@
+import { cChainParams } from './chain_params.js';
 import { deriveAddress } from './encoding.js';
-import { getSafeRand } from './misc.js';
+import { getSafeRand } from './utils.js';
 
-onmessage = function (_evt) {
+/**
+ * @param {MessageEvent<'main'|'testnet'>} event
+ */
+onmessage = (event) => {
     while (true) {
+        // Ensure we're using the correct network
+        cChainParams.current =
+            cChainParams[event.data === 'mainnet' ? 'main' : 'testnet'];
         const cKeypair = {};
         cKeypair.priv = getSafeRand();
 

@@ -612,7 +612,7 @@ export async function guiAddContactPrompt(
         }
     } else {
         // Ensure we're not adding (one of) our own address(es)
-        if (await wallet.isOwnAddress(strPubkey)) {
+        if (wallet.isOwnAddress(strPubkey)) {
             createAlert('warning', ALERTS.CONTACTS_CANNOT_ADD_YOURSELF, 3500);
             return false;
         }
@@ -890,17 +890,13 @@ export async function guiSetAccountName(strDOM) {
 }
 
 /**
- * Checks the input from the recipient field
- *
- * This function should be connected to an `input` as it's `onchange` function
- * @param {InputEvent} event - The change event from the input
+ * Get the address color based on the validity of an address/contact
+ * @param {string} address
  */
-export async function guiCheckRecipientInput(event) {
-    const strInput = event.target.value.trim();
-
+export async function getAddressColor(address) {
     // If the value is empty, we don't do any checks and simply reset the colourcoding
-    if (!strInput) {
-        return (event.target.style.color = '');
+    if (!address) {
+        return '';
     }
 
     // Fetch the current Account
@@ -909,22 +905,33 @@ export async function guiCheckRecipientInput(event) {
 
     // Check if this is a Contact
     const cContact = cAccount?.getContactBy({
-        name: strInput,
-        pubkey: strInput,
+        name: address,
+        pubkey: address,
     });
     if (cContact) {
         // Yep, nice!
-        return (event.target.style.color = 'green');
+        return 'green';
     }
 
     // Not a contact: dig deeper, is this a Standard address or XPub?
-    if (isStandardAddress(strInput) || isXPub(strInput)) {
+    if (isStandardAddress(address) || isXPub(address)) {
         // Yep!
-        return (event.target.style.color = 'green');
+        return 'green';
     } else {
         // We give up: this appears to be nonsense
-        return (event.target.style.color = '#b20000');
+        return '#b20000';
     }
+}
+
+/**
+ * Checks the input from the recipient field
+ *
+ * This function should be connected to an `input` as it's `onchange` function
+ * @param {InputEvent} event - The change event from the input
+ */
+export async function guiCheckRecipientInput(event) {
+    const strInput = event.target.value.trim();
+    event.target.style.color = await getAddressColor(strInput);
 }
 
 /**

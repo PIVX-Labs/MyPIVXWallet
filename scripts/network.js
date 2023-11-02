@@ -10,7 +10,7 @@ import {
     debug,
 } from './settings.js';
 import { ALERTS, translation } from './i18n.js';
-import { activityDashboard, mempool, stakingDashboard } from './global.js';
+import { mempool, stakingDashboard } from './global.js';
 
 /**
  * @typedef {Object} XPUBAddress
@@ -171,8 +171,8 @@ export class ExplorerNetwork extends Network {
                 if (this.fullSynced) {
                     await this.getLatestTxs(this.lastBlockSynced);
                     this.lastBlockSynced = this.blocks;
-                    activityDashboard.update(0);
                     stakingDashboard.update(0);
+                    getEventEmitter().emit('new-tx');
                 }
             }
         } catch (e) {
@@ -256,6 +256,8 @@ export class ExplorerNetwork extends Network {
             }
             await mempool.saveOnDisk();
         }
+
+        mempool.setBalance();
         if (debug) {
             console.log(
                 'Fetched latest txs: total number of pages was ',
@@ -264,11 +266,6 @@ export class ExplorerNetwork extends Network {
                 this.fullSynced
             );
             console.timeEnd('getLatestTxsTimer');
-        }
-        mempool.setBalance();
-        if (!this.fullSynced) {
-            getEventEmitter().emit('sync-status-update', 0, 0, true);
-            createAlert('success', translation.syncStatusFinished, 12500);
         }
     }
 
@@ -282,6 +279,13 @@ export class ExplorerNetwork extends Network {
                 ? 0
                 : nBlockHeights.sort((a, b) => a - b).at(-1);
         this.fullSynced = true;
+        createAlert('success', translation.syncStatusFinished, 12500);
+        getEventEmitter().emit('sync-status-update', 0, 0, true);
+    }
+    reset() {
+        this.fullSynced = false;
+        this.blocks = 0;
+        this.lastBlockSynced = 0;
     }
 
     /**

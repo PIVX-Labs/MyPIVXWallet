@@ -1,48 +1,20 @@
-import { parseWIF } from './encoding.js';
-import { generateMnemonic, mnemonicToSeed, validateMnemonic } from 'bip39';
-import {
-    doms,
-    beforeUnloadListener,
-    activityDashboard,
-    stakingDashboard,
-} from './global.js';
+import { validateMnemonic } from 'bip39';
+import { beforeUnloadListener } from './global.js';
 import { getNetwork } from './network.js';
 import { MAX_ACCOUNT_GAP } from './chain_params.js';
-import {
-    Transaction,
-    HistoricalTx,
-    HistoricalTxType,
-    CTxOut,
-} from './mempool.js';
-import {
-    LegacyMasterKey,
-    HdMasterKey,
-    HardwareWalletMasterKey,
-} from './masterkey.js';
-import { generateOrEncodePrivkey } from './encoding.js';
-import {
-    confirmPopup,
-    createAlert,
-    isXPub,
-    isStandardAddress,
-} from './misc.js';
+import { Transaction, HistoricalTx, HistoricalTxType } from './mempool.js';
+import { confirmPopup, createAlert } from './misc.js';
 import { cChainParams } from './chain_params.js';
 import { COIN } from './chain_params.js';
-import {
-    refreshChainData,
-    setDisplayForAllWalletOptions,
-    getStakingBalance,
-    mempool,
-} from './global.js';
+import { mempool } from './global.js';
 import { ALERTS, tr, translation } from './i18n.js';
-import { encrypt, decrypt } from './aes-gcm.js';
-import * as jdenticon from 'jdenticon';
+import { encrypt } from './aes-gcm.js';
 import { Database } from './database.js';
 import { guiRenderCurrentReceiveModal } from './contacts-book.js';
 import { Account } from './accounts.js';
-import { debug, fAdvancedMode } from './settings.js';
+import { fAdvancedMode } from './settings.js';
 import { bytesToHex, hexToBytes } from './utils.js';
-import { strHardwareName, getHardwareWalletKeys } from './ledger.js';
+import { strHardwareName } from './ledger.js';
 import { COutpoint, UTXO_WALLET_STATE } from './mempool.js';
 import {
     isP2CS,
@@ -52,8 +24,6 @@ import {
     P2PK_START_INDEX,
     OWNER_START_INDEX,
 } from './script.js';
-import { getEventEmitter } from './event_bus.js';
-export let fWalletLoaded = false;
 
 /**
  * Class Wallet, at the moment it is just a "realization" of Masterkey with a given nAccount
@@ -133,6 +103,7 @@ export class Wallet {
      */
     unlockCoin(opt) {
         this.#lockedCoins.delete(opt.toUnique());
+        mempool.setBalance();
     }
 
     getMasterKey() {
@@ -201,8 +172,14 @@ export class Wallet {
      * Set or replace the active Master Key with a new Master Key
      * @param {import('./masterkey.js').MasterKey} mk - The new Master Key to set active
      */
-    async setMasterKey(mk) {
+    setMasterKey(mk, nAccount = 0) {
+        if (
+            mk?.getKeyToExport(nAccount) !==
+            this.#masterKey?.getKeyToExport(this.#nAccount)
+        )
+            this.reset();
         this.#masterKey = mk;
+        this.#nAccount = nAccount;
         // If this is the global wallet update the network master key
         if (this.#isMainWallet) {
             getNetwork().setWallet(this);
@@ -217,6 +194,13 @@ export class Wallet {
         this.#highestUsedIndex = 0;
         this.#loadedIndexes = 0;
         this.#ownAddresses = new Map();
+        // TODO: This needs to be refactored
+        // The wallet could own its own mempool and network?
+        // Instead of having this isMainWallet flag
+        if (this.#isMainWallet) {
+            mempool.reset();
+            getNetwork().reset();
+        }
     }
 
     /**
@@ -271,9 +255,6 @@ export class Wallet {
         let strEncWIF = await encrypt(this.#masterKey.keyToBackup, strPassword);
         if (!strEncWIF) return false;
 
-        // Hide the encryption warning
-        doms.domGenKeyWarning.style.display = 'none';
-
         // Prepare to Add/Update an account in the DB
         const cAccount = new Account({
             publicKey: this.getKeyToExport(),
@@ -294,6 +275,7 @@ export class Wallet {
         removeEventListener('beforeunload', beforeUnloadListener, {
             capture: true,
         });
+        return true;
     }
 
     /**
@@ -383,6 +365,15 @@ export class Wallet {
 
     getKeyToExport() {
         return this.#masterKey?.getKeyToExport(this.#nAccount);
+    }
+
+    async getKeyToBackup() {
+        if (await hasEncryptedWallet()) {
+            const account = await (await Database.getInstance()).getAccount();
+            return account.encWif;
+        } else {
+            return this.getMasterKey().keyToBackup;
+        }
     }
 
     //Get path from a script
@@ -602,268 +593,6 @@ export class Wallet {
 export const wallet = new Wallet(0, true); // For now we are using only the 0-th account, (TODO: update once account system is done)
 
 /**
- * Import a wallet (with it's private, public or encrypted data)
- * @param {object} options
- * @param {string | Array<number>} options.newWif - The import data (if omitted, the UI input is accessed)
- * @param {boolean} options.fRaw - Whether the import data is raw bytes or encoded (WIF, xpriv, seed)
- * @param {boolean} options.isHardwareWallet - Whether the import is from a Hardware wallet or not
- * @param {boolean} options.fSavePublicKey - Whether to save the derived public key to disk (for View Only mode)
- * @param {boolean} options.fStartup - Whether the import is at Startup or at Runtime
- * @returns {Promise<void>}
- */
-export async function importWallet({
-    newWif = false,
-    fRaw = false,
-    isHardwareWallet = false,
-    fSavePublicKey = false,
-    fStartup = false,
-} = {}) {
-    // TODO: remove `walletConfirm`, it is useless as Accounts cannot be overriden, and multi-accounts will come soon anyway
-    // ... just didn't want to add a huge whitespace change from removing the `if (walletConfirm) {` line
-    const walletConfirm = true;
-    if (walletConfirm) {
-        if (isHardwareWallet) {
-            // Firefox does NOT support WebUSB, thus cannot work with Hardware wallets out-of-the-box
-            if (navigator.userAgent.includes('Firefox')) {
-                return createAlert(
-                    'warning',
-                    ALERTS.WALLET_FIREFOX_UNSUPPORTED,
-                    7500
-                );
-            }
-            // Derive our hardware address and import!
-            try {
-                const key = await HardwareWalletMasterKey.create(0);
-                await wallet.setMasterKey(key);
-            } catch (e) {
-                // Display a properly translated error if it's a ledger error
-                if (
-                    e instanceof Error &&
-                    e.message === 'Failed to get hardware wallet keys.'
-                ) {
-                    // console.error so we get a backtrace if needed
-                    console.error(e);
-                    return createAlert(
-                        'warning',
-                        translation.FAILED_TO_IMPORT_HARDWARE,
-                        5000
-                    );
-                } else {
-                    throw e;
-                }
-            }
-
-            createAlert(
-                'info',
-                tr(ALERTS.WALLET_HARDWARE_WALLET, [
-                    { hardwareWallet: strHardwareName },
-                ]),
-                12500
-            );
-        } else {
-            // If raw bytes: purely encode the given bytes rather than generating our own bytes
-            if (fRaw) {
-                newWif = generateOrEncodePrivkey(newWif).strWIF;
-
-                // A raw import likely means non-user owned key (i.e: created via VanityGen), thus, we assume safety first and add an exit blocking listener
-                addEventListener('beforeunload', beforeUnloadListener, {
-                    capture: true,
-                });
-            }
-
-            // Select WIF from internal source OR user input (could be: WIF, Mnemonic or xpriv)
-            const privateImportValue = newWif || doms.domPrivKey.value;
-            const passphrase = doms.domPrivKeyPassword.value;
-            doms.domPrivKey.value = '';
-            doms.domPrivKeyPassword.value = '';
-
-            // Clean and verify the Seed Phrase (if one exists)
-            const cPhraseValidator = await cleanAndVerifySeedPhrase(
-                privateImportValue,
-                true
-            );
-
-            // If Debugging is enabled, show what the validator returned
-            if (debug) {
-                const fnLog = cPhraseValidator.ok ? console.log : console.warn;
-                fnLog('Seed Import Validator: ' + cPhraseValidator.msg);
-            }
-
-            // If the Seed is OK, proceed
-            if (cPhraseValidator.ok) {
-                // Generate our HD MasterKey with the cleaned (Mnemonic) Seed Phrase
-                const seed = await mnemonicToSeed(
-                    cPhraseValidator.phrase,
-                    passphrase
-                );
-                await wallet.setMasterKey(new HdMasterKey({ seed }));
-            } else if (cPhraseValidator.phrase.includes(' ')) {
-                // The Phrase Validator failed, but the input contains at least one space; possibly a Seed Typo?
-                return createAlert('warning', cPhraseValidator.msg, 5000);
-            } else {
-                // The input definitely isn't a seed, so we'll try every other import method
-                try {
-                    // XPub import (HD view only)
-                    if (isXPub(privateImportValue)) {
-                        await wallet.setMasterKey(
-                            new HdMasterKey({
-                                xpub: privateImportValue,
-                            })
-                        );
-                        // XPrv import (HD full access)
-                    } else if (privateImportValue.startsWith('xprv')) {
-                        await wallet.setMasterKey(
-                            new HdMasterKey({
-                                xpriv: privateImportValue,
-                            })
-                        );
-                        // Pubkey import (non-HD view only)
-                    } else if (isStandardAddress(privateImportValue)) {
-                        await wallet.setMasterKey(
-                            new LegacyMasterKey({
-                                address: privateImportValue,
-                            })
-                        );
-                        // WIF import (non-HD full access)
-                    } else {
-                        // Attempt to import a raw WIF private key
-                        const pkBytes = parseWIF(privateImportValue);
-                        await wallet.setMasterKey(
-                            new LegacyMasterKey({ pkBytes })
-                        );
-                    }
-                } catch (e) {
-                    return createAlert(
-                        'warning',
-                        ALERTS.FAILED_TO_IMPORT + '<br>' + e.message,
-                        6000
-                    );
-                }
-            }
-        }
-
-        // Lock the masternode, if any
-        const masternode = await (await Database.getInstance()).getMasternode();
-        if (masternode) {
-            wallet.lockCoin(
-                new COutpoint({
-                    txid: masternode.collateralTxId,
-                    n: masternode.outidx,
-                })
-            );
-        }
-        // Reaching here: the deserialisation was a full cryptographic success, so a wallet is now imported!
-        fWalletLoaded = true;
-        doms.domLogOutContainer.style.display = 'block';
-        // Hide wipe wallet button if there is no private key
-        if (wallet.isViewOnly() || wallet.isHardwareWallet()) {
-            doms.domWipeWallet.hidden = true;
-            if (await hasEncryptedWallet()) {
-                doms.domRestoreWallet.hidden = false;
-            }
-        } else {
-            // Explicitly ask users to encrypt their wallet
-            doms.domGettingStartedBtn.click();
-        }
-
-        // For non-HD wallets: hide the 'new address' button, since these are essentially single-address MPW wallets
-
-        // Update the loaded address in the Dashboard
-        getNewAddress({ updateGUI: true });
-
-        // Display Text
-        doms.domGuiWallet.style.display = 'block';
-        doms.domDashboard.click();
-
-        // Update identicon
-        doms.domIdenticon.dataset.jdenticonValue = wallet.getAddress();
-        jdenticon.update('#identicon');
-
-        // Hide the encryption prompt if the user is using
-        // a hardware wallet, or is view-only mode.
-        if (!(isHardwareWallet || wallet.isViewOnly())) {
-            if (
-                // If the wallet was internally imported (not UI pasted), like via vanity, display the encryption prompt
-                (((fRaw && newWif.length) || newWif) &&
-                    !(await hasEncryptedWallet())) ||
-                // If the wallet was pasted and is an unencrypted key, then display the encryption prompt
-                !(await hasEncryptedWallet())
-            ) {
-                doms.domGenKeyWarning.style.display = 'block';
-            } else if (await hasEncryptedWallet()) {
-                // If the wallet was pasted and is an encrypted import, display the lock wallet UI
-                doms.domWipeWallet.hidden = false;
-            }
-        } else {
-            // Hide the encryption UI
-            doms.domGenKeyWarning.style.display = 'none';
-        }
-
-        // Hide all wallet starter options
-        setDisplayForAllWalletOptions('none');
-        getEventEmitter().emit('wallet-import');
-
-        getEventEmitter().emit('sync-status', 'start');
-        if (!(await mempool.loadFromDisk()) && getNetwork().enabled) {
-            createAlert('info', translation.syncStatusStarting, 12500);
-            await getNetwork().walletFullSync();
-        }
-        await activityDashboard.update(50);
-        await stakingDashboard.update(50);
-        getEventEmitter().emit('sync-status', 'stop');
-
-        if (getNetwork().enabled && !fStartup) {
-            refreshChainData();
-        }
-    }
-}
-
-// Wallet Generation
-export async function generateWallet(noUI = false) {
-    // TODO: remove `walletConfirm`, it is useless as Accounts cannot be overriden, and multi-accounts will come soon anyway
-    // ... just didn't want to add a huge whitespace change from removing the `if (walletConfirm) {` line
-    const walletConfirm = true;
-    if (walletConfirm) {
-        const mnemonic = generateMnemonic();
-
-        const passphrase = !noUI
-            ? await informUserOfMnemonic(mnemonic)
-            : undefined;
-        const seed = await mnemonicToSeed(mnemonic, passphrase);
-
-        // Prompt the user to encrypt the seed
-        await wallet.setMasterKey(new HdMasterKey({ seed }));
-        fWalletLoaded = true;
-
-        doms.domGenKeyWarning.style.display = 'block';
-        // Add a listener to block page unloads until we are sure the user has saved their keys, safety first!
-        addEventListener('beforeunload', beforeUnloadListener, {
-            capture: true,
-        });
-
-        // Display the dashboard
-        doms.domGuiWallet.style.display = 'block';
-        setDisplayForAllWalletOptions('none');
-
-        // Update identicon
-        doms.domIdenticon.dataset.jdenticonValue = wallet.getAddress();
-        jdenticon.update('#identicon');
-
-        await getNewAddress({ updateGUI: true });
-
-        // Refresh the balance UI (why? because it'll also display any 'get some funds!' alerts)
-        getStakingBalance(true);
-
-        // Wallet has just been generated: set the network status as full synced
-        getNetwork().fullSynced = true;
-    }
-    doms.domLogOutContainer.style.display = 'block';
-    // Explicitly ask users to encrypt their wallet
-    doms.domGettingStartedBtn.click();
-    return wallet;
-}
-
-/**
  * Clean a Seed Phrase string and verify it's integrity
  *
  * This returns an object of the validation status and the cleaned Seed Phrase for safe low-level usage.
@@ -929,53 +658,6 @@ export async function cleanAndVerifySeedPhrase(
             msg: translation.importSeedErrorSize,
             phrase: strPhrase,
         };
-    }
-}
-
-/**
- * Display a Seed Phrase popup to the user and optionally wait for a Seed Passphrase
- * @param {string} mnemonic - The Seed Phrase to display to the user
- * @returns {Promise<string>} - The Mnemonic Passphrase (empty string if omitted by user)
- */
-function informUserOfMnemonic(mnemonic) {
-    return new Promise((res, _) => {
-        // Configure the modal
-        $('#mnemonicModal').modal({ keyboard: false });
-
-        // Render the Seed Phrase and configure the button
-        doms.domMnemonicModalContent.innerText = mnemonic;
-        doms.domMnemonicModalButton.onclick = () => {
-            res(doms.domMnemonicModalPassphrase.value);
-            $('#mnemonicModal').modal('hide');
-
-            // Wipe the mnemonic displays of sensitive data
-            doms.domMnemonicModalContent.innerText = '';
-            doms.domMnemonicModalPassphrase.value = '';
-        };
-
-        // Display the modal
-        $('#mnemonicModal').modal('show');
-    });
-}
-
-export async function decryptWallet(strPassword = '') {
-    // Check if there's any encrypted WIF available
-    const database = await Database.getInstance();
-    const { encWif: strEncWIF } = await database.getAccount();
-    if (!strEncWIF || strEncWIF.length < 1) return false;
-
-    // Prompt to decrypt it via password
-    const strDecWIF = await decrypt(strEncWIF, strPassword);
-    if (!strDecWIF || strDecWIF === 'decryption failed!') {
-        if (strDecWIF)
-            return createAlert('warning', ALERTS.INCORRECT_PASSWORD, 6000);
-    } else {
-        await importWallet({
-            newWif: strDecWIF,
-            // Save the public key to disk for View Only mode
-            fSavePublicKey: true,
-        });
-        return true;
     }
 }
 

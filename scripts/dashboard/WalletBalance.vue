@@ -1,26 +1,49 @@
 <script setup>
-import { cChainParams, COIN } from './chain_params.js';
-import { tr, translation } from './i18n';
-import { ref, computed } from 'vue';
-
-import { nDisplayDecimals } from './settings';
-import { beautifyNumber } from './misc';
-import { getEventEmitter } from './event_bus';
-import { cMarket, strCurrency } from './settings.js';
-import {
-    mempool,
-    optimiseCurrencyLocale,
-    refreshChainData,
-    openExplorer,
-    toggleExportUI,
-    toggleBottomMenu,
-} from './global';
-import { renderWalletBreakdown } from './charting';
+import { cChainParams, COIN } from '../chain_params.js';
+import { tr, translation } from '../i18n';
+import { ref, computed, toRefs, onMounted, watch } from 'vue';
+import { beautifyNumber } from '../misc';
+import { getEventEmitter } from '../event_bus';
+import * as jdenticon from 'jdenticon';
+import { optimiseCurrencyLocale, openExplorer } from '../global';
+import { renderWalletBreakdown } from '../charting.js';
 import {
     guiRenderCurrentReceiveModal,
     guiRenderContacts,
-} from './contacts-book';
-import { wallet, getNewAddress } from './wallet';
+} from '../contacts-book';
+import { getNewAddress } from '../wallet.js';
+
+const props = defineProps({
+    jdenticonValue: String,
+    balance: Number,
+    isHdWallet: Boolean,
+    isHardwareWallet: Boolean,
+    currency: String,
+    price: Number,
+    displayDecimals: Number,
+});
+const {
+    jdenticonValue,
+    balance,
+    isHdWallet,
+    isHardwareWallet,
+    currency,
+    price,
+    displayDecimals,
+} = toRefs(props);
+
+onMounted(() => {
+    jdenticon.configure();
+    watch(
+        jdenticonValue,
+        () => {
+            jdenticon.update('#identicon', jdenticonValue.value);
+        },
+        {
+            immediate: true,
+        }
+    );
+});
 
 const totalSyncPages = ref(0);
 const currentSyncPage = ref(0);
@@ -31,17 +54,15 @@ const syncStr = computed(() => {
         { total: totalSyncPages.value },
     ]);
 });
-const balance = ref(0);
-const price = ref(0.0);
-const displayDecimals = ref(0);
+
 const updating = ref(false);
-const currency = ref('USD');
 const balanceStr = computed(() => {
     const nCoins = balance.value / COIN;
     const strBal = nCoins.toFixed(displayDecimals.value);
     const nLen = strBal.length;
     return beautifyNumber(strBal, nLen >= 10 ? '17px' : '25px');
 });
+
 const balanceValue = computed(() => {
     const { nValue, cLocale } = optimiseCurrencyLocale(
         (balance.value / COIN) * price.value
@@ -52,27 +73,11 @@ const balanceValue = computed(() => {
 
 const ticker = computed(() => cChainParams.current.TICKER);
 
-async function reload() {
-    if (updating.value) return;
-
-    try {
-        updating.value = true;
-        await refreshChainData();
-    } finally {
-        updating.value = false;
-    }
-}
-
-getEventEmitter().on('balance-update', async () => {
-    balance.value = mempool.balance;
-    currency.value = strCurrency.toUpperCase();
-    price.value = await cMarket.getPrice(strCurrency);
-    displayDecimals.value = nDisplayDecimals;
-});
-
 getEventEmitter().on('sync-status', (value) => {
     updating.value = value === 'start';
 });
+
+const emit = defineEmits(['reload', 'send', 'exportPrivKeyOpen']);
 
 getEventEmitter().on(
     'sync-status-update',
@@ -83,13 +88,12 @@ getEventEmitter().on(
     }
 );
 
-const isHdWallet = ref(false);
-const isHardwareWallet = ref(false);
-
-getEventEmitter().on('wallet-import', () => {
-    isHdWallet.value = wallet.isHD();
-    isHardwareWallet.value = wallet.isHardwareWallet();
-});
+function reload() {
+    if (!updating) {
+        updating.value = true;
+        emit('reload');
+    }
+}
 </script>
 
 <template>
@@ -174,7 +178,7 @@ getEventEmitter().on('wallet-import', () => {
                                         data-backdrop="static"
                                         data-keyboard="false"
                                         v-if="!isHardwareWallet"
-                                        @click="toggleExportUI()"
+                                        @click="$emit('exportPrivKeyOpen')"
                                     >
                                         <i class="fas fa-key"></i>
                                         <span
@@ -228,7 +232,6 @@ getEventEmitter().on('wallet-import', () => {
                 width="65"
                 height="65"
                 style="width: 65px; height: 65px"
-                data-jdenticon-value=""
             ></canvas
             ><br />
             <span
@@ -255,15 +258,7 @@ getEventEmitter().on('wallet-import', () => {
 
             <div class="row lessTop p-0">
                 <div class="col-6 d-flex" style="justify-content: flex-start">
-                    <div
-                        class="dcWallet-btn-left"
-                        @click="
-                            toggleBottomMenu(
-                                'transferMenu',
-                                'transferAnimation'
-                            )
-                        "
-                    >
+                    <div class="dcWallet-btn-left" @click="$emit('send')">
                         {{ translation.send }}
                     </div>
                 </div>

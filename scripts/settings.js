@@ -1,18 +1,15 @@
 import {
     doms,
-    getBalance,
     getStakingBalance,
-    guiUpdateImportInput,
     mempool,
     refreshChainData,
-    setDisplayForAllWalletOptions,
     updateEncryptionGUI,
     updateLogOutButton,
     updateGovernanceTab,
-    activityDashboard,
     stakingDashboard,
+    dashboard,
 } from './global.js';
-import { wallet, hasEncryptedWallet, importWallet } from './wallet.js';
+import { wallet, hasEncryptedWallet } from './wallet.js';
 import { cChainParams } from './chain_params.js';
 import { setNetwork, ExplorerNetwork, getNetwork } from './network.js';
 import { confirmPopup, createAlert, isEmpty } from './misc.js';
@@ -293,7 +290,6 @@ export async function setExplorer(explorer, fSilent = false) {
     const network = new ExplorerNetwork(cExplorer.url, wallet);
     setNetwork(network);
 
-    activityDashboard.reset();
     stakingDashboard.reset();
 
     // Update the selector UI
@@ -485,35 +481,10 @@ export async function logOut() {
     const database = await Database.getInstance();
     await database.removeAllTxs();
     await database.removeAccount({ publicKey: null });
-    mempool.reset();
-    wallet.reset();
-    wallet.setMasterKey(null);
-    // Hide all Dashboard info, kick the user back to the "Getting Started" area
-    doms.domGenKeyWarning.style.display = 'none';
-    doms.domGuiWallet.style.display = 'none';
-    doms.domWipeWallet.hidden = true;
-    doms.domRestoreWallet.hidden = true;
 
-    // Set the "Wallet Options" display CSS to it's Default
-    setDisplayForAllWalletOptions('');
-
-    // Reset the "Vanity" and "Import" flows
-    doms.domPrefix.value = '';
-    doms.domPrefix.style.display = 'none';
-
-    // Show "Access Wallet" button
-    doms.domImportWallet.style.display = 'none';
-    doms.domPrivKey.style.opacity = '0';
-    doms.domAccessWallet.style.display = '';
-    doms.domAccessWalletBtn.style.display = '';
-
-    // Hide "Import Wallet" so the user has to follow the `accessOrImportWallet()` flow
-    doms.domImportWallet.style.display = 'none';
-    await updateEncryptionGUI(false);
+    getEventEmitter().emit('toggle-network');
     updateLogOutButton();
-    activityDashboard.reset();
-    stakingDashboard.reset();
-    await fillExplorerSelect();
+    await updateEncryptionGUI();
     createAlert('success', translation.accountDeleted, 3000);
 }
 
@@ -562,57 +533,15 @@ export async function toggleTestnet() {
         ? ''
         : 'none';
     doms.domGuiBalanceStakingTicker.innerText = cChainParams.current.TICKER;
-    doms.domPrefixNetwork.innerText =
-        cChainParams.current.PUBKEY_PREFIX.join(' or ');
-
     // Update testnet toggle in settings
     doms.domTestnetToggler.checked = cChainParams.current.isTestnet;
 
-    // Check if the new network has an Account
-    const cNewDB = await Database.getInstance();
-    const cNewAccount = await cNewDB.getAccount();
     await fillExplorerSelect();
     await fillNodeSelect();
-    mempool.reset();
-    wallet.reset();
-    activityDashboard.reset();
+
     stakingDashboard.reset();
-    if (cNewAccount?.publicKey) {
-        // Import the new wallet (overwriting the existing in-memory wallet)
-        await importWallet({ newWif: cNewAccount.publicKey });
-    } else {
-        // Nuke the Master Key
-        wallet.setMasterKey(null);
 
-        // Clear the transaction DB
-        const database = await Database.getInstance();
-        await database.removeAllTxs();
-
-        // Hide all Dashboard info, kick the user back to the "Getting Started" area
-        doms.domGenKeyWarning.style.display = 'none';
-        doms.domGuiWallet.style.display = 'none';
-        doms.domWipeWallet.hidden = true;
-        doms.domRestoreWallet.hidden = true;
-
-        // Set the "Wallet Options" display CSS to it's Default
-        setDisplayForAllWalletOptions('');
-
-        // Reset the "Vanity" and "Import" flows
-        doms.domPrefix.value = '';
-        doms.domPrefix.style.display = 'none';
-
-        // Show "Access Wallet" button
-        doms.domImportWallet.style.display = 'none';
-        doms.domPrivKey.style.opacity = '0';
-        doms.domAccessWallet.style.display = '';
-        doms.domAccessWalletBtn.style.display = '';
-
-        // Hide "Import Wallet" so the user has to follow the `accessOrImportWallet()` flow
-        doms.domImportWallet.style.display = 'none';
-    }
-
-    await updateEncryptionGUI(wallet.isLoaded());
-    updateLogOutButton();
+    getEventEmitter().emit('toggle-network');
     await updateGovernanceTab();
 }
 
@@ -713,14 +642,12 @@ export async function toggleAdvancedMode() {
  * Configure the app functionality and UI for the current mode
  */
 async function configureAdvancedMode() {
-    // Re-render the Import Input UI
-    await guiUpdateImportInput();
-
-    // Hide or Show the "Mnemonic Passphrase" in the Seed Creation modal, and reset it's input
-    doms.domMnemonicModalPassphrase.value = '';
-    doms.domMnemonicModalPassphrase.hidden = !fAdvancedMode;
-
+    getEventEmitter().emit('advanced-mode', fAdvancedMode);
     // Hide or Show the "Owner Address" configuration for Staking, and reset it's input
     doms.domStakeOwnerAddress.value = '';
     doms.domStakeOwnerAddressContainer.hidden = !fAdvancedMode;
+}
+
+export function changePassword() {
+    dashboard.changePassword();
 }

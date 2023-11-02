@@ -4,7 +4,7 @@ import { Database } from './database.js';
 import { getEventEmitter } from './event_bus.js';
 import Multimap from 'multimap';
 import { wallet } from './wallet.js';
-import { COIN, cChainParams } from './chain_params.js';
+import { cChainParams } from './chain_params.js';
 
 export class CTxOut {
     /**
@@ -204,10 +204,8 @@ export class Mempool {
         this.txmap = new Map();
         this.spent = new Multimap();
         this.orderedTxmap = new Multimap();
-        this.#balance = 0;
-        this.#coldBalance = 0;
-        getEventEmitter().emit('balance-update');
-        getStakingBalance(true);
+        this.setBalance();
+        this.#highestSavedHeight = 0;
     }
     get balance() {
         return this.#balance;
@@ -365,6 +363,7 @@ export class Mempool {
         }
         this.addToOrderedTxMap(tx);
     }
+
     setBalance() {
         this.#balance = this.getBalance(UTXO_WALLET_STATE.SPENDABLE);
         this.#coldBalance = this.getBalance(UTXO_WALLET_STATE.SPENDABLE_COLD);
@@ -419,6 +418,7 @@ export class Mempool {
         const cNet = getNetwork();
         cNet.fullSynced = true;
         cNet.lastBlockSynced = nBlockHeights.at(-1);
+        getEventEmitter().emit('sync-status-update', 0, 0, true);
         this.#highestSavedHeight = nBlockHeights.at(-1);
         this.setBalance();
         return true;

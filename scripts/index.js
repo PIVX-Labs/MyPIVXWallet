@@ -13,51 +13,36 @@ import.meta.webpackContext('@fontsource/montserrat/', {
 import { start } from './global.js';
 import { getNetwork } from './network.js';
 
-window.onload = start;
-
 // Export global functions to the MPW namespace so we can use them in html
 export {
     openTab,
     accessOrImportWallet,
-    guiImportWallet,
     guiSetColdStakingAddress,
-    guiUpdateImportInput,
     toClipboard,
-    toggleExportUI,
     wipePrivateData,
     restoreWallet,
     refreshChainData,
     playMusic,
     selectMaxBalance,
     openExplorer,
-    guiEncryptWallet,
-    guiPreparePayment,
-    openSendQRScanner,
     doms,
-    generateVanityWallet,
     importMasternode,
     destroyMasternode,
     startMasternode,
-    checkVanity,
     toggleDropDown,
-    unblurPrivKey,
     toggleBottomMenu,
     createProposal,
     switchSettings,
     govVote,
 } from './global.js';
-export {
-    wallet,
-    getNewAddress,
-    generateWallet,
-    importWallet,
-} from './wallet.js';
+export { wallet, getNewAddress } from './wallet.js';
 export {
     logOut,
     toggleTestnet,
     toggleDebug,
     toggleAutoSwitch,
     toggleAdvancedMode,
+    changePassword,
 } from './settings.js';
 export {
     createTxGUI,
