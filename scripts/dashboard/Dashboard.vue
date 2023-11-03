@@ -207,7 +207,10 @@ async function importWallet({ type, secret, password = '' }) {
         } else {
             needsToEncrypt.value = false;
         }
-        //TODO: add shield database
+
+        // TODO: this is true for both transparent and shielding:
+        // if importWallet is called again before syncShield and walletFullSync finished bad thinks will happen.
+        await wallet.loadShieldFromDisk();
         wallet.syncShield();
         if (!(await mempool.loadFromDisk()))
             await getNetwork().walletFullSync();

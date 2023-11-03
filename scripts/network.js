@@ -186,11 +186,16 @@ export class ExplorerNetwork extends Network {
                     this.blocks
                 );
                 this.blocks = backend.blocks;
+                //TODO: unify the transparent sync with the shield sync
+                // in particular in place of getLatestTxs read directly from the block as we do for shielding
                 if (this.fullSynced) {
                     await this.getLatestTxs(this.lastBlockSynced);
                     this.lastBlockSynced = this.blocks;
                     stakingDashboard.update(0);
                     getEventEmitter().emit('new-tx');
+                }
+                if (this.wallet.isShieldSynced) {
+                    await this.wallet.getLatestBlocks();
                 }
             }
         } catch (e) {

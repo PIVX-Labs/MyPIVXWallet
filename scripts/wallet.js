@@ -24,6 +24,7 @@ import {
     P2PK_START_INDEX,
     OWNER_START_INDEX,
 } from './script.js';
+import { PIVXShield } from 'pivx-shield';
 
 /**
  * Class Wallet, at the moment it is just a "realization" of Masterkey with a given nAccount
@@ -285,12 +286,20 @@ export class Wallet {
     async encryptWallet(strPassword = '') {
         // Encrypt the wallet WIF with AES-GCM and a user-chosen password - suitable for browser storage
         let strEncWIF = await encrypt(this.#masterKey.keyToBackup, strPassword);
+        let strEncExtsk = '';
+        let shieldData = '';
+        if (this.#shield) {
+            strEncExtsk = await encrypt(this.#shield.extsk, strPassword);
+            shieldData = this.#shield.save();
+        }
         if (!strEncWIF) return false;
 
         // Prepare to Add/Update an account in the DB
         const cAccount = new Account({
             publicKey: this.getKeyToExport(),
             encWif: strEncWIF,
+            encExtsk: strEncExtsk,
+            shieldData: shieldData,
         });
 
         // Incase of a "Change Password", we check if an Account already exists
@@ -618,10 +627,10 @@ export class Wallet {
         return histTXs;
     }
     /**
-     * Full sync the shield
+     * Initial block and prover sync for the shield object
      */
     async syncShield() {
-        if (!this.#shield) {
+        if (!this.#shield || this.#isShieldSynced) {
             return;
         }
         /**
@@ -629,6 +638,7 @@ export class Wallet {
          */
         const cNet = getNetwork();
         await this.#shield.loadSaplingProver();
+        console.log(this.#shield, 'Loaded sapling prover');
         try {
             const blockHeights = (await cNet.getShieldBlockList()).filter(
                 (b) => b > this.#shield.getLastSyncedBlock()
@@ -637,35 +647,76 @@ export class Wallet {
                 const block = await cNet.getBlock(blockHeight);
                 await this.#shield.handleBlock(block);
             }
-
-            // At this point it should be safe to assume that shield is ready to use
-            this.#isShieldSynced = true;
-            while (true) {
-                for (
-                    let blockHeight = this.#shield.getLastSyncedBlock() + 1;
-                    blockHeight < cNet.cachedBlockCount;
-                    blockHeight++
-                ) {
-                    try {
-                        const block = await cNet.getBlock(blockHeight);
-                        if (block.txs) {
-                            await this.#shield.handleBlock(block);
-                        } else {
-                            break;
-                        }
-                    } catch (e) {
-                        console.error(e);
-                        break;
-                    }
-                }
-                await cNet.waitForNextBlock();
-                console.log('Shield updated:', this.#shield);
-            }
         } catch (e) {
             console.error(e);
-            await cNet.waitForNextBlock();
-            return this.syncShield();
         }
+        // At this point it should be safe to assume that shield is ready to use
+        await this.saveShieldOnDisk();
+        this.#isShieldSynced = true;
+        console.log('Shield has been synced!:');
+    }
+    /**
+     * Update the shield object with the latest blocks
+     */
+    async getLatestBlocks() {
+        /**
+         * @type {ExplorerNetwork}
+         */
+        const cNet = getNetwork();
+        console.log(
+            'New block arrived! Syncing shield:',
+            this.#shield.getLastSyncedBlock() + 1,
+            cNet.cachedBlockCount
+        );
+        for (
+            let blockHeight = this.#shield.getLastSyncedBlock() + 1;
+            blockHeight < cNet.cachedBlockCount;
+            blockHeight++
+        ) {
+            try {
+                const block = await cNet.getBlock(blockHeight);
+                if (block.txs) {
+                    await this.#shield.handleBlock(block);
+                } else {
+                    break;
+                }
+            } catch (e) {
+                console.error(e);
+                break;
+            }
+        }
+        await this.saveShieldOnDisk();
+    }
+    /**
+     * Save shield data on database
+     */
+    async saveShieldOnDisk() {
+        console.log('Saving shield data on disk!');
+        const cDB = await Database.getInstance();
+        const cAccount = await cDB.getAccount();
+        // If the account has not been created yet (for example no encryption) return
+        if (!cAccount) {
+            return;
+        }
+        cAccount.shieldData = this.#shield.save();
+        await cDB.updateAccount(cAccount);
+    }
+    /**
+     * Load shield data from database
+     */
+    async loadShieldFromDisk() {
+        if (this.#shield) {
+            return;
+        }
+        const cDB = await Database.getInstance();
+        const cAccount = await cDB.getAccount();
+        // If the account has not been created yet or there is no shield data return
+        if (!cAccount || cAccount.shieldData == '') {
+            return;
+        }
+        this.#shield = await PIVXShield.load(cAccount.shieldData);
+        console.log('Shield has been loaded from disk!');
+        return;
     }
 }
 
