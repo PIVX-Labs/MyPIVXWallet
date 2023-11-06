@@ -267,7 +267,7 @@ export class Wallet {
         return !!this.#masterKey;
     }
 
-    async encryptWallet(strPassword = '') {
+    async encryptWallet(strPassword) {
         // Encrypt the wallet WIF with AES-GCM and a user-chosen password - suitable for browser storage
         let strEncWIF = await encrypt(this.#masterKey.keyToBackup, strPassword);
         if (!strEncWIF) return false;
