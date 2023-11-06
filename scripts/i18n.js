@@ -1,4 +1,4 @@
-import { translation_template } from '../locale/template/translation.js';
+import template from '../locale/template/translation.toml';
 import { Database } from './database.js';
 import { fillAnalyticSelect, setTranslation } from './settings.js';
 import { updateEncryptionGUI } from './global.js';
@@ -6,6 +6,7 @@ import { wallet } from './wallet.js';
 import { getNetwork } from './network.js';
 import { cReceiveType, guiToggleReceiveType } from './contacts-book.js';
 import { reactive } from 'vue';
+import { negotiateLanguages } from '@fluent/langneg';
 
 /**
  * @type {translation_template}
@@ -17,12 +18,40 @@ export const ALERTS = {};
  */
 export const translation = reactive({});
 
+const defaultLang = 'en';
+
+/**
+ * @param {string} langName
+ * @example getParentlanguage('es-ES') === 'es' // true
+ * @example getParentLanguage('es') === defaultLang // true
+ * @returns the 'parent' language of a langcode
+ */
+function getParentLanguage(langName) {
+    return langName.includes('-') ? langName.split('-')[0] : defaultLang;
+}
+
 /**
  * @param {string} code
  * @returns {Promise<translation_template>}
  */
 async function getLanguage(code) {
-    return (await import(`../locale/${code}/translation.js`)).default;
+    return (await import(`../locale/${code}/translation.toml`)).default;
+}
+
+async function setTranslationKey(key, langName) {
+    const lang = await getLanguage(langName);
+
+    if (lang[key]) {
+        translation[key] = lang[key];
+    } else {
+        if (langName === defaultLang) {
+            // If the default language doens't have a string, then it has never been translated
+            translation[key] = '';
+            return;
+        }
+        // If there's an empty or missing key, use the parent language
+        await setTranslationKey(key, getParentLanguage(langName));
+    }
 }
 
 /**
@@ -30,20 +59,20 @@ async function getLanguage(code) {
  * @param {string} langName
  */
 export async function switchTranslation(langName) {
+    if (langName === 'auto' || !langName) {
+        langName = negotiateLanguages(
+            window.navigator.languages,
+            arrActiveLangs.slice(1).map((l) => l.code),
+            {
+                defualtLocale: defaultLang,
+            }
+        )[0];
+    }
+
     if (arrActiveLangs.find((lang) => lang.code === langName)) {
         // Load every 'active' key of the language, otherwise, we'll default the key to the EN file
-        const arrNewLang = await getLanguage(langName);
-        for (const strKey of Object.keys(arrNewLang)) {
-            // Skip empty and/or missing i18n keys, defaulting them to EN
-            if (!arrNewLang[strKey]) {
-                // It's fine if we import a language multiple times
-                // Webpack will fetch it once from the server
-                translation[strKey] = (await getLanguage('en'))[strKey];
-                continue;
-            }
-
-            // Apply the new i18n value to our runtime i18n sheet
-            translation[strKey] = arrNewLang[strKey];
+        for (const strKey of Object.keys(template)) {
+            await setTranslationKey(strKey, langName);
         }
 
         // Translate static`data-i18n` tags
@@ -66,7 +95,7 @@ export async function switchTranslation(langName) {
                 langName +
                 ") is not supported yet, if you'd like to contribute translations (for rewards!) contact us on GitHub or Discord!"
         );
-        switchTranslation('en');
+        switchTranslation(defaultLang);
         return false;
     }
 }
@@ -133,16 +162,9 @@ export function loadAlerts() {
         if (alert_key === 'ALERTS') fFoundAlerts = true;
     }
 }
-function parseUserAgentLang(strUA, arrLangsWithSubset) {
-    if (arrLangsWithSubset.some((strLang) => strUA.includes(strLang))) {
-        // Split the lang in to 'primary' and 'subset', only use the primary lang
-        return strUA.substring(0, 2);
-    }
-    // Otherwise, just use the full language spec
-    return strUA;
-}
 
 export const arrActiveLangs = [
+    { code: 'auto', emoji: '🌐' },
     { code: 'en', emoji: '🇬🇧' },
     { code: 'fr', emoji: '🇫🇷' },
     { code: 'de', emoji: '🇩🇪' },
@@ -156,36 +178,8 @@ export const arrActiveLangs = [
 ];
 
 export async function start() {
-    // We use this function to parse the UA lang in a safer way: for example, there's multiple `en` definitions
-    // ... but we shouldn't duplicate the language files, we can instead cut the affix (US, GB) and simply use 'en'.
-    // ... This logic may apply to other languages with such subsets as well, so take care of them here!
-    const arrLangsWithSubset = ['en', 'fr', 'de'];
+    const db = await Database.getInstance();
+    const settings = await db.getSettings();
 
-    const localeLang =
-        window?.navigator?.userLanguage || window?.navigator?.language;
-    const strLang = localeLang
-        ? parseUserAgentLang(localeLang.toLowerCase(), arrLangsWithSubset)
-        : undefined;
-
-    const database = await Database.getInstance();
-    const { translation: localTranslation } = await database.getSettings();
-
-    // Check if set in local storage
-    if (localTranslation !== '') {
-        await setTranslation(localTranslation);
-    } else {
-        // Check if we support the user's browser locale
-        if (arrActiveLangs.find((lang) => lang.code === strLang)) {
-            await setTranslation(strLang);
-        } else {
-            // Default to EN if the locale isn't supported yet
-            console.log(
-                'i18n: Your language (' +
-                    strLang +
-                    ") is not supported yet, if you'd like to contribute translations (for rewards!) contact us on GitHub or Discord!"
-            );
-            await setTranslation('en');
-        }
-    }
-    translateStaticHTML(translation);
+    await setTranslation(settings?.translation || 'auto');
 }
