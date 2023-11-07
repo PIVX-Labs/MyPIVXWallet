@@ -1,17 +1,15 @@
 <script setup>
 import { translation, tr, ALERTS } from '../i18n.js';
-import { onMounted, ref, toRef } from 'vue';
+import { ref } from 'vue';
 import Modal from '../Modal.vue';
-import { hasEncryptedWallet as isEncrypt } from '../wallet.js';
 import { MIN_PASS_LENGTH } from '../chain_params.js';
 import { createAlert } from '../misc';
 
 const props = defineProps({
     showModal: Boolean,
     showBox: Boolean,
+    isEncrypt: Boolean,
 });
-
-const hasEncryptedWallet = ref(false);
 
 const currentPassword = ref('');
 const password = ref('');
@@ -45,10 +43,6 @@ function submit() {
     emit('onEncrypt', password.value, currentPassword.value);
     close();
 }
-
-onMounted(async () => {
-    hasEncryptedWallet.value = await isEncrypt();
-});
 </script>
 
 <template>
@@ -109,7 +103,7 @@ onMounted(async () => {
                         style="width: 100%; font-family: monospace"
                         type="password"
                         placeholder="Current Password"
-                        v-show="hasEncryptedWallet"
+                        v-show="isEncrypt"
                     />
                     <div class="col-12 col-md-6 p-0 pr-0 pr-md-1">
                         <input

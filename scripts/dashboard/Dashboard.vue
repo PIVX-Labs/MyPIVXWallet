@@ -57,6 +57,7 @@ const showTransferMenu = ref(false);
 const advancedMode = ref(false);
 const showExportModal = ref(false);
 const showEncryptModal = ref(false);
+const isEncrypt = ref(false);
 const keyToBackup = ref('');
 const jdenticonValue = ref('');
 const transferAddress = ref('');
@@ -173,14 +174,14 @@ async function importWallet({ type, secret, password = '' }) {
         wallet.setMasterKey(key);
         isImported.value = true;
         jdenticonValue.value = wallet.getAddress();
+        isEncrypt.value = await hasEncryptedWallet();
         if (!wallet.isHardwareWallet()) {
-            needsToEncrypt.value =
-                !wallet.isViewOnly() && !(await hasEncryptedWallet());
+            needsToEncrypt.value = !wallet.isViewOnly() && !isEncrypt.value;
         } else {
             needsToEncrypt.value = false;
         }
-        if (!(await mempool.loadFromDisk()))
-            await getNetwork().walletFullSync();
+        await mempool.loadFromDisk();
+        await getNetwork().walletFullSync();
         getEventEmitter().emit('wallet-import');
         if (needsToEncrypt.value) showEncryptModal.value = true;
         return true;
@@ -189,17 +190,15 @@ async function importWallet({ type, secret, password = '' }) {
     return false;
 }
 
-async function decryptWallet(strPassword = '') {
+async function decryptWallet(strPassword) {
     // Check if there's any encrypted WIF available
     const database = await Database.getInstance();
     const { encWif: strEncWIF } = await database.getAccount();
     if (!strEncWIF || strEncWIF.length < 1) return false;
 
-    // Prompt to decrypt it via password
     const strDecWIF = await decrypt(strEncWIF, strPassword);
-    if (!strDecWIF || strDecWIF === 'decryption failed!') {
-        if (strDecWIF)
-            return createAlert('warning', ALERTS.INCORRECT_PASSWORD, 6000);
+    if (!strDecWIF) {
+        return createAlert('warning', ALERTS.INCORRECT_PASSWORD, 6000);
     } else {
         await importWallet({
             secret: strDecWIF,
@@ -222,6 +221,7 @@ async function encryptWallet(password, currentPassword = '') {
         createAlert('success', ALERTS.NEW_PASSWORD_SUCCESS, 5500);
     }
     needsToEncrypt.value = false;
+    isEncrypt.value = await hasEncryptedWallet();
     // TODO: refactor once settings is written
     await updateEncryptionGUI();
 }
@@ -872,6 +872,7 @@ defineExpose({
                     @close="showEncryptModal = false"
                     :showModal="showEncryptModal"
                     :showBox="needsToEncrypt"
+                    :isEncrypt="isEncrypt"
                 />
                 <div class="row p-0">
                     <!-- Balance in PIVX & USD-->

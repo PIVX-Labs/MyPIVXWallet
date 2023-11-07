@@ -6,20 +6,24 @@ const base64_to_buf = (b64) =>
 const enc = new TextEncoder();
 const dec = new TextDecoder();
 
-export async function encrypt(data, strPassword = '') {
-    const strPass =
-        strPassword ||
-        window.prompt('Please enter your wallet encryption password');
-    if (!strPass) return false;
-    return await encryptData(data, strPass);
+/**
+ * @param {String} data - The data you want to encrypt
+ * @param {String} strPassword - The password used to encrypt
+ * @returns {Promise<String|false>} Encrypt data or false if the process failed
+ */
+export async function encrypt(data, strPassword) {
+    if (!strPassword) return false;
+    return await encryptData(data, strPassword);
 }
 
+/**
+ * @param {String} data - The data you want to decrypt
+ * @param {String} strPassword - The password used to decrypt
+ * @returns {Promise<String|false>} Decrypted data or false if the process failed
+ */
 export async function decrypt(data, strPassword) {
-    const strPass =
-        strPassword ||
-        window.prompt('Please enter your wallet unlock password');
-    if (!strPass) return false;
-    return (await decryptData(data, strPass)) || 'decryption failed!';
+    if (!strPassword) return false;
+    return (await decryptData(data, strPassword)) || false;
 }
 
 const getPasswordKey = (password) =>
