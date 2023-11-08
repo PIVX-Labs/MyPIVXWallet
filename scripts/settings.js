@@ -466,13 +466,13 @@ async function setAnalytics(level, fSilent = false) {
  */
 export async function logOut() {
     const fContinue = await confirmPopup({
-        title: `${translation.CONFIRM_POPUP_DELETE_ACCOUNT_TITLE}`,
+        title: `${ALERTS.CONFIRM_POPUP_DELETE_ACCOUNT_TITLE}`,
         html: `
         <b>${tr(translation.netSwitchUnsavedWarningSubtitle, [
             { network: cChainParams.current.name },
         ])}</b>
         <br>
-        ${translation.CONFIRM_POPUP_DELETE_ACCOUNT}
+        ${ALERTS.CONFIRM_POPUP_DELETE_ACCOUNT}
         <br>
         <br>
     `,

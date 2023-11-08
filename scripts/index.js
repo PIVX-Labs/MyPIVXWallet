@@ -19,7 +19,6 @@ export {
     accessOrImportWallet,
     guiSetColdStakingAddress,
     toClipboard,
-    wipePrivateData,
     restoreWallet,
     refreshChainData,
     playMusic,

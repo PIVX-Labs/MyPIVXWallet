@@ -11,7 +11,7 @@ import { negotiateLanguages } from '@fluent/langneg';
 /**
  * @type {translation_template}
  */
-export const ALERTS = {};
+export let ALERTS = {};
 
 /**
  * @type {translation_template}
@@ -41,6 +41,10 @@ async function getLanguage(code) {
 async function setTranslationKey(key, langName) {
     const lang = await getLanguage(langName);
 
+    if (key === 'ALERTS') {
+        await setAlertKey(langName);
+        return;
+    }
     if (lang[key]) {
         translation[key] = lang[key];
     } else {
@@ -51,6 +55,38 @@ async function setTranslationKey(key, langName) {
         }
         // If there's an empty or missing key, use the parent language
         await setTranslationKey(key, getParentLanguage(langName));
+    }
+}
+
+/**
+ * Set the alert key for a given langName
+ * @param {String} langName - language name
+ */
+async function setAlertKey(langName) {
+    const lang = await getLanguage(langName);
+    translation['ALERTS'] = lang['ALERTS'];
+    for (const subKey in lang['ALERTS']) {
+        setAlertSubKey(subKey, langName);
+    }
+}
+
+/**
+ * Set a given subkey for ALERTS key for a given langName
+ * @param {String} langName - language name
+ * @param {String} subKey - ALERT subkey that we want to set
+ */
+async function setAlertSubKey(subKey, langName) {
+    const lang = await getLanguage(langName);
+    const item = lang['ALERTS'][subKey];
+    if (item !== '') {
+        translation['ALERTS'][subKey] = item;
+    } else {
+        if (langName === defaultLang) {
+            //Should not happen but just in case
+            translation['ALERTS'][subKey] = '';
+            return;
+        }
+        await setAlertSubKey(subKey, getParentLanguage(langName));
     }
 }
 
@@ -83,7 +119,7 @@ export async function switchTranslation(langName) {
         if (wallet.isLoaded() && cNet) {
             await updateEncryptionGUI();
         }
-        loadAlerts();
+        ALERTS = translation['ALERTS'];
         fillAnalyticSelect();
         if (wallet.isLoaded()) {
             await guiToggleReceiveType(cReceiveType);
@@ -145,22 +181,7 @@ export function translateStaticHTML(i18nLangs) {
             }
         }
     });
-    loadAlerts();
-}
-
-/**
- * Translates the alerts by loading the data into the ALERTS object
- */
-export function loadAlerts() {
-    // Alerts are designated by a special 'ALERTS' entry in each translation file
-    let fFoundAlerts = false;
-    for (const [alert_key, alert_translation] of Object.entries(translation)) {
-        if (fFoundAlerts) {
-            ALERTS[alert_key] = alert_translation;
-        }
-        // Skip all entries until we find the ALERTS flag
-        if (alert_key === 'ALERTS') fFoundAlerts = true;
-    }
+    ALERTS = translation['ALERTS'];
 }
 
 export const arrActiveLangs = [
