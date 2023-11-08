@@ -76,6 +76,7 @@
         "bs58": "^5.0.0",
         "buffer": "^6.0.3",
         "chart.js": "^4.2.1",
+        "country-locale-map": "^1.8.15",
         "create-xpub": "^2.1.0",
         "hdkey": "^2.0.1",
         "idb": "^7.1.1",

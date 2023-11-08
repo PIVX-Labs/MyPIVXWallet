@@ -23,6 +23,7 @@ import {
 import { CoinGecko, refreshPriceDisplay } from './prices.js';
 import { Database } from './database.js';
 import { getEventEmitter } from './event_bus.js';
+import { getCurrencyByAlpha2 } from 'country-locale-map';
 
 // --- Default Settings
 /** A mode that emits verbose console info for internal MPW operations */
@@ -31,7 +32,16 @@ export let debug = false;
  * The user-selected display currency from market-aggregator sites
  * @type {string}
  */
-export let strCurrency = 'usd';
+export let strCurrency = getDefaultCurrency();
+console.log(strCurrency);
+
+/**
+ * @returns {string} currency based on settings
+ */
+function getDefaultCurrency() {
+    const langCode = navigator.languages[0]?.split('-')?.at(-1) || 'US';
+    return getCurrencyByAlpha2(langCode).toLowerCase() || 'usd';
+}
 /**
  * The global market data source
  * @type {CoinGecko}
@@ -93,7 +103,7 @@ export class Settings {
         node,
         autoswitch = true,
         translation = '',
-        displayCurrency = 'usd',
+        displayCurrency = getDefaultCurrency(),
         displayDecimals = nDisplayDecimals,
         advancedMode = false,
         coldAddress = '',
@@ -335,6 +345,7 @@ export async function setTranslation(strLang = 'auto') {
  * @param {string} currency - The currency string name
  */
 async function setCurrency(currency) {
+
     strCurrency = currency;
     const database = await Database.getInstance();
     database.setSettings({ displayCurrency: strCurrency });
@@ -389,7 +400,6 @@ export async function fillCurrencySelect() {
         while (doms.domCurrencySelect.options.length > 0) {
             doms.domCurrencySelect.remove(0);
         }
-
         // Add each data source currency into the UI selector
         for (const currency of arrCurrencies) {
             const opt = document.createElement('option');
