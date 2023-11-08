@@ -33,7 +33,6 @@ export let debug = false;
  * @type {string}
  */
 export let strCurrency = getDefaultCurrency();
-console.log(strCurrency);
 
 /**
  * @returns {string} currency based on settings
@@ -345,7 +344,6 @@ export async function setTranslation(strLang = 'auto') {
  * @param {string} currency - The currency string name
  */
 async function setCurrency(currency) {
-
     strCurrency = currency;
     const database = await Database.getInstance();
     database.setSettings({ displayCurrency: strCurrency });
