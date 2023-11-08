@@ -27,7 +27,13 @@ const defaultLang = 'en';
  * @returns the 'parent' language of a langcode
  */
 function getParentLanguage(langName) {
-    return langName.includes('-') ? langName.split('-')[0] : defaultLang;
+    const strParentCode = langName.includes('-') ? langName.split('-')[0] : defaultLang;
+    // Ensure the code exists
+    if (arrActiveLangs.find((lang) => lang.code === strParentCode)) {
+        return strParentCode;
+    } else {
+        return defaultLang;
+    }
 }
 
 /**
