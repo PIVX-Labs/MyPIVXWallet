@@ -923,7 +923,7 @@ defineExpose({
             @openQrScan="openSendQRScanner()"
             @close="showTransferMenu = false"
             @send="send"
-            @max-balance="transferAmount = mempool.balance.toString()"
+            @max-balance="transferAmount = (mempool.balance / COIN).toString()"
         />
     </div>
 </template>
