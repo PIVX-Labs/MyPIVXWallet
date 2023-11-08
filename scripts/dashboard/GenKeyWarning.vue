@@ -84,7 +84,7 @@ function submit() {
             modalClass="exportKeysModalColor"
         >
             <template #header>
-                <h5 class="modal-title"> {{ translation.encryptWallet }} </h5>
+                <h5 class="modal-title">{{ translation.encryptWallet }}</h5>
                 <button
                     type="button"
                     class="close"
