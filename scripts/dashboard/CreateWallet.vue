@@ -42,7 +42,7 @@ async function generateWallet() {
             <div class="col-md-12 dashboard-title">
                 <h3 class="pivx-bold-title-smaller">
                     <span> {{ translation.dCardOneTitle }} </span>
-                    <div>{{ translation.dCardOneSubTitle }}</div>
+                    <div> {{ translation.dCardOneSubTitle }} </div>
                 </h3>
                 <p>
                     {{ translation.dCardOneDesc }}
@@ -51,8 +51,7 @@ async function generateWallet() {
 
             <button class="pivx-button-big" @click="generateWallet()">
                 <span class="buttoni-icon" v-html="pLogo"> </span>
-                <span class="buttoni-text" data-i18n="dCardOneButton"
-                    >Create A New Wallet</span
+                <span class="buttoni-text"> {{ translation.dCardOneButton }} </span
                 >
             </button>
         </div>
