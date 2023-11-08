@@ -100,7 +100,7 @@ export async function switchTranslation(langName) {
             window.navigator.languages,
             arrActiveLangs.slice(1).map((l) => l.code),
             {
-                defualtLocale: defaultLang,
+                defaultLocale: defaultLang,
             }
         )[0];
     }
