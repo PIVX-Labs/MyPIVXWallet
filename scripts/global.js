@@ -174,8 +174,6 @@ export async function start() {
         domMnemonicModalPassphrase: document.getElementById(
             'ModalMnemonicPassphrase'
         ),
-        domWipeWallet: document.getElementById('guiWipeWallet'),
-        domRestoreWallet: document.getElementById('guiRestoreWallet'),
         domRedeemTitle: document.getElementById('redeemCodeModalTitle'),
         domRedeemCodeUse: document.getElementById('redeemCodeUse'),
         domRedeemCodeCreate: document.getElementById('redeemCodeCreate'),
@@ -1051,28 +1049,6 @@ export async function guiSetColdStakingAddress() {
         }
     } else {
         return false;
-    }
-}
-
-export async function wipePrivateData() {
-    const isEncrypted = await hasEncryptedWallet();
-    const title = isEncrypted
-        ? translation.popupWalletLock
-        : translation.popupWalletWipe;
-    const html = isEncrypted
-        ? translation.popupWalletLockNote
-        : translation.popupWalletWipeNote;
-    if (
-        await confirmPopup({
-            title,
-            html,
-        })
-    ) {
-        wallet.wipePrivateData();
-        doms.domWipeWallet.hidden = true;
-        if (isEncrypted) {
-            doms.domRestoreWallet.hidden = false;
-        }
     }
 }
 
