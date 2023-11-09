@@ -84,7 +84,7 @@ function submit() {
             modalClass="exportKeysModalColor"
         >
             <template #header>
-                <h5 class="modal-title">Encrypt wallet</h5>
+                <h5 class="modal-title">{{ translation.encryptWallet }}</h5>
                 <button
                     type="button"
                     class="close"
@@ -102,7 +102,7 @@ function submit() {
                         v-model="currentPassword"
                         style="width: 100%; font-family: monospace"
                         type="password"
-                        placeholder="Current Password"
+                        :placeholder="translation.encryptPasswordCurrent"
                         v-show="isEncrypt"
                     />
                     <div class="col-12 col-md-6 p-0 pr-0 pr-md-1">
@@ -112,7 +112,7 @@ function submit() {
                             data-i18n="encryptPasswordFirst"
                             style="width: 100%; font-family: monospace"
                             type="password"
-                            placeholder="Enter Password"
+                            :placeholder="translation.encryptPasswordFirst"
                         />
                     </div>
                     <div class="col-12 col-md-6 p-0 pl-0 pl-md-1">
@@ -122,7 +122,7 @@ function submit() {
                             data-i18n="encryptPasswordSecond"
                             style="width: 100%; font-family: monospace"
                             type="password"
-                            placeholder="Re-enter Password"
+                            :placeholder="translation.encryptPasswordSecond"
                         />
                     </div>
                 </div>
@@ -139,7 +139,7 @@ function submit() {
                             ></path>
                         </svg>
                     </span>
-                    <span data-i18n="encrypt">Encrypt</span>
+                    <span data-i18n="encrypt"> {{ translation.encrypt }} </span>
                 </button>
             </template>
         </Modal>
