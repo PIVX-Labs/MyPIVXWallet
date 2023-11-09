@@ -35,7 +35,11 @@ function getParentLanguage(langName) {
  * @returns {Promise<translation_template>}
  */
 async function getLanguage(code) {
-    return (await import(`../locale/${code}/translation.toml`)).default;
+    try {
+        return (await import(`../locale/${code}/translation.toml`)).default;
+    } catch (e) {
+        return template;
+    }
 }
 
 async function setTranslationKey(key, langName) {
