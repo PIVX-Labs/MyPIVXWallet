@@ -40,7 +40,7 @@ export class Wallet {
     /**
      * @type {import('pivx-shield').PIVXShield?}
      */
-    #shield;
+    #shield = null;
     /**
      * @type {number}
      */
@@ -215,8 +215,11 @@ export class Wallet {
      * @param {import('pivx-shield').PIVXShield} shield object to set
      */
     setShield(shield) {
-        this.#shield = shield;
-        console.log(shield);
+        if (shield) this.#shield = shield;
+    }
+
+    hasShield() {
+        return !this.#shield ? false : true;
     }
 
     /**

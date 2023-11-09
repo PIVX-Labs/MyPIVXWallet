@@ -200,7 +200,6 @@ async function importWallet({ type, secret, password = '' }) {
     }
     if (parsedSecret) {
         wallet.setMasterKey(parsedSecret.masterKey);
-        wallet.setShield(parsedSecret.shield);
         isImported.value = true;
         jdenticonValue.value = wallet.getAddress();
         isEncrypt.value = await hasEncryptedWallet();
@@ -213,10 +212,14 @@ async function importWallet({ type, secret, password = '' }) {
         if (needsToEncrypt.value) showEncryptModal.value = true;
         isViewOnly.value = wallet.isViewOnly();
 
-        // TODO: this is true for both transparent and shielding:
-        // if importWallet is called again before syncShield and walletFullSync finished bad thinks will happen.
-        await wallet.loadShieldFromDisk();
-        wallet.syncShield();
+        // If shield has already been loaded ignore the parsedSecret.shield
+        // and DO NOT re-load and re-sync
+        // TODO: slightly change this flow when extsp is added to parsedSecret
+        if (!wallet.hasShield()) {
+            wallet.setShield(parsedSecret.shield);
+            await wallet.loadShieldFromDisk();
+            wallet.syncShield();
+        }
 
         await mempool.loadFromDisk();
         await getNetwork().walletFullSync();
