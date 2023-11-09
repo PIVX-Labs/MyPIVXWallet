@@ -52,12 +52,14 @@ import { scanQRCode } from '../scanner';
 import { PIVXShield } from 'pivx-shield';
 
 const isImported = ref(wallet.isLoaded());
+const isViewOnly = ref(wallet.isViewOnly());
 const activity = ref(null);
 const needsToEncrypt = ref(true);
 const showTransferMenu = ref(false);
 const advancedMode = ref(false);
 const showExportModal = ref(false);
 const showEncryptModal = ref(false);
+const isEncrypt = ref(false);
 const keyToBackup = ref('');
 const jdenticonValue = ref('');
 const transferAddress = ref('');
@@ -201,44 +203,29 @@ async function importWallet({ type, secret, password = '' }) {
         wallet.setShield(parsedSecret.shield);
         isImported.value = true;
         jdenticonValue.value = wallet.getAddress();
+        isEncrypt.value = await hasEncryptedWallet();
         if (!wallet.isHardwareWallet()) {
-            needsToEncrypt.value =
-                !wallet.isViewOnly() && !(await hasEncryptedWallet());
+            needsToEncrypt.value = !wallet.isViewOnly() && !isEncrypt.value;
         } else {
             needsToEncrypt.value = false;
         }
+
+        if (needsToEncrypt.value) showEncryptModal.value = true;
+        isViewOnly.value = wallet.isViewOnly();
 
         // TODO: this is true for both transparent and shielding:
         // if importWallet is called again before syncShield and walletFullSync finished bad thinks will happen.
         await wallet.loadShieldFromDisk();
         wallet.syncShield();
-        if (!(await mempool.loadFromDisk()))
-            await getNetwork().walletFullSync();
+
+        await mempool.loadFromDisk();
+        await getNetwork().walletFullSync();
+
         getEventEmitter().emit('wallet-import');
-        if (needsToEncrypt.value) showEncryptModal.value = true;
         return true;
     }
 
     return false;
-}
-
-async function decryptWallet(strPassword = '') {
-    // Check if there's any encrypted WIF available
-    const database = await Database.getInstance();
-    const { encWif: strEncWIF } = await database.getAccount();
-    if (!strEncWIF || strEncWIF.length < 1) return false;
-
-    // Prompt to decrypt it via password
-    const strDecWIF = await decrypt(strEncWIF, strPassword);
-    if (!strDecWIF || strDecWIF === 'decryption failed!') {
-        if (strDecWIF)
-            return createAlert('warning', ALERTS.INCORRECT_PASSWORD, 6000);
-    } else {
-        await importWallet({
-            secret: strDecWIF,
-        });
-        return true;
-    }
 }
 
 /**
@@ -248,13 +235,17 @@ async function decryptWallet(strPassword = '') {
  */
 async function encryptWallet(password, currentPassword = '') {
     if (await hasEncryptedWallet()) {
-        if (!(await decryptWallet(currentPassword))) return;
+        if (!(await wallet.checkDecryptPassword(currentPassword))) {
+            createAlert('warning', ALERTS.INCORRECT_PASSWORD, 6000);
+            return false;
+        }
     }
-    const res = await wallet.encryptWallet(password);
+    const res = await wallet.encrypt(password);
     if (res) {
         createAlert('success', ALERTS.NEW_PASSWORD_SUCCESS, 5500);
     }
     needsToEncrypt.value = false;
+    isEncrypt.value = await hasEncryptedWallet();
     // TODO: refactor once settings is written
     await updateEncryptionGUI();
 }
@@ -299,6 +290,28 @@ async function restoreWallet(strReason) {
     } else {
         // User rejected the unlock
         return false;
+    }
+}
+
+/**
+ * Lock the wallet by deleting masterkey private data
+ */
+async function lockWallet() {
+    const isEncrypted = await hasEncryptedWallet();
+    const title = isEncrypted
+        ? translation.popupWalletLock
+        : translation.popupWalletWipe;
+    const html = isEncrypted
+        ? translation.popupWalletLockNote
+        : translation.popupWalletWipeNote;
+    if (
+        await confirmPopup({
+            title,
+            html,
+        })
+    ) {
+        wallet.wipePrivateData();
+        isViewOnly.value = wallet.isViewOnly();
     }
 }
 
@@ -514,7 +527,10 @@ defineExpose({
             <br />
 
             <!-- Unlock wallet -->
-            <div class="col-12 p-0" id="guiRestoreWallet" hidden>
+            <div
+                class="col-12 p-0"
+                v-if="isViewOnly && !needsToEncrypt && isImported"
+            >
                 <center>
                     <div
                         class="dcWallet-warningMessage"
@@ -546,12 +562,12 @@ defineExpose({
             <!-- // Unlock Wallet -->
 
             <!-- Lock wallet -->
-            <div class="col-12" id="guiWipeWallet" hidden>
+            <div
+                class="col-12"
+                v-if="!isViewOnly && !needsToEncrypt && isImported"
+            >
                 <center>
-                    <div
-                        class="dcWallet-warningMessage"
-                        onclick="MPW.wipePrivateData()"
-                    >
+                    <div class="dcWallet-warningMessage" @click="lockWallet()">
                         <div class="shieldLogo">
                             <div class="shieldBackground">
                                 <span
@@ -905,6 +921,7 @@ defineExpose({
                     @close="showEncryptModal = false"
                     :showModal="showEncryptModal"
                     :showBox="needsToEncrypt"
+                    :isEncrypt="isEncrypt"
                 />
                 <div class="row p-0">
                     <!-- Balance in PIVX & USD-->

@@ -1,5 +1,6 @@
 jest.mock('@ledgerhq/hw-transport-webusb', () => jest.fn());
 jest.mock('../../scripts/global.js', () => jest.fn());
+jest.mock('../../locale/template/translation.toml', () => jest.fn());
 
 import { LegacyMasterKey, HdMasterKey } from '../../scripts/masterkey.js';
 import { mnemonicToSeed } from 'bip39';

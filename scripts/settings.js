@@ -323,7 +323,7 @@ async function setNode(node, fSilent = false) {
  * Switches the translation and sets the translation preference to database
  * @param {string} strLang
  */
-export async function setTranslation(strLang) {
+export async function setTranslation(strLang = 'auto') {
     await switchTranslation(strLang);
     const database = await Database.getInstance();
     await database.setSettings({ translation: strLang });
@@ -466,13 +466,13 @@ async function setAnalytics(level, fSilent = false) {
  */
 export async function logOut() {
     const fContinue = await confirmPopup({
-        title: `${translation.CONFIRM_POPUP_DELETE_ACCOUNT_TITLE}`,
+        title: `${ALERTS.CONFIRM_POPUP_DELETE_ACCOUNT_TITLE}`,
         html: `
         <b>${tr(translation.netSwitchUnsavedWarningSubtitle, [
             { network: cChainParams.current.name },
         ])}</b>
         <br>
-        ${translation.CONFIRM_POPUP_DELETE_ACCOUNT}
+        ${ALERTS.CONFIRM_POPUP_DELETE_ACCOUNT}
         <br>
         <br>
     `,

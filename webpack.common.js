@@ -7,6 +7,7 @@ import HtmlWebpackPlugin from 'html-webpack-plugin';
 import NodePolyfillPlugin from 'node-polyfill-webpack-plugin';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import CopyPlugin from 'copy-webpack-plugin';
+import toml from 'toml';
 import { VueLoaderPlugin } from 'vue-loader';
 
 import { readFileSync } from 'fs';
@@ -50,6 +51,23 @@ export default {
                             isCustomElement: (tag) => tag === 'center',
                         },
                     },
+                },
+            },
+            {
+                test: /\.toml$/,
+                // Json means we're returing an object.
+                // See https://webpack.js.org/configuration/module/#ruleparserparse
+                type: 'json',
+                parser: {
+                    parse: (str) =>
+                        toml.parse(
+                            str
+                                .split('\n')
+                                // Ignore lines starting with ~~, it means we haven't
+                                // translated them yet
+                                .filter((l) => !l.match(/^[\w\s]+=\s*['"]~~/))
+                                .join('\n')
+                        ),
                 },
             },
             {

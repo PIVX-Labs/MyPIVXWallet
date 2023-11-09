@@ -252,7 +252,10 @@ export class ExplorerNetwork extends Network {
             : null;
         //.txs returns the total number of wallet's transaction regardless the startHeight and we use this for first sync
         // after first sync (so at each new block) we can safely assume that user got less than 1000 new txs
-        const txNumber = !this.fullSynced ? probePage.txs : 1;
+        //in this way we don't have to fetch the probePage after first sync
+        const txNumber = !this.fullSynced
+            ? probePage.txs - mempool.txmap.size
+            : 1;
         // Compute the total pages and iterate through them until we've synced everything
         const totalPages = Math.ceil(txNumber / 1000);
         for (let i = totalPages; i > 0; i--) {
@@ -295,7 +298,7 @@ export class ExplorerNetwork extends Network {
     async walletFullSync() {
         if (this.fullSynced) return;
         if (!this.wallet || !this.wallet.isLoaded()) return;
-        await this.getLatestTxs(0);
+        await this.getLatestTxs(this.lastBlockSynced);
         const nBlockHeights = Array.from(mempool.orderedTxmap.keys());
         this.lastBlockSynced =
             nBlockHeights.length == 0
