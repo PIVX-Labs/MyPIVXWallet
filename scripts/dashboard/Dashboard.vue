@@ -199,6 +199,7 @@ async function importWallet({ type, secret, password = '' }) {
         parsedSecret = await parseSecret(secret, password);
     }
     if (parsedSecret) {
+        const isAlreadyLoaded = wallet.isLoaded();
         wallet.setMasterKey(parsedSecret.masterKey);
         isImported.value = true;
         jdenticonValue.value = wallet.getAddress();
@@ -212,8 +213,7 @@ async function importWallet({ type, secret, password = '' }) {
         if (needsToEncrypt.value) showEncryptModal.value = true;
         isViewOnly.value = wallet.isViewOnly();
 
-        // If shield has already been loaded ignore the parsedSecret.shield
-        // and DO NOT re-load and re-sync
+        // Don't reload an already loaded shield instance!
         // TODO: slightly change this flow when extsp is added to parsedSecret
         if (!wallet.hasShield()) {
             wallet.setShield(parsedSecret.shield);
@@ -221,9 +221,11 @@ async function importWallet({ type, secret, password = '' }) {
             wallet.syncShield();
         }
 
-        await mempool.loadFromDisk();
-        await getNetwork().walletFullSync();
-
+        // Don't reload an already loaded wallet!
+        if (!isAlreadyLoaded) {
+            await mempool.loadFromDisk();
+            getNetwork().walletFullSync();
+        }
         getEventEmitter().emit('wallet-import');
         return true;
     }
@@ -959,7 +961,7 @@ defineExpose({
             @openQrScan="openSendQRScanner()"
             @close="showTransferMenu = false"
             @send="send"
-            @max-balance="transferAmount = mempool.balance.toString()"
+            @max-balance="transferAmount = (mempool.balance / COIN).toString()"
         />
     </div>
 </template>

@@ -27,7 +27,15 @@ const defaultLang = 'en';
  * @returns the 'parent' language of a langcode
  */
 function getParentLanguage(langName) {
-    return langName.includes('-') ? langName.split('-')[0] : defaultLang;
+    const strParentCode = langName.includes('-')
+        ? langName.split('-')[0]
+        : defaultLang;
+    // Ensure the code exists
+    if (arrActiveLangs.find((lang) => lang.code === strParentCode)) {
+        return strParentCode;
+    } else {
+        return defaultLang;
+    }
 }
 
 /**
@@ -100,7 +108,7 @@ export async function switchTranslation(langName) {
             window.navigator.languages,
             arrActiveLangs.slice(1).map((l) => l.code),
             {
-                defualtLocale: defaultLang,
+                defaultLocale: defaultLang,
             }
         )[0];
     }

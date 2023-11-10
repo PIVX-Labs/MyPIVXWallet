@@ -115,3 +115,4 @@ CONFIRM_POPUP_VOTE_HTML = "Tem certeza? Demora 60 minutos para mudar o voto" # A
 FAILED_TO_IMPORT_HARDWARE = "" # <b> Failed to import Hardware Wallet</b>.
 CONFIRM_POPUP_DELETE_ACCOUNT = "" # This will delete all your data, including masternodes contacts and private keys!
 CONFIRM_POPUP_DELETE_ACCOUNT_TITLE = "" # Are you sure?
+WALLET_NOT_SYNCED = "" # Please try again when wallet finishes syncing!
