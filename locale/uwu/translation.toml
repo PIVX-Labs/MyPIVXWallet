@@ -209,6 +209,8 @@ syncStatusFinished = "" # <b>Sync Finished!</b><br>Your wallet is ready to use!
 accountDeleted = "" # Your account has been successfully deleted!
 activityShieldedAddress = "" # Shielded address
 activityReceivedWith = "" # Received with {s}
+syncLoadingSaplingProver = "" # Loading Sapling Prover
+syncShieldProgress = "" # Loading shielded blocks {current} of {total}
 
 [ALERTS]
 INTERNAL_ERROR = "Internal error, pwease try again later" # Internal error, please try again later

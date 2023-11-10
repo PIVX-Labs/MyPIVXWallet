@@ -77,6 +77,8 @@ syncStatusStarting = "" # <b>Your wallet is syncing!</b><br>You'll be able to us
 syncStatusFinished = "" # <b>Sync Finished!</b><br>Your wallet is ready to use!
 accountDeleted = "" # Your account has been successfully deleted!
 activityReceivedWith = "" # Received with {s}
+syncLoadingSaplingProver = "" # Loading Sapling Prover
+syncShieldProgress = "" # Loading shielded blocks {current} of {total}
 
 [ALERTS]
 MN_BAD_PRIVKEY = "" # The private key is invalid

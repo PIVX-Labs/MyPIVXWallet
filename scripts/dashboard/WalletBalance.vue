@@ -45,15 +45,13 @@ onMounted(() => {
     );
 });
 
-const totalSyncPages = ref(0);
-const currentSyncPage = ref(0);
-const isSyncing = ref(false);
-const syncStr = computed(() => {
-    return tr(translation.syncStatusHistoryProgress, [
-        { current: currentSyncPage.value },
-        { total: totalSyncPages.value },
-    ]);
-});
+// Transparent sync status
+const isTSyncing = ref(false);
+const syncTStr = ref('');
+
+// Shield sync status
+const isSSyncing = ref(false);
+const syncSStr = ref('');
 
 const updating = ref(false);
 const balanceStr = computed(() => {
@@ -79,14 +77,15 @@ getEventEmitter().on('sync-status', (value) => {
 
 const emit = defineEmits(['reload', 'send', 'exportPrivKeyOpen']);
 
-getEventEmitter().on(
-    'sync-status-update',
-    (currentPage, totalPages, finished) => {
-        totalSyncPages.value = totalPages;
-        currentSyncPage.value = currentPage;
-        isSyncing.value = finished === false;
-    }
-);
+getEventEmitter().on('transparent-sync-status-update', (str, finished) => {
+    syncTStr.value = str;
+    isTSyncing.value = !finished;
+});
+
+getEventEmitter().on('shield-sync-status-update', (str, finished) => {
+    syncSStr.value = str;
+    isSSyncing.value = !finished;
+});
 
 function reload() {
     if (!updating) {
@@ -277,7 +276,7 @@ function reload() {
         </div>
         <center>
             <div
-                v-if="isSyncing"
+                v-if="isTSyncing || isSSyncing"
                 style="
                     background-color: #0000002b;
                     width: fit-content;
@@ -285,7 +284,7 @@ function reload() {
                     border-radius: 15px;
                 "
             >
-                {{ syncStr }}
+                {{ isTSyncing ? syncTStr : syncSStr }}
             </div>
         </center>
     </center>

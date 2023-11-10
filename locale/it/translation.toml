@@ -209,6 +209,8 @@ settingsToggleAdvancedMode = "" # Advanced Mode
 settingsToggleAdvancedModeSubtext = "" # This unlocks deeper functionality and customisation, but may be overwhelming and potentially dangerous for unexperienced users!
 accountDeleted = "" # Your account has been successfully deleted!
 activityReceivedWith = "" # Received with {s}
+syncLoadingSaplingProver = "" # Loading Sapling Prover
+syncShieldProgress = "" # Loading shielded blocks {current} of {total}
 
 [ALERTS]
 INTERNAL_ERROR = "Errore interno, rirova più tardi" # Internal error, please try again later

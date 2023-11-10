@@ -209,6 +209,8 @@ syncStatusFinished = "" # <b>Sync Finished!</b><br>Your wallet is ready to use!
 contestedProposalsTitle = "" # Contested Proposals
 accountDeleted = "" # Your account has been successfully deleted!
 activityReceivedWith = "" # Received with {s}
+syncLoadingSaplingProver = "" # Loading Sapling Prover
+syncShieldProgress = "" # Loading shielded blocks {current} of {total}
 
 [ALERTS]
 INTERNAL_ERROR = "Erreur interne, veuillez réessayer plus tard" # Internal error, please try again later

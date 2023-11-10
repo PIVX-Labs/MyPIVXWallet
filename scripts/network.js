@@ -10,7 +10,7 @@ import {
     debug,
 } from './settings.js';
 import { cNode } from './settings.js';
-import { ALERTS, translation } from './i18n.js';
+import { ALERTS, tr, translation } from './i18n.js';
 import { mempool, stakingDashboard } from './global.js';
 
 /**
@@ -261,9 +261,11 @@ export class ExplorerNetwork extends Network {
         for (let i = totalPages; i > 0; i--) {
             if (!this.fullSynced) {
                 getEventEmitter().emit(
-                    'sync-status-update',
-                    totalPages - i + 1,
-                    totalPages,
+                    'transparent-sync-status-update',
+                    tr(translation.syncStatusHistoryProgress, [
+                        { current: totalPages - i + 1 },
+                        { total: totalPages },
+                    ]),
                     false
                 );
             }
@@ -305,8 +307,11 @@ export class ExplorerNetwork extends Network {
                 ? 0
                 : nBlockHeights.sort((a, b) => a - b).at(-1);
         this.fullSynced = true;
-        createAlert('success', translation.syncStatusFinished, 12500);
-        getEventEmitter().emit('sync-status-update', 0, 0, true);
+        getEventEmitter().emit('transparent-sync-status-update', '', true);
+        //TODO: update this once all wallet sync is in the wallet class
+        if (this.wallet.isShieldSynced) {
+            createAlert('success', translation.syncStatusFinished, 12500);
+        }
     }
     reset() {
         this.fullSynced = false;

@@ -209,6 +209,8 @@ netSwitchUnsavedWarningConfirmation = "" # Are you really sure?
 accountDeleted = "" # Your account has been successfully deleted!
 activitySelf = "" # self
 activityReceivedWith = "" # Received with {s}
+syncLoadingSaplingProver = "" # Loading Sapling Prover
+syncShieldProgress = "" # Loading shielded blocks {current} of {total}
 
 [ALERTS]
 INTERNAL_ERROR = "Interner Fehler, bitte versuche es später erneut" # Internal error, please try again later

@@ -17,6 +17,7 @@ import { fAdvancedMode } from './settings.js';
 import { bytesToHex, hexToBytes } from './utils.js';
 import { strHardwareName } from './ledger.js';
 import { COutpoint, UTXO_WALLET_STATE } from './mempool.js';
+import { getEventEmitter } from './event_bus.js';
 import {
     isP2CS,
     isP2PKH,
@@ -661,15 +662,34 @@ export class Wallet {
          * @type {ExplorerNetwork}
          */
         const cNet = getNetwork();
+        getEventEmitter().emit(
+            'shield-sync-status-update',
+            translation.syncLoadingSaplingProver,
+            false
+        );
         await this.#shield.loadSaplingProver();
-        console.log(this.#shield, 'Loaded sapling prover');
         try {
             const blockHeights = (await cNet.getShieldBlockList()).filter(
                 (b) => b > this.#shield.getLastSyncedBlock()
             );
+            let i = 1;
             for (const blockHeight of blockHeights) {
+                getEventEmitter().emit(
+                    'shield-sync-status-update',
+                    tr(translation.syncShieldProgress, [
+                        { current: i },
+                        { total: blockHeights.length },
+                    ]),
+                    false
+                );
                 const block = await cNet.getBlock(blockHeight);
                 await this.#shield.handleBlock(block);
+                i += 1;
+            }
+            getEventEmitter().emit('shield-sync-status-update', '', true);
+            //TODO: update this once all wallet sync is in the wallet class
+            if (cNet.fullSynced) {
+                createAlert('success', translation.syncStatusFinished, 12500);
             }
         } catch (e) {
             console.error(e);
@@ -677,7 +697,6 @@ export class Wallet {
         // At this point it should be safe to assume that shield is ready to use
         await this.saveShieldOnDisk();
         this.#isShieldSynced = true;
-        console.log('Shield has been synced!:');
     }
     /**
      * Update the shield object with the latest blocks
