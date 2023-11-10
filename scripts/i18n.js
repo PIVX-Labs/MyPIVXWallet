@@ -90,7 +90,7 @@ async function setAlertKey(langName) {
 async function setAlertSubKey(subKey, langName) {
     const lang = await getLanguage(langName);
     const item = lang['ALERTS'][subKey];
-    if (item !== '') {
+    if (!item) {
         translation['ALERTS'][subKey] = item;
     } else {
         if (langName === defaultLang) {
