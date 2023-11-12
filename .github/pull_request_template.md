@@ -21,6 +21,7 @@ I have:
 - [ ] Tested that the code functions as expected.
 - [ ] Ensured the code is properly formatted using `npm run prettier`.
 - [ ] Updated the changelog with the relevant changes.
+- [ ] I have updated the translation template with any string changes.
 
 <!---
 Below is for LMP (Labs Micro Proposals), how your PR is rewarded PIVX: this'll help your PR be rewarded faster by the DAO!
