@@ -48,6 +48,10 @@ watch([secret, advancedMode], ([secret, advancedMode]) => {
         ? translation.optionalPassphrase
         : translation.password;
 });
+watch(showPassword, (showPassword) => {
+    // Empty password prompt when hidden
+    if (!showPassword) password.value = '';
+});
 const emit = defineEmits(['import-wallet']);
 function importWallet() {
     emit('import-wallet', secret.value, password.value);
