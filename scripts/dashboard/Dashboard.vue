@@ -900,8 +900,8 @@ defineExpose({
                     <WalletBalance
                         :balance="balance"
                         :jdenticonValue="jdenticonValue"
-                        :isHdWallet="false"
-                        :isHardwareWallet="false"
+                        :isHdWallet="wallet.isHD()"
+                        :isHardwareWallet="wallet.isHardwareWallet()"
                         :currency="currency"
                         :price="price"
                         :displayDecimals="displayDecimals"
