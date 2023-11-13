@@ -198,7 +198,7 @@ export class Wallet {
         if (this.#isMainWallet) {
             getNetwork().setWallet(this);
         }
-        this.loadAddresses();
+        for (let i = 0; i < Wallet.chains; i++) this.loadAddresses(i);
     }
 
     /**
@@ -361,27 +361,26 @@ export class Wallet {
                 this.#highestUsedIndices.get(nReceiving) + MAX_ACCOUNT_GAP >=
                 this.#loadedIndexes.get(nReceiving)
             ) {
-                this.loadAddresses();
+                this.loadAddresses(nReceiving);
             }
         }
     }
 
     /**
      * Load MAX_ACCOUNT_GAP inside #ownAddresses map.
+     * @param {number} chain - Chain to load
      */
-    loadAddresses() {
+    loadAddresses(chain) {
         if (this.isHD()) {
-            for (let c = 0; c < Wallet.chains; c++) {
-                const start = this.#loadedIndexes.get(c);
-                const end = start + MAX_ACCOUNT_GAP;
-                for (let i = start; i <= end; i++) {
-                    const path = this.getDerivationPath(c, i);
-                    const address = this.#masterKey.getAddress(path);
-                    this.#ownAddresses.set(address, path);
-                }
-
-                this.#loadedIndexes.set(c, end);
+            const start = this.#loadedIndexes.get(chain);
+            const end = start + MAX_ACCOUNT_GAP;
+            for (let i = start; i <= end; i++) {
+                const path = this.getDerivationPath(chain, i);
+                const address = this.#masterKey.getAddress(path);
+                this.#ownAddresses.set(address, path);
             }
+
+            this.#loadedIndexes.set(chain, end);
         } else {
             this.#ownAddresses.set(this.getKeyToExport(), ':)');
         }
