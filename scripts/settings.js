@@ -39,7 +39,7 @@ export let strCurrency = getDefaultCurrency();
  */
 function getDefaultCurrency() {
     const langCode = navigator.languages[0]?.split('-')?.at(-1) || 'US';
-    return getCurrencyByAlpha2(langCode).toLowerCase() || 'usd';
+    return getCurrencyByAlpha2(langCode)?.toLowerCase() || 'usd';
 }
 /**
  * The global market data source
