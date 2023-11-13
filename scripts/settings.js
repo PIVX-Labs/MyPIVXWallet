@@ -408,8 +408,12 @@ export async function fillCurrencySelect() {
     }
 
     const database = await Database.getInstance();
-    const { displayCurrency } = await database.getSettings();
-
+    let { displayCurrency } = await database.getSettings();
+    if (!arrCurrencies.find((v) => v === displayCurrency)) {
+        // Currency not supported; fallback to USD
+        displayCurrency = 'usd';
+        database.setSettings({ displayCurrency });
+    }
     // And update the UI to reflect them
     strCurrency = doms.domCurrencySelect.value = displayCurrency;
 }
