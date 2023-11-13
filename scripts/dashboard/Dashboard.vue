@@ -117,7 +117,7 @@ async function parseSecret(secret, password = '') {
                 );
                 if (!ok) throw new Error(msg);
                 return new HdMasterKey({
-                    seed: await mnemonicToSeed(phrase),
+                    seed: await mnemonicToSeed(phrase, password),
                 });
             },
         },
