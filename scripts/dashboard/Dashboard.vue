@@ -71,10 +71,9 @@ watch(showExportModal, async (showExportModal) => {
         keyToBackup.value = '';
     }
 });
-getEventEmitter().on(
-    'advanced-mode',
-    (fAdvancedMode) => (advancedMode.value = fAdvancedMode)
-);
+getEventEmitter().on('advanced-mode', (fAdvancedMode) => {
+    advancedMode.value = fAdvancedMode;
+});
 
 /**
  * Parses whatever the secret is to a MasterKey
@@ -491,7 +490,11 @@ defineExpose({
 <template>
     <div id="keypair" class="tabcontent">
         <div class="row m-0">
-            <Login v-show="!isImported" @import-wallet="importWallet" />
+            <Login
+                v-show="!isImported"
+                :advancedMode="advancedMode"
+                @import-wallet="importWallet"
+            />
 
             <br />
 
