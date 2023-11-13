@@ -60,9 +60,9 @@ export class Wallet {
      */
     #highestUsedIndices = new Map();
     /**
-     * @type {number}
+     * @type {Map<number, number>}
      */
-    #addressIndex = 0;
+    #addressIndices = new Map();
     /**
      * Map our own address -> Path
      * @type {Map<String, String?>}
@@ -208,9 +208,11 @@ export class Wallet {
         this.#highestUsedIndices = new Map();
         this.#loadedIndexes = new Map();
         this.#ownAddresses = new Map();
+        this.#addressIndices = new Map();
         for (let i = 0; i < Wallet.chains; i++) {
             this.#highestUsedIndices.set(i, 0);
             this.#loadedIndexes.set(i, 0);
+            this.#addressIndices.set(i, 0);
         }
         // TODO: This needs to be refactored
         // The wallet could own its own mempool and network?
@@ -227,7 +229,7 @@ export class Wallet {
      *
      */
     getCurrentAddress() {
-        return this.getAddress(0, this.#addressIndex);
+        return this.getAddress(0, this.#addressIndices.get(0));
     }
 
     /**
@@ -321,14 +323,24 @@ export class Wallet {
      */
     getNewAddress(nReceiving = 0) {
         const last = this.#highestUsedIndices.get(nReceiving);
-        this.#addressIndex =
-            (this.#addressIndex > last ? this.#addressIndex : last) + 1;
-        if (this.#addressIndex - last > MAX_ACCOUNT_GAP) {
+        this.#addressIndices.set(
+            nReceiving,
+            (this.#addressIndices.get(nReceiving) > last
+                ? this.#addressIndices.get(nReceiving)
+                : last) + 1
+        );
+        if (this.#addressIndices.get(nReceiving) - last > MAX_ACCOUNT_GAP) {
             // If the user creates more than ${MAX_ACCOUNT_GAP} empty wallets we will not be able to sync them!
-            this.#addressIndex = last;
+            this.#addressIndices.set(nReceiving, last);
         }
-        const path = this.getDerivationPath(nReceiving, this.#addressIndex);
-        const address = this.getAddress(nReceiving, this.#addressIndex);
+        const path = this.getDerivationPath(
+            nReceiving,
+            this.#addressIndices.get(nReceiving)
+        );
+        const address = this.getAddress(
+            nReceiving,
+            this.#addressIndices.get(nReceiving)
+        );
         return [address, path];
     }
 
