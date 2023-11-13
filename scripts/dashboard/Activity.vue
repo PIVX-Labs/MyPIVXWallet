@@ -99,7 +99,6 @@ async function update(txToAdd = 0) {
     await parseTXs(arrTXs);
     txCount = found;
     updating.value = false;
-    rewardsText.value = (mempool.coldBalance / COIN).toFixed(2);
 }
 
 watch(translation, async () => await update());
