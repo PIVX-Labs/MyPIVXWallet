@@ -3,7 +3,7 @@ import { ref, computed, watch, onMounted } from 'vue';
 import { getNetwork } from '../network.js';
 import { wallet } from '../wallet.js';
 import { mempool } from '../global.js';
-import { cChainParams } from '../chain_params.js';
+import { COIN, cChainParams } from '../chain_params.js';
 import { translation } from '../i18n.js';
 import { Database } from '../database.js';
 import { HistoricalTx, HistoricalTxType } from '../mempool';
@@ -19,7 +19,10 @@ const txs = ref([]);
 let txCount = 0;
 const updating = ref(false);
 const isHistorySynced = ref(false);
-const rewardsText = ref('-');
+const rewardsText = computed(
+    () => `${isHistorySynced.value ? '' : '≥'}${rewardAmount.value.toFixed(2)}`
+);
+const rewardAmount = ref(0);
 const ticker = computed(() => cChainParams.current.TICKER);
 const explorerUrl = ref(getNetwork()?.strUrl);
 const txMap = computed(() => {
@@ -96,6 +99,7 @@ async function update(txToAdd = 0) {
     await parseTXs(arrTXs);
     txCount = found;
     updating.value = false;
+    rewardsText.value = (mempool.coldBalance / COIN).toFixed(2);
 }
 
 watch(translation, async () => await update());
@@ -220,6 +224,7 @@ async function parseTXs(arrTXs) {
             id: cTx.id,
             content: props.rewards ? cTx.id : content,
             formattedAmt,
+            amount: cTx.amount,
             confirmed: fConfirmed,
             icon,
             colour,
@@ -227,6 +232,13 @@ async function parseTXs(arrTXs) {
     }
 
     txs.value = newTxs;
+}
+if (props.rewards) {
+    watch(
+        txs,
+        (txs) =>
+            (rewardAmount.value = txs.reduce((acc, tx) => acc + tx.amount, 0))
+    );
 }
 
 function reset() {
