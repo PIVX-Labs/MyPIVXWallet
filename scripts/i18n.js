@@ -11,7 +11,7 @@ import { negotiateLanguages } from '@fluent/langneg';
 /**
  * @type {translation_template}
  */
-export const ALERTS = {};
+export let ALERTS = {};
 
 /**
  * @type {translation_template}
@@ -27,7 +27,15 @@ const defaultLang = 'en';
  * @returns the 'parent' language of a langcode
  */
 function getParentLanguage(langName) {
-    return langName.includes('-') ? langName.split('-')[0] : defaultLang;
+    const strParentCode = langName.includes('-')
+        ? langName.split('-')[0]
+        : defaultLang;
+    // Ensure the code exists
+    if (arrActiveLangs.find((lang) => lang.code === strParentCode)) {
+        return strParentCode;
+    } else {
+        return defaultLang;
+    }
 }
 
 /**
@@ -35,12 +43,20 @@ function getParentLanguage(langName) {
  * @returns {Promise<translation_template>}
  */
 async function getLanguage(code) {
-    return (await import(`../locale/${code}/translation.toml`)).default;
+    try {
+        return (await import(`../locale/${code}/translation.toml`)).default;
+    } catch (e) {
+        return template;
+    }
 }
 
 async function setTranslationKey(key, langName) {
     const lang = await getLanguage(langName);
 
+    if (key === 'ALERTS') {
+        await setAlertKey(langName);
+        return;
+    }
     if (lang[key]) {
         translation[key] = lang[key];
     } else {
@@ -55,6 +71,38 @@ async function setTranslationKey(key, langName) {
 }
 
 /**
+ * Set the alert key for a given langName
+ * @param {String} langName - language name
+ */
+async function setAlertKey(langName) {
+    const lang = await getLanguage(langName);
+    translation['ALERTS'] = lang['ALERTS'];
+    for (const subKey in lang['ALERTS']) {
+        setAlertSubKey(subKey, langName);
+    }
+}
+
+/**
+ * Set a given subkey for ALERTS key for a given langName
+ * @param {String} langName - language name
+ * @param {String} subKey - ALERT subkey that we want to set
+ */
+async function setAlertSubKey(subKey, langName) {
+    const lang = await getLanguage(langName);
+    const item = lang['ALERTS'][subKey];
+    if (item) {
+        translation['ALERTS'][subKey] = item;
+    } else {
+        if (langName === defaultLang) {
+            //Should not happen but just in case
+            translation['ALERTS'][subKey] = '';
+            return;
+        }
+        await setAlertSubKey(subKey, getParentLanguage(langName));
+    }
+}
+
+/**
  * Takes the language name and sets the translation settings based on the language file
  * @param {string} langName
  */
@@ -64,7 +112,7 @@ export async function switchTranslation(langName) {
             window.navigator.languages,
             arrActiveLangs.slice(1).map((l) => l.code),
             {
-                defualtLocale: defaultLang,
+                defaultLocale: defaultLang,
             }
         )[0];
     }
@@ -83,7 +131,7 @@ export async function switchTranslation(langName) {
         if (wallet.isLoaded() && cNet) {
             await updateEncryptionGUI();
         }
-        loadAlerts();
+        ALERTS = translation['ALERTS'];
         fillAnalyticSelect();
         if (wallet.isLoaded()) {
             await guiToggleReceiveType(cReceiveType);
@@ -145,22 +193,7 @@ export function translateStaticHTML(i18nLangs) {
             }
         }
     });
-    loadAlerts();
-}
-
-/**
- * Translates the alerts by loading the data into the ALERTS object
- */
-export function loadAlerts() {
-    // Alerts are designated by a special 'ALERTS' entry in each translation file
-    let fFoundAlerts = false;
-    for (const [alert_key, alert_translation] of Object.entries(translation)) {
-        if (fFoundAlerts) {
-            ALERTS[alert_key] = alert_translation;
-        }
-        // Skip all entries until we find the ALERTS flag
-        if (alert_key === 'ALERTS') fFoundAlerts = true;
-    }
+    ALERTS = translation['ALERTS'];
 }
 
 export const arrActiveLangs = [

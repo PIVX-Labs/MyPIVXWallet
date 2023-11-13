@@ -416,11 +416,8 @@ export class Mempool {
             }
         }
         const cNet = getNetwork();
-        cNet.fullSynced = true;
         cNet.lastBlockSynced = nBlockHeights.at(-1);
-        getEventEmitter().emit('sync-status-update', 0, 0, true);
         this.#highestSavedHeight = nBlockHeights.at(-1);
-        this.setBalance();
         return true;
     }
 }

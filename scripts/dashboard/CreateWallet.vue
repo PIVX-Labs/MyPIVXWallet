@@ -51,9 +51,9 @@ async function generateWallet() {
 
             <button class="pivx-button-big" @click="generateWallet()">
                 <span class="buttoni-icon" v-html="pLogo"> </span>
-                <span class="buttoni-text" data-i18n="ldCardOneButton"
-                    >Create A New Wallet</span
-                >
+                <span class="buttoni-text">
+                    {{ translation.dCardOneButton }}
+                </span>
             </button>
         </div>
     </div>
@@ -62,9 +62,7 @@ async function generateWallet() {
             <template #body>
                 <p class="modal-label"></p>
                 <div class="auto-fit">
-                    <span data-i18n="thisIsYourSeed"
-                        >This is your seed phrase:</span
-                    >
+                    <span v-html="translation.thisIsYourSeed"></span>
                     <b>
                         <div
                             translate="no"
@@ -74,17 +72,11 @@ async function generateWallet() {
                         </div>
                     </b>
                     <br />
-                    <span data-i18n="writeDownSeed"
-                        >Write it down somewhere. You'll only see this
-                        <b>once!</b></span
-                    >
+                    <span v-html="translation.writeDownSeed"></span>
                     <br />
-                    <span data-i18n="doNotShareWarning"
-                        >Anyone with a copy of it can access <b>all</b> of your
-                        funds.</span
-                    >
+                    <span v-html="translation.doNotShareWarning"> </span>
                     <br />
-                    <b data-i18n="doNotShare">Do NOT share it with anybody.</b>
+                    <b> {{ translation.doNotShare }} </b>
                     <br />
                     <br />
                     <a
@@ -92,10 +84,7 @@ async function generateWallet() {
                         target="_blank"
                         rel="noopener noreferrer"
                     >
-                        <i data-i18n="digitalStoreNotAdvised"
-                            >It is <b>NOT</b> advised to store this
-                            digitally.</i
-                        >
+                        <i v-html="translation.digitalStoreNotAdvised"></i>
                     </a>
                     <br />
                     <div v-if="fAdvancedMode">
@@ -113,11 +102,10 @@ async function generateWallet() {
                 <center>
                     <button
                         type="button"
-                        data-i18n="writtenDown"
                         class="pivx-button-big"
                         @click="showModal = false"
                     >
-                        I have written down my seed phrase
+                        {{ translation.writtenDown }}
                     </button>
                 </center>
             </template>

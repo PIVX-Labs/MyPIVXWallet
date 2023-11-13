@@ -130,6 +130,7 @@ timeHours = "Horas" # Hours
 timeMinutes = "Minutos" # Minutes
 timeSeconds = "Segundos" # Seconds
 unhandledException = "Exceção não tratada" # Unhandled exception.
+activityReceivedWith = "Recebido com {s}" # Received with {s}
 
 [ALERTS]
 INTERNAL_ERROR = "Erro interno, por favor tente novamente mais tarde" # Internal error, please try again later
@@ -172,7 +173,7 @@ MN_STARTED_ONLINE_SOON = "<b>Masternode iniciado!</b><br>Em breve estará online
 MN_START_FAILED = "<b>Masternode iniciado!</b>" # <b>Masternode started!</b>
 MN_RESTART_FAILED = "<b>Masternode reiniciado!</b>" # <b>Masternode restarted!</b>
 MN_BAD_IP = "O endereço IP é inválido!" # The IP address is invalid!
-MN_BAD_PRIVKEY = "" # The private key is invalid
+MN_BAD_PRIVKEY = "A chave privada é inválida" # The private key is invalid
 MN_NOT_ENOUGH_COLLAT = "Você precisa de <b>{amount} mais {ticker}</b> para criar um Masternode!" # You need <b>{amount} more {ticker}</b> to create a Masternode!
 MN_COLLAT_NOT_SUITABLE = "Este não é um UTXO adequado para um Masternode" # This is not a suitable UTXO for a Masternode
 MN_CANT_CONNECT = "Não é possível conectar ao nó RPC!" # Unable to connect to RPC node!

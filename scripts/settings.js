@@ -465,14 +465,19 @@ async function setAnalytics(level, fSilent = false) {
  * Log out from the current wallet
  */
 export async function logOut() {
+    const cNet = getNetwork();
+    if (!cNet.fullSynced && wallet.isLoaded()) {
+        createAlert('warning', `${ALERTS.WALLET_NOT_SYNCED}`, 3000);
+        return;
+    }
     const fContinue = await confirmPopup({
-        title: `${translation.CONFIRM_POPUP_DELETE_ACCOUNT_TITLE}`,
+        title: `${ALERTS.CONFIRM_POPUP_DELETE_ACCOUNT_TITLE}`,
         html: `
         <b>${tr(translation.netSwitchUnsavedWarningSubtitle, [
             { network: cChainParams.current.name },
         ])}</b>
         <br>
-        ${translation.CONFIRM_POPUP_DELETE_ACCOUNT}
+        ${ALERTS.CONFIRM_POPUP_DELETE_ACCOUNT}
         <br>
         <br>
     `,
@@ -492,6 +497,12 @@ export async function logOut() {
  * Toggle between Mainnet and Testnet
  */
 export async function toggleTestnet() {
+    const cNet = getNetwork();
+    if (!cNet.fullSynced && wallet.isLoaded()) {
+        createAlert('warning', `${ALERTS.WALLET_NOT_SYNCED}`, 3000);
+        doms.domTestnetToggler.checked = cChainParams.current.isTestnet;
+        return;
+    }
     const cNextNetwork = cChainParams.current.isTestnet
         ? cChainParams.main
         : cChainParams.testnet;
