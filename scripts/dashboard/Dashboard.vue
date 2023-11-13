@@ -172,6 +172,7 @@ async function importWallet({ type, secret, password = '' }) {
         key = await parseSecret(secret, password);
     }
     if (key) {
+        const isAlreadyLoaded = wallet.isLoaded();
         wallet.setMasterKey(key);
         isImported.value = true;
         jdenticonValue.value = wallet.getAddress();
@@ -184,10 +185,11 @@ async function importWallet({ type, secret, password = '' }) {
 
         if (needsToEncrypt.value) showEncryptModal.value = true;
         isViewOnly.value = wallet.isViewOnly();
-
-        await mempool.loadFromDisk();
-        await getNetwork().walletFullSync();
-
+        // Don't reload an already loaded wallet!
+        if (!isAlreadyLoaded) {
+            await mempool.loadFromDisk();
+            getNetwork().walletFullSync();
+        }
         getEventEmitter().emit('wallet-import');
         return true;
     }
@@ -923,7 +925,7 @@ defineExpose({
             @openQrScan="openSendQRScanner()"
             @close="showTransferMenu = false"
             @send="send"
-            @max-balance="transferAmount = mempool.balance.toString()"
+            @max-balance="transferAmount = (mempool.balance / COIN).toString()"
         />
     </div>
 </template>
