@@ -4,8 +4,14 @@ import pLogo from '../../assets/p_logo.svg';
 import VanityGen from './VanityGen.vue';
 import CreateWallet from './CreateWallet.vue';
 import AccessWallet from './AccessWallet.vue';
+import { watch, toRefs } from 'vue';
 
 defineEmits(['import-wallet']);
+
+const props = defineProps({
+    advancedMode: Boolean,
+});
+const { advancedMode } = toRefs(props);
 </script>
 
 <template>
@@ -67,6 +73,7 @@ defineEmits(['import-wallet']);
 
         <br />
         <AccessWallet
+            :advancedMode="advancedMode"
             @import-wallet="
                 (secret, password) =>
                     $emit('import-wallet', { type: 'hd', secret, password })

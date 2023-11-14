@@ -71,10 +71,9 @@ watch(showExportModal, async (showExportModal) => {
         keyToBackup.value = '';
     }
 });
-getEventEmitter().on(
-    'advanced-mode',
-    (fAdvancedMode) => (advancedMode.value = fAdvancedMode)
-);
+getEventEmitter().on('advanced-mode', (fAdvancedMode) => {
+    advancedMode.value = fAdvancedMode;
+});
 
 /**
  * Parses whatever the secret is to a MasterKey
@@ -118,7 +117,7 @@ async function parseSecret(secret, password = '') {
                 );
                 if (!ok) throw new Error(msg);
                 return new HdMasterKey({
-                    seed: await mnemonicToSeed(phrase),
+                    seed: await mnemonicToSeed(phrase, password),
                 });
             },
         },
@@ -491,7 +490,11 @@ defineExpose({
 <template>
     <div id="keypair" class="tabcontent">
         <div class="row m-0">
-            <Login v-show="!isImported" @import-wallet="importWallet" />
+            <Login
+                v-show="!isImported"
+                :advancedMode="advancedMode"
+                @import-wallet="importWallet"
+            />
 
             <br />
 

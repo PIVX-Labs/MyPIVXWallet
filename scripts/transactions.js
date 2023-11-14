@@ -232,7 +232,7 @@ export async function undelegateGUI() {
     if (!validateAmount(nAmount)) return;
 
     // Generate a new address to undelegate towards
-    const [address] = wallet.getNewAddress();
+    const [address] = wallet.getNewAddress(1);
 
     // Perform the TX
     const cTxRes = await createAndSendTransaction({
@@ -304,6 +304,7 @@ export async function createAndSendTransaction({
     const nChange = cCoinControl.nValue - (nFee + amount);
     const [changeAddress, _] = await getNewAddress({
         verify: wallet.isHardwareWallet(),
+        nReceiving: 1,
     });
 
     /**
@@ -342,8 +343,7 @@ export async function createAndSendTransaction({
         // For custom Cold Owner Addresses, it could be an external address, so we need the mempool to class it as an 'external send'
         const strOwnerAddress = fCustomColdOwner
             ? delegationOwnerAddress
-            : (await wallet.getNewAddress())[0];
-        const strOwnerPath = await wallet.isOwnAddress(strOwnerAddress);
+            : wallet.getNewAddress(1)[0];
 
         // Create the Delegation output
         cTx.addcoldstakingoutput(strOwnerAddress, address, amount / COIN);
@@ -425,6 +425,7 @@ export async function createMasternode() {
     // Generate the Masternode collateral
     const [address] = await getNewAddress({
         verify: wallet.isHardwareWallet(),
+        nReceiving: 1,
     });
     const result = await createAndSendTransaction({
         amount: cChainParams.current.collateralInSats,
