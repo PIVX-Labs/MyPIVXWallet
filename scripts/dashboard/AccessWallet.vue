@@ -1,7 +1,7 @@
 <script setup>
 import coinPlant from '../../assets/coin_plant.svg';
 import pLogo from '../../assets/p_logo.svg';
-import { ref, watch } from 'vue';
+import { ref, watch, toRefs } from 'vue';
 import { translation } from '../i18n.js';
 import { isBase64 } from '../misc';
 
@@ -13,7 +13,7 @@ const passwordPlaceholder = ref(translation.password);
 const props = defineProps({
     advancedMode: Boolean,
 });
-const advancedMode = ref(props.advancedMode);
+const { advancedMode } = toRefs(props);
 
 /**
  * Secret is the thing being imported:
@@ -26,12 +26,12 @@ const secret = ref('');
  */
 const password = ref('');
 
-watch(secret, (secret) => {
+watch([secret, advancedMode], ([secret, advancedMode]) => {
     // If it cointains spaces, it's likely a bip39 seed
     const fContainsSpaces = secret.trim().includes(' ');
 
     // Show password input if it's a bip39 seed and we're in advanced mode
-    if (fContainsSpaces && advancedMode.value) {
+    if (fContainsSpaces && advancedMode) {
         showPassword.value = true;
     }
     // If it's a Base64 secret, it's likely an MPW encrypted import,
@@ -47,6 +47,10 @@ watch(secret, (secret) => {
     passwordPlaceholder.value = fContainsSpaces
         ? translation.optionalPassphrase
         : translation.password;
+});
+watch(showPassword, (showPassword) => {
+    // Empty password prompt when hidden
+    if (!showPassword) password.value = '';
 });
 const emit = defineEmits(['import-wallet']);
 function importWallet() {
