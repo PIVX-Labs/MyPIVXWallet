@@ -14,7 +14,7 @@ import { Database } from './database.js';
 import { guiRenderCurrentReceiveModal } from './contacts-book.js';
 import { Account } from './accounts.js';
 import { fAdvancedMode } from './settings.js';
-import { bytesToHex, hexToBytes } from './utils.js';
+import { bytesToHex, hexToBytes, startBatch } from './utils.js';
 import { strHardwareName } from './ledger.js';
 import { COutpoint, UTXO_WALLET_STATE } from './mempool.js';
 import { getEventEmitter } from './event_bus.js';
@@ -672,20 +672,29 @@ export class Wallet {
             const blockHeights = (await cNet.getShieldBlockList()).filter(
                 (b) => b > this.#shield.getLastSyncedBlock()
             );
-            let i = 1;
-            for (const blockHeight of blockHeights) {
-                getEventEmitter().emit(
-                    'shield-sync-status-update',
-                    tr(translation.syncShieldProgress, [
-                        { current: i },
-                        { total: blockHeights.length },
-                    ]),
-                    false
-                );
-                const block = await cNet.getBlock(blockHeight);
-                await this.#shield.handleBlock(block);
-                i += 1;
-            }
+            const batchSize = Number.parseInt(prompt('Insert batch size', '8'));
+            console.time('sync_start');
+            let processed = 1;
+            const _blocks = await startBatch(
+                (i) => {
+                    return cNet.getBlock(blockHeights[i]).then((block) => {
+                        getEventEmitter().emit(
+                            'shield-sync-status-update',
+                            tr(translation.syncShieldProgress, [
+                                { current: ++processed },
+                                { total: blockHeights.length },
+                            ]),
+                            false
+                        );
+                        return block;
+                    });
+                },
+                blockHeights.length,
+                batchSize
+            );
+            // Disable block handlign for now
+            // for (const block of blocks) await this.#shield.handleBlock(block);
+            console.timeEnd('sync_start');
             getEventEmitter().emit('shield-sync-status-update', '', true);
             //TODO: update this once all wallet sync is in the wallet class
             if (cNet.fullSynced) {
