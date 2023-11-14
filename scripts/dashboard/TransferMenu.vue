@@ -47,7 +47,7 @@ function send() {
     // TODO: Maybe in the future do one of those cool animation that set the
     // Input red
     if (address.value && amount.value)
-        emit('send', sanitizeHTML(address.value), amount.value);
+        emit('send', sanitizeHTML(address.value), amount.value + 1);
 }
 
 function syncAmountCurrency() {
