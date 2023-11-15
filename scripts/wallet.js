@@ -11,7 +11,10 @@ import { mempool } from './global.js';
 import { ALERTS, tr, translation } from './i18n.js';
 import { encrypt } from './aes-gcm.js';
 import { Database } from './database.js';
-import { guiRenderCurrentReceiveModal } from './contacts-book.js';
+import {
+    RECEIVE_TYPES,
+    guiRenderCurrentReceiveModal,
+} from './contacts-book.js';
 import { Account } from './accounts.js';
 import { fAdvancedMode } from './settings.js';
 import { bytesToHex, hexToBytes, startBatch } from './utils.js';
@@ -27,6 +30,7 @@ import {
     OWNER_START_INDEX,
 } from './script.js';
 import { PIVXShield } from 'pivx-shield';
+import { guiToggleReceiveType } from './contacts-book.js';
 
 /**
  * Class Wallet, at the moment it is just a "realization" of Masterkey with a given nAccount
@@ -345,7 +349,7 @@ export class Wallet {
     }
 
     /**
-     * @return [string, string] Address and its BIP32 derivation path
+     * @return {[string, string]} Address and its BIP32 derivation path
      */
     getNewAddress() {
         const last = this.#highestUsedIndex;
@@ -358,6 +362,13 @@ export class Wallet {
         const path = this.getDerivationPath(0, this.#addressIndex);
         const address = this.getAddress(0, this.#addressIndex);
         return [address, path];
+    }
+
+    /**
+     * @returns {Promsie<string>} new shield address
+     */
+    async getNewShieldAddress() {
+        return await this.#shield.getNewAddress();
     }
 
     isHardwareWallet() {
@@ -879,6 +890,7 @@ export async function hasEncryptedWallet() {
 export async function getNewAddress({
     updateGUI = false,
     verify = false,
+    shield = false,
 } = {}) {
     const [address, path] = wallet.getNewAddress();
     if (verify && wallet.isHardwareWallet()) {
@@ -888,7 +900,6 @@ export async function getNewAddress({
             html: createAddressConfirmation(address),
             resolvePromise: wallet.getMasterKey().verifyAddress(path),
         });
-        console.log(address, confAddress);
         if (address !== confAddress) {
             throw new Error('User did not verify address');
         }
@@ -896,7 +907,9 @@ export async function getNewAddress({
 
     // If we're generating a new address manually, then render the new address in our Receive Modal
     if (updateGUI) {
-        guiRenderCurrentReceiveModal();
+        guiToggleReceiveType(
+            shield ? RECEIVE_TYPES.SHIELD : RECEIVE_TYPES.ADDRESS
+        );
     }
 
     return [address, path];

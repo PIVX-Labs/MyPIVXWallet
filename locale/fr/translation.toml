@@ -212,6 +212,8 @@ activityReceivedWith = "" # Received with {s}
 syncLoadingSaplingProver = "" # Loading Sapling Prover
 syncShieldProgress = "" # Loading shielded blocks {current} of {total}
 useShieldInputs = "" # Use shield inputs
+newShieldAddress = "" # Get new shield address
+shieldAddress = "" # Shield address
 
 [ALERTS]
 INTERNAL_ERROR = "Erreur interne, veuillez réessayer plus tard" # Internal error, please try again later

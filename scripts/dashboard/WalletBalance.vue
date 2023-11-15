@@ -21,6 +21,7 @@ const props = defineProps({
     currency: String,
     price: Number,
     displayDecimals: Number,
+    shieldEnabled: Boolean,
 });
 const {
     jdenticonValue,
@@ -30,6 +31,7 @@ const {
     currency,
     price,
     displayDecimals,
+    shieldEnabled,
 } = toRefs(props);
 
 onMounted(() => {
@@ -203,6 +205,26 @@ function reload() {
                                         <span
                                             >&nbsp;{{
                                                 translation.refreshAddress
+                                            }}</span
+                                        >
+                                    </a>
+                                    <a
+                                        class="dropdown-item ptr"
+                                        v-if="shieldEnabled"
+                                        data-toggle="modal"
+                                        data-target="#qrModal"
+                                        @click="
+                                            getNewAddress({
+                                                updateGUI: true,
+                                                verify: true,
+                                                shield: true,
+                                            })
+                                        "
+                                    >
+                                        <i class="fas fa-shield"></i>
+                                        <span
+                                            >&nbsp;{{
+                                                translation.newShieldAddress
                                             }}</span
                                         >
                                     </a>

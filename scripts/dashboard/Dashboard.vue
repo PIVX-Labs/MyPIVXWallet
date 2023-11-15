@@ -939,6 +939,7 @@ defineExpose({
                         :currency="currency"
                         :price="price"
                         :displayDecimals="displayDecimals"
+                        :shieldEnabled="wallet.hasShield()"
                         @reload="refreshChainData()"
                         @send="showTransferMenu = true"
                         @exportPrivKeyOpen="showExportModal = true"
