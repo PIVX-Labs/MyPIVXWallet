@@ -1,5 +1,6 @@
 import { Buffer } from 'buffer';
 import { sha256 } from '@noble/hashes/sha256';
+import { sleep } from './misc.js';
 
 export const pubKeyHashNetworkLen = 21;
 export const pubChksum = 4;
@@ -88,13 +89,21 @@ export function arrayToCSV(data) {
  * [ await promsieFactory(0), await promisefactory(1), ... ]
  * If the promises depend on each other, then behavior is undefined
  */
-export async function startBatch(promiseFactory, length, batchSize) {
+export async function startBatch(promiseFactory, length, batchSize, retryTime = 10000) {
     return new Promise((res) => {
-        // Start fisrt batchsize promises
         const running = [];
         let i = 0;
         const startNext = async (p) => {
-            const result = await p;
+	    let result;
+	    let current = i;
+	    try {
+		result = await p;
+	    } catch (e) {
+		// Try again later 
+		await sleep(retryTime);
+		running[current] = startNext(current);
+		return;
+	    }
             i++;
             if (i < length) {
                 running.push(startNext(promiseFactory(i)));
@@ -103,6 +112,7 @@ export async function startBatch(promiseFactory, length, batchSize) {
             }
             return result;
         };
+	// Start fisrt batchsize promises
         for (i = 0; i < batchSize; i++) {
             running.push(startNext(promiseFactory(i)));
         }
