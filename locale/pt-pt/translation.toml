@@ -79,6 +79,7 @@ accountDeleted = "" # Your account has been successfully deleted!
 activityReceivedWith = "" # Received with {s}
 syncLoadingSaplingProver = "" # Loading Sapling Prover
 syncShieldProgress = "" # Loading shielded blocks {current} of {total}
+useShieldInputs = "" # Use shield inputs
 
 [ALERTS]
 MN_BAD_PRIVKEY = "" # The private key is invalid

@@ -257,43 +257,19 @@ export async function undelegateGUI() {
     }
 }
 
-/**
- * Creates and sends a transaction to the network.
- * @param {Object} options
- * @param {string} options.address - base58 encoded address to send funds to
- * @param {Number} options.amount - Number of satoshi to send
- * @param {boolean} options.isDelegation - Whether to delegate the amount. Address will be the cold staking address
- * @param {boolean} options.useDelegatedInputs - If true, only delegated coins will be used in the transaction
- * @param {boolean} options.delegateChange - If there is at least 1.01 PIV of change, the change will be delegated to options.changeDelegationAddress
- * @param {string|null} options.changeDelegationAddress - See options.delegateChange
- * @param {string|null} options.delegationOwnerAddress - An optional Owner Address to use for the delegation
- * @returns {Promise<{ok: boolean, err: string?}>}
- */
-export async function createAndSendTransaction({
+async function createTransparentTransaction({
     address,
     amount,
-    isDelegation = false,
-    useDelegatedInputs = false,
-    delegateChange = false,
-    changeDelegationAddress = null,
-    delegationOwnerAddress = '',
-    isProposal = false,
+    isDelegation,
+    useDelegatedInputs,
+    delegateChange,
+    changeDelegationAddress,
+    isProposal,
 }) {
-    if (!(await wallet.hasWalletUnlocked(true))) return;
-    if ((isDelegation || useDelegatedInputs) && wallet.isHardwareWallet()) {
-        return createAlert('warning', ALERTS.STAKING_LEDGER_NO_SUPPORT, 6000);
-    }
-
-    // Ensure the wallet is unlocked
-    if (
-        wallet.isViewOnly() &&
-        !(await restoreWallet(translation.walletUnlockTx))
-    )
-        return;
-
     // Construct a TX and fetch Standard inputs
     const nBalance = getBalance();
     const cTx = new bitjs.transaction();
+
     const cCoinControl = await chooseUTXOs(cTx, amount, 0, useDelegatedInputs);
     if (!cCoinControl.success)
         return createAlert('warning', cCoinControl.msg, 5000);
@@ -342,8 +318,7 @@ export async function createAndSendTransaction({
         // For custom Cold Owner Addresses, it could be an external address, so we need the mempool to class it as an 'external send'
         const strOwnerAddress = fCustomColdOwner
             ? delegationOwnerAddress
-            : (await wallet.getNewAddress())[0];
-        const strOwnerPath = await wallet.isOwnAddress(strOwnerAddress);
+            : wallet.getNewAddress()[0];
 
         // Create the Delegation output
         cTx.addcoldstakingoutput(strOwnerAddress, address, amount / COIN);
@@ -372,7 +347,64 @@ export async function createAndSendTransaction({
         `);
     }
 
-    const sign = await signTransaction(cTx, wallet, outputs, delegateChange);
+    return await signTransaction(cTx, wallet, outputs, delegateChange);
+}
+
+async function createShieldTransaction(address, amount) {
+    return await wallet.createShieldTransaction(address, amount);
+}
+
+/**
+ * Creates and sends a transaction to the network.
+ * @param {Object} options
+ * @param {string} options.address - base58 encoded address to send funds to
+ * @param {Number} options.amount - Number of satoshi to send
+ * @param {boolean} options.isDelegation - Whether to delegate the amount. Address will be the cold staking address
+ * @param {boolean} options.useDelegatedInputs - If true, only delegated coins will be used in the transaction
+ * @param {boolean} options.delegateChange - If there is at least 1.01 PIV of change, the change will be delegated to options.changeDelegationAddress
+ * @param {string|null} options.changeDelegationAddress - See options.delegateChange
+ * @param {string|null} options.delegationOwnerAddress - An optional Owner Address to use for the delegation
+ * @returns {Promise<{ok: boolean, err: string?}>}
+ */
+export async function createAndSendTransaction({
+    address,
+    amount,
+    isDelegation = false,
+    useDelegatedInputs = false,
+    delegateChange = false,
+    changeDelegationAddress = null,
+    delegationOwnerAddress = '',
+    isProposal = false,
+    useShieldInputs = false,
+}) {
+    if (!(await wallet.hasWalletUnlocked(true))) return;
+    if ((isDelegation || useDelegatedInputs) && wallet.isHardwareWallet()) {
+        return createAlert('warning', ALERTS.STAKING_LEDGER_NO_SUPPORT, 6000);
+    }
+
+    // Ensure the wallet is unlocked
+    if (
+        wallet.isViewOnly() &&
+        !(await restoreWallet(translation.walletUnlockTx))
+    )
+        return;
+
+    let sign;
+    if (useShieldInputs) {
+        sign = await createShieldTransaction(address, amount);
+    } else {
+        sign = await createTransparentTransaction({
+            address,
+            amount,
+            isDelegation,
+            useDelegatedInputs,
+            delegateChange,
+            changeDelegationAddress,
+            delegationOwnerAddress,
+            isProposal,
+        });
+    }
+
     const result = await getNetwork().sendTransaction(sign);
     // Update the mempool
     if (result) {

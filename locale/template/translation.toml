@@ -235,6 +235,7 @@ timeHours = "Hours"
 timeMinutes = "Minutes"
 timeSeconds = "Seconds"
 unhandledException = "Unhandled exception."
+useShieldInputs = "Use shield inputs"
 
 [ALERTS]
 INTERNAL_ERROR = "Internal error, please try again later"

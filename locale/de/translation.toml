@@ -211,6 +211,7 @@ activitySelf = "" # self
 activityReceivedWith = "" # Received with {s}
 syncLoadingSaplingProver = "" # Loading Sapling Prover
 syncShieldProgress = "" # Loading shielded blocks {current} of {total}
+useShieldInputs = "" # Use shield inputs
 
 [ALERTS]
 INTERNAL_ERROR = "Interner Fehler, bitte versuche es später erneut" # Internal error, please try again later

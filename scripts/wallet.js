@@ -220,7 +220,7 @@ export class Wallet {
     }
 
     hasShield() {
-        return !this.#shield ? false : true;
+        return !!this.#shield;
     }
 
     /**
@@ -717,6 +717,17 @@ export class Wallet {
         await this.saveShieldOnDisk();
         this.#isShieldSynced = true;
     }
+
+    async createShieldTransaction(address, amount) {
+        const { hex, txid } = this.#shield.createTransaction({
+            address,
+            amount,
+            blockHeight: getNetwork().cachedBlockCount,
+            useShieldInputs: true,
+        });
+        return hex;
+    }
+
     /**
      * Update the shield object with the latest blocks
      */

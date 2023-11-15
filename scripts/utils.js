@@ -89,21 +89,26 @@ export function arrayToCSV(data) {
  * [ await promsieFactory(0), await promisefactory(1), ... ]
  * If the promises depend on each other, then behavior is undefined
  */
-export async function startBatch(promiseFactory, length, batchSize, retryTime = 10000) {
+export async function startBatch(
+    promiseFactory,
+    length,
+    batchSize,
+    retryTime = 10000
+) {
     return new Promise((res) => {
         const running = [];
         let i = 0;
         const startNext = async (p) => {
-	    let result;
-	    let current = i;
-	    try {
-		result = await p;
-	    } catch (e) {
-		// Try again later 
-		await sleep(retryTime);
-		running[current] = startNext(current);
-		return;
-	    }
+            let result;
+            let current = i;
+            try {
+                result = await p;
+            } catch (e) {
+                // Try again later
+                await sleep(retryTime);
+                running[current] = startNext(current);
+                return;
+            }
             i++;
             if (i < length) {
                 running.push(startNext(promiseFactory(i)));
@@ -112,7 +117,7 @@ export async function startBatch(promiseFactory, length, batchSize, retryTime = 
             }
             return result;
         };
-	// Start fisrt batchsize promises
+        // Start fisrt batchsize promises
         for (i = 0; i < batchSize; i++) {
             running.push(startNext(promiseFactory(i)));
         }

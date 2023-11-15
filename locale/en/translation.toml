@@ -211,6 +211,7 @@ activityReceivedWith = "Received with {s}" # Received with {s}
 accountDeleted = "Your account has been successfully deleted!" # Your account has been successfully deleted!
 syncLoadingSaplingProver = "Loading Sapling Prover" # Loading Sapling Prover
 syncShieldProgress = "Loading shielded blocks {current} of {total}" # Loading shielded blocks {current} of {total}
+useShieldInputs = "Use shield inputs" # Use shield inputs
 
 [ALERTS]
 INTERNAL_ERROR = "Internal error, please try again later" # Internal error, please try again later

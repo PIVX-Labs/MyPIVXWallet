@@ -325,7 +325,7 @@ async function lockWallet() {
  * @param {string} address - Address or contact to send to
  * @param {number} amount - Amount of PIVs to send
  */
-async function send(address, amount) {
+async function send(address, amount, useShieldInputs) {
     // Ensure a wallet is loaded
     if (!(await wallet.hasWalletUnlocked(true))) return;
 
@@ -402,6 +402,7 @@ async function send(address, amount) {
         address,
         amount: nValue,
         isDelegation: false,
+        useShieldInputs,
     });
 }
 
@@ -956,6 +957,7 @@ defineExpose({
             :show="showTransferMenu"
             :price="price"
             :currency="currency"
+            :shieldEnabled="wallet.hasShield()"
             v-model:amount="transferAmount"
             v-model:address="transferAddress"
             @openQrScan="openSendQRScanner()"
