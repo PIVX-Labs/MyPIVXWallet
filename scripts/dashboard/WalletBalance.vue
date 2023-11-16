@@ -286,7 +286,7 @@ function reload() {
                 >
                 </span>
                 <span style="margin-left: 5px">
-                    <i class="fas fa-shield fa-xs"> </i>
+                    <i class="fas fa-shield fa-xs" v-if="shieldEnabled"> </i>
                 </span>
             </div>
             <div class="dcWallet-usdBalance">
