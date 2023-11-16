@@ -9,6 +9,7 @@ import {
     createQR,
     getImageFile,
     isStandardAddress,
+    isValidPIVXAddress,
     isXPub,
     sanitizeHTML,
 } from './misc.js';
@@ -947,8 +948,7 @@ export async function getAddressColor(address) {
         return 'green';
     }
 
-    // Not a contact: dig deeper, is this a Standard address or XPub?
-    if (isStandardAddress(address) || isXPub(address)) {
+    if (isValidPIVXAddress(address)) {
         // Yep!
         return 'green';
     } else {

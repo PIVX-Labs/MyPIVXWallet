@@ -244,6 +244,28 @@ export function isColdAddress(strAddress) {
 }
 
 /**
+ * @param {string} strAddress - The address to check
+ * @returns {boolean} if strAddress is a valid shiled address
+ */
+export function isShieldAddress(strAddress) {
+    // Hopefully i'll remember to implement
+    return !isStandardAddress(strAddress);
+}
+
+/**
+ * @param {string} strAddress
+ * @return {boolean} If a straddress is a valid PIVX address,
+ * i.e. shield, xpub or standard
+ */
+export function isValidPIVXAddress(strAddress) {
+    return (
+        isStandardAddress(strAddress) ||
+        isColdAddress(strAddress) ||
+        isShieldAddress(strAddress)
+    );
+}
+
+/**
  * A quick check to see if a string is an XPub key
  * @param {string} strXPub - The XPub to check
  * @returns {boolean} - `true` if a valid formatted XPub, `false` if not
