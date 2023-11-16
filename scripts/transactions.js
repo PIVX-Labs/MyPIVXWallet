@@ -29,6 +29,7 @@ import {
     isXPub,
     isStandardAddress,
     isColdAddress,
+    isShieldAddress,
 } from './misc.js';
 import { bytesToHex, hexToBytes, dSHA256 } from './utils.js';
 import { Database } from './database.js';
@@ -346,7 +347,6 @@ async function createTransparentTransaction({
             ---- END TRANSACTION (Debug Mode) ----
         `);
     }
-
     return await signTransaction(cTx, wallet, outputs, delegateChange);
 }
 
@@ -390,7 +390,7 @@ export async function createAndSendTransaction({
         return;
 
     let sign;
-    if (useShieldInputs) {
+    if (useShieldInputs || isShieldAddress(address)) {
         sign = await createShieldTransaction(address, amount);
     } else {
         sign = await createTransparentTransaction({

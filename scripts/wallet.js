@@ -1,10 +1,11 @@
 import { validateMnemonic } from 'bip39';
 import { decrypt } from './aes-gcm.js';
+import { parseWIF } from './encoding.js';
 import { beforeUnloadListener } from './global.js';
 import { ExplorerNetwork, getNetwork } from './network.js';
 import { MAX_ACCOUNT_GAP } from './chain_params.js';
 import { Transaction, HistoricalTx, HistoricalTxType } from './mempool.js';
-import { confirmPopup, createAlert } from './misc.js';
+import { confirmPopup, createAlert, isShieldAddress } from './misc.js';
 import { cChainParams } from './chain_params.js';
 import { COIN } from './chain_params.js';
 import { mempool } from './global.js';
@@ -697,6 +698,7 @@ export class Wallet {
                     // One and handle as many as possible
                     for (let j = handled; blocks[j]; j = handled) {
                         handled++;
+                        console.log(`Handling ${j}`);
                         await this.#shield.handleBlock(blocks[j]);
                         // Delete so we don't have to hold all blocks in memory
                         // until we finish syncing
@@ -730,13 +732,43 @@ export class Wallet {
     }
 
     async createShieldTransaction(address, amount) {
-        const { hex, txid } = this.#shield.createTransaction({
-            address,
-            amount,
-            blockHeight: getNetwork().cachedBlockCount,
-            useShieldInputs: true,
-        });
-        return hex;
+        createAlert('success', 'Creating s tx');
+        if (isShieldAddress(address)) {
+            const { hex } = await this.#shield.createTransaction({
+                address,
+                amount,
+                blockHeight: getNetwork().cachedBlockCount,
+                useShieldInputs: false,
+                utxos: mempool
+                    .getUTXOs({
+                        filter: UTXO_WALLET_STATE.SPENDABLE,
+                        includeLocked: false,
+                    })
+                    .map((u) => {
+                        return {
+                            vout: u.outpoint.n,
+                            amount: u.value,
+                            private_key: parseWIF(
+                                this.#masterKey.getPrivateKey(
+                                    this.getPath(u.script)
+                                )
+                            ),
+                            script: hexToBytes(u.script),
+                            txid: u.outpoint.txid,
+                        };
+                    }),
+                transparentChangeAddress: this.getNewAddress()[0],
+            });
+            return hex;
+        } else {
+            const { hex, txid } = await this.#shield.createTransaction({
+                address,
+                amount,
+                blockHeight: getNetwork().cachedBlockCount,
+                useShieldInputs: true,
+            });
+            return hex;
+        }
     }
 
     /**
@@ -801,6 +833,13 @@ export class Wallet {
         this.#shield = await PIVXShield.load(cAccount.shieldData);
         console.log('Shield has been loaded from disk!');
         return;
+    }
+
+    /**
+     * @returns {Promise<number>} Number of shield satoshis of the account
+     */
+    async getShieldBalance() {
+        return this.#shield?.getBalance() || 0;
     }
 }
 
