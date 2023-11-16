@@ -14,6 +14,7 @@ import { parseWIF, verifyWIF } from '../encoding.js';
 import {
     createAlert,
     isBase64,
+    isShieldAddress,
     isValidBech32,
     parseBIP21Request,
     sanitizeHTML,
@@ -135,7 +136,7 @@ async function parseSecret(secret, password = '') {
                 const seed = await mnemonicToSeed(phrase);
                 const pivxShield = await PIVXShield.create({
                     seed,
-                    blockHeight: 0,
+                    blockHeight: 1000000000000,
                     coinType: cChainParams.current.BIP44_TYPE,
                     // TODO: Change account index once account system is made
                     accountIndex: 0,
@@ -386,7 +387,8 @@ async function send(address, amount, useShieldInputs) {
     }
 
     // Check if the Receiver Address is a valid P2PKH address
-    if (!isStandardAddress(address))
+    // or shield address
+    if (!isStandardAddress(address) && !isShieldAddress(address))
         return createAlert(
             'warning',
             tr(ALERTS.INVALID_ADDRESS, [{ address }]),
@@ -450,6 +452,7 @@ onMounted(async () => {
 });
 
 const balance = ref(0);
+const shieldBalance = ref(0);
 const currency = ref('USD');
 const price = ref(0.0);
 const displayDecimals = ref(0);
@@ -464,6 +467,7 @@ getEventEmitter().on('new-tx', (status) => {
 
 getEventEmitter().on('balance-update', async () => {
     balance.value = mempool.balance;
+    shieldBalance.value = await wallet.getShieldBalance();
     currency.value = strCurrency.toUpperCase();
     price.value = await cMarket.getPrice(strCurrency);
     displayDecimals.value = nDisplayDecimals;
@@ -933,6 +937,7 @@ defineExpose({
                     <!-- Balance in PIVX & USD-->
                     <WalletBalance
                         :balance="balance"
+                        :shieldBalance="shieldBalance"
                         :jdenticonValue="jdenticonValue"
                         :isHdWallet="false"
                         :isHardwareWallet="false"

@@ -16,6 +16,7 @@ import { getNewAddress } from '../wallet.js';
 const props = defineProps({
     jdenticonValue: String,
     balance: Number,
+    shieldBalance: Number,
     isHdWallet: Boolean,
     isHardwareWallet: Boolean,
     currency: String,
@@ -26,6 +27,7 @@ const props = defineProps({
 const {
     jdenticonValue,
     balance,
+    shieldBalance,
     isHdWallet,
     isHardwareWallet,
     currency,
@@ -48,11 +50,11 @@ onMounted(() => {
 });
 
 // Transparent sync status
-const isTSyncing = ref(false);
+const transparentSyncing = ref(false);
 const syncTStr = ref('');
 
 // Shield sync status
-const isSSyncing = ref(false);
+const shieldSyncing = ref(false);
 const syncSStr = ref('');
 
 const updating = ref(false);
@@ -61,6 +63,10 @@ const balanceStr = computed(() => {
     const strBal = nCoins.toFixed(displayDecimals.value);
     const nLen = strBal.length;
     return beautifyNumber(strBal, nLen >= 10 ? '17px' : '25px');
+});
+const shieldBalanceStr = computed(() => {
+    const nCoins = shieldBalance.value / COIN;
+    return nCoins.toFixed(displayDecimals.value);
 });
 
 const balanceValue = computed(() => {
@@ -81,12 +87,12 @@ const emit = defineEmits(['reload', 'send', 'exportPrivKeyOpen']);
 
 getEventEmitter().on('transparent-sync-status-update', (str, finished) => {
     syncTStr.value = str;
-    isTSyncing.value = !finished;
+    transparentSyncing.value = !finished;
 });
 
 getEventEmitter().on('shield-sync-status-update', (str, finished) => {
     syncSStr.value = str;
-    isSSyncing.value = !finished;
+    shieldSyncing.value = !finished;
 });
 
 function reload() {
@@ -273,6 +279,17 @@ function reload() {
             </span>
             <br />
             <div class="dcWallet-usdBalance">
+                <span
+                    class="dcWallet-usdValue"
+                    v-if="shieldEnabled"
+                    v-html="shieldBalanceStr"
+                >
+                </span>
+                <span style="margin-left: 5px">
+                    <i class="fas fa-shield fa-xs"> </i>
+                </span>
+            </div>
+            <div class="dcWallet-usdBalance">
                 <span class="dcWallet-usdValue">{{ balanceValue }}</span>
                 <span class="dcWallet-usdValue">&nbsp;{{ currency }}</span>
             </div>
@@ -298,7 +315,7 @@ function reload() {
         </div>
         <center>
             <div
-                v-if="isTSyncing || isSSyncing"
+                v-if="transparentSyncing || shieldSyncing"
                 style="
                     background-color: #0000002b;
                     width: fit-content;
@@ -306,7 +323,7 @@ function reload() {
                     border-radius: 15px;
                 "
             >
-                {{ isTSyncing ? syncTStr : syncSStr }}
+                {{ transparentSyncing ? syncTStr : syncSStr }}
             </div>
         </center>
     </center>
