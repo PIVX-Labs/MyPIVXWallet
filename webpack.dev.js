@@ -22,6 +22,10 @@ export default merge(common, {
         client: {
             overlay: false,
         },
+        headers: {
+            'Cross-Origin-Embedder-Policy': 'require-corp',
+            'Cross-Origin-Opener-Policy': 'same-origin',
+        },
     },
     plugins: [
         new webpack.DefinePlugin({
