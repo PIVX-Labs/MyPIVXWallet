@@ -31,11 +31,7 @@ function getParentLanguage(langName) {
         ? langName.split('-')[0]
         : defaultLang;
     // Ensure the code exists
-    if (arrActiveLangs.find((lang) => lang.code === strParentCode)) {
-        return strParentCode;
-    } else {
-        return defaultLang;
-    }
+    return strParentCode;
 }
 
 /**

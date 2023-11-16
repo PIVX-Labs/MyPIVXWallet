@@ -328,7 +328,13 @@ export async function start() {
     registerWorker();
     await settingsStart();
     // Just load the block count, for use in non-wallet areas
-    await getNetwork().getBlockCount();
+    try {
+        await getNetwork().getBlockCount();
+    } catch (e) {
+        // Block count failed, keep loading the wallet
+        // the network already creates an alert
+        console.error(e);
+    }
 
     subscribeToNetworkEvents();
 
