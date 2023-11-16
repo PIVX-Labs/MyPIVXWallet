@@ -121,5 +121,6 @@ export async function startBatch(
         for (i = 0; i < batchSize; i++) {
             running.push(startNext(promiseFactory(i)));
         }
+        --i;
     });
 }
