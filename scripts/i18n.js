@@ -31,11 +31,7 @@ function getParentLanguage(langName) {
         ? langName.split('-')[0]
         : defaultLang;
     // Ensure the code exists
-    if (arrActiveLangs.find((lang) => lang.code === strParentCode)) {
-        return strParentCode;
-    } else {
-        return defaultLang;
-    }
+    return strParentCode;
 }
 
 /**
@@ -43,7 +39,11 @@ function getParentLanguage(langName) {
  * @returns {Promise<translation_template>}
  */
 async function getLanguage(code) {
-    return (await import(`../locale/${code}/translation.toml`)).default;
+    try {
+        return (await import(`../locale/${code}/translation.toml`)).default;
+    } catch (e) {
+        return template;
+    }
 }
 
 async function setTranslationKey(key, langName) {
@@ -86,7 +86,7 @@ async function setAlertKey(langName) {
 async function setAlertSubKey(subKey, langName) {
     const lang = await getLanguage(langName);
     const item = lang['ALERTS'][subKey];
-    if (item !== '') {
+    if (item) {
         translation['ALERTS'][subKey] = item;
     } else {
         if (langName === defaultLang) {

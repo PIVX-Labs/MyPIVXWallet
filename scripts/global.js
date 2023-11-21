@@ -328,7 +328,13 @@ export async function start() {
     registerWorker();
     await settingsStart();
     // Just load the block count, for use in non-wallet areas
-    await getNetwork().getBlockCount();
+    try {
+        await getNetwork().getBlockCount();
+    } catch (e) {
+        // Block count failed, keep loading the wallet
+        // the network already creates an alert
+        console.error(e);
+    }
 
     subscribeToNetworkEvents();
 
@@ -972,7 +978,9 @@ export async function sweepAddress(arrUTXOs, sweepingMasterKey, nFixedFee = 0) {
     const nFee = nFixedFee || getNetwork().getFee(cTx.serialize().length);
 
     // Use a new address from our wallet to sweep the UTXOs in to
-    const strAddress = (await getNewAddress(true, false))[0];
+    const strAddress = (
+        await getNewAddress({ updateGUI: true, verify: false, nReceiving: 1 })
+    )[0];
 
     // Sweep the full funds amount, minus the fee, leaving no change from any sweeped UTXOs
     cTx.addoutput(strAddress, (nTotal - nFee) / COIN);
@@ -1963,7 +1971,7 @@ export async function createProposal() {
     // If Advanced Mode is enabled and an address is given, use the provided address, otherwise, generate a new one
     const strAddress =
         document.getElementById('proposalAddress').value.trim() ||
-        (await wallet.getNewAddress())[0];
+        wallet.getNewAddress(1)[0];
     const nextSuperblock = await Masternode.getNextSuperblock();
     const proposal = {
         name: strTitle,

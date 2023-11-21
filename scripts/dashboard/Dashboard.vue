@@ -73,10 +73,9 @@ watch(showExportModal, async (showExportModal) => {
         keyToBackup.value = '';
     }
 });
-getEventEmitter().on(
-    'advanced-mode',
-    (fAdvancedMode) => (advancedMode.value = fAdvancedMode)
-);
+getEventEmitter().on('advanced-mode', (fAdvancedMode) => {
+    advancedMode.value = fAdvancedMode;
+});
 
 class ParsedSecret {
     /**
@@ -133,7 +132,7 @@ async function parseSecret(secret, password = '') {
                     advancedMode.value
                 );
                 if (!ok) throw new Error(msg);
-                const seed = await mnemonicToSeed(phrase);
+                const seed = await mnemonicToSeed(phrase, password);
                 const pivxShield = await PIVXShield.create({
                     seed,
                     blockHeight: 1000000000000,
@@ -172,6 +171,7 @@ async function parseSecret(secret, password = '') {
 }
 
 /**
+ * Import a wallet, this function MUST be called only at start or when switching network
  * @param {Object} o - Options
  * @param {'legacy'|'hd'|'hardware'} o.type - type of import
  * @param {string} o.secret
@@ -202,6 +202,7 @@ async function importWallet({ type, secret, password = '' }) {
     if (parsedSecret) {
         wallet.setMasterKey(parsedSecret.masterKey);
         wallet.setShield(parsedSecret.shield);
+
         isImported.value = true;
         jdenticonValue.value = wallet.getAddress();
         isEncrypt.value = await hasEncryptedWallet();
@@ -270,16 +271,12 @@ async function restoreWallet(strReason) {
         domPassword.value = '';
         const database = await Database.getInstance();
         const { encWif } = await database.getAccount();
-
         // Attempt to unlock the wallet with the provided password
-        if (
-            await importWallet({
-                type: 'hd',
-                secret: encWif,
-                password: strPassword,
-            })
-        ) {
-            // Wallet is unlocked!
+        const key = await parseSecret(encWif, strPassword);
+        if (key) {
+            wallet.setMasterKey(key);
+            isViewOnly.value = wallet.isViewOnly();
+            createAlert('success', ALERTS.WALLET_UNLOCKED, 1500);
             return true;
         } else {
             // Password is invalid
@@ -310,6 +307,7 @@ async function lockWallet() {
     ) {
         wallet.wipePrivateData();
         isViewOnly.value = wallet.isViewOnly();
+        createAlert('success', ALERTS.WALLET_LOCKED, 1500);
     }
 }
 
@@ -524,7 +522,11 @@ defineExpose({
 <template>
     <div id="keypair" class="tabcontent">
         <div class="row m-0">
-            <Login v-show="!isImported" @import-wallet="importWallet" />
+            <Login
+                v-show="!isImported"
+                :advancedMode="advancedMode"
+                @import-wallet="importWallet"
+            />
 
             <br />
 
@@ -931,8 +933,8 @@ defineExpose({
                         :balance="balance"
                         :shieldBalance="shieldBalance"
                         :jdenticonValue="jdenticonValue"
-                        :isHdWallet="false"
-                        :isHardwareWallet="false"
+                        :isHdWallet="wallet.isHD()"
+                        :isHardwareWallet="wallet.isHardwareWallet()"
                         :currency="currency"
                         :price="price"
                         :displayDecimals="displayDecimals"
