@@ -731,32 +731,34 @@ export class Wallet {
         this.#isShieldSynced = true;
     }
 
-    async createShieldTransaction(address, amount) {
+    #getUTXOsForShield() {
+        return mempool
+            .getUTXOs({
+                filter: UTXO_WALLET_STATE.SPENDABLE,
+                includeLocked: false,
+            })
+            .map((u) => {
+                return {
+                    vout: u.outpoint.n,
+                    amount: u.value,
+                    private_key: parseWIF(
+                        this.#masterKey.getPrivateKey(this.getPath(u.script))
+                    ),
+                    script: hexToBytes(u.script),
+                    txid: u.outpoint.txid,
+                };
+            });
+    }
+
+    async createShieldTransaction(address, amount, useShieldInputs = true) {
         createAlert('success', 'Creating s tx');
-        if (isShieldAddress(address)) {
+        if (useShieldInputs) {
             const { hex } = await this.#shield.createTransaction({
                 address,
                 amount,
                 blockHeight: getNetwork().cachedBlockCount,
                 useShieldInputs: false,
-                utxos: mempool
-                    .getUTXOs({
-                        filter: UTXO_WALLET_STATE.SPENDABLE,
-                        includeLocked: false,
-                    })
-                    .map((u) => {
-                        return {
-                            vout: u.outpoint.n,
-                            amount: u.value,
-                            private_key: parseWIF(
-                                this.#masterKey.getPrivateKey(
-                                    this.getPath(u.script)
-                                )
-                            ),
-                            script: hexToBytes(u.script),
-                            txid: u.outpoint.txid,
-                        };
-                    }),
+                utxos: this.#getUTXOsForShield(),
                 transparentChangeAddress: this.getNewAddress()[0],
             });
             return hex;
