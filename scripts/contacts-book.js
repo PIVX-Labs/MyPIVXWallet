@@ -423,7 +423,7 @@ export async function guiRenderReceiveModal(
         case RECEIVE_TYPES.SHIELD:
             renderAddress(await wallet.getNewShieldAddress());
             break;
-        case RECEIVE_TYPES.XPUB:
+        case RECEIVE_TYPES.XPUB: {
             // Get our current wallet XPub
             const strXPub = wallet.getXPub();
 
@@ -447,6 +447,7 @@ export async function guiRenderReceiveModal(
             document.getElementById('clipboard').value = strXPub;
 
             break;
+        }
     }
 }
 

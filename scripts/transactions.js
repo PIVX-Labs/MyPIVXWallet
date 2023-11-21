@@ -266,6 +266,7 @@ async function createTransparentTransaction({
     delegateChange,
     changeDelegationAddress,
     isProposal,
+    delegationOwnerAddress,
 }) {
     // Construct a TX and fetch Standard inputs
     const nBalance = getBalance();
@@ -408,6 +409,7 @@ export async function createAndSendTransaction({
 
     const result = await getNetwork().sendTransaction(sign);
     // Update the mempool
+    /** TODO: Readd later
     if (result) {
         const futureTxid = bytesToHex(dSHA256(hexToBytes(sign)).reverse());
         // Build Transaction object
@@ -440,7 +442,8 @@ export async function createAndSendTransaction({
         });
         mempool.updateMempool(parsedTx);
         mempool.setBalance();
-    }
+	}
+	*/
     return { ok: !!result, txid: result };
 }
 
