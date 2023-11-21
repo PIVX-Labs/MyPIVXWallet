@@ -200,11 +200,12 @@ async function importWallet({ type, secret, password = '' }) {
         parsedSecret = await parseSecret(secret, password);
     }
     if (parsedSecret) {
-        const isAlreadyLoaded = wallet.isLoaded();
         wallet.setMasterKey(parsedSecret.masterKey);
+        wallet.setShield(parsedSecret.shield);
         isImported.value = true;
         jdenticonValue.value = wallet.getAddress();
         isEncrypt.value = await hasEncryptedWallet();
+
         if (!wallet.isHardwareWallet()) {
             needsToEncrypt.value = !wallet.isViewOnly() && !isEncrypt.value;
         } else {
@@ -213,20 +214,11 @@ async function importWallet({ type, secret, password = '' }) {
 
         if (needsToEncrypt.value) showEncryptModal.value = true;
         isViewOnly.value = wallet.isViewOnly();
+        // Start syncing in the background
+        wallet.sync().then(() => {
+            createAlert('success', translation.syncStatusFinished, 12500);
+        });
 
-        // Don't reload an already loaded shield instance!
-        // TODO: slightly change this flow when extsp is added to parsedSecret
-        if (!wallet.hasShield()) {
-            wallet.setShield(parsedSecret.shield);
-            await wallet.loadShieldFromDisk();
-            wallet.syncShield();
-        }
-
-        // Don't reload an already loaded wallet!
-        if (!isAlreadyLoaded) {
-            await mempool.loadFromDisk();
-            getNetwork().walletFullSync();
-        }
         getEventEmitter().emit('wallet-import');
         return true;
     }

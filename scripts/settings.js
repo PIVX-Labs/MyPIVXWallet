@@ -468,7 +468,7 @@ export async function logOut() {
     const cNet = getNetwork();
     if (
         (!cNet.fullSynced && wallet.isLoaded()) ||
-        (!wallet.isShieldSynced && wallet.hasShield())
+        (!wallet.isSynced && wallet.hasShield())
     ) {
         createAlert('warning', `${ALERTS.WALLET_NOT_SYNCED}`, 3000);
         return;
@@ -503,7 +503,7 @@ export async function toggleTestnet() {
     const cNet = getNetwork();
     if (
         (!cNet.fullSynced && wallet.isLoaded()) ||
-        (!wallet.isShieldSynced && wallet.hasShield())
+        (!wallet.isSynced && wallet.hasShield())
     ) {
         createAlert('warning', `${ALERTS.WALLET_NOT_SYNCED}`, 3000);
         doms.domTestnetToggler.checked = cChainParams.current.isTestnet;

@@ -86,10 +86,10 @@ export class Wallet {
      */
     #lockedCoins;
     /**
-     * Whether shielding is ready to use or not
-     * @type {Boolean}
+     * Whether the wallet is synced
+     * @type {boolean}
      */
-    #isShieldSynced = false;
+    #isSynced = false;
     constructor({
         nAccount = 0,
         isMainWallet = true,
@@ -130,6 +130,10 @@ export class Wallet {
         mempool.setBalance();
     }
 
+    /**
+     * Get master key
+     * @deprecated use the wallet functions instead
+     */
     getMasterKey() {
         return this.#masterKey;
     }
@@ -154,12 +158,13 @@ export class Wallet {
         return this.#nAccount;
     }
 
-    get isShieldSynced() {
-        return this.#isShieldSynced;
+    get isSynced() {
+        return this.#isSynced;
     }
 
     wipePrivateData() {
         this.#masterKey.wipePrivateData(this.#nAccount);
+        // this.#shield?.wipePrivateData();
     }
 
     isViewOnly() {
@@ -221,7 +226,7 @@ export class Wallet {
      * @param {import('pivx-shield').PIVXShield} shield object to set
      */
     setShield(shield) {
-        if (shield) this.#shield = shield;
+        this.#shield = shield;
     }
 
     hasShield() {
@@ -235,7 +240,7 @@ export class Wallet {
         this.#highestUsedIndex = 0;
         this.#loadedIndexes = 0;
         this.#ownAddresses = new Map();
-        this.#isShieldSynced = false;
+        this.#isSynced = false;
         this.#shield = null;
         // TODO: This needs to be refactored
         // The wallet could own its own mempool and network?
@@ -663,11 +668,32 @@ export class Wallet {
         }
         return histTXs;
     }
+
+    #syncing = false;
+
+    async sync() {
+        if (this.#isSynced || this.#syncing) {
+            throw new Error('Attempting to sync when already synced');
+        }
+        try {
+            this.#syncing = true;
+
+            await mempool.loadFromDisk();
+            await getNetwork().walletFullSync();
+            console.log(this.#shield);
+            if (this.hasShield()) {
+                await this.#syncShield();
+            }
+            this.#isSynced = true;
+        } finally {
+            this.#syncing = false;
+        }
+    }
     /**
      * Initial block and prover sync for the shield object
      */
-    async syncShield() {
-        if (!this.#shield || this.#isShieldSynced) {
+    async #syncShield() {
+        if (!this.#shield || this.#isSynced) {
             return;
         }
         /**
@@ -719,16 +745,12 @@ export class Wallet {
             );
             console.timeEnd('sync_start');
             getEventEmitter().emit('shield-sync-status-update', '', true);
-            // TODO: update this once all wallet sync is in the wallet class
-            if (cNet.fullSynced) {
-                createAlert('success', translation.syncStatusFinished, 12500);
-            }
         } catch (e) {
             console.error(e);
         }
         // At this point it should be safe to assume that shield is ready to use
         await this.saveShieldOnDisk();
-        this.#isShieldSynced = true;
+        this.#isSynced = true;
     }
 
     #getUTXOsForShield() {

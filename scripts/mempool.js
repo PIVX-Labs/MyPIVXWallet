@@ -325,7 +325,7 @@ export class Mempool {
             vout.push(
                 new CTxOut({
                     outpoint: new COutpoint({ txid: tx.txid, n: out.n }),
-                    script: out.hex,
+                    script: out.hex ?? 'f8',
                     value: parseInt(out.value),
                 })
             );

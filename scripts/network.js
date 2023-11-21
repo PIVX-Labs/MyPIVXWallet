@@ -194,7 +194,7 @@ export class ExplorerNetwork extends Network {
                     stakingDashboard.update(0);
                     getEventEmitter().emit('new-tx');
                 }
-                if (this.wallet.isShieldSynced) {
+                if (this.wallet.isSynced) {
                     await this.wallet.getLatestBlocks();
                 }
             }
@@ -308,10 +308,6 @@ export class ExplorerNetwork extends Network {
                 : nBlockHeights.sort((a, b) => a - b).at(-1);
         this.fullSynced = true;
         getEventEmitter().emit('transparent-sync-status-update', '', true);
-        //TODO: update this once all wallet sync is in the wallet class
-        if (this.wallet.isShieldSynced) {
-            createAlert('success', translation.syncStatusFinished, 12500);
-        }
     }
     reset() {
         this.fullSynced = false;
