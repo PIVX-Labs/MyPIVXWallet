@@ -316,3 +316,5 @@ PROMO_ALREADY_CREATED = "Vous avez déjà créé ce code !" # You've already cre
 CONFIRM_POPUP_DELETE_ACCOUNT = "Cette opération supprimera toutes vos données, y compris les contacts des masternodes et les clés privées !" # This will delete all your data, including masternodes contacts and private keys!
 CONFIRM_POPUP_DELETE_ACCOUNT_TITLE = "Êtes-vous sûr ?" # Are you sure?
 WALLET_NOT_SYNCED = "" # Please try again when wallet finishes syncing!
+WALLET_LOCKED = "" # Wallet successfully Locked!
+WALLET_UNLOCKED = "" # Wallet successfully Unlocked!

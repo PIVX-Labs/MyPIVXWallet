@@ -187,18 +187,19 @@ export class Wallet {
      * @param {import('./masterkey.js').MasterKey} mk - The new Master Key to set active
      */
     setMasterKey(mk, nAccount = 0) {
-        if (
+        const isNewAcc =
             mk?.getKeyToExport(nAccount) !==
-            this.#masterKey?.getKeyToExport(this.#nAccount)
-        )
-            this.reset();
+            this.#masterKey?.getKeyToExport(this.#nAccount);
         this.#masterKey = mk;
         this.#nAccount = nAccount;
-        // If this is the global wallet update the network master key
-        if (this.#isMainWallet) {
-            getNetwork().setWallet(this);
+        if (isNewAcc) {
+            this.reset();
+            // If this is the global wallet update the network master key
+            if (this.#isMainWallet) {
+                getNetwork().setWallet(this);
+            }
+            for (let i = 0; i < Wallet.chains; i++) this.loadAddresses(i);
         }
-        for (let i = 0; i < Wallet.chains; i++) this.loadAddresses(i);
     }
 
     /**

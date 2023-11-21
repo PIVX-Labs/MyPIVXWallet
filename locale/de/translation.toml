@@ -316,3 +316,5 @@ APP_INSTALLED = "Anwendung installiert!" # App Installed!
 CONFIRM_POPUP_DELETE_ACCOUNT = "Dies wird alle deine Daten löschen. Eingeschlossen Masternode, Kontakte und private Schlüssel!" # This will delete all your data, including masternodes contacts and private keys!
 CONFIRM_POPUP_DELETE_ACCOUNT_TITLE = "Bist du wirklich sicher?" # Are you sure?
 WALLET_NOT_SYNCED = "" # Please try again when wallet finishes syncing!
+WALLET_LOCKED = "" # Wallet successfully Locked!
+WALLET_UNLOCKED = "" # Wallet successfully Unlocked!

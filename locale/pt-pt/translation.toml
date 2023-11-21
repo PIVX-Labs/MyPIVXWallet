@@ -114,3 +114,5 @@ FAILED_TO_IMPORT_HARDWARE = "<b>Falha ao importar a carteira de hardware</b>." #
 CONFIRM_POPUP_DELETE_ACCOUNT = "Isso excluirá todos os seus dados, incluindo contatos de masternodes e chaves privadas!" # This will delete all your data, including masternodes contacts and private keys!
 CONFIRM_POPUP_DELETE_ACCOUNT_TITLE = "Tens a certeza?" # Are you sure?
 WALLET_NOT_SYNCED = "" # Please try again when wallet finishes syncing!
+WALLET_LOCKED = "" # Wallet successfully Locked!
+WALLET_UNLOCKED = "" # Wallet successfully Unlocked!
