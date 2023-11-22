@@ -32,7 +32,6 @@ import {
     updateEncryptionGUI,
     updateLogOutButton,
 } from '../global';
-
 import { mempool, refreshChainData } from '../global.js';
 import {
     confirmPopup,
@@ -284,7 +283,6 @@ async function send(address, amount) {
             3500
         );
     }
-    // if (!(await wallet.hasWalletUnlocked(true))) return;
 
     // Ensure the wallet is unlocked
     if (
