@@ -312,7 +312,7 @@ export class Wallet {
 
     /**
      * Derive xpub (given nReceiving and nIndex)
-     * @return {bool} Return true if a masterKey has been loaded in the wallet
+     * @return {boolean} Return true if a masterKey has been loaded in the wallet
      */
     isLoaded() {
         return !!this.#masterKey;
@@ -489,7 +489,7 @@ export class Wallet {
             const account = await (await Database.getInstance()).getAccount();
             return account.encWif;
         } else {
-            return this.getMasterKey().keyToBackup;
+            return this.getMasterKey()?.keyToBackup;
         }
     }
 
@@ -713,6 +713,7 @@ export class Wallet {
             this.#syncing = true;
 
             await mempool.loadFromDisk();
+            await this.loadShieldFromDisk();
             await getNetwork().walletFullSync();
             console.log(this.#shield);
             if (this.hasShield()) {
@@ -976,7 +977,7 @@ export async function cleanAndVerifySeedPhrase(
 }
 
 /**
- * @returns {Promise<bool>} If the wallet has an encrypted database backup
+ * @returns {Promise<boolean>} If the wallet has an encrypted database backup
  */
 export async function hasEncryptedWallet() {
     const database = await Database.getInstance();

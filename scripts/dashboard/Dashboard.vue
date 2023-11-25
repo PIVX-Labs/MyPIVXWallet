@@ -5,11 +5,7 @@ import Activity from './Activity.vue';
 import GenKeyWarning from './GenKeyWarning.vue';
 import TransferMenu from './TransferMenu.vue';
 import ExportPrivKey from './ExportPrivKey.vue';
-import {
-    cleanAndVerifySeedPhrase,
-    hasEncryptedWallet,
-    wallet,
-} from '../wallet.js';
+import { cleanAndVerifySeedPhrase } from '../wallet.js';
 import { parseWIF, verifyWIF } from '../encoding.js';
 import {
     createAlert,
@@ -27,7 +23,7 @@ import {
 } from '../masterkey';
 import { decrypt } from '../aes-gcm.js';
 import { cChainParams, COIN } from '../chain_params';
-import { onMounted, ref, watch } from 'vue';
+import { onMounted, ref, watch, computed } from 'vue';
 import { mnemonicToSeed } from 'bip39';
 import { getEventEmitter } from '../event_bus';
 import { Database } from '../database';
@@ -37,7 +33,6 @@ import {
     updateEncryptionGUI,
     updateLogOutButton,
 } from '../global';
-import { cMarket, nDisplayDecimals, strCurrency } from '../settings.js';
 import { mempool, refreshChainData } from '../global.js';
 import {
     confirmPopup,
@@ -51,16 +46,22 @@ import { strHardwareName } from '../ledger';
 import { guiAddContactPrompt } from '../contacts-book';
 import { scanQRCode } from '../scanner';
 import { PIVXShield } from 'pivx-shield';
+import { useWallet } from '../composables/use_wallet.js';
+import { useSettings } from '../composables/use_settings.js';
 
-const isImported = ref(wallet.isLoaded());
-const isViewOnly = ref(wallet.isViewOnly());
+const wallet = useWallet();
 const activity = ref(null);
-const needsToEncrypt = ref(true);
+const needsToEncrypt = computed(() => {
+    if (wallet.isHardwareWallet.value) {
+        return false;
+    } else {
+        return !wallet.isViewOnly.value && !wallet.isEncrypted.value;
+    }
+});
 const showTransferMenu = ref(false);
-const advancedMode = ref(false);
+const { advancedMode, displayDecimals } = useSettings();
 const showExportModal = ref(false);
 const showEncryptModal = ref(false);
-const isEncrypt = ref(false);
 const keyToBackup = ref('');
 const jdenticonValue = ref('');
 const transferAddress = ref('');
@@ -72,9 +73,6 @@ watch(showExportModal, async (showExportModal) => {
         // Wipe key to backup, just in case
         keyToBackup.value = '';
     }
-});
-getEventEmitter().on('advanced-mode', (fAdvancedMode) => {
-    advancedMode.value = fAdvancedMode;
 });
 
 class ParsedSecret {
@@ -202,24 +200,14 @@ async function importWallet({ type, secret, password = '' }) {
     if (parsedSecret) {
         wallet.setMasterKey(parsedSecret.masterKey);
         wallet.setShield(parsedSecret.shield);
-
-        isImported.value = true;
         jdenticonValue.value = wallet.getAddress();
-        isEncrypt.value = await hasEncryptedWallet();
-
-        if (!wallet.isHardwareWallet()) {
-            needsToEncrypt.value = !wallet.isViewOnly() && !isEncrypt.value;
-        } else {
-            needsToEncrypt.value = false;
-        }
 
         if (needsToEncrypt.value) showEncryptModal.value = true;
-        isViewOnly.value = wallet.isViewOnly();
+
         // Start syncing in the background
         wallet.sync().then(() => {
             createAlert('success', translation.syncStatusFinished, 12500);
         });
-
         getEventEmitter().emit('wallet-import');
         return true;
     }
@@ -233,7 +221,7 @@ async function importWallet({ type, secret, password = '' }) {
  * @param {string} [currentPassword] - Current password with which the wallet is encrypted with, if any
  */
 async function encryptWallet(password, currentPassword = '') {
-    if (await hasEncryptedWallet()) {
+    if (wallet.isEncrypted.value) {
         if (!(await wallet.checkDecryptPassword(currentPassword))) {
             createAlert('warning', ALERTS.INCORRECT_PASSWORD, 6000);
             return false;
@@ -243,15 +231,13 @@ async function encryptWallet(password, currentPassword = '') {
     if (res) {
         createAlert('success', ALERTS.NEW_PASSWORD_SUCCESS, 5500);
     }
-    needsToEncrypt.value = false;
-    isEncrypt.value = await hasEncryptedWallet();
     // TODO: refactor once settings is written
     await updateEncryptionGUI();
 }
 
 // TODO: This needs to be vueeifed a bit
 async function restoreWallet(strReason) {
-    if (wallet.isHardwareWallet()) return true;
+    if (wallet.isHardwareWallet.value) return true;
     // Build up the UI elements based upon conditions for the unlock prompt
     let strHTML = '';
 
@@ -275,7 +261,6 @@ async function restoreWallet(strReason) {
         const key = await parseSecret(encWif, strPassword);
         if (key) {
             wallet.setMasterKey(key);
-            isViewOnly.value = wallet.isViewOnly();
             createAlert('success', ALERTS.WALLET_UNLOCKED, 1500);
             return true;
         } else {
@@ -292,7 +277,7 @@ async function restoreWallet(strReason) {
  * Lock the wallet by deleting masterkey private data
  */
 async function lockWallet() {
-    const isEncrypted = await hasEncryptedWallet();
+    const isEncrypted = wallet.isEncrypted.value;
     const title = isEncrypted
         ? translation.popupWalletLock
         : translation.popupWalletWipe;
@@ -306,7 +291,6 @@ async function lockWallet() {
         })
     ) {
         wallet.wipePrivateData();
-        isViewOnly.value = wallet.isViewOnly();
         createAlert('success', ALERTS.WALLET_LOCKED, 1500);
     }
 }
@@ -318,11 +302,23 @@ async function lockWallet() {
  */
 async function send(address, amount, useShieldInputs) {
     // Ensure a wallet is loaded
-    if (!(await wallet.hasWalletUnlocked(true))) return;
+    if (wallet.isViewOnly.value) {
+        return createAlert(
+            'warning',
+            tr(ALERTS.WALLET_UNLOCK_IMPORT, [
+                {
+                    unlock: wallet.isEncrypted.value
+                        ? 'unlock '
+                        : 'import/create',
+                },
+            ]),
+            3500
+        );
+    }
 
     // Ensure the wallet is unlocked
     if (
-        wallet.isViewOnly() &&
+        wallet.isViewOnly.value &&
         !(await restoreWallet(translation.walletUnlockTx))
     )
         return;
@@ -401,17 +397,15 @@ async function send(address, amount, useShieldInputs) {
 getEventEmitter().on('toggle-network', async () => {
     const database = await Database.getInstance();
     const account = await database.getAccount();
-    wallet.reset();
     wallet.setMasterKey(null);
     activity.value?.reset();
 
     if (account) {
         await importWallet({ type: 'hd', secret: account.publicKey });
     } else {
-        isImported.value = false;
         await (await Database.getInstance()).removeAllTxs();
     }
-    await updateEncryptionGUI(wallet.isLoaded());
+    await updateEncryptionGUI(wallet.isImported.value);
     updateLogOutButton();
     // TODO: When tab component is written, simply emit an event
     doms.domDashboard.click();
@@ -420,7 +414,7 @@ getEventEmitter().on('toggle-network', async () => {
 onMounted(async () => {
     await start();
 
-    if (await hasEncryptedWallet()) {
+    if (wallet.isEncrypted.value) {
         const database = await Database.getInstance();
         const { publicKey } = await database.getAccount();
         await importWallet({ type: 'hd', secret: publicKey });
@@ -441,26 +435,14 @@ onMounted(async () => {
     updateLogOutButton();
 });
 
-const balance = ref(0);
-const shieldBalance = ref(0);
-const currency = ref('USD');
-const price = ref(0.0);
-const displayDecimals = ref(0);
+const { balance, shieldBalance, currency, price } = wallet;
 
 getEventEmitter().on('sync-status', (status) => {
     if (status === 'stop') activity?.value?.update();
 });
 
-getEventEmitter().on('new-tx', (status) => {
+getEventEmitter().on('new-tx', () => {
     activity?.value?.update();
-});
-
-getEventEmitter().on('balance-update', async () => {
-    balance.value = mempool.balance;
-    shieldBalance.value = await wallet.getShieldBalance();
-    currency.value = strCurrency.toUpperCase();
-    price.value = await cMarket.getPrice(strCurrency);
-    displayDecimals.value = nDisplayDecimals;
 });
 
 function changePassword() {
@@ -523,7 +505,7 @@ defineExpose({
     <div id="keypair" class="tabcontent">
         <div class="row m-0">
             <Login
-                v-show="!isImported"
+                v-show="!wallet.isImported.value"
                 :advancedMode="advancedMode"
                 @import-wallet="importWallet"
             />
@@ -533,7 +515,11 @@ defineExpose({
             <!-- Unlock wallet -->
             <div
                 class="col-12 p-0"
-                v-if="isViewOnly && !needsToEncrypt && isImported"
+                v-if="
+                    wallet.isViewOnly.value &&
+                    !needsToEncrypt &&
+                    wallet.isImported.value
+                "
             >
                 <center>
                     <div
@@ -568,7 +554,11 @@ defineExpose({
             <!-- Lock wallet -->
             <div
                 class="col-12"
-                v-if="!isViewOnly && !needsToEncrypt && isImported"
+                v-if="
+                    !wallet.isViewOnly.value &&
+                    !needsToEncrypt &&
+                    wallet.isImported.value
+                "
             >
                 <center>
                     <div class="dcWallet-warningMessage" @click="lockWallet()">
@@ -919,13 +909,13 @@ defineExpose({
                 @close="showExportModal = false"
             />
             <!-- WALLET FEATURES -->
-            <div v-if="isImported">
+            <div v-if="wallet.isImported.value">
                 <GenKeyWarning
                     @onEncrypt="encryptWallet"
                     @close="showEncryptModal = false"
                     :showModal="showEncryptModal"
                     :showBox="needsToEncrypt"
-                    :isEncrypt="isEncrypt"
+                    :isEncrypt="wallet.isEncrypted.value"
                 />
                 <div class="row p-0">
                     <!-- Balance in PIVX & USD-->
@@ -933,12 +923,12 @@ defineExpose({
                         :balance="balance"
                         :shieldBalance="shieldBalance"
                         :jdenticonValue="jdenticonValue"
-                        :isHdWallet="wallet.isHD()"
-                        :isHardwareWallet="wallet.isHardwareWallet()"
+                        :isHdWallet="wallet.isHD.value"
+                        :isHardwareWallet="wallet.isHardwareWallet.value"
                         :currency="currency"
                         :price="price"
                         :displayDecimals="displayDecimals"
-                        :shieldEnabled="wallet.hasShield()"
+                        :shieldEnabled="wallet.hasShield.value"
                         @reload="refreshChainData()"
                         @send="showTransferMenu = true"
                         @exportPrivKeyOpen="showExportModal = true"
@@ -957,7 +947,7 @@ defineExpose({
             :show="showTransferMenu"
             :price="price"
             :currency="currency"
-            :shieldEnabled="wallet.hasShield()"
+            :shieldEnabled="wallet.hasShield.value"
             v-model:amount="transferAmount"
             v-model:address="transferAddress"
             @openQrScan="openSendQRScanner()"
