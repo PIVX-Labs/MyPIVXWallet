@@ -270,7 +270,7 @@ async function restoreWallet(strReason) {
                 );
             }
             if (wallet.hasShield) {
-                wallet.setExtsk(extsk);
+                await wallet.setExtsk(extsk);
             }
             wallet.setMasterKey(key.masterKey);
             createAlert('success', ALERTS.WALLET_UNLOCKED, 1500);

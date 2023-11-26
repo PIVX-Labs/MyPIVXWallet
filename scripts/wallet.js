@@ -240,8 +240,8 @@ export class Wallet {
      * Set the extended spending key of a shield object
      * @param {String} extsk encoded extended spending key
      */
-    setExtsk(extsk) {
-        this.#shield.extsk = extsk;
+    async setExtsk(extsk) {
+        await this.#shield.loadExtendedSpendingKey(extsk);
     }
 
     /**
