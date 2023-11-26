@@ -48,6 +48,7 @@ import { scanQRCode } from '../scanner';
 import { PIVXShield } from 'pivx-shield';
 import { useWallet } from '../composables/use_wallet.js';
 import { useSettings } from '../composables/use_settings.js';
+import { create } from 'lodash-es';
 
 const wallet = useWallet();
 const activity = ref(null);
@@ -256,11 +257,24 @@ async function restoreWallet(strReason) {
         const strPassword = domPassword.value;
         domPassword.value = '';
         const database = await Database.getInstance();
-        const { encWif } = await database.getAccount();
+        const { encWif, encExtsk } = await database.getAccount();
+
         // Attempt to unlock the wallet with the provided password
         const key = await parseSecret(encWif, strPassword);
-        if (key) {
-            wallet.setMasterKey(key);
+        const extsk = await decrypt(encExtsk, strPassword);
+        console.log(extsk, encExtsk);
+        if (key.masterKey) {
+            //  This SHOULD REALLY NOT HAPPEN
+            if (wallet.hasShield && !extsk) {
+                createAlert(
+                    'warning',
+                    'Could not decrypt sk even if password is correct, please contact a developer'
+                );
+            }
+            if (wallet.hasShield) {
+                wallet.setExtsk(extsk);
+            }
+            wallet.setMasterKey(key.masterKey);
             createAlert('success', ALERTS.WALLET_UNLOCKED, 1500);
             return true;
         } else {

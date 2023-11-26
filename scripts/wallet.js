@@ -235,6 +235,14 @@ export class Wallet {
     }
 
     /**
+     * Set the extended spending key of a shield object
+     * @param {String} extsk encoded extended spending key
+     */
+    setExtsk(extsk) {
+        this.#shield.extsk = extsk;
+    }
+
+    /**
      * This should really be provided with the constructor,
      * This will be done once `Dashboard.vue` is the owner of the wallet
      * @param {import('pivx-shield').PIVXShield} shield object to set
@@ -344,6 +352,7 @@ export class Wallet {
         let strEncExtsk = '';
         let shieldData = '';
         if (this.#shield) {
+            //console.log("SAVING shiedld lol", this.#shield.ex, strPassword)
             strEncExtsk = await encrypt(this.#shield.extsk, strPassword);
             shieldData = this.#shield.save();
         }

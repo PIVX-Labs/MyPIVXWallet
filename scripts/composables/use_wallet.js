@@ -32,6 +32,9 @@ export function useWallet() {
         isViewOnly.value = wallet.isViewOnly();
         hasEncryptedWallet().then((i) => (isEncrypted.value = i));
     };
+    const setExtsk = (extsk) => {
+        wallet.setExtsk(extsk);
+    };
     const setShield = (shield) => {
         wallet.setShield(shield);
         hasShield.value = wallet.hasShield();
@@ -68,6 +71,7 @@ export function useWallet() {
         isEncrypted,
         getKeyToBackup,
         setMasterKey,
+        setExtsk,
         setShield,
         isHardwareWallet,
         checkDecryptPassword,
