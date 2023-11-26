@@ -177,7 +177,9 @@ export class Wallet {
 
     wipePrivateData() {
         this.#masterKey.wipePrivateData(this.#nAccount);
-        // this.#shield?.wipePrivateData();
+        if (this.#shield) {
+            this.#shield.extsk = null;
+        }
     }
 
     isViewOnly() {
