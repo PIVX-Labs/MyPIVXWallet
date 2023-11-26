@@ -48,7 +48,6 @@ import { scanQRCode } from '../scanner';
 import { PIVXShield } from 'pivx-shield';
 import { useWallet } from '../composables/use_wallet.js';
 import { useSettings } from '../composables/use_settings.js';
-import { create } from 'lodash-es';
 
 const wallet = useWallet();
 const activity = ref(null);

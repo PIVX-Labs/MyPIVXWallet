@@ -352,7 +352,6 @@ export class Wallet {
         let strEncExtsk = '';
         let shieldData = '';
         if (this.#shield) {
-            //console.log("SAVING shiedld lol", this.#shield.ex, strPassword)
             strEncExtsk = await encrypt(this.#shield.extsk, strPassword);
             shieldData = this.#shield.save();
         }
