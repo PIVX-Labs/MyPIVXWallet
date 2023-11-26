@@ -261,7 +261,6 @@ async function restoreWallet(strReason) {
         // Attempt to unlock the wallet with the provided password
         const key = await parseSecret(encWif, strPassword);
         const extsk = await decrypt(encExtsk, strPassword);
-        console.log(extsk, encExtsk);
         if (key.masterKey) {
             //  This SHOULD REALLY NOT HAPPEN
             if (wallet.hasShield && !extsk) {
