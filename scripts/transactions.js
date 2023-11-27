@@ -352,8 +352,12 @@ async function createTransparentTransaction({
     return await signTransaction(cTx, wallet, outputs, delegateChange);
 }
 
-async function createShieldTransaction(address, amount) {
-    return await wallet.createShieldTransaction(address, amount);
+async function createShieldTransaction(address, amount, useShieldInputs) {
+    return await wallet.createShieldTransaction(
+        address,
+        amount,
+        useShieldInputs
+    );
 }
 
 /**
@@ -393,7 +397,7 @@ export async function createAndSendTransaction({
 
     let sign;
     if (useShieldInputs || isShieldAddress(address)) {
-        sign = await createShieldTransaction(address, amount);
+        sign = await createShieldTransaction(address, amount, useShieldInputs);
     } else {
         sign = await createTransparentTransaction({
             address,

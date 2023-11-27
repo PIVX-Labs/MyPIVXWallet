@@ -32,6 +32,7 @@ import {
 } from './script.js';
 import { PIVXShield } from 'pivx-shield';
 import { guiToggleReceiveType } from './contacts-book.js';
+import bs58 from 'bs58';
 
 /**
  * Class Wallet, at the moment it is just a "realization" of Masterkey with a given nAccount
@@ -832,15 +833,36 @@ export class Wallet {
                 blockHeight: getNetwork().cachedBlockCount,
                 useShieldInputs: true,
                 utxos: this.#getUTXOsForShield(),
-                transparentChangeAddress: this.getNewAddress()[0],
             });
             return hex;
         } else {
+            const arrUTXOs = mempool
+                .getUTXOs({
+                    filter: UTXO_WALLET_STATE.SPENDABLE,
+                    target: amount,
+                    includeLocked: false,
+                })
+                .map((txOut) => {
+                    const path = wallet.getPath(txOut.script);
+                    if (path === null) {
+                        throw new Error('Path not found, shit');
+                    }
+                    const strWIF = this.#masterKey.getPrivateKey(path);
+                    return {
+                        txid: txOut.outpoint.txid,
+                        vout: txOut.outpoint.n,
+                        amount: txOut.value,
+                        private_key: bs58.decode(strWIF).slice(1, 33),
+                        script: hexToBytes(txOut.script),
+                    };
+                });
             const { hex, txid } = await this.#shield.createTransaction({
                 address,
                 amount,
                 blockHeight: getNetwork().cachedBlockCount,
                 useShieldInputs: false,
+                utxos: arrUTXOs,
+                transparentChangeAddress: this.getNewAddress()[0],
             });
             return hex;
         }
