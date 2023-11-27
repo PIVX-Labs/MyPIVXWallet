@@ -20,10 +20,7 @@ export function useWallet() {
     const getKeyToBackup = async () => await wallet.getKeyToBackup();
     const isEncrypted = ref(true);
     const hasShield = ref(wallet.hasShield());
-    const sync = async () => {
-        await wallet.sync();
-        hasShield.value = wallet.hasShield();
-    };
+
     const setMasterKey = (mk) => {
         wallet.setMasterKey(mk);
         isImported.value = wallet.isLoaded();
@@ -57,6 +54,12 @@ export function useWallet() {
     const shieldBalance = ref(0);
     const currency = ref('USD');
     const price = ref(0.0);
+    const sync = async () => {
+        await wallet.sync();
+        hasShield.value = wallet.hasShield();
+        balance.value = mempool.balance;
+        shieldBalance.value = await wallet.getShieldBalance();
+    };
 
     getEventEmitter().on('balance-update', async () => {
         balance.value = mempool.balance;
