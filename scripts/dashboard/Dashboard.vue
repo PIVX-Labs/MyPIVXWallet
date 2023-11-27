@@ -270,7 +270,7 @@ async function lockWallet() {
  */
 async function send(address, amount) {
     // Ensure a wallet is loaded
-    if (wallet.isViewOnly.value) {
+    if (wallet.isViewOnly.value && !wallet.isHardwareWallet.value) {
         return createAlert(
             'warning',
             tr(ALERTS.WALLET_UNLOCK_IMPORT, [
@@ -484,7 +484,8 @@ defineExpose({
                 v-if="
                     wallet.isViewOnly.value &&
                     !needsToEncrypt &&
-                    wallet.isImported.value
+                    wallet.isImported.value &&
+                    !wallet.isHardwareWallet.value
                 "
             >
                 <center>
@@ -523,7 +524,8 @@ defineExpose({
                 v-if="
                     !wallet.isViewOnly.value &&
                     !needsToEncrypt &&
-                    wallet.isImported.value
+                    wallet.isImported.value &&
+                    !wallet.isHardwareWallet.value
                 "
             >
                 <center>
