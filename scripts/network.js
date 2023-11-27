@@ -164,12 +164,30 @@ export class ExplorerNetwork extends Network {
      */
     async getBlock(blockHeight) {
         try {
-            const block = await (
-                await fetch(`${this.strUrl}/api/v2/block/${blockHeight}`)
-            ).json();
+            const response = await fetch(
+                `${this.strUrl}/api/v2/block/${blockHeight}`
+            );
+            if (!response.ok) throw new Error('failed');
+            const block = await response.json();
+            const newTxs = [];
+            // This is bad. We're making so many requests
+            // This is a quick fix to try to be compliant with the blockbook
+            // API, and not the PIVX extension.
+            // In the Blockbook API /block doesn't have any chain specific information
+            // Like hex, shield info or what not.
+            // We could change /getshieldblocks to /getshieldtxs?
+            for (const tx of block.txs) {
+                const r = await fetch(
+                    `${this.strUrl}/api/v2/tx-specific/${tx.txid}`
+                );
+                if (!r.ok) throw new Error('failed');
+                const newTx = await r.json();
+                newTxs.push(newTx);
+            }
+            block.txs = newTxs;
             return block;
         } catch (e) {
-            this.error();
+            //this.error();
             throw e;
         }
     }
