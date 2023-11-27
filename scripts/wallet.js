@@ -824,7 +824,7 @@ export class Wallet {
                 address,
                 amount,
                 blockHeight: getNetwork().cachedBlockCount,
-                useShieldInputs: false,
+                useShieldInputs: true,
                 utxos: this.#getUTXOsForShield(),
                 transparentChangeAddress: this.getNewAddress()[0],
             });
@@ -834,7 +834,7 @@ export class Wallet {
                 address,
                 amount,
                 blockHeight: getNetwork().cachedBlockCount,
-                useShieldInputs: true,
+                useShieldInputs: false,
             });
             return hex;
         }
