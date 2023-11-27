@@ -74,7 +74,7 @@ export const cChainParams = reactive({
         // A list of Labs-trusted explorers
         Explorers: [
             // Display name      Blockbook-compatible API base
-            { name: 'rockdev', url: 'https://testnet.rockdev.org' },
+            //            { name: 'rockdev', url: 'https://testnet.rockdev.org' },
             { name: 'duddino', url: 'https://testnet.duddino.com' },
         ],
         Nodes: [{ name: 'Duddino', url: 'https://rpc.duddino.com/testnet' }],
