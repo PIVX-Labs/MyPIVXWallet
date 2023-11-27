@@ -98,28 +98,26 @@ export async function startBatch(
     return new Promise((res) => {
         const running = [];
         let i = 0;
-        const startNext = async (p) => {
+        const startNext = async (current) => {
             let result;
-            let current = i;
             try {
-                result = await p;
+                result = await promiseFactory(current);
             } catch (e) {
                 // Try again later
                 await sleep(retryTime);
-                running[current] = startNext(current);
-                return;
+                return await startNext(current);
             }
             i++;
             if (i < length) {
-                running.push(startNext(promiseFactory(i)));
+                running.push(startNext(i));
             } else {
                 (async () => res(await Promise.all(running)))();
             }
             return result;
         };
         // Start fisrt batchsize promises
-        for (i = 0; i < batchSize; i++) {
-            running.push(startNext(promiseFactory(i)));
+        for (i = 0; i < batchSize && i < length; i++) {
+            running.push(startNext(i));
         }
         --i;
     });
