@@ -443,16 +443,3 @@ export function isEmpty(val) {
         (typeof val === 'object' && Object.keys(val).length === 0)
     );
 }
-
-/**
- * An artificial sleep function to pause code execution
- *
- * @param {Number} ms - The milliseconds to sleep
- *
- * @example
- * // Pause an asynchronous script for 1 second
- * await sleep(1000);
- */
-export function sleep(ms) {
-    return new Promise((res, _) => setTimeout(res, ms));
-}
