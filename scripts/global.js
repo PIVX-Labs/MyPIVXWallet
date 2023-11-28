@@ -19,12 +19,11 @@ import {
     createAlert,
     confirmPopup,
     sanitizeHTML,
-    sleep,
     beautifyNumber,
     isColdAddress,
 } from './misc.js';
 import { cChainParams, COIN } from './chain_params.js';
-
+import { sleep } from './utils.js';
 import { registerWorker } from './native.js';
 import { refreshPriceDisplay } from './prices.js';
 import { Address6 } from 'ip-address';
