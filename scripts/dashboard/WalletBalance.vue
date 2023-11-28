@@ -13,7 +13,7 @@ import {
 } from '../contacts-book';
 import { getNewAddress } from '../wallet.js';
 import LoadingBar from '../Loadingbar.vue';
-import { sleep } from '../misc.js';
+import { sleep } from '../utils.js';
 
 const props = defineProps({
     jdenticonValue: String,
