@@ -100,6 +100,11 @@ export class Wallet {
      * @type {boolean}
      */
     #isSynced = false;
+    /**
+     * true iff we are fetching latestBlocks
+     * @type {boolean}
+     */
+    #isFetchingLatestBlocks;
     constructor({
         nAccount = 0,
         isMainWallet = true,
@@ -901,6 +906,10 @@ export class Wallet {
      * Update the shield object with the latest blocks
      */
     async getLatestBlocks() {
+        // Exit if this function is still processing
+        // (this might take some time if we had many consecutive blocks without shield txs)
+        if (this.#isFetchingLatestBlocks) return;
+        this.#isFetchingLatestBlocks = true;
         /**
          * @type {ExplorerNetwork}
          */
@@ -910,6 +919,8 @@ export class Wallet {
             this.#shield.getLastSyncedBlock() + 1,
             cNet.cachedBlockCount
         );
+        // TODO: consider changing to
+        // blockHeight < cNet.cachedBlockCount - epsilon? Since latest blocks are not always available
         for (
             let blockHeight = this.#shield.getLastSyncedBlock() + 1;
             blockHeight < cNet.cachedBlockCount;
@@ -927,6 +938,7 @@ export class Wallet {
                 break;
             }
         }
+        this.#isFetchingLatestBlocks = false;
         await this.saveShieldOnDisk();
     }
     /**
