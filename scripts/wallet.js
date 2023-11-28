@@ -825,17 +825,33 @@ export class Wallet {
     }
 
     async createShieldTransaction(address, amount, useShieldInputs = true) {
-        createAlert('success', 'Creating s tx');
+        createAlert(
+            'info',
+            'Creating a shield tx, it might take a while',
+            2500
+        );
+        // Value returned by createTransaction
+        let ret_value = { hex: '', spentUTXOs: [], txid: '' };
+        const periodicFunction = setInterval(async () => {
+            const percentage = 5 + (await this.#shield.getTxStatus()) * 95;
+            getEventEmitter().emit(
+                'shield-transaction-creation-update',
+                percentage,
+                false
+            );
+        }, 500);
+
         if (useShieldInputs) {
-            const { hex } = await this.#shield.createTransaction({
+            // This is a s -> s transaction
+            ret_value = await this.#shield.createTransaction({
                 address,
                 amount,
                 blockHeight: getNetwork().cachedBlockCount,
                 useShieldInputs: true,
                 utxos: this.#getUTXOsForShield(),
             });
-            return hex;
         } else {
+            // This is a t -> s transaction! Get UTXOs from the mempool and map them into the lib internal object
             const arrUTXOs = mempool
                 .getUTXOs({
                     filter: UTXO_WALLET_STATE.SPENDABLE,
@@ -856,7 +872,7 @@ export class Wallet {
                         script: hexToBytes(txOut.script),
                     };
                 });
-            const { hex, txid } = await this.#shield.createTransaction({
+            ret_value = await this.#shield.createTransaction({
                 address,
                 amount,
                 blockHeight: getNetwork().cachedBlockCount,
@@ -864,8 +880,12 @@ export class Wallet {
                 utxos: arrUTXOs,
                 transparentChangeAddress: this.getNewAddress()[0],
             });
-            return hex;
         }
+        // Stop emitting tx updates
+        clearInterval(periodicFunction);
+        getEventEmitter().emit('shield-transaction-creation-update', 0.0, true);
+        console.log(ret_value);
+        return ret_value['hex'];
     }
 
     /**

@@ -12,6 +12,8 @@ import {
     guiRenderContacts,
 } from '../contacts-book';
 import { getNewAddress } from '../wallet.js';
+import LoadingBar from '../Loadingbar.vue';
+import { sleep } from '../misc.js';
 
 const props = defineProps({
     jdenticonValue: String,
@@ -57,6 +59,11 @@ const syncTStr = ref('');
 const shieldSyncing = ref(false);
 const syncSStr = ref('');
 
+// Shield transaction creation
+const isCreatingTx = ref(false);
+const txPercentageCreation = ref(0.0);
+const txCreationStr = 'Creating shield transaction';
+
 const updating = ref(false);
 const balanceStr = computed(() => {
     const nCoins = balance.value / COIN;
@@ -94,6 +101,19 @@ getEventEmitter().on('shield-sync-status-update', (str, finished) => {
     syncSStr.value = str;
     shieldSyncing.value = !finished;
 });
+
+getEventEmitter().on(
+    'shield-transaction-creation-update',
+    async (percentage, finished) => {
+        // If it just finished sleep for 1 second before making everything invisible
+        txPercentageCreation.value = 100.0;
+        if (finished) {
+            await sleep(1000);
+        }
+        isCreatingTx.value = !finished;
+        txPercentageCreation.value = percentage;
+    }
+);
 
 function reload() {
     if (!updating) {
@@ -324,6 +344,23 @@ function reload() {
                 "
             >
                 {{ transparentSyncing ? syncTStr : syncSStr }}
+            </div>
+        </center>
+        <center>
+            <div
+                v-if="isCreatingTx"
+                style="
+                    background-color: #0000002b;
+                    width: fit-content;
+                    padding: 8px;
+                    border-radius: 15px;
+                "
+            >
+                {{ txCreationStr }}
+                <LoadingBar
+                    :show="true"
+                    :percentage="txPercentageCreation"
+                ></LoadingBar>
             </div>
         </center>
     </center>
