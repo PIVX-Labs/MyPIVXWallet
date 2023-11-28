@@ -756,54 +756,59 @@ export class Wallet {
             const blockHeights = (await cNet.getShieldBlockList()).filter(
                 (b) => b > this.#shield.getLastSyncedBlock()
             );
-            const batchSize = Number.parseInt(prompt('Insert batch size', '8'));
-            console.time('sync_start');
-            let processed = 1;
-            let handled = 0;
-            const blocks = [];
-            let syncing = false;
-            await startBatch(
-                async (i) => {
-                    let block;
-                    try {
-                        block = await cNet.getBlock(blockHeights[i]);
-                    } catch (e) {
-                        console.log(`block ${i} failed`);
-                        throw e;
-                    }
-                    blocks[i] = block;
-                    // We need to process blocks monotically
-                    // When we get a block, start from the first unhandled
-                    // One and handle as many as possible
-                    for (let j = handled; blocks[j]; j = handled) {
-                        if (syncing) break;
-                        syncing = true;
-                        handled++;
-                        console.log(`Handling ${j}`);
-                        await this.#shield.handleBlock(blocks[j]);
-                        // Delete so we don't have to hold all blocks in memory
-                        // until we finish syncing
-                        delete blocks[j];
-                        syncing = false;
-                    }
+            if (blockHeights.length != 0) {
+                const batchSize = Number.parseInt(
+                    prompt('Insert batch size', '8')
+                );
+                console.time('sync_start');
+                let processed = 1;
+                let handled = 0;
+                const blocks = [];
+                let syncing = false;
+                await startBatch(
+                    async (i) => {
+                        let block;
+                        try {
+                            block = await cNet.getBlock(blockHeights[i]);
+                        } catch (e) {
+                            console.log(`block ${i} failed`);
+                            throw e;
+                        }
+                        blocks[i] = block;
+                        // We need to process blocks monotically
+                        // When we get a block, start from the first unhandled
+                        // One and handle as many as possible
+                        for (let j = handled; blocks[j]; j = handled) {
+                            if (syncing) break;
+                            syncing = true;
+                            handled++;
+                            console.log(`Handling ${j}`);
+                            await this.#shield.handleBlock(blocks[j]);
+                            // Delete so we don't have to hold all blocks in memory
+                            // until we finish syncing
+                            delete blocks[j];
+                            syncing = false;
+                        }
 
-                    getEventEmitter().emit(
-                        'shield-sync-status-update',
-                        tr(translation.syncShieldProgress, [
-                            { current: ++processed },
-                            { total: blockHeights.length },
-                        ]),
-                        false
-                    );
-                },
-                blockHeights.length,
-                batchSize
-            );
-            console.timeEnd('sync_start');
-            getEventEmitter().emit('shield-sync-status-update', '', true);
+                        getEventEmitter().emit(
+                            'shield-sync-status-update',
+                            tr(translation.syncShieldProgress, [
+                                { current: ++processed },
+                                { total: blockHeights.length },
+                            ]),
+                            false
+                        );
+                    },
+                    blockHeights.length,
+                    batchSize
+                );
+                console.timeEnd('sync_start');
+                getEventEmitter().emit('shield-sync-status-update', '', true);
+            }
         } catch (e) {
             console.error(e);
         }
+
         // At this point it should be safe to assume that shield is ready to use
         await this.saveShieldOnDisk();
         this.#isSynced = true;
