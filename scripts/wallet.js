@@ -761,6 +761,7 @@ export class Wallet {
             let processed = 1;
             let handled = 0;
             const blocks = [];
+            let syncing = false;
             await startBatch(
                 async (i) => {
                     let block;
@@ -775,12 +776,15 @@ export class Wallet {
                     // When we get a block, start from the first unhandled
                     // One and handle as many as possible
                     for (let j = handled; blocks[j]; j = handled) {
+                        if (syncing) break;
+                        syncing = true;
                         handled++;
                         console.log(`Handling ${j}`);
                         await this.#shield.handleBlock(blocks[j]);
                         // Delete so we don't have to hold all blocks in memory
                         // until we finish syncing
                         delete blocks[j];
+                        syncing = false;
                     }
 
                     getEventEmitter().emit(

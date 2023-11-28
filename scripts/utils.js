@@ -1,6 +1,5 @@
 import { Buffer } from 'buffer';
 import { sha256 } from '@noble/hashes/sha256';
-import { sleep } from './misc.js';
 
 export const pubKeyHashNetworkLen = 21;
 export const pubChksum = 4;
@@ -121,4 +120,17 @@ export async function startBatch(
         }
         --i;
     });
+}
+
+/**
+ * An artificial sleep function to pause code execution
+ *
+ * @param {Number} ms - The milliseconds to sleep
+ *
+ * @example
+ * // Pause an asynchronous script for 1 second
+ * await sleep(1000);
+ */
+export function sleep(ms) {
+    return new Promise((res, _) => setTimeout(res, ms));
 }

@@ -1,5 +1,6 @@
 import { cChainParams } from './chain_params.js';
-import { createAlert, sleep } from './misc.js';
+import { createAlert } from './misc.js';
+import { sleep } from './utils.js';
 import { getEventEmitter } from './event_bus.js';
 import {
     STATS,
@@ -187,7 +188,7 @@ export class ExplorerNetwork extends Network {
             block.txs = newTxs;
             return block;
         } catch (e) {
-            //this.error();
+            this.error();
             throw e;
         }
     }
