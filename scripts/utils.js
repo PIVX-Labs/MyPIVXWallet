@@ -94,6 +94,9 @@ export async function startBatch(
     batchSize,
     retryTime = 10000
 ) {
+    if (length == 0) {
+        return;
+    }
     return new Promise((res) => {
         const running = [];
         let i = 0;
