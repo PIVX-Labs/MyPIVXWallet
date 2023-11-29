@@ -914,15 +914,14 @@ export class Wallet {
             this.#shield.getLastSyncedBlock() + 1,
             cNet.cachedBlockCount
         );
-        // TODO: consider changing to
-        // blockHeight < cNet.cachedBlockCount - epsilon? Since latest blocks are not always available
+        // Don't ask for the exact last block that arrived,
+        // since it takes around 1 minute for blockbook to make it API available
         for (
             let blockHeight = this.#shield.getLastSyncedBlock() + 1;
             blockHeight < cNet.cachedBlockCount;
             blockHeight++
         ) {
             try {
-                //TODO: use safe fetch here
                 const block = await cNet.getBlock(blockHeight);
                 if (block.txs) {
                     await this.#shield.handleBlock(block);

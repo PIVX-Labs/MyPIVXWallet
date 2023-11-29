@@ -165,11 +165,9 @@ export class ExplorerNetwork extends Network {
      */
     async getBlock(blockHeight) {
         try {
-            const response = await fetch(
-                `${this.strUrl}/api/v2/block/${blockHeight}`
+            const block = await this.safeFetchFromExplorer(
+                `/api/v2/block/${blockHeight}`
             );
-            if (!response.ok) throw new Error('failed');
-            const block = await response.json();
             const newTxs = [];
             // This is bad. We're making so many requests
             // This is a quick fix to try to be compliant with the blockbook
@@ -225,23 +223,26 @@ export class ExplorerNetwork extends Network {
     }
 
     /**
-     * Sometimes blockbook might return internal error, in this case this function will sleep for 20 seconds and retry
+     * Sometimes blockbook might return internal error, in this case this function will sleep for some times and retry
      * @param {string} strCommand - The specific Blockbook api to call
+     * @param {number} sleepTime - How many milliseconds sleep between two calls. Default value is 20000ms
      * @returns {Promise<Object>} Explorer result in json
      */
-    async safeFetchFromExplorer(strCommand) {
+    async safeFetchFromExplorer(strCommand, sleepTime = 20000) {
         let trials = 0;
-        const maxTrials = 5;
+        const maxTrials = 6;
         while (trials < maxTrials) {
             trials += 1;
             const res = await fetchBlockbook(strCommand);
             if (!res.ok) {
                 if (debug) {
                     console.log(
-                        'Blockbook internal error! sleeping for 20 seconds'
+                        'Blockbook internal error! sleeping for ' +
+                            sleepTime +
+                            ' seconds'
                     );
                 }
-                await sleep(20000);
+                await sleep(sleepTime);
                 continue;
             }
             return await res.json();
