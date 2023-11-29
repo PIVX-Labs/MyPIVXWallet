@@ -948,7 +948,6 @@ export async function getAddressColor(address) {
         // Yep, nice!
         return 'green';
     }
-    console.log('AAAAAAAAAAA');
     if (isValidPIVXAddress(address)) {
         // Yep!
         return 'green';
