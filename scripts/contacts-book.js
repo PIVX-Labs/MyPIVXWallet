@@ -8,6 +8,7 @@ import {
     createAlert,
     createQR,
     getImageFile,
+    isShieldAddress,
     isStandardAddress,
     isValidPIVXAddress,
     isXPub,
@@ -531,13 +532,16 @@ export async function guiAddContact() {
         return createAlert('warning', ALERTS.CONTACTS_NAME_TOO_LONG, 2500);
 
     // Verify the address
-    if (!isStandardAddress(strAddr) && !isXPub(strAddr))
+    if (
+        !isStandardAddress(strAddr) &&
+        !isShieldAddress(strAddr) &&
+        !isXPub(strAddr)
+    )
         return createAlert(
             'warning',
             tr(ALERTS.INVALID_ADDRESS, [{ address: strAddr }]),
             3000
         );
-
     // Ensure we're not adding our own XPub
     if (isXPub(strAddr)) {
         if (wallet.isHD()) {
@@ -623,7 +627,11 @@ export async function guiAddContactPrompt(
         return createAlert('warning', ALERTS.CONTACTS_NAME_TOO_LONG, 2500);
 
     // Verify the address
-    if (!isStandardAddress(strPubkey) && !isXPub(strPubkey))
+    if (
+        !isStandardAddress(strPubkey) &&
+        !isShieldAddress(strPubkey) &&
+        !isXPub(strPubkey)
+    )
         return createAlert(
             'warning',
             tr(ALERTS.INVALID_ADDRESS, [{ address: strPubkey }]),
