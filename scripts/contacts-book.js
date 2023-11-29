@@ -390,8 +390,6 @@ async function renderContactModal() {
 
 function renderAddress(strAddress) {
     try {
-        // TODO: This is for shield address
-        // They're too long, but we can use numerical mode
         createQR('pivx:' + strAddress, doms.domModalQR);
         doms.domModalQR.firstChild.style.width = '100%';
         doms.domModalQR.firstChild.style.height = 'auto';
