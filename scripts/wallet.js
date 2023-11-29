@@ -849,51 +849,53 @@ export class Wallet {
                 false
             );
         }, 500);
-
-        if (useShieldInputs) {
-            // This is a s -> s transaction
-            ret_value = await this.#shield.createTransaction({
-                address,
-                amount,
-                blockHeight: getNetwork().cachedBlockCount,
-                useShieldInputs: true,
-                utxos: this.#getUTXOsForShield(),
-            });
-        } else {
-            // This is a t -> s transaction! Get UTXOs from the mempool and map them into the lib internal object
-            const arrUTXOs = mempool
-                .getUTXOs({
-                    filter: UTXO_WALLET_STATE.SPENDABLE,
-                    target: amount,
-                    includeLocked: false,
-                })
-                .map((txOut) => {
-                    const path = wallet.getPath(txOut.script);
-                    if (path === null) {
-                        throw new Error('Path not found, shit');
-                    }
-                    const strWIF = this.#masterKey.getPrivateKey(path);
-                    return {
-                        txid: txOut.outpoint.txid,
-                        vout: txOut.outpoint.n,
-                        amount: txOut.value,
-                        private_key: bs58.decode(strWIF).slice(1, 33),
-                        script: hexToBytes(txOut.script),
-                    };
+        try {
+            if (useShieldInputs) {
+                // This is a s -> s transaction
+                ret_value = await this.#shield.createTransaction({
+                    address,
+                    amount,
+                    blockHeight: getNetwork().cachedBlockCount,
+                    useShieldInputs: true,
+                    utxos: this.#getUTXOsForShield(),
                 });
-            ret_value = await this.#shield.createTransaction({
-                address,
-                amount,
-                blockHeight: getNetwork().cachedBlockCount,
-                useShieldInputs: false,
-                utxos: arrUTXOs,
-                transparentChangeAddress: this.getNewAddress()[0],
-            });
+            } else {
+                // This is a t -> s transaction! Get UTXOs from the mempool and map them into the lib internal object
+                const arrUTXOs = mempool
+                    .getUTXOs({
+                        filter: UTXO_WALLET_STATE.SPENDABLE,
+                        target: amount,
+                        includeLocked: false,
+                    })
+                    .map((txOut) => {
+                        const path = wallet.getPath(txOut.script);
+                        if (path === null) {
+                            throw new Error('Path not found, shit');
+                        }
+                        const strWIF = this.#masterKey.getPrivateKey(path);
+                        return {
+                            txid: txOut.outpoint.txid,
+                            vout: txOut.outpoint.n,
+                            amount: txOut.value,
+                            private_key: bs58.decode(strWIF).slice(1, 33),
+                            script: hexToBytes(txOut.script),
+                        };
+                    });
+                ret_value = await this.#shield.createTransaction({
+                    address,
+                    amount,
+                    blockHeight: getNetwork().cachedBlockCount,
+                    useShieldInputs: false,
+                    utxos: arrUTXOs,
+                    transparentChangeAddress: this.getNewAddress()[0],
+                });
+            }
+        } catch (e) {
+            console.error(e);
         }
         // Stop emitting tx updates
         clearInterval(periodicFunction);
         getEventEmitter().emit('shield-transaction-creation-update', 0.0, true);
-        console.log(ret_value);
         return ret_value['hex'];
     }
 
