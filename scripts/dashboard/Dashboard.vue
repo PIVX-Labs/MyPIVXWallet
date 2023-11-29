@@ -132,7 +132,9 @@ async function parseSecret(secret, password = '') {
                 const seed = await mnemonicToSeed(phrase, password);
                 const pivxShield = await PIVXShield.create({
                     seed,
-                    blockHeight: 1000000000000,
+                    // hardcoded value considering the last checkpoint, this is good both for mainnet and testnet
+                    // TODO: take the wallet creation height in input from users
+                    blockHeight: 4200000,
                     coinType: cChainParams.current.BIP44_TYPE,
                     // TODO: Change account index once account system is made
                     accountIndex: 0,
