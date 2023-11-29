@@ -160,7 +160,12 @@ async function selectContact() {
                                 <div class="input-group-append">
                                     <span class="input-group-text p-0">
                                         <div
-                                            @click="$emit('max-balance')"
+                                            @click="
+                                                $emit(
+                                                    'max-balance',
+                                                    useShieldInputs
+                                                )
+                                            "
                                             style="
                                                 cursor: pointer;
                                                 border: 0px;

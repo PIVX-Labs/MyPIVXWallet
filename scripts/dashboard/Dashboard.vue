@@ -407,6 +407,16 @@ async function send(address, amount, useShieldInputs) {
     });
 }
 
+/**
+ * @param {boolean} useShieldInputs - whether max balance is from shield or transparent pivs
+ */
+function getMaxBalance(useShieldInputs) {
+    const coinSatoshi = useShieldInputs
+        ? wallet.shieldBalance.value
+        : wallet.balance.value;
+    transferAmount.value = (coinSatoshi / COIN).toString();
+}
+
 getEventEmitter().on('toggle-network', async () => {
     const database = await Database.getInstance();
     const account = await database.getAccount();
@@ -966,7 +976,7 @@ defineExpose({
             @openQrScan="openSendQRScanner()"
             @close="showTransferMenu = false"
             @send="send"
-            @max-balance="transferAmount = (mempool.balance / COIN).toString()"
+            @max-balance="getMaxBalance"
         />
     </div>
 </template>
