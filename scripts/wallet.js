@@ -763,7 +763,6 @@ export class Wallet {
             );
             const batchSize = Number.parseInt(prompt('Insert batch size', '8'));
             console.time('sync_start');
-            let processed = 1;
             let handled = 0;
             const blocks = [];
             let syncing = false;
@@ -795,7 +794,7 @@ export class Wallet {
                     getEventEmitter().emit(
                         'shield-sync-status-update',
                         tr(translation.syncShieldProgress, [
-                            { current: ++processed },
+                            { current: handled - 1 },
                             { total: blockHeights.length },
                         ]),
                         false
@@ -923,6 +922,7 @@ export class Wallet {
             blockHeight++
         ) {
             try {
+                //TODO: use safe fetch here
                 const block = await cNet.getBlock(blockHeight);
                 if (block.txs) {
                     await this.#shield.handleBlock(block);
