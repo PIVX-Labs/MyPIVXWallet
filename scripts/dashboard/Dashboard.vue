@@ -11,7 +11,6 @@ import {
     createAlert,
     isBase64,
     isShieldAddress,
-    isValidBech32,
     parseBIP21Request,
     sanitizeHTML,
 } from '../misc.js';
@@ -466,7 +465,7 @@ async function openSendQRScanner() {
     if (cScan) {
         const { data } = cScan;
         if (!data) return;
-        if (isStandardAddress(data) || isValidBech32(data).valid) {
+        if (isStandardAddress(data) || isShieldAddress(data)) {
             transferAddress.value = data;
             showTransferMenu.value = true;
             return;

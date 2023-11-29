@@ -2,10 +2,9 @@ import { translation } from './i18n.js';
 import { doms } from './global.js';
 import qrcode from 'qrcode-generator';
 import bs58 from 'bs58';
-import { bech32 } from 'bech32';
 import { BIP21_PREFIX, cChainParams } from './chain_params.js';
 import { dSHA256 } from './utils.js';
-import { verifyPubkey } from './encoding.js';
+import { verifyPubkey, verifyBech32 } from './encoding.js';
 
 // Base58 Encoding Map
 export const MAP_B58 =
@@ -248,8 +247,7 @@ export function isColdAddress(strAddress) {
  * @returns {boolean} if strAddress is a valid shiled address
  */
 export function isShieldAddress(strAddress) {
-    // Hopefully i'll remember to implement
-    return !isStandardAddress(strAddress);
+    return verifyBech32(strAddress, cChainParams.current.SHIELD_PREFIX);
 }
 
 /**
@@ -305,7 +303,7 @@ export function parseBIP21Request(strReq) {
         // Standard address
         !isStandardAddress(strAddress) &&
         // Shield address
-        !isValidBech32(strAddress).valid
+        !isShieldAddress(strAddress)
     ) {
         return false;
     }
@@ -319,25 +317,6 @@ export function parseBIP21Request(strReq) {
     }
 
     return { address: strAddress, options: cOptions };
-}
-
-/**
- * @typedef {object} Bech32Check
- * @property {boolean} valid - If the string is a valid bech32 address
- * @property {object} res - The results of the bech32 decoding
- */
-
-/**
- * A safe bech32 wrapper for quickly checking if an address is valid
- * @param {string} str - Bech32 Address
- * @returns {Bech32Check} - Both the validity and decoding results
- */
-export function isValidBech32(str) {
-    try {
-        return { valid: true, res: bech32.decode(str) };
-    } catch (e) {
-        return { valid: false, res: e };
-    }
 }
 
 /**

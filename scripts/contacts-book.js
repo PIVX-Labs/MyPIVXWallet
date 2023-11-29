@@ -544,7 +544,7 @@ export async function guiAddContact() {
     if (isXPub(strAddr)) {
         if (wallet.isHD()) {
             // Compare the XPub against our own
-            const fOurs = strAddr === (await wallet.getXPub());
+            const fOurs = strAddr === wallet.getXPub();
             if (fOurs) {
                 createAlert(
                     'warning',
@@ -556,7 +556,7 @@ export async function guiAddContact() {
         }
     } else {
         // Ensure we're not adding (one of) our own address(es)
-        if (await wallet.isOwnAddress(strAddr)) {
+        if (wallet.isOwnAddress(strAddr)) {
             createAlert('warning', ALERTS.CONTACTS_CANNOT_ADD_YOURSELF, 3500);
             return false;
         }
@@ -948,7 +948,7 @@ export async function getAddressColor(address) {
         // Yep, nice!
         return 'green';
     }
-
+    console.log('AAAAAAAAAAA');
     if (isValidPIVXAddress(address)) {
         // Yep!
         return 'green';
