@@ -336,6 +336,14 @@ async function send(address, amount, useShieldInputs) {
     )
         return;
 
+    // Make sure we are not already creating a (shield) tx
+    if (wallet.isCreatingTx.value) {
+        return createAlert(
+            'warning',
+            'Already creating a transaction! please wait for it to finish'
+        );
+    }
+
     // Sanity check the receiver
     address = address.trim();
 

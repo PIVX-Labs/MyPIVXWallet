@@ -20,6 +20,9 @@ export function useWallet() {
     const getKeyToBackup = async () => await wallet.getKeyToBackup();
     const isEncrypted = ref(true);
     const hasShield = ref(wallet.hasShield());
+    // True only iff a shield transaction is being created
+    // Transparent txs are so fast that we don't need to keep track of them.
+    const isCreatingTx = ref(false);
 
     const setMasterKey = (mk) => {
         wallet.setMasterKey(mk);
@@ -61,6 +64,13 @@ export function useWallet() {
         shieldBalance.value = await wallet.getShieldBalance();
     };
 
+    getEventEmitter().on(
+        'shield-transaction-creation-update',
+        async (_, finished) => {
+            isCreatingTx.value = !finished;
+        }
+    );
+
     getEventEmitter().on('balance-update', async () => {
         balance.value = mempool.balance;
         currency.value = strCurrency.toUpperCase();
@@ -88,6 +98,7 @@ export function useWallet() {
         balance,
         hasShield,
         shieldBalance,
+        isCreatingTx,
         currency,
         price,
         sync,
