@@ -5,7 +5,7 @@ import { beforeUnloadListener } from './global.js';
 import { ExplorerNetwork, getNetwork } from './network.js';
 import { MAX_ACCOUNT_GAP } from './chain_params.js';
 import { Transaction, HistoricalTx, HistoricalTxType } from './mempool.js';
-import { confirmPopup, createAlert, isShieldAddress } from './misc.js';
+import { confirmPopup, createAlert } from './misc.js';
 import { cChainParams } from './chain_params.js';
 import { COIN } from './chain_params.js';
 import { mempool } from './global.js';
@@ -974,6 +974,13 @@ export class Wallet {
      */
     async getShieldBalance() {
         return this.#shield?.getBalance() || 0;
+    }
+
+    /**
+     * @returns {Promise<number>} Number of pending shield satoshis of the account
+     */
+    async getPendingShieldBalance() {
+        return this.#shield?.getPendingBalance() || 0;
     }
 }
 
