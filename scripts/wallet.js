@@ -727,7 +727,6 @@ export class Wallet {
         }
         try {
             this.#syncing = true;
-
             await mempool.loadFromDisk();
             await this.loadShieldFromDisk();
             await getNetwork().walletFullSync();
@@ -906,6 +905,8 @@ export class Wallet {
         // Exit if this function is still processing
         // (this might take some time if we had many consecutive blocks without shield txs)
         if (this.#isFetchingLatestBlocks) return;
+        // Exit if there is no shield loaded
+        if (!this.hasShield()) return;
         this.#isFetchingLatestBlocks = true;
         /**
          * @type {ExplorerNetwork}
@@ -966,6 +967,7 @@ export class Wallet {
             return;
         }
         this.#shield = await PIVXShield.load(cAccount.shieldData);
+        getEventEmitter().emit('shield-loaded-from-disk');
         console.log('Shield has been loaded from disk!');
         return;
     }

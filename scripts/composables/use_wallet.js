@@ -59,11 +59,12 @@ export function useWallet() {
     const price = ref(0.0);
     const sync = async () => {
         await wallet.sync();
-        hasShield.value = wallet.hasShield();
         balance.value = mempool.balance;
         shieldBalance.value = await wallet.getShieldBalance();
     };
-
+    getEventEmitter().on('shield-loaded-from-disk', () => {
+        hasShield.value = wallet.hasShield();
+    });
     getEventEmitter().on(
         'shield-transaction-creation-update',
         async (_, finished) => {
