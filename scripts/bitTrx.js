@@ -3,9 +3,6 @@ import * as nobleSecp256k1 from '@noble/secp256k1';
 import { BigInteger } from 'biginteger';
 import bs58 from 'bs58';
 import { OP } from './script.js';
-import { wallet } from './wallet.js';
-import { parseWIF, deriveAddress } from './encoding.js';
-import { sha256 } from '@noble/hashes/sha256';
 import { getNetwork } from './network.js';
 import { cChainParams } from './chain_params.js';
 import { cloneDeep } from 'lodash-es';
@@ -68,7 +65,7 @@ export default class bitjs {
             buf.push(OP['IF']);
             if (
                 getNetwork().cachedBlockCount >=
-                cChainParams.current.Consensus.UPGRADE_V6_0
+                Cchainparams.current.Consensus.UPGRADE_V6_0
             ) {
                 buf.push(OP['CHECKCOLDSTAKEVERIFY']);
             } else {
@@ -245,79 +242,7 @@ export default class bitjs {
             }
             return this.serialize();
         }
-
-        /* serialize a transaction */
-        serialize() {
-            let buffer = [
-                ...bitjs.numToBytes(parseInt(this.version), 4),
-                ...bitjs.numToVarInt(this.inputs.length),
-            ];
-            for (const input of this.inputs) {
-                buffer = [
-                    ...buffer,
-                    ...hexToBytes(input.outpoint.hash).reverse(),
-                    ...bitjs.numToBytes(parseInt(input.outpoint.index), 4),
-                    ...bitjs.numToVarInt(input.script.length),
-                    ...input.script,
-                    ...bitjs.numToBytes(parseInt(input.sequence), 4),
-                ];
-            }
-
-            buffer = [...buffer, ...bitjs.numToVarInt(this.outputs.length)];
-            for (const output of this.outputs) {
-                buffer = [
-                    ...buffer,
-                    ...bitjs.numToBytes(output.value, 8),
-                    ...bitjs.numToVarInt(output.script.length),
-                    ...output.script,
-                ];
-            }
-            buffer = [
-                ...buffer,
-                ...bitjs.numToBytes(parseInt(this.locktime), 4),
-            ];
-            return bytesToHex(buffer);
-        }
     };
-    static numToBytes(num, bytes) {
-        if (typeof bytes === 'undefined') bytes = 8;
-        if (bytes == 0) {
-            return [];
-        } else if (num == -1) {
-            return hexToBytes('ffffffffffffffff');
-        } else {
-            return [num % 256].concat(
-                bitjs.numToBytes(Math.floor(num / 256), bytes - 1)
-            );
-        }
-    }
-
-    static numToByteArray(num) {
-        if (num <= 256) {
-            return [num];
-        } else {
-            return [num % 256].concat(
-                bitjs.numToByteArray(Math.floor(num / 256))
-            );
-        }
-    }
-
-    static numToVarInt(num) {
-        if (num < 253) {
-            return [num];
-        } else if (num < 65536) {
-            return [253].concat(bitjs.numToBytes(num, 2));
-        } else if (num < 4294967296) {
-            return [254].concat(bitjs.numToBytes(num, 4));
-        } else {
-            return [255].concat(bitjs.numToBytes(num, 8));
-        }
-    }
-
-    static bytesToNum(bytes) {
-        if (bytes.length == 0) return 0;
-        else return bytes[0] + 256 * bitjs.bytesToNum(bytes.slice(1));
-    }
 
     static isValidDestination(address, base58Prefix) {
         const bytes = bs58.decode(address);

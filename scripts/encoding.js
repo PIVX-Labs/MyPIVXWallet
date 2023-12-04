@@ -218,3 +218,62 @@ export function verifyWIF(
 export function parseWIF(strWIF, skipVerification = false) {
     return verifyWIF(strWIF, true, skipVerification);
 }
+
+
+/**
+ * Encodes a number to bytes in little endian order
+ * @param {BigInt} num - number to encode
+ * @param {number} bytes - Number of bytes to encode to
+ * @returns {number[]} - Encoded numbers
+ */
+export function numToBytes(num, bytes = 8) {
+    if (bytes == 0) {
+        return [];
+    } else if (num == -1n) {
+        return hexToBytes('ffffffffffffffff');
+    } else {
+        return [Number(num % 256n)].concat(
+            numToBytes(num / 256n, bytes - 1)
+        );
+    }
+}
+
+/**
+ * @param {BigInt} num - Number to encode
+ * @returns {number[]} Number to bytes  
+ */
+export function numToByteArray(num) {
+    if (num <= 256n) {
+        return [Number(num)];
+    } else {
+        return [Number(num % 256n)].concat(
+            numToByteArray(num / 256n)
+        );
+    }
+}
+
+/**
+ * @param {number[]} bytes
+ * @returns {BigInt} converted number from bytes
+ */
+export function bytesToNum(bytes) {
+    if (bytes.length == 0) return 0n;
+    else return BigInt(bytes[0]) + 256n * bytesToNum(bytes.slice(1));
+}
+
+/**
+ * @param {BigInt} num - Number to encode
+ * @returns {number[]} Number encoded in bitcoin varint format
+ */
+export function numToVarInt(num) {
+    if (num < 253n) {
+        return [Number(num)];
+    } else if (num < 65536n) {
+        return [253].concat(numToBytes(num, 2));
+    } else if (num < 4294967296n) {
+        return [254].concat(numToBytes(num, 4));
+    } else {
+        return [255].concat(numToBytes(num, 8));
+    }
+}
+

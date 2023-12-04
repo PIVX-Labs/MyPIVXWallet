@@ -640,6 +640,15 @@ export class Wallet {
         }
         return histTXs;
     }
+
+    /**
+     * @param {Transaction} transaction
+     */
+    sign(transaction) {
+	if (this.isViewOnly()) {
+	    throw new Error('Cannot sign with a view only wallet');
+	}
+    }
 }
 
 /**
