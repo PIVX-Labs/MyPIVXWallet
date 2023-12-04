@@ -839,7 +839,7 @@ export class Wallet {
             2500
         );
         // Value returned by createTransaction
-        let ret_value = { hex: '', spentUTXOs: [], txid: '' };
+        let tx = { hex: '', spentUTXOs: [], txid: '' };
         const periodicFunction = setInterval(async () => {
             const percentage = 5 + (await this.#shield.getTxStatus()) * 95;
             getEventEmitter().emit(
@@ -851,7 +851,7 @@ export class Wallet {
         try {
             if (useShieldInputs) {
                 // This is a s -> s transaction
-                ret_value = await this.#shield.createTransaction({
+                tx = await this.#shield.createTransaction({
                     address,
                     amount,
                     blockHeight: getNetwork().cachedBlockCount,
@@ -880,7 +880,7 @@ export class Wallet {
                             script: hexToBytes(txOut.script),
                         };
                     });
-                ret_value = await this.#shield.createTransaction({
+                tx = await this.#shield.createTransaction({
                     address,
                     amount,
                     blockHeight: getNetwork().cachedBlockCount,
@@ -895,7 +895,7 @@ export class Wallet {
         // Stop emitting tx updates
         clearInterval(periodicFunction);
         getEventEmitter().emit('shield-transaction-creation-update', 0.0, true);
-        return ret_value['hex'];
+        return tx.hex;
     }
 
     /**
@@ -984,6 +984,14 @@ export class Wallet {
      */
     async getPendingShieldBalance() {
         return this.#shield?.getPendingBalance() || 0;
+    }
+
+    /**
+     * Finalize transaction shield
+     * @param {string} txid
+     */
+    async finalizeTransaction(txid) {
+        await this.#shield.finalizeTransaction(txid);
     }
 }
 

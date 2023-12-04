@@ -273,8 +273,9 @@ async function createTransparentTransaction({
     const cTx = new bitjs.transaction();
 
     const cCoinControl = await chooseUTXOs(cTx, amount, 0, useDelegatedInputs);
-    if (!cCoinControl.success)
-        return createAlert('warning', cCoinControl.msg, 5000);
+    if (!cCoinControl.success) {
+        throw new Error(cCoinControl.msg);
+    }
     // Compute fee
     const nFee = getNetwork().getFee(cTx.serialize().length);
 
@@ -291,8 +292,7 @@ async function createTransparentTransaction({
     const outputs = [];
     if (nChange > 0) {
         if (delegateChange && nChange > 1.01 * COIN) {
-            if (!changeDelegationAddress)
-                return { ok: false, err: 'No change addr' };
+            if (!changeDelegationAddress) throw new Error('No change address');
             cTx.addcoldstakingoutput(
                 changeAddress,
                 changeDelegationAddress,
@@ -349,7 +349,10 @@ async function createTransparentTransaction({
             ---- END TRANSACTION (Debug Mode) ----
         `);
     }
-    return await signTransaction(cTx, wallet, outputs, delegateChange);
+    return {
+        sign: await signTransaction(cTx, wallet, outputs, delegateChange),
+        cTx,
+    };
 }
 
 async function createShieldTransaction(address, amount, useShieldInputs) {
@@ -395,11 +398,11 @@ export async function createAndSendTransaction({
     )
         return;
 
-    let sign;
+    let sign, cTx;
     if (useShieldInputs || isShieldAddress(address)) {
         sign = await createShieldTransaction(address, amount, useShieldInputs);
     } else {
-        sign = await createTransparentTransaction({
+        const res = await createTransparentTransaction({
             address,
             amount,
             isDelegation,
@@ -409,46 +412,50 @@ export async function createAndSendTransaction({
             delegationOwnerAddress,
             isProposal,
         });
+        sign = res.sign;
+        cTx = res.cTx;
     }
 
     const result = await getNetwork().sendTransaction(sign);
     // Update the mempool
-    /** TODO: Readd later
     if (result) {
-        const futureTxid = bytesToHex(dSHA256(hexToBytes(sign)).reverse());
-        // Build Transaction object
-        const vin = cTx.inputs.map(
-            (inp) =>
-                new CTxIn({
-                    outpoint: new COutpoint({
-                        txid: inp.outpoint.hash,
-                        n: inp.outpoint.index,
-                    }),
-                    scriptSig: bytesToHex(inp.script),
-                })
-        );
-        const vout = cTx.outputs.map(
-            (out, i) =>
-                new CTxOut({
-                    outpoint: new COutpoint({
-                        txid: futureTxid,
-                        n: i,
-                    }),
-                    script: bytesToHex(out.script),
-                    value: Number(out.value),
-                })
-        );
-        const parsedTx = new Transaction({
-            txid: futureTxid,
-            blockHeight: -1,
-            vin: vin,
-            vout: vout,
-        });
-        mempool.updateMempool(parsedTx);
-        mempool.setBalance();
-	}
-	*/
-    return { ok: !!result, txid: result };
+        const txid = result;
+        if (cTx) {
+            // Build Transaction object
+            const vin = cTx.inputs.map(
+                (inp) =>
+                    new CTxIn({
+                        outpoint: new COutpoint({
+                            txid: inp.outpoint.hash,
+                            n: inp.outpoint.index,
+                        }),
+                        scriptSig: bytesToHex(inp.script),
+                    })
+            );
+            const vout = cTx.outputs.map(
+                (out, i) =>
+                    new CTxOut({
+                        outpoint: new COutpoint({
+                            txid: txid,
+                            n: i,
+                        }),
+                        script: bytesToHex(out.script),
+                        value: Number(out.value),
+                    })
+            );
+            const parsedTx = new Transaction({
+                txid: txid,
+                blockHeight: -1,
+                vin: vin,
+                vout: vout,
+            });
+            mempool.updateMempool(parsedTx);
+            mempool.setBalance();
+        } else {
+            await wallet.finalizeTransaction(txid);
+        }
+        return { ok: !!result, txid: result };
+    }
 }
 
 /**
