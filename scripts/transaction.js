@@ -1,7 +1,8 @@
-import { numToBytes, numToVarInt } from './encoding.js';
+import { bytesToNum, numToBytes, numToVarInt } from './encoding.js';
 import { hexToBytes, bytesToHex, dSHA256 } from './utils.js';
 import { OP } from './script.js';
 import bs58 from 'bs58';
+import { varIntToNum } from './encoding.js';
 
 /** An Unspent Transaction Output, used as Inputs of future transactions */
 export class COutpoint {
@@ -55,13 +56,14 @@ export class CTxIn {
      * @param {COutpoint} CTxIn.outpoint - Outpoint of the UTXO that the vin spends
      * @param {String} CTxIn.scriptSig - Script used to spend the corresponding UTXO, in hex
      */
-    constructor({ outpoint, scriptSig } = {}) {
+    constructor({ outpoint, scriptSig, sequence = 4294967295 } = {}) {
         /** Outpoint of the UTXO that the vin spends
          *  @type {COutpoint} */
         this.outpoint = outpoint;
         /** Script used to spend the corresponding UTXO, in hex
          * @type {string} */
         this.scriptSig = scriptSig;
+        this.sequence = sequence;
     }
 }
 
@@ -71,9 +73,9 @@ export class Transaction {
     /** @type{number} */
     blockHeight;
     /** @type{CtxIn[]}*/
-    vin;
+    vin = [];
     /** @type{CTxOut[]}*/
-    vout;
+    vout = [];
     /** @type{number} */
     blockTime;
     /** @type{number} */
@@ -82,68 +84,127 @@ export class Transaction {
     chainParams;
 
     get txid() {
-	return bytesToHex(dSHA256(hexToBytes(this.serialize())).reverse())
+        return bytesToHex(dSHA256(hexToBytes(this.serialize())).reverse());
     }
-    
+
     isConfirmed() {
         return this.blockHeight != -1;
     }
-    
+
     isCoinStake() {
         return this.vout.length >= 2 && this.vout[0].isEmpty();
     }
-    
+
     isCoinBase() {
         // txid undefined happens only for coinbase inputs
         return this.vin.length == 1 && !this.vin[0].outpoint.txid;
     }
-    
+
     isMature(currentHeight) {
         if (!(this.isCoinBase() || this.isCoinStake())) {
             return true;
         }
         return (
-            currentHeight - this.blockHeight >
-            this.chainParams.coinbaseMaturity
+            currentHeight - this.blockHeight > this.chainParams.coinbaseMaturity
         );
     }
 
+    /**
+     * @param {string} hex - hex encoded transaction
+     * @returns {Transaction}
+     */
+    static fromHex(hex) {
+        const bytes = hexToBytes(hex);
+        let offset = 0;
+        const tx = new Transaction();
+        tx.version = Number(bytesToNum(bytes.slice(offset, (offset += 4))));
+        const { num: vinLength, readBytes } = varIntToNum(bytes.slice(offset));
+        offset += readBytes;
+        for (let i = 0; i < Number(vinLength); i++) {
+            const txid = bytesToHex(
+                bytes.slice(offset, (offset += 32)).reverse()
+            );
+            const n = Number(bytesToNum(bytes.slice(offset, (offset += 4))));
+            const { num: scriptLength, readBytes } = varIntToNum(
+                bytes.slice(offset)
+            );
+            offset += readBytes;
+            const script = bytesToHex(
+                bytes.slice(offset, (offset += Number(scriptLength)))
+            );
+            const sequence = Number(
+                bytesToNum(bytes.slice(offset, (offset += 4)))
+            );
+
+            const input = new CTxIn({
+                outpoint: new COutpoint({
+                    txid,
+                    n,
+                }),
+                scriptSig: script,
+                sequence,
+            });
+            tx.vin.push(input);
+        }
+        const { num: voutLength, readBytes: readBytesOut } = varIntToNum(
+            bytes.slice(offset)
+        );
+        offset += readBytesOut;
+
+        for (let i = 0; i < voutLength; i++) {
+            const value = bytesToNum(bytes.slice(offset, (offset += 8)));
+            const { num: scriptLength, readBytes } = varIntToNum(
+                bytes.slice(offset)
+            );
+            offset += readBytes;
+            const script = bytesToHex(
+                bytes.slice(offset, (offset += Number(scriptLength)))
+            );
+
+            tx.vout.push(
+                new CTxOut({
+                    outpoint: null,
+                    script,
+                    value: Number(value),
+                })
+            );
+        }
+
+        return tx;
+    }
+
     serialize() {
-	const locktime = 4294967295n;
-	let buffer = [
-	    ...numToBytes(BigInt(this.version), 4),
-	    ...numToVarInt(BigInt(this.vin.length)),
-	];
+        const locktime = 4294967295n;
+        let buffer = [
+            ...numToBytes(BigInt(this.version), 4),
+            ...numToVarInt(BigInt(this.vin.length)),
+        ];
 
-	for (const input of this.vin) {
-	    const scriptBytes = hexToBytes(input.scriptSig);
-	    buffer = [
-		...buffer,
-		...hexToBytes(input.outpoint.txid).reverse(),
-		...numToBytes(BigInt(input.outpoint.n), 4),
-		...numToVarInt(BigInt(scriptBytes.length), 4),
-		...scriptBytes,
-		...numToBytes(locktime, 4)
-	    ];
-	}
-
-	buffer = [...buffer,...numToVarInt(BigInt(this.vout.length))]
-	for (const output of this.vout) {
-	    const scriptBytes = hexToBytes(output.script);
-	    buffer = [
+        for (const input of this.vin) {
+            const scriptBytes = hexToBytes(input.scriptSig);
+            buffer = [
                 ...buffer,
-		// This conversion may lose precision when we receive an UTXO worth
-		// more than 90 millions PIVs
+                ...hexToBytes(input.outpoint.txid).reverse(),
+                ...numToBytes(BigInt(input.outpoint.n), 4),
+                ...numToVarInt(BigInt(scriptBytes.length), 4),
+                ...scriptBytes,
+                ...numToBytes(locktime, 4),
+            ];
+        }
+
+        buffer = [...buffer, ...numToVarInt(BigInt(this.vout.length))];
+        for (const output of this.vout) {
+            const scriptBytes = hexToBytes(output.script);
+            buffer = [
+                ...buffer,
                 ...numToBytes(BigInt(output.value), 8),
                 ...numToVarInt(BigInt(scriptBytes.length)),
                 ...scriptBytes,
             ];
-	}
-	buffer = [
-	    ...buffer, ...numToBytes(0n, 4),
-	];
+        }
+        buffer = [...buffer, ...numToBytes(0n, 4)];
 
-	return bytesToHex(buffer)
+        return bytesToHex(buffer);
     }
 }
 
@@ -152,23 +213,23 @@ export class Transaction {
  */
 export class TransactionBuilder {
     #transaction = new Transaction();
-    
-    constructor() {  }
-    
+
+    constructor() {}
+
     /**
      * @returns {TransactionBuilder}
      */
     addInput({ txid, n }) {
-	this.#transaction.vin.push(
-	    new CTxIn({
-		outpoint: new COutpoint({
-		    txid,
-		    n
-		}),
-		scriptSig
-	    })
-	);
-	return this;
+        this.#transaction.vin.push(
+            new CTxIn({
+                outpoint: new COutpoint({
+                    txid,
+                    n,
+                }),
+                scriptSig,
+            })
+        );
+        return this;
     }
 
     /**
@@ -183,48 +244,46 @@ export class TransactionBuilder {
         if (checksum + '' == back + '') {
             return Array.from(front.slice(1));
         }
-	throw new Error('Invalid address');
+        throw new Error('Invalid address');
     }
-    
+
     /**
      * Adds a P2PKH output to the transaction
      * @param {{address: string, value: number}}
      * @returns {TransactionBuilder}
      */
     addOutput({ address, value }) {
-	const decoded = this.#decodeAddress(address);
-	const script = [
-	    OP['DUP'],
-	    OP['HASH160'],
-	    decoded.length,
-	    ...decoded,
-	    OP['EQUALVERIFY'],
-	    OP['CHECKSIG'],
-	];
-	this.#transaction.vout.push(new CTxOut({
-	    outpoint: this.#transaction.vout.length,
-	    script: bytesToHex(script),
-	    value,
-	}));
-	return this;
+        const decoded = this.#decodeAddress(address);
+        const script = [
+            OP['DUP'],
+            OP['HASH160'],
+            decoded.length,
+            ...decoded,
+            OP['EQUALVERIFY'],
+            OP['CHECKSIG'],
+        ];
+        this.#transaction.vout.push(
+            new CTxOut({
+                script: bytesToHex(script),
+                value,
+            })
+        );
+        return this;
     }
-    
+
     /**
      * Adds a proposal output to the transaction
      * @param {{hash: string, value: number}}
      * @returns {TransactionBuilder}
      */
     addProposalOutput({ hash, value }) {
-	this.#transaction.vout.push(new CTxOut({
-	    outpoint: this.#transaction.vout.length,
-	    script: bytesToHex([
-		OP['RETURN'],
-		32,
-		...hexToBytes(hash)
-	    ]),
-	    value,
-	}));
-	return this;
+        this.#transaction.vout.push(
+            new CTxOut({
+                script: bytesToHex([OP['RETURN'], 32, ...hexToBytes(hash)]),
+                value,
+            })
+        );
+        return this;
     }
 
     /**
@@ -233,34 +292,33 @@ export class TransactionBuilder {
      * @returns {TransactionBuilder}
      */
     addColdStakeOutput({ address, addressColdStake, value }) {
-	const decodedAddress = this.#decodeAddress(address);
-	const decodedAddressColdStake = this.#decodeAddress(addressColdStake);
-	    const script = [
-		OP['DUP'],
-		OP['HASH160'],
-		OP['ROT'],
-		OP['IF'],
-		OP['CHECKCOLDSTAKEVERIFY_LOF'],
-		decodedAddressColdStake.length,
-		...decodedAddressColdStake,
-		OP['ELSE'],
-		decodedAddress.length,
-		...decodedAddress,
-		OP['ENDIF'],
-		OP['EQUALVERIFY'],
-		OP['CHECKSIG'],
-	    ];
-	    this.#transaction.vout.push(new CTxOut({
-		outpoint: this.#transaction.vout.length,
-		script: bytesToHex(script),
-		value,
-	    }));
-	return this;
+        const decodedAddress = this.#decodeAddress(address);
+        const decodedAddressColdStake = this.#decodeAddress(addressColdStake);
+        const script = [
+            OP['DUP'],
+            OP['HASH160'],
+            OP['ROT'],
+            OP['IF'],
+            OP['CHECKCOLDSTAKEVERIFY_LOF'],
+            decodedAddressColdStake.length,
+            ...decodedAddressColdStake,
+            OP['ELSE'],
+            decodedAddress.length,
+            ...decodedAddress,
+            OP['ENDIF'],
+            OP['EQUALVERIFY'],
+            OP['CHECKSIG'],
+        ];
+        this.#transaction.vout.push(
+            new CTxOut({
+                script: bytesToHex(script),
+                value,
+            })
+        );
+        return this;
     }
-
 
     build() {
-	return this.#transaction;
+        return this.#transaction;
     }
 }
-
