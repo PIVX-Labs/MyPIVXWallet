@@ -219,7 +219,6 @@ export function parseWIF(strWIF, skipVerification = false) {
     return verifyWIF(strWIF, true, skipVerification);
 }
 
-
 /**
  * Encodes a number to bytes in little endian order
  * @param {BigInt} num - number to encode
@@ -232,23 +231,19 @@ export function numToBytes(num, bytes = 8) {
     } else if (num == -1n) {
         return hexToBytes('ffffffffffffffff');
     } else {
-        return [Number(num % 256n)].concat(
-            numToBytes(num / 256n, bytes - 1)
-        );
+        return [Number(num % 256n)].concat(numToBytes(num / 256n, bytes - 1));
     }
 }
 
 /**
  * @param {BigInt} num - Number to encode
- * @returns {number[]} Number to bytes  
+ * @returns {number[]} Number to bytes
  */
 export function numToByteArray(num) {
     if (num <= 256n) {
         return [Number(num)];
     } else {
-        return [Number(num % 256n)].concat(
-            numToByteArray(num / 256n)
-        );
+        return [Number(num % 256n)].concat(numToByteArray(num / 256n));
     }
 }
 
@@ -277,3 +272,18 @@ export function numToVarInt(num) {
     }
 }
 
+/**
+ * @returns {{num: BigInt, readBytes: number}}
+ */
+export function varIntToNum(bytes) {
+    if (bytes[0] < 253)
+        return {
+            num: BigInt(bytes[0]),
+            readBytes: 1,
+        };
+    const readBytes = 1 + 2 ** (bytes[0] - 252);
+    return {
+        num: bytesToNum(bytes.slice(1, readBytes)),
+        readBytes,
+    };
+}

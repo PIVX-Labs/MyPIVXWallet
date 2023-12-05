@@ -1,4 +1,11 @@
-import { parseWIF, numToBytes, numToByteArray, numToVarInt, bytesToNum } from '../../scripts/encoding.js';
+import {
+    parseWIF,
+    numToBytes,
+    numToByteArray,
+    numToVarInt,
+    bytesToNum,
+    varIntToNum,
+} from '../../scripts/encoding.js';
 import { describe, it, test, expect } from 'vitest';
 
 describe('parse WIF tests', () => {
@@ -22,37 +29,77 @@ describe('parse WIF tests', () => {
 
 describe('num to bytes tests', () => {
     test('numToBytes', () => {
-	expect(numToBytes(0n, 8)).toStrictEqual([0, 0, 0, 0, 0, 0, 0, 0]);
-	expect(numToBytes(1n, 8)).toStrictEqual([1, 0, 0, 0, 0, 0, 0, 0]);
-	expect(numToBytes(0n, 4)).toStrictEqual([0, 0, 0, 0]);
-	expect(numToBytes(1n, 4)).toStrictEqual([1, 0, 0, 0]);
-	// Little endian order
-	expect(numToBytes(0xdeadbeefn, 4)).toStrictEqual([0xef, 0xbe, 0xad, 0xde]);
-	expect(numToBytes(0xdeadbeefn, 8)).toStrictEqual([0xef, 0xbe, 0xad, 0xde, 0, 0, 0, 0]);
+        expect(numToBytes(0n, 8)).toStrictEqual([0, 0, 0, 0, 0, 0, 0, 0]);
+        expect(numToBytes(1n, 8)).toStrictEqual([1, 0, 0, 0, 0, 0, 0, 0]);
+        expect(numToBytes(0n, 4)).toStrictEqual([0, 0, 0, 0]);
+        expect(numToBytes(1n, 4)).toStrictEqual([1, 0, 0, 0]);
+        // Little endian order
+        expect(numToBytes(0xdeadbeefn, 4)).toStrictEqual([
+            0xef, 0xbe, 0xad, 0xde,
+        ]);
+        expect(numToBytes(0xdeadbeefn, 8)).toStrictEqual([
+            0xef, 0xbe, 0xad, 0xde, 0, 0, 0, 0,
+        ]);
     });
 
     test('numToByteArray', () => {
-	expect(numToByteArray(0n)).toStrictEqual([0]);
-	expect(numToByteArray(1n)).toStrictEqual([1]);
-	expect(numToByteArray(0xdeadbeefn)).toStrictEqual([0xef, 0xbe, 0xad, 0xde]);
-	expect(numToByteArray(0xdeadbeefdeadbeefn)).toStrictEqual([0xef, 0xbe, 0xad, 0xde, 0xef, 0xbe, 0xad, 0xde]);
+        expect(numToByteArray(0n)).toStrictEqual([0]);
+        expect(numToByteArray(1n)).toStrictEqual([1]);
+        expect(numToByteArray(0xdeadbeefn)).toStrictEqual([
+            0xef, 0xbe, 0xad, 0xde,
+        ]);
+        expect(numToByteArray(0xdeadbeefdeadbeefn)).toStrictEqual([
+            0xef, 0xbe, 0xad, 0xde, 0xef, 0xbe, 0xad, 0xde,
+        ]);
     });
-    
+
     test('numToVarInt', () => {
-	// Tests taken from https://wiki.bitcoinsv.io/index.php/VarInt
-	expect(numToVarInt(187n)).toStrictEqual([187]);
-	expect(numToVarInt(255n)).toStrictEqual([0xfd, 0xff, 0x00]);
-	expect(numToVarInt(0x3419n)).toStrictEqual([0xFd, 0x19, 0x34])
-	expect(numToVarInt(0x80081E5n)).toStrictEqual([0xFE,0xE5,0x81,0x00,0x08]);
-	expect(numToVarInt(0x4BF583A17D59C158n)).toStrictEqual([0xFF, 0x58, 0xC1, 0x59, 0x7D, 0xA1, 0x83, 0xF5, 0x4B]);
+        // Tests taken from https://wiki.bitcoinsv.io/index.php/VarInt
+        expect(numToVarInt(187n)).toStrictEqual([187]);
+        expect(numToVarInt(255n)).toStrictEqual([0xfd, 0xff, 0x00]);
+        expect(numToVarInt(0x3419n)).toStrictEqual([0xfd, 0x19, 0x34]);
+        expect(numToVarInt(0x80081e5n)).toStrictEqual([
+            0xfe, 0xe5, 0x81, 0x00, 0x08,
+        ]);
+        expect(numToVarInt(0x4bf583a17d59c158n)).toStrictEqual([
+            0xff, 0x58, 0xc1, 0x59, 0x7d, 0xa1, 0x83, 0xf5, 0x4b,
+        ]);
     });
-    
+
     test('bytesToNum', () => {
-	expect(bytesToNum([0, 0, 0, 0, 0, 0, 0, 0])).toStrictEqual(0n);
-	expect(bytesToNum([1, 0, 0, 0, 0, 0, 0, 0])).toStrictEqual(1n);
-	expect(bytesToNum([0, 0, 0, 0])).toStrictEqual(0n);
-	expect(bytesToNum([1, 0, 0, 0])).toStrictEqual(1n);
-	expect(bytesToNum([0xef, 0xbe, 0xad, 0xde])).toStrictEqual(0xdeadbeefn);
-	expect(bytesToNum([0xef, 0xbe, 0xad, 0xde, 0, 0, 0, 0])).toStrictEqual(0xdeadbeefn);
+        expect(bytesToNum([0, 0, 0, 0, 0, 0, 0, 0])).toStrictEqual(0n);
+        expect(bytesToNum([1, 0, 0, 0, 0, 0, 0, 0])).toStrictEqual(1n);
+        expect(bytesToNum([0, 0, 0, 0])).toStrictEqual(0n);
+        expect(bytesToNum([1, 0, 0, 0])).toStrictEqual(1n);
+        expect(bytesToNum([0xef, 0xbe, 0xad, 0xde])).toStrictEqual(0xdeadbeefn);
+        expect(bytesToNum([0xef, 0xbe, 0xad, 0xde, 0, 0, 0, 0])).toStrictEqual(
+            0xdeadbeefn
+        );
+    });
+
+    test('varIntToNum', () => {
+        // Tests taken from https://wiki.bitcoinsv.io/index.php/VarInt
+        expect(varIntToNum([187])).toStrictEqual({
+            readBytes: 1,
+            num: 187n,
+        });
+        expect(varIntToNum([0xfd, 0xff, 0x00])).toStrictEqual({
+            readBytes: 3,
+            num: 255n,
+        });
+        expect(varIntToNum([0xfd, 0x19, 0x34])).toStrictEqual({
+            readBytes: 3,
+            num: 0x3419n,
+        });
+        expect(varIntToNum([0xfe, 0xe5, 0x81, 0x00, 0x08])).toStrictEqual({
+            readBytes: 5,
+            num: 0x80081e5n,
+        });
+        expect(
+            varIntToNum([0xff, 0x58, 0xc1, 0x59, 0x7d, 0xa1, 0x83, 0xf5, 0x4b])
+        ).toStrictEqual({
+            readBytes: 9,
+            num: 0x4bf583a17d59c158n,
+        });
     });
 });
