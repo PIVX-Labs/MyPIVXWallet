@@ -157,7 +157,6 @@ STAKE_ADDR_BAD = "Endereço de Cold Staking inválido!" # Invalid Cold Staking a
 BAD_ADDR_LENGTH = "<b>Endereço PIVX inválido!<b><br>Comprimento incorreto ({addressLength})" # <b>Invalid PIVX address!<b><br>Bad length ({addressLength})
 BAD_ADDR_PREFIX = "<b>Endereço PIVX inválido!<b><br>Prefixo inválido {address} (Deve começar com {addressPrefix})" # <b>Invalid PIVX address!<b><br>Bad prefix {address} (Should start with {addressPrefix})
 SENT_NOTHING = "Você não pode enviar 'nada'!" # You can't send 'nothing'!
-MORE_THEN_8_DECIMALS = "limite de 8 decimais excedido" # 8 decimal limit exceeded
 BACKUP_OR_ENCRYPT_WALLET = "Criptografe e/ou faça backup das suas chaves antes de sair, ou você pode perdê-las!" # Please ENCRYPT and/or BACKUP your keys before leaving, or you may lose them!
 STAKING_LEDGER_NO_SUPPORT = "A Ledger não é compatível com Cold Staking" # Ledger is not supported for Cold Staking
 CONNECTION_FAILED = "<b>Falha ao sincronizar!</b> Tente novamente mais tarde.<br>Pode tentar reconectar através das Configurações." # <b>Failed to synchronize!</b> Please try again later.<br>You can attempt re-connect via the Settings.

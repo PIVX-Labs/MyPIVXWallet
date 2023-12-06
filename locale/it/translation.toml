@@ -238,7 +238,6 @@ STAKE_NOT_SEND = "In questo caso, utilizza la schermata <b>Stake</b>, NON la sch
 BAD_ADDR_LENGTH = "<b>Indirizzo PIVX non valido!<b><br>Lunghezza errata ({addressLength})" # <b>Invalid PIVX address!<b><br>Bad length ({addressLength})
 BAD_ADDR_PREFIX = "<b>Indirizzo PIVX non valido!<b><br>Prefisso {address} errato (dovrebbe iniziare con {addressPrefix})" # <b>Invalid PIVX address!<b><br>Bad prefix {address} (Should start with {addressPrefix})
 SENT_NOTHING = "Non puoi inviare 'niente'!" # You can't send 'nothing'!
-MORE_THEN_8_DECIMALS = "limite di 8 decimali superato" # 8 decimal limit exceeded
 SAVE_WALLET_PLEASE = "<b>Salva il tuo wallet!</b><br>Dashboard ➜ Proteggi il tuo wallet" # <b>Save your wallet!</b><br>Dashboard ➜ Secure your wallet
 BACKUP_OR_ENCRYPT_WALLET = "Ti preghiamo di crittografare e/o eseguire il backup delle tue chiavi prima di chiudere, altrimenti potresti perderle!" # Please ENCRYPT and/or BACKUP your keys before leaving, or you may lose them!
 NO_CAMERAS = "Questo dispositivo non ha una fotocamera!" # This device has no camera!
