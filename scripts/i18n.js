@@ -199,6 +199,7 @@ export const arrActiveLangs = [
     { code: 'de', emoji: '🇩🇪' },
     { code: 'nl', emoji: '🇳🇱' },
     { code: 'it', emoji: '🇮🇹' },
+    { code: 'pl', emoji: '🇵🇱' },
     { code: 'pt-pt', emoji: '🇵🇹' },
     { code: 'pt-br', emoji: '🇧🇷' },
     { code: 'es-mx', emoji: '🇲🇽' },
