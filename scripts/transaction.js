@@ -1,8 +1,10 @@
-import { bytesToNum, numToBytes, numToVarInt } from './encoding.js';
+import { bytesToNum, numToBytes, numToVarInt, parseWIF } from './encoding.js';
 import { hexToBytes, bytesToHex, dSHA256 } from './utils.js';
 import { OP } from './script.js';
 import bs58 from 'bs58';
-import { varIntToNum } from './encoding.js';
+import { varIntToNum, deriveAddress } from './encoding.js';
+import * as nobleSecp256k1 from '@noble/secp256k1';
+import { sha256 } from '@noble/hashes/sha256';
 
 /** An Unspent Transaction Output, used as Inputs of future transactions */
 export class COutpoint {
@@ -186,7 +188,7 @@ export class Transaction {
                 ...buffer,
                 ...hexToBytes(input.outpoint.txid).reverse(),
                 ...numToBytes(BigInt(input.outpoint.n), 4),
-                ...numToVarInt(BigInt(scriptBytes.length), 4),
+                ...numToVarInt(BigInt(scriptBytes.length)),
                 ...scriptBytes,
                 ...numToBytes(locktime, 4),
             ];
@@ -208,18 +210,46 @@ export class Transaction {
     }
 
     /**
-     * 
+     * Get the transaction hash of the indexth input
+     * Using the sighash type SIGHASH_ALL
      */
     transactionHash(index) {
-	const copy = structuredClone(this);
-	// Black out all other inputs, except this one
-	for (let i = 0; i < copy.vin.length; i++) {
-	    if (index != i) 
-		copy.vin[i].scriptSig = '';
-	}
-	return bytesToHex(dSHA256(hexToBytes(copy.serialize())));
+        const copy = structuredClone(this);
+        // Black out all inputs
+        for (let i = 0; i < copy.vin.length; i++) {
+            if (i != index) copy.vin[i].scriptSig = '';
+        }
+        return bytesToHex(
+            dSHA256([
+                ...hexToBytes(this.serialize.bind(copy)()),
+                //...hexToBytes(this.serialize()),
+                ...numToBytes(1n, 4), // SIGHASH_ALL
+            ])
+        );
     }
 
+    async signInput(index, wif) {
+        const pubkeyBytes = hexToBytes(
+            deriveAddress({
+                pkBytes: parseWIF(wif),
+                output: 'COMPRESSED_HEX',
+            })
+        );
+        const txhash = this.transactionHash(index);
+        let signature = Array.from(
+            await nobleSecp256k1.sign(txhash, parseWIF(wif), {
+                canonical: true,
+            })
+        );
+        signature.push(1); // SIGHASH_ALL
+
+        this.vin[index].scriptSig = bytesToHex([
+            signature.length,
+            ...signature,
+            pubkeyBytes.length,
+            ...pubkeyBytes,
+        ]);
+    }
 }
 
 /**
