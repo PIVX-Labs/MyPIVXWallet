@@ -263,7 +263,7 @@ export class TransactionBuilder {
     /**
      * @returns {TransactionBuilder}
      */
-    addInput({ txid, n }) {
+    addInput({ txid, n, scriptSig }) {
         this.#transaction.vin.push(
             new CTxIn({
                 outpoint: new COutpoint({
