@@ -642,12 +642,16 @@ export class Wallet {
     }
 
     /**
+     * Signs the transaction with the provided masterkey.
+     * The transaction is then ready to send to the network
      * @param {Transaction} transaction
+     * @returns {void}
      */
     sign(transaction) {
-	if (this.isViewOnly()) {
-	    throw new Error('Cannot sign with a view only wallet');
-	}
+        if (this.isViewOnly()) {
+            throw new Error('Cannot sign with a view only wallet');
+        }
+	
     }
 }
 

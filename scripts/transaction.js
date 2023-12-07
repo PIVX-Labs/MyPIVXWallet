@@ -72,7 +72,7 @@ export class Transaction {
     version;
     /** @type{number} */
     blockHeight;
-    /** @type{CtxIn[]}*/
+    /** @type{CTxIn[]}*/
     vin = [];
     /** @type{CTxOut[]}*/
     vout = [];
@@ -206,6 +206,20 @@ export class Transaction {
 
         return bytesToHex(buffer);
     }
+
+    /**
+     * 
+     */
+    transactionHash(index) {
+	const copy = structuredClone(this);
+	// Black out all other inputs, except this one
+	for (let i = 0; i < copy.vin.length; i++) {
+	    if (index != i) 
+		copy.vin[i].scriptSig = '';
+	}
+	return bytesToHex(dSHA256(hexToBytes(copy.serialize())));
+    }
+
 }
 
 /**

@@ -50,4 +50,9 @@ describe('transaction tests', () => {
         );
         expect(tx).toStrictEqual(getDummyTx());
     });
+
+    it('computes sighash correctly', () => {
+	const tx = getDummyTx();
+	expect(tx.transactionHash(0)).toBe('');
+    });
 });

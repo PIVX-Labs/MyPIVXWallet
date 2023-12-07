@@ -7,7 +7,6 @@ import { wallet } from './wallet.js';
 import { cChainParams } from './chain_params.js';
 import { Account } from './accounts.js';
 
-
 export const UTXO_WALLET_STATE = {
     NOT_MINE: 0, // Don't have the key to spend this utxo
     SPENDABLE: 1, // Have the key to spend this (P2PKH) utxo
