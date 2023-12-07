@@ -55,6 +55,7 @@ describe('num to bytes tests', () => {
 
     test('numToVarInt', () => {
         // Tests taken from https://wiki.bitcoinsv.io/index.php/VarInt
+        expect(numToVarInt(0n)).toStrictEqual([0]);
         expect(numToVarInt(187n)).toStrictEqual([187]);
         expect(numToVarInt(255n)).toStrictEqual([0xfd, 0xff, 0x00]);
         expect(numToVarInt(0x3419n)).toStrictEqual([0xfd, 0x19, 0x34]);
@@ -79,6 +80,11 @@ describe('num to bytes tests', () => {
 
     test('varIntToNum', () => {
         // Tests taken from https://wiki.bitcoinsv.io/index.php/VarInt
+        expect(varIntToNum([0])).toStrictEqual({
+            readBytes: 1,
+            num: 0n,
+        });
+
         expect(varIntToNum([187])).toStrictEqual({
             readBytes: 1,
             num: 187n,
