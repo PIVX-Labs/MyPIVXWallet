@@ -12,7 +12,8 @@
         "deploy": "gh-pages -d dist",
         "prettier": "prettier --write --cache .",
         "lint": "eslint .",
-        "test": "vitest"
+        "test": "vitest",
+        "coverage": "vitest --coverage"
     },
     "repository": {
         "type": "git",
@@ -35,6 +36,7 @@
         "@typescript-eslint/eslint-plugin": "^5.48.0",
         "@typescript-eslint/parser": "^5.48.0",
         "@vitejs/plugin-vue": "^4.4.1",
+        "@vitest/coverage-istanbul": "^1.0.2",
         "@vue/test-utils": "^2.4.2",
         "copy-webpack-plugin": "^11.0.0",
         "css-loader": "^6.7.3",
