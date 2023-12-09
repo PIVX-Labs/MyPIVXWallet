@@ -49,7 +49,11 @@ async function generateWallet() {
                 </p>
             </div>
 
-            <button class="pivx-button-big" @click="generateWallet()">
+            <button
+                class="pivx-button-big"
+                @click="generateWallet()"
+                data-testid="generateWallet"
+            >
                 <span class="buttoni-icon" v-html="pLogo"> </span>
                 <span class="buttoni-text">
                     {{ translation.dCardOneButton }}
@@ -94,6 +98,7 @@ async function generateWallet() {
                             type="password"
                             :placeholder="translation.optionalPassphrase"
                             v-model="passphrase"
+                            data-testid="passPhrase"
                         />
                     </div>
                 </div>
@@ -104,6 +109,7 @@ async function generateWallet() {
                         type="button"
                         class="pivx-button-big"
                         @click="showModal = false"
+                        data-testid="seedphraseModal"
                     >
                         {{ translation.writtenDown }}
                     </button>
