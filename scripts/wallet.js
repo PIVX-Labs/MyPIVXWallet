@@ -26,7 +26,8 @@ import {
     P2PK_START_INDEX,
     OWNER_START_INDEX,
 } from './script.js';
-import { CTxIn, TransactionBuilder } from './transaction';
+import { TransactionBuilder } from './transaction';
+import { getAddressesFromScript } from './encoding';
 
 /**
  * Class Wallet, at the moment it is just a "realization" of Masterkey with a given nAccount
@@ -445,42 +446,9 @@ export class Wallet {
         return this.isOwnAddress(address);
     }
 
-    /**
-     * Get addresses from a script
-     * @returns {{ type: 'p2pkh'|'p2cs'|'unknown', addresses: string[] }}
-     */
-    #getAddressesFromScript(script) {
-        const dataBytes = hexToBytes(script);
-        if (isP2PKH(dataBytes)) {
-            const address = this.getAddressFromHashCache(
-                bytesToHex(
-                    dataBytes.slice(P2PK_START_INDEX, P2PK_START_INDEX + 20)
-                ),
-                false
-            );
-            return {
-                type: 'p2pkh',
-                addresses: [address],
-            };
-        } else if (isP2CS(dataBytes)) {
-            const addresses = [];
-            for (let i = 0; i < 2; i++) {
-                const iStart = i == 0 ? OWNER_START_INDEX : COLD_START_INDEX;
-                addresses.push(
-                    this.getAddressFromHashCache(
-                        bytesToHex(dataBytes.slice(iStart, iStart + 20)),
-                        iStart === OWNER_START_INDEX
-                    )
-                );
-            }
-            return { type: 'p2cs', addresses };
-        } else {
-            return { type: 'unknown', addresses: [] };
-        }
-    }
 
     isMyVout(script) {
-        const { type, addresses } = this.#getAddressesFromScript(script);
+        const { type, addresses } = getAddressesFromScript(script);
         const index = addresses.findIndex((s) => this.isOwnAddress(s));
         if (index === -1) return UTXO_WALLET_STATE.NOT_MINE;
         if (type === 'p2pkh') return UTXO_WALLET_STATE.SPENDABLE;
@@ -585,7 +553,7 @@ export class Wallet {
         return tx.vout.reduce(
             (acc, vout) => [
                 ...acc,
-                ...this.#getAddressesFromScript(vout.script).addresses,
+                ...getAddressesFromScript(vout.script).addresses,
             ],
             []
         );
