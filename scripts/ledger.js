@@ -2,7 +2,9 @@ import createXpub from 'create-xpub';
 import { ALERTS, tr } from './i18n.js';
 import AppBtc from '@ledgerhq/hw-app-btc';
 import TransportWebUSB from '@ledgerhq/hw-transport-webusb';
-import { createAlert } from './misc.js';
+import { confirmPopup, createAlert } from './misc.js';
+import { getAddressesFromScript } from './encoding';
+import { getNetwork } from './network';
 
 /**
  * @type{TransportWebUSB}
@@ -130,6 +132,62 @@ export async function getHardwareWalletKeys(path, xpub = false, verify = true) {
 
         return null;
     }
+}
+
+/**
+ * @param {import('./wallet.js').Wallet} wallet
+ * @param {import('./transaction.js').Transaction} transaction - tx to sign
+ */
+export async function ledgerSignTransaction(wallet, transaction) {
+    const ledgerTx = cHardwareWallet.splitTransaction(transaction.serialize());
+    const outputs = transaction.vout.map((o) => {
+        const { addresses, type } = getAddressesFromScript(o.script);
+        if (type !== 'pk2pkh') {
+            throw new Error(
+                'Invalid script. Ledger supports p2pkh scripts only'
+            );
+        }
+        return {
+            value: o.value,
+            address: addresses[0],
+        };
+    });
+
+    const associatedKeysets = [];
+    const inputs = [];
+    for (const input of transaction.vin) {
+        const { hex } = await getNetwork().getTxInfo(input.outpoint.hash);
+        inputs.push([cHardwareWallet.splitTransaction(hex), input.outpoint.n]);
+        // ScriptSig is the script at this point, since it's not signed
+        associatedKeysets.push(wallet.getPath(input.scriptSig));
+    }
+    const outputScriptHex = cHardwareWallet
+        .serializeTransactionOutputs(ledgerTx)
+        .toString('hex');
+    return await confirmPopup({
+        title: ALERTS.CONFIRM_POPUP_TRANSACTION,
+        html: createTxConfirmation(outputs),
+        resolvePromise: cHardwareWallet.createPaymentTransaction({
+            inputs,
+            associatedKeysets,
+            outputScriptHex,
+        }),
+    });
+}
+
+function createTxConfirmation(outputs) {
+    let strHtml = tr(translation.CONFIRM_LEDGER_TX, [
+        { hardwareWallet: strHardwareName },
+    ]);
+    for (const { value, address } of outputs) {
+        const translated = tr(translation.CONFIRM_LEDGER_TX_OUT, [
+            { value },
+            { ticker: cChainParams.current.TICKER },
+            { address },
+        ]);
+        strHtml += `<br> <br> ${translated}`;
+    }
+    return strHtml;
 }
 
 // Ledger Hardware wallet constants
