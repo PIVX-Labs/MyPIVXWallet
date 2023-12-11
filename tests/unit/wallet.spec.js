@@ -18,7 +18,6 @@ vi.mock('../../scripts/global.js', (g) => {
     Mempool.prototype.addToOrderedTxMap = vi.fn();
     Mempool.prototype.setSpent = vi.fn();
     Mempool.prototype.getUTXOs = vi.fn(() => {
-        // Corresponds to f8f968d80ac382a7b64591cc166489f66b7c4422f95fbd89f946a5041d285d7c
         return [
             new CTxOut({
                 outpoint: new COutpoint({
@@ -30,9 +29,7 @@ vi.mock('../../scripts/global.js', (g) => {
             }),
         ];
     });
-    //const g = await vi.importActual('../../scripts/global.js');
     return {
-        //...(await g()),
         mempool: new Mempool(),
     };
 });
