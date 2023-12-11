@@ -446,7 +446,6 @@ export class Wallet {
         return this.isOwnAddress(address);
     }
 
-
     isMyVout(script) {
         const { type, addresses } = getAddressesFromScript(script);
         const index = addresses.findIndex((s) => this.isOwnAddress(s));

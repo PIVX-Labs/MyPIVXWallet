@@ -146,7 +146,7 @@ describe('Wallet transaction tests', () => {
     });
 
     it('creates a tx with max balance', () => {
-	        const wallet = new Wallet(0, false);
+        const wallet = new Wallet(0, false);
         wallet.setMasterKey(getLegacyMainnet());
         const tx = wallet.createTransaction(
             'SR3L4TFUKKGNsnv2Q4hWTuET2a4vHpm1b9',
@@ -154,7 +154,7 @@ describe('Wallet transaction tests', () => {
             { isDelegation: true }
         );
         expect(tx.version).toBe(1);
-	expect(tx.vin).toHaveLength(1);
+        expect(tx.vin).toHaveLength(1);
         expect(tx.vin[0]).toStrictEqual(
             new CTxIn({
                 outpoint: new COutpoint({
@@ -164,7 +164,7 @@ describe('Wallet transaction tests', () => {
                 scriptSig: '76a914f49b25384b79685227be5418f779b98a6be4c73888ac', // Script sig must be the UTXO script since it's not signed
             })
         );
-	expect(tx.vout).toHaveLength(1);
+        expect(tx.vout).toHaveLength(1);
         expect(tx.vout[0]).toStrictEqual(
             new CTxOut({
                 outpoint: null,
