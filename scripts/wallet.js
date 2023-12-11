@@ -710,6 +710,14 @@ export class Wallet {
         }
         return transaction;
     }
+
+    /**
+     * Finalize Transaction. To be called after it's signed and sent to the network, if successful
+     * @param {Transaction} transaction
+     */
+    finalizeTransaction(transaction) {
+        mempool.updateMempool(transaction);
+    }
 }
 
 /**

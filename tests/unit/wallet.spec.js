@@ -7,6 +7,7 @@ import {
     CTxOut,
     Transaction,
 } from '../../scripts/transaction.js';
+import { mempool } from '../../scripts/global';
 
 vi.mock('../../scripts/global.js', (g) => {
     const Mempool = vi.fn();
@@ -17,6 +18,7 @@ vi.mock('../../scripts/global.js', (g) => {
     Mempool.prototype.isSpent = vi.fn(() => false);
     Mempool.prototype.addToOrderedTxMap = vi.fn();
     Mempool.prototype.setSpent = vi.fn();
+    Mempool.prototype.updateMempool = vi.fn();
     Mempool.prototype.getUTXOs = vi.fn(() => {
         return [
             new CTxOut({
@@ -190,6 +192,14 @@ describe('Wallet transaction tests', () => {
                 20 * 10 ** 8
             )
         ).toThrow(/not enough balance/i);
+    });
+    
+    it('finalizes transaction correctly', () => {
+        const wallet = new Wallet(0, false);
+        const tx = {};
+        wallet.finalizeTransaction(tx);
+        expect(mempool.updateMempool).toBeCalled(1);
+	expect(mempool.updateMempool).toBeCalledWith(tx);
     });
 
     afterAll(() => {
