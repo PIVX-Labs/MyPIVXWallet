@@ -282,7 +282,7 @@ PROPOSAL_FINALISE_FAIL = "Nije uspjelo završavanje predloga." # Failed to final
 PROPOSAL_IMPORT_FIRST = "Kreirajte ili uvezite svoj novčanik da biste nastavili" # Create or import your wallet to continue
 PROPOSAL_NOT_ENOUGH_FUNDS = "Nema dovoljno sredstava za kreiranje predloga." # Not enough funds to create a proposal.
 PROPOSAL_INVALID_ERROR = "Predlog nije validan. Greška:" # Proposal is invalid. Error:
-PROPOSAL_CREATED = "<b>Predlog je kreiran!</b><br>Sačekajte potvrde, zatim finalizujte svoj predlog!" # <b>Proposal Created!</b><br>Wait for confirmations, then finalize your proposal!
+PROPOSAL_CREATED = "<b>Predlog je kreiran!</b><br>Sačekajte potvrde, zatim finalizujte svoj predlog!" # <b>Proposal Created!</b><br>Wait for confirmations, then finalise your proposal!
 PROMO_MIN = "Minimalni iznos je {min} {ticker}!" # Minimum amount is {min} {ticker}!
 PROMO_MAX_QUANTITY = "Vaš uređaj može kreirati samo {quantity} kodova odjednom!" # Your device can only create {quantity} codes at a time!
 PROMO_NOT_ENOUGH = "Nemate dovoljno {ticker} da biste kreirali taj kod!" # You don't have enough {ticker} to create that code!
@@ -317,3 +317,5 @@ CONFIRM_POPUP_DELETE_ACCOUNT_TITLE = "Da li ste sigurni?" # Are you sure?
 WALLET_NOT_SYNCED = "Molimo pokušajte ponovo kada novčanik završi sinhronizaciju!" # Please try again when wallet finishes syncing!
 WALLET_LOCKED = "Novčanik je uspešno zaključan!" # Wallet successfully Locked!
 WALLET_UNLOCKED = "Novčanik je uspešno otključan!" # Wallet successfully Unlocked!
+CONFIRM_LEDGER_TX = "" # Confirm this transaction matches the one on your {hardwareWallet}
+CONFIRM_LEDGER_TX_OUT = "" # You will send {value} {ticker} to <div class="inline-address>{address}</div>
