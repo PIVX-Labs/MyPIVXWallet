@@ -3,7 +3,8 @@ import { decrypt } from './aes-gcm.js';
 import { beforeUnloadListener } from './global.js';
 import { getNetwork } from './network.js';
 import { MAX_ACCOUNT_GAP } from './chain_params.js';
-import { Transaction, HistoricalTx, HistoricalTxType } from './mempool.js';
+import { HistoricalTx, HistoricalTxType } from './mempool.js';
+import { Transaction } from './transaction.js';
 import { confirmPopup, createAlert } from './misc.js';
 import { cChainParams } from './chain_params.js';
 import { COIN } from './chain_params.js';
@@ -25,6 +26,7 @@ import {
     P2PK_START_INDEX,
     OWNER_START_INDEX,
 } from './script.js';
+import { CTxIn, TransactionBuilder } from './transaction';
 
 /**
  * Class Wallet, at the moment it is just a "realization" of Masterkey with a given nAccount
@@ -642,16 +644,104 @@ export class Wallet {
     }
 
     /**
-     * Signs the transaction with the provided masterkey.
-     * The transaction is then ready to send to the network
-     * @param {Transaction} transaction
-     * @returns {void}
+     * Create a non signed transaction
+     * @param {string} address - Address to send to
+     * @param {number} value - Amount of satoshis to send
+     * @param {object} [opts] - Options
+     * @param {boolean} [opts.isDelegation] - Whether or not this delegates PIVs to `address`.
+     *     If set to true, `address` must be a valid cold staking address
+     * @param {boolean} [opts.useDelegatedInputs] - Whether or not cold stake inputs are to be used.
+     *    Should be set if this is an undelegation transaction.
+     * @param {string?} [opts.changeDelegationAddress] - Which address to use as change when `useDelegatedInputs` is set to true.
+     *     Only changes >= 1 PIV can be delegated
+     * @param {boolean} [opts.isProposal] - Whether or not this is a proposal transaction
      */
-    sign(transaction) {
+    createTransaction(
+        address,
+        value,
+        {
+            isDelegation = false,
+            useDelegatedInputs = false,
+            delegateChange = false,
+            changeDelegationAddress = null,
+            isProposal = false,
+        } = {}
+    ) {
+        if (mempool.balance <= value) {
+            throw new Error('Not enough balance');
+        }
+        if (delegateChange && !changeDelegationAddress)
+            throw new Error(
+                '`delegateChange` was set to true, but no `changeDelegationAddress` was provided.'
+            );
+        const filter = useDelegatedInputs
+            ? UTXO_WALLET_STATE.SPENDABLE
+            : UTXO_WALLET_STATE.SPENDABLE_COLD;
+        const utxos = mempool.getUTXOs({ filter, target: value });
+        const transactionBuilder = TransactionBuilder.create().addUTXOs(utxos);
+
+        const utxosValue = utxos.reduce((acc, u) => acc + u.value, 0);
+        const fee = transactionBuilder.getFee();
+        const changeValue = utxosValue - value - fee;
+
+        // Add change output
+        if (changeValue > 0) {
+            const [changeAddress] = this.getNewAddress(1);
+            if (delegateChange && changeValue > 1.01 * COIN) {
+                transactionBuilder.addColdStakeOutput({
+                    address: changeAddress,
+                    value: changeValue,
+                    addressColdStake: changeDelegationAddress,
+                });
+            } else {
+                transactionBuilder.addOutput({
+                    address: changeAddress,
+                    value: changeValue,
+                });
+            }
+        } else {
+            // We're sending alot! So we deduct the fee from the send amount. There's not enough change to pay it with!
+            value -= fee;
+        }
+
+        // Add primary output
+        if (isDelegation) {
+            const [returnAddress] = this.getNewAddress(1);
+            transactionBuilder.addColdStakeOutput({
+                address: returnAddress,
+                addressColdStake: address,
+                value,
+            });
+        } else if (isProposal) {
+            transactionBuilder.addProposalOutput({
+                hash: address,
+                value,
+            });
+        } else {
+            transactionBuilder.addOutput({
+                address,
+                value,
+            });
+        }
+        return transactionBuilder.build();
+    }
+
+    /**
+     * @param {Transaction} transaction - transaction to sign
+     * @throws {Error} if the wallet is view only
+     * @returns {Promise<Transaction>} a reference to the same transaction, signed
+     */
+    async sign(transaction) {
         if (this.isViewOnly()) {
             throw new Error('Cannot sign with a view only wallet');
         }
-	
+        for (let i = 0; i < transaction.vin.length; i++) {
+            const input = transaction.vin[i];
+            const path = this.getPath(input.scriptSig);
+            const wif = this.getMasterKey().getPrivateKey(path);
+            await transaction.signInput(i, wif);
+        }
+        return transaction;
     }
 }
 

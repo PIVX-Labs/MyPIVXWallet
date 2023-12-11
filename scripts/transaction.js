@@ -258,7 +258,24 @@ export class Transaction {
 export class TransactionBuilder {
     #transaction = new Transaction();
 
-    constructor() {}
+    constructor() {
+        this.#transaction.version = 1;
+        this.#transaction.blockHeight = -1; // Not yet sent
+        this.#transaction.blockTime = -1;
+        this.#transaction.lockTime = 4294967295;
+    }
+
+    /**
+     * Utility function to make chaining easier to read.
+     */
+    static create() {
+        return new TransactionBuilder();
+    }
+
+    getFee() {
+        // Temporary: 50 sats per byte
+        return this.#transaction.serialize().length * 50;
+    }
 
     /**
      * @returns {TransactionBuilder}
@@ -273,6 +290,42 @@ export class TransactionBuilder {
                 scriptSig,
             })
         );
+        return this;
+    }
+
+    /**
+     * @returns {TransactionBuilder}
+     */
+    addInputs(inputs) {
+        for (const input of inputs) {
+            this.addInput(input);
+        }
+        return this;
+    }
+
+    /**
+     * Add an unspent transaction output to the inputs
+     * @param {CTxOut} utxo
+     * @returns {TransactionBuilder}
+     */
+    addUTXO(utxo) {
+        this.addInput({
+            txid: utxo.outpoint.txid,
+            n: utxo.outpoint.n,
+            scriptSig: utxo.script,
+        });
+        return this;
+    }
+
+    /**
+     * Add an array of UTXOs to the inputs
+     * @param {CTxOut[]} utxos
+     * @returns {TransactionBuilder}
+     */
+    addUTXOs(utxos) {
+        for (const utxo of utxos) {
+            this.addUTXO(utxo);
+        }
         return this;
     }
 
@@ -306,12 +359,21 @@ export class TransactionBuilder {
             OP['EQUALVERIFY'],
             OP['CHECKSIG'],
         ];
+
         this.#transaction.vout.push(
             new CTxOut({
+                outpoint: null, // Outpoint not needed for serialization
                 script: bytesToHex(script),
                 value,
             })
         );
+        return this;
+    }
+
+    addOutputs(outputs) {
+        for (const output of outputs) {
+            this.addOutput(output);
+        }
         return this;
     }
 
@@ -323,6 +385,7 @@ export class TransactionBuilder {
     addProposalOutput({ hash, value }) {
         this.#transaction.vout.push(
             new CTxOut({
+                outpoint: null,
                 script: bytesToHex([OP['RETURN'], 32, ...hexToBytes(hash)]),
                 value,
             })
@@ -355,6 +418,7 @@ export class TransactionBuilder {
         ];
         this.#transaction.vout.push(
             new CTxOut({
+                outpoint: null,
                 script: bytesToHex(script),
                 value,
             })

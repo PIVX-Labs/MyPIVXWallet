@@ -84,11 +84,6 @@ export class Network {
         this.enabled = !this.enabled;
     }
 
-    getFee(bytes) {
-        // TEMPORARY: Hardcoded fee per-byte
-        return bytes * 50; // 50 sat/byte
-    }
-
     get cachedBlockCount() {
         throw new Error('cachedBlockCount must be implemented');
     }
