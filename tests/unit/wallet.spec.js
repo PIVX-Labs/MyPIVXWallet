@@ -148,6 +148,35 @@ describe('Wallet transaction tests', () => {
         );
     });
 
+    it('creates a tx with max balance', () => {
+	        const wallet = new Wallet(0, false);
+        wallet.setMasterKey(getLegacyMainnet());
+        const tx = wallet.createTransaction(
+            'SR3L4TFUKKGNsnv2Q4hWTuET2a4vHpm1b9',
+            0.1 * 10 ** 8,
+            { isDelegation: true }
+        );
+        expect(tx.version).toBe(1);
+	expect(tx.vin).toHaveLength(1);
+        expect(tx.vin[0]).toStrictEqual(
+            new CTxIn({
+                outpoint: new COutpoint({
+                    txid: 'f8f968d80ac382a7b64591cc166489f66b7c4422f95fbd89f946a5041d285d7c',
+                    n: 1,
+                }),
+                scriptSig: '76a914f49b25384b79685227be5418f779b98a6be4c73888ac', // Script sig must be the UTXO script since it's not signed
+            })
+        );
+	expect(tx.vout).toHaveLength(1);
+        expect(tx.vout[0]).toStrictEqual(
+            new CTxOut({
+                outpoint: null,
+                script: '76a97b63d114291a25b5b4d1802e0611e9bf724a1e57d9210e826714f49b25384b79685227be5418f779b98a6be4c7386888ac',
+                value: 9992400, // 0.1 PIV - fee
+            })
+        );
+    });
+
     it('throws when balance is insufficient', () => {
         const wallet = new Wallet(0, false);
         wallet.setMasterKey(getLegacyMainnet());

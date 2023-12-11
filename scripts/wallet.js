@@ -667,7 +667,7 @@ export class Wallet {
             isProposal = false,
         } = {}
     ) {
-        if (mempool.balance <= value) {
+        if (mempool.balance < value) {
             throw new Error('Not enough balance');
         }
         if (delegateChange && !changeDelegationAddress)
