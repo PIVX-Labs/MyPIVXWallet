@@ -4,7 +4,6 @@ import { OP } from './script.js';
 import bs58 from 'bs58';
 import { varIntToNum, deriveAddress } from './encoding.js';
 import * as nobleSecp256k1 from '@noble/secp256k1';
-import { isP2PKH } from './script.js';
 
 /** An Unspent Transaction Output, used as Inputs of future transactions */
 export class COutpoint {

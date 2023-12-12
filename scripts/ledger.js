@@ -5,6 +5,7 @@ import TransportWebUSB from '@ledgerhq/hw-transport-webusb';
 import { confirmPopup, createAlert } from './misc.js';
 import { getNetwork } from './network.js';
 import { Transaction } from './transaction.js';
+import { cChainParams } from './chain_params.js';
 
 /**
  * @type{TransportWebUSB}

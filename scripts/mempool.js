@@ -6,7 +6,7 @@ import Multimap from 'multimap';
 import { wallet } from './wallet.js';
 import { cChainParams } from './chain_params.js';
 import { Account } from './accounts.js';
-import { CTxOut, Transaction, CTxIn, COutpoint, UTXO } from './transaction.js';
+import { Transaction, COutpoint, UTXO } from './transaction.js';
 
 export const UTXO_WALLET_STATE = {
     NOT_MINE: 0, // Don't have the key to spend this utxo
