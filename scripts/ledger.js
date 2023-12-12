@@ -5,7 +5,7 @@ import TransportWebUSB from '@ledgerhq/hw-transport-webusb';
 import { confirmPopup, createAlert } from './misc.js';
 import { getNetwork } from './network.js';
 import { Transaction } from './transaction.js';
-import { cChainParams } from './chain_params.js';
+import { COIN, cChainParams } from './chain_params.js';
 
 /**
  * @type{TransportWebUSB}
@@ -157,7 +157,7 @@ export async function ledgerSignTransaction(wallet, transaction) {
     const associatedKeysets = [];
     const inputs = [];
     for (const input of transaction.vin) {
-        const { hex } = await getNetwork().getTxInfo(input.outpoint.hash);
+        const { hex } = await getNetwork().getTxInfo(input.outpoint.txid);
         inputs.push([cHardwareWallet.splitTransaction(hex), input.outpoint.n]);
         // ScriptSig is the script at this point, since it's not signed
         associatedKeysets.push(wallet.getPath(input.scriptSig));
@@ -181,12 +181,12 @@ export async function ledgerSignTransaction(wallet, transaction) {
 }
 
 function createTxConfirmation(outputs) {
-    let strHtml = tr(translation.CONFIRM_LEDGER_TX, [
+    let strHtml = tr(ALERTS.CONFIRM_LEDGER_TX, [
         { hardwareWallet: strHardwareName },
     ]);
     for (const { value, address } of outputs) {
-        const translated = tr(translation.CONFIRM_LEDGER_TX_OUT, [
-            { value },
+        const translated = tr(ALERTS.CONFIRM_LEDGER_TX_OUT, [
+            { value: value / COIN },
             { ticker: cChainParams.current.TICKER },
             { address },
         ]);
