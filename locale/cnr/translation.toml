@@ -318,4 +318,4 @@ WALLET_NOT_SYNCED = "Molimo pokušajte ponovo kada novčanik završi sinhronizac
 WALLET_LOCKED = "Novčanik je uspešno zaključan!" # Wallet successfully Locked!
 WALLET_UNLOCKED = "Novčanik je uspešno otključan!" # Wallet successfully Unlocked!
 CONFIRM_LEDGER_TX = "" # Confirm this transaction matches the one on your {hardwareWallet}
-CONFIRM_LEDGER_TX_OUT = "" # You will send {value} {ticker} to <div class="inline-address>{address}</div>
+CONFIRM_LEDGER_TX_OUT = "" # You will send {value} {ticker} to <div class="inline-address">{address}</div>
