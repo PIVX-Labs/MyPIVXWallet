@@ -22,7 +22,7 @@
                     "value": 5000000
                 }
             ],
-            "lockTime": 4294967295,
+            "lockTime": 0,
             "shieldData": ""
         },
         "9cf01cffc85d53b80a9c7ca106fc7326efa0f4f1db3eaf5be0ac45eb6105b8ab",
@@ -57,7 +57,7 @@
                     "value": 100000000
                 }
             ],
-            "lockTime": 4294967295,
+            "lockTime": 0,
             "shieldData": ""
         },
         "351925a42176fe2b95f1e650532529d5441cb5b4b66ecf29d45b6184f8203dbe",
@@ -91,7 +91,7 @@
                     "script": "76a9140363526ab523d61302f8c74305e5891ad8af922388ac"
                 }
             ],
-            "lockTime": 4294967295,
+            "lockTime": 0,
             "shieldData": ""
         },
         "a9c4aea4a3b7962ce6d33190f738ee6cf266e5dd3b7061f25fd8f285ae1fabba",

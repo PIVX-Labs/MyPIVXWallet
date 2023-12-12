@@ -92,7 +92,7 @@ export class Transaction {
         vin = [],
         vout = [],
         blockTime = -1,
-        lockTime = 4294967295,
+        lockTime = 0,
         shieldData = [],
     } = {}) {
         this.version = version;
@@ -188,7 +188,7 @@ export class Transaction {
             );
         }
 
-        const _lockTime = bytes.slice(offset, (offset += 4));
+        tx.lockTime = Number(bytesToNum(bytes.slice(offset, (offset += 4))));
 
         if (tx.version === 3) {
             tx.shieldData = Array.from(bytes.slice(offset));
@@ -198,7 +198,6 @@ export class Transaction {
     }
 
     serialize() {
-        const locktime = 4294967295n;
         let buffer = [
             ...numToBytes(BigInt(this.version), 4),
             ...numToVarInt(BigInt(this.vin.length)),
@@ -212,7 +211,7 @@ export class Transaction {
                 ...numToBytes(BigInt(input.outpoint.n), 4),
                 ...numToVarInt(BigInt(scriptBytes.length)),
                 ...scriptBytes,
-                ...numToBytes(BigInt(locktime), 4),
+                ...numToBytes(BigInt(input.sequence), 4),
             ];
         }
 
@@ -226,7 +225,7 @@ export class Transaction {
                 ...scriptBytes,
             ];
         }
-        buffer = [...buffer, ...numToBytes(0n, 4), ...this.shieldData];
+        buffer = [...buffer, ...numToBytes(BigInt(this.lockTime), 4), ...this.shieldData];
 
         return bytesToHex(buffer);
     }
