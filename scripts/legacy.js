@@ -1,7 +1,7 @@
 // Legacy functions
 // To be removed when vue port is done
 
-import { ALERTS, translation } from './i18n.js';
+import { ALERTS, translation, tr } from './i18n.js';
 import {
     doms,
     restoreWallet,
@@ -9,8 +9,7 @@ import {
     guiSetColdStakingAddress,
 } from './global.js';
 import { wallet, getNewAddress } from './wallet.js';
-
-import { cChainParams, COIN } from './chain_params.js';
+import { cChainParams, COIN, COIN_DECIMALS } from './chain_params.js';
 import {
     createAlert,
     generateMasternodePrivkey,
@@ -19,8 +18,6 @@ import {
 import { Database } from './database.js';
 import { getNetwork } from './network.js';
 import { ledgerSignTransaction } from './ledger.js';
-
-const validateAmount = () => true;
 
 /**
  * @deprecated use the new wallet method instead
@@ -180,4 +177,38 @@ export async function createMasternode() {
     // Remove any previous Masternode data, if there were any
     const database = await Database.getInstance();
     database.removeMasternode();
+}
+
+/**
+ * @deprecated reimplement when the vue port is done
+ */
+export function validateAmount(nAmountSats, nMinSats = 10000) {
+    // Validate the amount is a valid number, and meets the minimum (if any)
+    if (nAmountSats < nMinSats || isNaN(nAmountSats)) {
+        createAlert(
+            'warning',
+            tr(ALERTS.INVALID_AMOUNT + ALERTS.VALIDATE_AMOUNT_LOW, [
+                { minimumAmount: nMinSats / COIN },
+                { coinTicker: cChainParams.current.TICKER },
+            ]),
+            2500
+        );
+        return false;
+    }
+
+    // Validate the amount in Satoshi terms meets the coin's native decimal depth
+    if (!Number.isSafeInteger(nAmountSats)) {
+        createAlert(
+            'warning',
+            tr(
+                ALERTS.INVALID_AMOUNT + '<br>' + ALERTS.VALIDATE_AMOUNT_DECIMAL,
+                [{ coinDecimal: COIN_DECIMALS }]
+            ),
+            2500
+        );
+        return false;
+    }
+
+    // Amount looks valid!
+    return true;
 }

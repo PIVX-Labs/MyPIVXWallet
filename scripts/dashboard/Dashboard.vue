@@ -45,6 +45,7 @@ import { guiAddContactPrompt } from '../contacts-book';
 import { scanQRCode } from '../scanner';
 import { useWallet } from '../composables/use_wallet.js';
 import { useSettings } from '../composables/use_settings.js';
+import { validateAmount } from '../legacy.js';
 
 const wallet = useWallet();
 const activity = ref(null);
@@ -349,7 +350,7 @@ async function send(address, amount) {
 
     // Sanity check the amount
     const nValue = Math.round(amount * COIN);
-    // if (!validateAmount(nValue)) return;
+    if (!validateAmount(nValue)) return;
 
     // Create and send the TX
     await wallet.createAndSendTransaction(getNetwork(), address, nValue);
