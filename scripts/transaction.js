@@ -83,6 +83,9 @@ export class Transaction {
     /** @type{number} */
     lockTime;
 
+    /** @type{number[]} */
+    shieldData = [];
+
     constructor({
         version = 1,
         blockHeight = -1,
@@ -90,6 +93,7 @@ export class Transaction {
         vout = [],
         blockTime = -1,
         lockTime = 4294967295,
+        shieldData = [],
     } = {}) {
         this.version = version;
         this.blockHeight = blockHeight;
@@ -97,6 +101,7 @@ export class Transaction {
         this.vout = vout;
         this.blockTime = blockTime;
         this.lockTime = lockTime;
+        this.shieldData = shieldData;
     }
 
     get txid() {
@@ -183,6 +188,12 @@ export class Transaction {
             );
         }
 
+        const _lockTime = bytes.slice(offset, (offset += 4));
+
+        if (tx.version === 3) {
+            tx.shieldData = Array.from(bytes.slice(offset));
+        }
+
         return tx;
     }
 
@@ -215,7 +226,7 @@ export class Transaction {
                 ...scriptBytes,
             ];
         }
-        buffer = [...buffer, ...numToBytes(0n, 4)];
+        buffer = [...buffer, ...numToBytes(0n, 4), ...this.shieldData];
 
         return bytesToHex(buffer);
     }
