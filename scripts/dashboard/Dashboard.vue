@@ -269,21 +269,6 @@ async function lockWallet() {
  * @param {number} amount - Amount of PIVs to send
  */
 async function send(address, amount) {
-    // Ensure a wallet is loaded
-    if (wallet.isViewOnly.value) {
-        return createAlert(
-            'warning',
-            tr(ALERTS.WALLET_UNLOCK_IMPORT, [
-                {
-                    unlock: wallet.isEncrypted.value
-                        ? 'unlock '
-                        : 'import/create',
-                },
-            ]),
-            3500
-        );
-    }
-
     // Ensure the wallet is unlocked
     if (
         wallet.isViewOnly.value &&
