@@ -15,7 +15,7 @@ import { Account } from './accounts.js';
 import { COutpoint, CTxIn, CTxOut, Transaction } from './transaction.js';
 
 /** The current version of the DB - increasing this will prompt the Upgrade process for clients with an older version */
-export const DB_VERSION = 3;
+export const DB_VERSION = 4;
 
 /**
  *
@@ -24,6 +24,7 @@ export class Database {
     /**
      * Current Database Version.
      * Version 1 = Add index DB (PR #[FILL])
+     * Version 4 = Tx Refactor (PR #[FILL])
      * @type{Number}
      */
     static version = 1;
@@ -469,6 +470,10 @@ export class Database {
                     db.createObjectStore('promos');
                 }
                 if (oldVersion <= 2) {
+                    db.createObjectStore('txs');
+                }
+                if (oldVersion < 4) {
+                    db.deleteObjectStore('txs');
                     db.createObjectStore('txs');
                 }
             },
