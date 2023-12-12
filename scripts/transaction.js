@@ -225,7 +225,11 @@ export class Transaction {
                 ...scriptBytes,
             ];
         }
-        buffer = [...buffer, ...numToBytes(BigInt(this.lockTime), 4), ...this.shieldData];
+        buffer = [
+            ...buffer,
+            ...numToBytes(BigInt(this.lockTime), 4),
+            ...this.shieldData,
+        ];
 
         return bytesToHex(buffer);
     }
@@ -270,6 +274,7 @@ export class Transaction {
             })
         );
         signature.push(1); // SIGHASH_ALL
+        console.log(isColdStake);
 
         this.vin[index].scriptSig = bytesToHex([
             signature.length,
@@ -306,7 +311,7 @@ export class TransactionBuilder {
         this.#transaction.version = 1;
         this.#transaction.blockHeight = -1; // Not yet sent
         this.#transaction.blockTime = -1;
-        this.#transaction.lockTime = 4294967295;
+        this.#transaction.lockTime = 0;
     }
 
     /**
@@ -460,7 +465,9 @@ export class TransactionBuilder {
     }
 
     build() {
-        return this.#transaction;
+        const tx = this.#transaction;
+        this.#transaction = null;
+        return tx;
     }
 }
 
