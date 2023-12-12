@@ -51,7 +51,7 @@ export function useWallet() {
         if (wallet.isHardwareWallet()) {
             await ledgerSignTransaction(wallet, tx);
         } else {
-            wallet.sign(tx);
+            await wallet.sign(tx);
         }
         const res = await network.sendTransaction(tx.serialize());
         if (res) {
