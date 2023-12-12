@@ -143,7 +143,7 @@ export async function ledgerSignTransaction(wallet, transaction) {
     const ledgerTx = cHardwareWallet.splitTransaction(transaction.serialize());
     const outputs = transaction.vout.map((o) => {
         const { addresses, type } = wallet.getAddressesFromScript(o.script);
-        if (type !== 'pk2pkh') {
+        if (type !== 'p2pkh') {
             throw new Error(
                 'Invalid script. Ledger supports p2pkh scripts only'
             );
