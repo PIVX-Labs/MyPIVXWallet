@@ -11,6 +11,7 @@ import {
 } from './settings.js';
 import { ALERTS, translation } from './i18n.js';
 import { mempool, stakingDashboard } from './global.js';
+import { Transaction } from './transaction.js';
 
 /**
  * @typedef {Object} XPUBAddress
@@ -249,7 +250,7 @@ export class ExplorerNetwork extends Network {
             // Note: Extra check since Blockbook sucks and removes `.transactions` instead of an empty array if there's no transactions
             if (iPage?.transactions?.length > 0) {
                 for (const tx of iPage.transactions.reverse()) {
-                    mempool.updateMempool(mempool.parseTransaction(tx));
+                    mempool.updateMempool(Transaction.fromHex(tx.hex));
                 }
             }
             await mempool.saveOnDisk();

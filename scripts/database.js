@@ -12,7 +12,7 @@ import {
 import { PromoWallet } from './promos.js';
 import { ALERTS, translation } from './i18n.js';
 import { Account } from './accounts.js';
-import { COutpoint, CTxIn, CTxOut, Transaction } from './mempool.js';
+import { COutpoint, CTxIn, CTxOut, Transaction } from './transaction.js';
 
 /** The current version of the DB - increasing this will prompt the Upgrade process for clients with an older version */
 export const DB_VERSION = 3;

@@ -26,8 +26,7 @@ import {
     P2PK_START_INDEX,
     OWNER_START_INDEX,
 } from './script.js';
-import { TransactionBuilder } from './transaction';
-import { getAddressesFromScript } from './encoding';
+import { TransactionBuilder } from './transaction.js';
 
 /**
  * Class Wallet, at the moment it is just a "realization" of Masterkey with a given nAccount
@@ -447,7 +446,7 @@ export class Wallet {
     }
 
     isMyVout(script) {
-        const { type, addresses } = getAddressesFromScript(script);
+        const { type, addresses } = this.getAddressesFromScript(script);
         const index = addresses.findIndex((s) => this.isOwnAddress(s));
         if (index === -1) return UTXO_WALLET_STATE.NOT_MINE;
         if (type === 'p2pkh') return UTXO_WALLET_STATE.SPENDABLE;
@@ -457,6 +456,41 @@ export class Wallet {
                 : UTXO_WALLET_STATE.SPENDABLE_COLD;
         }
     }
+
+    /**
+     * Get addresses from a script
+     * @returns {{ type: 'p2pkh'|'p2cs'|'unknown', addresses: string[] }}
+     */
+    getAddressesFromScript(script) {
+        const dataBytes = hexToBytes(script);
+        if (isP2PKH(dataBytes)) {
+            const address = this.getAddressFromHashCache(
+                bytesToHex(
+                    dataBytes.slice(P2PK_START_INDEX, P2PK_START_INDEX + 20)
+                ),
+                false
+            );
+            return {
+                type: 'p2pkh',
+                addresses: [address],
+            };
+        } else if (isP2CS(dataBytes)) {
+            const addresses = [];
+            for (let i = 0; i < 2; i++) {
+                const iStart = i == 0 ? OWNER_START_INDEX : COLD_START_INDEX;
+                addresses.push(
+                    this.getAddressFromHashCache(
+                        bytesToHex(dataBytes.slice(iStart, iStart + 20)),
+                        iStart === OWNER_START_INDEX
+                    )
+                );
+            }
+            return { type: 'p2cs', addresses };
+        } else {
+            return { type: 'unknown', addresses: [] };
+        }
+    }
+
     // Avoid calculating over and over the same getAddressFromHash by saving the result in a map
     getAddressFromHashCache(pkh_hex, isColdStake) {
         if (!this.#knownPKH.has(pkh_hex)) {
@@ -552,7 +586,7 @@ export class Wallet {
         return tx.vout.reduce(
             (acc, vout) => [
                 ...acc,
-                ...getAddressesFromScript(vout.script).addresses,
+                ...this.getAddressesFromScript(vout.script).addresses,
             ],
             []
         );
@@ -642,14 +676,13 @@ export class Wallet {
                 '`delegateChange` was set to true, but no `changeDelegationAddress` was provided.'
             );
         const filter = useDelegatedInputs
-            ? UTXO_WALLET_STATE.SPENDABLE
-            : UTXO_WALLET_STATE.SPENDABLE_COLD;
+            ? UTXO_WALLET_STATE.SPENDABLE_COLD
+            : UTXO_WALLET_STATE.SPENDABLE;
         const utxos = mempool.getUTXOs({ filter, target: value });
         const transactionBuilder = TransactionBuilder.create().addUTXOs(utxos);
 
-        const utxosValue = utxos.reduce((acc, u) => acc + u.value, 0);
         const fee = transactionBuilder.getFee();
-        const changeValue = utxosValue - value - fee;
+        const changeValue = transactionBuilder.valueIn - value - fee;
 
         // Add change output
         if (changeValue > 0) {
@@ -704,9 +737,12 @@ export class Wallet {
         }
         for (let i = 0; i < transaction.vin.length; i++) {
             const input = transaction.vin[i];
+            const { type } = this.getAddressesFromScript(input.scriptSig);
             const path = this.getPath(input.scriptSig);
             const wif = this.getMasterKey().getPrivateKey(path);
-            await transaction.signInput(i, wif);
+            await transaction.signInput(i, wif, {
+                isColdStake: type === 'p2cs',
+            });
         }
         return transaction;
     }

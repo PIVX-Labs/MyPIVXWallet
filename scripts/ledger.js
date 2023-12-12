@@ -1,10 +1,10 @@
 import createXpub from 'create-xpub';
-import { ALERTS, tr } from './i18n.js';
+import { ALERTS, tr, translation } from './i18n.js';
 import AppBtc from '@ledgerhq/hw-app-btc';
 import TransportWebUSB from '@ledgerhq/hw-transport-webusb';
 import { confirmPopup, createAlert } from './misc.js';
-import { getAddressesFromScript } from './encoding';
-import { getNetwork } from './network';
+import { getNetwork } from './network.js';
+import { Transaction } from './transaction.js';
 
 /**
  * @type{TransportWebUSB}
@@ -141,7 +141,7 @@ export async function getHardwareWalletKeys(path, xpub = false, verify = true) {
 export async function ledgerSignTransaction(wallet, transaction) {
     const ledgerTx = cHardwareWallet.splitTransaction(transaction.serialize());
     const outputs = transaction.vout.map((o) => {
-        const { addresses, type } = getAddressesFromScript(o.script);
+        const { addresses, type } = wallet.getAddressesFromScript(o.script);
         if (type !== 'pk2pkh') {
             throw new Error(
                 'Invalid script. Ledger supports p2pkh scripts only'
@@ -164,7 +164,7 @@ export async function ledgerSignTransaction(wallet, transaction) {
     const outputScriptHex = cHardwareWallet
         .serializeTransactionOutputs(ledgerTx)
         .toString('hex');
-    return await confirmPopup({
+    const hex = await confirmPopup({
         title: ALERTS.CONFIRM_POPUP_TRANSACTION,
         html: createTxConfirmation(outputs),
         resolvePromise: cHardwareWallet.createPaymentTransaction({
@@ -173,6 +173,10 @@ export async function ledgerSignTransaction(wallet, transaction) {
             outputScriptHex,
         }),
     });
+    const signedTx = Transaction.fromHex(hex);
+    // Update vin with signatures
+    transaction.vin = signedTx.vin;
+    return signedTx;
 }
 
 function createTxConfirmation(outputs) {

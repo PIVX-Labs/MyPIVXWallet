@@ -26,39 +26,6 @@ export function compressPublicKey(pubKeyBytes) {
     // Compressed key is [key_parity + 2, x]
     return [y[31] % 2 === 0 ? 2 : 3, ...x];
 }
-/**
- * Get addresses from a script
- * @returns {{ type: 'p2pkh'|'p2cs'|'unknown', addresses: string[] }}
- */
-export function getAddressesFromScript(script) {
-    const dataBytes = hexToBytes(script);
-    if (isP2PKH(dataBytes)) {
-        const address = this.getAddressFromHashCache(
-            bytesToHex(
-                dataBytes.slice(P2PK_START_INDEX, P2PK_START_INDEX + 20)
-            ),
-            false
-        );
-        return {
-            type: 'p2pkh',
-            addresses: [address],
-        };
-    } else if (isP2CS(dataBytes)) {
-        const addresses = [];
-        for (let i = 0; i < 2; i++) {
-            const iStart = i == 0 ? OWNER_START_INDEX : COLD_START_INDEX;
-            addresses.push(
-                this.getAddressFromHashCache(
-                    bytesToHex(dataBytes.slice(iStart, iStart + 20)),
-                    iStart === OWNER_START_INDEX
-                )
-            );
-        }
-        return { type: 'p2cs', addresses };
-    } else {
-        return { type: 'unknown', addresses: [] };
-    }
-}
 
 /**
  * Network encode 32 bytes for a private key

@@ -40,7 +40,6 @@ import {
     isStandardAddress,
 } from '../misc.js';
 import { getNetwork } from '../network.js';
-import { validateAmount, createAndSendTransaction } from '../transactions.js';
 import { strHardwareName } from '../ledger';
 import { guiAddContactPrompt } from '../contacts-book';
 import { scanQRCode } from '../scanner';
@@ -350,14 +349,10 @@ async function send(address, amount) {
 
     // Sanity check the amount
     const nValue = Math.round(amount * COIN);
-    if (!validateAmount(nValue)) return;
+    // if (!validateAmount(nValue)) return;
 
     // Create and send the TX
-    await createAndSendTransaction({
-        address,
-        amount: nValue,
-        isDelegation: false,
-    });
+    await wallet.createAndSendTransaction(getNetwork(), address, nValue);
 }
 
 getEventEmitter().on('toggle-network', async () => {

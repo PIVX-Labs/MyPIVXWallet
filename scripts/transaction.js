@@ -4,7 +4,7 @@ import { OP } from './script.js';
 import bs58 from 'bs58';
 import { varIntToNum, deriveAddress } from './encoding.js';
 import * as nobleSecp256k1 from '@noble/secp256k1';
-import { sha256 } from '@noble/hashes/sha256';
+import { isP2PKH } from './script.js';
 
 /** An Unspent Transaction Output, used as Inputs of future transactions */
 export class COutpoint {
@@ -33,14 +33,13 @@ export class COutpoint {
 export class CTxOut {
     /**
      * @param {object} CTxOut
-     * @param {COutpoint} CTxOut.outpoint - COutpoint of the CTxOut
      * @param {string} CTxOut.script - Redeem script, in HEX
      * @param {number} CTxOut.value - Value in satoshi
      */
     constructor({ outpoint, script, value } = {}) {
-        /** COutpoint of the CTxOut
-         *  @type {COutpoint} */
-        this.outpoint = outpoint;
+        if (outpoint !== undefined) {
+            throw new Error('Outpoint defined!!!');
+        }
         /** Redeem script, in hex
          * @type {string} */
         this.script = script;
@@ -48,6 +47,7 @@ export class CTxOut {
          *  @type {number} */
         this.value = value;
     }
+
     isEmpty() {
         return this.value == 0 && this.script == 'f8';
     }
@@ -83,7 +83,21 @@ export class Transaction {
     /** @type{number} */
     lockTime;
 
-    chainParams;
+    constructor({
+        version = 1,
+        blockHeight = -1,
+        vin = [],
+        vout = [],
+        blockTime = -1,
+        lockTime = 4294967295,
+    } = {}) {
+        this.version = version;
+        this.blockHeight = blockHeight;
+        this.vin = vin;
+        this.vout = vout;
+        this.blockTime = blockTime;
+        this.lockTime = lockTime;
+    }
 
     get txid() {
         return bytesToHex(dSHA256(hexToBytes(this.serialize())).reverse());
@@ -102,13 +116,11 @@ export class Transaction {
         return this.vin.length == 1 && !this.vin[0].outpoint.txid;
     }
 
-    isMature(currentHeight) {
+    isMature(chainParams, currentHeight) {
         if (!(this.isCoinBase() || this.isCoinStake())) {
             return true;
         }
-        return (
-            currentHeight - this.blockHeight > this.chainParams.coinbaseMaturity
-        );
+        return currentHeight - this.blockHeight > chainParams.coinbaseMaturity;
     }
 
     /**
@@ -165,7 +177,6 @@ export class Transaction {
 
             tx.vout.push(
                 new CTxOut({
-                    outpoint: null,
                     script,
                     value: Number(value),
                 })
@@ -190,7 +201,7 @@ export class Transaction {
                 ...numToBytes(BigInt(input.outpoint.n), 4),
                 ...numToVarInt(BigInt(scriptBytes.length)),
                 ...scriptBytes,
-                ...numToBytes(locktime, 4),
+                ...numToBytes(BigInt(locktime), 4),
             ];
         }
 
@@ -228,7 +239,14 @@ export class Transaction {
         );
     }
 
-    async signInput(index, wif) {
+    /**
+     * Signs an input using the given wif
+     * @param {number} index - Which vin to sign
+     * @param {string} wif - base58 encoded private key
+     * @param {object} [options]
+     * @param {boolean} [isColdStake] - Whether or not we're signing a cold stake input
+     */
+    async signInput(index, wif, { isColdStake = false } = {}) {
         const pubkeyBytes = hexToBytes(
             deriveAddress({
                 pkBytes: parseWIF(wif),
@@ -246,6 +264,8 @@ export class Transaction {
         this.vin[index].scriptSig = bytesToHex([
             signature.length,
             ...signature,
+            // OP_FALSE to flag the redeeming of the delegation back to the Owner Address
+            ...(isColdStake ? [OP['FALSE']] : []),
             pubkeyBytes.length,
             ...pubkeyBytes,
         ]);
@@ -257,6 +277,20 @@ export class Transaction {
  */
 export class TransactionBuilder {
     #transaction = new Transaction();
+    #valueIn = 0;
+    #valueOut = 0;
+
+    get valueIn() {
+        return this.#valueIn;
+    }
+
+    get valueOut() {
+        return this.#valueOut;
+    }
+
+    get value() {
+        return this.#valueIn - this.#valueOut;
+    }
 
     constructor() {
         this.#transaction.version = 1;
@@ -280,7 +314,7 @@ export class TransactionBuilder {
     /**
      * @returns {TransactionBuilder}
      */
-    addInput({ txid, n, scriptSig }) {
+    #addInput({ txid, n, scriptSig }) {
         this.#transaction.vin.push(
             new CTxIn({
                 outpoint: new COutpoint({
@@ -294,26 +328,17 @@ export class TransactionBuilder {
     }
 
     /**
-     * @returns {TransactionBuilder}
-     */
-    addInputs(inputs) {
-        for (const input of inputs) {
-            this.addInput(input);
-        }
-        return this;
-    }
-
-    /**
      * Add an unspent transaction output to the inputs
-     * @param {CTxOut} utxo
+     * @param {UTXO} utxo
      * @returns {TransactionBuilder}
      */
     addUTXO(utxo) {
-        this.addInput({
+        this.#addInput({
             txid: utxo.outpoint.txid,
             n: utxo.outpoint.n,
             scriptSig: utxo.script,
         });
+        this.#valueIn += utxo.value;
         return this;
     }
 
@@ -362,11 +387,11 @@ export class TransactionBuilder {
 
         this.#transaction.vout.push(
             new CTxOut({
-                outpoint: null, // Outpoint not needed for serialization
                 script: bytesToHex(script),
                 value,
             })
         );
+        this.#valueOut += value;
         return this;
     }
 
@@ -385,7 +410,6 @@ export class TransactionBuilder {
     addProposalOutput({ hash, value }) {
         this.#transaction.vout.push(
             new CTxOut({
-                outpoint: null,
                 script: bytesToHex([OP['RETURN'], 32, ...hexToBytes(hash)]),
                 value,
             })
@@ -418,7 +442,6 @@ export class TransactionBuilder {
         ];
         this.#transaction.vout.push(
             new CTxOut({
-                outpoint: null,
                 script: bytesToHex(script),
                 value,
             })
@@ -428,5 +451,27 @@ export class TransactionBuilder {
 
     build() {
         return this.#transaction;
+    }
+}
+
+export class UTXO {
+    /** @type {COutpoint} */
+    outpoint;
+    /**
+     * @type {string} script in hex
+     */
+    script;
+    /**
+     * @type {number} value in satoshi
+     */
+    value;
+
+    /**
+     * @param {{outpoint: COutpoint, script: string, value: number}}
+     */
+    constructor({ outpoint, script, value }) {
+        this.outpoint = outpoint;
+        this.script = script;
+        this.value = value;
     }
 }

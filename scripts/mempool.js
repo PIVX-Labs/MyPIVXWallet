@@ -6,6 +6,7 @@ import Multimap from 'multimap';
 import { wallet } from './wallet.js';
 import { cChainParams } from './chain_params.js';
 import { Account } from './accounts.js';
+import { CTxOut, Transaction, CTxIn, COutpoint, UTXO } from './transaction.js';
 
 export const UTXO_WALLET_STATE = {
     NOT_MINE: 0, // Don't have the key to spend this utxo
@@ -146,18 +147,25 @@ export class Mempool {
     getBalance(filter, includeLocked = false) {
         let totBalance = 0;
         for (const [_, tx] of this.txmap) {
-            if (!tx.isMature()) {
+            if (
+                !tx.isMature(
+                    cChainParams.current,
+                    getNetwork().cachedBlockCount
+                )
+            ) {
                 continue;
             }
-            for (const vout of tx.vout) {
-                if (this.isSpent(vout.outpoint)) {
+            for (let i = 0; i < tx.vout.length; i++) {
+                const vout = tx.vout[i];
+                const outpoint = new COutpoint({ txid: tx.txid, n: i });
+                if (this.isSpent(outpoint)) {
                     continue;
                 }
                 const UTXO_STATE = wallet.isMyVout(vout.script);
                 if ((UTXO_STATE & filter) == 0) {
                     continue;
                 }
-                if (!includeLocked && wallet.isCoinLocked(vout.outpoint)) {
+                if (!includeLocked && wallet.isCoinLocked(outpoint)) {
                     continue;
                 }
                 totBalance += vout.value;
@@ -173,7 +181,7 @@ export class Mempool {
      * @param {Number | null} o.target PIVs in satoshi that we want to spend
      * @param {Boolean} o.onlyConfirmed Consider only confirmed transactions
      * @param {Boolean} o.includeLocked Include locked coins
-     * @returns {CTxOut[]} Array of fetched UTXOs
+     * @returns {utxos: UTXO[]} Array of fetched UTXOs
      */
     getUTXOs({ filter, target, onlyConfirmed = false, includeLocked }) {
         let totFound = 0;
@@ -182,21 +190,38 @@ export class Mempool {
             if (onlyConfirmed && !tx.isConfirmed()) {
                 continue;
             }
-            if (!tx.isMature()) {
+            if (
+                !tx.isMature(
+                    cChainParams.current,
+                    getNetwork().cachedBlockCount
+                )
+            ) {
                 continue;
             }
-            for (const vout of tx.vout) {
-                if (this.isSpent(vout.outpoint)) {
+            for (let i = 0; i < tx.vout.length; i++) {
+                const vout = tx.vout[i];
+                const outpoint = new COutpoint({
+                    txid: tx.txid,
+                    n: i,
+                });
+                if (this.isSpent(outpoint)) {
                     continue;
                 }
                 const UTXO_STATE = wallet.isMyVout(vout.script);
                 if ((UTXO_STATE & filter) == 0) {
                     continue;
                 }
-                if (!includeLocked && wallet.isCoinLocked(vout.outpoint)) {
+                if (!includeLocked && wallet.isCoinLocked(outpoint)) {
                     continue;
                 }
-                utxos.push(vout);
+                utxos.push(
+                    new UTXO({
+                        outpoint,
+                        script: vout.script,
+                        value: vout.value,
+                    })
+                );
+                console.log('Valid UTXO', utxos);
                 // Return early if you found enough PIVs (11/10 is to make sure to pay fee)
                 totFound += vout.value;
                 if (target && totFound > (11 / 10) * target) {
@@ -208,41 +233,11 @@ export class Mempool {
     }
 
     /**
-     * @param {Object} tx - tx object fetched from the explorer
-     * @returns {Transaction} transaction parsed
-     */
-    parseTransaction(tx) {
-        const vout = [];
-        const vin = [];
-        for (const out of tx.vout) {
-            vout.push(
-                new CTxOut({
-                    outpoint: new COutpoint({ txid: tx.txid, n: out.n }),
-                    script: out.hex,
-                    value: parseInt(out.value),
-                })
-            );
-        }
-        for (const inp of tx.vin) {
-            const op = new COutpoint({
-                txid: inp.txid,
-                n: inp.vout ? inp.vout : 0,
-            });
-            vin.push(new CTxIn({ outpoint: op, scriptSig: inp.hex }));
-        }
-        return new Transaction({
-            txid: tx.txid,
-            blockHeight: tx.blockHeight,
-            vin,
-            vout,
-            blockTime: tx.blockTime,
-        });
-    }
-    /**
      * Update the mempool status
      * @param {Transaction} tx
      */
     updateMempool(tx) {
+        //if (tx.version !== 1) return; // Ignore shield tx for now
         if (this.txmap.get(tx.txid)?.isConfirmed()) return;
         this.txmap.set(tx.txid, tx);
         for (const vin of tx.vin) {

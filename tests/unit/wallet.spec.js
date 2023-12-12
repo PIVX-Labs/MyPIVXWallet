@@ -5,6 +5,7 @@ import {
     COutpoint,
     CTxIn,
     CTxOut,
+    UTXO,
     Transaction,
 } from '../../scripts/transaction.js';
 import { mempool } from '../../scripts/global';
@@ -19,18 +20,16 @@ vi.mock('../../scripts/global.js', (g) => {
     Mempool.prototype.addToOrderedTxMap = vi.fn();
     Mempool.prototype.setSpent = vi.fn();
     Mempool.prototype.updateMempool = vi.fn();
-    Mempool.prototype.getUTXOs = vi.fn(() => {
-        return [
-            new CTxOut({
-                outpoint: new COutpoint({
-                    txid: 'f8f968d80ac382a7b64591cc166489f66b7c4422f95fbd89f946a5041d285d7c',
-                    n: 1,
-                }),
-                script: '76a914f49b25384b79685227be5418f779b98a6be4c73888ac',
-                value: 0.1 * 10 ** 8,
+    Mempool.prototype.getUTXOs = vi.fn(() => [
+        new UTXO({
+            outpoint: new COutpoint({
+                txid: 'f8f968d80ac382a7b64591cc166489f66b7c4422f95fbd89f946a5041d285d7c',
+                n: 1,
             }),
-        ];
-    });
+            script: '76a914f49b25384b79685227be5418f779b98a6be4c73888ac',
+            value: 0.1 * 10 ** 8,
+        }),
+    ]);
     return {
         mempool: new Mempool(),
     };
@@ -65,14 +64,12 @@ describe('Wallet transaction tests', () => {
         );
         expect(tx.vout[0]).toStrictEqual(
             new CTxOut({
-                outpoint: null,
                 script: '76a914f49b25384b79685227be5418f779b98a6be4c73888ac',
                 value: 4992400,
             })
         );
         expect(tx.vout[1]).toStrictEqual(
             new CTxOut({
-                outpoint: null,
                 script: '76a914a95cc6408a676232d61ec29dc56a180b5847835788ac',
                 value: 5000000,
             })
@@ -99,14 +96,12 @@ describe('Wallet transaction tests', () => {
         );
         expect(tx.vout[0]).toStrictEqual(
             new CTxOut({
-                outpoint: null,
                 script: '76a914f49b25384b79685227be5418f779b98a6be4c73888ac',
                 value: 4992400,
             })
         );
         expect(tx.vout[1]).toStrictEqual(
             new CTxOut({
-                outpoint: null,
                 script: '6a20bcea39f87b1dd7a5ba9d11d3d956adc6ce57dfff9397860cc30c11f08b3aa7c8',
                 value: 5000000,
             })
@@ -133,14 +128,12 @@ describe('Wallet transaction tests', () => {
         );
         expect(tx.vout[0]).toStrictEqual(
             new CTxOut({
-                outpoint: null,
                 script: '76a914f49b25384b79685227be5418f779b98a6be4c73888ac',
                 value: 4992400,
             })
         );
         expect(tx.vout[1]).toStrictEqual(
             new CTxOut({
-                outpoint: null,
                 script: '76a97b63d114291a25b5b4d1802e0611e9bf724a1e57d9210e826714f49b25384b79685227be5418f779b98a6be4c7386888ac',
                 value: 5000000,
             })
@@ -169,7 +162,6 @@ describe('Wallet transaction tests', () => {
         expect(tx.vout).toHaveLength(1);
         expect(tx.vout[0]).toStrictEqual(
             new CTxOut({
-                outpoint: null,
                 script: '76a97b63d114291a25b5b4d1802e0611e9bf724a1e57d9210e826714f49b25384b79685227be5418f779b98a6be4c7386888ac',
                 value: 9992400, // 0.1 PIV - fee
             })
@@ -193,13 +185,13 @@ describe('Wallet transaction tests', () => {
             )
         ).toThrow(/not enough balance/i);
     });
-    
+
     it('finalizes transaction correctly', () => {
         const wallet = new Wallet(0, false);
         const tx = {};
         wallet.finalizeTransaction(tx);
         expect(mempool.updateMempool).toBeCalled(1);
-	expect(mempool.updateMempool).toBeCalledWith(tx);
+        expect(mempool.updateMempool).toBeCalledWith(tx);
     });
 
     afterAll(() => {
@@ -234,12 +226,10 @@ describe('Wallet signature tests', () => {
         ];
         tx.vout = [
             new CTxOut({
-                outpoint: null,
                 script: '76a914f49b25384b79685227be5418f779b98a6be4c73888ac',
                 value: 4992400,
             }),
             new CTxOut({
-                outpoint: null,
                 script: '76a914a95cc6408a676232d61ec29dc56a180b5847835788ac',
                 value: 5000000,
             }),

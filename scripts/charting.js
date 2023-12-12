@@ -12,7 +12,7 @@ import { doms, mempool } from './global.js';
 import { Database } from './database.js';
 import { translation } from './i18n.js';
 import { wallet } from './wallet.js';
-import { COutpoint } from './mempool.js';
+import { COutpoint } from './transaction.js';
 
 Chart.register(
     Colors,

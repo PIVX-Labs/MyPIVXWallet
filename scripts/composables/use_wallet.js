@@ -4,6 +4,7 @@ import { ref } from 'vue';
 import { strCurrency } from '../settings.js';
 import { mempool } from '../global.js';
 import { cMarket } from '../settings.js';
+import { ledgerSignTransaction } from '../ledger.js';
 
 /**
  * This is the middle ground between vue and the wallet class
@@ -45,6 +46,18 @@ export function useWallet() {
     const balance = ref(0);
     const currency = ref('USD');
     const price = ref(0.0);
+    const createAndSendTransaction = async (network, address, value, opts) => {
+        const tx = wallet.createTransaction(address, value, opts);
+        if (wallet.isHardwareWallet()) {
+            await ledgerSignTransaction(wallet, tx);
+        } else {
+            wallet.sign(tx);
+        }
+        const res = await network.sendTransaction(tx.serialize());
+        if (res) {
+            wallet.finalizeTransaction(tx);
+        }
+    };
 
     getEventEmitter().on('balance-update', async () => {
         balance.value = mempool.balance;
@@ -70,5 +83,6 @@ export function useWallet() {
         balance,
         currency,
         price,
+        createAndSendTransaction,
     };
 }
