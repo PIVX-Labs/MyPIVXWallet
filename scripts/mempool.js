@@ -221,7 +221,6 @@ export class Mempool {
                         value: vout.value,
                     })
                 );
-                console.log('Valid UTXO', utxos);
                 // Return early if you found enough PIVs (11/10 is to make sure to pay fee)
                 totFound += vout.value;
                 if (target && totFound > (11 / 10) * target) {
