@@ -20,6 +20,8 @@ import { Database } from './database.js';
 import { getNetwork } from './network.js';
 import { ledgerSignTransaction } from './ledger.js';
 
+const validateAmount = () => true;
+
 /**
  * @deprecated use the new wallet method instead
  */
@@ -39,12 +41,16 @@ export async function createAndSendTransaction({
         changeDelegationAddress,
         isProposal,
     });
-    if (wallet.isHardwareWallet()) await wallet.sign(tx);
+    if (!wallet.isHardwareWallet()) await wallet.sign(tx);
     else {
         await ledgerSignTransaction(wallet, tx);
     }
     const res = await getNetwork().sendTransaction(tx.serialize());
-    if (res) wallet.finalizeTransaction(tx);
+    if (res) {
+        wallet.finalizeTransaction(tx);
+        return { ok: true };
+    }
+    return { ok: false };
 }
 
 /**
