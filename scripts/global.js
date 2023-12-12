@@ -15,7 +15,7 @@ import {
     nDisplayDecimals,
     fAdvancedMode,
 } from './settings.js';
-//import { createAndSendTransaction, signTransaction } from './transactions.js';
+import { createAndSendTransaction } from './legacy.js';
 import {
     createAlert,
     confirmPopup,

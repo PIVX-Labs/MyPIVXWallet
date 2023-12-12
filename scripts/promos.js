@@ -6,7 +6,7 @@ import { getAlphaNumericRand, arrayToCSV } from './utils.js';
 import { ALERTS, translation, tr } from './i18n.js';
 import { getNetwork } from './network.js';
 import { scanQRCode } from './scanner.js';
-//import { createAndSendTransaction } from './transactions.js';
+import { createAndSendTransaction } from './legacy.js';
 import { UTXO, COutpoint } from './transaction.js';
 import { wallet } from './wallet.js';
 import { LegacyMasterKey } from './masterkey.js';
