@@ -35,10 +35,7 @@ export class CTxOut {
      * @param {string} CTxOut.script - Redeem script, in HEX
      * @param {number} CTxOut.value - Value in satoshi
      */
-    constructor({ outpoint, script, value } = {}) {
-        if (outpoint !== undefined) {
-            throw new Error('Outpoint defined!!!');
-        }
+    constructor({ script, value } = {}) {
         /** Redeem script, in hex
          * @type {string} */
         this.script = script;
