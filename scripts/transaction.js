@@ -45,7 +45,7 @@ export class CTxOut {
     }
 
     isEmpty() {
-        return this.value == 0 && this.script == 'f8';
+        return this.value == 0 && (this.script === 'f8' || this.script === '');
     }
 }
 export class CTxIn {
@@ -113,8 +113,10 @@ export class Transaction {
     }
 
     isCoinBase() {
-        // txid undefined happens only for coinbase inputs
-        return this.vin.length == 1 && !this.vin[0].outpoint.txid;
+        // txid is full of 0s for coinbase inputs
+        return (
+            this.vin.length == 1 && !!this.vin[0].outpoint.txid.match(/^0*$/)
+        );
     }
 
     isMature(chainParams, currentHeight) {
