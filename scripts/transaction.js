@@ -270,7 +270,6 @@ export class Transaction {
             })
         );
         signature.push(1); // SIGHASH_ALL
-        console.log(isColdStake);
 
         this.vin[index].scriptSig = bytesToHex([
             signature.length,
