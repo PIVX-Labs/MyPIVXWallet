@@ -1,4 +1,4 @@
-import { describe, it } from 'vitest';
+import { describe, it, test, vi, beforeAll } from 'vitest';
 import {
     Transaction,
     CTxIn,
@@ -7,6 +7,8 @@ import {
 } from '../../scripts/transaction.js';
 import { hexToBytes } from '../../scripts/utils.js';
 import testVector from './transaction.test.json';
+import * as encoding from '../../scripts/encoding.js';
+
 testVector = testVector.map(([tx, txid, hex, wif]) => [
     new Transaction({
         version: tx.version,
@@ -36,6 +38,34 @@ testVector = testVector.map(([tx, txid, hex, wif]) => [
 ]);
 
 describe('transaction tests', () => {
+    beforeAll(() => {
+        const oldParseWIF = encoding.parseWIF;
+        // Make parseWIF skip verification, we don't care about that here
+        vi.spyOn(encoding, 'parseWIF').mockImplementation((strWIF) =>
+            oldParseWIF(strWIF, true)
+        );
+        return vi.restoreAllMocks;
+    });
+    test('Coinstake/Coinbase detection work', () => {
+        expect(testVector.map(([t]) => t.isCoinBase())).toStrictEqual([
+            false,
+            false,
+            false,
+            true,
+            false,
+            false,
+            false,
+        ]);
+        expect(testVector.map(([t]) => t.isCoinStake())).toStrictEqual([
+            false,
+            false,
+            true,
+            false,
+            false,
+            false,
+            false,
+        ]);
+    });
     it.each(testVector)('serializes correctly ($txid)', (tx, txid, hex) => {
         expect(tx.serialize()).toBe(hex);
         expect(tx.txid).toBe(txid);
@@ -54,7 +84,8 @@ describe('transaction tests', () => {
             }
             for (let i = 0; i < inputs.length; i++) {
                 const wif = inputs[i][0];
-                await tx.signInput(i, wif);
+                const isColdStake = !!inputs[i][2];
+                await tx.signInput(i, wif, { isColdStake });
             }
             expect(tx.serialize()).toBe(hex);
         }

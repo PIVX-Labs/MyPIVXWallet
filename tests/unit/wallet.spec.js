@@ -180,10 +180,22 @@ describe('Wallet transaction tests', () => {
         ).toThrow(/not enough balance/i);
         expect(() =>
             wallet.createTransaction(
-                () => 'DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb',
+                'DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb',
                 20 * 10 ** 8
             )
         ).toThrow(/not enough balance/i);
+    });
+
+    it('throws when delegateChange is set, but changeDelegationAddress is not', () => {
+        const wallet = new Wallet(0, false);
+        wallet.setMasterKey(getLegacyMainnet());
+        expect(() =>
+            wallet.createTransaction(
+                'DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb',
+                0.1 * 10 ** 8,
+                { delegateChange: true }
+            )
+        ).toThrow(/was set to/i);
     });
 
     it('finalizes transaction correctly', () => {
