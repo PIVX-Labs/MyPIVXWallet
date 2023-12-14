@@ -250,7 +250,10 @@ export class ExplorerNetwork extends Network {
             // Note: Extra check since Blockbook sucks and removes `.transactions` instead of an empty array if there's no transactions
             if (iPage?.transactions?.length > 0) {
                 for (const tx of iPage.transactions.reverse()) {
-                    mempool.updateMempool(Transaction.fromHex(tx.hex));
+                    const parsed = Transaction.fromHex(tx.hex);
+                    parsed.blockHeight = tx.blockHeight;
+                    parsed.blockTime = tx.blockTime;
+                    mempool.updateMempool(parsed);
                 }
             }
             await mempool.saveOnDisk();

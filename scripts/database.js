@@ -334,20 +334,18 @@ export class Database {
             const vout = tx.vout.map(
                 (x) =>
                     new CTxOut({
-                        outpoint: new COutpoint({
-                            txid: x.outpoint.txid,
-                            n: x.outpoint.n,
-                        }),
                         script: x.script,
                         value: x.value,
                     })
             );
             return new Transaction({
-                txid: tx.txid,
+                version: tx.version,
                 blockHeight: tx.blockHeight,
                 blockTime: tx.blockTime,
                 vin: vin,
                 vout: vout,
+                shieldData: tx.shieldData,
+                lockTime: tx.lockTime,
             });
         });
     }
