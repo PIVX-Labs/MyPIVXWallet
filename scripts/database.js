@@ -14,20 +14,16 @@ import { ALERTS, translation } from './i18n.js';
 import { Account } from './accounts.js';
 import { COutpoint, CTxIn, CTxOut, Transaction } from './transaction.js';
 
-/** The current version of the DB - increasing this will prompt the Upgrade process for clients with an older version */
-export const DB_VERSION = 4;
-
-/**
- *
- */
 export class Database {
     /**
-     * Current Database Version.
-     * Version 1 = Add index DB (PR #[FILL])
-     * Version 4 = Tx Refactor (PR #[FILL])
+     * The current version of the DB - increasing this will prompt the Upgrade process for clients with an older version
+     * Version 1 = Add index DB (#121)
+     * Version 2 = Promos Integration (#124)
+     * Version 3 = TX Database (#235)
+     * Version 4 = Tx Refactor (#284)
      * @type{Number}
      */
-    static version = 1;
+    static version = 4;
 
     /**
      * @type{IDBPDatabase}
@@ -453,10 +449,13 @@ export class Database {
     static async create(name) {
         let migrate = false;
         const database = new Database({ db: null });
-        const db = await openDB(`MPW-${name}`, DB_VERSION, {
+        const db = await openDB(`MPW-${name}`, Database.version, {
             upgrade: (db, oldVersion) => {
                 console.log(
-                    'DB: Upgrading from ' + oldVersion + ' to ' + DB_VERSION
+                    'DB: Upgrading from ' +
+                        oldVersion +
+                        ' to ' +
+                        Database.version
                 );
                 if (oldVersion == 0) {
                     db.createObjectStore('masternodes');
@@ -473,6 +472,7 @@ export class Database {
                     db.createObjectStore('txs');
                 }
                 if (oldVersion < 4) {
+                    // Recreate tx db due to transaction class changes
                     db.deleteObjectStore('txs');
                     db.createObjectStore('txs');
                 }
