@@ -17,7 +17,7 @@ import { Account } from './accounts.js';
 import { fAdvancedMode } from './settings.js';
 import { bytesToHex, hexToBytes } from './utils.js';
 import { strHardwareName } from './ledger.js';
-import { COutpoint, UTXO_WALLET_STATE } from './mempool.js';
+import { UTXO_WALLET_STATE } from './mempool.js';
 import {
     isP2CS,
     isP2PKH,
@@ -26,7 +26,7 @@ import {
     P2PK_START_INDEX,
     OWNER_START_INDEX,
 } from './script.js';
-import { TransactionBuilder } from './transaction.js';
+import { TransactionBuilder } from './transaction_builder.js';
 
 /**
  * Class Wallet, at the moment it is just a "realization" of Masterkey with a given nAccount

@@ -4,9 +4,9 @@ import {
     CTxIn,
     CTxOut,
     Transaction,
-    TransactionBuilder,
     UTXO,
-} from '../../scripts/transaction';
+} from '../../scripts/transaction.js';
+import { TransactionBuilder } from '../../scripts/transaction_builder.js';
 
 describe('Transaction builder tests', () => {
     it('Builds a transaction correctly', () => {

@@ -1,5 +1,6 @@
 import { Mempool, UTXO_WALLET_STATE } from './mempool.js';
-import { COutpoint, UTXO } from './transaction.js';
+import { COutpoint } from './transaction.js';
+import { TransactionBuilder } from './transaction_builder.js';
 import Masternode from './masternode.js';
 import { ALERTS, tr, start as i18nStart, translation } from './i18n.js';
 
@@ -31,7 +32,6 @@ import { refreshPriceDisplay } from './prices.js';
 import { Address6 } from 'ip-address';
 import { getEventEmitter } from './event_bus.js';
 import { Database } from './database.js';
-import { TransactionBuilder } from './transaction.js';
 import { checkForUpgrades } from './changelog.js';
 import { FlipDown } from './flipdown.js';
 import { createApp } from 'vue';
@@ -978,7 +978,7 @@ export async function sweepAddress(arrUTXOs, sweepingMasterKey) {
     sweepingWallet.setMasterKey(sweepingMasterKey);
 
     await sweepingWallet.sign(tx);
-    return await getNetwork().sendTransactio(tx.serialize());
+    return await getNetwork().sendTransaction(tx.serialize());
 }
 
 export function toggleDropDown(id) {

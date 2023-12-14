@@ -1,7 +1,6 @@
 import {
     doms,
     getStakingBalance,
-    mempool,
     refreshChainData,
     updateEncryptionGUI,
     updateLogOutButton,

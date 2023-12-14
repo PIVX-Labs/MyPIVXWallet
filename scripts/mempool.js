@@ -6,7 +6,7 @@ import Multimap from 'multimap';
 import { wallet } from './wallet.js';
 import { cChainParams } from './chain_params.js';
 import { Account } from './accounts.js';
-import { Transaction, COutpoint, UTXO } from './transaction.js';
+import { COutpoint, UTXO } from './transaction.js';
 
 export const UTXO_WALLET_STATE = {
     NOT_MINE: 0, // Don't have the key to spend this utxo
@@ -236,7 +236,6 @@ export class Mempool {
      * @param {Transaction} tx
      */
     updateMempool(tx) {
-        //if (tx.version !== 1) return; // Ignore shield tx for now
         if (this.txmap.get(tx.txid)?.isConfirmed()) return;
         this.txmap.set(tx.txid, tx);
         for (const vin of tx.vin) {
