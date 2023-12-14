@@ -6,7 +6,7 @@ import Multimap from 'multimap';
 import { wallet } from './wallet.js';
 import { cChainParams } from './chain_params.js';
 import { Account } from './accounts.js';
-import { COutpoint, UTXO } from './transaction.js';
+import { Transaction, COutpoint, UTXO } from './transaction.js';
 
 export const UTXO_WALLET_STATE = {
     NOT_MINE: 0, // Don't have the key to spend this utxo
@@ -141,18 +141,27 @@ export class Mempool {
     }
 
     /**
+     * @param {Transaction} tx
+     * @returns {boolean} if the tx is mature
+     */
+    isMature(tx) {
+        if (!(tx.isCoinBase() || tx.isCoinStake())) {
+            return true;
+        }
+        return (
+            getNetwork().cachedBlockCount - tx.blockHeight >
+            cChainParams.current.coinbaseMaturity
+        );
+    }
+
+    /**
      * Get the total wallet balance
      * @param {UTXO_WALLET_STATE} filter the filter you want to apply
      */
     getBalance(filter, includeLocked = false) {
         let totBalance = 0;
         for (const [_, tx] of this.txmap) {
-            if (
-                !tx.isMature(
-                    cChainParams.current,
-                    getNetwork().cachedBlockCount
-                )
-            ) {
+            if (!this.isMature(tx)) {
                 continue;
             }
             for (let i = 0; i < tx.vout.length; i++) {
@@ -190,12 +199,7 @@ export class Mempool {
             if (onlyConfirmed && !tx.isConfirmed()) {
                 continue;
             }
-            if (
-                !tx.isMature(
-                    cChainParams.current,
-                    getNetwork().cachedBlockCount
-                )
-            ) {
+            if (!this.isMature(tx)) {
                 continue;
             }
             for (let i = 0; i < tx.vout.length; i++) {

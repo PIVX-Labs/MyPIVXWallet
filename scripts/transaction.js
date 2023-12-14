@@ -118,13 +118,6 @@ export class Transaction {
         );
     }
 
-    isMature(chainParams, currentHeight) {
-        if (!(this.isCoinBase() || this.isCoinStake())) {
-            return true;
-        }
-        return currentHeight - this.blockHeight > chainParams.coinbaseMaturity;
-    }
-
     /**
      * @param {string} hex - hex encoded transaction
      * @returns {Transaction}
