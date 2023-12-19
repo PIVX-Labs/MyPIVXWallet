@@ -270,7 +270,7 @@ async function lockWallet() {
  */
 async function send(address, amount) {
     // Ensure a wallet is unlocked
-    if (wallet.isViewOnly.value) {
+    if (wallet.isViewOnly.value && !wallet.isHardwareWallet.value) {
         return createAlert(
             'warning',
             tr(ALERTS.WALLET_UNLOCK_IMPORT, [
