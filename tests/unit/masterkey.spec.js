@@ -1,8 +1,3 @@
-jest.mock('@ledgerhq/hw-transport-webusb', () => jest.fn());
-jest.mock('../../scripts/global.js', () => jest.fn());
-jest.mock('../../locale/template/translation.toml', () => jest.fn());
-jest.mock('../../scripts/settings.js', () => jest.fn());
-
 import { LegacyMasterKey, HdMasterKey } from '../../scripts/masterkey.js';
 import { mnemonicToSeed } from 'bip39';
 import { parseWIF, verifyPubkey } from '../../scripts/encoding.js';
@@ -58,7 +53,7 @@ describe('mainnet tests', () => {
             'YU12G8Y9LwC3wb2cwUXvvg1iMvBey1ibCF23WBAapCuaKhd6a4R6'
         );
         expect(async () => {
-            await l.getxpub();
+            l.getxpub();
         }).rejects.toThrow(/extended public key/i);
 
         expect(() => getLegacyTestnet()).toThrow(/testnet/i);

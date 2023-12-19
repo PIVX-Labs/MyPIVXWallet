@@ -209,6 +209,7 @@ syncStatusStarting = "<b>Your wallet is syncing!</b><br>You'll be able to use it
 syncStatusFinished = "<b>Sync Finished!</b><br>Your wallet is ready to use!" # <b>Sync Finished!</b><br>Your wallet is ready to use!
 activityReceivedWith = "Received with {s}" # Received with {s}
 accountDeleted = "Your account has been successfully deleted!" # Your account has been successfully deleted!
+chartImmatureBalance = "Immature balance" # Immature balance
 
 [ALERTS]
 INTERNAL_ERROR = "Internal error, please try again later" # Internal error, please try again later
@@ -238,7 +239,6 @@ STAKE_NOT_SEND = "Here, use the <b>Stake</b> screen, not the Send screen!" # Her
 BAD_ADDR_LENGTH = "<b>Invalid PIVX address!<b><br>Bad length ({addressLength})" # <b>Invalid PIVX address!<b><br>Bad length ({addressLength})
 BAD_ADDR_PREFIX = "<b>Invalid PIVX address!<b><br>Bad prefix {address} (Should start with {addressPrefix})" # <b>Invalid PIVX address!<b><br>Bad prefix {address} (Should start with {addressPrefix})
 SENT_NOTHING = "You can't send 'nothing'!" # You can't send 'nothing'!
-MORE_THEN_8_DECIMALS = "8 decimal limit exceeded" # 8 decimal limit exceeded
 SAVE_WALLET_PLEASE = "<b>Save your wallet!</b><br>Dashboard ➜ Secure your wallet" # <b>Save your wallet!</b><br>Dashboard ➜ Secure your wallet
 BACKUP_OR_ENCRYPT_WALLET = "Please ENCRYPT and/or BACKUP your keys before leaving, or you may lose them!" # Please ENCRYPT and/or BACKUP your keys before leaving, or you may lose them!
 NO_CAMERAS = "This device has no camera!" # This device has no camera!

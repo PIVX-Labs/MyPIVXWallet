@@ -209,6 +209,7 @@ syncStatusStarting = "" # <b>Your wallet is syncing!</b><br>You'll be able to us
 syncStatusFinished = "" # <b>Sync Finished!</b><br>Your wallet is ready to use!
 accountDeleted = "" # Your account has been successfully deleted!
 activityReceivedWith = "" # Received with {s}
+chartImmatureBalance = "" # Immature balance
 
 [ALERTS]
 INTERNAL_ERROR = "Interne fout, probeer het later opnieuw" # Internal error, please try again later
@@ -238,7 +239,6 @@ STAKE_NOT_SEND = "Gebruik hier het <b>Stake</b> scherm, niet het Verzend scherm!
 BAD_ADDR_LENGTH = "<b>Ongeldig PIVX-adres!<b><br>Slechte lengte ({addressLength})" # <b>Invalid PIVX address!<b><br>Bad length ({addressLength})
 BAD_ADDR_PREFIX = "<b>Ongeldig PIVX-adres!<b><br>Ongeldige prefix {address} (Moet beginnen met {addressPrefix})" # <b>Invalid PIVX address!<b><br>Bad prefix {address} (Should start with {addressPrefix})
 SENT_NOTHING = "Je kunt 'niets' niet versturen!" # You can't send 'nothing'!
-MORE_THEN_8_DECIMALS = "8 decimale limiet overschreden" # 8 decimal limit exceeded
 SAVE_WALLET_PLEASE = "<b>Sla je portemonnee op!</b><br>Dashboard ➜ Beveilig je portemonnee" # <b>Save your wallet!</b><br>Dashboard ➜ Secure your wallet
 BACKUP_OR_ENCRYPT_WALLET = "Versleutel en/of BACK-UP je sleutels voordat je weggaat, anders kan je ze verliezen!" # Please ENCRYPT and/or BACKUP your keys before leaving, or you may lose them!
 NO_CAMERAS = "Dit apparaat heeft geen camera!" # This device has no camera!

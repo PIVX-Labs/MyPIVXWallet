@@ -20,13 +20,13 @@ export function useWallet() {
     const getKeyToBackup = async () => await wallet.getKeyToBackup();
     const isEncrypted = ref(true);
 
-    const setMasterKey = (mk) => {
+    const setMasterKey = async (mk) => {
         wallet.setMasterKey(mk);
         isImported.value = wallet.isLoaded();
         isHardwareWallet.value = wallet.isHardwareWallet();
         isHD.value = wallet.isHD();
         isViewOnly.value = wallet.isViewOnly();
-        hasEncryptedWallet().then((i) => (isEncrypted.value = i));
+        isEncrypted.value = await hasEncryptedWallet();
     };
     const getAddress = () => wallet.getAddress();
     const isHardwareWallet = ref(wallet.isHardwareWallet());
@@ -43,11 +43,13 @@ export function useWallet() {
         isEncrypted.value = await hasEncryptedWallet();
     };
     const balance = ref(0);
+    const immatureBalance = ref(0);
     const currency = ref('USD');
     const price = ref(0.0);
 
     getEventEmitter().on('balance-update', async () => {
         balance.value = mempool.balance;
+        immatureBalance.value = mempool.immatureBalance;
         currency.value = strCurrency.toUpperCase();
         price.value = await cMarket.getPrice(strCurrency);
     });
@@ -68,6 +70,7 @@ export function useWallet() {
         },
         isHD,
         balance,
+        immatureBalance,
         currency,
         price,
     };

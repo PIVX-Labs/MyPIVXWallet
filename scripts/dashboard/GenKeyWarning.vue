@@ -15,10 +15,9 @@ const currentPassword = ref('');
 const password = ref('');
 const passwordConfirm = ref('');
 
-const emit = defineEmits(['onEncrypt', 'close']);
+const emit = defineEmits(['onEncrypt', 'close', 'open']);
 
 function close() {
-    props.showModal = false;
     currentPassword.value = '';
     password.value = '';
     passwordConfirm.value = '';
@@ -48,7 +47,11 @@ function submit() {
 <template>
     <div class="col-12" v-show="showBox">
         <center>
-            <div class="dcWallet-warningMessage" @click="showModal = true">
+            <div
+                class="dcWallet-warningMessage"
+                @click="emit('open')"
+                data-testid="encryptBox"
+            >
                 <div class="shieldLogo">
                     <div class="shieldBackground">
                         <span
@@ -78,11 +81,7 @@ function submit() {
     </div>
 
     <Teleport to="body">
-        <Modal
-            :show="showModal"
-            @close="close()"
-            modalClass="exportKeysModalColor"
-        >
+        <Modal :show="showModal" modalClass="exportKeysModalColor">
             <template #header>
                 <h5 class="modal-title">{{ translation.encryptWallet }}</h5>
                 <button
@@ -90,6 +89,7 @@ function submit() {
                     class="close"
                     aria-label="Close"
                     @click="close()"
+                    data-testid="closeBtn"
                 >
                     <i class="fa-solid fa-xmark closeCross"></i>
                 </button>
@@ -104,6 +104,7 @@ function submit() {
                         type="password"
                         :placeholder="translation.encryptPasswordCurrent"
                         v-show="isEncrypt"
+                        data-testid="currentPasswordModal"
                     />
                     <div class="col-12 col-md-6 p-0 pr-0 pr-md-1">
                         <input
@@ -113,6 +114,7 @@ function submit() {
                             style="width: 100%; font-family: monospace"
                             type="password"
                             :placeholder="translation.encryptPasswordFirst"
+                            data-testid="newPasswordModal"
                         />
                     </div>
                     <div class="col-12 col-md-6 p-0 pl-0 pl-md-1">
@@ -123,12 +125,17 @@ function submit() {
                             style="width: 100%; font-family: monospace"
                             type="password"
                             :placeholder="translation.encryptPasswordSecond"
+                            data-testid="confirmPasswordModal"
                         />
                     </div>
                 </div>
             </template>
             <template #footer>
-                <button class="pivx-button-small" @click="submit()">
+                <button
+                    class="pivx-button-small"
+                    @click="submit()"
+                    data-testid="submitBtn"
+                >
                     <span class="dcWallet-svgIconPurple">
                         <svg
                             xmlns="http://www.w3.org/2000/svg"

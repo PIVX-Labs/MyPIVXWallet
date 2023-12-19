@@ -376,7 +376,7 @@ async function fillTranslationSelect() {
     // Add each language into the UI selector
     for (const cLang of arrActiveLangs) {
         const opt = document.createElement('option');
-        opt.innerHTML = `${cLang.emoji} ${cLang.code.toUpperCase()}`;
+        opt.innerHTML = `${cLang.emoji} ${cLang.display}`;
         opt.value = cLang.code;
         doms.domTranslationSelect.appendChild(opt);
     }
@@ -496,7 +496,6 @@ export async function logOut() {
     });
     if (!fContinue) return;
     const database = await Database.getInstance();
-    await database.removeAllTxs();
     await database.removeAccount({ publicKey: null });
 
     getEventEmitter().emit('toggle-network');

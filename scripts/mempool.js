@@ -5,6 +5,7 @@ import { getEventEmitter } from './event_bus.js';
 import Multimap from 'multimap';
 import { wallet } from './wallet.js';
 import { cChainParams } from './chain_params.js';
+import { Account } from './accounts.js';
 
 export class CTxOut {
     /**
@@ -120,6 +121,8 @@ export const UTXO_WALLET_STATE = {
     SPENDABLE_COLD: 2, // Have the key to spend this (P2CS) utxo
     COLD_RECEIVED: 4, // Have the staking key of this (P2CS) utxo
     SPENDABLE_TOTAL: 1 | 2,
+    IMMATURE: 8, // Coinbase/ coinstake that it's not mature (and hence spendable) yet
+    LOCKED: 16, // Coins in the LOCK set
 };
 
 /**
@@ -170,6 +173,10 @@ export const HistoricalTxType = {
 /** A Mempool instance, stores and handles UTXO data for the wallet */
 export class Mempool {
     /**
+     * @type {number} - Immature balance
+     */
+    #immatureBalance = 0;
+    /**
      * @type {number} - Our Public balance in Satoshis
      */
     #balance = 0;
@@ -213,6 +220,9 @@ export class Mempool {
     get coldBalance() {
         return this.#coldBalance;
     }
+    get immatureBalance() {
+        return this.#immatureBalance;
+    }
 
     /**
      * An Outpoint to check
@@ -250,10 +260,11 @@ export class Mempool {
      * Get the total wallet balance
      * @param {UTXO_WALLET_STATE} filter the filter you want to apply
      */
-    getBalance(filter, includeLocked = false) {
+    getBalance(filter) {
         let totBalance = 0;
         for (const [_, tx] of this.txmap) {
-            if (!tx.isMature()) {
+            // Check if tx is mature (or if we want to include immature)
+            if (!tx.isMature() && !(filter & UTXO_WALLET_STATE.IMMATURE)) {
                 continue;
             }
             for (const vout of tx.vout) {
@@ -264,7 +275,11 @@ export class Mempool {
                 if ((UTXO_STATE & filter) == 0) {
                     continue;
                 }
-                if (!includeLocked && wallet.isCoinLocked(vout.outpoint)) {
+                // Check if vout is not locked (or if we want to include locked)
+                if (
+                    !(filter & UTXO_WALLET_STATE.LOCKED) &&
+                    wallet.isCoinLocked(vout.outpoint)
+                ) {
                     continue;
                 }
                 totBalance += vout.value;
@@ -367,6 +382,10 @@ export class Mempool {
     setBalance() {
         this.#balance = this.getBalance(UTXO_WALLET_STATE.SPENDABLE);
         this.#coldBalance = this.getBalance(UTXO_WALLET_STATE.SPENDABLE_COLD);
+        this.#immatureBalance =
+            this.getBalance(
+                UTXO_WALLET_STATE.SPENDABLE | UTXO_WALLET_STATE.IMMATURE
+            ) - this.#balance;
         getEventEmitter().emit('balance-update');
         getStakingBalance(true);
     }
@@ -400,6 +419,18 @@ export class Mempool {
      */
     async loadFromDisk() {
         const database = await Database.getInstance();
+        // Check if the stored txs are linked to this wallet
+        if (
+            (await database.getAccount())?.publicKey != wallet.getKeyToExport()
+        ) {
+            await database.removeAllTxs();
+            await database.removeAccount({ publicKey: null });
+            const cAccount = new Account({
+                publicKey: wallet.getKeyToExport(),
+            });
+            await database.addAccount(cAccount);
+            return;
+        }
         const txs = await database.getTxs();
         if (txs.length == 0) {
             return false;
