@@ -269,12 +269,25 @@ async function lockWallet() {
  * @param {number} amount - Amount of PIVs to send
  */
 async function send(address, amount) {
-    // Ensure the wallet is unlocked
-    if (
-        wallet.isViewOnly.value &&
-        !(await restoreWallet(translation.walletUnlockTx))
-    )
-        return;
+    // Ensure a wallet is unlocked
+    if (wallet.isViewOnly.value) {
+        return createAlert(
+            'warning',
+            tr(ALERTS.WALLET_UNLOCK_IMPORT, [
+                {
+                    unlock: wallet.isEncrypted.value
+                        ? 'unlock '
+                        : 'import/create',
+                },
+            ]),
+            3000
+        );
+    }
+
+    // Ensure wallet is synced
+    if (!getNetwork()?.fullSynced) {
+        return createAlert('warning', `${ALERTS.WALLET_NOT_SYNCED}`, 3000);
+    }
 
     // Sanity check the receiver
     address = address.trim();
@@ -336,6 +349,11 @@ async function send(address, amount) {
     // Sanity check the amount
     const nValue = Math.round(amount * COIN);
     if (!validateAmount(nValue)) return;
+
+    // Close the send screen and clear inputs
+    showTransferMenu.value = false;
+    transferAddress.value = '';
+    transferAmount.value = '';
 
     // Create and send the TX
     await wallet.createAndSendTransaction(getNetwork(), address, nValue);
@@ -856,6 +874,7 @@ defineExpose({
                 <GenKeyWarning
                     @onEncrypt="encryptWallet"
                     @close="showEncryptModal = false"
+                    @open="showEncryptModal = true"
                     :showModal="showEncryptModal"
                     :showBox="needsToEncrypt"
                     :isEncrypt="wallet.isEncrypted.value"

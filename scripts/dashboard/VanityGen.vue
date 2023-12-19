@@ -143,12 +143,14 @@ function generate() {
                         data-i18n="vanityPrefixInput"
                         placeholder="Address Prefix"
                         maxlength="5"
+                        data-testid="prefixInput"
                     />
                 </Transition>
 
                 <button
                     class="pivx-button-big"
                     @click="isGenerating ? stop() : generate()"
+                    data-testid="generateBtn"
                 >
                     <span class="buttoni-icon" v-html="pLogo"> </span>
 

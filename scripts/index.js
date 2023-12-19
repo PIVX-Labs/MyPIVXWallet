@@ -43,7 +43,6 @@ export {
     changePassword,
 } from './settings.js';
 export { undelegateGUI, delegateGUI, createMasternode } from './legacy.js';
-
 export {
     promoConfirm,
     setPromoMode,
