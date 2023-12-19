@@ -209,6 +209,7 @@ settingsToggleAdvancedMode = "Modalità Avanzata" # Advanced Mode
 settingsToggleAdvancedModeSubtext = "Sblocca funzionalità e personalizzazioni più avanzate, ma potrebbe essere troppo confusionale e potenzialmente pericoloso per utenti inesperti." # This unlocks deeper functionality and customisation, but may be overwhelming and potentially dangerous for unexperienced users!
 accountDeleted = "Il tuo account è stato eliminato con successo!" # Your account has been successfully deleted!
 activityReceivedWith = "Ricevuto con {s}" # Received with {s}
+chartImmatureBalance = "" # Immature balance
 
 [ALERTS]
 INTERNAL_ERROR = "Errore interno, rirova più tardi" # Internal error, please try again later

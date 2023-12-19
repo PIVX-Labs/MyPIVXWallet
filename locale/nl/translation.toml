@@ -209,6 +209,7 @@ syncStatusStarting = "" # <b>Your wallet is syncing!</b><br>You'll be able to us
 syncStatusFinished = "" # <b>Sync Finished!</b><br>Your wallet is ready to use!
 accountDeleted = "" # Your account has been successfully deleted!
 activityReceivedWith = "" # Received with {s}
+chartImmatureBalance = "" # Immature balance
 
 [ALERTS]
 INTERNAL_ERROR = "Interne fout, probeer het later opnieuw" # Internal error, please try again later

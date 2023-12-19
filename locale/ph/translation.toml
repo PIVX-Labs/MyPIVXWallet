@@ -209,6 +209,7 @@ contestedProposalsTitle = "" # Contested Proposals
 accountDeleted = "" # Your account has been successfully deleted!
 activityReceivedWith = "" # Received with {s}
 popupProposalName = "" # Proposal Name
+chartImmatureBalance = "" # Immature balance
 
 [ALERTS]
 INTERNAL_ERROR = "Internal error, Pakiusap uliting muli" # Internal error, please try again later

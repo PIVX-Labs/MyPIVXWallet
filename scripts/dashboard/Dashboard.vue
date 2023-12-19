@@ -396,7 +396,7 @@ onMounted(async () => {
     updateLogOutButton();
 });
 
-const { balance, currency, price } = wallet;
+const { balance, immatureBalance, currency, price } = wallet;
 
 getEventEmitter().on('sync-status', (status) => {
     if (status === 'stop') activity?.value?.update();
@@ -883,6 +883,7 @@ defineExpose({
                     <!-- Balance in PIVX & USD-->
                     <WalletBalance
                         :balance="balance"
+                        :immatureBalance="immatureBalance"
                         :jdenticonValue="jdenticonValue"
                         :isHdWallet="wallet.isHD.value"
                         :isHardwareWallet="wallet.isHardwareWallet.value"

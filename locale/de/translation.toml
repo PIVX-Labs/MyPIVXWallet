@@ -209,6 +209,7 @@ netSwitchUnsavedWarningConfirmation = "Bist du wirklich sicher?" # Are you reall
 accountDeleted = "Deine Geldbörse wurde erfolgreich gelöscht" # Your account has been successfully deleted!
 activitySelf = "Eigenüberweisung" # self
 activityReceivedWith = "Erhalten über {s}" # Received with {s}
+chartImmatureBalance = "" # Immature balance
 
 [ALERTS]
 INTERNAL_ERROR = "Interner Fehler, bitte versuche es später erneut" # Internal error, please try again later

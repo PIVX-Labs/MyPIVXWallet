@@ -54,6 +54,14 @@ async function getWalletDataset() {
         });
     }
 
+    const immature_bal = mempool.immatureBalance;
+    if (immature_bal > 0) {
+        arrBreakdown.push({
+            type: translation.chartImmatureBalance,
+            balance: immature_bal / COIN,
+            colour: 'rgba(127, 17, 151, 1)',
+        });
+    }
     // Staking (Locked)
     const spendable_cold_bal = mempool.coldBalance;
     if (spendable_cold_bal > 0) {

@@ -14,6 +14,8 @@ export const UTXO_WALLET_STATE = {
     SPENDABLE_COLD: 2, // Have the key to spend this (P2CS) utxo
     COLD_RECEIVED: 4, // Have the staking key of this (P2CS) utxo
     SPENDABLE_TOTAL: 1 | 2,
+    IMMATURE: 8, // Coinbase/ coinstake that it's not mature (and hence spendable) yet
+    LOCKED: 16, // Coins in the LOCK set
 };
 
 /**
@@ -64,6 +66,10 @@ export const HistoricalTxType = {
 /** A Mempool instance, stores and handles UTXO data for the wallet */
 export class Mempool {
     /**
+     * @type {number} - Immature balance
+     */
+    #immatureBalance = 0;
+    /**
      * @type {number} - Our Public balance in Satoshis
      */
     #balance = 0;
@@ -106,6 +112,9 @@ export class Mempool {
     }
     get coldBalance() {
         return this.#coldBalance;
+    }
+    get immatureBalance() {
+        return this.#immatureBalance;
     }
 
     /**
@@ -158,10 +167,11 @@ export class Mempool {
      * Get the total wallet balance
      * @param {UTXO_WALLET_STATE} filter the filter you want to apply
      */
-    getBalance(filter, includeLocked = false) {
+    getBalance(filter) {
         let totBalance = 0;
         for (const [_, tx] of this.txmap) {
-            if (!this.isMature(tx)) {
+            // Check if tx is mature (or if we want to include immature)
+            if (!this.isMature(tx) && !(filter & UTXO_WALLET_STATE.IMMATURE)) {
                 continue;
             }
             for (let i = 0; i < tx.vout.length; i++) {
@@ -174,7 +184,11 @@ export class Mempool {
                 if ((UTXO_STATE & filter) == 0) {
                     continue;
                 }
-                if (!includeLocked && wallet.isCoinLocked(outpoint)) {
+
+                if (
+                    !(filter & UTXO_WALLET_STATE.LOCKED) &&
+                    wallet.isCoinLocked(outpoint)
+                ) {
                     continue;
                 }
                 totBalance += vout.value;
@@ -257,6 +271,10 @@ export class Mempool {
     setBalance() {
         this.#balance = this.getBalance(UTXO_WALLET_STATE.SPENDABLE);
         this.#coldBalance = this.getBalance(UTXO_WALLET_STATE.SPENDABLE_COLD);
+        this.#immatureBalance =
+            this.getBalance(
+                UTXO_WALLET_STATE.SPENDABLE | UTXO_WALLET_STATE.IMMATURE
+            ) - this.#balance;
         getEventEmitter().emit('balance-update');
         getStakingBalance(true);
     }
