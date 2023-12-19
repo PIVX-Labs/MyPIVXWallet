@@ -17,6 +17,7 @@ const { advancedMode } = toRefs(props);
 <template>
     <div class="row m-0">
         <CreateWallet
+            :advanced-mode="advancedMode"
             @import-wallet="
                 (mnemonic, password) =>
                     $emit('import-wallet', {
@@ -60,6 +61,7 @@ const { advancedMode } = toRefs(props);
                     <button
                         class="pivx-button-big"
                         @click="$emit('import-wallet', { type: 'hardware' })"
+                        data-testid="hardwareWalletBtn"
                     >
                         <span class="buttoni-icon" v-html="pLogo"> </span>
 

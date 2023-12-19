@@ -193,17 +193,19 @@ export function translateStaticHTML(i18nLangs) {
 }
 
 export const arrActiveLangs = [
-    { code: 'auto', emoji: '🌐' },
-    { code: 'en', emoji: '🇬🇧' },
-    { code: 'fr', emoji: '🇫🇷' },
-    { code: 'de', emoji: '🇩🇪' },
-    { code: 'nl', emoji: '🇳🇱' },
-    { code: 'it', emoji: '🇮🇹' },
-    { code: 'pt-pt', emoji: '🇵🇹' },
-    { code: 'pt-br', emoji: '🇧🇷' },
-    { code: 'es-mx', emoji: '🇲🇽' },
-    { code: 'ph', emoji: '🇵🇭' },
-    { code: 'uwu', emoji: '🐈' },
+    { code: 'auto', display: 'Auto', emoji: '🌐' },
+    { code: 'en', display: 'English', emoji: '🇬🇧' },
+    { code: 'fr', display: 'French', emoji: '🇫🇷' },
+    { code: 'de', display: 'German', emoji: '🇩🇪' },
+    { code: 'nl', display: 'Dutch', emoji: '🇳🇱' },
+    { code: 'it', display: 'Italian', emoji: '🇮🇹' },
+    { code: 'pl', display: 'Polish', emoji: '🇵🇱' },
+    { code: 'pt-pt', display: 'Portuguese', emoji: '🇵🇹' },
+    { code: 'pt-br', display: 'Brazilian Portuguese', emoji: '🇧🇷' },
+    { code: 'cnr', display: 'Montenegrin', emoji: '🇲🇪' },
+    { code: 'es-mx', display: 'Mexican Spanish', emoji: '🇲🇽' },
+    { code: 'ph', display: 'Filipino', emoji: '🇵🇭' },
+    { code: 'uwu', display: 'UwU', emoji: '🐈' },
 ];
 
 export async function start() {

@@ -16,6 +16,7 @@ import { getNewAddress } from '../wallet.js';
 const props = defineProps({
     jdenticonValue: String,
     balance: Number,
+    immatureBalance: Number,
     isHdWallet: Boolean,
     isHardwareWallet: Boolean,
     currency: String,
@@ -25,6 +26,7 @@ const props = defineProps({
 const {
     jdenticonValue,
     balance,
+    immatureBalance,
     isHdWallet,
     isHardwareWallet,
     currency,
@@ -61,6 +63,12 @@ const balanceStr = computed(() => {
     const strBal = nCoins.toFixed(displayDecimals.value);
     const nLen = strBal.length;
     return beautifyNumber(strBal, nLen >= 10 ? '17px' : '25px');
+});
+
+const immatureBalanceStr = computed(() => {
+    const nCoins = immatureBalance.value / COIN;
+    const strBal = nCoins.toFixed(displayDecimals.value);
+    return beautifyNumber(strBal);
 });
 
 const balanceValue = computed(() => {
@@ -241,14 +249,21 @@ function reload() {
                 data-target="#walletBreakdownModal"
             >
                 <span class="dcWallet-pivxBalance" v-html="balanceStr"> </span>
-                <span class="dcWallet-pivxTicker"
-                    >&nbsp;{{ ticker }}&nbsp;</span
-                >
-
                 <i
                     class="fa-solid fa-plus"
+                    v-if="immatureBalance != 0"
                     style="opacity: 0.5; position: relative; left: 2px"
                 ></i>
+                <span
+                    style="position: relative; left: 4px; font-size: 17px"
+                    v-if="immatureBalance != 0"
+                    v-html="immatureBalanceStr"
+                ></span>
+                <span
+                    class="dcWallet-pivxTicker"
+                    style="position: relative; left: 4px"
+                    >&nbsp;{{ ticker }}&nbsp;</span
+                >
             </span>
             <br />
             <div class="dcWallet-usdBalance">

@@ -376,7 +376,7 @@ async function fillTranslationSelect() {
     // Add each language into the UI selector
     for (const cLang of arrActiveLangs) {
         const opt = document.createElement('option');
-        opt.innerHTML = `${cLang.emoji} ${cLang.code.toUpperCase()}`;
+        opt.innerHTML = `${cLang.emoji} ${cLang.display}`;
         opt.value = cLang.code;
         doms.domTranslationSelect.appendChild(opt);
     }

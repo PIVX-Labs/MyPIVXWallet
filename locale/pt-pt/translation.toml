@@ -76,6 +76,7 @@ syncStatusHistoryProgress = "Sincronização de fracções do histórico {atual}
 syncStatusStarting = "<b>Sua carteira está sincronizando!</b><br>Você poderá usá-la totalmente quando isso for concluído." # <b>Your wallet is syncing!</b><br>You'll be able to use it fully once this is complete.
 syncStatusFinished = "<b>Sincronização concluída!</b><br>Sua carteira está pronta para uso!" # <b>Sync Finished!</b><br>Your wallet is ready to use!
 accountDeleted = "Sua conta foi excluída com sucesso!" # Your account has been successfully deleted!
+chartImmatureBalance = "" # Immature balance
 
 [ALERTS]
 STAKE_ADDR_SET = "<b>Endereço de Cold Staking definido!</b><br>Ao fazer Stake no futuro irá ser usado este endereço." # <b>Cold Address set!</b><br>Future stakes will use this address.

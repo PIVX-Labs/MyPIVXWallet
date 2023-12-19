@@ -44,7 +44,6 @@ export {
     changePassword,
 } from './settings.js';
 export {
-    createTxGUI,
     undelegateGUI,
     delegateGUI,
     createMasternode,

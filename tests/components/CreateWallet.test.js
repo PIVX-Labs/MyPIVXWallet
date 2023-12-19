@@ -1,18 +1,16 @@
 import { mount } from '@vue/test-utils';
-import { nextTick, ref } from 'vue';
 import { expect } from 'vitest';
 import CreateWallet from '../../scripts/dashboard/CreateWallet.vue';
 import Modal from '../../scripts/Modal.vue';
 import { vi, it, describe } from 'vitest';
-import * as settings from '../../scripts/settings';
 
 describe('create wallet tests', () => {
-    afterEach(() => vi.clearAllMocks());
     it('Generates wallet', async () => {
-        // mock settings to disable advancedmode
-        vi.spyOn(settings, 'fAdvancedMode', 'get').mockReturnValue(false);
-
-        const wrapper = mount(CreateWallet);
+        const wrapper = mount(CreateWallet, {
+            props: {
+                advancedMode: false,
+            },
+        });
         expect(wrapper.emitted('importWallet')).toBeUndefined();
         // Modal with seedphrase is still hidden
         expect(
@@ -52,10 +50,11 @@ describe('create wallet tests', () => {
         ]);
     });
     it('Generates wallet advanced mode', async () => {
-        // mock settings to disable advancedmode
-        vi.spyOn(settings, 'fAdvancedMode', 'get').mockReturnValue(true);
-
-        const wrapper = mount(CreateWallet);
+        const wrapper = mount(CreateWallet, {
+            props: {
+                advancedMode: true,
+            },
+        });
         expect(wrapper.emitted('importWallet')).toBeUndefined();
         // Modal with seedphrase and passphrase is still hidden
         expect(
