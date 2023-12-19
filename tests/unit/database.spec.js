@@ -1,5 +1,4 @@
 import 'fake-indexeddb/auto';
-import { FDBFactory } from 'fake-indexeddb';
 import { PromoWallet } from '../../scripts/promos.js';
 import { it, describe, vi, expect } from 'vitest';
 import { Database } from '../../scripts/database.js';
@@ -56,7 +55,7 @@ describe('database tests', () => {
             'prop2',
         ]);
 
-        // Unles `allowDeletion` is set to true
+        // Unless `allowDeletion` is set to true
         await db.updateAccount(
             new Account({
                 encWif: 'newWIF2!',
