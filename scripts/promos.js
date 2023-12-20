@@ -469,7 +469,7 @@ export async function updatePromoCreationTick(fRecursive = false) {
             }
 
             // Send the fill transaction if unlocked
-            if (!wallet.isViewOnly()) {
+            if (!wallet.isViewOnly() || wallet.isHardwareWallet()) {
                 const res = await createAndSendTransaction({
                     address: strAddress,
                     amount: cThread.amount * COIN + PROMO_FEE,
