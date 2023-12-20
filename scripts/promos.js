@@ -62,7 +62,7 @@ export class PromoWallet {
         }
 
         // Return the sum of the set
-        return this.utxos.reduce((a, b) => a + b.sats, 0);
+        return this.utxos.reduce((a, b) => a + b.value, 0);
     }
 
     /**
