@@ -97,13 +97,13 @@ export class Database {
     }
     /**
      * Removes a Promo Code from the Promo management system
-     * @param {string} promo - the promo code to remove
+     * @param {string} promoCode - the promo code to remove
      */
-    async removePromo(promo) {
+    async removePromo(promoCode) {
         const store = this.#db
             .transaction('promos', 'readwrite')
             .objectStore('promos');
-        await store.delete(promo);
+        await store.delete(promoCode);
     }
 
     /**
@@ -124,7 +124,9 @@ export class Database {
                 'warning',
                 '<b>Account Creation Error</b><br>Logs were dumped in your Browser Console<br>Please submit these privately to PIVX Labs Developers!'
             );
-            return false;
+            throw new Error(
+                'addAccount was called with with an invalid account'
+            );
         }
 
         // Create an empty DB Account
@@ -154,7 +156,7 @@ export class Database {
 
         // Check this account isn't already added (by pubkey once multi-account)
         if (await store.get('account'))
-            return console.error(
+            throw new Error(
                 'DB: Ran addAccount() when account already exists!'
             );
 
@@ -187,7 +189,9 @@ export class Database {
                 'warning',
                 '<b>DB Update Error</b><br>Your wallet is safe, logs were dumped in your Browser Console<br>Please submit these privately to PIVX Labs Developers!'
             );
-            return false;
+            throw new Error(
+                'addAccount was called with with an invalid account'
+            );
         }
 
         // Fetch the DB account
@@ -205,7 +209,9 @@ export class Database {
                 'warning',
                 '<b>DB Update Error</b><br>Logs were dumped in your Browser Console<br>Please submit these privately to PIVX Labs Developers!'
             );
-            return false;
+            throw new Error(
+                "updateAccount was called, but the account doesn't exist"
+            );
         }
 
         // We'll overlay the `account` keys atop the `DB Account` keys:
@@ -486,7 +492,7 @@ export class Database {
         });
         database.#db = db;
         if (migrate) {
-            database.#migrateLocalStorage();
+            await database.#migrateLocalStorage();
         }
         return database;
     }
