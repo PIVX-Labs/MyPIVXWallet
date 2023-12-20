@@ -320,7 +320,7 @@ export class Database {
 
     /**
      * Get all txs from the database
-     * @returns {Promise<Transaction>}
+     * @returns {Promise<Transaction[]>}
      */
     async getTxs() {
         const store = this.#db
