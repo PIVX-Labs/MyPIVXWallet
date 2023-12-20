@@ -961,10 +961,10 @@ export async function updateEncryptionGUI(fEncrypted = null) {
  * @param {number} nFixedFee - An optional fixed satoshi fee
  * @returns {Promise<string|false>} - TXID on success, false or error on failure
  */
-export async function sweepAddress(arrUTXOs, sweepingMasterKey) {
+export async function sweepAddress(arrUTXOs, sweepingMasterKey, nFixedFee) {
     const txBuilder = TransactionBuilder.create().addUTXOs(arrUTXOs);
 
-    const outputValue = txBuilder.valueIn - txBuilder.getFee();
+    const outputValue = txBuilder.valueIn - (nFixedFee || txBuilder.getFee());
     const [address] = wallet.getNewAddress(1);
     const tx = txBuilder
         .addOutput({
