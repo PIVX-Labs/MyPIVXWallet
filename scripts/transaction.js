@@ -52,6 +52,7 @@ export class CTxIn {
      * @param {Object} CTxIn
      * @param {COutpoint} CTxIn.outpoint - Outpoint of the UTXO that the vin spends
      * @param {String} CTxIn.scriptSig - Script used to spend the corresponding UTXO, in hex
+     * @param {number} CTxIn.sequence - Sequence
      */
     constructor({ outpoint, scriptSig, sequence = 4294967295 } = {}) {
         /** Outpoint of the UTXO that the vin spends

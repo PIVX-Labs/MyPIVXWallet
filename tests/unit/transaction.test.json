@@ -219,5 +219,35 @@
                 true
             ]
         ]
+    ],
+    [
+        {
+            "comment": "Tx with locktime = 0",
+            "version": 1,
+            "vin": [
+                {
+                    "outpoint": {
+                        "txid": "ad33a6786b9fa8a55155c9694db938cadc8d4a4eebfc65b010dedd3d2fa4a3ff",
+                        "n": 1
+                    },
+                    "scriptSig": "47304402200d3fe81ea14d48e22485731c1d404bcb68c449be6e6ee017651c8cb9c7eff2980220343e228dd6ef42f8baf3eabeb41766eba906835c6c26bd47b5d710b3382253a6012103b6c8fe9e4a7c1e7bd040f2b1d13b023f89f78f9a61dce73665c25d96d0f34bde",
+                    "sequence": 0
+                }
+            ],
+            "vout": [
+                {
+                    "script": "76a914a95cc6408a676232d61ec29dc56a180b5847835788ac",
+                    "value": 5000000
+                },
+                {
+                    "script": "76a9149209691ea10d302c1eb8dd21d966beb7c24e0c6988ac",
+                    "value": 4997514
+                }
+            ],
+            "lockTime": 0,
+            "shieldData": ""
+        },
+        "f4e8367e511c0c0119766b9f31f63e25efd806167e017960e6ef7fbd83da1cf9",
+        "0100000001ffa3a42f3dddde10b065fceb4e4a8ddcca38b94d69c95551a5a89f6b78a633ad010000006a47304402200d3fe81ea14d48e22485731c1d404bcb68c449be6e6ee017651c8cb9c7eff2980220343e228dd6ef42f8baf3eabeb41766eba906835c6c26bd47b5d710b3382253a6012103b6c8fe9e4a7c1e7bd040f2b1d13b023f89f78f9a61dce73665c25d96d0f34bde0000000002404b4c00000000001976a914a95cc6408a676232d61ec29dc56a180b5847835788ac8a414c00000000001976a9149209691ea10d302c1eb8dd21d966beb7c24e0c6988ac00000000"
     ]
 ]

@@ -20,6 +20,7 @@ testVector = testVector.map(([tx, txid, hex, wif]) => [
                         n: input.outpoint.n,
                     }),
                     scriptSig: input.scriptSig,
+                    sequence: input.sequence,
                 })
         ),
         vout: tx.vout.map(
@@ -55,11 +56,13 @@ describe('transaction tests', () => {
             false,
             false,
             false,
+            false,
         ]);
         expect(testVector.map(([t]) => t.isCoinStake())).toStrictEqual([
             false,
             false,
             true,
+            false,
             false,
             false,
             false,

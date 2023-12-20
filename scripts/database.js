@@ -335,6 +335,7 @@ export class Database {
                             n: x.outpoint.n,
                         }),
                         scriptSig: x.scriptSig,
+                        sequence: x.sequence,
                     })
             );
             const vout = tx.vout.map(
