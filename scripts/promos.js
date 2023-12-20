@@ -472,7 +472,7 @@ export async function updatePromoCreationTick(fRecursive = false) {
             if (!wallet.isViewOnly()) {
                 const res = await createAndSendTransaction({
                     address: strAddress,
-                    amount: cThread.amount * COIN + 10000,
+                    amount: cThread.amount * COIN + PROMO_FEE,
                 }).catch((_) => {
                     // Failed to create this code - mark it as errored
                     cThread.end_state = 'Errored';
