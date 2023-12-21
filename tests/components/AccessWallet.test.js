@@ -4,14 +4,6 @@ import { expect } from 'vitest';
 import AccessWallet from '../../scripts/dashboard/AccessWallet.vue';
 import { vi, it, describe } from 'vitest';
 
-// We need to attach the component to a HTML,
-// or .isVisible() function does not work
-document.body.innerHTML = `
-  <div>
-    <div id="app"></div>
-  </div>
-`;
-
 describe('access wallet tests', () => {
     afterEach(() => vi.clearAllMocks());
     it('Access wallet (no advanced)', async () => {

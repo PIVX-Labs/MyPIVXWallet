@@ -10,6 +10,7 @@ export default defineConfig({
         coverage: {
             provider: 'istanbul',
         },
+        setupFiles: ['test_setup.js'],
         pool: 'forks',
     },
 });

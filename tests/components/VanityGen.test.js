@@ -6,14 +6,6 @@ import { vi, it, describe } from 'vitest';
 import * as translation from '../../scripts/i18n.js';
 import * as misc from '../../scripts/misc.js';
 
-// We need to attach the component to a HTML,
-// or .isVisible() function does not work
-document.body.innerHTML = `
-  <div>
-    <div id="app"></div>
-  </div>
-`;
-
 describe('VanityGen tests', () => {
     beforeEach(() => {
         vi.spyOn(translation, 'tr').mockImplementation((message, variables) => {
