@@ -20,6 +20,7 @@ vi.mock('../../scripts/global.js', (g) => {
     Mempool.prototype.addToOrderedTxMap = vi.fn();
     Mempool.prototype.setSpent = vi.fn();
     Mempool.prototype.updateMempool = vi.fn();
+    Mempool.prototype.setBalance = vi.fn();
     Mempool.prototype.getUTXOs = vi.fn(() => [
         new UTXO({
             outpoint: new COutpoint({
@@ -204,6 +205,8 @@ describe('Wallet transaction tests', () => {
         wallet.finalizeTransaction(tx);
         expect(mempool.updateMempool).toBeCalled(1);
         expect(mempool.updateMempool).toBeCalledWith(tx);
+        expect(mempool.setBalance).toBeCalled(1);
+        expect(mempool.setBalance).toBeCalledWith();
     });
 
     afterAll(() => {
