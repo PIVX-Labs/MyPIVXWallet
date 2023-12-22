@@ -753,6 +753,7 @@ export class Wallet {
      */
     finalizeTransaction(transaction) {
         mempool.updateMempool(transaction);
+        mempool.setBalance();
     }
 }
 
