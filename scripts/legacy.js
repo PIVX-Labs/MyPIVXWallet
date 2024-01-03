@@ -45,7 +45,7 @@ export async function createAndSendTransaction({
     const res = await getNetwork().sendTransaction(tx.serialize());
     if (res) {
         wallet.finalizeTransaction(tx);
-        return { ok: true };
+        return { ok: true, txid: tx.txid };
     }
     return { ok: false };
 }
