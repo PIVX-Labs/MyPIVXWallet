@@ -5,6 +5,10 @@
     "main": "scripts/index.js",
     "type": "module",
     "scripts": {
+        "config": "test -f chain_params.json || cp chain_params.prod.json chain_params.json",
+        "prebuild": "npm run config",
+        "predev": "npm run config",
+        "prewatch": "npm run config",
         "build": "webpack --config webpack.prod.js",
         "watch": "webpack --watch",
         "dev": "webpack serve --config webpack.dev.js",

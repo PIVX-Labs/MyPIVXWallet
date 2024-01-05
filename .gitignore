@@ -4,3 +4,4 @@ locale/lang-tools/env
 __pycache__
 coverage/
 coverage.data
+chain_params.json

@@ -1,0 +1,63 @@
+{
+    "main": {
+        "name": "mainnet",
+        "collateralInSats": 1000000000000,
+        "isTestnet": false,
+        "TICKER": "PIV",
+        "PUBKEY_PREFIX": ["D"],
+        "STAKING_PREFIX": "S",
+        "PUBKEY_ADDRESS": 30,
+        "STAKING_ADDRESS": 63,
+        "SECRET_KEY": 212,
+        "BIP44_TYPE": 119,
+        "BIP44_TYPE_LEDGER": 77,
+        "PROTOCOL_VERSION": 70926,
+        "MASTERNODE_PORT": 51472,
+        "Explorers": [
+            { "name": "rockdev", "url": "https://explorer.rockdev.org" },
+            { "name": "zkBitcoin", "url": "https://zkbitcoin.com" },
+            { "name": "Duddino", "url": "https://explorer.duddino.com" }
+        ],
+        "Nodes": [
+            { "name": "Duddino", "url": "https://rpc.duddino.com/mainnet" }
+        ],
+        "Consensus": {},
+        "coinbaseMaturity": 100,
+        "budgetCycleBlocks": 43200,
+        "proposalFee": 5000000000,
+        "proposalFeeConfirmRequirement": 6,
+        "maxPaymentCycles": 6,
+        "maxPayment": 43200000000000,
+        "defaultColdStakingAddress": "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy"
+    },
+    "testnet": {
+        "name": "testnet",
+        "collateralInSats": 1000000000000,
+        "isTestnet": true,
+        "TICKER": "tPIV",
+        "PUBKEY_PREFIX": ["x", "y"],
+        "STAKING_PREFIX": "W",
+        "PUBKEY_ADDRESS": 139,
+        "STAKING_ADDRESS": 73,
+        "SECRET_KEY": 239,
+        "BIP44_TYPE": 1,
+        "BIP44_TYPE_LEDGER": 1,
+        "PROTOCOL_VERSION": 70926,
+        "MASTERNODE_PORT": 51474,
+        "Explorers": [
+            { "name": "rockdev", "url": "https://testnet.rockdev.org" },
+            { "name": "duddino", "url": "https://testnet.duddino.com" }
+        ],
+        "Nodes": [
+            { "name": "Duddino", "url": "https://rpc.duddino.com/testnet" }
+        ],
+        "Consensus": {},
+        "coinbaseMaturity": 15,
+        "budgetCycleBlocks": 144,
+        "proposalFee": 5000000000,
+        "proposalFeeConfirmRequirement": 3,
+        "maxPaymentCycles": 20,
+        "maxPayment": 144000000000,
+        "defaultColdStakingAddress": "WmNziUEPyhnUkiVdfsiNX93H6rSJnios44"
+    }
+}
