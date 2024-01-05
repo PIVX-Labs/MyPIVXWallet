@@ -1,0 +1,19 @@
+{
+    "coin_name": "PIVX",
+    "coin_shortcut": "PIV",
+    "coin_label": "PIVX",
+    "rpc_url": "http://pivx:51470/",
+    "rpc_user": "rpc",
+    "rpc_pass": "pivxrpc",
+    "rpc_timeout": 25,
+    "parse": true,
+    "message_queue_binding": "tcp://127.0.0.1:38349",
+    "subversion": "",
+    "address_format": "",
+    "xpub_magic": 36513075,
+    "slip44": 119,
+
+    "mempool_workers": 8,
+    "mempool_sub_workers": 2,
+    "block_addresses_to_keep": 300
+}

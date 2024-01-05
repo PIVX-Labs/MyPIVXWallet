@@ -1,0 +1,11 @@
+FROM node:alpine3.18
+RUN apk add git
+WORKDIR /node
+RUN git clone https://github.com/PIVX-Labs/PivxNodeController.git
+WORKDIR PivxNodeController
+RUN git checkout url
+COPY docker/.env.rpc .env
+RUN npm ci
+ENTRYPOINT ["node"]
+CMD ["app.js"]
+EXPOSE 8080
