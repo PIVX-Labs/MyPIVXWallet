@@ -668,7 +668,10 @@ export class Wallet {
             isProposal = false,
         } = {}
     ) {
-        if (mempool.balance < value) {
+        const balance = useDelegatedInputs
+            ? mempool.coldBalance
+            : mempool.balance;
+        if (balance < value) {
             throw new Error('Not enough balance');
         }
         if (delegateChange && !changeDelegationAddress)
