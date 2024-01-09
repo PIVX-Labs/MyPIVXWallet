@@ -5,6 +5,7 @@
     "main": "scripts/index.js",
     "type": "module",
     "scripts": {
+        "postinstall": "test -f chain_params.json || cp chain_params.prod.json chain_params.json",
         "build": "webpack --config webpack.prod.js",
         "watch": "webpack --watch",
         "dev": "webpack serve --config webpack.dev.js",
