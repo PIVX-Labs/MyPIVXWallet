@@ -20,6 +20,7 @@ export default merge(common, {
         compress: true,
         port: 5500,
         hot: true,
+        allowedHosts: ['all'],
         client: {
             overlay: false,
         },
