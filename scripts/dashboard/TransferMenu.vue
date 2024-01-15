@@ -89,6 +89,7 @@ async function selectContact() {
                             show = false;
                             $emit('close');
                         "
+                        data-testid="closeButton"
                     >
                         <i class="fa-solid fa-xmark"></i>
                     </div>
@@ -154,6 +155,7 @@ async function selectContact() {
                                     placeholder="0.00"
                                     autocomplete="nope"
                                     onkeydown="javascript: return event.keyCode == 69 ? false : true"
+                                    data-testid="amount"
                                     @input="$nextTick(syncAmountCurrency)"
                                     v-model="amount"
                                 />
@@ -197,6 +199,7 @@ async function selectContact() {
                                     placeholder="0.00"
                                     autocomplete="nope"
                                     onkeydown="javascript: return event.keyCode == 69 ? false : true"
+                                    data-testid="amountCurrency"
                                     @input="syncAmount"
                                     v-model="amountCurrency"
                                 />
@@ -261,6 +264,7 @@ async function selectContact() {
                             class="pivx-button-medium w-100"
                             style="margin: 0px"
                             @click="send()"
+                            data-testid="sendButton"
                         >
                             <span class="buttoni-icon"
                                 ><i

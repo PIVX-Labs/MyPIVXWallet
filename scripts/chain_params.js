@@ -1,4 +1,5 @@
 import { reactive } from 'vue';
+import chainParams from '../chain_params.json';
 
 // In most BTC-derived coins, the below parameters can be found in the 'src/chainparams.cpp' Mainnet configuration.
 // These below params share the same names as the CPP params, so finding and editing these is easy-peasy!
@@ -20,76 +21,6 @@ export const BIP21_PREFIX = 'pivx';
 
 /* chainparams */
 export const cChainParams = reactive({
-    current: null,
-    main: {
-        name: 'mainnet',
-        collateralInSats: 10000 * COIN,
-        isTestnet: false,
-        TICKER: 'PIV',
-        PUBKEY_PREFIX: ['D'],
-        STAKING_PREFIX: 'S',
-        PUBKEY_ADDRESS: 30,
-        STAKING_ADDRESS: 63,
-        SECRET_KEY: 212,
-        BIP44_TYPE: 119,
-        BIP44_TYPE_LEDGER: 77,
-        PROTOCOL_VERSION: 70926,
-        MASTERNODE_PORT: 51472,
-        SHIELD_PREFIX: 'ps',
-        // A list of Labs-trusted explorers
-        Explorers: [
-            // Display name      Blockbook-compatible API base
-            { name: 'rockdev', url: 'https://explorer.rockdev.org' },
-            { name: 'zkBitcoin', url: 'https://zkbitcoin.com' },
-            { name: 'Duddino', url: 'https://explorer.duddino.com' },
-        ],
-        Nodes: [{ name: 'Duddino', url: 'https://rpc.duddino.com/mainnet' }],
-        Consensus: {
-            // Network upgrades
-            UPGRADE_V6_0: undefined,
-        },
-        coinbaseMaturity: 100,
-        budgetCycleBlocks: 43200,
-        proposalFee: 50 * COIN,
-        proposalFeeConfirmRequirement: 6,
-        maxPaymentCycles: 6,
-        maxPayment: 10 * 43200 * COIN, // 43200 blocks of 10 PIV
-        defaultColdStakingAddress: 'SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy', // Labs Cold Pool
-    },
-    testnet: {
-        name: 'testnet',
-        collateralInSats: 10000 * COIN,
-        isTestnet: true,
-        TICKER: 'tPIV',
-        PUBKEY_PREFIX: ['x', 'y'],
-        STAKING_PREFIX: 'W',
-        PUBKEY_ADDRESS: 139,
-        STAKING_ADDRESS: 73,
-        SECRET_KEY: 239,
-        BIP44_TYPE: 1,
-        BIP44_TYPE_LEDGER: 1,
-        PROTOCOL_VERSION: 70926,
-        MASTERNODE_PORT: 51474,
-        SHIELD_PREFIX: 'ptestsapling',
-        // A list of Labs-trusted explorers
-        Explorers: [
-            // Display name      Blockbook-compatible API base
-            //            { name: 'rockdev', url: 'https://testnet.rockdev.org' },
-            { name: 'duddino', url: 'https://testnet.duddino.com' },
-        ],
-        Nodes: [{ name: 'Duddino', url: 'https://rpc.duddino.com/testnet' }],
-        Consensus: {
-            // Network upgrades
-            UPGRADE_V6_0: undefined,
-        },
-        coinbaseMaturity: 15,
-        budgetCycleBlocks: 144,
-        proposalFee: 50 * COIN,
-        proposalFeeConfirmRequirement: 3,
-        maxPaymentCycles: 20,
-        maxPayment: 10 * 144 * COIN, // 144 blocks of 10 tPIV
-        defaultColdStakingAddress: 'WmNziUEPyhnUkiVdfsiNX93H6rSJnios44', // Sparrow's Testnet Cold Pool
-    },
+    current: chainParams.main,
+    ...chainParams,
 });
-// Set default chain
-cChainParams.current = cChainParams.main;

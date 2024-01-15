@@ -76,6 +76,7 @@ syncStatusHistoryProgress = "Sincronizando chunks de histórico" # Syncing Histo
 syncStatusStarting = "<b>Sua carteira está sincronizando!</b><br>Você poderá usá-la completamente quando isso for feito" # <b>Your wallet is syncing!</b><br>You'll be able to use it fully once this is complete.
 syncStatusFinished = "<b> Sincronização Terminada!</b><br>Sua carteira está pronta para ser utilizada" # <b>Sync Finished!</b><br>Your wallet is ready to use!
 accountDeleted = "Sua conta foi deletada com successo" # Your account has been successfully deleted!
+chartImmatureBalance = "" # Immature balance
 syncLoadingSaplingProver = "" # Loading Sapling Prover
 syncShieldProgress = "" # Loading shielded blocks {current} of {total}
 useShieldInputs = "" # Use shield inputs
@@ -121,3 +122,5 @@ CONFIRM_POPUP_DELETE_ACCOUNT_TITLE = "Você tem certerza?" # Are you sure?
 WALLET_NOT_SYNCED = "" # Please try again when wallet finishes syncing!
 WALLET_LOCKED = "" # Wallet successfully Locked!
 WALLET_UNLOCKED = "" # Wallet successfully Unlocked!
+CONFIRM_LEDGER_TX = "" # Confirm this transaction matches the one on your {hardwareWallet}
+CONFIRM_LEDGER_TX_OUT = "" # You will send {value} {ticker} to <div class="inline-address">{address}</div>

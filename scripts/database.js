@@ -12,21 +12,18 @@ import {
 import { PromoWallet } from './promos.js';
 import { ALERTS, translation } from './i18n.js';
 import { Account } from './accounts.js';
-import { COutpoint, CTxIn, CTxOut, Transaction } from './mempool.js';
+import { COutpoint, CTxIn, CTxOut, Transaction } from './transaction.js';
 
-/** The current version of the DB - increasing this will prompt the Upgrade process for clients with an older version */
-export const DB_VERSION = 3;
-
-/**
- *
- */
 export class Database {
     /**
-     * Current Database Version.
-     * Version 1 = Add index DB (PR #[FILL])
+     * The current version of the DB - increasing this will prompt the Upgrade process for clients with an older version
+     * Version 1 = Add index DB (#121)
+     * Version 2 = Promos Integration (#124)
+     * Version 3 = TX Database (#235)
+     * Version 4 = Tx Refactor (#284)
      * @type{Number}
      */
-    static version = 1;
+    static version = 4;
 
     /**
      * @type{IDBPDatabase}
@@ -100,13 +97,13 @@ export class Database {
     }
     /**
      * Removes a Promo Code from the Promo management system
-     * @param {string} promo - the promo code to remove
+     * @param {string} promoCode - the promo code to remove
      */
-    async removePromo(promo) {
+    async removePromo(promoCode) {
         const store = this.#db
             .transaction('promos', 'readwrite')
             .objectStore('promos');
-        await store.delete(promo);
+        await store.delete(promoCode);
     }
 
     /**
@@ -127,7 +124,9 @@ export class Database {
                 'warning',
                 '<b>Account Creation Error</b><br>Logs were dumped in your Browser Console<br>Please submit these privately to PIVX Labs Developers!'
             );
-            return false;
+            throw new Error(
+                'addAccount was called with with an invalid account'
+            );
         }
 
         // Create an empty DB Account
@@ -157,7 +156,7 @@ export class Database {
 
         // Check this account isn't already added (by pubkey once multi-account)
         if (await store.get('account'))
-            return console.error(
+            throw new Error(
                 'DB: Ran addAccount() when account already exists!'
             );
 
@@ -190,7 +189,9 @@ export class Database {
                 'warning',
                 '<b>DB Update Error</b><br>Your wallet is safe, logs were dumped in your Browser Console<br>Please submit these privately to PIVX Labs Developers!'
             );
-            return false;
+            throw new Error(
+                'addAccount was called with with an invalid account'
+            );
         }
 
         // Fetch the DB account
@@ -208,7 +209,9 @@ export class Database {
                 'warning',
                 '<b>DB Update Error</b><br>Logs were dumped in your Browser Console<br>Please submit these privately to PIVX Labs Developers!'
             );
-            return false;
+            throw new Error(
+                "updateAccount was called, but the account doesn't exist"
+            );
         }
 
         // We'll overlay the `account` keys atop the `DB Account` keys:
@@ -317,7 +320,7 @@ export class Database {
 
     /**
      * Get all txs from the database
-     * @returns {Promise<Transaction>}
+     * @returns {Promise<Transaction[]>}
      */
     async getTxs() {
         const store = this.#db
@@ -332,25 +335,24 @@ export class Database {
                             n: x.outpoint.n,
                         }),
                         scriptSig: x.scriptSig,
+                        sequence: x.sequence,
                     })
             );
             const vout = tx.vout.map(
                 (x) =>
                     new CTxOut({
-                        outpoint: new COutpoint({
-                            txid: x.outpoint.txid,
-                            n: x.outpoint.n,
-                        }),
                         script: x.script,
                         value: x.value,
                     })
             );
             return new Transaction({
-                txid: tx.txid,
+                version: tx.version,
                 blockHeight: tx.blockHeight,
                 blockTime: tx.blockTime,
                 vin: vin,
                 vout: vout,
+                shieldData: tx.shieldData,
+                lockTime: tx.lockTime,
             });
         });
     }
@@ -452,10 +454,13 @@ export class Database {
     static async create(name) {
         let migrate = false;
         const database = new Database({ db: null });
-        const db = await openDB(`MPW-${name}`, DB_VERSION, {
+        const db = await openDB(`MPW-${name}`, Database.version, {
             upgrade: (db, oldVersion) => {
                 console.log(
-                    'DB: Upgrading from ' + oldVersion + ' to ' + DB_VERSION
+                    'DB: Upgrading from ' +
+                        oldVersion +
+                        ' to ' +
+                        Database.version
                 );
                 if (oldVersion == 0) {
                     db.createObjectStore('masternodes');
@@ -471,6 +476,11 @@ export class Database {
                 if (oldVersion <= 2) {
                     db.createObjectStore('txs');
                 }
+                if (oldVersion < 4) {
+                    // Recreate tx db due to transaction class changes
+                    db.deleteObjectStore('txs');
+                    db.createObjectStore('txs');
+                }
             },
             blocking: () => {
                 // Another instance is waiting to upgrade, and we're preventing it
@@ -483,7 +493,7 @@ export class Database {
         });
         database.#db = db;
         if (migrate) {
-            database.#migrateLocalStorage();
+            await database.#migrateLocalStorage();
         }
         return database;
     }

@@ -4,13 +4,17 @@ import pLogo from '../../assets/p_logo.svg';
 import Modal from '../Modal.vue';
 import { generateMnemonic } from 'bip39';
 import { translation } from '../i18n.js';
-import { ref, watch } from 'vue';
-import { fAdvancedMode } from '../settings';
+import { ref, watch, toRefs } from 'vue';
 
 const emit = defineEmits(['importWallet']);
 const showModal = ref(false);
 const mnemonic = ref('');
 const passphrase = ref('');
+
+const props = defineProps({
+    advancedMode: Boolean,
+});
+const { advancedMode } = toRefs(props);
 
 async function informUserOfMnemonic() {
     return await new Promise((res, _) => {
@@ -49,7 +53,11 @@ async function generateWallet() {
                 </p>
             </div>
 
-            <button class="pivx-button-big" @click="generateWallet()">
+            <button
+                class="pivx-button-big"
+                @click="generateWallet()"
+                data-testid="generateWallet"
+            >
                 <span class="buttoni-icon" v-html="pLogo"> </span>
                 <span class="buttoni-text">
                     {{ translation.dCardOneButton }}
@@ -87,13 +95,14 @@ async function generateWallet() {
                         <i v-html="translation.digitalStoreNotAdvised"></i>
                     </a>
                     <br />
-                    <div v-if="fAdvancedMode">
+                    <div v-if="advancedMode">
                         <br />
                         <input
                             class="center-text"
                             type="password"
                             :placeholder="translation.optionalPassphrase"
                             v-model="passphrase"
+                            data-testid="passPhrase"
                         />
                     </div>
                 </div>
@@ -104,6 +113,7 @@ async function generateWallet() {
                         type="button"
                         class="pivx-button-big"
                         @click="showModal = false"
+                        data-testid="seedphraseModal"
                     >
                         {{ translation.writtenDown }}
                     </button>

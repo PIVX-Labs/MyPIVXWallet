@@ -5,114 +5,8 @@ import { getEventEmitter } from './event_bus.js';
 import Multimap from 'multimap';
 import { wallet } from './wallet.js';
 import { cChainParams } from './chain_params.js';
-
-export class CTxOut {
-    /**
-     * @param {Object} CTxOut
-     * @param {COutpoint} CTxOut.outpoint - COutpoint of the CTxOut
-     * @param {String} CTxOut.script - Redeem script, in HEX
-     * @param {Number} CTxOut.value - Value in satoshi
-     */
-    constructor({ outpoint, script, value } = {}) {
-        /** COutpoint of the CTxOut
-         *  @type {COutpoint} */
-        this.outpoint = outpoint;
-        /** Redeem script, in hex
-         * @type {String} */
-        this.script = script;
-        /** Value in satoshi
-         *  @type {Number} */
-        this.value = value;
-    }
-    isEmpty() {
-        return this.value == 0 && this.script == 'f8';
-    }
-}
-export class CTxIn {
-    /**
-     * @param {Object} CTxIn
-     * @param {COutpoint} CTxIn.outpoint - Outpoint of the UTXO that the vin spends
-     * @param {String} CTxIn.scriptSig - Script used to spend the corresponding UTXO, in hex
-     */
-    constructor({ outpoint, scriptSig } = {}) {
-        /** Outpoint of the UTXO that the vin spends
-         *  @type {COutpoint} */
-        this.outpoint = outpoint;
-        /** Script used to spend the corresponding UTXO, in hex
-         * @type {String} */
-        this.scriptSig = scriptSig;
-    }
-}
-
-export class Transaction {
-    /**
-     * @param {Object} Transaction
-     * @param {String} Transaction.txid - Transaction ID
-     * @param {Number} Transaction.blockHeight - Block height of the transaction (-1 if is pending)
-     * @param {Array<CTxIn>} Transaction.vin - Inputs of the transaction
-     * @param {Array<CTxOut>} Transaction.vout - Outputs of the transaction
-     * @param {Number} Transaction.blockTime - Time of the block
-     */
-    constructor({ txid, blockHeight, vin, vout, blockTime } = {}) {
-        /** Transaction ID
-         * @type {String} */
-        this.txid = txid;
-        /** Block height of the transaction (-1 if is pending)
-         * @param {Number} */
-        this.blockHeight = blockHeight;
-        /** Inputs of the transaction
-         *  @type {Array<CTxIn>}*/
-        this.vin = vin;
-        /** Outputs of the transaction
-         *  @type {Array<CTxOut>}*/
-        this.vout = vout;
-        /** Time of the block
-         * @type {blockTime}*/
-        this.blockTime = blockTime;
-    }
-    isConfirmed() {
-        return this.blockHeight != -1;
-    }
-    isCoinStake() {
-        return this.vout.length >= 2 && this.vout[0].isEmpty();
-    }
-    isCoinBase() {
-        // txid undefined happens only for coinbase inputs
-        return this.vin.length == 1 && !this.vin[0].outpoint.txid;
-    }
-    isMature() {
-        if (!(this.isCoinBase() || this.isCoinStake())) {
-            return true;
-        }
-        return (
-            getNetwork().cachedBlockCount - this.blockHeight >
-            cChainParams.current.coinbaseMaturity
-        );
-    }
-}
-/** An Unspent Transaction Output, used as Inputs of future transactions */
-export class COutpoint {
-    /**
-     * @param {Object} COutpoint
-     * @param {String} COutpoint.txid - Transaction ID
-     * @param {Number} COutpoint.n - Outpoint position in the corresponding transaction
-     */
-    constructor({ txid, n } = {}) {
-        /** Transaction ID
-         * @type {String} */
-        this.txid = txid;
-        /** Outpoint position in the corresponding transaction
-         *  @type {Number} */
-        this.n = n;
-    }
-    /**
-     * Sadly javascript sucks and we cannot directly compare Objects in Sets
-     * @returns {String} Unique string representation of the COutpoint
-     */
-    toUnique() {
-        return this.txid + this.n.toString();
-    }
-}
+import { Account } from './accounts.js';
+import { Transaction, COutpoint, UTXO } from './transaction.js';
 
 export const UTXO_WALLET_STATE = {
     NOT_MINE: 0, // Don't have the key to spend this utxo
@@ -120,6 +14,8 @@ export const UTXO_WALLET_STATE = {
     SPENDABLE_COLD: 2, // Have the key to spend this (P2CS) utxo
     COLD_RECEIVED: 4, // Have the staking key of this (P2CS) utxo
     SPENDABLE_TOTAL: 1 | 2,
+    IMMATURE: 8, // Coinbase/ coinstake that it's not mature (and hence spendable) yet
+    LOCKED: 16, // Coins in the LOCK set
 };
 
 /**
@@ -170,6 +66,10 @@ export const HistoricalTxType = {
 /** A Mempool instance, stores and handles UTXO data for the wallet */
 export class Mempool {
     /**
+     * @type {number} - Immature balance
+     */
+    #immatureBalance = 0;
+    /**
      * @type {number} - Our Public balance in Satoshis
      */
     #balance = 0;
@@ -213,6 +113,9 @@ export class Mempool {
     get coldBalance() {
         return this.#coldBalance;
     }
+    get immatureBalance() {
+        return this.#immatureBalance;
+    }
 
     /**
      * An Outpoint to check
@@ -247,24 +150,45 @@ export class Mempool {
     }
 
     /**
+     * @param {Transaction} tx
+     * @returns {boolean} if the tx is mature
+     */
+    isMature(tx) {
+        if (!(tx.isCoinBase() || tx.isCoinStake())) {
+            return true;
+        }
+        return (
+            getNetwork().cachedBlockCount - tx.blockHeight >
+            cChainParams.current.coinbaseMaturity
+        );
+    }
+
+    /**
      * Get the total wallet balance
      * @param {UTXO_WALLET_STATE} filter the filter you want to apply
      */
-    getBalance(filter, includeLocked = false) {
+    getBalance(filter) {
         let totBalance = 0;
         for (const [_, tx] of this.txmap) {
-            if (!tx.isMature()) {
+            // Check if tx is mature (or if we want to include immature)
+            if (!this.isMature(tx) && !(filter & UTXO_WALLET_STATE.IMMATURE)) {
                 continue;
             }
-            for (const vout of tx.vout) {
-                if (this.isSpent(vout.outpoint)) {
+            for (let i = 0; i < tx.vout.length; i++) {
+                const vout = tx.vout[i];
+                const outpoint = new COutpoint({ txid: tx.txid, n: i });
+                if (this.isSpent(outpoint)) {
                     continue;
                 }
                 const UTXO_STATE = wallet.isMyVout(vout.script);
                 if ((UTXO_STATE & filter) == 0) {
                     continue;
                 }
-                if (!includeLocked && wallet.isCoinLocked(vout.outpoint)) {
+
+                if (
+                    !(filter & UTXO_WALLET_STATE.LOCKED) &&
+                    wallet.isCoinLocked(outpoint)
+                ) {
                     continue;
                 }
                 totBalance += vout.value;
@@ -280,7 +204,7 @@ export class Mempool {
      * @param {Number | null} o.target PIVs in satoshi that we want to spend
      * @param {Boolean} o.onlyConfirmed Consider only confirmed transactions
      * @param {Boolean} o.includeLocked Include locked coins
-     * @returns {CTxOut[]} Array of fetched UTXOs
+     * @returns {utxos: UTXO[]} Array of fetched UTXOs
      */
     getUTXOs({ filter, target, onlyConfirmed = false, includeLocked }) {
         let totFound = 0;
@@ -289,21 +213,32 @@ export class Mempool {
             if (onlyConfirmed && !tx.isConfirmed()) {
                 continue;
             }
-            if (!tx.isMature()) {
+            if (!this.isMature(tx)) {
                 continue;
             }
-            for (const vout of tx.vout) {
-                if (this.isSpent(vout.outpoint)) {
+            for (let i = 0; i < tx.vout.length; i++) {
+                const vout = tx.vout[i];
+                const outpoint = new COutpoint({
+                    txid: tx.txid,
+                    n: i,
+                });
+                if (this.isSpent(outpoint)) {
                     continue;
                 }
                 const UTXO_STATE = wallet.isMyVout(vout.script);
                 if ((UTXO_STATE & filter) == 0) {
                     continue;
                 }
-                if (!includeLocked && wallet.isCoinLocked(vout.outpoint)) {
+                if (!includeLocked && wallet.isCoinLocked(outpoint)) {
                     continue;
                 }
-                utxos.push(vout);
+                utxos.push(
+                    new UTXO({
+                        outpoint,
+                        script: vout.script,
+                        value: vout.value,
+                    })
+                );
                 // Return early if you found enough PIVs (11/10 is to make sure to pay fee)
                 totFound += vout.value;
                 if (target && totFound > (11 / 10) * target) {
@@ -346,6 +281,40 @@ export class Mempool {
         });
     }
     /**
+||||||| 7c7c1da
+     * @param {Object} tx - tx object fetched from the explorer
+     * @returns {Transaction} transaction parsed
+     */
+    parseTransaction(tx) {
+        const vout = [];
+        const vin = [];
+        for (const out of tx.vout) {
+            vout.push(
+                new CTxOut({
+                    outpoint: new COutpoint({ txid: tx.txid, n: out.n }),
+                    script: out.hex,
+                    value: parseInt(out.value),
+                })
+            );
+        }
+        for (const inp of tx.vin) {
+            const op = new COutpoint({
+                txid: inp.txid,
+                n: inp.vout ? inp.vout : 0,
+            });
+            vin.push(new CTxIn({ outpoint: op, scriptSig: inp.hex }));
+        }
+        return new Transaction({
+            txid: tx.txid,
+            blockHeight: tx.blockHeight,
+            vin,
+            vout,
+            blockTime: tx.blockTime,
+        });
+    }
+    /**
+=======
+>>>>>>> master
      * Update the mempool status
      * @param {Transaction} tx
      */
@@ -367,6 +336,10 @@ export class Mempool {
     setBalance() {
         this.#balance = this.getBalance(UTXO_WALLET_STATE.SPENDABLE);
         this.#coldBalance = this.getBalance(UTXO_WALLET_STATE.SPENDABLE_COLD);
+        this.#immatureBalance =
+            this.getBalance(
+                UTXO_WALLET_STATE.SPENDABLE | UTXO_WALLET_STATE.IMMATURE
+            ) - this.#balance;
         getEventEmitter().emit('balance-update');
         getStakingBalance(true);
     }
@@ -400,6 +373,18 @@ export class Mempool {
      */
     async loadFromDisk() {
         const database = await Database.getInstance();
+        // Check if the stored txs are linked to this wallet
+        if (
+            (await database.getAccount())?.publicKey != wallet.getKeyToExport()
+        ) {
+            await database.removeAllTxs();
+            await database.removeAccount({ publicKey: null });
+            const cAccount = new Account({
+                publicKey: wallet.getKeyToExport(),
+            });
+            await database.addAccount(cAccount);
+            return;
+        }
         const txs = await database.getTxs();
         if (txs.length == 0) {
             return false;

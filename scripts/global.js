@@ -1,4 +1,6 @@
-import { COutpoint, Mempool, UTXO_WALLET_STATE } from './mempool.js';
+import { Mempool, UTXO_WALLET_STATE } from './mempool.js';
+import { COutpoint } from './transaction.js';
+import { TransactionBuilder } from './transaction_builder.js';
 import Masternode from './masternode.js';
 import { ALERTS, tr, start as i18nStart, translation } from './i18n.js';
 
@@ -14,7 +16,7 @@ import {
     nDisplayDecimals,
     fAdvancedMode,
 } from './settings.js';
-import { createAndSendTransaction, signTransaction } from './transactions.js';
+import { createAndSendTransaction } from './legacy.js';
 import {
     createAlert,
     confirmPopup,
@@ -29,7 +31,6 @@ import { refreshPriceDisplay } from './prices.js';
 import { Address6 } from 'ip-address';
 import { getEventEmitter } from './event_bus.js';
 import { Database } from './database.js';
-import bitjs from './bitTrx.js';
 import { checkForUpgrades } from './changelog.js';
 import { FlipDown } from './flipdown.js';
 import { createApp } from 'vue';
@@ -959,37 +960,24 @@ export async function updateEncryptionGUI(fEncrypted = null) {
  * @param {number} nFixedFee - An optional fixed satoshi fee
  * @returns {Promise<string|false>} - TXID on success, false or error on failure
  */
-export async function sweepAddress(arrUTXOs, sweepingMasterKey, nFixedFee = 0) {
-    const cTx = new bitjs.transaction();
+export async function sweepAddress(arrUTXOs, sweepingMasterKey, nFixedFee) {
+    const txBuilder = TransactionBuilder.create().addUTXOs(arrUTXOs);
 
-    // Load all UTXOs as inputs
-    let nTotal = 0;
-    for (const cUTXO of arrUTXOs) {
-        nTotal += cUTXO.sats;
-        cTx.addinput({
-            txid: cUTXO.id,
-            index: cUTXO.vout,
-            script: cUTXO.script,
-        });
-    }
-
-    // Use a given fixed fee, or use the network fee if unspecified
-    const nFee = nFixedFee || getNetwork().getFee(cTx.serialize().length);
-
-    // Use a new address from our wallet to sweep the UTXOs in to
-    const strAddress = (
-        await getNewAddress({ updateGUI: true, verify: false, nReceiving: 1 })
-    )[0];
-
-    // Sweep the full funds amount, minus the fee, leaving no change from any sweeped UTXOs
-    cTx.addoutput(strAddress, (nTotal - nFee) / COIN);
+    const outputValue = txBuilder.valueIn - (nFixedFee || txBuilder.getFee());
+    const [address] = wallet.getNewAddress(1);
+    const tx = txBuilder
+        .addOutput({
+            address,
+            value: outputValue,
+        })
+        .build();
 
     // Sign using the given Master Key, then broadcast the sweep, returning the TXID (or a failure)
     const sweepingWallet = new Wallet({ nAccount: 0, isMainWallet: false });
     sweepingWallet.setMasterKey(sweepingMasterKey);
 
-    const sign = await signTransaction(cTx, sweepingWallet);
-    return await getNetwork().sendTransaction(sign);
+    await sweepingWallet.sign(tx);
+    return await getNetwork().sendTransaction(tx.serialize());
 }
 
 export function toggleDropDown(id) {

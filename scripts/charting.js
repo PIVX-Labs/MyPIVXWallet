@@ -12,7 +12,7 @@ import { doms, mempool } from './global.js';
 import { Database } from './database.js';
 import { translation } from './i18n.js';
 import { wallet } from './wallet.js';
-import { COutpoint } from './mempool.js';
+import { COutpoint } from './transaction.js';
 
 Chart.register(
     Colors,
@@ -74,6 +74,14 @@ async function getWalletDataset() {
         });
     }
 
+    const immature_bal = mempool.immatureBalance;
+    if (immature_bal > 0) {
+        arrBreakdown.push({
+            type: translation.chartImmatureBalance,
+            balance: immature_bal / COIN,
+            colour: 'rgba(127, 17, 151, 1)',
+        });
+    }
     // Staking (Locked)
     const spendable_cold_bal = mempool.coldBalance;
     if (spendable_cold_bal > 0) {

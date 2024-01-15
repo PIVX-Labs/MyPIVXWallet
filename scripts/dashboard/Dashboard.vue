@@ -40,13 +40,13 @@ import {
     isStandardAddress,
 } from '../misc.js';
 import { getNetwork } from '../network.js';
-import { validateAmount, createAndSendTransaction } from '../transactions.js';
 import { strHardwareName } from '../ledger';
 import { guiAddContactPrompt } from '../contacts-book';
 import { scanQRCode } from '../scanner';
 import { PIVXShield } from 'pivx-shield';
 import { useWallet } from '../composables/use_wallet.js';
 import { useSettings } from '../composables/use_settings.js';
+import { validateAmount } from '../legacy.js';
 
 const wallet = useWallet();
 const activity = ref(null);
@@ -199,7 +199,7 @@ async function importWallet({ type, secret, password = '' }) {
         parsedSecret = await parseSecret(secret, password);
     }
     if (parsedSecret) {
-        wallet.setMasterKey(parsedSecret.masterKey);
+        await wallet.setMasterKey(parsedSecret.masterKey);
         wallet.setShield(parsedSecret.shield);
         jdenticonValue.value = wallet.getAddress();
 
@@ -273,7 +273,7 @@ async function restoreWallet(strReason) {
             if (wallet.hasShield) {
                 await wallet.setExtsk(extsk);
             }
-            wallet.setMasterKey(key.masterKey);
+            await wallet.setMasterKey(key.masterKey);
             createAlert('success', ALERTS.WALLET_UNLOCKED, 1500);
             return true;
         } else {
@@ -314,8 +314,8 @@ async function lockWallet() {
  * @param {number} amount - Amount of PIVs to send
  */
 async function send(address, amount, useShieldInputs) {
-    // Ensure a wallet is loaded
-    if (wallet.isViewOnly.value) {
+    // Ensure a wallet is unlocked
+    if (wallet.isViewOnly.value && !wallet.isHardwareWallet.value) {
         return createAlert(
             'warning',
             tr(ALERTS.WALLET_UNLOCK_IMPORT, [
@@ -325,16 +325,14 @@ async function send(address, amount, useShieldInputs) {
                         : 'import/create',
                 },
             ]),
-            3500
+            3000
         );
     }
 
-    // Ensure the wallet is unlocked
-    if (
-        wallet.isViewOnly.value &&
-        !(await restoreWallet(translation.walletUnlockTx))
-    )
-        return;
+    // Ensure wallet is synced
+    if (!getNetwork()?.fullSynced) {
+        return createAlert('warning', `${ALERTS.WALLET_NOT_SYNCED}`, 3000);
+    }
 
     // Make sure we are not already creating a (shield) tx
     if (wallet.isCreatingTx.value) {
@@ -406,13 +404,18 @@ async function send(address, amount, useShieldInputs) {
     const nValue = Math.round(amount * COIN);
     if (!validateAmount(nValue)) return;
 
+    // Close the send screen and clear inputs
+    showTransferMenu.value = false;
+    transferAddress.value = '';
+    transferAmount.value = '';
+
     // Create and send the TX
-    await createAndSendTransaction({
+    await wallet.createAndSendTransaction(
+        getNetwork(),
         address,
-        amount: nValue,
-        isDelegation: false,
-        useShieldInputs,
-    });
+        nValue,
+        useShieldInputs
+    );
 }
 
 /**
@@ -428,13 +431,11 @@ function getMaxBalance(useShieldInputs) {
 getEventEmitter().on('toggle-network', async () => {
     const database = await Database.getInstance();
     const account = await database.getAccount();
-    wallet.setMasterKey(null);
+    await wallet.setMasterKey(null);
     activity.value?.reset();
 
-    if (account) {
+    if (wallet.isEncrypted.value) {
         await importWallet({ type: 'hd', secret: account.publicKey });
-    } else {
-        await (await Database.getInstance()).removeAllTxs();
     }
     await updateEncryptionGUI(wallet.isImported.value);
     updateLogOutButton();
@@ -460,13 +461,11 @@ onMounted(async () => {
             transferAmount.value = reqAmount;
             showTransferMenu.value = true;
         }
-    } else {
-        await (await Database.getInstance()).removeAllTxs();
     }
     updateLogOutButton();
 });
 
-const { balance, shieldBalance, currency, price } = wallet;
+const { balance, shieldBalance, immatureBalance, currency, price } = wallet;
 
 getEventEmitter().on('sync-status', (status) => {
     if (status === 'stop') activity?.value?.update();
@@ -548,7 +547,7 @@ defineExpose({
                 class="col-12 p-0"
                 v-if="
                     wallet.isViewOnly.value &&
-                    !needsToEncrypt &&
+                    wallet.isEncrypted.value &&
                     wallet.isImported.value
                 "
             >
@@ -944,6 +943,7 @@ defineExpose({
                 <GenKeyWarning
                     @onEncrypt="encryptWallet"
                     @close="showEncryptModal = false"
+                    @open="showEncryptModal = true"
                     :showModal="showEncryptModal"
                     :showBox="needsToEncrypt"
                     :isEncrypt="wallet.isEncrypted.value"
@@ -953,6 +953,7 @@ defineExpose({
                     <WalletBalance
                         :balance="balance"
                         :shieldBalance="shieldBalance"
+                        :immatureBalance="immatureBalance"
                         :jdenticonValue="jdenticonValue"
                         :isHdWallet="wallet.isHD.value"
                         :isHardwareWallet="wallet.isHardwareWallet.value"

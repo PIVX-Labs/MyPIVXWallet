@@ -13,6 +13,7 @@ import {
 import { cNode } from './settings.js';
 import { ALERTS, tr, translation } from './i18n.js';
 import { mempool, stakingDashboard } from './global.js';
+import { Transaction } from './transaction.js';
 
 /**
  * @typedef {Object} XPUBAddress
@@ -84,11 +85,6 @@ export class Network {
 
     toggle() {
         this.enabled = !this.enabled;
-    }
-
-    getFee(bytes) {
-        // TEMPORARY: Hardcoded fee per-byte
-        return bytes * 50; // 50 sat/byte
     }
 
     get cachedBlockCount() {
@@ -299,7 +295,10 @@ export class ExplorerNetwork extends Network {
             // Note: Extra check since Blockbook sucks and removes `.transactions` instead of an empty array if there's no transactions
             if (iPage?.transactions?.length > 0) {
                 for (const tx of iPage.transactions.reverse()) {
-                    mempool.updateMempool(mempool.parseTransaction(tx));
+                    const parsed = Transaction.fromHex(tx.hex);
+                    parsed.blockHeight = tx.blockHeight;
+                    parsed.blockTime = tx.blockTime;
+                    mempool.updateMempool(parsed);
                 }
             }
             await mempool.saveOnDisk();

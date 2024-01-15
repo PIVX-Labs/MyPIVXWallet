@@ -87,14 +87,20 @@ function importWallet() {
                         v-model="secret"
                         :type="cloakSecret ? 'password' : 'text'"
                         placeholder="Seed Phrase, XPriv or WIF Private Key"
+                        data-testid="secretInp"
                     />
                     <input
                         v-show="showPassword"
                         v-model="password"
                         type="password"
                         :placeholder="passwordPlaceholder"
+                        data-testid="passwordInp"
                     />
-                    <button class="pivx-button-big" @click="importWallet()">
+                    <button
+                        class="pivx-button-big"
+                        @click="importWallet()"
+                        data-testid="importWalletButton"
+                    >
                         <span class="buttoni-icon"
                             ><i class="fas fa-file-upload fa-tiny-margin"></i
                         ></span>
@@ -119,6 +125,7 @@ function importWallet() {
                     v-show="!showInput"
                     class="pivx-button-big"
                     @click="showInput = true"
+                    data-testid="accWalletButton"
                 >
                     <span class="buttoni-icon" v-html="pLogo"> </span>
 

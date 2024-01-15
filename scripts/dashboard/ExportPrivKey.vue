@@ -29,6 +29,7 @@ function close() {
                     class="close"
                     @click="close()"
                     aria-label="Close"
+                    data-testid="closeBtn"
                 >
                     <i class="fa-solid fa-xmark closeCross"></i>
                 </button>
@@ -39,12 +40,20 @@ function close() {
                     <h3>{{ translation.viewPrivateKey }}</h3>
                     <span class="span1">{{ translation.privateWarning1 }}</span>
                     <span class="span2">{{ translation.privateWarning2 }}</span>
-                    <code :class="{ blurred: blur }">{{ privateKey }}</code>
+                    <code
+                        :class="{ blurred: blur }"
+                        data-testid="privateKeyText"
+                        >{{ privateKey }}</code
+                    >
                 </div>
             </template>
             <template #footer>
                 <center>
-                    <button class="pivx-button-big" @click="blur = !blur">
+                    <button
+                        class="pivx-button-big"
+                        @click="blur = !blur"
+                        data-testid="blurBtn"
+                    >
                         <span data-i18n="viewKey" class="buttoni-text"
                             >{{ translation.viewKey }}
                         </span>

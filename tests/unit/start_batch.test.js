@@ -1,5 +1,5 @@
 import { startBatch } from '../../scripts/utils.js';
-jest.setTimeout(100000);
+import { describe, it, test } from 'vitest';
 
 describe('Start batch tests', () => {
     const basicFunc = async (arrSize, batchSize) => {

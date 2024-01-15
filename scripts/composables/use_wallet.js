@@ -4,6 +4,7 @@ import { ref } from 'vue';
 import { strCurrency } from '../settings.js';
 import { mempool } from '../global.js';
 import { cMarket } from '../settings.js';
+import { ledgerSignTransaction } from '../ledger.js';
 
 /**
  * This is the middle ground between vue and the wallet class
@@ -24,13 +25,13 @@ export function useWallet() {
     // Transparent txs are so fast that we don't need to keep track of them.
     const isCreatingTx = ref(false);
 
-    const setMasterKey = (mk) => {
+    const setMasterKey = async (mk) => {
         wallet.setMasterKey(mk);
         isImported.value = wallet.isLoaded();
         isHardwareWallet.value = wallet.isHardwareWallet();
         isHD.value = wallet.isHD();
         isViewOnly.value = wallet.isViewOnly();
-        hasEncryptedWallet().then((i) => (isEncrypted.value = i));
+        isEncrypted.value = await hasEncryptedWallet();
     };
     const setExtsk = async (extsk) => {
         await wallet.setExtsk(extsk);
@@ -55,6 +56,7 @@ export function useWallet() {
     };
     const balance = ref(0);
     const shieldBalance = ref(0);
+    const immatureBalance = ref(0);
     const currency = ref('USD');
     const price = ref(0.0);
     const sync = async () => {
@@ -71,9 +73,22 @@ export function useWallet() {
             isCreatingTx.value = !finished;
         }
     );
+    const createAndSendTransaction = async (network, address, value, opts) => {
+        const tx = wallet.createTransaction(address, value, opts);
+        if (wallet.isHardwareWallet()) {
+            await ledgerSignTransaction(wallet, tx);
+        } else {
+            await wallet.sign(tx);
+        }
+        const res = await network.sendTransaction(tx.serialize());
+        if (res) {
+            wallet.finalizeTransaction(tx);
+        }
+    };
 
     getEventEmitter().on('balance-update', async () => {
         balance.value = mempool.balance;
+        immatureBalance.value = mempool.immatureBalance;
         currency.value = strCurrency.toUpperCase();
         shieldBalance.value = await wallet.getShieldBalance();
         price.value = await cMarket.getPrice(strCurrency);
@@ -100,8 +115,10 @@ export function useWallet() {
         hasShield,
         shieldBalance,
         isCreatingTx,
+        immatureBalance,
         currency,
         price,
         sync,
+        createAndSendTransaction,
     };
 }

@@ -6,7 +6,8 @@ import { getAlphaNumericRand, arrayToCSV } from './utils.js';
 import { ALERTS, translation, tr } from './i18n.js';
 import { getNetwork } from './network.js';
 import { scanQRCode } from './scanner.js';
-import { createAndSendTransaction } from './transactions.js';
+import { createAndSendTransaction } from './legacy.js';
+import { UTXO, COutpoint } from './transaction.js';
 import { wallet } from './wallet.js';
 import { LegacyMasterKey } from './masterkey.js';
 import { deriveAddress } from './encoding.js';
@@ -37,7 +38,7 @@ export class PromoWallet {
         this.address = address;
         /** @type {Uint8Array} The private key bytes derived from the Promo Code */
         this.pkBytes = pkBytes;
-        /** @type {Array<object>} UTXOs associated with the Promo Code */
+        /** @type {Array<UTXO>} UTXOs associated with the Promo Code */
         this.utxos = utxos;
         /** @type {Date|number} The Date or timestamp the code was created */
         this.time = time instanceof Date ? time : new Date(time);
@@ -61,7 +62,7 @@ export class PromoWallet {
         }
 
         // Return the sum of the set
-        return this.utxos.reduce((a, b) => a + b.sats, 0);
+        return this.utxos.reduce((a, b) => a + b.value, 0);
     }
 
     /**
@@ -85,12 +86,16 @@ export class PromoWallet {
         // Generate the UTXO with scripts
         this.utxos = [];
         for (const cUTXO of arrSimpleUTXOs) {
-            this.utxos.push({
-                id: cUTXO.txid,
-                sats: parseInt(cUTXO.value),
-                vout: cUTXO.vout,
-                script: getP2PKHScript(this.address),
-            });
+            this.utxos.push(
+                new UTXO({
+                    outpoint: new COutpoint({
+                        txid: cUTXO.txid,
+                        n: cUTXO.vout,
+                    }),
+                    script: getP2PKHScript(this.address),
+                    value: parseInt(cUTXO.value),
+                })
+            );
         }
         // Unlock, mark as synced and return the UTXO set
         this.fLock = false;
@@ -464,10 +469,10 @@ export async function updatePromoCreationTick(fRecursive = false) {
             }
 
             // Send the fill transaction if unlocked
-            if (!wallet.isViewOnly()) {
+            if (!wallet.isViewOnly() || wallet.isHardwareWallet()) {
                 const res = await createAndSendTransaction({
                     address: strAddress,
-                    amount: cThread.amount * COIN + 10000,
+                    amount: cThread.amount * COIN + PROMO_FEE,
                 }).catch((_) => {
                     // Failed to create this code - mark it as errored
                     cThread.end_state = 'Errored';
