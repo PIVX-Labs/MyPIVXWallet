@@ -31,7 +31,6 @@ import {
 } from './script.js';
 import { PIVXShield } from 'pivx-shield';
 import { guiToggleReceiveType } from './contacts-book.js';
-import bs58 from 'bs58';
 import { TransactionBuilder } from './transaction_builder.js';
 
 /**
@@ -1057,9 +1056,7 @@ export class Wallet {
                 0.0,
                 true
             );
-            transaction.fromHex(hex);
-            // TODO: check this
-            return Transaction.fromHex(hex);
+            return transaction.fromHex(hex);
         }
 
         return transaction;
