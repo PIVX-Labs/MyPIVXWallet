@@ -8,8 +8,6 @@ import {
     createAlert,
     createQR,
     getImageFile,
-    isShieldAddress,
-    isStandardAddress,
     isValidPIVXAddress,
     isXPub,
     sanitizeHTML,
@@ -532,11 +530,7 @@ export async function guiAddContact() {
         return createAlert('warning', ALERTS.CONTACTS_NAME_TOO_LONG, 2500);
 
     // Verify the address
-    if (
-        !isStandardAddress(strAddr) &&
-        !isShieldAddress(strAddr) &&
-        !isXPub(strAddr)
-    )
+    if (!isValidPIVXAddress(strAddr))
         return createAlert(
             'warning',
             tr(ALERTS.INVALID_ADDRESS, [{ address: strAddr }]),
@@ -627,11 +621,7 @@ export async function guiAddContactPrompt(
         return createAlert('warning', ALERTS.CONTACTS_NAME_TOO_LONG, 2500);
 
     // Verify the address
-    if (
-        !isStandardAddress(strPubkey) &&
-        !isShieldAddress(strPubkey) &&
-        !isXPub(strPubkey)
-    )
+    if (!isValidPIVXAddress(strPubkey))
         return createAlert(
             'warning',
             tr(ALERTS.INVALID_ADDRESS, [{ address: strPubkey }]),
