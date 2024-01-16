@@ -119,17 +119,22 @@ export class Transaction {
         );
     }
 
+    static fromHex(hex) {
+        const tx = new Transaction();
+        return tx.fromHex(hex);
+    }
+
     /**
      * @param {string} hex - hex encoded transaction
      * @returns {Transaction}
      */
-    static fromHex(hex) {
+    fromHex(hex) {
         const bytes = hexToBytes(hex);
         let offset = 0;
-        const tx = new Transaction();
-        tx.version = Number(bytesToNum(bytes.slice(offset, (offset += 4))));
+        this.version = Number(bytesToNum(bytes.slice(offset, (offset += 4))));
         const { num: vinLength, readBytes } = varIntToNum(bytes.slice(offset));
         offset += readBytes;
+        this.vin = [];
         for (let i = 0; i < Number(vinLength); i++) {
             const txid = bytesToHex(
                 bytes.slice(offset, (offset += 32)).reverse()
@@ -154,13 +159,14 @@ export class Transaction {
                 scriptSig: script,
                 sequence,
             });
-            tx.vin.push(input);
+            this.vin.push(input);
         }
         const { num: voutLength, readBytes: readBytesOut } = varIntToNum(
             bytes.slice(offset)
         );
         offset += readBytesOut;
 
+        this.vout = [];
         for (let i = 0; i < voutLength; i++) {
             const value = bytesToNum(bytes.slice(offset, (offset += 8)));
             const { num: scriptLength, readBytes } = varIntToNum(
@@ -171,7 +177,7 @@ export class Transaction {
                 bytes.slice(offset, (offset += Number(scriptLength)))
             );
 
-            tx.vout.push(
+            this.vout.push(
                 new CTxOut({
                     script,
                     value: Number(value),
@@ -179,13 +185,13 @@ export class Transaction {
             );
         }
 
-        tx.lockTime = Number(bytesToNum(bytes.slice(offset, (offset += 4))));
+        this.lockTime = Number(bytesToNum(bytes.slice(offset, (offset += 4))));
 
-        if (tx.version === 3) {
-            tx.shieldData = Array.from(bytes.slice(offset));
+        if (this.version === 3) {
+            this.shieldData = Array.from(bytes.slice(offset));
         }
 
-        return tx;
+        return this;
     }
 
     serialize() {

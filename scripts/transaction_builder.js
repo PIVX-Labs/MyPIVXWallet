@@ -2,6 +2,7 @@ import { Transaction, CTxIn, CTxOut, COutpoint } from './transaction.js';
 import bs58 from 'bs58';
 import { OP } from './script.js';
 import { hexToBytes, bytesToHex, dSHA256 } from './utils.js';
+import { isShieldAddress } from './misc.js';
 /**
  * @class Builds a non-signed transaction
  */
@@ -100,11 +101,29 @@ export class TransactionBuilder {
     }
 
     /**
+     * Add a shield output. Automatically called by `addOutput`
+     * @param {{address: string, value: number}}
+     * @returns {TransactionBuilder}
+     */
+    #addShieldOutput({ address, value }) {
+        // We don't know how to create shieldData, so we create
+        // a dummy object so we can pass it later to the Shield library
+        // upon signing.
+        // This is similar to how we temporarely use the UTXO script instead
+        // of the scriptSig because we don't know how to sign it
+        this.#transaction.shieldData.push({ address, value });
+        return this;
+    }
+
+    /**
      * Adds a P2PKH output to the transaction
      * @param {{address: string, value: number}}
      * @returns {TransactionBuilder}
      */
     addOutput({ address, value }) {
+        if (isShieldAddress(address)) {
+            return this.#addShieldOutput({ address, value });
+        }
         const decoded = this.#decodeAddress(address);
         const script = [
             OP['DUP'],

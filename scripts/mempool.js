@@ -204,7 +204,7 @@ export class Mempool {
      * @param {Number | null} o.target PIVs in satoshi that we want to spend
      * @param {Boolean} o.onlyConfirmed Consider only confirmed transactions
      * @param {Boolean} o.includeLocked Include locked coins
-     * @returns {utxos: UTXO[]} Array of fetched UTXOs
+     * @returns {UTXO[]} Array of fetched UTXOs
      */
     getUTXOs({ filter, target, onlyConfirmed = false, includeLocked }) {
         let totFound = 0;

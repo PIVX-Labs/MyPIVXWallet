@@ -832,72 +832,6 @@ export class Wallet {
             });
     }
 
-    async createShieldTransaction(address, amount, useShieldInputs = true) {
-        createAlert(
-            'info',
-            'Creating a shield tx, it might take a while',
-            2500
-        );
-        // Value returned by createTransaction
-        let tx = { hex: '', spentUTXOs: [], txid: '' };
-        const periodicFunction = setInterval(async () => {
-            const percentage = 5 + (await this.#shield.getTxStatus()) * 95;
-            getEventEmitter().emit(
-                'shield-transaction-creation-update',
-                percentage,
-                false
-            );
-        }, 500);
-        try {
-            if (useShieldInputs) {
-                // This is a s -> s transaction
-                tx = await this.#shield.createTransaction({
-                    address,
-                    amount,
-                    blockHeight: getNetwork().cachedBlockCount,
-                    useShieldInputs: true,
-                    utxos: this.#getUTXOsForShield(),
-                });
-            } else {
-                // This is a t -> s transaction! Get UTXOs from the mempool and map them into the lib internal object
-                const arrUTXOs = mempool
-                    .getUTXOs({
-                        filter: UTXO_WALLET_STATE.SPENDABLE,
-                        target: amount,
-                        includeLocked: false,
-                    })
-                    .map((txOut) => {
-                        const path = wallet.getPath(txOut.script);
-                        if (path === null) {
-                            throw new Error('Path not found, shit');
-                        }
-                        const strWIF = this.#masterKey.getPrivateKey(path);
-                        return {
-                            txid: txOut.outpoint.txid,
-                            vout: txOut.outpoint.n,
-                            amount: txOut.value,
-                            private_key: bs58.decode(strWIF).slice(1, 33),
-                            script: hexToBytes(txOut.script),
-                        };
-                    });
-                tx = await this.#shield.createTransaction({
-                    address,
-                    amount,
-                    blockHeight: getNetwork().cachedBlockCount,
-                    useShieldInputs: false,
-                    utxos: arrUTXOs,
-                    transparentChangeAddress: this.getNewAddress()[0],
-                });
-            }
-        } catch (e) {
-            console.error(e);
-        }
-        // Stop emitting tx updates
-        clearInterval(periodicFunction);
-        getEventEmitter().emit('shield-transaction-creation-update', 0.0, true);
-        return tx.hex;
-    }
-
     /**
      * Update the shield object with the latest blocks
      */
@@ -987,14 +921,6 @@ export class Wallet {
     }
 
     /**
-     * Finalize transaction shield
-     * @param {string} txid
-     */
-    async finalizeTransaction(txid) {
-        await this.#shield.finalizeTransaction(txid);
-    }
-
-    /**
      * Create a non signed transaction
      * @param {string} address - Address to send to
      * @param {number} value - Amount of satoshis to send
@@ -1013,6 +939,7 @@ export class Wallet {
         {
             isDelegation = false,
             useDelegatedInputs = false,
+            useShieldInputs = false,
             delegateChange = false,
             changeDelegationAddress = null,
             isProposal = false,
@@ -1028,11 +955,14 @@ export class Wallet {
             throw new Error(
                 '`delegateChange` was set to true, but no `changeDelegationAddress` was provided.'
             );
-        const filter = useDelegatedInputs
-            ? UTXO_WALLET_STATE.SPENDABLE_COLD
-            : UTXO_WALLET_STATE.SPENDABLE;
-        const utxos = mempool.getUTXOs({ filter, target: value });
-        const transactionBuilder = TransactionBuilder.create().addUTXOs(utxos);
+        const transactionBuilder = TransactionBuilder.create();
+        if (!useShieldInputs) {
+            const filter = useDelegatedInputs
+                ? UTXO_WALLET_STATE.SPENDABLE_COLD
+                : UTXO_WALLET_STATE.SPENDABLE;
+            const utxos = mempool.getUTXOs({ filter, target: value });
+            transactionBuilder.addUTXOs(utxos);
+        }
 
         const fee = transactionBuilder.getFee();
         const changeValue = transactionBuilder.valueIn - value - fee;
@@ -1097,6 +1027,41 @@ export class Wallet {
                 isColdStake: type === 'p2cs',
             });
         }
+
+        if (transaction.version === 3 || transaction.vin.length === 0) {
+            const periodicFunction = setInterval(async () => {
+                const percentage = 5 + (await this.#shield.getTxStatus()) * 95;
+                getEventEmitter().emit(
+                    'shield-transaction-creation-update',
+                    percentage,
+                    false
+                );
+            }, 500);
+
+            const value =
+                transaction.shieldData[0]?.value || transaction.vout[0].value;
+            const { hex } = await this.#shield.createTransaction({
+                address:
+                    transaction.shieldData[0]?.address ||
+                    this.getAddressesFromScript(transaction.vout[0].script)
+                        .addresses[0],
+                amount: value,
+                blockHeight: getNetwork().cachedBlockCount,
+                useShieldInputs: transaction.vin.length === 0,
+                utxos: this.#getUTXOsForShield(),
+                transparentChangeAddress: this.getNewAddress(1),
+            });
+            clearInterval(periodicFunction);
+            getEventEmitter().emit(
+                'shield-transaction-creation-update',
+                0.0,
+                true
+            );
+            transaction.fromHex(hex);
+            // TODO: check this
+            return Transaction.fromHex(hex);
+        }
+
         return transaction;
     }
 
@@ -1107,6 +1072,9 @@ export class Wallet {
     finalizeTransaction(transaction) {
         mempool.updateMempool(transaction);
         mempool.setBalance();
+        if (transaction.version === 3) {
+            wallet.#shield.finalizeTransaction(transaction);
+        }
     }
 }
 
