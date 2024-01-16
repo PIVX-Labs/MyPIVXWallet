@@ -84,7 +84,7 @@ export function arrayToCSV(data) {
  * @param {number} length - How many promises to spawn
  * @param {number} batchSize - How many promises to spawn at a time
  * @returns {Promise<T[]>} array of the return value of the promise.
- * It's guaranteed to be in the sorted, i.e. it will contain
+ * It's guaranteed to be sorted, i.e. it will contain
  * [ await promsieFactory(0), await promisefactory(1), ... ]
  * If the promises depend on each other, then behavior is undefined
  */
