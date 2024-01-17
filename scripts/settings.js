@@ -295,8 +295,12 @@ export async function setExplorer(explorer, fSilent = false) {
     cExplorer = explorer;
 
     // Enable networking + notify if allowed
-    const network = new ExplorerNetwork(cExplorer.url, wallet);
-    setNetwork(network);
+    if (getNetwork()) {
+        getNetwork().strUrl = cExplorer.url;
+    } else {
+        const network = new ExplorerNetwork(cExplorer.url, wallet);
+        setNetwork(network);
+    }
 
     stakingDashboard.reset();
 
