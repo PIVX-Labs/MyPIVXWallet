@@ -201,7 +201,7 @@ export class TransactionBuilder {
 
     build() {
         const tx = this.#transaction;
-        if (!tx.vin.length) {
+        if (tx && !tx.vin.length) {
             // If the tx doesn't have any clear inputs,
             // it must be a shield transaction
             tx.version = 3;
