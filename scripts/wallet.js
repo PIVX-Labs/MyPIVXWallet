@@ -812,6 +812,12 @@ export class Wallet {
         this.#isSynced = true;
     }
 
+    /**
+     * @todo this needs to take the `vin` as input,
+     * But currently we don't have any way of getting the UTXO
+     * out of the vin. This will hapèen after the mempool refactor,
+     * But for now we can just recalculate the UTXOs
+     */
     #getUTXOsForShield() {
         return mempool
             .getUTXOs({
