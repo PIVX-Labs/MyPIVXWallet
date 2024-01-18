@@ -1009,6 +1009,42 @@ export class Wallet {
     }
 
     /**
+     * Sign a shield transaction
+     * @param {Transaction} transaction
+     */
+    async #signShield(transaction) {
+        if (transaction.version !== 3) {
+            throw new Error('`signShield` was called with a non-shield tx');
+        }
+
+        const periodicFunction = setInterval(async () => {
+            const percentage = 5 + (await this.#shield.getTxStatus()) * 95;
+            getEventEmitter().emit(
+                'shield-transaction-creation-update',
+                percentage,
+                false
+            );
+        }, 500);
+
+        const value =
+            transaction.shieldData[0]?.value || transaction.vout[0].value;
+        const { hex } = await this.#shield.createTransaction({
+            address:
+                transaction.shieldData[0]?.address ||
+                this.getAddressesFromScript(transaction.vout[0].script)
+                    .addresses[0],
+            amount: value,
+            blockHeight: getNetwork().cachedBlockCount,
+            useShieldInputs: transaction.vin.length === 0,
+            utxos: this.#getUTXOsForShield(),
+            transparentChangeAddress: this.getNewAddress(1)[0],
+        });
+        clearInterval(periodicFunction);
+        getEventEmitter().emit('shield-transaction-creation-update', 0.0, true);
+        return transaction.fromHex(hex);
+    }
+
+    /**
      * @param {Transaction} transaction - transaction to sign
      * @throws {Error} if the wallet is view only
      * @returns {Promise<Transaction>} a reference to the same transaction, signed
@@ -1016,6 +1052,9 @@ export class Wallet {
     async sign(transaction) {
         if (this.isViewOnly()) {
             throw new Error('Cannot sign with a view only wallet');
+        }
+        if (transaction.version === 3) {
+            return await this.#signShield(transaction);
         }
         for (let i = 0; i < transaction.vin.length; i++) {
             const input = transaction.vin[i];
@@ -1026,39 +1065,6 @@ export class Wallet {
                 isColdStake: type === 'p2cs',
             });
         }
-
-        if (transaction.version === 3 || transaction.vin.length === 0) {
-            const periodicFunction = setInterval(async () => {
-                const percentage = 5 + (await this.#shield.getTxStatus()) * 95;
-                getEventEmitter().emit(
-                    'shield-transaction-creation-update',
-                    percentage,
-                    false
-                );
-            }, 500);
-
-            const value =
-                transaction.shieldData[0]?.value || transaction.vout[0].value;
-            const { hex } = await this.#shield.createTransaction({
-                address:
-                    transaction.shieldData[0]?.address ||
-                    this.getAddressesFromScript(transaction.vout[0].script)
-                        .addresses[0],
-                amount: value,
-                blockHeight: getNetwork().cachedBlockCount,
-                useShieldInputs: transaction.vin.length === 0,
-                utxos: this.#getUTXOsForShield(),
-                transparentChangeAddress: this.getNewAddress(1)[0],
-            });
-            clearInterval(periodicFunction);
-            getEventEmitter().emit(
-                'shield-transaction-creation-update',
-                0.0,
-                true
-            );
-            return transaction.fromHex(hex);
-        }
-
         return transaction;
     }
 
