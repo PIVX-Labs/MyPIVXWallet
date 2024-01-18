@@ -1048,7 +1048,7 @@ export class Wallet {
                 blockHeight: getNetwork().cachedBlockCount,
                 useShieldInputs: transaction.vin.length === 0,
                 utxos: this.#getUTXOsForShield(),
-                transparentChangeAddress: this.getNewAddress(1),
+                transparentChangeAddress: this.getNewAddress(1)[0],
             });
             clearInterval(periodicFunction);
             getEventEmitter().emit(
