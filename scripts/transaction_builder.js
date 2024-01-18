@@ -106,6 +106,7 @@ export class TransactionBuilder {
      * @returns {TransactionBuilder}
      */
     #addShieldOutput({ address, value }) {
+        this.#transaction.version = 3;
         // We don't know how to create shieldData, so we create
         // a dummy object so we can pass it later to the Shield library
         // upon signing.
