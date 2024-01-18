@@ -174,7 +174,6 @@ export function verifyBech32(address, expectedPrefix) {
         }
         return true;
     } catch (e) {
-        console.error(e);
         return false;
     }
 }
