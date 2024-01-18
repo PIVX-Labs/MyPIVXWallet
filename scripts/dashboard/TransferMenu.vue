@@ -247,6 +247,7 @@ async function selectContact() {
                             <input
                                 type="checkbox"
                                 class="custom-control-input"
+                                data-testid="useShieldInputs"
                                 id="useShieldInputs"
                                 v-model="useShieldInputs"
                             />
