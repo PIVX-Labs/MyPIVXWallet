@@ -651,8 +651,8 @@ export class Wallet {
                 '`delegateChange` was set to true, but no `changeDelegationAddress` was provided.'
             );
         const filter = useDelegatedInputs
-            ? OutpointState.SPENDABLE_COLD
-            : OutpointState.SPENDABLE;
+            ? OutpointState.P2CS
+            : OutpointState.P2PKH;
         const utxos = this.#mempool.getUTXOs({ filter, target: value });
         const transactionBuilder = TransactionBuilder.create().addUTXOs(utxos);
 
