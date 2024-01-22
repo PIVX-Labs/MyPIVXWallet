@@ -1079,11 +1079,12 @@ export class Wallet {
      * @param {Transaction} transaction
      */
     finalizeTransaction(transaction) {
+        if (transaction.version === 3) {
+            wallet.#shield.finalizeTransaction(transaction.txid);
+        }
+
         mempool.updateMempool(transaction);
         mempool.setBalance();
-        if (transaction.version === 3) {
-            wallet.#shield.finalizeTransaction(transaction);
-        }
     }
 }
 
