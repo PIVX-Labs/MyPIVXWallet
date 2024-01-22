@@ -110,9 +110,6 @@ export class Mempool {
      * @param {number} status
      */
     addOutpointStatus(outpoint, status) {
-        if (!outpoint.toUnique) {
-            debugger;
-        }
         const oldStatus = this.#outpointStatus.get(outpoint.toUnique());
         this.#outpointStatus.set(outpoint.toUnique(), oldStatus | status);
         this.#invalidateBalanceCache();
