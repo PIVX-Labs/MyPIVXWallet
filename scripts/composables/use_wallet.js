@@ -2,7 +2,6 @@ import { getEventEmitter } from '../event_bus.js';
 import { hasEncryptedWallet, wallet } from '../wallet.js';
 import { ref } from 'vue';
 import { strCurrency } from '../settings.js';
-import { mempool } from '../global.js';
 import { cMarket } from '../settings.js';
 import { ledgerSignTransaction } from '../ledger.js';
 
@@ -20,6 +19,7 @@ export function useWallet() {
     const isViewOnly = ref(wallet.isViewOnly());
     const getKeyToBackup = async () => await wallet.getKeyToBackup();
     const isEncrypted = ref(true);
+    const loadFromDisk = wallet.loadFromDisk;
 
     const setMasterKey = async (mk) => {
         wallet.setMasterKey(mk);
@@ -56,13 +56,13 @@ export function useWallet() {
         }
         const res = await network.sendTransaction(tx.serialize());
         if (res) {
-            wallet.finalizeTransaction(tx);
+            wallet.addTransaction(tx);
         }
     };
 
     getEventEmitter().on('balance-update', async () => {
-        balance.value = mempool.balance;
-        immatureBalance.value = mempool.immatureBalance;
+        balance.value = wallet.balance;
+        immatureBalance.value = wallet.immatureBalance;
         currency.value = strCurrency.toUpperCase();
         price.value = await cMarket.getPrice(strCurrency);
     });
@@ -87,5 +87,6 @@ export function useWallet() {
         currency,
         price,
         createAndSendTransaction,
+        loadFromDisk,
     };
 }

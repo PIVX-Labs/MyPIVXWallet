@@ -3,12 +3,11 @@ import { decrypt } from './aes-gcm.js';
 import { beforeUnloadListener } from './global.js';
 import { getNetwork } from './network.js';
 import { MAX_ACCOUNT_GAP } from './chain_params.js';
-import { HistoricalTx, HistoricalTxType } from './mempool.js';
-import { Transaction } from './transaction.js';
+import { HistoricalTx, HistoricalTxType, Mempool } from './mempool.js';
+import { COutpoint, Transaction } from './transaction.js';
 import { confirmPopup, createAlert } from './misc.js';
 import { cChainParams } from './chain_params.js';
 import { COIN } from './chain_params.js';
-import { mempool } from './global.js';
 import { ALERTS, tr, translation } from './i18n.js';
 import { encrypt } from './aes-gcm.js';
 import { Database } from './database.js';
@@ -17,7 +16,7 @@ import { Account } from './accounts.js';
 import { fAdvancedMode } from './settings.js';
 import { bytesToHex, hexToBytes } from './utils.js';
 import { strHardwareName } from './ledger.js';
-import { UTXO_WALLET_STATE } from './mempool.js';
+import { OutpointState } from './mempool.js';
 import {
     isP2CS,
     isP2PKH,
@@ -80,15 +79,20 @@ export class Wallet {
      * @type {Boolean}
      */
     #isMainWallet;
+
+    /**
+     * @type {Mempool}
+     */
+    #mempool;
+
     /**
      * Set of unique representations of Outpoints that keep track of locked utxos.
      * @type {Set<String>}
      */
-    #lockedCoins;
-    constructor(nAccount, isMainWallet) {
+    constructor(nAccount, isMainWallet, mempool = new Mempool()) {
         this.#nAccount = nAccount;
         this.#isMainWallet = isMainWallet;
-        this.#lockedCoins = new Set();
+        this.#mempool = mempool;
         for (let i = 0; i < Wallet.chains; i++) {
             this.#highestUsedIndices.set(i, 0);
             this.#loadedIndexes.set(i, 0);
@@ -98,10 +102,10 @@ export class Wallet {
     /**
      * Check whether a given outpoint is locked
      * @param {COutpoint} opt
-     * @return {Boolean} true if opt is locked, false otherwise
+     * @return {boolean} true if opt is locked, false otherwise
      */
     isCoinLocked(opt) {
-        return this.#lockedCoins.has(opt.toUnique());
+        return !!(this.#mempool.getOutpointStatus(opt) & OutpointState.LOCKED);
     }
 
     /**
@@ -109,8 +113,7 @@ export class Wallet {
      * @param {COutpoint} opt
      */
     lockCoin(opt) {
-        this.#lockedCoins.add(opt.toUnique());
-        mempool.setBalance();
+        this.#mempool.addOutpointStatus(opt, OutpointState.LOCKED);
     }
 
     /**
@@ -118,8 +121,7 @@ export class Wallet {
      * @param {COutpoint} opt
      */
     unlockCoin(opt) {
-        this.#lockedCoins.delete(opt.toUnique());
-        mempool.setBalance();
+        this.#mempool.removeOutpointStatus(opt, OutpointState.LOCKED);
     }
 
     getMasterKey() {
@@ -212,16 +214,14 @@ export class Wallet {
         this.#loadedIndexes = new Map();
         this.#ownAddresses = new Map();
         this.#addressIndices = new Map();
+        // TODO: readd this.#mempool = new Mempool();
         for (let i = 0; i < Wallet.chains; i++) {
             this.#highestUsedIndices.set(i, 0);
             this.#loadedIndexes.set(i, 0);
             this.#addressIndices.set(i, 0);
         }
-        // TODO: This needs to be refactored
-        // The wallet could own its own mempool and network?
-        // Instead of having this isMainWallet flag
+        // TODO: This needs to be refactored to remove the getNetwork dependency
         if (this.#isMainWallet) {
-            mempool.reset();
             getNetwork().reset();
         }
     }
@@ -445,16 +445,22 @@ export class Wallet {
         return this.isOwnAddress(address);
     }
 
-    isMyVout(script) {
+    /**
+     * Get the outpoint state based on the script.
+     * This functions only tells us the type of the script and if it's ours
+     * It doesn't know about LOCK, IMMATURE or SPENT statuses, for that
+     * it's necessary to interrogate the mempool
+     */
+    getScriptType(script) {
         const { type, addresses } = this.getAddressesFromScript(script);
-        const index = addresses.findIndex((s) => this.isOwnAddress(s));
-        if (index === -1) return UTXO_WALLET_STATE.NOT_MINE;
-        if (type === 'p2pkh') return UTXO_WALLET_STATE.SPENDABLE;
+        let status = 0;
+        const isOurs = addresses.some((s) => this.isOwnAddress(s));
+        if (isOurs) status |= OutpointState.OURS;
+        if (type === 'p2pkh') status |= OutpointState.P2PKH;
         if (type === 'p2cs') {
-            return index === 0
-                ? UTXO_WALLET_STATE.COLD_RECEIVED
-                : UTXO_WALLET_STATE.SPENDABLE_COLD;
+            status |= OutpointState.P2CS;
         }
+        return status;
     }
 
     /**
@@ -503,59 +509,14 @@ export class Wallet {
     }
 
     /**
-     * Get the debit of a transaction in satoshi
-     * @param {Transaction} tx
-     */
-    getDebit(tx) {
-        let debit = 0;
-        for (const vin of tx.vin) {
-            if (mempool.txmap.has(vin.outpoint.txid)) {
-                const spentVout = mempool.txmap.get(vin.outpoint.txid).vout[
-                    vin.outpoint.n
-                ];
-                if (
-                    (this.isMyVout(spentVout.script) &
-                        UTXO_WALLET_STATE.SPENDABLE_TOTAL) !=
-                    0
-                ) {
-                    debit += spentVout.value;
-                }
-            }
-        }
-        return debit;
-    }
-
-    /**
-     * Get the credit of a transaction in satoshi
-     * @param {Transaction} tx
-     */
-    getCredit(tx, filter) {
-        let credit = 0;
-        for (const vout of tx.vout) {
-            if ((this.isMyVout(vout.script) & filter) != 0) {
-                credit += vout.value;
-            }
-        }
-        return credit;
-    }
-
-    /**
      * Return true if the transaction contains undelegations regarding the given wallet
      * @param {Transaction} tx
      */
     checkForUndelegations(tx) {
         for (const vin of tx.vin) {
-            if (mempool.txmap.has(vin.outpoint.txid)) {
-                const spentVout = mempool.txmap.get(vin.outpoint.txid).vout[
-                    vin.outpoint.n
-                ];
-                if (
-                    (this.isMyVout(spentVout.script) &
-                        UTXO_WALLET_STATE.SPENDABLE_COLD) !=
-                    0
-                ) {
-                    return true;
-                }
+            const status = this.#mempool.getOutpointStatus(vin.outpoint);
+            if (status & OutpointState.P2CS) {
+                return true;
             }
         }
         return false;
@@ -566,11 +527,14 @@ export class Wallet {
      * @param {Transaction} tx
      */
     checkForDelegations(tx) {
-        for (const vout of tx.vout) {
+        const txid = tx.txid;
+        for (let i = 0; i < tx.vout.length; i++) {
+            const outpoint = new COutpoint({
+                txid,
+                n: i,
+            });
             if (
-                (this.isMyVout(vout.script) &
-                    UTXO_WALLET_STATE.SPENDABLE_COLD) !=
-                0
+                this.#mempool.getOutpointStatus(outpoint) & OutpointState.P2CS
             ) {
                 return true;
             }
@@ -595,7 +559,7 @@ export class Wallet {
     /**
      * Convert a list of Blockbook transactions to HistoricalTxs
      * @param {Array<Transaction>} arrTXs - An array of the Blockbook TXs
-     * @returns {Promise<Array<HistoricalTx>>} - A new array of `HistoricalTx`-formatted transactions
+     * @returns {Array<HistoricalTx>} - A new array of `HistoricalTx`-formatted transactions
      */
     // TODO: add shield data to txs
     toHistoricalTXs(arrTXs) {
@@ -603,9 +567,16 @@ export class Wallet {
         for (const tx of arrTXs) {
             // The total 'delta' or change in balance, from the Tx's sums
             let nAmount =
-                (this.getCredit(tx, UTXO_WALLET_STATE.SPENDABLE_TOTAL) -
-                    this.getDebit(tx)) /
+                (this.#mempool.getCredit(tx) - this.#mempool.getDebit(tx)) /
                 COIN;
+            console.log(
+                nAmount,
+                this.#mempool.getCredit(tx),
+                this.#mempool.getDebit(tx)
+            );
+            if (nAmount === 0) {
+                console.log(tx);
+            }
 
             // The receiver addresses, if any
             let arrReceivers = this.getOutAddress(tx);
@@ -621,12 +592,13 @@ export class Wallet {
                 arrReceivers = arrReceivers.filter((addr) => {
                     return addr[0] === cChainParams.current.STAKING_PREFIX;
                 });
-                nAmount =
-                    this.getCredit(tx, UTXO_WALLET_STATE.SPENDABLE_COLD) / COIN;
+                nAmount = this.#mempool.getCredit(tx) / COIN;
             } else if (nAmount > 0) {
                 type = HistoricalTxType.RECEIVED;
             } else if (nAmount < 0) {
                 type = HistoricalTxType.SENT;
+            } else if (tx.shieldData.length > 0) {
+                type = HistoricalTxType.SHIELD;
             }
 
             histTXs.push(
@@ -669,8 +641,8 @@ export class Wallet {
         } = {}
     ) {
         const balance = useDelegatedInputs
-            ? mempool.coldBalance
-            : mempool.balance;
+            ? this.#mempool.coldBalance
+            : this.#mempool.balance;
         if (balance < value) {
             throw new Error('Not enough balance');
         }
@@ -679,9 +651,9 @@ export class Wallet {
                 '`delegateChange` was set to true, but no `changeDelegationAddress` was provided.'
             );
         const filter = useDelegatedInputs
-            ? UTXO_WALLET_STATE.SPENDABLE_COLD
-            : UTXO_WALLET_STATE.SPENDABLE;
-        const utxos = mempool.getUTXOs({ filter, target: value });
+            ? OutpointState.SPENDABLE_COLD
+            : OutpointState.SPENDABLE;
+        const utxos = this.#mempool.getUTXOs({ filter, target: value });
         const transactionBuilder = TransactionBuilder.create().addUTXOs(utxos);
 
         const fee = transactionBuilder.getFee();
@@ -751,12 +723,48 @@ export class Wallet {
     }
 
     /**
-     * Finalize Transaction. To be called after it's signed and sent to the network, if successful
+     * Adds a transaction to the mempool. To be called after it's signed and sent to the network, if successful
      * @param {Transaction} transaction
      */
-    finalizeTransaction(transaction) {
-        mempool.updateMempool(transaction);
-        mempool.setBalance();
+    addTransaction(transaction) {
+        this.#mempool.addTransaction(transaction);
+        let i = 0;
+        for (const out of transaction.vout) {
+            const status = this.getScriptType(out.script);
+            if (status & OutpointState.OURS) {
+                this.#mempool.setOutpointStatus(
+                    new COutpoint({
+                        txid: transaction.txid,
+                        n: i,
+                    }),
+                    status
+                );
+            }
+            i++;
+        }
+    }
+
+    /**
+     * @returns {Transaction[]} a list of all transactions
+     */
+    getTransactions() {
+        return this.#mempool.getTransactions();
+    }
+
+    get balance() {
+        return this.#mempool.balance;
+    }
+
+    get immatureBalance() {
+        return this.#mempool.immatureBalance;
+    }
+
+    get coldBalance() {
+        return this.#mempool.coldBalance;
+    }
+
+    loadFromDisk() {
+        // TODO
     }
 }
 

@@ -227,7 +227,7 @@ export class ExplorerNetwork extends Network {
         // after first sync (so at each new block) we can safely assume that user got less than 1000 new txs
         //in this way we don't have to fetch the probePage after first sync
         const txNumber = !this.fullSynced
-            ? probePage.txs - mempool.txmap.size
+            ? probePage.txs - this.wallet.getTransactions().length
             : 1;
         // Compute the total pages and iterate through them until we've synced everything
         const totalPages = Math.ceil(txNumber / 1000);
@@ -253,13 +253,12 @@ export class ExplorerNetwork extends Network {
                     const parsed = Transaction.fromHex(tx.hex);
                     parsed.blockHeight = tx.blockHeight;
                     parsed.blockTime = tx.blockTime;
-                    mempool.updateMempool(parsed);
+                    this.wallet.addTransaction(parsed);
                 }
             }
-            await mempool.saveOnDisk();
+            // await mempool.saveOnDisk();
         }
 
-        mempool.setBalance();
         if (debug) {
             console.log(
                 'Fetched latest txs: total number of pages was ',
@@ -275,11 +274,9 @@ export class ExplorerNetwork extends Network {
         if (this.fullSynced) return;
         if (!this.wallet || !this.wallet.isLoaded()) return;
         await this.getLatestTxs(this.lastBlockSynced);
-        const nBlockHeights = Array.from(mempool.orderedTxmap.keys());
-        this.lastBlockSynced =
-            nBlockHeights.length == 0
-                ? 0
-                : nBlockHeights.sort((a, b) => a - b).at(-1);
+        this.lastBlockSynced = Math.max(
+            ...this.wallet.getTransactions().map((tx) => tx.blockHeight)
+        );
         this.fullSynced = true;
         createAlert('success', translation.syncStatusFinished, 12500);
         getEventEmitter().emit('sync-status-update', 0, 0, true);

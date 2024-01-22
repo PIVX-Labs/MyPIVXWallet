@@ -2,7 +2,6 @@
 import { ref, computed, watch, onMounted } from 'vue';
 import { getNetwork } from '../network.js';
 import { wallet } from '../wallet.js';
-import { mempool } from '../global.js';
 import { COIN, cChainParams } from '../chain_params.js';
 import { translation } from '../i18n.js';
 import { Database } from '../database.js';
@@ -80,20 +79,20 @@ async function update(txToAdd = 0) {
     if (txCount < 10 && txToAdd == 0) txToAdd = 10;
 
     let found = 0;
-    const nHeights = Array.from(mempool.orderedTxmap.keys()).sort(
-        (a, b) => a - b
+    // Since ECMAScript 2019 .sort is stable.
+    // https://caniuse.com/mdn-javascript_builtins_array_sort_stable
+    const orderedTxs = Array.from(wallet.getTransactions()).sort(
+        (a, b) => a.blockHeight - b.blockHeight
     );
     while (found < txCount + txToAdd) {
-        if (nHeights.length == 0) {
+        if (orderedTxs.length == 0) {
             isHistorySynced.value = true;
             break;
         }
-        const nHeight = nHeights.pop();
-        const txsAtnHeight = mempool.orderedTxmap.get(nHeight).filter((tx) => {
-            return props.rewards ? tx.isCoinStake() : true;
-        });
-        newTxs = newTxs.concat(txsAtnHeight);
-        found += txsAtnHeight.length;
+        const tx = orderedTxs.pop();
+        if (props.rewards && !tx.isCoinStake()) continue;
+        newTxs.push(tx);
+        found++;
     }
     const arrTXs = wallet.toHistoricalTXs(newTxs);
     await parseTXs(arrTXs);

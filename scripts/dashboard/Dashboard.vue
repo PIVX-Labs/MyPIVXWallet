@@ -32,7 +32,7 @@ import {
     updateEncryptionGUI,
     updateLogOutButton,
 } from '../global';
-import { mempool, refreshChainData } from '../global.js';
+import { refreshChainData } from '../global.js';
 import {
     confirmPopup,
     isXPub,
@@ -174,7 +174,7 @@ async function importWallet({ type, secret, password = '' }) {
         jdenticonValue.value = wallet.getAddress();
 
         if (needsToEncrypt.value) showEncryptModal.value = true;
-        await mempool.loadFromDisk();
+        await wallet.loadFromDisk();
         getNetwork().walletFullSync();
         getEventEmitter().emit('wallet-import');
         return true;
@@ -913,7 +913,9 @@ defineExpose({
             @openQrScan="openSendQRScanner()"
             @close="showTransferMenu = false"
             @send="send"
-            @max-balance="transferAmount = (mempool.balance / COIN).toString()"
+            @max-balance="
+                transferAmount = (wallet.balance.value / COIN).toString()
+            "
         />
     </div>
 </template>

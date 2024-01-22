@@ -26,6 +26,16 @@ export class COutpoint {
     toUnique() {
         return this.txid + this.n.toString();
     }
+
+    /**
+     * @param {string} str
+     */
+    static fromUnique(str) {
+        return new COutpoint({
+            txid: str.slice(0, 64),
+            n: parseInt(str.slice(64)),
+        });
+    }
 }
 
 export class CTxOut {
