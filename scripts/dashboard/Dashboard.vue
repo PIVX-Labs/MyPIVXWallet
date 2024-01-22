@@ -403,7 +403,16 @@ async function send(address, amount, useShieldInputs) {
     // Sanity check the amount
     const nValue = Math.round(amount * COIN);
     if (!validateAmount(nValue)) return;
-
+    const availableBalance = useShieldInputs
+        ? wallet.shieldBalance.value
+        : wallet.balance.value;
+    if (nValue > availableBalance) {
+        createAlert(
+            'warning',
+            tr(ALERTS.MISSING_FUNDS, [{ sats: nValue - availableBalance }])
+        );
+        return;
+    }
     // Close the send screen and clear inputs
     showTransferMenu.value = false;
     transferAddress.value = '';
