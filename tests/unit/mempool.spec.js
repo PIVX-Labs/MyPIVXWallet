@@ -5,6 +5,7 @@ import {
     CTxOut,
     COutpoint,
     UTXO,
+    CTxIn,
 } from '../../scripts/transaction.js';
 describe('mempool tests', () => {
     /** @type{Mempool} */
@@ -95,8 +96,28 @@ describe('mempool tests', () => {
     });
 
     it('gives correct debit', () => {
-        // TODO: Come up with a better test lol
-        expect(mempool.getDebit(tx)).toBe(0);
+        const spendTx = new Transaction({
+            version: 1,
+            vin: [
+                new CTxIn({
+                    scriptSig: 'dummy',
+                    outpoint: new COutpoint({
+                        txid: tx.txid,
+                        n: 1,
+                    }),
+                }),
+                new CTxIn({
+                    scriptSig: 'dummy',
+                    outpoint: new COutpoint({
+                        txid: tx.txid,
+                        n: 0,
+                    }),
+                }),
+            ],
+            vout: [],
+        });
+        mempool.addTransaction(spendTx);
+        expect(mempool.getDebit(spendTx)).toBe(5000000 + 4992400);
     });
 
     it('gives correct credit', () => {
