@@ -5,7 +5,7 @@ import { getNetwork } from './network.js';
 import { MAX_ACCOUNT_GAP } from './chain_params.js';
 import { Mempool } from './mempool.js';
 import { HistoricalTx, HistoricalTxType } from './historical_tx.js';
-import { COutpoint, Transaction } from './transaction.js';
+import { COutpoint } from './transaction.js';
 import { confirmPopup, createAlert } from './misc.js';
 import { cChainParams } from './chain_params.js';
 import { COIN } from './chain_params.js';
@@ -511,7 +511,7 @@ export class Wallet {
 
     /**
      * Return true if the transaction contains undelegations regarding the given wallet
-     * @param {Transaction} tx
+     * @param {import('./transaction.js').Transaction} tx
      */
     checkForUndelegations(tx) {
         for (const vin of tx.vin) {
@@ -525,7 +525,7 @@ export class Wallet {
 
     /**
      * Return true if the transaction contains delegations regarding the given wallet
-     * @param {Transaction} tx
+     * @param {import('./transaction.js').Transaction} tx
      */
     checkForDelegations(tx) {
         const txid = tx.txid;
@@ -545,7 +545,7 @@ export class Wallet {
 
     /**
      * Return the output addresses for a given transaction
-     * @param {Transaction} tx
+     * @param {import('./transaction.js').Transaction} tx
      */
     getOutAddress(tx) {
         return tx.vout.reduce(
@@ -559,7 +559,7 @@ export class Wallet {
 
     /**
      * Convert a list of Blockbook transactions to HistoricalTxs
-     * @param {Array<Transaction>} arrTXs - An array of the Blockbook TXs
+     * @param {import('./transaction.js').Transaction[]} arrTXs - An array of the Blockbook TXs
      * @returns {Array<HistoricalTx>} - A new array of `HistoricalTx`-formatted transactions
      */
     // TODO: add shield data to txs
@@ -703,9 +703,9 @@ export class Wallet {
     }
 
     /**
-     * @param {Transaction} transaction - transaction to sign
+     * @param {import('./transaction.js').Transaction} transaction - transaction to sign
      * @throws {Error} if the wallet is view only
-     * @returns {Promise<Transaction>} a reference to the same transaction, signed
+     * @returns {Promise<import('./transaction.js').Transaction>} a reference to the same transaction, signed
      */
     async sign(transaction) {
         if (this.isViewOnly()) {
@@ -725,7 +725,7 @@ export class Wallet {
 
     /**
      * Adds a transaction to the mempool. To be called after it's signed and sent to the network, if successful
-     * @param {Transaction} transaction
+     * @param {import('./transaction.js').Transaction} transaction
      */
     addTransaction(transaction) {
         this.#mempool.addTransaction(transaction);
@@ -745,12 +745,22 @@ export class Wallet {
         }
     }
 
+    /**
+     * @returns {UTXO[]} Any UTXO that has value of
+     * exactly `cChainParams.current.collateralInSats`
+     */
     getMasternodeUTXOs() {
         const collateralValue = cChainParams.current.collateralInSats;
+        return this.#mempool
+            .getUTXOs({
+                filter: OutpointState.SPENT | OutpointState.IMMATURE,
+                requirement: OutpointState.P2PKH,
+            })
+            .filter((u) => u.value === collateralValue);
     }
 
     /**
-     * @returns {Transaction[]} a list of all transactions
+     * @returns {import('./transaction.js').Transaction[]} a list of all transactions
      */
     getTransactions() {
         return this.#mempool.getTransactions();
