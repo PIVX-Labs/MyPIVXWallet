@@ -651,10 +651,10 @@ export class Wallet {
             throw new Error(
                 '`delegateChange` was set to true, but no `changeDelegationAddress` was provided.'
             );
-        const filter = useDelegatedInputs
+        const requirement = useDelegatedInputs
             ? OutpointState.P2CS
             : OutpointState.P2PKH;
-        const utxos = this.#mempool.getUTXOs({ filter, target: value });
+        const utxos = this.#mempool.getUTXOs({ requirement, target: value });
         const transactionBuilder = TransactionBuilder.create().addUTXOs(utxos);
 
         const fee = transactionBuilder.getFee();
@@ -743,6 +743,10 @@ export class Wallet {
             }
             i++;
         }
+    }
+
+    getMasternodeUTXOs() {
+        const collateralValue = cChainParams.current.collateralInSats;
     }
 
     /**

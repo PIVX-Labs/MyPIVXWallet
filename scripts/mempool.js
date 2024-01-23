@@ -149,20 +149,34 @@ export class Mempool {
     }
 
     /**
-     * @param {{filter: number, target: number}}
+     * @param {object} o - options
+     * @param {number} [o.filter] - A filter to apply to all UTXOs. For example
+     * `OutpointState.P2CS` will NOT return P2CS transactions.
+     * By default it's OutpointState.SPENT
+     * @param {number} [o.requirement] - A requirement to apply to all UTXOs. For example
+     * `OutpointState.P2CS` will only return P2CS transactions.
+     * By default it's MAX_SAFE_INTEGER
      * @returns {UTXO[]} a list of unspent transaction outputs
      */
-    getUTXOs({ filter, target = Number.POSITIVE_INFINITY }) {
+    getUTXOs({
+        filter = OutpointState.SPENT,
+        requirement = Number.MAX_SAFE_INTEGER,
+        target = Number.POSITIVE_INFINITY,
+    } = {}) {
         const utxos = [];
         let value = 0;
         for (const [o, status] of this.#outpointStatus) {
             const outpoint = COutpoint.fromUnique(o);
-            if (!this.isSpent(outpoint) && status & filter) {
-                utxos.push(this.#outpointToUTXO(outpoint));
-                value += utxos.at(-1).value;
-                if (value >= (target * 11) / 10) {
-                    break;
-                }
+            if (status & filter) {
+                continue;
+            }
+            if (!(status & requirement)) {
+                continue;
+            }
+            utxos.push(this.#outpointToUTXO(outpoint));
+            value += utxos.at(-1).value;
+            if (value >= (target * 11) / 10) {
+                break;
             }
         }
         return utxos;

@@ -52,34 +52,40 @@ describe('mempool tests', () => {
             }),
         ];
 
-        // Without target, mempool should return all UTXOs
-        expect(
-            mempool.getUTXOs({
-                filter: OutpointState.P2PKH,
-            })
-        ).toStrictEqual(expectedUTXOs);
+        // By default, it should return all UTXOs
+        expect(mempool.getUTXOs()).toStrictEqual(expectedUTXOs);
 
         // With target, should only return the first one
         expect(
             mempool.getUTXOs({
-                filter: OutpointState.P2PKH,
                 target: 4000000,
             })
         ).toStrictEqual([expectedUTXOs[0]]);
 
         mempool.setSpent(new COutpoint({ txid: tx.txid, n: 0 }));
         // After spending one UTXO, it should not return it again
-        expect(
-            mempool.getUTXOs({
-                filter: OutpointState.P2PKH,
-            })
-        ).toStrictEqual([expectedUTXOs[1]]);
+        expect(mempool.getUTXOs()).toStrictEqual([expectedUTXOs[1]]);
         mempool.setSpent(new COutpoint({ txid: tx.txid, n: 1 }));
+        expect(mempool.getUTXOs()).toHaveLength(0);
+
+        [0, 1].forEach((n) =>
+            mempool.removeOutpointStatus(
+                new COutpoint({ txid: tx.txid, n }),
+                OutpointState.SPENT
+            )
+        );
+        mempool.addOutpointStatus(
+            new COutpoint({ txid: tx.txid, n: 1 }),
+            OutpointState.LOCKED
+        );
+        // Filter should remove any LOCKED UTXOs
         expect(
-            mempool.getUTXOs({
-                filter: OutpointState.P2PKH,
-            })
-        ).toHaveLength(0);
+            mempool.getUTXOs({ filter: OutpointState.LOCKED })
+        ).toStrictEqual([expectedUTXOs[0]]);
+        // Requirement should only return LOCKED UTXOs
+        expect(
+            mempool.getUTXOs({ requirement: OutpointState.LOCKED })
+        ).toStrictEqual([expectedUTXOs[1]]);
     });
     it('gets correct balance', () => {
         expect(mempool.getBalance(OutpointState.P2PKH)).toBe(4992400 + 5000000);
