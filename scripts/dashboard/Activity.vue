@@ -5,7 +5,7 @@ import { wallet } from '../wallet.js';
 import { COIN, cChainParams } from '../chain_params.js';
 import { translation } from '../i18n.js';
 import { Database } from '../database.js';
-import { HistoricalTx, HistoricalTxType } from '../mempool';
+import { HistoricalTx, HistoricalTxType } from '../historical_tx.js';
 import { getNameOrAddress } from '../contacts-book.js';
 import { getEventEmitter } from '../event_bus';
 
