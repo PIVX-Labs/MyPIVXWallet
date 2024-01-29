@@ -1034,6 +1034,7 @@ export class Wallet {
 
         const value =
             transaction.shieldData[0]?.value || transaction.vout[0].value;
+        console.time('shield_tx');
         const { hex } = await this.#shield.createTransaction({
             address:
                 transaction.shieldData[0]?.address ||
@@ -1045,6 +1046,7 @@ export class Wallet {
             utxos: this.#getUTXOsForShield(),
             transparentChangeAddress: this.getNewAddress(1)[0],
         });
+        console.timeEnd('shield_tx');
         clearInterval(periodicFunction);
         getEventEmitter().emit('shield-transaction-creation-update', 0.0, true);
         return transaction.fromHex(hex);
