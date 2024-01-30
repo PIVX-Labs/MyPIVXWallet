@@ -6,6 +6,7 @@ import { confirmPopup, createAlert } from './misc.js';
 import { getNetwork } from './network.js';
 import { Transaction } from './transaction.js';
 import { COIN, cChainParams } from './chain_params.js';
+import { hexToBytes } from './utils';
 
 /**
  * @type{TransportWebUSB}
@@ -156,11 +157,14 @@ export async function ledgerSignTransaction(wallet, transaction) {
 
     const associatedKeysets = [];
     const inputs = [];
+    const isColdStake = [];
     for (const input of transaction.vin) {
         const { hex } = await getNetwork().getTxInfo(input.outpoint.txid);
+        const { type } = wallet.getAddressesFromScript(input.scriptSig);
         inputs.push([cHardwareWallet.splitTransaction(hex), input.outpoint.n]);
         // ScriptSig is the script at this point, since it's not signed
         associatedKeysets.push(wallet.getPath(input.scriptSig));
+        isColdStake.push(type === 'p2cs');
     }
     const outputScriptHex = cHardwareWallet
         .serializeTransactionOutputs(ledgerTx)
@@ -174,10 +178,25 @@ export async function ledgerSignTransaction(wallet, transaction) {
             outputScriptHex,
         }),
     });
+
     const signedTx = Transaction.fromHex(hex);
     // Update vin with signatures
     transaction.vin = signedTx.vin;
-    return signedTx;
+    for (let i = 0; i < transaction.vin.length; i++) {
+        const input = transaction.vin[i];
+        // if it's a cold stake tx we need to add OP_FALSE
+        if (isColdStake[i]) {
+            const bytes = hexToBytes(input.scriptSig);
+            const sigLength = bytes[0];
+            input.scriptSig = bytesToHex([
+                bytes[0],
+                ...bytes.splice(1, sigLength),
+                OP['FALSE'],
+                ...bytes.splice(sigLength + 1),
+            ]);
+        }
+    }
+    return transaction;
 }
 
 function createTxConfirmation(outputs) {
