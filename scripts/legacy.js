@@ -30,6 +30,7 @@ export async function createAndSendTransaction({
     delegateChange = false,
     changeDelegationAddress = null,
     isProposal = false,
+    changeAddress = '',
 }) {
     const tx = wallet.createTransaction(address, amount, {
         isDelegation,
@@ -37,6 +38,7 @@ export async function createAndSendTransaction({
         delegateChange,
         changeDelegationAddress,
         isProposal,
+        changeAddress,
     });
     if (!wallet.isHardwareWallet()) await wallet.sign(tx);
     else {
@@ -72,7 +74,10 @@ export async function undelegateGUI() {
     if (!validateAmount(nAmount)) return;
 
     // Generate a new address to undelegate towards
-    const [address] = wallet.getNewAddress(1);
+
+    const [address] = await getNewAddress({
+        verify: wallet.isHardwareWallet(),
+    });
 
     // Perform the TX
     const cTxRes = await createAndSendTransaction({
@@ -82,6 +87,7 @@ export async function undelegateGUI() {
         useDelegatedInputs: true,
         delegateChange: !wallet.isHardwareWallet(),
         changeDelegationAddress: await wallet.getColdStakingAddress(),
+        changeAddress: address,
     });
 
     if (!cTxRes.ok && cTxRes.err === 'No change addr') {
