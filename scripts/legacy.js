@@ -107,6 +107,9 @@ export async function undelegateGUI() {
  * @deprecated use the new wallet method instead
  */
 export async function delegateGUI() {
+    if (wallet.isHardwareWallet()) {
+        return createAlert('warning', ALERTS.STAKING_LEDGER_NO_SUPPORT);
+    }
     // Ensure the wallet is unlocked
     if (
         wallet.isViewOnly() &&
