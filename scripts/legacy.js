@@ -54,18 +54,16 @@ export async function createAndSendTransaction({
  * @deprecated use the new wallet method instead
  */
 export async function undelegateGUI() {
-    if (wallet.isHardwareWallet()) {
-        return createAlert('warning', ALERTS.STAKING_LEDGER_NO_SUPPORT, 6000);
-    }
-
     // Ensure the wallet is unlocked
-    if (
-        wallet.isViewOnly() &&
-        !(await restoreWallet(
-            `${translation.walletUnlockUnstake} ${cChainParams.current.TICKER}!`
-        ))
-    )
-        return;
+    if (!wallet.isHardwareWallet()) {
+        if (
+            wallet.isViewOnly() &&
+            !(await restoreWallet(
+                `${translation.walletUnlockUnstake} ${cChainParams.current.TICKER}!`
+            ))
+        )
+            return;
+    }
 
     // Verify the amount
     const nAmount = Math.round(
