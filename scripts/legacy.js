@@ -80,7 +80,7 @@ export async function undelegateGUI() {
         amount: nAmount,
         isDelegation: false,
         useDelegatedInputs: true,
-        delegateChange: true,
+        delegateChange: !wallet.isHardwareWallet(),
         changeDelegationAddress: await wallet.getColdStakingAddress(),
     });
 
