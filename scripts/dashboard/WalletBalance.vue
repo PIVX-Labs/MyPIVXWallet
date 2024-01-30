@@ -361,8 +361,9 @@ function reload() {
                 {{ transparentSyncing ? syncTStr : syncSStr }}
             </div>
         </center>
-        <center><!-- v-if="isCreatingTx" -->
+        <center>
             <div
+                v-if="isCreatingTx"
                 style="
                 display:flex;
                     font-size: 15px;
