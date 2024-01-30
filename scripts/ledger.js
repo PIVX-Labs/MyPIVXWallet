@@ -6,7 +6,7 @@ import { confirmPopup, createAlert } from './misc.js';
 import { getNetwork } from './network.js';
 import { Transaction } from './transaction.js';
 import { COIN, cChainParams } from './chain_params.js';
-import { hexToBytes } from './utils';
+import { hexToBytes } from './utils.js';
 
 /**
  * @type{TransportWebUSB}
