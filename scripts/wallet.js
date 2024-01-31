@@ -3,7 +3,7 @@ import { decrypt } from './aes-gcm.js';
 import { parseWIF } from './encoding.js';
 import { beforeUnloadListener } from './global.js';
 import { ExplorerNetwork, getNetwork } from './network.js';
-import { MAX_ACCOUNT_GAP } from './chain_params.js';
+import { MAX_ACCOUNT_GAP, SHIELD_BATCH_SYNC_SIZE } from './chain_params.js';
 import { HistoricalTx, HistoricalTxType } from './mempool.js';
 import { Transaction } from './transaction.js';
 import { confirmPopup, createAlert } from './misc.js';
@@ -759,7 +759,7 @@ export class Wallet {
             const blockHeights = (await cNet.getShieldBlockList()).filter(
                 (b) => b > this.#shield.getLastSyncedBlock()
             );
-            const batchSize = Number.parseInt(prompt('Insert batch size', '8'));
+            const batchSize = SHIELD_BATCH_SYNC_SIZE;
             console.time('sync_start');
             let handled = 0;
             const blocks = [];
