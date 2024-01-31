@@ -191,9 +191,9 @@ export async function ledgerSignTransaction(wallet, transaction) {
             const sigLength = bytes[0];
             input.scriptSig = bytesToHex([
                 bytes[0],
-                ...bytes.splice(1, sigLength),
+                ...bytes.slice(1, sigLength + 1),
                 OP['FALSE'],
-                ...bytes.splice(sigLength + 1),
+                ...bytes.slice(sigLength + 1),
             ]);
         }
     }

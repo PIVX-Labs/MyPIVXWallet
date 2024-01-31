@@ -31,6 +31,7 @@ export async function createAndSendTransaction({
     changeDelegationAddress = null,
     isProposal = false,
     changeAddress = '',
+    delegationOwnerAddress,
 }) {
     const tx = wallet.createTransaction(address, amount, {
         isDelegation,
@@ -39,6 +40,7 @@ export async function createAndSendTransaction({
         changeDelegationAddress,
         isProposal,
         changeAddress,
+        returnAddress: delegationOwnerAddress,
     });
     if (!wallet.isHardwareWallet()) await wallet.sign(tx);
     else {

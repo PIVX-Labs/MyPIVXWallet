@@ -667,6 +667,7 @@ export class Wallet {
             changeDelegationAddress = null,
             isProposal = false,
             changeAddress = '',
+            returnAddress = '',
         } = {}
     ) {
         const balance = useDelegatedInputs
@@ -710,7 +711,7 @@ export class Wallet {
 
         // Add primary output
         if (isDelegation) {
-            const [returnAddress] = this.getNewAddress(1);
+            if (!returnAddress) [returnAddress] = this.getNewAddress(1);
             transactionBuilder.addColdStakeOutput({
                 address: returnAddress,
                 addressColdStake: address,
