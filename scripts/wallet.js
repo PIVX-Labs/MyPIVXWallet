@@ -950,9 +950,14 @@ export class Wallet {
             isProposal = false,
         } = {}
     ) {
-        const balance = useDelegatedInputs
-            ? mempool.coldBalance
-            : mempool.balance;
+        let balance;
+        if (useDelegatedInputs) {
+            balance = mempool.coldBalance;
+        } else if (useShieldInputs) {
+            balance = this.#shield.getBalance();
+        } else {
+            balance = mempool.balance;
+        }
         if (balance < value) {
             throw new Error('Not enough balance');
         }
