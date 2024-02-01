@@ -33,12 +33,9 @@ self.addEventListener('fetch', async (event) => {
 
             if (cachedResponse) {
                 console.log('Found match!');
-                // If we found a match in the cache, return it, but also
-                // update the entry in the cache in the background.
                 return cachedResponse;
             }
             console.log('Fail :(!');
-            console.log(event.request);
             // If we didn't find a match in the cache, use the network.
             const response = await fetch(event.request);
             await cache.put(event.request, response.clone());
