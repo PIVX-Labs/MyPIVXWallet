@@ -13,3 +13,36 @@ self.addEventListener('activate', (_event) => {
     // Tell the active service worker to take control of the page immediately.
     self.clients.claim();
 });
+
+self.addEventListener('fetch', async (event) => {
+    const cacheRegexp = /sapling-(spend|output)\.params/;
+
+    if (!cacheRegexp.test(event.request.url)) {
+        return;
+    }
+    // Let the browser do its default thing
+    // for non-GET requests.
+    if (event.request.method !== 'GET') return;
+
+    event.respondWith(
+        (async () => {
+            console.log(`Handling request ${event.request}`);
+            // Try to get the response from a cache.
+            const cache = await caches.open('sapling-params-v1');
+            const cachedResponse = await cache.match(event.request);
+
+            if (cachedResponse) {
+                console.log('Found match!');
+                // If we found a match in the cache, return it, but also
+                // update the entry in the cache in the background.
+                return cachedResponse;
+            }
+            console.log('Fail :(!');
+            console.log(event.request);
+            // If we didn't find a match in the cache, use the network.
+            const response = await fetch(event.request);
+            await cache.put(event.request, response.clone());
+            return response;
+        })()
+    );
+});
