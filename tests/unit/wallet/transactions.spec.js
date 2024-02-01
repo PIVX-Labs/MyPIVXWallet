@@ -1,5 +1,5 @@
-import { Wallet } from '../../scripts/wallet.js';
-import { getLegacyMainnet } from './test_utils';
+import { Wallet } from '../../../scripts/wallet.js';
+import { getLegacyMainnet } from '../test_utils';
 import { describe, it, vi, afterAll, expect } from 'vitest';
 import {
     COutpoint,
@@ -7,47 +7,13 @@ import {
     CTxOut,
     UTXO,
     Transaction,
-} from '../../scripts/transaction.js';
-import { mempool } from '../../scripts/global';
-import { hexToBytes } from '../../scripts/utils';
+} from '../../../scripts/transaction.js';
+import { mempool } from '../../../scripts/global';
+import { hexToBytes } from '../../../scripts/utils';
 
-vi.mock('../../scripts/global.js', (g) => {
-    const Mempool = vi.fn();
+vi.mock('../../../scripts/global.js');
+vi.mock('../../../scripts/network.js');
 
-    Mempool.prototype.reset = vi.fn();
-    Mempool.prototype.balance = 0.1 * 10 ** 8;
-    Mempool.prototype.coldBalance = 0;
-    Mempool.prototype.isSpent = vi.fn(() => false);
-    Mempool.prototype.addToOrderedTxMap = vi.fn();
-    Mempool.prototype.setSpent = vi.fn();
-    Mempool.prototype.updateMempool = vi.fn();
-    Mempool.prototype.setBalance = vi.fn();
-    Mempool.prototype.getUTXOs = vi.fn(() => [
-        new UTXO({
-            outpoint: new COutpoint({
-                txid: 'f8f968d80ac382a7b64591cc166489f66b7c4422f95fbd89f946a5041d285d7c',
-                n: 1,
-            }),
-            script: '76a914f49b25384b79685227be5418f779b98a6be4c73888ac',
-            value: 0.1 * 10 ** 8,
-        }),
-    ]);
-    return {
-        mempool: new Mempool(),
-    };
-});
-
-vi.mock('../../scripts/network.js', () => {
-    return {
-        getNetwork: vi.fn(() => {
-            return {
-                cachedBlockCount: 1504903,
-                reset: vi.fn(),
-                setWallet: vi.fn(),
-            };
-        }),
-    };
-});
 describe('Wallet transaction tests', () => {
     it('Creates a transaction correctly', async () => {
         const wallet = new Wallet(0, false);
@@ -170,6 +136,10 @@ describe('Wallet transaction tests', () => {
                 value: 9992400, // 0.1 PIV - fee
             })
         );
+    });
+
+    it('creates a t->s tx correctly', async () => {
+        const wallet = new Wallet(0, false);
     });
 
     it('throws when balance is insufficient', () => {
