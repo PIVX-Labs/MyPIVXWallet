@@ -972,29 +972,28 @@ export class Wallet {
                 : UTXO_WALLET_STATE.SPENDABLE;
             const utxos = mempool.getUTXOs({ filter, target: value });
             transactionBuilder.addUTXOs(utxos);
-        }
+            const fee = transactionBuilder.getFee();
+            const changeValue = transactionBuilder.valueIn - value - fee;
 
-        const fee = transactionBuilder.getFee();
-        const changeValue = transactionBuilder.valueIn - value - fee;
-
-        // Add change output
-        if (changeValue > 0) {
-            const [changeAddress] = this.getNewAddress(1);
-            if (delegateChange && changeValue > 1.01 * COIN) {
-                transactionBuilder.addColdStakeOutput({
-                    address: changeAddress,
-                    value: changeValue,
-                    addressColdStake: changeDelegationAddress,
-                });
+            // Add change output
+            if (changeValue > 0) {
+                const [changeAddress] = this.getNewAddress(1);
+                if (delegateChange && changeValue > 1.01 * COIN) {
+                    transactionBuilder.addColdStakeOutput({
+                        address: changeAddress,
+                        value: changeValue,
+                        addressColdStake: changeDelegationAddress,
+                    });
+                } else {
+                    transactionBuilder.addOutput({
+                        address: changeAddress,
+                        value: changeValue,
+                    });
+                }
             } else {
-                transactionBuilder.addOutput({
-                    address: changeAddress,
-                    value: changeValue,
-                });
+                // We're sending alot! So we deduct the fee from the send amount. There's not enough change to pay it with!
+                value -= fee;
             }
-        } else {
-            // We're sending alot! So we deduct the fee from the send amount. There's not enough change to pay it with!
-            value -= fee;
         }
 
         // Add primary output
