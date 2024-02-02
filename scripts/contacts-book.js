@@ -397,7 +397,8 @@ function renderAddress(strAddress) {
         doms.domModalQR.hidden = true;
     }
     doms.domModalQrLabel.innerHTML =
-        strAddress +
+        // SanitzeHTML shouldn't be necessary, but let's keep it just in case
+        sanitizeHTML(strAddress) +
         `<i onclick="MPW.toClipboard('${strAddress}', this)" id="guiAddressCopy" class="fas fa-clipboard" style="cursor: pointer; width: 20px;"></i>`;
     document.getElementById('clipboard').value = strAddress;
 }
@@ -426,7 +427,7 @@ export async function guiRenderReceiveModal(
 
             // Update the QR Label (we'll show the address here for now, user can set Contact "Name" optionally later)
             doms.domModalQrLabel.innerHTML =
-                strXPub +
+                sanitizeHTML(strXPub) +
                 `<i onclick="MPW.toClipboard('${strXPub}', this)" id="guiAddressCopy" class="fas fa-clipboard" style="cursor: pointer; width: 20px;"></i>`;
 
             // We'll render a short informational text, alongside a QR below for Contact scanning
