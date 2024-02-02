@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 import { UTXO, COutpoint } from '../transaction.js';
 
 const Mempool = vi.fn();
