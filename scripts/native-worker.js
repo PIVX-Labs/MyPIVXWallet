@@ -15,14 +15,15 @@ self.addEventListener('activate', (_event) => {
 });
 
 self.addEventListener('fetch', async (event) => {
+    // Let the browser do its default thing
+    // for non-GET requests.
+    if (event.request.method !== 'GET') return;
+
     const cacheRegexp = /sapling-(spend|output)\.params/;
 
     if (!cacheRegexp.test(event.request.url)) {
         return;
     }
-    // Let the browser do its default thing
-    // for non-GET requests.
-    if (event.request.method !== 'GET') return;
 
     event.respondWith(
         (async () => {
