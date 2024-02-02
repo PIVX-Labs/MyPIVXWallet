@@ -729,7 +729,6 @@ export class Wallet {
             await mempool.loadFromDisk();
             await this.loadShieldFromDisk();
             await getNetwork().walletFullSync();
-            console.log(this.#shield);
             if (this.hasShield()) {
                 await this.#syncShield();
             }
@@ -760,7 +759,6 @@ export class Wallet {
                 (b) => b > this.#shield.getLastSyncedBlock()
             );
             const batchSize = SHIELD_BATCH_SYNC_SIZE;
-            console.time('sync_start');
             let handled = 0;
             const blocks = [];
             let syncing = false;
@@ -770,7 +768,6 @@ export class Wallet {
                     try {
                         block = await cNet.getBlock(blockHeights[i]);
                     } catch (e) {
-                        console.log(`block ${i} failed`);
                         throw e;
                     }
                     blocks[i] = block;
@@ -781,7 +778,6 @@ export class Wallet {
                         if (syncing) break;
                         syncing = true;
                         handled++;
-                        console.log(`Handling ${j}`);
                         await this.#shield.handleBlock(blocks[j]);
                         // Delete so we don't have to hold all blocks in memory
                         // until we finish syncing
@@ -801,7 +797,6 @@ export class Wallet {
                 blockHeights.length,
                 batchSize
             );
-            console.timeEnd('sync_start');
             getEventEmitter().emit('shield-sync-status-update', '', true);
         } catch (e) {
             console.error(e);
@@ -851,11 +846,6 @@ export class Wallet {
          * @type {ExplorerNetwork}
          */
         const cNet = getNetwork();
-        console.log(
-            'New block arrived! Syncing shield:',
-            this.#shield.getLastSyncedBlock() + 1,
-            cNet.cachedBlockCount
-        );
         // Don't ask for the exact last block that arrived,
         // since it takes around 1 minute for blockbook to make it API available
         for (
@@ -882,7 +872,6 @@ export class Wallet {
      * Save shield data on database
      */
     async saveShieldOnDisk() {
-        console.log('Saving shield data on disk!');
         const cDB = await Database.getInstance();
         const cAccount = await cDB.getAccount();
         // If the account has not been created yet (for example no encryption) return
@@ -907,7 +896,6 @@ export class Wallet {
         }
         this.#shield = await PIVXShield.load(cAccount.shieldData);
         getEventEmitter().emit('shield-loaded-from-disk');
-        console.log('Shield has been loaded from disk!');
         return;
     }
 
@@ -1038,7 +1026,6 @@ export class Wallet {
 
         const value =
             transaction.shieldData[0]?.value || transaction.vout[0].value;
-        console.time('shield_tx');
         const { hex } = await this.#shield.createTransaction({
             address:
                 transaction.shieldData[0]?.address ||
@@ -1050,7 +1037,6 @@ export class Wallet {
             utxos: this.#getUTXOsForShield(),
             transparentChangeAddress: this.getNewAddress(1)[0],
         });
-        console.timeEnd('shield_tx');
         clearInterval(periodicFunction);
         getEventEmitter().emit('shield-transaction-creation-update', 0.0, true);
         return transaction.fromHex(hex);
