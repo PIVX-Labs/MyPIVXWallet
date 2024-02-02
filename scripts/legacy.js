@@ -30,6 +30,8 @@ export async function createAndSendTransaction({
     delegateChange = false,
     changeDelegationAddress = null,
     isProposal = false,
+    changeAddress = '',
+    delegationOwnerAddress,
 }) {
     const tx = wallet.createTransaction(address, amount, {
         isDelegation,
@@ -37,6 +39,8 @@ export async function createAndSendTransaction({
         delegateChange,
         changeDelegationAddress,
         isProposal,
+        changeAddress,
+        returnAddress: delegationOwnerAddress,
     });
     if (!wallet.isHardwareWallet()) await wallet.sign(tx);
     else {
@@ -54,18 +58,16 @@ export async function createAndSendTransaction({
  * @deprecated use the new wallet method instead
  */
 export async function undelegateGUI() {
-    if (wallet.isHardwareWallet()) {
-        return createAlert('warning', ALERTS.STAKING_LEDGER_NO_SUPPORT, 6000);
-    }
-
     // Ensure the wallet is unlocked
-    if (
-        wallet.isViewOnly() &&
-        !(await restoreWallet(
-            `${translation.walletUnlockUnstake} ${cChainParams.current.TICKER}!`
-        ))
-    )
-        return;
+    if (!wallet.isHardwareWallet()) {
+        if (
+            wallet.isViewOnly() &&
+            !(await restoreWallet(
+                `${translation.walletUnlockUnstake} ${cChainParams.current.TICKER}!`
+            ))
+        )
+            return;
+    }
 
     // Verify the amount
     const nAmount = Math.round(
@@ -74,7 +76,10 @@ export async function undelegateGUI() {
     if (!validateAmount(nAmount)) return;
 
     // Generate a new address to undelegate towards
-    const [address] = wallet.getNewAddress(1);
+
+    const [address] = await getNewAddress({
+        verify: wallet.isHardwareWallet(),
+    });
 
     // Perform the TX
     const cTxRes = await createAndSendTransaction({
@@ -82,8 +87,9 @@ export async function undelegateGUI() {
         amount: nAmount,
         isDelegation: false,
         useDelegatedInputs: true,
-        delegateChange: true,
+        delegateChange: !wallet.isHardwareWallet(),
         changeDelegationAddress: await wallet.getColdStakingAddress(),
+        changeAddress: address,
     });
 
     if (!cTxRes.ok && cTxRes.err === 'No change addr') {
@@ -103,6 +109,9 @@ export async function undelegateGUI() {
  * @deprecated use the new wallet method instead
  */
 export async function delegateGUI() {
+    if (wallet.isHardwareWallet()) {
+        return createAlert('warning', ALERTS.STAKING_LEDGER_NO_SUPPORT);
+    }
     // Ensure the wallet is unlocked
     if (
         wallet.isViewOnly() &&
