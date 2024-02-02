@@ -26,16 +26,13 @@ self.addEventListener('fetch', async (event) => {
 
     event.respondWith(
         (async () => {
-            console.log(`Handling request ${event.request}`);
             // Try to get the response from a cache.
             const cache = await caches.open('sapling-params-v1');
             const cachedResponse = await cache.match(event.request);
 
-            if (cachedResponse) {
-                console.log('Found match!');
+            if (cachedResponse && cachedResponse.ok) {
                 return cachedResponse;
             }
-            console.log('Fail :(!');
             // If we didn't find a match in the cache, use the network.
             const response = await fetch(event.request);
             await cache.put(event.request, response.clone());
