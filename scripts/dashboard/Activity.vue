@@ -9,6 +9,7 @@ import { Database } from '../database.js';
 import { HistoricalTx, HistoricalTxType } from '../mempool';
 import { getNameOrAddress } from '../contacts-book.js';
 import { getEventEmitter } from '../event_bus';
+import TxDescription from './TxDescription.vue';
 
 const props = defineProps({
     title: String,
@@ -25,6 +26,9 @@ const rewardsText = computed(
 const rewardAmount = ref(0);
 const ticker = computed(() => cChainParams.current.TICKER);
 const explorerUrl = ref(getNetwork()?.strUrl);
+
+const showTxDescription = ref(false);
+const selectedTx = ref(null);
 const txMap = computed(() => {
     return {
         [HistoricalTxType.STAKE]: {
@@ -177,9 +181,9 @@ async function parseTXs(arrTXs) {
         if (cTx.type === HistoricalTxType.SENT) {
             fSendToSelf = true;
             // Check all addresses to find our own, caching them for performance
-            for (const strAddr of cTx.receivers) {
+            for (const { address } of cTx.receivers) {
                 // If a previous Tx checked this address, skip it, otherwise, check it against our own address(es)
-                if (!wallet.isOwnAddress(strAddr)) {
+                if (!wallet.isOwnAddress(address)) {
                     // External address, this is not a self-only Tx
                     fSendToSelf = false;
                 }
@@ -197,7 +201,10 @@ async function parseTXs(arrTXs) {
                 who = translation.activityShieldedAddress;
             } else {
                 const arrAddresses = cTx.receivers
-                    .map((addr) => [wallet.isOwnAddress(addr), addr])
+                    .map(({ address }) => [
+                        wallet.isOwnAddress(address),
+                        address,
+                    ])
                     .filter(([isOwnAddress, _]) => {
                         return cTx.type === HistoricalTxType.RECEIVED
                             ? isOwnAddress
@@ -227,6 +234,7 @@ async function parseTXs(arrTXs) {
             confirmed: fConfirmed,
             icon,
             colour,
+            tx: cTx,
         });
     }
 
@@ -259,11 +267,16 @@ getEventEmitter().on(
     (_str, done) => done && update()
 );
 onMounted(() => update());
-
 defineExpose({ update, reset, getTxCount });
 </script>
 
 <template>
+    <TxDescription
+        :show="showTxDescription"
+        :tx="selectedTx"
+        :displayDecimals="2"
+        @close="showTxDescription = false"
+    />
     <div>
         <center>
             <span class="dcWallet-activityLbl"
@@ -298,7 +311,15 @@ defineExpose({ update, reset, getTxCount });
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="tx in txs">
+                            <tr
+                                v-for="tx in txs"
+                                @click="
+                                    () => {
+                                        selectedTx = tx.tx;
+                                        showTxDescription = true;
+                                    }
+                                "
+                            >
                                 <td
                                     class="align-middle pr-10px"
                                     style="font-size: 12px"

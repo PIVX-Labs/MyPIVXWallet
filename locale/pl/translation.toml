@@ -215,6 +215,8 @@ chartImmatureBalance = "" # Immature balance
 useShieldInputs = "" # Use shield inputs
 newShieldAddress = "" # Get new shield address
 shieldAddress = "" # Shield address
+noInputs = "" # No inputs
+noOutputs = "" # No outputs
 
 [ALERTS]
 INTERNAL_ERROR = "Błąd wewnętrzny, spróbuj ponownie później" # Internal error, please try again later

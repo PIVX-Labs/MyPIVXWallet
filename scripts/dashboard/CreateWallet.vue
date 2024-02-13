@@ -66,7 +66,7 @@ async function generateWallet() {
         </div>
     </div>
     <Teleport to="body">
-        <modal :show="showModal" @close="showModal = false">
+        <Modal :show="showModal" @close="showModal = false">
             <template #body>
                 <p class="modal-label"></p>
                 <div class="auto-fit">
@@ -119,6 +119,6 @@ async function generateWallet() {
                     </button>
                 </center>
             </template>
-        </modal>
+        </Modal>
     </Teleport>
 </template>

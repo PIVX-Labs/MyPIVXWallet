@@ -239,6 +239,8 @@ unhandledException = "Unhandled exception."
 useShieldInputs = "Use shield inputs"
 newShieldAddress = "Get new shield address"
 shieldAddress = "Shield address"
+noInputs = "No inputs"
+noOutputs = "No outputs"
 
 [ALERTS]
 INTERNAL_ERROR = "Internal error, please try again later"
