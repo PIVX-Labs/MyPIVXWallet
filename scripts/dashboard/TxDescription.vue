@@ -4,28 +4,32 @@ import { translation } from '../i18n.js';
 import { watch, ref, toRefs, defineProps } from 'vue';
 import { getNetwork } from '../network';
 import { COIN, cChainParams } from '../chain_params';
-import { beautifyNumber } from '../misc';
 /** @type {{show: boolean, tx: import('../mempool.js').HistoricalTx, wallet: import('../wallet.js').Wallet}} */
 const props = defineProps({
     show: Boolean,
     tx: Object,
-    wallet: Object,
     displayDecimals: Number,
 });
-const { show, tx, wallet, displayDecimals } = toRefs(props);
+const { show, tx, displayDecimals } = toRefs(props);
 const emit = defineEmits(['close']);
 const inputs = ref([]);
 watch(tx, async () => {
     inputs.value = [];
-    for (const input of tx.value.senders) {
-        const inputTx = await getNetwork().getTxInfo(input.txid);
-        const txout = inputTx.vout[input.n];
+    inputs.value = (
+        await Promise.all(
+            tx.value.senders.map(async (i) => [
+                await getNetwork().getTxInfo(i.txid),
+                i.n,
+            ])
+        )
+    ).map(([inputTx, n]) => {
+        const txout = inputTx.vout[n];
 
-        inputs.value.push({
+        return {
             address: txout.addresses[0],
             amount: txout.value,
-        });
-    }
+        };
+    });
 });
 function satsToStr(sats) {
     console.log(displayDecimals);
