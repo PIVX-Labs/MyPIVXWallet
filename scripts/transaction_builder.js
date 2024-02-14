@@ -112,7 +112,7 @@ export class TransactionBuilder {
         // upon signing.
         // This is similar to how we temporarely use the UTXO script instead
         // of the scriptSig because we don't know how to sign it
-        this.#transaction.shieldData.push({ address, value });
+        this.#transaction.shieldOutput.push({ address, value });
         return this;
     }
 

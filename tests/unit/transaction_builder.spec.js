@@ -77,7 +77,7 @@ describe('Transaction builder tests', () => {
                 ],
                 blockTime: -1,
                 lockTime: 0,
-                shieldData: [],
+                shieldOutput: [],
             })
         );
         // Subsequent builds must return null
@@ -95,7 +95,7 @@ describe('Transaction builder tests', () => {
         expect(tx).toStrictEqual(
             new Transaction({
                 version: 3,
-                shieldData: [
+                shieldOutput: [
                     {
                         address:
                             'ps1kw7d704cpvy4f5e5usk3xhykytxnjfk872fpty7ct6znvmdepsxq4s90p9a3arg0qg8tzjk7vkn',
@@ -147,7 +147,7 @@ describe('Transaction builder tests', () => {
         expect(tx).toStrictEqual(
             new Transaction({
                 version: 3,
-                shieldData: [
+                shieldOutput: [
                     {
                         address:
                             'ps1kw7d704cpvy4f5e5usk3xhykytxnjfk872fpty7ct6znvmdepsxq4s90p9a3arg0qg8tzjk7vkn',

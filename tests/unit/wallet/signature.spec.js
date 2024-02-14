@@ -76,7 +76,7 @@ describe('Wallet signature tests', () => {
             blockHeight: -1,
             vin: [],
             vout: [],
-            shieldData: [
+            shieldOutput: [
                 {
                     value: 100000,
                     address: 'ptest1234567',
@@ -118,7 +118,7 @@ describe('Wallet signature tests', () => {
                     value: 4992400,
                 }),
             ],
-            shieldData: [],
+            shieldOutput: [],
         });
         const txRef = await wallet.sign(tx);
         expect(txRef).toBe(tx);
@@ -158,7 +158,7 @@ describe('Wallet signature tests', () => {
                 }),
             ],
             vout: [],
-            shieldData: [
+            shieldOutput: [
                 {
                     value: 100000,
                     address: 'ptest1234567',

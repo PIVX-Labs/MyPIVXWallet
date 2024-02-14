@@ -198,7 +198,7 @@ describe('Wallet transaction tests', () => {
                         value: 4992400,
                     }),
                 ],
-                shieldData: [
+                shieldOutput: [
                     {
                         address: addr,
                         value: 0.05 * 10 ** 8,
@@ -237,7 +237,7 @@ describe('Wallet transaction tests', () => {
         expect(tx).toStrictEqual(
             new Transaction({
                 version: 3,
-                shieldData: [
+                shieldOutput: [
                     {
                         address: addr,
                         value: 0.05 * 10 ** 8,
