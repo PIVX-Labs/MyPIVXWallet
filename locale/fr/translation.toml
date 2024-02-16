@@ -210,6 +210,11 @@ contestedProposalsTitle = "Propositions contestées" # Contested Proposals
 accountDeleted = "" # Your account has been successfully deleted!
 activityReceivedWith = "Reçu avec {s}" # Received with {s}
 chartImmatureBalance = "" # Immature balance
+syncLoadingSaplingProver = "" # Loading Sapling Prover
+syncShieldProgress = "" # Loading shielded blocks {current} of {total}
+useShieldInputs = "" # Use shield inputs
+newShieldAddress = "" # Get new shield address
+shieldAddress = "" # Shield address
 
 [ALERTS]
 INTERNAL_ERROR = "Erreur interne, veuillez réessayer plus tard" # Internal error, please try again later
@@ -320,3 +325,4 @@ WALLET_LOCKED = "" # Wallet successfully Locked!
 WALLET_UNLOCKED = "" # Wallet successfully Unlocked!
 CONFIRM_LEDGER_TX = "" # Confirm this transaction matches the one on your {hardwareWallet}
 CONFIRM_LEDGER_TX_OUT = "" # You will send {value} {ticker} to <div class="inline-address">{address}</div>
+MISSING_FUNDS = "" # Balance is too small! Missing {sats} sats!

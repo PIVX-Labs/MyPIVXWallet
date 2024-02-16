@@ -1,5 +1,3 @@
-//import { getNetwork } from './network.js';
-import { getStakingBalance } from './global.js';
 import { getEventEmitter } from './event_bus.js';
 import { Transaction, COutpoint, UTXO } from './transaction.js';
 

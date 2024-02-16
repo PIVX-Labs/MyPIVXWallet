@@ -13,6 +13,7 @@
         "BIP44_TYPE_LEDGER": 77,
         "PROTOCOL_VERSION": 70926,
         "MASTERNODE_PORT": 51472,
+        "SHIELD_PREFIX": "ps",
         "Explorers": [
             { "name": "rockdev", "url": "https://explorer.rockdev.org" },
             { "name": "zkBitcoin", "url": "https://zkbitcoin.com" },
@@ -44,6 +45,7 @@
         "BIP44_TYPE_LEDGER": 1,
         "PROTOCOL_VERSION": 70926,
         "MASTERNODE_PORT": 51474,
+        "SHIELD_PREFIX": "ptestsapling",
         "Explorers": [
             { "name": "rockdev", "url": "https://testnet.rockdev.org" },
             { "name": "duddino", "url": "https://testnet.duddino.com" }

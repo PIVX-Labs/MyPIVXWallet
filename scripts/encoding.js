@@ -11,6 +11,7 @@ import {
 } from './utils.js';
 
 import bs58 from 'bs58';
+import { bech32 } from 'bech32';
 
 /**
  * Compress an uncompressed Public Key in byte form
@@ -156,6 +157,23 @@ export function verifyPubkey(
         return true;
     } catch (e) {
         // Definitely not valid (likely a bad base58 string)
+        return false;
+    }
+}
+
+/**
+ * Verify that a string has been encoded correctly in bech32
+ * @param {String} encodedString - the encoded string we want to validate
+ * @param {String} expectedPrefix - expected bech32 encoding prefix
+ */
+export function verifyBech32(address, expectedPrefix) {
+    try {
+        const { prefix } = bech32.decode(address);
+        if (prefix !== expectedPrefix) {
+            return false;
+        }
+        return true;
+    } catch (e) {
         return false;
     }
 }

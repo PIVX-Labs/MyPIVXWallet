@@ -8,7 +8,7 @@ import {
     createAlert,
     createQR,
     getImageFile,
-    isStandardAddress,
+    isValidPIVXAddress,
     isXPub,
     sanitizeHTML,
 } from './misc.js';
@@ -325,55 +325,48 @@ export async function setAccountContactName(account, name) {
     await cDB.updateAccount(account);
 }
 
-/**
- * Render the Receive Modal with either our Contact or Address
- * @param {boolean} fContact - `true` to render our Contact, `false` to render our current Address
- */
-export async function guiRenderReceiveModal(
-    cReceiveType = RECEIVE_TYPES.CONTACT
-) {
-    if (cReceiveType === RECEIVE_TYPES.CONTACT) {
-        // Fetch Contact info from the current Account
-        const cDB = await Database.getInstance();
-        const cAccount = await cDB.getAccount();
+async function renderContactModal() {
+    // Fetch Contact info from the current Account
+    const cDB = await Database.getInstance();
+    const cAccount = await cDB.getAccount();
 
-        // Check that a local Contact name was set
-        if (cAccount?.name) {
-            // Derive our Public Key
-            let strPubkey = '';
+    // Check that a local Contact name was set
+    if (cAccount?.name) {
+        // Derive our Public Key
+        let strPubkey = '';
 
-            // If HD: use xpub, otherwise we'll fallback to our single address
-            strPubkey = await wallet.getKeyToExport();
+        // If HD: use xpub, otherwise we'll fallback to our single address
+        strPubkey = await wallet.getKeyToExport();
 
-            // Construct the Contact Share URI
-            const strContactURI = await localContactToURI(cAccount, strPubkey);
+        // Construct the Contact Share URI
+        const strContactURI = await localContactToURI(cAccount, strPubkey);
 
-            // Render Copy Button
-            doms.domModalQrLabel.innerHTML = `${translation.shareContactURL}<i onclick="MPW.localContactToClipboard(event)" id="guiAddressCopy" class="fas fa-clipboard" style="cursor: pointer; width: 20px;"></i>`;
+        // Render Copy Button
+        doms.domModalQrLabel.innerHTML = `${translation.shareContactURL}<i onclick="MPW.localContactToClipboard(event)" id="guiAddressCopy" class="fas fa-clipboard" style="cursor: pointer; width: 20px;"></i>`;
 
-            // We'll render a short informational text, alongside a QR below for Contact scanning
-            doms.domModalQR.innerHTML = `
+        // We'll render a short informational text, alongside a QR below for Contact scanning
+        doms.domModalQR.innerHTML = `
                 <p>${translation.onlyShareContactPrivately}</p>
                 <div id="receiveModalEmbeddedQR"></div>
             `;
-            const domQR = document.getElementById('receiveModalEmbeddedQR');
-            createQR(strContactURI, domQR, 10);
-            domQR.firstChild.style.width = '100%';
-            domQR.firstChild.style.height = 'auto';
-            domQR.firstChild.classList.add('no-antialias');
-            document.getElementById('clipboard').value = strPubkey;
-        } else {
-            // Get our current wallet address
-            const strAddress = await wallet.getCurrentAddress();
+        const domQR = document.getElementById('receiveModalEmbeddedQR');
+        createQR(strContactURI, domQR, 10);
+        domQR.firstChild.style.width = '100%';
+        domQR.firstChild.style.height = 'auto';
+        domQR.firstChild.classList.add('no-antialias');
+        document.getElementById('clipboard').value = strPubkey;
+    } else {
+        // Get our current wallet address
+        const strAddress = wallet.getCurrentAddress();
 
-            // Update the QR Label (we'll show the address here for now, user can set Contact "Name" optionally later)
-            doms.domModalQrLabel.innerHTML =
-                strAddress +
-                `<i onclick="MPW.toClipboard('${strAddress}', this)" id="guiAddressCopy" class="fas fa-clipboard" style="cursor: pointer; width: 20px;"></i>`;
+        // Update the QR Label (we'll show the address here for now, user can set Contact "Name" optionally later)
+        doms.domModalQrLabel.innerHTML =
+            strAddress +
+            `<i onclick="MPW.toClipboard('${strAddress}', this)" id="guiAddressCopy" class="fas fa-clipboard" style="cursor: pointer; width: 20px;"></i>`;
 
-            // Update the QR section
-            if (await hasEncryptedWallet()) {
-                doms.domModalQR.innerHTML = `
+        // Update the QR section
+        if (await hasEncryptedWallet()) {
+            doms.domModalQR.innerHTML = `
                     <center>
                         <b>${translation.setupYourContact}</b>
                         <p>${translation.receiveWithContact}</p>
@@ -381,8 +374,8 @@ export async function guiRenderReceiveModal(
                         <button onclick="MPW.guiSetAccountName('setContactName')">${translation.createContact}</button>
                     </center>
                 `;
-            } else {
-                doms.domModalQR.innerHTML = `
+        } else {
+            doms.domModalQR.innerHTML = `
                     <center>
                         <b>${translation.secureYourWallet}</b>
                         <p>${tr(translation.encryptFirstForContacts, [
@@ -390,41 +383,69 @@ export async function guiRenderReceiveModal(
                         ])}</p>
                     </center>
                 `;
-            }
         }
-    } else if (cReceiveType === RECEIVE_TYPES.ADDRESS) {
-        // Get our current wallet address
-        const strAddress = await wallet.getCurrentAddress();
+    }
+}
+
+function renderAddress(strAddress) {
+    try {
         createQR('pivx:' + strAddress, doms.domModalQR);
-        doms.domModalQrLabel.innerHTML =
-            strAddress +
-            `<i onclick="MPW.toClipboard('${strAddress}', this)" id="guiAddressCopy" class="fas fa-clipboard" style="cursor: pointer; width: 20px;"></i>`;
         doms.domModalQR.firstChild.style.width = '100%';
         doms.domModalQR.firstChild.style.height = 'auto';
         doms.domModalQR.firstChild.classList.add('no-antialias');
-        document.getElementById('clipboard').value = strAddress;
-    } else {
-        // Get our current wallet XPub
-        const strXPub = await wallet.getXPub();
+    } catch (e) {
+        doms.domModalQR.hidden = true;
+    }
+    doms.domModalQrLabel.innerHTML =
+        // SanitzeHTML shouldn't be necessary, but let's keep it just in case
+        sanitizeHTML(strAddress) +
+        `<i onclick="MPW.toClipboard('${strAddress}', this)" id="guiAddressCopy" class="fas fa-clipboard" style="cursor: pointer; width: 20px;"></i>`;
+    document.getElementById('clipboard').value = strAddress;
+}
 
-        // Update the QR Label (we'll show the address here for now, user can set Contact "Name" optionally later)
-        doms.domModalQrLabel.innerHTML =
-            strXPub +
-            `<i onclick="MPW.toClipboard('${strXPub}', this)" id="guiAddressCopy" class="fas fa-clipboard" style="cursor: pointer; width: 20px;"></i>`;
+/**
+ * Render the Receive Modal with either our Contact or Address
+ * @param {boolean} fContact - `true` to render our Contact, `false` to render our current Address
+ */
+export async function guiRenderReceiveModal(
+    cReceiveType = RECEIVE_TYPES.CONTACT
+) {
+    doms.domModalQR.hidden = false;
+    switch (cReceiveType) {
+        case RECEIVE_TYPES.CONTACT:
+            await renderContactModal();
+            break;
+        case RECEIVE_TYPES.ADDRESS:
+            renderAddress(wallet.getCurrentAddress());
+            break;
+        case RECEIVE_TYPES.SHIELD:
+            renderAddress(await wallet.getNewShieldAddress());
+            break;
+        case RECEIVE_TYPES.XPUB: {
+            // Get our current wallet XPub
+            const strXPub = wallet.getXPub();
 
-        // We'll render a short informational text, alongside a QR below for Contact scanning
-        doms.domModalQR.innerHTML = `
+            // Update the QR Label (we'll show the address here for now, user can set Contact "Name" optionally later)
+            doms.domModalQrLabel.innerHTML =
+                sanitizeHTML(strXPub) +
+                `<i onclick="MPW.toClipboard('${strXPub}', this)" id="guiAddressCopy" class="fas fa-clipboard" style="cursor: pointer; width: 20px;"></i>`;
+
+            // We'll render a short informational text, alongside a QR below for Contact scanning
+            doms.domModalQR.innerHTML = `
             <p>${translation.onlyShareContactPrivately}</p>
             <div id="receiveModalEmbeddedQR"></div>
         `;
 
-        // Update the QR section
-        const domQR = document.getElementById('receiveModalEmbeddedQR');
-        createQR(strXPub, domQR, 10);
-        domQR.firstChild.style.width = '100%';
-        domQR.firstChild.style.height = 'auto';
-        domQR.firstChild.classList.add('no-antialias');
-        document.getElementById('clipboard').value = strXPub;
+            // Update the QR section
+            const domQR = document.getElementById('receiveModalEmbeddedQR');
+            createQR(strXPub, domQR, 10);
+            domQR.firstChild.style.width = '100%';
+            domQR.firstChild.style.height = 'auto';
+            domQR.firstChild.classList.add('no-antialias');
+            document.getElementById('clipboard').value = strXPub;
+
+            break;
+        }
     }
 }
 
@@ -441,7 +462,8 @@ export async function guiRenderCurrentReceiveModal() {
 export const RECEIVE_TYPES = {
     CONTACT: 0,
     ADDRESS: 1,
-    XPUB: 2,
+    SHIELD: 2,
+    XPUB: 3,
 };
 
 /** The current Receive Type used by Receive UIs */
@@ -453,14 +475,23 @@ export let cReceiveType = RECEIVE_TYPES.CONTACT;
  */
 export async function guiToggleReceiveType(nForceType = null) {
     // Figure out which Types can be used with this wallet
-    const nTypeMax = wallet.isHD() ? 3 : 2;
+    const availableTypes = [RECEIVE_TYPES.CONTACT, RECEIVE_TYPES.ADDRESS];
+    if (wallet.hasShield()) {
+        availableTypes.push(RECEIVE_TYPES.SHIELD);
+    }
+
+    if (wallet.isHD()) {
+        availableTypes.push(RECEIVE_TYPES.XPUB);
+    }
 
     // Loop back to the first if we hit the end
     cReceiveType =
-        nForceType !== null ? nForceType : (cReceiveType + 1) % nTypeMax;
+        nForceType !== null
+            ? nForceType
+            : (cReceiveType + 1) % availableTypes.length;
 
     // Convert the *next* Type to text (also runs through i18n system)
-    const nNextType = (cReceiveType + 1) % nTypeMax;
+    const nNextType = (cReceiveType + 1) % availableTypes.length;
     let strNextType = '';
     switch (nNextType) {
         case RECEIVE_TYPES.CONTACT:
@@ -468,6 +499,9 @@ export async function guiToggleReceiveType(nForceType = null) {
             break;
         case RECEIVE_TYPES.ADDRESS:
             strNextType = translation.address;
+            break;
+        case RECEIVE_TYPES.SHIELD:
+            strNextType = translation.shieldAddress;
             break;
         case RECEIVE_TYPES.XPUB:
             strNextType = translation.xpub;
@@ -497,18 +531,17 @@ export async function guiAddContact() {
         return createAlert('warning', ALERTS.CONTACTS_NAME_TOO_LONG, 2500);
 
     // Verify the address
-    if (!isStandardAddress(strAddr) && !isXPub(strAddr))
+    if (!isValidPIVXAddress(strAddr))
         return createAlert(
             'warning',
             tr(ALERTS.INVALID_ADDRESS, [{ address: strAddr }]),
             3000
         );
-
     // Ensure we're not adding our own XPub
     if (isXPub(strAddr)) {
         if (wallet.isHD()) {
             // Compare the XPub against our own
-            const fOurs = strAddr === (await wallet.getXPub());
+            const fOurs = strAddr === wallet.getXPub();
             if (fOurs) {
                 createAlert(
                     'warning',
@@ -520,7 +553,7 @@ export async function guiAddContact() {
         }
     } else {
         // Ensure we're not adding (one of) our own address(es)
-        if (await wallet.isOwnAddress(strAddr)) {
+        if (wallet.isOwnAddress(strAddr)) {
             createAlert('warning', ALERTS.CONTACTS_CANNOT_ADD_YOURSELF, 3500);
             return false;
         }
@@ -589,7 +622,7 @@ export async function guiAddContactPrompt(
         return createAlert('warning', ALERTS.CONTACTS_NAME_TOO_LONG, 2500);
 
     // Verify the address
-    if (!isStandardAddress(strPubkey) && !isXPub(strPubkey))
+    if (!isValidPIVXAddress(strPubkey))
         return createAlert(
             'warning',
             tr(ALERTS.INVALID_ADDRESS, [{ address: strPubkey }]),
@@ -912,9 +945,7 @@ export async function getAddressColor(address) {
         // Yep, nice!
         return 'green';
     }
-
-    // Not a contact: dig deeper, is this a Standard address or XPub?
-    if (isStandardAddress(address) || isXPub(address)) {
+    if (isValidPIVXAddress(address)) {
         // Yep!
         return 'green';
     } else {

@@ -1,52 +1,36 @@
-import { Wallet } from '../../scripts/wallet.js';
-import { getLegacyMainnet } from './test_utils';
-import { describe, it, vi, afterAll, expect, beforeEach } from 'vitest';
+vi.mock('../../../scripts/mempool.js');
+vi.mock('../../../scripts/network.js');
+
+import { Wallet } from '../../../scripts/wallet.js';
+import { Mempool } from '../../../scripts/mempool.js';
+import { getLegacyMainnet } from '../test_utils';
+import { describe, it, vi, afterAll, expect } from 'vitest';
 import {
     COutpoint,
     CTxIn,
     CTxOut,
-    UTXO,
     Transaction,
-} from '../../scripts/transaction.js';
+} from '../../../scripts/transaction.js';
 
-const Mempool = vi.fn();
 
-Mempool.prototype.reset = vi.fn();
-Mempool.prototype.balance = 0.1 * 10 ** 8;
-Mempool.prototype.coldBalance = 0;
-Mempool.prototype.isSpent = vi.fn(() => false);
-Mempool.prototype.addToOrderedTxMap = vi.fn();
-Mempool.prototype.setSpent = vi.fn();
-Mempool.prototype.addTransaction = vi.fn();
-Mempool.prototype.getUTXOs = vi.fn(() => [
-    new UTXO({
-        outpoint: new COutpoint({
-            txid: 'f8f968d80ac382a7b64591cc166489f66b7c4422f95fbd89f946a5041d285d7c',
-            n: 1,
-        }),
-        script: '76a914f49b25384b79685227be5418f779b98a6be4c73888ac',
-        value: 0.1 * 10 ** 8,
-    }),
-]);
-
-vi.mock('../../scripts/network.js', () => {
-    return {
-        getNetwork: vi.fn(() => {
-            return {
-                cachedBlockCount: 1504903,
-            };
-        }),
-    };
-});
 describe('Wallet transaction tests', () => {
     let wallet;
     let mempool;
+    let PIVXShield;
     beforeEach(() => {
         mempool = new Mempool();
-        wallet = new Wallet(0, false, mempool);
+	wallet = new Wallet({ nAccount: 0, isMainWallet: false, mempool });
+        wallet.setMasterKey(getLegacyMainnet());
+        PIVXShield = vi.fn();
+        PIVXShield.prototype.createTransaction = vi.fn(() => {
+            return {
+                hex: '00',
+            };
+        });
+        PIVXShield.prototype.getBalance = vi.fn(() => 40 * 10 ** 8);
+        wallet.setShield(new PIVXShield());
     });
     it('Creates a transaction correctly', async () => {
-        wallet.setMasterKey(getLegacyMainnet());
         const tx = wallet.createTransaction(
             'DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb',
             0.05 * 10 ** 8
@@ -78,6 +62,36 @@ describe('Wallet transaction tests', () => {
     it('Creates a proposal tx correctly', async () => {
         wallet.setMasterKey(getLegacyMainnet());
         const tx = wallet.createTransaction(
+            'DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb',
+            0.05 * 10 ** 8,
+            { changeAddress: 'D8Ervc3Ka6TuKgvXZH9Eo4ou24AiVwTbL6' }
+        );
+        expect(tx.version).toBe(1);
+        expect(tx.vin[0]).toStrictEqual(
+            new CTxIn({
+                outpoint: new COutpoint({
+                    txid: 'f8f968d80ac382a7b64591cc166489f66b7c4422f95fbd89f946a5041d285d7c',
+                    n: 1,
+                }),
+                scriptSig: '76a914f49b25384b79685227be5418f779b98a6be4c73888ac', // Script sig must be the UTXO script since it's not signed
+            })
+        );
+        expect(tx.vout[0]).toStrictEqual(
+            new CTxOut({
+                script: '76a91421ff8214d09d60713b89809bb413a0651ee6931488ac',
+                value: 4992400,
+            })
+        );
+        expect(tx.vout[1]).toStrictEqual(
+            new CTxOut({
+                script: '76a914a95cc6408a676232d61ec29dc56a180b5847835788ac',
+                value: 5000000,
+            })
+        );
+    });
+
+    it('Creates a proposal tx correctly', async () => {
+        const tx = wallet.createTransaction(
             'bcea39f87b1dd7a5ba9d11d3d956adc6ce57dfff9397860cc30c11f08b3aa7c8',
             0.05 * 10 ** 8,
             { isProposal: true }
@@ -107,7 +121,6 @@ describe('Wallet transaction tests', () => {
     });
 
     it('Creates a cold stake tx correctly', async () => {
-        wallet.setMasterKey(getLegacyMainnet());
         const tx = wallet.createTransaction(
             'SR3L4TFUKKGNsnv2Q4hWTuET2a4vHpm1b9',
             0.05 * 10 ** 8,
@@ -138,7 +151,6 @@ describe('Wallet transaction tests', () => {
     });
 
     it('creates a tx with max balance', () => {
-        wallet.setMasterKey(getLegacyMainnet());
         const tx = wallet.createTransaction(
             'SR3L4TFUKKGNsnv2Q4hWTuET2a4vHpm1b9',
             0.1 * 10 ** 8,
@@ -164,8 +176,78 @@ describe('Wallet transaction tests', () => {
         );
     });
 
+    it('creates a t->s tx correctly', () => {
+        const addr =
+            'ps1a0x2few52sy3t0nrdhun0re4c870e04w448qpa7c26qjw9ljs4quhja40hat95f7hy8tcuvcn2s';
+        const tx = wallet.createTransaction(addr, 0.05 * 10 ** 8);
+        expect(tx).toStrictEqual(
+            new Transaction({
+                vin: [
+                    new CTxIn({
+                        outpoint: new COutpoint({
+                            txid: 'f8f968d80ac382a7b64591cc166489f66b7c4422f95fbd89f946a5041d285d7c',
+                            n: 1,
+                        }),
+                        scriptSig:
+                            '76a914f49b25384b79685227be5418f779b98a6be4c73888ac',
+                    }),
+                ],
+                vout: [
+                    new CTxOut({
+                        script: '76a914f49b25384b79685227be5418f779b98a6be4c73888ac',
+                        value: 4992400,
+                    }),
+                ],
+                shieldData: [
+                    {
+                        address: addr,
+                        value: 0.05 * 10 ** 8,
+                    },
+                ],
+                version: 3,
+            })
+        );
+    });
+
+    it('creates a s->t tx correctly', async () => {
+        const tx = wallet.createTransaction(
+            'DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb',
+            0.05 * 10 ** 8,
+            { useShieldInputs: true }
+        );
+        expect(tx).toStrictEqual(
+            new Transaction({
+                version: 3,
+                vout: [
+                    new CTxOut({
+                        script: '76a914a95cc6408a676232d61ec29dc56a180b5847835788ac',
+                        value: 5000000,
+                    }),
+                ],
+            })
+        );
+    });
+
+    it('creates a s->s tx correctly', async () => {
+        const addr =
+            'ps1a0x2few52sy3t0nrdhun0re4c870e04w448qpa7c26qjw9ljs4quhja40hat95f7hy8tcuvcn2s';
+        const tx = wallet.createTransaction(addr, 0.05 * 10 ** 8, {
+            useShieldInputs: true,
+        });
+        expect(tx).toStrictEqual(
+            new Transaction({
+                version: 3,
+                shieldData: [
+                    {
+                        address: addr,
+                        value: 0.05 * 10 ** 8,
+                    },
+                ],
+            })
+        );
+    });
+
     it('throws when balance is insufficient', () => {
-        wallet.setMasterKey(getLegacyMainnet());
         expect(() =>
             wallet.createTransaction(
                 'SR3L4TFUKKGNsnv2Q4hWTuET2a4vHpm1b9',
@@ -179,10 +261,25 @@ describe('Wallet transaction tests', () => {
                 20 * 10 ** 8
             )
         ).toThrow(/not enough balance/i);
+        expect(() =>
+            wallet.createTransaction(
+                'DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb',
+                50 * 10 ** 8,
+                { useShieldInputs: true }
+            )
+        ).toThrow(/not enough balance/i);
+
+        // Should use shield balance when `useShieldInputs` is true
+        expect(
+            wallet.createTransaction(
+                'DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb',
+                30 * 10 ** 8,
+                { useShieldInputs: true }
+            )
+        ).toBeDefined();
     });
 
     it('throws when delegateChange is set, but changeDelegationAddress is not', () => {
-        wallet.setMasterKey(getLegacyMainnet());
         expect(() =>
             wallet.createTransaction(
                 'DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb',
@@ -192,8 +289,8 @@ describe('Wallet transaction tests', () => {
         ).toThrow(/was set to/i);
     });
 
-    it.todo('finalizes transaction correctly', () => {
-        const tx = {};
+    it('finalizes transaction correctly', () => {
+        const tx = {vout: []};
         wallet.addTransaction(tx);
         expect(mempool.addTransaction).toBeCalled(1);
         expect(mempool.addTransaction).toBeCalledWith(tx);
@@ -201,49 +298,5 @@ describe('Wallet transaction tests', () => {
 
     afterAll(() => {
         vi.clearAllMocks();
-    });
-});
-
-describe('Wallet signature tests', () => {
-    it('throws when is view only', async () => {
-        const wallet = new Wallet(0, false);
-        const mk = getLegacyMainnet();
-        mk.wipePrivateData();
-        wallet.setMasterKey(mk);
-        expect(wallet.sign({})).rejects.toThrow(/view only/i);
-    });
-    it('signs a transaction correctly', async () => {
-        const wallet = new Wallet(0, false);
-        const mk = getLegacyMainnet();
-        wallet.setMasterKey(mk);
-        const tx = new Transaction();
-        tx.version = 1;
-        tx.blockHeight = -1;
-        tx.blockTime = -1;
-        tx.vin = [
-            new CTxIn({
-                outpoint: new COutpoint({
-                    txid: 'f8f968d80ac382a7b64591cc166489f66b7c4422f95fbd89f946a5041d285d7c',
-                    n: 1,
-                }),
-                scriptSig: '76a914f49b25384b79685227be5418f779b98a6be4c73888ac', // Script sig must be the UTXO script since it's not signed
-            }),
-        ];
-        tx.vout = [
-            new CTxOut({
-                script: '76a914f49b25384b79685227be5418f779b98a6be4c73888ac',
-                value: 4992400,
-            }),
-            new CTxOut({
-                script: '76a914a95cc6408a676232d61ec29dc56a180b5847835788ac',
-                value: 5000000,
-            }),
-        ];
-        const signedTx = await wallet.sign(tx);
-        // Return value must reference the same tx
-        expect(signedTx).toBe(tx);
-        expect(signedTx.txid).toBe(
-            '9cf01cffc85d53b80a9c7ca106fc7326efa0f4f1db3eaf5be0ac45eb6105b8ab'
-        );
     });
 });

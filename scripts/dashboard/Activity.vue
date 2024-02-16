@@ -249,7 +249,14 @@ function getTxCount() {
     return txCount;
 }
 
-getEventEmitter().on('sync-status-update', (_a, _b, done) => done && update());
+getEventEmitter().on(
+    'transparent-sync-status-update',
+    (_str, done) => done && update()
+);
+getEventEmitter().on(
+    'shield-sync-status-update',
+    (_str, done) => done && update()
+);
 onMounted(() => update());
 
 defineExpose({ update, reset, getTxCount });

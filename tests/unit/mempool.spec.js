@@ -1,5 +1,5 @@
-import { it, describe, beforeEach, expect } from 'vitest';
-import { Mempool, OutpointState } from '../../scripts/mempool.js';
+import { it, describe, beforeEach, expect, vi } from 'vitest';
+
 import {
     Transaction,
     CTxOut,
@@ -7,6 +7,8 @@ import {
     UTXO,
     CTxIn,
 } from '../../scripts/transaction.js';
+import { Mempool, OutpointState } from '../../scripts/mempool.js';
+
 describe('mempool tests', () => {
     /** @type{Mempool} */
     let mempool;

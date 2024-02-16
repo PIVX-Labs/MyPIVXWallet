@@ -21,12 +21,11 @@ import {
     createAlert,
     confirmPopup,
     sanitizeHTML,
-    sleep,
     beautifyNumber,
     isColdAddress,
 } from './misc.js';
 import { cChainParams, COIN } from './chain_params.js';
-
+import { sleep } from './utils.js';
 import { registerWorker } from './native.js';
 import { refreshPriceDisplay } from './prices.js';
 import { Address6 } from 'ip-address';
@@ -960,7 +959,7 @@ export async function sweepAddress(arrUTXOs, sweepingMasterKey, nFixedFee) {
         .build();
 
     // Sign using the given Master Key, then broadcast the sweep, returning the TXID (or a failure)
-    const sweepingWallet = new Wallet(0, false);
+    const sweepingWallet = new Wallet({ nAccount: 0, isMainWallet: false });
     sweepingWallet.setMasterKey(sweepingMasterKey);
 
     await sweepingWallet.sign(tx);

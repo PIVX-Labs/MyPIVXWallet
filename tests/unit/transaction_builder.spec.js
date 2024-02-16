@@ -83,6 +83,90 @@ describe('Transaction builder tests', () => {
         // Subsequent builds must return null
         expect(txBuilder.build()).toBe(null);
     });
+
+    it('builds a s->s transaction correctly', () => {
+        const tx = TransactionBuilder.create()
+            .addOutput({
+                address:
+                    'ps1kw7d704cpvy4f5e5usk3xhykytxnjfk872fpty7ct6znvmdepsxq4s90p9a3arg0qg8tzjk7vkn',
+                value: 1000,
+            })
+            .build();
+        expect(tx).toStrictEqual(
+            new Transaction({
+                version: 3,
+                shieldData: [
+                    {
+                        address:
+                            'ps1kw7d704cpvy4f5e5usk3xhykytxnjfk872fpty7ct6znvmdepsxq4s90p9a3arg0qg8tzjk7vkn',
+                        value: 1000,
+                    },
+                ],
+            })
+        );
+    });
+
+    it('builds a s->t transaction correctly', () => {
+        const tx = TransactionBuilder.create()
+            .addOutput({
+                address: 'DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb',
+                value: 3,
+            })
+            .build();
+        expect(tx).toStrictEqual(
+            new Transaction({
+                version: 3, // The important thing here is version=3
+                vout: [
+                    new CTxOut({
+                        script: '76a914a95cc6408a676232d61ec29dc56a180b5847835788ac',
+                        value: 3,
+                    }),
+                ],
+            })
+        );
+    });
+
+    it('builds a t->s transaction correctly', () => {
+        const tx = TransactionBuilder.create()
+            .addUTXO(
+                new UTXO({
+                    outpoint: new COutpoint({
+                        txid: 'abcd',
+                        n: 4,
+                    }),
+                    script: 'script1',
+                    value: 5,
+                })
+            )
+            .addOutput({
+                address:
+                    'ps1kw7d704cpvy4f5e5usk3xhykytxnjfk872fpty7ct6znvmdepsxq4s90p9a3arg0qg8tzjk7vkn',
+                value: 1000,
+            })
+            .build();
+        expect(tx).toStrictEqual(
+            new Transaction({
+                version: 3,
+                shieldData: [
+                    {
+                        address:
+                            'ps1kw7d704cpvy4f5e5usk3xhykytxnjfk872fpty7ct6znvmdepsxq4s90p9a3arg0qg8tzjk7vkn',
+                        value: 1000,
+                    },
+                ],
+                vin: [
+                    new CTxIn({
+                        outpoint: new COutpoint({
+                            txid: 'abcd',
+                            n: 4,
+                        }),
+                        scriptSig: 'script1',
+                    }),
+                ],
+            })
+        );
+    });
+
     it('throws when address is invalid', () => {
         const txBuilder = TransactionBuilder.create();
         expect(() =>

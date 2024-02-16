@@ -2,10 +2,9 @@ import { translation } from './i18n.js';
 import { doms } from './global.js';
 import qrcode from 'qrcode-generator';
 import bs58 from 'bs58';
-import { bech32 } from 'bech32';
 import { BIP21_PREFIX, cChainParams } from './chain_params.js';
 import { dSHA256 } from './utils.js';
-import { verifyPubkey } from './encoding.js';
+import { verifyPubkey, verifyBech32 } from './encoding.js';
 
 // Base58 Encoding Map
 export const MAP_B58 =
@@ -197,7 +196,7 @@ export async function confirmPopup({
 }
 
 // Generates and sets a QRCode image from a string and dom element
-export function createQR(strData = '', domImg, size = 4) {
+export function createQR(strData = '', domImg, size = 5) {
     // QRCode class consists of 'typeNumber' & 'errorCorrectionLevel'
     const cQR = qrcode(size, 'L');
     cQR.addData(strData);
@@ -244,6 +243,27 @@ export function isColdAddress(strAddress) {
 }
 
 /**
+ * @param {string} strAddress - The address to check
+ * @returns {boolean} if strAddress is a valid shiled address
+ */
+export function isShieldAddress(strAddress) {
+    return verifyBech32(strAddress, cChainParams.current.SHIELD_PREFIX);
+}
+
+/**
+ * @param {string} strAddress
+ * @return {boolean} If a straddress is a valid PIVX address,
+ * i.e. shield, xpub or standard
+ */
+export function isValidPIVXAddress(strAddress) {
+    return (
+        isStandardAddress(strAddress) ||
+        isColdAddress(strAddress) ||
+        isShieldAddress(strAddress)
+    );
+}
+
+/**
  * A quick check to see if a string is an XPub key
  * @param {string} strXPub - The XPub to check
  * @returns {boolean} - `true` if a valid formatted XPub, `false` if not
@@ -283,7 +303,7 @@ export function parseBIP21Request(strReq) {
         // Standard address
         !isStandardAddress(strAddress) &&
         // Shield address
-        !isValidBech32(strAddress).valid
+        !isShieldAddress(strAddress)
     ) {
         return false;
     }
@@ -297,25 +317,6 @@ export function parseBIP21Request(strReq) {
     }
 
     return { address: strAddress, options: cOptions };
-}
-
-/**
- * @typedef {object} Bech32Check
- * @property {boolean} valid - If the string is a valid bech32 address
- * @property {object} res - The results of the bech32 decoding
- */
-
-/**
- * A safe bech32 wrapper for quickly checking if an address is valid
- * @param {string} str - Bech32 Address
- * @returns {Bech32Check} - Both the validity and decoding results
- */
-export function isValidBech32(str) {
-    try {
-        return { valid: true, res: bech32.decode(str) };
-    } catch (e) {
-        return { valid: false, res: e };
-    }
 }
 
 /**
@@ -420,17 +421,4 @@ export function isEmpty(val) {
         (Array.isArray(val) && val.length === 0) ||
         (typeof val === 'object' && Object.keys(val).length === 0)
     );
-}
-
-/**
- * An artificial sleep function to pause code execution
- *
- * @param {Number} ms - The milliseconds to sleep
- *
- * @example
- * // Pause an asynchronous script for 1 second
- * await sleep(1000);
- */
-export function sleep(ms) {
-    return new Promise((res, _) => setTimeout(res, ms));
 }

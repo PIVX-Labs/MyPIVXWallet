@@ -13,6 +13,8 @@ export class Account {
      * @param {Array<Contact>} [accountData.contacts] - The Contacts saved in this account.
      * @param {String} [accountData.name] - The Contact Name of the account.
      * @param {String} [accountData.coldAddress] - The Cold Address that this account delegates to.
+     * @param {String} [accountData.shieldData] - Shield data necessary to load shielding
+     * @param {String} [accountData.encExtsk] - Encrypted extended spending key
      */
     constructor(accountData) {
         // Keys take the Constructor as priority, but if missing, default to their "Type" in empty form for type-safety
@@ -22,6 +24,8 @@ export class Account {
         this.contacts = accountData?.contacts || [];
         this.name = accountData?.name || '';
         this.coldAddress = accountData?.coldAddress || '';
+        this.shieldData = accountData?.shieldData || '';
+        this.encExtsk = accountData?.encExtsk || '';
     }
 
     /** @type {String} The public key. */
@@ -41,6 +45,12 @@ export class Account {
 
     /** @type {String} The Cold Address that this account delegates to. */
     coldAddress = '';
+
+    /** @type {String} Shield data necessary to load shielding */
+    shieldData = '';
+
+    /** @type {String} Encrypted extended spending key*/
+    encExtsk = '';
 
     /**
      * Search for a Contact in this account, by specific properties
