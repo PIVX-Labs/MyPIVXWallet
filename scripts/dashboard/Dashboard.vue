@@ -174,8 +174,10 @@ async function importWallet({ type, secret, password = '' }) {
         jdenticonValue.value = wallet.getAddress();
 
         if (needsToEncrypt.value) showEncryptModal.value = true;
-        await wallet.loadFromDisk();
-        getNetwork().walletFullSync();
+        wallet.loadFromDisk().then(() => {
+            getNetwork().walletFullSync();
+        });
+
         getEventEmitter().emit('wallet-import');
         return true;
     }

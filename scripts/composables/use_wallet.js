@@ -19,7 +19,7 @@ export function useWallet() {
     const isViewOnly = ref(wallet.isViewOnly());
     const getKeyToBackup = async () => await wallet.getKeyToBackup();
     const isEncrypted = ref(true);
-    const loadFromDisk = wallet.loadFromDisk;
+    const loadFromDisk = () => wallet.loadFromDisk();
 
     const setMasterKey = async (mk) => {
         wallet.setMasterKey(mk);

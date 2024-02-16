@@ -221,6 +221,7 @@ export class Wallet {
             this.#loadedIndexes.set(i, 0);
             this.#addressIndices.set(i, 0);
         }
+        this.#mempool = new Mempool();
         // TODO: This needs to be refactored to remove the getNetwork dependency
         if (this.#isMainWallet) {
             getNetwork().reset();
@@ -407,7 +408,8 @@ export class Wallet {
      * @return {string?} BIP32 path or null if it's not your address
      */
     isOwnAddress(address) {
-        return this.#ownAddresses.get(address) ?? null;
+        const path = this.#ownAddresses.get(address) ?? null;
+        return path;
     }
 
     /**
@@ -570,14 +572,6 @@ export class Wallet {
             let nAmount =
                 (this.#mempool.getCredit(tx) - this.#mempool.getDebit(tx)) /
                 COIN;
-            console.log(
-                nAmount,
-                this.#mempool.getCredit(tx),
-                this.#mempool.getDebit(tx)
-            );
-            if (nAmount === 0) {
-                console.log(tx);
-            }
 
             // The receiver addresses, if any
             let arrReceivers = this.getOutAddress(tx);
@@ -598,8 +592,6 @@ export class Wallet {
                 type = HistoricalTxType.RECEIVED;
             } else if (nAmount < 0) {
                 type = HistoricalTxType.SENT;
-            } else if (tx.shieldData.length > 0) {
-                type = HistoricalTxType.SHIELD;
             }
 
             histTXs.push(
@@ -727,10 +719,11 @@ export class Wallet {
      * Adds a transaction to the mempool. To be called after it's signed and sent to the network, if successful
      * @param {import('./transaction.js').Transaction} transaction
      */
-    addTransaction(transaction) {
+    async addTransaction(transaction, skipdblol = false) {
         this.#mempool.addTransaction(transaction);
         let i = 0;
         for (const out of transaction.vout) {
+            this.updateHighestUsedIndex(out);
             const status = this.getScriptType(out.script);
             if (status & OutpointState.OURS) {
                 this.#mempool.setOutpointStatus(
@@ -743,6 +736,12 @@ export class Wallet {
             }
             i++;
         }
+
+        if (skipdblol) {
+            const db = await Database.getInstance();
+            await db.storeTx(transaction);
+        }
+        console.log(this.#mempool.coldBalance);
     }
 
     /**
@@ -778,8 +777,16 @@ export class Wallet {
         return this.#mempool.coldBalance;
     }
 
-    loadFromDisk() {
-        // TODO
+    async loadFromDisk() {
+        const db = await Database.getInstance();
+        if ((await db.getAccount())?.publicKey !== this.getKeyToExport()) {
+            await db.removeAllTxs();
+            return;
+        }
+        const txs = await db.getTxs();
+        for (const tx of txs) {
+            this.addTransaction(tx, true);
+        }
     }
 }
 

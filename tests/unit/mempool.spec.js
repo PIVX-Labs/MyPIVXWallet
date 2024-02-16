@@ -124,6 +124,8 @@ describe('mempool tests', () => {
         });
         mempool.addTransaction(spendTx);
         expect(mempool.getDebit(spendTx)).toBe(5000000 + 4992400);
+
+        expect(mempool.getDebit(new Transaction())).toBe(0);
     });
 
     it('gives correct credit', () => {
@@ -134,6 +136,7 @@ describe('mempool tests', () => {
         expect(mempool.getCredit(tx)).toBe(5000000 + 4992400);
         mempool.setSpent(new COutpoint({ txid: tx.txid, n: 0 }));
         expect(mempool.getCredit(tx)).toBe(5000000 + 4992400);
+        expect(mempool.getCredit(new Transaction())).toBe(0);
     });
 
     it('marks outpoint as spent correctly', () => {

@@ -253,7 +253,7 @@ export class ExplorerNetwork extends Network {
                     const parsed = Transaction.fromHex(tx.hex);
                     parsed.blockHeight = tx.blockHeight;
                     parsed.blockTime = tx.blockTime;
-                    this.wallet.addTransaction(parsed);
+                    await this.wallet.addTransaction(parsed);
                 }
             }
             // await mempool.saveOnDisk();
@@ -273,6 +273,9 @@ export class ExplorerNetwork extends Network {
     async walletFullSync() {
         if (this.fullSynced) return;
         if (!this.wallet || !this.wallet.isLoaded()) return;
+        this.lastBlockSynced = Math.max(
+            ...this.wallet.getTransactions().map((tx) => tx.blockHeight)
+        );
         await this.getLatestTxs(this.lastBlockSynced);
         this.lastBlockSynced = Math.max(
             ...this.wallet.getTransactions().map((tx) => tx.blockHeight)

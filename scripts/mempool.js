@@ -1,5 +1,5 @@
 //import { getNetwork } from './network.js';
-//import { getStakingBalance } from './global.js';
+import { getStakingBalance } from './global.js';
 import { getEventEmitter } from './event_bus.js';
 import { Transaction, COutpoint, UTXO } from './transaction.js';
 
@@ -132,6 +132,7 @@ export class Mempool {
      */
     getCredit(tx) {
         const txid = tx.txid;
+
         return tx.vout
             .map(
                 (_, i) =>
@@ -203,10 +204,23 @@ export class Mempool {
 
     #invalidateBalanceCache() {
         this.#balances = new Map();
+        this.#emitBalanceUpdate();
+    }
 
-        // TODO: remove once staking page refactor
-        getEventEmitter().emit('balance-update');
-        //getStakingBalance(true);
+    #emittingBalanceUpdate = false;
+
+    #emitBalanceUpdate() {
+        if (this.#emittingBalanceUpdate) return;
+        this.#emittingBalanceUpdate = true;
+        // TODO: This is not ideal, we are limiting the mempool to only emit 1 balance-update per frame,
+        // but we don't want the mempool to know about animation frames. This is needed during
+        // sync to avoid spamming balance-updates and slowing down the sync.
+        // The best course of action is to probably add a loading page/state and avoid
+        // listening to the balance-update event until the sync is done
+        requestAnimationFrame(() => {
+            getEventEmitter().emit('balance-update');
+            this.#emittingBalanceUpdate = false;
+        });
     }
 
     /**
