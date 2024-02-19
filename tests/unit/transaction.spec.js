@@ -61,11 +61,13 @@ describe('transaction tests', () => {
             false,
             false,
             false,
+            false,
         ]);
         expect(testVector.map(([t]) => t.isCoinStake())).toStrictEqual([
             false,
             false,
             true,
+            false,
             false,
             false,
             false,

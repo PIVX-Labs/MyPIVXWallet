@@ -107,6 +107,10 @@ export class Transaction {
         return bytesToHex(dSHA256(hexToBytes(this.serialize())).reverse());
     }
 
+    hasShieldData() {
+        return this.bindingSig !== '';
+    }
+
     isConfirmed() {
         return this.blockHeight != -1;
     }
@@ -191,74 +195,82 @@ export class Transaction {
         this.lockTime = Number(bytesToNum(bytes.slice(offset, (offset += 4))));
 
         if (this.version === 3) {
-            offset += 1; // TODO: figure out what this 1 is
-            this.valueBalance = Number(
-                bytesToNum(bytes.slice(offset, (offset += 8)))
-            );
+            const hasShield = bytesToNum(bytes.slice(offset, (offset += 1)));
+            if (hasShield) {
+                this.valueBalance = Number(
+                    bytesToNum(bytes.slice(offset, (offset += 8)))
+                );
 
-            const { num: shieldSpendLen, readBytes } = varIntToNum(
-                bytes.slice(offset)
-            );
-            offset += readBytes;
-            for (let i = 0; i < shieldSpendLen; i++) {
-                const cv = bytesToHex(
-                    bytes.slice(offset, (offset += 32)).reverse()
+                const { num: shieldSpendLen, readBytes } = varIntToNum(
+                    bytes.slice(offset)
                 );
-                const anchor = bytesToHex(
-                    bytes.slice(offset, (offset += 32)).reverse()
+                offset += readBytes;
+                for (let i = 0; i < shieldSpendLen; i++) {
+                    const cv = bytesToHex(
+                        bytes.slice(offset, (offset += 32)).reverse()
+                    );
+                    const anchor = bytesToHex(
+                        bytes.slice(offset, (offset += 32)).reverse()
+                    );
+                    const nullifier = bytesToHex(
+                        bytes.slice(offset, (offset += 32)).reverse()
+                    );
+                    const rk = bytesToHex(
+                        bytes.slice(offset, (offset += 32)).reverse()
+                    );
+                    const proof = bytesToHex(
+                        bytes.slice(offset, (offset += 192))
+                    );
+                    const spendAuthSig = bytesToHex(
+                        bytes.slice(offset, (offset += 64))
+                    );
+
+                    this.shieldSpend.push({
+                        cv,
+                        anchor,
+                        nullifier,
+                        rk,
+                        proof,
+                        spendAuthSig,
+                    });
+                }
+                const { num: outputLen, readBytes: readOutBytes } = varIntToNum(
+                    bytes.slice(offset)
                 );
-                const nullifier = bytesToHex(
-                    bytes.slice(offset, (offset += 32)).reverse()
-                );
-                const rk = bytesToHex(
-                    bytes.slice(offset, (offset += 32)).reverse()
-                );
-                const proof = bytesToHex(bytes.slice(offset, (offset += 192)));
-                const spendAuthSig = bytesToHex(
+                offset += readOutBytes;
+                for (let i = 0; i < outputLen; i++) {
+                    const cv = bytesToHex(
+                        bytes.slice(offset, (offset += 32)).reverse()
+                    );
+                    const cmu = bytesToHex(
+                        bytes.slice(offset, (offset += 32)).reverse()
+                    );
+                    const ephemeralKey = bytesToHex(
+                        bytes.slice(offset, (offset += 32)).reverse()
+                    );
+                    const encCiphertext = bytesToHex(
+                        bytes.slice(offset, (offset += 580))
+                    );
+                    const outCiphertext = bytesToHex(
+                        bytes.slice(offset, (offset += 80))
+                    );
+                    const proof = bytesToHex(
+                        bytes.slice(offset, (offset += 192))
+                    );
+
+                    this.shieldOutput.push({
+                        cv,
+                        cmu,
+                        ephemeralKey,
+                        encCiphertext,
+                        outCiphertext,
+                        proof,
+                    });
+                }
+                this.bindingSig = bytesToHex(
                     bytes.slice(offset, (offset += 64))
                 );
-
-                this.shieldSpend.push({
-                    cv,
-                    anchor,
-                    nullifier,
-                    rk,
-                    proof,
-                    spendAuthSig,
-                });
             }
-            const { num: outputLen, readBytes: readOutBytes } = varIntToNum(
-                bytes.slice(offset)
-            );
-            offset += readOutBytes;
-            for (let i = 0; i < outputLen; i++) {
-                const cv = bytesToHex(
-                    bytes.slice(offset, (offset += 32)).reverse()
-                );
-                const cmu = bytesToHex(
-                    bytes.slice(offset, (offset += 32)).reverse()
-                );
-                const ephemeralKey = bytesToHex(
-                    bytes.slice(offset, (offset += 32)).reverse()
-                );
-                const encCiphertext = bytesToHex(
-                    bytes.slice(offset, (offset += 580))
-                );
-                const outCiphertext = bytesToHex(
-                    bytes.slice(offset, (offset += 80))
-                );
-                const proof = bytesToHex(bytes.slice(offset, (offset += 192)));
-
-                this.shieldOutput.push({
-                    cv,
-                    cmu,
-                    ephemeralKey,
-                    encCiphertext,
-                    outCiphertext,
-                    proof,
-                });
-            }
-            this.bindingSig = bytesToHex(bytes.slice(offset, (offset += 64)));
         }
 
         return this;
@@ -297,7 +309,7 @@ export class Transaction {
         if (this.version === 3) {
             buffer = [
                 ...buffer,
-                1,
+                Number(this.hasShieldData()),
                 ...numToBytes(BigInt(this.valueBalance), 8),
                 ...numToVarInt(BigInt(this.shieldSpend.length)),
             ];
