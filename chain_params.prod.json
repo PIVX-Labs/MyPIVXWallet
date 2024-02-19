@@ -15,9 +15,8 @@
         "MASTERNODE_PORT": 51472,
         "SHIELD_PREFIX": "ps",
         "Explorers": [
-            { "name": "rockdev", "url": "https://explorer.rockdev.org" },
-            { "name": "zkBitcoin", "url": "https://zkbitcoin.com" },
-            { "name": "Duddino", "url": "https://explorer.duddino.com" }
+            { "name": "Duddino", "url": "https://explorer.duddino.com" },
+            { "name": "zkBitcoin", "url": "https://zkbitcoin.com" }
         ],
         "Nodes": [
             { "name": "Duddino", "url": "https://rpc.duddino.com/mainnet" }
