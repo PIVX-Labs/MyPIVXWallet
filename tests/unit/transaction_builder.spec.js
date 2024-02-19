@@ -84,6 +84,44 @@ describe('Transaction builder tests', () => {
         expect(txBuilder.build()).toBe(null);
     });
 
+    it('builds an exchange tx correctly', () => {
+        const tx = TransactionBuilder.create()
+            .addOutput({
+                address: 'EXMDbnWT4K3nWfK1311otFrnYLcFSipp3iez',
+                value: 1,
+            })
+            .addUTXO(
+                new UTXO({
+                    outpoint: new COutpoint({
+                        txid: 'abcd',
+                        n: 4,
+                    }),
+                    script: 'script1',
+                    value: 5,
+                })
+            )
+            .build();
+        expect(tx).toStrictEqual(
+            new Transaction({
+                vin: [
+                    new CTxIn({
+                        outpoint: new COutpoint({
+                            txid: 'abcd',
+                            n: 4,
+                        }),
+                        scriptSig: 'script1',
+                    }),
+                ],
+                vout: [
+                    new CTxOut({
+                        script: 'e076a916b9a21c62aa5fb5bc8a4932491fcfc1832fb5422e0cd288ac',
+                        value: 1,
+                    }),
+                ],
+            })
+        );
+    });
+
     it('builds a s->s transaction correctly', () => {
         const tx = TransactionBuilder.create()
             .addOutput({

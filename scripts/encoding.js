@@ -131,7 +131,7 @@ export function deriveAddress({ pkBytes, publicKey, output = 'ENCODED' }) {
 /**
  * Verify the integrity of an address
  * @param {string} strPubkey - A base58 encoded public key
- * @param {Object} [expectedKey] - The key type to check, defaults to current chain's `PUBKEY_ADDRESS`
+ * @param {number[]} [expectedKey] - The key type to check, defaults to current chain's `PUBKEY_ADDRESS`
  * @return {boolean|Error} `true` if valid, `false` if invalid
  */
 export function verifyPubkey(
@@ -141,15 +141,15 @@ export function verifyPubkey(
     // Decode base58 and verify basic integrity
     try {
         const bDecoded = bs58.decode(strPubkey);
-        if (bDecoded.length !== 25) return false;
-        if (bDecoded[0] !== expectedKey) return false;
+        if (bDecoded.length !== 25 && bDecoded.length !== 27) return false;
+        if (!expectedKey.every((n, i) => n === bDecoded[i])) return false;
 
         // Sha256d hash the pubkey payload
-        const bDoubleSHA = dSHA256(bDecoded.slice(0, 21));
+        const bDoubleSHA = dSHA256(bDecoded.slice(0, bDecoded.length - 4));
 
         // Verify payload integrity via checksum
         const bChecksum = bDoubleSHA.slice(0, 4);
-        const bChecksumPayload = bDecoded.slice(21);
+        const bChecksumPayload = bDecoded.slice(bDecoded.length - 4);
         if (!bChecksum.every((byte, i) => byte === bChecksumPayload[i]))
             return false;
 

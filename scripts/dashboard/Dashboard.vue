@@ -10,7 +10,9 @@ import { parseWIF, verifyWIF } from '../encoding.js';
 import {
     createAlert,
     isBase64,
+    isExchangeAddress,
     isShieldAddress,
+    isValidPIVXAddress,
     parseBIP21Request,
     sanitizeHTML,
 } from '../misc.js';
@@ -393,12 +395,22 @@ async function send(address, amount, useShieldInputs) {
 
     // Check if the Receiver Address is a valid P2PKH address
     // or shield address
-    if (!isStandardAddress(address) && !isShieldAddress(address))
+    if (!isValidPIVXAddress(address))
         return createAlert(
             'warning',
             tr(ALERTS.INVALID_ADDRESS, [{ address }]),
             2500
         );
+    if (isColdAddress(address)) {
+        return createAlert(
+            'warning',
+            tr(ALERTS.INVALID_ADDRESS, [{ address }]),
+            2500
+        );
+    }
+    if (isExchangeAddress(address) && useShieldInputs) {
+        return createAlert('warning', translation.cantShieldToExc, 2500);
+    }
 
     // Sanity check the amount
     const nValue = Math.round(amount * COIN);
