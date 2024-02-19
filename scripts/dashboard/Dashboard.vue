@@ -264,13 +264,13 @@ async function restoreWallet(strReason) {
         const extsk = await decrypt(encExtsk, strPassword);
         if (key.masterKey) {
             //  This SHOULD REALLY NOT HAPPEN
-            if (wallet.hasShield && !extsk) {
+            if (wallet.hasShield.value && !extsk) {
                 createAlert(
                     'warning',
                     'Could not decrypt sk even if password is correct, please contact a developer'
                 );
             }
-            if (wallet.hasShield) {
+            if (wallet.hasShield.value) {
                 await wallet.setExtsk(extsk);
             }
             await wallet.setMasterKey(key.masterKey);
