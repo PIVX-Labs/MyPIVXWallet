@@ -114,7 +114,7 @@ describe('Transaction builder tests', () => {
                 ],
                 vout: [
                     new CTxOut({
-                        script: 'e076a916b9a21c62aa5fb5bc8a4932491fcfc1832fb5422e0cd288ac',
+                        script: 'e076a9141c62aa5fb5bc8a4932491fcfc1832fb5422e0cd288ac',
                         value: 1,
                     }),
                 ],

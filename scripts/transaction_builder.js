@@ -95,7 +95,7 @@ export class TransactionBuilder {
         const back = bytes.slice(bytes.length - 4);
         const checksum = dSHA256(front).slice(0, 4);
         if (checksum + '' == back + '') {
-            return Array.from(front.slice(1));
+            return Array.from(front.slice(isExchangeAddress(address) ? 3 : 1));
         }
         throw new Error('Invalid address');
     }
