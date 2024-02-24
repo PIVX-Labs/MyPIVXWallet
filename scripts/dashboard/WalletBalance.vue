@@ -353,10 +353,15 @@ function reload() {
             <div
                 v-if="transparentSyncing || shieldSyncing"
                 style="
-                    background-color: #0000002b;
-                    width: fit-content;
-                    padding: 8px;
-                    border-radius: 15px;
+                    display: block;
+                    font-size: 15px;
+                    background-color: #3a0c60;
+                    border: 1px solid #9f00f9;
+                    padding: 8px 15px 10px 15px;
+                    border-radius: 10px;
+                    color: #d3bee5;
+                    width: 310px;
+                    text-align: center;
                 "
             >
                 {{ transparentSyncing ? syncTStr : syncSStr }}
