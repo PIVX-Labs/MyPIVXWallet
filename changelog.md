@@ -1,20 +1,21 @@
 # New Features
-- TX Database and Network Rewrite.
-- Ability to delete an MPW wallet.
+- SHIELD Support (send & receive)
+- Exchange Address Support (sending)
 
-You'll notice that MPW now requires a small amount of 'syncing time' during your first use of v1.4.0, as MPW now synchronises your full TX history to your machine, so the next time you open the wallet, it instantly resumes using the chain data it previously synced.
+# Consensus
+MyPIVXWallet has bumped it's Protocol Version alongside PIVX Core v5.6.1, Masternodes (re)started with this update will use the latest protocol version.
 
-This system will save massive amounts of bandwidth long-term, speed up operations, and allow MPW to implement more advanced features that PIVX Core have.
+Congrats on the upgrade, PIVX Core!
 
-# New Language
-- 🇳🇱 Dutch (by BreadJS).
+# New Languages
+- 🇲🇪 Montenegrin (by Mirela Abazović).
+- 🇵🇱 Polish (by MagMagik).
 
 # Improvements
-- Safer Address validation (B58Check).
-- Better under-the-hood Coin Locking.
-- Dashboard fully ported to Vue.js.
-- Encryption is now actively prompted to users with unencrypted wallets.
+- Ability to Unstake on Ledger.
+- Immature balances are now displayed.
+- Massive Tx-creation refactoring.
+- A new, large test-suite.
 
 # Bug Fixes
-- Fixed various bugs in Chain Switching.
-- Fixed various linting and fork-repo issues.
+- Fix BIP39 Passphrase visiblity.
