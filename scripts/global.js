@@ -882,7 +882,10 @@ export async function importMasternode() {
             includeLocked: false,
         });
         for (const u of utxos) {
-            if (wallet.getPath(u.script) === path) {
+            if (
+                u.value === cChainParams.current.collateralInSats &&
+                wallet.getPath(u.script) === path
+            ) {
                 masterUtxo = u;
             }
         }
