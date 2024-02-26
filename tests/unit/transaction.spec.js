@@ -1,4 +1,4 @@
-import { describe, it, test, vi, beforeAll } from 'vitest';
+import { describe, it, test, vi, beforeAll, expect } from 'vitest';
 import {
     Transaction,
     CTxIn,
@@ -76,6 +76,18 @@ describe('transaction tests', () => {
     it.each(testVector)('deserializes correctly ($txid)', (tx, _, hex) => {
         const ourTx = Transaction.fromHex(hex);
         expect(ourTx).toStrictEqual(tx);
+    });
+
+    it.sequential('updates txid when a property changes', () => {
+        const [tx, txid] = testVector[0];
+        const originalVersion = tx.version;
+        expect(tx.txid).toBe(txid);
+        tx.version = 10;
+        expect(tx.txid).not.toBe(txid);
+        expect(tx.txid).toBe(
+            '416368b2101fab865db162d49d0540560f802e89801cad8eb1d9cf3a4e6ad5be'
+        );
+        tx.version = originalVersion;
     });
 
     it.each(testVector.filter((t) => t[3]))(

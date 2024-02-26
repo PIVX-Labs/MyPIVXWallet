@@ -81,6 +81,8 @@ export class Transaction {
 
     /** @type{number[]} */
     shieldData = [];
+    /** Cached txid */
+    #txid = '';
 
     constructor({
         version = 1,
@@ -98,10 +100,23 @@ export class Transaction {
         this.blockTime = blockTime;
         this.lockTime = lockTime;
         this.shieldData = shieldData;
+        /** Handle to the unproxied tx for when we need to clone it */
+        this.__original = this;
+        return new Proxy(this, {
+            set(obj) {
+                obj.#txid = '';
+                return Reflect.set(...arguments);
+            },
+        });
     }
 
     get txid() {
-        return bytesToHex(dSHA256(hexToBytes(this.serialize())).reverse());
+        if (!this.__original.#txid) {
+            this.__original.#txid = bytesToHex(
+                dSHA256(hexToBytes(this.serialize())).reverse()
+            );
+        }
+        return this.__original.#txid;
     }
 
     isConfirmed() {
@@ -236,7 +251,7 @@ export class Transaction {
      * Using the sighash type SIGHASH_ALL
      */
     transactionHash(index) {
-        const copy = structuredClone(this);
+        const copy = structuredClone(this.__original);
         // Black out all inputs
         for (let i = 0; i < copy.vin.length; i++) {
             if (i != index) copy.vin[i].scriptSig = '';
