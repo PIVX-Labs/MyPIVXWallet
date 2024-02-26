@@ -58,11 +58,40 @@ describe('Wallet transaction tests', () => {
         );
     });
 
+    it('creates an exchange tx correctly', async () => {
+        const tx = wallet.createTransaction(
+            'DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb',
+            0.05 * 10 ** 8
+        );
+        expect(tx.version).toBe(1);
+        expect(tx.vin[0]).toStrictEqual(
+            new CTxIn({
+                outpoint: new COutpoint({
+                    txid: 'f8f968d80ac382a7b64591cc166489f66b7c4422f95fbd89f946a5041d285d7c',
+                    n: 1,
+                }),
+                scriptSig: '76a914f49b25384b79685227be5418f779b98a6be4c73888ac', // Script sig must be the UTXO script since it's not signed
+            })
+        );
+        expect(tx.vout[0]).toStrictEqual(
+            new CTxOut({
+                script: '76a914f49b25384b79685227be5418f779b98a6be4c73888ac',
+                value: 4992400,
+            })
+        );
+        expect(tx.vout[1]).toStrictEqual(
+            new CTxOut({
+                script: '76a914a95cc6408a676232d61ec29dc56a180b5847835788ac',
+                value: 5000000,
+            })
+        );
+    });
+
     it('Creates a tx with change address', async () => {
         const wallet = new Wallet(0, false);
         wallet.setMasterKey(getLegacyMainnet());
         const tx = wallet.createTransaction(
-            'DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb',
+            'EXMDbnWT4K3nWfK1311otFrnYLcFSipp3iez',
             0.05 * 10 ** 8,
             { changeAddress: 'D8Ervc3Ka6TuKgvXZH9Eo4ou24AiVwTbL6' }
         );
@@ -84,7 +113,7 @@ describe('Wallet transaction tests', () => {
         );
         expect(tx.vout[1]).toStrictEqual(
             new CTxOut({
-                script: '76a914a95cc6408a676232d61ec29dc56a180b5847835788ac',
+                script: 'e076a9141c62aa5fb5bc8a4932491fcfc1832fb5422e0cd288ac',
                 value: 5000000,
             })
         );

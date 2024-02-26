@@ -243,6 +243,18 @@ export function isColdAddress(strAddress) {
 }
 
 /**
+ * A quick check to see if an address is an exchange address
+ * @param {string} strAddress - The address to check
+ * @returns {boolean} - `true` if an exchange address, `false` if not
+ */
+export function isExchangeAddress(strAddress) {
+    return verifyPubkey(
+        strAddress,
+        cChainParams.current.EXCHANGE_ADDRESS_PREFIX
+    );
+}
+
+/**
  * @param {string} strAddress - The address to check
  * @returns {boolean} if strAddress is a valid shiled address
  */
@@ -259,7 +271,8 @@ export function isValidPIVXAddress(strAddress) {
     return (
         isStandardAddress(strAddress) ||
         isColdAddress(strAddress) ||
-        isShieldAddress(strAddress)
+        isShieldAddress(strAddress) ||
+        isExchangeAddress(strAddress)
     );
 }
 
