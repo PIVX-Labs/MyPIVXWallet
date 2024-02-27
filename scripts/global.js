@@ -868,7 +868,10 @@ export async function importMasternode() {
         let masterUtxo;
         const utxos = wallet.getMasternodeUTXOs();
         for (const u of utxos) {
-            if (wallet.getPath(u.script) === path) {
+            if (
+                u.value === cChainParams.current.collateralInSats &&
+                wallet.getPath(u.script) === path
+            ) {
                 masterUtxo = u;
             }
         }

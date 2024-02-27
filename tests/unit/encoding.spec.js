@@ -7,6 +7,13 @@ import {
     varIntToNum,
 } from '../../scripts/encoding.js';
 import { describe, it, test, expect } from 'vitest';
+import {
+    isColdAddress,
+    isExchangeAddress,
+    isShieldAddress,
+    isStandardAddress,
+    isValidPIVXAddress,
+} from '../../scripts/misc';
 
 describe('parse WIF tests', () => {
     it('Parses WIF correctly', () => {
@@ -107,5 +114,42 @@ describe('num to bytes tests', () => {
             readBytes: 9,
             num: 0x4bf583a17d59c158n,
         });
+    });
+});
+
+describe('Address validation', () => {
+    const addresses = [
+        { addr: 'DSxfioagfTXeCX1teMQNbWnzqWkz5mZNtH', desc: 'p2pkh' },
+        { addr: 'EXMDbnWT4K3nWfK1311otFrnYLcFSipp3iez', desc: 'exc' },
+        { addr: 'SbqnpKgFRm1zPLHQRRuvuUH4Tyc6Em53xt', desc: 'cold' },
+        {
+            addr: 'ps10g8s4f87fc787e8nzw65men80kqsdmem4uu3yj6zer3uz7ya4m2fjnvc9l5f3009ur6kszfjp34',
+            desc: 'shield',
+        },
+        { addr: 'DSxfioagfTUeCX1teMQNbWnzqWkz5mZNtH', desc: 'invalid' },
+        { addr: 'EXMDbnWT4K3nWfK2311otFrnYLcFSipp3iez', desc: 'invalid' },
+        { addr: 'SbqnpKgFRm1zPLHQRRuvuUh4Tyc6Em53xt', desc: 'invalid' },
+        {
+            addr: 'ps10g8s4f87fc78788nzw65men80kqsdmem4uu3yj6zer3uz7ya4m2fjnvc9l5f3009ur6kszfjp34',
+            desc: 'invalid',
+        },
+    ];
+
+    it.each(addresses)('recognises shield addresses', (address) => {
+        expect(isShieldAddress(address.addr)).toBe(address.desc === 'shield');
+    });
+    it.each(addresses)('recognises p2pkh addresses', (address) => {
+        expect(isStandardAddress(address.addr)).toBe(address.desc === 'p2pkh');
+    });
+    it.each(addresses)('recognises exchange addresses', (address) => {
+        expect(isExchangeAddress(address.addr)).toBe(address.desc === 'exc');
+    });
+    it.each(addresses)('recognises cold addresses', (address) => {
+        expect(isColdAddress(address.addr)).toBe(address.desc === 'cold');
+    });
+    it.each(addresses)('recognises valid addresses', (address) => {
+        expect(isValidPIVXAddress(address.addr)).toBe(
+            address.desc !== 'invalid'
+        );
     });
 });
