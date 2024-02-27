@@ -1,0 +1,1 @@
+*.toml merge=union # Use union merge driver for locale files
