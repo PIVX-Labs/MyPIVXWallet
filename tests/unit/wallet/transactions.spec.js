@@ -12,14 +12,13 @@ import {
     Transaction,
 } from '../../../scripts/transaction.js';
 
-
 describe('Wallet transaction tests', () => {
     let wallet;
     let mempool;
     let PIVXShield;
     beforeEach(() => {
         mempool = new Mempool();
-	wallet = new Wallet({ nAccount: 0, isMainWallet: false, mempool });
+        wallet = new Wallet({ nAccount: 0, isMainWallet: false, mempool });
         wallet.setMasterKey(getLegacyMainnet());
         PIVXShield = vi.fn();
         PIVXShield.prototype.createTransaction = vi.fn(() => {
@@ -319,7 +318,7 @@ describe('Wallet transaction tests', () => {
     });
 
     it('finalizes transaction correctly', () => {
-        const tx = {vout: []};
+        const tx = { vout: [] };
         wallet.addTransaction(tx);
         expect(mempool.addTransaction).toBeCalled(1);
         expect(mempool.addTransaction).toBeCalledWith(tx);

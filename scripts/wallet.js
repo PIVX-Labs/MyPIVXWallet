@@ -97,7 +97,13 @@ export class Wallet {
     #isSynced = false;
     #isFetchingLatestBlocks = false;
 
-    constructor({ nAccount, isMainWallet, masterKey, shield, mempool = new Mempool() }) {
+    constructor({
+        nAccount,
+        isMainWallet,
+        masterKey,
+        shield,
+        mempool = new Mempool(),
+    }) {
         this.#nAccount = nAccount;
         this.#isMainWallet = isMainWallet;
         this.#mempool = mempool;
@@ -903,8 +909,11 @@ export class Wallet {
         if (!useShieldInputs) {
             const requirement = useDelegatedInputs
                 ? OutpointState.P2CS
-                  : OutpointState.P2PKH;
-            const utxos = this.#mempool.getUTXOs({ requirement, target: value });
+                : OutpointState.P2PKH;
+            const utxos = this.#mempool.getUTXOs({
+                requirement,
+                target: value,
+            });
             transactionBuilder.addUTXOs(utxos);
             const fee = transactionBuilder.getFee();
             const changeValue = transactionBuilder.valueIn - value - fee;
@@ -1090,7 +1099,7 @@ export class Wallet {
 /**
  * @type{Wallet}
  */
-export const wallet = new Wallet({nAccountL: 0, isMainWallet: true}); // For now we are using only the 0-th account, (TODO: update once account system is done)
+export const wallet = new Wallet({ nAccountL: 0, isMainWallet: true }); // For now we are using only the 0-th account, (TODO: update once account system is done)
 
 /**
  * Clean a Seed Phrase string and verify it's integrity
