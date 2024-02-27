@@ -77,11 +77,49 @@ describe('Transaction builder tests', () => {
                 ],
                 blockTime: -1,
                 lockTime: 0,
-                shieldData: [],
+                shieldOutput: [],
             })
         );
         // Subsequent builds must return null
         expect(txBuilder.build()).toBe(null);
+    });
+
+    it('builds an exchange tx correctly', () => {
+        const tx = TransactionBuilder.create()
+            .addOutput({
+                address: 'EXMDbnWT4K3nWfK1311otFrnYLcFSipp3iez',
+                value: 1,
+            })
+            .addUTXO(
+                new UTXO({
+                    outpoint: new COutpoint({
+                        txid: 'abcd',
+                        n: 4,
+                    }),
+                    script: 'script1',
+                    value: 5,
+                })
+            )
+            .build();
+        expect(tx).toStrictEqual(
+            new Transaction({
+                vin: [
+                    new CTxIn({
+                        outpoint: new COutpoint({
+                            txid: 'abcd',
+                            n: 4,
+                        }),
+                        scriptSig: 'script1',
+                    }),
+                ],
+                vout: [
+                    new CTxOut({
+                        script: 'e076a9141c62aa5fb5bc8a4932491fcfc1832fb5422e0cd288ac',
+                        value: 1,
+                    }),
+                ],
+            })
+        );
     });
 
     it('builds a s->s transaction correctly', () => {
@@ -95,7 +133,7 @@ describe('Transaction builder tests', () => {
         expect(tx).toStrictEqual(
             new Transaction({
                 version: 3,
-                shieldData: [
+                shieldOutput: [
                     {
                         address:
                             'ps1kw7d704cpvy4f5e5usk3xhykytxnjfk872fpty7ct6znvmdepsxq4s90p9a3arg0qg8tzjk7vkn',
@@ -147,7 +185,7 @@ describe('Transaction builder tests', () => {
         expect(tx).toStrictEqual(
             new Transaction({
                 version: 3,
-                shieldData: [
+                shieldOutput: [
                     {
                         address:
                             'ps1kw7d704cpvy4f5e5usk3xhykytxnjfk872fpty7ct6znvmdepsxq4s90p9a3arg0qg8tzjk7vkn',

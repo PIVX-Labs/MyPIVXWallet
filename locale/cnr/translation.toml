@@ -217,6 +217,7 @@ newShieldAddress = "" # Get new shield address
 shieldAddress = "" # Shield address
 noInputs = "" # No inputs
 noOutputs = "" # No outputs
+cantShieldToExc = "" # This address does not support shield transfers
 
 [ALERTS]
 INTERNAL_ERROR = "Interna greška, molimo pokušajte ponovo kasnije" # Internal error, please try again later

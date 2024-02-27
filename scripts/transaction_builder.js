@@ -2,7 +2,7 @@ import { Transaction, CTxIn, CTxOut, COutpoint } from './transaction.js';
 import bs58 from 'bs58';
 import { OP } from './script.js';
 import { hexToBytes, bytesToHex, dSHA256 } from './utils.js';
-import { isShieldAddress } from './misc.js';
+import { isShieldAddress, isExchangeAddress } from './misc.js';
 /**
  * @class Builds a non-signed transaction
  */
@@ -95,7 +95,7 @@ export class TransactionBuilder {
         const back = bytes.slice(bytes.length - 4);
         const checksum = dSHA256(front).slice(0, 4);
         if (checksum + '' == back + '') {
-            return Array.from(front.slice(1));
+            return Array.from(front.slice(isExchangeAddress(address) ? 3 : 1));
         }
         throw new Error('Invalid address');
     }
@@ -112,8 +112,36 @@ export class TransactionBuilder {
         // upon signing.
         // This is similar to how we temporarely use the UTXO script instead
         // of the scriptSig because we don't know how to sign it
-        this.#transaction.shieldData.push({ address, value });
+        this.#transaction.shieldOutput.push({ address, value });
         return this;
+    }
+
+    /**
+     * Add an exchange output to the transaction.
+     * @param{{address:string, value: number}}
+     */
+    #addExchangeOutput({ address, value }) {
+        const decoded = this.#decodeAddress(address);
+        const script = [
+            OP['EXCHANGEADDR'],
+            OP['DUP'],
+            OP['HASH160'],
+            decoded.length,
+            ...decoded,
+            OP['EQUALVERIFY'],
+            OP['CHECKSIG'],
+        ];
+        this.#addScript({ script, value });
+    }
+
+    #addScript({ script, value }) {
+        this.#transaction.vout.push(
+            new CTxOut({
+                script: bytesToHex(script),
+                value,
+            })
+        );
+        this.#valueOut += value;
     }
 
     /**
@@ -121,10 +149,7 @@ export class TransactionBuilder {
      * @param {{address: string, value: number}}
      * @returns {TransactionBuilder}
      */
-    addOutput({ address, value }) {
-        if (isShieldAddress(address)) {
-            return this.#addShieldOutput({ address, value });
-        }
+    #addP2pkhOutput({ address, value }) {
         const decoded = this.#decodeAddress(address);
         const script = [
             OP['DUP'],
@@ -134,14 +159,23 @@ export class TransactionBuilder {
             OP['EQUALVERIFY'],
             OP['CHECKSIG'],
         ];
+        this.#addScript({ script, value });
+    }
 
-        this.#transaction.vout.push(
-            new CTxOut({
-                script: bytesToHex(script),
-                value,
-            })
-        );
-        this.#valueOut += value;
+    /**
+     * Adds an output to the transaction
+     * @param {{address: string, value: number}}
+     * @returns {TransactionBuilder}
+     */
+    addOutput({ address, value }) {
+        if (isShieldAddress(address)) {
+            this.#addShieldOutput({ address, value });
+        } else if (isExchangeAddress(address)) {
+            this.#addExchangeOutput({ address, value });
+        } else {
+            this.#addP2pkhOutput({ address, value });
+        }
+
         return this;
     }
 
@@ -158,12 +192,10 @@ export class TransactionBuilder {
      * @returns {TransactionBuilder}
      */
     addProposalOutput({ hash, value }) {
-        this.#transaction.vout.push(
-            new CTxOut({
-                script: bytesToHex([OP['RETURN'], 32, ...hexToBytes(hash)]),
-                value,
-            })
-        );
+        this.#addScript({
+            script: [OP['RETURN'], 32, ...hexToBytes(hash)],
+            value,
+        });
         return this;
     }
 

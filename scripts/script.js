@@ -148,6 +148,7 @@ export const OP = {
     // cold staking
     CHECKCOLDSTAKEVERIFY_LOF: 0xd1, // last output free for masternode/budget payments
     CHECKCOLDSTAKEVERIFY: 0xd2,
+    EXCHANGEADDR: 0xe0,
 
     INVALIDOPCODE: 0xff,
 };

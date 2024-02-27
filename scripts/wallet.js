@@ -1040,10 +1040,10 @@ export class Wallet {
         }, 500);
 
         const value =
-            transaction.shieldData[0]?.value || transaction.vout[0].value;
+            transaction.shieldOutput[0]?.value || transaction.vout[0].value;
         const { hex } = await this.#shield.createTransaction({
             address:
-                transaction.shieldData[0]?.address ||
+                transaction.shieldOutput[0]?.address ||
                 this.getAddressesFromScript(transaction.vout[0].script)
                     .addresses[0],
             amount: value,

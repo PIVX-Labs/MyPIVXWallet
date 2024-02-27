@@ -217,6 +217,7 @@ newShieldAddress = "Get new shield address" # Get new shield address
 shieldAddress = "Shield address" # Shield address
 noInputs = "No inputs" # No inputs
 noOutputs = "No outputs" # No outputs
+cantShieldToExc = "This address does not support shield transfers" # This address does not support shield transfers
 
 [ALERTS]
 INTERNAL_ERROR = "Internal error, please try again later" # Internal error, please try again later
