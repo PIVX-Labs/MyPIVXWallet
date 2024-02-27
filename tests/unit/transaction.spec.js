@@ -30,7 +30,11 @@ testVector = testVector.map(([tx, txid, hex, wif]) => [
                     value: output.value,
                 })
         ),
+        valueBalance: tx.valueBalance,
+        shieldSpend: tx.shieldSpend,
+        shieldOutput: tx.shieldOutput,
         shieldData: Array.from(hexToBytes(tx.shieldData ?? '')),
+        bindingSig: tx.bindingSig,
         lockTime: tx.lockTime,
     }),
     txid,
@@ -57,11 +61,13 @@ describe('transaction tests', () => {
             false,
             false,
             false,
+            false,
         ]);
         expect(testVector.map(([t]) => t.isCoinStake())).toStrictEqual([
             false,
             false,
             true,
+            false,
             false,
             false,
             false,
