@@ -680,7 +680,7 @@ export class Wallet {
         }
         try {
             this.#syncing = true;
-            // READ THIS!!!await this.#mempool.loadFr;
+	    await this.loadFromDisk();
             await this.loadShieldFromDisk();
             await getNetwork().walletFullSync();
             if (this.hasShield()) {
@@ -1025,7 +1025,7 @@ export class Wallet {
      * Adds a transaction to the mempool. To be called after it's signed and sent to the network, if successful
      * @param {import('./transaction.js').Transaction} transaction
      */
-    async addTransaction(transaction, skipdblol = false) {
+    async addTransaction(transaction, skipDatabase = false) {
         this.#mempool.addTransaction(transaction);
         let i = 0;
         for (const out of transaction.vout) {
@@ -1043,11 +1043,10 @@ export class Wallet {
             i++;
         }
 
-        if (skipdblol) {
+        if (skipDatabase) {
             const db = await Database.getInstance();
             await db.storeTx(transaction);
         }
-        console.log(this.#mempool.coldBalance);
     }
 
     /**
