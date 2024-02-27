@@ -99,7 +99,7 @@ export class Transaction {
         this.vout = vout;
         this.blockTime = blockTime;
         this.lockTime = lockTime;
-	this.shieldSpend = shieldSpend;
+        this.shieldSpend = shieldSpend;
         this.shieldOutput = shieldOutput;
         this.bindingSig = bindingSig;
         this.valueBalance = valueBalance;
