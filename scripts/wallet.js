@@ -680,7 +680,7 @@ export class Wallet {
         }
         try {
             this.#syncing = true;
-	    await this.loadFromDisk();
+            await this.loadFromDisk();
             await this.loadShieldFromDisk();
             await getNetwork().walletFullSync();
             if (this.hasShield()) {
