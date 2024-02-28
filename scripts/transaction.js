@@ -197,9 +197,7 @@ export class Transaction {
         if (this.version === 3) {
             const hasShield = bytesToNum(bytes.slice(offset, (offset += 1)));
             if (hasShield) {
-                this.valueBalance = Number(
-                    bytesToNum(bytes.slice(offset, (offset += 8)))
-                );
+		this.valueBalance = Number(new BigInt64Array([bytesToNum(bytes.slice(offset, (offset += 8)))])[0])
 
                 const { num: shieldSpendLen, readBytes } = varIntToNum(
                     bytes.slice(offset)
@@ -307,10 +305,12 @@ export class Transaction {
         buffer = [...buffer, ...numToBytes(BigInt(this.lockTime), 4)];
 
         if (this.version === 3) {
+	    const valueBalance = Buffer.alloc(8)
+	    valueBalance.writeBigInt64LE(BigInt(this.valueBalance));
             buffer = [
                 ...buffer,
                 Number(this.hasShieldData()),
-                ...numToBytes(BigInt(this.valueBalance), 8),
+                ...valueBalance,
                 ...numToVarInt(BigInt(this.shieldSpend.length)),
             ];
             for (const spend of this.shieldSpend) {
