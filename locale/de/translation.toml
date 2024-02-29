@@ -215,6 +215,8 @@ syncShieldProgress = "" # Loading shielded blocks {current} of {total}
 useShieldInputs = "" # Use shield inputs
 newShieldAddress = "" # Get new shield address
 shieldAddress = "" # Shield address
+noInputs = "" # No inputs
+noOutputs = "" # No outputs
 cantShieldToExc = "" # This address does not support shield transfers
 
 [ALERTS]

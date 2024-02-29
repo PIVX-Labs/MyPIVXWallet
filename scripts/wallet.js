@@ -661,10 +661,25 @@ export class Wallet {
         return tx.vout.reduce(
             (acc, vout) => [
                 ...acc,
-                ...this.getAddressesFromScript(vout.script).addresses,
+                ...this.getAddressesFromScript(vout.script).addresses.map(
+                    (address) => {
+                        return {
+                            address,
+                            amount: vout.value,
+                        };
+                    }
+                ),
             ],
             []
         );
+    }
+
+    /**
+     * Return the input addresses for a given transaction
+     * @param {Transaction} tx
+     */
+    getInAddress(tx) {
+        return tx.vin.map((i) => i.outpoint);
     }
 
     /**
@@ -684,6 +699,7 @@ export class Wallet {
 
             // The receiver addresses, if any
             let arrReceivers = this.getOutAddress(tx);
+            const arrSenders = this.getInAddress(tx);
 
             // Figure out the type, based on the Tx's properties
             let type = HistoricalTxType.UNKNOWN;
@@ -708,6 +724,7 @@ export class Wallet {
                 new HistoricalTx(
                     type,
                     tx.txid,
+                    arrSenders,
                     arrReceivers,
                     false,
                     tx.blockTime,

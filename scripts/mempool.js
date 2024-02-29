@@ -25,7 +25,8 @@ export class HistoricalTx {
     /**
      * @param {HistoricalTxType} type - The type of transaction.
      * @param {string} id - The transaction ID.
-     * @param {Array<string>} receivers - The list of 'output addresses'.
+     * @param {Array<{amount: number, address: string}>} receivers - The list of 'output addresses'.
+     * @param {Array<{amount: number, address: string}>} senders - The list of 'output addresses'.
      * @param {boolean} shieldedOutputs - If this transaction contains Shield outputs.
      * @param {number} time - The block time of the transaction.
      * @param {number} blockHeight - The block height of the transaction.
@@ -34,6 +35,7 @@ export class HistoricalTx {
     constructor(
         type,
         id,
+        senders,
         receivers,
         shieldedOutputs,
         time,
@@ -42,6 +44,7 @@ export class HistoricalTx {
     ) {
         this.type = type;
         this.id = id;
+        this.senders = senders;
         this.receivers = receivers;
         this.shieldedOutputs = shieldedOutputs;
         this.time = time;
@@ -258,6 +261,7 @@ export class Mempool {
         this.txmap.set(tx.txid, tx);
         for (const vin of tx.vin) {
             const op = vin.outpoint;
+            if (!op) console.log(tx);
             if (!this.isSpent(op)) {
                 this.setSpent(op.txid, op);
             }
