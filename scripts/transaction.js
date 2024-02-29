@@ -1,3 +1,4 @@
+import { Buffer } from 'buffer';
 import { bytesToNum, numToBytes, numToVarInt, parseWIF } from './encoding.js';
 import { hexToBytes, bytesToHex, dSHA256 } from './utils.js';
 import { OP } from './script.js';
