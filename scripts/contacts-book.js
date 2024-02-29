@@ -464,10 +464,21 @@ export const RECEIVE_TYPES = {
     ADDRESS: 1,
     SHIELD: 2,
     XPUB: 3,
+    MAX_RECEIVE: 4,
 };
 
 /** The current Receive Type used by Receive UIs */
 export let cReceiveType = RECEIVE_TYPES.CONTACT;
+
+/**
+ * Helper function for guiToggleReceiveType
+ */
+function findNextAvailableType(startType, availableTypes) {
+    do {
+        startType = (startType + 1) % RECEIVE_TYPES.MAX_RECEIVE;
+    } while (!availableTypes.includes(startType));
+    return startType;
+}
 
 /**
  * Cycles through the Receive Types with each run
@@ -488,10 +499,10 @@ export async function guiToggleReceiveType(nForceType = null) {
     cReceiveType =
         nForceType !== null
             ? nForceType
-            : (cReceiveType + 1) % availableTypes.length;
+            : findNextAvailableType(cReceiveType, availableTypes);
 
     // Convert the *next* Type to text (also runs through i18n system)
-    const nNextType = (cReceiveType + 1) % availableTypes.length;
+    const nNextType = findNextAvailableType(cReceiveType, availableTypes);
     let strNextType = '';
     switch (nNextType) {
         case RECEIVE_TYPES.CONTACT:

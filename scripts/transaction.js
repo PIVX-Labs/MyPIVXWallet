@@ -88,9 +88,8 @@ export class Transaction {
     blockTime;
     /** @type{number} */
     lockTime;
-
-    /** @type{number[]} */
-    shieldData = [];
+    /** Cached txid */
+    #txid = '';
 
     constructor({
         version = 1,
@@ -99,7 +98,10 @@ export class Transaction {
         vout = [],
         blockTime = -1,
         lockTime = 0,
-        shieldData = [],
+        valueBalance = 0,
+        shieldSpend = [],
+        shieldOutput = [],
+        bindingSig = '',
     } = {}) {
         this.version = version;
         this.blockHeight = blockHeight;
@@ -107,11 +109,31 @@ export class Transaction {
         this.vout = vout;
         this.blockTime = blockTime;
         this.lockTime = lockTime;
-        this.shieldData = shieldData;
+        this.shieldSpend = shieldSpend;
+        this.shieldOutput = shieldOutput;
+        this.bindingSig = bindingSig;
+        this.valueBalance = valueBalance;
+        /** Handle to the unproxied tx for when we need to clone it */
+        this.__original = this;
+        return new Proxy(this, {
+            set(obj) {
+                obj.#txid = '';
+                return Reflect.set(...arguments);
+            },
+        });
     }
 
     get txid() {
-        return bytesToHex(dSHA256(hexToBytes(this.serialize())).reverse());
+        if (!this.__original.#txid) {
+            this.__original.#txid = bytesToHex(
+                dSHA256(hexToBytes(this.serialize())).reverse()
+            );
+        }
+        return this.__original.#txid;
+    }
+
+    hasShieldData() {
+        return this.bindingSig !== '';
     }
 
     isConfirmed() {
@@ -198,7 +220,82 @@ export class Transaction {
         this.lockTime = Number(bytesToNum(bytes.slice(offset, (offset += 4))));
 
         if (this.version === 3) {
-            this.shieldData = Array.from(bytes.slice(offset));
+            const hasShield = bytesToNum(bytes.slice(offset, (offset += 1)));
+            if (hasShield) {
+                this.valueBalance = Number(
+                    bytesToNum(bytes.slice(offset, (offset += 8)))
+                );
+
+                const { num: shieldSpendLen, readBytes } = varIntToNum(
+                    bytes.slice(offset)
+                );
+                offset += readBytes;
+                for (let i = 0; i < shieldSpendLen; i++) {
+                    const cv = bytesToHex(
+                        bytes.slice(offset, (offset += 32)).reverse()
+                    );
+                    const anchor = bytesToHex(
+                        bytes.slice(offset, (offset += 32)).reverse()
+                    );
+                    const nullifier = bytesToHex(
+                        bytes.slice(offset, (offset += 32)).reverse()
+                    );
+                    const rk = bytesToHex(
+                        bytes.slice(offset, (offset += 32)).reverse()
+                    );
+                    const proof = bytesToHex(
+                        bytes.slice(offset, (offset += 192))
+                    );
+                    const spendAuthSig = bytesToHex(
+                        bytes.slice(offset, (offset += 64))
+                    );
+
+                    this.shieldSpend.push({
+                        cv,
+                        anchor,
+                        nullifier,
+                        rk,
+                        proof,
+                        spendAuthSig,
+                    });
+                }
+                const { num: outputLen, readBytes: readOutBytes } = varIntToNum(
+                    bytes.slice(offset)
+                );
+                offset += readOutBytes;
+                for (let i = 0; i < outputLen; i++) {
+                    const cv = bytesToHex(
+                        bytes.slice(offset, (offset += 32)).reverse()
+                    );
+                    const cmu = bytesToHex(
+                        bytes.slice(offset, (offset += 32)).reverse()
+                    );
+                    const ephemeralKey = bytesToHex(
+                        bytes.slice(offset, (offset += 32)).reverse()
+                    );
+                    const encCiphertext = bytesToHex(
+                        bytes.slice(offset, (offset += 580))
+                    );
+                    const outCiphertext = bytesToHex(
+                        bytes.slice(offset, (offset += 80))
+                    );
+                    const proof = bytesToHex(
+                        bytes.slice(offset, (offset += 192))
+                    );
+
+                    this.shieldOutput.push({
+                        cv,
+                        cmu,
+                        ephemeralKey,
+                        encCiphertext,
+                        outCiphertext,
+                        proof,
+                    });
+                }
+                this.bindingSig = bytesToHex(
+                    bytes.slice(offset, (offset += 64))
+                );
+            }
         }
 
         return this;
@@ -232,11 +329,43 @@ export class Transaction {
                 ...scriptBytes,
             ];
         }
-        buffer = [
-            ...buffer,
-            ...numToBytes(BigInt(this.lockTime), 4),
-            ...this.shieldData,
-        ];
+        buffer = [...buffer, ...numToBytes(BigInt(this.lockTime), 4)];
+
+        if (this.version === 3) {
+            buffer = [
+                ...buffer,
+                Number(this.hasShieldData()),
+                ...numToBytes(BigInt(this.valueBalance), 8),
+                ...numToVarInt(BigInt(this.shieldSpend.length)),
+            ];
+            for (const spend of this.shieldSpend) {
+                buffer = [
+                    ...buffer,
+                    ...hexToBytes(spend.cv).reverse(),
+                    ...hexToBytes(spend.anchor).reverse(),
+                    ...hexToBytes(spend.nullifier).reverse(),
+                    ...hexToBytes(spend.rk).reverse(),
+                    ...hexToBytes(spend.proof),
+                    ...hexToBytes(spend.spendAuthSig),
+                ];
+            }
+            buffer = [
+                ...buffer,
+                ...numToVarInt(BigInt(this.shieldOutput.length)),
+            ];
+            for (const output of this.shieldOutput) {
+                buffer = [
+                    ...buffer,
+                    ...hexToBytes(output.cv).reverse(),
+                    ...hexToBytes(output.cmu).reverse(),
+                    ...hexToBytes(output.ephemeralKey).reverse(),
+                    ...hexToBytes(output.encCiphertext),
+                    ...hexToBytes(output.outCiphertext),
+                    ...hexToBytes(output.proof),
+                ];
+            }
+            buffer = [...buffer, ...hexToBytes(this.bindingSig)];
+        }
 
         return bytesToHex(buffer);
     }
@@ -246,7 +375,7 @@ export class Transaction {
      * Using the sighash type SIGHASH_ALL
      */
     transactionHash(index) {
-        const copy = structuredClone(this);
+        const copy = structuredClone(this.__original);
         // Black out all inputs
         for (let i = 0; i < copy.vin.length; i++) {
             if (i != index) copy.vin[i].scriptSig = '';

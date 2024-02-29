@@ -358,6 +358,13 @@ async function send(address, amount, useShieldInputs) {
     // If a Contact were found, we use it's Pubkey
     if (cContact) address = cContact.pubkey;
 
+    // Make sure wallet has shield enabled
+    if (!wallet.hasShield.value) {
+        if (useShieldInputs || isShieldAddress(address)) {
+            return createAlert('warning', ALERTS.MISSING_SHIELD);
+        }
+    }
+
     // If this is an XPub, we'll fetch their last used 'index', and derive a new public key for enhanced privacy
     if (isXPub(address)) {
         const cNet = getNetwork();

@@ -21,9 +21,10 @@ export class Database {
      * Version 2 = Promos Integration (#124)
      * Version 3 = TX Database (#235)
      * Version 4 = Tx Refactor (#284)
+     * Version 5 = Tx shield data (#295)
      * @type{Number}
      */
-    static version = 4;
+    static version = 5;
 
     /**
      * @type{IDBPDatabase}
@@ -70,7 +71,7 @@ export class Database {
         const store = this.#db
             .transaction('txs', 'readwrite')
             .objectStore('txs');
-        await store.put(tx, tx.txid);
+        await store.put(tx.__original, tx.txid);
     }
 
     /**
@@ -351,7 +352,10 @@ export class Database {
                 blockTime: tx.blockTime,
                 vin: vin,
                 vout: vout,
-                shieldData: tx.shieldData,
+                valueBalance: tx.valueBalance,
+                shieldSpend: tx.shieldSpend,
+                shieldOutput: tx.shieldOutput,
+                bindingSig: tx.bindingSig,
                 lockTime: tx.lockTime,
             });
         });
@@ -476,7 +480,7 @@ export class Database {
                 if (oldVersion <= 2) {
                     db.createObjectStore('txs');
                 }
-                if (oldVersion < 4) {
+                if (oldVersion < 5) {
                     // Recreate tx db due to transaction class changes
                     db.deleteObjectStore('txs');
                     db.createObjectStore('txs');

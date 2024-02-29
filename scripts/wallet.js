@@ -969,6 +969,11 @@ export class Wallet {
         if (transaction.version !== 3) {
             throw new Error('`signShield` was called with a non-shield tx');
         }
+        if (!this.hasShield()) {
+            throw new Error(
+                'trying to create a shield transaction without having shield enable'
+            );
+        }
 
         const periodicFunction = setInterval(async () => {
             const percentage = 5 + (await this.#shield.getTxStatus()) * 95;
@@ -980,10 +985,10 @@ export class Wallet {
         }, 500);
 
         const value =
-            transaction.shieldData[0]?.value || transaction.vout[0].value;
+            transaction.shieldOutput[0]?.value || transaction.vout[0].value;
         const { hex } = await this.#shield.createTransaction({
             address:
-                transaction.shieldData[0]?.address ||
+                transaction.shieldOutput[0]?.address ||
                 this.getAddressesFromScript(transaction.vout[0].script)
                     .addresses[0],
             amount: value,
