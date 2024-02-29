@@ -327,3 +327,4 @@ WALLET_UNLOCKED = "Wallet sbloccato con successo!" # Wallet successfully Unlocke
 CONFIRM_LEDGER_TX = "Conferma che questa transazione combacia quella nel tuo {hardwareWallet}" # Confirm this transaction matches the one on your {hardwareWallet}
 CONFIRM_LEDGER_TX_OUT = "Manderai {value} {ticker} a <div class=\"inline-address\">{address}</div>" # You will send {value} {ticker} to <div class="inline-address">{address}</div>
 MISSING_FUNDS = "Il bilancio non è sufficiente! Mancano {sats} sats!" # Balance is too small! Missing {sats} sats!
+MISSING_SHIELD = "Lo Shield non è abilitato nel wallet!" # Shield is not enabled in this wallet!
