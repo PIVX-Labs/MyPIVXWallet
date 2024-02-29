@@ -323,7 +323,13 @@ function reload() {
             <br />
             <div class="dcWallet-usdBalance">
                 <span class="dcWallet-usdValue" v-if="shieldEnabled">
-                    <i class="fas fa-shield fa-xs" style="margin-right: 4px" v-if="shieldEnabled"> </i>{{ shieldBalanceStr }}
+                    <i
+                        class="fas fa-shield fa-xs"
+                        style="margin-right: 4px"
+                        v-if="shieldEnabled"
+                    >
+                    </i
+                    >{{ shieldBalanceStr }}
                     <span
                         style="opacity: 0.75"
                         v-if="pendingShieldBalance != 0"
