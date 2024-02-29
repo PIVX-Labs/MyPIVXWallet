@@ -673,7 +673,7 @@ defineExpose({
                         <div class="modal-body center-text">
                             <center>
                                 <p class="mono" style="font-size: small">
-                                    <b>PIVX Promos</b>
+                                    <b>PIVX Promos </b>
                                     <span
                                         style="font-family: inherit !important"
                                     >
