@@ -240,6 +240,7 @@ async function encryptWallet(password, currentPassword = '') {
 
 // TODO: This needs to be vueeifed a bit
 async function restoreWallet(strReason) {
+    if (!wallet.isEncrypted.value) return false;
     if (wallet.isHardwareWallet.value) return true;
     // Build up the UI elements based upon conditions for the unlock prompt
     let strHTML = '';
@@ -318,17 +319,18 @@ async function lockWallet() {
 async function send(address, amount, useShieldInputs) {
     // Ensure a wallet is unlocked
     if (wallet.isViewOnly.value && !wallet.isHardwareWallet.value) {
-        return createAlert(
-            'warning',
-            tr(ALERTS.WALLET_UNLOCK_IMPORT, [
-                {
-                    unlock: wallet.isEncrypted.value
-                        ? 'unlock '
-                        : 'import/create',
-                },
-            ]),
-            3000
-        );
+        if (
+            !(await restoreWallet(
+                tr(ALERTS.WALLET_UNLOCK_IMPORT, [
+                    {
+                        unlock: wallet.isEncrypted.value
+                            ? 'unlock '
+                            : 'import/create',
+                    },
+                ])
+            ))
+        )
+            return;
     }
 
     // Ensure wallet is synced
