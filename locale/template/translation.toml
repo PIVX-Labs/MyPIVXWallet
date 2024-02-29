@@ -74,6 +74,8 @@ secureYourWallet = "Secure your wallet"
 unlockWallet = "Unlock wallet"
 lockWallet = "Lock wallet"
 syncStatusHistoryProgress = "Syncing History Chunks {current} of {total}"
+syncLoadingSaplingProver = "Loading Sapling Prover"
+syncShieldProgress = "Loading shielded blocks {current} of {total}"
 syncStatusStarting = "<b>Your wallet is syncing!</b><br>You'll be able to use it fully once this is complete."
 syncStatusFinished = "<b>Sync Finished!</b><br>Your wallet is ready to use!"
 encryptWallet = "Encrypt wallet"
@@ -234,6 +236,10 @@ timeHours = "Hours"
 timeMinutes = "Minutes"
 timeSeconds = "Seconds"
 unhandledException = "Unhandled exception."
+useShieldInputs = "Use shield inputs"
+newShieldAddress = "Get new shield address"
+shieldAddress = "Shield address"
+cantShieldToExc = "This address does not support shield transfers"
 
 [ALERTS]
 INTERNAL_ERROR = "Internal error, please try again later"
@@ -342,3 +348,7 @@ APP_INSTALLED = "App Installed!"
 WALLET_FIREFOX_UNSUPPORTED ="<b>Firefox doesn't support this!</b><br>Unfortunately, Firefox does not support hardware wallets"
 CONFIRM_POPUP_DELETE_ACCOUNT = 'This will delete all your data, including masternodes contacts and private keys!'
 CONFIRM_POPUP_DELETE_ACCOUNT_TITLE = 'Are you sure?'
+CONFIRM_LEDGER_TX = 'Confirm this transaction matches the one on your {hardwareWallet}'
+CONFIRM_LEDGER_TX_OUT = 'You will send {value} {ticker} to <div class="inline-address">{address}</div>'
+MISSING_FUNDS = 'Balance is too small! Missing {sats} sats!'
+MISSING_SHIELD = "Shield is not enabled in this wallet!"

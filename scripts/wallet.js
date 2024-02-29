@@ -1,9 +1,11 @@
 import { validateMnemonic } from 'bip39';
 import { decrypt } from './aes-gcm.js';
+import { parseWIF } from './encoding.js';
 import { beforeUnloadListener } from './global.js';
-import { getNetwork } from './network.js';
-import { MAX_ACCOUNT_GAP } from './chain_params.js';
-import { Transaction, HistoricalTx, HistoricalTxType } from './mempool.js';
+import { ExplorerNetwork, getNetwork } from './network.js';
+import { MAX_ACCOUNT_GAP, SHIELD_BATCH_SYNC_SIZE } from './chain_params.js';
+import { HistoricalTx, HistoricalTxType } from './mempool.js';
+import { Transaction } from './transaction.js';
 import { confirmPopup, createAlert } from './misc.js';
 import { cChainParams } from './chain_params.js';
 import { COIN } from './chain_params.js';
@@ -11,12 +13,14 @@ import { mempool } from './global.js';
 import { ALERTS, tr, translation } from './i18n.js';
 import { encrypt } from './aes-gcm.js';
 import { Database } from './database.js';
-import { guiRenderCurrentReceiveModal } from './contacts-book.js';
+import { RECEIVE_TYPES } from './contacts-book.js';
 import { Account } from './accounts.js';
 import { fAdvancedMode } from './settings.js';
-import { bytesToHex, hexToBytes } from './utils.js';
+import { bytesToHex, hexToBytes, startBatch } from './utils.js';
 import { strHardwareName } from './ledger.js';
 import { COutpoint, UTXO_WALLET_STATE } from './mempool.js';
+import { getEventEmitter } from './event_bus.js';
+
 import {
     isP2CS,
     isP2PKH,
@@ -25,6 +29,9 @@ import {
     P2PK_START_INDEX,
     OWNER_START_INDEX,
 } from './script.js';
+import { PIVXShield } from 'pivx-shield';
+import { guiToggleReceiveType } from './contacts-book.js';
+import { TransactionBuilder } from './transaction_builder.js';
 
 /**
  * Class Wallet, at the moment it is just a "realization" of Masterkey with a given nAccount
@@ -39,9 +46,13 @@ export class Wallet {
      */
     static chains = 2;
     /**
-     * @type {import('./masterkey.js').MasterKey}
+     * @type {import('./masterkey.js').MasterKey?}
      */
     #masterKey;
+    /**
+     * @type {import('pivx-shield').PIVXShield?}
+     */
+    #shield = null;
     /**
      * @type {number}
      */
@@ -83,10 +94,27 @@ export class Wallet {
      * @type {Set<String>}
      */
     #lockedCoins;
-    constructor(nAccount, isMainWallet) {
+    /**
+     * Whether the wallet is synced
+     * @type {boolean}
+     */
+    #isSynced = false;
+    /**
+     * true iff we are fetching latestBlocks
+     * @type {boolean}
+     */
+    #isFetchingLatestBlocks;
+    constructor({
+        nAccount = 0,
+        isMainWallet = true,
+        masterKey = null,
+        shield = null,
+    } = {}) {
         this.#nAccount = nAccount;
         this.#isMainWallet = isMainWallet;
         this.#lockedCoins = new Set();
+        this.#masterKey = masterKey;
+        this.#shield = shield;
         for (let i = 0; i < Wallet.chains; i++) {
             this.#highestUsedIndices.set(i, 0);
             this.#loadedIndexes.set(i, 0);
@@ -120,6 +148,10 @@ export class Wallet {
         mempool.setBalance();
     }
 
+    /**
+     * Get master key
+     * @deprecated use the wallet functions instead
+     */
     getMasterKey() {
         return this.#masterKey;
     }
@@ -144,8 +176,15 @@ export class Wallet {
         return this.#nAccount;
     }
 
+    get isSynced() {
+        return this.#isSynced;
+    }
+
     wipePrivateData() {
         this.#masterKey.wipePrivateData(this.#nAccount);
+        if (this.#shield) {
+            this.#shield.extsk = null;
+        }
     }
 
     isViewOnly() {
@@ -203,12 +242,35 @@ export class Wallet {
     }
 
     /**
+     * Set the extended spending key of a shield object
+     * @param {String} extsk encoded extended spending key
+     */
+    async setExtsk(extsk) {
+        await this.#shield.loadExtendedSpendingKey(extsk);
+    }
+
+    /**
+     * This should really be provided with the constructor,
+     * This will be done once `Dashboard.vue` is the owner of the wallet
+     * @param {import('pivx-shield').PIVXShield} shield object to set
+     */
+    setShield(shield) {
+        this.#shield = shield;
+    }
+
+    hasShield() {
+        return !!this.#shield;
+    }
+
+    /**
      * Reset the wallet, indexes address map and so on
      */
     reset() {
         this.#highestUsedIndices = new Map();
         this.#loadedIndexes = new Map();
         this.#ownAddresses = new Map();
+        this.#isSynced = false;
+        this.#shield = null;
         this.#addressIndices = new Map();
         for (let i = 0; i < Wallet.chains; i++) {
             this.#highestUsedIndices.set(i, 0);
@@ -294,12 +356,20 @@ export class Wallet {
     async encrypt(strPassword) {
         // Encrypt the wallet WIF with AES-GCM and a user-chosen password - suitable for browser storage
         let strEncWIF = await encrypt(this.#masterKey.keyToBackup, strPassword);
+        let strEncExtsk = '';
+        let shieldData = '';
+        if (this.#shield) {
+            strEncExtsk = await encrypt(this.#shield.extsk, strPassword);
+            shieldData = this.#shield.save();
+        }
         if (!strEncWIF) return false;
 
         // Prepare to Add/Update an account in the DB
         const cAccount = new Account({
             publicKey: this.getKeyToExport(),
             encWif: strEncWIF,
+            encExtsk: strEncExtsk,
+            shieldData: shieldData,
         });
 
         // Incase of a "Change Password", we check if an Account already exists
@@ -320,7 +390,7 @@ export class Wallet {
     }
 
     /**
-     * @return [string, string] Address and its BIP32 derivation path
+     * @return {[string, string]} Address and its BIP32 derivation path
      */
     getNewAddress(nReceiving = 0) {
         const last = this.#highestUsedIndices.get(nReceiving);
@@ -343,6 +413,13 @@ export class Wallet {
             this.#addressIndices.get(nReceiving)
         );
         return [address, path];
+    }
+
+    /**
+     * @returns {Promsie<string>} new shield address
+     */
+    async getNewShieldAddress() {
+        return await this.#shield.getNewAddress();
     }
 
     isHardwareWallet() {
@@ -443,11 +520,23 @@ export class Wallet {
         return this.isOwnAddress(address);
     }
 
+    isMyVout(script) {
+        const { type, addresses } = this.getAddressesFromScript(script);
+        const index = addresses.findIndex((s) => this.isOwnAddress(s));
+        if (index === -1) return UTXO_WALLET_STATE.NOT_MINE;
+        if (type === 'p2pkh') return UTXO_WALLET_STATE.SPENDABLE;
+        if (type === 'p2cs') {
+            return index === 0
+                ? UTXO_WALLET_STATE.COLD_RECEIVED
+                : UTXO_WALLET_STATE.SPENDABLE_COLD;
+        }
+    }
+
     /**
      * Get addresses from a script
      * @returns {{ type: 'p2pkh'|'p2cs'|'unknown', addresses: string[] }}
      */
-    #getAddressesFromScript(script) {
+    getAddressesFromScript(script) {
         const dataBytes = hexToBytes(script);
         if (isP2PKH(dataBytes)) {
             const address = this.getAddressFromHashCache(
@@ -477,17 +566,6 @@ export class Wallet {
         }
     }
 
-    isMyVout(script) {
-        const { type, addresses } = this.#getAddressesFromScript(script);
-        const index = addresses.findIndex((s) => this.isOwnAddress(s));
-        if (index === -1) return UTXO_WALLET_STATE.NOT_MINE;
-        if (type === 'p2pkh') return UTXO_WALLET_STATE.SPENDABLE;
-        if (type === 'p2cs') {
-            return index === 0
-                ? UTXO_WALLET_STATE.COLD_RECEIVED
-                : UTXO_WALLET_STATE.SPENDABLE_COLD;
-        }
-    }
     // Avoid calculating over and over the same getAddressFromHash by saving the result in a map
     getAddressFromHashCache(pkh_hex, isColdStake) {
         if (!this.#knownPKH.has(pkh_hex)) {
@@ -583,7 +661,7 @@ export class Wallet {
         return tx.vout.reduce(
             (acc, vout) => [
                 ...acc,
-                ...this.#getAddressesFromScript(vout.script).addresses,
+                ...this.getAddressesFromScript(vout.script).addresses,
             ],
             []
         );
@@ -640,12 +718,375 @@ export class Wallet {
         }
         return histTXs;
     }
+    #syncing = false;
+
+    async sync() {
+        if (this.#isSynced || this.#syncing) {
+            throw new Error('Attempting to sync when already synced');
+        }
+        try {
+            this.#syncing = true;
+            await mempool.loadFromDisk();
+            await this.loadShieldFromDisk();
+            await getNetwork().walletFullSync();
+            if (this.hasShield()) {
+                await this.#syncShield();
+            }
+            this.#isSynced = true;
+        } finally {
+            this.#syncing = false;
+        }
+    }
+    /**
+     * Initial block and prover sync for the shield object
+     */
+    async #syncShield() {
+        if (!this.#shield || this.#isSynced) {
+            return;
+        }
+        /**
+         * @type {ExplorerNetwork}
+         */
+        const cNet = getNetwork();
+        getEventEmitter().emit(
+            'shield-sync-status-update',
+            translation.syncLoadingSaplingProver,
+            false
+        );
+        await this.#shield.loadSaplingProver();
+        try {
+            const blockHeights = (await cNet.getShieldBlockList()).filter(
+                (b) => b > this.#shield.getLastSyncedBlock()
+            );
+            const batchSize = SHIELD_BATCH_SYNC_SIZE;
+            let handled = 0;
+            const blocks = [];
+            let syncing = false;
+            await startBatch(
+                async (i) => {
+                    let block;
+                    block = await cNet.getBlock(blockHeights[i]);
+                    blocks[i] = block;
+                    // We need to process blocks monotically
+                    // When we get a block, start from the first unhandled
+                    // One and handle as many as possible
+                    for (let j = handled; blocks[j]; j = handled) {
+                        if (syncing) break;
+                        syncing = true;
+                        handled++;
+                        await this.#shield.handleBlock(blocks[j]);
+                        // Delete so we don't have to hold all blocks in memory
+                        // until we finish syncing
+                        delete blocks[j];
+                        syncing = false;
+                    }
+
+                    getEventEmitter().emit(
+                        'shield-sync-status-update',
+                        tr(translation.syncShieldProgress, [
+                            { current: handled - 1 },
+                            { total: blockHeights.length },
+                        ]),
+                        false
+                    );
+                },
+                blockHeights.length,
+                batchSize
+            );
+            getEventEmitter().emit('shield-sync-status-update', '', true);
+        } catch (e) {
+            console.error(e);
+        }
+
+        // At this point it should be safe to assume that shield is ready to use
+        await this.saveShieldOnDisk();
+        this.#isSynced = true;
+    }
+
+    /**
+     * @todo this needs to take the `vin` as input,
+     * But currently we don't have any way of getting the UTXO
+     * out of the vin. This will hapèen after the mempool refactor,
+     * But for now we can just recalculate the UTXOs
+     */
+    #getUTXOsForShield() {
+        return mempool
+            .getUTXOs({
+                filter: UTXO_WALLET_STATE.SPENDABLE,
+                includeLocked: false,
+            })
+            .map((u) => {
+                return {
+                    vout: u.outpoint.n,
+                    amount: u.value,
+                    private_key: parseWIF(
+                        this.#masterKey.getPrivateKey(this.getPath(u.script))
+                    ),
+                    script: hexToBytes(u.script),
+                    txid: u.outpoint.txid,
+                };
+            });
+    }
+
+    /**
+     * Update the shield object with the latest blocks
+     */
+    async getLatestBlocks() {
+        // Exit if this function is still processing
+        // (this might take some time if we had many consecutive blocks without shield txs)
+        if (this.#isFetchingLatestBlocks) return;
+        // Exit if there is no shield loaded
+        if (!this.hasShield()) return;
+        this.#isFetchingLatestBlocks = true;
+        /**
+         * @type {ExplorerNetwork}
+         */
+        const cNet = getNetwork();
+        // Don't ask for the exact last block that arrived,
+        // since it takes around 1 minute for blockbook to make it API available
+        for (
+            let blockHeight = this.#shield.getLastSyncedBlock() + 1;
+            blockHeight < cNet.cachedBlockCount;
+            blockHeight++
+        ) {
+            try {
+                const block = await cNet.getBlock(blockHeight);
+                if (block.txs) {
+                    await this.#shield.handleBlock(block);
+                } else {
+                    break;
+                }
+            } catch (e) {
+                console.error(e);
+                break;
+            }
+        }
+        this.#isFetchingLatestBlocks = false;
+        await this.saveShieldOnDisk();
+    }
+    /**
+     * Save shield data on database
+     */
+    async saveShieldOnDisk() {
+        const cDB = await Database.getInstance();
+        const cAccount = await cDB.getAccount();
+        // If the account has not been created yet (for example no encryption) return
+        if (!cAccount) {
+            return;
+        }
+        cAccount.shieldData = this.#shield.save();
+        await cDB.updateAccount(cAccount);
+    }
+    /**
+     * Load shield data from database
+     */
+    async loadShieldFromDisk() {
+        if (this.#shield) {
+            return;
+        }
+        const cDB = await Database.getInstance();
+        const cAccount = await cDB.getAccount();
+        // If the account has not been created yet or there is no shield data return
+        if (!cAccount || cAccount.shieldData == '') {
+            return;
+        }
+        this.#shield = await PIVXShield.load(cAccount.shieldData);
+        getEventEmitter().emit('shield-loaded-from-disk');
+        return;
+    }
+
+    /**
+     * @returns {Promise<number>} Number of shield satoshis of the account
+     */
+    async getShieldBalance() {
+        return this.#shield?.getBalance() || 0;
+    }
+
+    /**
+     * @returns {Promise<number>} Number of pending shield satoshis of the account
+     */
+    async getPendingShieldBalance() {
+        return this.#shield?.getPendingBalance() || 0;
+    }
+
+    /**
+     * Create a non signed transaction
+     * @param {string} address - Address to send to
+     * @param {number} value - Amount of satoshis to send
+     * @param {object} [opts] - Options
+     * @param {boolean} [opts.isDelegation] - Whether or not this delegates PIVs to `address`.
+     *     If set to true, `address` must be a valid cold staking address
+     * @param {boolean} [opts.useDelegatedInputs] - Whether or not cold stake inputs are to be used.
+     *    Should be set if this is an undelegation transaction.
+     * @param {string?} [opts.changeDelegationAddress] - Which address to use as change when `useDelegatedInputs` is set to true.
+     *     Only changes >= 1 PIV can be delegated
+     * @param {boolean} [opts.isProposal] - Whether or not this is a proposal transaction
+     */
+    createTransaction(
+        address,
+        value,
+        {
+            isDelegation = false,
+            useDelegatedInputs = false,
+            useShieldInputs = false,
+            delegateChange = false,
+            changeDelegationAddress = null,
+            isProposal = false,
+            changeAddress = '',
+            returnAddress = '',
+        } = {}
+    ) {
+        let balance;
+        if (useDelegatedInputs) {
+            balance = mempool.coldBalance;
+        } else if (useShieldInputs) {
+            balance = this.#shield.getBalance();
+        } else {
+            balance = mempool.balance;
+        }
+        if (balance < value) {
+            throw new Error('Not enough balance');
+        }
+        if (delegateChange && !changeDelegationAddress)
+            throw new Error(
+                '`delegateChange` was set to true, but no `changeDelegationAddress` was provided.'
+            );
+        const transactionBuilder = TransactionBuilder.create();
+        if (!useShieldInputs) {
+            const filter = useDelegatedInputs
+                ? UTXO_WALLET_STATE.SPENDABLE_COLD
+                : UTXO_WALLET_STATE.SPENDABLE;
+            const utxos = mempool.getUTXOs({ filter, target: value });
+            transactionBuilder.addUTXOs(utxos);
+            const fee = transactionBuilder.getFee();
+            const changeValue = transactionBuilder.valueIn - value - fee;
+
+            // Add change output
+            if (changeValue > 0) {
+                if (!changeAddress) [changeAddress] = this.getNewAddress(1);
+                if (delegateChange && changeValue > 1.01 * COIN) {
+                    transactionBuilder.addColdStakeOutput({
+                        address: changeAddress,
+                        value: changeValue,
+                        addressColdStake: changeDelegationAddress,
+                    });
+                } else {
+                    transactionBuilder.addOutput({
+                        address: changeAddress,
+                        value: changeValue,
+                    });
+                }
+            } else {
+                // We're sending alot! So we deduct the fee from the send amount. There's not enough change to pay it with!
+                value -= fee;
+            }
+        }
+
+        // Add primary output
+        if (isDelegation) {
+            if (!returnAddress) [returnAddress] = this.getNewAddress(1);
+            transactionBuilder.addColdStakeOutput({
+                address: returnAddress,
+                addressColdStake: address,
+                value,
+            });
+        } else if (isProposal) {
+            transactionBuilder.addProposalOutput({
+                hash: address,
+                value,
+            });
+        } else {
+            transactionBuilder.addOutput({
+                address,
+                value,
+            });
+        }
+        return transactionBuilder.build();
+    }
+
+    /**
+     * Sign a shield transaction
+     * @param {Transaction} transaction
+     */
+    async #signShield(transaction) {
+        if (transaction.version !== 3) {
+            throw new Error('`signShield` was called with a non-shield tx');
+        }
+        if (!this.hasShield()) {
+            throw new Error(
+                'trying to create a shield transaction without having shield enable'
+            );
+        }
+
+        const periodicFunction = setInterval(async () => {
+            const percentage = 5 + (await this.#shield.getTxStatus()) * 95;
+            getEventEmitter().emit(
+                'shield-transaction-creation-update',
+                percentage,
+                false
+            );
+        }, 500);
+
+        const value =
+            transaction.shieldOutput[0]?.value || transaction.vout[0].value;
+        const { hex } = await this.#shield.createTransaction({
+            address:
+                transaction.shieldOutput[0]?.address ||
+                this.getAddressesFromScript(transaction.vout[0].script)
+                    .addresses[0],
+            amount: value,
+            blockHeight: getNetwork().cachedBlockCount,
+            useShieldInputs: transaction.vin.length === 0,
+            utxos: this.#getUTXOsForShield(),
+            transparentChangeAddress: this.getNewAddress(1)[0],
+        });
+        clearInterval(periodicFunction);
+        getEventEmitter().emit('shield-transaction-creation-update', 0.0, true);
+        return transaction.fromHex(hex);
+    }
+
+    /**
+     * @param {Transaction} transaction - transaction to sign
+     * @throws {Error} if the wallet is view only
+     * @returns {Promise<Transaction>} a reference to the same transaction, signed
+     */
+    async sign(transaction) {
+        if (this.isViewOnly()) {
+            throw new Error('Cannot sign with a view only wallet');
+        }
+        if (transaction.version === 3) {
+            return await this.#signShield(transaction);
+        }
+        for (let i = 0; i < transaction.vin.length; i++) {
+            const input = transaction.vin[i];
+            const { type } = this.getAddressesFromScript(input.scriptSig);
+            const path = this.getPath(input.scriptSig);
+            const wif = this.getMasterKey().getPrivateKey(path);
+            await transaction.signInput(i, wif, {
+                isColdStake: type === 'p2cs',
+            });
+        }
+        return transaction;
+    }
+
+    /**
+     * Finalize Transaction. To be called after it's signed and sent to the network, if successful
+     * @param {Transaction} transaction
+     */
+    finalizeTransaction(transaction) {
+        if (transaction.version === 3) {
+            wallet.#shield.finalizeTransaction(transaction.txid);
+        }
+
+        mempool.updateMempool(transaction);
+        mempool.setBalance();
+    }
 }
 
 /**
  * @type{Wallet}
  */
-export const wallet = new Wallet(0, true); // For now we are using only the 0-th account, (TODO: update once account system is done)
+export const wallet = new Wallet(); // For now we are using only the 0-th account, (TODO: update once account system is done)
 
 /**
  * Clean a Seed Phrase string and verify it's integrity
@@ -728,6 +1169,7 @@ export async function hasEncryptedWallet() {
 export async function getNewAddress({
     updateGUI = false,
     verify = false,
+    shield = false,
     nReceiving = 0,
 } = {}) {
     const [address, path] = wallet.getNewAddress(nReceiving);
@@ -738,7 +1180,6 @@ export async function getNewAddress({
             html: createAddressConfirmation(address),
             resolvePromise: wallet.getMasterKey().verifyAddress(path),
         });
-        console.log(address, confAddress);
         if (address !== confAddress) {
             throw new Error('User did not verify address');
         }
@@ -746,7 +1187,9 @@ export async function getNewAddress({
 
     // If we're generating a new address manually, then render the new address in our Receive Modal
     if (updateGUI) {
-        guiRenderCurrentReceiveModal();
+        guiToggleReceiveType(
+            shield ? RECEIVE_TYPES.SHIELD : RECEIVE_TYPES.ADDRESS
+        );
     }
 
     return [address, path];

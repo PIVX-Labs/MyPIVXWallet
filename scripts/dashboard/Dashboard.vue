@@ -10,7 +10,9 @@ import { parseWIF, verifyWIF } from '../encoding.js';
 import {
     createAlert,
     isBase64,
-    isValidBech32,
+    isExchangeAddress,
+    isShieldAddress,
+    isValidPIVXAddress,
     parseBIP21Request,
     sanitizeHTML,
 } from '../misc.js';
@@ -40,12 +42,13 @@ import {
     isStandardAddress,
 } from '../misc.js';
 import { getNetwork } from '../network.js';
-import { validateAmount, createAndSendTransaction } from '../transactions.js';
 import { strHardwareName } from '../ledger';
 import { guiAddContactPrompt } from '../contacts-book';
 import { scanQRCode } from '../scanner';
+import { PIVXShield } from 'pivx-shield';
 import { useWallet } from '../composables/use_wallet.js';
 import { useSettings } from '../composables/use_settings.js';
+import { validateAmount } from '../legacy.js';
 
 const wallet = useWallet();
 const activity = ref(null);
@@ -73,16 +76,30 @@ watch(showExportModal, async (showExportModal) => {
     }
 });
 
+class ParsedSecret {
+    /**
+     * @type {import('../masterkey.js').MasterKey} masterkey - Masterkey object derived from the secret
+     */
+    masterKey;
+    /**
+     * @type {PIVXShield} shield - Shield object associated with the secret. Only provided if the secret contains a seed
+     */
+    shield;
+    constructor(masterKey, shield = null) {
+        this.masterKey = masterKey;
+        this.shield = shield;
+    }
+}
 /**
  * Parses whatever the secret is to a MasterKey
  * @param {string|number[]|Uint8Array} secret
- * @returns {Promise<import('../masterkey.js').MasterKey>}
+ * @returns {Promise<ParsedSecret?>}
  */
 async function parseSecret(secret, password = '') {
     const rules = [
         {
             test: (s) => Array.isArray(s) || s instanceof Uint8Array,
-            f: (s) => new LegacyMasterKey({ pkBytes: s }),
+            f: (s) => new ParsedSecret(new LegacyMasterKey({ pkBytes: s })),
         },
         {
             test: (s) => isBase64(s) && s.length >= 128,
@@ -90,17 +107,17 @@ async function parseSecret(secret, password = '') {
         },
         {
             test: (s) => s.startsWith('xprv'),
-            f: (s) => new HdMasterKey({ xpriv: s }),
+            f: (s) => new ParsedSecret(new HdMasterKey({ xpriv: s })),
         },
         {
             test: (s) => s.startsWith('xpub'),
-            f: (s) => new HdMasterKey({ xpub: s }),
+            f: (s) => new ParsedSecret(new HdMasterKey({ xpub: s })),
         },
         {
             test: (s) =>
                 cChainParams.current.PUBKEY_PREFIX.includes(s[0]) &&
                 s.length === 34,
-            f: (s) => new LegacyMasterKey({ address: s }),
+            f: (s) => new ParsedSecret(new LegacyMasterKey({ address: s })),
         },
         {
             test: (s) => verifyWIF(s),
@@ -114,9 +131,23 @@ async function parseSecret(secret, password = '') {
                     advancedMode.value
                 );
                 if (!ok) throw new Error(msg);
-                return new HdMasterKey({
-                    seed: await mnemonicToSeed(phrase, password),
+                const seed = await mnemonicToSeed(phrase, password);
+                const pivxShield = await PIVXShield.create({
+                    seed,
+                    // hardcoded value considering the last checkpoint, this is good both for mainnet and testnet
+                    // TODO: take the wallet creation height in input from users
+                    blockHeight: 4200000,
+                    coinType: cChainParams.current.BIP44_TYPE,
+                    // TODO: Change account index once account system is made
+                    accountIndex: 0,
+                    loadSaplingData: false,
                 });
+                return new ParsedSecret(
+                    new HdMasterKey({
+                        seed,
+                    }),
+                    pivxShield
+                );
             },
         },
     ];
@@ -149,15 +180,15 @@ async function parseSecret(secret, password = '') {
  */
 async function importWallet({ type, secret, password = '' }) {
     /**
-     * @type{import('../masterkey.js').MasterKey}
+     * @type{ParsedSecret?}
      */
-    let key;
+    let parsedSecret;
     if (type === 'hardware') {
         if (navigator.userAgent.includes('Firefox')) {
             createAlert('warning', ALERTS.WALLET_FIREFOX_UNSUPPORTED, 7500);
             return false;
         }
-        key = await HardwareWalletMasterKey.create();
+        parsedSecret = new ParsedSecret(await HardwareWalletMasterKey.create());
 
         createAlert(
             'info',
@@ -167,15 +198,19 @@ async function importWallet({ type, secret, password = '' }) {
             12500
         );
     } else {
-        key = await parseSecret(secret, password);
+        parsedSecret = await parseSecret(secret, password);
     }
-    if (key) {
-        await wallet.setMasterKey(key);
+    if (parsedSecret) {
+        await wallet.setMasterKey(parsedSecret.masterKey);
+        wallet.setShield(parsedSecret.shield);
         jdenticonValue.value = wallet.getAddress();
 
         if (needsToEncrypt.value) showEncryptModal.value = true;
-        await mempool.loadFromDisk();
-        getNetwork().walletFullSync();
+
+        // Start syncing in the background
+        wallet.sync().then(() => {
+            createAlert('success', translation.syncStatusFinished, 12500);
+        });
         getEventEmitter().emit('wallet-import');
         return true;
     }
@@ -224,11 +259,23 @@ async function restoreWallet(strReason) {
         const strPassword = domPassword.value;
         domPassword.value = '';
         const database = await Database.getInstance();
-        const { encWif } = await database.getAccount();
+        const { encWif, encExtsk } = await database.getAccount();
+
         // Attempt to unlock the wallet with the provided password
         const key = await parseSecret(encWif, strPassword);
-        if (key) {
-            await wallet.setMasterKey(key);
+        const extsk = await decrypt(encExtsk, strPassword);
+        if (key.masterKey) {
+            //  This SHOULD REALLY NOT HAPPEN
+            if (wallet.hasShield.value && !extsk) {
+                createAlert(
+                    'warning',
+                    'Could not decrypt sk even if password is correct, please contact a developer'
+                );
+            }
+            if (wallet.hasShield.value) {
+                await wallet.setExtsk(extsk);
+            }
+            await wallet.setMasterKey(key.masterKey);
             createAlert('success', ALERTS.WALLET_UNLOCKED, 1500);
             return true;
         } else {
@@ -268,9 +315,9 @@ async function lockWallet() {
  * @param {string} address - Address or contact to send to
  * @param {number} amount - Amount of PIVs to send
  */
-async function send(address, amount) {
+async function send(address, amount, useShieldInputs) {
     // Ensure a wallet is unlocked
-    if (wallet.isViewOnly.value) {
+    if (wallet.isViewOnly.value && !wallet.isHardwareWallet.value) {
         return createAlert(
             'warning',
             tr(ALERTS.WALLET_UNLOCK_IMPORT, [
@@ -289,6 +336,14 @@ async function send(address, amount) {
         return createAlert('warning', `${ALERTS.WALLET_NOT_SYNCED}`, 3000);
     }
 
+    // Make sure we are not already creating a (shield) tx
+    if (wallet.isCreatingTx.value) {
+        return createAlert(
+            'warning',
+            'Already creating a transaction! please wait for it to finish'
+        );
+    }
+
     // Sanity check the receiver
     address = address.trim();
 
@@ -303,6 +358,13 @@ async function send(address, amount) {
     });
     // If a Contact were found, we use it's Pubkey
     if (cContact) address = cContact.pubkey;
+
+    // Make sure wallet has shield enabled
+    if (!wallet.hasShield.value) {
+        if (useShieldInputs || isShieldAddress(address)) {
+            return createAlert('warning', ALERTS.MISSING_SHIELD);
+        }
+    }
 
     // If this is an XPub, we'll fetch their last used 'index', and derive a new public key for enhanced privacy
     if (isXPub(address)) {
@@ -339,28 +401,56 @@ async function send(address, amount) {
     }
 
     // Check if the Receiver Address is a valid P2PKH address
-    if (!isStandardAddress(address))
+    // or shield address
+    if (!isValidPIVXAddress(address))
         return createAlert(
             'warning',
             tr(ALERTS.INVALID_ADDRESS, [{ address }]),
             2500
         );
+    if (isColdAddress(address)) {
+        return createAlert(
+            'warning',
+            tr(ALERTS.INVALID_ADDRESS, [{ address }]),
+            2500
+        );
+    }
+    if (isExchangeAddress(address) && useShieldInputs) {
+        return createAlert('warning', translation.cantShieldToExc, 2500);
+    }
 
     // Sanity check the amount
     const nValue = Math.round(amount * COIN);
     if (!validateAmount(nValue)) return;
-
+    const availableBalance = useShieldInputs
+        ? wallet.shieldBalance.value
+        : wallet.balance.value;
+    if (nValue > availableBalance) {
+        createAlert(
+            'warning',
+            tr(ALERTS.MISSING_FUNDS, [{ sats: nValue - availableBalance }])
+        );
+        return;
+    }
     // Close the send screen and clear inputs
     showTransferMenu.value = false;
     transferAddress.value = '';
     transferAmount.value = '';
 
     // Create and send the TX
-    await createAndSendTransaction({
-        address,
-        amount: nValue,
-        isDelegation: false,
+    await wallet.createAndSendTransaction(getNetwork(), address, nValue, {
+        useShieldInputs,
     });
+}
+
+/**
+ * @param {boolean} useShieldInputs - whether max balance is from shield or transparent pivs
+ */
+function getMaxBalance(useShieldInputs) {
+    const coinSatoshi = useShieldInputs
+        ? wallet.shieldBalance.value
+        : wallet.balance.value;
+    transferAmount.value = (coinSatoshi / COIN).toString();
 }
 
 getEventEmitter().on('toggle-network', async () => {
@@ -400,7 +490,7 @@ onMounted(async () => {
     updateLogOutButton();
 });
 
-const { balance, immatureBalance, currency, price } = wallet;
+const { balance, shieldBalance, immatureBalance, currency, price } = wallet;
 
 getEventEmitter().on('sync-status', (status) => {
     if (status === 'stop') activity?.value?.update();
@@ -419,7 +509,7 @@ async function openSendQRScanner() {
     if (cScan) {
         const { data } = cScan;
         if (!data) return;
-        if (isStandardAddress(data) || isValidBech32(data).valid) {
+        if (isStandardAddress(data) || isShieldAddress(data)) {
             transferAddress.value = data;
             showTransferMenu.value = true;
             return;
@@ -887,6 +977,7 @@ defineExpose({
                     <!-- Balance in PIVX & USD-->
                     <WalletBalance
                         :balance="balance"
+                        :shieldBalance="shieldBalance"
                         :immatureBalance="immatureBalance"
                         :jdenticonValue="jdenticonValue"
                         :isHdWallet="wallet.isHD.value"
@@ -894,6 +985,7 @@ defineExpose({
                         :currency="currency"
                         :price="price"
                         :displayDecimals="displayDecimals"
+                        :shieldEnabled="wallet.hasShield.value"
                         @reload="refreshChainData()"
                         @send="showTransferMenu = true"
                         @exportPrivKeyOpen="showExportModal = true"
@@ -912,12 +1004,13 @@ defineExpose({
             :show="showTransferMenu"
             :price="price"
             :currency="currency"
+            :shieldEnabled="wallet.hasShield.value"
             v-model:amount="transferAmount"
             v-model:address="transferAddress"
             @openQrScan="openSendQRScanner()"
             @close="showTransferMenu = false"
             @send="send"
-            @max-balance="transferAmount = (mempool.balance / COIN).toString()"
+            @max-balance="getMaxBalance"
         />
     </div>
 </template>

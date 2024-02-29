@@ -15,6 +15,7 @@ const emit = defineEmits([
 ]);
 // Amount of PIVs to send in the selected currency (e.g. USD)
 const amountCurrency = ref('');
+const useShieldInputs = ref(false);
 const color = ref('');
 
 const props = defineProps({
@@ -23,6 +24,7 @@ const props = defineProps({
     currency: String,
     amount: String,
     address: String,
+    shieldEnabled: Boolean,
 });
 
 const address = computed({
@@ -47,7 +49,12 @@ function send() {
     // TODO: Maybe in the future do one of those cool animation that set the
     // Input red
     if (address.value && amount.value)
-        emit('send', sanitizeHTML(address.value), amount.value);
+        emit(
+            'send',
+            sanitizeHTML(address.value),
+            amount.value,
+            useShieldInputs.value
+        );
 }
 
 function syncAmountCurrency() {
@@ -155,7 +162,12 @@ async function selectContact() {
                                 <div class="input-group-append">
                                     <span class="input-group-text p-0">
                                         <div
-                                            @click="$emit('max-balance')"
+                                            @click="
+                                                $emit(
+                                                    'max-balance',
+                                                    useShieldInputs
+                                                )
+                                            "
                                             style="
                                                 cursor: pointer;
                                                 border: 0px;
@@ -226,6 +238,24 @@ async function selectContact() {
                                     14 sat/B
                                 </div>
                             </div>
+                        </div>
+                        <br />
+                    </div>
+
+                    <div v-if="shieldEnabled">
+                        <div class="custom-control custom-switch">
+                            <input
+                                type="checkbox"
+                                class="custom-control-input"
+                                data-testid="useShieldInputs"
+                                id="useShieldInputs"
+                                v-model="useShieldInputs"
+                            />
+                            <label
+                                class="custom-control-label"
+                                for="useShieldInputs"
+                                >{{ translation.useShieldInputs }}</label
+                            >
                         </div>
                         <br />
                     </div>

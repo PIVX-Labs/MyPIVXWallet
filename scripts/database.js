@@ -12,21 +12,19 @@ import {
 import { PromoWallet } from './promos.js';
 import { ALERTS, translation } from './i18n.js';
 import { Account } from './accounts.js';
-import { COutpoint, CTxIn, CTxOut, Transaction } from './mempool.js';
+import { COutpoint, CTxIn, CTxOut, Transaction } from './transaction.js';
 
-/** The current version of the DB - increasing this will prompt the Upgrade process for clients with an older version */
-export const DB_VERSION = 3;
-
-/**
- *
- */
 export class Database {
     /**
-     * Current Database Version.
-     * Version 1 = Add index DB (PR #[FILL])
+     * The current version of the DB - increasing this will prompt the Upgrade process for clients with an older version
+     * Version 1 = Add index DB (#121)
+     * Version 2 = Promos Integration (#124)
+     * Version 3 = TX Database (#235)
+     * Version 4 = Tx Refactor (#284)
+     * Version 5 = Tx shield data (#295)
      * @type{Number}
      */
-    static version = 1;
+    static version = 5;
 
     /**
      * @type{IDBPDatabase}
@@ -73,7 +71,7 @@ export class Database {
         const store = this.#db
             .transaction('txs', 'readwrite')
             .objectStore('txs');
-        await store.put(tx, tx.txid);
+        await store.put(tx.__original, tx.txid);
     }
 
     /**
@@ -323,7 +321,7 @@ export class Database {
 
     /**
      * Get all txs from the database
-     * @returns {Promise<Transaction>}
+     * @returns {Promise<Transaction[]>}
      */
     async getTxs() {
         const store = this.#db
@@ -338,25 +336,27 @@ export class Database {
                             n: x.outpoint.n,
                         }),
                         scriptSig: x.scriptSig,
+                        sequence: x.sequence,
                     })
             );
             const vout = tx.vout.map(
                 (x) =>
                     new CTxOut({
-                        outpoint: new COutpoint({
-                            txid: x.outpoint.txid,
-                            n: x.outpoint.n,
-                        }),
                         script: x.script,
                         value: x.value,
                     })
             );
             return new Transaction({
-                txid: tx.txid,
+                version: tx.version,
                 blockHeight: tx.blockHeight,
                 blockTime: tx.blockTime,
                 vin: vin,
                 vout: vout,
+                valueBalance: tx.valueBalance,
+                shieldSpend: tx.shieldSpend,
+                shieldOutput: tx.shieldOutput,
+                bindingSig: tx.bindingSig,
+                lockTime: tx.lockTime,
             });
         });
     }
@@ -458,10 +458,13 @@ export class Database {
     static async create(name) {
         let migrate = false;
         const database = new Database({ db: null });
-        const db = await openDB(`MPW-${name}`, DB_VERSION, {
+        const db = await openDB(`MPW-${name}`, Database.version, {
             upgrade: (db, oldVersion) => {
                 console.log(
-                    'DB: Upgrading from ' + oldVersion + ' to ' + DB_VERSION
+                    'DB: Upgrading from ' +
+                        oldVersion +
+                        ' to ' +
+                        Database.version
                 );
                 if (oldVersion == 0) {
                     db.createObjectStore('masternodes');
@@ -475,6 +478,11 @@ export class Database {
                     db.createObjectStore('promos');
                 }
                 if (oldVersion <= 2) {
+                    db.createObjectStore('txs');
+                }
+                if (oldVersion < 5) {
+                    // Recreate tx db due to transaction class changes
+                    db.deleteObjectStore('txs');
                     db.createObjectStore('txs');
                 }
             },

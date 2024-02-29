@@ -9,7 +9,6 @@ import.meta.webpackContext('@fontsource/montserrat/', {
     recursive: false,
     regExp: /\.css$/,
 });
-
 import { start } from './global.js';
 import { getNetwork } from './network.js';
 
@@ -43,11 +42,7 @@ export {
     toggleAdvancedMode,
     changePassword,
 } from './settings.js';
-export {
-    undelegateGUI,
-    delegateGUI,
-    createMasternode,
-} from './transactions.js';
+export { undelegateGUI, delegateGUI, createMasternode } from './legacy.js';
 export {
     promoConfirm,
     setPromoMode,

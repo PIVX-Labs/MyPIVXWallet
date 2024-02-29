@@ -4,6 +4,7 @@ import { ref } from 'vue';
 import { strCurrency } from '../settings.js';
 import { mempool } from '../global.js';
 import { cMarket } from '../settings.js';
+import { ledgerSignTransaction } from '../ledger.js';
 
 /**
  * This is the middle ground between vue and the wallet class
@@ -19,6 +20,10 @@ export function useWallet() {
     const isViewOnly = ref(wallet.isViewOnly());
     const getKeyToBackup = async () => await wallet.getKeyToBackup();
     const isEncrypted = ref(true);
+    const hasShield = ref(wallet.hasShield());
+    // True only iff a shield transaction is being created
+    // Transparent txs are so fast that we don't need to keep track of them.
+    const isCreatingTx = ref(false);
 
     const setMasterKey = async (mk) => {
         wallet.setMasterKey(mk);
@@ -27,6 +32,13 @@ export function useWallet() {
         isHD.value = wallet.isHD();
         isViewOnly.value = wallet.isViewOnly();
         isEncrypted.value = await hasEncryptedWallet();
+    };
+    const setExtsk = async (extsk) => {
+        await wallet.setExtsk(extsk);
+    };
+    const setShield = (shield) => {
+        wallet.setShield(shield);
+        hasShield.value = wallet.hasShield();
     };
     const getAddress = () => wallet.getAddress();
     const isHardwareWallet = ref(wallet.isHardwareWallet());
@@ -43,14 +55,42 @@ export function useWallet() {
         isEncrypted.value = await hasEncryptedWallet();
     };
     const balance = ref(0);
+    const shieldBalance = ref(0);
     const immatureBalance = ref(0);
     const currency = ref('USD');
     const price = ref(0.0);
+    const sync = async () => {
+        await wallet.sync();
+        balance.value = mempool.balance;
+        shieldBalance.value = await wallet.getShieldBalance();
+    };
+    getEventEmitter().on('shield-loaded-from-disk', () => {
+        hasShield.value = wallet.hasShield();
+    });
+    getEventEmitter().on(
+        'shield-transaction-creation-update',
+        async (_, finished) => {
+            isCreatingTx.value = !finished;
+        }
+    );
+    const createAndSendTransaction = async (network, address, value, opts) => {
+        const tx = wallet.createTransaction(address, value, opts);
+        if (wallet.isHardwareWallet()) {
+            await ledgerSignTransaction(wallet, tx);
+        } else {
+            await wallet.sign(tx);
+        }
+        const res = await network.sendTransaction(tx.serialize());
+        if (res) {
+            wallet.finalizeTransaction(tx);
+        }
+    };
 
     getEventEmitter().on('balance-update', async () => {
         balance.value = mempool.balance;
         immatureBalance.value = mempool.immatureBalance;
         currency.value = strCurrency.toUpperCase();
+        shieldBalance.value = await wallet.getShieldBalance();
         price.value = await cMarket.getPrice(strCurrency);
     });
 
@@ -60,6 +100,8 @@ export function useWallet() {
         isEncrypted,
         getKeyToBackup,
         setMasterKey,
+        setExtsk,
+        setShield,
         isHardwareWallet,
         checkDecryptPassword,
         encrypt,
@@ -70,8 +112,13 @@ export function useWallet() {
         },
         isHD,
         balance,
+        hasShield,
+        shieldBalance,
+        isCreatingTx,
         immatureBalance,
         currency,
         price,
+        sync,
+        createAndSendTransaction,
     };
 }

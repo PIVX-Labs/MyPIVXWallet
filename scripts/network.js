@@ -1,5 +1,6 @@
 import { cChainParams } from './chain_params.js';
-import { createAlert, sleep } from './misc.js';
+import { createAlert } from './misc.js';
+import { sleep } from './utils.js';
 import { getEventEmitter } from './event_bus.js';
 import {
     STATS,
@@ -9,8 +10,10 @@ import {
     fAutoSwitch,
     debug,
 } from './settings.js';
-import { ALERTS, translation } from './i18n.js';
+import { cNode } from './settings.js';
+import { ALERTS, tr, translation } from './i18n.js';
 import { mempool, stakingDashboard } from './global.js';
+import { Transaction } from './transaction.js';
 
 /**
  * @typedef {Object} XPUBAddress
@@ -84,11 +87,6 @@ export class Network {
         this.enabled = !this.enabled;
     }
 
-    getFee(bytes) {
-        // TEMPORARY: Hardcoded fee per-byte
-        return bytes * 50; // 50 sat/byte
-    }
-
     get cachedBlockCount() {
         throw new Error('cachedBlockCount must be implemented');
     }
@@ -156,6 +154,39 @@ export class ExplorerNetwork extends Network {
         return this.blocks;
     }
 
+    /**
+     * Fetch a block from the explorer given the height
+     * @param {Number} blockHeight
+     * @returns {Promise<Object>} the block fetched from explorer
+     */
+    async getBlock(blockHeight) {
+        try {
+            const block = await this.safeFetchFromExplorer(
+                `/api/v2/block/${blockHeight}`
+            );
+            const newTxs = [];
+            // This is bad. We're making so many requests
+            // This is a quick fix to try to be compliant with the blockbook
+            // API, and not the PIVX extension.
+            // In the Blockbook API /block doesn't have any chain specific information
+            // Like hex, shield info or what not.
+            // We could change /getshieldblocks to /getshieldtxs?
+            for (const tx of block.txs) {
+                const r = await fetch(
+                    `${this.strUrl}/api/v2/tx-specific/${tx.txid}`
+                );
+                if (!r.ok) throw new Error('failed');
+                const newTx = await r.json();
+                newTxs.push(newTx);
+            }
+            block.txs = newTxs;
+            return block;
+        } catch (e) {
+            this.error();
+            throw e;
+        }
+    }
+
     async getBlockCount() {
         try {
             const { backend } = await (
@@ -168,11 +199,16 @@ export class ExplorerNetwork extends Network {
                     this.blocks
                 );
                 this.blocks = backend.blocks;
+                //TODO: unify the transparent sync with the shield sync
+                // in particular in place of getLatestTxs read directly from the block as we do for shielding
                 if (this.fullSynced) {
                     await this.getLatestTxs(this.lastBlockSynced);
                     this.lastBlockSynced = this.blocks;
                     stakingDashboard.update(0);
                     getEventEmitter().emit('new-tx');
+                }
+                if (this.wallet.isSynced) {
+                    await this.wallet.getLatestBlocks();
                 }
             }
         } catch (e) {
@@ -183,23 +219,26 @@ export class ExplorerNetwork extends Network {
     }
 
     /**
-     * Sometimes blockbook might return internal error, in this case this function will sleep for 20 seconds and retry
+     * Sometimes blockbook might return internal error, in this case this function will sleep for some times and retry
      * @param {string} strCommand - The specific Blockbook api to call
+     * @param {number} sleepTime - How many milliseconds sleep between two calls. Default value is 20000ms
      * @returns {Promise<Object>} Explorer result in json
      */
-    async safeFetchFromExplorer(strCommand) {
+    async safeFetchFromExplorer(strCommand, sleepTime = 20000) {
         let trials = 0;
-        const maxTrials = 5;
+        const maxTrials = 6;
         while (trials < maxTrials) {
             trials += 1;
             const res = await fetchBlockbook(strCommand);
             if (!res.ok) {
                 if (debug) {
                     console.log(
-                        'Blockbook internal error! sleeping for 20 seconds'
+                        'Blockbook internal error! sleeping for ' +
+                            sleepTime +
+                            ' seconds'
                     );
                 }
-                await sleep(20000);
+                await sleep(sleepTime);
                 continue;
             }
             return await res.json();
@@ -238,9 +277,11 @@ export class ExplorerNetwork extends Network {
         for (let i = totalPages; i > 0; i--) {
             if (!this.fullSynced) {
                 getEventEmitter().emit(
-                    'sync-status-update',
-                    totalPages - i + 1,
-                    totalPages,
+                    'transparent-sync-status-update',
+                    tr(translation.syncStatusHistoryProgress, [
+                        { current: totalPages - i + 1 },
+                        { total: totalPages },
+                    ]),
                     false
                 );
             }
@@ -254,7 +295,10 @@ export class ExplorerNetwork extends Network {
             // Note: Extra check since Blockbook sucks and removes `.transactions` instead of an empty array if there's no transactions
             if (iPage?.transactions?.length > 0) {
                 for (const tx of iPage.transactions.reverse()) {
-                    mempool.updateMempool(mempool.parseTransaction(tx));
+                    const parsed = Transaction.fromHex(tx.hex);
+                    parsed.blockHeight = tx.blockHeight;
+                    parsed.blockTime = tx.blockTime;
+                    mempool.updateMempool(parsed);
                 }
             }
             await mempool.saveOnDisk();
@@ -282,8 +326,7 @@ export class ExplorerNetwork extends Network {
                 ? 0
                 : nBlockHeights.sort((a, b) => a - b).at(-1);
         this.fullSynced = true;
-        createAlert('success', translation.syncStatusFinished, 12500);
-        getEventEmitter().emit('sync-status-update', 0, 0, true);
+        getEventEmitter().emit('transparent-sync-status-update', '', true);
     }
     reset() {
         this.fullSynced = false;
@@ -378,6 +421,34 @@ export class ExplorerNetwork extends Network {
         return await req.json();
     }
 
+    /**
+     * @return {Promise<Number[]>} The list of blocks which have at least one shield transaction
+     */
+    async getShieldBlockList() {
+        /**
+         * @type {Number[]}
+         */
+        const blockCount = await this.getBlockCount(false);
+        const blocks = await (
+            await fetch(`${cNode.url}/getshieldblocks`)
+        ).json();
+        const maxBlock = blocks[blocks.length - 1];
+        //I think
+        if (maxBlock < blockCount - 5) {
+            blocks.push(blockCount - 5);
+        }
+        return blocks;
+    }
+
+    /**
+     * Waits for next block
+     * @returns {Promise<Number>} Resolves when the next block is obtained
+     */
+    waitForNextBlock() {
+        return new Promise((res, _rej) => {
+            getEventEmitter().once('new-block', (block) => res(block));
+        });
+    }
     // PIVX Labs Analytics: if you are a user, you can disable this FULLY via the Settings.
     // ... if you're a developer, we ask you to keep these stats to enhance upstream development,
     // ... but you are free to completely strip MPW of any analytics, if you wish, no hard feelings.

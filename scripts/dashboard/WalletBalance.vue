@@ -12,26 +12,33 @@ import {
     guiRenderContacts,
 } from '../contacts-book';
 import { getNewAddress } from '../wallet.js';
+import LoadingBar from '../Loadingbar.vue';
+import { sleep } from '../utils.js';
+import shieldLogo from '../../assets/shield_logo.svg';
 
 const props = defineProps({
     jdenticonValue: String,
     balance: Number,
+    shieldBalance: Number,
     immatureBalance: Number,
     isHdWallet: Boolean,
     isHardwareWallet: Boolean,
     currency: String,
     price: Number,
     displayDecimals: Number,
+    shieldEnabled: Boolean,
 });
 const {
     jdenticonValue,
     balance,
+    shieldBalance,
     immatureBalance,
     isHdWallet,
     isHardwareWallet,
     currency,
     price,
     displayDecimals,
+    shieldEnabled,
 } = toRefs(props);
 
 onMounted(() => {
@@ -47,15 +54,18 @@ onMounted(() => {
     );
 });
 
-const totalSyncPages = ref(0);
-const currentSyncPage = ref(0);
-const isSyncing = ref(false);
-const syncStr = computed(() => {
-    return tr(translation.syncStatusHistoryProgress, [
-        { current: currentSyncPage.value },
-        { total: totalSyncPages.value },
-    ]);
-});
+// Transparent sync status
+const transparentSyncing = ref(false);
+const syncTStr = ref('');
+
+// Shield sync status
+const shieldSyncing = ref(false);
+const syncSStr = ref('');
+
+// Shield transaction creation
+const isCreatingTx = ref(false);
+const txPercentageCreation = ref(0.0);
+const txCreationStr = 'Creating SHIELD transaction...';
 
 const updating = ref(false);
 const balanceStr = computed(() => {
@@ -63,6 +73,10 @@ const balanceStr = computed(() => {
     const strBal = nCoins.toFixed(displayDecimals.value);
     const nLen = strBal.length;
     return beautifyNumber(strBal, nLen >= 10 ? '17px' : '25px');
+});
+const shieldBalanceStr = computed(() => {
+    const nCoins = shieldBalance.value / COIN;
+    return nCoins.toFixed(displayDecimals.value);
 });
 
 const immatureBalanceStr = computed(() => {
@@ -87,12 +101,26 @@ getEventEmitter().on('sync-status', (value) => {
 
 const emit = defineEmits(['reload', 'send', 'exportPrivKeyOpen']);
 
+getEventEmitter().on('transparent-sync-status-update', (str, finished) => {
+    syncTStr.value = str;
+    transparentSyncing.value = !finished;
+});
+
+getEventEmitter().on('shield-sync-status-update', (str, finished) => {
+    syncSStr.value = str;
+    shieldSyncing.value = !finished;
+});
+
 getEventEmitter().on(
-    'sync-status-update',
-    (currentPage, totalPages, finished) => {
-        totalSyncPages.value = totalPages;
-        currentSyncPage.value = currentPage;
-        isSyncing.value = finished === false;
+    'shield-transaction-creation-update',
+    async (percentage, finished) => {
+        // If it just finished sleep for 1 second before making everything invisible
+        txPercentageCreation.value = 100.0;
+        if (finished) {
+            await sleep(1000);
+        }
+        isCreatingTx.value = !finished;
+        txPercentageCreation.value = percentage;
     }
 );
 
@@ -217,6 +245,26 @@ function reload() {
                                     </a>
                                     <a
                                         class="dropdown-item ptr"
+                                        v-if="shieldEnabled"
+                                        data-toggle="modal"
+                                        data-target="#qrModal"
+                                        @click="
+                                            getNewAddress({
+                                                updateGUI: true,
+                                                verify: true,
+                                                shield: true,
+                                            })
+                                        "
+                                    >
+                                        <i class="fas fa-shield"></i>
+                                        <span
+                                            >&nbsp;{{
+                                                translation.newShieldAddress
+                                            }}</span
+                                        >
+                                    </a>
+                                    <a
+                                        class="dropdown-item ptr"
                                         data-toggle="modal"
                                         data-target="#redeemCodeModal"
                                     >
@@ -267,6 +315,17 @@ function reload() {
             </span>
             <br />
             <div class="dcWallet-usdBalance">
+                <span
+                    class="dcWallet-usdValue"
+                    v-if="shieldEnabled"
+                    v-html="shieldBalanceStr"
+                >
+                </span>
+                <span style="margin-left: 5px">
+                    <i class="fas fa-shield fa-xs" v-if="shieldEnabled"> </i>
+                </span>
+            </div>
+            <div class="dcWallet-usdBalance">
                 <span class="dcWallet-usdValue">{{ balanceValue }}</span>
                 <span class="dcWallet-usdValue">&nbsp;{{ currency }}</span>
             </div>
@@ -292,15 +351,64 @@ function reload() {
         </div>
         <center>
             <div
-                v-if="isSyncing"
+                v-if="transparentSyncing || shieldSyncing"
                 style="
-                    background-color: #0000002b;
-                    width: fit-content;
-                    padding: 8px;
-                    border-radius: 15px;
+                    display: block;
+                    font-size: 15px;
+                    background-color: #3a0c60;
+                    border: 1px solid #9f00f9;
+                    padding: 8px 15px 10px 15px;
+                    border-radius: 10px;
+                    color: #d3bee5;
+                    width: 310px;
+                    text-align: center;
                 "
             >
-                {{ syncStr }}
+                {{ transparentSyncing ? syncTStr : syncSStr }}
+            </div>
+        </center>
+        <center>
+            <div
+                v-if="isCreatingTx"
+                style="
+                    display: flex;
+                    font-size: 15px;
+                    background-color: #3a0c60;
+                    border: 1px solid #9f00f9;
+                    padding: 8px 15px 10px 15px;
+                    border-radius: 10px;
+                    color: #d3bee5;
+                    width: 310px;
+                    text-align: left;
+                "
+            >
+                <div
+                    style="
+                        width: 38px;
+                        height: 38px;
+                        background-color: #310b51;
+                        margin-right: 9px;
+                        border-radius: 9px;
+                    "
+                >
+                    <span
+                        class="dcWallet-svgIconPurple"
+                        style="margin-left: 1px; top: 14px; left: 7px"
+                        v-html="shieldLogo"
+                    ></span>
+                </div>
+                <div style="width: -webkit-fill-available">
+                    {{ txCreationStr }}
+                    <LoadingBar
+                        :show="true"
+                        :percentage="txPercentageCreation"
+                        style="
+                            border: 1px solid #932ecd;
+                            border-radius: 4px;
+                            background-color: #2b003a;
+                        "
+                    ></LoadingBar>
+                </div>
             </div>
         </center>
     </center>

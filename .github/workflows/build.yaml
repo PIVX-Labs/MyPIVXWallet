@@ -6,7 +6,7 @@ on:
       - "master"
     paths-ignore:
       - "*.md"
-      - LICENCE
+      - LICENSE
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
@@ -20,12 +20,10 @@ jobs:
       
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         
       - name: Install npm/nodejs
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18
+        uses: actions/setup-node@v4
       - name: Install packages
         run: npm install
       - name: Build 

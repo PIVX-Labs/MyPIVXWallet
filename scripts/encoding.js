@@ -11,6 +11,7 @@ import {
 } from './utils.js';
 
 import bs58 from 'bs58';
+import { bech32 } from 'bech32';
 
 /**
  * Compress an uncompressed Public Key in byte form
@@ -130,7 +131,7 @@ export function deriveAddress({ pkBytes, publicKey, output = 'ENCODED' }) {
 /**
  * Verify the integrity of an address
  * @param {string} strPubkey - A base58 encoded public key
- * @param {Object} [expectedKey] - The key type to check, defaults to current chain's `PUBKEY_ADDRESS`
+ * @param {number[]} [expectedKey] - The key type to check, defaults to current chain's `PUBKEY_ADDRESS`
  * @return {boolean|Error} `true` if valid, `false` if invalid
  */
 export function verifyPubkey(
@@ -140,15 +141,15 @@ export function verifyPubkey(
     // Decode base58 and verify basic integrity
     try {
         const bDecoded = bs58.decode(strPubkey);
-        if (bDecoded.length !== 25) return false;
-        if (bDecoded[0] !== expectedKey) return false;
+        if (bDecoded.length !== 25 && bDecoded.length !== 27) return false;
+        if (!expectedKey.every((n, i) => n === bDecoded[i])) return false;
 
         // Sha256d hash the pubkey payload
-        const bDoubleSHA = dSHA256(bDecoded.slice(0, 21));
+        const bDoubleSHA = dSHA256(bDecoded.slice(0, bDecoded.length - 4));
 
         // Verify payload integrity via checksum
         const bChecksum = bDoubleSHA.slice(0, 4);
-        const bChecksumPayload = bDecoded.slice(21);
+        const bChecksumPayload = bDecoded.slice(bDecoded.length - 4);
         if (!bChecksum.every((byte, i) => byte === bChecksumPayload[i]))
             return false;
 
@@ -156,6 +157,23 @@ export function verifyPubkey(
         return true;
     } catch (e) {
         // Definitely not valid (likely a bad base58 string)
+        return false;
+    }
+}
+
+/**
+ * Verify that a string has been encoded correctly in bech32
+ * @param {String} encodedString - the encoded string we want to validate
+ * @param {String} expectedPrefix - expected bech32 encoding prefix
+ */
+export function verifyBech32(address, expectedPrefix) {
+    try {
+        const { prefix } = bech32.decode(address);
+        if (prefix !== expectedPrefix) {
+            return false;
+        }
+        return true;
+    } catch (e) {
         return false;
     }
 }
@@ -217,4 +235,73 @@ export function verifyWIF(
 // A convenient alias to verifyWIF that returns the raw byte payload
 export function parseWIF(strWIF, skipVerification = false) {
     return verifyWIF(strWIF, true, skipVerification);
+}
+
+/**
+ * Encodes a number to bytes in little endian order
+ * @param {BigInt} num - number to encode
+ * @param {number} bytes - Number of bytes to encode to
+ * @returns {number[]} - Encoded numbers
+ */
+export function numToBytes(num, bytes = 8) {
+    if (bytes == 0) {
+        return [];
+    } else if (num == -1n) {
+        return hexToBytes('ffffffffffffffff');
+    } else {
+        return [Number(num % 256n)].concat(numToBytes(num / 256n, bytes - 1));
+    }
+}
+
+/**
+ * @param {BigInt} num - Number to encode
+ * @returns {number[]} Number to bytes
+ */
+export function numToByteArray(num) {
+    if (num <= 256n) {
+        return [Number(num)];
+    } else {
+        return [Number(num % 256n)].concat(numToByteArray(num / 256n));
+    }
+}
+
+/**
+ * @param {number[]} bytes
+ * @returns {BigInt} converted number from bytes
+ */
+export function bytesToNum(bytes) {
+    if (bytes.length == 0) return 0n;
+    else return BigInt(bytes[0]) + 256n * bytesToNum(bytes.slice(1));
+}
+
+/**
+ * @param {BigInt} num - Number to encode
+ * @returns {number[]} Number encoded in bitcoin varint format
+ */
+export function numToVarInt(num) {
+    if (num < 253n) {
+        return [Number(num)];
+    } else if (num < 65536n) {
+        return [253].concat(numToBytes(num, 2));
+    } else if (num < 4294967296n) {
+        return [254].concat(numToBytes(num, 4));
+    } else {
+        return [255].concat(numToBytes(num, 8));
+    }
+}
+
+/**
+ * @returns {{num: BigInt, readBytes: number}}
+ */
+export function varIntToNum(bytes) {
+    if (bytes[0] < 253)
+        return {
+            num: BigInt(bytes[0]),
+            readBytes: 1,
+        };
+    const readBytes = 1 + 2 ** (bytes[0] - 252);
+    return {
+        num: bytesToNum(bytes.slice(1, readBytes)),
+        readBytes,
+    };
 }
