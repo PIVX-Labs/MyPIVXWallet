@@ -56,6 +56,7 @@ export function useWallet() {
     };
     const balance = ref(0);
     const shieldBalance = ref(0);
+    const pendingShieldBalance = ref(0);
     const immatureBalance = ref(0);
     const currency = ref('USD');
     const price = ref(0.0);
@@ -63,6 +64,7 @@ export function useWallet() {
         await wallet.sync();
         balance.value = mempool.balance;
         shieldBalance.value = await wallet.getShieldBalance();
+        pendingShieldBalance.value = await wallet.getPendingShieldBalance();
     };
     getEventEmitter().on('shield-loaded-from-disk', () => {
         hasShield.value = wallet.hasShield();
@@ -91,6 +93,7 @@ export function useWallet() {
         immatureBalance.value = mempool.immatureBalance;
         currency.value = strCurrency.toUpperCase();
         shieldBalance.value = await wallet.getShieldBalance();
+        pendingShieldBalance.value = await wallet.getPendingShieldBalance();
         price.value = await cMarket.getPrice(strCurrency);
     });
 
@@ -114,6 +117,7 @@ export function useWallet() {
         balance,
         hasShield,
         shieldBalance,
+        pendingShieldBalance,
         isCreatingTx,
         immatureBalance,
         currency,

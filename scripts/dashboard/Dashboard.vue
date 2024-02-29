@@ -492,7 +492,14 @@ onMounted(async () => {
     updateLogOutButton();
 });
 
-const { balance, shieldBalance, immatureBalance, currency, price } = wallet;
+const {
+    balance,
+    shieldBalance,
+    pendingShieldBalance,
+    immatureBalance,
+    currency,
+    price,
+} = wallet;
 
 getEventEmitter().on('sync-status', (status) => {
     if (status === 'stop') activity?.value?.update();
@@ -980,6 +987,7 @@ defineExpose({
                     <WalletBalance
                         :balance="balance"
                         :shieldBalance="shieldBalance"
+                        :pendingShieldBalance="pendingShieldBalance"
                         :immatureBalance="immatureBalance"
                         :jdenticonValue="jdenticonValue"
                         :isHdWallet="wallet.isHD.value"

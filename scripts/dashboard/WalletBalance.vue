@@ -20,6 +20,7 @@ const props = defineProps({
     jdenticonValue: String,
     balance: Number,
     shieldBalance: Number,
+    pendingShieldBalance: Number,
     immatureBalance: Number,
     isHdWallet: Boolean,
     isHardwareWallet: Boolean,
@@ -32,6 +33,7 @@ const {
     jdenticonValue,
     balance,
     shieldBalance,
+    pendingShieldBalance,
     immatureBalance,
     isHdWallet,
     isHardwareWallet,
@@ -76,6 +78,11 @@ const balanceStr = computed(() => {
 });
 const shieldBalanceStr = computed(() => {
     const nCoins = shieldBalance.value / COIN;
+    return nCoins.toFixed(displayDecimals.value);
+});
+
+const pendingShieldBalanceStr = computed(() => {
+    const nCoins = pendingShieldBalance.value / COIN;
     return nCoins.toFixed(displayDecimals.value);
 });
 
@@ -315,13 +322,16 @@ function reload() {
             </span>
             <br />
             <div class="dcWallet-usdBalance">
-                <span
-                    class="dcWallet-usdValue"
-                    v-if="shieldEnabled"
-                    v-html="shieldBalanceStr"
+                <span class="dcWallet-usdValue" v-if="shieldEnabled"
+                    >{{ shieldBalanceStr }}
+                    <span
+                        style="opacity: 0.75"
+                        v-if="pendingShieldBalance != 0"
+                    >
+                        ({{ pendingShieldBalanceStr }} Pending)</span
+                    ></span
                 >
-                </span>
-                <span style="margin-left: 5px">
+                <span style="margin-left: 2px">
                     <i class="fas fa-shield fa-xs" v-if="shieldEnabled"> </i>
                 </span>
             </div>
