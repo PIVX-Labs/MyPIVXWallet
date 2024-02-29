@@ -71,7 +71,7 @@ export class Database {
         const store = this.#db
             .transaction('txs', 'readwrite')
             .objectStore('txs');
-        await store.put(tx, tx.txid);
+        await store.put(tx.__original, tx.txid);
     }
 
     /**
