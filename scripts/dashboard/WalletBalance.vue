@@ -322,8 +322,8 @@ function reload() {
             </span>
             <br />
             <div class="dcWallet-usdBalance">
-                <span class="dcWallet-usdValue" v-if="shieldEnabled"
-                    >{{ shieldBalanceStr }}
+                <span class="dcWallet-usdValue" v-if="shieldEnabled">
+                    <i class="fas fa-shield fa-xs" style="margin-right: 4px" v-if="shieldEnabled"> </i>{{ shieldBalanceStr }}
                     <span
                         style="opacity: 0.75"
                         v-if="pendingShieldBalance != 0"
@@ -331,9 +331,6 @@ function reload() {
                         ({{ pendingShieldBalanceStr }} Pending)</span
                     ></span
                 >
-                <span style="margin-left: 2px">
-                    <i class="fas fa-shield fa-xs" v-if="shieldEnabled"> </i>
-                </span>
             </div>
             <div class="dcWallet-usdBalance">
                 <span class="dcWallet-usdValue">{{ balanceValue }}</span>
