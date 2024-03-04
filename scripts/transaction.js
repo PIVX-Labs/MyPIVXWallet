@@ -1,8 +1,10 @@
+import { Buffer } from 'buffer';
 import { bytesToNum, numToBytes, numToVarInt, parseWIF } from './encoding.js';
 import { hexToBytes, bytesToHex, dSHA256 } from './utils.js';
 import { OP } from './script.js';
 import { varIntToNum, deriveAddress } from './encoding.js';
 import * as nobleSecp256k1 from '@noble/secp256k1';
+import { SAPLING_TX_VERSION } from './chain_params.js';
 
 /** An Unspent Transaction Output, used as Inputs of future transactions */
 export class COutpoint {
@@ -123,6 +125,10 @@ export class Transaction {
         });
     }
 
+    get hasSaplingVersion() {
+        return this.version >= SAPLING_TX_VERSION;
+    }
+
     get txid() {
         if (!this.__original.#txid) {
             this.__original.#txid = bytesToHex(
@@ -132,7 +138,7 @@ export class Transaction {
         return this.__original.#txid;
     }
 
-    hasShieldData() {
+    get hasShieldData() {
         return this.bindingSig !== '';
     }
 
@@ -218,12 +224,15 @@ export class Transaction {
         }
 
         this.lockTime = Number(bytesToNum(bytes.slice(offset, (offset += 4))));
-
-        if (this.version === 3) {
+        this.shieldSpend = [];
+        this.shieldOutput = [];
+        if (this.hasSaplingVersion) {
             const hasShield = bytesToNum(bytes.slice(offset, (offset += 1)));
             if (hasShield) {
                 this.valueBalance = Number(
-                    bytesToNum(bytes.slice(offset, (offset += 8)))
+                    new BigInt64Array([
+                        bytesToNum(bytes.slice(offset, (offset += 8))),
+                    ])[0]
                 );
 
                 const { num: shieldSpendLen, readBytes } = varIntToNum(
@@ -331,11 +340,13 @@ export class Transaction {
         }
         buffer = [...buffer, ...numToBytes(BigInt(this.lockTime), 4)];
 
-        if (this.version === 3) {
+        if (this.hasSaplingVersion) {
+            const valueBalance = Buffer.alloc(8);
+            valueBalance.writeBigInt64LE(BigInt(this.valueBalance));
             buffer = [
                 ...buffer,
-                Number(this.hasShieldData()),
-                ...numToBytes(BigInt(this.valueBalance), 8),
+                Number(this.hasShieldData),
+                ...valueBalance,
                 ...numToVarInt(BigInt(this.shieldSpend.length)),
             ];
             for (const spend of this.shieldSpend) {
@@ -375,6 +386,9 @@ export class Transaction {
      * Using the sighash type SIGHASH_ALL
      */
     transactionHash(index) {
+        if (this.hasSaplingVersion) {
+            throw new Error('tx version too high, cannot use base tx hash');
+        }
         const copy = structuredClone(this.__original);
         // Black out all inputs
         for (let i = 0; i < copy.vin.length; i++) {

@@ -1,0 +1,18 @@
+FROM ubuntu:latest
+
+# setup pivx node
+
+WORKDIR /pivx
+RUN  apt-get update \
+  && apt-get install -y wget
+RUN wget https://github.com/PIVX-Project/PIVX/releases/download/v5.5.0/pivx-5.5.0-x86_64-linux-gnu.tar.gz
+RUN tar xf *.tar.gz
+RUN rm *.tar.gz
+WORKDIR /pivx/pivx-5.5.0
+COPY docker/pivx.conf .
+RUN ./install-params.sh
+WORKDIR bin
+RUN chmod +x ./pivxd
+ENTRYPOINT ["/pivx/pivx-5.5.0/bin/pivxd"]
+CMD ["--regtest", "-rpcport=51470", "-rpcallowip=0.0.0.0/0", "-rpcuser=rpc", "-rpcpassword=pivxrpc", "-rpcbind=0.0.0.0:51470"]
+EXPOSE 51470

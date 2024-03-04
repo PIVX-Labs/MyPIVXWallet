@@ -3,6 +3,7 @@ import bs58 from 'bs58';
 import { OP } from './script.js';
 import { hexToBytes, bytesToHex, dSHA256 } from './utils.js';
 import { isShieldAddress, isExchangeAddress } from './misc.js';
+import { SAPLING_TX_VERSION } from './chain_params.js';
 /**
  * @class Builds a non-signed transaction
  */
@@ -106,7 +107,7 @@ export class TransactionBuilder {
      * @returns {TransactionBuilder}
      */
     #addShieldOutput({ address, value }) {
-        this.#transaction.version = 3;
+        this.#transaction.version = SAPLING_TX_VERSION;
         // We don't know how to create shieldData, so we create
         // a dummy object so we can pass it later to the Shield library
         // upon signing.
@@ -236,7 +237,7 @@ export class TransactionBuilder {
         if (tx && !tx.vin.length) {
             // If the tx doesn't have any clear inputs,
             // it must be a shield transaction
-            tx.version = 3;
+            tx.version = SAPLING_TX_VERSION;
         }
         this.#transaction = null;
         return tx;

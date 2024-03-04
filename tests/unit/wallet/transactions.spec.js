@@ -318,7 +318,7 @@ describe('Wallet transaction tests', () => {
     });
 
     it('finalizes transaction correctly', () => {
-        const tx = { vout: [] };
+        const tx = new Transaction();
         wallet.addTransaction(tx);
         expect(mempool.addTransaction).toBeCalled(1);
         expect(mempool.addTransaction).toBeCalledWith(tx);

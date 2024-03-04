@@ -1,0 +1,26 @@
+version: '3'
+services:
+    pivx:
+        build:
+            context: .
+            dockerfile: docker/Dockerfile.pivx
+        ports:
+            - 51470:51470
+    explorer:
+        build:
+            context: .
+            dockerfile: docker/Dockerfile.explorer
+        ports:
+            - 8081:443
+    rpc:
+        build:
+            context: .
+            dockerfile: docker/Dockerfile.rpc
+        ports:
+            - 8082:8080
+    mpw:
+        build:
+            context: .
+            dockerfile: docker/Dockerfile
+        ports:
+            - 8080:80

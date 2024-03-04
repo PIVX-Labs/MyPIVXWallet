@@ -239,6 +239,7 @@ async function encryptWallet(password, currentPassword = '') {
 
 // TODO: This needs to be vueeifed a bit
 async function restoreWallet(strReason) {
+    if (!wallet.isEncrypted.value) return false;
     if (wallet.isHardwareWallet.value) return true;
     // Build up the UI elements based upon conditions for the unlock prompt
     let strHTML = '';
@@ -317,17 +318,18 @@ async function lockWallet() {
 async function send(address, amount, useShieldInputs) {
     // Ensure a wallet is unlocked
     if (wallet.isViewOnly.value && !wallet.isHardwareWallet.value) {
-        return createAlert(
-            'warning',
-            tr(ALERTS.WALLET_UNLOCK_IMPORT, [
-                {
-                    unlock: wallet.isEncrypted.value
-                        ? 'unlock '
-                        : 'import/create',
-                },
-            ]),
-            3000
-        );
+        if (
+            !(await restoreWallet(
+                tr(ALERTS.WALLET_UNLOCK_IMPORT, [
+                    {
+                        unlock: wallet.isEncrypted.value
+                            ? 'unlock '
+                            : 'import/create',
+                    },
+                ])
+            ))
+        )
+            return;
     }
 
     // Ensure wallet is synced
@@ -489,7 +491,14 @@ onMounted(async () => {
     updateLogOutButton();
 });
 
-const { balance, shieldBalance, immatureBalance, currency, price } = wallet;
+const {
+    balance,
+    shieldBalance,
+    pendingShieldBalance,
+    immatureBalance,
+    currency,
+    price,
+} = wallet;
 
 getEventEmitter().on('sync-status', (status) => {
     if (status === 'stop') activity?.value?.update();
@@ -672,7 +681,7 @@ defineExpose({
                         <div class="modal-body center-text">
                             <center>
                                 <p class="mono" style="font-size: small">
-                                    <b>PIVX Promos</b>
+                                    <b>PIVX Promos </b>
                                     <span
                                         style="font-family: inherit !important"
                                     >
@@ -977,6 +986,7 @@ defineExpose({
                     <WalletBalance
                         :balance="balance"
                         :shieldBalance="shieldBalance"
+                        :pendingShieldBalance="pendingShieldBalance"
                         :immatureBalance="immatureBalance"
                         :jdenticonValue="jdenticonValue"
                         :isHdWallet="wallet.isHD.value"

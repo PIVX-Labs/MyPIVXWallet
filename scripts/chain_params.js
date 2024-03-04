@@ -15,6 +15,9 @@ export const MAX_ACCOUNT_GAP = 20;
 /** The batch size of Shield block synchronisation */
 export const SHIELD_BATCH_SYNC_SIZE = 32;
 
+/** Transaction Sapling Version */
+export const SAPLING_TX_VERSION = 3;
+
 /* Internal tweaking parameters */
 // A new encryption password must be 'at least' this long.
 export const MIN_PASS_LENGTH = 6;

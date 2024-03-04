@@ -20,6 +20,7 @@ const props = defineProps({
     jdenticonValue: String,
     balance: Number,
     shieldBalance: Number,
+    pendingShieldBalance: Number,
     immatureBalance: Number,
     isHdWallet: Boolean,
     isHardwareWallet: Boolean,
@@ -32,6 +33,7 @@ const {
     jdenticonValue,
     balance,
     shieldBalance,
+    pendingShieldBalance,
     immatureBalance,
     isHdWallet,
     isHardwareWallet,
@@ -76,6 +78,11 @@ const balanceStr = computed(() => {
 });
 const shieldBalanceStr = computed(() => {
     const nCoins = shieldBalance.value / COIN;
+    return nCoins.toFixed(displayDecimals.value);
+});
+
+const pendingShieldBalanceStr = computed(() => {
+    const nCoins = pendingShieldBalance.value / COIN;
     return nCoins.toFixed(displayDecimals.value);
 });
 
@@ -315,15 +322,21 @@ function reload() {
             </span>
             <br />
             <div class="dcWallet-usdBalance">
-                <span
-                    class="dcWallet-usdValue"
-                    v-if="shieldEnabled"
-                    v-html="shieldBalanceStr"
+                <span class="dcWallet-usdValue" v-if="shieldEnabled">
+                    <i
+                        class="fas fa-shield fa-xs"
+                        style="margin-right: 4px"
+                        v-if="shieldEnabled"
+                    >
+                    </i
+                    >{{ shieldBalanceStr }}
+                    <span
+                        style="opacity: 0.75"
+                        v-if="pendingShieldBalance != 0"
+                    >
+                        ({{ pendingShieldBalanceStr }} Pending)</span
+                    ></span
                 >
-                </span>
-                <span style="margin-left: 5px">
-                    <i class="fas fa-shield fa-xs" v-if="shieldEnabled"> </i>
-                </span>
             </div>
             <div class="dcWallet-usdBalance">
                 <span class="dcWallet-usdValue">{{ balanceValue }}</span>
@@ -353,10 +366,15 @@ function reload() {
             <div
                 v-if="transparentSyncing || shieldSyncing"
                 style="
-                    background-color: #0000002b;
-                    width: fit-content;
-                    padding: 8px;
-                    border-radius: 15px;
+                    display: block;
+                    font-size: 15px;
+                    background-color: #3a0c60;
+                    border: 1px solid #9f00f9;
+                    padding: 8px 15px 10px 15px;
+                    border-radius: 10px;
+                    color: #d3bee5;
+                    width: 310px;
+                    text-align: center;
                 "
             >
                 {{ transparentSyncing ? syncTStr : syncSStr }}

@@ -62,11 +62,13 @@ describe('transaction tests', () => {
             false,
             false,
             false,
+            false,
         ]);
         expect(testVector.map(([t]) => t.isCoinStake())).toStrictEqual([
             false,
             false,
             true,
+            false,
             false,
             false,
             false,
@@ -91,7 +93,7 @@ describe('transaction tests', () => {
         tx.version = 10;
         expect(tx.txid).not.toBe(txid);
         expect(tx.txid).toBe(
-            '416368b2101fab865db162d49d0540560f802e89801cad8eb1d9cf3a4e6ad5be'
+            '69f75c046610514156fdd816ed562ba8a9f1578008740c0cbd752254a9767d2c'
         );
         tx.version = originalVersion;
     });
