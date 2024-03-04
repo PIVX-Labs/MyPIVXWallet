@@ -4,8 +4,7 @@ import { TransactionBuilder } from './transaction_builder.js';
 import Masternode from './masternode.js';
 import { ALERTS, tr, start as i18nStart, translation } from './i18n.js';
 
-import { wallet, hasEncryptedWallet, getNewAddress, Wallet } from './wallet.js';
-import { LegacyMasterKey } from './masterkey.js';
+import { wallet, hasEncryptedWallet, Wallet } from './wallet.js';
 import { getNetwork } from './network.js';
 import {
     start as settingsStart,
@@ -959,7 +958,7 @@ export async function updateEncryptionGUI(fEncrypted = null) {
 /**
  * Sweep an address to our own wallet, spending all it's UTXOs without change
  * @param {Array<object>} arrUTXOs - The UTXOs belonging to the address to sweep
- * @param {LegacyMasterKey} sweepingMasterKey - The address to sweep from
+ * @param {import('./masterkey.js').LegacyMasterKey} sweepingMasterKey - The address to sweep from
  * @param {number} nFixedFee - An optional fixed satoshi fee
  * @returns {Promise<string|false>} - TXID on success, false or error on failure
  */

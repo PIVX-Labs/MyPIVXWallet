@@ -6,7 +6,7 @@ import Multimap from 'multimap';
 import { wallet } from './wallet.js';
 import { cChainParams } from './chain_params.js';
 import { Account } from './accounts.js';
-import { Transaction, COutpoint, UTXO } from './transaction.js';
+import { COutpoint, UTXO } from './transaction.js';
 
 export const UTXO_WALLET_STATE = {
     NOT_MINE: 0, // Don't have the key to spend this utxo
@@ -90,12 +90,12 @@ export class Mempool {
         this.spent = new Multimap();
         /**
          * A map of all known transactions
-         * @type {Map<String, Transaction>}
+         * @type {Map<String, import('./transaction.js').Transaction>}
          */
         this.txmap = new Map();
         /**
-         * Multimap nBlockHeight -> Transaction
-         * @type {Multimap<Number, Transaction>}
+         * Multimap nBlockHeight -> import('./transaction.js').Transaction
+         * @type {Multimap<Number, import('./transaction.js').Transaction>}
          */
         this.orderedTxmap = new Multimap();
     }
@@ -127,7 +127,7 @@ export class Mempool {
 
     /**
      * Add a transaction to the orderedTxmap, must be called once a new transaction is received.
-     * @param {Transaction} tx
+     * @param {import('./transaction.js').Transaction} tx
      */
     addToOrderedTxMap(tx) {
         if (!tx.isConfirmed()) return;
@@ -150,7 +150,7 @@ export class Mempool {
     }
 
     /**
-     * @param {Transaction} tx
+     * @param {import('./transaction.js').Transaction} tx
      * @returns {boolean} if the tx is mature
      */
     isMature(tx) {
@@ -251,7 +251,7 @@ export class Mempool {
 
     /**
      * Update the mempool status
-     * @param {Transaction} tx
+     * @param {import('./transaction.js').Transaction} tx
      */
     updateMempool(tx) {
         if (this.txmap.get(tx.txid)?.isConfirmed()) return;

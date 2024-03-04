@@ -2,10 +2,9 @@ import { validateMnemonic } from 'bip39';
 import { decrypt } from './aes-gcm.js';
 import { parseWIF } from './encoding.js';
 import { beforeUnloadListener } from './global.js';
-import { ExplorerNetwork, getNetwork } from './network.js';
+import { getNetwork } from './network.js';
 import { MAX_ACCOUNT_GAP, SHIELD_BATCH_SYNC_SIZE } from './chain_params.js';
 import { HistoricalTx, HistoricalTxType } from './mempool.js';
-import { Transaction } from './transaction.js';
 import { confirmPopup, createAlert } from './misc.js';
 import { cChainParams } from './chain_params.js';
 import { COIN } from './chain_params.js';
@@ -18,7 +17,7 @@ import { Account } from './accounts.js';
 import { fAdvancedMode } from './settings.js';
 import { bytesToHex, hexToBytes, startBatch } from './utils.js';
 import { strHardwareName } from './ledger.js';
-import { COutpoint, UTXO_WALLET_STATE } from './mempool.js';
+import { UTXO_WALLET_STATE } from './mempool.js';
 import { getEventEmitter } from './event_bus.js';
 
 import {
@@ -123,7 +122,7 @@ export class Wallet {
 
     /**
      * Check whether a given outpoint is locked
-     * @param {COutpoint} opt
+     * @param {import('./transaction.js').COutpoint} opt
      * @return {Boolean} true if opt is locked, false otherwise
      */
     isCoinLocked(opt) {
@@ -132,7 +131,7 @@ export class Wallet {
 
     /**
      * Lock a given Outpoint
-     * @param {COutpoint} opt
+     * @param {import('./transaction.js').COutpoint} opt
      */
     lockCoin(opt) {
         this.#lockedCoins.add(opt.toUnique());
@@ -141,7 +140,7 @@ export class Wallet {
 
     /**
      * Unlock a given Outpoint
-     * @param {COutpoint} opt
+     * @param {import('./transaction.js').COutpoint} opt
      */
     unlockCoin(opt) {
         this.#lockedCoins.delete(opt.toUnique());
@@ -579,7 +578,7 @@ export class Wallet {
 
     /**
      * Get the debit of a transaction in satoshi
-     * @param {Transaction} tx
+     * @param {import('./transaction.js').Transaction} tx
      */
     getDebit(tx) {
         let debit = 0;
@@ -602,7 +601,7 @@ export class Wallet {
 
     /**
      * Get the credit of a transaction in satoshi
-     * @param {Transaction} tx
+     * @param {import('./transaction.js').Transaction} tx
      */
     getCredit(tx, filter) {
         let credit = 0;
@@ -616,7 +615,7 @@ export class Wallet {
 
     /**
      * Return true if the transaction contains undelegations regarding the given wallet
-     * @param {Transaction} tx
+     * @param {import('./transaction.js').Transaction} tx
      */
     checkForUndelegations(tx) {
         for (const vin of tx.vin) {
@@ -638,7 +637,7 @@ export class Wallet {
 
     /**
      * Return true if the transaction contains delegations regarding the given wallet
-     * @param {Transaction} tx
+     * @param {import('./transaction.js').Transaction} tx
      */
     checkForDelegations(tx) {
         for (const vout of tx.vout) {
@@ -655,7 +654,7 @@ export class Wallet {
 
     /**
      * Return the output addresses for a given transaction
-     * @param {Transaction} tx
+     * @param {import('./transaction.js').Transaction} tx
      */
     getOutAddress(tx) {
         return tx.vout.reduce(
@@ -669,7 +668,7 @@ export class Wallet {
 
     /**
      * Convert a list of Blockbook transactions to HistoricalTxs
-     * @param {Array<Transaction>} arrTXs - An array of the Blockbook TXs
+     * @param {Array<import('./transaction.js').Transaction>} arrTXs - An array of the Blockbook TXs
      * @returns {Promise<Array<HistoricalTx>>} - A new array of `HistoricalTx`-formatted transactions
      */
     // TODO: add shield data to txs
@@ -744,9 +743,6 @@ export class Wallet {
         if (!this.#shield || this.#isSynced) {
             return;
         }
-        /**
-         * @type {ExplorerNetwork}
-         */
         const cNet = getNetwork();
         getEventEmitter().emit(
             'shield-sync-status-update',
@@ -838,9 +834,7 @@ export class Wallet {
         // Exit if there is no shield loaded
         if (!this.hasShield()) return;
         this.#isFetchingLatestBlocks = true;
-        /**
-         * @type {ExplorerNetwork}
-         */
+
         const cNet = getNetwork();
         // Don't ask for the exact last block that arrived,
         // since it takes around 1 minute for blockbook to make it API available
@@ -1006,7 +1000,7 @@ export class Wallet {
 
     /**
      * Sign a shield transaction
-     * @param {Transaction} transaction
+     * @param {import('./transaction.js').Transaction} transaction
      */
     async #signShield(transaction) {
         if (!transaction.hasSaplingVersion) {
@@ -1048,9 +1042,9 @@ export class Wallet {
     }
 
     /**
-     * @param {Transaction} transaction - transaction to sign
+     * @param {import('./transaction.js').Transaction} transaction - transaction to sign
      * @throws {Error} if the wallet is view only
-     * @returns {Promise<Transaction>} a reference to the same transaction, signed
+     * @returns {Promise<import('./transaction.js').Transaction>} a reference to the same transaction, signed
      */
     async sign(transaction) {
         if (this.isViewOnly()) {
@@ -1074,7 +1068,7 @@ export class Wallet {
 
     /**
      * Finalize Transaction. To be called after it's signed and sent to the network, if successful
-     * @param {Transaction} transaction
+     * @param {import('./transaction.js').Transaction} transaction
      */
     finalizeTransaction(transaction) {
         if (transaction.hasShieldData) {
