@@ -90,7 +90,7 @@ export async function removeContact(account, pubkey) {
 
 /**
  * Render an Account's contact list
- * @param {import('.7accounts.js').Account} account
+ * @param {import('./accounts.js').Account} account
  * @param {boolean} fPrompt - If this is a Contact Selection prompt
  */
 export async function renderContacts(account, fPrompt = false) {
