@@ -94,6 +94,7 @@ export class Transaction {
         shieldSpend = [],
         shieldOutput = [],
         bindingSig = '',
+        txid,
     } = {}) {
         this.version = version;
         this.blockHeight = blockHeight;
@@ -105,11 +106,15 @@ export class Transaction {
         this.shieldOutput = shieldOutput;
         this.bindingSig = bindingSig;
         this.valueBalance = valueBalance;
+        this.#txid = txid;
         /** Handle to the unproxied tx for when we need to clone it */
         this.__original = this;
         return new Proxy(this, {
-            set(obj) {
-                obj.#txid = '';
+            set(obj, p) {
+                if (p !== 'blockHeight' && p !== 'blockTime') {
+                    if (obj.#txid) throw new Error('what the fuck?');
+                    obj.#txid = '';
+                }
                 return Reflect.set(...arguments);
             },
         });
@@ -296,7 +301,7 @@ export class Transaction {
                 );
             }
         }
-
+        this.__original.#txid = bytesToHex(dSHA256(hexToBytes(hex)).reverse());
         return this;
     }
 
