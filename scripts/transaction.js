@@ -112,7 +112,6 @@ export class Transaction {
         return new Proxy(this, {
             set(obj, p) {
                 if (p !== 'blockHeight' && p !== 'blockTime') {
-                    if (obj.#txid) throw new Error('what the fuck?');
                     obj.#txid = '';
                 }
                 return Reflect.set(...arguments);
