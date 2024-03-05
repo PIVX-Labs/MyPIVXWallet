@@ -1040,7 +1040,7 @@ export class Wallet {
             this.updateHighestUsedIndex(out);
             const status = this.getScriptType(out.script);
             if (status & OutpointState.OURS) {
-                this.#mempool.setOutpointStatus(
+                this.#mempool.addOutpointStatus(
                     new COutpoint({
                         txid: transaction.txid,
                         n: i,
@@ -1052,7 +1052,7 @@ export class Wallet {
         }
 
         if (transaction.hasShieldData) {
-            wallet.#shield.finalizeTransaction(transaction.txid);
+            wallet.#shield?.finalizeTransaction(transaction.txid);
         }
 
         if (skipDatabase) {
