@@ -327,38 +327,40 @@ export class Database {
         const store = this.#db
             .transaction('txs', 'readonly')
             .objectStore('txs');
-        return (await store.getAll()).map((tx) => {
-            const vin = tx.vin.map(
-                (x) =>
-                    new CTxIn({
-                        outpoint: new COutpoint({
-                            txid: x.outpoint.txid,
-                            n: x.outpoint.n,
-                        }),
-                        scriptSig: x.scriptSig,
-                        sequence: x.sequence,
-                    })
-            );
-            const vout = tx.vout.map(
-                (x) =>
-                    new CTxOut({
-                        script: x.script,
-                        value: x.value,
-                    })
-            );
-            return new Transaction({
-                version: tx.version,
-                blockHeight: tx.blockHeight,
-                blockTime: tx.blockTime,
-                vin: vin,
-                vout: vout,
-                valueBalance: tx.valueBalance,
-                shieldSpend: tx.shieldSpend,
-                shieldOutput: tx.shieldOutput,
-                bindingSig: tx.bindingSig,
-                lockTime: tx.lockTime,
-            });
-        });
+        return (await store.getAll())
+            .map((tx) => {
+                const vin = tx.vin.map(
+                    (x) =>
+                        new CTxIn({
+                            outpoint: new COutpoint({
+                                txid: x.outpoint.txid,
+                                n: x.outpoint.n,
+                            }),
+                            scriptSig: x.scriptSig,
+                            sequence: x.sequence,
+                        })
+                );
+                const vout = tx.vout.map(
+                    (x) =>
+                        new CTxOut({
+                            script: x.script,
+                            value: x.value,
+                        })
+                );
+                return new Transaction({
+                    version: tx.version,
+                    blockHeight: tx.blockHeight,
+                    blockTime: tx.blockTime,
+                    vin: vin,
+                    vout: vout,
+                    valueBalance: tx.valueBalance,
+                    shieldSpend: tx.shieldSpend,
+                    shieldOutput: tx.shieldOutput,
+                    bindingSig: tx.bindingSig,
+                    lockTime: tx.lockTime,
+                });
+            })
+            .sort((a, b) => a.blockHeight - b.blockHeight);
     }
     /**
      * Remove all txs from db
@@ -510,7 +512,7 @@ export class Database {
     /**
      * @return {Promise<Database>} the default database instance
      */
-    static async getInstance() {
+    static async getsInstance() {
         const name = cChainParams.current.name;
         const instance = this.#instances.get(name);
         if (!instance || !instance.#db) {
