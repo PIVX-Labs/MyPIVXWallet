@@ -2,10 +2,10 @@ import { validateMnemonic } from 'bip39';
 import { decrypt } from './aes-gcm.js';
 import { parseWIF } from './encoding.js';
 import { beforeUnloadListener } from './global.js';
-import { ExplorerNetwork, getNetwork } from './network.js';
+import { getNetwork } from './network.js';
 import { MAX_ACCOUNT_GAP, SHIELD_BATCH_SYNC_SIZE } from './chain_params.js';
 import { HistoricalTx, HistoricalTxType } from './historical_tx.js';
-import { Transaction, COutpoint } from './transaction.js';
+import { COutpoint } from './transaction.js';
 import { confirmPopup, createAlert } from './misc.js';
 import { cChainParams } from './chain_params.js';
 import { COIN } from './chain_params.js';
@@ -117,7 +117,7 @@ export class Wallet {
 
     /**
      * Check whether a given outpoint is locked
-     * @param {COutpoint} opt
+     * @param {import('./transaction.js').COutpoint} opt
      * @return {boolean} true if opt is locked, false otherwise
      */
     isCoinLocked(opt) {
@@ -126,7 +126,7 @@ export class Wallet {
 
     /**
      * Lock a given Outpoint
-     * @param {COutpoint} opt
+     * @param {import('./transaction.js').COutpoint} opt
      */
     lockCoin(opt) {
         this.#mempool.addOutpointStatus(opt, OutpointState.LOCKED);
@@ -134,7 +134,7 @@ export class Wallet {
 
     /**
      * Unlock a given Outpoint
-     * @param {COutpoint} opt
+     * @param {import('./transaction.js').COutpoint} opt
      */
     unlockCoin(opt) {
         this.#mempool.removeOutpointStatus(opt, OutpointState.LOCKED);
@@ -697,9 +697,6 @@ export class Wallet {
         if (!this.#shield || this.#isSynced) {
             return;
         }
-        /**
-         * @type {ExplorerNetwork}
-         */
         const cNet = getNetwork();
         getEventEmitter().emit(
             'shield-sync-status-update',
@@ -790,9 +787,7 @@ export class Wallet {
         // Exit if there is no shield loaded
         if (!this.hasShield()) return;
         this.#isFetchingLatestBlocks = true;
-        /**
-         * @type {ExplorerNetwork}
-         */
+
         const cNet = getNetwork();
         // Don't ask for the exact last block that arrived,
         // since it takes around 1 minute for blockbook to make it API available
@@ -961,7 +956,7 @@ export class Wallet {
 
     /**
      * Sign a shield transaction
-     * @param {Transaction} transaction
+     * @param {import('./transaction.js').Transaction} transaction
      */
     async #signShield(transaction) {
         if (!transaction.hasSaplingVersion) {

@@ -1,5 +1,5 @@
 import { getEventEmitter } from './event_bus.js';
-import { Transaction, COutpoint, UTXO } from './transaction.js';
+import { COutpoint, UTXO } from './transaction.js';
 
 export const OutpointState = {
     OURS: 1 << 0, // This outpoint is ours
@@ -18,7 +18,7 @@ export class Mempool {
 
     /**
      * Maps txid -> Transaction
-     * @type{Map<string, Transaction>}
+     * @type{Map<string, import('./transaction.js').Transaction>}
      */
     #txmap = new Map();
 
@@ -31,7 +31,7 @@ export class Mempool {
     /**
      * Add a transaction to the mempool
      * And mark the input as spent.
-     * @param {Transaction} tx
+     * @param {import('./transaction.js').Transaction} tx
      */
     addTransaction(tx) {
         this.#txmap.set(tx.txid, tx);
@@ -112,7 +112,7 @@ export class Mempool {
 
     /**
      * Get the debit of a transaction in satoshi
-     * @param {Transaction} tx
+     * @param {import('./transaction.js').Transaction} tx
      */
     getDebit(tx) {
         return tx.vin
@@ -126,7 +126,7 @@ export class Mempool {
 
     /**
      * Get the credit of a transaction in satoshi
-     * @param {Transaction} tx
+     * @param {import('./transaction.js').Transaction} tx
      */
     getCredit(tx) {
         const txid = tx.txid;
@@ -222,7 +222,7 @@ export class Mempool {
     }
 
     /**
-     * @returns {Transaction[]} a list of all transactions
+     * @returns {import('./transaction.js').Transaction[]} a list of all transactions
      */
     getTransactions() {
         return Array.from(this.#txmap.values());

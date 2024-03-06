@@ -1,5 +1,4 @@
 import { Buffer } from 'buffer';
-import { Account } from './accounts.js';
 import { Database } from './database.js';
 import { doms, toClipboard } from './global.js';
 import { ALERTS, tr, translation } from './i18n.js';
@@ -57,7 +56,7 @@ export class Contact {
 
 /**
  * Add a Contact to an Account's contact list
- * @param {Account} account - The account to add the Contact to
+ * @param {import('./accounts.js').Account} account - The account to add the Contact to
  * @param {Contact} contact - The contact object
  */
 export async function addContact(account, contact) {
@@ -73,7 +72,7 @@ export async function addContact(account, contact) {
 
 /**
  * Remove a Contact from an Account's contact list
- * @param {Account} account - The account to remove the Contact from
+ * @param {import('./accounts.js').Account} account - The account to remove the Contact from
  * @param {string} pubkey - The contact pubkey
  */
 export async function removeContact(account, pubkey) {
@@ -91,7 +90,7 @@ export async function removeContact(account, pubkey) {
 
 /**
  * Render an Account's contact list
- * @param {Account} account
+ * @param {import('./accounts.js').Account} account
  * @param {boolean} fPrompt - If this is a Contact Selection prompt
  */
 export async function renderContacts(account, fPrompt = false) {
@@ -312,7 +311,7 @@ export async function guiRenderContacts() {
 
 /**
  * Set the current Account's Contact name
- * @param {Account} account - The account to add the new Name to
+ * @param {import('./accounts.js').Account} account - The account to add the new Name to
  * @param {String} name - The name to set
  */
 export async function setAccountContactName(account, name) {

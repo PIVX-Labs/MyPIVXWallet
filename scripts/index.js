@@ -9,7 +9,7 @@ import.meta.webpackContext('@fontsource/montserrat/', {
     recursive: false,
     regExp: /\.css$/,
 });
-import { start } from './global.js';
+import './global.js';
 import { getNetwork } from './network.js';
 
 // Export global functions to the MPW namespace so we can use them in html

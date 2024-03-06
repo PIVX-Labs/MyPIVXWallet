@@ -1,7 +1,5 @@
 import createXpub from 'create-xpub';
-import { ALERTS, tr, translation } from './i18n.js';
-import AppBtc from '@ledgerhq/hw-app-btc';
-import TransportWebUSB from '@ledgerhq/hw-transport-webusb';
+import { ALERTS, tr } from './i18n.js';
 import { confirmPopup, createAlert } from './misc.js';
 import { getNetwork } from './network.js';
 import { Transaction } from './transaction.js';
@@ -10,11 +8,11 @@ import { hexToBytes, bytesToHex } from './utils.js';
 import { OP } from './script.js';
 
 /**
- * @type{TransportWebUSB}
+ * @type{import('@ledgerhq/hw-transport-webusb').default}
  */
 let transport;
 /**
- * @type {AppBtc?}
+ * @type {import('@ledgerhq/hw-app-btc').default?}
  */
 export let cHardwareWallet = null;
 export let strHardwareName = '';

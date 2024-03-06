@@ -1,4 +1,4 @@
-import { openDB, IDBPDatabase } from 'idb';
+import { openDB } from 'idb';
 import Masternode from './masternode.js';
 import { Settings } from './settings.js';
 import { cChainParams } from './chain_params.js';
@@ -27,7 +27,7 @@ export class Database {
     static version = 5;
 
     /**
-     * @type{IDBPDatabase}
+     * @type{import('idb').IDBPDatabase}
      */
     #db;
 
@@ -249,7 +249,7 @@ export class Database {
      * @param {Object} o
      * @param {String} o.publicKey - Public key associated to the account.
      */
-    async removeAccount({ publicKey }) {
+    async removeAccount({ publicKey: _publicKey }) {
         const store = this.#db
             .transaction('accounts', 'readwrite')
             .objectStore('accounts');
@@ -400,7 +400,6 @@ export class Database {
 
     /**
      * Migrates from local storage
-     * @param {IDBPDatabase} db
      */
     async #migrateLocalStorage() {
         if (localStorage.length === 0) return;

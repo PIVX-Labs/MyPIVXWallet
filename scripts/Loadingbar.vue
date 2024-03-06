@@ -10,10 +10,10 @@ const props = defineProps({
         <div
             class="progress-bar progress-bar-striped progress-bar-animated"
             role="progressbar"
-            aria-valuenow="percentage"
+            :aria-valuenow="percentage"
             aria-valuemin="0"
             aria-valuemax="100"
-            :style="{ width: percentage + '%' }"
+            :style="{ width: percentage + '% !important' }"
         ></div>
     </div>
 </template>
