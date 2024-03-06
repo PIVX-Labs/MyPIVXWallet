@@ -12,7 +12,7 @@ import {
 } from './settings.js';
 import { cNode } from './settings.js';
 import { ALERTS, tr, translation } from './i18n.js';
-import { mempool, stakingDashboard } from './global.js';
+import { stakingDashboard } from './global.js';
 import { Transaction } from './transaction.js';
 
 /**
@@ -301,7 +301,6 @@ export class ExplorerNetwork extends Network {
                     await this.wallet.addTransaction(parsed);
                 }
             }
-            // await mempool.saveOnDisk();
         }
 
         if (debug) {

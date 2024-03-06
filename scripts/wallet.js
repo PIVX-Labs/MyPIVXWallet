@@ -264,7 +264,6 @@ export class Wallet {
         this.#isSynced = false;
         this.#shield = null;
         this.#addressIndices = new Map();
-        // TODO: readd this.#mempool = new Mempool();
         for (let i = 0; i < Wallet.chains; i++) {
             this.#highestUsedIndices.set(i, 0);
             this.#loadedIndexes.set(i, 0);

@@ -1,10 +1,9 @@
-import { OutpointState } from './mempool.js';
 import { COutpoint } from './transaction.js';
 import { TransactionBuilder } from './transaction_builder.js';
 import Masternode from './masternode.js';
 import { ALERTS, tr, start as i18nStart, translation } from './i18n.js';
 
-import { wallet, hasEncryptedWallet, getNewAddress, Wallet } from './wallet.js';
+import { wallet, hasEncryptedWallet, Wallet } from './wallet.js';
 import { LegacyMasterKey } from './masterkey.js';
 import { getNetwork } from './network.js';
 import {
