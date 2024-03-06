@@ -1055,7 +1055,7 @@ export class Wallet {
             wallet.#shield?.finalizeTransaction(transaction.txid);
         }
 
-        if (skipDatabase) {
+        if (!skipDatabase) {
             const db = await Database.getInstance();
             await db.storeTx(transaction);
         }
