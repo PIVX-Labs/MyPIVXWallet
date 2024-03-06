@@ -6,7 +6,6 @@ const Mempool = vi.fn();
 Mempool.prototype.balance = 0.1 * 10 ** 8;
 Mempool.prototype.coldBalance = 0;
 Mempool.prototype.isSpent = vi.fn(() => false);
-Mempool.prototype.addToOrderedTxMap = vi.fn();
 Mempool.prototype.setSpent = vi.fn();
 Mempool.prototype.addTransaction = vi.fn();
 Mempool.prototype.getUTXOs = vi.fn(() => [
