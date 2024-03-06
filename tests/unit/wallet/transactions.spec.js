@@ -11,6 +11,7 @@ import {
     CTxOut,
     Transaction,
 } from '../../../scripts/transaction.js';
+import 'fake-indexeddb/auto';
 
 describe('Wallet transaction tests', () => {
     let wallet;
@@ -28,6 +29,9 @@ describe('Wallet transaction tests', () => {
         });
         PIVXShield.prototype.getBalance = vi.fn(() => 40 * 10 ** 8);
         wallet.setShield(new PIVXShield());
+        // Reset indexedDB before each test
+        vi.stubGlobal('indexedDB', new IDBFactory());
+        return vi.unstubAllGlobals;
     });
     it('Creates a transaction correctly', async () => {
         const tx = wallet.createTransaction(
