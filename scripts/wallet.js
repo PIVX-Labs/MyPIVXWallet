@@ -896,7 +896,6 @@ export class Wallet {
         } else {
             balance = this.#mempool.balance;
         }
-
         if (balance < value) {
             throw new Error('Not enough balance');
         }

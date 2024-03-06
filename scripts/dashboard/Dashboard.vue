@@ -206,6 +206,7 @@ async function importWallet({ type, secret, password = '' }) {
         jdenticonValue.value = wallet.getAddress();
 
         if (needsToEncrypt.value) showEncryptModal.value = true;
+
         // Start syncing in the background
         wallet.sync().then(() => {
             createAlert('success', translation.syncStatusFinished, 12500);
