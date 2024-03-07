@@ -440,9 +440,14 @@ async function send(address, amount, useShieldInputs) {
     transferAmount.value = '';
 
     // Create and send the TX
-    await wallet.createAndSendTransaction(getNetwork(), address, nValue, {
-        useShieldInputs,
-    });
+    try {
+        await wallet.createAndSendTransaction(getNetwork(), address, nValue, {
+            useShieldInputs,
+        });
+    } catch (e) {
+        console.error(e);
+        createAlert('warning', e);
+    }
 }
 
 /**

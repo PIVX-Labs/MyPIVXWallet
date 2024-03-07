@@ -15,7 +15,7 @@ import { Database } from './database.js';
 import { RECEIVE_TYPES } from './contacts-book.js';
 import { Account } from './accounts.js';
 import { fAdvancedMode } from './settings.js';
-import { bytesToHex, hexToBytes, startBatch } from './utils.js';
+import { bytesToHex, hexToBytes, sleep, startBatch } from './utils.js';
 import { strHardwareName } from './ledger.js';
 import { OutpointState, Mempool } from './mempool.js';
 import { getEventEmitter } from './event_bus.js';
@@ -981,20 +981,31 @@ export class Wallet {
 
         const value =
             transaction.shieldOutput[0]?.value || transaction.vout[0].value;
-        const { hex } = await this.#shield.createTransaction({
-            address:
-                transaction.shieldOutput[0]?.address ||
-                this.getAddressesFromScript(transaction.vout[0].script)
-                    .addresses[0],
-            amount: value,
-            blockHeight: getNetwork().cachedBlockCount,
-            useShieldInputs: transaction.vin.length === 0,
-            utxos: this.#getUTXOsForShield(),
-            transparentChangeAddress: this.getNewAddress(1)[0],
-        });
-        clearInterval(periodicFunction);
-        getEventEmitter().emit('shield-transaction-creation-update', 0.0, true);
-        return transaction.fromHex(hex);
+        try {
+            const { hex } = await this.#shield.createTransaction({
+                address:
+                    transaction.shieldOutput[0]?.address ||
+                    this.getAddressesFromScript(transaction.vout[0].script)
+                        .addresses[0],
+                amount: value,
+                blockHeight: getNetwork().cachedBlockCount,
+                useShieldInputs: transaction.vin.length === 0,
+                utxos: this.#getUTXOsForShield(),
+                transparentChangeAddress: this.getNewAddress(1)[0],
+            });
+            return transaction.fromHex(hex);
+        } catch (e) {
+            // sleep a full period of periodicFunction
+            await sleep(500);
+            throw new Error(e);
+        } finally {
+            clearInterval(periodicFunction);
+            getEventEmitter().emit(
+                'shield-transaction-creation-update',
+                0.0,
+                true
+            );
+        }
     }
 
     /**
