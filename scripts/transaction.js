@@ -94,7 +94,6 @@ export class Transaction {
         shieldSpend = [],
         shieldOutput = [],
         bindingSig = '',
-        txid,
     } = {}) {
         this.version = version;
         this.blockHeight = blockHeight;
@@ -106,7 +105,6 @@ export class Transaction {
         this.shieldOutput = shieldOutput;
         this.bindingSig = bindingSig;
         this.valueBalance = valueBalance;
-        this.#txid = txid;
         /** Handle to the unproxied tx for when we need to clone it */
         this.__original = this;
         return new Proxy(this, {
