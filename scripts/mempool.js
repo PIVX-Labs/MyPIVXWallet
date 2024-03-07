@@ -132,18 +132,15 @@ export class Mempool {
         const txid = tx.txid;
 
         return tx.vout
-            .map(
-                (_, i) =>
-                    new COutpoint({
-                        txid,
-                        n: i,
-                    })
-            )
             .filter(
-                (outpoint) =>
-                    this.getOutpointStatus(outpoint) & OutpointState.OURS
+                (_, i) =>
+                    this.getOutpointStatus(
+                        new COutpoint({
+                            txid,
+                            n: i,
+                        })
+                    ) & OutpointState.OURS
             )
-            .map((o) => this.#outpointToUTXO(o))
             .reduce((acc, u) => acc + u?.value ?? 0, 0);
     }
 
