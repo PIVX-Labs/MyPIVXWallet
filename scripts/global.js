@@ -561,6 +561,8 @@ export function getStakingBalance(updateGUI = false) {
     return nBalance;
 }
 
+getEventEmitter().on('balance-update', () => getStakingBalance(true));
+
 /**
  * Fill a 'Coin Amount' with all of a balance type, and update the 'Coin Value'
  * @param {HTMLInputElement} domCoin - The 'Coin Amount' input element
