@@ -512,7 +512,7 @@ export class Database {
     /**
      * @return {Promise<Database>} the default database instance
      */
-    static async getsInstance() {
+    static async getInstance() {
         const name = cChainParams.current.name;
         const instance = this.#instances.get(name);
         if (!instance || !instance.#db) {
