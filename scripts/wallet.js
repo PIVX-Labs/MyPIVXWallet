@@ -639,18 +639,33 @@ export class Wallet {
             // The receiver addresses, if any
             let arrReceivers = this.getOutAddress(tx);
 
+            const getFilteredCredit = (filter) => {
+                return tx.vout
+                    .filter((_, i) => {
+                        const status = this.#mempool.getOutpointStatus(
+                            new COutpoint({
+                                txid: tx.txid,
+                                n: i,
+                            })
+                        );
+                        return status & filter && status & OutpointState.OURS;
+                    })
+                    .reduce((acc, o) => acc + o.value, 0);
+            };
+
             // Figure out the type, based on the Tx's properties
             let type = HistoricalTxType.UNKNOWN;
             if (tx.isCoinStake()) {
                 type = HistoricalTxType.STAKE;
             } else if (this.checkForUndelegations(tx)) {
                 type = HistoricalTxType.UNDELEGATION;
+                nAmount = getFilteredCredit(OutpointState.P2PKH) / COIN;
             } else if (this.checkForDelegations(tx)) {
                 type = HistoricalTxType.DELEGATION;
                 arrReceivers = arrReceivers.filter((addr) => {
                     return addr[0] === cChainParams.current.STAKING_PREFIX;
                 });
-                nAmount = this.#mempool.getCredit(tx) / COIN;
+                nAmount = getFilteredCredit(OutpointState.P2CS) / COIN;
             } else if (nAmount > 0) {
                 type = HistoricalTxType.RECEIVED;
             } else if (nAmount < 0) {
