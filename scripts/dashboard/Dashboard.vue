@@ -240,8 +240,8 @@ async function encryptWallet(password, currentPassword = '') {
 
 // TODO: This needs to be vueeifed a bit
 async function restoreWallet(strReason) {
-    if (!wallet.isEncrypted.value) return false;
     if (wallet.isHardwareWallet.value) return true;
+    if (!wallet.isEncrypted.value) return true;
     // Build up the UI elements based upon conditions for the unlock prompt
     let strHTML = '';
 
