@@ -15,6 +15,7 @@ import {
 import 'fake-indexeddb/auto';
 import { TransactionBuilder } from '../../../scripts/transaction_builder.js';
 
+vi.stubGlobal('localStorage', { length: 0 });
 vi.mock('../../../scripts/global.js');
 vi.mock('../../../scripts/network.js');
 
