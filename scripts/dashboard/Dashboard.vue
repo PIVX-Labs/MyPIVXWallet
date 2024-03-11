@@ -60,7 +60,7 @@ const needsToEncrypt = computed(() => {
     }
 });
 const showTransferMenu = ref(false);
-const { advancedMode, displayDecimals } = useSettings();
+const { advancedMode, displayDecimals, autoLockWallet } = useSettings();
 const showExportModal = ref(false);
 const showEncryptModal = ref(false);
 const keyToBackup = ref('');
@@ -290,9 +290,9 @@ async function restoreWallet(strReason) {
 }
 
 /**
- * Lock the wallet by deleting masterkey private data
+ * Lock the wallet by deleting masterkey private data, after user confirmation
  */
-async function lockWallet() {
+async function displayLockWalletModal() {
     const isEncrypted = wallet.isEncrypted.value;
     const title = isEncrypted
         ? translation.popupWalletLock
@@ -306,9 +306,16 @@ async function lockWallet() {
             html,
         })
     ) {
-        wallet.wipePrivateData();
-        createAlert('success', ALERTS.WALLET_LOCKED, 1500);
+        lockWallet();
     }
+}
+
+/**
+ * Lock the wallet by deleting masterkey private data
+ */
+function lockWallet() {
+    wallet.wipePrivateData();
+    createAlert('success', ALERTS.WALLET_LOCKED, 1500);
 }
 
 /**
@@ -447,6 +454,14 @@ async function send(address, amount, useShieldInputs) {
     } catch (e) {
         console.error(e);
         createAlert('warning', e);
+    } finally {
+        if (autoLockWallet.value) {
+            if (wallet.isEncrypted.value) {
+                lockWallet();
+            } else {
+                await displayLockWalletModal();
+            }
+        }
     }
 }
 
@@ -630,7 +645,10 @@ defineExpose({
                 "
             >
                 <center>
-                    <div class="dcWallet-warningMessage" @click="lockWallet()">
+                    <div
+                        class="dcWallet-warningMessage"
+                        @click="displayLockWalletModal()"
+                    >
                         <div class="shieldLogo">
                             <div class="shieldBackground">
                                 <span

@@ -216,6 +216,7 @@ useShieldInputs = "" # Use shield inputs
 newShieldAddress = "" # Get new shield address
 shieldAddress = "" # Shield address
 cantShieldToExc = "" # This address does not support shield transfers
+settingsToggleAutoLockWallet = "" # Auto Lock the Wallet
 
 [ALERTS]
 INTERNAL_ERROR = "Błąd wewnętrzny, spróbuj ponownie później" # Internal error, please try again later

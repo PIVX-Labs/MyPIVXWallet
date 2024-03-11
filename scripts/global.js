@@ -247,6 +247,7 @@ export async function start() {
         domFlipdown: document.getElementById('flipdown'),
         domTestnetToggler: document.getElementById('testnetToggler'),
         domAdvancedModeToggler: document.getElementById('advancedModeToggler'),
+        domAutoLockModeToggler: document.getElementById('autoLockModeToggler'),
     };
 
     await i18nStart();

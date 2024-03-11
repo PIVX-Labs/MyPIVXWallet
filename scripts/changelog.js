@@ -13,16 +13,15 @@ export function checkForUpgrades() {
     // Check if the last used version doesn't match the current version.
     // Note: it's intended to skip if `lastVersion` is null, as this stops the popups for NEW users.
     const lastVersion = localStorage.getItem('version');
-    if (lastVersion && lastVersion !== VERSION) {
+    if (lastVersion && lastVersion !== VERSION.split('-')[0]) {
         // Old user's first time on this update; display the changelog
         renderChangelog();
     }
-
     // Update the footer with our version
-    doms.domVersion.innerText = 'v' + VERSION;
+    doms.domVersion.innerText = `v${VERSION}`;
 
     // Update the last-used app version
-    localStorage.setItem('version', VERSION);
+    localStorage.setItem('version', VERSION.split('-')[0]);
 }
 
 /**

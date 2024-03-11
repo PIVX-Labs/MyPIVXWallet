@@ -7,6 +7,7 @@
     "scripts": {
         "postinstall": "test -f chain_params.json || cp chain_params.prod.json chain_params.json",
         "build": "webpack --config webpack.prod.js",
+        "buildDev": "webpack --config webpack.dev.js",
         "watch": "webpack --watch",
         "dev": "webpack serve --config webpack.dev.js",
         "predeploy": "npm run build",

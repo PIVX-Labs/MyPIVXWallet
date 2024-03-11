@@ -6,6 +6,11 @@ import { merge } from 'webpack-merge';
 import common from './webpack.common.js';
 import CssMinimizerPlugin from 'css-minimizer-webpack-plugin';
 import webpack from 'webpack';
+import { readFileSync } from 'fs';
+
+const version = JSON.parse(
+    readFileSync('./package.json', { encoding: 'utf8' })
+).version;
 
 export default merge(common, {
     mode: 'production',
@@ -17,6 +22,7 @@ export default merge(common, {
         new webpack.DefinePlugin({
             __VUE_OPTIONS_API__: false,
             __VUE_PROD_DEVTOOLS__: false,
+            VERSION: JSON.stringify(version),
         }),
     ],
 });
