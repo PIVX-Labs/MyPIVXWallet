@@ -3417,3 +3417,9 @@ select.form-control option {
 .contactsList .qrContactBtn:hover {
     background-color: #f2f2f24d;
 }
+
+.progress .progress-bar {
+    background-image: none;
+    background-color: #7000ab;
+    width:50%!important;
+}

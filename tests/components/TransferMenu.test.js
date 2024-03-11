@@ -13,6 +13,7 @@ const mountTM = (amount = '123', address = '') => {
             address,
 
             'onUpdate:amount': (e) => wrapper.setProps({ amount: e }),
+            shieldEnabled: true,
         },
     });
     return wrapper;
@@ -60,8 +61,19 @@ it('Closes correctly', async () => {
 it('Sends transaction correctly', async () => {
     const wrapper = mountTM('60', 'DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bc');
     expect(wrapper.emitted('send')).toBeUndefined();
-    wrapper.find('[data-testid=sendButton]').trigger('click');
+    await wrapper.find('[data-testid=sendButton]').trigger('click');
     expect(wrapper.emitted('send')).toStrictEqual([
-        ['DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bc', '60'],
+        ['DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bc', '60', false],
+    ]);
+});
+
+it('Sends transaction with shield inputs', async () => {
+    const wrapper = mountTM('60', 'DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bc');
+    expect(wrapper.emitted('send')).toBeUndefined();
+    await wrapper.find('[data-testid=useShieldInputs]').setChecked();
+    await wrapper.find('[data-testid=sendButton]').trigger('click');
+
+    expect(wrapper.emitted('send')).toStrictEqual([
+        ['DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bc', '60', true],
     ]);
 });

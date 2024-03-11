@@ -7,13 +7,6 @@ import { nextTick } from 'vue';
 import * as translation from '../../scripts/i18n.js';
 import * as misc from '../../scripts/misc.js';
 import { MIN_PASS_LENGTH } from '../../scripts/chain_params.js';
-// We need to attach the component to a HTML,
-// or .isVisible() function does not work
-document.body.innerHTML = `
-  <div>
-    <div id="app"></div>
-  </div>
-`;
 
 const checkEventsEmitted = (wrapper, nClose, nOnEncrypt, nOpen) => {
     if (nClose == 0) {

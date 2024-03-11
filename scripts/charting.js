@@ -12,7 +12,7 @@ import { doms, mempool } from './global.js';
 import { Database } from './database.js';
 import { translation } from './i18n.js';
 import { wallet } from './wallet.js';
-import { COutpoint } from './mempool.js';
+import { COutpoint } from './transaction.js';
 
 Chart.register(
     Colors,
@@ -50,7 +50,27 @@ async function getWalletDataset() {
         arrBreakdown.push({
             type: translation.chartPublicAvailable,
             balance: spendable_bal / COIN,
-            colour: 'rgba(127, 17, 224, 1)',
+            colour: '#9236e2',
+        });
+    }
+
+    // Shielded (Available spendable)
+    const shield_spendable = await wallet.getShieldBalance();
+    if (shield_spendable > 0) {
+        arrBreakdown.push({
+            type: 'Shield Available',
+            balance: shield_spendable / COIN,
+            colour: '#781dc9',
+        });
+    }
+
+    // Shielded (Pending i.e still unspendable)
+    const shield_pending = await wallet.getPendingShieldBalance();
+    if (shield_pending > 0) {
+        arrBreakdown.push({
+            type: 'Shield Pending',
+            balance: shield_pending / COIN,
+            colour: '#5e169c',
         });
     }
 
@@ -68,7 +88,7 @@ async function getWalletDataset() {
         arrBreakdown.push({
             type: 'Staking',
             balance: spendable_cold_bal / COIN,
-            colour: 'rgba(42, 27, 66, 1)',
+            colour: '#360c5a',
         });
     }
 

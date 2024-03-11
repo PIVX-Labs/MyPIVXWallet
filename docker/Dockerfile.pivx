@@ -15,3 +15,4 @@ WORKDIR bin
 RUN chmod +x ./pivxd
 ENTRYPOINT ["/pivx/pivx-5.5.0/bin/pivxd"]
 CMD ["--regtest", "-rpcport=51470", "-rpcallowip=0.0.0.0/0", "-rpcuser=rpc", "-rpcpassword=pivxrpc", "-rpcbind=0.0.0.0:51470"]
+EXPOSE 51470

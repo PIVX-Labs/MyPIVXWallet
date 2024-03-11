@@ -1,12 +1,13 @@
 {
     "name": "mypivxwallet",
-    "version": "1.4.0",
+    "version": "1.5.0",
     "description": "Wallet for PIVX",
     "main": "scripts/index.js",
     "type": "module",
     "scripts": {
         "postinstall": "test -f chain_params.json || cp chain_params.prod.json chain_params.json",
         "build": "webpack --config webpack.prod.js",
+        "buildDev": "webpack --config webpack.dev.js",
         "watch": "webpack --watch",
         "dev": "webpack serve --config webpack.dev.js",
         "predeploy": "npm run build",
@@ -33,7 +34,6 @@
     "homepage": "https://github.com/PIVX-Labs/MyPIVXWallet#readme",
     "devDependencies": {
         "@fluent/langneg": "^0.7.0",
-        "@types/lodash-es": "^4.17.6",
         "@typescript-eslint/eslint-plugin": "^5.48.0",
         "@typescript-eslint/parser": "^5.48.0",
         "@vitejs/plugin-vue": "^4.4.1",
@@ -88,8 +88,8 @@
         "ip-address": "^8.1.0",
         "jdenticon": "^3.2.0",
         "jquery": "^3.6.3",
-        "lodash-es": "^4.17.21",
         "pivx-promos": "^0.2.0",
+        "pivx-shield": "^1.1.2",
         "qr-scanner": "^1.4.2",
         "qrcode-generator": "^1.4.4",
         "vue": "^3.3.4",

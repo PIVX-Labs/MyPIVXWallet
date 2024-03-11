@@ -152,7 +152,7 @@ export async function switchTranslation(langName) {
  *
  * @example
  * //returns "test this"
- * tr("test {x}" [x: "this"])
+ * tr("test {x}" [{x: "this"}])
  */
 export function tr(message, variables) {
     variables.forEach((element) => {

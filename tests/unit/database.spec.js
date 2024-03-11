@@ -6,6 +6,7 @@ import { Account } from '../../scripts/accounts';
 import * as misc from '../../scripts/misc.js';
 import { Settings } from '../../scripts/settings';
 import Masternode from '../../scripts/masternode';
+import { Transaction } from '../../scripts/transaction';
 describe('database tests', () => {
     beforeAll(() => {
         // Mock createAlert
@@ -70,8 +71,28 @@ describe('database tests', () => {
         expect(await db.getAccount()).toBeNull();
     });
 
-    it.todo('stores transaction correctly', () => {
-        // To avoid conflicts, I will implement this after #284
+    it('stores transaction correctly', async () => {
+        const transactions = [
+            '0100000001d895a1dfa0198d6b8c8cf2eacccca96586ee0d2281b19c36b995aad096899cdb010000006c473044022030b9d2447e976562133a7c2b9fb70b25f427b205491d14a4f11c5096426a4d8202204bde1afbdd4dd8eb4ec6ab3b22512354dc917c4eccb464f228c2c6a28fed46080101512102883374ead5b57d8db4a302f64b0b72e214f6a428dd1eff85919ec289ad92c52effffffff030000000000000000007bd4532b0f0000003376a97b63d114b3be8567d0190c67ca4675a0019089c55fe695f967142bd00337677ee0216d47a2dbdf1f4e107e54e4206888ac0046c323000000001976a914f5f49c7ed95e5b7f54b0f93a81d9699472011feb88ac00000000',
+            '01000000019e07debe5a00f18f9343b270dc7d408c3116e605dd937eb432e1cab23ea407fa010000006d483045022100e4ecab97c5c733c9d883046653045fa269031a89812921ae2bb956e063b911d9022053413e4c8e0aae5ac580bbd6c9a3eb08222ecb0ab6821a96d3389872a304ec3a01015121025559a792b8805da7f5d61237a45d7e70c9b3133a176e755e7e90514e37673720ffffffff03000000000000000000900a44e8100000003376a97b63d114490254a35e71df73197db35a8d4c5f50068cd1f26714f250ed27afc2f51164c67501471a52661cd8f62f6888ac0046c323000000001976a914074610f922bee2ec55dc15a1e335e8ca9cec991388ac00000000',
+            '01000000010000000000000000000000000000000000000000000000000000000000000000ffffffff05038bce3f00ffffffff0100000000000000000000000000',
+        ].map((h) => Transaction.fromHex(h));
+        const db = await Database.create('test');
+        for (const tx of transactions) {
+            await db.storeTx(tx);
+        }
+        expect(
+            (await db.getTxs()).sort((a, b) => a.txid.localeCompare(b.txid))
+        ).toStrictEqual(
+            transactions.sort((a, b) => a.txid.localeCompare(b.txid))
+        );
+        // If we store a tx multiple times, it won't repeat the transaction
+        await db.storeTx(transactions[0]);
+        expect(
+            (await db.getTxs()).sort((a, b) => a.txid.localeCompare(b.txid))
+        ).toStrictEqual(
+            transactions.sort((a, b) => a.txid.localeCompare(b.txid))
+        );
     });
 
     it('stores masternodes correctly', async () => {

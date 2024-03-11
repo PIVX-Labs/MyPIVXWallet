@@ -210,6 +210,13 @@ accountDeleted = "Deine Geldbörse wurde erfolgreich gelöscht" # Your account h
 activitySelf = "Eigenüberweisung" # self
 activityReceivedWith = "Erhalten über {s}" # Received with {s}
 chartImmatureBalance = "" # Immature balance
+syncLoadingSaplingProver = "" # Loading Sapling Prover
+syncShieldProgress = "" # Loading shielded blocks {current} of {total}
+useShieldInputs = "" # Use shield inputs
+newShieldAddress = "" # Get new shield address
+shieldAddress = "" # Shield address
+cantShieldToExc = "" # This address does not support shield transfers
+settingsToggleAutoLockWallet = "" # Auto Lock the Wallet
 
 [ALERTS]
 INTERNAL_ERROR = "Interner Fehler, bitte versuche es später erneut" # Internal error, please try again later
@@ -239,7 +246,6 @@ STAKE_NOT_SEND = "Benutze bitte den <b>Stake</b> Reiter, nicht den Senden Reiter
 BAD_ADDR_LENGTH = "<b>Ungültige PIVX Adresse!<b><br>Falsche Länge ({addressLength})" # <b>Invalid PIVX address!<b><br>Bad length ({addressLength})
 BAD_ADDR_PREFIX = "<b>Ungültige PIVX Adresse!<b><br>Falscher Prefixx {address} (Sollte eigentlich mit {addressPrefix} beginnen)" # <b>Invalid PIVX address!<b><br>Bad prefix {address} (Should start with {addressPrefix})
 SENT_NOTHING = "Zu senden Mengen kann nicht 0 sein!" # You can't send 'nothing'!
-
 SAVE_WALLET_PLEASE = "<b>Sichere deine Geldbörse!</b><br>Übersicht ➜ Sichere deine Geldbörse" # <b>Save your wallet!</b><br>Dashboard ➜ Secure your wallet
 BACKUP_OR_ENCRYPT_WALLET = "Bitter verschlüssel und/oder Sichere deine Schlüssel bevor du die Sitzung beendest, oder du verlierst den Zugriff!" # Please ENCRYPT and/or BACKUP your keys before leaving, or you may lose them!
 NO_CAMERAS = "Dieses Gerät hat keine Kamera" # This device has no camera!
@@ -319,3 +325,7 @@ CONFIRM_POPUP_DELETE_ACCOUNT_TITLE = "Bist du wirklich sicher?" # Are you sure?
 WALLET_NOT_SYNCED = "" # Please try again when wallet finishes syncing!
 WALLET_LOCKED = "" # Wallet successfully Locked!
 WALLET_UNLOCKED = "" # Wallet successfully Unlocked!
+CONFIRM_LEDGER_TX = "" # Confirm this transaction matches the one on your {hardwareWallet}
+CONFIRM_LEDGER_TX_OUT = "" # You will send {value} {ticker} to <div class="inline-address">{address}</div>
+MISSING_FUNDS = "" # Balance is too small! Missing {sats} sats!
+MISSING_SHIELD = "" # Shield is not enabled in this wallet!

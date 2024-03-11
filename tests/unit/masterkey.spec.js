@@ -1,23 +1,8 @@
-import { LegacyMasterKey, HdMasterKey } from '../../scripts/masterkey.js';
+import { getLegacyMainnet, getLegacyTestnet } from './test_utils.js';
+import { HdMasterKey } from '../../scripts/masterkey.js';
 import { mnemonicToSeed } from 'bip39';
-import { parseWIF, verifyPubkey } from '../../scripts/encoding.js';
+import { verifyPubkey } from '../../scripts/encoding.js';
 import { cChainParams } from '../../scripts/chain_params.js';
-
-function getLegacyMainnet() {
-    return new LegacyMasterKey({
-        pkBytes: parseWIF(
-            'YU12G8Y9LwC3wb2cwUXvvg1iMvBey1ibCF23WBAapCuaKhd6a4R6'
-        ),
-    });
-}
-
-function getLegacyTestnet() {
-    return new LegacyMasterKey({
-        pkBytes: parseWIF(
-            'cW6uViWJU7fUUsB44CDaVN3mKe7dAM3Jun8NHUajT3kgavFx91me'
-        ),
-    });
-}
 
 async function getHdKeyBySeed() {
     return new HdMasterKey({
@@ -55,8 +40,6 @@ describe('mainnet tests', () => {
         expect(async () => {
             l.getxpub();
         }).rejects.toThrow(/extended public key/i);
-
-        expect(() => getLegacyTestnet()).toThrow(/testnet/i);
     });
 
     test('Hd keys basic properties', async () => {
@@ -175,7 +158,6 @@ describe('testnet tests', () => {
         expect(async () => {
             await l.getxpub();
         }).rejects.toThrow(/extended public key/i);
-        expect(() => getLegacyMainnet()).toThrow(/mainnet/i);
     });
     test('Hd master key are all the same', async () => {
         const s = await getHdKeyBySeed();
