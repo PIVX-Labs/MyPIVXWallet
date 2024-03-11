@@ -19,9 +19,6 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 // Inject the Changelog and Version to the app
 const changelog = readFileSync('./changelog.md', { encoding: 'utf8' });
-const version = JSON.parse(
-    readFileSync('./package.json', { encoding: 'utf8' })
-).version;
 
 export default {
     entry: './scripts/index.js',
@@ -109,7 +106,6 @@ export default {
         // Make the Changelog available globally
         new webpack.DefinePlugin({
             CHANGELOG: JSON.stringify(changelog),
-            VERSION: JSON.stringify(version),
         }),
         // Ignore non english bip39 wordlists
         new webpack.IgnorePlugin({
