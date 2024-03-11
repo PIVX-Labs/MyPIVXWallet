@@ -12,6 +12,12 @@ export class TransactionBuilder {
     #valueIn = 0;
     #valueOut = 0;
 
+    // Part of the tx fee that has been already handled
+    #handledFee = 0;
+    MIN_FEE_PER_BYTE = 10;
+    // This number is larger or equal than the max size of the script sig for a P2CS and P2PKH transaction
+    SCRIPT_SIG_MAX_SIZE = 108;
+
     get valueIn() {
         return this.#valueIn;
     }
@@ -22,6 +28,14 @@ export class TransactionBuilder {
 
     get value() {
         return this.#valueIn - this.#valueOut;
+    }
+    /**
+     * See if the given CTxOut is plain dust
+     * @param{{out:CTxOut, value: number}}
+     */
+    isDust({ out, value }) {
+        // Dust is a transaction such that its creation costs more than its value
+        return value < out.serialize().length * this.MIN_FEE_PER_BYTE;
     }
 
     constructor() {
@@ -39,8 +53,23 @@ export class TransactionBuilder {
     }
 
     getFee() {
-        // Temporary: 50 sats per byte
-        return this.#transaction.serialize().length * 50;
+        //TODO: find a cleaner way to add the dummy signature
+        let scriptSig = [];
+        for (let vin of this.#transaction.vin) {
+            scriptSig.push(vin.scriptSig);
+            // Insert a dummy signature just to compute fees
+            vin.scriptSig = bytesToHex(Array(this.SCRIPT_SIG_MAX_SIZE).fill(0));
+        }
+
+        const fee =
+            Math.ceil(this.#transaction.serialize().length / 2) *
+                this.MIN_FEE_PER_BYTE -
+            this.#handledFee;
+        // Re-insert whatever was inside before
+        for (let i = 0; i < scriptSig.length; i++) {
+            this.#transaction.vin[i].scriptSig = scriptSig[i];
+        }
+        return fee;
     }
 
     /**
@@ -135,22 +164,32 @@ export class TransactionBuilder {
         this.#addScript({ script, value });
     }
 
-    #addScript({ script, value }) {
-        this.#transaction.vout.push(
-            new CTxOut({
-                script: bytesToHex(script),
-                value,
-            })
-        );
-        this.#valueOut += value;
+    #addScript({ script, value, subtractFeeFromAmt = false }) {
+        let out = new CTxOut({
+            script: bytesToHex(script),
+            value,
+        });
+        // if subtractFeeFromAmt has been set do NOT add dust
+        // We would end up with an UTXO with negative value
+        if (this.isDust({ out, value }) && subtractFeeFromAmt) {
+            return;
+        }
+        const fee = out.serialize().length * this.MIN_FEE_PER_BYTE;
+        // We have subtracted fees from the value, mark this fee as handled (don't pay them again)
+        if (subtractFeeFromAmt) {
+            out.value -= fee;
+            this.#handledFee += fee;
+        }
+        this.#transaction.vout.push(out);
+        this.#valueOut += out.value;
     }
 
     /**
      * Adds a P2PKH output to the transaction
-     * @param {{address: string, value: number}}
+     * @param {{address: string, value: number, isChange: boolean}}
      * @returns {TransactionBuilder}
      */
-    #addP2pkhOutput({ address, value }) {
+    #addP2pkhOutput({ address, value, isChange }) {
         const decoded = this.#decodeAddress(address);
         const script = [
             OP['DUP'],
@@ -160,21 +199,21 @@ export class TransactionBuilder {
             OP['EQUALVERIFY'],
             OP['CHECKSIG'],
         ];
-        this.#addScript({ script, value });
+        this.#addScript({ script, value, subtractFeeFromAmt: isChange });
     }
 
     /**
      * Adds an output to the transaction
-     * @param {{address: string, value: number}}
+     * @param {{address: string, value: number, isChange: boolean}}
      * @returns {TransactionBuilder}
      */
-    addOutput({ address, value }) {
+    addOutput({ address, value, isChange = false }) {
         if (isShieldAddress(address)) {
             this.#addShieldOutput({ address, value });
         } else if (isExchangeAddress(address)) {
             this.#addExchangeOutput({ address, value });
         } else {
-            this.#addP2pkhOutput({ address, value });
+            this.#addP2pkhOutput({ address, value, isChange });
         }
 
         return this;
@@ -205,7 +244,7 @@ export class TransactionBuilder {
      * @param {{address: string, addressColdStake: string, value: number}}
      * @returns {TransactionBuilder}
      */
-    addColdStakeOutput({ address, addressColdStake, value }) {
+    addColdStakeOutput({ address, addressColdStake, value, isChange }) {
         const decodedAddress = this.#decodeAddress(address);
         const decodedAddressColdStake = this.#decodeAddress(addressColdStake);
         const script = [
@@ -223,13 +262,26 @@ export class TransactionBuilder {
             OP['EQUALVERIFY'],
             OP['CHECKSIG'],
         ];
-        this.#transaction.vout.push(
-            new CTxOut({
-                script: bytesToHex(script),
-                value,
-            })
-        );
+        this.#addScript({ script, value, subtractFeeFromAmt: isChange });
         return this;
+    }
+
+    // Equally subtract a value from every output of the tx
+    equallySubtractAmt(value) {
+        const tx = this.#transaction;
+        let first = true;
+        const outputs = tx.vout.length;
+        if (!outputs || outputs == 0) {
+            throw new Error('tx has no outputs!');
+        }
+        for (let vout of tx.vout) {
+            vout.value -= Math.floor(value / outputs);
+            // The first pays the remainder
+            if (first) {
+                vout.value -= value % outputs;
+                first = false;
+            }
+        }
     }
 
     build() {

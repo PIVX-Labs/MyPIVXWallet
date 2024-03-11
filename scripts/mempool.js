@@ -100,7 +100,7 @@ export class Mempool {
      * @param {COutpoint} outpoint
      * @returns {UTXO?}
      */
-    #outpointToUTXO(outpoint) {
+    outpointToUTXO(outpoint) {
         const tx = this.#txmap.get(outpoint.txid);
         if (!tx) return null;
         return new UTXO({
@@ -120,7 +120,7 @@ export class Mempool {
                 (input) =>
                     this.getOutpointStatus(input.outpoint) & OutpointState.OURS
             )
-            .map((i) => this.#outpointToUTXO(i.outpoint))
+            .map((i) => this.outpointToUTXO(i.outpoint))
             .reduce((acc, u) => acc + (u?.value || 0), 0);
     }
 
@@ -169,7 +169,7 @@ export class Mempool {
             if (!(status & requirement)) {
                 continue;
             }
-            utxos.push(this.#outpointToUTXO(outpoint));
+            utxos.push(this.outpointToUTXO(outpoint));
             value += utxos.at(-1).value;
             if (value >= (target * 11) / 10) {
                 break;

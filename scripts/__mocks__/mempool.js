@@ -18,6 +18,22 @@ Mempool.prototype.getUTXOs = vi.fn(() => [
         value: 0.1 * 10 ** 8,
     }),
 ]);
+Mempool.prototype.outpointToUTXO = vi.fn((outpoint) => {
+    if (
+        outpoint.txid ===
+            'f8f968d80ac382a7b64591cc166489f66b7c4422f95fbd89f946a5041d285d7c' &&
+        outpoint.n === 1
+    ) {
+        return new UTXO({
+            outpoint: new COutpoint({
+                txid: 'f8f968d80ac382a7b64591cc166489f66b7c4422f95fbd89f946a5041d285d7c',
+                n: 1,
+            }),
+            script: '76a914f49b25384b79685227be5418f779b98a6be4c73888ac',
+            value: 0.1 * 10 ** 8,
+        });
+    }
+});
 const OutpointState = {
     OURS: 1 << 0, // This outpoint is ours
 
