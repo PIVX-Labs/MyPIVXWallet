@@ -37,39 +37,37 @@ const { advancedMode } = toRefs(props);
         />
 
         <!-- ACCESS LEDGER HARDWARE WALLET -->
-        <div class="col-12 col-lg-6 p-2">
+        <div class="col-12 col-lg-3 p-2">
             <div
                 id="generateHardwareWallet"
-                class="h-100 dashboard-item dashboard-display"
+                class="dashboard-item dashboard-display"
             >
-                <div class="container">
-                    <div class="coinstat-icon" v-html="fire"></div>
+                <div class="coinstat-icon" v-html="fire"></div>
 
-                    <div class="col-md-12 dashboard-title">
-                        <h3 class="pivx-bold-title" style="font-size: 38px">
-                            <span data-i18n="dCardThreeTitle">Access your</span>
-                            <div data-i18n="dCardThreeSubTitle">
-                                Ledger Wallet
-                            </div>
-                        </h3>
-                        <p data-i18n="dCardThreeDesc">
-                            Use your Ledger Hardware wallet with MPW's familiar
-                            interface.
-                        </p>
-                    </div>
-
-                    <button
-                        class="pivx-button-big"
-                        @click="$emit('import-wallet', { type: 'hardware' })"
-                        data-testid="hardwareWalletBtn"
-                    >
-                        <span class="buttoni-icon" v-html="pLogo"> </span>
-
-                        <span class="buttoni-text" data-i18n="dCardThreeButton"
-                            >Access my Ledger</span
-                        >
-                    </button>
+                <div class="col-md-12 dashboard-title">
+                    <h3 class="pivx-bold-title" style="font-size: 25px">
+                        <span data-i18n="dCardThreeTitle">Access your</span>
+                        <div data-i18n="dCardThreeSubTitle">
+                            Ledger Wallet
+                        </div>
+                    </h3>
+                    <p data-i18n="dCardThreeDesc">
+                        Use your Ledger Hardware wallet with MPW's familiar
+                        interface.
+                    </p>
                 </div>
+
+                <button
+                    class="pivx-button-big"
+                    @click="$emit('import-wallet', { type: 'hardware' })"
+                    data-testid="hardwareWalletBtn"
+                >
+                    <span class="buttoni-icon" v-html="pLogo"> </span>
+
+                    <span class="buttoni-text" data-i18n="dCardThreeButton"
+                        >Access my Ledger</span
+                    >
+                </button>
             </div>
         </div>
 
