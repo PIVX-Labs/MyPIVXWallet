@@ -1,6 +1,7 @@
 <script setup>
 import Login from './Login.vue';
 import WalletBalance from './WalletBalance.vue';
+import WalletButtons from './WalletButtons.vue';
 import Activity from './Activity.vue';
 import GenKeyWarning from './GenKeyWarning.vue';
 import TransferMenu from './TransferMenu.vue';
@@ -596,84 +597,6 @@ defineExpose({
 
             <br />
 
-            <!-- Unlock wallet -->
-            <div
-                class="col-12 p-0"
-                v-if="
-                    wallet.isViewOnly.value &&
-                    wallet.isEncrypted.value &&
-                    wallet.isImported.value
-                "
-            >
-                <center>
-                    <div
-                        class="dcWallet-warningMessage"
-                        onclick="MPW.restoreWallet()"
-                    >
-                        <div class="shieldLogo">
-                            <div class="shieldBackground">
-                                <span
-                                    class="dcWallet-svgIconPurple"
-                                    style="top: 14px; left: 7px"
-                                >
-                                    <i
-                                        class="fas fa-lock"
-                                        style="
-                                            position: relative;
-                                            left: 3px;
-                                            top: -5px;
-                                        "
-                                    ></i>
-                                </span>
-                            </div>
-                        </div>
-                        <div class="lockUnlock">
-                            {{ translation.unlockWallet }}
-                        </div>
-                    </div>
-                </center>
-            </div>
-            <!-- // Unlock Wallet -->
-
-            <!-- Lock wallet -->
-            <div
-                class="col-12"
-                v-if="
-                    !wallet.isViewOnly.value &&
-                    !needsToEncrypt &&
-                    wallet.isImported.value
-                "
-            >
-                <center>
-                    <div
-                        class="dcWallet-warningMessage"
-                        @click="displayLockWalletModal()"
-                    >
-                        <div class="shieldLogo">
-                            <div class="shieldBackground">
-                                <span
-                                    class="dcWallet-svgIconPurple"
-                                    style="top: 14px; left: 7px"
-                                >
-                                    <i
-                                        class="fas fa-unlock"
-                                        style="
-                                            position: relative;
-                                            left: 3px;
-                                            top: -5px;
-                                        "
-                                    ></i>
-                                </span>
-                            </div>
-                        </div>
-                        <div class="lockUnlock">
-                            {{ translation.lockWallet }}
-                        </div>
-                    </div>
-                </center>
-            </div>
-            <!-- // Lock Wallet -->
-
             <!-- Redeem Code (PIVX Promos) -->
             <div
                 class="modal"
@@ -1014,6 +937,11 @@ defineExpose({
                         :immatureBalance="immatureBalance"
                         :jdenticonValue="jdenticonValue"
                         :isHdWallet="wallet.isHD.value"
+                        :isViewOnly="wallet.isViewOnly.value"
+                        :isEncrypted="wallet.isEncrypted.value"
+                        :isImported="wallet.isImported.value"
+                        :needsToEncrypt="needsToEncrypt"
+                        @displayLockWalletModal="displayLockWalletModal()"
                         :isHardwareWallet="wallet.isHardwareWallet.value"
                         :currency="currency"
                         :price="price"
@@ -1022,7 +950,10 @@ defineExpose({
                         @reload="refreshChainData()"
                         @send="showTransferMenu = true"
                         @exportPrivKeyOpen="showExportModal = true"
-                        class="col-12 p-0 mb-5"
+                        class="col-12 p-0 mb-2"
+                    />
+                    <WalletButtons
+                        class="col-12 p-0 md-5"
                     />
                     <Activity
                         ref="activity"
