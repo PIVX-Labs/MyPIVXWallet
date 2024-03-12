@@ -122,6 +122,7 @@ progress[value]::-moz-progress-bar {
     width: 0px;
     height: 0px;
     opacity: 0;
+    display:none;
 }
 
 .fa-tiny-margin {
@@ -173,11 +174,11 @@ progress[value]::-moz-progress-bar {
 }
 
 .nav-link {
-    color: rgb(255, 255, 255) !important;
+    color: rgb(255, 255, 255, 85%) !important;
 }
 
 .nav-link:hover {
-    color: rgba(255, 255, 255, 0.75) !important;
+    color: rgba(255, 255, 255, 70%) !important;
 }
 
 .minor-notif-subtext {
@@ -412,11 +413,12 @@ progress[value]::-moz-progress-bar {
 
 /* Create an active/current tablink class */
 .tab button.active {
-    background-color: #b088ff !important;
+    background-color: #9131ea !important;
 }
 
 .active {
-    color: #b088ff !important;
+    color: #9131ea !important;
+    text-shadow: 0px 0px 21px #904dcf;
 }
 
 /* Style the tab content */
@@ -789,10 +791,8 @@ progress[value]::-moz-progress-bar {
 }
 
 .navbarSpecial {
-    background: linear-gradient(90deg, #2c0b4c 12.5%, #500f83, #2c0b4c);
-    border-bottom-color: #521186;
-    border-bottom-style: solid;
-    border-bottom-width: 1px;
+    background: linear-gradient(90deg, #1a122d, #211138);
+    box-shadow: 0 0px 15px 3px #0e071a;
     position: fixed;
     width: 100%;
     min-height: 77px;
@@ -837,7 +837,7 @@ progress[value]::-moz-progress-bar {
     margin: 5px;
     font-family: Montserrat, sans-serif;
     height: auto;
-    padding: 14px 30px;
+    padding: 14px 20px;
     background-image: linear-gradient(183deg, #9621ff, #7d21ff);
     position: relative;
     z-index: 1;
@@ -949,7 +949,9 @@ progress[value]::-moz-progress-bar {
 }
 
 .home-hero {
-    background: radial-gradient(45vw 80% at 90% 40%, rgba(162, 50, 255, .3), rgba(44, 11, 76, 0) 95%), linear-gradient(90deg, rgba(44, 11, 76, .9), rgba(80, 15, 131, .5) 60%, rgba(44, 11, 76, .9)), linear-gradient(35deg, rgba(44, 11, 76, .3), rgba(80, 15, 131, .3) 37%, rgba(44, 11, 76, .3) 0, rgba(80, 15, 131, .3) 76%, rgba(44, 11, 76, .3) 0, rgba(80, 15, 131, .3)), linear-gradient(90deg, #2c0b4c, #500f83 60%, #2c0b4c);
+    /*background: radial-gradient(45vw 80% at 90% 40%, rgba(162, 50, 255, .3), rgba(44, 11, 76, 0) 95%), linear-gradient(90deg, rgba(44, 11, 76, .9), rgba(80, 15, 131, .5) 60%, rgba(44, 11, 76, .9)), linear-gradient(35deg, rgba(44, 11, 76, .3), rgba(80, 15, 131, .3) 37%, rgba(44, 11, 76, .3) 0, rgba(80, 15, 131, .3) 76%, rgba(44, 11, 76, .3) 0, rgba(80, 15, 131, .3)), linear-gradient(90deg, #2c0b4c, #500f83 60%, #2c0b4c);*/
+    background: linear-gradient(135deg, #271a40 0%, #1b0e2e 15%, #1a122d 15%, #201431 37%, #1a1529 37%, #221237 59%, #1d112d 59%, #1d1030 81%, #181225 81%, #281c41 100%);
+    background-attachment: fixed;
 }
 
 .title-section {
@@ -992,14 +994,14 @@ progress[value]::-moz-progress-bar {
 
 .pivx-bold-title-smaller {
     line-height: 1.35em;
-    font-size: 38px;
+    font-size: 25px;
     font-weight: 700;
     font-family: Montserrat, sans-serif;
 }
 
 .pivx-bold-title span,
 .pivx-bold-title-smaller span {
-    font-size: .6em;
+    font-size: .8em;
     display: block;
     line-height: 1.2em;
     font-weight: 300;
@@ -1058,7 +1060,7 @@ progress[value]::-moz-progress-bar {
 .buttoni-icon {
     vertical-align: top;
     display: inline-block;
-    padding: 0 12px 0 0;
+    padding: 0 7px 0 0;
     -webkit-transition: all .2s ease-out;
     -moz-transition: all .2s ease-out;
     -o-transition: all .2s ease-out;
@@ -1186,10 +1188,12 @@ a {
 .dashboard-item {
     background: rgba(43, 9, 80, .75);
     border-radius: 6px;
-    padding: 40px;
+    padding: 23px;
     text-align: center;
     float: left;
     margin-bottom: 15px;
+    padding-top: 45px;
+    padding-bottom: 35px;
 }
 
 .send-eligibility-section .container .column-padded-around .coinstat-icon,
@@ -1229,6 +1233,10 @@ a {
 
 .dashboard-title {
     margin-top: 15px;
+}
+
+.dashboard-title p {
+    font-size:0.85rem;
 }
 
 .badge {
@@ -2240,6 +2248,7 @@ a {
   margin-left: 5px;
   margin-right: 5px;
   transition: all .2s ease-in-out;
+  text-transform: uppercase;
 }
 
 
@@ -3422,4 +3431,11 @@ select.form-control option {
     background-image: none;
     background-color: #7000ab;
     width:50%!important;
+}
+
+.nav-centered {
+    display: flex;
+    width: calc(100% - 150px);
+    justify-content: center;
+    margin-right: 150px
 }
