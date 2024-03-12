@@ -158,7 +158,7 @@ export class Mempool {
         filter = OutpointState.SPENT |
             OutpointState.IMMATURE |
             OutpointState.LOCKED,
-        requirement = Number.MAX_SAFE_INTEGER,
+        requirement = 0,
         target = Number.POSITIVE_INFINITY,
     } = {}) {
         const utxos = [];
@@ -168,7 +168,7 @@ export class Mempool {
             if (status & filter) {
                 continue;
             }
-            if (!(status & requirement)) {
+            if ((status & requirement) !== requirement) {
                 continue;
             }
             utxos.push(this.outpointToUTXO(outpoint));
