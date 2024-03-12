@@ -962,7 +962,7 @@ export class Wallet {
             } else if (changeValue > 0) {
                 // TransactionBuilder will internally add the change only if it is not dust
                 if (!changeAddress) [changeAddress] = this.getNewAddress(1);
-                if (delegateChange) {
+                if (delegateChange && changeValue >= 1 * COIN) {
                     transactionBuilder.addColdStakeOutput({
                         address: changeAddress,
                         value: changeValue,
