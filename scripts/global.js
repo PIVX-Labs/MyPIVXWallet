@@ -10,7 +10,6 @@ import {
     debug,
     cMarket,
     strCurrency,
-    nDisplayDecimals,
     fAdvancedMode,
 } from './settings.js';
 import { createAndSendTransaction } from './legacy.js';
@@ -18,7 +17,6 @@ import {
     createAlert,
     confirmPopup,
     sanitizeHTML,
-    beautifyNumber,
     isColdAddress,
 } from './misc.js';
 import { cChainParams, COIN } from './chain_params.js';
@@ -413,23 +411,6 @@ export function openTab(evt, tabName) {
 }
 
 /**
- * Updates the GUI ticker among all elements; useful for Network Switching
- */
-export function updateTicker() {
-    // Update the Stake Dashboard currency
-    doms.domGuiStakingValueCurrency.innerText = strCurrency.toUpperCase();
-
-    // Update the Stake/Unstake menu ticker and currency
-    // Stake
-    doms.domStakeAmountValueCurrency.innerText = strCurrency.toUpperCase();
-    doms.domStakeAmountCoinsTicker.innerText = cChainParams.current.TICKER;
-
-    // Unstake
-    doms.domUnstakeAmountValueCurrency.innerText = strCurrency.toUpperCase();
-    doms.domUnstakeAmountCoinsTicker.innerText = cChainParams.current.TICKER;
-}
-
-/**
  * Return locale settings best for displaying the user-selected currency
  * @param {Number} nAmount - The amount in Currency
  */
@@ -460,40 +441,7 @@ export function optimiseCurrencyLocale(nAmount) {
     return { nValue, cLocale };
 }
 
-/**
- * Update a 'price value' DOM display for the given balance type
- * @param {HTMLElement} domValue
- * @param {boolean} fCold
- */
-export async function updatePriceDisplay(domValue, fCold = false) {
-    // Update currency values
-    const nPrice = await cMarket.getPrice(strCurrency);
-
-    if (nPrice) {
-        // Calculate the value
-        const nCurrencyValue =
-            ((fCold ? getStakingBalance() : wallet.balance) / COIN) * nPrice;
-
-        const { nValue, cLocale } = optimiseCurrencyLocale(nCurrencyValue);
-
-        // Update the DOM
-        domValue.innerText = nValue.toLocaleString('en-gb', cLocale);
-    }
-}
-
 //getEventEmitter().on('balance-update', () => getStakingBalance(true));
-
-/**
- * Fill a 'Coin Amount' with all of a balance type, and update the 'Coin Value'
- * @param {HTMLInputElement} domCoin - The 'Coin Amount' input element
- * @param {HTMLInputElement} domValue - Th 'Coin Value' input element
- * @param {boolean} fCold - Use the Cold Staking balance, or Available balance
- */
-export function selectMaxBalance(domCoin, domValue, fCold = false) {
-    domCoin.value = (fCold ? getStakingBalance() : wallet.balance) / COIN;
-    // Update the Send menu's value (assumption: if it's not a Cold balance, it's probably for Sending!)
-    updateAmountInputPair(domCoin, domValue, true);
-}
 
 /**
  * Open the Explorer in a new tab for the current wallet, or a specific address
@@ -537,30 +485,6 @@ export async function playMusic() {
         audio.pause();
         for (const domImg of document.getElementsByTagName('img'))
             domImg.classList.remove('discoFilter');
-    }
-}
-
-/**
- * Updates an Amount Input UI pair ('Coin' and 'Value' input boxes) in relation to the input box used
- * @param {HTMLInputElement} domCoin - The DOM input for the Coin amount
- * @param {HTMLInputElement} domValue - The DOM input for the Value amount
- * @param {boolean} fCoinEdited - `true` if Coin, `false` if Value
- */
-export async function updateAmountInputPair(domCoin, domValue, fCoinEdited) {
-    // Fetch the price in the user's preferred currency
-    const nPrice = await cMarket.getPrice(strCurrency);
-
-    // If there is no price loaded, then we just won't do anything
-    if (!nPrice) return;
-
-    if (fCoinEdited) {
-        // If the 'Coin' input is edited, then update the 'Value' input with it's converted currency
-        const nValue = Number(domCoin.value) * nPrice;
-        domValue.value = nValue <= 0 ? '' : nValue;
-    } else {
-        // If the 'Value' input is edited, then update the 'Coin' input with the reversed conversion rate
-        const nValue = Number(domValue.value) / nPrice;
-        domCoin.value = nValue <= 0 ? '' : nValue;
     }
 }
 
