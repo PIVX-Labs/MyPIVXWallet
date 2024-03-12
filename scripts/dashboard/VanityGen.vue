@@ -110,62 +110,54 @@ function generate() {
 }
 </style>
 <template>
-    <div class="col-12 col-lg-6 p-2">
-        <div class="h-100 dashboard-item dashboard-display">
-            <div class="container">
-                <div class="coinstat-icon" v-html="fire"></div>
+    <div class="col-12 col-lg-3 p-2">
+        <div class="dashboard-item dashboard-display">
+            <div class="coinstat-icon" v-html="fire"></div>
 
-                <div class="col-md-12 dashboard-title">
-                    <h3 class="pivx-bold-title" style="font-size: 38px">
-                        <span data-i18n="dCardTwoTitle">Create a new</span>
-                        <div data-i18n="dCardTwoSubTitle">Vanity Wallet</div>
-                    </h3>
-                    <p data-i18n="dCardTwoDesc">
-                        Create a wallet with a custom prefix, this can take a
-                        long time!
-                    </p>
-                    <span style="opacity: 0.75; font-size: small"
-                        ><span data-i18n="vanityPrefixNote"
-                            >Note: addresses will always start with:</span
-                        >
-                        <b>&hairsp; {{ prefixNetwork }}</b></span
-                    >
-                </div>
-
-                <Transition>
-                    <input
-                        v-show="addressPrefixShow"
-                        v-model="addressPrefix"
-                        :disabled="isGenerating"
-                        ref="addressPrefixElement"
-                        class="center-text"
-                        type="text"
-                        data-i18n="vanityPrefixInput"
-                        placeholder="Address Prefix"
-                        maxlength="5"
-                        data-testid="prefixInput"
-                    />
-                </Transition>
-
-                <button
-                    class="pivx-button-big"
-                    @click="isGenerating ? stop() : generate()"
-                    data-testid="generateBtn"
-                >
-                    <span class="buttoni-icon" v-html="pLogo"> </span>
-
-                    <span class="buttoni-text">
-                        <span v-if="isGenerating">
-                            <!-- TODO: translate this string -->
-                            STOP (SEARCHED
-                            {{ attempts.toLocaleString('en-gb') }} KEYS)
-                        </span>
-                        <span v-else>
-                            {{ translation.dCardTwoButton }}
-                        </span>
-                    </span>
-                </button>
+            <div class="col-md-12 dashboard-title">
+                <h3 class="pivx-bold-title" style="font-size: 25px">
+                    <span data-i18n="dCardTwoTitle">Create a new</span>
+                    <div data-i18n="dCardTwoSubTitle">Vanity Wallet</div>
+                </h3>
+                <p data-i18n="dCardTwoDesc">
+                    Create a wallet with a custom prefix, this can take a
+                    long time!
+                </p>
             </div>
+
+            <Transition>
+                <input
+                    v-show="addressPrefixShow"
+                    v-model="addressPrefix"
+                    :disabled="isGenerating"
+                    ref="addressPrefixElement"
+                    class="center-text"
+                    type="text"
+                    data-i18n="vanityPrefixInput"
+                    placeholder="Address Prefix"
+                    maxlength="5"
+                    data-testid="prefixInput"
+                />
+            </Transition>
+
+            <button
+                class="pivx-button-big"
+                @click="isGenerating ? stop() : generate()"
+                data-testid="generateBtn"
+            >
+                <span class="buttoni-icon" v-html="pLogo"> </span>
+
+                <span class="buttoni-text">
+                    <span v-if="isGenerating">
+                        <!-- TODO: translate this string -->
+                        STOP (SEARCHED
+                        {{ attempts.toLocaleString('en-gb') }} KEYS)
+                    </span>
+                    <span v-else>
+                        {{ translation.dCardTwoButton }}
+                    </span>
+                </span>
+            </button>
         </div>
     </div>
 </template>
