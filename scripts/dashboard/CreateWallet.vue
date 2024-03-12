@@ -40,8 +40,8 @@ async function generateWallet() {
 </script>
 
 <template>
-    <div class="col-12 col-lg-6 p-2">
-        <div class="h-100 dashboard-item dashboard-display">
+    <div class="col-12 col-lg-3 p-2">
+        <div class="dashboard-item dashboard-display">
             <div class="coinstat-icon" v-html="phone"></div>
             <div class="col-md-12 dashboard-title">
                 <h3 class="pivx-bold-title-smaller">
