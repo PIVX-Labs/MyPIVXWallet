@@ -31,8 +31,8 @@ import { Database } from './database.js';
 import { checkForUpgrades } from './changelog.js';
 import { FlipDown } from './flipdown.js';
 import { createApp } from 'vue';
-import Activity from './dashboard/Activity.vue';
 import Dashboard from './dashboard/Dashboard.vue';
+import Stake from './stake/Stake.vue';
 
 /** A flag showing if base MPW is fully loaded or not */
 export let fIsLoaded = false;
@@ -45,13 +45,7 @@ export function isLoaded() {
 export let doms = {};
 
 export const dashboard = createApp(Dashboard).mount('#DashboardTab');
-
-// For now we'll import the component as a vue app by itself. Later, when the
-// stake tab is rewritten in vue, we can simply add <Activity /> to the stake tab component template.
-export const stakingDashboard = createApp(Activity, {
-    title: 'Reward History',
-    rewards: true,
-}).mount('#stakeActivity');
+createApp(Stake).mount('#StakingTab');
 
 export async function start() {
     doms = {
@@ -289,38 +283,6 @@ export async function start() {
     sliderElement.addEventListener('input', handleDecimalSlider);
     sliderElement.addEventListener('mouseover', handleDecimalSlider);
 
-    /** Staking (Stake) */
-    doms.domStakeAmount.oninput = () => {
-        updateAmountInputPair(
-            doms.domStakeAmount,
-            doms.domStakeAmountValue,
-            true
-        );
-    };
-    doms.domStakeAmountValue.oninput = () => {
-        updateAmountInputPair(
-            doms.domStakeAmount,
-            doms.domStakeAmountValue,
-            false
-        );
-    };
-
-    /** Staking (Unstake) */
-    doms.domUnstakeAmount.oninput = () => {
-        updateAmountInputPair(
-            doms.domUnstakeAmount,
-            doms.domUnstakeAmountValue,
-            true
-        );
-    };
-    doms.domUnstakeAmountValue.oninput = () => {
-        updateAmountInputPair(
-            doms.domUnstakeAmount,
-            doms.domUnstakeAmountValue,
-            false
-        );
-    };
-
     // Register native app service
     registerWorker();
     await settingsStart();
@@ -380,7 +342,7 @@ function subscribeToNetworkEvents() {
     getEventEmitter().on('new-block', (block, oldBlock) => {
         console.log(`New block detected! ${oldBlock} --> ${block}`);
         // Fetch latest Activity
-        stakingDashboard.update();
+        //stakingDashboard.update();
 
         // If it's open: update the Governance Dashboard
         if (doms.domGovTab.classList.contains('active')) {
@@ -443,10 +405,10 @@ export function openTab(evt, tabName) {
         updateMasternodeTab();
     } else if (
         tabName === 'StakingTab' &&
-        stakingDashboard.getTxCount() === 0
+        false //stakingDashboard.getTxCount() === 0
     ) {
         // Refresh the TX list
-        stakingDashboard.update();
+        //stakingDashboard.update();
     }
 }
 
@@ -536,33 +498,7 @@ export function getBalance(updateGUI = false) {
 
     return nBalance;
 }
-
-export function getStakingBalance(updateGUI = false) {
-    const nBalance = wallet.coldBalance;
-    const nCoins = nBalance / COIN;
-
-    if (updateGUI) {
-        // Set the balance, and adjust font-size for large balance strings
-        const strBal = nCoins.toFixed(nDisplayDecimals);
-        const nLen = strBal.length;
-        doms.domGuiBalanceStaking.innerHTML = beautifyNumber(
-            strBal,
-            nLen >= 10 ? '17px' : '25px'
-        );
-        doms.domAvailToUndelegate.innerHTML =
-            beautifyNumber(strBal) + ' ' + cChainParams.current.TICKER;
-
-        // Update tickers
-        updateTicker();
-
-        // Update price displays
-        updatePriceDisplay(doms.domGuiStakingValue, true);
-    }
-
-    return nBalance;
-}
-
-getEventEmitter().on('balance-update', () => getStakingBalance(true));
+//getEventEmitter().on('balance-update', () => getStakingBalance(true));
 
 /**
  * Fill a 'Coin Amount' with all of a balance type, and update the 'Coin Value'
@@ -618,23 +554,6 @@ export async function playMusic() {
         audio.pause();
         for (const domImg of document.getElementsByTagName('img'))
             domImg.classList.remove('discoFilter');
-    }
-}
-
-export function toggleBottomMenu(dom, ani) {
-    let element = document.getElementById(dom);
-    if (element.classList.contains(ani)) {
-        element.classList.remove(ani);
-        doms.domBlackBack.classList.remove('d-none');
-        setTimeout(() => {
-            doms.domBlackBack.classList.remove('blackBackHide');
-        }, 10);
-    } else {
-        element.classList.add(ani);
-        doms.domBlackBack.classList.add('blackBackHide');
-        setTimeout(() => {
-            doms.domBlackBack.classList.add('d-none');
-        }, 150);
     }
 }
 

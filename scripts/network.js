@@ -12,7 +12,6 @@ import {
 } from './settings.js';
 import { cNode } from './settings.js';
 import { ALERTS, tr, translation } from './i18n.js';
-import { stakingDashboard } from './global.js';
 import { Transaction } from './transaction.js';
 
 /**
@@ -204,7 +203,6 @@ export class ExplorerNetwork extends Network {
                 if (this.fullSynced) {
                     await this.getLatestTxs(this.lastBlockSynced);
                     this.lastBlockSynced = this.blocks;
-                    stakingDashboard.update(0);
                     getEventEmitter().emit('new-tx');
                 }
                 if (this.wallet.isSynced) {

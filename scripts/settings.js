@@ -5,7 +5,6 @@ import {
     updateEncryptionGUI,
     updateLogOutButton,
     updateGovernanceTab,
-    stakingDashboard,
     dashboard,
 } from './global.js';
 import { wallet, hasEncryptedWallet } from './wallet.js';
@@ -315,8 +314,6 @@ export async function setExplorer(explorer, fSilent = false) {
         setNetwork(network);
     }
 
-    stakingDashboard.reset();
-
     // Update the selector UI
     doms.domExplorerSelect.value = cExplorer.url;
 
@@ -365,7 +362,6 @@ async function setCurrency(currency) {
     database.setSettings({ displayCurrency: strCurrency });
     // Update the UI to reflect the new currency
     getEventEmitter().emit('balance-update');
-    getStakingBalance(true);
 }
 
 /**
@@ -378,7 +374,6 @@ async function setDecimals(decimals) {
     database.setSettings({ displayDecimals: nDisplayDecimals });
     // Update the UI to reflect the new decimals
     getEventEmitter().emit('balance-update');
-    getStakingBalance(true);
 }
 
 /**
@@ -581,8 +576,6 @@ export async function toggleTestnet() {
     doms.domTestnetToggler.checked = cChainParams.current.isTestnet;
     await start();
 
-    stakingDashboard.reset();
-
     getEventEmitter().emit('toggle-network');
     await updateGovernanceTab();
 }
@@ -693,9 +686,6 @@ export async function toggleAutoLockWallet() {
  */
 async function configureAdvancedMode() {
     getEventEmitter().emit('advanced-mode', fAdvancedMode);
-    // Hide or Show the "Owner Address" configuration for Staking, and reset it's input
-    doms.domStakeOwnerAddress.value = '';
-    doms.domStakeOwnerAddressContainer.hidden = !fAdvancedMode;
 }
 
 function configureAutoLockWallet() {
