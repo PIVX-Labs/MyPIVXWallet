@@ -472,7 +472,7 @@ export async function updatePriceDisplay(domValue, fCold = false) {
     if (nPrice) {
         // Calculate the value
         const nCurrencyValue =
-            ((fCold ? getStakingBalance() : getBalance()) / COIN) * nPrice;
+            ((fCold ? getStakingBalance() : wallet.balance) / COIN) * nPrice;
 
         const { nValue, cLocale } = optimiseCurrencyLocale(nCurrencyValue);
 
@@ -481,23 +481,6 @@ export async function updatePriceDisplay(domValue, fCold = false) {
     }
 }
 
-export function getBalance(updateGUI = false) {
-    const nBalance = wallet.balance;
-    const nCoins = nBalance / COIN;
-
-    // Update the GUI too, if chosen
-    if (updateGUI) {
-        // Set the balance, and adjust font-size for large balance strings
-        const strBal = nCoins.toFixed(nDisplayDecimals);
-        doms.domAvailToDelegate.innerHTML =
-            beautifyNumber(strBal) + ' ' + cChainParams.current.TICKER;
-
-        // Update tickers
-        updateTicker();
-    }
-
-    return nBalance;
-}
 //getEventEmitter().on('balance-update', () => getStakingBalance(true));
 
 /**
@@ -507,7 +490,7 @@ export function getBalance(updateGUI = false) {
  * @param {boolean} fCold - Use the Cold Staking balance, or Available balance
  */
 export function selectMaxBalance(domCoin, domValue, fCold = false) {
-    domCoin.value = (fCold ? getStakingBalance() : getBalance()) / COIN;
+    domCoin.value = (fCold ? getStakingBalance() : wallet.balance) / COIN;
     // Update the Send menu's value (assumption: if it's not a Cold balance, it's probably for Sending!)
     updateAmountInputPair(domCoin, domValue, true);
 }
@@ -746,7 +729,7 @@ export async function importMasternode() {
     if (!wallet.isHD()) {
         // Find the first UTXO matching the expected collateral size
         const cCollaUTXO = wallet.getMasternodeUTXOs()[0];
-        const balance = getBalance(false);
+        const balance = wallet.balance;
         // If there's no valid UTXO, exit with a contextual message
         if (!cCollaUTXO) {
             if (balance < cChainParams.current.collateralInSats) {
@@ -1629,7 +1612,7 @@ export async function updateMasternodeTab() {
         // Find the first UTXO matching the expected collateral size
         const cCollaUTXO = wallet.getMasternodeUTXOs()[0];
 
-        const balance = getBalance(false);
+        const balance = wallet.balance;
         if (cMasternode) {
             await refreshMasternodeData(cMasternode);
             doms.domMnDashboard.style.display = '';
@@ -1804,7 +1787,7 @@ export async function createProposal() {
         return;
     }
     // Must have enough funds
-    if (getBalance() * COIN < cChainParams.current.proposalFee) {
+    if (wallet.balance * COIN < cChainParams.current.proposalFee) {
         return createAlert('warning', ALERTS.PROPOSAL_NOT_ENOUGH_FUNDS, 4500);
     }
 

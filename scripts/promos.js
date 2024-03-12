@@ -1,6 +1,6 @@
 import { cChainParams, COIN } from './chain_params.js';
 import { Database } from './database.js';
-import { doms, getBalance, restoreWallet, sweepAddress } from './global.js';
+import { doms, restoreWallet, sweepAddress } from './global.js';
 import { createAlert, downloadBlob } from './misc.js';
 import { getAlphaNumericRand, arrayToCSV } from './utils.js';
 import { ALERTS, translation, tr } from './i18n.js';
@@ -248,7 +248,7 @@ export async function createPromoCode(strCode, nAmount, fAddRandomness = true) {
         (a, b) => a + b.amount * COIN,
         0
     );
-    if (getBalance() - nReservedBalance < nAmount * COIN + PROMO_FEE * 2) {
+    if (wallet.balance - nReservedBalance < nAmount * COIN + PROMO_FEE * 2) {
         return createAlert(
             'warning',
             tr(ALERTS.PROMO_NOT_ENOUGH, [
