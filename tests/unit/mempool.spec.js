@@ -86,7 +86,7 @@ describe('mempool tests', () => {
         ).toStrictEqual([expectedUTXOs[0]]);
         // Requirement should only return LOCKED UTXOs
         expect(
-            mempool.getUTXOs({ requirement: OutpointState.LOCKED })
+            mempool.getUTXOs({ requirement: OutpointState.LOCKED, filter: 0 })
         ).toStrictEqual([expectedUTXOs[1]]);
     });
     it('gets correct balance', () => {

@@ -777,7 +777,7 @@ export class Wallet {
     #getUTXOsForShield() {
         return this.#mempool
             .getUTXOs({
-                requirement: OutpointState.P2PKH,
+                requirement: OutpointState.P2PKH | OutpointState.OURS,
             })
             .map((u) => {
                 return {
@@ -938,10 +938,13 @@ export class Wallet {
         }
 
         if (!useShieldInputs) {
-            const filter = useDelegatedInputs
+            const requirement = useDelegatedInputs
                 ? OutpointState.P2CS
                 : OutpointState.P2PKH;
-            const utxos = this.#mempool.getUTXOs({ filter, target: value });
+            const utxos = this.#mempool.getUTXOs({
+                requirement: requirement | OutpointState.OURS,
+                target: value,
+            });
             transactionBuilder.addUTXOs(utxos);
 
             // Shield txs will handle change internally
@@ -1097,8 +1100,7 @@ export class Wallet {
         const collateralValue = cChainParams.current.collateralInSats;
         return this.#mempool
             .getUTXOs({
-                filter: OutpointState.SPENT | OutpointState.IMMATURE,
-                requirement: OutpointState.P2PKH,
+                requirement: OutpointState.P2PKH | OutpointState.OURS,
             })
             .filter((u) => u.value === collateralValue);
     }

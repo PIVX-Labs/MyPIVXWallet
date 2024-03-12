@@ -148,14 +148,16 @@ export class Mempool {
      * @param {object} o - options
      * @param {number} [o.filter] - A filter to apply to all UTXOs. For example
      * `OutpointState.P2CS` will NOT return P2CS transactions.
-     * By default it's OutpointState.SPENT
+     * By default it's `OutpointState.SPENT | OutpointState.IMMATURE | OutpointState.LOCKED`
      * @param {number} [o.requirement] - A requirement to apply to all UTXOs. For example
      * `OutpointState.P2CS` will only return P2CS transactions.
      * By default it's MAX_SAFE_INTEGER
      * @returns {UTXO[]} a list of unspent transaction outputs
      */
     getUTXOs({
-        filter = OutpointState.SPENT,
+        filter = OutpointState.SPENT |
+            OutpointState.IMMATURE |
+            OutpointState.LOCKED,
         requirement = Number.MAX_SAFE_INTEGER,
         target = Number.POSITIVE_INFINITY,
     } = {}) {
