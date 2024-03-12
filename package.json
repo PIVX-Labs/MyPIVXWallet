@@ -5,7 +5,7 @@
     "main": "scripts/index.js",
     "type": "module",
     "scripts": {
-        "postinstall": "test -f chain_params.json || cp chain_params.prod.json chain_params.json",
+        "postinstall": "cross-env OS_TYPE=$(uname) node postinstall.cjs",
         "build": "webpack --config webpack.prod.js",
         "buildDev": "webpack --config webpack.dev.js",
         "watch": "webpack --watch",
@@ -43,6 +43,7 @@
         "css-loader": "^6.7.3",
         "css-minimizer-webpack-plugin": "^4.2.2",
         "eslint": "^8.31.0",
+        "cross-env": "^7.0.3",
         "fake-indexeddb": "^5.0.1",
         "file-loader": "^6.2.0",
         "gh-pages": "^5.0.0",
