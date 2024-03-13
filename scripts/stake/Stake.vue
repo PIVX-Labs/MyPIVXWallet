@@ -1,13 +1,27 @@
 <script setup>
 import { useWallet } from '../composables/use_wallet';
 import Activity from '../dashboard/Activity.vue';
+import { Database } from '../database';
 import StakeBalance from './StakeBalance.vue';
 import StakeInput from './StakeInput.vue';
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 
-const {} = useWallet();
+const { coldBalance } = useWallet();
 const showUnstake = ref(false);
 const showStake = ref(false);
+const coldStakingAddress = ref('');
+Database.getInstance().then(async (db) => {
+    coldStakingAddress.value = (await db.getAccount()).coldAddress;
+});
+
+watch(coldStakingAddress, async (coldStakingAddress) => {
+    const db = await Database.getInstance();
+    const cAccount = await db.getAccount();
+
+    // Save to DB (allowDeletion enabled to allow for resetting the Cold Address)
+    cAccount.coldAddress = coldStakingAddress;
+    await db.updateAccount(cAccount, true);
+});
 </script>
 
 <template>
@@ -15,6 +29,8 @@ const showStake = ref(false);
         <div class="col-12 p-0 mb-5">
             <center>
                 <StakeBalance
+                    v-model:coldStakingAddress="coldStakingAddress"
+                    :coldBalance="coldBalance"
                     @showUnstake="showUnstake = true"
                     @showStake="showStake = true"
                 />

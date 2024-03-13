@@ -1,6 +1,35 @@
 <script setup>
-import { defineEmits } from 'vue';
-const emit = defineEmits(['showUnstake', 'showStake']);
+import { computed, defineEmits, ref, toRefs, watch } from 'vue';
+import { refreshChainData } from '../global.js';
+import { translation, ALERTS } from '../i18n.js';
+import Modal from '../Modal.vue';
+import { createAlert, isColdAddress } from '../misc';
+import { COIN } from '../chain_params';
+import { beautifyNumber } from '../misc';
+const coldStakingAddress = defineModel('coldStakingAddress');
+const csAddrInternal = ref(coldStakingAddress.value);
+const showColdStakingAddressModal = ref(false);
+const emit = defineEmits(['showUnstake', 'showStake', 'setColdStakingAddress']);
+const props = defineProps({
+    coldBalance: Number,
+});
+const { coldBalance } = toRefs(props);
+const coldBalanceStr = computed(() => {
+    const nCoins = coldBalance.value / COIN;
+    const strBal = nCoins.toFixed(displayDecimals.value);
+    const nLen = strBal.length;
+    return beautifyNumber(strBal, nLen >= 10 ? '17px' : '25px');
+});
+
+function submit() {
+    if (isColdAddress(csAddrInternal.value)) {
+        coldStakingAddress.value = csAddrInternal.value;
+        showColdStakingAddressModal.value = false;
+        createAlert('info', ALERTS.STAKE_ADDR_SET, 5000);
+    } else {
+        createAlert('warning', ALERTS.STAKE_ADDR_BAD, 2500);
+    }
+}
 </script>
 
 <template>
@@ -11,9 +40,7 @@ const emit = defineEmits(['showUnstake', 'showStake']);
                 style="justify-content: flex-start"
             >
                 <h3 class="noselect balance-title">
-                    <span
-                        class="reload noselect"
-                        onclick="MPW.refreshChainData()"
+                    <span class="reload noselect" @click="refreshChainData()"
                         ><i
                             id="balanceReloadStaking"
                             class="fa-solid fa-rotate-right cur-pointer"
@@ -30,15 +57,16 @@ const emit = defineEmits(['showUnstake', 'showStake']);
                     <i
                         class="fa-solid fa-gear"
                         style="width: 20px"
-                        onclick="MPW.guiSetColdStakingAddress()"
+                        @click="showColdStakingAddressModal = true"
                     ></i>
                 </div>
             </div>
         </div>
 
         <span data-i18n="staking">Staking</span><br />
-        <span class="dcWallet-pivxBalance" id="guiBalanceStaking">0</span>
-        <span id="guiBalanceStakingTicker" class="dcWallet-pivxTicker">PIV</span
+        <span class="dcWallet-pivxBalance" v-html="coldBalanceStr"></span>
+        <span id="guiBalanceStakingTicker" class="dcWallet-pivxTicker"
+            >&nbsp;PIV&nbsp;</span
         ><br />
         <div class="dcWallet-usdBalance">
             <span id="guiStakingValue" class="dcWallet-usdValue">$-</span>
@@ -69,4 +97,53 @@ const emit = defineEmits(['showUnstake', 'showStake']);
             </div>
         </div>
     </div>
+    <Teleport to="body">
+        <Modal :show="showColdStakingAddressModal">
+            <template #header>
+                <h3
+                    class="modal-title"
+                    id="confirmModalTitle"
+                    style="text-align: center; width: 100%; color: #8e21ff"
+                >
+                    Set your Cold Staking address
+                </h3>
+            </template>
+            <template #body>
+                <p>
+                    <span
+                        style="opacity: 0.65; margin: 10px; margin-buttom: 0px"
+                    >
+                        {{ translation.popupColdStakeNote }}
+                    </span>
+                </p>
+                <input
+                    type="text"
+                    id="newColdAddress"
+                    :placeholder="`${
+                        translation.popupExample
+                    } ${coldStakingAddress.substring(0, 6)}...`"
+                    v-model="csAddrInternal"
+                    style="text-align: center"
+                />
+            </template>
+            <template #footer>
+                <button
+                    type="button"
+                    class="pivx-button-big"
+                    style="float: right"
+                    @click="submit()"
+                >
+                    {{ translation.popupConfirm }}
+                </button>
+                <button
+                    type="button"
+                    class="pivx-button-big"
+                    style="float: right; opacity: 0.7"
+                    @click="showColdStakingAddressModal = false"
+                >
+                    {{ translation.popupCancel }}
+                </button>
+            </template>
+        </Modal>
+    </Teleport>
 </template>
