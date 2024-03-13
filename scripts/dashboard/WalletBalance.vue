@@ -176,16 +176,16 @@ function displayLockWalletModal() {
 
                 <div class="col-6 d-flex dcWallet-topRightMenu" style="justify-content: flex-end">
                     <div class="btn-group dropleft">
-                        <i class="fa-solid fa-ellipsis-vertical" style="width: 20px" data-toggle="dropdown"
+                        <i class="fa-solid fa-ellipsis-vertical topCol" style="width: 20px" data-toggle="dropdown"
                             aria-haspopup="true" aria-expanded="false"></i>
                         <div class="dropdown">
                             <div class="dropdown-move">
-                                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                <div class="dropdown-menu" style="border-radius: 10px;" aria-labelledby="dropdownMenuButton">
                                     <a class="dropdown-item ptr" data-toggle="modal"
                                         data-target="#exportPrivateKeysModal" data-backdrop="static"
                                         data-keyboard="false" v-if="!isHardwareWallet"
                                         @click="$emit('exportPrivKeyOpen')">
-                                        <i class="fas fa-key"></i>
+                                        <i class="fas fa-key icoCol"></i>
                                         <span>&nbsp;{{
                             translation.export
                         }}</span>
@@ -198,7 +198,7 @@ function displayLockWalletModal() {
                                 verify: true,
                             })
                             ">
-                                        <i class="fas fa-sync-alt"></i>
+                                        <i class="fas fa-sync-alt icoCol"></i>
                                         <span>&nbsp;{{
                             translation.refreshAddress
                         }}</span>
@@ -211,7 +211,7 @@ function displayLockWalletModal() {
                                 shield: true,
                             })
                             ">
-                                        <i class="fas fa-shield"></i>
+                                        <i class="fas fa-shield icoCol"></i>
                                         <span>&nbsp;{{
                             translation.newShieldAddress
                         }}</span>

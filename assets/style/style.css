@@ -2397,8 +2397,16 @@ a {
 
 .dcWallet-topRightMenu .dropdown-move .dropdown-menu {
   backdrop-filter: blur(5px);
-  background-color: rgba(88, 37, 131, 0.95);
-  border: 1px solid hsl(273 54% 56% / 1);
+  background-color: #281c40;
+  border: 1px solid #6d1fd6;
+}
+
+.dcWallet-topRightMenu .dropdown-move .dropdown-menu .dropdown-item span {
+  font-size: 14px;
+  padding-left: 5px;
+  position: relative;
+  top: 0px;
+  color: #eadeffcc;
 }
 
 .dcWallet-topRightMenu .dropdown-move .dropdown-menu .dropdown-item {
@@ -2407,7 +2415,7 @@ a {
 }
 
 .dcWallet-topRightMenu .dropdown-move .dropdown-menu .dropdown-item:hover {
-  background-color: #ffffff1a;
+  background-color: #ffffff0f;
 }
 
 @media (max-width: 768px) {
@@ -2483,6 +2491,12 @@ a {
   font-size: 18px;
   width: 27px;
   transition: all .2s ease-in-out;
+}
+
+.icoCol,
+.dcWallet-topLeftMenu .topCol,
+.dcWallet-topRightMenu .topCol {
+  color:#9621FF;
 }
 
 .textboxTransparency {
