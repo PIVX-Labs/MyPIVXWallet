@@ -810,59 +810,6 @@ export function isMasternodeUTXO(cUTXO, cMasternode) {
 }
 
 /**
- * Creates a GUI popup for the user to check or customise their Cold Address
- */
-export async function guiSetColdStakingAddress() {
-    // Use the Account's cold address, otherwise use the network's default Cold Staking address
-    const strColdAddress = await wallet.getColdStakingAddress();
-
-    // Display the popup and await a response
-    if (
-        await confirmPopup({
-            title: translation.popupSetColdAddr,
-            html: `
-            <p>
-                <span style="opacity: 0.65; margin: 10px; margin-buttom: 0px;">
-                    ${translation.popupColdStakeNote}
-                </span>
-            </p>
-            <input type="text" id="newColdAddress" placeholder="${
-                translation.popupExample
-            } ${strColdAddress.substring(
-                0,
-                6
-            )}..." value="${strColdAddress}" style="text-align: center;">`,
-        })
-    ) {
-        // Check the Cold Address input
-        const strNewColdAddress = document
-            .getElementById('newColdAddress')
-            .value.trim();
-        const fValidCold = isColdAddress(strNewColdAddress);
-        if (
-            !strNewColdAddress ||
-            (strNewColdAddress !== strColdAddress && fValidCold)
-        ) {
-            // If the input is empty: we'll default back to this network's Cold Staking address (effectively a 'reset')
-            const cDB = await Database.getInstance();
-            const cAccount = await cDB.getAccount();
-
-            // Save to DB (allowDeletion enabled to allow for resetting the Cold Address)
-            cAccount.coldAddress = strNewColdAddress;
-            await cDB.updateAccount(cAccount, true);
-
-            createAlert('info', ALERTS.STAKE_ADDR_SET, 5000);
-            return true;
-        } else if (!fValidCold) {
-            createAlert('warning', ALERTS.STAKE_ADDR_BAD, 2500);
-            return false;
-        }
-    } else {
-        return false;
-    }
-}
-
-/**
  * Prompt the user in the GUI to unlock their wallet
  * @param {string} strReason - An optional reason for the unlock
  * @returns {Promise<boolean>} - If the unlock was successful or rejected

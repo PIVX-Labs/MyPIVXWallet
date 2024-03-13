@@ -2,12 +2,7 @@
 // To be removed when vue port is done
 
 import { ALERTS, translation, tr } from './i18n.js';
-import {
-    doms,
-    restoreWallet,
-    toggleBottomMenu,
-    guiSetColdStakingAddress,
-} from './global.js';
+import { doms, restoreWallet, guiSetColdStakingAddress } from './global.js';
 import { wallet, getNewAddress } from './wallet.js';
 import { cChainParams, COIN, COIN_DECIMALS } from './chain_params.js';
 import {
@@ -52,100 +47,6 @@ export async function createAndSendTransaction({
         return { ok: true, txid: tx.txid };
     }
     return { ok: false };
-}
-
-/**
- * @deprecated use the new wallet method instead
- */
-export async function undelegateGUI() {
-    // Ensure the wallet is unlocked
-    if (!wallet.isHardwareWallet()) {
-        if (
-            wallet.isViewOnly() &&
-            !(await restoreWallet(
-                `${translation.walletUnlockUnstake} ${cChainParams.current.TICKER}!`
-            ))
-        )
-            return;
-    }
-
-    // Verify the amount
-    const nAmount = Math.round(
-        Number(doms.domUnstakeAmount.value.trim()) * COIN
-    );
-    if (!validateAmount(nAmount)) return;
-
-    // Generate a new address to undelegate towards
-
-    const [address] = await getNewAddress({
-        verify: wallet.isHardwareWallet(),
-    });
-
-    // Perform the TX
-    const cTxRes = await createAndSendTransaction({
-        address,
-        amount: nAmount,
-        isDelegation: false,
-        useDelegatedInputs: true,
-        delegateChange: !wallet.isHardwareWallet(),
-        changeDelegationAddress: await wallet.getColdStakingAddress(),
-        changeAddress: address,
-    });
-
-    if (!cTxRes.ok && cTxRes.err === 'No change addr') {
-        await guiSetColdStakingAddress();
-        await undelegateGUI();
-    } else {
-        // If successful, reset the inputs
-        doms.domUnstakeAmount.value = '';
-        doms.domUnstakeAmountValue.value = '';
-
-        // And close the modal
-        toggleBottomMenu('stakingUndelegate', 'transferAnimation');
-    }
-}
-
-/**
- * @deprecated use the new wallet method instead
- */
-export async function delegateGUI() {
-    if (wallet.isHardwareWallet()) {
-        return createAlert('warning', ALERTS.STAKING_LEDGER_NO_SUPPORT);
-    }
-    // Ensure the wallet is unlocked
-    if (
-        wallet.isViewOnly() &&
-        !(await restoreWallet(
-            `${translation.walletUnlockStake} ${cChainParams.current.TICKER}!`
-        ))
-    )
-        return;
-
-    // Verify the amount; Delegations must be a minimum of 1 PIV, enforced by the network
-    const nAmount = Math.round(Number(doms.domStakeAmount.value.trim()) * COIN);
-    if (!validateAmount(nAmount, COIN)) return;
-
-    // (Advanced Mode) Verify the Owner Address, if any was provided
-    const strOwnerAddress = doms.domStakeOwnerAddress.value.trim();
-
-    // Perform the TX
-    const cTxRes = await createAndSendTransaction({
-        amount: nAmount,
-        address: await wallet.getColdStakingAddress(),
-        isDelegation: true,
-        useDelegatedInputs: false,
-        delegationOwnerAddress: strOwnerAddress,
-    });
-
-    // If successful, reset the inputs
-    if (cTxRes.ok) {
-        doms.domStakeAmount.value = '';
-        doms.domStakeAmountValue.value = '';
-        doms.domStakeOwnerAddress.value = '';
-
-        // And close the modal
-        toggleBottomMenu('stakingDelegate', 'transferAnimation');
-    }
 }
 
 /**

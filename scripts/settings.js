@@ -571,7 +571,6 @@ export async function toggleTestnet() {
     doms.domTestnet.style.display = cChainParams.current.isTestnet
         ? ''
         : 'none';
-    doms.domGuiBalanceStakingTicker.innerText = cChainParams.current.TICKER;
     // Update testnet toggle in settings
     doms.domTestnetToggler.checked = cChainParams.current.isTestnet;
     await start();
