@@ -2335,30 +2335,38 @@ a {
   text-align: left;
   max-width: 310px;
   margin-bottom: 15px;
-  border-radius: 10px;
   padding: 8px 12px;
-  background-color: rgba(255, 255, 255, 12%);
   display: flex;
   line-height: 18px;
-  background: radial-gradient(45vw 80% at 90% 40%, rgb(223 185 255 / 5%), rgba(44, 11, 76, 0) 95%), linear-gradient(52deg, rgb(43 11 76 / 0%), #500f8300 60%, rgb(44 11 76 / 0%)), linear-gradient(35deg, hsl(270deg 38% 60% / 28%), rgb(171 133 201 / 15%) 37%, rgb(80 32 126 / 45%) 0, rgb(102 45 147 / 25%) 76%, rgb(61 19 102 / 22%) 0, rgb(124 37 193 / 34%)), linear-gradient(90deg, rgb(44 11 76 / 12%), #500f8300 60%, #2c0b4c00);
+  background:  linear-gradient(#32135C 0 0) padding-box, linear-gradient(to top, #771DF3, #9631F4) border-box;
+  border: 3px solid transparent;
+  border-radius:100px;
 }
 
-.dcWallet-warningMessage .shieldLogo {
+.dcWallet-warningMessage .messLogo {
   padding-top: 1px;
   padding-right: 12px;
+  position: relative;
+  left: 10px;
+  top: 5px;
+  margin-right: 4px;
 }
 
-.dcWallet-warningMessage .shieldLogo .shieldBackground {
-  background-color: rgb(0 0 0 / 18%);
-  width: 35px;
-  height: 35px;
-  border-radius: 10px;
-}
-
-.dcWallet-warningMessage .lockUnlock {
+.dcWallet-warningMessage .messMessage {
   display: flex;
   align-content: center;
   flex-wrap: wrap;
+  flex-direction: column;
+}
+
+.dcWallet-warningMessage .messMessage .messTop {
+  font-size:11px;
+  color:#ffffffbd;
+}
+
+.dcWallet-warningMessage .messMessage .messBot {
+  font-weight: 500;
+  font-size: 15px;
 }
 
 .dcWallet-topRightMenu {

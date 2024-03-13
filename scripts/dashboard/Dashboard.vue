@@ -50,6 +50,7 @@ import { PIVXShield } from 'pivx-shield';
 import { useWallet } from '../composables/use_wallet.js';
 import { useSettings } from '../composables/use_settings.js';
 import { validateAmount } from '../legacy.js';
+import pLogo from '../../assets/p_logo.svg';
 
 const wallet = useWallet();
 const activity = ref(null);
@@ -596,6 +597,31 @@ defineExpose({
             />
 
             <br />
+
+            <!-- Switch to Private -->
+            <div
+                class="col-12 p-0"
+                v-if="
+                    true
+                "
+            >
+                <center>
+                    <div
+                        class="dcWallet-warningMessage"
+                        onclick="MPW.restoreWallet()"
+                    >
+                        <div class="messLogo">
+                            <span class="buttoni-icon" v-html="pLogo"> </span>
+                        </div>
+                        <div class="messMessage">
+                            <span class="messTop">Now in Public Mode</span>
+                            <span class="messBot">Switch to Private</span>
+                        </div>
+                    </div>
+                </center>
+            </div>
+            <!-- // Unlock Wallet -->
+
 
             <!-- Redeem Code (PIVX Promos) -->
             <div
