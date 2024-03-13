@@ -56,6 +56,7 @@ export function useWallet() {
     };
     const balance = ref(0);
     const shieldBalance = ref(0);
+    const coldBalance = ref(0);
     const pendingShieldBalance = ref(0);
     const immatureBalance = ref(0);
     const currency = ref('USD');
@@ -94,6 +95,7 @@ export function useWallet() {
         currency.value = strCurrency.toUpperCase();
         shieldBalance.value = await wallet.getShieldBalance();
         pendingShieldBalance.value = await wallet.getPendingShieldBalance();
+        coldBalance.value = wallet.coldBalance;
         price.value = await cMarket.getPrice(strCurrency);
     });
 
@@ -125,5 +127,6 @@ export function useWallet() {
         sync,
         createAndSendTransaction,
         loadFromDisk,
+        coldBalance,
     };
 }
