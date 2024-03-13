@@ -31,19 +31,19 @@ onMounted(() => {
         <div class="row mb-5" style="max-width: 310px; font-size:13px;">
             <div class="col-3 p-0 cur-pointer" @click="renderWalletBreakdown()" data-toggle="modal" data-target="#walletBreakdownModal">
                 <i class="fa-solid fa-chart-pie" style="color:#9621FF; height: 25px; font-size:20px"></i><br>
-                Balance
+                <span style="color:#eddaffc7;">Balance</span>
             </div>
             <div class="col-3 p-0 cur-pointer" @click="openExplorer()">
                 <i class="fa-solid fa-magnifying-glass" style="color:#9621FF; height: 25px; font-size:20px"></i><br>
-                Explorer
+                <span style="color:#eddaffc7;">Explorer</span>
             </div>
             <div class="col-3 p-0 cur-pointer" @click="guiRenderContacts()" data-toggle="modal" data-target="#contactsModal">
                 <i class="fa-solid fa-address-book" style="color:#9621FF; height: 25px; font-size:20px"></i><br>
-                Contacts
+                <span style="color:#eddaffc7;">Contacts</span>
             </div>
-            <div class="col-3 p- cur-pointer" data-toggle="modal" data-target="#redeemCodeModal">
+            <div class="col-3 p-0 cur-pointer" data-toggle="modal" data-target="#redeemCodeModal">
                 <i class="fa-solid fa-gift" style="color:#9621FF; height: 25px; font-size:20px"></i><br>
-                Gift Code
+                <span style="color:#eddaffc7;">Gift Code</span>
             </div>
         </div>
     </center>
