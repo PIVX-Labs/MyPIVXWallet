@@ -8,6 +8,7 @@ import { COIN } from '../chain_params';
 import { beautifyNumber } from '../misc';
 const coldStakingAddress = defineModel('coldStakingAddress');
 const csAddrInternal = ref(coldStakingAddress.value);
+watch(coldStakingAddress, (addr) => (csAddrInternal.value = addr));
 const showColdStakingAddressModal = ref(false);
 const emit = defineEmits(['showUnstake', 'showStake', 'setColdStakingAddress']);
 const props = defineProps({
