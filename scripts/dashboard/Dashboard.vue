@@ -150,35 +150,32 @@ async function parseSecret(secret, password = '') {
                 );
             },
         },
-	{
-	    test: (s) => {
-			try {
-			    const obj = JSON.parse(s);
-			    return !!obj.mk;
-			} catch (_) {
-			    return false;
-			}
-	    },
-	    f: async (s) => {
-		const obj = JSON.parse(s);
-		const mk = (await parseSecret(obj.mk)).masterKey;
-		let shield;
-		try {
-		    if(obj.shield)
-			shield = await PIVXShield.create({
-			    extendedSpendingKey: obj.shield,
-			    blockHeight: 4200000,
-			    coinType: cChainParams.current.BIP44_TYPE,
-			    accountIndex: 0,
-			    loadSaplingData: false,
-			});
-		} catch (_) { }
-		return new ParsedSecret(
-		    mk,
-		    shield,
-		)
-	    }
-	}
+        {
+            test: (s) => {
+                try {
+                    const obj = JSON.parse(s);
+                    return !!obj.mk;
+                } catch (_) {
+                    return false;
+                }
+            },
+            f: async (s) => {
+                const obj = JSON.parse(s);
+                const mk = (await parseSecret(obj.mk)).masterKey;
+                let shield;
+                try {
+                    if (obj.shield)
+                        shield = await PIVXShield.create({
+                            extendedSpendingKey: obj.shield,
+                            blockHeight: 4200000,
+                            coinType: cChainParams.current.BIP44_TYPE,
+                            accountIndex: 0,
+                            loadSaplingData: false,
+                        });
+                } catch (_) {}
+                return new ParsedSecret(mk, shield);
+            },
+        },
     ];
 
     for (const rule of rules) {

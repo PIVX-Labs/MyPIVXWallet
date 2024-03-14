@@ -496,18 +496,18 @@ export class Wallet {
     }
 
     getKeyToExport() {
-	return this.#masterKey?.getKeyToExport(this.#nAccount);
+        return this.#masterKey?.getKeyToExport(this.#nAccount);
     }
 
     async getKeyToBackup() {
         if (await hasEncryptedWallet()) {
             const account = await (await Database.getInstance()).getAccount();
             return account.encWif;
-	}
-	return JSON.stringify({
-	    mk: this.getMasterKey()?.keyToBackup,
-	    shield: this.#shield?.extsk,
-	});
+        }
+        return JSON.stringify({
+            mk: this.getMasterKey()?.keyToBackup,
+            shield: this.#shield?.extsk,
+        });
     }
 
     //Get path from a script
