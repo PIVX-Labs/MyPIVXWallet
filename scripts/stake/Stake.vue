@@ -1,5 +1,5 @@
 <script setup>
-import { cChainParams } from '../chain_params';
+import { COIN, cChainParams } from '../chain_params';
 import { useSettings } from '../composables/use_settings';
 import { useWallet } from '../composables/use_wallet';
 import Activity from '../dashboard/Activity.vue';
@@ -10,12 +10,20 @@ import StakeBalance from './StakeBalance.vue';
 import StakeInput from './StakeInput.vue';
 import { onMounted, ref, watch } from 'vue';
 
-const { coldBalance, createAndSendTransaction, getAddress, price, currency } =
-    useWallet();
+const {
+    balance,
+    coldBalance,
+    createAndSendTransaction,
+    getAddress,
+    price,
+    currency,
+} = useWallet();
 const { advancedMode, displayDecimals } = useSettings();
 const showUnstake = ref(false);
 const showStake = ref(false);
 const coldStakingAddress = ref('');
+const stakeAmount = ref('');
+const unstakeAmount = ref('');
 async function updateColdStakingAddress() {
     const db = await Database.getInstance();
     coldStakingAddress.value =
@@ -74,6 +82,8 @@ function unstake(value) {
         :showOwnerAddress="advancedMode"
         :show="showStake"
         :price="price"
+        v-model:amount="stakeAmount"
+        @maxBalance="stakeAmount = (balance / COIN).toString()"
         @close="showStake = false"
         @submit="stake"
     />
@@ -82,6 +92,8 @@ function unstake(value) {
         :showOwnerAddress="false"
         :show="showUnstake"
         :price="price"
+        v-model:amount="unstakeAmount"
+        @maxBalance="unstakeAmount = (coldBalance / COIN).toString()"
         @close="showUnstake = false"
         @submit="unstake"
     />

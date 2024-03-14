@@ -1,5 +1,5 @@
 <script setup>
-import { ref, toRefs, watch } from 'vue';
+import { nextTick, ref, toRefs, watch } from 'vue';
 import { translation } from '../i18n';
 import BottomPopup from '../BottomPopup.vue';
 import { validateAmount } from '../legacy';
@@ -11,7 +11,7 @@ const props = defineProps({
     price: Number,
 });
 const { unstake, show, price, showOwnerAddress } = toRefs(props);
-const emit = defineEmits(['close', 'submit']);
+const emit = defineEmits(['close', 'submit', 'maxBalance']);
 
 const amount = defineModel('amount', {
     default: '',
@@ -19,12 +19,17 @@ const amount = defineModel('amount', {
 const ownerAddress = ref('');
 const amountCurrency = ref('');
 
+function maxBalance() {
+    emit('maxBalance');
+    nextTick(syncAmountCurrency);
+}
+
 watch(showOwnerAddress, () => {
     ownerAddress.value = '';
 });
 
 function submit() {
-    const value = parseFloat(amount.value) * COIN;
+    const value = Math.round(parseFloat(amount.value) * COIN);
 
     if (validateAmount(value)) {
         emit('submit', value, ownerAddress.value);
@@ -80,7 +85,7 @@ function syncAmount() {
                             <span class="input-group-text p-0">
                                 <div
                                     data-i18n="sendAmountCoinsMax"
-                                    onclick="MPW.selectMaxBalance(MPW.doms.domStakeAmount, MPW.doms.domStakeAmountValue)"
+                                    @click="maxBalance()"
                                     style="
                                         cursor: pointer;
                                         border: 0px;
