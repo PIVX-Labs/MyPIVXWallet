@@ -163,7 +163,6 @@ async function parseSecret(secret, password = '') {
 		const obj = JSON.parse(s);
 		const mk = (await parseSecret(obj.mk)).masterKey;
 		let shield;
-			debugger;
 		try {
 		    if(obj.shield)
 			shield = await PIVXShield.create({
