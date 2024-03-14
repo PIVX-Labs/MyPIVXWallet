@@ -1,13 +1,45 @@
 <script setup>
-import {} from 'vue';
+import { ref } from 'vue';
 import { translation } from '../i18n';
 import BottomPopup from '../BottomPopup.vue';
+import { validateAmount } from '../legacy';
+import { COIN } from '../chain_params';
 const { unstake, show } = defineProps({
     unstake: Boolean,
     showOwnerAddress: Boolean,
     show: Boolean,
 });
-const emit = defineEmits(['close']);
+const emit = defineEmits(['close', 'submit']);
+
+const price = ref(0.5);
+const amount = defineModel('amount', {
+    default: '',
+});
+const amountCurrency = ref('');
+
+function submit() {
+    const value = parseFloat(amount.value) * COIN;
+
+    if (validateAmount(value)) {
+        emit('submit', value);
+    }
+}
+
+function syncAmountCurrency() {
+    if (amount.value === '') {
+        amountCurrency.value = '';
+    } else {
+        amountCurrency.value = amount.value * price.value;
+    }
+}
+
+function syncAmount() {
+    if (amountCurrency.value === '') {
+        amount.value = '';
+    } else {
+        amount.value = amountCurrency.value / price.value;
+    }
+}
 </script>
 
 <template>
@@ -35,6 +67,8 @@ const emit = defineEmits(['close']);
                             placeholder="0.00"
                             autocomplete="nope"
                             onkeydown="javascript: return event.keyCode == 69 ? false : true"
+                            v-model="amount"
+                            @input="$nextTick(syncAmountCurrency)"
                         />
                         <div class="input-group-append">
                             <span class="input-group-text p-0">
@@ -73,10 +107,11 @@ const emit = defineEmits(['close']);
                         <input
                             class="btn-group-input"
                             type="text"
-                            id="stakeAmountValue"
                             placeholder="0.00"
                             autocomplete="nope"
                             onkeydown="javascript: return event.keyCode == 69 ? false : true"
+                            v-model="amountCurrency"
+                            @input="syncAmount"
                         />
                         <div class="input-group-append">
                             <span
@@ -118,7 +153,7 @@ const emit = defineEmits(['close']);
                 <button
                     class="pivx-button-medium w-100"
                     style="margin: 0px"
-                    onclick="MPW.delegateGUI()"
+                    @click="submit()"
                 >
                     <span class="buttoni-icon"
                         ><i class="fas fa-paper-plane fa-tiny-margin"></i
