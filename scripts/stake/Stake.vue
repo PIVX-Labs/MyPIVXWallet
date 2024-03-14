@@ -10,7 +10,8 @@ import StakeBalance from './StakeBalance.vue';
 import StakeInput from './StakeInput.vue';
 import { onMounted, ref, watch } from 'vue';
 
-const { coldBalance, createAndSendTransaction, getAddress } = useWallet();
+const { coldBalance, createAndSendTransaction, getAddress, price, currency } =
+    useWallet();
 const { advancedMode, displayDecimals } = useSettings();
 const showUnstake = ref(false);
 const showStake = ref(false);
@@ -32,14 +33,19 @@ watch(coldStakingAddress, async (coldStakingAddress) => {
     cAccount.coldAddress = coldStakingAddress;
     await db.updateAccount(cAccount, true);
 });
-function stake(value) {
+function stake(value, ownerAddress) {
     // TODO: restore wallet
-    createAndSendTransaction(getNetwork(), coldStakingAddress.value, value);
+    createAndSendTransaction(getNetwork(), coldStakingAddress.value, value, {
+        isDelegation: true,
+        returnAddress: ownerAddress,
+    });
 }
 
 function unstake(value) {
     createAndSendTransaction(getNetwork(), getAddress(1), value, {
         useDelegatedInputs: true,
+        delegateChange: true,
+        changeDelegationAddress: coldStakingAddress.value,
     });
 }
 </script>
@@ -51,6 +57,8 @@ function unstake(value) {
                 <StakeBalance
                     v-model:coldStakingAddress="coldStakingAddress"
                     :coldBalance="coldBalance"
+                    :price="price"
+                    :currency="currency"
                     @showUnstake="showUnstake = true"
                     @showStake="showStake = true"
                 />
@@ -65,6 +73,7 @@ function unstake(value) {
         :unstake="false"
         :showOwnerAddress="advancedMode"
         :show="showStake"
+        :price="price"
         @close="showStake = false"
         @submit="stake"
     />
@@ -72,6 +81,7 @@ function unstake(value) {
         :unstake="true"
         :showOwnerAddress="false"
         :show="showUnstake"
+        :price="price"
         @close="showUnstake = false"
         @submit="unstake"
     />

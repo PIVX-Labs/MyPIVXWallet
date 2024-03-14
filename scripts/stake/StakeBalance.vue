@@ -1,11 +1,12 @@
 <script setup>
 import { computed, defineEmits, ref, toRefs, watch } from 'vue';
-import { refreshChainData } from '../global.js';
+import { optimiseCurrencyLocale, refreshChainData } from '../global.js';
 import { translation, ALERTS } from '../i18n.js';
 import Modal from '../Modal.vue';
 import { createAlert, isColdAddress } from '../misc';
 import { COIN } from '../chain_params';
 import { beautifyNumber } from '../misc';
+
 const coldStakingAddress = defineModel('coldStakingAddress');
 const csAddrInternal = ref(coldStakingAddress.value);
 watch(coldStakingAddress, (addr) => (csAddrInternal.value = addr));
@@ -13,13 +14,22 @@ const showColdStakingAddressModal = ref(false);
 const emit = defineEmits(['showUnstake', 'showStake', 'setColdStakingAddress']);
 const props = defineProps({
     coldBalance: Number,
+    price: Number,
+    currency: String,
 });
-const { coldBalance } = toRefs(props);
+const { coldBalance, price, currency } = toRefs(props);
 const coldBalanceStr = computed(() => {
     const nCoins = coldBalance.value / COIN;
     const strBal = nCoins.toFixed(displayDecimals.value);
     const nLen = strBal.length;
     return beautifyNumber(strBal, nLen >= 10 ? '17px' : '25px');
+});
+const coldBalanceValue = computed(() => {
+    const { nValue, cLocale } = optimiseCurrencyLocale(
+        (coldBalance.value / COIN) * price.value
+    );
+
+    return nValue.toLocaleString('en-gb', cLocale);
 });
 
 function submit() {
@@ -70,10 +80,8 @@ function submit() {
             >&nbsp;PIV&nbsp;</span
         ><br />
         <div class="dcWallet-usdBalance">
-            <span id="guiStakingValue" class="dcWallet-usdValue">$-</span>
-            <span id="guiStakingValueCurrency" class="dcWallet-usdValue"
-                >USD</span
-            >
+            <span class="dcWallet-usdValue"> {{ coldBalanceValue }} </span>
+            <span class="dcWallet-usdValue">&nbsp;{{ currency }}&nbsp;</span>
         </div>
 
         <div class="row lessTop p-0">

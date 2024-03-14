@@ -1,27 +1,33 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, toRefs, watch } from 'vue';
 import { translation } from '../i18n';
 import BottomPopup from '../BottomPopup.vue';
 import { validateAmount } from '../legacy';
 import { COIN } from '../chain_params';
-const { unstake, show } = defineProps({
+const props = defineProps({
     unstake: Boolean,
     showOwnerAddress: Boolean,
     show: Boolean,
+    price: Number,
 });
+const { unstake, show, price, showOwnerAddress } = toRefs(props);
 const emit = defineEmits(['close', 'submit']);
 
-const price = ref(0.5);
 const amount = defineModel('amount', {
     default: '',
 });
+const ownerAddress = ref('');
 const amountCurrency = ref('');
+
+watch(showOwnerAddress, () => {
+    ownerAddress.value = '';
+});
 
 function submit() {
     const value = parseFloat(amount.value) * COIN;
 
     if (validateAmount(value)) {
-        emit('submit', value);
+        emit('submit', value, ownerAddress.value);
     }
 }
 
@@ -135,7 +141,7 @@ function syncAmount() {
                         oninput="MPW.guiCheckRecipientInput(event)"
                         style="font-family: monospace"
                         type="text"
-                        id="delegateOwnerAddress"
+                        :v-model="ownerAddress"
                         placeholder="(Optional) Owner Address"
                         autocomplete="nope"
                     />
