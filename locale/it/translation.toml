@@ -217,6 +217,7 @@ newShieldAddress = "Genera un nuovo indirizzo shield" # Get new shield address
 shieldAddress = "Indirizzo shield" # Shield address
 cantShieldToExc = "Questo indirizzo non supporta i trasferimenti shield" # This address does not support shield transfers
 settingsToggleAutoLockWallet = "" # Auto Lock the Wallet
+saveWalletFile = "" # Save Wallet File
 
 [ALERTS]
 INTERNAL_ERROR = "Errore interno, rirova più tardi" # Internal error, please try again later

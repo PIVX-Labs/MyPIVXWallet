@@ -1019,6 +1019,7 @@ defineExpose({
             <ExportPrivKey
                 :show="showExportModal"
                 :privateKey="keyToBackup"
+                :isJSON="wallet.hasShield.value && !wallet.isEncrypted.value"
                 @close="showExportModal = false"
             />
             <!-- WALLET FEATURES -->
