@@ -55,6 +55,8 @@ export let fAutoSwitch = true;
 export let nDisplayDecimals = 2;
 /** A mode which configures MPW towards Advanced users, with low-level feature access and less restrictions (Potentially dangerous) */
 export let fAdvancedMode = false;
+/** automatically lock the wallet after any operation  that requires unlocking */
+export let fAutoLockWallet = false;
 
 let transparencyReport;
 
@@ -95,6 +97,10 @@ export class Settings {
      * @type {boolean} Whether Advanced Mode is enabled or disabled
      */
     advancedMode;
+    /**
+     * @type {boolean} Whether auto lock feature is enabled or disabled
+     */
+    autoLockWallet;
     constructor({
         analytics,
         explorer,
@@ -105,6 +111,7 @@ export class Settings {
         displayDecimals = nDisplayDecimals,
         advancedMode = false,
         coldAddress = '',
+        autoLockWallet = false,
     } = {}) {
         this.analytics = analytics;
         this.explorer = explorer;
@@ -114,6 +121,7 @@ export class Settings {
         this.displayCurrency = displayCurrency;
         this.displayDecimals = displayDecimals;
         this.advancedMode = advancedMode;
+        this.autoLockWallet = autoLockWallet;
         // DEPRECATED: Read-only below here, for migration only
         this.coldAddress = coldAddress;
     }
@@ -206,6 +214,7 @@ export async function start() {
         displayCurrency,
         displayDecimals,
         advancedMode,
+        autoLockWallet,
         // DEPRECATED: Below here are entries that are read-only due to being moved to a different location in the DB
         coldAddress,
     } = await database.getSettings();
@@ -227,6 +236,10 @@ export async function start() {
             await database.setSettings({ coldAddress: '' });
         }
     }
+    // auto lock wallet
+    fAutoLockWallet = autoLockWallet;
+    doms.domAutoLockModeToggler.checked = fAutoLockWallet;
+    configureAutoLockWallet();
 
     // Set any Toggles to their default or DB state
     // Network Auto-Switch
@@ -566,9 +579,7 @@ export async function toggleTestnet() {
     doms.domGuiBalanceStakingTicker.innerText = cChainParams.current.TICKER;
     // Update testnet toggle in settings
     doms.domTestnetToggler.checked = cChainParams.current.isTestnet;
-
-    await fillExplorerSelect();
-    await fillNodeSelect();
+    await start();
 
     stakingDashboard.reset();
 
@@ -669,6 +680,14 @@ export async function toggleAdvancedMode() {
     await database.setSettings({ advancedMode: fAdvancedMode });
 }
 
+export async function toggleAutoLockWallet() {
+    fAutoLockWallet = !fAutoLockWallet;
+    configureAutoLockWallet();
+    // Update the setting in the DB
+    const database = await Database.getInstance();
+    await database.setSettings({ autoLockWallet: fAutoLockWallet });
+}
+
 /**
  * Configure the app functionality and UI for the current mode
  */
@@ -677,6 +696,10 @@ async function configureAdvancedMode() {
     // Hide or Show the "Owner Address" configuration for Staking, and reset it's input
     doms.domStakeOwnerAddress.value = '';
     doms.domStakeOwnerAddressContainer.hidden = !fAdvancedMode;
+}
+
+function configureAutoLockWallet() {
+    getEventEmitter().emit('auto-lock-wallet', fAutoLockWallet);
 }
 
 export function changePassword() {

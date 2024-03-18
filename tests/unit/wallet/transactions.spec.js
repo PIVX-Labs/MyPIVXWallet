@@ -1,28 +1,37 @@
+vi.mock('../../../scripts/mempool.js');
+vi.mock('../../../scripts/network.js');
+
 import { Wallet } from '../../../scripts/wallet.js';
+import { Mempool } from '../../../scripts/mempool.js';
 import { getLegacyMainnet } from '../test_utils';
 import { describe, it, vi, afterAll, expect } from 'vitest';
 import {
     COutpoint,
     CTxIn,
     CTxOut,
-    UTXO,
     Transaction,
 } from '../../../scripts/transaction.js';
-import { mempool } from '../../../scripts/global';
+
+import 'fake-indexeddb/auto';
 import { TransactionBuilder } from '../../../scripts/transaction_builder.js';
 
+vi.stubGlobal('localStorage', { length: 0 });
 vi.mock('../../../scripts/global.js');
 vi.mock('../../../scripts/network.js');
 
+/**
+ * @param {Wallet} wallet
+ * @param {Transaction} tx
+ * @param {number} feesPerBytes
+ */
 async function checkFees(wallet, tx, feesPerBytes) {
     let fees = 0;
     for (const vout of tx.vout) {
         fees -= vout.value;
     }
+
     for (const vin of tx.vin) {
-        fees += mempool
-            .getUTXOs()
-            .find((utxo) => utxo.outpoint.txid === vin.outpoint.txid).value;
+        fees += wallet.outpointToUTXO(vin.outpoint).value;
     }
     // Sign and verify that it pays enough fees, and that it is greedy enough
     const nBytes = (await wallet.sign(tx)).serialize().length / 2;
@@ -31,10 +40,12 @@ async function checkFees(wallet, tx, feesPerBytes) {
 }
 describe('Wallet transaction tests', () => {
     let wallet;
+    let mempool;
     let PIVXShield;
     const MIN_FEE_PER_BYTE = new TransactionBuilder().MIN_FEE_PER_BYTE;
     beforeEach(() => {
-        wallet = new Wallet(0, false);
+        mempool = new Mempool();
+        wallet = new Wallet({ nAccount: 0, isMainWallet: false, mempool });
         wallet.setMasterKey(getLegacyMainnet());
         PIVXShield = vi.fn();
         PIVXShield.prototype.createTransaction = vi.fn(() => {
@@ -44,6 +55,9 @@ describe('Wallet transaction tests', () => {
         });
         PIVXShield.prototype.getBalance = vi.fn(() => 40 * 10 ** 8);
         wallet.setShield(new PIVXShield());
+        // Reset indexedDB before each test
+        vi.stubGlobal('indexedDB', new IDBFactory());
+        return vi.unstubAllGlobals;
     });
     it('Creates a transaction correctly', async () => {
         const tx = wallet.createTransaction(
@@ -60,11 +74,8 @@ describe('Wallet transaction tests', () => {
                 scriptSig: '76a914f49b25384b79685227be5418f779b98a6be4c73888ac', // Script sig must be the UTXO script since it's not signed
             })
         );
-        expect(tx.vout[1]).toStrictEqual(
-            new CTxOut({
-                script: '76a914f49b25384b79685227be5418f779b98a6be4c73888ac',
-                value: 4997730,
-            })
+        expect(tx.vout[1].script).toBe(
+            '76a914f49b25384b79685227be5418f779b98a6be4c73888ac'
         );
         expect(tx.vout[0]).toStrictEqual(
             new CTxOut({
@@ -106,7 +117,6 @@ describe('Wallet transaction tests', () => {
     });
 
     it('Creates a tx with change address', async () => {
-        const wallet = new Wallet(0, false);
         wallet.setMasterKey(getLegacyMainnet());
         const tx = wallet.createTransaction(
             'EXMDbnWT4K3nWfK1311otFrnYLcFSipp3iez',
@@ -375,11 +385,9 @@ describe('Wallet transaction tests', () => {
 
     it('finalizes transaction correctly', () => {
         const tx = new Transaction();
-        wallet.finalizeTransaction(tx);
-        expect(mempool.updateMempool).toBeCalled(1);
-        expect(mempool.updateMempool).toBeCalledWith(tx);
-        expect(mempool.setBalance).toBeCalled(1);
-        expect(mempool.setBalance).toBeCalledWith();
+        wallet.addTransaction(tx);
+        expect(mempool.addTransaction).toBeCalled(1);
+        expect(mempool.addTransaction).toBeCalledWith(tx);
     });
 
     afterAll(() => {

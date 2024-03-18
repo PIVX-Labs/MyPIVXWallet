@@ -34,7 +34,7 @@ import {
     updateEncryptionGUI,
     updateLogOutButton,
 } from '../global';
-import { mempool, refreshChainData } from '../global.js';
+import { refreshChainData } from '../global.js';
 import {
     confirmPopup,
     isXPub,
@@ -60,7 +60,7 @@ const needsToEncrypt = computed(() => {
     }
 });
 const showTransferMenu = ref(false);
-const { advancedMode, displayDecimals } = useSettings();
+const { advancedMode, displayDecimals, autoLockWallet } = useSettings();
 const showExportModal = ref(false);
 const showEncryptModal = ref(false);
 const keyToBackup = ref('');
@@ -148,6 +148,32 @@ async function parseSecret(secret, password = '') {
                     }),
                     pivxShield
                 );
+            },
+        },
+        {
+            test: (s) => {
+                try {
+                    const obj = JSON.parse(s);
+                    return !!obj.mk;
+                } catch (_) {
+                    return false;
+                }
+            },
+            f: async (s) => {
+                const obj = JSON.parse(s);
+                const mk = (await parseSecret(obj.mk)).masterKey;
+                let shield;
+                try {
+                    if (obj.shield)
+                        shield = await PIVXShield.create({
+                            extendedSpendingKey: obj.shield,
+                            blockHeight: 4200000,
+                            coinType: cChainParams.current.BIP44_TYPE,
+                            accountIndex: 0,
+                            loadSaplingData: false,
+                        });
+                } catch (_) {}
+                return new ParsedSecret(mk, shield);
             },
         },
     ];
@@ -290,9 +316,9 @@ async function restoreWallet(strReason) {
 }
 
 /**
- * Lock the wallet by deleting masterkey private data
+ * Lock the wallet by deleting masterkey private data, after user confirmation
  */
-async function lockWallet() {
+async function displayLockWalletModal() {
     const isEncrypted = wallet.isEncrypted.value;
     const title = isEncrypted
         ? translation.popupWalletLock
@@ -306,9 +332,16 @@ async function lockWallet() {
             html,
         })
     ) {
-        wallet.wipePrivateData();
-        createAlert('success', ALERTS.WALLET_LOCKED, 1500);
+        lockWallet();
     }
+}
+
+/**
+ * Lock the wallet by deleting masterkey private data
+ */
+function lockWallet() {
+    wallet.wipePrivateData();
+    createAlert('success', ALERTS.WALLET_LOCKED, 1500);
 }
 
 /**
@@ -447,6 +480,14 @@ async function send(address, amount, useShieldInputs) {
     } catch (e) {
         console.error(e);
         createAlert('warning', e);
+    } finally {
+        if (autoLockWallet.value) {
+            if (wallet.isEncrypted.value) {
+                lockWallet();
+            } else {
+                await displayLockWalletModal();
+            }
+        }
     }
 }
 
@@ -630,7 +671,10 @@ defineExpose({
                 "
             >
                 <center>
-                    <div class="dcWallet-warningMessage" @click="lockWallet()">
+                    <div
+                        class="dcWallet-warningMessage"
+                        @click="displayLockWalletModal()"
+                    >
                         <div class="shieldLogo">
                             <div class="shieldBackground">
                                 <span
@@ -975,6 +1019,7 @@ defineExpose({
             <ExportPrivKey
                 :show="showExportModal"
                 :privateKey="keyToBackup"
+                :isJSON="wallet.hasShield.value && !wallet.isEncrypted.value"
                 @close="showExportModal = false"
             />
             <!-- WALLET FEATURES -->

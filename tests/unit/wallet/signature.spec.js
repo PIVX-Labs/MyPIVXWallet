@@ -1,5 +1,5 @@
 import { Wallet } from '../../../scripts/wallet.js';
-import { getLegacyMainnet, mockMempool } from '../test_utils';
+import { getLegacyMainnet } from '../test_utils';
 import { describe, it, vi, afterAll, expect } from 'vitest';
 import {
     COutpoint,
@@ -11,7 +11,7 @@ import {
 import { mempool } from '../../../scripts/global';
 import { hexToBytes } from '../../../scripts/utils';
 
-vi.mock('../../../scripts/global.js');
+vi.mock('../../../scripts/mempool.js');
 vi.mock('../../../scripts/network.js');
 
 describe('Wallet signature tests', () => {

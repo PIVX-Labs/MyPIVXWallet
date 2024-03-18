@@ -1,9 +1,7 @@
-import { Mempool, UTXO_WALLET_STATE } from './mempool.js';
 import { COutpoint } from './transaction.js';
 import { TransactionBuilder } from './transaction_builder.js';
 import Masternode from './masternode.js';
 import { ALERTS, tr, start as i18nStart, translation } from './i18n.js';
-
 import { wallet, hasEncryptedWallet, Wallet } from './wallet.js';
 import { getNetwork } from './network.js';
 import {
@@ -45,7 +43,6 @@ export function isLoaded() {
 }
 
 export let doms = {};
-export const mempool = new Mempool();
 
 export const dashboard = createApp(Dashboard).mount('#DashboardTab');
 
@@ -250,6 +247,7 @@ export async function start() {
         domFlipdown: document.getElementById('flipdown'),
         domTestnetToggler: document.getElementById('testnetToggler'),
         domAdvancedModeToggler: document.getElementById('advancedModeToggler'),
+        domAutoLockModeToggler: document.getElementById('autoLockModeToggler'),
     };
 
     await i18nStart();
@@ -522,7 +520,7 @@ export async function updatePriceDisplay(domValue, fCold = false) {
 }
 
 export function getBalance(updateGUI = false) {
-    const nBalance = mempool.balance;
+    const nBalance = wallet.balance;
     const nCoins = nBalance / COIN;
 
     // Update the GUI too, if chosen
@@ -540,7 +538,7 @@ export function getBalance(updateGUI = false) {
 }
 
 export function getStakingBalance(updateGUI = false) {
-    const nBalance = mempool.coldBalance;
+    const nBalance = wallet.coldBalance;
     const nCoins = nBalance / COIN;
 
     if (updateGUI) {
@@ -563,6 +561,8 @@ export function getStakingBalance(updateGUI = false) {
 
     return nBalance;
 }
+
+getEventEmitter().on('balance-update', () => getStakingBalance(true));
 
 /**
  * Fill a 'Coin Amount' with all of a balance type, and update the 'Coin Value'
@@ -763,7 +763,6 @@ export async function destroyMasternode() {
                 n: cMasternode.outidx,
             })
         );
-        mempool.setBalance();
 
         database.removeMasternode(wallet.getMasterKey());
         createAlert('success', ALERTS.MN_DESTROYED, 5000);
@@ -827,15 +826,7 @@ export async function importMasternode() {
 
     if (!wallet.isHD()) {
         // Find the first UTXO matching the expected collateral size
-        const cCollaUTXO = mempool
-            .getUTXOs({
-                filter: UTXO_WALLET_STATE.SPENDABLE,
-                onlyConfirmed: true,
-                includeLocked: false,
-            })
-            .find(
-                (cUTXO) => cUTXO.value === cChainParams.current.collateralInSats
-            );
+        const cCollaUTXO = wallet.getMasternodeUTXOs()[0];
         const balance = getBalance(false);
         // If there's no valid UTXO, exit with a contextual message
         if (!cCollaUTXO) {
@@ -875,11 +866,7 @@ export async function importMasternode() {
     } else {
         const path = doms.domMnTxId.value;
         let masterUtxo;
-        const utxos = mempool.getUTXOs({
-            filter: UTXO_WALLET_STATE.SPENDABLE,
-            onlyConfirmed: true,
-            includeLocked: false,
-        });
+        const utxos = wallet.getMasternodeUTXOs();
         for (const u of utxos) {
             if (
                 u.value === cChainParams.current.collateralInSats &&
@@ -1721,15 +1708,7 @@ export async function updateMasternodeTab() {
             doms.masternodeLegacyAccessText;
         doms.domMnTxId.style.display = 'none';
         // Find the first UTXO matching the expected collateral size
-        const cCollaUTXO = mempool
-            .getUTXOs({
-                filter: UTXO_WALLET_STATE.SPENDABLE,
-                onlyConfirmed: true,
-                includeLocked: false,
-            })
-            .find(
-                (cUTXO) => cUTXO.value === cChainParams.current.collateralInSats
-            );
+        const cCollaUTXO = wallet.getMasternodeUTXOs()[0];
 
         const balance = getBalance(false);
         if (cMasternode) {
@@ -1761,12 +1740,7 @@ export async function updateMasternodeTab() {
         const mapCollateralPath = new Map();
 
         // Aggregate all valid Masternode collaterals into a map of Path <--> Collateral
-        for (const cUTXO of mempool.getUTXOs({
-            filter: UTXO_WALLET_STATE.SPENDABLE,
-            onlyConfirmed: true,
-            includeLocked: false,
-        })) {
-            if (cUTXO.value !== cChainParams.current.collateralInSats) continue;
+        for (const cUTXO of wallet.getMasternodeUTXOs()) {
             mapCollateralPath.set(wallet.getPath(cUTXO.script), cUTXO);
         }
         const fHasCollateral = mapCollateralPath.size > 0;

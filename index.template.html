@@ -593,6 +593,13 @@
                       <br>
 
                       <div class="custom-control custom-switch">
+                        <input type="checkbox" class="custom-control-input" id="autoLockModeToggler" onclick="MPW.toggleAutoLockWallet()">
+                        <label data-i18n="settingsToggleAutoLockWallet" class="custom-control-label" for="autoLockModeToggler">Auto Lock the Wallet</label>
+                      </div>
+
+                      <br>
+
+                      <div class="custom-control custom-switch">
                         <input type="checkbox" class="custom-control-input" id="advancedModeToggler" onclick="MPW.toggleAdvancedMode()">
                         <label data-i18n="settingsToggleAdvancedMode" class="custom-control-label" for="advancedModeToggler">Advanced Mode</label>
                         <p style="opacity: 0.6; margin-top: 5px;"><i class="fa-solid fa-triangle-exclamation" style="margin-right: 5px;"></i><span data-i18n="settingsToggleAdvancedModeSubtext">This unlocks deeper functionality and customisation, but may be overwhelming and potentially dangerous for unexperienced users!</p>

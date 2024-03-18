@@ -1,343 +1,241 @@
-import { getNetwork } from './network.js';
-import { getStakingBalance } from './global.js';
-import { Database } from './database.js';
 import { getEventEmitter } from './event_bus.js';
-import Multimap from 'multimap';
-import { wallet } from './wallet.js';
-import { cChainParams } from './chain_params.js';
-import { Account } from './accounts.js';
 import { COutpoint, UTXO } from './transaction.js';
 
-export const UTXO_WALLET_STATE = {
-    NOT_MINE: 0, // Don't have the key to spend this utxo
-    SPENDABLE: 1, // Have the key to spend this (P2PKH) utxo
-    SPENDABLE_COLD: 2, // Have the key to spend this (P2CS) utxo
-    COLD_RECEIVED: 4, // Have the staking key of this (P2CS) utxo
-    SPENDABLE_TOTAL: 1 | 2,
-    IMMATURE: 8, // Coinbase/ coinstake that it's not mature (and hence spendable) yet
-    LOCKED: 16, // Coins in the LOCK set
+export const OutpointState = {
+    OURS: 1 << 0, // This outpoint is ours
+
+    P2PKH: 1 << 1, // This is a P2PKH outpoint
+    P2CS: 1 << 2, // This is a P2CS outpoint
+
+    SPENT: 1 << 3, // This outpoint has been spent
+    IMMATURE: 1 << 4, // Coinbase/coinstake that it's not mature (hence not spendable) yet
+    LOCKED: 1 << 5, // Coins in the LOCK set
 };
 
-/**
- * A historical transaction
- */
-export class HistoricalTx {
-    /**
-     * @param {HistoricalTxType} type - The type of transaction.
-     * @param {string} id - The transaction ID.
-     * @param {Array<string>} receivers - The list of 'output addresses'.
-     * @param {boolean} shieldedOutputs - If this transaction contains Shield outputs.
-     * @param {number} time - The block time of the transaction.
-     * @param {number} blockHeight - The block height of the transaction.
-     * @param {number} amount - The amount transacted, in coins.
-     */
-    constructor(
-        type,
-        id,
-        receivers,
-        shieldedOutputs,
-        time,
-        blockHeight,
-        amount
-    ) {
-        this.type = type;
-        this.id = id;
-        this.receivers = receivers;
-        this.shieldedOutputs = shieldedOutputs;
-        this.time = time;
-        this.blockHeight = blockHeight;
-        this.amount = amount;
-    }
-}
-
-/**
- * A historical transaction type.
- * @enum {number}
- */
-export const HistoricalTxType = {
-    UNKNOWN: 0,
-    STAKE: 1,
-    DELEGATION: 2,
-    UNDELEGATION: 3,
-    RECEIVED: 4,
-    SENT: 5,
-};
-
-/** A Mempool instance, stores and handles UTXO data for the wallet */
 export class Mempool {
-    /**
-     * @type {number} - Immature balance
-     */
-    #immatureBalance = 0;
-    /**
-     * @type {number} - Our Public balance in Satoshis
-     */
-    #balance = 0;
-    /**
-     * @type {number} - Our Cold Staking balance in Satoshis
-     */
-    #coldBalance = 0;
-    /**
-     * @type {number} - Highest block height saved on disk
-     */
-    #highestSavedHeight = 0;
-
-    constructor() {
-        /**
-         * Multimap txid -> spent Coutpoint
-         * @type {Multimap<String, COutpoint>}
-         */
-        this.spent = new Multimap();
-        /**
-         * A map of all known transactions
-         * @type {Map<String, import('./transaction.js').Transaction>}
-         */
-        this.txmap = new Map();
-        /**
-         * Multimap nBlockHeight -> import('./transaction.js').Transaction
-         * @type {Multimap<Number, import('./transaction.js').Transaction>}
-         */
-        this.orderedTxmap = new Multimap();
-    }
-
-    reset() {
-        this.txmap = new Map();
-        this.spent = new Multimap();
-        this.orderedTxmap = new Multimap();
-        this.setBalance();
-        this.#highestSavedHeight = 0;
-    }
-    get balance() {
-        return this.#balance;
-    }
-    get coldBalance() {
-        return this.#coldBalance;
-    }
-    get immatureBalance() {
-        return this.#immatureBalance;
-    }
+    /** @type{Map<string, number>} */
+    #outpointStatus = new Map();
 
     /**
-     * An Outpoint to check
-     * @param {COutpoint} op
+     * Maps txid -> Transaction
+     * @type{Map<string, import('./transaction.js').Transaction>}
      */
-    isSpent(op) {
-        return this.spent.get(op.txid)?.some((x) => x.n == op.n);
-    }
+    #txmap = new Map();
 
     /**
-     * Add a transaction to the orderedTxmap, must be called once a new transaction is received.
+     * balance cache, mapping filter -> balance
+     * @type{Map<number, number>}
+     */
+    #balances = new Map();
+
+    /**
+     * Add a transaction to the mempool
+     * And mark the input as spent.
      * @param {import('./transaction.js').Transaction} tx
      */
-    addToOrderedTxMap(tx) {
-        if (!tx.isConfirmed()) return;
-        if (
-            this.orderedTxmap
-                .get(tx.blockHeight)
-                ?.some((x) => x.txid == tx.txid)
-        )
-            return;
-        this.orderedTxmap.set(tx.blockHeight, tx);
-    }
-    /**
-     * Add op to the spent map and optionally remove it from the lock set
-     * @param {String} txid - transaction id
-     * @param {COutpoint} op
-     */
-    setSpent(txid, op) {
-        this.spent.set(txid, op);
-        if (wallet.isCoinLocked(op)) wallet.unlockCoin(op);
+    addTransaction(tx) {
+        this.#txmap.set(tx.txid, tx);
+        for (const input of tx.vin) {
+            this.setSpent(input.outpoint);
+        }
     }
 
     /**
+     * @param {COutpoint} outpoint
+     */
+    getOutpointStatus(outpoint) {
+        return this.#outpointStatus.get(outpoint.toUnique()) ?? 0;
+    }
+
+    /**
+     * Sets outpoint status to `status`, overriding the old one
+     * @param {COutpoint} outpoint
+     * @param {number} status
+     */
+    setOutpointStatus(outpoint, status) {
+        this.#outpointStatus.set(outpoint.toUnique(), status);
+        this.#invalidateBalanceCache();
+    }
+
+    /**
+     * Adds `status` to the outpoint status, keeping the old status
+     * @param {COutpoint} outpoint
+     * @param {number} status
+     */
+    addOutpointStatus(outpoint, status) {
+        const oldStatus = this.#outpointStatus.get(outpoint.toUnique());
+        this.#outpointStatus.set(outpoint.toUnique(), oldStatus | status);
+        this.#invalidateBalanceCache();
+    }
+
+    /**
+     * Removes `status` to the outpoint status, keeping the old status
+     * @param {COutpoint} outpoint
+     * @param {number} status
+     */
+    removeOutpointStatus(outpoint, status) {
+        const oldStatus = this.#outpointStatus.get(outpoint.toUnique());
+        this.#outpointStatus.set(outpoint.toUnique(), oldStatus & ~status);
+        this.#invalidateBalanceCache();
+    }
+
+    /**
+     * Mark an outpoint as spent
+     * @param {COutpoint} outpoint
+     */
+    setSpent(outpoint) {
+        this.addOutpointStatus(outpoint, OutpointState.SPENT);
+    }
+
+    /**
+     * @param {COutpoint} outpoint
+     * @returns {boolean} whether or not the outpoint has been marked as spent
+     */
+    isSpent(outpoint) {
+        return !!(this.getOutpointStatus(outpoint) & OutpointState.SPENT);
+    }
+
+    /**
+     * Utility function to get the UTXO from an outpoint
+     * @param {COutpoint} outpoint
+     * @returns {UTXO?}
+     */
+    outpointToUTXO(outpoint) {
+        const tx = this.#txmap.get(outpoint.txid);
+        if (!tx) return null;
+        return new UTXO({
+            outpoint,
+            script: tx.vout[outpoint.n].script,
+            value: tx.vout[outpoint.n].value,
+        });
+    }
+
+    /**
+     * Get the debit of a transaction in satoshi
      * @param {import('./transaction.js').Transaction} tx
-     * @returns {boolean} if the tx is mature
      */
-    isMature(tx) {
-        if (!(tx.isCoinBase() || tx.isCoinStake())) {
-            return true;
-        }
-        return (
-            getNetwork().cachedBlockCount - tx.blockHeight >
-            cChainParams.current.coinbaseMaturity
-        );
+    getDebit(tx) {
+        return tx.vin
+            .filter(
+                (input) =>
+                    this.getOutpointStatus(input.outpoint) & OutpointState.OURS
+            )
+            .map((i) => this.outpointToUTXO(i.outpoint))
+            .reduce((acc, u) => acc + (u?.value || 0), 0);
     }
 
     /**
-     * Get the total wallet balance
-     * @param {UTXO_WALLET_STATE} filter the filter you want to apply
+     * Get the credit of a transaction in satoshi
+     * @param {import('./transaction.js').Transaction} tx
      */
-    getBalance(filter) {
-        let totBalance = 0;
-        for (const [_, tx] of this.txmap) {
-            // Check if tx is mature (or if we want to include immature)
-            if (!this.isMature(tx) && !(filter & UTXO_WALLET_STATE.IMMATURE)) {
-                continue;
-            }
-            for (let i = 0; i < tx.vout.length; i++) {
-                const vout = tx.vout[i];
-                const outpoint = new COutpoint({ txid: tx.txid, n: i });
-                if (this.isSpent(outpoint)) {
-                    continue;
-                }
-                const UTXO_STATE = wallet.isMyVout(vout.script);
-                if ((UTXO_STATE & filter) == 0) {
-                    continue;
-                }
+    getCredit(tx) {
+        const txid = tx.txid;
 
-                if (
-                    !(filter & UTXO_WALLET_STATE.LOCKED) &&
-                    wallet.isCoinLocked(outpoint)
-                ) {
-                    continue;
-                }
-                totBalance += vout.value;
-            }
-        }
-        return totBalance;
+        return tx.vout
+            .filter(
+                (_, i) =>
+                    this.getOutpointStatus(
+                        new COutpoint({
+                            txid,
+                            n: i,
+                        })
+                    ) & OutpointState.OURS
+            )
+            .reduce((acc, u) => acc + u?.value ?? 0, 0);
     }
 
     /**
-     * Get a list of UTXOs
-     * @param {Object} o
-     * @param {Number} o.filter enum element of UTXO_WALLET_STATE
-     * @param {Number | null} o.target PIVs in satoshi that we want to spend
-     * @param {Boolean} o.onlyConfirmed Consider only confirmed transactions
-     * @param {Boolean} o.includeLocked Include locked coins
-     * @returns {UTXO[]} Array of fetched UTXOs
+     * @param {object} o - options
+     * @param {number} [o.filter] - A filter to apply to all UTXOs. For example
+     * `OutpointState.P2CS` will NOT return P2CS transactions.
+     * By default it's `OutpointState.SPENT | OutpointState.IMMATURE | OutpointState.LOCKED`
+     * @param {number} [o.requirement] - A requirement to apply to all UTXOs. For example
+     * `OutpointState.P2CS` will only return P2CS transactions.
+     * By default it's MAX_SAFE_INTEGER
+     * @returns {UTXO[]} a list of unspent transaction outputs
      */
-    getUTXOs({ filter, target, onlyConfirmed = false, includeLocked }) {
-        let totFound = 0;
-        let utxos = [];
-        for (const [_, tx] of this.txmap) {
-            if (onlyConfirmed && !tx.isConfirmed()) {
+    getUTXOs({
+        filter = OutpointState.SPENT |
+            OutpointState.IMMATURE |
+            OutpointState.LOCKED,
+        requirement = 0,
+        target = Number.POSITIVE_INFINITY,
+    } = {}) {
+        const utxos = [];
+        let value = 0;
+        for (const [o, status] of this.#outpointStatus) {
+            const outpoint = COutpoint.fromUnique(o);
+            if (status & filter) {
                 continue;
             }
-            if (!this.isMature(tx)) {
+            if ((status & requirement) !== requirement) {
                 continue;
             }
-            for (let i = 0; i < tx.vout.length; i++) {
-                const vout = tx.vout[i];
-                const outpoint = new COutpoint({
-                    txid: tx.txid,
-                    n: i,
-                });
-                if (this.isSpent(outpoint)) {
-                    continue;
-                }
-                const UTXO_STATE = wallet.isMyVout(vout.script);
-                if ((UTXO_STATE & filter) == 0) {
-                    continue;
-                }
-                if (!includeLocked && wallet.isCoinLocked(outpoint)) {
-                    continue;
-                }
-                utxos.push(
-                    new UTXO({
-                        outpoint,
-                        script: vout.script,
-                        value: vout.value,
-                    })
-                );
-                // Return early if you found enough PIVs (11/10 is to make sure to pay fee)
-                totFound += vout.value;
-                if (target && totFound > (11 / 10) * target) {
-                    return utxos;
-                }
+            utxos.push(this.outpointToUTXO(outpoint));
+            value += utxos.at(-1).value;
+            if (value >= (target * 11) / 10) {
+                break;
             }
         }
         return utxos;
     }
 
     /**
-     * Update the mempool status
-     * @param {import('./transaction.js').Transaction} tx
+     * @param {number} filter
      */
-    updateMempool(tx) {
-        if (this.txmap.get(tx.txid)?.isConfirmed()) return;
-        this.txmap.set(tx.txid, tx);
-        for (const vin of tx.vin) {
-            const op = vin.outpoint;
-            if (!this.isSpent(op)) {
-                this.setSpent(op.txid, op);
-            }
+    getBalance(filter) {
+        if (this.#balances.has(filter)) {
+            return this.#balances.get(filter);
         }
-        for (const vout of tx.vout) {
-            wallet.updateHighestUsedIndex(vout);
-        }
-        this.addToOrderedTxMap(tx);
+        const bal = Array.from(this.#outpointStatus)
+            .filter(([_, status]) => !(status & OutpointState.SPENT))
+            .filter(([_, status]) => status & filter)
+            .reduce((acc, [o]) => {
+                const outpoint = COutpoint.fromUnique(o);
+                const tx = this.#txmap.get(outpoint.txid);
+                return acc + tx.vout[outpoint.n].value;
+            }, 0);
+        this.#balances.set(filter, bal);
+        return bal;
     }
 
-    setBalance() {
-        this.#balance = this.getBalance(UTXO_WALLET_STATE.SPENDABLE);
-        this.#coldBalance = this.getBalance(UTXO_WALLET_STATE.SPENDABLE_COLD);
-        this.#immatureBalance =
-            this.getBalance(
-                UTXO_WALLET_STATE.SPENDABLE | UTXO_WALLET_STATE.IMMATURE
-            ) - this.#balance;
-        getEventEmitter().emit('balance-update');
-        getStakingBalance(true);
+    #invalidateBalanceCache() {
+        this.#balances = new Map();
+        this.#emitBalanceUpdate();
+    }
+
+    #emittingBalanceUpdate = false;
+
+    #emitBalanceUpdate() {
+        if (this.#emittingBalanceUpdate) return;
+        this.#emittingBalanceUpdate = true;
+        // TODO: This is not ideal, we are limiting the mempool to only emit 1 balance-update per frame,
+        // but we don't want the mempool to know about animation frames. This is needed during
+        // sync to avoid spamming balance-updates and slowing down the sync.
+        // The best course of action is to probably add a loading page/state and avoid
+        // listening to the balance-update event until the sync is done
+        requestAnimationFrame(() => {
+            getEventEmitter().emit('balance-update');
+            this.#emittingBalanceUpdate = false;
+        });
     }
 
     /**
-     * Save txs on database
+     * @returns {import('./transaction.js').Transaction[]} a list of all transactions
      */
-    async saveOnDisk() {
-        const nBlockHeights = Array.from(this.orderedTxmap.keys())
-            .sort((a, b) => a - b)
-            .reverse();
-        if (nBlockHeights.length == 0) {
-            return;
-        }
-        const database = await Database.getInstance();
-        for (const nHeight of nBlockHeights) {
-            if (this.#highestSavedHeight > nHeight) {
-                break;
-            }
-            await Promise.all(
-                this.orderedTxmap.get(nHeight).map(async function (tx) {
-                    await database.storeTx(tx);
-                })
-            );
-        }
-        this.#highestSavedHeight = nBlockHeights[0];
+    getTransactions() {
+        return Array.from(this.#txmap.values());
     }
-    /**
-     * Load txs from database
-     * @returns {Promise<Boolean>} true if database was non-empty and transaction are loaded successfully
-     */
-    async loadFromDisk() {
-        const database = await Database.getInstance();
-        // Check if the stored txs are linked to this wallet
-        if (
-            (await database.getAccount())?.publicKey != wallet.getKeyToExport()
-        ) {
-            await database.removeAllTxs();
-            await database.removeAccount({ publicKey: null });
-            const cAccount = new Account({
-                publicKey: wallet.getKeyToExport(),
-            });
-            await database.addAccount(cAccount);
-            return;
-        }
-        const txs = await database.getTxs();
-        if (txs.length == 0) {
-            return false;
-        }
-        for (const tx of txs) {
-            this.addToOrderedTxMap(tx);
-        }
-        const nBlockHeights = Array.from(this.orderedTxmap.keys()).sort(
-            (a, b) => a - b
-        );
-        for (const nHeight of nBlockHeights) {
-            for (const tx of this.orderedTxmap.get(nHeight)) {
-                this.updateMempool(tx);
-            }
-        }
-        const cNet = getNetwork();
-        cNet.lastBlockSynced = nBlockHeights.at(-1);
-        this.#highestSavedHeight = nBlockHeights.at(-1);
-        return true;
+
+    get balance() {
+        return this.getBalance(OutpointState.P2PKH);
+    }
+
+    get coldBalance() {
+        return this.getBalance(OutpointState.P2CS);
+    }
+
+    get immatureBalance() {
+        return this.getBalance(OutpointState.IMMATURE);
     }
 }

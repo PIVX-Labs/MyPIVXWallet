@@ -40,6 +40,7 @@ export {
     toggleDebug,
     toggleAutoSwitch,
     toggleAdvancedMode,
+    toggleAutoLockWallet,
     changePassword,
 } from './settings.js';
 export { undelegateGUI, delegateGUI, createMasternode } from './legacy.js';

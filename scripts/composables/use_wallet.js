@@ -2,7 +2,6 @@ import { getEventEmitter } from '../event_bus.js';
 import { hasEncryptedWallet, wallet } from '../wallet.js';
 import { ref } from 'vue';
 import { strCurrency } from '../settings.js';
-import { mempool } from '../global.js';
 import { cMarket } from '../settings.js';
 import { ledgerSignTransaction } from '../ledger.js';
 
@@ -20,6 +19,7 @@ export function useWallet() {
     const isViewOnly = ref(wallet.isViewOnly());
     const getKeyToBackup = async () => await wallet.getKeyToBackup();
     const isEncrypted = ref(true);
+    const loadFromDisk = () => wallet.loadFromDisk();
     const hasShield = ref(wallet.hasShield());
     // True only iff a shield transaction is being created
     // Transparent txs are so fast that we don't need to keep track of them.
@@ -62,7 +62,7 @@ export function useWallet() {
     const price = ref(0.0);
     const sync = async () => {
         await wallet.sync();
-        balance.value = mempool.balance;
+        balance.value = wallet.balance;
         shieldBalance.value = await wallet.getShieldBalance();
         pendingShieldBalance.value = await wallet.getPendingShieldBalance();
     };
@@ -84,13 +84,13 @@ export function useWallet() {
         }
         const res = await network.sendTransaction(tx.serialize());
         if (res) {
-            wallet.finalizeTransaction(tx);
+            wallet.addTransaction(tx);
         }
     };
 
     getEventEmitter().on('balance-update', async () => {
-        balance.value = mempool.balance;
-        immatureBalance.value = mempool.immatureBalance;
+        balance.value = wallet.balance;
+        immatureBalance.value = wallet.immatureBalance;
         currency.value = strCurrency.toUpperCase();
         shieldBalance.value = await wallet.getShieldBalance();
         pendingShieldBalance.value = await wallet.getPendingShieldBalance();
@@ -124,5 +124,6 @@ export function useWallet() {
         price,
         sync,
         createAndSendTransaction,
+        loadFromDisk,
     };
 }
