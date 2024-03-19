@@ -23,6 +23,7 @@ const props = defineProps({
     price: Number,
     currency: String,
     amount: String,
+    desc: String,
     address: String,
     shieldEnabled: Boolean,
 });
@@ -123,7 +124,7 @@ async function selectContact() {
                         </div>
                     </div>
 
-                    <div style="display: none">
+                    <div v-if="desc && desc.length > 0">
                         <label
                             ><span>{{
                                 translation.paymentRequestMessage
@@ -137,6 +138,7 @@ async function selectContact() {
                                 disabled
                                 placeholder="Payment Request Description"
                                 autocomplete="nope"
+                                :value="desc"
                             />
                         </div>
                     </div>

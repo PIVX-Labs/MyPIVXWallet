@@ -66,6 +66,7 @@ const showEncryptModal = ref(false);
 const keyToBackup = ref('');
 const jdenticonValue = ref('');
 const transferAddress = ref('');
+const transferDescription = ref('');
 const transferAmount = ref('');
 watch(showExportModal, async (showExportModal) => {
     if (showExportModal) {
@@ -470,6 +471,7 @@ async function send(address, amount, useShieldInputs) {
     // Close the send screen and clear inputs
     showTransferMenu.value = false;
     transferAddress.value = '';
+    transferDescription.value = '';
     transferAmount.value = '';
 
     // Create and send the TX
@@ -528,10 +530,9 @@ onMounted(async () => {
         if (urlParams.has('addcontact')) {
             await handleContactRequest(urlParams);
         } else if (urlParams.has('pay')) {
-            const reqAmount = parseFloat(urlParams.get('amount')) ?? 0;
-            const reqTo = urlParams.get('pay') ?? '';
-            transferAddress.value = reqTo;
-            transferAmount.value = reqAmount;
+            transferAddress.value = urlParams.get('pay') ?? '';
+            transferDescription.value = urlParams.get('desc') ?? '';
+            transferAmount.value = parseFloat(urlParams.get('amount')) ?? 0;
             showTransferMenu.value = true;
         }
     }
@@ -1066,6 +1067,7 @@ defineExpose({
             :currency="currency"
             :shieldEnabled="wallet.hasShield.value"
             v-model:amount="transferAmount"
+            v-model:desc="transferDescription"
             v-model:address="transferAddress"
             @openQrScan="openSendQRScanner()"
             @close="showTransferMenu = false"
