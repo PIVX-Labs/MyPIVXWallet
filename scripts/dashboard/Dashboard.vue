@@ -5,8 +5,7 @@ import Activity from './Activity.vue';
 import GenKeyWarning from './GenKeyWarning.vue';
 import TransferMenu from './TransferMenu.vue';
 import ExportPrivKey from './ExportPrivKey.vue';
-import { cleanAndVerifySeedPhrase } from '../wallet.js';
-import { parseWIF, verifyWIF } from '../encoding.js';
+import RestoreWallet from './RestoreWallet.vue';
 import {
     createAlert,
     isBase64,
@@ -17,15 +16,9 @@ import {
     sanitizeHTML,
 } from '../misc.js';
 import { ALERTS, translation, tr } from '../i18n.js';
-import {
-    LegacyMasterKey,
-    HardwareWalletMasterKey,
-    HdMasterKey,
-} from '../masterkey';
-import { decrypt } from '../aes-gcm.js';
-import { cChainParams, COIN } from '../chain_params';
+import { HardwareWalletMasterKey, HdMasterKey } from '../masterkey';
+import { COIN } from '../chain_params';
 import { onMounted, ref, watch, computed } from 'vue';
-import { mnemonicToSeed } from 'bip39';
 import { getEventEmitter } from '../event_bus';
 import { Database } from '../database';
 import {
@@ -35,6 +28,7 @@ import {
     updateLogOutButton,
 } from '../global';
 import { refreshChainData } from '../global.js';
+import { validateAmount } from '../legacy';
 import {
     confirmPopup,
     isXPub,
@@ -45,10 +39,9 @@ import { getNetwork } from '../network.js';
 import { strHardwareName } from '../ledger';
 import { guiAddContactPrompt } from '../contacts-book';
 import { scanQRCode } from '../scanner';
-import { PIVXShield } from 'pivx-shield';
 import { useWallet } from '../composables/use_wallet.js';
 import { useSettings } from '../composables/use_settings.js';
-import { validateAmount } from '../legacy.js';
+import { ParsedSecret } from '../parsed_secret.js';
 
 const wallet = useWallet();
 const activity = ref(null);
@@ -67,6 +60,8 @@ const keyToBackup = ref('');
 const jdenticonValue = ref('');
 const transferAddress = ref('');
 const transferAmount = ref('');
+const showRestoreWallet = ref(false);
+const restoreWalletReason = ref('');
 watch(showExportModal, async (showExportModal) => {
     if (showExportModal) {
         keyToBackup.value = await wallet.getKeyToBackup();
@@ -75,127 +70,6 @@ watch(showExportModal, async (showExportModal) => {
         keyToBackup.value = '';
     }
 });
-
-class ParsedSecret {
-    /**
-     * @type {import('../masterkey.js').MasterKey} masterkey - Masterkey object derived from the secret
-     */
-    masterKey;
-    /**
-     * @type {PIVXShield} shield - Shield object associated with the secret. Only provided if the secret contains a seed
-     */
-    shield;
-    constructor(masterKey, shield = null) {
-        this.masterKey = masterKey;
-        this.shield = shield;
-    }
-}
-/**
- * Parses whatever the secret is to a MasterKey
- * @param {string|number[]|Uint8Array} secret
- * @returns {Promise<ParsedSecret?>}
- */
-async function parseSecret(secret, password = '') {
-    const rules = [
-        {
-            test: (s) => Array.isArray(s) || s instanceof Uint8Array,
-            f: (s) => new ParsedSecret(new LegacyMasterKey({ pkBytes: s })),
-        },
-        {
-            test: (s) => isBase64(s) && s.length >= 128,
-            f: async (s, p) => parseSecret(await decrypt(s, p)),
-        },
-        {
-            test: (s) => s.startsWith('xprv'),
-            f: (s) => new ParsedSecret(new HdMasterKey({ xpriv: s })),
-        },
-        {
-            test: (s) => s.startsWith('xpub'),
-            f: (s) => new ParsedSecret(new HdMasterKey({ xpub: s })),
-        },
-        {
-            test: (s) =>
-                cChainParams.current.PUBKEY_PREFIX.includes(s[0]) &&
-                s.length === 34,
-            f: (s) => new ParsedSecret(new LegacyMasterKey({ address: s })),
-        },
-        {
-            test: (s) => verifyWIF(s),
-            f: (s) => parseSecret(parseWIF(s)),
-        },
-        {
-            test: (s) => s.includes(' '),
-            f: async (s) => {
-                const { ok, msg, phrase } = await cleanAndVerifySeedPhrase(
-                    s,
-                    advancedMode.value
-                );
-                if (!ok) throw new Error(msg);
-                const seed = await mnemonicToSeed(phrase, password);
-                const pivxShield = await PIVXShield.create({
-                    seed,
-                    // hardcoded value considering the last checkpoint, this is good both for mainnet and testnet
-                    // TODO: take the wallet creation height in input from users
-                    blockHeight: 4200000,
-                    coinType: cChainParams.current.BIP44_TYPE,
-                    // TODO: Change account index once account system is made
-                    accountIndex: 0,
-                    loadSaplingData: false,
-                });
-                return new ParsedSecret(
-                    new HdMasterKey({
-                        seed,
-                    }),
-                    pivxShield
-                );
-            },
-        },
-        {
-            test: (s) => {
-                try {
-                    const obj = JSON.parse(s);
-                    return !!obj.mk;
-                } catch (_) {
-                    return false;
-                }
-            },
-            f: async (s) => {
-                const obj = JSON.parse(s);
-                const mk = (await parseSecret(obj.mk)).masterKey;
-                let shield;
-                try {
-                    if (obj.shield)
-                        shield = await PIVXShield.create({
-                            extendedSpendingKey: obj.shield,
-                            blockHeight: 4200000,
-                            coinType: cChainParams.current.BIP44_TYPE,
-                            accountIndex: 0,
-                            loadSaplingData: false,
-                        });
-                } catch (_) {}
-                return new ParsedSecret(mk, shield);
-            },
-        },
-    ];
-
-    for (const rule of rules) {
-        let test;
-        try {
-            test = rule.test(secret, password);
-        } catch (e) {
-            test = false;
-        }
-        if (test) {
-            try {
-                return await rule.f(secret, password);
-            } catch (e) {
-                createAlert('warning', e.message, 5000);
-                return;
-            }
-        }
-    }
-    createAlert('warning', ALERTS.FAILED_TO_IMPORT + '<br>', 6000);
-}
 
 /**
  * Import a wallet, this function MUST be called only at start or when switching network
@@ -224,7 +98,11 @@ async function importWallet({ type, secret, password = '' }) {
             12500
         );
     } else {
-        parsedSecret = await parseSecret(secret, password);
+        parsedSecret = await ParsedSecret.parse(
+            secret,
+            password,
+            advancedMode.value
+        );
     }
     if (parsedSecret) {
         await wallet.setMasterKey(parsedSecret.masterKey);
@@ -267,51 +145,33 @@ async function encryptWallet(password, currentPassword = '') {
 // TODO: This needs to be vueeifed a bit
 async function restoreWallet(strReason) {
     if (wallet.isHardwareWallet.value) return true;
-    if (!wallet.isEncrypted.value) return true;
-    // Build up the UI elements based upon conditions for the unlock prompt
-    let strHTML = '';
+    showRestoreWallet.value = true;
+    return await new Promise((res) => {
+        watch(
+            showRestoreWallet,
+            () => {
+                res(wallet.isEncrypted.value);
+            },
+            { once: true }
+        );
+    });
+}
 
-    // If there's a reason given; display it as a sub-text
-    strHTML += `<p style="opacity: 0.75">${strReason}</p>`;
-
-    // Prompt the user
-    if (
-        await confirmPopup({
-            title: translation.walletUnlock,
-            html: `${strHTML}<input type="password" id="restoreWalletPassword" placeholder="${translation.walletPassword}" style="text-align: center;">`,
-        })
-    ) {
-        // Fetch the password from the prompt, and immediately destroy the prompt input
-        const domPassword = document.getElementById('restoreWalletPassword');
-        const strPassword = domPassword.value;
-        domPassword.value = '';
-        const database = await Database.getInstance();
-        const { encWif, encExtsk } = await database.getAccount();
-
-        // Attempt to unlock the wallet with the provided password
-        const key = await parseSecret(encWif, strPassword);
-        const extsk = await decrypt(encExtsk, strPassword);
-        if (key.masterKey) {
-            //  This SHOULD REALLY NOT HAPPEN
-            if (wallet.hasShield.value && !extsk) {
-                createAlert(
-                    'warning',
-                    'Could not decrypt sk even if password is correct, please contact a developer'
-                );
-            }
-            if (wallet.hasShield.value) {
-                await wallet.setExtsk(extsk);
-            }
-            await wallet.setMasterKey(key.masterKey);
-            createAlert('success', ALERTS.WALLET_UNLOCKED, 1500);
-            return true;
-        } else {
-            // Password is invalid
-            return false;
+async function idontknowwhattonamethis(wif, extsk) {
+    console.log(wif);
+    const secret = await ParsedSecret.parse(wif);
+    if (secret.masterKey) {
+        await wallet.setMasterKey(secret.masterKey);
+        if (wallet.hasShield.value && !extsk) {
+            createAlert(
+                'warning',
+                'Could not decrypt sk even if password is correct, please contact a developer'
+            );
         }
-    } else {
-        // User rejected the unlock
-        return false;
+        if (wallet.hasShield.value) {
+            await wallet.setExtsk(extsk);
+        }
+        createAlert('success', ALERTS.WALLET_UNLOCKED, 1500);
     }
 }
 
@@ -1073,4 +933,10 @@ defineExpose({
             @max-balance="getMaxBalance"
         />
     </div>
+    <RestoreWallet
+        :show="showRestoreWallet"
+        :reason="restoreWalletReason"
+        @close="showRestoreWallet = false"
+        @import="idontknowwhattonamethis"
+    />
 </template>
