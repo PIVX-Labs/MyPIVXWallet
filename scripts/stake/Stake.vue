@@ -3,13 +3,14 @@ import { COIN, cChainParams } from '../chain_params';
 import { useSettings } from '../composables/use_settings';
 import { useWallet } from '../composables/use_wallet';
 import Activity from '../dashboard/Activity.vue';
+import RestoreWallet from '../dashboard/RestoreWallet.vue';
 import { Database } from '../database';
 import { getEventEmitter } from '../event_bus';
 import { getNetwork } from '../network';
 import StakeBalance from './StakeBalance.vue';
 import StakeInput from './StakeInput.vue';
 import { onMounted, ref, watch } from 'vue';
-
+const wallet = useWallet();
 const {
     balance,
     coldBalance,
@@ -17,13 +18,15 @@ const {
     getAddress,
     price,
     currency,
-} = useWallet();
+} = wallet;
 const { advancedMode, displayDecimals } = useSettings();
 const showUnstake = ref(false);
 const showStake = ref(false);
 const coldStakingAddress = ref('');
 const stakeAmount = ref('');
 const unstakeAmount = ref('');
+const showRestoreWallet = ref(false);
+const restoreWalletReason = ref('');
 async function updateColdStakingAddress() {
     const db = await Database.getInstance();
     coldStakingAddress.value =
@@ -41,20 +44,53 @@ watch(coldStakingAddress, async (coldStakingAddress) => {
     cAccount.coldAddress = coldStakingAddress;
     await db.updateAccount(cAccount, true);
 });
-function stake(value, ownerAddress) {
-    // TODO: restore wallet
+async function stake(value, ownerAddress) {
+    await restoreWallet();
     createAndSendTransaction(getNetwork(), coldStakingAddress.value, value, {
         isDelegation: true,
         returnAddress: ownerAddress,
     });
 }
 
-function unstake(value) {
+async function unstake(value) {
+    await restoreWallet();
     createAndSendTransaction(getNetwork(), getAddress(1), value, {
         useDelegatedInputs: true,
         delegateChange: true,
         changeDelegationAddress: coldStakingAddress.value,
     });
+}
+
+async function restoreWallet(strReason) {
+    if (!wallet.isEncrypted.value) return false;
+    if (wallet.isHardwareWallet.value) return true;
+    showRestoreWallet.value = true;
+    return await new Promise((res) => {
+        watch(
+            showRestoreWallet,
+            () => {
+                res(wallet.isEncrypted.value);
+            },
+            { once: true }
+        );
+    });
+}
+
+async function importWif(wif, extsk) {
+    const secret = await ParsedSecret.parse(wif);
+    if (secret.masterKey) {
+        await wallet.setMasterKey(secret.masterKey);
+        if (wallet.hasShield.value && !extsk) {
+            createAlert(
+                'warning',
+                'Could not decrypt sk even if password is correct, please contact a developer'
+            );
+        }
+        if (wallet.hasShield.value) {
+            await wallet.setExtsk(extsk);
+        }
+        createAlert('success', ALERTS.WALLET_UNLOCKED, 1500);
+    }
 }
 </script>
 
@@ -96,5 +132,11 @@ function unstake(value) {
         @maxBalance="unstakeAmount = (coldBalance / COIN).toString()"
         @close="showUnstake = false"
         @submit="unstake"
+    />
+    <RestoreWallet
+        :show="showRestoreWallet"
+        :reason="restoreWalletReason"
+        @close="showRestoreWallet = false"
+        @import="importWif"
     />
 </template>

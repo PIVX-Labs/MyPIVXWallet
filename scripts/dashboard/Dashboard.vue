@@ -142,7 +142,6 @@ async function encryptWallet(password, currentPassword = '') {
     await updateEncryptionGUI();
 }
 
-// TODO: This needs to be vueeifed a bit
 async function restoreWallet(strReason) {
     if (wallet.isHardwareWallet.value) return true;
     showRestoreWallet.value = true;
@@ -157,8 +156,7 @@ async function restoreWallet(strReason) {
     });
 }
 
-async function idontknowwhattonamethis(wif, extsk) {
-    console.log(wif);
+async function importWif(wif, extsk) {
     const secret = await ParsedSecret.parse(wif);
     if (secret.masterKey) {
         await wallet.setMasterKey(secret.masterKey);
@@ -937,6 +935,6 @@ defineExpose({
         :show="showRestoreWallet"
         :reason="restoreWalletReason"
         @close="showRestoreWallet = false"
-        @import="idontknowwhattonamethis"
+        @import="importWif"
     />
 </template>
