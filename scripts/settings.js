@@ -494,10 +494,7 @@ async function setAnalytics(level, fSilent = false) {
  */
 export async function logOut() {
     const cNet = getNetwork();
-    if (
-        (!cNet.fullSynced && wallet.isLoaded()) ||
-        (!wallet.isSynced && wallet.hasShield())
-    ) {
+    if (wallet.isSyncing) {
         createAlert('warning', `${ALERTS.WALLET_NOT_SYNCED}`, 3000);
         return;
     }

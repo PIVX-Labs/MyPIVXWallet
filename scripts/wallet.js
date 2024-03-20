@@ -172,6 +172,10 @@ export class Wallet {
         return this.#isSynced;
     }
 
+    get isSyncing() {
+        return this.#syncing;
+    }
+
     wipePrivateData() {
         this.#masterKey.wipePrivateData(this.#nAccount);
         if (this.#shield) {
