@@ -1067,7 +1067,7 @@ defineExpose({
             :currency="currency"
             :shieldEnabled="wallet.hasShield.value"
             v-model:amount="transferAmount"
-            v-model:desc="transferDescription"
+            :desc="transferDescription"
             v-model:address="transferAddress"
             @openQrScan="openSendQRScanner()"
             @close="showTransferMenu = false"
