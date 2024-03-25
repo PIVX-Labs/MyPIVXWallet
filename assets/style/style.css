@@ -419,8 +419,7 @@ progress[value]::-moz-progress-bar {
 }
 
 .active {
-    color: #9131ea !important;
-    text-shadow: 0px 0px 21px #904dcf;
+    color: #9221FF !important;
 }
 
 /* Style the tab content */
@@ -1076,6 +1075,41 @@ progress[value]::-moz-progress-bar {
     max-height: 24px;
     margin: 0;
     fill: #fffeff;
+}
+
+.checkIcon svg {
+    display: block;
+    width: auto;
+    height: 11px;
+    max-height: 11px;
+    margin: 0;
+    fill: #fffeff;
+}
+
+.shieldBalanceLogo svg {
+    display: block;
+    width: auto;
+    height: 16px;
+    max-height: 16px;
+    margin: 0;
+    fill: #9221FF;
+    position: relative;
+    top: 3px;
+}
+
+.logo-pivBal {
+  display: inline-block;
+  position: relative;
+  left: -6px;
+}
+
+.logo-pivBal svg {
+  display: block;
+  width: auto;
+  height: 27px;
+  max-height: 27px;
+  margin: 0;
+  fill: #fffeff;
 }
 
 .buttoni-text {
@@ -2264,12 +2298,11 @@ a {
 
 .dcWallet-balances {
   max-width: 310px;
-  background-color: rgba(255, 255, 255, 12%);
-  border-radius: 13px;
+  background-color: #301f4c61;
+  border:2px solid #31135A;
+  border-radius: 10px;
   padding: 3px 0px 0px 0px;
   backdrop-filter: blur(4px);
-  border-bottom-left-radius: 25px;
-  border-bottom-right-radius: 25px;
 }
 
 .dcWallet-balances .lessBot {
@@ -2306,10 +2339,10 @@ a {
 }
 
 .dcWallet-activity {
-  /*border: 2px solid rgba(255, 255, 255, 12%);*/
   max-width: 95svw;
   padding: 14px 16px;
-  background-color: rgba(255, 255, 255, 12%);
+  background-color: #301f4c61;
+  border: 2px solid #31135A;
   border-radius: 10px;
   backdrop-filter: blur(4px);
 }
@@ -2592,12 +2625,23 @@ input {
 }
 
 .stakingTx thead tr th {
-    border-top:0px;
-    border-color:#ffffff5c;
+    padding: 9px 20px 9px;
+    font-family: 'Montserrat Regular';
+    letter-spacing: .5px;
+    color: #E9DEFF;
+    background: rgba(100, 16, 199, .3);
+    border:0px;
+    font-weight: 100;
+}
+
+.stakingTx thead {
+    border: 1px rgba(146, 33, 255, .3) solid;
 }
 
 .stakingTx tbody tr td {
-    border-top: 1px solid #ffffff1f;
+    padding: 9px 20px 9px;
+    border-bottom: 1px solid #ffffff1f;
+    border-top:0px;
 }
 
 .stakingTx tbody tr {
@@ -2605,13 +2649,26 @@ input {
 }
 
 .stakingTx tbody tr:hover {
-    background-color:#ffffff1a;
+    background-color:#00000017;
+}
+
+.txcode code {
+    font-weight:700;
 }
 
 .badge-purple {
-    background-color: #9552cf!important;
-    padding: 4px 7px;
+    background-color: #6410C7 !important;
+    padding: 4px 5px;
     padding-top: 5px;
+    padding-bottom: 5px;
+    border-radius: 4px;
+}
+
+.badge-danger {
+    background-color: #df3b3b !important;
+    padding: 4px 5px;
+    padding-top: 5px;
+    padding-bottom: 5px;
     border-radius: 4px;
 }
 
@@ -2679,17 +2736,17 @@ input {
 }
 
 ::-webkit-scrollbar-track {
-    background: #e7e7e7; 
+    background: #1B102E; 
     border-radius:10px;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #797979;
+    background: #9221FF;
     border-radius:10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: #696969; 
+    background: #8916f5; 
 }
 
 @media (min-width: 768px) {
