@@ -355,7 +355,7 @@ export function sanitizeHTML(text) {
  * @param {string?} strDecFontSize - The optional font size to display decimals in
  * @returns {string} - A HTML string with beautified number handling
  */
-export function beautifyNumber(strNumber, strDecFontSize = '') {
+export function beautifyNumber(strNumber, strDecFontSize = '', showFirstNumber = true) {
     if (typeof strNumber === 'number') strNumber = strNumber.toString();
 
     // Only run this for numbers with decimals
@@ -366,7 +366,7 @@ export function beautifyNumber(strNumber, strDecFontSize = '') {
 
     // Return a HTML that renders the decimal in a lower opacity
     const strFontSize = strDecFontSize ? 'font-size: ' + strDecFontSize : '';
-    return `${arrNumParts[0]}<span style="opacity: 0.55; ${strFontSize}">.${arrNumParts[1]}</span>`;
+    return `${(showFirstNumber ? arrNumParts[0] : '')}<span style="opacity: 0.55; ${strFontSize}">.${arrNumParts[1]}</span>`;
 }
 
 /**
