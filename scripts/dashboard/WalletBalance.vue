@@ -14,7 +14,11 @@ import {
 import { getNewAddress } from '../wallet.js';
 import LoadingBar from '../Loadingbar.vue';
 import { sleep } from '../utils.js';
-import shieldLogo from '../../assets/shield_logo.svg';
+
+import iShieldLock from '../../assets/icons/icon_shield_lock_locked.svg';
+import iShieldLogo from '../../assets/icons/icon_shield_pivx.svg';
+import pLogo from '../../assets/p_logo.svg';
+import logo from '../../assets/pivx.png';
 
 const props = defineProps({
     jdenticonValue: String,
@@ -50,19 +54,6 @@ const {
     displayDecimals,
     shieldEnabled,
 } = toRefs(props);
-
-onMounted(() => {
-    jdenticon.configure();
-    watch(
-        jdenticonValue,
-        () => {
-            jdenticon.update('#identicon', jdenticonValue.value);
-        },
-        {
-            immediate: true,
-        }
-    );
-});
 
 // Transparent sync status
 const transparentSyncing = ref(false);
@@ -105,7 +96,10 @@ const balanceValue = computed(() => {
         (balance.value / COIN) * price.value
     );
 
-    return nValue.toLocaleString('en-gb', cLocale);
+    cLocale.minimumFractionDigits = 0;
+    cLocale.maximumFractionDigits = 0;
+
+    return `${nValue.toLocaleString('en-gb', cLocale)}${beautifyNumber(nValue.toFixed(2), '13px', false)}`;
 });
 
 const ticker = computed(() => cChainParams.current.TICKER);
@@ -161,15 +155,15 @@ function displayLockWalletModal() {
                             isEncrypted &&
                             isImported
                             " onclick="MPW.restoreWallet()">
-                            <i class="fas fa-lock"></i>
+                            <i class="fas fa-lock topCol"></i>
                         </span>
                         <span class="reload" v-if="!isViewOnly &&
                             !needsToEncrypt &&
                             isImported
                             " @click="displayLockWalletModal()">
-                            <i class="fas fa-unlock"></i>
+                            <i class="fas fa-unlock topCol"></i>
                         </span>
-                        <span class="reload noselect" @click="reload()"><i class="fa-solid fa-rotate-right"
+                        <span class="reload noselect" @click="reload()"><i class="fa-solid fa-rotate-right topCol"
                                 :class="{ playAnim: updating }"></i></span>
                     </h3>
                 </div>
@@ -223,41 +217,54 @@ function displayLockWalletModal() {
                 </div>
             </div>
 
-            <canvas id="identicon" class="innerShadow" width="65" height="65"
-                style="width: 65px; height: 65px"></canvas><br />
-            <span class="ptr" @click="renderWalletBreakdown()" data-toggle="modal" data-target="#walletBreakdownModal">
-                <span class="dcWallet-pivxBalance" v-html="balanceStr"> </span>
-                <i class="fa-solid fa-plus" v-if="immatureBalance != 0"
+            <div style="margin-top:22px; padding-left:15px; padding-right:15px; margin-bottom: 35px;">
+                <div style="background-color:#32224e61; border:2px solid #361562; border-top-left-radius:10px; border-top-right-radius:10px;">
+                    <i class="fa-solid fa-plus" v-if="immatureBalance != 0"
                     style="opacity: 0.5; position: relative; left: 2px"></i>
                 <span style="position: relative; left: 4px; font-size: 17px" v-if="immatureBalance != 0"
                     v-html="immatureBalanceStr"></span>
-                <span class="dcWallet-pivxTicker" style="position: relative; left: 4px">&nbsp;{{ ticker }}&nbsp;</span>
-            </span>
-            <br />
-            <div class="dcWallet-usdBalance">
-                <span class="dcWallet-usdValue" v-if="shieldEnabled">
-                    <i class="fas fa-shield fa-xs" style="margin-right: 4px" v-if="shieldEnabled">
-                    </i>{{ shieldBalanceStr }}
-                    <span style="opacity: 0.75" v-if="pendingShieldBalance != 0">
-                        ({{ pendingShieldBalanceStr }} Pending)</span></span>
-            </div>
-            <div class="dcWallet-usdBalance">
-                <span class="dcWallet-usdValue">{{ balanceValue }}</span>
-                <span class="dcWallet-usdValue">&nbsp;{{ currency }}</span>
-            </div>
+                </div>
+                <div style="background-color:#32224e61; border:2px solid #361562; border-bottom:none; border-top:none;">
+                    <div>
+                        <img :src="logo" style="height: 60px; margin-top:14px">
+                    </div>
+                    <span class="ptr" data-toggle="modal" data-target="#walletBreakdownModal" @click="renderWalletBreakdown()">
+                        <span class="logo-pivBal" v-html="pLogo"></span>
+                        <span class="dcWallet-pivxBalance" v-html="balanceStr"> </span>
+                        <span class="dcWallet-pivxTicker" style="position: relative; left: 4px">&nbsp;{{ ticker }}&nbsp;</span>
+                    </span>
 
-            <div class="row lessTop p-0">
-                <div class="col-6 d-flex" style="justify-content: flex-start">
-                    <div class="dcWallet-btn-left" @click="$emit('send')">
-                        {{ translation.send }}
+                    <div class="dcWallet-usdBalance" style="padding-bottom: 12px; padding-top: 3px;">
+                        <span class="dcWallet-usdValue" style="color:#d7d7d7; font-weight: 500;" v-html="balanceValue"></span>
+                        <span class="dcWallet-usdValue" style="opacity: 0.55;">&nbsp;{{ currency }}</span>
                     </div>
                 </div>
-
-                <div class="col-6 d-flex" style="justify-content: flex-end">
-                    <div class="dcWallet-btn-right" @click="guiRenderCurrentReceiveModal()" data-toggle="modal"
-                        data-target="#qrModal">
-                        {{ translation.receive }}
+                <div style="background-color:#32224e61; border:2px solid #361562; border-bottom-left-radius:10px; border-bottom-right-radius:10px;">
+                    <div class="dcWallet-usdBalance">
+                        <span class="dcWallet-usdValue" style="display: flex; justify-content: center; color:#9221FF; font-weight:500; padding-top: 21px; padding-bottom: 11px; font-size:16px;">
+                            <span class="shieldBalanceLogo" v-html="iShieldLogo"></span>&nbsp;{{ shieldBalanceStr }} S-{{ ticker }}
+                            <span style="opacity: 0.75" v-if="pendingShieldBalance != 0">({{ pendingShieldBalanceStr }} Pending)</span>
+                        </span>
                     </div>
+                </div>
+            </div>
+            
+            
+            <div class="row lessTop p-0" style="margin-left:15px; margin-right:15px; margin-bottom: 19px; margin-top: -16px;">
+                <div class="col-6 d-flex p-0" style="justify-content: flex-start">
+                    <button class="pivx-button-small" style="height: 42px; width: 97px;" @click="$emit('send')">
+                        <span class="buttoni-text">
+                            {{ translation.send }}
+                        </span>
+                    </button>
+                </div>
+
+                <div class="col-6 d-flex p-0" style="justify-content: flex-end">
+                    <button class="pivx-button-small" style="height: 42px; width: 97px;" @click="guiRenderCurrentReceiveModal()" data-toggle="modal" data-target="#qrModal">
+                        <span class="buttoni-text">
+                            {{ translation.receive }}
+                        </span>
+                    </button>
                 </div>
             </div>
         </div>
@@ -296,7 +303,7 @@ function displayLockWalletModal() {
                         border-radius: 9px;
                     ">
                     <span class="dcWallet-svgIconPurple" style="margin-left: 1px; top: 14px; left: 7px"
-                        v-html="shieldLogo"></span>
+                        v-html="iShieldLock"></span>
                 </div>
                 <div style="width: -webkit-fill-available">
                     {{ txCreationStr }}
