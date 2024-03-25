@@ -17,6 +17,7 @@ import { sleep } from '../utils.js';
 
 import iShieldLock from '../../assets/icons/icon_shield_lock_locked.svg';
 import iShieldLogo from '../../assets/icons/icon_shield_pivx.svg';
+import iHourglass from '../../assets/icons/icon-hourglass.svg';
 import pLogo from '../../assets/p_logo.svg';
 import logo from '../../assets/pivx.png';
 
@@ -88,7 +89,7 @@ const pendingShieldBalanceStr = computed(() => {
 const immatureBalanceStr = computed(() => {
     const nCoins = immatureBalance.value / COIN;
     const strBal = nCoins.toFixed(displayDecimals.value);
-    return beautifyNumber(strBal);
+    return strBal + " " + cChainParams.current.TICKER;
 });
 
 const balanceValue = computed(() => {
@@ -219,10 +220,10 @@ function displayLockWalletModal() {
 
             <div style="margin-top:22px; padding-left:15px; padding-right:15px; margin-bottom: 35px;">
                 <div style="background-color:#32224e61; border:2px solid #361562; border-top-left-radius:10px; border-top-right-radius:10px;">
-                    <i class="fa-solid fa-plus" v-if="immatureBalance != 0"
-                    style="opacity: 0.5; position: relative; left: 2px"></i>
-                <span style="position: relative; left: 4px; font-size: 17px" v-if="immatureBalance != 0"
-                    v-html="immatureBalanceStr"></span>
+                    <div class="immatureBalanceSpan" v-if="immatureBalance != 0">
+                        <span v-html="iHourglass" class="hourglassImmatureIcon"></span>
+                        <span style="position: relative; left: 4px; font-size: 14px;" v-html="immatureBalanceStr"></span>
+                    </div>
                 </div>
                 <div style="background-color:#32224e61; border:2px solid #361562; border-bottom:none; border-top:none;">
                     <div>

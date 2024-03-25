@@ -1097,6 +1097,26 @@ progress[value]::-moz-progress-bar {
     top: 3px;
 }
 
+.hourglassImmatureIcon svg {
+    display: block;
+    width: auto;
+    height: 16px;
+    max-height: 16px;
+    margin: 0;
+    fill: #7c659e;
+}
+
+.immatureBalanceSpan {
+    opacity: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color:#7c659e;
+    font-weight:400;
+    padding-top:13px;
+    padding-bottom:13px;
+}
+
 .logo-pivBal {
   display: inline-block;
   position: relative;
