@@ -53,10 +53,7 @@ function submit() {
             >
                 <h3 class="noselect balance-title">
                     <span class="reload noselect" @click="refreshChainData()"
-                        ><i
-                            id="balanceReloadStaking"
-                            class="fa-solid fa-rotate-right cur-pointer"
-                        ></i
+                        ><i class="fa-solid fa-rotate-right cur-pointer"></i
                     ></span>
                 </h3>
             </div>
@@ -82,9 +79,7 @@ function submit() {
             data-testid="coldBalance"
             v-html="coldBalanceStr"
         ></span>
-        <span id="guiBalanceStakingTicker" class="dcWallet-pivxTicker"
-            >&nbsp;PIV&nbsp;</span
-        ><br />
+        <span class="dcWallet-pivxTicker">&nbsp;PIV&nbsp;</span><br />
         <div class="dcWallet-usdBalance">
             <span class="dcWallet-usdValue" data-testid="coldBalanceValue">
                 {{ coldBalanceValue }}
@@ -123,7 +118,6 @@ function submit() {
             <template #header>
                 <h3
                     class="modal-title"
-                    id="confirmModalTitle"
                     style="text-align: center; width: 100%; color: #8e21ff"
                 >
                     Set your Cold Staking address
@@ -139,7 +133,6 @@ function submit() {
                 </p>
                 <input
                     type="text"
-                    id="newColdAddress"
                     :placeholder="`${
                         translation.popupExample
                     } ${coldStakingAddress.substring(0, 6)}...`"

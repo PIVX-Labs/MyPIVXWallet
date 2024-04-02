@@ -61,10 +61,7 @@ function syncAmount() {
     >
         <div class="transferBody">
             <label
-                ><span data-i18n="amount">Amount</span> (<span
-                    id="availToDelegate"
-                    >-</span
-                >)</label
+                ><span data-i18n="amount">Amount</span> (<span>-</span>)</label
             ><br />
 
             <div class="row">
@@ -75,7 +72,6 @@ function syncAmount() {
                             style="padding-right: 0px"
                             type="number"
                             data-testid="amount"
-                            id="delegateAmount"
                             placeholder="0.00"
                             autocomplete="nope"
                             onkeydown="javascript: return event.keyCode == 69 ? false : true"
@@ -105,11 +101,7 @@ function syncAmount() {
                                     MAX
                                 </div>
                             </span>
-                            <span
-                                id="stakeAmountCoinsTicker"
-                                class="input-group-text"
-                                >PIV</span
-                            >
+                            <span class="input-group-text">PIV</span>
                         </div>
                     </div>
                 </div>
@@ -127,17 +119,13 @@ function syncAmount() {
                             @input="syncAmount"
                         />
                         <div class="input-group-append">
-                            <span
-                                id="stakeAmountValueCurrency"
-                                class="input-group-text pl-0"
-                                >USD</span
-                            >
+                            <span class="input-group-text pl-0">USD</span>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div id="ownerAddressContainer" v-if="showOwnerAddress">
+            <div v-if="showOwnerAddress">
                 <label data-i18n="ownerAddress">(Optional) Owner Address</label
                 ><br />
 
