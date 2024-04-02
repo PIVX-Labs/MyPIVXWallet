@@ -17,7 +17,6 @@ import {
     createAlert,
     confirmPopup,
     sanitizeHTML,
-    isColdAddress,
 } from './misc.js';
 import { cChainParams, COIN } from './chain_params.js';
 import { sleep } from './utils.js';
@@ -49,39 +48,7 @@ export async function start() {
     doms = {
         domNavbarToggler: document.getElementById('navbarToggler'),
         domDashboard: document.getElementById('dashboard'),
-        domGuiStakingValue: document.getElementById('guiStakingValue'),
-        domGuiStakingValueCurrency: document.getElementById(
-            'guiStakingValueCurrency'
-        ),
-        domBalanceReloadStaking: document.getElementById(
-            'balanceReloadStaking'
-        ),
-        domGuiBalanceStaking: document.getElementById('guiBalanceStaking'),
-        domGuiBalanceStakingTicker: document.getElementById(
-            'guiBalanceStakingTicker'
-        ),
-        domStakeAmount: document.getElementById('delegateAmount'),
-        domStakeOwnerAddressContainer: document.getElementById(
-            'ownerAddressContainer'
-        ),
-        domStakeOwnerAddress: document.getElementById('delegateOwnerAddress'),
-        domUnstakeAmount: document.getElementById('undelegateAmount'),
         domStakeTab: document.getElementById('stakeTab'),
-        domStakeAmountCoinsTicker: document.getElementById(
-            'stakeAmountCoinsTicker'
-        ),
-        domStakeAmountValueCurrency: document.getElementById(
-            'stakeAmountValueCurrency'
-        ),
-        domStakeAmountValue: document.getElementById('stakeAmountValue'),
-        domUnstakeAmountCoinsTicker: document.getElementById(
-            'unstakeAmountCoinsTicker'
-        ),
-        domUnstakeAmountValueCurrency: document.getElementById(
-            'unstakeAmountValueCurrency'
-        ),
-
-        domUnstakeAmountValue: document.getElementById('unstakeAmountValue'),
         domModalQR: document.getElementById('ModalQR'),
         domModalQrLabel: document.getElementById('ModalQRLabel'),
         domModalQrReceiveTypeBtn: document.getElementById(
@@ -150,18 +117,7 @@ export async function start() {
         ),
         domEncryptPasswordFirst: document.getElementById('newPassword'),
         domEncryptPasswordSecond: document.getElementById('newPasswordRetype'),
-        domAvailToDelegate: document.getElementById('availToDelegate'),
-        domAvailToUndelegate: document.getElementById('availToUndelegate'),
         domAnalyticsDescriptor: document.getElementById('analyticsDescriptor'),
-        domMnemonicModalContent: document.getElementById(
-            'ModalMnemonicContent'
-        ),
-        domMnemonicModalButton: document.getElementById(
-            'modalMnemonicConfirmButton'
-        ),
-        domMnemonicModalPassphrase: document.getElementById(
-            'ModalMnemonicPassphrase'
-        ),
         domRedeemTitle: document.getElementById('redeemCodeModalTitle'),
         domRedeemCodeUse: document.getElementById('redeemCodeUse'),
         domRedeemCodeCreate: document.getElementById('redeemCodeCreate'),
@@ -326,22 +282,8 @@ function subscribeToNetworkEvents() {
             '<i class="fa-solid fa-' + (value ? 'wifi' : 'ban') + '"></i>';
     });
 
-    getEventEmitter().on('sync-status', (value) => {
-        switch (value) {
-            case 'start':
-                doms.domBalanceReloadStaking.classList.add('playAnim');
-                break;
-            case 'stop':
-                doms.domBalanceReloadStaking.classList.remove('playAnim');
-                break;
-        }
-    });
-
     getEventEmitter().on('new-block', (block, oldBlock) => {
         console.log(`New block detected! ${oldBlock} --> ${block}`);
-        // Fetch latest Activity
-        //stakingDashboard.update();
-
         // If it's open: update the Governance Dashboard
         if (doms.domGovTab.classList.contains('active')) {
             updateGovernanceTab();
@@ -401,12 +343,6 @@ export function openTab(evt, tabName) {
         updateGovernanceTab();
     } else if (tabName === 'Masternode') {
         updateMasternodeTab();
-    } else if (
-        tabName === 'StakingTab' &&
-        false //stakingDashboard.getTxCount() === 0
-    ) {
-        // Refresh the TX list
-        //stakingDashboard.update();
     }
 }
 
@@ -440,8 +376,6 @@ export function optimiseCurrencyLocale(nAmount) {
     // Return display-optimised Value and Locale pair.
     return { nValue, cLocale };
 }
-
-//getEventEmitter().on('balance-update', () => getStakingBalance(true));
 
 /**
  * Open the Explorer in a new tab for the current wallet, or a specific address
