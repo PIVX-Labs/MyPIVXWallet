@@ -13,11 +13,7 @@ import {
     fAdvancedMode,
 } from './settings.js';
 import { createAndSendTransaction } from './legacy.js';
-import {
-    createAlert,
-    confirmPopup,
-    sanitizeHTML,
-} from './misc.js';
+import { createAlert, confirmPopup, sanitizeHTML } from './misc.js';
 import { cChainParams, COIN } from './chain_params.js';
 import { sleep } from './utils.js';
 import { registerWorker } from './native.js';
