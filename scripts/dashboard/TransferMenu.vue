@@ -24,6 +24,7 @@ const props = defineProps({
     price: Number,
     currency: String,
     amount: String,
+    desc: String,
     address: String,
     shieldEnabled: Boolean,
 });
@@ -186,6 +187,24 @@ async function selectContact() {
                             <span class="input-group-text pl-0">{{
                                 currency
                             }}</span>
+                        </div>
+                    </div>
+                    <div v-if="desc && desc.length > 0">
+                        <label
+                            ><span>{{
+                                translation.paymentRequestMessage
+                            }}</span></label
+                        ><br />
+                        <div class="input-group">
+                            <input
+                                class="btn-input"
+                                style="font-family: monospace"
+                                type="text"
+                                disabled
+                                placeholder="Payment Request Description"
+                                autocomplete="nope"
+                                :value="desc"
+                            />
                         </div>
                     </div>
                 </div>
