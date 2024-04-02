@@ -69,6 +69,7 @@ function submit() {
                     <i
                         class="fa-solid fa-gear"
                         style="width: 20px"
+                        data-testid="setColdStakeButton"
                         @click="showColdStakingAddressModal = true"
                     ></i>
                 </div>
@@ -76,12 +77,16 @@ function submit() {
         </div>
 
         <span data-i18n="staking">Staking</span><br />
-        <span class="dcWallet-pivxBalance" v-html="coldBalanceStr"></span>
+        <span
+            class="dcWallet-pivxBalance"
+            data-testid="coldBalance"
+            v-html="coldBalanceStr"
+        ></span>
         <span id="guiBalanceStakingTicker" class="dcWallet-pivxTicker"
             >&nbsp;PIV&nbsp;</span
         ><br />
         <div class="dcWallet-usdBalance">
-            <span class="dcWallet-usdValue" data-testid="coldBalance">
+            <span class="dcWallet-usdValue" data-testid="coldBalanceValue">
                 {{ coldBalanceValue }}
             </span>
             <span class="dcWallet-usdValue" data-testid="coldBalanceCurrency"
@@ -94,6 +99,7 @@ function submit() {
                 <div
                     data-i18n="stake"
                     class="dcWallet-btn-left"
+                    data-testid="showStakeButton"
                     @click="emit('showStake')"
                 >
                     Stake
@@ -104,6 +110,7 @@ function submit() {
                 <div
                     data-i18n="stakeUnstake"
                     class="dcWallet-btn-right"
+                    data-testid="showUnstakeButton"
                     @click="emit('showUnstake')"
                 >
                     Unstake
@@ -136,6 +143,7 @@ function submit() {
                     :placeholder="`${
                         translation.popupExample
                     } ${coldStakingAddress.substring(0, 6)}...`"
+                    data-testid="csAddrInput"
                     v-model="csAddrInternal"
                     style="text-align: center"
                 />
@@ -145,6 +153,7 @@ function submit() {
                     type="button"
                     class="pivx-button-big"
                     style="float: right"
+                    data-testid="csAddrSubmit"
                     @click="submit()"
                 >
                     {{ translation.popupConfirm }}
@@ -153,6 +162,7 @@ function submit() {
                     type="button"
                     class="pivx-button-big"
                     style="float: right; opacity: 0.7"
+                    data-testid="csAddrCancel"
                     @click="showColdStakingAddressModal = false"
                 >
                     {{ translation.popupCancel }}
