@@ -16,8 +16,9 @@ const props = defineProps({
     coldBalance: Number,
     price: Number,
     currency: String,
+    displayDecimals: Number,
 });
-const { coldBalance, price, currency } = toRefs(props);
+const { coldBalance, price, currency, displayDecimals } = toRefs(props);
 const coldBalanceStr = computed(() => {
     const nCoins = coldBalance.value / COIN;
     const strBal = nCoins.toFixed(displayDecimals.value);
@@ -80,8 +81,12 @@ function submit() {
             >&nbsp;PIV&nbsp;</span
         ><br />
         <div class="dcWallet-usdBalance">
-            <span class="dcWallet-usdValue"> {{ coldBalanceValue }} </span>
-            <span class="dcWallet-usdValue">&nbsp;{{ currency }}&nbsp;</span>
+            <span class="dcWallet-usdValue" data-testid="coldBalance">
+                {{ coldBalanceValue }}
+            </span>
+            <span class="dcWallet-usdValue" data-testid="coldBalanceCurrency"
+                >&nbsp;{{ currency }}&nbsp;</span
+            >
         </div>
 
         <div class="row lessTop p-0">

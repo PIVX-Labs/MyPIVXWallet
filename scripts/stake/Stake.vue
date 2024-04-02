@@ -103,6 +103,7 @@ async function importWif(wif, extsk) {
                     :coldBalance="coldBalance"
                     :price="price"
                     :currency="currency"
+                    :displayDecimals="displayDecimals"
                     @showUnstake="showUnstake = true"
                     @showStake="showStake = true"
                 />
