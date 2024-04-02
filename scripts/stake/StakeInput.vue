@@ -74,6 +74,7 @@ function syncAmount() {
                             class="btn-group-input"
                             style="padding-right: 0px"
                             type="number"
+                            data-testid="amount"
                             id="delegateAmount"
                             placeholder="0.00"
                             autocomplete="nope"
@@ -118,6 +119,7 @@ function syncAmount() {
                         <input
                             class="btn-group-input"
                             type="text"
+                            data-testid="amountCurrency"
                             placeholder="0.00"
                             autocomplete="nope"
                             onkeydown="javascript: return event.keyCode == 69 ? false : true"
@@ -164,6 +166,7 @@ function syncAmount() {
                 <button
                     class="pivx-button-medium w-100"
                     style="margin: 0px"
+                    data-testid="sendButton"
                     @click="submit()"
                 >
                     <span class="buttoni-icon"
