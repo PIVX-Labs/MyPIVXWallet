@@ -2,7 +2,7 @@
 // To be removed when vue port is done
 
 import { ALERTS, translation, tr } from './i18n.js';
-import { doms, restoreWallet, guiSetColdStakingAddress } from './global.js';
+import { doms, restoreWallet } from './global.js';
 import { wallet, getNewAddress } from './wallet.js';
 import { cChainParams, COIN, COIN_DECIMALS } from './chain_params.js';
 import {
