@@ -1089,7 +1089,7 @@ export class Wallet {
         }
 
         if (transaction.hasShieldData) {
-            wallet.#shield?.finalizeTransaction(transaction.txid);
+            await wallet.#shield?.finalizeTransaction(transaction.txid);
         }
 
         if (!skipDatabase) {

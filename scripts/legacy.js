@@ -48,7 +48,7 @@ export async function createAndSendTransaction({
     }
     const res = await getNetwork().sendTransaction(tx.serialize());
     if (res) {
-        wallet.addTransaction(tx);
+        await wallet.addTransaction(tx);
         return { ok: true, txid: tx.txid };
     }
     wallet.discardTransaction(tx);
