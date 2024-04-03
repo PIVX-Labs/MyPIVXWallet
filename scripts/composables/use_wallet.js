@@ -85,6 +85,8 @@ export function useWallet() {
         const res = await network.sendTransaction(tx.serialize());
         if (res) {
             wallet.addTransaction(tx);
+        } else {
+            wallet.discardTransaction(tx);
         }
     };
 

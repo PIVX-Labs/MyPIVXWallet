@@ -51,6 +51,7 @@ export async function createAndSendTransaction({
         wallet.addTransaction(tx);
         return { ok: true, txid: tx.txid };
     }
+    wallet.discardTransaction(tx);
     return { ok: false };
 }
 

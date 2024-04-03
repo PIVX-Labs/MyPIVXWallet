@@ -1099,6 +1099,14 @@ export class Wallet {
     }
 
     /**
+     * Discard a transaction. Must be called only if network doesn't accept it.
+     * @param {import('./transaction.js').Transaction} transaction
+     */
+    discardTransaction(transaction) {
+        wallet.#shield?.discardTransaction(transaction.txid);
+    }
+
+    /**
      * @returns {UTXO[]} Any UTXO that has value of
      * exactly `cChainParams.current.collateralInSats`
      */
