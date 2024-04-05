@@ -763,6 +763,11 @@ export class Wallet {
 
         // At this point it should be safe to assume that shield is ready to use
         await this.saveShieldOnDisk();
+        const networkSaplingRoot = (
+            await getNetwork().getBlock(this.#shield.getLastSyncedBlock())
+        ).finalsaplingroot;
+        if (networkSaplingRoot)
+            await this.#checkShieldSaplingRoot(networkSaplingRoot);
         this.#isSynced = true;
     }
 
@@ -815,6 +820,7 @@ export class Wallet {
         this.#isFetchingLatestBlocks = true;
 
         const cNet = getNetwork();
+        let block;
         // Don't ask for the exact last block that arrived,
         // since it takes around 1 minute for blockbook to make it API available
         for (
@@ -823,7 +829,7 @@ export class Wallet {
             blockHeight++
         ) {
             try {
-                const block = await cNet.getBlock(blockHeight);
+                block = await cNet.getBlock(blockHeight);
                 if (block.txs) {
                     await this.#shield.handleBlock(block);
                 } else {
@@ -835,8 +841,29 @@ export class Wallet {
             }
         }
         this.#isFetchingLatestBlocks = false;
+        if (block?.finalSaplingRoot)
+            if (!(await this.#checkShieldSaplingRoot(block.finalsaplingroot)))
+                return;
         await this.saveShieldOnDisk();
     }
+
+    async #checkShieldSaplingRoot(networkSaplingRoot) {
+        const saplingRoot = bytesToHex(
+            hexToBytes(await this.#shield.getSaplingRoot()).reverse()
+        );
+        // If explorer sapling root is different from ours, there must be a sync error
+        if (saplingRoot !== networkSaplingRoot) {
+            createAlert('warning', translation.badSaplingRoot, 5000);
+            this.#mempool = new Mempool();
+            // TODO: take the wallet creation height in input from users
+            this.#shield.reloadFromCheckpoint(4200000);
+            await this.#transparentSync();
+            await this.#syncShield();
+            return false;
+        }
+        return true;
+    }
+
     /**
      * Save shield data on database
      */
