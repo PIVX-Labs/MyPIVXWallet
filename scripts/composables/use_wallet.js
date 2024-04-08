@@ -55,7 +55,7 @@ export function useWallet() {
     const encrypt = async (passwd) => {
         const res = await wallet.encrypt(passwd);
         isEncrypted.value = await hasEncryptedWallet();
-	return res;
+        return res;
     };
     const balance = ref(0);
     const shieldBalance = ref(0);

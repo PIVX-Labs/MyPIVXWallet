@@ -483,7 +483,7 @@ export class Wallet {
             const account = await (await Database.getInstance()).getAccount();
             return account.encWif;
         }
-	return this.#getKeyToEncrypt();
+        return this.#getKeyToEncrypt();
     }
 
     /**
