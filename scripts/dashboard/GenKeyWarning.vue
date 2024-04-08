@@ -81,10 +81,10 @@ function submit() {
     </div>
 
     <Teleport to="body">
-        <Modal :show="showModal" modalClass="exportKeysModalColor">
+        <Modal :show="showModal" modalClass="exportKeysModalColor modalMain">
             <template #header>
-                <h5 class="modal-title">{{ translation.encryptWallet }}</h5>
-                <button
+                <h5 class="modal-title" style="text-align: center; width: 100%;">{{ translation.encryptWallet }}</h5>
+                <!--<button
                     type="button"
                     class="close"
                     aria-label="Close"
@@ -92,47 +92,41 @@ function submit() {
                     data-testid="closeBtn"
                 >
                     <i class="fa-solid fa-xmark closeCross"></i>
-                </button>
+                </button>-->
             </template>
             <template #body>
-                <div class="row m-0">
-                    <input
-                        class="center-text textboxTransparency"
-                        data-i18n="encryptPasswordCurrent"
-                        v-model="currentPassword"
-                        style="width: 100%; font-family: monospace"
-                        type="password"
-                        :placeholder="translation.encryptPasswordCurrent"
-                        v-show="isEncrypt"
-                        data-testid="currentPasswordModal"
-                    />
-                    <div class="col-12 col-md-6 p-0 pr-0 pr-md-1">
-                        <input
-                            class="center-text textboxTransparency"
-                            v-model="password"
-                            data-i18n="encryptPasswordFirst"
-                            style="width: 100%; font-family: monospace"
-                            type="password"
-                            :placeholder="translation.encryptPasswordFirst"
-                            data-testid="newPasswordModal"
-                        />
-                    </div>
-                    <div class="col-12 col-md-6 p-0 pl-0 pl-md-1">
-                        <input
-                            class="center-text textboxTransparency"
-                            v-model="passwordConfirm"
-                            data-i18n="encryptPasswordSecond"
-                            style="width: 100%; font-family: monospace"
-                            type="password"
-                            :placeholder="translation.encryptPasswordSecond"
-                            data-testid="confirmPasswordModal"
-                        />
-                    </div>
-                </div>
+                <input
+                    class="center-text textboxTransparency passwordTxtbox"
+                    data-i18n="encryptPasswordCurrent"
+                    v-model="currentPassword"
+                    style="width: 100%; font-family: monospace"
+                    type="password"
+                    :placeholder="translation.encryptPasswordCurrent"
+                    v-show="isEncrypt"
+                    data-testid="currentPasswordModal"
+                />
+                <input
+                    class="center-text textboxTransparency passwordTxtbox"
+                    v-model="password"
+                    data-i18n="encryptPasswordFirst"
+                    style="width: 100%; font-family: monospace"
+                    type="password"
+                    :placeholder="translation.encryptPasswordFirst"
+                    data-testid="newPasswordModal"
+                />
+                <input
+                    class="center-text textboxTransparency passwordTxtbox"
+                    v-model="passwordConfirm"
+                    data-i18n="encryptPasswordSecond"
+                    style="width: 100%; font-family: monospace; margin-bottom:0px;"
+                    type="password"
+                    :placeholder="translation.encryptPasswordSecond"
+                    data-testid="confirmPasswordModal"
+                />
             </template>
             <template #footer>
                 <button
-                    class="pivx-button-small"
+                    class="pivx-button-big"
                     @click="submit()"
                     data-testid="submitBtn"
                 >

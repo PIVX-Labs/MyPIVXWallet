@@ -248,13 +248,19 @@ async function restoreWallet(strReason) {
     let strHTML = '';
 
     // If there's a reason given; display it as a sub-text
-    strHTML += `<p style="opacity: 0.75">${strReason}</p>`;
+    if(strReason !== "") {
+        strHTML += `<p style="opacity: 0.75">${strReason}</p>`;
+    }
 
     // Prompt the user
     if (
         await confirmPopup({
             title: translation.walletUnlock,
-            html: `${strHTML}<input type="password" id="restoreWalletPassword" placeholder="${translation.walletPassword}" style="text-align: center;">`,
+            html: `<div class="modalContents">
+                <span class="topText" style="margin-bottom: 25px;">Enter your password to access your funds.</span>
+                ${strHTML}<input type="password" id="restoreWalletPassword" class="passwordTxtbox" placeholder="${translation.walletPassword}" style="text-align: center;">
+                </div>
+            `,
         })
     ) {
         // Fetch the password from the prompt, and immediately destroy the prompt input
@@ -299,9 +305,9 @@ async function displayLockWalletModal() {
     const title = isEncrypted
         ? translation.popupWalletLock
         : translation.popupWalletWipe;
-    const html = isEncrypted
+    const html = '<div class="modalContents"><span class="topText">' + (isEncrypted
         ? translation.popupWalletLockNote
-        : translation.popupWalletWipeNote;
+        : translation.popupWalletWipeNote) + '</span></div>';
     if (
         await confirmPopup({
             title,

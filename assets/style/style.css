@@ -3596,3 +3596,48 @@ select.form-control option {
     justify-content: center;
     margin-right: 150px
 }
+
+.modalMain {
+    background-color: #25193ded;
+}
+
+.modal-dialog {
+    padding-top: 100px;
+    width: 380px;
+}
+
+.modal-content {
+    border-radius: 10px;
+    border: 1px solid #42127F;
+}
+
+.modal-title {
+    color: #e9defb !important;
+    font-size: 25px;
+    margin-top: 22px;
+}
+
+.modalContents {
+    margin-top: -14px;
+}
+
+.modalContents .topText {
+    padding: 0px 39px;
+    color: #AF9CC6;
+    font-size: 16px;
+    font-weight: 500;
+    display: block;
+}
+
+.textGradientKeys {
+    background: -webkit-linear-gradient(left, #9B21FB , #FC1DA0);
+    background: -o-linear-gradient(right, #9B21FB, #FC1DA0);
+    background: -moz-linear-gradient(right, #9B21FB, #FC1DA0);
+    background: linear-gradient(to right, #9B21FB , #FC1DA0); 
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+    font-weight: 600;
+}

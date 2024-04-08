@@ -504,13 +504,15 @@ export async function logOut() {
     const fContinue = await confirmPopup({
         title: `${ALERTS.CONFIRM_POPUP_DELETE_ACCOUNT_TITLE}`,
         html: `
-        <b>${tr(translation.netSwitchUnsavedWarningSubtitle, [
-            { network: cChainParams.current.name },
-        ])}</b>
-        <br>
-        ${ALERTS.CONFIRM_POPUP_DELETE_ACCOUNT}
-        <br>
-        <br>
+        <div class="modalContents">
+            <span class="topText">
+                <b>${tr(translation.netSwitchUnsavedWarningSubtitle, [
+                    { network: cChainParams.current.name },
+                ])}</b><br><br>
+
+                <span class="textGradientKeys">${ALERTS.CONFIRM_POPUP_DELETE_ACCOUNT}</span>
+            </span>
+        </div>
     `,
     });
     if (!fContinue) return;

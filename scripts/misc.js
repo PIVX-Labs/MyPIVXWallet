@@ -131,9 +131,9 @@ export async function confirmPopup({
 
     // Show or hide the confirm button, and replace 'Cancel' with 'Close'
     doms.domConfirmModalConfirmButton.style.display = hideConfirm ? 'none' : '';
-    doms.domConfirmModalCancelButton.innerText = hideConfirm
+    doms.domConfirmModalCancelButton.innerHTML = '<span>' + (hideConfirm
         ? translation.popupClose
-        : translation.popupCancel;
+        : translation.popupCancel) + '</span>';
 
     // Set content display
     doms.domConfirmModalContent.innerHTML = html;
