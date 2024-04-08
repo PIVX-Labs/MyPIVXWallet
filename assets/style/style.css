@@ -1291,14 +1291,21 @@ a {
 
 /*PIVX DASHBOARD*/
 .dashboard-item {
-    background: rgba(43, 9, 80, .75);
-    border-radius: 6px;
+    background: rgba(43, 9, 80, .38);
+    border-radius: 12px;
     padding: 23px;
     text-align: center;
     float: left;
     margin-bottom: 15px;
     padding-top: 45px;
     padding-bottom: 35px;
+    border: 2px solid #3c1170;
+    transition: all .125s ease-in-out;
+}
+
+
+.dashboard-item:hover {
+    border: 2px solid #9221ff;
 }
 
 .send-eligibility-section .container .column-padded-around .coinstat-icon,
