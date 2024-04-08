@@ -2914,24 +2914,24 @@ select.form-control option {
 
 .flipdown.flipdown__theme-dark .rotor-group:nth-child(n+2):nth-child(-n+3):before,
 .flipdown.flipdown__theme-dark .rotor-group:nth-child(n+2):nth-child(-n+3):after {
-    background-color: #31125f;
+    background-color: #6410C7;
 }
 
 .flipdown.flipdown__theme-dark .rotor,
 .flipdown.flipdown__theme-dark .rotor-top,
 .flipdown.flipdown__theme-dark .rotor-leaf-front {
     color: #FFFFFF;
-    background-color: #31125f;
+    background-color: #431180;
 }
 
 .flipdown.flipdown__theme-dark .rotor-bottom,
 .flipdown.flipdown__theme-dark .rotor-leaf-rear {
     color: #EFEFEF;
-    background-color: #461989;
+    background-color: #6410c7;
 }
 
 .flipdown.flipdown__theme-dark .rotor:after {
-    border-top: solid 1px #31125f;
+    border-top: solid 2px #1d142e;
 }
 
 .flipdown {
