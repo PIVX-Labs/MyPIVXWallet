@@ -326,11 +326,11 @@ export class Wallet {
     /**
      * Encrypt the keyToBackup with a given password
      * @param {string} strPassword
-     * @returns {Promise<boolean}
+     * @returns {Promise<boolean>}
      */
     async encrypt(strPassword) {
         // Encrypt the wallet WIF with AES-GCM and a user-chosen password - suitable for browser storage
-        let strEncWIF = await encrypt(await this.getKeyToBackup(), strPassword);
+        let strEncWIF = await encrypt(this.#getKeyToEncrypt(), strPassword);
         let strEncExtsk = '';
         let shieldData = '';
         if (this.#shield) {
@@ -475,11 +475,21 @@ export class Wallet {
         return this.#masterKey?.getKeyToExport(this.#nAccount);
     }
 
+    /**
+     * @returns key to backup. May be encrypted
+     */
     async getKeyToBackup() {
         if (await hasEncryptedWallet()) {
             const account = await (await Database.getInstance()).getAccount();
             return account.encWif;
         }
+	return this.#getKeyToEncrypt();
+    }
+
+    /**
+     * @returns key to encrypt
+     */
+    #getKeyToEncrypt() {
         return JSON.stringify({
             mk: this.getMasterKey()?.keyToBackup,
             shield: this.#shield?.extsk,
