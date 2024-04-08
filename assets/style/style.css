@@ -961,6 +961,36 @@ progress[value]::-moz-progress-bar {
   opacity: 1;
 }
 
+.pivx-button-outline {
+    font: 15px Montserrat, sans-serif !important;
+    background-image: linear-gradient(183deg, #9131EA, #731EEA);
+    padding: 3px;
+    display: flex;
+    border-radius:100px;
+    -webkit-box-shadow: 3px 3px 25px 2px rgb(26 14 42 / 50%);
+    -moz-box-shadow: 3px 3px 25px 2px rgba(26, 14, 42, .5);
+    box-shadow: 3px 3px 25px 2px rgb(26 14 42 / 50%);
+    -webkit-transition: all .2s ease-in-out;
+    -moz-transition: all .2s ease-in-out;
+    -o-transition: all .2s ease-in-out;
+    transition: all .2s ease-in-out;
+    text-transform: uppercase;
+    cursor:pointer;
+}
+
+.pivx-button-outline span {
+    background: #37195F;
+    border-radius:100px;
+    color: #fffeff;
+    padding: 14px 20px;
+    transition: all .125s ease-in-out;
+}
+
+.pivx-button-outline span:hover {
+    background-color:#2f1452;
+}
+
+
 .button-padd {
     display: inline-block;
     height: auto;
