@@ -345,10 +345,8 @@ export async function start() {
 
     // Update the Encryption UI (If the user has a wallet, then it changes to "Change Password" rather than "Encrypt Wallet")
     getEventEmitter().on('wallet-import', async () => {
-        await updateEncryptionGUI();
         updateLogOutButton();
     });
-    await updateEncryptionGUI();
     fIsLoaded = true;
 
     // If we haven't already (due to having no wallet, etc), display the Dashboard
@@ -921,21 +919,6 @@ export function updateLogOutButton() {
     doms.domLogOutContainer.style.display = wallet.isLoaded()
         ? 'block'
         : 'none';
-}
-
-/** Update the "Encrypt Wallet" / "Change Password" dialog to match the current wallet state */
-export async function updateEncryptionGUI(fEncrypted = null) {
-    // If no param is provided, check if a wallet exists in the database
-    if (fEncrypted === null) {
-        fEncrypted = await hasEncryptedWallet();
-    }
-    // If the wallet is encrypted, we display a "Current Password" input in the Encryption dialog, otherwise, only accept New Passwords
-    doms.domEncryptPasswordCurrent.style.display = fEncrypted ? '' : 'none';
-    // And we adjust the displays to accomodate the mode as well
-    document.getElementById('changePasswordBtn').innerText = fEncrypted
-        ? translation.changePassword
-        : translation.encryptWallet;
-    doms.domChangePasswordContainer.style.display = fEncrypted ? '' : 'none';
 }
 
 /**

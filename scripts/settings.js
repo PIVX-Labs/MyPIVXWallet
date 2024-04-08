@@ -2,7 +2,6 @@ import {
     doms,
     getStakingBalance,
     refreshChainData,
-    updateEncryptionGUI,
     updateLogOutButton,
     updateGovernanceTab,
     stakingDashboard,
@@ -516,7 +515,6 @@ export async function logOut() {
 
     getEventEmitter().emit('toggle-network');
     updateLogOutButton();
-    await updateEncryptionGUI();
     createAlert('success', translation.accountDeleted, 3000);
 }
 

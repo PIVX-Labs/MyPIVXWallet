@@ -31,7 +31,6 @@ import { Database } from '../database';
 import {
     start,
     doms,
-    updateEncryptionGUI,
     updateLogOutButton,
 } from '../global';
 import { refreshChainData } from '../global.js';
@@ -261,8 +260,6 @@ async function encryptWallet(password, currentPassword = '') {
     if (res) {
         createAlert('success', ALERTS.NEW_PASSWORD_SUCCESS, 5500);
     }
-    // TODO: refactor once settings is written
-    await updateEncryptionGUI();
 }
 
 // TODO: This needs to be vueeifed a bit
@@ -512,7 +509,6 @@ getEventEmitter().on('toggle-network', async () => {
     if (wallet.isEncrypted.value) {
         await importWallet({ type: 'hd', secret: account.publicKey });
     }
-    await updateEncryptionGUI(wallet.isImported.value);
     updateLogOutButton();
     // TODO: When tab component is written, simply emit an event
     doms.domDashboard.click();
