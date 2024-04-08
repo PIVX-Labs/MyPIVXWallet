@@ -28,11 +28,7 @@ import { onMounted, ref, watch, computed } from 'vue';
 import { mnemonicToSeed } from 'bip39';
 import { getEventEmitter } from '../event_bus';
 import { Database } from '../database';
-import {
-    start,
-    doms,
-    updateLogOutButton,
-} from '../global';
+import { start, doms, updateLogOutButton } from '../global';
 import { refreshChainData } from '../global.js';
 import {
     confirmPopup,
