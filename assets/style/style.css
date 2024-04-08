@@ -37,17 +37,39 @@ pre {
 textarea,
 input {
     font-family: monospace !important;
-    background-color: #fff;
+    background-color: #E9DEFF !important;
     border-radius: 9px;
     margin-bottom: 5px;
     width: 100%;
     height: 43px;
     margin-bottom: 14px;
     transition: all .125s ease-in-out;
-    border: 2px solid #fff;
+    border: 2px solid #AF9CC6;
+    color: #6410C7 !important;
+    font-size: 14px;
     padding-left: 12px;
     padding-right: 12px;
-    font-size: 14px;
+}
+
+input:focus-visible {
+    outline: none;
+    border: 2px solid #dccfec;
+}
+
+.passwordTxtbox {
+    font-size: 34px !important;
+    color: #6410C7 !important;
+}
+
+.passwordTxtbox::placeholder {
+    position: relative !important;
+    top: -6px;
+}
+
+input::placeholder {
+    font-size: 14px !important;
+    color:#AF9CC6!important;
+    text-align: left;
 }
 
 input[type=number] {
