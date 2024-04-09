@@ -1245,7 +1245,7 @@ async function renderProposals(arrProposals, fContested) {
     const { nValue, cLocale } = optimiseCurrencyLocale(nCurrencyValue);
     doms.domTotalGovernanceBudgetValue.innerHTML =
         nValue.toLocaleString('en-gb', cLocale) +
-        ' <span style="color:#8b38ff;">' +
+        ' <span style="color:#7C1DEA;">' +
         strCurrency.toUpperCase() +
         '</span>';
 
@@ -1356,7 +1356,7 @@ async function renderProposals(arrProposals, fContested) {
             }
             const strLocalStatus = getProposalFinalisationStatus(cPropCache);
             const finalizeButton = document.createElement('button');
-            finalizeButton.className = 'pivx-button-small';
+            finalizeButton.className = 'pivx-button-small ';
             finalizeButton.innerHTML = '<i class="fas fa-check"></i>';
 
             if (
@@ -1460,10 +1460,10 @@ async function renderProposals(arrProposals, fContested) {
             domStatus.innerHTML = `
             <span style="font-size:12px; line-height: 15px; display: block; margin-bottom:15px;">
                 <span style="font-weight:700;" class="votes${strColourClass}">${strStatus}</span><br>
-                <span style="color:hsl(265 100% 67% / 1);">(${strFundingStatus})</span><br>
+                <span style="color:#9482b1;">(${strFundingStatus})</span><br>
             </span>
-            <span style="font-size:12px; line-height: 15px; display: block; color:#d1d1d1;">
-                <b>${nNetYesPercent.toFixed(1)}%</b><br>
+            <span style="font-size:12px; line-height: 15px; display: block; color:#9482b1;">
+                <b style="color:#e9deff;">${nNetYesPercent.toFixed(1)}%</b><br>
                 ${translation.proposalNetYes}
             </span>
             <span class="governArrow for-mobile ptr">
@@ -1480,10 +1480,11 @@ async function renderProposals(arrProposals, fContested) {
             cProposal.URL
         )}" target="_blank" rel="noopener noreferrer"><b>${sanitizeHTML(
             cProposal.Name
-        )} <span class="governLinkIco"><i class="fa-solid fa-arrow-up-right-from-square"></i></b></a></span><br><a class="governLink" style="font-size: small; color:#8b38ff;" onclick="MPW.openExplorer('${
+        )} <span class="governLinkIco"><i class="fa-solid fa-arrow-up-right-from-square"></i></b></a></span><br>
+        <a class="governLink" style="border-radius: 8px; background-color:#1A122D; padding: 6px 9px; font-size: 14px; color:#861ff7;" onclick="MPW.openExplorer('${
             cProposal.PaymentAddress
         }')"><i class="fa-solid fa-user-large" style="margin-right: 5px"></i><b>${sanitizeHTML(
-            cProposal.PaymentAddress.slice(0, 6) + '...'
+            cProposal.PaymentAddress.slice(0, 10) + '...'
         )}`;
 
         // Convert proposal amount to user's currency
@@ -1500,13 +1501,13 @@ async function renderProposals(arrProposals, fContested) {
         )}</b> <span class="governMarked">${
             cChainParams.current.TICKER
         }</span> <br>
-        <b class="governFiatSize">(${strProposalCurrency} <span style="color:#8b38ff;">${strCurrency.toUpperCase()}</span>)</b></span>
+        <b class="governFiatSize">${strProposalCurrency} <span style="color:#7C1DEA;">${strCurrency.toUpperCase()}</span></b></span>
 
         <span class="governInstallments"> ${sanitizeHTML(
             cProposal['RemainingPaymentCount']
-        )} ${translation.proposalPaymentsRemaining} <b>${sanitizeHTML(
+        )} ${translation.proposalPaymentsRemaining} <span style="font-weight:500;">${sanitizeHTML(
             parseInt(cProposal.TotalPayment).toLocaleString('en-gb', ',', '.')
-        )} ${cChainParams.current.TICKER}</b> ${
+        )} ${cChainParams.current.TICKER}</span> ${
             translation.proposalPaymentTotal
         }</span>`;
 
@@ -1541,7 +1542,7 @@ async function renderProposals(arrProposals, fContested) {
             voteBtn = '';
         } else {
             let btnYesClass = 'pivx-button-small';
-            let btnNoClass = 'pivx-button-small';
+            let btnNoClass = 'pivx-button-outline pivx-button-outline-small';
             if (cProposal.YourVote) {
                 if (cProposal.YourVote === 1) {
                     btnYesClass += ' pivx-button-big-yes-gov';
@@ -1549,11 +1550,19 @@ async function renderProposals(arrProposals, fContested) {
                     btnNoClass += ' pivx-button-big-no-gov';
                 }
             }
+
+            
+            /*
+
+            <div></div>
+            */
+
             const domVoteBtns = domRow.insertCell();
-            domVoteBtns.style = 'vertical-align: middle;';
-            const domNoBtn = document.createElement('button');
+            domVoteBtns.style = 'padding-top: 30px; vertical-align: middle; display: flex; justify-content: center; align-items: center;';
+            const domNoBtn = document.createElement('div');
             domNoBtn.className = btnNoClass;
-            domNoBtn.innerText = translation.no;
+            domNoBtn.style.width = 'fit-content';
+            domNoBtn.innerHTML = `<span>${translation.no}</span>`;
             domNoBtn.onclick = () => govVote(cProposal.Hash, 2);
 
             const domYesBtn = document.createElement('button');
@@ -1665,7 +1674,7 @@ async function renderProposals(arrProposals, fContested) {
         const { nValue } = optimiseCurrencyLocale(nCurrencyValue);
         const strAllocCurrency =
             nValue.toLocaleString('en-gb', cLocale) +
-            ' <span style="color:#8b38ff;">' +
+            ' <span style="color:#7C1DEA;">' +
             strCurrency.toUpperCase() +
             '</span>';
         doms.domAllocatedGovernanceBudgetValue.innerHTML = strAllocCurrency;

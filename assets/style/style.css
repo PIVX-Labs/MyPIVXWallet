@@ -985,6 +985,13 @@ progress[value]::-moz-progress-bar {
     background-color:#2f1452;
 }
 
+.pivx-button-outline-small {
+    font: 13px Montserrat, sans-serif !important;
+}
+
+.pivx-button-outline-small span {
+    padding: 7px 16px;
+}
 
 .button-padd {
     display: inline-block;
@@ -3222,11 +3229,11 @@ select.form-control option {
     color: #d1d1d1;
     line-height: 17px;
     display: block;
-    font-size: 13px;
+    font-size: 12px;
 }
 
 .governMarked {
-    color: hsl(265 100% 67% / 1);
+    color: #7C1DEA;
     font-weight: 700;
 }
 
@@ -3248,7 +3255,7 @@ select.form-control option {
 
 .governBudgetCard {
     font-weight: 700;
-    font-size: 15px;
+    font-size: 20px;
     display: flex;
     justify-content: center;
     flex-direction: column;
@@ -3266,7 +3273,12 @@ select.form-control option {
 .governTable thead tr td {
     font-size: 13px;
     border-top: 0px;
-    background-color: #00000024;
+    background-color: #371665;
+}
+
+.governTable thead tr td {
+    padding-top:10px;
+    padding-bottom:10px;
 }
 
 .governTable .btlr-7p {
@@ -3306,17 +3318,18 @@ select.form-control option {
 }
 
 .votesYes {
-    color: #5bd376;
+    color: #6fc500;
 }
 
 .votesNo {
-    color: #df4b6c;
+    color: #ff1d1d;
 }
 
 .governTable .votesBg {
-    background-color: #00000021;
-    padding: 3px 6px;
+    background-color: #1a122d;
+    padding: 7px 7px 3px 7px;
     border-radius: 5px;
+    font-weight: 100!important;
 }
 
 .governTable .governStatusCol {
@@ -3372,6 +3385,11 @@ select.form-control option {
 @media (min-width: 992px) {
     .for-mobile {
         display: none !important;
+    }
+
+    .for-desktopTime {
+        position: relative;
+        top: -15px;
     }
 }
 
