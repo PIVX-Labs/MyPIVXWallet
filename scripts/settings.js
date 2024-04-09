@@ -2,7 +2,6 @@ import {
     doms,
     getStakingBalance,
     refreshChainData,
-    updateEncryptionGUI,
     updateLogOutButton,
     updateGovernanceTab,
     dashboard,
@@ -511,7 +510,6 @@ export async function logOut() {
 
     getEventEmitter().emit('toggle-network');
     updateLogOutButton();
-    await updateEncryptionGUI();
     createAlert('success', translation.accountDeleted, 3000);
 }
 
@@ -519,11 +517,7 @@ export async function logOut() {
  * Toggle between Mainnet and Testnet
  */
 export async function toggleTestnet() {
-    const cNet = getNetwork();
-    if (
-        (!cNet.fullSynced && wallet.isLoaded()) ||
-        (!wallet.isSynced && wallet.hasShield())
-    ) {
+    if (wallet.isLoaded() && !wallet.isSynced) {
         createAlert('warning', `${ALERTS.WALLET_NOT_SYNCED}`, 3000);
         doms.domTestnetToggler.checked = cChainParams.current.isTestnet;
         return;

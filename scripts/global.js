@@ -35,6 +35,9 @@ export function isLoaded() {
     return fIsLoaded;
 }
 
+// Block count
+let blockCount = 0;
+
 export let doms = {};
 
 export const dashboard = createApp(Dashboard).mount('#DashboardTab');
@@ -236,14 +239,6 @@ export async function start() {
     // Register native app service
     registerWorker();
     await settingsStart();
-    // Just load the block count, for use in non-wallet areas
-    try {
-        await getNetwork().getBlockCount();
-    } catch (e) {
-        // Block count failed, keep loading the wallet
-        // the network already creates an alert
-        console.error(e);
-    }
 
     subscribeToNetworkEvents();
 
@@ -262,10 +257,8 @@ export async function start() {
 
     // Update the Encryption UI (If the user has a wallet, then it changes to "Change Password" rather than "Encrypt Wallet")
     getEventEmitter().on('wallet-import', async () => {
-        await updateEncryptionGUI();
         updateLogOutButton();
     });
-    await updateEncryptionGUI();
     fIsLoaded = true;
 
     // If we haven't already (due to having no wallet, etc), display the Dashboard
@@ -278,8 +271,21 @@ function subscribeToNetworkEvents() {
             '<i class="fa-solid fa-' + (value ? 'wifi' : 'ban') + '"></i>';
     });
 
-    getEventEmitter().on('new-block', (block, oldBlock) => {
-        console.log(`New block detected! ${oldBlock} --> ${block}`);
+    getEventEmitter().on('sync-status', (value) => {
+        switch (value) {
+            case 'start':
+                doms.domBalanceReloadStaking.classList.add('playAnim');
+                break;
+            case 'stop':
+                doms.domBalanceReloadStaking.classList.remove('playAnim');
+                break;
+        }
+    });
+
+    getEventEmitter().on('new-block', (block) => {
+        console.log(`New block detected! ${block}`);
+        blockCount = block;
+
         // If it's open: update the Governance Dashboard
         if (doms.domGovTab.classList.contains('active')) {
             updateGovernanceTab();
@@ -683,21 +689,6 @@ export function updateLogOutButton() {
         : 'none';
 }
 
-/** Update the "Encrypt Wallet" / "Change Password" dialog to match the current wallet state */
-export async function updateEncryptionGUI(fEncrypted = null) {
-    // If no param is provided, check if a wallet exists in the database
-    if (fEncrypted === null) {
-        fEncrypted = await hasEncryptedWallet();
-    }
-    // If the wallet is encrypted, we display a "Current Password" input in the Encryption dialog, otherwise, only accept New Passwords
-    doms.domEncryptPasswordCurrent.style.display = fEncrypted ? '' : 'none';
-    // And we adjust the displays to accomodate the mode as well
-    document.getElementById('changePasswordBtn').innerText = fEncrypted
-        ? translation.changePassword
-        : translation.encryptWallet;
-    doms.domChangePasswordContainer.style.display = fEncrypted ? '' : 'none';
-}
-
 /**
  * Sweep an address to our own wallet, spending all it's UTXOs without change
  * @param {Array<object>} arrUTXOs - The UTXOs belonging to the address to sweep
@@ -718,7 +709,7 @@ export async function sweepAddress(arrUTXOs, sweepingMasterKey, nFixedFee) {
         .build();
 
     // Sign using the given Master Key, then broadcast the sweep, returning the TXID (or a failure)
-    const sweepingWallet = new Wallet({ nAccount: 0, isMainWallet: false });
+    const sweepingWallet = new Wallet({ nAccount: 0 });
     sweepingWallet.setMasterKey(sweepingMasterKey);
 
     await sweepingWallet.sign(tx);
@@ -762,25 +753,18 @@ export async function updateGovernanceTab() {
     fRenderingGovernance = true;
 
     // Setup the Superblock countdown (if not already done), no need to block thread with await, either.
-    let cNet = getNetwork();
-
-    // When switching to mainnet from testnet or vise versa, you ned to use an await on getBlockCount() or cNet.cachedBlockCount returns 0
     if (!isTestnetLastState == cChainParams.current.isTestnet) {
         // Reset flipdown
         governanceFlipdown = null;
         doms.domFlipdown.innerHTML = '';
-
-        // Get new network blockcount
-        await getNetwork().getBlockCount();
-        cNet = getNetwork();
     }
 
     // Update governance counter when testnet/mainnet has been switched
-    if (!governanceFlipdown && cNet.cachedBlockCount > 0) {
+    if (!governanceFlipdown && blockCount > 0) {
         Masternode.getNextSuperblock().then((nSuperblock) => {
             // The estimated time to the superblock (using the block target and remaining blocks)
             const nTimestamp =
-                Date.now() / 1000 + (nSuperblock - cNet.cachedBlockCount) * 60;
+                Date.now() / 1000 + (nSuperblock - blockCount) * 60;
             governanceFlipdown = new FlipDown(nTimestamp).start();
         });
         isTestnetLastState = cChainParams.current.isTestnet;
@@ -868,14 +852,13 @@ async function waitForSubmissionBlockHeight(cProposalCache) {
  * @returns {string} The string status, for display purposes
  */
 function getProposalFinalisationStatus(cPropCache) {
-    const cNet = getNetwork();
     // Confirmations left until finalisation, by network consensus
     const nConfsLeft =
         cPropCache.nSubmissionHeight +
         cChainParams.current.proposalFeeConfirmRequirement -
-        cNet.cachedBlockCount;
+        blockCount;
 
-    if (cPropCache.nSubmissionHeight === 0 || cNet.cachedBlockCount === 0) {
+    if (cPropCache.nSubmissionHeight === 0 || blockCount === 0) {
         return translation.proposalFinalisationConfirming;
     } else if (nConfsLeft > 0) {
         return (
@@ -1378,8 +1361,7 @@ export async function updateMasternodeTab() {
         return;
     }
 
-    const cNet = getNetwork();
-    if (!cNet || !cNet.fullSynced) {
+    if (!wallet.isSynced) {
         doms.domMnTextErrors.innerHTML =
             'Your wallet is empty or still loading, re-open the tab in a few seconds!';
         return;
@@ -1689,7 +1671,8 @@ export async function refreshChainData() {
     if (!wallet.isLoaded()) return;
 
     // Fetch block count
-    await cNet.getBlockCount();
+    const blockCount = await cNet.getBlockCount();
+    getEventEmitter().emit('new-block', blockCount);
 }
 
 // A safety mechanism enabled if the user attempts to leave without encrypting/saving their keys

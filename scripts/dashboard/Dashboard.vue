@@ -21,12 +21,7 @@ import { COIN } from '../chain_params';
 import { onMounted, ref, watch, computed } from 'vue';
 import { getEventEmitter } from '../event_bus';
 import { Database } from '../database';
-import {
-    start,
-    doms,
-    updateEncryptionGUI,
-    updateLogOutButton,
-} from '../global';
+import { start, doms, updateLogOutButton } from '../global';
 import { refreshChainData } from '../global.js';
 import { validateAmount } from '../legacy';
 import {
@@ -139,8 +134,6 @@ async function encryptWallet(password, currentPassword = '') {
     if (res) {
         createAlert('success', ALERTS.NEW_PASSWORD_SUCCESS, 5500);
     }
-    // TODO: refactor once settings is written
-    await updateEncryptionGUI();
 }
 
 async function restoreWallet(strReason) {
@@ -226,7 +219,7 @@ async function send(address, amount, useShieldInputs) {
     }
 
     // Ensure wallet is synced
-    if (!getNetwork()?.fullSynced) {
+    if (!wallet.isSynced.value) {
         return createAlert('warning', `${ALERTS.WALLET_NOT_SYNCED}`, 3000);
     }
 
@@ -370,7 +363,6 @@ getEventEmitter().on('toggle-network', async () => {
     if (wallet.isEncrypted.value) {
         await importWallet({ type: 'hd', secret: account.publicKey });
     }
-    await updateEncryptionGUI(wallet.isImported.value);
     updateLogOutButton();
     // TODO: When tab component is written, simply emit an event
     doms.domDashboard.click();

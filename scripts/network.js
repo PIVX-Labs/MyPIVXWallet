@@ -48,16 +48,11 @@ import { Transaction } from './transaction.js';
  *
  */
 export class Network {
-    wallet;
-    /**
-     * @param {import('./wallet.js').Wallet} wallet
-     */
-    constructor(wallet) {
+    constructor() {
         if (this.constructor === Network) {
             throw new Error('Initializing virtual class');
         }
         this._enabled = true;
-        this.wallet = wallet;
     }
 
     /**
@@ -86,10 +81,6 @@ export class Network {
         this.enabled = !this.enabled;
     }
 
-    get cachedBlockCount() {
-        throw new Error('cachedBlockCount must be implemented');
-    }
-
     error() {
         throw new Error('Error must be implemented');
     }
@@ -98,16 +89,12 @@ export class Network {
         throw new Error('getBlockCount must be implemented');
     }
 
-    sentTransaction() {
+    sendTransaction() {
         throw new Error('sendTransaction must be implemented');
     }
 
     submitAnalytics(_strType, _cData = {}) {
         throw new Error('submitAnalytics must be implemented');
-    }
-
-    setWallet(wallet) {
-        this.wallet = wallet;
     }
 
     async getTxInfo(_txHash) {
@@ -129,17 +116,6 @@ export class ExplorerNetwork extends Network {
          * @public
          */
         this.strUrl = strUrl;
-
-        /**
-         * @type{Number}
-         * @private
-         */
-        this.blocks = 0;
-
-        this.historySyncing = false;
-        this.utxoFetched = false;
-        this.fullSynced = false;
-        this.lastBlockSynced = 0;
     }
 
     error() {
@@ -147,10 +123,6 @@ export class ExplorerNetwork extends Network {
             this.disable();
             createAlert('warning', ALERTS.CONNECTION_FAILED);
         }
-    }
-
-    get cachedBlockCount() {
-        return this.blocks;
     }
 
     /**
@@ -191,29 +163,12 @@ export class ExplorerNetwork extends Network {
             const { backend } = await (
                 await retryWrapper(fetchBlockbook, `/api/v2/api`)
             ).json();
-            if (backend.blocks > this.blocks) {
-                getEventEmitter().emit(
-                    'new-block',
-                    backend.blocks,
-                    this.blocks
-                );
-                this.blocks = backend.blocks;
-                //TODO: unify the transparent sync with the shield sync
-                // in particular in place of getLatestTxs read directly from the block as we do for shielding
-                if (this.fullSynced) {
-                    await this.getLatestTxs(this.lastBlockSynced);
-                    this.lastBlockSynced = this.blocks;
-                    getEventEmitter().emit('new-tx');
-                }
-                if (this.wallet.isSynced) {
-                    await this.wallet.getLatestBlocks();
-                }
-            }
+
+            return backend.blocks;
         } catch (e) {
             this.error();
             throw e;
         }
-        return this.blocks;
     }
 
     /**
@@ -227,7 +182,7 @@ export class ExplorerNetwork extends Network {
         const maxTrials = 6;
         while (trials < maxTrials) {
             trials += 1;
-            const res = await fetchBlockbook(strCommand);
+            const res = await retryWrapper(fetchBlockbook, strCommand);
             if (!res.ok) {
                 if (debug) {
                     console.log(
@@ -243,7 +198,18 @@ export class ExplorerNetwork extends Network {
         }
         throw new Error('Cannot safe fetch from explorer!');
     }
-    async getLatestTxs(nStartHeight) {
+
+    /**
+     * //TODO: do not take the wallet as parameter but instead something weaker like a public key or address?
+     * @param {number} nStartHeight - Minimum block height to get
+     * @param {import('./wallet.js').Wallet} wallet - Wallet that we are getting the txs of
+     * @returns {Promise<void>}
+     */
+    async getLatestTxs(wallet) {
+        const isFirstSync = !wallet.isSynced;
+        let nStartHeight = Math.max(
+            ...wallet.getTransactions().map((tx) => tx.blockHeight)
+        );
         // Ask some blocks in the past or blockbock might not return a transaction that has just been mined
         const blockOffset = 10;
         nStartHeight =
@@ -254,12 +220,12 @@ export class ExplorerNetwork extends Network {
             console.time('getLatestTxsTimer');
         }
         // Form the API call using our wallet information
-        const strKey = this.wallet.getKeyToExport();
+        const strKey = wallet.getKeyToExport();
         const strRoot = `/api/v2/${
-            this.wallet.isHD() ? 'xpub/' : 'address/'
+            wallet.isHD() ? 'xpub/' : 'address/'
         }${strKey}`;
         const strCoreParams = `?details=txs&from=${nStartHeight}`;
-        const probePage = !this.fullSynced
+        const probePage = isFirstSync
             ? await this.safeFetchFromExplorer(
                   `${strRoot + strCoreParams}&pageSize=1`
               )
@@ -267,13 +233,13 @@ export class ExplorerNetwork extends Network {
         //.txs returns the total number of wallet's transaction regardless the startHeight and we use this for first sync
         // after first sync (so at each new block) we can safely assume that user got less than 1000 new txs
         //in this way we don't have to fetch the probePage after first sync
-        const txNumber = !this.fullSynced
-            ? probePage.txs - this.wallet.getTransactions().length
+        const txNumber = isFirstSync
+            ? probePage.txs - wallet.getTransactions().length
             : 1;
         // Compute the total pages and iterate through them until we've synced everything
         const totalPages = Math.ceil(txNumber / 1000);
         for (let i = totalPages; i > 0; i--) {
-            if (!this.fullSynced) {
+            if (isFirstSync) {
                 getEventEmitter().emit(
                     'transparent-sync-status-update',
                     tr(translation.syncStatusHistoryProgress, [
@@ -296,7 +262,7 @@ export class ExplorerNetwork extends Network {
                     const parsed = Transaction.fromHex(tx.hex);
                     parsed.blockHeight = tx.blockHeight;
                     parsed.blockTime = tx.blockTime;
-                    await this.wallet.addTransaction(parsed);
+                    await wallet.addTransaction(parsed);
                 }
             }
         }
@@ -306,29 +272,10 @@ export class ExplorerNetwork extends Network {
                 'Fetched latest txs: total number of pages was ',
                 totalPages,
                 ' fullSynced? ',
-                this.fullSynced
+                !isFirstSync
             );
             console.timeEnd('getLatestTxsTimer');
         }
-    }
-
-    async walletFullSync() {
-        if (this.fullSynced) return;
-        if (!this.wallet || !this.wallet.isLoaded()) return;
-        this.lastBlockSynced = Math.max(
-            ...this.wallet.getTransactions().map((tx) => tx.blockHeight)
-        );
-        await this.getLatestTxs(this.lastBlockSynced);
-        this.lastBlockSynced = Math.max(
-            ...this.wallet.getTransactions().map((tx) => tx.blockHeight)
-        );
-        this.fullSynced = true;
-        getEventEmitter().emit('transparent-sync-status-update', '', true);
-    }
-    reset() {
-        this.fullSynced = false;
-        this.blocks = 0;
-        this.lastBlockSynced = 0;
     }
 
     /**
@@ -342,42 +289,20 @@ export class ExplorerNetwork extends Network {
 
     /**
      * Fetch UTXOs from the current primary explorer
-     * @param {string} strAddress - Optional address, gets UTXOs without changing MPW's state
+     * @param {string} strAddress -  address of which we want UTXOs
      * @returns {Promise<Array<BlockbookUTXO>>} Resolves when it has finished fetching UTXOs
      */
-    async getUTXOs(strAddress = '') {
-        // If getUTXOs has been already called return
-        if (this.utxoFetched && !strAddress) {
-            return;
-        }
-        // Don't fetch UTXOs if we're already scanning for them!
-        if (!strAddress) {
-            if (!this.wallet || !this.wallet.isLoaded()) return;
-            if (this.isSyncing) return;
-            this.isSyncing = true;
-        }
+    async getUTXOs(strAddress) {
         try {
-            let publicKey = strAddress || this.wallet.getKeyToExport();
+            let publicKey = strAddress;
             // Fetch UTXOs for the key
             const arrUTXOs = await (
                 await retryWrapper(fetchBlockbook, `/api/v2/utxo/${publicKey}`)
             ).json();
-
-            // If using MPW's wallet, then sync the UTXOs in MPW's state
-            // This check is a temporary fix to the toggle explorer call
-            if (this === getNetwork())
-                if (!strAddress) {
-                    this.utxoFetched = true;
-                    getEventEmitter().emit('utxo', arrUTXOs);
-                }
-
-            // Return the UTXOs for additional utility use
             return arrUTXOs;
         } catch (e) {
             console.error(e);
             this.error();
-        } finally {
-            this.isSyncing = false;
         }
     }
 
@@ -437,15 +362,6 @@ export class ExplorerNetwork extends Network {
         return blocks;
     }
 
-    /**
-     * Waits for next block
-     * @returns {Promise<Number>} Resolves when the next block is obtained
-     */
-    waitForNextBlock() {
-        return new Promise((res, _rej) => {
-            getEventEmitter().once('new-block', (block) => res(block));
-        });
-    }
     // PIVX Labs Analytics: if you are a user, you can disable this FULLY via the Settings.
     // ... if you're a developer, we ask you to keep these stats to enhance upstream development,
     // ... but you are free to completely strip MPW of any analytics, if you wish, no hard feelings.
