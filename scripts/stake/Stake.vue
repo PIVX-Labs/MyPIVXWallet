@@ -27,6 +27,7 @@ const stakeAmount = ref('');
 const unstakeAmount = ref('');
 const showRestoreWallet = ref(false);
 const restoreWalletReason = ref('');
+const activity = ref(null);
 async function updateColdStakingAddress() {
     const db = await Database.getInstance();
     coldStakingAddress.value =
@@ -34,6 +35,9 @@ async function updateColdStakingAddress() {
         cChainParams.current.defaultColdStakingAddress;
 }
 getEventEmitter().on('toggle-network', updateColdStakingAddress);
+getEventEmitter().on('new-tx', () => {
+    activity?.value?.update();
+});
 onMounted(updateColdStakingAddress);
 
 watch(coldStakingAddress, async (coldStakingAddress) => {
@@ -112,7 +116,7 @@ async function importWif(wif, extsk) {
         </div>
 
         <div class="col-12 mb-5">
-            <Activity title="Reward History" :rewards="true" />
+            <Activity title="Reward History" :rewards="true" ref="activity" />
         </div>
     </div>
     <StakeInput
