@@ -805,7 +805,6 @@ export class Wallet {
             // in particular in place of getLatestTxs read directly from the block as we do for shielding
             if (this.#isSynced) {
                 await getNetwork().getLatestTxs(this);
-                stakingDashboard.update(0);
                 getEventEmitter().emit('new-tx');
                 await this.getLatestBlocks(block);
             }
