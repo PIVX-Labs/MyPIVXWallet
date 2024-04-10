@@ -19,6 +19,7 @@ watch(show, (show) => {
     nextTick(() => {
         if (show) passwordInput?.value?.focus();
     });
+    if (!show) password.value = '';
 });
 
 async function submit() {
@@ -28,7 +29,6 @@ async function submit() {
     const extsk = await decrypt(account.encExtsk, password.value);
     if (wif) {
         emit('import', wif, extsk);
-        close();
     } else {
         createAlert('warning', ALERTS.FAILED_TO_IMPORT);
     }

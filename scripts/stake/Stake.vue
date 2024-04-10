@@ -9,16 +9,14 @@ import { getEventEmitter } from '../event_bus';
 import { getNetwork } from '../network';
 import StakeBalance from './StakeBalance.vue';
 import StakeInput from './StakeInput.vue';
-import { onMounted, ref, watch } from 'vue';
+import { onMounted, ref, watch, nextTick } from 'vue';
+import { ParsedSecret } from '../parsed_secret.js';
+import { storeToRefs } from 'pinia';
+import { createAlert } from '../misc';
+import { ALERTS } from '../i18n';
 const wallet = useWallet();
-const {
-    balance,
-    coldBalance,
-    createAndSendTransaction,
-    getAddress,
-    price,
-    currency,
-} = wallet;
+const { balance, coldBalance, getAddress, price, currency, isViewOnly } =
+    storeToRefs(wallet);
 const { advancedMode, displayDecimals } = useSettings();
 const showUnstake = ref(false);
 const showStake = ref(false);
@@ -50,16 +48,28 @@ watch(coldStakingAddress, async (coldStakingAddress) => {
     await db.updateAccount(cAccount, true);
 });
 async function stake(value, ownerAddress) {
-    await restoreWallet();
-    createAndSendTransaction(getNetwork(), coldStakingAddress.value, value, {
-        isDelegation: true,
-        returnAddress: ownerAddress,
-    });
+    debugger;
+    if (wallet.isViewOnly && !(await restoreWallet())) {
+        console.log('RETURNED');
+        return;
+    }
+    console.log('REACHED');
+    wallet.createAndSendTransaction(
+        getNetwork(),
+        coldStakingAddress.value,
+        value,
+        {
+            isDelegation: true,
+            returnAddress: ownerAddress,
+        }
+    );
 }
 
 async function unstake(value) {
-    await restoreWallet();
-    createAndSendTransaction(getNetwork(), getAddress(1), value, {
+    if (wallet.isViewOnly && !(await restoreWallet())) {
+        return;
+    }
+    wallet.createAndSendTransaction(getNetwork(), getAddress(1), value, {
         useDelegatedInputs: true,
         delegateChange: true,
         changeDelegationAddress: coldStakingAddress.value,
@@ -67,14 +77,15 @@ async function unstake(value) {
 }
 
 async function restoreWallet(strReason) {
-    if (!wallet.isEncrypted.value) return false;
-    if (wallet.isHardwareWallet.value) return true;
+    if (!wallet.isEncrypted) return false;
+    if (wallet.isHardwareWallet) return true;
     showRestoreWallet.value = true;
     return await new Promise((res) => {
         watch(
-            showRestoreWallet,
+            [showRestoreWallet, isViewOnly],
             () => {
-                res(wallet.isEncrypted.value);
+                showRestoreWallet.value = false;
+                res(!isViewOnly.value);
             },
             { once: true }
         );
@@ -85,13 +96,13 @@ async function importWif(wif, extsk) {
     const secret = await ParsedSecret.parse(wif);
     if (secret.masterKey) {
         await wallet.setMasterKey(secret.masterKey);
-        if (wallet.hasShield.value && !extsk) {
+        if (wallet.hasShield && !extsk) {
             createAlert(
                 'warning',
                 'Could not decrypt sk even if password is correct, please contact a developer'
             );
         }
-        if (wallet.hasShield.value) {
+        if (wallet.hasShield) {
             await wallet.setExtsk(extsk);
         }
         createAlert('success', ALERTS.WALLET_UNLOCKED, 1500);
@@ -142,7 +153,7 @@ async function importWif(wif, extsk) {
     <RestoreWallet
         :show="showRestoreWallet"
         :reason="restoreWalletReason"
-        @close="showRestoreWallet = false"
         @import="importWif"
+        @close="showRestoreWallet = false"
     />
 </template>

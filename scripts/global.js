@@ -26,6 +26,7 @@ import { FlipDown } from './flipdown.js';
 import { createApp } from 'vue';
 import Dashboard from './dashboard/Dashboard.vue';
 import Stake from './stake/Stake.vue';
+import { createPinia } from 'pinia';
 
 /** A flag showing if base MPW is fully loaded or not */
 export let fIsLoaded = false;
@@ -40,8 +41,10 @@ let blockCount = 0;
 
 export let doms = {};
 
-export const dashboard = createApp(Dashboard).mount('#DashboardTab');
-createApp(Stake).mount('#StakingTab');
+const pinia = createPinia();
+
+export const dashboard = createApp(Dashboard).use(pinia).mount('#DashboardTab');
+createApp(Stake).use(pinia).mount('#StakingTab');
 
 export async function start() {
     doms = {

@@ -4,13 +4,14 @@ import { ref } from 'vue';
 import { strCurrency } from '../settings.js';
 import { cMarket } from '../settings.js';
 import { ledgerSignTransaction } from '../ledger.js';
+import { defineStore } from 'pinia';
 
 /**
  * This is the middle ground between vue and the wallet class
  * It makes sure that everything is up to date and provides
  * a reactive interface to it
  */
-export function useWallet() {
+export const useWallet = defineStore('wallet', () => {
     // Eventually we want to create a new wallet
     // For now we'll just import the existing one
     // const wallet = new Wallet();
@@ -49,6 +50,7 @@ export function useWallet() {
         await wallet.checkDecryptPassword(passwd);
 
     hasEncryptedWallet().then((r) => {
+        console.log(r);
         isEncrypted.value = r;
     });
 
@@ -73,6 +75,9 @@ export function useWallet() {
     };
     getEventEmitter().on('shield-loaded-from-disk', () => {
         hasShield.value = wallet.hasShield();
+    });
+    getEventEmitter().on('toggle-network', async () => {
+        isEncrypted.value = await hasEncryptedWallet();
     });
     getEventEmitter().on(
         'shield-transaction-creation-update',
@@ -136,4 +141,4 @@ export function useWallet() {
         loadFromDisk,
         coldBalance,
     };
-}
+});

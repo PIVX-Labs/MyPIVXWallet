@@ -86,6 +86,7 @@
         "ip-address": "^8.1.0",
         "jdenticon": "^3.2.0",
         "jquery": "^3.6.3",
+        "pinia": "^2.1.7",
         "pivx-promos": "^0.2.0",
         "pivx-shield": "^1.1.2",
         "qr-scanner": "^1.4.2",
