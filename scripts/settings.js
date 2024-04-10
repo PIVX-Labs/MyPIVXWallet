@@ -1,6 +1,5 @@
 import {
     doms,
-    getStakingBalance,
     refreshChainData,
     updateLogOutButton,
     updateGovernanceTab,
@@ -487,7 +486,6 @@ async function setAnalytics(level, fSilent = false) {
  * Log out from the current wallet
  */
 export async function logOut() {
-    const cNet = getNetwork();
     if (wallet.isSyncing) {
         createAlert('warning', `${ALERTS.WALLET_NOT_SYNCED}`, 3000);
         return;
