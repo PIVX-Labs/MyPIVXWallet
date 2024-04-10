@@ -1,5 +1,5 @@
 <script setup>
-import { ref, toRefs } from 'vue';
+import { nextTick, ref, toRefs, watch } from 'vue';
 import Modal from '../Modal.vue';
 import { ALERTS, translation } from '../i18n.js';
 import { Database } from '../database.js';
@@ -13,6 +13,13 @@ const props = defineProps({
 const { show, reason } = toRefs(props);
 const emit = defineEmits(['close', 'import']);
 const password = ref('');
+const passwordInput = ref(null);
+
+watch(show, (show) => {
+    nextTick(() => {
+        if (show) passwordInput?.value?.focus();
+    });
+});
 
 async function submit() {
     const db = await Database.getInstance();
@@ -47,6 +54,7 @@ function close() {
                 <p style="opacity: 0.75" v-if="!!reason">{{ reason }}</p>
                 <input
                     type="password"
+                    ref="passwordInput"
                     v-model="password"
                     :placeholder="translation.walletPassword"
                     style="text-align: center"
