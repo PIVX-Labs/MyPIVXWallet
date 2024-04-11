@@ -15,7 +15,7 @@ import { storeToRefs } from 'pinia';
 import { createAlert } from '../misc';
 import { ALERTS } from '../i18n';
 const wallet = useWallet();
-const { balance, coldBalance, getAddress, price, currency, isViewOnly } =
+const { balance, coldBalance, price, currency, isViewOnly } =
     storeToRefs(wallet);
 const { advancedMode, displayDecimals } = useSettings();
 const showUnstake = ref(false);
@@ -69,7 +69,7 @@ async function unstake(value) {
     if (wallet.isViewOnly && !(await restoreWallet())) {
         return;
     }
-    wallet.createAndSendTransaction(getNetwork(), getAddress(1), value, {
+    wallet.createAndSendTransaction(getNetwork(), wallet.getAddress(1), value, {
         useDelegatedInputs: true,
         delegateChange: true,
         changeDelegationAddress: coldStakingAddress.value,
