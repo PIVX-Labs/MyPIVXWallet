@@ -4,6 +4,7 @@ import { translation } from '../i18n';
 import BottomPopup from '../BottomPopup.vue';
 import { validateAmount } from '../legacy';
 import { COIN } from '../chain_params';
+import { getAddressColor, promptForContact } from '../contacts-book';
 const props = defineProps({
     unstake: Boolean,
     showOwnerAddress: Boolean,
@@ -17,6 +18,7 @@ const amount = defineModel('amount', {
     default: '',
 });
 const ownerAddress = ref('');
+const ownerAddressColor = ref('');
 const amountCurrency = ref('');
 
 function maxBalance() {
@@ -26,6 +28,10 @@ function maxBalance() {
 
 watch(showOwnerAddress, () => {
     ownerAddress.value = '';
+});
+
+watch(ownerAddress, async (ownerAddress) => {
+    ownerAddressColor.value = await getAddressColor(ownerAddress);
 });
 
 function submit() {
@@ -50,6 +56,12 @@ function syncAmount() {
     } else {
         amount.value = amountCurrency.value / price.value;
     }
+}
+
+async function selectContact() {
+    console.log(ownerAddress.value);
+    ownerAddress.value = (await promptForContact()) || '';
+    console.log(ownerAddress.value);
 }
 </script>
 
@@ -133,18 +145,19 @@ function syncAmount() {
                     <input
                         class="btn-group-input"
                         data-i18n="ownerAddress"
-                        oninput="MPW.guiCheckRecipientInput(event)"
                         style="font-family: monospace"
                         type="text"
-                        :v-model="ownerAddress"
+                        v-model="ownerAddress"
                         placeholder="(Optional) Owner Address"
                         autocomplete="nope"
+                        :style="{ color: ownerAddressColor }"
                     />
                     <div class="input-group-append">
-                        <span
-                            class="input-group-text ptr"
-                            onclick="MPW.guiSelectContact(MPW.doms.domStakeOwnerAddress)"
-                            ><i class="fa-solid fa-address-book fa-2xl"></i
+                        <span class="input-group-text ptr"
+                            ><i
+                                class="fa-solid fa-address-book fa-2xl"
+                                @click="selectContact()"
+                            ></i
                         ></span>
                     </div>
                 </div>
