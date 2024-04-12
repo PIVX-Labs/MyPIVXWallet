@@ -200,7 +200,7 @@ export class ExplorerNetwork extends Network {
 
     /**
      * //TODO: do not take the wallet as parameter but instead something weaker like a public key or address?
-     * @param {number} nStartHeight - Minimum block height to get
+     * Must be called only for initial wallet sync
      * @param {import('./wallet.js').Wallet} wallet - Wallet that we are getting the txs of
      * @returns {Promise<void>}
      */
