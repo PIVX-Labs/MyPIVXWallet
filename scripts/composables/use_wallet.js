@@ -98,6 +98,7 @@ export const useWallet = defineStore('wallet', () => {
         } else {
             wallet.discardTransaction(tx);
         }
+        return res;
     };
 
     getEventEmitter().on('balance-update', async () => {

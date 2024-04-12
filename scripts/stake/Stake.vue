@@ -48,13 +48,10 @@ watch(coldStakingAddress, async (coldStakingAddress) => {
     await db.updateAccount(cAccount, true);
 });
 async function stake(value, ownerAddress) {
-    debugger;
     if (wallet.isViewOnly && !(await restoreWallet())) {
-        console.log('RETURNED');
         return;
     }
-    console.log('REACHED');
-    wallet.createAndSendTransaction(
+    const res = await wallet.createAndSendTransaction(
         getNetwork(),
         coldStakingAddress.value,
         value,
@@ -63,17 +60,24 @@ async function stake(value, ownerAddress) {
             returnAddress: ownerAddress,
         }
     );
+    if (res) showStake.value = false;
 }
 
 async function unstake(value) {
     if (wallet.isViewOnly && !(await restoreWallet())) {
         return;
     }
-    wallet.createAndSendTransaction(getNetwork(), wallet.getAddress(1), value, {
-        useDelegatedInputs: true,
-        delegateChange: true,
-        changeDelegationAddress: coldStakingAddress.value,
-    });
+    const res = await wallet.createAndSendTransaction(
+        getNetwork(),
+        wallet.getAddress(1),
+        value,
+        {
+            useDelegatedInputs: true,
+            delegateChange: true,
+            changeDelegationAddress: coldStakingAddress.value,
+        }
+    );
+    if (res) showUnstake.value = false;
 }
 
 async function restoreWallet(strReason) {
