@@ -91,7 +91,11 @@ export class Wallet {
 
     #isSynced = false;
     #isFetchingLatestBlocks = false;
-
+    /**
+     * The height of the last processed block in the wallet
+     * @type {number}
+     */
+    #lastProcessedBlock = 0;
     constructor({ nAccount, masterKey, shield, mempool = new Mempool() }) {
         this.#nAccount = nAccount;
         this.#mempool = mempool;
@@ -693,6 +697,10 @@ export class Wallet {
             this.#syncing = true;
             await this.loadFromDisk();
             await this.loadShieldFromDisk();
+            // Let's set the last processed block 5 blocks behind the actual chain tip
+            // This is just to be sure since blockbook (as we know)
+            // usually does not return txs of the actual last block.
+            this.#lastProcessedBlock = (await getNetwork().getBlockCount()) - 5;
             await this.#transparentSync();
             if (this.hasShield()) {
                 await this.#syncShield();
