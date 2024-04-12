@@ -346,19 +346,7 @@ export class ExplorerNetwork extends Network {
      * @return {Promise<Number[]>} The list of blocks which have at least one shield transaction
      */
     async getShieldBlockList() {
-        /**
-         * @type {Number[]}
-         */
-        const blockCount = await this.getBlockCount(false);
-        const blocks = await (
-            await fetch(`${cNode.url}/getshieldblocks`)
-        ).json();
-        const maxBlock = blocks[blocks.length - 1];
-        //I think
-        if (maxBlock < blockCount - 5) {
-            blocks.push(blockCount - 5);
-        }
-        return blocks;
+        return await (await fetch(`${cNode.url}/getshieldblocks`)).json();
     }
 
     // PIVX Labs Analytics: if you are a user, you can disable this FULLY via the Settings.
