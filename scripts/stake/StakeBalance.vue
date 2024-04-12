@@ -4,7 +4,7 @@ import { optimiseCurrencyLocale, refreshChainData } from '../global.js';
 import { translation, ALERTS } from '../i18n.js';
 import Modal from '../Modal.vue';
 import { createAlert, isColdAddress } from '../misc';
-import { COIN } from '../chain_params';
+import { COIN, cChainParams } from '../chain_params';
 import { beautifyNumber } from '../misc';
 
 const coldStakingAddress = defineModel('coldStakingAddress');
@@ -41,6 +41,9 @@ watch(showColdStakingAddressModal, (showColdStakingAddressModal) => {
 });
 
 function submit() {
+    if (csAddrInternal.value === '') {
+        csAddrInternal.value = cChainParams.current.defaultColdStakingAddress;
+    }
     if (isColdAddress(csAddrInternal.value)) {
         coldStakingAddress.value = csAddrInternal.value;
         showColdStakingAddressModal.value = false;
