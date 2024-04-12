@@ -63,6 +63,8 @@ describe('stake balance tests', () => {
         const csaddrInput = wrapper
             .findComponent(Modal)
             .find('[data-testid=csAddrInput]');
+        // Test that it is in focus
+        expect(csaddrInput.element).toBe(document.activeElement);
         expect(csaddrInput.isVisible()).toBeTruthy();
         const newCsAddr = 'SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy';
         csaddrInput.element.value = newCsAddr;

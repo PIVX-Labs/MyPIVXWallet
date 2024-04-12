@@ -1,5 +1,5 @@
 <script setup>
-import { computed, defineEmits, ref, toRefs, watch } from 'vue';
+import { computed, defineEmits, ref, toRefs, watch, nextTick } from 'vue';
 import { optimiseCurrencyLocale, refreshChainData } from '../global.js';
 import { translation, ALERTS } from '../i18n.js';
 import Modal from '../Modal.vue';
@@ -12,6 +12,7 @@ const csAddrInternal = ref(coldStakingAddress.value);
 watch(coldStakingAddress, (addr) => (csAddrInternal.value = addr));
 const showColdStakingAddressModal = ref(false);
 const emit = defineEmits(['showUnstake', 'showStake', 'setColdStakingAddress']);
+const coldAddrInput = ref(null);
 const props = defineProps({
     coldBalance: Number,
     price: Number,
@@ -31,6 +32,12 @@ const coldBalanceValue = computed(() => {
     );
 
     return nValue.toLocaleString('en-gb', cLocale);
+});
+
+watch(showColdStakingAddressModal, (showColdStakingAddressModal) => {
+    nextTick(() => {
+        if (showColdStakingAddressModal) coldAddrInput.value.focus();
+    });
 });
 
 function submit() {
@@ -133,6 +140,7 @@ function submit() {
                 </p>
                 <input
                     type="text"
+                    ref="coldAddrInput"
                     :placeholder="`${
                         translation.popupExample
                     } ${coldStakingAddress.substring(0, 6)}...`"
