@@ -209,12 +209,6 @@ export class ExplorerNetwork extends Network {
         let nStartHeight = Math.max(
             ...wallet.getTransactions().map((tx) => tx.blockHeight)
         );
-        // Ask some blocks in the past or blockbock might not return a transaction that has just been mined
-        const blockOffset = 10;
-        nStartHeight =
-            nStartHeight > blockOffset
-                ? nStartHeight - blockOffset
-                : nStartHeight;
         if (debug) {
             console.time('getLatestTxsTimer');
         }
