@@ -205,7 +205,9 @@ export class ExplorerNetwork extends Network {
      * @returns {Promise<void>}
      */
     async getLatestTxs(wallet) {
-        const isFirstSync = !wallet.isSynced;
+        if (wallet.isSynced) {
+            throw new Error('getLatestTxs must only be for initial sync');
+        }
         let nStartHeight = Math.max(
             ...wallet.getTransactions().map((tx) => tx.blockHeight)
         );
@@ -218,30 +220,21 @@ export class ExplorerNetwork extends Network {
             wallet.isHD() ? 'xpub/' : 'address/'
         }${strKey}`;
         const strCoreParams = `?details=txs&from=${nStartHeight}`;
-        const probePage = isFirstSync
-            ? await this.safeFetchFromExplorer(
-                  `${strRoot + strCoreParams}&pageSize=1`
-              )
-            : null;
-        //.txs returns the total number of wallet's transaction regardless the startHeight and we use this for first sync
-        // after first sync (so at each new block) we can safely assume that user got less than 1000 new txs
-        //in this way we don't have to fetch the probePage after first sync
-        const txNumber = isFirstSync
-            ? probePage.txs - wallet.getTransactions().length
-            : 1;
+        const probePage = await this.safeFetchFromExplorer(
+            `${strRoot + strCoreParams}&pageSize=1`
+        );
+        const txNumber = probePage.txs - wallet.getTransactions().length;
         // Compute the total pages and iterate through them until we've synced everything
         const totalPages = Math.ceil(txNumber / 1000);
         for (let i = totalPages; i > 0; i--) {
-            if (isFirstSync) {
-                getEventEmitter().emit(
-                    'transparent-sync-status-update',
-                    tr(translation.syncStatusHistoryProgress, [
-                        { current: totalPages - i + 1 },
-                        { total: totalPages },
-                    ]),
-                    false
-                );
-            }
+            getEventEmitter().emit(
+                'transparent-sync-status-update',
+                tr(translation.syncStatusHistoryProgress, [
+                    { current: totalPages - i + 1 },
+                    { total: totalPages },
+                ]),
+                false
+            );
 
             // Fetch this page of transactions
             const iPage = await this.safeFetchFromExplorer(
@@ -263,9 +256,7 @@ export class ExplorerNetwork extends Network {
         if (debug) {
             console.log(
                 'Fetched latest txs: total number of pages was ',
-                totalPages,
-                ' fullSynced? ',
-                !isFirstSync
+                totalPages
             );
             console.timeEnd('getLatestTxsTimer');
         }
