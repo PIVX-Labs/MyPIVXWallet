@@ -51,13 +51,21 @@ async function stake(value, ownerAddress) {
     if (wallet.isViewOnly && !(await restoreWallet())) {
         return;
     }
+    const cDB = await Database.getInstance();
+    const cAccount = await cDB.getAccount();
+    const returnAddress =
+        cAccount?.getContactBy({
+            name: ownerAddress,
+            pubkey: ownerAddress,
+        })?.pubkey || ownerAddress;
+    console.log(returnAddress, ownerAddress);
     const res = await wallet.createAndSendTransaction(
         getNetwork(),
         coldStakingAddress.value,
         value,
         {
             isDelegation: true,
-            returnAddress: ownerAddress,
+            returnAddress,
         }
     );
     if (res) showStake.value = false;
