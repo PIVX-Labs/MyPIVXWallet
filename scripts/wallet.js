@@ -1,7 +1,7 @@
 import { validateMnemonic } from 'bip39';
 import { decrypt } from './aes-gcm.js';
 import { parseWIF } from './encoding.js';
-import { beforeUnloadListener, stakingDashboard } from './global.js';
+import { beforeUnloadListener } from './global.js';
 import { getNetwork } from './network.js';
 import { MAX_ACCOUNT_GAP, SHIELD_BATCH_SYNC_SIZE } from './chain_params.js';
 import { HistoricalTx, HistoricalTxType } from './historical_tx.js';
