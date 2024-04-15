@@ -201,21 +201,17 @@ export class ExplorerNetwork extends Network {
 
     /**
      * //TODO: do not take the wallet as parameter but instead something weaker like a public key or address?
-     * @param {number} nStartHeight - Minimum block height to get
+     * Must be called only for initial wallet sync
      * @param {import('./wallet.js').Wallet} wallet - Wallet that we are getting the txs of
      * @returns {Promise<void>}
      */
     async getLatestTxs(wallet) {
-        const isFirstSync = !wallet.isSynced;
+        if (wallet.isSynced) {
+            throw new Error('getLatestTxs must only be for initial sync');
+        }
         let nStartHeight = Math.max(
             ...wallet.getTransactions().map((tx) => tx.blockHeight)
         );
-        // Ask some blocks in the past or blockbock might not return a transaction that has just been mined
-        const blockOffset = 10;
-        nStartHeight =
-            nStartHeight > blockOffset
-                ? nStartHeight - blockOffset
-                : nStartHeight;
         if (debug) {
             console.time('getLatestTxsTimer');
         }
@@ -225,30 +221,21 @@ export class ExplorerNetwork extends Network {
             wallet.isHD() ? 'xpub/' : 'address/'
         }${strKey}`;
         const strCoreParams = `?details=txs&from=${nStartHeight}`;
-        const probePage = isFirstSync
-            ? await this.safeFetchFromExplorer(
-                  `${strRoot + strCoreParams}&pageSize=1`
-              )
-            : null;
-        //.txs returns the total number of wallet's transaction regardless the startHeight and we use this for first sync
-        // after first sync (so at each new block) we can safely assume that user got less than 1000 new txs
-        //in this way we don't have to fetch the probePage after first sync
-        const txNumber = isFirstSync
-            ? probePage.txs - wallet.getTransactions().length
-            : 1;
+        const probePage = await this.safeFetchFromExplorer(
+            `${strRoot + strCoreParams}&pageSize=1`
+        );
+        const txNumber = probePage.txs - wallet.getTransactions().length;
         // Compute the total pages and iterate through them until we've synced everything
         const totalPages = Math.ceil(txNumber / 1000);
         for (let i = totalPages; i > 0; i--) {
-            if (isFirstSync) {
-                getEventEmitter().emit(
-                    'transparent-sync-status-update',
-                    tr(translation.syncStatusHistoryProgress, [
-                        { current: totalPages - i + 1 },
-                        { total: totalPages },
-                    ]),
-                    false
-                );
-            }
+            getEventEmitter().emit(
+                'transparent-sync-status-update',
+                tr(translation.syncStatusHistoryProgress, [
+                    { current: totalPages - i + 1 },
+                    { total: totalPages },
+                ]),
+                false
+            );
 
             // Fetch this page of transactions
             const iPage = await this.safeFetchFromExplorer(
@@ -270,9 +257,7 @@ export class ExplorerNetwork extends Network {
         if (debug) {
             console.log(
                 'Fetched latest txs: total number of pages was ',
-                totalPages,
-                ' fullSynced? ',
-                !isFirstSync
+                totalPages
             );
             console.timeEnd('getLatestTxsTimer');
         }
@@ -347,19 +332,7 @@ export class ExplorerNetwork extends Network {
      * @return {Promise<Number[]>} The list of blocks which have at least one shield transaction
      */
     async getShieldBlockList() {
-        /**
-         * @type {Number[]}
-         */
-        const blockCount = await this.getBlockCount(false);
-        const blocks = await (
-            await fetch(`${cNode.url}/getshieldblocks`)
-        ).json();
-        const maxBlock = blocks[blocks.length - 1];
-        //I think
-        if (maxBlock < blockCount - 5) {
-            blocks.push(blockCount - 5);
-        }
-        return blocks;
+        return await (await fetch(`${cNode.url}/getshieldblocks`)).json();
     }
 
     // PIVX Labs Analytics: if you are a user, you can disable this FULLY via the Settings.
