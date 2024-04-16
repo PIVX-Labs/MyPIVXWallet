@@ -978,7 +978,7 @@ async function renderProposals(arrProposals, fContested) {
 
         const domStatus = domRow.insertCell();
         domStatus.classList.add('governStatusCol');
-        if (domTable.id == 'proposalsTableBody') {
+        if (!fContested) {
             domStatus.setAttribute(
                 'onclick',
                 `if(document.getElementById('governMob${i}').classList.contains('d-none')) { document.getElementById('governMob${i}').classList.remove('d-none'); } else { document.getElementById('governMob${i}').classList.add('d-none'); }`
@@ -1003,34 +1003,33 @@ async function renderProposals(arrProposals, fContested) {
         // Proposal Status calculation
         const nRequiredVotes = cMasternodes.enabled / 10;
         const nMonthlyPayment = parseInt(cProposal.MonthlyPayment);
-        let strStatus = '';
-        let strFundingStatus = '';
-        let strColourClass = '';
+
+        // Initial state is assumed to be "Not enough votes"
+        let strStatus = translation.proposalFailing;
+        let strFundingStatus = translation.proposalNotFunded;
+        let strColourClass = 'No';
 
         // Proposal Status calculations
         if (nNetYes < nRequiredVotes) {
-            // Scenario 1: Not enough votes
-            strStatus = translation.proposalFailing;
-            strFundingStatus = translation.proposalNotFunded;
-            strColourClass = 'No';
+            // Scenario 1: Not enough votes, default scenario
         } else if (!cProposal.IsEstablished) {
             // Scenario 2: Enough votes, but not established
-            strStatus = translation.proposalFailing;
             strFundingStatus = translation.proposalTooYoung;
-            strColourClass = 'No';
         } else if (
             nMonthlyPayment + totalAllocatedAmount >
             cChainParams.current.maxPayment / COIN
         ) {
             // Scenario 3: Enough votes, and established, but over-allocating the budget
             strStatus = translation.proposalPassing;
-            strFundingStatus = translation.proposalNotFunded;
             strColourClass = 'OverAllocated';
         } else {
             // Scenario 4: Enough votes, and established
             strStatus = translation.proposalPassing;
             strFundingStatus = translation.proposalFunded;
             strColourClass = 'Yes';
+
+            // Allocate this with the budget
+            totalAllocatedAmount += nMonthlyPayment;
         }
 
         // Funding Status and allocation calculations
@@ -1129,17 +1128,6 @@ async function renderProposals(arrProposals, fContested) {
             </span>`;
             domStatus.appendChild(finalizeButton);
         } else {
-            if (domTable.id == 'proposalsTableBody') {
-                if (
-                    cProposal.IsEstablished &&
-                    nNetYes >= nRequiredVotes &&
-                    totalAllocatedAmount + nMonthlyPayment <=
-                        cChainParams.current.maxPayment / COIN
-                ) {
-                    totalAllocatedAmount += nMonthlyPayment;
-                }
-            }
-
             domStatus.innerHTML = `
             <span style="font-size:12px; line-height: 15px; display: block; margin-bottom:15px;">
                 <span style="font-weight:700;" class="votes${strColourClass}">${strStatus}</span><br>
@@ -1268,7 +1256,7 @@ async function renderProposals(arrProposals, fContested) {
         const mobileDomRow = domTable.insertRow();
         const mobileExtended = mobileDomRow.insertCell();
         mobileExtended.style = 'vertical-align: middle;';
-        if (domTable.id == 'proposalsTableBody') {
+        if (!fContested) {
             mobileExtended.id = `governMob${i}`;
         } else if (domTable.id == 'proposalsContestedTableBody') {
             mobileExtended.id = `governMobCon${i}`;
@@ -1332,7 +1320,7 @@ async function renderProposals(arrProposals, fContested) {
     }
 
     // Show allocated budget
-    if (domTable.id == 'proposalsTableBody') {
+    if (!fContested) {
         const strAlloc = sanitizeHTML(
             totalAllocatedAmount.toLocaleString('en-gb')
         );
