@@ -3132,6 +3132,10 @@ select.form-control option {
     color:#5bd376;
 }
 
+.votesOverAllocated {
+    color:#dfb04b;
+}
+
 .votesNo {
     color:#df4b6c;
 }

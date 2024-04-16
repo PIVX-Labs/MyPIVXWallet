@@ -1002,22 +1002,35 @@ async function renderProposals(arrProposals, fContested) {
 
         // Proposal Status calculation
         const nRequiredVotes = cMasternodes.enabled / 10;
+        const nMonthlyPayment = parseInt(cProposal.MonthlyPayment);
         let strStatus = '';
         let strFundingStatus = '';
+        let strColourClass = '';
 
         // Proposal Status calculations
         if (nNetYes < nRequiredVotes) {
             // Scenario 1: Not enough votes
             strStatus = translation.proposalFailing;
             strFundingStatus = translation.proposalNotFunded;
+            strColourClass = 'No';
         } else if (!cProposal.IsEstablished) {
             // Scenario 2: Enough votes, but not established
             strStatus = translation.proposalFailing;
             strFundingStatus = translation.proposalTooYoung;
+            strColourClass = 'No';
+        } else if (
+            nMonthlyPayment + totalAllocatedAmount >
+            cChainParams.current.maxPayment / COIN
+        ) {
+            // Scenario 3: Enough votes, and established, but over-allocating the budget
+            strStatus = translation.proposalPassing;
+            strFundingStatus = translation.proposalNotFunded;
+            strColourClass = 'OverAllocated';
         } else {
-            // Scenario 3: Enough votes, and established
+            // Scenario 4: Enough votes, and established
             strStatus = translation.proposalPassing;
             strFundingStatus = translation.proposalFunded;
+            strColourClass = 'Yes';
         }
 
         // Funding Status and allocation calculations
@@ -1120,17 +1133,12 @@ async function renderProposals(arrProposals, fContested) {
                 if (
                     cProposal.IsEstablished &&
                     nNetYes >= nRequiredVotes &&
-                    totalAllocatedAmount + cProposal.MonthlyPayment <=
+                    totalAllocatedAmount + nMonthlyPayment <=
                         cChainParams.current.maxPayment / COIN
                 ) {
-                    strFundingStatus = translation.proposalFunded;
-                    totalAllocatedAmount += cProposal.MonthlyPayment;
+                    totalAllocatedAmount += nMonthlyPayment;
                 }
             }
-
-            // Figure out the colour of the Status, if any (using CSS class `votes[Yes/No]`)
-            const strColourClass =
-                strStatus === translation.proposalPassing ? 'Yes' : 'No';
 
             domStatus.innerHTML = `
             <span style="font-size:12px; line-height: 15px; display: block; margin-bottom:15px;">
@@ -1162,7 +1170,7 @@ async function renderProposals(arrProposals, fContested) {
         )}`;
 
         // Convert proposal amount to user's currency
-        const nProposalValue = parseInt(cProposal.MonthlyPayment) * nPrice;
+        const nProposalValue = nMonthlyPayment * nPrice;
         const { nValue } = optimiseCurrencyLocale(nProposalValue);
         const strProposalCurrency = nValue.toLocaleString('en-gb', cLocale);
 
@@ -1171,7 +1179,7 @@ async function renderProposals(arrProposals, fContested) {
         domPayments.classList.add('for-desktop');
         domPayments.style = 'vertical-align: middle;';
         domPayments.innerHTML = `<span class="governValues"><b>${sanitizeHTML(
-            parseInt(cProposal.MonthlyPayment).toLocaleString('en-gb', ',', '.')
+            nMonthlyPayment.toLocaleString('en-gb', ',', '.')
         )}</b> <span class="governMarked">${
             cChainParams.current.TICKER
         }</span> <br>
@@ -1276,11 +1284,7 @@ async function renderProposals(arrProposals, fContested) {
             </div>
             <div class="col-7">
                 <span class="governValues"><b>${sanitizeHTML(
-                    parseInt(cProposal.MonthlyPayment).toLocaleString(
-                        'en-gb',
-                        ',',
-                        '.'
-                    )
+                    nMonthlyPayment.toLocaleString('en-gb', ',', '.')
                 )}</b> <span class="governMarked">${
             cChainParams.current.TICKER
         }</span> <span style="margin-left:10px; margin-right: 2px;" class="governMarked governFiatSize">${strProposalCurrency}</span></b></span>
