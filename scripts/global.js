@@ -983,7 +983,7 @@ async function renderProposals(arrProposals, fContested) {
                 'onclick',
                 `if(document.getElementById('governMob${i}').classList.contains('d-none')) { document.getElementById('governMob${i}').classList.remove('d-none'); } else { document.getElementById('governMob${i}').classList.add('d-none'); }`
             );
-        } else if (domTable.id == 'proposalsContestedTableBody') {
+        } else {
             domStatus.setAttribute(
                 'onclick',
                 `if(document.getElementById('governMobCon${i}').classList.contains('d-none')) { document.getElementById('governMobCon${i}').classList.remove('d-none'); } else { document.getElementById('governMobCon${i}').classList.add('d-none'); }`
@@ -1258,7 +1258,7 @@ async function renderProposals(arrProposals, fContested) {
         mobileExtended.style = 'vertical-align: middle;';
         if (!fContested) {
             mobileExtended.id = `governMob${i}`;
-        } else if (domTable.id == 'proposalsContestedTableBody') {
+        } else {
             mobileExtended.id = `governMobCon${i}`;
         }
         mobileExtended.colSpan = '2';
