@@ -58,11 +58,6 @@ export class Account {
      * @returns {import('./contact-book.js').Contact?} - A Contact, if found
      */
     getContactBy({ name, pubkey }) {
-        if (!name && !pubkey)
-            throw Error(
-                'getContactBy(): At least ONE search parameter MUST be set!'
-            );
-
         // Get by Name
         if (name) return this.contacts.find((a) => a.label === name);
         // Get by Pubkey
