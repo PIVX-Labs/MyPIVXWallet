@@ -2,7 +2,6 @@ import template from '../locale/template/translation.toml';
 import { Database } from './database.js';
 import { fillAnalyticSelect, setTranslation } from './settings.js';
 import { wallet } from './wallet.js';
-import { getNetwork } from './network.js';
 import { cReceiveType, guiToggleReceiveType } from './contacts-book.js';
 import { reactive } from 'vue';
 import { negotiateLanguages } from '@fluent/langneg';
