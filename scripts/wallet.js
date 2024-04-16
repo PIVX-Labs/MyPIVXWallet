@@ -810,8 +810,8 @@ export class Wallet {
     subscribeToNetworkEvents() {
         getEventEmitter().on('new-block', async (block) => {
             if (this.#isSynced) {
-                getEventEmitter().emit('new-tx');
                 await this.getLatestBlocks(block);
+                getEventEmitter().emit('new-tx');
             }
         });
     }
