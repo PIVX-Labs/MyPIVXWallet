@@ -121,6 +121,5 @@ export class ParsedSecret {
             }
         }
         return null;
-        // createAlert('warning', ALERTS.FAILED_TO_IMPORT + '<br>', 6000);
     }
 }

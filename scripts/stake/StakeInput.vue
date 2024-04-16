@@ -59,9 +59,7 @@ function syncAmount() {
 }
 
 async function selectContact() {
-    console.log(ownerAddress.value);
     ownerAddress.value = (await promptForContact()) || '';
-    console.log(ownerAddress.value);
 }
 </script>
 

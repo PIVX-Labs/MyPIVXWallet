@@ -50,7 +50,6 @@ export const useWallet = defineStore('wallet', () => {
         await wallet.checkDecryptPassword(passwd);
 
     hasEncryptedWallet().then((r) => {
-        console.log(r);
         isEncrypted.value = r;
     });
 

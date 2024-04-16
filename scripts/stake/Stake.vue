@@ -58,7 +58,6 @@ async function stake(value, ownerAddress) {
             name: ownerAddress,
             pubkey: ownerAddress,
         })?.pubkey || ownerAddress;
-    console.log(returnAddress, ownerAddress);
     const res = await wallet.createAndSendTransaction(
         getNetwork(),
         coldStakingAddress.value,
