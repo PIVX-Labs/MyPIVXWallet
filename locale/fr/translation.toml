@@ -186,11 +186,11 @@ proposalFinalisationConfirming = "Confirmant..." # Confirming...
 proposalFinalisationRemaining = "restants" # remaining
 proposalFinalisationExpired = "Proposition expirée" # Proposal Expired
 proposalFinalisationReady = "Prêt à soumettre" # Ready to submit
-proposalPassing = "PASSANT" # PASSING
-proposalFailing = "ÉCHOUANT" # FAILING
-proposalTooYoung = "TROP JEUNE" # TOO YOUNG
-proposalFunded = "FINANCÉE" # FUNDED
-proposalNotFunded = "NON FINANCÉE" # NOT FUNDED
+proposalPassing = "Passant" # Passing
+proposalFailing = "Échouant" # Failing
+proposalTooYoung = "Trop jeune" # Too Young
+proposalFunded = "Financée" # Funded
+proposalNotFunded = "Non financée" # Not Funded
 proposalPaymentsRemaining = "l'installation(s) restants<br>de" # installment(s) remaining<br>of
 proposalPaymentTotal = "totale" # total
 proposalNetYes = "Net Oui" # Net Yes
@@ -218,6 +218,7 @@ shieldAddress = "" # Shield address
 cantShieldToExc = "" # This address does not support shield transfers
 settingsToggleAutoLockWallet = "" # Auto Lock the Wallet
 saveWalletFile = "" # Save Wallet File
+proposalOverBudget = "" # Over Budget
 
 [ALERTS]
 INTERNAL_ERROR = "Erreur interne, veuillez réessayer plus tard" # Internal error, please try again later

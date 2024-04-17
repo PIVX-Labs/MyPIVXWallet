@@ -187,11 +187,11 @@ proposalFinalisationConfirming = "Potvrđivanje..." # Confirming...
 proposalFinalisationRemaining = "preostalo" # remaining
 proposalFinalisationExpired = "Predlog je istekao" # Proposal Expired
 proposalFinalisationReady = "Spremno za slanje" # Ready to submit
-proposalPassing = "PROLAZI" # PASSING
-proposalFailing = "NE PROLAZI" # FAILING
-proposalTooYoung = "PREMLAD" # TOO YOUNG
-proposalFunded = "FINANSIRAN" # FUNDED
-proposalNotFunded = "NIJE FINANSIRAN" # NOT FUNDED
+proposalPassing = "Prolazi" # Passing
+proposalFailing = "Ne prolazi" # Failing
+proposalTooYoung = "Premlad" # Too Young
+proposalFunded = "Finansiran" # Funded
+proposalNotFunded = "Nije finansiran" # Not Funded
 proposalPaymentsRemaining = "preostalih rata<br>od" # installment(s) remaining<br>of
 proposalPaymentTotal = "ukupno" # total
 proposalNetYes = "Neto Da" # Net Yes
@@ -218,6 +218,7 @@ shieldAddress = "" # Shield address
 cantShieldToExc = "" # This address does not support shield transfers
 settingsToggleAutoLockWallet = "" # Auto Lock the Wallet
 saveWalletFile = "" # Save Wallet File
+proposalOverBudget = "" # Over Budget
 
 [ALERTS]
 INTERNAL_ERROR = "Interna greška, molimo pokušajte ponovo kasnije" # Internal error, please try again later

@@ -1021,6 +1021,7 @@ async function renderProposals(arrProposals, fContested) {
         ) {
             // Scenario 3: Enough votes, and established, but over-allocating the budget
             strStatus = translation.proposalPassing;
+            strFundingStatus = translation.proposalOverBudget;
             strColourClass = 'OverAllocated';
         } else {
             // Scenario 4: Enough votes, and established
@@ -1129,7 +1130,7 @@ async function renderProposals(arrProposals, fContested) {
             domStatus.appendChild(finalizeButton);
         } else {
             domStatus.innerHTML = `
-            <span style="font-size:12px; line-height: 15px; display: block; margin-bottom:15px;">
+            <span style="text-transform:uppercase; font-size:12px; line-height: 15px; display: block; margin-bottom:15px;">
                 <span style="font-weight:700;" class="votes${strColourClass}">${strStatus}</span><br>
                 <span style="color:hsl(265 100% 67% / 1);">(${strFundingStatus})</span><br>
             </span>

@@ -187,11 +187,11 @@ proposalFinalisationConfirming = "Bevestigen..." # Confirming...
 proposalFinalisationRemaining = "resterend" # remaining
 proposalFinalisationExpired = "Voorstel verlopen" # Proposal Expired
 proposalFinalisationReady = "Klaar om in te dienen" # Ready to submit
-proposalPassing = "SLAAGT" # PASSING
-proposalFailing = "MISLUKT" # FAILING
-proposalTooYoung = "TE JONG" # TOO YOUNG
-proposalFunded = "GEFINANCIERD" # FUNDED
-proposalNotFunded = "NIET GEFINANCIERD" # NOT FUNDED
+proposalPassing = "Slaagt" # Passing
+proposalFailing = "Mislukt" # Failing
+proposalTooYoung = "Te jong" # Too Young
+proposalFunded = "Gefinancierd" # Funded
+proposalNotFunded = "Niet gefinancierd" # Not Funded
 proposalPaymentsRemaining = "termijn(en) resterend<br>van" # installment(s) remaining<br>of
 proposalPaymentTotal = "totaal" # total
 proposalNetYes = "Netto Ja" # Net Yes
@@ -218,6 +218,7 @@ shieldAddress = "" # Shield address
 cantShieldToExc = "" # This address does not support shield transfers
 settingsToggleAutoLockWallet = "" # Auto Lock the Wallet
 saveWalletFile = "" # Save Wallet File
+proposalOverBudget = "" # Over Budget
 
 [ALERTS]
 INTERNAL_ERROR = "Interne fout, probeer het later opnieuw" # Internal error, please try again later

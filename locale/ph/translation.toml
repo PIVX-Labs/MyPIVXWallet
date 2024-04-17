@@ -185,11 +185,11 @@ proposalFinalisationConfirming = "Kinukumpirma..." # Confirming...
 proposalFinalisationRemaining = "natitira" # remaining
 proposalFinalisationExpired = "Proposal expired" # Proposal Expired
 proposalFinalisationReady = "Handa ng ipasa" # Ready to submit
-proposalPassing = "PASSING" # PASSING
-proposalFailing = "FAILING" # FAILING
-proposalTooYoung = "TOO YOUNG" # TOO YOUNG
-proposalFunded = "FUNDED" # FUNDED
-proposalNotFunded = "NOT FUNDED" # NOT FUNDED
+proposalPassing = "Passing" # Passing
+proposalFailing = "Failing" # Failing
+proposalTooYoung = "Too Young" # Too Young
+proposalFunded = "Funded" # Funded
+proposalNotFunded = "Not Funded" # Not Funded
 proposalPaymentsRemaining = "installment(s) remaining<br>of" # installment(s) remaining<br>of
 proposalPaymentTotal = "Total" # total
 proposalNetYes = "Net Yes" # Net Yes
@@ -218,6 +218,7 @@ shieldAddress = "" # Shield address
 cantShieldToExc = "" # This address does not support shield transfers
 settingsToggleAutoLockWallet = "" # Auto Lock the Wallet
 saveWalletFile = "" # Save Wallet File
+proposalOverBudget = "" # Over Budget
 
 [ALERTS]
 INTERNAL_ERROR = "Internal error, Pakiusap uliting muli" # Internal error, please try again later
