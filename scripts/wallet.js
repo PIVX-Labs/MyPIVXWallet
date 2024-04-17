@@ -866,10 +866,14 @@ export class Wallet {
             }
         }
         this.#isFetchingLatestBlocks = false;
-        if (block?.finalSaplingRoot)
-            if (!(await this.#checkShieldSaplingRoot(block.finalsaplingroot)))
-                return;
-        await this.saveShieldOnDisk();
+
+        // SHIELD-only checks
+        if (this.hasShield()) {
+            if (block?.finalSaplingRoot)
+                if (!(await this.#checkShieldSaplingRoot(block.finalsaplingroot)))
+                    return;
+            await this.saveShieldOnDisk();
+        }
     }
 
     async #checkShieldSaplingRoot(networkSaplingRoot) {
