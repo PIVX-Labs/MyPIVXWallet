@@ -69,7 +69,6 @@ const isCreatingTx = ref(false);
 const txPercentageCreation = ref(0.0);
 const txCreationStr = 'Creating SHIELD transaction...';
 
-const updating = ref(false);
 const balanceStr = computed(() => {
     const nCoins = balance.value / COIN;
     const strBal = nCoins.toFixed(displayDecimals.value);
@@ -101,10 +100,6 @@ const balanceValue = computed(() => {
 });
 
 const ticker = computed(() => cChainParams.current.TICKER);
-
-getEventEmitter().on('sync-status', (value) => {
-    updating.value = value === 'start';
-});
 
 const emit = defineEmits(['send', 'exportPrivKeyOpen']);
 
