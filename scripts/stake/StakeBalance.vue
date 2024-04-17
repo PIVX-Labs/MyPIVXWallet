@@ -1,6 +1,6 @@
 <script setup>
 import { computed, defineEmits, ref, toRefs, watch, nextTick } from 'vue';
-import { optimiseCurrencyLocale, refreshChainData } from '../global.js';
+import { optimiseCurrencyLocale } from '../global.js';
 import { translation, ALERTS } from '../i18n.js';
 import Modal from '../Modal.vue';
 import { createAlert, isColdAddress } from '../misc';
@@ -61,11 +61,7 @@ function submit() {
                 class="col-6 d-flex dcWallet-topLeftMenu"
                 style="justify-content: flex-start"
             >
-                <h3 class="noselect balance-title">
-                    <span class="reload noselect" @click="refreshChainData()"
-                        ><i class="fa-solid fa-rotate-right cur-pointer"></i
-                    ></span>
-                </h3>
+                <h3 class="noselect balance-title"></h3>
             </div>
 
             <div

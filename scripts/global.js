@@ -274,17 +274,6 @@ function subscribeToNetworkEvents() {
             '<i class="fa-solid fa-' + (value ? 'wifi' : 'ban') + '"></i>';
     });
 
-    getEventEmitter().on('sync-status', (value) => {
-        switch (value) {
-            case 'start':
-                doms.domBalanceReloadStaking.classList.add('playAnim');
-                break;
-            case 'stop':
-                doms.domBalanceReloadStaking.classList.remove('playAnim');
-                break;
-        }
-    });
-
     getEventEmitter().on('new-block', (block) => {
         console.log(`New block detected! ${block}`);
         blockCount = block;
