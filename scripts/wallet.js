@@ -870,7 +870,11 @@ export class Wallet {
         // SHIELD-only checks
         if (this.hasShield()) {
             if (block?.finalSaplingRoot)
-                if (!(await this.#checkShieldSaplingRoot(block.finalsaplingroot)))
+                if (
+                    !(await this.#checkShieldSaplingRoot(
+                        block.finalsaplingroot
+                    ))
+                )
                     return;
             await this.saveShieldOnDisk();
         }
