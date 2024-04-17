@@ -219,6 +219,7 @@ cantShieldToExc = "" # This address does not support shield transfers
 settingsToggleAutoLockWallet = "" # Auto Lock the Wallet
 saveWalletFile = "" # Save Wallet File
 proposalOverBudget = "" # Over Budget
+badSaplingRoot = "" # There was an error while syncing. Resyncing from scratch (Bad sapling root)
 
 [ALERTS]
 INTERNAL_ERROR = "Erreur interne, veuillez réessayer plus tard" # Internal error, please try again later
