@@ -1,88 +1,122 @@
 import { getEventEmitter } from './event_bus.js';
-import { isEmpty } from './misc.js';
-import { cMarket, fillCurrencySelect } from './settings.js';
+import { cOracle, fillCurrencySelect, strCurrency } from './settings.js';
 
 /**
- * CoinGecko's endpoint for PIVX data, optimised for least bandwidth
- * - No localisation, tickers, community data, developer data or sparklines
+ * @typedef {Object} Currency
+ * @property {string} currency - The type of currency
+ * @property {number} value - The value of the currency
+ * @property {number} last_updated - The timestamp when this value was last updated
  */
-export const COINGECKO_ENDPOINT =
-    'https://api.coingecko.com/api/v3/coins/pivx?localization=false&tickers=false&market_data=true&community_data=false&developer_data=false&sparkline=false';
 
 /**
- * The generic market data source template, used to build site-specific classes
+ * Oracle's primary instance.
+ *
+ * @todo Allow an array of Oracle instances for better privacy and decentralisation
  */
-export class MarketSource {
-    /** The storage object for raw market data */
-    cData = {};
+export const ORACLE_BASE = 'https://pivxla.bz/oracle/api/v1';
 
-    /** The name of the market source */
-    strName = '';
-
-    /** The customised API endpoint of the market source */
-    strEndpoint = '';
+/**
+ * An Oracle instance
+ */
+export class Oracle {
+    /**
+     * The currencies cache list
+     * @type {Currency[]} Array to store currency objects
+     */
+    arrCurrencies = [];
 
     /**
-     * Ensure a market data cache exists, if not, fetch it and resume
+     * A lock-like flag which waits until at least once successful "full fetch" of currencies has occurred.
+     * This flag massively lowers bandwidth by only fetching the bulk once, falling to per-currency APIs afterwards.
      */
-    async ensureCacheExists() {
-        if (!this.cData || !Object.keys(this.cData).length) await this.fetch();
+    fLoadedCurrencies = false;
+
+    /**
+     * Get the price in a specific display currency with extremely low bandwidth
+     * @param {string} strCurrency - The Oracle display currency
+     * @param {boolean} fUseCache - Whether to use local cache or fetch via API
+     * @return {Promise<Currency>}
+     */
+    async getPrice(strCurrency, fUseCache = true) {
+        if (fUseCache && this.arrCurrencies.length !== 0) {
+            // We're attempting to read in-cache, and we have some data, let's try finding it
+            return (
+                this.arrCurrencies?.find((a) => a.currency === strCurrency)
+                    ?.value || 0
+            );
+        } else {
+            // Either a refresh request, or no cache available: let's fetch it
+            try {
+                /** @type {Currency} */
+                const cCurrency = await (
+                    await fetch(`${ORACLE_BASE}/price/${strCurrency}`)
+                ).json();
+
+                // If we already have it, update it
+                const nCachedCurrencyIndex = this.arrCurrencies.findIndex(
+                    (a) => a.currency === strCurrency
+                );
+                if (nCachedCurrencyIndex !== -1) {
+                    this.arrCurrencies[nCachedCurrencyIndex] = cCurrency;
+                } else {
+                    // Otherwise, add it new
+                    this.arrCurrencies.push(cCurrency);
+                }
+
+                // And finally return it
+                return cCurrency;
+            } catch (e) {
+                console.warn(
+                    'Oracle: Failed to fetch ' +
+                        strCurrency.toUpperCase() +
+                        ' price!'
+                );
+                console.warn(e);
+                return 0;
+            }
+        }
     }
 
     /**
-     * Fetches the raw market source data
-     * @returns {Promise<object>}
+     * Get a list of the supported display currencies
+     * @param {boolean} fUseCache - Whether to use local cache or fetch via API
+     * @returns {Promise<Array<Currency>>} - A list of Oracle-supported display currencies
      */
-    async fetch() {
+    async getCurrencies(fUseCache = true) {
+        if (fUseCache && this.arrCurrencies.length !== 0)
+            return this.arrCurrencies;
+
+        // Either a refresh request, or no cache, fetch everything we can get!
         try {
-            return (this.cData = await (await fetch(this.strEndpoint)).json());
+            this.arrCurrencies = await (
+                await fetch(`${ORACLE_BASE}/currencies`)
+            ).json();
+
+            // Now we've loaded all currencies: we'll flag it and use the lower bandwidth price fetches in the future
+            this.fLoadedCurrencies = true;
+            return this.arrCurrencies;
         } catch (e) {
-            console.warn('CoinGecko: Failed to fetch prices!');
+            console.warn('Oracle: Failed to fetch currencies!');
             console.warn(e);
-            return null;
+            return [];
         }
     }
 }
 
 /**
- * The CoinGecko market data source
- */
-export class CoinGecko extends MarketSource {
-    constructor() {
-        super();
-        this.strName = 'CoinGecko';
-        this.strEndpoint = COINGECKO_ENDPOINT;
-    }
-
-    /**
-     * Get the price in a specific display currency
-     * @param {string} strCurrency - The CoinGecko-supported display currency
-     * @return {Promise<number>}
-     */
-    async getPrice(strCurrency) {
-        await this.ensureCacheExists();
-        return this.cData?.market_data?.current_price[strCurrency] || 0;
-    }
-
-    /**
-     * Get a list of the supported display currencies
-     * @returns {Promise<Array<string>>} - A list of CoinGecko-supported display currencies
-     */
-    async getCurrencies() {
-        await this.ensureCacheExists();
-        return !isEmpty(this.cData)
-            ? Object.keys(this.cData.market_data.current_price)
-            : [];
-    }
-}
-
-/**
- * Refreshes market data from the user's data source, then re-renders currency options and price displays
+ * Refreshes market data from the user's Oracle, then re-renders currency options and price displays
  */
 export async function refreshPriceDisplay() {
-    // Refresh our price data, and if successful, update the UI
-    if (!isEmpty(await cMarket.fetch())) {
-        // Update the currency customisation menu from the selected data source
+    // If we have an empty cache, we'll do a heavy full-fetch to populate the cache
+    if (!cOracle.fLoadedCurrencies) {
+        await cOracle.getCurrencies(false);
+    } else {
+        // And if we have cache: we do a low-bandwidth, single-currency refresh
+        await cOracle.getPrice(strCurrency, false);
+    }
+
+    if (cOracle.fLoadedCurrencies) {
+        // Update the currency customisation menu from the selected Oracle
         await fillCurrencySelect();
 
         // Update price values
