@@ -22,6 +22,12 @@ export default merge(common, {
     devServer: {
         static: {
             directory: path.join(__dirname, './'),
+            watch: {
+                ignored: [
+                  // ignore changes in '.git' subdirectory (prevent constant hot-reloading in auto-fetch configurations)
+                  '**/.git'
+                ],
+              },
         },
         compress: true,
         port: 5500,
