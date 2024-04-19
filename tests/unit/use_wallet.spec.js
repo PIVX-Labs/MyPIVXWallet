@@ -5,13 +5,14 @@ import { useWallet } from '../../scripts/composables/use_wallet.js';
 import { hasEncryptedWallet, wallet } from '../../scripts/wallet.js';
 import { LegacyMasterKey } from '../../scripts/masterkey.js';
 import { getNetwork } from '../../scripts/network.js';
+import { strCurrency, cMarket } from '../../scripts/settings.js';
 
 vi.mock('../../scripts/network.js');
 vi.mock('../../scripts/mempool.js');
 
 describe('useWallet tests', () => {
     let walletComposable;
-    beforeEach(() => {
+    beforeEach(async () => {
         walletComposable = useWallet();
         vi.stubGlobal('indexedDB', new IDBFactory());
         getEventEmitter().emit('balance-update');
@@ -36,7 +37,7 @@ describe('useWallet tests', () => {
             walletComposable.pendingShieldBalance
         );
         expect(wallet.immatureBalance).toBe(walletComposable.immatureBalance);
-        // TODO: Currency, Price
+        expect(walletComposable.currency).toBe(strCurrency.toUpperCase());
 
         return true;
     }
