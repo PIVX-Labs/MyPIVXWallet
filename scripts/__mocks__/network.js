@@ -5,5 +5,7 @@ export const getNetwork = vi.fn(() => {
         getBlockCount: vi.fn(() => {
             return 1504903;
         }),
+        getLatestTxs: vi.fn(),
+        sendTransaction: vi.fn(),
     };
 });
