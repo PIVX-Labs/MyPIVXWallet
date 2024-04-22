@@ -199,7 +199,7 @@ export async function start() {
 
     // Fetch price data, then fetch chain data
     if (getNetwork().enabled) {
-        refreshPriceDisplay().finally(refreshChainData);
+        refreshPriceDisplay();
     }
 
     const database = await Database.getInstance();
