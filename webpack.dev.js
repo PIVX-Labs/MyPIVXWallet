@@ -26,6 +26,9 @@ export default merge(common, {
                 ignored: [
                     // ignore changes in '.git' subdirectory (prevent constant hot-reloading in auto-fetch configurations)
                     '**/.git',
+                    /node_modules/,
+		    /coverage/,
+
                 ],
             },
         },
