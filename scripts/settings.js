@@ -1,6 +1,5 @@
 import {
     doms,
-    refreshChainData,
     updateLogOutButton,
     updateGovernanceTab,
     dashboard,
