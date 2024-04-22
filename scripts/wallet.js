@@ -212,7 +212,10 @@ export class Wallet {
 
     /**
      * Set or replace the active Master Key with a new Master Key
-     * @param {import('./masterkey.js').MasterKey} mk - The new Master Key to set active
+     * @param {object} o - Object to be destructured
+     * @param {import('./masterkey.js').MasterKey} o.mk - The new Master Key
+     * @param {number} [o.nAccount] - The account number
+     * @param {string} [o.extsk] - The extended spending key
      */
     async setMasterKey({ mk, nAccount = 0, extsk }) {
         const isNewAcc =
