@@ -177,6 +177,7 @@ export class Mempool {
      * By default it's `OutpointState.SPENT | OutpointState.IMMATURE | OutpointState.LOCKED`
      * @param {number} [o.requirement] - A requirement to apply to all UTXOs. For example
      * `OutpointState.P2CS` will only return P2CS transactions.
+     * @param {number} [o.target] - Number of satoshis needed. The method will return early when the value of the UTXOs has been reached, plus a bit to account for change
      * By default it's MAX_SAFE_INTEGER
      * @returns {UTXO[]} a list of unspent transaction outputs
      */

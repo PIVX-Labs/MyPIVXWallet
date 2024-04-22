@@ -791,8 +791,9 @@ export class Wallet {
      * But currently we don't have any way of getting the UTXO
      * out of the vin. This will happen after the mempool refactor,
      * But for now we can just recalculate the UTXOs
+     * @param {number} target - Number of satoshis needed. See Mempool.getUTXOs
      */
-    #getUTXOsForShield(target) {
+    #getUTXOsForShield(target = Number.POSITIVE_INFINITY) {
         return this.#mempool
             .getUTXOs({
                 requirement: OutpointState.P2PKH | OutpointState.OURS,
