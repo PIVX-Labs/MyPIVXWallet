@@ -789,7 +789,7 @@ export class Wallet {
     /**
      * @todo this needs to take the `vin` as input,
      * But currently we don't have any way of getting the UTXO
-     * out of the vin. This will hapèen after the mempool refactor,
+     * out of the vin. This will happen after the mempool refactor,
      * But for now we can just recalculate the UTXOs
      */
     #getUTXOsForShield(target) {
