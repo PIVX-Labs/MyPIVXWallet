@@ -1090,7 +1090,7 @@ export class Wallet {
         } catch (e) {
             // sleep a full period of periodicFunction
             await sleep(500);
-            throw new Error(e);
+            throw e;
         } finally {
             clearInterval(periodicFunction);
             getEventEmitter().emit(
