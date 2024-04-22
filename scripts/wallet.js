@@ -728,12 +728,6 @@ export class Wallet {
             return;
         }
         const cNet = getNetwork();
-        getEventEmitter().emit(
-            'shield-sync-status-update',
-            translation.syncLoadingSaplingProver,
-            false
-        );
-        await this.#shield.loadSaplingProver();
         try {
             const blockHeights = (await cNet.getShieldBlockList()).filter(
                 (b) => b > this.#shield.getLastSyncedBlock()
@@ -794,10 +788,11 @@ export class Wallet {
      * out of the vin. This will hapèen after the mempool refactor,
      * But for now we can just recalculate the UTXOs
      */
-    #getUTXOsForShield() {
+    #getUTXOsForShield(target) {
         return this.#mempool
             .getUTXOs({
                 requirement: OutpointState.P2PKH | OutpointState.OURS,
+                target,
             })
             .map((u) => {
                 return {
@@ -1088,7 +1083,7 @@ export class Wallet {
                 amount: value,
                 blockHeight: blockCount + 1,
                 useShieldInputs: transaction.vin.length === 0,
-                utxos: this.#getUTXOsForShield(),
+                utxos: this.#getUTXOsForShield(value),
                 transparentChangeAddress: this.getNewAddress(1)[0],
             });
             return transaction.fromHex(hex);
