@@ -197,7 +197,7 @@ export async function start() {
         fillTranslationSelect(),
     ]);
 
-    // Fetch price data, then fetch chain data
+    // Fetch price data
     if (getNetwork().enabled) {
         refreshPriceDisplay();
     }
