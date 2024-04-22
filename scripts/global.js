@@ -905,7 +905,7 @@ async function renderProposals(arrProposals, fContested) {
     ).toLocaleString('en-gb');
 
     // Update total budget in user's currency
-    const nPrice = await cOracle.getPrice(strCurrency);
+    const nPrice = cOracle.getCachedPrice(strCurrency);
     const nCurrencyValue = (cChainParams.current.maxPayment / COIN) * nPrice;
     const { nValue, cLocale } = optimiseCurrencyLocale(nCurrencyValue);
     doms.domTotalGovernanceBudgetValue.innerHTML =

@@ -8,7 +8,7 @@ import {
 import { wallet, hasEncryptedWallet } from './wallet.js';
 import { cChainParams } from './chain_params.js';
 import { setNetwork, ExplorerNetwork, getNetwork } from './network.js';
-import { confirmPopup, createAlert, isEmpty } from './misc.js';
+import { confirmPopup, createAlert } from './misc.js';
 import {
     switchTranslation,
     ALERTS,
@@ -400,10 +400,13 @@ async function fillTranslationSelect() {
  * Fills the display currency dropbox on the settings page
  */
 export async function fillCurrencySelect() {
-    const arrCurrencies = await cOracle.getCurrencies();
+    // If we already have a currency cache; use it, or just pull fresh
+    const arrCurrencies = cOracle.fLoadedCurrencies
+        ? cOracle.getCachedCurrencies()
+        : await cOracle.getCurrencies();
 
     // Only update if we have a currency list
-    if (!isEmpty(arrCurrencies)) {
+    if (cOracle.fLoadedCurrencies) {
         while (doms.domCurrencySelect.options.length > 0) {
             doms.domCurrencySelect.remove(0);
         }

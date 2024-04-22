@@ -107,7 +107,7 @@ export const useWallet = defineStore('wallet', () => {
         shieldBalance.value = await wallet.getShieldBalance();
         pendingShieldBalance.value = await wallet.getPendingShieldBalance();
         coldBalance.value = wallet.coldBalance;
-        price.value = await cOracle.getPrice(strCurrency);
+        price.value = cOracle.getCachedPrice(strCurrency);
     });
 
     return {
