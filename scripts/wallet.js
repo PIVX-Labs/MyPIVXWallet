@@ -16,7 +16,7 @@ import { RECEIVE_TYPES } from './contacts-book.js';
 import { Account } from './accounts.js';
 import { fAdvancedMode } from './settings.js';
 import { bytesToHex, hexToBytes, sleep, startBatch } from './utils.js';
-import { strHardwareName } from './ledger.js';
+import { ledgerSignTransaction, strHardwareName } from './ledger.js';
 import { OutpointState, Mempool } from './mempool.js';
 import { getEventEmitter } from './event_bus.js';
 
@@ -178,36 +178,12 @@ export class Wallet {
 
     isViewOnly() {
         if (!this.#masterKey) return false;
-        return this.#masterKey.isViewOnly;
+        return this.#masterKey.isViewOnly && !this.isHardwareWallet();
     }
 
     isHD() {
         if (!this.#masterKey) return false;
         return this.#masterKey.isHD;
-    }
-
-    async hasWalletUnlocked(fIncludeNetwork = false) {
-        if (fIncludeNetwork && !getNetwork().enabled)
-            return createAlert(
-                'warning',
-                ALERTS.WALLET_OFFLINE_AUTOMATIC,
-                5500
-            );
-        if (!this.isLoaded()) {
-            return createAlert(
-                'warning',
-                tr(ALERTS.WALLET_UNLOCK_IMPORT, [
-                    {
-                        unlock: (await hasEncryptedWallet())
-                            ? 'unlock '
-                            : 'import/create',
-                    },
-                ]),
-                3500
-            );
-        } else {
-            return true;
-        }
     }
 
     /**
@@ -981,6 +957,9 @@ export class Wallet {
         if (balance < value) {
             throw new Error('Not enough balance');
         }
+        if (isDelegation && this.isHardwareWallet()) {
+            throw new Error('Ledger does not support cold staking yet');
+        }
         if (delegateChange && !changeDelegationAddress)
             throw new Error(
                 '`delegateChange` was set to true, but no `changeDelegationAddress` was provided.'
@@ -1114,6 +1093,9 @@ export class Wallet {
     async sign(transaction) {
         if (this.isViewOnly()) {
             throw new Error('Cannot sign with a view only wallet');
+        }
+        if (this.isHardwareWallet()) {
+            return await ledgerSignTransaction(this, transaction);
         }
         if (!transaction.vin.length || transaction.shieldOutput[0]) {
             // TODO: separate signing and building process for shield?

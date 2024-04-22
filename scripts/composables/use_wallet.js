@@ -86,11 +86,7 @@ export const useWallet = defineStore('wallet', () => {
     );
     const createAndSendTransaction = async (network, address, value, opts) => {
         const tx = wallet.createTransaction(address, value, opts);
-        if (wallet.isHardwareWallet()) {
-            await ledgerSignTransaction(wallet, tx);
-        } else {
-            await wallet.sign(tx);
-        }
+        await wallet.sign(tx);
         const res = await network.sendTransaction(tx.serialize());
         if (res) {
             await wallet.addTransaction(tx);

@@ -12,7 +12,6 @@ import {
 } from './misc.js';
 import { Database } from './database.js';
 import { getNetwork } from './network.js';
-import { ledgerSignTransaction } from './ledger.js';
 
 /**
  * @deprecated use the new wallet method instead
@@ -37,10 +36,7 @@ export async function createAndSendTransaction({
         changeAddress,
         returnAddress: delegationOwnerAddress,
     });
-    if (!wallet.isHardwareWallet()) await wallet.sign(tx);
-    else {
-        await ledgerSignTransaction(wallet, tx);
-    }
+    await wallet.sign(tx);
     const res = await getNetwork().sendTransaction(tx.serialize());
     if (res) {
         await wallet.addTransaction(tx);
@@ -63,7 +59,7 @@ export async function createMasternode() {
 
     // Generate the Masternode collateral
     const [address] = await getNewAddress({
-        verify: wallet.isHardwareWallet(),
+        verify: true,
         nReceiving: 1,
     });
     const result = await createAndSendTransaction({

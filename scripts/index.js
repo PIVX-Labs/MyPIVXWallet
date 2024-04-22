@@ -30,7 +30,7 @@ export {
     switchSettings,
     govVote,
 } from './global.js';
-export { wallet, getNewAddress } from './wallet.js';
+export { wallet } from './wallet.js';
 export {
     logOut,
     toggleTestnet,

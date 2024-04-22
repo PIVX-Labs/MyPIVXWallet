@@ -139,7 +139,6 @@ async function encryptWallet(password, currentPassword = '') {
 
 async function restoreWallet(strReason) {
     if (!wallet.isEncrypted) return false;
-    if (wallet.isHardwareWallet) return true;
     showRestoreWallet.value = true;
     return await new Promise((res) => {
         watch(
@@ -206,7 +205,7 @@ function lockWallet() {
  */
 async function send(address, amount, useShieldInputs) {
     // Ensure a wallet is unlocked
-    if (wallet.isViewOnly && !wallet.isHardwareWallet) {
+    if (wallet.isViewOnly) {
         if (
             !(await restoreWallet(
                 tr(ALERTS.WALLET_UNLOCK_IMPORT, [
@@ -516,7 +515,9 @@ defineExpose({
             <div
                 class="col-12"
                 v-if="
-                    !wallet.isViewOnly && !needsToEncrypt && wallet.isImported
+                    !wallet.isViewOnly &&
+                    wallet.isEncrypted &&
+                    wallet.isImported
                 "
             >
                 <center>

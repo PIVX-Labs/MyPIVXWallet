@@ -89,7 +89,6 @@ async function unstake(value) {
 
 async function restoreWallet(strReason) {
     if (!wallet.isEncrypted) return false;
-    if (wallet.isHardwareWallet) return true;
     showRestoreWallet.value = true;
     return await new Promise((res) => {
         watch(
