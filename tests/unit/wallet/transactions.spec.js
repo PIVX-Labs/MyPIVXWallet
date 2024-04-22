@@ -46,7 +46,7 @@ describe('Wallet transaction tests', () => {
     beforeEach(() => {
         mempool = new Mempool();
         wallet = new Wallet({ nAccount: 0, isMainWallet: false, mempool });
-        wallet.setMasterKey(getLegacyMainnet());
+		wallet.setMasterKey({ mk: getLegacyMainnet() });
         PIVXShield = vi.fn();
         PIVXShield.prototype.createTransaction = vi.fn(() => {
             return {
@@ -117,7 +117,7 @@ describe('Wallet transaction tests', () => {
     });
 
     it('Creates a tx with change address', async () => {
-        wallet.setMasterKey(getLegacyMainnet());
+		wallet.setMasterKey({ mk: getLegacyMainnet() });
         const tx = wallet.createTransaction(
             'EXMDbnWT4K3nWfK1311otFrnYLcFSipp3iez',
             0.05 * 10 ** 8,

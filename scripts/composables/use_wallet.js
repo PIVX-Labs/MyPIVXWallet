@@ -27,8 +27,8 @@ export const useWallet = defineStore('wallet', () => {
     // Transparent txs are so fast that we don't need to keep track of them.
     const isCreatingTx = ref(false);
 
-    const setMasterKey = async (mk) => {
-        wallet.setMasterKey(mk);
+    const setMasterKey = async ({ mk, extsk }) => {
+        wallet.setMasterKey({ mk, extsk });
         isImported.value = wallet.isLoaded();
         isHardwareWallet.value = wallet.isHardwareWallet();
         isHD.value = wallet.isHD();

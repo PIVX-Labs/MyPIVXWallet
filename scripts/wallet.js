@@ -214,12 +214,13 @@ export class Wallet {
      * Set or replace the active Master Key with a new Master Key
      * @param {import('./masterkey.js').MasterKey} mk - The new Master Key to set active
      */
-    setMasterKey(mk, nAccount = 0) {
+    async setMasterKey({ mk, nAccount = 0, extsk }) {
         const isNewAcc =
             mk?.getKeyToExport(nAccount) !==
             this.#masterKey?.getKeyToExport(this.#nAccount);
         this.#masterKey = mk;
         this.#nAccount = nAccount;
+        if (extsk) await this.setExtsk(extsk);
         if (isNewAcc) {
             this.reset();
             for (let i = 0; i < Wallet.chains; i++) this.loadAddresses(i);
