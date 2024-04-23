@@ -2979,6 +2979,7 @@ select.form-control option {
 .flipdown.flipdown__theme-dark {
     font-family: sans-serif;
     font-weight: bold;
+    text-transform: uppercase;
 }
 
 .flipdown.flipdown__theme-dark .rotor-group-heading:before {
