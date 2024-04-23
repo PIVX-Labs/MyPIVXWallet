@@ -21,7 +21,7 @@ export const ORACLE_BASE = 'https://pivxla.bz/oracle/api/v1';
 export class Oracle {
     /**
      * The currencies cache map
-     * @type {Map<string, Currency>} Array to store currency objects
+     * @type {Map<string, Currency>} Map to store currency objects
      */
     mapCurrencies = new Map();
 
