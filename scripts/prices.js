@@ -42,7 +42,7 @@ export class Oracle {
 
     /**
      * Get a cached list of the supported display currencies
-     * 
+     *
      * **Note:** This is a read-only array, use the {@link mapCurrencies} map to mutate the cache
      * @returns {Array<Currency>} - A list of Oracle-supported display currencies
      */
