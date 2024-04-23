@@ -24,7 +24,7 @@ import { getCurrencyByAlpha2 } from 'country-locale-map';
 /** A mode that emits verbose console info for internal MPW operations */
 export let debug = false;
 /**
- * The user-selected display currency from market-aggregator sites
+ * The user-selected display currency from Oracle
  * @type {string}
  */
 export let strCurrency = getDefaultCurrency();
