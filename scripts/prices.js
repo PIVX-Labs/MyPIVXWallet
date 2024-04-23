@@ -20,10 +20,10 @@ export const ORACLE_BASE = 'https://pivxla.bz/oracle/api/v1';
  */
 export class Oracle {
     /**
-     * The currencies cache list
-     * @type {Currency[]} Array to store currency objects
+     * The currencies cache map
+     * @type {Map<string, Currency>} Array to store currency objects
      */
-    arrCurrencies = [];
+    mapCurrencies = new Map();
 
     /**
      * A lock-like flag which waits until at least once successful "full fetch" of currencies has occurred.
@@ -37,18 +37,17 @@ export class Oracle {
      * @return {Number}
      */
     getCachedPrice(strCurrency) {
-        return (
-            this.arrCurrencies.find((a) => a.currency === strCurrency)?.value ||
-            0
-        );
+        return this.mapCurrencies.get(strCurrency)?.value || 0;
     }
 
     /**
      * Get a cached list of the supported display currencies
+     * 
+     * **Note:** This is a read-only array, use the {@link mapCurrencies} map to mutate the cache
      * @returns {Array<Currency>} - A list of Oracle-supported display currencies
      */
     getCachedCurrencies() {
-        return this.arrCurrencies;
+        return Array.from(this.mapCurrencies.values());
     }
 
     /**
@@ -66,16 +65,8 @@ export class Oracle {
             /** @type {Currency} */
             const cCurrency = await cReq.json();
 
-            // If we already have it, update it
-            const nCachedCurrencyIndex = this.arrCurrencies.findIndex(
-                (a) => a.currency === strCurrency
-            );
-            if (nCachedCurrencyIndex !== -1) {
-                this.arrCurrencies[nCachedCurrencyIndex] = cCurrency;
-            } else {
-                // Otherwise, add it new
-                this.arrCurrencies.push(cCurrency);
-            }
+            // Update it
+            this.mapCurrencies.set(strCurrency, cCurrency);
 
             // And finally return it
             return cCurrency.value;
@@ -103,12 +94,19 @@ export class Oracle {
             const cReq = await fetch(`${ORACLE_BASE}/currencies`);
 
             // If the request fails, we'll try to fallback to cache, otherwise return a safe empty state
-            if (!cReq.ok) return this.arrCurrencies;
-            this.arrCurrencies = await cReq.json();
+            if (!cReq.ok) return this.getCachedCurrencies();
+
+            /** @type {Array<Currency>} */
+            const arrCurrencies = await cReq.json();
+
+            // Loop each currency and update the cache
+            for (const cCurrency of arrCurrencies) {
+                this.mapCurrencies.set(cCurrency.currency, cCurrency);
+            }
 
             // Now we've loaded all currencies: we'll flag it and use the lower bandwidth price fetches in the future
             this.fLoadedCurrencies = true;
-            return this.arrCurrencies;
+            return arrCurrencies;
         } catch (e) {
             console.warn('Oracle: Failed to fetch currencies!');
             console.warn(e);
