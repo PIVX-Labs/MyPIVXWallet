@@ -16,19 +16,16 @@ import { getNetwork } from './network.js';
 export {
     openTab,
     accessOrImportWallet,
-    guiSetColdStakingAddress,
     toClipboard,
     restoreWallet,
     refreshChainData,
     playMusic,
-    selectMaxBalance,
     openExplorer,
     doms,
     importMasternode,
     destroyMasternode,
     startMasternode,
     toggleDropDown,
-    toggleBottomMenu,
     createProposal,
     switchSettings,
     govVote,
@@ -43,7 +40,7 @@ export {
     toggleAutoLockWallet,
     changePassword,
 } from './settings.js';
-export { undelegateGUI, delegateGUI, createMasternode } from './legacy.js';
+export { createMasternode } from './legacy.js';
 export {
     promoConfirm,
     setPromoMode,

@@ -69,7 +69,6 @@ const isCreatingTx = ref(false);
 const txPercentageCreation = ref(0.0);
 const txCreationStr = 'Creating SHIELD transaction...';
 
-const updating = ref(false);
 const balanceStr = computed(() => {
     const nCoins = balance.value / COIN;
     const strBal = nCoins.toFixed(displayDecimals.value);
@@ -105,11 +104,7 @@ const balanceValue = computed(() => {
 
 const ticker = computed(() => cChainParams.current.TICKER);
 
-getEventEmitter().on('sync-status', (value) => {
-    updating.value = value === 'start';
-});
-
-const emit = defineEmits(['reload', 'send', 'exportPrivKeyOpen', 'displayLockWalletModal']);
+const emit = defineEmits(['send', 'exportPrivKeyOpen', 'displayLockWalletModal']);
 
 getEventEmitter().on('transparent-sync-status-update', (str, finished) => {
     syncTStr.value = str;
@@ -134,16 +129,10 @@ getEventEmitter().on(
     }
 );
 
-function reload() {
-    if (!updating) {
-        updating.value = true;
-        emit('reload');
-    }
-}
-
 function displayLockWalletModal() {
     emit('displayLockWalletModal');
 }
+
 </script>
 
 <template>
@@ -167,6 +156,7 @@ function displayLockWalletModal() {
                         <span class="reload noselect" @click="reload()"><i class="fa-solid fa-rotate-right topCol"
                                 :class="{ playAnim: updating }"></i></span>
                     </h3>
+		    <h3 class="noselect balance-title"></h3>
                 </div>
 
                 <div class="col-6 d-flex dcWallet-topRightMenu" style="justify-content: flex-end">

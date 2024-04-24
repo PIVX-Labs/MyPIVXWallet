@@ -181,11 +181,11 @@ proposalFinalisationConfirming = "Bestätige..." # Confirming...
 proposalFinalisationRemaining = "Verbleibend" # remaining
 proposalFinalisationExpired = "Antrag ausgelaufen" # Proposal Expired
 proposalFinalisationReady = "Bereit zum Einreichen" # Ready to submit
-proposalPassing = "Bestehend" # PASSING
-proposalFailing = "Scheiternd" # FAILING
-proposalTooYoung = "noch zu Jung" # TOO YOUNG
-proposalFunded = "Finanziert" # FUNDED
-proposalNotFunded = "nicht Finanziert" # NOT FUNDED
+proposalPassing = "Bestehend" # Passing
+proposalFailing = "Scheiternd" # Failing
+proposalTooYoung = "noch zu Jung" # Too Young
+proposalFunded = "Finanziert" # Funded
+proposalNotFunded = "nicht Finanziert" # Not Funded
 proposalPaymentsRemaining = "Ausstehende Transaktion(en)<br>" # installment(s) remaining<br>of
 proposalPaymentTotal = "Insgesamt" # total
 proposalNetYes = "Netto Ja" # Net Yes
@@ -217,6 +217,9 @@ newShieldAddress = "" # Get new shield address
 shieldAddress = "" # Shield address
 cantShieldToExc = "" # This address does not support shield transfers
 settingsToggleAutoLockWallet = "" # Auto Lock the Wallet
+saveWalletFile = "" # Save Wallet File
+proposalOverBudget = "" # Over Budget
+badSaplingRoot = "" # There was an error while syncing. Resyncing from scratch (Bad sapling root)
 
 [ALERTS]
 INTERNAL_ERROR = "Interner Fehler, bitte versuche es später erneut" # Internal error, please try again later

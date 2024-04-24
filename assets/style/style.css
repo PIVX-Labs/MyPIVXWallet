@@ -293,37 +293,6 @@ progress[value]::-moz-progress-bar {
     animation-timing-function: linear;
 }
 
-.reload {
-    font-family: Lucida Sans Unicode;
-    cursor: pointer;
-    margin-left: 10px;
-}
-
-.reload i {
-    animation-name: spinner;
-    animation-duration: 0.75s;
-    animation-play-state: paused;
-    animation-iteration-count: infinite;
-    animation-timing-function: linear;
-    font-size: 21px;
-    width: 21px;
-    height: 21px;
-}
-
-.playAnim {
-    animation-play-state: running !important;
-}
-
-@keyframes spinner {
-    0% {
-        transform: translate3d(0%, 0%, 0) rotate(0deg);
-    }
-
-    100% {
-        transform: translate3d(0%, 0%, 0) rotate(360deg);
-    }
-}
-
 .noselect {
     -webkit-touch-callout: none;
     /* iOS Safari */
@@ -516,6 +485,10 @@ progress[value]::-moz-progress-bar {
     width: 95%;
     height: 125px;
     background: linear-gradient(0.25turn, rgba(122, 122, 122, 0.5), rgba(115, 0, 255, 0.4));
+}
+
+.balance-title {
+    height: 35px;
 }
 
 #bal-title {
@@ -3320,6 +3293,10 @@ select.form-control option {
 
 .votesYes {
     color: #6fc500;
+}
+
+.votesOverAllocated {
+    color:#dfb04b;
 }
 
 .votesNo {

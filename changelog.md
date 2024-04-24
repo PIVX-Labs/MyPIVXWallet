@@ -1,21 +1,21 @@
 # New Features
-- SHIELD Support (send & receive)
-- Exchange Address Support (sending)
-
-# Consensus
-MyPIVXWallet has bumped it's Protocol Version alongside PIVX Core v5.6.1, Masternodes (re)started with this update will use the latest protocol version.
-
-Congrats on the upgrade, PIVX Core!
-
-# New Languages
-- 🇲🇪 Montenegrin (by Mirela Abazović).
-- 🇵🇱 Polish (by MagMagik).
+- New Setting: wallet auto-locking.
 
 # Improvements
-- Ability to Unstake on Ledger.
-- Immature balances are now displayed.
-- Massive Tx-creation refactoring.
-- A new, large test-suite.
+- Improved fee calculations, lower fees!
+- Pending SHIELD balance is now displayed.
+- Added TXID cache: big wallets get a noticeable performance boost!
+- Added SHIELD secret key (extsk) to applicable exports.
+- Added ability to export applicable wallets to file.
 
 # Bug Fixes
-- Fix BIP39 Passphrase visiblity.
+- Various SHIELD implementation fixes.
+- Fixed MN collateral detection.
+- Fixed MN creation on Ledger.
+- Fixed SHIELD Receive flow errors.
+- Fixed the in-payment wallet unlock flow.
+- Fixed missing payment descriptions.
+- Fixed MPW getting stuck on SHIELD errors.
+- Fixed the Dashboard progress bar.
+- Fixed PIVX Promos text spacing.
+- Fixed deleting wallet if explorer fails.

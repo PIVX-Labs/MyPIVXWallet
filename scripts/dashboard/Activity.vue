@@ -2,17 +2,17 @@
 import { ref, computed, watch, onMounted } from 'vue';
 import { getNetwork } from '../network.js';
 import { wallet } from '../wallet.js';
-import { mempool } from '../global.js';
 import { COIN, cChainParams } from '../chain_params.js';
 import { translation } from '../i18n.js';
 import { Database } from '../database.js';
-import { HistoricalTx, HistoricalTxType } from '../mempool';
+import { HistoricalTx, HistoricalTxType } from '../historical_tx.js';
 import { getNameOrAddress } from '../contacts-book.js';
 import { getEventEmitter } from '../event_bus';
 import { beautifyNumber } from '../misc';
 
 import iCheck from '../../assets/icons/icon-check.svg';
 import iHourglass from '../../assets/icons/icon-hourglass.svg';
+import { blockCount } from '../global.js';
 
 const props = defineProps({
     title: String,
@@ -67,7 +67,7 @@ const txMap = computed(() => {
 async function update(txToAdd = 0) {
     const cNet = getNetwork();
     // Return if wallet is not synced yet
-    if (!cNet || !cNet.fullSynced) {
+    if (!wallet.isSynced) {
         return;
     }
 
@@ -84,20 +84,20 @@ async function update(txToAdd = 0) {
     if (txCount < 10 && txToAdd == 0) txToAdd = 10;
 
     let found = 0;
-    const nHeights = Array.from(mempool.orderedTxmap.keys()).sort(
-        (a, b) => a - b
+    // Since ECMAScript 2019 .sort is stable.
+    // https://caniuse.com/mdn-javascript_builtins_array_sort_stable
+    const orderedTxs = Array.from(wallet.getTransactions()).sort(
+        (a, b) => a.blockHeight - b.blockHeight
     );
     while (found < txCount + txToAdd) {
-        if (nHeights.length == 0) {
+        if (orderedTxs.length == 0) {
             isHistorySynced.value = true;
             break;
         }
-        const nHeight = nHeights.pop();
-        const txsAtnHeight = mempool.orderedTxmap.get(nHeight).filter((tx) => {
-            return props.rewards ? tx.isCoinStake() : true;
-        });
-        newTxs = newTxs.concat(txsAtnHeight);
-        found += txsAtnHeight.length;
+        const tx = orderedTxs.pop();
+        if (props.rewards && !tx.isCoinStake()) continue;
+        newTxs.push(tx);
+        found++;
     }
     const arrTXs = wallet.toHistoricalTXs(newTxs);
     await parseTXs(arrTXs);
@@ -113,7 +113,6 @@ watch(translation, async () => await update());
  */
 async function parseTXs(arrTXs) {
     const newTxs = [];
-    const cNet = getNetwork();
 
     // Prepare time formatting
     const dateOptions = {
@@ -160,7 +159,7 @@ async function parseTXs(arrTXs) {
 
         // Coinbase Transactions (rewards) require coinbaseMaturity confs
         const fConfirmed =
-            cNet.cachedBlockCount - cTx.blockHeight >=
+            blockCount - cTx.blockHeight >=
             (props.rewards ? cChainParams.current.coinbaseMaturity : 6);
 
         // Choose the content type, for the Dashboard; use a generative description, otherwise, a TX-ID

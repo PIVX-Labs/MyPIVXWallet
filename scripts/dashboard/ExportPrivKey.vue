@@ -2,14 +2,21 @@
 import Modal from '../Modal.vue';
 import { ref } from 'vue';
 import { translation } from '../i18n.js';
+import { downloadBlob } from '../misc';
 import KeyPng from '../../assets/key.png';
 const props = defineProps({
     privateKey: String,
+    // Note: isJSON should probably be temporary, maybe we have a "Wallet Type" enum that determines the export UI?
+    isJSON: Boolean,
     show: Boolean,
 });
 const blur = ref(true);
 
 const emit = defineEmits(['close']);
+
+function downloadWalletFile() {
+    downloadBlob(props.privateKey, 'wallet.json', 'text/csv;charset=utf-8;');
+}
 
 function close() {
     blur.value = true;
@@ -56,6 +63,15 @@ function close() {
                     >
                         <span data-i18n="viewKey" class="buttoni-text"
                             >{{ translation.viewKey }}
+                        </span>
+                    </button>
+                    <button
+                        v-if="isJSON"
+                        class="pivx-button-big"
+                        @click="downloadWalletFile()"
+                    >
+                        <span data-i18n="saveWalletFile" class="buttoni-text"
+                            >{{ translation.saveWalletFile }}
                         </span>
                     </button>
                 </center>

@@ -1,9 +1,7 @@
-import { Mempool, UTXO_WALLET_STATE } from './mempool.js';
 import { COutpoint } from './transaction.js';
 import { TransactionBuilder } from './transaction_builder.js';
 import Masternode from './masternode.js';
 import { ALERTS, tr, start as i18nStart, translation } from './i18n.js';
-
 import { wallet, hasEncryptedWallet, Wallet } from './wallet.js';
 import { getNetwork } from './network.js';
 import {
@@ -12,17 +10,10 @@ import {
     debug,
     cMarket,
     strCurrency,
-    nDisplayDecimals,
     fAdvancedMode,
 } from './settings.js';
 import { createAndSendTransaction } from './legacy.js';
-import {
-    createAlert,
-    confirmPopup,
-    sanitizeHTML,
-    beautifyNumber,
-    isColdAddress,
-} from './misc.js';
+import { createAlert, confirmPopup, sanitizeHTML } from './misc.js';
 import { cChainParams, COIN } from './chain_params.js';
 import { sleep } from './utils.js';
 import { registerWorker } from './native.js';
@@ -33,8 +24,9 @@ import { Database } from './database.js';
 import { checkForUpgrades } from './changelog.js';
 import { FlipDown } from './flipdown.js';
 import { createApp } from 'vue';
-import Activity from './dashboard/Activity.vue';
 import Dashboard from './dashboard/Dashboard.vue';
+import Stake from './stake/Stake.vue';
+import { createPinia } from 'pinia';
 
 /** A flag showing if base MPW is fully loaded or not */
 export let fIsLoaded = false;
@@ -44,55 +36,21 @@ export function isLoaded() {
     return fIsLoaded;
 }
 
+// Block count
+export let blockCount = 0;
+
 export let doms = {};
-export const mempool = new Mempool();
 
-export const dashboard = createApp(Dashboard).mount('#DashboardTab');
+const pinia = createPinia();
 
-// For now we'll import the component as a vue app by itself. Later, when the
-// stake tab is rewritten in vue, we can simply add <Activity /> to the stake tab component template.
-export const stakingDashboard = createApp(Activity, {
-    title: 'Reward History',
-    rewards: true,
-}).mount('#stakeActivity');
+export const dashboard = createApp(Dashboard).use(pinia).mount('#DashboardTab');
+createApp(Stake).use(pinia).mount('#StakingTab');
 
 export async function start() {
     doms = {
         domNavbarToggler: document.getElementById('navbarToggler'),
         domDashboard: document.getElementById('dashboard'),
-        domGuiStakingValue: document.getElementById('guiStakingValue'),
-        domGuiStakingValueCurrency: document.getElementById(
-            'guiStakingValueCurrency'
-        ),
-        domBalanceReloadStaking: document.getElementById(
-            'balanceReloadStaking'
-        ),
-        domGuiBalanceStaking: document.getElementById('guiBalanceStaking'),
-        domGuiBalanceStakingTicker: document.getElementById(
-            'guiBalanceStakingTicker'
-        ),
-        domStakeAmount: document.getElementById('delegateAmount'),
-        domStakeOwnerAddressContainer: document.getElementById(
-            'ownerAddressContainer'
-        ),
-        domStakeOwnerAddress: document.getElementById('delegateOwnerAddress'),
-        domUnstakeAmount: document.getElementById('undelegateAmount'),
         domStakeTab: document.getElementById('stakeTab'),
-        domStakeAmountCoinsTicker: document.getElementById(
-            'stakeAmountCoinsTicker'
-        ),
-        domStakeAmountValueCurrency: document.getElementById(
-            'stakeAmountValueCurrency'
-        ),
-        domStakeAmountValue: document.getElementById('stakeAmountValue'),
-        domUnstakeAmountCoinsTicker: document.getElementById(
-            'unstakeAmountCoinsTicker'
-        ),
-        domUnstakeAmountValueCurrency: document.getElementById(
-            'unstakeAmountValueCurrency'
-        ),
-
-        domUnstakeAmountValue: document.getElementById('unstakeAmountValue'),
         domModalQR: document.getElementById('ModalQR'),
         domModalQrLabel: document.getElementById('ModalQRLabel'),
         domModalQrReceiveTypeBtn: document.getElementById(
@@ -161,18 +119,7 @@ export async function start() {
         ),
         domEncryptPasswordFirst: document.getElementById('newPassword'),
         domEncryptPasswordSecond: document.getElementById('newPasswordRetype'),
-        domAvailToDelegate: document.getElementById('availToDelegate'),
-        domAvailToUndelegate: document.getElementById('availToUndelegate'),
         domAnalyticsDescriptor: document.getElementById('analyticsDescriptor'),
-        domMnemonicModalContent: document.getElementById(
-            'ModalMnemonicContent'
-        ),
-        domMnemonicModalButton: document.getElementById(
-            'modalMnemonicConfirmButton'
-        ),
-        domMnemonicModalPassphrase: document.getElementById(
-            'ModalMnemonicPassphrase'
-        ),
         domRedeemTitle: document.getElementById('redeemCodeModalTitle'),
         domRedeemCodeUse: document.getElementById('redeemCodeUse'),
         domRedeemCodeCreate: document.getElementById('redeemCodeCreate'),
@@ -292,51 +239,13 @@ export async function start() {
     sliderElement.addEventListener('input', handleDecimalSlider);
     sliderElement.addEventListener('mouseover', handleDecimalSlider);
 
-    /** Staking (Stake) */
-    doms.domStakeAmount.oninput = () => {
-        updateAmountInputPair(
-            doms.domStakeAmount,
-            doms.domStakeAmountValue,
-            true
-        );
-    };
-    doms.domStakeAmountValue.oninput = () => {
-        updateAmountInputPair(
-            doms.domStakeAmount,
-            doms.domStakeAmountValue,
-            false
-        );
-    };
-
-    /** Staking (Unstake) */
-    doms.domUnstakeAmount.oninput = () => {
-        updateAmountInputPair(
-            doms.domUnstakeAmount,
-            doms.domUnstakeAmountValue,
-            true
-        );
-    };
-    doms.domUnstakeAmountValue.oninput = () => {
-        updateAmountInputPair(
-            doms.domUnstakeAmount,
-            doms.domUnstakeAmountValue,
-            false
-        );
-    };
-
     // Register native app service
     registerWorker();
     await settingsStart();
-    // Just load the block count, for use in non-wallet areas
-    try {
-        await getNetwork().getBlockCount();
-    } catch (e) {
-        // Block count failed, keep loading the wallet
-        // the network already creates an alert
-        console.error(e);
-    }
 
     subscribeToNetworkEvents();
+    // Make sure we know the correct number of blocks
+    await refreshChainData();
 
     // If allowed by settings: submit a simple 'hit' (app load) to Labs Analytics
     getNetwork().submitAnalytics('hit');
@@ -353,10 +262,8 @@ export async function start() {
 
     // Update the Encryption UI (If the user has a wallet, then it changes to "Change Password" rather than "Encrypt Wallet")
     getEventEmitter().on('wallet-import', async () => {
-        await updateEncryptionGUI();
         updateLogOutButton();
     });
-    await updateEncryptionGUI();
     fIsLoaded = true;
 
     // If we haven't already (due to having no wallet, etc), display the Dashboard
@@ -369,21 +276,8 @@ function subscribeToNetworkEvents() {
             '<i class="fa-solid fa-' + (value ? 'wifi' : 'ban') + '"></i>';
     });
 
-    getEventEmitter().on('sync-status', (value) => {
-        switch (value) {
-            case 'start':
-                doms.domBalanceReloadStaking.classList.add('playAnim');
-                break;
-            case 'stop':
-                doms.domBalanceReloadStaking.classList.remove('playAnim');
-                break;
-        }
-    });
-
-    getEventEmitter().on('new-block', (block, oldBlock) => {
-        console.log(`New block detected! ${oldBlock} --> ${block}`);
-        // Fetch latest Activity
-        stakingDashboard.update();
+    getEventEmitter().on('new-block', (block) => {
+        console.log(`New block detected! ${block}`);
 
         // If it's open: update the Governance Dashboard
         if (doms.domGovTab.classList.contains('active')) {
@@ -444,30 +338,7 @@ export function openTab(evt, tabName) {
         updateGovernanceTab();
     } else if (tabName === 'Masternode') {
         updateMasternodeTab();
-    } else if (
-        tabName === 'StakingTab' &&
-        stakingDashboard.getTxCount() === 0
-    ) {
-        // Refresh the TX list
-        stakingDashboard.update();
     }
-}
-
-/**
- * Updates the GUI ticker among all elements; useful for Network Switching
- */
-export function updateTicker() {
-    // Update the Stake Dashboard currency
-    doms.domGuiStakingValueCurrency.innerText = strCurrency.toUpperCase();
-
-    // Update the Stake/Unstake menu ticker and currency
-    // Stake
-    doms.domStakeAmountValueCurrency.innerText = strCurrency.toUpperCase();
-    doms.domStakeAmountCoinsTicker.innerText = cChainParams.current.TICKER;
-
-    // Unstake
-    doms.domUnstakeAmountValueCurrency.innerText = strCurrency.toUpperCase();
-    doms.domUnstakeAmountCoinsTicker.innerText = cChainParams.current.TICKER;
 }
 
 /**
@@ -499,82 +370,6 @@ export function optimiseCurrencyLocale(nAmount) {
 
     // Return display-optimised Value and Locale pair.
     return { nValue, cLocale };
-}
-
-/**
- * Update a 'price value' DOM display for the given balance type
- * @param {HTMLElement} domValue
- * @param {boolean} fCold
- */
-export async function updatePriceDisplay(domValue, fCold = false) {
-    // Update currency values
-    const nPrice = await cMarket.getPrice(strCurrency);
-
-    if (nPrice) {
-        // Calculate the value
-        const nCurrencyValue =
-            ((fCold ? getStakingBalance() : getBalance()) / COIN) * nPrice;
-
-        const { nValue, cLocale } = optimiseCurrencyLocale(nCurrencyValue);
-
-        // Update the DOM
-        domValue.innerText = nValue.toLocaleString('en-gb', cLocale);
-    }
-}
-
-export function getBalance(updateGUI = false) {
-    const nBalance = mempool.balance;
-    const nCoins = nBalance / COIN;
-
-    // Update the GUI too, if chosen
-    if (updateGUI) {
-        // Set the balance, and adjust font-size for large balance strings
-        const strBal = nCoins.toFixed(nDisplayDecimals);
-        doms.domAvailToDelegate.innerHTML =
-            beautifyNumber(strBal) + ' ' + cChainParams.current.TICKER;
-
-        // Update tickers
-        updateTicker();
-    }
-
-    return nBalance;
-}
-
-export function getStakingBalance(updateGUI = false) {
-    const nBalance = mempool.coldBalance;
-    const nCoins = nBalance / COIN;
-
-    if (updateGUI) {
-        // Set the balance, and adjust font-size for large balance strings
-        const strBal = nCoins.toFixed(nDisplayDecimals);
-        const nLen = strBal.length;
-        doms.domGuiBalanceStaking.innerHTML = beautifyNumber(
-            strBal,
-            nLen >= 10 ? '17px' : '25px'
-        );
-        doms.domAvailToUndelegate.innerHTML =
-            beautifyNumber(strBal) + ' ' + cChainParams.current.TICKER;
-
-        // Update tickers
-        updateTicker();
-
-        // Update price displays
-        updatePriceDisplay(doms.domGuiStakingValue, true);
-    }
-
-    return nBalance;
-}
-
-/**
- * Fill a 'Coin Amount' with all of a balance type, and update the 'Coin Value'
- * @param {HTMLInputElement} domCoin - The 'Coin Amount' input element
- * @param {HTMLInputElement} domValue - Th 'Coin Value' input element
- * @param {boolean} fCold - Use the Cold Staking balance, or Available balance
- */
-export function selectMaxBalance(domCoin, domValue, fCold = false) {
-    domCoin.value = (fCold ? getStakingBalance() : getBalance()) / COIN;
-    // Update the Send menu's value (assumption: if it's not a Cold balance, it's probably for Sending!)
-    updateAmountInputPair(domCoin, domValue, true);
 }
 
 /**
@@ -619,47 +414,6 @@ export async function playMusic() {
         audio.pause();
         for (const domImg of document.getElementsByTagName('img'))
             domImg.classList.remove('discoFilter');
-    }
-}
-
-export function toggleBottomMenu(dom, ani) {
-    let element = document.getElementById(dom);
-    if (element.classList.contains(ani)) {
-        element.classList.remove(ani);
-        doms.domBlackBack.classList.remove('d-none');
-        setTimeout(() => {
-            doms.domBlackBack.classList.remove('blackBackHide');
-        }, 10);
-    } else {
-        element.classList.add(ani);
-        doms.domBlackBack.classList.add('blackBackHide');
-        setTimeout(() => {
-            doms.domBlackBack.classList.add('d-none');
-        }, 150);
-    }
-}
-
-/**
- * Updates an Amount Input UI pair ('Coin' and 'Value' input boxes) in relation to the input box used
- * @param {HTMLInputElement} domCoin - The DOM input for the Coin amount
- * @param {HTMLInputElement} domValue - The DOM input for the Value amount
- * @param {boolean} fCoinEdited - `true` if Coin, `false` if Value
- */
-export async function updateAmountInputPair(domCoin, domValue, fCoinEdited) {
-    // Fetch the price in the user's preferred currency
-    const nPrice = await cMarket.getPrice(strCurrency);
-
-    // If there is no price loaded, then we just won't do anything
-    if (!nPrice) return;
-
-    if (fCoinEdited) {
-        // If the 'Coin' input is edited, then update the 'Value' input with it's converted currency
-        const nValue = Number(domCoin.value) * nPrice;
-        domValue.value = nValue <= 0 ? '' : nValue;
-    } else {
-        // If the 'Value' input is edited, then update the 'Coin' input with the reversed conversion rate
-        const nValue = Number(domValue.value) / nPrice;
-        domCoin.value = nValue <= 0 ? '' : nValue;
     }
 }
 
@@ -764,7 +518,6 @@ export async function destroyMasternode() {
                 n: cMasternode.outidx,
             })
         );
-        mempool.setBalance();
 
         database.removeMasternode(wallet.getMasterKey());
         createAlert('success', ALERTS.MN_DESTROYED, 5000);
@@ -828,16 +581,8 @@ export async function importMasternode() {
 
     if (!wallet.isHD()) {
         // Find the first UTXO matching the expected collateral size
-        const cCollaUTXO = mempool
-            .getUTXOs({
-                filter: UTXO_WALLET_STATE.SPENDABLE,
-                onlyConfirmed: true,
-                includeLocked: false,
-            })
-            .find(
-                (cUTXO) => cUTXO.value === cChainParams.current.collateralInSats
-            );
-        const balance = getBalance(false);
+        const cCollaUTXO = wallet.getMasternodeUTXOs()[0];
+        const balance = wallet.balance;
         // If there's no valid UTXO, exit with a contextual message
         if (!cCollaUTXO) {
             if (balance < cChainParams.current.collateralInSats) {
@@ -876,11 +621,7 @@ export async function importMasternode() {
     } else {
         const path = doms.domMnTxId.value;
         let masterUtxo;
-        const utxos = mempool.getUTXOs({
-            filter: UTXO_WALLET_STATE.SPENDABLE,
-            onlyConfirmed: true,
-            includeLocked: false,
-        });
+        const utxos = wallet.getMasternodeUTXOs();
         for (const u of utxos) {
             if (
                 u.value === cChainParams.current.collateralInSats &&
@@ -941,21 +682,6 @@ export function updateLogOutButton() {
         : 'none';
 }
 
-/** Update the "Encrypt Wallet" / "Change Password" dialog to match the current wallet state */
-export async function updateEncryptionGUI(fEncrypted = null) {
-    // If no param is provided, check if a wallet exists in the database
-    if (fEncrypted === null) {
-        fEncrypted = await hasEncryptedWallet();
-    }
-    // If the wallet is encrypted, we display a "Current Password" input in the Encryption dialog, otherwise, only accept New Passwords
-    doms.domEncryptPasswordCurrent.style.display = fEncrypted ? '' : 'none';
-    // And we adjust the displays to accomodate the mode as well
-    document.getElementById('changePasswordBtn').innerText = fEncrypted
-        ? translation.changePassword
-        : translation.encryptWallet;
-    doms.domChangePasswordContainer.style.display = fEncrypted ? '' : 'none';
-}
-
 /**
  * Sweep an address to our own wallet, spending all it's UTXOs without change
  * @param {Array<object>} arrUTXOs - The UTXOs belonging to the address to sweep
@@ -976,7 +702,7 @@ export async function sweepAddress(arrUTXOs, sweepingMasterKey, nFixedFee) {
         .build();
 
     // Sign using the given Master Key, then broadcast the sweep, returning the TXID (or a failure)
-    const sweepingWallet = new Wallet({ nAccount: 0, isMainWallet: false });
+    const sweepingWallet = new Wallet({ nAccount: 0 });
     sweepingWallet.setMasterKey(sweepingMasterKey);
 
     await sweepingWallet.sign(tx);
@@ -992,59 +718,6 @@ export function isMasternodeUTXO(cUTXO, cMasternode) {
     if (cMasternode?.collateralTxId) {
         const { collateralTxId, outidx } = cMasternode;
         return collateralTxId === cUTXO.id && cUTXO.vout === outidx;
-    } else {
-        return false;
-    }
-}
-
-/**
- * Creates a GUI popup for the user to check or customise their Cold Address
- */
-export async function guiSetColdStakingAddress() {
-    // Use the Account's cold address, otherwise use the network's default Cold Staking address
-    const strColdAddress = await wallet.getColdStakingAddress();
-
-    // Display the popup and await a response
-    if (
-        await confirmPopup({
-            title: translation.popupSetColdAddr,
-            html: `
-            <p>
-                <span style="opacity: 0.65; margin: 10px; margin-buttom: 0px;">
-                    ${translation.popupColdStakeNote}
-                </span>
-            </p>
-            <input type="text" id="newColdAddress" placeholder="${
-                translation.popupExample
-            } ${strColdAddress.substring(
-                0,
-                6
-            )}..." value="${strColdAddress}" style="text-align: center;">`,
-        })
-    ) {
-        // Check the Cold Address input
-        const strNewColdAddress = document
-            .getElementById('newColdAddress')
-            .value.trim();
-        const fValidCold = isColdAddress(strNewColdAddress);
-        if (
-            !strNewColdAddress ||
-            (strNewColdAddress !== strColdAddress && fValidCold)
-        ) {
-            // If the input is empty: we'll default back to this network's Cold Staking address (effectively a 'reset')
-            const cDB = await Database.getInstance();
-            const cAccount = await cDB.getAccount();
-
-            // Save to DB (allowDeletion enabled to allow for resetting the Cold Address)
-            cAccount.coldAddress = strNewColdAddress;
-            await cDB.updateAccount(cAccount, true);
-
-            createAlert('info', ALERTS.STAKE_ADDR_SET, 5000);
-            return true;
-        } else if (!fValidCold) {
-            createAlert('warning', ALERTS.STAKE_ADDR_BAD, 2500);
-            return false;
-        }
     } else {
         return false;
     }
@@ -1073,25 +746,18 @@ export async function updateGovernanceTab() {
     fRenderingGovernance = true;
 
     // Setup the Superblock countdown (if not already done), no need to block thread with await, either.
-    let cNet = getNetwork();
-
-    // When switching to mainnet from testnet or vise versa, you ned to use an await on getBlockCount() or cNet.cachedBlockCount returns 0
     if (!isTestnetLastState == cChainParams.current.isTestnet) {
         // Reset flipdown
         governanceFlipdown = null;
         doms.domFlipdown.innerHTML = '';
-
-        // Get new network blockcount
-        await getNetwork().getBlockCount();
-        cNet = getNetwork();
     }
 
     // Update governance counter when testnet/mainnet has been switched
-    if (!governanceFlipdown && cNet.cachedBlockCount > 0) {
+    if (!governanceFlipdown && blockCount > 0) {
         Masternode.getNextSuperblock().then((nSuperblock) => {
             // The estimated time to the superblock (using the block target and remaining blocks)
             const nTimestamp =
-                Date.now() / 1000 + (nSuperblock - cNet.cachedBlockCount) * 60;
+                Date.now() / 1000 + (nSuperblock - blockCount) * 60;
             governanceFlipdown = new FlipDown(nTimestamp).start();
         });
         isTestnetLastState = cChainParams.current.isTestnet;
@@ -1179,14 +845,13 @@ async function waitForSubmissionBlockHeight(cProposalCache) {
  * @returns {string} The string status, for display purposes
  */
 function getProposalFinalisationStatus(cPropCache) {
-    const cNet = getNetwork();
     // Confirmations left until finalisation, by network consensus
     const nConfsLeft =
         cPropCache.nSubmissionHeight +
         cChainParams.current.proposalFeeConfirmRequirement -
-        cNet.cachedBlockCount;
+        blockCount;
 
-    if (cPropCache.nSubmissionHeight === 0 || cNet.cachedBlockCount === 0) {
+    if (cPropCache.nSubmissionHeight === 0 || blockCount === 0) {
         return translation.proposalFinalisationConfirming;
     } else if (nConfsLeft > 0) {
         return (
@@ -1303,12 +968,12 @@ async function renderProposals(arrProposals, fContested) {
 
         const domStatus = domRow.insertCell();
         domStatus.classList.add('governStatusCol');
-        if (domTable.id == 'proposalsTableBody') {
+        if (!fContested) {
             domStatus.setAttribute(
                 'onclick',
                 `if(document.getElementById('governMob${i}').classList.contains('d-none')) { document.getElementById('governMob${i}').classList.remove('d-none'); } else { document.getElementById('governMob${i}').classList.add('d-none'); }`
             );
-        } else if (domTable.id == 'proposalsContestedTableBody') {
+        } else {
             domStatus.setAttribute(
                 'onclick',
                 `if(document.getElementById('governMobCon${i}').classList.contains('d-none')) { document.getElementById('governMobCon${i}').classList.remove('d-none'); } else { document.getElementById('governMobCon${i}').classList.add('d-none'); }`
@@ -1327,22 +992,35 @@ async function renderProposals(arrProposals, fContested) {
 
         // Proposal Status calculation
         const nRequiredVotes = cMasternodes.enabled / 10;
-        let strStatus = '';
-        let strFundingStatus = '';
+        const nMonthlyPayment = parseInt(cProposal.MonthlyPayment);
+
+        // Initial state is assumed to be "Not enough votes"
+        let strStatus = translation.proposalFailing;
+        let strFundingStatus = translation.proposalNotFunded;
+        let strColourClass = 'No';
 
         // Proposal Status calculations
         if (nNetYes < nRequiredVotes) {
-            // Scenario 1: Not enough votes
-            strStatus = translation.proposalFailing;
-            strFundingStatus = translation.proposalNotFunded;
+            // Scenario 1: Not enough votes, default scenario
         } else if (!cProposal.IsEstablished) {
             // Scenario 2: Enough votes, but not established
-            strStatus = translation.proposalFailing;
             strFundingStatus = translation.proposalTooYoung;
+        } else if (
+            nMonthlyPayment + totalAllocatedAmount >
+            cChainParams.current.maxPayment / COIN
+        ) {
+            // Scenario 3: Enough votes, and established, but over-allocating the budget
+            strStatus = translation.proposalPassing;
+            strFundingStatus = translation.proposalOverBudget;
+            strColourClass = 'OverAllocated';
         } else {
-            // Scenario 3: Enough votes, and established
+            // Scenario 4: Enough votes, and established
             strStatus = translation.proposalPassing;
             strFundingStatus = translation.proposalFunded;
+            strColourClass = 'Yes';
+
+            // Allocate this with the budget
+            totalAllocatedAmount += nMonthlyPayment;
         }
 
         // Funding Status and allocation calculations
@@ -1441,24 +1119,8 @@ async function renderProposals(arrProposals, fContested) {
             </span>`;
             domStatus.appendChild(finalizeButton);
         } else {
-            if (domTable.id == 'proposalsTableBody') {
-                if (
-                    cProposal.IsEstablished &&
-                    nNetYes >= nRequiredVotes &&
-                    totalAllocatedAmount + cProposal.MonthlyPayment <=
-                        cChainParams.current.maxPayment / COIN
-                ) {
-                    strFundingStatus = translation.proposalFunded;
-                    totalAllocatedAmount += cProposal.MonthlyPayment;
-                }
-            }
-
-            // Figure out the colour of the Status, if any (using CSS class `votes[Yes/No]`)
-            const strColourClass =
-                strStatus === translation.proposalPassing ? 'Yes' : 'No';
-
             domStatus.innerHTML = `
-            <span style="font-size:12px; line-height: 15px; display: block; margin-bottom:15px;">
+            <span style="text-transform:uppercase; font-size:12px; line-height: 15px; display: block; margin-bottom:15px;">
                 <span style="font-weight:700;" class="votes${strColourClass}">${strStatus}</span><br>
                 <span style="color:#9482b1;">(${strFundingStatus})</span><br>
             </span>
@@ -1488,7 +1150,7 @@ async function renderProposals(arrProposals, fContested) {
         )}`;
 
         // Convert proposal amount to user's currency
-        const nProposalValue = parseInt(cProposal.MonthlyPayment) * nPrice;
+        const nProposalValue = nMonthlyPayment * nPrice;
         const { nValue } = optimiseCurrencyLocale(nProposalValue);
         const strProposalCurrency = nValue.toLocaleString('en-gb', cLocale);
 
@@ -1497,7 +1159,7 @@ async function renderProposals(arrProposals, fContested) {
         domPayments.classList.add('for-desktop');
         domPayments.style = 'vertical-align: middle;';
         domPayments.innerHTML = `<span class="governValues"><b>${sanitizeHTML(
-            parseInt(cProposal.MonthlyPayment).toLocaleString('en-gb', ',', '.')
+            nMonthlyPayment.toLocaleString('en-gb', ',', '.')
         )}</b> <span class="governMarked">${
             cChainParams.current.TICKER
         }</span> <br>
@@ -1594,9 +1256,9 @@ async function renderProposals(arrProposals, fContested) {
         const mobileDomRow = domTable.insertRow();
         const mobileExtended = mobileDomRow.insertCell();
         mobileExtended.style = 'vertical-align: middle;';
-        if (domTable.id == 'proposalsTableBody') {
+        if (!fContested) {
             mobileExtended.id = `governMob${i}`;
-        } else if (domTable.id == 'proposalsContestedTableBody') {
+        } else {
             mobileExtended.id = `governMobCon${i}`;
         }
         mobileExtended.colSpan = '2';
@@ -1610,11 +1272,7 @@ async function renderProposals(arrProposals, fContested) {
             </div>
             <div class="col-7">
                 <span class="governValues"><b>${sanitizeHTML(
-                    parseInt(cProposal.MonthlyPayment).toLocaleString(
-                        'en-gb',
-                        ',',
-                        '.'
-                    )
+                    nMonthlyPayment.toLocaleString('en-gb', ',', '.')
                 )}</b> <span class="governMarked">${
             cChainParams.current.TICKER
         }</span> <span style="margin-left:10px; margin-right: 2px;" class="governMarked governFiatSize">${strProposalCurrency}</span></b></span>
@@ -1662,7 +1320,7 @@ async function renderProposals(arrProposals, fContested) {
     }
 
     // Show allocated budget
-    if (domTable.id == 'proposalsTableBody') {
+    if (!fContested) {
         const strAlloc = sanitizeHTML(
             totalAllocatedAmount.toLocaleString('en-gb')
         );
@@ -1698,8 +1356,7 @@ export async function updateMasternodeTab() {
         return;
     }
 
-    const cNet = getNetwork();
-    if (!cNet || !cNet.fullSynced) {
+    if (!wallet.isSynced) {
         doms.domMnTextErrors.innerHTML =
             'Your wallet is empty or still loading, re-open the tab in a few seconds!';
         return;
@@ -1731,17 +1388,9 @@ export async function updateMasternodeTab() {
             doms.masternodeLegacyAccessText;
         doms.domMnTxId.style.display = 'none';
         // Find the first UTXO matching the expected collateral size
-        const cCollaUTXO = mempool
-            .getUTXOs({
-                filter: UTXO_WALLET_STATE.SPENDABLE,
-                onlyConfirmed: true,
-                includeLocked: false,
-            })
-            .find(
-                (cUTXO) => cUTXO.value === cChainParams.current.collateralInSats
-            );
+        const cCollaUTXO = wallet.getMasternodeUTXOs()[0];
 
-        const balance = getBalance(false);
+        const balance = wallet.balance;
         if (cMasternode) {
             await refreshMasternodeData(cMasternode);
             doms.domMnDashboard.style.display = '';
@@ -1771,12 +1420,7 @@ export async function updateMasternodeTab() {
         const mapCollateralPath = new Map();
 
         // Aggregate all valid Masternode collaterals into a map of Path <--> Collateral
-        for (const cUTXO of mempool.getUTXOs({
-            filter: UTXO_WALLET_STATE.SPENDABLE,
-            onlyConfirmed: true,
-            includeLocked: false,
-        })) {
-            if (cUTXO.value !== cChainParams.current.collateralInSats) continue;
+        for (const cUTXO of wallet.getMasternodeUTXOs()) {
             mapCollateralPath.set(wallet.getPath(cUTXO.script), cUTXO);
         }
         const fHasCollateral = mapCollateralPath.size > 0;
@@ -1921,7 +1565,7 @@ export async function createProposal() {
         return;
     }
     // Must have enough funds
-    if (getBalance() * COIN < cChainParams.current.proposalFee) {
+    if (wallet.balance * COIN < cChainParams.current.proposalFee) {
         return createAlert('warning', ALERTS.PROPOSAL_NOT_ENOUGH_FUNDS, 4500);
     }
 
@@ -2019,10 +1663,14 @@ export async function refreshChainData() {
         return console.warn(
             'Offline mode active: For your security, the wallet will avoid ALL internet requests.'
         );
-    if (!wallet.isLoaded()) return;
 
     // Fetch block count
-    await cNet.getBlockCount();
+    const newBlockCount = await cNet.getBlockCount();
+    if (newBlockCount !== blockCount) {
+        blockCount = newBlockCount;
+        if (!wallet.isLoaded()) return;
+        getEventEmitter().emit('new-block', blockCount);
+    }
 }
 
 // A safety mechanism enabled if the user attempts to leave without encrypting/saving their keys

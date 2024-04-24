@@ -114,3 +114,31 @@ describe('transaction tests', () => {
         }
     );
 });
+
+describe('COutpoint tests', () => {
+    it.each([
+        new COutpoint({
+            txid: 'c463e9484973e085fac81763f4ba882dad961885890edd02be55b94aa291a739',
+            n: 123,
+        }),
+        new COutpoint({
+            txid: '25ffc9a52fe7f4b7b0865d6f5db7aefd17871971ef09fabafe519ceef2174c89',
+            n: 0,
+        }),
+        new COutpoint({
+            txid: 'aab36ff5f222ef56f569b5c84d335f522339db8755e5eeae0cee5a447126a9d6',
+            n: 1,
+        }),
+        new COutpoint({
+            txid: 'b067b802d4cc673ebf0f124fe4d2304ca5ca7d733fde573011ed29a90dee8e39',
+            n: 13,
+        }),
+        new COutpoint({
+            txid: '5be92981ac013a819bd4490aa2f64ef45e4eb0f48abb9e6ed0d5a6cfbf4965f8',
+            n: 19348113,
+        }),
+    ])('converts from and to unique', (outpoint) => {
+        const unique = outpoint.toUnique();
+        expect(COutpoint.fromUnique(unique)).toStrictEqual(outpoint);
+    });
+});

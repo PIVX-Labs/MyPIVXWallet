@@ -8,7 +8,7 @@ import {
     Tooltip,
 } from 'chart.js';
 import { cChainParams, COIN } from './chain_params.js';
-import { doms, mempool } from './global.js';
+import { doms } from './global.js';
 import { Database } from './database.js';
 import { translation } from './i18n.js';
 import { wallet } from './wallet.js';
@@ -45,7 +45,7 @@ async function getWalletDataset() {
     const arrBreakdown = [];
 
     // Public (Available)
-    const spendable_bal = mempool.balance;
+    const spendable_bal = wallet.balance;
     if (spendable_bal > 0) {
         arrBreakdown.push({
             type: translation.chartPublicAvailable,
@@ -74,7 +74,7 @@ async function getWalletDataset() {
         });
     }
 
-    const immature_bal = mempool.immatureBalance;
+    const immature_bal = wallet.immatureBalance;
     if (immature_bal > 0) {
         arrBreakdown.push({
             type: translation.chartImmatureBalance,
@@ -83,7 +83,7 @@ async function getWalletDataset() {
         });
     }
     // Staking (Locked)
-    const spendable_cold_bal = mempool.coldBalance;
+    const spendable_cold_bal = wallet.coldBalance;
     if (spendable_cold_bal > 0) {
         arrBreakdown.push({
             type: 'Staking',

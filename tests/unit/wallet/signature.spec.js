@@ -1,5 +1,5 @@
 import { Wallet } from '../../../scripts/wallet.js';
-import { getLegacyMainnet, mockMempool } from '../test_utils';
+import { getLegacyMainnet } from '../test_utils';
 import { describe, it, vi, afterAll, expect } from 'vitest';
 import {
     COutpoint,
@@ -11,8 +11,9 @@ import {
 import { mempool } from '../../../scripts/global';
 import { hexToBytes } from '../../../scripts/utils';
 
-vi.mock('../../../scripts/global.js');
+vi.mock('../../../scripts/mempool.js');
 vi.mock('../../../scripts/network.js');
+vi.mock('../../../scripts/global.js');
 
 describe('Wallet signature tests', () => {
     let PIVXShield;
@@ -26,14 +27,14 @@ describe('Wallet signature tests', () => {
     });
 
     it('throws when is view only', async () => {
-        const wallet = new Wallet(0, false);
+        const wallet = new Wallet(0);
         const mk = getLegacyMainnet();
         mk.wipePrivateData();
         wallet.setMasterKey(mk);
         expect(wallet.sign({})).rejects.toThrow(/view only/i);
     });
     it('signs a transaction correctly', async () => {
-        const wallet = new Wallet(0, false);
+        const wallet = new Wallet(0);
         const mk = getLegacyMainnet();
         wallet.setMasterKey(mk);
         const tx = new Transaction();
@@ -68,7 +69,7 @@ describe('Wallet signature tests', () => {
     });
 
     it('signs a s->s transaction correctly', async () => {
-        const wallet = new Wallet(0, false);
+        const wallet = new Wallet(0);
         wallet.setMasterKey(getLegacyMainnet());
         wallet.setShield(new PIVXShield());
         const tx = new Transaction({
@@ -88,7 +89,7 @@ describe('Wallet signature tests', () => {
         expect(PIVXShield.prototype.createTransaction).toHaveBeenCalledWith({
             address: 'ptest1234567',
             amount: 100000,
-            blockHeight: 1504903,
+            blockHeight: 1504904,
             transparentChangeAddress: 'DTSTGkncpC86sbEUZ2rCBLEe2aXSeZPLnC',
             useShieldInputs: true, // Because vin is empty
             utxos: [
@@ -105,7 +106,7 @@ describe('Wallet signature tests', () => {
         });
     });
     it('signs a s->t tx correctly', async () => {
-        const wallet = new Wallet(0, false);
+        const wallet = new Wallet(0);
         wallet.setMasterKey(getLegacyMainnet());
         wallet.setShield(new PIVXShield());
         const tx = new Transaction({
@@ -125,7 +126,7 @@ describe('Wallet signature tests', () => {
         expect(PIVXShield.prototype.createTransaction).toHaveBeenCalledWith({
             address: 'DTSTGkncpC86sbEUZ2rCBLEe2aXSeZPLnC',
             amount: 4992400,
-            blockHeight: 1504903,
+            blockHeight: 1504904,
             transparentChangeAddress: 'DTSTGkncpC86sbEUZ2rCBLEe2aXSeZPLnC',
             useShieldInputs: true, // Because vin is empty
             utxos: [
@@ -142,7 +143,7 @@ describe('Wallet signature tests', () => {
         });
     });
     it('signs a t->s tx correctly', async () => {
-        const wallet = new Wallet(0, false);
+        const wallet = new Wallet(0);
         wallet.setMasterKey(getLegacyMainnet());
         wallet.setShield(new PIVXShield());
         const tx = new Transaction({
@@ -170,7 +171,7 @@ describe('Wallet signature tests', () => {
         expect(PIVXShield.prototype.createTransaction).toHaveBeenCalledWith({
             address: 'ptest1234567',
             amount: 100000,
-            blockHeight: 1504903,
+            blockHeight: 1504904,
             transparentChangeAddress: 'DTSTGkncpC86sbEUZ2rCBLEe2aXSeZPLnC',
             useShieldInputs: false,
             utxos: [

@@ -186,11 +186,11 @@ proposalFinalisationConfirming = "Confwirming..." # Confirming...
 proposalFinalisationRemaining = "left" # remaining
 proposalFinalisationExpired = "Pwoposal Expired" # Proposal Expired
 proposalFinalisationReady = "Ready tew submit" # Ready to submit
-proposalPassing = "PASSING, YAY!" # PASSING
-proposalFailing = "FAILING, NAY!" # FAILING
-proposalTooYoung = "TOO YOUNG, BAKA!" # TOO YOUNG
-proposalFunded = "FUNDED!" # FUNDED
-proposalNotFunded = "NO MONIES" # NOT FUNDED
+proposalPassing = "Passing, YAY!" # Passing
+proposalFailing = "Failing, NAY!" # Failing
+proposalTooYoung = "Too Young, BAKA!" # Too Young
+proposalFunded = "Funded!" # Funded
+proposalNotFunded = "No Monies!" # Not Funded
 proposalPaymentsRemaining = "payment(s) remainingz<br>of" # installment(s) remaining<br>of
 proposalPaymentTotal = "totalz" # total
 proposalNetYes = "Net Yasss'es" # Net Yes
@@ -217,6 +217,9 @@ newShieldAddress = "" # Get new shield address
 shieldAddress = "" # Shield address
 cantShieldToExc = "" # This address does not support shield transfers
 settingsToggleAutoLockWallet = "" # Auto Lock the Wallet
+saveWalletFile = "Save Wawwet File" # Save Wallet File
+proposalOverBudget = "Over Budgey" # Over Budget
+badSaplingRoot = "" # There was an error while syncing. Resyncing from scratch (Bad sapling root)
 
 [ALERTS]
 INTERNAL_ERROR = "Internal error, pwease try again later" # Internal error, please try again later

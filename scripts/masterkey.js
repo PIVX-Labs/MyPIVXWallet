@@ -215,6 +215,13 @@ export class HardwareWalletMasterKey extends HdMasterKey {
         return new HardwareWalletMasterKey(xpub);
     }
 
+    async getPublicKey(path, { verify } = {}) {
+        return deriveAddress({
+            publicKey: await getHardwareWalletKeys(path, false, verify),
+            output: 'COMPRESSED_HEX',
+        });
+    }
+
     /**
      * Verifies that the address is correct by asking the ledger
      * directly and then the user.
