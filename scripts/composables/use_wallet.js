@@ -2,7 +2,7 @@ import { getEventEmitter } from '../event_bus.js';
 import { hasEncryptedWallet, wallet } from '../wallet.js';
 import { ref } from 'vue';
 import { strCurrency } from '../settings.js';
-import { cMarket } from '../settings.js';
+import { cOracle } from '../settings.js';
 import { ledgerSignTransaction } from '../ledger.js';
 import { defineStore } from 'pinia';
 import { lockableFunction } from '../lock.js';
@@ -102,7 +102,7 @@ export const useWallet = defineStore('wallet', () => {
         shieldBalance.value = await wallet.getShieldBalance();
         pendingShieldBalance.value = await wallet.getPendingShieldBalance();
         coldBalance.value = wallet.coldBalance;
-        price.value = await cMarket.getPrice(strCurrency);
+        price.value = cOracle.getCachedPrice(strCurrency);
     });
 
     return {

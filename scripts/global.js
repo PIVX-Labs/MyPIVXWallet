@@ -8,7 +8,7 @@ import {
     start as settingsStart,
     cExplorer,
     debug,
-    cMarket,
+    cOracle,
     strCurrency,
     fAdvancedMode,
 } from './settings.js';
@@ -905,7 +905,7 @@ async function renderProposals(arrProposals, fContested) {
     ).toLocaleString('en-gb');
 
     // Update total budget in user's currency
-    const nPrice = await cMarket.getPrice(strCurrency);
+    const nPrice = cOracle.getCachedPrice(strCurrency);
     const nCurrencyValue = (cChainParams.current.maxPayment / COIN) * nPrice;
     const { nValue, cLocale } = optimiseCurrencyLocale(nCurrencyValue);
     doms.domTotalGovernanceBudgetValue.innerHTML =
