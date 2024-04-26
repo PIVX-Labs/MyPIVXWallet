@@ -90,6 +90,7 @@ export const useWallet = defineStore('wallet', () => {
             return res;
         }
     );
+    const isCreatingTransaction = () => createAndSendTransaction.isLocked();
 
     getEventEmitter().on('toggle-network', async () => {
         isEncrypted.value = await hasEncryptedWallet();
@@ -122,6 +123,7 @@ export const useWallet = defineStore('wallet', () => {
             wallet.wipePrivateData();
             isViewOnly.value = wallet.isViewOnly();
         },
+        isCreatingTransaction,
         isHD,
         balance,
         hasShield,
