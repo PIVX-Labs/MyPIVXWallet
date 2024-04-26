@@ -8,7 +8,6 @@ import ExportPrivKey from './ExportPrivKey.vue';
 import RestoreWallet from './RestoreWallet.vue';
 import {
     createAlert,
-    isBase64,
     isExchangeAddress,
     isShieldAddress,
     isValidPIVXAddress,
@@ -224,7 +223,7 @@ async function send(address, amount, useShieldInputs) {
     }
 
     // Make sure we are not already creating a (shield) tx
-    if (wallet.isCreatingTx) {
+    if (wallet.createAndSendTransaction.isLocked()) {
         return createAlert(
             'warning',
             'Already creating a transaction! please wait for it to finish'

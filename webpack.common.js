@@ -69,6 +69,19 @@ export default {
                 },
             },
             {
+                test: /countries.json$/,
+                type: 'json',
+                parser: {
+                    parse: (str) =>
+                        JSON.parse(str).map((c) => {
+                            return {
+                                alpha2: c.alpha2,
+                                currency: c.currency,
+                            };
+                        }),
+                },
+            },
+            {
                 test: /\.svg$/i,
                 type: 'asset/source',
             },
@@ -111,6 +124,10 @@ export default {
         new webpack.IgnorePlugin({
             resourceRegExp: /^\.\/wordlists\/(?!english)/,
             contextRegExp: /bip39\/src$/,
+        }),
+        // Ignore countries-intl
+        new webpack.IgnorePlugin({
+            resourceRegExp: /countries-intl.json$/,
         }),
         // Copy static web-facing files
         new CopyPlugin({

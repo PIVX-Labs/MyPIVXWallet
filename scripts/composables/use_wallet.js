@@ -2,9 +2,10 @@ import { getEventEmitter } from '../event_bus.js';
 import { hasEncryptedWallet, wallet } from '../wallet.js';
 import { ref } from 'vue';
 import { strCurrency } from '../settings.js';
-import { cMarket } from '../settings.js';
+import { cOracle } from '../settings.js';
 import { ledgerSignTransaction } from '../ledger.js';
 import { defineStore } from 'pinia';
+import { lockableFunction } from '../lock.js';
 
 /**
  * This is the middle ground between vue and the wallet class
@@ -23,9 +24,6 @@ export const useWallet = defineStore('wallet', () => {
     const isEncrypted = ref(true);
     const loadFromDisk = () => wallet.loadFromDisk();
     const hasShield = ref(wallet.hasShield());
-    // True only iff a shield transaction is being created
-    // Transparent txs are so fast that we don't need to keep track of them.
-    const isCreatingTx = ref(false);
 
     const setMasterKey = async ({ mk, extsk }) => {
         wallet.setMasterKey({ mk, extsk });
@@ -75,30 +73,27 @@ export const useWallet = defineStore('wallet', () => {
     getEventEmitter().on('shield-loaded-from-disk', () => {
         hasShield.value = wallet.hasShield();
     });
+    const createAndSendTransaction = lockableFunction(
+        async (network, address, value, opts) => {
+            const tx = wallet.createTransaction(address, value, opts);
+            if (wallet.isHardwareWallet()) {
+                await ledgerSignTransaction(wallet, tx);
+            } else {
+                await wallet.sign(tx);
+            }
+            const res = await network.sendTransaction(tx.serialize());
+            if (res) {
+                await wallet.addTransaction(tx);
+            } else {
+                wallet.discardTransaction(tx);
+            }
+            return res;
+        }
+    );
+
     getEventEmitter().on('toggle-network', async () => {
         isEncrypted.value = await hasEncryptedWallet();
     });
-    getEventEmitter().on(
-        'shield-transaction-creation-update',
-        async (_, finished) => {
-            isCreatingTx.value = !finished;
-        }
-    );
-    const createAndSendTransaction = async (network, address, value, opts) => {
-        const tx = wallet.createTransaction(address, value, opts);
-        if (wallet.isHardwareWallet()) {
-            await ledgerSignTransaction(wallet, tx);
-        } else {
-            await wallet.sign(tx);
-        }
-        const res = await network.sendTransaction(tx.serialize());
-        if (res) {
-            await wallet.addTransaction(tx);
-        } else {
-            wallet.discardTransaction(tx);
-        }
-        return res;
-    };
 
     getEventEmitter().on('balance-update', async () => {
         balance.value = wallet.balance;
@@ -107,7 +102,7 @@ export const useWallet = defineStore('wallet', () => {
         shieldBalance.value = await wallet.getShieldBalance();
         pendingShieldBalance.value = await wallet.getPendingShieldBalance();
         coldBalance.value = wallet.coldBalance;
-        price.value = await cMarket.getPrice(strCurrency);
+        price.value = cOracle.getCachedPrice(strCurrency);
     });
 
     return {
@@ -132,7 +127,6 @@ export const useWallet = defineStore('wallet', () => {
         hasShield,
         shieldBalance,
         pendingShieldBalance,
-        isCreatingTx,
         immatureBalance,
         currency,
         price,

@@ -1,6 +1,5 @@
 import {
     doms,
-    refreshChainData,
     updateLogOutButton,
     updateGovernanceTab,
     dashboard,
@@ -8,7 +7,7 @@ import {
 import { wallet, hasEncryptedWallet } from './wallet.js';
 import { cChainParams } from './chain_params.js';
 import { setNetwork, ExplorerNetwork, getNetwork } from './network.js';
-import { confirmPopup, createAlert, isEmpty } from './misc.js';
+import { confirmPopup, createAlert } from './misc.js';
 import {
     switchTranslation,
     ALERTS,
@@ -16,7 +15,7 @@ import {
     arrActiveLangs,
     tr,
 } from './i18n.js';
-import { CoinGecko, refreshPriceDisplay } from './prices.js';
+import { Oracle, refreshPriceDisplay } from './prices.js';
 import { Database } from './database.js';
 import { getEventEmitter } from './event_bus.js';
 import { getCurrencyByAlpha2 } from 'country-locale-map';
@@ -25,7 +24,7 @@ import { getCurrencyByAlpha2 } from 'country-locale-map';
 /** A mode that emits verbose console info for internal MPW operations */
 export let debug = false;
 /**
- * The user-selected display currency from market-aggregator sites
+ * The user-selected display currency from Oracle
  * @type {string}
  */
 export let strCurrency = getDefaultCurrency();
@@ -38,10 +37,10 @@ function getDefaultCurrency() {
     return getCurrencyByAlpha2(langCode)?.toLowerCase() || 'usd';
 }
 /**
- * The global market data source
- * @type {CoinGecko}
+ * The user-selected Price Oracle, used for all price data
+ * @type {Oracle}
  */
-export let cMarket = new CoinGecko();
+export let cOracle = new Oracle();
 /** The user-selected explorer, used for most of MPW's data synchronisation */
 export let cExplorer = cChainParams.current.Explorers[0];
 /** The user-selected MPW node, used for alternative blockchain data */
@@ -197,9 +196,9 @@ export async function start() {
         fillTranslationSelect(),
     ]);
 
-    // Fetch price data, then fetch chain data
+    // Fetch price data
     if (getNetwork().enabled) {
-        refreshPriceDisplay().finally(refreshChainData);
+        refreshPriceDisplay();
     }
 
     const database = await Database.getInstance();
@@ -400,25 +399,28 @@ async function fillTranslationSelect() {
  * Fills the display currency dropbox on the settings page
  */
 export async function fillCurrencySelect() {
-    const arrCurrencies = await cMarket.getCurrencies();
+    // If we already have a currency cache; use it, or just pull fresh
+    const arrCurrencies = cOracle.fLoadedCurrencies
+        ? cOracle.getCachedCurrencies()
+        : await cOracle.getCurrencies();
 
     // Only update if we have a currency list
-    if (!isEmpty(arrCurrencies)) {
+    if (cOracle.fLoadedCurrencies) {
         while (doms.domCurrencySelect.options.length > 0) {
             doms.domCurrencySelect.remove(0);
         }
         // Add each data source currency into the UI selector
-        for (const currency of arrCurrencies) {
+        for (const cCurrency of arrCurrencies) {
             const opt = document.createElement('option');
-            opt.innerHTML = currency.toUpperCase();
-            opt.value = currency;
+            opt.innerHTML = cCurrency.currency.toUpperCase();
+            opt.value = cCurrency.currency;
             doms.domCurrencySelect.appendChild(opt);
         }
     }
 
     const database = await Database.getInstance();
     let { displayCurrency } = await database.getSettings();
-    if (!arrCurrencies.find((v) => v === displayCurrency)) {
+    if (!arrCurrencies.find((v) => v.currency === displayCurrency)) {
         // Currency not supported; fallback to USD
         displayCurrency = 'usd';
         database.setSettings({ displayCurrency });
