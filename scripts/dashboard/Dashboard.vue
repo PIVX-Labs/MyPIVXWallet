@@ -223,7 +223,7 @@ async function send(address, amount, useShieldInputs) {
     }
 
     // Make sure we are not already creating a (shield) tx
-    if (wallet.createAndSendTransaction.isLocked()) {
+    if (wallet.isCreatingTransaction()) {
         return createAlert(
             'warning',
             'Already creating a transaction! please wait for it to finish'
