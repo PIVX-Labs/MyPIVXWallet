@@ -2,7 +2,7 @@
 import { sha256 } from '@noble/hashes/sha256';
 import { sha512 } from '@noble/hashes/sha512';
 import { hmac } from '@noble/hashes/hmac';
-import { randomBytes } from '@noble/hashes/utils';
+import { randomBytes as nobleRandomBytes } from '@noble/hashes/utils';
 import { Buffer } from 'buffer';
 
 export const createHash = (hash, options) => {
@@ -35,5 +35,5 @@ export const createHmac = (hash, key) => {
 };
 
 export const randomBytes = (length) => {
-    return new Buffer.from(randomBytes(length));
+    return new Buffer.from(nobleRandomBytes(length));
 };
