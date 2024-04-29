@@ -1,12 +1,13 @@
 // Lightweight polyfill for the NodeJS crypto module
 import { sha256 } from '@noble/hashes/sha256';
 import { sha512 } from '@noble/hashes/sha512';
+import { sha1 } from '@noble/hashes/sha1';
 import { hmac } from '@noble/hashes/hmac';
 import { randomBytes as nobleRandomBytes } from '@noble/hashes/utils';
 import { Buffer } from 'buffer';
 
 export const createHash = (hash, options) => {
-    if (!!options) throw new Error('Unfilled polyfill');
+    if (options) throw new Error('Unfilled polyfill');
     let fun;
     switch (hash) {
         case 'sha256':
