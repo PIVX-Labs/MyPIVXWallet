@@ -88,11 +88,9 @@ export default {
         ],
     },
     resolve: {
-        alias: {
-            'bn.js': path.join(__dirname, 'node_modules/bn.js/lib/bn.js'),
-        },
         fallback: {
             fs: false,
+            crypto: path.resolve(__dirname, 'scripts/polyfills/crypto.js'),
         },
     },
     plugins: [
@@ -107,7 +105,9 @@ export default {
         }),
         new VueLoaderPlugin(),
         // Polyfill for non web libraries
-        new NodePolyfillPlugin(),
+        new NodePolyfillPlugin({
+            includeAliases: ['stream', 'process', 'Buffer'],
+        }),
         // Prevents non styled flashing on load
         new MiniCssExtractPlugin(),
         // Make jquery available globally
