@@ -4,6 +4,7 @@ import { sha512 } from '@noble/hashes/sha512';
 import { sha1 } from '@noble/hashes/sha1';
 import { hmac } from '@noble/hashes/hmac';
 import { randomBytes as nobleRandomBytes } from '@noble/hashes/utils';
+import { Buffer } from 'buffer';
 
 class WrappedCreate {
     #hash;

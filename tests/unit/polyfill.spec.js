@@ -5,6 +5,8 @@ import {
 } from '../../scripts/polyfills/crypto.js';
 import { describe, it, vi } from 'vitest';
 import { randomBytes as nobleRandomBytes } from '@noble/hashes/utils';
+import { Buffer } from 'buffer';
+
 vi.mock('@noble/hashes/utils', () => {
     const randomBytes = vi.fn(
         (length) => new Uint8Array(Array(length).fill(0xde))
