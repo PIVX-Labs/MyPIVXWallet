@@ -4,7 +4,23 @@ import { sha512 } from '@noble/hashes/sha512';
 import { sha1 } from '@noble/hashes/sha1';
 import { hmac } from '@noble/hashes/hmac';
 import { randomBytes as nobleRandomBytes } from '@noble/hashes/utils';
-import { Buffer } from 'buffer';
+
+class WrappedCreate {
+    #hash;
+
+    constructor(hash, ...args) {
+        this.#hash = hash.create(...args);
+    }
+
+    update(buff) {
+        this.#hash.update(buff);
+        return this;
+    }
+
+    digest() {
+        return Buffer.from(this.#hash.digest());
+    }
+}
 
 export const createHash = (hash, options) => {
     if (options) throw new Error('Unfilled polyfill');
@@ -19,22 +35,14 @@ export const createHash = (hash, options) => {
         default:
             throw new Error('Unfilleld polyfill');
     }
-    return {
-        update: (buff) => {
-            return {
-                digest: () => {
-                    return Buffer.from(fun(buff));
-                },
-            };
-        },
-    };
+    return new WrappedCreate(fun);
 };
 
 export const createHmac = (hash, key) => {
     if (hash !== 'sha512') throw new Error('unfilled polyfill');
-    return hmac.create(sha512, key);
+    return new WrappedCreate(hmac, sha512, key);
 };
 
 export const randomBytes = (length) => {
-    return new Buffer.from(nobleRandomBytes(length));
+    return Buffer.from(nobleRandomBytes(length));
 };
