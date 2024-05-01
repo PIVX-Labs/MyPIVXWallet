@@ -1,7 +1,7 @@
 import {
     getLegacyMainnet,
     PIVXShield,
-    setUpMainnetWallet,
+    setUpLegacyMainnetWallet,
 } from '../test_utils';
 import { describe, it, vi, expect } from 'vitest';
 import 'fake-indexeddb/auto';
@@ -19,7 +19,7 @@ vi.mock('../../../scripts/global.js');
 describe('Wallet signature tests', () => {
     let wallet;
     beforeEach(async () => {
-        wallet = await setUpMainnetWallet();
+        wallet = await setUpLegacyMainnetWallet();
         // Reset indexedDB before each test
         vi.stubGlobal('indexedDB', new IDBFactory());
     });

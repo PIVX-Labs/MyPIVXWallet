@@ -1,6 +1,6 @@
 import { Wallet } from '../../../scripts/wallet.js';
 import { Mempool } from '../../../scripts/mempool.js';
-import { setUpMainnetWallet } from '../test_utils';
+import { setUpLegacyMainnetWallet } from '../test_utils';
 import { describe, it, vi, afterAll, expect } from 'vitest';
 import {
     COutpoint,
@@ -39,7 +39,7 @@ describe('Wallet transaction tests', () => {
     let wallet;
     const MIN_FEE_PER_BYTE = new TransactionBuilder().MIN_FEE_PER_BYTE;
     beforeEach(async () => {
-        wallet = await setUpMainnetWallet();
+        wallet = await setUpLegacyMainnetWallet();
 
         // Reset indexedDB before each test
         vi.stubGlobal('indexedDB', new IDBFactory());
