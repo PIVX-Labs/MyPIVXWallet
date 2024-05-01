@@ -77,7 +77,7 @@ syncStatusStarting = "<b>Sua carteira está sincronizando!</b><br>Você poderá 
 syncStatusFinished = "<b> Sincronização Terminada!</b><br>Sua carteira está pronta para ser utilizada" # <b>Sync Finished!</b><br>Your wallet is ready to use!
 accountDeleted = "Sua conta foi deletada com successo" # Your account has been successfully deleted!
 chartImmatureBalance = "" # Immature balance
-syncLoadingSaplingProver = "" # Loading Sapling Prover
+syncLoadingSaplingProver = "" # Loading SHIELD parameters...
 syncShieldProgress = "" # Loading shielded blocks {current} of {total}
 useShieldInputs = "" # Use shield inputs
 newShieldAddress = "" # Get new shield address
@@ -87,6 +87,7 @@ settingsToggleAutoLockWallet = "" # Auto Lock the Wallet
 saveWalletFile = "" # Save Wallet File
 proposalOverBudget = "" # Over Budget
 badSaplingRoot = "" # There was an error while syncing. Resyncing from scratch (Bad sapling root)
+creatingShieldTransaction = "" # Creating SHIELD transaction...
 
 [ALERTS]
 STAKE_ADDR_SET = "<b>Endereço de Cold Staking definido!</b><br>Ao fazer Stake no futuro este endereço irá ser usado." # <b>Cold Address set!</b><br>Future stakes will use this address.
