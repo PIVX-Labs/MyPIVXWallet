@@ -18,7 +18,6 @@ export {
     accessOrImportWallet,
     toClipboard,
     restoreWallet,
-    refreshChainData,
     playMusic,
     openExplorer,
     doms,

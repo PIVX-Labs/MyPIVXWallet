@@ -3,6 +3,7 @@ import {
     updateLogOutButton,
     updateGovernanceTab,
     dashboard,
+    refreshChainData,
 } from './global.js';
 import { wallet, hasEncryptedWallet } from './wallet.js';
 import { cChainParams } from './chain_params.js';
@@ -557,7 +558,8 @@ export async function toggleTestnet() {
     // Update testnet toggle in settings
     doms.domTestnetToggler.checked = cChainParams.current.isTestnet;
     await start();
-
+    // Make sure we have the correct number of blocks before loading any wallet
+    await refreshChainData();
     getEventEmitter().emit('toggle-network');
     await updateGovernanceTab();
 }

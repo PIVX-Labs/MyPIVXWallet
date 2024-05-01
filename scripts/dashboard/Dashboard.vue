@@ -21,7 +21,6 @@ import { onMounted, ref, watch, computed } from 'vue';
 import { getEventEmitter } from '../event_bus';
 import { Database } from '../database';
 import { start, doms, updateLogOutButton } from '../global';
-import { refreshChainData } from '../global.js';
 import { validateAmount } from '../legacy';
 import {
     confirmPopup,

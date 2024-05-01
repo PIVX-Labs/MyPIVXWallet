@@ -263,6 +263,7 @@ export class Wallet {
             this.#addressIndices.set(i, 0);
         }
         this.#mempool = new Mempool();
+        this.#lastProcessedBlock = 0;
     }
 
     /**
