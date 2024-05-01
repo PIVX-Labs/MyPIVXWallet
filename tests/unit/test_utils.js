@@ -38,7 +38,7 @@ PIVXShield.prototype.getBalance = vi.fn(() => 40 * 10 ** 8);
 async function setUpWallet(masterKey, includeShield) {
     const mempool = new Mempool();
     const wallet = new Wallet({ nAccount: 0, isMainWallet: false, mempool });
-    wallet.setMasterKey(masterKey);
+    await wallet.setMasterKey({ mk: masterKey });
     await wallet.sync();
     if (includeShield) {
         // TODO: shield sync is a bit problematic and a better plan to mock it is needed

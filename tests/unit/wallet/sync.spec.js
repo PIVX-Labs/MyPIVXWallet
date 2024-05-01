@@ -42,10 +42,6 @@ describe('Wallet sync tests', () => {
         walletLegacy = await setUpLegacyMainnetWallet();
         // Reset indexedDB before each test
         vi.stubGlobal('indexedDB', new IDBFactory());
-        // We are not using the global wallet, this is needed so that refreshChainData() doesn't bail out early
-        vi.stubGlobal('wallet.isLoaded', () => {
-            return true;
-        });
     });
 
     it('Basic 2 wallets sync test', async () => {
