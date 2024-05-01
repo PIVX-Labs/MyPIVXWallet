@@ -38,7 +38,7 @@ async function checkFees(wallet, tx, feesPerBytes) {
 describe('Wallet transaction tests', () => {
     let wallet;
     const MIN_FEE_PER_BYTE = new TransactionBuilder().MIN_FEE_PER_BYTE;
-    
+
     beforeEach(async () => {
         wallet = await setUpMainnetWallet();
         // Reset indexedDB before each test

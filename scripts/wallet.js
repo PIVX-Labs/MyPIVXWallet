@@ -1063,7 +1063,7 @@ export class Wallet {
         }
 
         const periodicFunction = setInterval(async () => {
-            const percentage = await this.#shield.getTxStatus();
+            const percentage = (await this.#shield.getTxStatus()) * 100;
             getEventEmitter().emit(
                 'shield-transaction-creation-update',
                 percentage,
