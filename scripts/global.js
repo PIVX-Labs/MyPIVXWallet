@@ -1665,7 +1665,6 @@ export async function refreshChainData() {
     const newBlockCount = await cNet.getBlockCount();
     if (newBlockCount !== blockCount) {
         blockCount = newBlockCount;
-        if (!wallet.isLoaded()) return;
         getEventEmitter().emit('new-block', blockCount);
     }
 }
