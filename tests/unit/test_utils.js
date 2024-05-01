@@ -1,4 +1,8 @@
-import { LegacyMasterKey, MasterKey } from '../../scripts/masterkey.js';
+import {
+    HdMasterKey,
+    LegacyMasterKey,
+    MasterKey,
+} from '../../scripts/masterkey.js';
 import { Wallet } from '../../scripts/wallet.js';
 import { Mempool } from '../../scripts/mempool.js';
 import { vi } from 'vitest';
@@ -18,6 +22,10 @@ PIVXShield.prototype.createTransaction = vi.fn(() => {
     return {
         hex: '00',
     };
+});
+// Return + infinity so that we don't have to mock this.#shield.handleBlock(block);
+PIVXShield.prototype.getLastSyncedBlock = vi.fn(() => {
+    return Infinity;
 });
 PIVXShield.prototype.getBalance = vi.fn(() => 40 * 10 ** 8);
 
@@ -57,12 +65,41 @@ export async function setUpLegacyMainnetWallet() {
     return wallet;
 }
 
+/**
+ * Create a mainnet HD wallet
+ * for the moment includeShield must be false, TODO: generalize
+ * @param{boolean} includeShield
+ * @returns{Promise<Wallet>}
+ */
+export async function setUpHDMainnetWallet(includeShield) {
+    const wallet = await setUpWallet(getHDMainnet(), includeShield);
+
+    // sanity check on the balance
+    expect(wallet.balance).toBe(1 * 10 ** 8);
+    expect(wallet.coldBalance).toBe(0);
+    expect(wallet.immatureBalance).toBe(0);
+
+    return wallet;
+}
+
 export function getLegacyTestnet() {
     return new LegacyMasterKey({
         pkBytes: new Uint8Array([
             254, 60, 197, 153, 164, 198, 53, 142, 244, 155, 71, 44, 96, 5, 195,
             133, 140, 205, 48, 232, 157, 152, 118, 173, 49, 41, 118, 47, 175,
             196, 232, 82,
+        ]),
+    });
+}
+
+function getHDMainnet() {
+    return new HdMasterKey({
+        seed: new Uint8Array([
+            159, 45, 151, 205, 11, 183, 130, 131, 116, 62, 56, 190, 142, 201,
+            142, 222, 16, 196, 8, 154, 101, 90, 8, 12, 191, 160, 222, 153, 10,
+            19, 97, 133, 225, 213, 43, 109, 103, 146, 79, 217, 191, 212, 211,
+            95, 120, 171, 18, 126, 47, 138, 85, 99, 120, 150, 103, 108, 254,
+            209, 99, 51, 209, 70, 127, 81,
         ]),
     });
 }
