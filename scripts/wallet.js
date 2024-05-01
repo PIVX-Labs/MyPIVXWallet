@@ -843,7 +843,7 @@ export class Wallet {
                             parsed.blockHeight = blockHeight;
                             parsed.blockTime = tx.blocktime;
                             // Avoid wasting memory on txs that do not regard our wallet
-                            if (this.#mempool.ownTransaction(parsed)) {
+                            if (this.ownTransaction(parsed)) {
                                 await wallet.addTransaction(parsed);
                             }
                         }
@@ -1153,6 +1153,25 @@ export class Wallet {
             const db = await Database.getInstance();
             await db.storeTx(transaction);
         }
+    }
+
+    /**
+     * Check if any vin or vout of the transaction belong to the wallet
+     * @param {import('./transaction.js').Transaction} transaction
+     */
+    ownTransaction(transaction) {
+        const ownVout =
+            transaction.vout.filter((out) => {
+                return this.getScriptType(out.script) & OutpointState.OURS;
+            }).length > 0;
+        const ownVin =
+            transaction.vin.filter((input) => {
+                return (
+                    this.#mempool.getOutpointStatus(input.outpoint) &
+                    OutpointState.OURS
+                );
+            }).length > 0;
+        return ownVout || ownVin;
     }
 
     /**
