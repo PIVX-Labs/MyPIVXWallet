@@ -30,7 +30,7 @@ PIVXShield.prototype.getBalance = vi.fn(() => 40 * 10 ** 8);
 export async function setUpMainnetWallet() {
     const mempool = new Mempool();
     const wallet = new Wallet({ nAccount: 0, isMainWallet: false, mempool });
-    wallet.setMasterKey(getLegacyMainnet());
+    wallet.setMasterKey({ mk: getLegacyMainnet() });
     wallet.setShield(new PIVXShield());
 
     // tx_1 provides a spendable balance of 0.1 * 10^8 satoshi

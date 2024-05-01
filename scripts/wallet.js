@@ -212,14 +212,18 @@ export class Wallet {
 
     /**
      * Set or replace the active Master Key with a new Master Key
-     * @param {import('./masterkey.js').MasterKey} mk - The new Master Key to set active
+     * @param {object} o - Object to be destructured
+     * @param {import('./masterkey.js').MasterKey} o.mk - The new Master Key
+     * @param {number} [o.nAccount] - The account number
+     * @param {string} [o.extsk] - The extended spending key
      */
-    setMasterKey(mk, nAccount = 0) {
+    async setMasterKey({ mk, nAccount = 0, extsk }) {
         const isNewAcc =
             mk?.getKeyToExport(nAccount) !==
             this.#masterKey?.getKeyToExport(this.#nAccount);
         this.#masterKey = mk;
         this.#nAccount = nAccount;
+        if (extsk) await this.setExtsk(extsk);
         if (isNewAcc) {
             this.reset();
             for (let i = 0; i < Wallet.chains; i++) this.loadAddresses(i);
@@ -722,12 +726,6 @@ export class Wallet {
             return;
         }
         const cNet = getNetwork();
-        getEventEmitter().emit(
-            'shield-sync-status-update',
-            translation.syncLoadingSaplingProver,
-            false
-        );
-        await this.#shield.loadSaplingProver();
         try {
             const blockHeights = (await cNet.getShieldBlockList()).filter(
                 (b) => b > this.#shield.getLastSyncedBlock()
@@ -785,13 +783,15 @@ export class Wallet {
     /**
      * @todo this needs to take the `vin` as input,
      * But currently we don't have any way of getting the UTXO
-     * out of the vin. This will hapèen after the mempool refactor,
+     * out of the vin. This will happen after the mempool refactor,
      * But for now we can just recalculate the UTXOs
+     * @param {number} target - Number of satoshis needed. See Mempool.getUTXOs
      */
-    #getUTXOsForShield() {
+    #getUTXOsForShield(target = Number.POSITIVE_INFINITY) {
         return this.#mempool
             .getUTXOs({
                 requirement: OutpointState.P2PKH | OutpointState.OURS,
+                target,
             })
             .map((u) => {
                 return {
@@ -1061,7 +1061,7 @@ export class Wallet {
         }
 
         const periodicFunction = setInterval(async () => {
-            const percentage = 5 + (await this.#shield.getTxStatus()) * 95;
+            const percentage = (await this.#shield.getTxStatus()) * 100;
             getEventEmitter().emit(
                 'shield-transaction-creation-update',
                 percentage,
@@ -1080,14 +1080,14 @@ export class Wallet {
                 amount: value,
                 blockHeight: blockCount + 1,
                 useShieldInputs: transaction.vin.length === 0,
-                utxos: this.#getUTXOsForShield(),
+                utxos: this.#getUTXOsForShield(value),
                 transparentChangeAddress: this.getNewAddress(1)[0],
             });
             return transaction.fromHex(hex);
         } catch (e) {
             // sleep a full period of periodicFunction
             await sleep(500);
-            throw new Error(e);
+            throw e;
         } finally {
             clearInterval(periodicFunction);
             getEventEmitter().emit(
