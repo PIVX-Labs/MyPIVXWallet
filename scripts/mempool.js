@@ -39,47 +39,6 @@ export class Mempool {
             this.setSpent(input.outpoint);
         }
     }
-    /**
-     * Return owned vin of a given transaction
-     * @param {import('./transaction.js').Transaction} tx
-     * @returns {UTXO[]} List of UTXO corresponding to the owned vin
-     */
-    getOwnedVin(tx) {
-        return tx.vin
-            .filter(
-                (input) =>
-                    this.getOutpointStatus(input.outpoint) & OutpointState.OURS
-            )
-            .map((i) => this.outpointToUTXO(i.outpoint));
-    }
-    /**
-     * Return owned vout of a given transaction
-     * @param {import('./transaction.js').Transaction} tx
-     * @returns {CTxOut[]} List of UTXO corresponding to the owned vin
-     */
-    getOwnedVout(tx) {
-        const txid = tx.txid;
-        return tx.vout.filter(
-            (_, i) =>
-                this.getOutpointStatus(
-                    new COutpoint({
-                        txid,
-                        n: i,
-                    })
-                ) & OutpointState.OURS
-        );
-    }
-    /**
-     * Check if we own any transparent input our output of a given transaction
-     * @param {import('./transaction.js').Transaction} tx
-     * @returns {boolean} whether we own at least a input or an output of the tx
-     */
-    ownTransaction(tx) {
-        return (
-            this.getOwnedVout(tx).length !== 0 ||
-            this.getOwnedVin(tx).length !== 0
-        );
-    }
 
     /**
      * @param {COutpoint} outpoint
@@ -156,10 +115,13 @@ export class Mempool {
      * @param {import('./transaction.js').Transaction} tx
      */
     getDebit(tx) {
-        return this.getOwnedVin(tx).reduce(
-            (acc, u) => acc + (u?.value || 0),
-            0
-        );
+        return tx.vin
+            .filter(
+                (input) =>
+                    this.getOutpointStatus(input.outpoint) & OutpointState.OURS
+            )
+            .map((i) => this.outpointToUTXO(i.outpoint))
+            .reduce((acc, u) => acc + (u?.value || 0), 0);
     }
 
     /**
@@ -167,7 +129,19 @@ export class Mempool {
      * @param {import('./transaction.js').Transaction} tx
      */
     getCredit(tx) {
-        return this.getOwnedVout(tx).reduce((acc, u) => acc + u?.value ?? 0, 0);
+        const txid = tx.txid;
+
+        return tx.vout
+            .filter(
+                (_, i) =>
+                    this.getOutpointStatus(
+                        new COutpoint({
+                            txid,
+                            n: i,
+                        })
+                    ) & OutpointState.OURS
+            )
+            .reduce((acc, u) => acc + u?.value ?? 0, 0);
     }
 
     /**
@@ -177,6 +151,7 @@ export class Mempool {
      * By default it's `OutpointState.SPENT | OutpointState.IMMATURE | OutpointState.LOCKED`
      * @param {number} [o.requirement] - A requirement to apply to all UTXOs. For example
      * `OutpointState.P2CS` will only return P2CS transactions.
+     * @param {number} [o.target] - Number of satoshis needed. The method will return early when the value of the UTXOs has been reached, plus a bit to account for change
      * By default it's MAX_SAFE_INTEGER
      * @returns {UTXO[]} a list of unspent transaction outputs
      */
