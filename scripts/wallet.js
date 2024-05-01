@@ -819,8 +819,6 @@ export class Wallet {
          * @param{number} blockCount - block count
          */
         async (blockCount) => {
-            // Exit if there is no shield loaded
-            if (!this.hasShield()) return;
             const cNet = getNetwork();
             let block;
             // Don't ask for the exact last block that arrived,
@@ -833,20 +831,19 @@ export class Wallet {
                 try {
                     block = await cNet.getBlock(blockHeight);
                     if (block.txs) {
-                        if (this.hasShield()) {
-                            if (
-                                blockHeight > this.#shield.getLastSyncedBlock()
-                            ) {
-                                await this.#shield.handleBlock(block);
-                            }
-                            for (const tx of block.txs) {
-                                const parsed = Transaction.fromHex(tx.hex);
-                                parsed.blockHeight = blockHeight;
-                                parsed.blockTime = tx.blocktime;
-                                // Avoid wasting memory on txs that do not regard our wallet
-                                if (this.#mempool.ownTransaction(parsed)) {
-                                    await wallet.addTransaction(parsed);
-                                }
+                        if (
+                            this.hasShield() &&
+                            blockHeight > this.#shield.getLastSyncedBlock()
+                        ) {
+                            await this.#shield.handleBlock(block);
+                        }
+                        for (const tx of block.txs) {
+                            const parsed = Transaction.fromHex(tx.hex);
+                            parsed.blockHeight = blockHeight;
+                            parsed.blockTime = tx.blocktime;
+                            // Avoid wasting memory on txs that do not regard our wallet
+                            if (this.#mempool.ownTransaction(parsed)) {
+                                await wallet.addTransaction(parsed);
                             }
                         }
                     } else {
@@ -858,17 +855,17 @@ export class Wallet {
                     break;
                 }
             }
-            await this.saveShieldOnDisk();
 
             // SHIELD-only checks
             if (this.hasShield()) {
-                if (block?.finalSaplingRoot)
+                if (block?.finalSaplingRoot) {
                     if (
                         !(await this.#checkShieldSaplingRoot(
                             block.finalsaplingroot
                         ))
                     )
                         return;
+                }
                 await this.saveShieldOnDisk();
             }
         }
