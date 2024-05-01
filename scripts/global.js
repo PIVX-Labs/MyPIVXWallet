@@ -8,7 +8,6 @@ import {
     start as settingsStart,
     cExplorer,
     debug,
-    cOracle,
     strCurrency,
     fAdvancedMode,
 } from './settings.js';
@@ -17,7 +16,6 @@ import { createAlert, confirmPopup, sanitizeHTML } from './misc.js';
 import { cChainParams, COIN } from './chain_params.js';
 import { sleep } from './utils.js';
 import { registerWorker } from './native.js';
-import { refreshPriceDisplay } from './prices.js';
 import { Address6 } from 'ip-address';
 import { getEventEmitter } from './event_bus.js';
 import { Database } from './database.js';
@@ -27,6 +25,7 @@ import { createApp } from 'vue';
 import Dashboard from './dashboard/Dashboard.vue';
 import Stake from './stake/Stake.vue';
 import { createPinia } from 'pinia';
+import { cOracle } from './prices.js';
 
 /** A flag showing if base MPW is fully loaded or not */
 export let fIsLoaded = false;
@@ -246,6 +245,8 @@ export async function start() {
     subscribeToNetworkEvents();
     // Make sure we know the correct number of blocks
     await refreshChainData();
+    // Load the price manager
+    cOracle.load();
 
     // If allowed by settings: submit a simple 'hit' (app load) to Labs Analytics
     getNetwork().submitAnalytics('hit');
@@ -268,6 +269,11 @@ export async function start() {
 
     // If we haven't already (due to having no wallet, etc), display the Dashboard
     doms.domDashboard.click();
+}
+
+async function refreshPriceDisplay() {
+    await cOracle.getPrice(strCurrency);
+    getEventEmitter().emit('balance-update');
 }
 
 function subscribeToNetworkEvents() {

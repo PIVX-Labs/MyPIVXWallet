@@ -2,7 +2,7 @@ import { getEventEmitter } from '../event_bus.js';
 import { hasEncryptedWallet, wallet } from '../wallet.js';
 import { ref } from 'vue';
 import { strCurrency } from '../settings.js';
-import { cOracle } from '../settings.js';
+import { cOracle } from '../prices.js';
 import { ledgerSignTransaction } from '../ledger.js';
 import { defineStore } from 'pinia';
 import { lockableFunction } from '../lock.js';
