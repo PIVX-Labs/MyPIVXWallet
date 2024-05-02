@@ -13,6 +13,21 @@ self.addEventListener('activate', (_event) => {
     // Tell the active service worker to take control of the page immediately.
     self.clients.claim();
 });
+self.addEventListener('message', (event) => {
+    console.log(event.data);
+    if (event.data) populatePrefetchCache(event.data);
+});
+
+async function populatePrefetchCache(files) {
+    console.log(files);
+    const cache = await caches.open('sapling-params-v1');
+    for (const file of files) {
+        const res = await fetch(file, {
+            priority: 'low',
+        });
+        if (res.ok) await cache.put(file, res);
+    }
+}
 
 self.addEventListener('fetch', (event) => {
     // Let the browser do its default thing
@@ -21,6 +36,7 @@ self.addEventListener('fetch', (event) => {
 
     const cacheRegexps = [
         /sapling-(spend|output)\.params/,
+        /.wasm$/,
         /(pivx-shield|util)/,
     ];
 

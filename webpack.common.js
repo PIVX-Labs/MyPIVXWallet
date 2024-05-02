@@ -140,7 +140,9 @@ export default {
             ],
         }),
         new PreloadWebpackPlugin({
-            rel: 'prefetch',
+            // This is something made up, it's just to get the
+            // bundle name in the service worker
+            rel: 'serviceworkprefetch',
             include: 'all',
             fileWhitelist: [/\.wasm$/, /(pivx-shield|util)/],
         }),
