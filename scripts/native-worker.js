@@ -21,7 +21,7 @@ self.addEventListener('fetch', (event) => {
 
     const cacheRegexps = [
         /sapling-(spend|output)\.params/,
-        /(multicore|util|pivx-shield)/,
+        /(pivx-shield|util)/,
     ];
 
     if (!cacheRegexps.some((r) => r.test(event.request.url))) {

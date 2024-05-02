@@ -142,7 +142,7 @@ export default {
         new PreloadWebpackPlugin({
             rel: 'prefetch',
             include: 'all',
-            fileWhitelist: [/\.wasm$/, /(multicore|util)/],
+            fileWhitelist: [/\.wasm$/, /(pivx-shield|util)/],
         }),
     ],
 };
