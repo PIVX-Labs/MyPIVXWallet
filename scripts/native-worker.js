@@ -19,7 +19,7 @@ self.addEventListener('fetch', (event) => {
     // for non-GET requests.
     if (event.request.method !== 'GET') return;
 
-    const cacheRegexps = [/sapling-(spend|output)\.params/, /(multicore|util)/];
+    const cacheRegexps = [/sapling-(spend|output)\.params/, /(multicore|util|pivx-shield)/];
 
     if (!cacheRegexps.some((r) => r.test(event.request.url))) {
         return;
