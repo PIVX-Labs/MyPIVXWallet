@@ -8,6 +8,7 @@ import HtmlWebpackPlugin from 'html-webpack-plugin';
 import NodePolyfillPlugin from 'node-polyfill-webpack-plugin';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import CopyPlugin from 'copy-webpack-plugin';
+import PreloadWebpackPlugin from '@vue/preload-webpack-plugin';
 import toml from 'toml';
 import { VueLoaderPlugin } from 'vue-loader';
 
@@ -137,6 +138,11 @@ export default {
                 { from: 'assets/logo_opaque-dark-bg.png' },
                 { from: 'scripts/native-worker.js' },
             ],
+        }),
+        new PreloadWebpackPlugin({
+            rel: 'prefetch',
+            include: 'all',
+            fileWhitelist: [/\.wasm$/, /(multicore|util)/],
         }),
     ],
 };

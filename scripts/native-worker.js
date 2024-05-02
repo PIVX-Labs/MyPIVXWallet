@@ -14,14 +14,14 @@ self.addEventListener('activate', (_event) => {
     self.clients.claim();
 });
 
-self.addEventListener('fetch', async (event) => {
+self.addEventListener('fetch', (event) => {
     // Let the browser do its default thing
     // for non-GET requests.
     if (event.request.method !== 'GET') return;
 
-    const cacheRegexp = /sapling-(spend|output)\.params/;
+    const cacheRegexps = [/sapling-(spend|output)\.params/, /(multicore|util)/];
 
-    if (!cacheRegexp.test(event.request.url)) {
+    if (!cacheRegexps.some((r) => r.test(event.request.url))) {
         return;
     }
 
@@ -29,14 +29,14 @@ self.addEventListener('fetch', async (event) => {
         (async () => {
             // Try to get the response from a cache.
             const cache = await caches.open('sapling-params-v1');
-            const cachedResponse = await cache.match(event.request);
+            const cachedResponse = await cache.match(event.request.url);
 
             if (cachedResponse && cachedResponse.ok) {
                 return cachedResponse;
             }
             // If we didn't find a match in the cache, use the network.
             const response = await fetch(event.request);
-            await cache.put(event.request, response.clone());
+            await cache.put(event.request.url, response.clone());
             return response;
         })()
     );
