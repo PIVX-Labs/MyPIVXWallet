@@ -209,7 +209,7 @@ syncStatusStarting = "<b>Twój portfel jest w trakcie synchronizacji!</b><br>Po 
 syncStatusFinished = "<b>Synchronizacja Zakończona!</b><br>Twój portfel jest gotowy do użycia!" # <b>Sync Finished!</b><br>Your wallet is ready to use!
 activityReceivedWith = "Otrzymano z {s}" # Received with {s}
 accountDeleted = "Twoje konto zostało pomyślnie usunięte!" # Your account has been successfully deleted!
-syncLoadingSaplingProver = "" # Loading Sapling Prover
+syncLoadingSaplingProver = "" # Loading SHIELD parameters...
 syncShieldProgress = "" # Loading shielded blocks {current} of {total}
 chartImmatureBalance = "" # Immature balance
 useShieldInputs = "" # Use shield inputs
@@ -220,6 +220,7 @@ settingsToggleAutoLockWallet = "" # Auto Lock the Wallet
 saveWalletFile = "" # Save Wallet File
 proposalOverBudget = "" # Over Budget
 badSaplingRoot = "" # There was an error while syncing. Resyncing from scratch (Bad sapling root)
+creatingShieldTransaction = "" # Creating SHIELD transaction...
 
 [ALERTS]
 INTERNAL_ERROR = "Błąd wewnętrzny, spróbuj ponownie później" # Internal error, please try again later

@@ -210,7 +210,7 @@ contestedProposalsTitle = "" # Contested Proposals
 accountDeleted = "" # Your account has been successfully deleted!
 activityReceivedWith = "" # Received with {s}
 chartImmatureBalance = "" # Immature balance
-syncLoadingSaplingProver = "" # Loading Sapling Prover
+syncLoadingSaplingProver = "" # Loading SHIELD parameters...
 syncShieldProgress = "" # Loading shielded blocks {current} of {total}
 useShieldInputs = "" # Use shield inputs
 newShieldAddress = "" # Get new shield address
@@ -220,6 +220,7 @@ settingsToggleAutoLockWallet = "" # Auto Lock the Wallet
 saveWalletFile = "" # Save Wallet File
 proposalOverBudget = "" # Over Budget
 badSaplingRoot = "" # There was an error while syncing. Resyncing from scratch (Bad sapling root)
+creatingShieldTransaction = "" # Creating SHIELD transaction...
 
 [ALERTS]
 INTERNAL_ERROR = "Error interno, vuelve a intentarlo más tarde" # Internal error, please try again later

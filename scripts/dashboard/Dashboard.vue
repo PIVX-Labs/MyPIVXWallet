@@ -21,7 +21,6 @@ import { onMounted, ref, watch, computed } from 'vue';
 import { getEventEmitter } from '../event_bus';
 import { Database } from '../database';
 import { start, doms, updateLogOutButton } from '../global';
-import { refreshChainData } from '../global.js';
 import { validateAmount } from '../legacy';
 import {
     confirmPopup,
@@ -101,7 +100,7 @@ async function importWallet({ type, secret, password = '' }) {
         );
     }
     if (parsedSecret) {
-        await wallet.setMasterKey(parsedSecret.masterKey);
+        await wallet.setMasterKey({ mk: parsedSecret.masterKey });
         wallet.setShield(parsedSecret.shield);
         jdenticonValue.value = wallet.getAddress();
 
@@ -155,15 +154,12 @@ async function restoreWallet(strReason) {
 async function importWif(wif, extsk) {
     const secret = await ParsedSecret.parse(wif);
     if (secret.masterKey) {
-        await wallet.setMasterKey(secret.masterKey);
+        await wallet.setMasterKey({ mk: secret.masterKey, extsk });
         if (wallet.hasShield && !extsk) {
             createAlert(
                 'warning',
                 'Could not decrypt sk even if password is correct, please contact a developer'
             );
-        }
-        if (wallet.hasShield) {
-            await wallet.setExtsk(extsk);
         }
         createAlert('success', ALERTS.WALLET_UNLOCKED, 1500);
     }
@@ -226,7 +222,7 @@ async function send(address, amount, useShieldInputs) {
     }
 
     // Make sure we are not already creating a (shield) tx
-    if (wallet.createAndSendTransaction.isLocked()) {
+    if (wallet.isCreatingTransaction()) {
         return createAlert(
             'warning',
             'Already creating a transaction! please wait for it to finish'
@@ -357,7 +353,7 @@ function getMaxBalance(useShieldInputs) {
 getEventEmitter().on('toggle-network', async () => {
     const database = await Database.getInstance();
     const account = await database.getAccount();
-    await wallet.setMasterKey(null);
+    await wallet.setMasterKey({ mk: null });
     activity.value?.reset();
 
     if (wallet.isEncrypted) {

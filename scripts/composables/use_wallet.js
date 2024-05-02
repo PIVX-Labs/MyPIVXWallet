@@ -2,7 +2,7 @@ import { getEventEmitter } from '../event_bus.js';
 import { hasEncryptedWallet, wallet } from '../wallet.js';
 import { ref } from 'vue';
 import { strCurrency } from '../settings.js';
-import { cOracle } from '../settings.js';
+import { cOracle } from '../prices.js';
 import { ledgerSignTransaction } from '../ledger.js';
 import { defineStore } from 'pinia';
 import { lockableFunction } from '../lock.js';
@@ -25,8 +25,8 @@ export const useWallet = defineStore('wallet', () => {
     const loadFromDisk = () => wallet.loadFromDisk();
     const hasShield = ref(wallet.hasShield());
 
-    const setMasterKey = async (mk) => {
-        wallet.setMasterKey(mk);
+    const setMasterKey = async ({ mk, extsk }) => {
+        wallet.setMasterKey({ mk, extsk });
         isImported.value = wallet.isLoaded();
         isHardwareWallet.value = wallet.isHardwareWallet();
         isHD.value = wallet.isHD();
@@ -90,6 +90,7 @@ export const useWallet = defineStore('wallet', () => {
             return res;
         }
     );
+    const isCreatingTransaction = () => createAndSendTransaction.isLocked();
 
     getEventEmitter().on('toggle-network', async () => {
         isEncrypted.value = await hasEncryptedWallet();
@@ -122,6 +123,7 @@ export const useWallet = defineStore('wallet', () => {
             wallet.wipePrivateData();
             isViewOnly.value = wallet.isViewOnly();
         },
+        isCreatingTransaction,
         isHD,
         balance,
         hasShield,
