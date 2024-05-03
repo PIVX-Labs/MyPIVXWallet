@@ -1,4 +1,7 @@
-import { setUpHDMainnetWallet, setUpLegacyMainnetWallet } from '../test_utils';
+import {
+    setUpHDMainnetWallet,
+    setUpLegacyMainnetWallet,
+} from '../../utils/test_utils';
 
 import 'fake-indexeddb/auto';
 import { describe, it, vi, expect, afterAll } from 'vitest';

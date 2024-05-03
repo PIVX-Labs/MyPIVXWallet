@@ -2,7 +2,7 @@ import {
     getLegacyMainnet,
     PIVXShield,
     setUpLegacyMainnetWallet,
-} from '../test_utils';
+} from '../../utils/test_utils';
 import { describe, it, vi, expect } from 'vitest';
 import 'fake-indexeddb/auto';
 import {

@@ -1,6 +1,6 @@
 import { Wallet } from '../../../scripts/wallet.js';
 import { Mempool } from '../../../scripts/mempool.js';
-import { setUpLegacyMainnetWallet } from '../test_utils';
+import { setUpLegacyMainnetWallet } from '../../utils/test_utils';
 import { describe, it, vi, afterAll, expect } from 'vitest';
 import {
     COutpoint,
