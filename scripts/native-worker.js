@@ -14,12 +14,10 @@ self.addEventListener('activate', (_event) => {
     self.clients.claim();
 });
 self.addEventListener('message', (event) => {
-    console.log(event.data);
     if (event.data) populatePrefetchCache(event.data);
 });
 
 async function populatePrefetchCache(files) {
-    console.log(files);
     const cache = await caches.open('sapling-params-v1');
     for (const file of files) {
         const res = await fetch(file, {
