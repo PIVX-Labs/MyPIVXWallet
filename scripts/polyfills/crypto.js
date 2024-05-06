@@ -34,7 +34,7 @@ export const createHash = (hash, options) => {
             fun = sha1;
             break;
         default:
-            throw new Error('Unfilleld polyfill');
+            throw new Error('Unfilled polyfill');
     }
     return new WrappedCreate(fun);
 };
