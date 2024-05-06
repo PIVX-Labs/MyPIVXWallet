@@ -160,7 +160,10 @@ export async function ledgerSignTransaction(wallet, transaction) {
     for (const input of transaction.vin) {
         const { hex } = await getNetwork().getTxInfo(input.outpoint.txid);
         const { type } = wallet.getAddressesFromScript(input.scriptSig);
-        inputs.push([cHardwareWallet.splitTransaction(hex), input.outpoint.n]);
+        inputs.push([
+            cHardwareWallet.splitTransaction(hex, false, false, true),
+            input.outpoint.n,
+        ]);
         // ScriptSig is the script at this point, since it's not signed
         associatedKeysets.push(wallet.getPath(input.scriptSig));
         isColdStake.push(type === 'p2cs');
