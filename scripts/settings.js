@@ -35,7 +35,7 @@ export let strCurrency = getDefaultCurrency();
 function getDefaultCurrency() {
     const langCode = navigator.languages[0]?.split('-')?.at(-1) || 'US';
     return (
-        countries.find((c) => c.alpha2 === langCode).currency.toLowerCase() ||
+        countries.find((c) => c.alpha2 === langCode)?.currency?.toLowerCase() ||
         'usd'
     );
 }
