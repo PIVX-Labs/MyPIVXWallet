@@ -236,6 +236,11 @@ progress[value]::-moz-progress-bar {
     font-size: 21px;
 }
 
+.noselect .reload {
+    padding-left: 17px;
+    font-size: 19px;
+}
+
 .centerFlex {
     display: flex;
     justify-content: center;
@@ -2707,12 +2712,12 @@ input {
 
 .stakingTx thead tr th {
     padding: 9px 20px 9px;
-    font-family: 'Montserrat Regular';
+    font-family: Montserrat;
     letter-spacing: .5px;
     color: #E9DEFF;
     background: rgba(100, 16, 199, .3);
     border: 0px;
-    font-weight: 100;
+    font-weight: 500;
 }
 
 .stakingTx thead {
