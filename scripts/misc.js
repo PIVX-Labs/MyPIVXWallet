@@ -116,6 +116,7 @@ export async function confirmPopup({
     textLeft,
     noPadding,
     maxHeight,
+    centerButtons,
 }) {
     // If there's a title provided: display the header and text
     doms.domConfirmModalHeader.style.display = title ? 'block' : 'none';
@@ -172,6 +173,12 @@ export async function confirmPopup({
             break;
         }
     }
+
+    // Center the buttons
+    if(centerButtons) {
+        confirmModalButtons.innerHTML = "<div class='centerFlex'>" + confirmModalButtons.innerHTML + "</div>"
+    }
+    
 
     // Wait for the promise to resolve OR create a new one which resolves upon a modal button click
     resolvePromise =
