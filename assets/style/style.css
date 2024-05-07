@@ -3674,3 +3674,12 @@ select.form-control option {
     -webkit-box-decoration-break: clone;
     font-weight: 600;
 }
+
+.rewardsBadge {
+    background-color: #5811AB;
+    border-radius: 8px;
+    margin-left: 18px;
+    padding: 4px 13px;
+    position: relative;
+    top: -2px;
+}

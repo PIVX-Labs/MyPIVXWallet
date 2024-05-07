@@ -12,7 +12,7 @@ import { beautifyNumber } from '../misc';
 
 import iCheck from '../../assets/icons/icon-check.svg';
 import iHourglass from '../../assets/icons/icon-hourglass.svg';
-import { blockCount } from '../global.js';
+import { blockCount, optimiseCurrencyLocale } from '../global.js';
 
 const props = defineProps({
     title: String,
@@ -23,9 +23,6 @@ const txs = ref([]);
 let txCount = 0;
 const updating = ref(false);
 const isHistorySynced = ref(false);
-const rewardsText = computed(
-    () => `${isHistorySynced.value ? '' : '≥'}${rewardAmount.value.toFixed(2)}`
-);
 const rewardAmount = ref(0);
 const ticker = computed(() => cChainParams.current.TICKER);
 const explorerUrl = ref(getNetwork()?.strUrl);
@@ -243,6 +240,13 @@ if (props.rewards) {
     );
 }
 
+const rewardsText = computed(() => {
+    const nCoins = rewardAmount.value / COIN;
+    const strBal = nCoins.toFixed(displayDecimals.value);
+    const nLen = strBal.length;
+    return `${beautifyNumber(strBal, nLen >= 10 ? '15px' : '15px')} <span style="font-size:15px; opacity: 0.55;">${ticker.value}</span>`;
+});
+
 function reset() {
     txs.value = [];
     txCount = 0;
@@ -268,13 +272,11 @@ defineExpose({ update, reset, getTxCount });
 
 <template>
     <div>
-        <center>
-            <span class="dcWallet-activityLbl">
-                <span v-if="rewards"> ({{ rewardsText }} {{ ticker }}) </span>
-            </span>
-        </center>
         <div class="dcWallet-activity">
-            <span style="font: 24px 'Montserrat Regular'; color: rgb(233, 222, 255); display: flex; justify-content: center; margin-bottom: 24px; margin-top: 20px;" :data-i18n="rewards ? 'rewardHistory' : 'activity'">{{title}}</span>
+            <span style="font-family: 'Montserrat Regular'; color: rgb(233, 222, 255); display: flex; justify-content: center; margin-bottom: 24px; margin-top: 20px;">
+                <span style="font-size:24px;" :data-i18n="rewards ? 'rewardHistory' : 'activity'">{{title}}</span>
+                <span style="font-size:20px;"   class="rewardsBadge" v-if="rewards" v-html="rewardsText"></span>
+            </span>
 
             <div class="scrollTable">
                 <div>

@@ -7,6 +7,9 @@ import { createAlert, isColdAddress } from '../misc';
 import { COIN, cChainParams } from '../chain_params';
 import { beautifyNumber } from '../misc';
 
+import pLogo from '../../assets/p_logo.svg';
+import logo from '../../assets/pivx.png';
+
 const coldStakingAddress = defineModel('coldStakingAddress');
 const csAddrInternal = ref(coldStakingAddress.value);
 watch(coldStakingAddress, (addr) => (csAddrInternal.value = addr));
@@ -34,6 +37,8 @@ const coldBalanceValue = computed(() => {
     return nValue.toLocaleString('en-gb', cLocale);
 });
 
+const ticker = computed(() => cChainParams.current.TICKER);
+
 watch(showColdStakingAddressModal, (showColdStakingAddressModal) => {
     nextTick(() => {
         if (showColdStakingAddressModal) coldAddrInput.value.focus();
@@ -55,70 +60,66 @@ function submit() {
 </script>
 
 <template>
-    <div class="dcWallet-balances mb-4" style="margin-top: 37px">
-        <div class="row lessBot p-0">
-            <div
-                class="col-6 d-flex dcWallet-topLeftMenu"
-                style="justify-content: flex-start"
-            >
-                <h3 class="noselect balance-title"></h3>
-            </div>
-
-            <div
-                class="col-6 d-flex dcWallet-topRightMenu"
-                style="justify-content: flex-end"
-            >
-                <div class="btn-group dropleft">
-                    <i
-                        class="fa-solid fa-gear"
-                        style="width: 20px"
-                        data-testid="setColdStakeButton"
-                        @click="showColdStakingAddressModal = true"
-                    ></i>
+    <center>
+        <div class="dcWallet-balances mb-4">
+            <div class="row lessBot p-0">
+                <div class="col-6 d-flex dcWallet-topLeftMenu" style="justify-content: flex-start">
+                    <h3 class="noselect balance-title">
+                        <span class="reload noselect" @click="reload()"><i class="fa-solid fa-rotate-right topCol"
+                                :class="{ playAnim: updating }"></i></span>
+                    </h3>
                 </div>
-            </div>
-        </div>
 
-        <span data-i18n="staking">Staking</span><br />
-        <span
-            class="dcWallet-pivxBalance"
-            data-testid="coldBalance"
-            v-html="coldBalanceStr"
-        ></span>
-        <span class="dcWallet-pivxTicker">&nbsp;PIV&nbsp;</span><br />
-        <div class="dcWallet-usdBalance">
-            <span class="dcWallet-usdValue" data-testid="coldBalanceValue">
-                {{ coldBalanceValue }}
-            </span>
-            <span class="dcWallet-usdValue" data-testid="coldBalanceCurrency"
-                >&nbsp;{{ currency }}&nbsp;</span
-            >
-        </div>
-
-        <div class="row lessTop p-0">
-            <div class="col-6 d-flex" style="justify-content: flex-start">
-                <div
-                    data-i18n="stake"
-                    class="dcWallet-btn-left"
-                    data-testid="showStakeButton"
-                    @click="emit('showStake')"
-                >
-                    Stake
+                <div class="col-6 d-flex dcWallet-topRightMenu" style="justify-content: flex-end">
+                    <div class="btn-group dropleft">
+                        <i class="fa-solid fa-gear topCol" style="width: 20px; position: relative; top: 3px; right: 8px;"
+                            data-testid="setColdStakeButton"
+                            @click="showColdStakingAddressModal = true"></i>
+                    </div>
                 </div>
             </div>
 
-            <div class="col-6 d-flex" style="justify-content: flex-end">
-                <div
-                    data-i18n="stakeUnstake"
-                    class="dcWallet-btn-right"
-                    data-testid="showUnstakeButton"
-                    @click="emit('showUnstake')"
-                >
-                    Unstake
+
+            
+            <div style="margin-top:22px; padding-left:15px; padding-right:15px; margin-bottom: 35px;">
+                <div style="background-color:#32224e61; border:2px solid #361562; border-bottom:none; border-top:none;">
+                    <div>
+                        <img :src="logo" style="height: 60px; margin-top:14px">
+                    </div>
+                    <span class="ptr" data-toggle="modal" data-target="#walletBreakdownModal" @click="renderWalletBreakdown()">
+                        <span class="logo-pivBal" v-html="pLogo"></span>
+                        <span class="dcWallet-pivxBalance" v-html="coldBalanceStr"> </span>
+                        <span class="dcWallet-pivxTicker" style="position: relative; left: 4px">&nbsp;{{ ticker }}&nbsp;</span>
+                    </span>
+
+                    <div class="dcWallet-usdBalance" style="padding-bottom: 12px; padding-top: 3px;">
+                        <span class="dcWallet-usdValue" style="color:#d7d7d7; font-weight: 500;" v-html="coldBalanceValue"></span>
+                        <span class="dcWallet-usdValue" style="opacity: 0.55;">&nbsp;{{ currency }}</span>
+                    </div>
+                </div>
+            </div>
+            
+            
+            <div class="row lessTop p-0" style="margin-left:15px; margin-right:15px; margin-bottom: 19px; margin-top: -16px;">
+                <div class="col-6 d-flex p-0" style="justify-content: flex-start">
+                    <button class="pivx-button-small" style="height: 42px; width: 97px;" @click="emit('showStake')">
+                        <span class="buttoni-text">
+                            {{ translation.stake }}
+                        </span>
+                    </button>
+                </div>
+
+                <div class="col-6 d-flex p-0" style="justify-content: flex-end">
+                    <button class="pivx-button-small" style="height: 42px; width: 106px;" @click="emit('showUnstake')">
+                        <span class="buttoni-text">
+                            {{ translation.stakeUnstake }}
+                        </span>
+                    </button>
                 </div>
             </div>
         </div>
-    </div>
+    </center>
+
     <Teleport to="body">
         <Modal :show="showColdStakingAddressModal">
             <template #header>
