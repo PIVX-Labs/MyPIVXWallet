@@ -156,7 +156,7 @@ function displayLockWalletModal() {
                         <span class="reload noselect" @click="reload()"><i class="fa-solid fa-rotate-right topCol"
                                 :class="{ playAnim: updating }"></i></span>
                     </h3>
-		    <h3 class="noselect balance-title"></h3>
+		            <h3 class="noselect balance-title"></h3>
                 </div>
 
                 <div class="col-6 d-flex dcWallet-topRightMenu" style="justify-content: flex-end">
