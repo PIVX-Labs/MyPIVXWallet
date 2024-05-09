@@ -2548,7 +2548,7 @@ a {
 }
 
 .exportKeysModalColor {
-    background-color: #410970c7;
+    background-color: #25183d;
     backdrop-filter: blur(5px);
     color: #fff;
 }
@@ -2854,20 +2854,23 @@ input {
 }
 
 select.form-control {
-    color: #ffffff;
-    background-color: rgba(255, 255, 255, 18%);
-    border: 1px solid rgba(255, 255, 255, 22%);
+    color: #6410c7;
+    background-color: #e9deff;
+    border: 1px solid #af9cc6;
+    font-weight: 500;
 }
 
 select.form-control:focus {
-    color: #ffffff;
-    background-color: rgba(255, 255, 255, 18%);
-    border: 1px solid rgba(255, 255, 255, 40%);
+    color: #6410c7;
+    background-color: #e9deff;
+    border: 1px solid #af9cc6;
+    font-weight: 500;
     box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 22%);
 }
 
 select.form-control option {
-    background-color: hsl(274 37% 43% / 1);
+    background-color: #e9deff;
+    color:#9221FF;
 }
 
 .settingsMenu {
@@ -3641,7 +3644,7 @@ select.form-control option {
 
 .modal-content {
     border-radius: 10px;
-    border: 1px solid #8320E6;
+    border: 1px solid #42117e;
 }
 
 .modal-title {
@@ -3682,4 +3685,28 @@ select.form-control option {
     padding: 4px 13px;
     position: relative;
     top: -2px;
+}
+
+.plus-icon {
+    margin-right: 5px;
+}
+
+.plus-icon svg {
+    height: 15px;
+    position: relative;
+    top: -1px;
+}
+
+.plus-icon svg path {
+    fill: #fff;
+}
+
+.masternodeModalDialog {
+    width: 800px;
+}
+
+@media (min-width: 576px) {
+    .masternodeModalDialog {
+        max-width: 800px;
+    }
 }

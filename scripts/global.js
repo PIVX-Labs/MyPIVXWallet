@@ -387,11 +387,18 @@ export async function openExplorer(strAddress = '') {
 }
 
 async function loadImages() {
-    const images = [['mpw-main-logo', import('../assets/logo.png')]];
+    const images = [['mpw-main-logo', import('../assets/logo.png')],
+                    ['plus-icon', import('../assets/icons/icon-plus.svg')],
+                    ['plus-icon2', import('../assets/icons/icon-plus.svg')],
+                ];
 
     const promises = images.map(([id, path]) =>
         (async () => {
-            document.getElementById(id).src = (await path).default;
+            if((await path).default.includes('<svg')) {
+                document.getElementById(id).innerHTML = (await path).default;
+            } else {
+                document.getElementById(id).src = (await path).default;
+            }
         })()
     );
     await Promise.all(promises);
@@ -1407,7 +1414,7 @@ export async function updateMasternodeTab() {
                 '</b> to create a Masternode!';
         } else {
             // The user has the funds, but not an exact collateral, prompt for them to create one
-            doms.domCreateMasternode.style.display = 'block';
+            doms.domCreateMasternode.style.display = 'flex';
             doms.domMnTxId.style.display = 'none';
             doms.domMnTxId.innerHTML = '';
         }
@@ -1439,7 +1446,7 @@ export async function updateMasternodeTab() {
 
         // If there's no collateral found, display the creation UI
         if (!fHasCollateral && !cMasternode)
-            doms.domCreateMasternode.style.display = 'block';
+            doms.domCreateMasternode.style.display = 'flex';
 
         // If we a loaded Masternode, display the Dashboard
         if (cMasternode) {

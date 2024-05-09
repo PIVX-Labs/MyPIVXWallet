@@ -156,6 +156,45 @@
           </div>
         </div>
 
+        <!-- Create Masternode -->
+        <div class="modal fade" id="createMasternodeModal" tabindex="-1" aria-labelledby="createMasternodeModalLabel" role="dialog" aria-hidden="true">
+          <div class="modal-mask black-text" style="z-index: 2000;background-color: rgba(32, 20, 54, 0.86);">
+            <div class="modal-dialog masternodeModalDialog modal-dialog-centered" role="document">
+              <div class="modal-content exportKeysModalColor">
+                <div class="modal-header" style="z-index: 101;">
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <i class="fa-solid fa-xmark closeCross"></i>
+                  </button>
+                </div>
+                <div class="modal-body center-text" style="z-index:100; margin-top: -35px; padding-bottom: 35px;">
+                  
+                  <div class="container">
+                    <h4>Create a masternode</h4>
+                    <span style="color: #af9cc6; margin-bottom: 23px; display: block;">This action requires <b>10,000 PIV</b> in collateral.</span>
+                    <input class="hide-element" type="text" />
+                    <div style="display: block; text-align: left;">
+                      <p style="margin-bottom: 6px; color: #af9cc6;">Choose your Masternode type</p>
+                      <select id="mnCreateType" style="display: block; text-align: left;" placeholder="Masternode collateral tx" class="form-control">
+                        <option value="VPS"> Self-hosted (a masternode server ran by you)</option>
+                        <option value="Third Party"> Third Party (a masternode server ran by someone else)</option>
+                      </select>
+                      <br />
+                      <br />
+                    </div>
+
+                    <button onclick="MPW.createMasternode()" class="pivx-button-small" style="height: 42px; width: 228px;">
+                      <span class="buttoni-text">
+                        <span id="plus-icon2" class="plus-icon"></span>
+                        Create Masternode</span>
+                    </button>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div class="container">
           <div class="row no-gutters">
             <div class="col-md-12 rm-pd">
@@ -170,8 +209,8 @@
                 <!-- // PIVX TITLE SECTION -->
               </div>
 
-	      <div id="DashboardTab"> </div>
-	      <div id="StakingTab" class="tabcontent"> </div>
+              <div id="DashboardTab"> </div>
+              <div id="StakingTab" class="tabcontent"> </div>
               <div id="Governance" class="tabcontent">
                 <div class="col-md-12 title-section float-left rm-pd">
                   <span style="font: 23px 'Montserrat Regular'; text-align: center; display: block; font-weight: 300;">Vote on Governance</span>
@@ -247,9 +286,12 @@
                 </table>
               </div>
               <div id="Masternode" class="tabcontent">
-                <div class="col-md-12 title-section float-left rm-pd center-text">
-                  <h3><span data-i18n="mnControlYour" style="font-weight: 300;">Control your</span></h3><h3 data-i18n="navMasternode" class="pivx-bold-title"> Masternode</h3>
-                  <p data-i18n="mnSubtext">From this tab you can create and access one or more masternodes</p>
+                <div class="col-md-12 title-section float-left rm-pd center-text" style="padding-bottom: 0px;">
+                  <h3 style="margin-bottom: -2px;">
+                    <span data-i18n="mnControlYour" style="font-weight: 300;">Control your</span>
+                  </h3>
+                  <h3 data-i18n="navMasternode" class="pivx-bold-title"> Masternode</h3>
+                  <p data-i18n="mnSubtext" style="color:#beaed0;">From this tab you can create and access one or more masternodes</p>
                 </div>
 
                 <div style="display: block;">
@@ -282,29 +324,12 @@
                 <!-- // IMPORT MASTERNODE -->
                 <br />
 
-                <div id="createMasternode" class="dashboard-item" style="display: none; width: 100%;">
-                  <div class="container">
-                    <h4>Create a masternode <small style="opacity: 0.75;">(10k PIV)</small></h4>
-                    <input class="hide-element" type="text" />
-                    <div style="display: block;">
-                      <p>Choose your Masternode type</p>
-                      <select id="mnCreateType" style="display: block; text-align: center;" placeholder="Masternode collateral tx" class="form-control">
-                        <option value="VPS"> Self-hosted (a masternode server ran by you)</option>
-                        <option value="Third Party"> Third Party (a masternode server ran by someone else)</option>
-                      </select>
-                      <br />
-                      <br />
-                      <button class="pivx-button-big" onclick="MPW.createMasternode()">
-                        <span class="buttoni-icon"><i class="fas fa-file-upload fa-tiny-margin"></i></span>
-                        <span class="buttoni-text" id="importMnText">Create Masternode</span>
-                        <span class="buttoni-arrow">
-                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-                            <path d="M23.328 16.707L13.121 26.914a.5.5 0 01-.707 0l-2.828-2.828a.5.5 0 010-.707L16.964 16 9.586 8.621a.5.5 0 010-.707l2.828-2.828a.5.5 0 01.707 0l10.207 10.207a1 1 0 010 1.414z"></path>
-                          </svg>
-                        </span>
-                      </button>
-                    </div>
-                  </div>
+                <div id="createMasternode" style="display: flex; justify-content: center; width: 100%;">
+                  <button class="pivx-button-small" style="height: 42px; width: 228px;" data-toggle="modal" data-target="#createMasternodeModal">
+                    <span class="buttoni-text">
+                      <span id="plus-icon" class="plus-icon"></span>
+                      Create Masternode</span>
+                  </button>
                 </div>
 
                 <div id="mnDashboard" class="staking-banner-bottom">
