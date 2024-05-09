@@ -9,7 +9,7 @@ const props = defineProps({
     <Transition name="modal" style="z-index: 2000; background-color: #201436db;">
         <div v-if="show" class="modal-mask black-text">
             <div class="modal-dialog" role="document">
-                <div class="modal-content" :class="modalClass">
+                <div class="modal-content exportKeysModalColor" :class="modalClass">
                     <div class="modal-header" v-if="!!$slots.header">
                         <slot name="header"></slot>
                     </div>
