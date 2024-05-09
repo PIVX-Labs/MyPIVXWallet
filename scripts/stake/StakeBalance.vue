@@ -82,7 +82,7 @@ function submit() {
 
             
             <div style="margin-top:22px; padding-left:15px; padding-right:15px; margin-bottom: 35px;">
-                <div style="background-color:#32224e61; border:2px solid #361562; border-bottom:none; border-top:none;">
+                <div style="background-color:#32224e61; border:2px solid #361562; border-radius: 5px;">
                     <div>
                         <img :src="logo" style="height: 60px; margin-top:14px">
                     </div>
