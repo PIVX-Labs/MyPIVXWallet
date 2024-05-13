@@ -92,9 +92,9 @@ export default {
             fs: false,
             crypto: path.resolve(__dirname, 'scripts/polyfills/crypto.js'),
         },
-	alias: {
+        alias: {
             'tiny-secp256k1': '@bitcoinerlab/secp256k1',
-            secp256k1: 'secp256k1-noble'
+            secp256k1: 'secp256k1-noble',
         },
     },
     plugins: [
