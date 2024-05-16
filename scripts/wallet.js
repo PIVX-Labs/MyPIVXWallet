@@ -737,7 +737,7 @@ export class Wallet {
             await startBatch(
                 async (i) => {
                     let block;
-                    block = await cNet.getBlock(blockHeights[i], true);
+                    block = await cNet.getBlock(blockHeights[i]);
                     blocks[i] = block;
                     // We need to process blocks monotically
                     // When we get a block, start from the first unhandled
@@ -750,17 +750,16 @@ export class Wallet {
                         // Delete so we don't have to hold all blocks in memory
                         // until we finish syncing
                         delete blocks[j];
+                        getEventEmitter().emit(
+                            'shield-sync-status-update',
+                            tr(translation.syncShieldProgress, [
+                                { current: handled },
+                                { total: blockHeights.length },
+                            ]),
+                            false
+                        );
                         syncing = false;
                     }
-
-                    getEventEmitter().emit(
-                        'shield-sync-status-update',
-                        tr(translation.syncShieldProgress, [
-                            { current: handled - 1 },
-                            { total: blockHeights.length },
-                        ]),
-                        false
-                    );
                 },
                 blockHeights.length,
                 batchSize
@@ -841,7 +840,7 @@ export class Wallet {
                         for (const tx of block.txs) {
                             const parsed = Transaction.fromHex(tx.hex);
                             parsed.blockHeight = blockHeight;
-                            parsed.blockTime = tx.blocktime;
+                            parsed.blockTime = tx.blockTime;
                             // Avoid wasting memory on txs that do not regard our wallet
                             if (this.ownTransaction(parsed)) {
                                 await this.addTransaction(parsed);

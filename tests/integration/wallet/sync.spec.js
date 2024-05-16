@@ -9,10 +9,11 @@ import {
     getNetwork,
     resetNetwork,
 } from '../../../scripts/__mocks__/network.js';
-import { refreshChainData } from '../../../scripts/global.js';
 import { sleep } from '../../../scripts/utils.js';
+import { start } from '../../../scripts/__mocks__/global.js';
 
 vi.mock('../../../scripts/network.js');
+vi.mock('../../../scripts/global.js');
 
 /**
  * @param{import('scripts/wallet').Wallet} wallet - wallet that will generate the transaction
@@ -28,8 +29,7 @@ async function crateAndSendTransaction(wallet, address, value) {
 }
 
 async function mineAndSync() {
-    getNetwork().mintBlock();
-    await refreshChainData();
+    getNetwork().mintAndEmit();
     // 500 milliseconds are enough time to make the wallets sync and handle the new blocks
     await sleep(500);
 }
@@ -37,10 +37,11 @@ async function mineAndSync() {
 describe('Wallet sync tests', () => {
     let walletHD;
     let walletLegacy;
+    beforeAll(async () => {
+        await start();
+    });
     beforeEach(async () => {
-        resetNetwork();
-        // Update the global variable blockCount
-        await refreshChainData();
+        await resetNetwork();
         walletHD = await setUpHDMainnetWallet(false);
         walletLegacy = await setUpLegacyMainnetWallet();
         // Reset indexedDB before each test

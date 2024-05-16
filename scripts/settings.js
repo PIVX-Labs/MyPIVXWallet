@@ -3,7 +3,7 @@ import {
     updateLogOutButton,
     updateGovernanceTab,
     dashboard,
-    refreshChainData,
+    updateBlockCount,
 } from './global.js';
 import { wallet, hasEncryptedWallet } from './wallet.js';
 import { cChainParams } from './chain_params.js';
@@ -302,18 +302,13 @@ function subscribeToNetworkEvents() {
 }
 
 // --- Settings Functions
-export async function setExplorer(explorer, fSilent = false) {
+async function setExplorer(explorer, fSilent = false) {
     const database = await Database.getInstance();
     database.setSettings({ explorer: explorer.url });
     cExplorer = explorer;
 
     // Enable networking + notify if allowed
-    if (getNetwork()) {
-        getNetwork().strUrl = cExplorer.url;
-    } else {
-        const network = new ExplorerNetwork(cExplorer.url, wallet);
-        setNetwork(network);
-    }
+    await setNetwork(cExplorer.url);
 
     // Update the selector UI
     doms.domExplorerSelect.value = cExplorer.url;
@@ -324,6 +319,18 @@ export async function setExplorer(explorer, fSilent = false) {
             tr(ALERTS.SWITCHED_EXPLORERS, [{ explorerName: cExplorer.name }]),
             2250
         );
+}
+
+export async function setNextExplorer() {
+    // The explorer index we started at
+    let nIndex = cChainParams.current.Explorers.findIndex(
+        (a) => a.url === getNetwork().strUrl
+    );
+    if (fAutoSwitch) {
+        nIndex = (nIndex + 1) % cChainParams.current.Explorers.length;
+    }
+    const cNewExplorer = cChainParams.current.Explorers[nIndex];
+    await setExplorer(cNewExplorer, true);
 }
 
 async function setNode(node, fSilent = false) {
@@ -562,7 +569,7 @@ export async function toggleTestnet() {
     doms.domTestnetToggler.checked = cChainParams.current.isTestnet;
     await start();
     // Make sure we have the correct number of blocks before loading any wallet
-    await refreshChainData();
+    await updateBlockCount();
     getEventEmitter().emit('toggle-network');
     await updateGovernanceTab();
 }

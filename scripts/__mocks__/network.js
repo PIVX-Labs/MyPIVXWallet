@@ -1,5 +1,7 @@
 import { vi } from 'vitest';
 import { Transaction } from '../transaction.js';
+import { getEventEmitter } from '../event_bus.js';
+import { sleep } from '../utils.js';
 
 export const getNetwork = vi.fn(() => {
     return globalNetwork;
@@ -106,6 +108,10 @@ class TestNetwork {
         this.#nextBlock.reset();
         this.#nextBlock.blockHeight = this.#blockHeight + 1;
     }
+    mintAndEmit() {
+        this.mintBlock();
+        getEventEmitter().emit('new-block', this.#blockHeight);
+    }
 }
 
 /**
@@ -157,6 +163,9 @@ class TestTransaction {
 
 let globalNetwork = new TestNetwork();
 
-export function resetNetwork() {
+export async function resetNetwork() {
     globalNetwork = new TestNetwork();
+    // Update the global variable blockCount
+    getEventEmitter().emit('new-block', globalNetwork.getBlockCount());
+    await sleep(100);
 }

@@ -247,16 +247,13 @@ export async function start() {
 
     subscribeToNetworkEvents();
     // Make sure we know the correct number of blocks
-    await refreshChainData();
+    await updateBlockCount();
     // Load the price manager
     cOracle.load();
 
     // If allowed by settings: submit a simple 'hit' (app load) to Labs Analytics
     getNetwork().submitAnalytics('hit');
     setInterval(() => {
-        // Refresh blockchain data
-        refreshChainData();
-
         // Fetch the PIVX prices
         refreshPriceDisplay();
     }, 15000);
@@ -274,6 +271,14 @@ export async function start() {
     doms.domDashboard.click();
 }
 
+/**
+ * Updates the blockcount
+ * Must be called only on start and when toggling network
+ * @returns {Promise<void>}
+ */
+export async function updateBlockCount() {
+    blockCount = await getNetwork().getBlockCount();
+}
 async function refreshPriceDisplay() {
     await cOracle.getPrice(strCurrency);
     getEventEmitter().emit('balance-update');
@@ -287,7 +292,7 @@ function subscribeToNetworkEvents() {
 
     getEventEmitter().on('new-block', (block) => {
         debugLog(DebugTopics.GLOBAL, `New block detected! ${block}`);
-
+        blockCount = block;
         // If it's open: update the Governance Dashboard
         if (doms.domGovTab.classList.contains('active')) {
             updateGovernanceTab();
@@ -1651,22 +1656,6 @@ export async function createProposal() {
         await database.updateAccount(account);
         createAlert('success', translation.PROPOSAL_CREATED, 10000);
         updateGovernanceTab();
-    }
-}
-
-export async function refreshChainData() {
-    const cNet = getNetwork();
-    // If in offline mode: don't sync ANY data or connect to the internet
-    if (!cNet.enabled)
-        return console.warn(
-            'Offline mode active: For your security, the wallet will avoid ALL internet requests.'
-        );
-
-    // Fetch block count
-    const newBlockCount = await cNet.getBlockCount();
-    if (newBlockCount !== blockCount) {
-        blockCount = newBlockCount;
-        getEventEmitter().emit('new-block', blockCount);
     }
 }
 

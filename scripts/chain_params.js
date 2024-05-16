@@ -13,7 +13,7 @@ export const COIN = 10 ** 8;
 export const MAX_ACCOUNT_GAP = 20;
 
 /** The batch size of Shield block synchronisation */
-export const SHIELD_BATCH_SYNC_SIZE = 32;
+export const SHIELD_BATCH_SYNC_SIZE = 16;
 
 /** Transaction Sapling Version */
 export const SAPLING_TX_VERSION = 3;
