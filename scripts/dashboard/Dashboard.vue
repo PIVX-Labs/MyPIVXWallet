@@ -198,8 +198,9 @@ function lockWallet() {
  * Sends a transaction
  * @param {string} address - Address or contact to send to
  * @param {number} amount - Amount of PIVs to send
+ * @param {boolean} isAutoShield - Whether or not this is an autoshield transaction
  */
-async function send(address, amount, useShieldInputs) {
+async function send(address, amount, useShieldInputs, isAutoShield) {
     // Ensure a wallet is unlocked
     if (wallet.isViewOnly && !wallet.isHardwareWallet) {
         if (
@@ -325,9 +326,22 @@ async function send(address, amount, useShieldInputs) {
 
     // Create and send the TX
     try {
-        await wallet.createAndSendTransaction(getNetwork(), address, nValue, {
-            useShieldInputs,
-        });
+        if (isAutoShield) {
+            await wallet.createAuthoshieldTransactions(
+                getNetwork(),
+                address,
+                nValue
+            );
+        } else {
+            await wallet.createAndSendTransaction(
+                getNetwork(),
+                address,
+                nValue,
+                {
+                    useShieldInputs,
+                }
+            );
+        }
     } catch (e) {
         console.error(e);
         createAlert('warning', e);

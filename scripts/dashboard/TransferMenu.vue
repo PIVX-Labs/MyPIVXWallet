@@ -17,7 +17,12 @@ const emit = defineEmits([
 // Amount of PIVs to send in the selected currency (e.g. USD)
 const amountCurrency = ref('');
 const useShieldInputs = ref(false);
+const autoShieldTransaction = ref(false);
 const color = ref('');
+
+watch(useShieldInputs, (useShieldInputs) => {
+    if (!useShieldInputs) autoShieldTransaction.value = false;
+});
 
 const props = defineProps({
     show: Boolean,
@@ -55,7 +60,8 @@ function send() {
             'send',
             sanitizeHTML(address.value),
             amount.value,
-            useShieldInputs.value
+            useShieldInputs.value,
+            autoShieldTransaction.value
         );
 }
 
@@ -254,6 +260,23 @@ async function selectContact() {
                     }}</label>
                 </div>
                 <br />
+                <div v-show="useShieldInputs">
+                    <div class="custom-control custom-switch">
+                        <input
+                            type="checkbox"
+                            class="custom-control-input"
+                            data-testid="useShieldInputs"
+                            id="autoShieldTransaction"
+                            v-model="autoShieldTransaction"
+                        />
+                        <label
+                            class="custom-control-label"
+                            for="autoShieldTransaction"
+                            >{{ translation.autoShieldTransaction }}</label
+                        >
+                    </div>
+                    <br />
+                </div>
             </div>
 
             <div class="text-right pb-2">

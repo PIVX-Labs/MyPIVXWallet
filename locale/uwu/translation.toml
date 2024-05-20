@@ -221,6 +221,7 @@ saveWalletFile = "Save Wawwet File" # Save Wallet File
 proposalOverBudget = "Over Budgey" # Over Budget
 badSaplingRoot = "" # There was an error while syncing. Resyncing from scratch (Bad sapling root)
 creatingShieldTransaction = "" # Creating SHIELD transaction...
+autoShieldTransaction = "" # Auto shield transaction
 
 [ALERTS]
 INTERNAL_ERROR = "Internal error, pwease try again later" # Internal error, please try again later

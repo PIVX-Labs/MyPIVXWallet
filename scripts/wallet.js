@@ -5,7 +5,7 @@ import { beforeUnloadListener, blockCount } from './global.js';
 import { getNetwork } from './network.js';
 import { MAX_ACCOUNT_GAP, SHIELD_BATCH_SYNC_SIZE } from './chain_params.js';
 import { HistoricalTx, HistoricalTxType } from './historical_tx.js';
-import { COutpoint, Transaction } from './transaction.js';
+import { COutpoint, Transaction, UTXO } from './transaction.js';
 import { confirmPopup, createAlert, isShieldAddress } from './misc.js';
 import { cChainParams } from './chain_params.js';
 import { COIN } from './chain_params.js';
@@ -1072,6 +1072,7 @@ export class Wallet {
         const value =
             transaction.shieldOutput[0]?.value || transaction.vout[0].value;
         try {
+            //await this.#shield.loadSaplingProver();
             const { hex } = await this.#shield.createTransaction({
                 address:
                     transaction.shieldOutput[0]?.address ||
@@ -1096,6 +1097,41 @@ export class Wallet {
                 true
             );
         }
+    }
+
+    /**
+     *
+     */
+    async createAutoshieldTransactions(address, value) {
+        const [intermediaryAddress] = this.getNewAddress(1);
+        const firstTx = await this.sign(
+            this.createTransaction(
+                intermediaryAddress,
+                value + TransactionBuilder.getStandardTxFee(1, 1),
+                {
+                    useShieldInputs: true,
+                }
+            )
+        );
+        const txBuilder = new TransactionBuilder()
+            .addUTXO(
+                new UTXO({
+                    outpoint: new COutpoint({
+                        txid: firstTx.txid,
+                        n: 0,
+                    }),
+                    value: firstTx.vout[0].value,
+                    script: firstTx.vout[0].script,
+                })
+            )
+            .addOutput({
+                address,
+                value: firstTx.vout[0].value,
+            });
+        txBuilder.equallySubtractAmt(txBuilder.getFee());
+        const tx = txBuilder.build();
+        await this.sign(tx);
+        return [firstTx, tx];
     }
 
     /**
