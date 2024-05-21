@@ -378,7 +378,7 @@
                     </ul>
                   </div>
                   <div class="col-12 col-md-9">
-                    <div id="settingsWallet" class="settingsContent">
+                    <div id="settingsWallet" class="settingsContent" style="color:#AF9CC6;">
                       <span data-i18n="wallet" class="header-title">Wallet</span>
 
                       <hr />
@@ -410,23 +410,23 @@
                       <br />
                       <select id="analytics" class="form-control" name="analytics">
                         <!-- Populated via JS at DOM load (settings.js) -->
-                      </select>
+                      </select><br>
                       <div id="analyticsDescriptor"></div>
 
                       <hr>
                       <div id="changePassword-container">
+                        <label for="UNKNOWN" data-i18n="TODOTXT">Change your wallet's password</label>
+                        <br>
+                        <button class="pivx-button-small" style="height: 42px; width: 210px; margin: 0px; margin-top: 2px; margin-bottom: 12px;" id="changePasswordBtn" onclick="MPW.changePassword()">
+                          <span class="buttoni-text">  
+                            <span id="change-pwd-icon" class="change-pwd-icon"></span>
+                            Change Password
+                          </span>
+                        </button>
+                        <hr>
+                      </div>
 
-                        <div id="changePasswordBtn" onclick="MPW.changePassword()" style="cursor: pointer; border: 0px; border-radius: 7px; padding: 6px 10px; margin: 0px 1px; background: linear-gradient(183deg, #9621ff9c, #7d21ffc7); color: #fff; font-weight: bold; width: fit-content; margin: 20px 0px;">
-                          Change Password
-                        </div>
-                        <hr>
-                      </div>
-                      <div id="logOut-container">
-                        <div onclick="MPW.logOut()" style="cursor: pointer; border: 0px; border-radius: 7px; padding: 6px 10px; margin: 0px 1px; background: linear-gradient(183deg, #9621ff9c, #7d21ffc7); color: #fff; font-weight: bold; width: fit-content; margin: 20px 0px;">
-                          Delete Wallet
-                        </div>
-                        <hr>
-                      </div>
+                      <label for="UNKNOWN" data-i18n="TODOTXT">Change your wallet's operational mode</label>
 
                       <!-- Default switch -->
                       <div class="custom-control custom-switch">
@@ -443,17 +443,33 @@
 
                       <br>
 
-                      <div class="custom-control custom-switch">
-                        <input type="checkbox" class="custom-control-input" id="autoLockModeToggler" onclick="MPW.toggleAutoLockWallet()">
-                        <label data-i18n="settingsToggleAutoLockWallet" class="custom-control-label" for="autoLockModeToggler">Auto Lock the Wallet</label>
+                      <!-- This needs to be removed??? -->
+                      <div class="d-none">
+                        <div class="custom-control custom-switch">
+                          <input type="checkbox" class="custom-control-input" id="autoLockModeToggler" onclick="MPW.toggleAutoLockWallet()">
+                          <label data-i18n="settingsToggleAutoLockWallet" class="custom-control-label" for="autoLockModeToggler">Auto Lock the Wallet</label>
+                        </div>
+                        <br>
                       </div>
-
-                      <br>
 
                       <div class="custom-control custom-switch">
                         <input type="checkbox" class="custom-control-input" id="advancedModeToggler" onclick="MPW.toggleAdvancedMode()">
                         <label data-i18n="settingsToggleAdvancedMode" class="custom-control-label" for="advancedModeToggler">Advanced Mode</label>
-                        <p style="opacity: 0.6; margin-top: 5px;"><i class="fa-solid fa-triangle-exclamation" style="margin-right: 5px;"></i><span data-i18n="settingsToggleAdvancedModeSubtext">This unlocks deeper functionality and customisation, but may be overwhelming and potentially dangerous for unexperienced users!</p>
+                        <p style="margin-top: 5px; color:#7C659D!important;"><i class="fa-solid fa-triangle-exclamation" style="margin-right: 5px;"></i><span data-i18n="settingsToggleAdvancedModeSubtext">This unlocks deeper functionality and customisation, but may be overwhelming and potentially dangerous for unexperienced users!</p>
+                      </div>
+
+                      
+                      <div id="logOut-container">
+                        <hr>
+
+                        <label for="UNKNOWN" data-i18n="TODOTXT">Permanently delete your wallet</label>
+                        <br>
+                        <button class="pivx-button-small" style="height: 42px; width: 185px; margin: 0px; margin-top: 2px;" onclick="MPW.logOut()">
+                          <span class="buttoni-text">
+                            <span id="del-wallet-icon" class="del-wallet-icon"></span>
+                            Delete Wallet
+                          </span>
+                        </button>
                       </div>
 
                     </div>

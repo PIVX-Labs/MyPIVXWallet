@@ -284,7 +284,7 @@ export async function start() {
         // Disabled
         setAnalytics(arrAnalytics[0], true);
         doms.domAnalyticsDescriptor.innerHTML =
-            '<h6 style="color:#dcdf6b;font-family:mono !important;"><pre style="color: inherit;">Analytics disabled to honour "Do Not Track" browser setting, you may manually enable if desired, though!</pre></h6>';
+            '<h6 style="color:#dcdf6b;font-family:mono !important;"><pre style="color: #421180; background-color:#9481B0; border:2px solid #AF9CC6; padding: 12px;">Analytics disabled to honour "Do Not Track" browser setting, you may manually enable if desired, though!</pre></h6>';
     } else {
         // Load from storage, or use defaults
         setAnalytics(
@@ -469,7 +469,7 @@ async function setAnalytics(level, fSilent = false) {
     doms.domAnalyticsDescriptor.innerHTML =
         cAnalyticsLevel.name === arrAnalytics[0].name
             ? ''
-            : '<h6 style="color:#dcdf6b;font-family:mono !important;"><pre style="color: inherit;">' +
+            : '<h6 style="color:#dcdf6b;font-family:mono !important;"><pre style="color: #421180; background-color:#9481B0; border:2px solid #AF9CC6; padding: 12px; border-radius:8px;">' +
               strDesc +
               '</pre></h6>';
     if (!fSilent)

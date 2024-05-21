@@ -2856,14 +2856,18 @@ input {
 select.form-control {
     color: #6410c7;
     background-color: #e9deff;
-    border: 1px solid #af9cc6;
+    border: 2px solid #AF9CC6;
     font-weight: 500;
+    border-radius: 8px;
+    padding: 11px 11px;
+    height: auto;
+    font-size: 15px;
 }
 
 select.form-control:focus {
     color: #6410c7;
     background-color: #e9deff;
-    border: 1px solid #af9cc6;
+    border: 2px solid #AF9CC6;
     font-weight: 500;
     box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 22%);
 }
@@ -2919,9 +2923,7 @@ select.form-control option {
 }
 
 .settingsContent hr {
-    background-color: hsl(272deg 23% 51% / 37%);
-    margin-left: -17px;
-    margin-right: -17px;
+    background-color: #640FC7;
     margin-top: 11px;
 }
 
@@ -3687,8 +3689,18 @@ select.form-control option {
     top: -2px;
 }
 
-.plus-icon {
+.plus-icon,
+.change-pwd-icon,
+.del-wallet-icon {
     margin-right: 5px;
+}
+
+
+
+.plus-icon svg path,
+.change-pwd-icon svg path,
+.del-wallet-icon svg path {
+    fill: #fff;
 }
 
 .plus-icon svg {
@@ -3697,8 +3709,11 @@ select.form-control option {
     top: -1px;
 }
 
-.plus-icon svg path {
-    fill: #fff;
+.change-pwd-icon svg,
+.del-wallet-icon svg {
+    height: 15px;
+    position: relative;
+    top: -2px;
 }
 
 .masternodeModalDialog {
