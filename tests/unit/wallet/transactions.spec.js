@@ -1,6 +1,6 @@
 import { Wallet } from '../../../scripts/wallet.js';
 import { Mempool } from '../../../scripts/mempool.js';
-import { setUpLegacyMainnetWallet } from '../../utils/test_utils';
+import { PIVXShield, setUpLegacyMainnetWallet } from '../../utils/test_utils';
 import { describe, it, vi, afterAll, expect } from 'vitest';
 import {
     COutpoint,
@@ -11,6 +11,8 @@ import {
 
 import 'fake-indexeddb/auto';
 import { TransactionBuilder } from '../../../scripts/transaction_builder.js';
+import { setUpHDMainnetWallet } from '../../utils/test_utils';
+import { COIN } from '../../../scripts/chain_params';
 
 vi.stubGlobal('localStorage', { length: 0 });
 vi.mock('../../../scripts/global.js');
@@ -36,6 +38,9 @@ async function checkFees(wallet, tx, feesPerBytes) {
     expect(fees).toBeLessThanOrEqual((feesPerBytes + 1) * nBytes);
 }
 describe('Wallet transaction tests', () => {
+    /**
+     * @type {Wallet}
+     */
     let wallet;
     const MIN_FEE_PER_BYTE = TransactionBuilder.MIN_FEE_PER_BYTE;
     beforeEach(async () => {
@@ -374,6 +379,68 @@ describe('Wallet transaction tests', () => {
         wallet.addTransaction(tx);
         expect(spy).toBeCalledTimes(1);
         expect(spy).toBeCalledWith(tx);
+    });
+
+    it('throws when calling auto shield transaction on a legacy wallet', () => {
+        wallet.setShield(null);
+        expect(
+            wallet.createAutoshieldTransactions(
+                'DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb',
+                1
+            )
+        ).rejects.toThrowError('shield enabled');
+    });
+
+    it('creates auto shield transaction correctly', async () => {
+        wallet = await setUpHDMainnetWallet(true);
+        let shieldTx;
+        PIVXShield.prototype.createTransaction.mockImplementationOnce(
+            ({ address, amount }) => {
+                shieldTx = new TransactionBuilder()
+                    .addOutput({
+                        address,
+                        value: amount,
+                    })
+                    .build();
+                return {
+                    hex: shieldTx.serialize(),
+                };
+            }
+        );
+        const txs = await wallet.createAutoshieldTransactions(
+            'DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb',
+            1 * COIN
+        );
+        expect(txs).toHaveLength(2);
+        expect(txs[0].serialize()).toBe(shieldTx.serialize());
+        expect(txs[1].vin).toStrictEqual([
+            new CTxIn({
+                outpoint: new COutpoint({
+                    txid: shieldTx.txid,
+                    n: 0,
+                }),
+                scriptSig:
+                    '47304402203185d51275f4bf0057ffc9191b58d2e26052b67f7767542bbb7960cae3b26b97022037e86cc2a0c74f33e3490283c0cf7ab42414b9c7574c0a9defb8c21b32ad8a9b012102ecd478b763612a71351b16165dac15afd591c33e28cf7ca7b45b7189691b6373',
+            }),
+        ]);
+        expect(txs[1].vout).toStrictEqual([
+            new CTxOut({
+                script: '76a914a95cc6408a676232d61ec29dc56a180b5847835788ac',
+                value: 1 * COIN,
+            }),
+        ]);
+    });
+
+    it('throws when auto shielding to invalid or shield addresses', () => {
+        expect(
+            wallet.createAutoshieldTransactions('Invalidaddress', 1)
+        ).rejects.toThrowError('Invalid address');
+        expect(
+            wallet.createAutoshieldTransactions(
+                'ps1a0x2few52sy3t0nrdhun0re4c870e04w448qpa7c26qjw9ljs4quhja40hat95f7hy8tcuvcn2s',
+                1
+            )
+        ).rejects.toThrowError('Invalid address');
     });
 
     afterAll(() => {
