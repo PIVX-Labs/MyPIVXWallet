@@ -252,6 +252,10 @@ async function send(address, amount, useShieldInputs, isAutoShield) {
         }
     }
 
+    if (isAutoShield && isShieldAddress(address)) {
+        return createAlert('warning', ALERTS.AUTO_SHIELDING_TO_SHIELD_ADDRESS);
+    }
+
     // If this is an XPub, we'll fetch their last used 'index', and derive a new public key for enhanced privacy
     if (isXPub(address)) {
         const cNet = getNetwork();

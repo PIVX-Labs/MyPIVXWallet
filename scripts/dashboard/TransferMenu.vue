@@ -40,8 +40,15 @@ const address = computed({
     },
     set(value) {
         emit('update:address', value);
-        getAddressColor(value).then((c) => (color.value = c));
+        getAddressColor(
+            value,
+            autoShieldTransaction.value || !props.shieldEnabled
+        ).then((c) => (color.value = c));
     },
+});
+watch(autoShieldTransaction, () => {
+    // Trigger address setter so we can recolor shield addresses
+    address.value = address.value;
 });
 const amount = computed({
     get() {

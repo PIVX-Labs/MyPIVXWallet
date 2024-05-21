@@ -6,7 +6,12 @@ import { getNetwork } from './network.js';
 import { MAX_ACCOUNT_GAP, SHIELD_BATCH_SYNC_SIZE } from './chain_params.js';
 import { HistoricalTx, HistoricalTxType } from './historical_tx.js';
 import { COutpoint, Transaction, UTXO } from './transaction.js';
-import { confirmPopup, createAlert, isShieldAddress } from './misc.js';
+import {
+    confirmPopup,
+    createAlert,
+    isShieldAddress,
+    isValidPIVXAddress,
+} from './misc.js';
 import { cChainParams } from './chain_params.js';
 import { COIN } from './chain_params.js';
 import { ALERTS, tr, translation } from './i18n.js';
@@ -1100,9 +1105,18 @@ export class Wallet {
     }
 
     /**
-     *
+     * @param {string} address
+     * @param {number} value - Value to send in satoshi
+     * @returns {Transaction[]} Two transactions, the first one deshielding `value`, the second one sending `value` to `address`
      */
     async createAutoshieldTransactions(address, value) {
+        if (!this.hasShield()) {
+            throw new Error(
+                'trying to create a shield transaction without having shield enabled'
+            );
+        }
+        if (isShieldAddress(address) || !isValidPIVXAddress(address))
+            throw new Error('Invalid address');
         const [intermediaryAddress] = this.getNewAddress(1);
         const firstTx = await this.sign(
             this.createTransaction(
