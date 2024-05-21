@@ -390,15 +390,19 @@ async function loadImages() {
     const images = [['mpw-main-logo', import('../assets/logo.png')],
                     ['plus-icon', import('../assets/icons/icon-plus.svg')],
                     ['plus-icon2', import('../assets/icons/icon-plus.svg')],
+                    ['del-wallet-icon', import('../assets/icons/icon-bin.svg')],
+                    ['change-pwd-icon', import('../assets/icons/icon-key.svg')],
                 ];
 
     const promises = images.map(([id, path]) =>
         (async () => {
-            if((await path).default.includes('<svg')) {
-                document.getElementById(id).innerHTML = (await path).default;
-            } else {
-                document.getElementById(id).src = (await path).default;
-            }
+            try {
+                if((await path).default.includes('<svg')) {
+                    document.getElementById(id).innerHTML = (await path).default;
+                } else {
+                    document.getElementById(id).src = (await path).default;
+                }
+            } catch(e) { }
         })()
     );
     await Promise.all(promises);
