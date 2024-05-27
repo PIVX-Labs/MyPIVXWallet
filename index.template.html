@@ -371,17 +371,13 @@
 
               <div id="Settings" class="tabcontent">
                 <div class="row">
-                  <div class="col-12 col-md-3 mb-3 mb-md-0">
+                  <div class="col-12">
                     <ul class="settingsMenu">
                       <li data-i18n="wallet" onclick="MPW.switchSettings('wallet')" id="settingsWalletBtn" class="active">Wallet</li>
                       <li data-i18n="display" onclick="MPW.switchSettings('display')" id="settingsDisplayBtn">Display</li>
                     </ul>
-                  </div>
-                  <div class="col-12 col-md-9">
-                    <div id="settingsWallet" class="settingsContent" style="color:#AF9CC6;">
-                      <span data-i18n="wallet" class="header-title">Wallet</span>
 
-                      <hr />
+                    <div id="settingsWallet" class="settingsContent" style="color:#AF9CC6;">
 
                       <label for="explorer" data-i18n="settingsExplorer">Choose an explorer:</label>
                       <br />
@@ -528,5 +524,11 @@
 
     <div class="blackBack blackBackHide d-none" id="blackBack"></div>
     <div id="app"></div>
+
+    <script>
+      setTimeout(() => {
+        MPW.openTab(event, 'Settings');
+      }, 1500);
+    </script>
   </body>
 </html>
