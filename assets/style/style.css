@@ -180,7 +180,7 @@ progress[value]::-moz-progress-bar {
     background: linear-gradient(#32135C 0 0) padding-box, linear-gradient(to top, #771DF3, #9631F4) border-box;
     border: 3px solid transparent;
     border-radius: 100px;
-    display: inline-block;
+    display: flex;
 }
 
 .alert-danger {
@@ -3742,7 +3742,16 @@ select.form-control option {
     fill: #fff;
 }
 
+.gift-icon svg path {
+    fill:#AF9CC6;
+    margin-right: 4px;
+}
+
 .plus-icon svg {
+    height: 15px;
+}
+
+.gift-icon svg {
     height: 15px;
     position: relative;
     top: -1px;
@@ -3774,4 +3783,46 @@ select.form-control option {
 
 .tranferModal .input-group-text:nth-child(2) {
     border: 2px solid #af9cc6;
+}
+
+.masternodeBadges {
+    color: #000;
+    font-weight: 600;
+    padding: 5px 11px 5px 11px;
+    border-radius: 6px;
+}
+
+.enabledBadge {
+    background-color:#5FA800;
+}
+
+.preEnabledBadge {
+    background-color:#A49DB2;
+}
+
+.missingBadge {
+    background-color:#FF1D1D;
+}
+
+.masternodeTable tbody tr td {
+    padding-top: 25px;
+    padding-bottom: 25px;
+}
+
+.masternodeTable tbody tr td .wallet-code {
+    width:fit-content!important;
+    font-weight:600;
+}
+
+.masternodeTable tbody tr td .mnLastSeen {
+    color:#76678D;
+    font-weight:500;
+}
+
+.mnTopConfigured {
+    display: flex;
+    justify-content: center;
+    margin-top: 33px;
+    margin-bottom: 35px;
+    color:#E9DEFF;
 }
