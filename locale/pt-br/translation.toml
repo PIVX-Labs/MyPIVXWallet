@@ -88,6 +88,7 @@ saveWalletFile = "" # Save Wallet File
 proposalOverBudget = "" # Over Budget
 badSaplingRoot = "" # There was an error while syncing. Resyncing from scratch (Bad sapling root)
 creatingShieldTransaction = "" # Creating SHIELD transaction...
+autoShieldTransaction = "" # Auto shield transaction
 
 [ALERTS]
 STAKE_ADDR_SET = "<b>Endereço de Cold Staking definido!</b><br>Ao fazer Stake no futuro este endereço irá ser usado." # <b>Cold Address set!</b><br>Future stakes will use this address.
@@ -132,3 +133,4 @@ CONFIRM_LEDGER_TX = "" # Confirm this transaction matches the one on your {hardw
 CONFIRM_LEDGER_TX_OUT = "" # You will send {value} {ticker} to <div class="inline-address">{address}</div>
 MISSING_FUNDS = "" # Balance is too small! Missing {sats} sats!
 MISSING_SHIELD = "" # Shield is not enabled in this wallet!
+AUTO_SHIELDING_TO_SHIELD_ADDRESS = "" # Cannot auto shield to a shield address!
