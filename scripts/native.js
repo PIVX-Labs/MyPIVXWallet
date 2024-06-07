@@ -4,7 +4,18 @@ import { createAlert } from './misc.js';
 // Register a service worker, if it's supported
 export function registerWorker() {
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('./native-worker.js');
+        navigator.serviceWorker
+            .register('./native-worker.js')
+            .then((registration) => {
+                if (registration.active) {
+                    const files = Array.from(
+                        document.head.querySelectorAll(
+                            'link[rel="serviceworkprefetch"]'
+                        )
+                    ).map((l) => l.href);
+                    registration.active.postMessage(files);
+                }
+            });
 
         // Listen for device pre-install events, these fire if MPW is capable of being installed on the device
         window.addEventListener('beforeinstallprompt', (event) => {
