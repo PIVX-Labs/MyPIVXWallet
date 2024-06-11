@@ -1,10 +1,10 @@
 <script setup>
-import phone from '../../assets/phone.svg';
 import pLogo from '../../assets/p_logo.svg';
 import Modal from '../Modal.vue';
 import { generateMnemonic } from 'bip39';
 import { translation } from '../i18n.js';
 import { ref, watch, toRefs } from 'vue';
+import newWalletIcon from '../../assets/icons/icon-new-wallet.svg';
 
 const emit = defineEmits(['importWallet']);
 const showModal = ref(false);
@@ -42,7 +42,7 @@ async function generateWallet() {
 <template>
     <div class="col-12 col-lg-3 p-2">
         <div class="dashboard-item dashboard-display">
-            <div class="coinstat-icon" v-html="phone"></div>
+            <div class="coinstat-icon" v-html="newWalletIcon"></div>
             <div class="col-md-12 dashboard-title">
                 <h3 class="pivx-bold-title-smaller">
                     <span> {{ translation.dCardOneTitle }} </span>

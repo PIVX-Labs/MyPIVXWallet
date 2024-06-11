@@ -1298,10 +1298,11 @@ a {
     text-align: center;
     float: left;
     margin-bottom: 15px;
-    padding-top: 45px;
-    padding-bottom: 35px;
+    padding-top: 0px;
+    padding-bottom: 0px;
     border: 2px solid #3c1170;
     transition: all .125s ease-in-out;
+    height:100%;
 }
 
 

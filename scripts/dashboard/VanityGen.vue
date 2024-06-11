@@ -1,6 +1,6 @@
 <script setup>
-import fire from '../../assets/fire.svg';
 import pLogo from '../../assets/p_logo.svg';
+import vanityWalletIcon from '../../assets/icons/icon-vanity-wallet.svg';
 import { ALERTS, translation, tr } from '../i18n.js';
 import { ref, computed, watch } from 'vue';
 import { cChainParams } from '../chain_params.js';
@@ -112,7 +112,7 @@ function generate() {
 <template>
     <div class="col-12 col-lg-3 p-2">
         <div class="dashboard-item dashboard-display">
-            <div class="coinstat-icon" v-html="fire"></div>
+            <div class="coinstat-icon" v-html="vanityWalletIcon"></div>
 
             <div class="col-md-12 dashboard-title">
                 <h3 class="pivx-bold-title" style="font-size: 25px">

@@ -1,5 +1,5 @@
 <script setup>
-import coinPlant from '../../assets/coin_plant.svg';
+import loginIcon from '../../assets/icons/icon-login.svg';
 import pLogo from '../../assets/p_logo.svg';
 import { ref, watch, toRefs } from 'vue';
 import { translation } from '../i18n.js';
@@ -67,7 +67,7 @@ function importWallet() {
             class="dashboard-item dashboard-display"
             style="margin-bottom: 100px"
         >
-            <div class="coinstat-icon" v-html="coinPlant"></div>
+            <div class="coinstat-icon" v-html="loginIcon"></div>
 
             <div class="col-md-12 dashboard-title">
                 <h3 class="pivx-bold-title-smaller">

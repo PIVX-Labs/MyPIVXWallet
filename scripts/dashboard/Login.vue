@@ -1,6 +1,6 @@
 <script setup>
-import fire from '../../assets/fire.svg';
 import pLogo from '../../assets/p_logo.svg';
+import ledgerWallet from '../../assets/icons/icon-ledger-wallet.svg';
 import VanityGen from './VanityGen.vue';
 import CreateWallet from './CreateWallet.vue';
 import AccessWallet from './AccessWallet.vue';
@@ -42,7 +42,7 @@ const { advancedMode } = toRefs(props);
                 id="generateHardwareWallet"
                 class="dashboard-item dashboard-display"
             >
-                <div class="coinstat-icon" v-html="fire"></div>
+                <div class="coinstat-icon" v-html="ledgerWallet"></div>
 
                 <div class="col-md-12 dashboard-title">
                     <h3 class="pivx-bold-title" style="font-size: 25px">
