@@ -22,7 +22,7 @@ import { onMounted, ref, watch, computed } from 'vue';
 import { getEventEmitter } from '../event_bus';
 import { Database } from '../database';
 import { start, doms, updateLogOutButton } from '../global';
-import { refreshChainData } from '../global.js';
+import { refreshChainData, publicMode } from '../global.js';
 import { validateAmount } from '../legacy';
 import {
     confirmPopup,
@@ -37,6 +37,7 @@ import { scanQRCode } from '../scanner';
 import { useWallet } from '../composables/use_wallet.js';
 import { useSettings } from '../composables/use_settings.js';
 import pLogo from '../../assets/p_logo.svg';
+import pShieldLogo from '../../assets/icons/icon_shield_pivx.svg';
 import { ParsedSecret } from '../parsed_secret.js';
 import { storeToRefs } from 'pinia';
 
@@ -477,23 +478,19 @@ defineExpose({
             <br />
 
             <!-- Switch to Private -->
-            <div
-                class="col-12 p-0"
-                v-if="
-                    true
-                "
-            >
+            <div class="col-12 p-0">
                 <center>
                     <div
                         class="dcWallet-warningMessage"
-                        onclick="MPW.restoreWallet()"
+                        id="warningMessage"
+                        onclick="MPW.switchPublicPrivate()"
                     >
                         <div class="messLogo">
-                            <span class="buttoni-icon" v-html="pLogo"> </span>
+                            <span class="buttoni-icon" v-html="(publicMode ? pLogo : pShieldLogo)"> </span>
                         </div>
-                        <div class="messMessage">
-                            <span class="messTop">Now in Public Mode</span>
-                            <span class="messBot">Switch to Private</span>
+                        <div class="messMessage" id="publicPrivateText">
+                            <span class="messTop">Now in <span v-html="(publicMode ? 'Public' : 'Private')"></span> Mode</span>
+                            <span class="messBot">Switch to <span v-html="(publicMode ? 'Private' : 'Public')"></span></span>
                         </div>
                     </div>
                 </center>
@@ -852,6 +849,7 @@ defineExpose({
                         :shieldEnabled="wallet.hasShield"
                         @send="showTransferMenu = true"
                         @exportPrivKeyOpen="showExportModal = true"
+                        :publicMode="publicMode"
                         class="col-12 p-0 mb-2"
                     />
                     <WalletButtons

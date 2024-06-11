@@ -39,6 +39,9 @@ export function isLoaded() {
 // Block count
 export let blockCount = 0;
 
+// Public or private mode
+export let publicMode = true;
+
 export let doms = {};
 
 const pinia = createPinia();
@@ -198,6 +201,9 @@ export async function start() {
         domTestnetToggler: document.getElementById('testnetToggler'),
         domAdvancedModeToggler: document.getElementById('advancedModeToggler'),
         domAutoLockModeToggler: document.getElementById('autoLockModeToggler'),
+        domNavbar: document.getElementById('navbar'),
+        domPageContainer: document.getElementById('page-container'),
+        domWarningMessage: document.getElementById('warningMessage'),
     };
 
     await i18nStart();
@@ -338,6 +344,21 @@ export function openTab(evt, tabName) {
         updateGovernanceTab();
     } else if (tabName === 'Masternode') {
         updateMasternodeTab();
+    }
+}
+
+
+export function switchPublicPrivate() {
+    if(publicMode) {
+        publicMode = false;
+        doms.domNavbar.classList.add('navbarSpecial-dark');
+        doms.domPageContainer.classList.add('home-hero-dark');
+        doms.domWarningMessage.classList.add('dcWallet-warningMessage-dark');
+    } else {
+        publicMode = true;
+        doms.domNavbar.classList.remove('navbarSpecial-dark');
+        doms.domPageContainer.classList.remove('home-hero-dark');
+        doms.domWarningMessage.classList.remove('dcWallet-warningMessage-dark');
     }
 }
 

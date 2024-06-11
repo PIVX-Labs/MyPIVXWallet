@@ -815,6 +815,10 @@ progress[value]::-moz-progress-bar {
     min-height: 77px;
 }
 
+.navbarSpecial-dark {
+    background: linear-gradient(90deg, #1A122D, #150927)!important;
+}
+
 /* New styling */
 
 /* Buttons */
@@ -1002,6 +1006,11 @@ progress[value]::-moz-progress-bar {
 .home-hero {
     /*background: radial-gradient(45vw 80% at 90% 40%, rgba(162, 50, 255, .3), rgba(44, 11, 76, 0) 95%), linear-gradient(90deg, rgba(44, 11, 76, .9), rgba(80, 15, 131, .5) 60%, rgba(44, 11, 76, .9)), linear-gradient(35deg, rgba(44, 11, 76, .3), rgba(80, 15, 131, .3) 37%, rgba(44, 11, 76, .3) 0, rgba(80, 15, 131, .3) 76%, rgba(44, 11, 76, .3) 0, rgba(80, 15, 131, .3)), linear-gradient(90deg, #2c0b4c, #500f83 60%, #2c0b4c);*/
     background: linear-gradient(135deg, #271a40 0%, #1b0e2e 15%, #1a122d 15%, #201431 37%, #1a1529 37%, #221237 59%, #1d112d 59%, #1d1030 81%, #181225 81%, #281c41 100%);
+    background-attachment: fixed;
+}
+
+.home-hero-dark {
+    background: linear-gradient(135deg, #1D1231 0%, #050308 15%, #0E081A 15%, #0F0A1C 37%, #120D20 37%, #0B0914 59%, #100C1E 59%, #0C0717 81%, #120920 81%, #120920 100%);
     background-attachment: fixed;
 }
 
@@ -2461,6 +2470,10 @@ a {
     background: linear-gradient(#32135C 0 0) padding-box, linear-gradient(to top, #771DF3, #9631F4) border-box;
     border: 3px solid transparent;
     border-radius: 100px;
+}
+
+.dcWallet-warningMessage-dark {
+    background: linear-gradient(#221239 0 0) padding-box, linear-gradient(to top, #6e1ed8, #7c1fd8) border-box!important;
 }
 
 .dcWallet-warningMessage .messLogo {

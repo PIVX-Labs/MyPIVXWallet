@@ -37,6 +37,7 @@ const props = defineProps({
     price: Number,
     displayDecimals: Number,
     shieldEnabled: Boolean,
+    publicMode: Boolean,
 });
 const {
     jdenticonValue,
@@ -54,6 +55,7 @@ const {
     price,
     displayDecimals,
     shieldEnabled,
+    publicMode,
 } = toRefs(props);
 
 // Transparent sync status
@@ -70,7 +72,13 @@ const txPercentageCreation = ref(0.0);
 const txCreationStr = 'Creating SHIELD transaction...';
 
 const balanceStr = computed(() => {
-    const nCoins = balance.value / COIN;
+    let nCoins;
+    if(publicMode.value) {
+        nCoins = balance.value / COIN
+    } else {
+        nCoins = shieldBalance.value / COIN;
+    }
+    
     const strBal = nCoins.toFixed(displayDecimals.value);
     const nLen = strBal.length;
     return beautifyNumber(strBal, nLen >= 10 ? '17px' : '25px');
@@ -92,10 +100,17 @@ const immatureBalanceStr = computed(() => {
 });
 
 const balanceValue = computed(() => {
-    const { nValue, cLocale } = optimiseCurrencyLocale(
-        (balance.value / COIN) * price.value
-    );
+    let balanceVal;
+    if(publicMode.value) {
+        balanceVal = (balance.value / COIN) * price.value;
+    } else {
+        balanceVal = (shieldBalance.value / COIN) * price.value;
+    }
 
+    const { nValue, cLocale } = optimiseCurrencyLocale(
+        balanceVal
+    );
+    
     cLocale.minimumFractionDigits = 0;
     cLocale.maximumFractionDigits = 0;
 
