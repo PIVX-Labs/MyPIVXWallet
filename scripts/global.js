@@ -39,9 +39,6 @@ export function isLoaded() {
 // Block count
 export let blockCount = 0;
 
-// Public or private mode
-export let publicMode = true;
-
 export let doms = {};
 
 const pinia = createPinia();
@@ -347,20 +344,6 @@ export function openTab(evt, tabName) {
     }
 }
 
-
-export function switchPublicPrivate() {
-    if(publicMode) {
-        publicMode = false;
-        doms.domNavbar.classList.add('navbarSpecial-dark');
-        doms.domPageContainer.classList.add('home-hero-dark');
-        doms.domWarningMessage.classList.add('dcWallet-warningMessage-dark');
-    } else {
-        publicMode = true;
-        doms.domNavbar.classList.remove('navbarSpecial-dark');
-        doms.domPageContainer.classList.remove('home-hero-dark');
-        doms.domWarningMessage.classList.remove('dcWallet-warningMessage-dark');
-    }
-}
 
 /**
  * Return locale settings best for displaying the user-selected currency

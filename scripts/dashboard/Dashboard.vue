@@ -22,7 +22,7 @@ import { onMounted, ref, watch, computed } from 'vue';
 import { getEventEmitter } from '../event_bus';
 import { Database } from '../database';
 import { start, doms, updateLogOutButton } from '../global';
-import { refreshChainData, publicMode } from '../global.js';
+import { refreshChainData } from '../global.js';
 import { validateAmount } from '../legacy';
 import {
     confirmPopup,
@@ -43,6 +43,10 @@ import { storeToRefs } from 'pinia';
 
 const wallet = useWallet();
 const activity = ref(null);
+
+// Public or private mode
+const publicMode = ref(true);
+
 const needsToEncrypt = computed(() => {
     if (wallet.isHardwareWallet) {
         return false;
@@ -357,6 +361,24 @@ function getMaxBalance(useShieldInputs) {
     transferAmount.value = (coinSatoshi / COIN).toString();
 }
 
+
+/**
+ * Switch between public or private mode
+ */
+ function switchPublicPrivate() {
+    if(publicMode.value) {
+        publicMode.value = false;
+        doms.domNavbar.classList.add('navbarSpecial-dark');
+        doms.domPageContainer.classList.add('home-hero-dark');
+        doms.domWarningMessage.classList.add('dcWallet-warningMessage-dark');
+    } else {
+        publicMode.value = true;
+        doms.domNavbar.classList.remove('navbarSpecial-dark');
+        doms.domPageContainer.classList.remove('home-hero-dark');
+        doms.domWarningMessage.classList.remove('dcWallet-warningMessage-dark');
+    }
+}
+
 getEventEmitter().on('toggle-network', async () => {
     const database = await Database.getInstance();
     const account = await database.getAccount();
@@ -478,15 +500,15 @@ defineExpose({
             <br />
 
             <!-- Switch to Private -->
-            <div class="col-12 p-0">
+            <div class="col-12 p-0" v-show="wallet.isImported">
                 <center>
                     <div
                         class="dcWallet-warningMessage"
                         id="warningMessage"
-                        onclick="MPW.switchPublicPrivate()"
+                        @click="switchPublicPrivate()"
                     >
                         <div class="messLogo">
-                            <span class="buttoni-icon" v-html="(publicMode ? pLogo : pShieldLogo)"> </span>
+                            <span class="buttoni-icon publicSwitchIcon" v-html="(publicMode ? pLogo : pShieldLogo)"> </span>
                         </div>
                         <div class="messMessage" id="publicPrivateText">
                             <span class="messTop">Now in <span v-html="(publicMode ? 'Public' : 'Private')"></span> Mode</span>

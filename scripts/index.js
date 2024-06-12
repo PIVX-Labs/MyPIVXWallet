@@ -29,7 +29,6 @@ export {
     createProposal,
     switchSettings,
     govVote,
-    switchPublicPrivate,
 } from './global.js';
 export { wallet, getNewAddress } from './wallet.js';
 export {
