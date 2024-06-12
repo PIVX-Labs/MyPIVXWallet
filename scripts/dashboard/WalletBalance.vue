@@ -86,13 +86,26 @@ const balanceStr = computed(() => {
     const nLen = strBal.length;
     return beautifyNumber(strBal, nLen >= 10 ? '17px' : '25px');
 });
-const shieldBalanceStr = computed(() => {
-    const nCoins = shieldBalance.value / COIN;
+
+const secondBalanceStr = computed(() => {
+    let nCoins;
+    if(publicMode.value) {
+        nCoins = shieldBalance.value / COIN
+    } else {
+        nCoins = balance.value / COIN;
+    }
+
     return nCoins.toFixed(displayDecimals.value);
 });
 
-const pendingShieldBalanceStr = computed(() => {
-    const nCoins = pendingShieldBalance.value / COIN;
+const pendingSecondBalanceStr = computed(() => {
+    let nCoins;
+    if(publicMode.value) {
+        nCoins = pendingShieldBalance.value / COIN
+    } else {
+        nCoins = pendingBalance.value / COIN;
+    }
+
     return nCoins.toFixed(displayDecimals.value);
 });
 
@@ -238,7 +251,7 @@ function displayLockWalletModal() {
                         <img :src="logo" style="height: 60px; margin-top:14px">
                     </div>
                     <span class="ptr" data-toggle="modal" data-target="#walletBreakdownModal" @click="renderWalletBreakdown()">
-                        <span class="logo-pivBal" v-html="pLogo"></span>
+                        <span class="logo-pivBal" v-html="(publicMode ? pLogo : iShieldLogo)"></span>
                         <span class="dcWallet-pivxBalance" v-html="balanceStr"> </span>
                         <span class="dcWallet-pivxTicker" style="position: relative; left: 4px">&nbsp;{{ ticker }}&nbsp;</span>
                     </span>
@@ -251,8 +264,8 @@ function displayLockWalletModal() {
                 <div style="background-color:#32224e61; border:2px solid #361562; border-bottom-left-radius:10px; border-bottom-right-radius:10px;">
                     <div class="dcWallet-usdBalance">
                         <span class="dcWallet-usdValue" style="display: flex; justify-content: center; color:#9221FF; font-weight:500; padding-top: 21px; padding-bottom: 11px; font-size:16px;">
-                            <span class="shieldBalanceLogo" v-html="iShieldLogo"></span>&nbsp;{{ shieldBalanceStr }} S-{{ ticker }}
-                            <span style="opacity: 0.75" v-if="pendingShieldBalance != 0">({{ pendingShieldBalanceStr }} Pending)</span>
+                            <span class="shieldBalanceLogo" v-html="(publicMode ? iShieldLogo : pLogo)"></span>&nbsp;{{ secondBalanceStr }} S-{{ ticker }}
+                            <span style="opacity: 0.75" v-if="pendingShieldBalance != 0">({{ pendingSecondBalanceStr }} Pending)</span>
                         </span>
                     </div>
                 </div>
