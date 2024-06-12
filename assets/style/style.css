@@ -1161,8 +1161,20 @@ progress[value]::-moz-progress-bar {
     width: 29px;
 }
 
+.iconList svg,
 .publicSwitchIcon svg {
     fill:#9221FF!important;
+}
+
+.iconList svg {
+    position: relative;
+    top: 3px!important;
+    height:17px!important;
+}
+
+.iconList {
+    padding: 0px !important;
+    width: 17px;
 }
 
 .buttoni-icon svg {

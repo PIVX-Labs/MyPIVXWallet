@@ -23,6 +23,9 @@ import logo from '../../assets/pivx.png';
 
 import pLocked from '../../assets/icons/icon-lock-locked.svg';
 import pUnlocked from '../../assets/icons/icon-lock-unlocked.svg';
+import pExport from '../../assets/icons/icon-export.svg';
+import pShieldCheck from '../../assets/icons/icon-shield-check.svg';
+import pRefresh from '../../assets/icons/icon-refresh.svg';
 
 const props = defineProps({
     jdenticonValue: String,
@@ -201,7 +204,7 @@ function displayLockWalletModal() {
                                         data-target="#exportPrivateKeysModal" data-backdrop="static"
                                         data-keyboard="false" v-if="!isHardwareWallet"
                                         @click="$emit('exportPrivKeyOpen')">
-                                        <i class="fas fa-key icoCol"></i>
+                                        <span class="buttoni-icon iconList" v-html="pExport"></span>
                                         <span>&nbsp;{{
                             translation.export
                         }}</span>
@@ -214,7 +217,7 @@ function displayLockWalletModal() {
                                 verify: true,
                             })
                             ">
-                                        <i class="fas fa-sync-alt icoCol"></i>
+                                        <span class="buttoni-icon iconList" v-html="pRefresh"></span>
                                         <span>&nbsp;{{
                             translation.refreshAddress
                         }}</span>
@@ -227,7 +230,7 @@ function displayLockWalletModal() {
                                 shield: true,
                             })
                             ">
-                                        <i class="fas fa-shield icoCol"></i>
+                                        <span class="buttoni-icon iconList" v-html="pShieldCheck"></span>
                                         <span>&nbsp;{{
                             translation.newShieldAddress
                         }}</span>
