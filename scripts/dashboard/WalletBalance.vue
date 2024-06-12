@@ -21,6 +21,9 @@ import iHourglass from '../../assets/icons/icon-hourglass.svg';
 import pLogo from '../../assets/p_logo.svg';
 import logo from '../../assets/pivx.png';
 
+import pLocked from '../../assets/icons/icon-lock-locked.svg';
+import pUnlocked from '../../assets/icons/icon-lock-unlocked.svg';
+
 const props = defineProps({
     jdenticonValue: String,
     balance: Number,
@@ -160,13 +163,13 @@ function displayLockWalletModal() {
                             isEncrypted &&
                             isImported
                             " onclick="MPW.restoreWallet()">
-                            <i class="fas fa-lock topCol"></i>
+                            <span class="dcWallet-topLeftIcons buttoni-icon topCol" v-html="pLocked"></span>
                         </span>
                         <span class="reload" v-if="!isViewOnly &&
                             !needsToEncrypt &&
                             isImported
                             " @click="displayLockWalletModal()">
-                            <i class="fas fa-unlock topCol"></i>
+                            <span class="dcWallet-topLeftIcons buttoni-icon topCol" v-html="pUnlocked"></span>
                         </span>
                         <span class="reload noselect" @click="reload()"><i class="fa-solid fa-rotate-right topCol"
                                 :class="{ playAnim: updating }"></i></span>

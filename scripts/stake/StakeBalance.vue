@@ -131,9 +131,11 @@ function submit() {
                 </h3>
             </template>
             <template #body>
-                <p>
+                <p
+                    style="margin-bottom: 30px; padding: 0px 35px; margin-top: -14px;"
+                >
                     <span
-                        style="opacity: 0.65; margin: 10px; margin-buttom: 0px"
+                        style="opacity: 0.65;"
                     >
                         {{ translation.popupColdStakeNote }}
                     </span>
@@ -152,21 +154,21 @@ function submit() {
             <template #footer>
                 <button
                     type="button"
+                    class="pivx-button-big-cancel"
+                    style="float: left;"
+                    data-testid="csAddrCancel"
+                    @click="showColdStakingAddressModal = false"
+                >
+                    {{ translation.popupCancel }}
+                </button>
+                <button
+                    type="button"
                     class="pivx-button-big"
                     style="float: right"
                     data-testid="csAddrSubmit"
                     @click="submit()"
                 >
                     {{ translation.popupConfirm }}
-                </button>
-                <button
-                    type="button"
-                    class="pivx-button-big"
-                    style="float: right; opacity: 0.7"
-                    data-testid="csAddrCancel"
-                    @click="showColdStakingAddressModal = false"
-                >
-                    {{ translation.popupCancel }}
                 </button>
             </template>
         </Modal>
