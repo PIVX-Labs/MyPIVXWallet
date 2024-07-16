@@ -103,3 +103,11 @@ function getHDMainnet() {
         ]),
     });
 }
+
+/**
+ * Returns a watch only wallet from a given address
+ * @param{String} address
+ */
+export async function getWalletFromAddress(address) {
+    return await setUpWallet(new LegacyMasterKey({ address }), false);
+}
