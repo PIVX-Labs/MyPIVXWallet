@@ -13,6 +13,7 @@ describe('mempool tests', () => {
     /** @type{Mempool} */
     let mempool;
     let tx;
+    let txBlockHeight = 1000;
     beforeEach(() => {
         mempool = new Mempool();
         tx = new Transaction({
@@ -28,6 +29,7 @@ describe('mempool tests', () => {
                     value: 5000000,
                 }),
             ],
+            blockHeight: txBlockHeight,
         });
         mempool.addTransaction(tx);
         mempool.setOutpointStatus(
@@ -39,7 +41,6 @@ describe('mempool tests', () => {
             OutpointState.OURS | OutpointState.P2PKH
         );
     });
-
     it('gets UTXOs correctly', () => {
         let expectedUTXOs = [
             new UTXO({
@@ -80,30 +81,22 @@ describe('mempool tests', () => {
             new COutpoint({ txid: tx.txid, n: 1 }),
             OutpointState.LOCKED
         );
-        // Filter should remove any LOCKED UTXOs
-        expect(
-            mempool.getUTXOs({ filter: OutpointState.LOCKED })
-        ).toStrictEqual([expectedUTXOs[0]]);
-        // Requirement should only return LOCKED UTXOs
-        expect(
-            mempool.getUTXOs({
-                requirement: OutpointState.LOCKED | OutpointState.OURS,
-                filter: 0,
-            })
-        ).toStrictEqual([expectedUTXOs[1]]);
+        // any LOCKED UTXOs is removed
+        expect(mempool.getUTXOs()).toStrictEqual([expectedUTXOs[0]]);
     });
+
     it('gets correct balance', () => {
-        expect(mempool.getBalance(OutpointState.P2PKH)).toBe(4992400 + 5000000);
+        const confirmedHeight = txBlockHeight + 100;
+        expect(mempool.getBalance(confirmedHeight)).toBe(4992400 + 5000000);
         // Subsequent calls should be cached
-        expect(mempool.balance).toBe(4992400 + 5000000);
-        expect(mempool.getBalance(OutpointState.P2CS)).toBe(0);
-        expect(
-            mempool.getBalance(OutpointState.P2CS | OutpointState.P2PKH)
-        ).toBe(4992400 + 5000000);
+        expect(mempool.getBalance(confirmedHeight)).toBe(4992400 + 5000000);
+        expect(mempool.getColdBalance(confirmedHeight)).toBe(0);
+        expect(mempool.getImmatureBalance(confirmedHeight)).toBe(0);
+
         mempool.setSpent(new COutpoint({ txid: tx.txid, n: 0 }));
-        expect(mempool.getBalance(OutpointState.P2PKH)).toBe(5000000);
+        expect(mempool.getBalance(confirmedHeight)).toBe(5000000);
         mempool.setSpent(new COutpoint({ txid: tx.txid, n: 1 }));
-        expect(mempool.getBalance(OutpointState.P2PKH)).toBe(0);
+        expect(mempool.getBalance(confirmedHeight)).toBe(0);
     });
 
     it('gives correct debit', () => {
@@ -189,40 +182,27 @@ describe('mempool tests', () => {
             OutpointState.P2CS | OutpointState.OURS
         );
         // Set should override the status
-        mempool.setOutpointStatus(o, OutpointState.IMMATURE);
-        expect(mempool.getOutpointStatus(o)).toBe(OutpointState.IMMATURE);
+        mempool.setOutpointStatus(o, OutpointState.SPENT);
+        expect(mempool.getOutpointStatus(o)).toBe(OutpointState.SPENT);
         // Add should work with multiple flags
-        mempool.addOutpointStatus(
-            o,
-            OutpointState.P2CS | OutpointState.SPENT | OutpointState.OURS
-        );
+        mempool.addOutpointStatus(o, OutpointState.P2CS | OutpointState.OURS);
         expect(mempool.getOutpointStatus(o)).toBe(
-            OutpointState.P2CS |
-                OutpointState.SPENT |
-                OutpointState.OURS |
-                OutpointState.IMMATURE
+            OutpointState.P2CS | OutpointState.SPENT | OutpointState.OURS
         );
         // Adding an already set flag should do nothing
         mempool.addOutpointStatus(o, OutpointState.SPENT);
         expect(mempool.getOutpointStatus(o)).toBe(
-            OutpointState.P2CS |
-                OutpointState.SPENT |
-                OutpointState.OURS |
-                OutpointState.IMMATURE
+            OutpointState.P2CS | OutpointState.SPENT | OutpointState.OURS
         );
         // Remove should work with multiple flags
         mempool.removeOutpointStatus(
             o,
             OutpointState.LOCKED | OutpointState.P2CS | OutpointState.SPENT
         );
-        expect(mempool.getOutpointStatus(o)).toBe(
-            OutpointState.OURS | OutpointState.IMMATURE
-        );
+        expect(mempool.getOutpointStatus(o)).toBe(OutpointState.OURS);
         // Removing a non set flag should do nothing
         mempool.removeOutpointStatus(o, OutpointState.LOCKED);
-        expect(mempool.getOutpointStatus(o)).toBe(
-            OutpointState.OURS | OutpointState.IMMATURE
-        );
+        expect(mempool.getOutpointStatus(o)).toBe(OutpointState.OURS);
         // Removing MAX_SAFE_INTEGER should remove everything
         mempool.removeOutpointStatus(o, Number.MAX_SAFE_INTEGER);
         expect(mempool.getOutpointStatus(o)).toBe(0);

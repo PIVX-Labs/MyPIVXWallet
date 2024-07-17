@@ -18,7 +18,7 @@ import {
 } from './i18n.js';
 import { Database } from './database.js';
 import { getEventEmitter } from './event_bus.js';
-import { getCurrencyByAlpha2 } from 'country-locale-map';
+import countries from 'country-locale-map/countries.json';
 
 // --- Default Settings
 /** A mode that emits verbose console info for internal MPW operations */
@@ -34,7 +34,10 @@ export let strCurrency = getDefaultCurrency();
  */
 function getDefaultCurrency() {
     const langCode = navigator.languages[0]?.split('-')?.at(-1) || 'US';
-    return getCurrencyByAlpha2(langCode)?.toLowerCase() || 'usd';
+    return (
+        countries.find((c) => c.alpha2 === langCode)?.currency?.toLowerCase() ||
+        'usd'
+    );
 }
 
 /** The user-selected explorer, used for most of MPW's data synchronisation */

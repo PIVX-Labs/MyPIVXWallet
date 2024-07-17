@@ -792,6 +792,7 @@ export class Wallet {
             .getUTXOs({
                 requirement: OutpointState.P2PKH | OutpointState.OURS,
                 target,
+                blockCount,
             })
             .map((u) => {
                 return {
@@ -809,6 +810,8 @@ export class Wallet {
     subscribeToNetworkEvents() {
         getEventEmitter().on('new-block', async (block) => {
             if (this.#isSynced) {
+                // Invalidate the balance cache to keep immature balance updated
+                this.#mempool.invalidateBalanceCache();
                 await this.getLatestBlocks(block);
                 getEventEmitter().emit('new-tx');
             }
@@ -844,7 +847,7 @@ export class Wallet {
                             parsed.blockTime = tx.blocktime;
                             // Avoid wasting memory on txs that do not regard our wallet
                             if (this.ownTransaction(parsed)) {
-                                await wallet.addTransaction(parsed);
+                                await this.addTransaction(parsed);
                             }
                         }
                     } else {
@@ -964,11 +967,11 @@ export class Wallet {
     ) {
         let balance;
         if (useDelegatedInputs) {
-            balance = this.#mempool.coldBalance;
+            balance = this.coldBalance;
         } else if (useShieldInputs) {
             balance = this.#shield.getBalance();
         } else {
-            balance = this.#mempool.balance;
+            balance = this.balance;
         }
         if (balance < value) {
             throw new Error('Not enough balance');
@@ -1007,6 +1010,7 @@ export class Wallet {
             const utxos = this.#mempool.getUTXOs({
                 requirement: requirement | OutpointState.OURS,
                 target: value,
+                blockCount,
             });
             transactionBuilder.addUTXOs(utxos);
 
@@ -1191,6 +1195,7 @@ export class Wallet {
         return this.#mempool
             .getUTXOs({
                 requirement: OutpointState.P2PKH | OutpointState.OURS,
+                blockCount,
             })
             .filter((u) => u.value === collateralValue);
     }
@@ -1203,15 +1208,15 @@ export class Wallet {
     }
 
     get balance() {
-        return this.#mempool.balance;
+        return this.#mempool.getBalance(blockCount);
     }
 
     get immatureBalance() {
-        return this.#mempool.immatureBalance;
+        return this.#mempool.getImmatureBalance(blockCount);
     }
 
     get coldBalance() {
-        return this.#mempool.coldBalance;
+        return this.#mempool.getColdBalance(blockCount);
     }
 
     /**
@@ -1239,7 +1244,7 @@ export class Wallet {
 /**
  * @type{Wallet}
  */
-export const wallet = new Wallet({ nAccountL: 0 }); // For now we are using only the 0-th account, (TODO: update once account system is done)
+export const wallet = new Wallet({ nAccount: 0 }); // For now we are using only the 0-th account, (TODO: update once account system is done)
 
 /**
  * Clean a Seed Phrase string and verify it's integrity

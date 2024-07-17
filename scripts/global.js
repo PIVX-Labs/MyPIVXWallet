@@ -7,7 +7,6 @@ import { getNetwork } from './network.js';
 import {
     start as settingsStart,
     cExplorer,
-    debug,
     strCurrency,
     fAdvancedMode,
 } from './settings.js';
@@ -23,6 +22,7 @@ import { checkForUpgrades } from './changelog.js';
 import { FlipDown } from './flipdown.js';
 import { createApp } from 'vue';
 import Dashboard from './dashboard/Dashboard.vue';
+import { loadDebug, debugLog, DebugTopics } from './debug.js';
 import Stake from './stake/Stake.vue';
 import { createPinia } from 'pinia';
 import { cOracle } from './prices.js';
@@ -238,6 +238,9 @@ export async function start() {
     sliderElement.addEventListener('input', handleDecimalSlider);
     sliderElement.addEventListener('mouseover', handleDecimalSlider);
 
+    // Load debug
+    await loadDebug();
+
     // Register native app service
     registerWorker();
     await settingsStart();
@@ -283,7 +286,7 @@ function subscribeToNetworkEvents() {
     });
 
     getEventEmitter().on('new-block', (block) => {
-        console.log(`New block detected! ${block}`);
+        debugLog(DebugTopics.GLOBAL, `New block detected! ${block}`);
 
         // If it's open: update the Governance Dashboard
         if (doms.domGovTab.classList.contains('active')) {
@@ -1450,11 +1453,9 @@ export async function updateMasternodeTab() {
 async function refreshMasternodeData(cMasternode, fAlert = false) {
     const cMasternodeData = await cMasternode.getFullData();
 
-    if (debug) {
-        console.log('---- NEW MASTERNODE DATA (Debug Mode) ----');
-        console.log(cMasternodeData);
-        console.log('---- END MASTERNODE DATA (Debug Mode) ----');
-    }
+    debugLog(DebugTopics.GLOBAL, ' ---- NEW MASTERNODE DATA (Debug Mode) ----');
+    debugLog(DebugTopics.GLOBAL, cMasternodeData);
+    debugLog(DebugTopics.GLOBAL, '---- END MASTERNODE DATA (Debug Mode) ----');
 
     // If we have MN data available, update the dashboard
     if (cMasternodeData && cMasternodeData.status !== 'MISSING') {
@@ -1665,7 +1666,6 @@ export async function refreshChainData() {
     const newBlockCount = await cNet.getBlockCount();
     if (newBlockCount !== blockCount) {
         blockCount = newBlockCount;
-        if (!wallet.isLoaded()) return;
         getEventEmitter().emit('new-block', blockCount);
     }
 }

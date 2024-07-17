@@ -6,7 +6,7 @@ import { hasEncryptedWallet, wallet } from '../../scripts/wallet.js';
 import { LegacyMasterKey } from '../../scripts/masterkey.js';
 import { getNetwork } from '../../scripts/network.js';
 import { strCurrency } from '../../scripts/settings.js';
-import { setUpMainnetWallet } from './test_utils.js';
+import { setUpLegacyMainnetWallet } from '../utils/test_utils';
 
 vi.mock('../../scripts/network.js');
 
@@ -15,7 +15,7 @@ describe('useWallet tests', () => {
     beforeEach(async () => {
         walletComposable = useWallet();
         vi.stubGlobal('indexedDB', new IDBFactory());
-        vi.stubGlobal('wallet', await setUpMainnetWallet());
+        vi.stubGlobal('wallet', await setUpLegacyMainnetWallet());
         getEventEmitter().emit('balance-update');
     });
 

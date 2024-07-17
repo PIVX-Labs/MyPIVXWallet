@@ -4,7 +4,7 @@ import { hexToBytes, bytesToHex, dSHA256 } from './utils.js';
 import { OP } from './script.js';
 import { varIntToNum, deriveAddress } from './encoding.js';
 import * as nobleSecp256k1 from '@noble/secp256k1';
-import { SAPLING_TX_VERSION } from './chain_params.js';
+import { cChainParams, SAPLING_TX_VERSION } from './chain_params.js';
 
 /** An Unspent Transaction Output, used as Inputs of future transactions */
 export class COutpoint {
@@ -165,6 +165,20 @@ export class Transaction {
         return (
             this.vin.length == 1 && !!this.vin[0].outpoint.txid.match(/^0*$/)
         );
+    }
+
+    /**
+     * @param {Transaction} tx - transaction we want to check
+     * @returns {boolean}
+     */
+    isImmature(blockCount) {
+        if (this.isCoinStake() || this.isCoinBase()) {
+            return (
+                blockCount - this.blockHeight <
+                cChainParams.current.coinbaseMaturity
+            );
+        }
+        return false;
     }
 
     static fromHex(hex) {
