@@ -26,6 +26,7 @@ import { loadDebug, debugLog, DebugTopics } from './debug.js';
 import Stake from './stake/Stake.vue';
 import { createPinia } from 'pinia';
 import { cOracle } from './prices.js';
+import AdvancedSettings from './settings/AdvancedSettings.vue';
 
 /** A flag showing if base MPW is fully loaded or not */
 export let fIsLoaded = false;
@@ -44,6 +45,7 @@ const pinia = createPinia();
 
 export const dashboard = createApp(Dashboard).use(pinia).mount('#DashboardTab');
 createApp(Stake).use(pinia).mount('#StakingTab');
+createApp(AdvancedSettings).use(pinia).mount('#AdvancedSettings');
 
 export async function start() {
     doms = {

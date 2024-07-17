@@ -25,8 +25,8 @@ export const useWallet = defineStore('wallet', () => {
     const loadFromDisk = () => wallet.loadFromDisk();
     const hasShield = ref(wallet.hasShield());
 
-    const setMasterKey = async ({ mk, extsk }) => {
-        wallet.setMasterKey({ mk, extsk });
+    const setMasterKey = async ({ mk, extsk, nAccount }) => {
+        wallet.setMasterKey({ mk, extsk, nAccount });
         isImported.value = wallet.isLoaded();
         isHardwareWallet.value = wallet.isHardwareWallet();
         isHD.value = wallet.isHD();

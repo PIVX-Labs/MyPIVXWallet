@@ -96,6 +96,10 @@ export class Settings {
      * @type {boolean} Whether auto lock feature is enabled or disabled
      */
     autoLockWallet;
+
+    /* @type {number} Account index for ledger wallets */
+    accountIndex = 0;
+
     constructor({
         analytics,
         explorer,
@@ -107,6 +111,7 @@ export class Settings {
         advancedMode = false,
         coldAddress = '',
         autoLockWallet = false,
+        accountIndex = 0,
     } = {}) {
         this.analytics = analytics;
         this.explorer = explorer;
@@ -117,6 +122,7 @@ export class Settings {
         this.displayDecimals = displayDecimals;
         this.advancedMode = advancedMode;
         this.autoLockWallet = autoLockWallet;
+        this.accountIndex = accountIndex;
         // DEPRECATED: Read-only below here, for migration only
         this.coldAddress = coldAddress;
     }

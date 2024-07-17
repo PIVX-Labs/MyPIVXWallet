@@ -47,7 +47,7 @@ const needsToEncrypt = computed(() => {
     }
 });
 const showTransferMenu = ref(false);
-const { advancedMode, displayDecimals, autoLockWallet } = useSettings();
+const settings = useSettings();
 const showExportModal = ref(false);
 const showEncryptModal = ref(false);
 const keyToBackup = ref('');
@@ -83,7 +83,9 @@ async function importWallet({ type, secret, password = '' }) {
             createAlert('warning', ALERTS.WALLET_FIREFOX_UNSUPPORTED, 7500);
             return false;
         }
-        parsedSecret = new ParsedSecret(await HardwareWalletMasterKey.create());
+        parsedSecret = new ParsedSecret(
+            await HardwareWalletMasterKey.create(settings.accountIndex)
+        );
 
         createAlert(
             'info',
@@ -96,7 +98,7 @@ async function importWallet({ type, secret, password = '' }) {
         parsedSecret = await ParsedSecret.parse(
             secret,
             password,
-            advancedMode.value
+            settings.advancedMode
         );
     }
     if (parsedSecret) {
@@ -332,7 +334,7 @@ async function send(address, amount, useShieldInputs) {
         console.error(e);
         createAlert('warning', e);
     } finally {
-        if (autoLockWallet.value) {
+        if (settings.autoLockWallet) {
             if (wallet.isEncrypted) {
                 lockWallet();
             } else {
@@ -464,7 +466,7 @@ defineExpose({
         <div class="row m-0">
             <Login
                 v-show="!wallet.isImported"
-                :advancedMode="advancedMode"
+                :advancedMode="settings.advancedMode"
                 @import-wallet="importWallet"
             />
 
@@ -888,7 +890,7 @@ defineExpose({
                         :isHardwareWallet="wallet.isHardwareWallet"
                         :currency="currency"
                         :price="price"
-                        :displayDecimals="displayDecimals"
+                        :displayDecimals="settings.displayDecimals"
                         :shieldEnabled="wallet.hasShield"
                         @send="showTransferMenu = true"
                         @exportPrivKeyOpen="showExportModal = true"
