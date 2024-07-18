@@ -145,6 +145,7 @@ async function importWif(wif, extsk) {
         :unstake="false"
         :showOwnerAddress="advancedMode"
         :show="showStake"
+        :currency="currency"
         :price="price"
         v-model:amount="stakeAmount"
         @maxBalance="stakeAmount = (balance / COIN).toString()"
