@@ -83,18 +83,22 @@
           <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content exportKeysModalColor">
               <div class="modal-header">
-                <h5 class="modal-title" data-i18n="receive" id="qrModalLabel">Receive</h5>
+                <div style="display: flex; justify-content: center; width: 100%;">
+                  <h5 class="modal-title" data-i18n="receive" id="qrModalLabel" style="font-family: 'Montserrat';">
+                    Receive
+                  </h5>
+                </div>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                   <i class="fa-solid fa-xmark closeCross"></i>
                 </button>
               </div>
               <div class="modal-body center-text">
-                <code id="ModalQRLabel" class="wallet-code"></code>
-                <div id="ModalQR" style="padding: 17px 10px 10px 10px;" class="auto-fit"></div>
+                <code id="ModalQRLabel" class="wallet-code-new w-100" style="margin-bottom: 18px; padding-right: 35px;"></code>
+                <div id="ModalQR" style="font-family: 'Montserrat'; text-align: start; border-radius: 10px; border: 1px solid #42117e; background-color: #25183d; padding: 13px 13px;" class="auto-fit"></div>
                 <center>
-                  <div id="ModalQRReceiveTypeBtn" onclick="MPW.guiToggleReceiveType()" style="cursor: pointer; border: 0px; border-radius: 7px; padding: 6px 10px; margin: 0px 1px; background: linear-gradient(183deg, #9621ff9c, #7d21ffc7); color: #fff; font-weight: bold; width: fit-content; margin: 20px 0px;">
-                    Change to Address
-                  </div>
+                  <button id="ModalQRReceiveTypeBtn" class="pivx-button-small" onclick="MPW.guiToggleReceiveType()" style="margin-top:25px; height: 42px; width: 250px;">
+                    <span class="buttoni-text">Change to Address</span>
+                  </button>
                 </center>
               </div>
             </div>
