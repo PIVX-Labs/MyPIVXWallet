@@ -56,6 +56,11 @@ input:focus-visible {
     border: 2px solid #dccfec;
 }
 
+.balanceInput:focus-visible {
+    border: 2px solid #AF9CC6!important;
+    border-right:0px!important;
+}
+
 .passwordTxtbox {
     font-size: 34px !important;
     color: #6410C7 !important;
@@ -850,6 +855,7 @@ progress[value]::-moz-progress-bar {
     -moz-transition: all .2s ease-in-out;
     -o-transition: all .2s ease-in-out;
     transition: all .2s ease-in-out;
+    padding-top: 6px;
 }
 
 .pivx-button-big {
@@ -883,7 +889,8 @@ progress[value]::-moz-progress-bar {
 
 
 
-.pivx-button-big-cancel {
+.pivx-button-big-cancel,
+.pivx-button-small-cancel {
     display: inline-block;
     outline: none;
     margin: 5px;
@@ -911,6 +918,12 @@ progress[value]::-moz-progress-bar {
     -moz-transition: all .2s ease-in-out;
     -o-transition: all .2s ease-in-out;
     transition: all .2s ease-in-out;
+}
+
+.pivx-button-small-cancel {
+    font: 13px Montserrat, sans-serif !important;
+    padding: 8px 18px;
+    padding-top: 6px;
 }
 
 .pivx-button-big-no-gov {
@@ -3688,16 +3701,10 @@ select.form-control option {
     transition: all .25s ease-in-out;
 }
 
-.contactsList .contactItem:hover {
-    background-color: #0000001c !important;
-}
-
-.contactsList .contactItem:nth-child(odd) {
-    background-color: #00000017
-}
-
-.contactsList .contactItem:nth-child(even) {
-    background-color: #00000033
+.pIconBin svg {
+    height:19px;
+    width:19px;
+    fill:#9221FF;
 }
 
 .contactsList .addContact .contactName input,
@@ -3864,10 +3871,39 @@ select.form-control option {
     width: 800px;
 }
 
+textarea:focus-visible {
+    outline:none;
+}
+
+.masternodeModalDialog2 .modal-footer {
+    width: 300px;
+    padding-left: calc(50%);
+}
+
+.masternodeModalDialog2 .modal-footer button {
+    margin-left:15px;
+}
+
+.masternodeModalDialog2 .modal-footer .pivx-button-outline {
+    margin-right:15px;
+}
+
 @media (min-width: 576px) {
     .masternodeModalDialog {
         max-width: 800px;
     }
+}
+
+.transferBody {
+    font: 14px 'Montserrat Regular';
+    color: #AF9CC6;
+    font-weight: 500;
+}
+
+.transferBody label,
+.transferBody label {
+    margin-left:5px;
+    margin-bottom: 10px;
 }
 
 .tranferModal .input-group-text {
@@ -3905,6 +3941,12 @@ select.form-control option {
     padding-bottom: 25px;
 }
 
+.cameraIcon svg {
+    height:22px;
+    width:22px;
+    fill:#e9deff;
+}
+
 .masternodeTable tbody tr td .wallet-code {
     width:fit-content!important;
     font-weight:600;
@@ -3913,6 +3955,18 @@ select.form-control option {
 .masternodeTable tbody tr td .mnLastSeen {
     color:#76678D;
     font-weight:500;
+}
+
+.pColor svg {
+    fill:#6410c7;
+}
+.wallet-code-new {
+    background-color: #e9deff;
+    color: #6410c7;
+    border-radius: 7px;
+    border: 1px solid #af9cc6;
+    padding: 7px 10px;
+    display:block;
 }
 
 .mnTopConfigured {
