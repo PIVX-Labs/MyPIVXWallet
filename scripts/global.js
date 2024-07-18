@@ -1588,32 +1588,25 @@ export async function createProposal() {
 
     // Create the popup, wait for the user to confirm or cancel
     const fConfirmed = await confirmPopup({
-        title: `${translation.popupCreateProposal} (${
-            translation.popupCreateProposalCost
-        } ${cChainParams.current.proposalFee / COIN} ${
-            cChainParams.current.TICKER
-        })`,
-        html: `<input id="proposalTitle" maxlength="20" placeholder="${
-            translation.popupProposalName
-        }" style="text-align: center;"><br>
-               <input id="proposalUrl" maxlength="64" placeholder="${
-                   translation.popupExample
-               } https://forum.pivx.org/..." style="text-align: center;"><br>
-               <input type="number" id="proposalCycles" min="1" max="${
-                   cChainParams.current.maxPaymentCycles
-               }" placeholder="${
-            translation.popupProposalDuration
-        }" style="text-align: center;"><br>
-               <input type="number" id="proposalPayment" min="10" max="${
-                   cChainParams.current.maxPayment / COIN
-               }" placeholder="${cChainParams.current.TICKER} ${
-            translation.popupProposalPerCycle
-        }" style="text-align: center;"><br>
-               <input id="proposalAddress" maxlength="34" placeholder="${
-                   translation.popupProposalAddress
-               }" style="text-align: center; ${
-            !fAdvancedMode ? 'display: none' : ''
-        }"><br>`,
+        title: `<h4>${translation.popupCreateProposal}</h4>
+        <span style="color: #af9cc6; font-size: 1rem; margin-bottom: 23px; display: block;">${ translation.popupCreateProposalCost } <b>${cChainParams.current.proposalFee / COIN} ${ cChainParams.current.TICKER }</b></span>`,
+        html: `<div style="padding-left: 10px; padding-right: 10px;">
+            <p style="margin-bottom: 12px; color: #af9cc6; font-size: 1rem; font-weight: 500;">Proposal name</p>
+            <input id="proposalTitle" maxlength="20" placeholder="${translation.popupProposalName}" style="text-align: start; margin-bottom: 25px;"><br>
+            
+            <p style="margin-bottom: 12px; color: #af9cc6; font-size: 1rem; font-weight: 500;">URL</p>
+            <input id="proposalUrl" maxlength="64" placeholder="https://forum.pivx.org/..." style=" margin-bottom: 25px; text-align: start;"><br>
+            
+            <p style="margin-bottom: 12px; color: #af9cc6; font-size: 1rem; font-weight: 500;">Duration in cycles</p>
+            <input type="number" id="proposalCycles" min="1" max="${cChainParams.current.maxPaymentCycles}" placeholder="${translation.popupProposalDuration}" style=" margin-bottom: 25px; text-align: start;"><br>
+            
+            <p style="margin-bottom: 12px; color: #af9cc6; font-size: 1rem; font-weight: 500;">${cChainParams.current.TICKER} per cycle</p>
+            <input type="number" id="proposalPayment" min="10" max="${cChainParams.current.maxPayment / COIN}" placeholder="${cChainParams.current.TICKER} ${translation.popupProposalPerCycle}" style=" margin-bottom: 25px; text-align: start;">${!fAdvancedMode ? '<br>' : ''}
+            
+            <p style="margin-bottom: 12px; color: #af9cc6; font-size: 1rem; font-weight: 500; ${!fAdvancedMode ? 'display: none' : ''}">test</p>
+            <input id="proposalAddress" maxlength="34" placeholder="${translation.popupProposalAddress}" style=" margin-bottom: 25px; text-align: start; ${!fAdvancedMode ? 'display: none' : ''}">
+        </div>`,
+        wideModal: true,
     });
 
     // If the user cancelled, then we return
