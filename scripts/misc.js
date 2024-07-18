@@ -117,6 +117,7 @@ export async function confirmPopup({
     noPadding,
     maxHeight,
     centerButtons,
+    wideModal
 }) {
     // If there's a title provided: display the header and text
     doms.domConfirmModalHeader.style.display = title ? 'block' : 'none';
@@ -151,6 +152,14 @@ export async function confirmPopup({
         doms.domConfirmModalMain.classList.add('exportKeysModalColor');
     } else {
         doms.domConfirmModalMain.classList.remove('exportKeysModalColor');
+    }
+
+    // If modal is wide
+    if(wideModal) {
+        doms.domConfirmModalDialog.classList.add('masternodeModalDialog');
+        doms.domConfirmModalDialog.classList.add('masternodeModalDialog2');
+
+        doms.domConfirmModalContent.classList.remove('center-text');
     }
 
     // Remove padding
