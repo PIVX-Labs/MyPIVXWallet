@@ -28,6 +28,9 @@ import Dashboard from './dashboard/Dashboard.vue';
 import Stake from './stake/Stake.vue';
 import { createPinia } from 'pinia';
 
+import pIconCopy from '../assets/icons/icon-copy.svg';
+import pIconCheck from '../assets/icons/icon-check.svg';
+
 /** A flag showing if base MPW is fully loaded or not */
 export let fIsLoaded = false;
 
@@ -451,12 +454,10 @@ export function toClipboard(source, caller) {
     }
 
     // Display a temporary checkmark response
-    caller.classList.add('fa-check');
-    caller.classList.remove('fa-clipboard');
+    caller.innerHTML = pIconCheck;
     caller.style.cursor = 'default';
     setTimeout(() => {
-        caller.classList.add('fa-clipboard');
-        caller.classList.remove('fa-check');
+        caller.innerHTML = pIconCopy;
         caller.style.cursor = 'pointer';
     }, 1000);
 }
