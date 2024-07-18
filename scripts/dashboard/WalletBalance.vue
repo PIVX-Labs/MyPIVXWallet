@@ -256,7 +256,7 @@ function displayLockWalletModal() {
                     <span class="ptr" data-toggle="modal" data-target="#walletBreakdownModal" @click="renderWalletBreakdown()">
                         <span class="logo-pivBal" v-html="(publicMode ? pLogo : iShieldLogo)"></span>
                         <span class="dcWallet-pivxBalance" v-html="balanceStr"> </span>
-                        <span class="dcWallet-pivxTicker" style="position: relative; left: 4px">&nbsp;{{ ticker }}&nbsp;</span>
+                        <span class="dcWallet-pivxTicker" style="position: relative; left: 4px">&nbsp;<span v-if="!publicMode">S-</span>{{ ticker }}&nbsp;</span>
                     </span>
 
                     <div class="dcWallet-usdBalance" style="padding-bottom: 12px; padding-top: 3px;">
@@ -267,7 +267,7 @@ function displayLockWalletModal() {
                 <div style="background-color:#32224e61; border:2px solid #361562; border-bottom-left-radius:10px; border-bottom-right-radius:10px;">
                     <div class="dcWallet-usdBalance">
                         <span class="dcWallet-usdValue" style="display: flex; justify-content: center; color:#9221FF; font-weight:500; padding-top: 21px; padding-bottom: 11px; font-size:16px;">
-                            <span class="shieldBalanceLogo" v-html="(publicMode ? iShieldLogo : pLogo)"></span>&nbsp;{{ secondBalanceStr }} S-{{ ticker }}
+                            <span class="shieldBalanceLogo" v-html="(publicMode ? iShieldLogo : pLogo)"></span>&nbsp;{{ secondBalanceStr }} <span v-if="publicMode">&nbsp;S-</span>{{ ticker }}
                             <span style="opacity: 0.75" v-if="pendingShieldBalance != 0">({{ pendingSecondBalanceStr }} Pending)</span>
                         </span>
                     </div>
