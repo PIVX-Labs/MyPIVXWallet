@@ -13,6 +13,9 @@ import {
 } from './misc.js';
 import { scanQRCode } from './scanner.js';
 import { wallet, hasEncryptedWallet } from './wallet.js';
+import pIconCopy from '../assets/icons/icon-copy.svg';
+import pIconCamera from '../assets/icons/icon-camera.svg';
+import pIconBin from '../assets/icons/icon-bin.svg';
 
 /**
  * Represents an Account contact
@@ -99,87 +102,104 @@ export async function renderContacts(account, fPrompt = false) {
 
     // For non-prompts: we allow the user to Add, Edit or Delete their contacts
     if (!fPrompt) {
-        // Render an editable Contacts Table
-        for (const cContact of account.contacts || []) {
-            const strPubkey = isXPub(cContact.pubkey)
-                ? cContact.pubkey.slice(0, 32) + '…'
-                : cContact.pubkey;
-            strHTML += `
-            <div class="d-flex px-3 py-3 contactItem">
-                <div>
-                    <img onclick="MPW.guiAddContactImage('${i}')" class="ptr" style="margin-right:20px; width: 50px; height: 50px; border-radius: 100%; background-color: white; border: 2px solid #d5adff;" ${
-                cContact.icon ? 'src="' + cContact.icon + '"' : ''
-            }>
-                </div>
-                <div style="width: 100%; line-height: 15px;">
-                    <span id="contactsName${i}" onclick="MPW.guiEditContactNamePrompt('${i}')" style="word-wrap: anywhere; cursor:pointer; color: #d5adff; font-weight: 600; margin-top: 8px; display: block;">${sanitizeHTML(
-                cContact.label
-            )}</span>
-                    <span id="contactsAddress${i}" style="word-wrap: anywhere; font-size: 13px; position: relative; top: 3px;">${sanitizeHTML(
-                strPubkey
-            )}</span>
-                </div>
-                <div style="display: flex; justify-content: flex-end; align-items: center; padding-right: 6px; padding-left: 15px;">
-                    <i style="cursor:pointer;" onclick="MPW.guiRemoveContact(${i})" class="far fa-trash-alt"></i>
-                </div>
-            </div>
-            `;
-            i++;
-        }
-
         // Lastly, inject the "Add Account" UI to the table
         strHTML += `
-            <div class="d-flex px-3 addContact" style="margin-top:20px;">
-                <div class="contactName">
-                    <input id="contactsNameInput" class="m-0" placeholder="${translation.name}" autocomplete="nope">
-                </div>
-                <div class="contactAddr">
-                    <input id="contactsAddressInput" class="m-0" placeholder="${translation.addressOrXPub}" autocomplete="nope">
-                </div>
-                <div class="d-flex" style="align-items: center;">
-                    <div onclick="MPW.guiAddContact()" class="addContactBtn">
-                        <i class="fas fa-plus"></i>
+            <div style="font-family: 'Montserrat'; text-align: start; margin: 0px 15px; border-radius: 10px; border: 1px solid #42117e; background-color: #25183d; padding: 13px 13px; margin-bottom: 28px;">
+                <label style="color:#af9cc6; font-size: 15px; font-weight: 500; margin-bottom: 17px;">Add new contact</label>
+                <input id="contactsNameInput" style="margin-bottom:17px;" placeholder="${translation.name}" autocomplete="nope">
+                <input id="contactsAddressInput" style="margin-bottom:17px;" placeholder="${translation.addressOrXPub}" autocomplete="nope">
+
+                <div class="row">
+                    <div class="col-6">
+                        <button class="pivx-button-small-cancel" style="height: 49px; width: 49px; padding-left: 12px;" onclick="MPW.guiAddContactQRPrompt()">
+                            <span class="buttoni-text cameraIcon">
+                                ${pIconCamera}
+                            </span>
+                        </button>
                     </div>
-                    <div onclick="MPW.guiAddContactQRPrompt()" class="qrContactBtn">
-                        <i class="fa-solid fa-qrcode"></i>
+                    <div class="col-6 text-right">
+                        <button class="pivx-button-small" style="height: 42px; width: 97px;" onclick="MPW.guiAddContact()">
+                            <span class="buttoni-text">
+                                Save
+                            </span>
+                        </button>
                     </div>
                 </div>
             </div>
         `;
 
-        doms.domContactsTable.innerHTML = strHTML;
-    } else {
-        // For prompts: the user must click an address (or cancel), and cannot add, edit or delete contacts
-        strHTML += `<div id="contactsList" class="contactsList">`;
+        // Render an editable Contacts Table
+        strHTML += `<div style="font-family: 'Montserrat'; text-align: start; margin: 0px 15px; border-radius: 10px; border: 1px solid #42117e; background-color: #25183d; padding: 13px 9px;">
+        <div style="max-height: 270px; overflow: auto;">`;
+
         for (const cContact of account.contacts || []) {
             const strPubkey = isXPub(cContact.pubkey)
                 ? cContact.pubkey.slice(0, 32) + '…'
                 : cContact.pubkey;
             strHTML += `
-            <div class="d-flex px-3 py-3 contactItem ptr" id="contactsSelector${i}">
-                <div id="contactsAvatarContainer${i}">
-                    <img id="contactsAvatar${i}" class="ptr" style="margin-right:20px; width: 50px; height: 50px; border-radius: 100%; background-color: white; border: 2px solid #d5adff;" ${
+            <div class="d-flex px-3 py-3 contactItem" style="padding-left: 10px !important; border-bottom: 1px solid #461584;">
+                <div>
+                    <img onclick="MPW.guiAddContactImage('${i}')" class="ptr" style="margin-right:20px; width: 50px; height: 50px; border-radius: 100%; background-color: white; border: 2px solid #d5adff;" ${
                 cContact.icon ? 'src="' + cContact.icon + '"' : ''
             }>
                 </div>
-                <div id="contactsNameContainer${i}" style="width: 100%; line-height: 15px;">
-                    <span id="contactsName${i}" style="word-wrap: anywhere; color: #d5adff; font-weight: 600; margin-top: 8px; display: block;">${sanitizeHTML(
-                sanitizeHTML(cContact.label)
+                <div style="width: 100%; line-height: 15px; margin-top: -6px;">
+                    <span id="contactsName${i}" onclick="MPW.guiEditContactNamePrompt('${i}')" style="word-wrap: anywhere; cursor:pointer; color: #e9deff; font-weight: 500; margin-top: 8px; display: block;">${sanitizeHTML(
+                cContact.label
             )}</span>
-                    <span id="contactsAddress${i}" style="word-wrap: anywhere; font-size: 13px; position: relative; top: 3px;">${sanitizeHTML(
-                strPubkey
-            )}</span>
+                    <span id="contactsAddress${i}" style="word-wrap: anywhere; font-size: 13px; position: relative; top: 10px;">
+                        <code style="background-color: #1a122d; color: #7c659e; padding: 7px 10px; font-size: 13px; border-radius: 9px;">
+                            ${sanitizeHTML(strPubkey).substring(0, 20)}...
+                        </code>
+                    </span>
+                </div>
+                <div style="display: flex; justify-content: flex-end; align-items: center; padding-right: 6px; padding-left: 15px;">
+                    <i style="cursor:pointer;" class="pIconBin" onclick="MPW.guiRemoveContact(${i})">${pIconBin}</i>
                 </div>
             </div>
             `;
             i++;
         }
 
+        strHTML += `</div>`;
+
+        doms.domContactsTable.innerHTML = strHTML;
+    } else {
+        // For prompts: the user must click an address (or cancel), and cannot add, edit or delete contacts
+        strHTML += `<div id="contactsList" class="contactsList" style="padding: 0px 22px;">
+        <div style="max-height: 270px; overflow: auto;">`;
+        for (const cContact of account.contacts || []) {
+            const strPubkey = isXPub(cContact.pubkey)
+                ? cContact.pubkey.slice(0, 32) + '…'
+                : cContact.pubkey;
+            strHTML += `
+            <div class="d-flex px-3 py-3 contactItem ptr" id="contactsSelector${i}" style="border-bottom: 1px solid #461584;">
+                <div id="contactsAvatarContainer${i}">
+                    <img id="contactsAvatar${i}" class="ptr" style="margin-right:20px; width: 50px; height: 50px; border-radius: 100%; background-color: white; border: 2px solid #d5adff;" ${
+                cContact.icon ? 'src="' + cContact.icon + '"' : ''
+            }>
+                </div>
+                <div id="contactsNameContainer${i}" style="width: 100%; line-height: 15px; margin-top: -6px;">
+                    <span id="contactsName${i}" style="word-wrap: anywhere; color: #e9deff; font-weight: 600; margin-top: 8px; display: block;">${sanitizeHTML(
+                sanitizeHTML(cContact.label)
+            )}</span>
+                    <span id="contactsAddress${i}" style="word-wrap: anywhere; font-size: 13px; position: relative; top: 10px;">
+                        <code style="background-color: #1a122d; color: #7c659e; padding: 7px 10px; font-size: 13px; border-radius: 9px;">
+                            ${sanitizeHTML(strPubkey).substring(0, 23)}...
+                        </code>
+                    </span>
+                </div>
+            </div>
+            `;
+            i++;
+        }
+        strHTML += `</div>`;
+
         // Add the final "Back" button
         strHTML += `
-            <span class="d-flex px-3 py-3 contactItem ptr" id="contactsSelector-1">
-                ${translation.back}
-            </span>
+            <div class="text-right" style="margin-top: 15px; margin-bottom: 15px;">
+                <button class="pivx-button-small-cancel" style="height: 42px; width: 97px;"><span class="buttoni-text" id="contactsSelector-1"> Close </span></button>
+            </div>
         `;
 
         // Finish the display
@@ -341,11 +361,11 @@ async function renderContactModal() {
         const strContactURI = await localContactToURI(cAccount, strPubkey);
 
         // Render Copy Button
-        doms.domModalQrLabel.innerHTML = `${translation.shareContactURL}<i onclick="MPW.localContactToClipboard(event)" id="guiAddressCopy" class="fas fa-clipboard" style="cursor: pointer; width: 20px;"></i>`;
+        doms.domModalQrLabel.innerHTML = `${translation.shareContactURL}<i onclick="MPW.localContactToClipboard(event)" id="guiAddressCopy" class="pColor" style="position: absolute; right: 27px; margin-top: -1px; cursor: pointer; width: 20px;">${pIconCopy}</i>`;
 
         // We'll render a short informational text, alongside a QR below for Contact scanning
         doms.domModalQR.innerHTML = `
-                <p>${translation.onlyShareContactPrivately}</p>
+                <!--<p>${translation.onlyShareContactPrivately}</p>-->
                 <div id="receiveModalEmbeddedQR"></div>
             `;
         const domQR = document.getElementById('receiveModalEmbeddedQR');
@@ -361,18 +381,17 @@ async function renderContactModal() {
         // Update the QR Label (we'll show the address here for now, user can set Contact "Name" optionally later)
         doms.domModalQrLabel.innerHTML =
             strAddress +
-            `<i onclick="MPW.toClipboard('${strAddress}', this)" id="guiAddressCopy" class="fas fa-clipboard" style="cursor: pointer; width: 20px;"></i>`;
+            `<i onclick="MPW.toClipboard('${strAddress}', this)" id="guiAddressCopy" class="pColor" style="position: absolute; right: 27px; margin-top: -1px; cursor: pointer; width: 20px;">
+                ${pIconCopy}
+            </i>`;
 
         // Update the QR section
         if (await hasEncryptedWallet()) {
             doms.domModalQR.innerHTML = `
-                    <center>
-                        <b>${translation.setupYourContact}</b>
-                        <p>${translation.receiveWithContact}</p>
-                        <input id="setContactName" placeholder="${translation.username}" style="text-align: center;"></input>
-                        <button onclick="MPW.guiSetAccountName('setContactName')">${translation.createContact}</button>
-                    </center>
-                `;
+                <b style="margin-bottom: 9px; display: block; font-size: 16px; color:#af9cc6; font-weight: 500;">${translation.setupYourContact}</b>
+                <p style="font-size: 14px; color:#827592; font-weight: 500;">${translation.receiveWithContact}</p>
+                <input id="setContactName" placeholder="${translation.username}" style="text-align: start;"></input>
+                <button class="pivx-button-small-cancel" style="height: 42px; width: 167px;" onclick="MPW.guiSetAccountName('setContactName')"><span class="buttoni-text">${translation.createContact}</span></button>`;
         } else {
             doms.domModalQR.innerHTML = `
                     <center>
@@ -398,7 +417,7 @@ function renderAddress(strAddress) {
     doms.domModalQrLabel.innerHTML =
         // SanitzeHTML shouldn't be necessary, but let's keep it just in case
         sanitizeHTML(strAddress) +
-        `<i onclick="MPW.toClipboard('${strAddress}', this)" id="guiAddressCopy" class="fas fa-clipboard" style="cursor: pointer; width: 20px;"></i>`;
+        `<i onclick="MPW.toClipboard('${strAddress}', this)" id="guiAddressCopy" class="pColor" style="position: absolute; right: 27px; margin-top: -1px; cursor: pointer; width: 20px;">${pIconCopy}</i>`;
     document.getElementById('clipboard').value = strAddress;
 }
 
@@ -427,11 +446,11 @@ export async function guiRenderReceiveModal(
             // Update the QR Label (we'll show the address here for now, user can set Contact "Name" optionally later)
             doms.domModalQrLabel.innerHTML =
                 sanitizeHTML(strXPub) +
-                `<i onclick="MPW.toClipboard('${strXPub}', this)" id="guiAddressCopy" class="fas fa-clipboard" style="cursor: pointer; width: 20px;"></i>`;
+                `<i onclick="MPW.toClipboard('${strXPub}', this)" id="guiAddressCopy" class="pColor" style="position: absolute; right: 27px; margin-top: -1px; cursor: pointer; width: 20px;">${pIconCopy}</i>`;
 
             // We'll render a short informational text, alongside a QR below for Contact scanning
             doms.domModalQR.innerHTML = `
-            <p>${translation.onlyShareContactPrivately}</p>
+            <!--<p>${translation.onlyShareContactPrivately}</p>-->
             <div id="receiveModalEmbeddedQR"></div>
         `;
 
