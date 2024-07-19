@@ -1,4 +1,4 @@
-import { getLegacyMainnet, getLegacyTestnet } from './test_utils.js';
+import { getLegacyMainnet, getLegacyTestnet } from '../utils/test_utils.js';
 import { HdMasterKey } from '../../scripts/masterkey.js';
 import { mnemonicToSeed } from 'bip39';
 import { verifyPubkey } from '../../scripts/encoding.js';

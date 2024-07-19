@@ -210,7 +210,7 @@ accountDeleted = "Deine Geldbörse wurde erfolgreich gelöscht" # Your account h
 activitySelf = "Eigenüberweisung" # self
 activityReceivedWith = "Erhalten über {s}" # Received with {s}
 chartImmatureBalance = "" # Immature balance
-syncLoadingSaplingProver = "" # Loading Sapling Prover
+syncLoadingSaplingProver = "" # Loading SHIELD parameters...
 syncShieldProgress = "" # Loading shielded blocks {current} of {total}
 useShieldInputs = "" # Use shield inputs
 newShieldAddress = "" # Get new shield address
@@ -220,6 +220,7 @@ settingsToggleAutoLockWallet = "" # Auto Lock the Wallet
 saveWalletFile = "" # Save Wallet File
 proposalOverBudget = "" # Over Budget
 badSaplingRoot = "" # There was an error while syncing. Resyncing from scratch (Bad sapling root)
+creatingShieldTransaction = "" # Creating SHIELD transaction...
 
 [ALERTS]
 INTERNAL_ERROR = "Interner Fehler, bitte versuche es später erneut" # Internal error, please try again later

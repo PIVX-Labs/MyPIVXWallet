@@ -1,14 +1,14 @@
 import {
     doms,
-    refreshChainData,
     updateLogOutButton,
     updateGovernanceTab,
     dashboard,
+    refreshChainData,
 } from './global.js';
 import { wallet, hasEncryptedWallet } from './wallet.js';
 import { cChainParams } from './chain_params.js';
 import { setNetwork, ExplorerNetwork, getNetwork } from './network.js';
-import { confirmPopup, createAlert, isEmpty } from './misc.js';
+import { confirmPopup, createAlert } from './misc.js';
 import {
     switchTranslation,
     ALERTS,
@@ -16,16 +16,15 @@ import {
     arrActiveLangs,
     tr,
 } from './i18n.js';
-import { CoinGecko, refreshPriceDisplay } from './prices.js';
 import { Database } from './database.js';
 import { getEventEmitter } from './event_bus.js';
-import { getCurrencyByAlpha2 } from 'country-locale-map';
+import countries from 'country-locale-map/countries.json';
 
 // --- Default Settings
 /** A mode that emits verbose console info for internal MPW operations */
 export let debug = false;
 /**
- * The user-selected display currency from market-aggregator sites
+ * The user-selected display currency from Oracle
  * @type {string}
  */
 export let strCurrency = getDefaultCurrency();
@@ -35,13 +34,12 @@ export let strCurrency = getDefaultCurrency();
  */
 function getDefaultCurrency() {
     const langCode = navigator.languages[0]?.split('-')?.at(-1) || 'US';
-    return getCurrencyByAlpha2(langCode)?.toLowerCase() || 'usd';
+    return (
+        countries.find((c) => c.alpha2 === langCode)?.currency?.toLowerCase() ||
+        'usd'
+    );
 }
-/**
- * The global market data source
- * @type {CoinGecko}
- */
-export let cMarket = new CoinGecko();
+
 /** The user-selected explorer, used for most of MPW's data synchronisation */
 export let cExplorer = cChainParams.current.Explorers[0];
 /** The user-selected MPW node, used for alternative blockchain data */
@@ -197,11 +195,6 @@ export async function start() {
         fillTranslationSelect(),
     ]);
 
-    // Fetch price data, then fetch chain data
-    if (getNetwork().enabled) {
-        refreshPriceDisplay().finally(refreshChainData);
-    }
-
     const database = await Database.getInstance();
 
     // Fetch settings from Database
@@ -297,7 +290,17 @@ export async function start() {
 
     // Add each analytics level into the UI selector
     fillAnalyticSelect();
+
+    // Subscribe to events
+    subscribeToNetworkEvents();
 }
+
+function subscribeToNetworkEvents() {
+    getEventEmitter().on('currency-loaded', async (mapCurrencies) => {
+        await fillCurrencySelect(mapCurrencies);
+    });
+}
+
 // --- Settings Functions
 export async function setExplorer(explorer, fSilent = false) {
     const database = await Database.getInstance();
@@ -399,26 +402,21 @@ async function fillTranslationSelect() {
 /**
  * Fills the display currency dropbox on the settings page
  */
-export async function fillCurrencySelect() {
-    const arrCurrencies = await cMarket.getCurrencies();
-
-    // Only update if we have a currency list
-    if (!isEmpty(arrCurrencies)) {
-        while (doms.domCurrencySelect.options.length > 0) {
-            doms.domCurrencySelect.remove(0);
-        }
-        // Add each data source currency into the UI selector
-        for (const currency of arrCurrencies) {
-            const opt = document.createElement('option');
-            opt.innerHTML = currency.toUpperCase();
-            opt.value = currency;
-            doms.domCurrencySelect.appendChild(opt);
-        }
+async function fillCurrencySelect(mapCurrencies) {
+    while (doms.domCurrencySelect.options.length > 0) {
+        doms.domCurrencySelect.remove(0);
+    }
+    // Add each data source currency into the UI selector
+    for (const cCurrency of mapCurrencies.values()) {
+        const opt = document.createElement('option');
+        opt.innerHTML = cCurrency.currency.toUpperCase();
+        opt.value = cCurrency.currency;
+        doms.domCurrencySelect.appendChild(opt);
     }
 
     const database = await Database.getInstance();
     let { displayCurrency } = await database.getSettings();
-    if (!arrCurrencies.find((v) => v === displayCurrency)) {
+    if (!mapCurrencies.has(displayCurrency)) {
         // Currency not supported; fallback to USD
         displayCurrency = 'usd';
         database.setSettings({ displayCurrency });
@@ -565,7 +563,8 @@ export async function toggleTestnet() {
     // Update testnet toggle in settings
     doms.domTestnetToggler.checked = cChainParams.current.isTestnet;
     await start();
-
+    // Make sure we have the correct number of blocks before loading any wallet
+    await refreshChainData();
     getEventEmitter().emit('toggle-network');
     await updateGovernanceTab();
 }

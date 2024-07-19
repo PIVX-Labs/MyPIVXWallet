@@ -1,42 +1,34 @@
-import { Wallet } from '../../../scripts/wallet.js';
-import { getLegacyMainnet } from '../test_utils';
-import { describe, it, vi, afterAll, expect } from 'vitest';
+import {
+    getLegacyMainnet,
+    PIVXShield,
+    setUpLegacyMainnetWallet,
+} from '../../utils/test_utils';
+import { describe, it, vi, expect } from 'vitest';
+import 'fake-indexeddb/auto';
 import {
     COutpoint,
     CTxIn,
     CTxOut,
-    UTXO,
     Transaction,
 } from '../../../scripts/transaction.js';
-import { mempool } from '../../../scripts/global';
 import { hexToBytes } from '../../../scripts/utils';
 
-vi.mock('../../../scripts/mempool.js');
 vi.mock('../../../scripts/network.js');
 vi.mock('../../../scripts/global.js');
 
 describe('Wallet signature tests', () => {
-    let PIVXShield;
-    beforeEach(() => {
-        PIVXShield = vi.fn();
-        PIVXShield.prototype.createTransaction = vi.fn(() => {
-            return {
-                hex: '00',
-            };
-        });
+    let wallet;
+    beforeEach(async () => {
+        wallet = await setUpLegacyMainnetWallet();
+        // Reset indexedDB before each test
+        vi.stubGlobal('indexedDB', new IDBFactory());
     });
 
     it('throws when is view only', async () => {
-        const wallet = new Wallet(0);
-        const mk = getLegacyMainnet();
-        mk.wipePrivateData();
-        wallet.setMasterKey(mk);
+        wallet.wipePrivateData();
         expect(wallet.sign({})).rejects.toThrow(/view only/i);
     });
     it('signs a transaction correctly', async () => {
-        const wallet = new Wallet(0);
-        const mk = getLegacyMainnet();
-        wallet.setMasterKey(mk);
         const tx = new Transaction();
         tx.version = 1;
         tx.blockHeight = -1;
@@ -69,9 +61,6 @@ describe('Wallet signature tests', () => {
     });
 
     it('signs a s->s transaction correctly', async () => {
-        const wallet = new Wallet(0);
-        wallet.setMasterKey(getLegacyMainnet());
-        wallet.setShield(new PIVXShield());
         const tx = new Transaction({
             version: 3,
             blockHeight: -1,
@@ -106,9 +95,6 @@ describe('Wallet signature tests', () => {
         });
     });
     it('signs a s->t tx correctly', async () => {
-        const wallet = new Wallet(0);
-        wallet.setMasterKey(getLegacyMainnet());
-        wallet.setShield(new PIVXShield());
         const tx = new Transaction({
             version: 3,
             blockHeight: -1,
@@ -143,9 +129,6 @@ describe('Wallet signature tests', () => {
         });
     });
     it('signs a t->s tx correctly', async () => {
-        const wallet = new Wallet(0);
-        wallet.setMasterKey(getLegacyMainnet());
-        wallet.setShield(new PIVXShield());
         const tx = new Transaction({
             version: 3,
             blockHeight: -1,

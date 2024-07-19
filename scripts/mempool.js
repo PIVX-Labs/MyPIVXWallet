@@ -8,7 +8,6 @@ export const OutpointState = {
     P2CS: 1 << 2, // This is a P2CS outpoint
 
     SPENT: 1 << 3, // This outpoint has been spent
-    IMMATURE: 1 << 4, // Coinbase/coinstake that it's not mature (hence not spendable) yet
     LOCKED: 1 << 5, // Coins in the LOCK set
 };
 
@@ -23,10 +22,13 @@ export class Mempool {
     #txmap = new Map();
 
     /**
-     * balance cache, mapping filter -> balance
-     * @type{Map<number, number>}
+     * Object containing balances of the wallet
      */
-    #balances = new Map();
+    #balances = {
+        balance: new CachableBalance(),
+        coldBalance: new CachableBalance(),
+        immatureBalance: new CachableBalance(),
+    };
 
     /**
      * Add a transaction to the mempool
@@ -38,47 +40,6 @@ export class Mempool {
         for (const input of tx.vin) {
             this.setSpent(input.outpoint);
         }
-    }
-    /**
-     * Return owned vin of a given transaction
-     * @param {import('./transaction.js').Transaction} tx
-     * @returns {UTXO[]} List of UTXO corresponding to the owned vin
-     */
-    getOwnedVin(tx) {
-        return tx.vin
-            .filter(
-                (input) =>
-                    this.getOutpointStatus(input.outpoint) & OutpointState.OURS
-            )
-            .map((i) => this.outpointToUTXO(i.outpoint));
-    }
-    /**
-     * Return owned vout of a given transaction
-     * @param {import('./transaction.js').Transaction} tx
-     * @returns {CTxOut[]} List of UTXO corresponding to the owned vin
-     */
-    getOwnedVout(tx) {
-        const txid = tx.txid;
-        return tx.vout.filter(
-            (_, i) =>
-                this.getOutpointStatus(
-                    new COutpoint({
-                        txid,
-                        n: i,
-                    })
-                ) & OutpointState.OURS
-        );
-    }
-    /**
-     * Check if we own any transparent input our output of a given transaction
-     * @param {import('./transaction.js').Transaction} tx
-     * @returns {boolean} whether we own at least a input or an output of the tx
-     */
-    ownTransaction(tx) {
-        return (
-            this.getOwnedVout(tx).length !== 0 ||
-            this.getOwnedVin(tx).length !== 0
-        );
     }
 
     /**
@@ -95,7 +56,7 @@ export class Mempool {
      */
     setOutpointStatus(outpoint, status) {
         this.#outpointStatus.set(outpoint.toUnique(), status);
-        this.#invalidateBalanceCache();
+        this.invalidateBalanceCache();
     }
 
     /**
@@ -106,7 +67,7 @@ export class Mempool {
     addOutpointStatus(outpoint, status) {
         const oldStatus = this.#outpointStatus.get(outpoint.toUnique());
         this.#outpointStatus.set(outpoint.toUnique(), oldStatus | status);
-        this.#invalidateBalanceCache();
+        this.invalidateBalanceCache();
     }
 
     /**
@@ -117,7 +78,7 @@ export class Mempool {
     removeOutpointStatus(outpoint, status) {
         const oldStatus = this.#outpointStatus.get(outpoint.toUnique());
         this.#outpointStatus.set(outpoint.toUnique(), oldStatus & ~status);
-        this.#invalidateBalanceCache();
+        this.invalidateBalanceCache();
     }
 
     /**
@@ -156,10 +117,13 @@ export class Mempool {
      * @param {import('./transaction.js').Transaction} tx
      */
     getDebit(tx) {
-        return this.getOwnedVin(tx).reduce(
-            (acc, u) => acc + (u?.value || 0),
-            0
-        );
+        return tx.vin
+            .filter(
+                (input) =>
+                    this.getOutpointStatus(input.outpoint) & OutpointState.OURS
+            )
+            .map((i) => this.outpointToUTXO(i.outpoint))
+            .reduce((acc, u) => acc + (u?.value || 0), 0);
     }
 
     /**
@@ -167,66 +131,106 @@ export class Mempool {
      * @param {import('./transaction.js').Transaction} tx
      */
     getCredit(tx) {
-        return this.getOwnedVout(tx).reduce((acc, u) => acc + u?.value ?? 0, 0);
+        const txid = tx.txid;
+
+        return tx.vout
+            .filter(
+                (_, i) =>
+                    this.getOutpointStatus(
+                        new COutpoint({
+                            txid,
+                            n: i,
+                        })
+                    ) & OutpointState.OURS
+            )
+            .reduce((acc, u) => acc + u?.value ?? 0, 0);
+    }
+
+    /**
+     * Loop through the unspent balance of the wallet
+     * @template T
+     * @param {number} requirement - Requirement that outpoints must have
+     * @param {T} initialValue - initial value of the result
+     * @param {balanceIterator} fn
+     * @returns {T}
+     */
+    loopSpendableBalance(requirement, initialValue, fn) {
+        for (const tx of this.#txmap.values()) {
+            for (const [index, vout] of tx.vout.entries()) {
+                const status = this.getOutpointStatus(
+                    new COutpoint({ txid: tx.txid, n: index })
+                );
+                if (status & (OutpointState.SPENT | OutpointState.LOCKED)) {
+                    continue;
+                }
+                if ((status & requirement) === requirement) {
+                    initialValue = fn(tx, vout, initialValue);
+                }
+            }
+        }
+        return initialValue;
     }
 
     /**
      * @param {object} o - options
-     * @param {number} [o.filter] - A filter to apply to all UTXOs. For example
-     * `OutpointState.P2CS` will NOT return P2CS transactions.
-     * By default it's `OutpointState.SPENT | OutpointState.IMMATURE | OutpointState.LOCKED`
      * @param {number} [o.requirement] - A requirement to apply to all UTXOs. For example
      * `OutpointState.P2CS` will only return P2CS transactions.
+     * @param {number} [o.target] - Number of satoshis needed. The method will return early when the value of the UTXOs has been reached, plus a bit to account for change
      * By default it's MAX_SAFE_INTEGER
+     * @param {boolean} [o.includeImmature] - If set to true immature UTXOs will be included
+     * @param {number} [o.blockCount] - Current number of blocks
      * @returns {UTXO[]} a list of unspent transaction outputs
      */
     getUTXOs({
-        filter = OutpointState.SPENT |
-            OutpointState.IMMATURE |
-            OutpointState.LOCKED,
         requirement = 0,
+        includeImmature = false,
         target = Number.POSITIVE_INFINITY,
+        blockCount,
     } = {}) {
-        const utxos = [];
-        let value = 0;
-        for (const [o, status] of this.#outpointStatus) {
-            const outpoint = COutpoint.fromUnique(o);
-            if (status & filter) {
-                continue;
+        return this.loopSpendableBalance(
+            requirement,
+            { utxos: [], bal: 0 },
+            (tx, vout, currentValue) => {
+                if (
+                    (!includeImmature && tx.isImmature(blockCount)) ||
+                    (currentValue.bal >= (target * 11) / 10 &&
+                        currentValue.bal > 0)
+                ) {
+                    return currentValue;
+                }
+                const n = tx.vout.findIndex((element) => element === vout);
+                currentValue.utxos.push(
+                    new UTXO({
+                        outpoint: new COutpoint({ txid: tx.txid, n }),
+                        script: vout.script,
+                        value: vout.value,
+                    })
+                );
+                currentValue.bal += vout.value;
+                return currentValue;
             }
-            if ((status & requirement) !== requirement) {
-                continue;
-            }
-            utxos.push(this.outpointToUTXO(outpoint));
-            value += utxos.at(-1).value;
-            if (value >= (target * 11) / 10) {
-                break;
-            }
-        }
-        return utxos;
+        ).utxos;
     }
 
-    /**
-     * @param {number} filter
-     */
-    getBalance(filter) {
-        if (this.#balances.has(filter)) {
-            return this.#balances.get(filter);
-        }
-        const bal = Array.from(this.#outpointStatus)
-            .filter(([_, status]) => !(status & OutpointState.SPENT))
-            .filter(([_, status]) => status & filter)
-            .reduce((acc, [o]) => {
-                const outpoint = COutpoint.fromUnique(o);
-                const tx = this.#txmap.get(outpoint.txid);
-                return acc + tx.vout[outpoint.n].value;
-            }, 0);
-        this.#balances.set(filter, bal);
-        return bal;
+    #balanceInternal(requirement, blockCount, includeImmature = false) {
+        return this.loopSpendableBalance(
+            requirement,
+            0,
+            (tx, vout, currentValue) => {
+                if (!tx.isImmature(blockCount)) {
+                    return currentValue + vout.value;
+                } else if (includeImmature) {
+                    return currentValue + vout.value;
+                }
+                return currentValue;
+            }
+        );
     }
 
-    #invalidateBalanceCache() {
-        this.#balances = new Map();
+    invalidateBalanceCache() {
+        this.#balances.immatureBalance.invalidate();
+        this.#balances.balance.invalidate();
+        this.#balances.coldBalance.invalidate();
         this.#emitBalanceUpdate();
     }
 
@@ -253,15 +257,76 @@ export class Mempool {
         return Array.from(this.#txmap.values());
     }
 
-    get balance() {
-        return this.getBalance(OutpointState.P2PKH);
+    /**
+     * @param blockCount - chain height
+     */
+    getBalance(blockCount) {
+        return this.#balances.balance.getOrUpdateInvalid(() => {
+            return this.#balanceInternal(
+                OutpointState.OURS | OutpointState.P2PKH,
+                blockCount
+            );
+        });
     }
 
-    get coldBalance() {
-        return this.getBalance(OutpointState.P2CS);
+    /**
+     * @param blockCount - chain height
+     */
+    getColdBalance(blockCount) {
+        return this.#balances.coldBalance.getOrUpdateInvalid(() => {
+            return this.#balanceInternal(
+                OutpointState.OURS | OutpointState.P2CS,
+                blockCount
+            );
+        });
     }
 
-    get immatureBalance() {
-        return this.getBalance(OutpointState.IMMATURE);
+    /**
+     * @param blockCount - chain height
+     */
+    getImmatureBalance(blockCount) {
+        return this.#balances.immatureBalance.getOrUpdateInvalid(() => {
+            return (
+                this.#balanceInternal(OutpointState.OURS, blockCount, true) -
+                this.getBalance(blockCount) -
+                this.getColdBalance(blockCount)
+            );
+        });
     }
 }
+
+class CachableBalance {
+    /**
+     * @type {number}
+     * represents a cachable balance
+     */
+    value = -1;
+
+    isValid() {
+        return this.value != -1;
+    }
+    invalidate() {
+        this.value = -1;
+    }
+
+    /**
+     * Return the cached balance if it's valid, or re-compute and return.
+     * @param {Function} fn - function with which calculate the balance
+     * @returns {number} cached balance
+     */
+    getOrUpdateInvalid(fn) {
+        if (!this.isValid()) {
+            this.value = fn();
+        }
+        return this.value;
+    }
+}
+
+/**
+ * @template T
+ * @typedef {Function} balanceIterator
+ * @param {import('./transaction.js').Transaction} tx
+ * @param {CTxOut} vout
+ * @param {T} currentValue - the current value iterated
+ * @returns {number} amount
+ */

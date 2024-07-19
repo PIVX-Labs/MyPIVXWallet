@@ -7,8 +7,6 @@ import { getNetwork } from './network.js';
 import {
     start as settingsStart,
     cExplorer,
-    debug,
-    cMarket,
     strCurrency,
     fAdvancedMode,
 } from './settings.js';
@@ -17,7 +15,6 @@ import { createAlert, confirmPopup, sanitizeHTML } from './misc.js';
 import { cChainParams, COIN } from './chain_params.js';
 import { sleep } from './utils.js';
 import { registerWorker } from './native.js';
-import { refreshPriceDisplay } from './prices.js';
 import { Address6 } from 'ip-address';
 import { getEventEmitter } from './event_bus.js';
 import { Database } from './database.js';
@@ -25,8 +22,10 @@ import { checkForUpgrades } from './changelog.js';
 import { FlipDown } from './flipdown.js';
 import { createApp } from 'vue';
 import Dashboard from './dashboard/Dashboard.vue';
+import { loadDebug, debugLog, DebugTopics } from './debug.js';
 import Stake from './stake/Stake.vue';
 import { createPinia } from 'pinia';
+import { cOracle } from './prices.js';
 
 import pIconCopy from '../assets/icons/icon-copy.svg';
 import pIconCheck from '../assets/icons/icon-check.svg';
@@ -245,6 +244,9 @@ export async function start() {
     sliderElement.addEventListener('input', handleDecimalSlider);
     sliderElement.addEventListener('mouseover', handleDecimalSlider);
 
+    // Load debug
+    await loadDebug();
+
     // Register native app service
     registerWorker();
     await settingsStart();
@@ -252,6 +254,8 @@ export async function start() {
     subscribeToNetworkEvents();
     // Make sure we know the correct number of blocks
     await refreshChainData();
+    // Load the price manager
+    cOracle.load();
 
     // If allowed by settings: submit a simple 'hit' (app load) to Labs Analytics
     getNetwork().submitAnalytics('hit');
@@ -276,6 +280,11 @@ export async function start() {
     doms.domDashboard.click();
 }
 
+async function refreshPriceDisplay() {
+    await cOracle.getPrice(strCurrency);
+    getEventEmitter().emit('balance-update');
+}
+
 function subscribeToNetworkEvents() {
     getEventEmitter().on('network-toggle', (value) => {
         doms.domNetwork.innerHTML =
@@ -283,7 +292,7 @@ function subscribeToNetworkEvents() {
     });
 
     getEventEmitter().on('new-block', (block) => {
-        console.log(`New block detected! ${block}`);
+        debugLog(DebugTopics.GLOBAL, `New block detected! ${block}`);
 
         // If it's open: update the Governance Dashboard
         if (doms.domGovTab.classList.contains('active')) {
@@ -720,7 +729,7 @@ export async function sweepAddress(arrUTXOs, sweepingMasterKey, nFixedFee) {
 
     // Sign using the given Master Key, then broadcast the sweep, returning the TXID (or a failure)
     const sweepingWallet = new Wallet({ nAccount: 0 });
-    sweepingWallet.setMasterKey(sweepingMasterKey);
+    sweepingWallet.setMasterKey({ mk: sweepingMasterKey });
 
     await sweepingWallet.sign(tx);
     return await getNetwork().sendTransaction(tx.serialize());
@@ -922,7 +931,7 @@ async function renderProposals(arrProposals, fContested) {
     ).toLocaleString('en-gb');
 
     // Update total budget in user's currency
-    const nPrice = await cMarket.getPrice(strCurrency);
+    const nPrice = cOracle.getCachedPrice(strCurrency);
     const nCurrencyValue = (cChainParams.current.maxPayment / COIN) * nPrice;
     const { nValue, cLocale } = optimiseCurrencyLocale(nCurrencyValue);
     doms.domTotalGovernanceBudgetValue.innerHTML =
@@ -1470,11 +1479,9 @@ export async function updateMasternodeTab() {
 async function refreshMasternodeData(cMasternode, fAlert = false) {
     const cMasternodeData = await cMasternode.getFullData();
 
-    if (debug) {
-        console.log('---- NEW MASTERNODE DATA (Debug Mode) ----');
-        console.log(cMasternodeData);
-        console.log('---- END MASTERNODE DATA (Debug Mode) ----');
-    }
+    debugLog(DebugTopics.GLOBAL, ' ---- NEW MASTERNODE DATA (Debug Mode) ----');
+    debugLog(DebugTopics.GLOBAL, cMasternodeData);
+    debugLog(DebugTopics.GLOBAL, '---- END MASTERNODE DATA (Debug Mode) ----');
 
     // If we have MN data available, update the dashboard
     if (cMasternodeData && cMasternodeData.status !== 'MISSING') {
@@ -1678,7 +1685,6 @@ export async function refreshChainData() {
     const newBlockCount = await cNet.getBlockCount();
     if (newBlockCount !== blockCount) {
         blockCount = newBlockCount;
-        if (!wallet.isLoaded()) return;
         getEventEmitter().emit('new-block', blockCount);
     }
 }

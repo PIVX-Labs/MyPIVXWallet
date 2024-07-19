@@ -75,7 +75,7 @@ const syncSStr = ref('');
 // Shield transaction creation
 const isCreatingTx = ref(false);
 const txPercentageCreation = ref(0.0);
-const txCreationStr = 'Creating SHIELD transaction...';
+const txCreationStr = ref('Creating SHIELD transaction...');
 
 const balanceStr = computed(() => {
     let nCoins;
@@ -153,9 +153,15 @@ getEventEmitter().on('shield-sync-status-update', (str, finished) => {
 getEventEmitter().on(
     'shield-transaction-creation-update',
     async (percentage, finished) => {
+        if (percentage === 0.0 && !finished) {
+            txCreationStr.value = translation.syncLoadingSaplingProver;
+        } else {
+            txCreationStr.value = translation.creatingShieldTransaction;
+        }
+
         // If it just finished sleep for 1 second before making everything invisible
-        txPercentageCreation.value = 100.0;
         if (finished) {
+            txPercentageCreation.value = 100.0;
             await sleep(1000);
         }
         isCreatingTx.value = !finished;

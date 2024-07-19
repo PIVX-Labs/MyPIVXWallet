@@ -69,17 +69,28 @@ export default {
                 },
             },
             {
+                test: /countries.json$/,
+                type: 'json',
+                parser: {
+                    parse: (str) =>
+                        JSON.parse(str).map((c) => {
+                            return {
+                                alpha2: c.alpha2,
+                                currency: c.currency,
+                            };
+                        }),
+                },
+            },
+            {
                 test: /\.svg$/i,
                 type: 'asset/source',
             },
         ],
     },
     resolve: {
-        alias: {
-            'bn.js': path.join(__dirname, 'node_modules/bn.js/lib/bn.js'),
-        },
         fallback: {
             fs: false,
+            crypto: path.resolve(__dirname, 'scripts/polyfills/crypto.js'),
         },
     },
     plugins: [
@@ -94,7 +105,9 @@ export default {
         }),
         new VueLoaderPlugin(),
         // Polyfill for non web libraries
-        new NodePolyfillPlugin(),
+        new NodePolyfillPlugin({
+            includeAliases: ['stream', 'process', 'Buffer'],
+        }),
         // Prevents non styled flashing on load
         new MiniCssExtractPlugin(),
         // Make jquery available globally
@@ -111,6 +124,10 @@ export default {
         new webpack.IgnorePlugin({
             resourceRegExp: /^\.\/wordlists\/(?!english)/,
             contextRegExp: /bip39\/src$/,
+        }),
+        // Ignore countries-intl
+        new webpack.IgnorePlugin({
+            resourceRegExp: /countries-intl.json$/,
         }),
         // Copy static web-facing files
         new CopyPlugin({

@@ -1,0 +1,6 @@
+{
+    "net": true,
+    "global": true,
+    "wallet": true,
+    "mempool": true
+}

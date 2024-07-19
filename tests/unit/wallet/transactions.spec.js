@@ -1,9 +1,6 @@
-vi.mock('../../../scripts/mempool.js');
-vi.mock('../../../scripts/network.js');
-
 import { Wallet } from '../../../scripts/wallet.js';
 import { Mempool } from '../../../scripts/mempool.js';
-import { getLegacyMainnet } from '../test_utils';
+import { setUpLegacyMainnetWallet } from '../../utils/test_utils';
 import { describe, it, vi, afterAll, expect } from 'vitest';
 import {
     COutpoint,
@@ -40,21 +37,10 @@ async function checkFees(wallet, tx, feesPerBytes) {
 }
 describe('Wallet transaction tests', () => {
     let wallet;
-    let mempool;
-    let PIVXShield;
     const MIN_FEE_PER_BYTE = new TransactionBuilder().MIN_FEE_PER_BYTE;
-    beforeEach(() => {
-        mempool = new Mempool();
-        wallet = new Wallet({ nAccount: 0, isMainWallet: false, mempool });
-        wallet.setMasterKey(getLegacyMainnet());
-        PIVXShield = vi.fn();
-        PIVXShield.prototype.createTransaction = vi.fn(() => {
-            return {
-                hex: '00',
-            };
-        });
-        PIVXShield.prototype.getBalance = vi.fn(() => 40 * 10 ** 8);
-        wallet.setShield(new PIVXShield());
+    beforeEach(async () => {
+        wallet = await setUpLegacyMainnetWallet();
+
         // Reset indexedDB before each test
         vi.stubGlobal('indexedDB', new IDBFactory());
         return vi.unstubAllGlobals;
@@ -117,7 +103,6 @@ describe('Wallet transaction tests', () => {
     });
 
     it('Creates a tx with change address', async () => {
-        wallet.setMasterKey(getLegacyMainnet());
         const tx = wallet.createTransaction(
             'EXMDbnWT4K3nWfK1311otFrnYLcFSipp3iez',
             0.05 * 10 ** 8,
@@ -384,10 +369,11 @@ describe('Wallet transaction tests', () => {
     });
 
     it('finalizes transaction correctly', () => {
+        const spy = vi.spyOn(Mempool.prototype, 'addTransaction');
         const tx = new Transaction();
         wallet.addTransaction(tx);
-        expect(mempool.addTransaction).toBeCalled(1);
-        expect(mempool.addTransaction).toBeCalledWith(tx);
+        expect(spy).toBeCalledTimes(1);
+        expect(spy).toBeCalledWith(tx);
     });
 
     afterAll(() => {
