@@ -546,10 +546,7 @@ defineExpose({
                     class="modal-dialog modal-dialog-centered max-w-600"
                     role="document"
                 >
-                    <div
-                        class="modal-content exportKeysModalColor"
-                        style="border-top-left-radius: 0px"
-                    >
+                    <div class="modal-content exportKeysModalColor">
                         <div style="position: relative; top: -54px; left: -1px">
                             <ul class="settingsMenu redeemMenu">
                                 <li

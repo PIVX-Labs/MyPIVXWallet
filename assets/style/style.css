@@ -3005,6 +3005,7 @@ select.form-control option {
 
 .settingsMenu li {
     margin-right: 9px;
+    margin-left: 9px;
     border-top-left-radius: 9px;
     border-top-right-radius: 9px;
     margin-top: 1px;
@@ -3066,7 +3067,6 @@ select.form-control option {
 .settingsContent {
     background-color: #281D3D;
     border-radius: 9px;
-    border-top-left-radius:0px;
     padding-top: 13px;
     padding-bottom: 20px;
     padding-left: 17px;
@@ -3751,7 +3751,7 @@ select.form-control option {
     font-weight: bold;
     width: fit-content;
     height: 43px;
-    display: flex;
+    display: flex;border-top-left-radius: 0px;
     align-items: center;
     transition: all .125s ease-in-out;
     border-right: none;
