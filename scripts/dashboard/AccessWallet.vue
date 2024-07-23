@@ -62,10 +62,11 @@ function importWallet() {
 </script>
 
 <template>
-    <div class="col-12 col-lg-3 p-2">
+    <div class="col-12 col-md-6 col-xl-3 p-2">
         <div
             class="dashboard-item dashboard-display"
-            style="margin-bottom: 100px"
+            @click="showInput = true"
+            data-testid="accWalletButton"
         >
             <div class="coinstat-icon" v-html="loginIcon"></div>
 
@@ -104,7 +105,7 @@ function importWallet() {
                         ><i class="fas fa-file-upload fa-tiny-margin"></i
                     ></span>
                     <span class="buttoni-text" data-i18n="dCardFourButtonI"
-                        >Import Wallet</span
+                        >Import</span
                     >
                     <span class="buttoni-arrow">
                         <svg
@@ -119,19 +120,6 @@ function importWallet() {
                 </button>
             </div>
             <!-- // IMPORT WALLET -->
-
-            <button
-                v-show="!showInput"
-                class="pivx-button-big"
-                @click="showInput = true"
-                data-testid="accWalletButton"
-            >
-                <span class="buttoni-icon" v-html="pLogo"> </span>
-
-                <span class="buttoni-text" data-i18n="dCardFourButtonA"
-                    >Access My Wallet</span
-                >
-            </button>
         </div>
     </div>
 </template>

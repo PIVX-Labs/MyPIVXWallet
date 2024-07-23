@@ -37,10 +37,12 @@ const { advancedMode } = toRefs(props);
         />
 
         <!-- ACCESS LEDGER HARDWARE WALLET -->
-        <div class="col-12 col-lg-3 p-2">
+        <div class="col-12 col-md-6 col-xl-3 p-2">
             <div
                 id="generateHardwareWallet"
                 class="dashboard-item dashboard-display"
+                @click="$emit('import-wallet', { type: 'hardware' })"
+                data-testid="hardwareWalletBtn"
             >
                 <div class="coinstat-icon" v-html="ledgerWallet"></div>
 
@@ -54,18 +56,6 @@ const { advancedMode } = toRefs(props);
                         interface.
                     </p>
                 </div>
-
-                <button
-                    class="pivx-button-big"
-                    @click="$emit('import-wallet', { type: 'hardware' })"
-                    data-testid="hardwareWalletBtn"
-                >
-                    <span class="buttoni-icon" v-html="pLogo"> </span>
-
-                    <span class="buttoni-text" data-i18n="dCardThreeButton"
-                        >Access my Ledger</span
-                    >
-                </button>
             </div>
         </div>
 

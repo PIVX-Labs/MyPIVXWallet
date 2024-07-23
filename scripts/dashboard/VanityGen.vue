@@ -10,6 +10,7 @@ const addressPrefix = ref('');
 const addressPrefixShow = ref(false);
 const addressPrefixElement = ref({});
 const isGenerating = ref(false);
+const isClicked = ref(false);
 const attempts = ref(0);
 /**
  * @type {Worker[]}
@@ -96,6 +97,21 @@ function generate() {
         arrWorkers.push(worker);
     }
 }
+
+function createVanityClick() {
+    if (!isClicked.value) {
+        isClicked.value = true;
+        addressPrefixShow.value = true;
+    } else {
+        if (isGenerating.value) {
+            console.log('poep');
+            stop();
+        } else {
+            console.log('generate');
+            generate();
+        }
+    }
+}
 </script>
 
 <style>
@@ -110,8 +126,12 @@ function generate() {
 }
 </style>
 <template>
-    <div class="col-12 col-lg-3 p-2">
-        <div class="dashboard-item dashboard-display">
+    <div class="col-12 col-md-6 col-xl-3 p-2">
+        <div
+            class="dashboard-item dashboard-display"
+            @click="isClicked ? '' : createVanityClick()"
+            data-testid="generateBtn"
+        >
             <div class="coinstat-icon" v-html="vanityWalletIcon"></div>
 
             <div class="col-md-12 dashboard-title">
@@ -140,18 +160,34 @@ function generate() {
                 />
             </Transition>
 
+            <span
+                style="
+                    border: 2px solid rgb(80, 23, 151);
+                    background: rgba(72, 15, 133, 0.49);
+                    border-radius: 9px;
+                    padding: 5px 13px;
+                    margin-top: 2px;
+                    margin-bottom: 8px;
+                    font-family: monospace !important;
+                    font-size: 15px;
+                    width: 100%;
+                "
+                v-if="isGenerating"
+            >
+                Searched {{ attempts.toLocaleString('en-gb') }} keys
+            </span>
+
             <button
+                v-if="isClicked"
+                @click="createVanityClick()"
                 class="pivx-button-big"
-                @click="isGenerating ? stop() : generate()"
-                data-testid="generateBtn"
             >
                 <span class="buttoni-icon" v-html="pLogo"> </span>
 
                 <span class="buttoni-text">
                     <span v-if="isGenerating">
                         <!-- TODO: translate this string -->
-                        STOP (SEARCHED
-                        {{ attempts.toLocaleString('en-gb') }} KEYS)
+                        STOP
                     </span>
                     <span v-else>
                         {{ translation.dCardTwoButton }}
