@@ -165,9 +165,12 @@ async function parseTXs(arrTXs) {
         // Format the amount to reduce text size
         let formattedAmt = '';
         if (cTx.amount < 0.01) {
-            formattedAmt = beautifyNumber("0.01", '13px');
+            formattedAmt = beautifyNumber('0.01', '13px');
         } else if (cTx.amount >= 100) {
-            formattedAmt = beautifyNumber(Math.round(cTx.amount).toString(), '13px');
+            formattedAmt = beautifyNumber(
+                Math.round(cTx.amount).toString(),
+                '13px'
+            );
         } else {
             formattedAmt = beautifyNumber(`${cTx.amount.toFixed(2)}`, '13px');
         }
@@ -244,7 +247,10 @@ const rewardsText = computed(() => {
     const nCoins = rewardAmount.value / COIN;
     const strBal = nCoins.toFixed(displayDecimals.value);
     const nLen = strBal.length;
-    return `${beautifyNumber(strBal, nLen >= 10 ? '15px' : '15px')} <span style="font-size:15px; opacity: 0.55;">${ticker.value}</span>`;
+    return `${beautifyNumber(
+        strBal,
+        nLen >= 10 ? '15px' : '15px'
+    )} <span style="font-size:15px; opacity: 0.55;">${ticker.value}</span>`;
 });
 
 function reset() {
@@ -273,9 +279,27 @@ defineExpose({ update, reset, getTxCount });
 <template>
     <div>
         <div class="dcWallet-activity">
-            <span style="font-family: 'Montserrat Regular'; color: rgb(233, 222, 255); display: flex; justify-content: center; margin-bottom: 24px; margin-top: 20px;">
-                <span style="font-size:24px;" :data-i18n="rewards ? 'rewardHistory' : 'activity'">{{title}}</span>
-                <span style="font-size:20px;"   class="rewardsBadge" v-if="rewards" v-html="rewardsText"></span>
+            <span
+                style="
+                    font-family: 'Montserrat Regular';
+                    color: rgb(233, 222, 255);
+                    display: flex;
+                    justify-content: center;
+                    margin-bottom: 24px;
+                    margin-top: 20px;
+                "
+            >
+                <span
+                    style="font-size: 24px"
+                    :data-i18n="rewards ? 'rewardHistory' : 'activity'"
+                    >{{ title }}</span
+                >
+                <span
+                    style="font-size: 20px"
+                    class="rewardsBadge"
+                    v-if="rewards"
+                    v-html="rewardsText"
+                ></span>
             </span>
 
             <div class="scrollTable">
@@ -307,7 +331,9 @@ defineExpose({ update, reset, getTxCount });
                                     class="align-middle pr-10px"
                                     style="font-size: 12px"
                                 >
-                                    <span style="opacity: 50%">{{ tx.date }}</span>
+                                    <span style="opacity: 50%">{{
+                                        tx.date
+                                    }}</span>
                                 </td>
                                 <td class="align-middle pr-10px txcode">
                                     <a
@@ -323,14 +349,29 @@ defineExpose({ update, reset, getTxCount });
                                     </a>
                                 </td>
                                 <td class="align-middle pr-10px">
-                                    <b style="font-family: 'Montserrat Medium'; font-size:13px; font-weight:100;"
+                                    <b
+                                        style="
+                                            font-family: 'Montserrat Medium';
+                                            font-size: 13px;
+                                            font-weight: 100;
+                                        "
                                         ><i
                                             class="fa-solid"
                                             style="padding-right: 3px"
                                             :class="[tx.icon]"
                                             :style="{ color: tx.colour }"
                                         ></i>
-                                        <span style="font-weight: 300;" v-html="tx.formattedAmt"></span> <span style="font-weight: 300; opacity: 0.55;">{{ ticker }}</span></b
+                                        <span
+                                            style="font-weight: 300"
+                                            v-html="tx.formattedAmt"
+                                        ></span>
+                                        <span
+                                            style="
+                                                font-weight: 300;
+                                                opacity: 0.55;
+                                            "
+                                            >{{ ticker }}</span
+                                        ></b
                                     >
                                 </td>
                                 <td class="text-right pr-10px align-middle">
@@ -341,8 +382,16 @@ defineExpose({ update, reset, getTxCount });
                                             'badge-danger': !tx.confirmed,
                                         }"
                                     >
-                                        <span class="checkIcon" v-if="tx.confirmed" v-html="iCheck"></span>
-                                        <span class="checkIcon" v-else v-html="iHourglass"></span>
+                                        <span
+                                            class="checkIcon"
+                                            v-if="tx.confirmed"
+                                            v-html="iCheck"
+                                        ></span>
+                                        <span
+                                            class="checkIcon"
+                                            v-else
+                                            v-html="iHourglass"
+                                        ></span>
                                     </span>
                                 </td>
                             </tr>

@@ -6,14 +6,20 @@ const props = defineProps({
 </script>
 
 <template>
-    <Transition name="modal" style="z-index: 2000; background-color: #201436db;">
+    <Transition name="modal" style="z-index: 2000; background-color: #201436db">
         <div v-if="show" class="modal-mask black-text">
             <div class="modal-dialog" role="document">
-                <div class="modal-content exportKeysModalColor" :class="modalClass">
+                <div
+                    class="modal-content exportKeysModalColor"
+                    :class="modalClass"
+                >
                     <div class="modal-header" v-if="!!$slots.header">
                         <slot name="header"></slot>
                     </div>
-                    <div class="modal-body center-text" style="padding-bottom: 8px;">
+                    <div
+                        class="modal-body center-text"
+                        style="padding-bottom: 8px"
+                    >
                         <slot name="body"></slot>
                     </div>
                     <div class="modal-footer" v-if="!!$slots.footer">

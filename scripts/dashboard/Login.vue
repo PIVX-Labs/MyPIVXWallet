@@ -47,9 +47,7 @@ const { advancedMode } = toRefs(props);
                 <div class="col-md-12 dashboard-title">
                     <h3 class="pivx-bold-title" style="font-size: 25px">
                         <span data-i18n="dCardThreeTitle">Access your</span>
-                        <div data-i18n="dCardThreeSubTitle">
-                            Ledger Wallet
-                        </div>
+                        <div data-i18n="dCardThreeSubTitle">Ledger Wallet</div>
                     </h3>
                     <p data-i18n="dCardThreeDesc">
                         Use your Ledger Hardware wallet with MPW's familiar

@@ -120,8 +120,8 @@ function generate() {
                     <div data-i18n="dCardTwoSubTitle">Vanity Wallet</div>
                 </h3>
                 <p data-i18n="dCardTwoDesc">
-                    Create a wallet with a custom prefix, this can take a
-                    long time!
+                    Create a wallet with a custom prefix, this can take a long
+                    time!
                 </p>
             </div>
 

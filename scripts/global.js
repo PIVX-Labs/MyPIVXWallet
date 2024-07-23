@@ -356,7 +356,6 @@ export function openTab(evt, tabName) {
     }
 }
 
-
 /**
  * Return locale settings best for displaying the user-selected currency
  * @param {Number} nAmount - The amount in Currency
@@ -403,23 +402,26 @@ export async function openExplorer(strAddress = '') {
 }
 
 async function loadImages() {
-    const images = [['mpw-main-logo', import('../assets/logo.png')],
-                    ['plus-icon', import('../assets/icons/icon-plus.svg')],
-                    ['plus-icon2', import('../assets/icons/icon-plus.svg')],
-                    ['plus-icon3', import('../assets/icons/icon-plus.svg')],
-                    ['del-wallet-icon', import('../assets/icons/icon-bin.svg')],
-                    ['change-pwd-icon', import('../assets/icons/icon-key.svg')],
-                ];
+    const images = [
+        ['mpw-main-logo', import('../assets/logo.png')],
+        ['plus-icon', import('../assets/icons/icon-plus.svg')],
+        ['plus-icon2', import('../assets/icons/icon-plus.svg')],
+        ['plus-icon3', import('../assets/icons/icon-plus.svg')],
+        ['del-wallet-icon', import('../assets/icons/icon-bin.svg')],
+        ['change-pwd-icon', import('../assets/icons/icon-key.svg')],
+    ];
 
     const promises = images.map(([id, path]) =>
         (async () => {
             try {
-                if((await path).default.includes('<svg')) {
-                    document.getElementById(id).innerHTML = (await path).default;
+                if ((await path).default.includes('<svg')) {
+                    document.getElementById(id).innerHTML = (
+                        await path
+                    ).default;
                 } else {
                     document.getElementById(id).src = (await path).default;
                 }
-            } catch(e) { }
+            } catch (e) {}
         })()
     );
     await Promise.all(promises);
@@ -1193,7 +1195,9 @@ async function renderProposals(arrProposals, fContested) {
 
         <span class="governInstallments"> ${sanitizeHTML(
             cProposal['RemainingPaymentCount']
-        )} ${translation.proposalPaymentsRemaining} <span style="font-weight:500;">${sanitizeHTML(
+        )} ${
+            translation.proposalPaymentsRemaining
+        } <span style="font-weight:500;">${sanitizeHTML(
             parseInt(cProposal.TotalPayment).toLocaleString('en-gb', ',', '.')
         )} ${cChainParams.current.TICKER}</span> ${
             translation.proposalPaymentTotal
@@ -1239,14 +1243,14 @@ async function renderProposals(arrProposals, fContested) {
                 }
             }
 
-            
             /*
 
             <div></div>
             */
 
             const domVoteBtns = domRow.insertCell();
-            domVoteBtns.style = 'padding-top: 30px; vertical-align: middle; display: flex; justify-content: center; align-items: center;';
+            domVoteBtns.style =
+                'padding-top: 30px; vertical-align: middle; display: flex; justify-content: center; align-items: center;';
             const domNoBtn = document.createElement('div');
             domNoBtn.className = btnNoClass;
             domNoBtn.style.width = 'fit-content';
@@ -1596,22 +1600,46 @@ export async function createProposal() {
     // Create the popup, wait for the user to confirm or cancel
     const fConfirmed = await confirmPopup({
         title: `<h4>${translation.popupCreateProposal}</h4>
-        <span style="color: #af9cc6; font-size: 1rem; margin-bottom: 23px; display: block;">${ translation.popupCreateProposalCost } <b>${cChainParams.current.proposalFee / COIN} ${ cChainParams.current.TICKER }</b></span>`,
+        <span style="color: #af9cc6; font-size: 1rem; margin-bottom: 23px; display: block;">${
+            translation.popupCreateProposalCost
+        } <b>${cChainParams.current.proposalFee / COIN} ${
+            cChainParams.current.TICKER
+        }</b></span>`,
         html: `<div style="padding-left: 10px; padding-right: 10px;">
             <p style="margin-bottom: 12px; color: #af9cc6; font-size: 1rem; font-weight: 500;">Proposal name</p>
-            <input id="proposalTitle" maxlength="20" placeholder="${translation.popupProposalName}" style="text-align: start; margin-bottom: 25px;"><br>
+            <input id="proposalTitle" maxlength="20" placeholder="${
+                translation.popupProposalName
+            }" style="text-align: start; margin-bottom: 25px;"><br>
             
             <p style="margin-bottom: 12px; color: #af9cc6; font-size: 1rem; font-weight: 500;">URL</p>
             <input id="proposalUrl" maxlength="64" placeholder="https://forum.pivx.org/..." style=" margin-bottom: 25px; text-align: start;"><br>
             
             <p style="margin-bottom: 12px; color: #af9cc6; font-size: 1rem; font-weight: 500;">Duration in cycles</p>
-            <input type="number" id="proposalCycles" min="1" max="${cChainParams.current.maxPaymentCycles}" placeholder="${translation.popupProposalDuration}" style=" margin-bottom: 25px; text-align: start;"><br>
+            <input type="number" id="proposalCycles" min="1" max="${
+                cChainParams.current.maxPaymentCycles
+            }" placeholder="${
+            translation.popupProposalDuration
+        }" style=" margin-bottom: 25px; text-align: start;"><br>
             
-            <p style="margin-bottom: 12px; color: #af9cc6; font-size: 1rem; font-weight: 500;">${cChainParams.current.TICKER} per cycle</p>
-            <input type="number" id="proposalPayment" min="10" max="${cChainParams.current.maxPayment / COIN}" placeholder="${cChainParams.current.TICKER} ${translation.popupProposalPerCycle}" style=" margin-bottom: 25px; text-align: start;">${!fAdvancedMode ? '<br>' : ''}
+            <p style="margin-bottom: 12px; color: #af9cc6; font-size: 1rem; font-weight: 500;">${
+                cChainParams.current.TICKER
+            } per cycle</p>
+            <input type="number" id="proposalPayment" min="10" max="${
+                cChainParams.current.maxPayment / COIN
+            }" placeholder="${cChainParams.current.TICKER} ${
+            translation.popupProposalPerCycle
+        }" style=" margin-bottom: 25px; text-align: start;">${
+            !fAdvancedMode ? '<br>' : ''
+        }
             
-            <p style="margin-bottom: 12px; color: #af9cc6; font-size: 1rem; font-weight: 500; ${!fAdvancedMode ? 'display: none' : ''}">test</p>
-            <input id="proposalAddress" maxlength="34" placeholder="${translation.popupProposalAddress}" style=" margin-bottom: 25px; text-align: start; ${!fAdvancedMode ? 'display: none' : ''}">
+            <p style="margin-bottom: 12px; color: #af9cc6; font-size: 1rem; font-weight: 500; ${
+                !fAdvancedMode ? 'display: none' : ''
+            }">test</p>
+            <input id="proposalAddress" maxlength="34" placeholder="${
+                translation.popupProposalAddress
+            }" style=" margin-bottom: 25px; text-align: start; ${
+            !fAdvancedMode ? 'display: none' : ''
+        }">
         </div>`,
         wideModal: true,
     });

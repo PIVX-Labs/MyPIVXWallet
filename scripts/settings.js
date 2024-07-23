@@ -497,7 +497,9 @@ export async function logOut() {
                     { network: cChainParams.current.name },
                 ])}</b><br><br>
 
-                <span class="textGradientKeys">${ALERTS.CONFIRM_POPUP_DELETE_ACCOUNT}</span>
+                <span class="textGradientKeys">${
+                    ALERTS.CONFIRM_POPUP_DELETE_ACCOUNT
+                }</span>
             </span>
         </div>
     `,

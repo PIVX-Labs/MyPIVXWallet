@@ -63,46 +63,114 @@ function submit() {
     <center>
         <div class="dcWallet-balances mb-4">
             <div class="row lessBot p-0">
-                <div class="col-6 d-flex dcWallet-topLeftMenu" style="justify-content: flex-start">
+                <div
+                    class="col-6 d-flex dcWallet-topLeftMenu"
+                    style="justify-content: flex-start"
+                >
                     <h3 class="noselect balance-title">
-                        <span class="reload noselect" @click="reload()"><i class="fa-solid fa-rotate-right topCol"
-                                :class="{ playAnim: updating }"></i></span>
+                        <span class="reload noselect" @click="reload()"
+                            ><i
+                                class="fa-solid fa-rotate-right topCol"
+                                :class="{ playAnim: updating }"
+                            ></i
+                        ></span>
                     </h3>
                 </div>
 
-                <div class="col-6 d-flex dcWallet-topRightMenu" style="justify-content: flex-end">
+                <div
+                    class="col-6 d-flex dcWallet-topRightMenu"
+                    style="justify-content: flex-end"
+                >
                     <div class="btn-group dropleft">
-                        <i class="fa-solid fa-gear topCol" style="width: 20px; position: relative; top: 3px; right: 8px;"
+                        <i
+                            class="fa-solid fa-gear topCol"
+                            style="
+                                width: 20px;
+                                position: relative;
+                                top: 3px;
+                                right: 8px;
+                            "
                             data-testid="setColdStakeButton"
-                            @click="showColdStakingAddressModal = true"></i>
+                            @click="showColdStakingAddressModal = true"
+                        ></i>
                     </div>
                 </div>
             </div>
 
-
-            
-            <div style="margin-top:22px; padding-left:15px; padding-right:15px; margin-bottom: 35px;">
-                <div style="background-color:#32224e61; border:2px solid #361562; border-radius: 5px;">
+            <div
+                style="
+                    margin-top: 22px;
+                    padding-left: 15px;
+                    padding-right: 15px;
+                    margin-bottom: 35px;
+                "
+            >
+                <div
+                    style="
+                        background-color: #32224e61;
+                        border: 2px solid #361562;
+                        border-radius: 5px;
+                    "
+                >
                     <div>
-                        <img :src="logo" style="height: 60px; margin-top:14px">
+                        <img
+                            :src="logo"
+                            style="height: 60px; margin-top: 14px"
+                        />
                     </div>
-                    <span class="ptr" data-toggle="modal" data-target="#walletBreakdownModal" @click="renderWalletBreakdown()">
+                    <span
+                        class="ptr"
+                        data-toggle="modal"
+                        data-target="#walletBreakdownModal"
+                        @click="renderWalletBreakdown()"
+                    >
                         <span class="logo-pivBal" v-html="pLogo"></span>
-                        <span class="dcWallet-pivxBalance" v-html="coldBalanceStr"> </span>
-                        <span class="dcWallet-pivxTicker" style="position: relative; left: 4px">&nbsp;{{ ticker }}&nbsp;</span>
+                        <span
+                            class="dcWallet-pivxBalance"
+                            v-html="coldBalanceStr"
+                        >
+                        </span>
+                        <span
+                            class="dcWallet-pivxTicker"
+                            style="position: relative; left: 4px"
+                            >&nbsp;{{ ticker }}&nbsp;</span
+                        >
                     </span>
 
-                    <div class="dcWallet-usdBalance" style="padding-bottom: 12px; padding-top: 3px;">
-                        <span class="dcWallet-usdValue" style="color:#d7d7d7; font-weight: 500;" v-html="coldBalanceValue"></span>
-                        <span class="dcWallet-usdValue" style="opacity: 0.55;">&nbsp;{{ currency }}</span>
+                    <div
+                        class="dcWallet-usdBalance"
+                        style="padding-bottom: 12px; padding-top: 3px"
+                    >
+                        <span
+                            class="dcWallet-usdValue"
+                            style="color: #d7d7d7; font-weight: 500"
+                            v-html="coldBalanceValue"
+                        ></span>
+                        <span class="dcWallet-usdValue" style="opacity: 0.55"
+                            >&nbsp;{{ currency }}</span
+                        >
                     </div>
                 </div>
             </div>
-            
-            
-            <div class="row lessTop p-0" style="margin-left:15px; margin-right:15px; margin-bottom: 19px; margin-top: -16px;">
-                <div class="col-6 d-flex p-0" style="justify-content: flex-start">
-                    <button class="pivx-button-small" style="height: 42px; width: 97px;" @click="emit('showStake')">
+
+            <div
+                class="row lessTop p-0"
+                style="
+                    margin-left: 15px;
+                    margin-right: 15px;
+                    margin-bottom: 19px;
+                    margin-top: -16px;
+                "
+            >
+                <div
+                    class="col-6 d-flex p-0"
+                    style="justify-content: flex-start"
+                >
+                    <button
+                        class="pivx-button-small"
+                        style="height: 42px; width: 97px"
+                        @click="emit('showStake')"
+                    >
                         <span class="buttoni-text">
                             {{ translation.stake }}
                         </span>
@@ -110,7 +178,11 @@ function submit() {
                 </div>
 
                 <div class="col-6 d-flex p-0" style="justify-content: flex-end">
-                    <button class="pivx-button-small" style="height: 42px; width: 106px;" @click="emit('showUnstake')">
+                    <button
+                        class="pivx-button-small"
+                        style="height: 42px; width: 106px"
+                        @click="emit('showUnstake')"
+                    >
                         <span class="buttoni-text">
                             {{ translation.stakeUnstake }}
                         </span>
@@ -132,11 +204,13 @@ function submit() {
             </template>
             <template #body>
                 <p
-                    style="margin-bottom: 30px; padding: 0px 35px; margin-top: -14px;"
+                    style="
+                        margin-bottom: 30px;
+                        padding: 0px 35px;
+                        margin-top: -14px;
+                    "
                 >
-                    <span
-                        style="opacity: 0.65;"
-                    >
+                    <span style="opacity: 0.65">
                         {{ translation.popupColdStakeNote }}
                     </span>
                 </p>
@@ -155,7 +229,7 @@ function submit() {
                 <button
                     type="button"
                     class="pivx-button-big-cancel"
-                    style="float: left;"
+                    style="float: left"
                     data-testid="csAddrCancel"
                     @click="showColdStakingAddressModal = false"
                 >

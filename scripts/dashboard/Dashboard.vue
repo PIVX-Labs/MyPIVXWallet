@@ -180,9 +180,12 @@ async function displayLockWalletModal() {
     const title = isEncrypted
         ? translation.popupWalletLock
         : translation.popupWalletWipe;
-    const html = '<div class="modalContents"><span class="topText">' + (isEncrypted
-        ? translation.popupWalletLockNote
-        : translation.popupWalletWipeNote) + '</span></div>';
+    const html =
+        '<div class="modalContents"><span class="topText">' +
+        (isEncrypted
+            ? translation.popupWalletLockNote
+            : translation.popupWalletWipeNote) +
+        '</span></div>';
     if (
         await confirmPopup({
             title,
@@ -357,12 +360,11 @@ function getMaxBalance(useShieldInputs) {
     transferAmount.value = (coinSatoshi / COIN).toString();
 }
 
-
 /**
  * Switch between public or private mode
  */
- function switchPublicPrivate() {
-    if(publicMode.value) {
+function switchPublicPrivate() {
+    if (publicMode.value) {
         publicMode.value = false;
         doms.domNavbar.classList.add('navbarSpecial-dark');
         doms.domPageContainer.classList.add('home-hero-dark');
@@ -504,16 +506,31 @@ defineExpose({
                         @click="switchPublicPrivate()"
                     >
                         <div class="messLogo">
-                            <span class="buttoni-icon publicSwitchIcon" v-html="(publicMode ? pLogo : pShieldLogo)"> </span>
+                            <span
+                                class="buttoni-icon publicSwitchIcon"
+                                v-html="publicMode ? pLogo : pShieldLogo"
+                            >
+                            </span>
                         </div>
                         <div class="messMessage" id="publicPrivateText">
-                            <span class="messTop">Now in <span v-html="(publicMode ? 'Public' : 'Private')"></span> Mode</span>
-                            <span class="messBot">Switch to <span v-html="(publicMode ? 'Private' : 'Public')"></span></span>
+                            <span class="messTop"
+                                >Now in
+                                <span
+                                    v-html="publicMode ? 'Public' : 'Private'"
+                                ></span>
+                                Mode</span
+                            >
+                            <span class="messBot"
+                                >Switch to
+                                <span
+                                    v-html="publicMode ? 'Private' : 'Public'"
+                                ></span
+                            ></span>
                         </div>
                     </div>
                 </center>
             </div>
-	    
+
             <!-- Redeem Code (PIVX Promos) -->
             <div
                 class="modal"
@@ -870,9 +887,7 @@ defineExpose({
                         :publicMode="publicMode"
                         class="col-12 p-0 mb-2"
                     />
-                    <WalletButtons
-                        class="col-12 p-0 md-5"
-                    />
+                    <WalletButtons class="col-12 p-0 md-5" />
                     <Activity
                         ref="activity"
                         class="col-12 mb-5"

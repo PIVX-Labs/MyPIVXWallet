@@ -71,14 +71,15 @@ async function selectContact() {
         @close="emit('close')"
     >
         <div class="transferBody">
-            <label><span data-i18n="amount">Amount</span></label><br />
+            <label><span data-i18n="amount">Amount</span></label
+            ><br />
 
             <div class="row">
                 <div class="col-12 pr-2">
                     <div class="input-group mb-3">
                         <input
                             class="btn-group-input balanceInput"
-                            style="padding-right: 0px; border-right:0px;"
+                            style="padding-right: 0px; border-right: 0px"
                             type="number"
                             placeholder="0.00"
                             autocomplete="nope"
@@ -88,13 +89,30 @@ async function selectContact() {
                             v-model="amount"
                         />
                         <div class="input-group-append">
-                            <span class="input-group-text"
-                                style="background-color:#E9DEFF; color:#AF9CC6; border:2px solid #AF9CC6; border-left:0px;">
+                            <span
+                                class="input-group-text"
+                                style="
+                                    background-color: #e9deff;
+                                    color: #af9cc6;
+                                    border: 2px solid #af9cc6;
+                                    border-left: 0px;
+                                "
+                            >
                                 PIVX
                             </span>
-                            <span class="input-group-text p-0" data-i18n="sendAmountCoinsMax"
-                                style="cursor:pointer; background-color:#7F20FF; border:2px solid #AF9CC6; color:#E9DEFF; font-weight:700; padding: 0px 10px 0px 10px !important;"
-                                @click="maxBalance()">
+                            <span
+                                class="input-group-text p-0"
+                                data-i18n="sendAmountCoinsMax"
+                                style="
+                                    cursor: pointer;
+                                    background-color: #7f20ff;
+                                    border: 2px solid #af9cc6;
+                                    color: #e9deff;
+                                    font-weight: 700;
+                                    padding: 0px 10px 0px 10px !important;
+                                "
+                                @click="maxBalance()"
+                            >
                                 {{ translation.sendAmountCoinsMax }}
                             </span>
                         </div>
@@ -112,12 +130,19 @@ async function selectContact() {
                             data-testid="amountCurrency"
                             @input="syncAmount"
                             v-model="amountCurrency"
-                            style="border-right:0px;"
+                            style="border-right: 0px"
                         />
                         <div class="input-group-append">
-                            <span class="input-group-text pl-0" style="background-color:#E9DEFF; color:#AF9CC6; border:2px solid #AF9CC6; border-left:0px;">{{
-                                currency
-                            }}</span>
+                            <span
+                                class="input-group-text pl-0"
+                                style="
+                                    background-color: #e9deff;
+                                    color: #af9cc6;
+                                    border: 2px solid #af9cc6;
+                                    border-left: 0px;
+                                "
+                                >{{ currency }}</span
+                            >
                         </div>
                     </div>
                 </div>
@@ -152,7 +177,11 @@ async function selectContact() {
             <div class="pb-2">
                 <div class="row">
                     <div class="col-12 col-md-6">
-                        <button class="pivx-button-small-cancel" style="height: 42px; width: 97px;" @click="$emit('close')">
+                        <button
+                            class="pivx-button-small-cancel"
+                            style="height: 42px; width: 97px"
+                            @click="$emit('close')"
+                        >
                             <span class="buttoni-text">
                                 {{ translation.cancel }} Cancel
                             </span>
@@ -160,9 +189,18 @@ async function selectContact() {
                     </div>
 
                     <div class="col-12 col-md-6 text-right">
-                        <button class="pivx-button-small" style="height: 42px; width: 97px;" @click="submit()" data-testid="sendButton">
+                        <button
+                            class="pivx-button-small"
+                            style="height: 42px; width: 97px"
+                            @click="submit()"
+                            data-testid="sendButton"
+                        >
                             <span class="buttoni-text" data-i18n="stake">
-                                {{ unstake ? translation.stakeUnstake : translation.stake }}
+                                {{
+                                    unstake
+                                        ? translation.stakeUnstake
+                                        : translation.stake
+                                }}
                             </span>
                         </button>
                     </div>

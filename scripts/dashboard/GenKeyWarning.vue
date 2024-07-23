@@ -54,7 +54,7 @@ function submit() {
                 @click="emit('open')"
                 data-testid="encryptBox"
             >
-                <div class="shieldLogo" style="width: 42px;">
+                <div class="shieldLogo" style="width: 42px">
                     <div class="shieldBackground">
                         <span
                             class="dcWallet-svgIconPurple publicSwitchIcon"
@@ -85,7 +85,9 @@ function submit() {
     <Teleport to="body">
         <Modal :show="showModal" modalClass="exportKeysModalColor modalMain">
             <template #header>
-                <h5 class="modal-title" style="text-align: center; width: 100%;">{{ translation.encryptWallet }}</h5>
+                <h5 class="modal-title" style="text-align: center; width: 100%">
+                    {{ translation.encryptWallet }}
+                </h5>
             </template>
             <template #body>
                 <input
@@ -111,7 +113,11 @@ function submit() {
                     class="center-text textboxTransparency passwordTxtbox"
                     v-model="passwordConfirm"
                     data-i18n="encryptPasswordSecond"
-                    style="width: 100%; font-family: monospace; margin-bottom:0px;"
+                    style="
+                        width: 100%;
+                        font-family: monospace;
+                        margin-bottom: 0px;
+                    "
                     type="password"
                     :placeholder="translation.encryptPasswordSecond"
                     data-testid="confirmPasswordModal"
@@ -133,7 +139,11 @@ function submit() {
                     @click="submit()"
                     data-testid="submitBtn"
                 >
-                    <span class="dcWallet-svgIconPurple iconBtn" style="margin-right: 5px; top: 4px;" v-html="pLock"></span>
+                    <span
+                        class="dcWallet-svgIconPurple iconBtn"
+                        style="margin-right: 5px; top: 4px"
+                        v-html="pLock"
+                    ></span>
                     <span data-i18n="encrypt"> {{ translation.encrypt }} </span>
                 </button>
             </template>

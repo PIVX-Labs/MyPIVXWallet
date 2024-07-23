@@ -10,7 +10,7 @@ defineEmits(['close']);
     <div v-show="show" class="v-mask">
         <Transition name="bottomPopup">
             <div v-show="show" class="exportKeysModalColor bottomPopup">
-                <div class="bottomPopupHeader" style="justify-content: center;">
+                <div class="bottomPopupHeader" style="justify-content: center">
                     <div class="sendHeaderoText">{{ title }}</div>
                 </div>
 

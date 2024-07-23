@@ -49,7 +49,9 @@ export function renderChangelog() {
                 break;
             case '-':
                 // `-` is a list element, for each 'New Feature' or 'Bug Fix' to be listed with
-                strHTML += `<p><span class="dotSpan"></span>${sanitizeHTML(line)}</p>`;
+                strHTML += `<p><span class="dotSpan"></span>${sanitizeHTML(
+                    line
+                )}</p>`;
                 break;
             default:
                 // If no element was recognised, it's just a plaintext line
