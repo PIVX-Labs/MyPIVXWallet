@@ -185,10 +185,12 @@ export async function confirmPopup({
     }
 
     // Center the buttons
-    if(centerButtons) {
-        confirmModalButtons.innerHTML = "<div class='centerFlex'>" + confirmModalButtons.innerHTML + "</div>"
+    if (centerButtons) {
+        doms.confirmModalButtons.innerHTML =
+            "<div class='centerFlex'>" +
+            doms.confirmModalButtons.innerHTML +
+            '</div>';
     }
-    
 
     // Wait for the promise to resolve OR create a new one which resolves upon a modal button click
     resolvePromise =
