@@ -24,7 +24,7 @@ const defaultLang = 'en';
  * @example getParentLanguage('es') === defaultLang // true
  * @returns the 'parent' language of a langcode
  */
-function getParentLanguage(langName) {
+export function getParentLanguage(langName) {
     const strParentCode = langName.includes('-')
         ? langName.split('-')[0]
         : defaultLang;
@@ -71,7 +71,7 @@ async function setTranslationKey(key, langName) {
 async function setAlertKey(langName) {
     const lang = await getLanguage(langName);
     translation['ALERTS'] = lang['ALERTS'];
-    for (const subKey in lang['ALERTS']) {
+    for (const subKey in template['ALERTS']) {
         setAlertSubKey(subKey, langName);
     }
 }
