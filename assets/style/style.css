@@ -247,11 +247,6 @@ progress[value]::-moz-progress-bar {
     cursor:pointer;
 }
 
-.centerFlex {
-    display: flex;
-    justify-content: center;
-}
-
 .large-box {
     background: rgba(43, 9, 80, 0.55);
     border-radius: 8px;
@@ -360,7 +355,12 @@ progress[value]::-moz-progress-bar {
 
 /* a bootstrap override */
 .modal-footer {
-    display: block !important;
+    display: block;
+}
+
+.centerFlex {
+    display: flex !important;
+    justify-content: center;
 }
 
 .inline-address {
