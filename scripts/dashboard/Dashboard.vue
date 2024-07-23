@@ -37,6 +37,7 @@ import { useWallet } from '../composables/use_wallet.js';
 import { useSettings } from '../composables/use_settings.js';
 import pLogo from '../../assets/p_logo.svg';
 import pShieldLogo from '../../assets/icons/icon_shield_pivx.svg';
+import pIconCamera from '../../assets/icons/icon-camera.svg';
 import { ParsedSecret } from '../parsed_secret.js';
 import { storeToRefs } from 'pinia';
 
@@ -545,8 +546,36 @@ defineExpose({
                     class="modal-dialog modal-dialog-centered max-w-600"
                     role="document"
                 >
-                    <div class="modal-content">
-                        <div class="modal-header" id="redeemCodeModalHeader">
+                    <div
+                        class="modal-content exportKeysModalColor"
+                        style="border-top-left-radius: 0px"
+                    >
+                        <div style="position: relative; top: -54px; left: -1px">
+                            <ul class="settingsMenu redeemMenu">
+                                <li
+                                    data-i18n="redeem"
+                                    style="width: 50%; text-align: center"
+                                    onclick="MPW.setPromoMode(true)"
+                                    id="redeemCodeModeRedeem"
+                                    class="active"
+                                >
+                                    Redeem
+                                </li>
+                                <li
+                                    data-i18n="create"
+                                    style="width: 50%; text-align: center"
+                                    onclick="MPW.setPromoMode(false)"
+                                    id="redeemCodeModeCreate"
+                                >
+                                    Create
+                                </li>
+                            </ul>
+                        </div>
+                        <div
+                            class="modal-header"
+                            id="redeemCodeModalHeader"
+                            style="margin-top: -40px"
+                        >
                             <h3
                                 class="modal-title"
                                 id="redeemCodeModalTitle"
@@ -554,82 +583,40 @@ defineExpose({
                                     text-align: center;
                                     width: 100%;
                                     color: #8e21ff;
+                                    margin-top: 0px;
                                 "
                             >
                                 Redeem Code
                             </h3>
                         </div>
-                        <div class="modal-body center-text">
+                        <div
+                            class="modal-body center-text"
+                            style="padding-top: 0px; padding-bottom: 0px"
+                        >
                             <center>
-                                <p class="mono" style="font-size: small">
-                                    <b>PIVX Promos </b>
-                                    <span
-                                        style="font-family: inherit !important"
-                                    >
-                                        {{ translation.pivxPromos }}
-                                    </span>
+                                <p
+                                    style="
+                                        color: #af9cc6;
+                                        font-size: 15px;
+                                        width: 250px;
+                                        font-family: Montserrat !important;
+                                    "
+                                >
+                                    PIVX Promos
+                                    {{ translation.pivxPromos }}
                                 </p>
-                                <div id="redeemCodeModeBox">
-                                    <button
-                                        type="button"
-                                        onclick="MPW.setPromoMode(true)"
-                                        id="redeemCodeModeRedeem"
-                                        class="pivx-button-big"
-                                        style="
-                                            margin: 0;
-                                            border-top-right-radius: 0;
-                                            border-bottom-right-radius: 0;
-                                            opacity: 0.5;
-                                        "
-                                    >
-                                        Redeem
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onclick="MPW.setPromoMode(false)"
-                                        id="redeemCodeModeCreate"
-                                        class="pivx-button-big"
-                                        style="
-                                            margin: 0;
-                                            border-top-left-radius: 0;
-                                            border-bottom-left-radius: 0;
-                                            opacity: 0.8;
-                                        "
-                                    >
-                                        Create
-                                    </button>
-                                </div>
-                                <br />
-                                <br />
                                 <div id="redeemCodeUse">
-                                    <div class="col-8" id="redeemCodeInputBox">
-                                        <div
-                                            class="input-group"
-                                            style="
-                                                border-color: #9121ff;
-                                                border-style: solid;
-                                                border-radius: 10px;
+                                    <div id="redeemCodeInputBox">
+                                        <input
+                                            class="btn-input mono center-text"
+                                            type="text"
+                                            id="redeemCodeInput"
+                                            :placeholder="
+                                                translation.redeemInput
                                             "
-                                        >
-                                            <input
-                                                class="btn-group-input mono center-text"
-                                                type="text"
-                                                id="redeemCodeInput"
-                                                :placeholder="
-                                                    translation.redeemInput
-                                                "
-                                                autocomplete="nope"
-                                            />
-                                            <div class="input-group-append">
-                                                <span
-                                                    class="input-group-text ptr"
-                                                    onclick="MPW.openPromoQRScanner()"
-                                                    ><i
-                                                        class="fa-solid fa-qrcode fa-2xl"
-                                                    ></i
-                                                ></span>
-                                            </div>
-                                        </div>
+                                            style="text-align: left"
+                                            autocomplete="nope"
+                                        />
                                     </div>
                                     <center>
                                         <div
@@ -671,82 +658,80 @@ defineExpose({
                                     id="redeemCodeCreate"
                                     style="display: none"
                                 >
-                                    <div class="col-11">
-                                        <div class="row">
-                                            <div
-                                                class="col-6"
-                                                style="padding-right: 3px"
-                                            >
-                                                <div
-                                                    class="input-group"
-                                                    style="
-                                                        border-color: #9121ff;
-                                                        border-style: solid;
-                                                        border-radius: 10px;
-                                                    "
-                                                >
-                                                    <input
-                                                        class="btn-group-input mono center-text"
-                                                        style="
-                                                            border-top-right-radius: 9px;
-                                                            border-bottom-right-radius: 9px;
-                                                        "
-                                                        type="text"
-                                                        id="redeemCodeCreateInput"
-                                                        :placeholder="
-                                                            translation.createName
-                                                        "
-                                                        autocomplete="nope"
-                                                    />
-                                                </div>
-                                            </div>
-                                            <div
-                                                class="col-6"
-                                                style="padding-left: 3px"
-                                            >
-                                                <div
-                                                    class="input-group"
-                                                    style="
-                                                        border-color: #9121ff;
-                                                        border-style: solid;
-                                                        border-radius: 10px;
-                                                    "
-                                                >
-                                                    <input
-                                                        class="btn-group-input mono center-text"
-                                                        id="redeemCodeCreateAmountInput"
-                                                        style="
-                                                            border-top-right-radius: 9px;
-                                                            border-bottom-right-radius: 9px;
-                                                        "
-                                                        type="text"
-                                                        :placeholder="
-                                                            translation.createAmount
-                                                        "
-                                                        autocomplete="nope"
-                                                    />
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    <input
+                                        class="btn-input mono center-text"
+                                        style="
+                                            border-top-right-radius: 9px;
+                                            border-bottom-right-radius: 9px;
+                                        "
+                                        type="text"
+                                        id="redeemCodeCreateInput"
+                                        :placeholder="translation.createName"
+                                        autocomplete="nope"
+                                    />
+                                    <input
+                                        class="btn-input mono center-text"
+                                        id="redeemCodeCreateAmountInput"
+                                        style="
+                                            border-top-right-radius: 9px;
+                                            border-bottom-right-radius: 9px;
+                                        "
+                                        type="text"
+                                        :placeholder="translation.createAmount"
+                                        autocomplete="nope"
+                                    />
                                     <div
                                         class="table-promo d-none"
                                         id="promo-table"
                                     >
                                         <br />
-                                        <table class="table table-hover">
-                                            <thead>
+                                        <table
+                                            class="table table-responsive table-sm stakingTx table-mobile-scroll"
+                                        >
+                                            <thead style="border: 0px">
                                                 <tr>
-                                                    <td class="text-center">
+                                                    <td
+                                                        style="
+                                                            width: 100px;
+                                                            border-top: 0px;
+                                                            border-bottom: 1px
+                                                                solid #534270;
+                                                        "
+                                                        class="text-center"
+                                                    >
                                                         <b> Manage </b>
                                                     </td>
-                                                    <td class="text-center">
+                                                    <td
+                                                        style="
+                                                            width: 100px;
+                                                            border-top: 0px;
+                                                            border-bottom: 1px
+                                                                solid #534270;
+                                                        "
+                                                        class="text-center"
+                                                    >
                                                         <b> Promo Code </b>
                                                     </td>
-                                                    <td class="text-center">
+                                                    <td
+                                                        style="
+                                                            width: 100px;
+                                                            border-top: 0px;
+                                                            border-bottom: 1px
+                                                                solid #534270;
+                                                        "
+                                                        class="text-center"
+                                                    >
                                                         <b> Amount </b>
                                                     </td>
-                                                    <td class="text-center">
+                                                    <td
+                                                        style="
+                                                            width: 100px;
+                                                            border-top: 0px;
+                                                            border-bottom: 1px
+                                                                solid #534270;
+                                                        "
+                                                        class="text-center"
+                                                    >
                                                         <b> State </b
                                                         ><i
                                                             onclick="MPW.promosToCSV()"
@@ -768,14 +753,28 @@ defineExpose({
                                         </table>
                                     </div>
                                 </div>
-                                <br />
                             </center>
                         </div>
-                        <div
-                            class="modal-footer"
-                            hidden="true"
-                            id="redeemCodeModalButtons"
-                        >
+                        <div class="modal-footer" id="redeemCodeModalButtons">
+                            <div id="redeemCameraBtn">
+                                <button
+                                    class="pivx-button-small-cancel"
+                                    style="
+                                        float: left;
+                                        height: 49px;
+                                        width: 49px;
+                                        padding-left: 12px;
+                                    "
+                                    onclick="MPW.openPromoQRScanner()"
+                                >
+                                    <span
+                                        class="buttoni-text cameraIcon"
+                                        v-html="pIconCamera"
+                                    >
+                                    </span>
+                                </button>
+                            </div>
+
                             <button
                                 type="button"
                                 onclick="MPW.promoConfirm()"
@@ -785,12 +784,14 @@ defineExpose({
                             >
                                 Redeem
                             </button>
+
                             <button
                                 type="button"
+                                class="pivx-button-big-cancel"
+                                id="redeemCodeModalConfirmButton"
+                                style="float: right"
                                 data-dismiss="modal"
                                 aria-label="Close"
-                                class="pivx-button-big"
-                                style="float: right; opacity: 0.7"
                             >
                                 {{ translation.popupClose }}
                             </button>

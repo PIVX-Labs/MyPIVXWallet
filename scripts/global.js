@@ -203,6 +203,7 @@ export async function start() {
         domNavbar: document.getElementById('navbar'),
         domPageContainer: document.getElementById('page-container'),
         domWarningMessage: document.getElementById('warningMessage'),
+        domRedeemCameraBtn: document.getElementById('redeemCameraBtn'),
     };
 
     await i18nStart();

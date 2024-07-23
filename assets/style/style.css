@@ -3043,6 +3043,10 @@ select.form-control option {
     font-weight: 600;
 }
 
+.redeemMenu .active {
+    background-color: #25183D;
+}
+
 .settingsMenu .active:hover {
     background:none;
     background-color: #281D3D;
