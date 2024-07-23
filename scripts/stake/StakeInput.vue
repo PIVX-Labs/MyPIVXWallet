@@ -181,6 +181,7 @@ async function selectContact() {
                             class="pivx-button-small-cancel"
                             style="height: 42px; width: 97px"
                             @click="$emit('close')"
+                            data-testid="closeButton"
                         >
                             <span class="buttoni-text">
                                 {{ translation.cancel }} Cancel

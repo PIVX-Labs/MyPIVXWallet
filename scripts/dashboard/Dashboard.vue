@@ -497,7 +497,7 @@ defineExpose({
 
             <br />
 
-            <!-- Switch to Private -->
+            <!-- Switch to Public/Private -->
             <div class="col-12 p-0" v-show="wallet.isImported">
                 <center>
                     <div
@@ -899,6 +899,7 @@ defineExpose({
         </div>
         <TransferMenu
             :show="showTransferMenu"
+            :publicMode="publicMode"
             :price="price"
             :currency="currency"
             :shieldEnabled="wallet.hasShield"

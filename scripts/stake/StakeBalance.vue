@@ -128,6 +128,7 @@ function submit() {
                         <span
                             class="dcWallet-pivxBalance"
                             v-html="coldBalanceStr"
+                            data-testid="coldBalance"
                         >
                         </span>
                         <span
@@ -145,8 +146,9 @@ function submit() {
                             class="dcWallet-usdValue"
                             style="color: #d7d7d7; font-weight: 500"
                             v-html="coldBalanceValue"
+                            data-testid="coldBalanceValue"
                         ></span>
-                        <span class="dcWallet-usdValue" style="opacity: 0.55"
+                        <span class="dcWallet-usdValue" style="opacity: 0.55" data-testid="coldBalanceCurrency"
                             >&nbsp;{{ currency }}</span
                         >
                     </div>
@@ -170,6 +172,7 @@ function submit() {
                         class="pivx-button-small"
                         style="height: 42px; width: 97px"
                         @click="emit('showStake')"
+                        data-testid="showStakeButton"
                     >
                         <span class="buttoni-text">
                             {{ translation.stake }}
@@ -182,6 +185,7 @@ function submit() {
                         class="pivx-button-small"
                         style="height: 42px; width: 106px"
                         @click="emit('showUnstake')"
+                        data-testid="showUnstakeButton"
                     >
                         <span class="buttoni-text">
                             {{ translation.stakeUnstake }}

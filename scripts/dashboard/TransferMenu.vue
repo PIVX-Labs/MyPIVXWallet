@@ -266,15 +266,16 @@ async function selectContact() {
                 <br />
             </div>
 
-            <div v-if="false">
+            <div v-if="shieldEnabled">
                 <!-- shieldEnabled -->
-                <div class="custom-control custom-switch">
+                <div class="custom-control custom-switch d-none">
                     <input
                         type="checkbox"
                         class="custom-control-input"
                         data-testid="useShieldInputs"
                         id="useShieldInputs"
                         v-model="useShieldInputs"
+                        :checked="!publicMode"
                     />
                     <label class="custom-control-label" for="useShieldInputs">{{
                         translation.useShieldInputs
@@ -290,6 +291,7 @@ async function selectContact() {
                             class="pivx-button-small-cancel"
                             style="height: 42px; width: 97px"
                             @click="$emit('close')"
+                            data-testid="closeButton"
                         >
                             <span class="buttoni-text">
                                 {{ translation.cancel }} Cancel
