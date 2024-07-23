@@ -148,7 +148,10 @@ function submit() {
                             v-html="coldBalanceValue"
                             data-testid="coldBalanceValue"
                         ></span>
-                        <span class="dcWallet-usdValue" style="opacity: 0.55" data-testid="coldBalanceCurrency"
+                        <span
+                            class="dcWallet-usdValue"
+                            style="opacity: 0.55"
+                            data-testid="coldBalanceCurrency"
                             >&nbsp;{{ currency }}</span
                         >
                     </div>
