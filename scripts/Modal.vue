@@ -6,7 +6,15 @@ const props = defineProps({
 </script>
 
 <template>
-    <Transition name="modal" style="z-index: 2000; background-color: #201436db">
+    <Transition
+        name="modal"
+        style="
+            display: flex;
+            justify-content: center;
+            z-index: 2000;
+            background-color: #201436db;
+        "
+    >
         <div v-if="show" class="modal-mask black-text">
             <div class="modal-dialog" role="document">
                 <div
@@ -18,7 +26,7 @@ const props = defineProps({
                     </div>
                     <div
                         class="modal-body center-text"
-                        style="padding-bottom: 8px"
+                        style="padding-bottom: 8px; overflow: auto"
                     >
                         <slot name="body"></slot>
                     </div>
