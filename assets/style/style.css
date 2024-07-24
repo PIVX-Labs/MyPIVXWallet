@@ -3992,3 +3992,11 @@ textarea::placeholder {
     margin-bottom: 35px;
     color:#E9DEFF;
 }
+
+.modal {
+    width: auto;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
