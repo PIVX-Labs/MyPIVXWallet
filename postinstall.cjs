@@ -1,16 +1,15 @@
 const { execSync } = require('child_process');
-const fs = require('fs');
 
 // Determine the operating system type
 const os = require('os');
-const osType = os.type();
+const osType = os.platform();
 
 // Define the command to execute based on the OS
 let command;
-if (osType === 'Linux') {
+if (osType.match(/aix|darwin|freebsd|linux|openbsd|sunos|android/)) {
     command =
         'test -f chain_params.json || cp chain_params.prod.json chain_params.json';
-} else if (osType === 'Windows_NT') {
+} else if (osType.match(/win32/)) {
     command =
         'if not exist chain_params.json copy chain_params.prod.json chain_params.json';
 } else {
