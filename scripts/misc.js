@@ -379,7 +379,8 @@ export function beautifyNumber(
     if (typeof strNumber === 'number') strNumber = strNumber.toString();
 
     // Only run this for numbers with decimals
-    if (!strNumber.includes('.')) return parseInt(strNumber).toLocaleString('en-GB');
+    if (!strNumber.includes('.'))
+        return parseInt(strNumber).toLocaleString('en-GB');
 
     // Split the number in to Full and Decimal parts
     const arrNumParts = strNumber.split('.');
