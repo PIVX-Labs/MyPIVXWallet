@@ -379,7 +379,7 @@ export function beautifyNumber(
     if (typeof strNumber === 'number') strNumber = strNumber.toString();
 
     // Only run this for numbers with decimals
-    if (!strNumber.includes('.')) return strNumber;
+    if (!strNumber.includes('.')) return parseInt(strNumber).toLocaleString('en-GB');
 
     // Split the number in to Full and Decimal parts
     const arrNumParts = strNumber.split('.');
@@ -387,7 +387,7 @@ export function beautifyNumber(
     // Return a HTML that renders the decimal in a lower opacity
     const strFontSize = strDecFontSize ? 'font-size: ' + strDecFontSize : '';
     return `${
-        showFirstNumber ? arrNumParts[0] : ''
+        showFirstNumber ? parseInt(arrNumParts[0]).toLocaleString('en-GB') : ''
     }<span style="opacity: 0.55; ${strFontSize}">.${arrNumParts[1]}</span>`;
 }
 
