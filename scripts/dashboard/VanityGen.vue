@@ -2,15 +2,14 @@
 import pLogo from '../../assets/p_logo.svg';
 import vanityWalletIcon from '../../assets/icons/icon-vanity-wallet.svg';
 import { ALERTS, translation, tr } from '../i18n.js';
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, nextTick } from 'vue';
 import { cChainParams } from '../chain_params.js';
 import { MAP_B58, createAlert } from '../misc.js';
 
 const addressPrefix = ref('');
-const addressPrefixShow = ref(false);
 const addressPrefixElement = ref({});
 const isGenerating = ref(false);
-const isClicked = ref(false);
+const addressPrefixShow = ref(false);
 const attempts = ref(0);
 /**
  * @type {Worker[]}
@@ -49,8 +48,7 @@ function generate() {
 
     if (typeof Worker === 'undefined')
         return createAlert('error', ALERTS.UNSUPPORTED_WEBWORKERS, 7500);
-    if (!addressPrefixShow.value || addressPrefix.value.length === 0) {
-        addressPrefixShow.value = true;
+    if (addressPrefix.value.length === 0) {
         addressPrefixElement.value.focus();
         return;
     }
@@ -98,19 +96,9 @@ function generate() {
     }
 }
 
-function createVanityClick() {
-    if (!isClicked.value) {
-        isClicked.value = true;
-        addressPrefixShow.value = true;
-    } else {
-        if (isGenerating.value) {
-            console.log('poep');
-            stop();
-        } else {
-            console.log('generate');
-            generate();
-        }
-    }
+function showAddressPrefix() {
+    addressPrefixShow.value = true;
+    nextTick(() => addressPrefixElement.value.focus());
 }
 </script>
 
@@ -129,8 +117,8 @@ function createVanityClick() {
     <div class="col-12 col-md-6 col-xl-3 p-2">
         <div
             class="dashboard-item dashboard-display"
-            @click="isClicked ? '' : createVanityClick()"
-            data-testid="generateBtn"
+            @click="showAddressPrefix()"
+            data-testid="vanityWalletButton"
         >
             <div class="coinstat-icon" v-html="vanityWalletIcon"></div>
 
@@ -178,9 +166,10 @@ function createVanityClick() {
             </span>
 
             <button
-                v-if="isClicked"
-                @click="createVanityClick()"
+                v-if="addressPrefixShow"
+                @click="isGenerating ? stop() : generate()"
                 class="pivx-button-big"
+                data-testid="generateBtn"
             >
                 <span class="buttoni-icon" v-html="pLogo"> </span>
 
