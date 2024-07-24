@@ -370,7 +370,7 @@ defineExpose({ update, reset, getTxCount });
                                                 font-weight: 300;
                                                 opacity: 0.55;
                                             "
-                                            >{{ ticker }}</span
+                                            >&nbsp;{{ ticker }}</span
                                         ></b
                                     >
                                 </td>
