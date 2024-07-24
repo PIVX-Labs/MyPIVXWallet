@@ -829,16 +829,22 @@ defineExpose({
                         <div class="modal-body px-0">
                             <div id="contactsList" class="contactsList"></div>
                         </div>
-                        <div class="modal-footer" hidden="true">
+                        <div
+                            class="modal-footer"
+                            style="
+                                display: flex;
+                                justify-content: center;
+                                padding-top: 0px;
+                            "
+                        >
                             <button
                                 type="button"
-                                data-dismiss="modal"
+                                class="pivx-button-big-cancel"
                                 aria-label="Close"
-                                class="pivx-button-big"
+                                data-dismiss="modal"
                                 data-i18n="popupClose"
-                                style="color: #fff; float: right; opacity: 0.8"
                             >
-                                Close
+                                {{ translation.popupClose }}
                             </button>
                         </div>
                     </div>
