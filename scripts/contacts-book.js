@@ -104,7 +104,7 @@ export async function renderContacts(account, fPrompt = false) {
     if (!fPrompt) {
         // Lastly, inject the "Add Account" UI to the table
         strHTML += `
-            <div style="font-family: 'Montserrat'; text-align: start; margin: 0px 15px; border-radius: 10px; border: 1px solid #42117e; background-color: #25183d; padding: 13px 13px; margin-bottom: 28px;">
+            <div class="shadowInnerCard" style="font-family: 'Montserrat'; text-align: start; margin: 0px 15px; border-radius: 10px; border: 1px solid #42117e; background-color: #25183d; padding: 13px 13px; margin-bottom: 28px;">
                 <label style="color:#af9cc6; font-size: 15px; font-weight: 500; margin-bottom: 17px;">Add new contact</label>
                 <input id="contactsNameInput" style="margin-bottom:17px;" placeholder="${translation.name}" autocomplete="nope">
                 <input id="contactsAddressInput" style="margin-bottom:17px;" placeholder="${translation.addressOrXPub}" autocomplete="nope">
@@ -129,7 +129,7 @@ export async function renderContacts(account, fPrompt = false) {
         `;
 
         // Render an editable Contacts Table
-        strHTML += `<div style="font-family: 'Montserrat'; text-align: start; margin: 0px 15px; border-radius: 10px; border: 1px solid #42117e; background-color: #25183d; padding: 13px 9px;">
+        strHTML += `<div class="shadowInnerCard" style="font-family: 'Montserrat'; text-align: start; margin: 0px 15px; border-radius: 10px; border: 1px solid #42117e; background-color: #25183d; padding: 13px 9px;">
         <div style="max-height: 270px; overflow: auto;">`;
 
         for (const cContact of account.contacts || []) {

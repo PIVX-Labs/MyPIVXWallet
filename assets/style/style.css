@@ -4000,3 +4000,8 @@ textarea::placeholder {
     transform: translate(-50%, -50%);
 }
 
+.shadowInnerCard {
+    -webkit-box-shadow: 5px 5px 14px -5px rgba(22, 22, 22, 1);
+    -moz-box-shadow: 5px 5px 14px -5px rgba(22, 22, 22, 1);
+    box-shadow: 5px 5px 14px -5px rgba(22, 22, 22, 1);
+}
