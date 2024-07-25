@@ -203,8 +203,6 @@ export async function start() {
         domTestnetToggler: document.getElementById('testnetToggler'),
         domAdvancedModeToggler: document.getElementById('advancedModeToggler'),
         domAutoLockModeToggler: document.getElementById('autoLockModeToggler'),
-        domNavbar: document.getElementById('navbar'),
-        domPageContainer: document.getElementById('page-container'),
         domRedeemCameraBtn: document.getElementById('redeemCameraBtn'),
     };
 

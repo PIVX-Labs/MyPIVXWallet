@@ -367,14 +367,24 @@ function getMaxBalance(useShieldInputs) {
 function switchPublicPrivate() {
     if (publicMode.value) {
         publicMode.value = false;
-        doms.domNavbar.classList.add('navbarSpecial-dark');
-        doms.domPageContainer.classList.add('home-hero-dark');
-        document.getElementById('warningMessage').classList.add('dcWallet-warningMessage-dark');
+        document.getElementById('navbar').classList.add('navbarSpecial-dark');
+        document
+            .getElementById('page-container')
+            .classList.add('home-hero-dark');
+        document
+            .getElementById('warningMessage')
+            .classList.add('dcWallet-warningMessage-dark');
     } else {
         publicMode.value = true;
-        doms.domNavbar.classList.remove('navbarSpecial-dark');
-        doms.domPageContainer.classList.remove('home-hero-dark');
-        document.getElementById('warningMessage').classList.remove('dcWallet-warningMessage-dark');
+        document
+            .getElementById('navbar')
+            .classList.remove('navbarSpecial-dark');
+        document
+            .getElementById('page-container')
+            .classList.remove('home-hero-dark');
+        document
+            .getElementById('warningMessage')
+            .classList.remove('dcWallet-warningMessage-dark');
     }
 }
 
