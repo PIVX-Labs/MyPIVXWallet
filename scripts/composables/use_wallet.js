@@ -93,7 +93,7 @@ export const useWallet = defineStore('wallet', () => {
             return await sendTransaction(network, tx);
         }
     );
-    const createAuthoshieldTransactions = async (network, address, value) => {
+    const createAutoshieldTransactions = async (network, address, value) => {
         const txs = await wallet.createAutoshieldTransactions(address, value);
         let res = true;
         for (const tx of txs) {
@@ -147,6 +147,6 @@ export const useWallet = defineStore('wallet', () => {
         createAndSendTransaction,
         loadFromDisk,
         coldBalance,
-        createAuthoshieldTransactions,
+        createAutoshieldTransactions,
     };
 });

@@ -331,7 +331,7 @@ async function send(address, amount, useShieldInputs, isAutoShield) {
     // Create and send the TX
     try {
         if (isAutoShield) {
-            await wallet.createAuthoshieldTransactions(
+            await wallet.createAutoshieldTransactions(
                 getNetwork(),
                 address,
                 nValue
