@@ -192,7 +192,7 @@ function displayLockWalletModal() {
                         <span
                             class="reload"
                             v-if="isViewOnly && isEncrypted && isImported"
-                            onclick="MPW.restoreWallet()"
+                            @click="restoreWallet()"
                         >
                             <span
                                 class="dcWallet-topLeftIcons buttoni-icon topCol"
