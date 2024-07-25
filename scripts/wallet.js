@@ -1081,7 +1081,6 @@ export class Wallet {
         const value =
             transaction.shieldOutput[0]?.value || transaction.vout[0].value;
         try {
-            //await this.#shield.loadSaplingProver();
             const { hex } = await this.#shield.createTransaction({
                 address:
                     transaction.shieldOutput[0]?.address ||
