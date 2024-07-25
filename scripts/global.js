@@ -67,6 +67,9 @@ export async function start() {
         domWalletBreakdownCanvas: document.getElementById(
             'walletBreakdownCanvas'
         ),
+        domWalletBreakdownLegend: document.getElementById(
+            'walletBreakdownLegend'
+        ),
         domGenHardwareWallet: document.getElementById('generateHardwareWallet'),
         //GOVERNANCE ELEMENTS
         domGovTab: document.getElementById('governanceTab'),

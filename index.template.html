@@ -126,14 +126,15 @@
         <div class="modal fade" id="walletBreakdownModal" tabindex="-1" aria-labelledby="walletBreakdownModalLabel" role="dialog" aria-hidden="true">
           <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content exportKeysModalColor">
-              <div class="modal-header">
+              <div class="modal-header" style="display: flex; justify-content: center; padding-bottom: 0px;">
                 <h5 data-i18n="balanceBreakdown" class="modal-title" id="walletBreakdownModalLabel">Balance Breakdown</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                  <i class="fa-solid fa-xmark closeCross"></i>
-                </button>
               </div>
-              <div class="modal-body center-text">
+              <div class="modal-body center-text" style="padding-bottom: 0px; padding-top: 0px;">
                 <canvas id="walletBreakdownCanvas"></canvas>
+                <div id="walletBreakdownLegend" style="padding-left: 14px; padding-top: 20px;"></div>
+              </div>
+              <div class="modal-footer" style="padding-top: 0px; display: flex; justify-content: center;">
+                <button type="button" class="pivx-button-big-cancel" data-dismiss="modal" aria-label="Close">Close</button>
               </div>
             </div>
           </div>
