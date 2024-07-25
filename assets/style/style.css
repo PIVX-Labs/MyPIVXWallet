@@ -3788,9 +3788,9 @@ select.form-control option {
 
 .nav-centered {
     display: flex;
-    width: calc(100% - 150px);
+    width: calc(100% - 80px);
     justify-content: center;
-    margin-right: 150px
+    margin-right: 80px;
 }
 
 .modalMain {
@@ -4008,4 +4008,19 @@ textarea::placeholder {
     -webkit-box-shadow: 5px 5px 14px -5px rgba(22, 22, 22, 1);
     -moz-box-shadow: 5px 5px 14px -5px rgba(22, 22, 22, 1);
     box-shadow: 5px 5px 14px -5px rgba(22, 22, 22, 1);
+}
+
+@media (max-width:992px) {
+    .navBarActions {
+        flex-direction: row;
+        height: 45px;
+        display: flex;
+        align-items: center;
+    }
+
+    .navBarActions .nav-item .nav-link {
+        display:flex;
+        justify-content: center;
+        width:40px;
+    }
 }
