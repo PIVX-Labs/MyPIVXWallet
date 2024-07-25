@@ -101,22 +101,13 @@ function importWallet() {
                     @click="importWallet()"
                     data-testid="importWalletButton"
                 >
-                    <span class="buttoni-icon"
-                        ><i class="fas fa-file-upload fa-tiny-margin"></i
+                    <span
+                        class="buttoni-icon goToWalletIco"
+                        v-html="loginIcon"
                     ></span>
                     <span class="buttoni-text" data-i18n="dCardFourButtonI"
                         >Import</span
                     >
-                    <span class="buttoni-arrow">
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 32 32"
-                        >
-                            <path
-                                d="M23.328 16.707L13.121 26.914a.5.5 0 01-.707 0l-2.828-2.828a.5.5 0 010-.707L16.964 16 9.586 8.621a.5.5 0 010-.707l2.828-2.828a.5.5 0 01.707 0l10.207 10.207a1 1 0 010 1.414z"
-                            ></path>
-                        </svg>
-                    </span>
                 </button>
             </div>
             <!-- // IMPORT WALLET -->

@@ -4024,3 +4024,9 @@ textarea::placeholder {
         width:40px;
     }
 }
+
+.goToWalletIco svg {
+    height: 18px;
+    position: relative;
+    top: 2px;
+}
