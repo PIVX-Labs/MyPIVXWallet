@@ -1834,6 +1834,10 @@ a {
 
 @media screen and (max-width: 600px) {
 
+    .containerMobileApp {
+        padding-top: 25px;
+    }
+
     /* Buttons - Hide icons or it will be deformed */
     .buttoni-arrow,
     .buttoni-icon {
