@@ -532,7 +532,7 @@ export async function toggleTestnet() {
             title: tr(translation.netSwitchUnsavedWarningTitle, [
                 { network: cChainParams.current.name },
             ]),
-            html: `
+            html: `<div style="color:#af9cc6;">
             <b>${tr(translation.netSwitchUnsavedWarningSubtitle, [
                 { network: cChainParams.current.name },
             ])}</b>
@@ -545,7 +545,7 @@ export async function toggleTestnet() {
             <i style="opacity:0.65">${
                 translation.netSwitchUnsavedWarningConfirmation
             }</i>
-        `,
+        </div>`,
         });
 
         if (!fContinue) {
