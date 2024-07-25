@@ -1824,7 +1824,7 @@ a {
     }
 
     .modal-content {
-        height: 100%;
+        /*height: 100%;*/
     }
 
     .modal-body {
