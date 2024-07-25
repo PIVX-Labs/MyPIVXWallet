@@ -218,6 +218,7 @@ describe('Transaction builder tests', () => {
 
     it('returns correct fee on standard tx', () => {
         let tx = new TransactionBuilder().build();
+        tx.version = 1;
         expect(TransactionBuilder.getStandardTxFee(0, 0)).toBe(
             (tx.serialize().length / 2) * TransactionBuilder.MIN_FEE_PER_BYTE
         );
@@ -227,6 +228,7 @@ describe('Transaction builder tests', () => {
                 value: 1000,
             })
             .build();
+        tx.version = 1;
         expect(TransactionBuilder.getStandardTxFee(0, 1)).toBe(
             (tx.serialize().length / 2) * TransactionBuilder.MIN_FEE_PER_BYTE
         );
@@ -240,6 +242,7 @@ describe('Transaction builder tests', () => {
                 value: 1000,
             })
             .build();
+        tx.version = 1;
         expect(TransactionBuilder.getStandardTxFee(0, 2)).toBe(
             (tx.serialize().length / 2) * TransactionBuilder.MIN_FEE_PER_BYTE
         );
@@ -257,6 +260,7 @@ describe('Transaction builder tests', () => {
                 })
             )
             .build();
+        tx.version = 1;
         expect(TransactionBuilder.getStandardTxFee(1, 0)).toBe(
             (tx.serialize().length / 2) * TransactionBuilder.MIN_FEE_PER_BYTE
         );
@@ -282,6 +286,7 @@ describe('Transaction builder tests', () => {
                 value: 1000,
             })
             .build();
+        tx.version = 1;
         expect(TransactionBuilder.getStandardTxFee(1, 2)).toBe(
             (tx.serialize().length / 2) * TransactionBuilder.MIN_FEE_PER_BYTE
         );

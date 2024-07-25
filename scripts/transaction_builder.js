@@ -4,6 +4,7 @@ import { OP } from './script.js';
 import { hexToBytes, bytesToHex, dSHA256 } from './utils.js';
 import { isShieldAddress, isExchangeAddress } from './misc.js';
 import { SAPLING_TX_VERSION } from './chain_params.js';
+import { numToVarInt } from './encoding.js';
 /**
  * @class Builds a non-signed transaction
  */
@@ -59,8 +60,14 @@ export class TransactionBuilder {
      * number of inputs and outputs
      */
     static getStandardTxFee(nInputs, nOutputs) {
+        const inputVarIntLength = numToVarInt(nInputs).length;
+        const outputVarIntLength = numToVarInt(nOutputs).length;
         return (
-            (nInputs * 146 + nOutputs * 34 + 26) *
+            (nInputs * (TransactionBuilder.SCRIPT_SIG_MAX_SIZE + 41) +
+                nOutputs * 34 +
+                8 +
+                inputVarIntLength +
+                outputVarIntLength) *
             TransactionBuilder.MIN_FEE_PER_BYTE
         );
     }
