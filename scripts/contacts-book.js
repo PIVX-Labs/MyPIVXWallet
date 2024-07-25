@@ -129,7 +129,9 @@ export async function renderContacts(account, fPrompt = false) {
         `;
 
         // Render an editable Contacts Table
-        strHTML += `<div class="shadowInnerCard${(account.contacts.length == 0 ? ' d-none' : '')}" style="font-family: 'Montserrat'; text-align: start; margin: 0px 15px; border-radius: 10px; border: 1px solid #42117e; background-color: #25183d; padding: 13px 9px;">
+        strHTML += `<div class="shadowInnerCard${
+            account.contacts.length == 0 ? ' d-none' : ''
+        }" style="font-family: 'Montserrat'; text-align: start; margin: 0px 15px; border-radius: 10px; border: 1px solid #42117e; background-color: #25183d; padding: 13px 9px;">
         <div style="max-height: 270px; overflow: auto;">`;
 
         for (const cContact of account.contacts || []) {
