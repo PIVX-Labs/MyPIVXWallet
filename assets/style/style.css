@@ -1841,7 +1841,7 @@ a {
     /* Buttons - Hide icons or it will be deformed */
     .buttoni-arrow,
     .buttoni-icon {
-        display: none;
+        /*display: none;*/
     }
 
     /* Main Wallet page */
