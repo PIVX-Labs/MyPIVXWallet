@@ -227,7 +227,7 @@ async function selectContact() {
                 </div>
             </div>
 
-            <div v-if="!publicMode">
+            <div v-if="!publicMode && false">
                 <label>SHIELD Message</label><br />
 
                 <textarea
