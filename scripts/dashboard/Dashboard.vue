@@ -369,12 +369,12 @@ function switchPublicPrivate() {
         publicMode.value = false;
         doms.domNavbar.classList.add('navbarSpecial-dark');
         doms.domPageContainer.classList.add('home-hero-dark');
-        doms.domWarningMessage.classList.add('dcWallet-warningMessage-dark');
+        document.getElementById('warningMessage').classList.add('dcWallet-warningMessage-dark');
     } else {
         publicMode.value = true;
         doms.domNavbar.classList.remove('navbarSpecial-dark');
         doms.domPageContainer.classList.remove('home-hero-dark');
-        doms.domWarningMessage.classList.remove('dcWallet-warningMessage-dark');
+        document.getElementById('warningMessage').classList.remove('dcWallet-warningMessage-dark');
     }
 }
 

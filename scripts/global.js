@@ -205,7 +205,6 @@ export async function start() {
         domAutoLockModeToggler: document.getElementById('autoLockModeToggler'),
         domNavbar: document.getElementById('navbar'),
         domPageContainer: document.getElementById('page-container'),
-        domWarningMessage: document.getElementById('warningMessage'),
         domRedeemCameraBtn: document.getElementById('redeemCameraBtn'),
     };
 
