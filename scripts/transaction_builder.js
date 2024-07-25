@@ -60,7 +60,7 @@ export class TransactionBuilder {
      */
     static getStandardTxFee(nInputs, nOutputs) {
         return (
-            (nInputs * 138 + nOutputs * 34 + 21) *
+            (nInputs * 146 + nOutputs * 34 + 26) *
             TransactionBuilder.MIN_FEE_PER_BYTE
         );
     }
