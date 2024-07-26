@@ -886,6 +886,7 @@ defineExpose({
                         :isImported="wallet.isImported"
                         :needsToEncrypt="needsToEncrypt"
                         @displayLockWalletModal="displayLockWalletModal()"
+                        @restoreWallet="restoreWallet()"
                         :isHardwareWallet="wallet.isHardwareWallet"
                         :currency="currency"
                         :price="price"

@@ -144,6 +144,7 @@ const emit = defineEmits([
     'send',
     'exportPrivKeyOpen',
     'displayLockWalletModal',
+    'restoreWallet',
 ]);
 
 getEventEmitter().on('transparent-sync-status-update', (str, finished) => {
@@ -177,6 +178,10 @@ getEventEmitter().on(
 
 function displayLockWalletModal() {
     emit('displayLockWalletModal');
+}
+
+function restoreWallet() {
+    emit('restoreWallet');
 }
 </script>
 
