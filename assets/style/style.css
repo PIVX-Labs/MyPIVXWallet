@@ -2467,8 +2467,8 @@ a {
 
 .navbar-nav .nav-item span {
     cursor: pointer;
-    margin-left: 5px;
-    margin-right: 5px;
+    margin-left: 3px;
+    margin-right: 3px;
     transition: all .2s ease-in-out;
     text-transform: uppercase;
 }
