@@ -371,9 +371,6 @@ function switchPublicPrivate() {
         document
             .getElementById('page-container')
             .classList.add('home-hero-dark');
-        document
-            .getElementById('warningMessage')
-            .classList.add('dcWallet-warningMessage-dark');
     } else {
         publicMode.value = true;
         document
@@ -382,9 +379,6 @@ function switchPublicPrivate() {
         document
             .getElementById('page-container')
             .classList.remove('home-hero-dark');
-        document
-            .getElementById('warningMessage')
-            .classList.remove('dcWallet-warningMessage-dark');
     }
 }
 
@@ -512,6 +506,7 @@ defineExpose({
             <div class="col-12 p-0" v-show="wallet.isImported">
                 <center>
                     <div
+                        :class="{ 'dcWallet-warningMessage-dark': publicMode }"
                         class="dcWallet-warningMessage"
                         id="warningMessage"
                         @click="switchPublicPrivate()"
