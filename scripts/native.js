@@ -7,13 +7,30 @@ export function registerWorker() {
         navigator.serviceWorker
             .register('./native-worker.js')
             .then((registration) => {
-                if (registration.active) {
+                const sendMessage = (serviceWorker) => {
                     const files = Array.from(
                         document.head.querySelectorAll(
                             'link[rel="serviceworkprefetch"]'
                         )
                     ).map((l) => l.href);
-                    registration.active.postMessage(files);
+                    serviceWorker.postMessage(files);
+                };
+
+                if (registration.active) {
+                    sendMessage(registration.active);
+                } else {
+                    // Wait for the service worker to become active
+                    registration.addEventListener('updatefound', () => {
+                        const newWorker =
+                            registration.installing || registration.waiting;
+                        if (newWorker) {
+                            newWorker.addEventListener('statechange', () => {
+                                if (newWorker.state === 'activated') {
+                                    sendMessage(newWorker);
+                                }
+                            });
+                        }
+                    });
                 }
             });
 
