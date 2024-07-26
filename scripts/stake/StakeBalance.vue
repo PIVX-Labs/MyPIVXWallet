@@ -67,8 +67,7 @@ function submit() {
                     class="col-6 d-flex dcWallet-topLeftMenu"
                     style="justify-content: flex-start"
                 >
-                    <h3 class="noselect balance-title">
-                    </h3>
+                    <h3 class="noselect balance-title"></h3>
                 </div>
 
                 <div
