@@ -4030,3 +4030,7 @@ textarea::placeholder {
     position: relative;
     top: 2px;
 }
+
+.tooltip {
+    z-index: 5000;
+}
