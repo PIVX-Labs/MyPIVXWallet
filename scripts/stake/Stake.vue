@@ -153,6 +153,7 @@ async function importWif(wif, extsk) {
         :unstake="true"
         :showOwnerAddress="false"
         :show="showUnstake"
+        :currency="currency"
         :price="price"
         v-model:amount="unstakeAmount"
         @maxBalance="unstakeAmount = (coldBalance / COIN).toString()"

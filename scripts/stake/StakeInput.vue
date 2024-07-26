@@ -192,11 +192,11 @@ async function selectContact() {
                     <div class="col-6 col-md-6 text-right">
                         <button
                             class="pivx-button-small"
-                            style="height: 42px; width: 97px"
+                            style="height: 42px; width: 106px"
                             @click="submit()"
                             data-testid="sendButton"
                         >
-                            <span class="buttoni-text" data-i18n="stake">
+                            <span class="buttoni-text" data-i18n="stakeUnstake">
                                 {{
                                     unstake
                                         ? translation.stakeUnstake
