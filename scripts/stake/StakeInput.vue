@@ -176,7 +176,7 @@ async function selectContact() {
 
             <div class="pb-2">
                 <div class="row">
-                    <div class="col-12 col-md-6">
+                    <div class="col-6 col-md-6">
                         <button
                             class="pivx-button-small-cancel"
                             style="height: 42px; width: 97px"
@@ -189,7 +189,7 @@ async function selectContact() {
                         </button>
                     </div>
 
-                    <div class="col-12 col-md-6 text-right">
+                    <div class="col-6 col-md-6 text-right">
                         <button
                             class="pivx-button-small"
                             style="height: 42px; width: 97px"
