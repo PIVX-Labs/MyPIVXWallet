@@ -900,7 +900,7 @@ defineExpose({
                     <WalletButtons class="col-12 p-0 md-5" />
                     <Activity
                         ref="activity"
-                        class="col-12 mb-5"
+                        class="col-12 p-0 mb-5"
                         title="Activity"
                         :rewards="false"
                     />

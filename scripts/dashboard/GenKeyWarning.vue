@@ -47,7 +47,7 @@ function submit() {
 </script>
 
 <template>
-    <div class="col-12" v-show="showBox">
+    <div class="col-12 p-0" v-show="showBox">
         <center>
             <div
                 class="dcWallet-warningMessage"

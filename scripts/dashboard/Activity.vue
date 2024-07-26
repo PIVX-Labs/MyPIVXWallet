@@ -277,7 +277,7 @@ defineExpose({ update, reset, getTxCount });
 </script>
 
 <template>
-    <div>
+    <center>
         <div class="dcWallet-activity">
             <span
                 style="
@@ -417,5 +417,5 @@ defineExpose({ update, reset, getTxCount });
                 </center>
             </div>
         </div>
-    </div>
+    </center>
 </template>
