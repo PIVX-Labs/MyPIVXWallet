@@ -214,12 +214,6 @@ function restoreWallet() {
                                 v-html="pUnlocked"
                             ></span>
                         </span>
-                        <span class="reload noselect" @click="reload()"
-                            ><i
-                                class="fa-solid fa-rotate-right topCol"
-                                :class="{ playAnim: updating }"
-                            ></i
-                        ></span>
                     </h3>
                     <h3 class="noselect balance-title"></h3>
                 </div>

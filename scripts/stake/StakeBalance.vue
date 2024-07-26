@@ -68,12 +68,6 @@ function submit() {
                     style="justify-content: flex-start"
                 >
                     <h3 class="noselect balance-title">
-                        <span class="reload noselect" @click="reload()"
-                            ><i
-                                class="fa-solid fa-rotate-right topCol"
-                                :class="{ playAnim: updating }"
-                            ></i
-                        ></span>
                     </h3>
                 </div>
 
