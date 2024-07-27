@@ -43,6 +43,9 @@ export let blockCount = 0;
 
 export let doms = {};
 
+// Public or private mode
+export let publicMode = true;
+
 const pinia = createPinia();
 
 export const dashboard = createApp(Dashboard).use(pinia).mount('#DashboardTab');
@@ -284,6 +287,11 @@ export async function start() {
 async function refreshPriceDisplay() {
     await cOracle.getPrice(strCurrency);
     getEventEmitter().emit('balance-update');
+}
+
+export function switchPublicMode() {
+    publicMode = publicMode ? false : true;
+    return publicMode;
 }
 
 function subscribeToNetworkEvents() {

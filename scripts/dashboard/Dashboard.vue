@@ -21,7 +21,13 @@ import { COIN } from '../chain_params';
 import { onMounted, ref, watch, computed } from 'vue';
 import { getEventEmitter } from '../event_bus';
 import { Database } from '../database';
-import { start, doms, updateLogOutButton } from '../global';
+import {
+    start,
+    doms,
+    updateLogOutButton,
+    publicMode,
+    switchPublicMode,
+} from '../global';
 import { validateAmount } from '../legacy';
 import {
     confirmPopup,
@@ -44,8 +50,7 @@ import { storeToRefs } from 'pinia';
 const wallet = useWallet();
 const activity = ref(null);
 
-// Public or private mode
-const publicMode = ref(true);
+const publicModeRef = ref(publicMode);
 
 const needsToEncrypt = computed(() => {
     if (wallet.isHardwareWallet) {
@@ -365,14 +370,16 @@ function getMaxBalance(useShieldInputs) {
  * Switch between public or private mode
  */
 function switchPublicPrivate() {
-    if (publicMode.value) {
-        publicMode.value = false;
+    switchPublicMode();
+
+    if (publicModeRef.value) {
+        publicModeRef.value = false;
         document.getElementById('navbar').classList.add('navbarSpecial-dark');
         document
             .getElementById('page-container')
             .classList.add('home-hero-dark');
     } else {
-        publicMode.value = true;
+        publicModeRef.value = true;
         document
             .getElementById('navbar')
             .classList.remove('navbarSpecial-dark');
@@ -506,7 +513,9 @@ defineExpose({
             <div class="col-12 p-0" v-show="wallet.isImported">
                 <center>
                     <div
-                        :class="{ 'dcWallet-warningMessage-dark': publicMode }"
+                        :class="{
+                            'dcWallet-warningMessage-dark': publicModeRef,
+                        }"
                         class="dcWallet-warningMessage"
                         id="warningMessage"
                         @click="switchPublicPrivate()"
@@ -514,7 +523,7 @@ defineExpose({
                         <div class="messLogo">
                             <span
                                 class="buttoni-icon publicSwitchIcon"
-                                v-html="publicMode ? pLogo : pShieldLogo"
+                                v-html="publicModeRef ? pLogo : pShieldLogo"
                             >
                             </span>
                         </div>
@@ -522,14 +531,18 @@ defineExpose({
                             <span class="messTop"
                                 >Now in
                                 <span
-                                    v-html="publicMode ? 'Public' : 'Private'"
+                                    v-html="
+                                        publicModeRef ? 'Public' : 'Private'
+                                    "
                                 ></span>
                                 Mode</span
                             >
                             <span class="messBot"
                                 >Switch to
                                 <span
-                                    v-html="publicMode ? 'Private' : 'Public'"
+                                    v-html="
+                                        publicModeRef ? 'Private' : 'Public'
+                                    "
                                 ></span
                             ></span>
                         </div>
