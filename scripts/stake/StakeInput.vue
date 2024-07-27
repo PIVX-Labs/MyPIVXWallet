@@ -196,7 +196,14 @@ async function selectContact() {
                             @click="submit()"
                             data-testid="sendButton"
                         >
-                            <span class="buttoni-text" data-i18n="stakeUnstake">
+                            <span
+                                class="buttoni-text"
+                                :data-i18n="
+                                    unstake
+                                        ? translation.stakeUnstake
+                                        : translation.stake
+                                "
+                            >
                                 {{
                                     unstake
                                         ? translation.stakeUnstake
