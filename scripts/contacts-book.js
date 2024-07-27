@@ -1,6 +1,6 @@
 import { Buffer } from 'buffer';
 import { Database } from './database.js';
-import { doms, toClipboard } from './global.js';
+import { doms, toClipboard, publicMode } from './global.js';
 import { ALERTS, tr, translation } from './i18n.js';
 import {
     confirmPopup,
@@ -506,13 +506,19 @@ function findNextAvailableType(startType, availableTypes) {
  */
 export async function guiToggleReceiveType(nForceType = null) {
     // Figure out which Types can be used with this wallet
-    const availableTypes = [RECEIVE_TYPES.CONTACT, RECEIVE_TYPES.ADDRESS];
-    if (wallet.hasShield()) {
-        availableTypes.push(RECEIVE_TYPES.SHIELD);
-    }
+    const availableTypes = [RECEIVE_TYPES.CONTACT];
 
-    if (wallet.isHD()) {
-        availableTypes.push(RECEIVE_TYPES.XPUB);
+    // Show only addresses according to public/private mode
+    if (publicMode) {
+        availableTypes.push(RECEIVE_TYPES.ADDRESS);
+
+        if (wallet.isHD()) {
+            availableTypes.push(RECEIVE_TYPES.XPUB);
+        }
+    } else {
+        if (wallet.hasShield()) {
+            availableTypes.push(RECEIVE_TYPES.SHIELD);
+        }
     }
 
     // Loop back to the first if we hit the end
@@ -520,6 +526,11 @@ export async function guiToggleReceiveType(nForceType = null) {
         nForceType !== null
             ? nForceType
             : findNextAvailableType(cReceiveType, availableTypes);
+
+    // If type is not found, then default to contact
+    if (!availableTypes.includes(cReceiveType)) {
+        cReceiveType = availableTypes[0];
+    }
 
     // Convert the *next* Type to text (also runs through i18n system)
     const nNextType = findNextAvailableType(cReceiveType, availableTypes);
