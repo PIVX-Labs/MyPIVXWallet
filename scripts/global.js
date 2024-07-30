@@ -1643,7 +1643,7 @@ export async function createProposal() {
             
             <p style="margin-bottom: 12px; color: #af9cc6; font-size: 1rem; font-weight: 500; ${
                 !fAdvancedMode ? 'display: none' : ''
-            }">test</p>
+            }">Proposal Address</p>
             <input id="proposalAddress" maxlength="34" placeholder="${
                 translation.popupProposalAddress
             }" style=" margin-bottom: 25px; text-align: start; ${
