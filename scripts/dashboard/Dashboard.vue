@@ -510,7 +510,7 @@ defineExpose({
             <br />
 
             <!-- Switch to Public/Private -->
-            <div class="col-12 p-0" v-show="wallet.isImported">
+            <div class="col-12 p-0" v-show="wallet.isImported && wallet.isHD">
                 <center>
                     <div
                         :class="{
