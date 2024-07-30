@@ -357,7 +357,7 @@ defineExpose({ update, reset, getTxCount });
                                         "
                                         ><i
                                             class="fa-solid"
-                                            style="padding-right: 3px"
+                                            style="padding-right: 5px"
                                             :class="[tx.icon]"
                                             :style="{ color: tx.colour }"
                                         ></i>
