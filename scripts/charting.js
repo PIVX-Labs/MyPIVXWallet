@@ -221,4 +221,27 @@ export async function renderWalletBreakdown() {
         (data) => data.colour
     );
     chartWalletBreakdown.update();
+
+    // Update the wallet breakdown
+    let breakdownLegendStr = '';
+    for (let i = 0; i < arrBreakdown.length; i++) {
+        breakdownLegendStr += `<div style="display: flex; margin-bottom: 12px;">
+            <div style="width:40px; height:40px; border-radius:5px; background-color:${
+                arrBreakdown[i]['colour']
+            };"></div>
+            <div style="padding-left: 13px; text-align: left; display: flex; flex-direction: column; font-size: 16px;">
+                <span>${beautifyNumber(
+                    arrBreakdown[i]['balance'].toFixed(2),
+                    '13px'
+                )} <span style="opacity:0.55; font-size:13px;">${
+            cChainParams.current.TICKER
+        }</span></span>
+                <span style="font-size:13px; color:#c0b1d2;">${
+                    arrBreakdown[i]['type']
+                }</span>
+            </div>
+        </div>`;
+    }
+
+    doms.domWalletBreakdownLegend.innerHTML = breakdownLegendStr;
 }
