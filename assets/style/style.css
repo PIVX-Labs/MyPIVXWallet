@@ -363,6 +363,10 @@ progress[value]::-moz-progress-bar {
     justify-content: center;
 }
 
+.placeholderCenter::placeholder {
+    text-align: center!important;
+}
+
 .inline-address {
     font-family: mono;
     background-color: #00000014;

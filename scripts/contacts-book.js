@@ -392,7 +392,7 @@ async function renderContactModal() {
             doms.domModalQR.innerHTML = `
                 <b style="margin-bottom: 9px; display: block; font-size: 16px; color:#af9cc6; font-weight: 500;">${translation.setupYourContact}</b>
                 <p style="font-size: 14px; color:#827592; font-weight: 500;">${translation.receiveWithContact}</p>
-                <input id="setContactName" placeholder="${translation.username}" style="text-align: start;"></input>
+                <input id="setContactName" class="placeholderCenter" placeholder="${translation.username}" style="text-align: center;"></input>
                 <button class="pivx-button-small-cancel" style="height: 42px; width: 167px;" onclick="MPW.guiSetAccountName('setContactName')"><span class="buttoni-text">${translation.createContact}</span></button>`;
         } else {
             doms.domModalQR.innerHTML = `
