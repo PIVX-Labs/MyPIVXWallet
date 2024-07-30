@@ -355,7 +355,9 @@ progress[value]::-moz-progress-bar {
 
 /* a bootstrap override */
 .modal-footer {
-    display: block;
+    display: flex!important;
+    flex-wrap: nowrap;
+    justify-content: center;
 }
 
 .centerFlex {
@@ -3812,7 +3814,7 @@ select.form-control option {
 }
 
 .modal-title {
-    color: #e9defb !important;
+    color: #d5adff  !important;
     font-size: 25px;
     margin-top: 22px;
 }
@@ -4006,6 +4008,7 @@ textarea::placeholder {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+    width: 100%;
 }
 
 .shadowInnerCard {
