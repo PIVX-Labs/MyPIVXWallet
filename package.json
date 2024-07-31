@@ -5,7 +5,7 @@
     "main": "scripts/index.js",
     "type": "module",
     "scripts": {
-        "postinstall": "test -f chain_params.json || cp chain_params.prod.json chain_params.json",
+        "postinstall": "node postinstall.cjs",
         "build": "webpack --config webpack.prod.js",
         "buildDev": "webpack --config webpack.dev.js",
         "watch": "webpack --watch",
@@ -38,6 +38,7 @@
         "@typescript-eslint/parser": "^5.48.0",
         "@vitejs/plugin-vue": "^4.4.1",
         "@vitest/coverage-istanbul": "^1.0.2",
+        "@vue/preload-webpack-plugin": "^2.0.0",
         "@vue/test-utils": "^2.4.2",
         "copy-webpack-plugin": "^11.0.0",
         "css-loader": "^6.7.3",
