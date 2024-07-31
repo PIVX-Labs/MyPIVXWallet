@@ -198,8 +198,9 @@ function lockWallet() {
  * Sends a transaction
  * @param {string} address - Address or contact to send to
  * @param {number} amount - Amount of PIVs to send
+ * @param {boolean} isAutoShield - Whether or not this is an autoshield transaction
  */
-async function send(address, amount, useShieldInputs) {
+async function send(address, amount, useShieldInputs, isAutoShield) {
     // Ensure a wallet is unlocked
     if (wallet.isViewOnly && !wallet.isHardwareWallet) {
         if (
@@ -249,6 +250,10 @@ async function send(address, amount, useShieldInputs) {
         if (useShieldInputs || isShieldAddress(address)) {
             return createAlert('warning', ALERTS.MISSING_SHIELD);
         }
+    }
+
+    if (isAutoShield && isShieldAddress(address)) {
+        return createAlert('warning', ALERTS.AUTO_SHIELDING_TO_SHIELD_ADDRESS);
     }
 
     // If this is an XPub, we'll fetch their last used 'index', and derive a new public key for enhanced privacy
@@ -325,9 +330,22 @@ async function send(address, amount, useShieldInputs) {
 
     // Create and send the TX
     try {
-        await wallet.createAndSendTransaction(getNetwork(), address, nValue, {
-            useShieldInputs,
-        });
+        if (isAutoShield) {
+            await wallet.createAutoshieldTransactions(
+                getNetwork(),
+                address,
+                nValue
+            );
+        } else {
+            await wallet.createAndSendTransaction(
+                getNetwork(),
+                address,
+                nValue,
+                {
+                    useShieldInputs,
+                }
+            );
+        }
     } catch (e) {
         console.error(e);
         createAlert('warning', e);

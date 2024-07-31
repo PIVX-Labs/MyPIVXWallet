@@ -5,8 +5,13 @@ import { beforeUnloadListener, blockCount } from './global.js';
 import { getNetwork } from './network.js';
 import { MAX_ACCOUNT_GAP, SHIELD_BATCH_SYNC_SIZE } from './chain_params.js';
 import { HistoricalTx, HistoricalTxType } from './historical_tx.js';
-import { COutpoint, Transaction } from './transaction.js';
-import { confirmPopup, createAlert, isShieldAddress } from './misc.js';
+import { COutpoint, Transaction, UTXO } from './transaction.js';
+import {
+    confirmPopup,
+    createAlert,
+    isShieldAddress,
+    isValidPIVXAddress,
+} from './misc.js';
 import { cChainParams } from './chain_params.js';
 import { COIN } from './chain_params.js';
 import { ALERTS, tr, translation } from './i18n.js';
@@ -1100,6 +1105,50 @@ export class Wallet {
                 true
             );
         }
+    }
+
+    /**
+     * @param {string} address
+     * @param {number} value - Value to send in satoshi
+     * @returns {Transaction[]} Two transactions, the first one deshielding `value`, the second one sending `value` to `address`
+     */
+    async createAutoshieldTransactions(address, value) {
+        if (!this.hasShield()) {
+            throw new Error(
+                'trying to create a shield transaction without having shield enabled'
+            );
+        }
+        if (isShieldAddress(address) || !isValidPIVXAddress(address))
+            throw new Error('Invalid address');
+        const [intermediaryAddress] = this.getNewAddress(1);
+        const firstTx = await this.sign(
+            this.createTransaction(
+                intermediaryAddress,
+                value + TransactionBuilder.getStandardTxFee(1, 1),
+                {
+                    useShieldInputs: true,
+                }
+            )
+        );
+        const txBuilder = new TransactionBuilder()
+            .addUTXO(
+                new UTXO({
+                    outpoint: new COutpoint({
+                        txid: firstTx.txid,
+                        n: 0,
+                    }),
+                    value: firstTx.vout[0].value,
+                    script: firstTx.vout[0].script,
+                })
+            )
+            .addOutput({
+                address,
+                value: firstTx.vout[0].value,
+            });
+        txBuilder.equallySubtractAmt(txBuilder.getFee());
+        const tx = txBuilder.build();
+        await this.sign(tx);
+        return [firstTx, tx];
     }
 
     /**

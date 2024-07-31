@@ -73,6 +73,15 @@ export const useWallet = defineStore('wallet', () => {
     getEventEmitter().on('shield-loaded-from-disk', () => {
         hasShield.value = wallet.hasShield();
     });
+    const sendTransaction = async (network, tx) => {
+        const res = await network.sendTransaction(tx.serialize());
+        if (res) {
+            await wallet.addTransaction(tx);
+        } else {
+            wallet.discardTransaction(tx);
+        }
+        return res;
+    };
     const createAndSendTransaction = lockableFunction(
         async (network, address, value, opts) => {
             const tx = wallet.createTransaction(address, value, opts);
@@ -81,15 +90,17 @@ export const useWallet = defineStore('wallet', () => {
             } else {
                 await wallet.sign(tx);
             }
-            const res = await network.sendTransaction(tx.serialize());
-            if (res) {
-                await wallet.addTransaction(tx);
-            } else {
-                wallet.discardTransaction(tx);
-            }
-            return res;
+            return await sendTransaction(network, tx);
         }
     );
+    const createAutoshieldTransactions = async (network, address, value) => {
+        const txs = await wallet.createAutoshieldTransactions(address, value);
+        let res = true;
+        for (const tx of txs) {
+            res = res && (await sendTransaction(network, tx));
+        }
+        return res;
+    };
     const isCreatingTransaction = () => createAndSendTransaction.isLocked();
 
     getEventEmitter().on('toggle-network', async () => {
@@ -136,5 +147,6 @@ export const useWallet = defineStore('wallet', () => {
         createAndSendTransaction,
         loadFromDisk,
         coldBalance,
+        createAutoshieldTransactions,
     };
 });

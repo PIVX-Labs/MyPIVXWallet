@@ -7,6 +7,7 @@ import {
     UTXO,
 } from '../../scripts/transaction.js';
 import { TransactionBuilder } from '../../scripts/transaction_builder.js';
+import { bytesToHex } from '../../scripts/utils';
 
 describe('Transaction builder tests', () => {
     it('Builds a transaction correctly', () => {
@@ -213,5 +214,81 @@ describe('Transaction builder tests', () => {
                 value: 5,
             })
         ).toThrow(/address/);
+    });
+
+    it('returns correct fee on standard tx', () => {
+        let tx = new TransactionBuilder().build();
+        tx.version = 1;
+        expect(TransactionBuilder.getStandardTxFee(0, 0)).toBe(
+            (tx.serialize().length / 2) * TransactionBuilder.MIN_FEE_PER_BYTE
+        );
+        tx = new TransactionBuilder()
+            .addOutput({
+                address: 'DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb',
+                value: 1000,
+            })
+            .build();
+        tx.version = 1;
+        expect(TransactionBuilder.getStandardTxFee(0, 1)).toBe(
+            (tx.serialize().length / 2) * TransactionBuilder.MIN_FEE_PER_BYTE
+        );
+        tx = new TransactionBuilder()
+            .addOutput({
+                address: 'DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb',
+                value: 1000,
+            })
+            .addOutput({
+                address: 'DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb',
+                value: 1000,
+            })
+            .build();
+        tx.version = 1;
+        expect(TransactionBuilder.getStandardTxFee(0, 2)).toBe(
+            (tx.serialize().length / 2) * TransactionBuilder.MIN_FEE_PER_BYTE
+        );
+        tx = new TransactionBuilder()
+            .addUTXO(
+                new UTXO({
+                    outpoint: new COutpoint({
+                        txid: 'a4dce96d30fd6a5acb63dd25b4d59e4216824ec0bbabe54f237cf9754f9b62bc',
+                        n: 4,
+                    }),
+                    script: bytesToHex(
+                        Array(TransactionBuilder.SCRIPT_SIG_MAX_SIZE).fill(0)
+                    ),
+                    value: 5,
+                })
+            )
+            .build();
+        tx.version = 1;
+        expect(TransactionBuilder.getStandardTxFee(1, 0)).toBe(
+            (tx.serialize().length / 2) * TransactionBuilder.MIN_FEE_PER_BYTE
+        );
+        tx = new TransactionBuilder()
+            .addUTXO(
+                new UTXO({
+                    outpoint: new COutpoint({
+                        txid: 'a4dce96d30fd6a5acb63dd25b4d59e4216824ec0bbabe54f237cf9754f9b62bc',
+                        n: 4,
+                    }),
+                    script: bytesToHex(
+                        Array(TransactionBuilder.SCRIPT_SIG_MAX_SIZE).fill(0)
+                    ),
+                    value: 5,
+                })
+            )
+            .addOutput({
+                address: 'DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb',
+                value: 1000,
+            })
+            .addOutput({
+                address: 'DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb',
+                value: 1000,
+            })
+            .build();
+        tx.version = 1;
+        expect(TransactionBuilder.getStandardTxFee(1, 2)).toBe(
+            (tx.serialize().length / 2) * TransactionBuilder.MIN_FEE_PER_BYTE
+        );
     });
 });

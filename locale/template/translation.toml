@@ -245,6 +245,7 @@ shieldAddress = "Shield address"
 cantShieldToExc = "This address does not support shield transfers"
 badSaplingRoot = "There was an error while syncing. Resyncing from scratch (Bad sapling root)"
 creatingShieldTransaction = "Creating SHIELD transaction..."
+autoShieldTransaction = "Auto shield transaction"
 
 [ALERTS]
 INTERNAL_ERROR = "Internal error, please try again later"
@@ -357,3 +358,4 @@ CONFIRM_LEDGER_TX = 'Confirm this transaction matches the one on your {hardwareW
 CONFIRM_LEDGER_TX_OUT = 'You will send {value} {ticker} to <div class="inline-address">{address}</div>'
 MISSING_FUNDS = 'Balance is too small! Missing {sats} sats!'
 MISSING_SHIELD = "Shield is not enabled in this wallet!"
+AUTO_SHIELDING_TO_SHIELD_ADDRESS = "Cannot auto shield to a shield address!"
