@@ -71,22 +71,6 @@ watch(showExportModal, async (showExportModal) => {
     }
 });
 
-watch(wallet.publicMode, (publicMode) => {
-    if (publicMode) {
-        document
-            .getElementById('navbar')
-            .classList.remove('navbarSpecial-dark');
-        document
-            .getElementById('page-container')
-            .classList.remove('home-hero-dark');
-    } else {
-        document.getElementById('navbar').classList.add('navbarSpecial-dark');
-        document
-            .getElementById('page-container')
-            .classList.add('home-hero-dark');
-    }
-});
-
 /**
  * Import a wallet, this function MUST be called only at start or when switching network
  * @param {Object} o - Options

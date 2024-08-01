@@ -1,6 +1,6 @@
 import { Buffer } from 'buffer';
 import { Database } from './database.js';
-import { doms, toClipboard, publicMode } from './global.js';
+import { doms, toClipboard } from './global.js';
 import { ALERTS, tr, translation } from './i18n.js';
 import {
     confirmPopup,
@@ -13,6 +13,7 @@ import {
 } from './misc.js';
 import { scanQRCode } from './scanner.js';
 import { wallet, hasEncryptedWallet } from './wallet.js';
+import { useWallet } from './composables/use_wallet.js';
 import pIconCopy from '../assets/icons/icon-copy.svg';
 import pIconCamera from '../assets/icons/icon-camera.svg';
 import pIconBin from '../assets/icons/icon-bin.svg';
@@ -505,11 +506,13 @@ function findNextAvailableType(startType, availableTypes) {
  * @param {number?} nForceType - Optionally force the Receive Type
  */
 export async function guiToggleReceiveType(nForceType = null) {
+    const walletUse = useWallet();
+
     // Figure out which Types can be used with this wallet
     const availableTypes = [RECEIVE_TYPES.CONTACT];
 
     // Show only addresses according to public/private mode
-    if (publicMode) {
+    if (walletUse.publicMode) {
         availableTypes.push(RECEIVE_TYPES.ADDRESS);
 
         if (wallet.isHD()) {
