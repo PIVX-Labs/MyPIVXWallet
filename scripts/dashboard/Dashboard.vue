@@ -21,13 +21,7 @@ import { COIN } from '../chain_params';
 import { onMounted, ref, watch, computed } from 'vue';
 import { getEventEmitter } from '../event_bus';
 import { Database } from '../database';
-import {
-    start,
-    doms,
-    updateLogOutButton,
-    publicMode,
-    switchPublicMode,
-} from '../global';
+import { start, doms, updateLogOutButton } from '../global';
 import { validateAmount } from '../legacy';
 import {
     confirmPopup,
@@ -49,8 +43,6 @@ import { storeToRefs } from 'pinia';
 
 const wallet = useWallet();
 const activity = ref(null);
-
-const publicModeRef = ref(publicMode);
 
 const needsToEncrypt = computed(() => {
     if (wallet.isHardwareWallet) {
@@ -76,6 +68,22 @@ watch(showExportModal, async (showExportModal) => {
     } else {
         // Wipe key to backup, just in case
         keyToBackup.value = '';
+    }
+});
+
+watch(wallet.publicMode, (publicMode) => {
+    if (publicMode) {
+        document
+            .getElementById('navbar')
+            .classList.remove('navbarSpecial-dark');
+        document
+            .getElementById('page-container')
+            .classList.remove('home-hero-dark');
+    } else {
+        document.getElementById('navbar').classList.add('navbarSpecial-dark');
+        document
+            .getElementById('page-container')
+            .classList.add('home-hero-dark');
     }
 });
 
@@ -366,29 +374,6 @@ function getMaxBalance(useShieldInputs) {
     transferAmount.value = (coinSatoshi / COIN).toString();
 }
 
-/**
- * Switch between public or private mode
- */
-function switchPublicPrivate() {
-    switchPublicMode();
-
-    if (publicModeRef.value) {
-        publicModeRef.value = false;
-        document.getElementById('navbar').classList.add('navbarSpecial-dark');
-        document
-            .getElementById('page-container')
-            .classList.add('home-hero-dark');
-    } else {
-        publicModeRef.value = true;
-        document
-            .getElementById('navbar')
-            .classList.remove('navbarSpecial-dark');
-        document
-            .getElementById('page-container')
-            .classList.remove('home-hero-dark');
-    }
-}
-
 getEventEmitter().on('toggle-network', async () => {
     const database = await Database.getInstance();
     const account = await database.getAccount();
@@ -514,16 +499,16 @@ defineExpose({
                 <center>
                     <div
                         :class="{
-                            'dcWallet-warningMessage-dark': publicModeRef,
+                            'dcWallet-warningMessage-dark': wallet.publicMode,
                         }"
                         class="dcWallet-warningMessage"
                         id="warningMessage"
-                        @click="switchPublicPrivate()"
+                        @click="wallet.publicMode = !wallet.publicMode"
                     >
                         <div class="messLogo">
                             <span
                                 class="buttoni-icon publicSwitchIcon"
-                                v-html="publicModeRef ? pLogo : pShieldLogo"
+                                v-html="wallet.publicMode ? pLogo : pShieldLogo"
                             >
                             </span>
                         </div>
@@ -532,7 +517,7 @@ defineExpose({
                                 >Now in
                                 <span
                                     v-html="
-                                        publicModeRef ? 'Public' : 'Private'
+                                        wallet.publicMode ? 'Public' : 'Private'
                                     "
                                 ></span>
                                 Mode</span
@@ -541,7 +526,7 @@ defineExpose({
                                 >Switch to
                                 <span
                                     v-html="
-                                        publicModeRef ? 'Private' : 'Public'
+                                        wallet.publicMode ? 'Private' : 'Public'
                                     "
                                 ></span
                             ></span>
@@ -907,7 +892,7 @@ defineExpose({
                         :shieldEnabled="wallet.hasShield"
                         @send="showTransferMenu = true"
                         @exportPrivKeyOpen="showExportModal = true"
-                        :publicMode="publicMode"
+                        :publicMode="wallet.publicMode"
                         class="col-12 p-0 mb-2"
                     />
                     <WalletButtons class="col-12 p-0 md-5" />
@@ -922,7 +907,7 @@ defineExpose({
         </div>
         <TransferMenu
             :show="showTransferMenu"
-            :publicMode="publicMode"
+            :publicMode="wallet.publicMode"
             :price="price"
             :currency="currency"
             :shieldEnabled="wallet.hasShield"

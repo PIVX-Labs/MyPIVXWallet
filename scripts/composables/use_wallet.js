@@ -17,6 +17,7 @@ export const useWallet = defineStore('wallet', () => {
     // For now we'll just import the existing one
     // const wallet = new Wallet();
 
+    const publicMode = ref(true);
     const isImported = ref(wallet.isLoaded());
     const isViewOnly = ref(wallet.isViewOnly());
     const isSynced = ref(wallet.isSynced);
@@ -107,6 +108,7 @@ export const useWallet = defineStore('wallet', () => {
     });
 
     return {
+        publicMode,
         isImported,
         isViewOnly,
         isEncrypted,
