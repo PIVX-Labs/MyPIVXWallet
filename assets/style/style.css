@@ -3795,6 +3795,11 @@ select.form-control option {
     margin-right: 80px;
 }
 
+.modal.show {
+    display: flex!important;
+    justify-content: center;
+}
+
 .modalMain {
     background-color: #221239;
 }
