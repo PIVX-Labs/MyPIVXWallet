@@ -20,19 +20,11 @@ export const useWallet = defineStore('wallet', () => {
     const publicMode = ref(true);
     watch(publicMode, (publicMode) => {
         if (publicMode) {
-            document
-                .getElementById('navbar')
-                .classList.remove('navbarSpecial-dark');
-            document
-                .getElementById('page-container')
-                .classList.remove('home-hero-dark');
+            document.getElementById('navbar').classList.toggle('active');
+            document.getElementById('page-container-light').style.opacity = '1';
         } else {
-            document
-                .getElementById('navbar')
-                .classList.add('navbarSpecial-dark');
-            document
-                .getElementById('page-container')
-                .classList.add('home-hero-dark');
+            document.getElementById('navbar').classList.toggle('active');
+            document.getElementById('page-container-light').style.opacity = '0';
         }
     });
 
