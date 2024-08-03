@@ -480,6 +480,7 @@ function restoreWallet() {
                     color: #d3bee5;
                     width: 310px;
                     text-align: center;
+                    margin-bottom: 20px;
                 "
             >
                 {{ transparentSyncing ? syncTStr : syncSStr }}
@@ -498,6 +499,7 @@ function restoreWallet() {
                     color: #d3bee5;
                     width: 310px;
                     text-align: left;
+                    margin-bottom: 20px;
                 "
             >
                 <div
