@@ -2296,7 +2296,7 @@ a {
 /* Alert */
 .alertPositioning {
     position: fixed;
-    z-index: 2000;
+    z-index: 10000;
     right: 15px;
     bottom: 0px;
     display: flex;
