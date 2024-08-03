@@ -293,6 +293,11 @@ export async function start() {
 
     // Subscribe to events
     subscribeToNetworkEvents();
+
+    // Check if password is encrypted
+    if (await hasEncryptedWallet()) {
+        doms.domChangePasswordContainer.classList.remove('d-none');
+    }
 }
 
 function subscribeToNetworkEvents() {

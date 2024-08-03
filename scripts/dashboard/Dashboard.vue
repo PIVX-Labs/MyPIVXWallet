@@ -137,6 +137,7 @@ async function encryptWallet(password, currentPassword = '') {
     const res = await wallet.encrypt(password);
     if (res) {
         createAlert('success', ALERTS.NEW_PASSWORD_SUCCESS, 5500);
+        doms.domChangePasswordContainer.classList.remove('d-none');
     }
 }
 
