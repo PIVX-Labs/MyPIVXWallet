@@ -3021,7 +3021,7 @@ select.form-control option {
     padding-top: 9px;
     padding-bottom: 9px;
     height: 43px;
-
+    border:1px solid #41117B;
     position: relative;
     top: 10px;
 
