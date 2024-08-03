@@ -4063,8 +4063,12 @@ textarea::placeholder {
     opacity: 0;
     z-index:-10;
     transition: opacity 0.125s ease-in-out;
-  }
+}
 
-  .navbar.active::after {
+.navbar.active::after {
     opacity: 1;
-  }
+}
+
+.navbar-toggler:hover {
+    background-color:#ffffff0f;
+}
