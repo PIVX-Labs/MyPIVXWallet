@@ -1234,8 +1234,8 @@ async function renderProposals(arrProposals, fContested) {
             domVoteBtns.style = 'vertical-align: middle;';
             voteBtn = '';
         } else {
-            let btnYesClass = 'pivx-button-small';
-            let btnNoClass = 'pivx-button-outline pivx-button-outline-small';
+            let btnYesClass = 'pivx-button-small govYesBtnMob';
+            let btnNoClass = 'pivx-button-outline pivx-button-outline-small govNoBtnMob';
             if (cProposal.YourVote) {
                 if (cProposal.YourVote === 1) {
                     btnYesClass += ' pivx-button-big-yes-gov';

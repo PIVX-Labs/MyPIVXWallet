@@ -4076,3 +4076,15 @@ textarea::placeholder {
 .sendHeaderoText {
     color:#d5adff!important;
 }
+
+@media (max-width: 992px) {
+    .govNoBtnMob span {
+        width:62px;
+        text-align: center;
+    }
+
+    .govYesBtnMob {
+        width:68px;
+        margin-left: 0px;
+    }
+}
