@@ -1235,7 +1235,8 @@ async function renderProposals(arrProposals, fContested) {
             voteBtn = '';
         } else {
             let btnYesClass = 'pivx-button-small govYesBtnMob';
-            let btnNoClass = 'pivx-button-outline pivx-button-outline-small govNoBtnMob';
+            let btnNoClass =
+                'pivx-button-outline pivx-button-outline-small govNoBtnMob';
             if (cProposal.YourVote) {
                 if (cProposal.YourVote === 1) {
                     btnYesClass += ' pivx-button-big-yes-gov';
