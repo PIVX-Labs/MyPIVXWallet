@@ -4088,3 +4088,7 @@ textarea::placeholder {
         margin-left: 0px;
     }
 }
+
+.modal-body {
+    overflow: auto;
+}
