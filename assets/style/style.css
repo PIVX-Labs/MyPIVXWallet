@@ -4072,3 +4072,7 @@ textarea::placeholder {
 .navbar-toggler:hover {
     background-color:#ffffff0f;
 }
+
+.sendHeaderoText {
+    color:#d5adff!important;
+}
