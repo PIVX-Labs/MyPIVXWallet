@@ -6,6 +6,7 @@ import Modal from '../Modal.vue';
 import { createAlert, isColdAddress } from '../misc';
 import { COIN, cChainParams } from '../chain_params';
 import { beautifyNumber } from '../misc';
+import { renderWalletBreakdown } from '../charting.js';
 
 import pLogo from '../../assets/p_logo.svg';
 import logo from '../../assets/pivx.png';
