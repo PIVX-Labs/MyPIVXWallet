@@ -186,8 +186,8 @@ export async function renderContacts(account, fPrompt = false) {
                     <span id="contactsName${i}" style="word-wrap: anywhere; color: #e9deff; font-weight: 600; margin-top: 8px; display: block;">${sanitizeHTML(
                 sanitizeHTML(cContact.label)
             )}</span>
-                    <span id="contactsAddress${i}" style="word-wrap: anywhere; font-size: 13px; position: relative; top: 10px;">
-                        <code style="background-color: #1a122d; color: #7c659e; padding: 7px 10px; font-size: 13px; border-radius: 9px;">
+                    <span style="word-wrap: anywhere; font-size: 13px; position: relative; top: 10px;">
+                        <code id="contactsAddress${i}" style="background-color: #1a122d; color: #7c659e; padding: 7px 10px; font-size: 13px; border-radius: 9px;">
                             ${sanitizeHTML(strPubkey).substring(0, 23)}...
                         </code>
                     </span>
