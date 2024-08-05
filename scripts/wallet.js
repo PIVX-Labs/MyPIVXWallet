@@ -755,17 +755,15 @@ export class Wallet {
 
                     getEventEmitter().emit(
                         'shield-sync-status-update',
-                        tr(translation.syncShieldProgress, [
-                            { current: handled - 1 },
-                            { total: blockHeights.length },
-                        ]),
+                        handled - 1,
+                        blockHeights.length,
                         false
                     );
                 },
                 blockHeights.length,
                 batchSize
             );
-            getEventEmitter().emit('shield-sync-status-update', '', true);
+            getEventEmitter().emit('shield-sync-status-update', 0, 0, true);
         } catch (e) {
             console.error(e);
         }

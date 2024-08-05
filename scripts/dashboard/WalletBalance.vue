@@ -70,7 +70,7 @@ const syncTStr = ref('');
 
 // Shield sync status
 const shieldSyncing = ref(false);
-const syncSStr = ref('');
+const shieldPercentageSyncing = ref(0.0);
 
 // Shield transaction creation
 const isCreatingTx = ref(false);
@@ -152,10 +152,15 @@ getEventEmitter().on('transparent-sync-status-update', (str, finished) => {
     transparentSyncing.value = !finished;
 });
 
-getEventEmitter().on('shield-sync-status-update', (str, finished) => {
-    syncSStr.value = str;
-    shieldSyncing.value = !finished;
-});
+getEventEmitter().on(
+    'shield-sync-status-update',
+    (blocks, totalBlocks, finished) => {
+        shieldPercentageSyncing.value = Math.round(
+            (blocks / totalBlocks) * 100
+        );
+        shieldSyncing.value = !finished;
+    }
+);
 
 getEventEmitter().on(
     'shield-transaction-creation-update',
@@ -471,7 +476,7 @@ function restoreWallet() {
             <div
                 v-if="transparentSyncing || shieldSyncing"
                 style="
-                    display: block;
+                    display: flex;
                     font-size: 15px;
                     background-color: #3a0c60;
                     border: 1px solid #9f00f9;
@@ -479,11 +484,37 @@ function restoreWallet() {
                     border-radius: 10px;
                     color: #d3bee5;
                     width: 310px;
-                    text-align: center;
+                    text-align: left;
                     margin-bottom: 20px;
                 "
             >
-                {{ transparentSyncing ? syncTStr : syncSStr }}
+                <div
+                    style="
+                        width: 38px;
+                        height: 38px;
+                        background-color: #310b51;
+                        margin-right: 9px;
+                        border-radius: 9px;
+                    "
+                >
+                    <span
+                        class="dcWallet-svgIconPurple"
+                        style="margin-left: 1px; top: 14px; left: 7px"
+                        v-html="iShieldLock"
+                    ></span>
+                </div>
+                <div style="width: -webkit-fill-available">
+                    {{ transparentSyncing ? syncTStr : 'Syncing Blocks...' }}
+                    <LoadingBar
+                        :show="true"
+                        :percentage="shieldPercentageSyncing"
+                        style="
+                            border: 1px solid #932ecd;
+                            border-radius: 4px;
+                            background-color: #2b003a;
+                        "
+                    ></LoadingBar>
+                </div>
             </div>
         </center>
         <center>

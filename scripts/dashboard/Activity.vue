@@ -269,7 +269,7 @@ getEventEmitter().on(
 );
 getEventEmitter().on(
     'shield-sync-status-update',
-    (_str, done) => done && update()
+    (blocks, totalBlocks, done) => done && update()
 );
 onMounted(() => update());
 
