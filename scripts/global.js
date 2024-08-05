@@ -206,6 +206,9 @@ export async function start() {
         domRedeemCameraBtn: document.getElementById('redeemCameraBtn'),
     };
 
+    // Set Copyright year on footer
+    document.getElementById('copyrightYear').innerHTML = new Date().getFullYear();
+
     await i18nStart();
     await loadImages();
 
