@@ -152,7 +152,7 @@ export async function renderContacts(account, fPrompt = false) {
             )}</span>
                     <span id="contactsAddress${i}" style="word-wrap: anywhere; font-size: 13px; position: relative; top: 10px;">
                         <code style="background-color: #1a122d; color: #7c659e; padding: 7px 10px; font-size: 13px; border-radius: 9px;">
-                            ${sanitizeHTML(strPubkey).substring(0, 20)}...
+                            ${sanitizeHTML(strPubkey).substring(0, 18)}...
                         </code>
                     </span>
                 </div>
