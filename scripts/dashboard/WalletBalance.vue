@@ -490,18 +490,18 @@ function restoreWallet() {
             >
                 <div
                     style="
-                        width: 38px;
+                        width: 48px;
                         height: 38px;
                         background-color: #310b51;
                         margin-right: 9px;
                         border-radius: 9px;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        font-size: 20px;
                     "
                 >
-                    <span
-                        class="dcWallet-svgIconPurple"
-                        style="margin-left: 1px; top: 14px; left: 7px"
-                        v-html="iShieldLock"
-                    ></span>
+                    <i class="fas fa-spinner spinningLoading"></i>
                 </div>
                 <div style="width: 100%">
                     {{ transparentSyncing ? syncTStr : 'Syncing Blocks...' }}
@@ -535,7 +535,7 @@ function restoreWallet() {
             >
                 <div
                     style="
-                        width: 38px;
+                        width: 48px;
                         height: 38px;
                         background-color: #310b51;
                         margin-right: 9px;
