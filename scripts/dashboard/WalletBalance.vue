@@ -503,7 +503,7 @@ function restoreWallet() {
                         v-html="iShieldLock"
                     ></span>
                 </div>
-                <div style="width: -webkit-fill-available">
+                <div style="width: 100%">
                     {{ transparentSyncing ? syncTStr : 'Syncing Blocks...' }}
                     <LoadingBar
                         :show="true"
@@ -548,7 +548,7 @@ function restoreWallet() {
                         v-html="iShieldLock"
                     ></span>
                 </div>
-                <div style="width: -webkit-fill-available">
+                <div style="width: 100%">
                     {{ txCreationStr }}
                     <LoadingBar
                         :show="true"
