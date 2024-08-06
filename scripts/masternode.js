@@ -40,9 +40,7 @@ export default class Masternode {
     static sessionVotes = [];
 
     async _getWalletPrivateKey() {
-        return await wallet
-            .getMasterKey()
-            .getPrivateKey(this.walletPrivateKeyPath);
+        return wallet.getMasterKey().getPrivateKey(this.walletPrivateKeyPath);
     }
 
     /**
