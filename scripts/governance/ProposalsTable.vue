@@ -3,12 +3,21 @@ import ProposalStatus from './ProposalStatus.vue';
 import ProposalName from './ProposalName.vue';
 import ProposalPayment from './ProposalPayment.vue';
 import ProposalVotes from './ProposalVotes.vue';
-import { toRef } from 'vue';
+import { toRefs, computed } from 'vue';
 import { translation } from '../i18n.js';
+import { ProposalValidator } from './status';
 const props = defineProps({
     proposals: Object,
+    masternodeCount: Number,
+    strCurrency: String,
+    price: Number,
 });
-const proposals = toRef(props, 'proposals');
+const { proposals, masternodeCount, strCurrency, price } = toRefs(props);
+const proposalValidator = computed(
+    () => new ProposalValidator(masternodeCount.value)
+);
+
+//TODO: fetch currency from settings
 </script>
 <template>
     <table
@@ -44,15 +53,19 @@ const proposals = toRef(props, 'proposals');
                     <!-- REMEMBER TO UPDATE THIS!!! -->
                     <ProposalStatus
                         :proposal="proposal"
-                        :nMasternodes="2000"
-                        :overBudget="false"
+                        :proposalValidator="proposalValidator"
+                        :nMasternodes="masternodeCount"
                     />
                 </td>
                 <td style="vertical-align: middle">
                     <ProposalName :proposal="proposal" />
                 </td>
                 <td style="vertical-align: middle">
-                    <ProposalPayment :proposal="proposal" />
+                    <ProposalPayment
+                        :proposal="proposal"
+                        :price="price"
+                        :strCurrency="strCurrency"
+                    />
                 </td>
                 <td style="vertical-align: middle">
                     <ProposalVotes :proposal="proposal" />

@@ -1,41 +1,54 @@
 <script setup>
 import { translation } from '../i18n';
-import { ref, computed, toRefs } from 'vue';
+import { computed, toRefs } from 'vue';
+import { ProposalValidator, reasons } from './status';
 const props = defineProps({
     proposal: Object,
     nMasternodes: Number,
-    overBudget: Boolean,
+    proposalValidator: ProposalValidator,
 });
-console.log(props.proposal);
+const { proposal, nMasternodes, overBudget, proposalValidator } = toRefs(props);
 const proposalStatus = computed(() => {
-    const { Yeas, Nays } = props.proposal;
+    const { Yeas, Nays } = proposal.value;
     const netYes = Yeas - Nays;
 
-    const requiredVotes = props.nMasternodes / 10;
-    const status =
-        netYes >= requiredVotes
-            ? translation.proposalPassing
-            : translation.proposalFailing;
     let statusClass = '';
     let funding = '';
-    if (netYes < requiredVotes) {
-        funding = translation.proposalNotFunded;
-        statusClass = 'votesNo';
-    } else if (!props.proposal.IsEstablished) {
-        funding = translation.proposalTooYoung;
-        statusClass = 'votesNo';
-    } else if (props.overBudget) {
-        funding = translation.proposalOverBudget;
-        statusClass = 'votesOverAllocted';
-    } else {
+    const { passing, reason } = proposalValidator.value.validate(
+        proposal.value
+    );
+    const status = passing
+        ? translation.proposalPassing
+        : translation.proposalFailing;
+
+    if (passing) {
         funding = translation.proposalFunded;
         statusClass = 'votesYes';
+    } else {
+        switch (reason) {
+            case reasons.NOT_FUNDED: {
+                funding = translation.proposalNotFunded;
+                statusClass = 'votesNo';
+                break;
+            }
+            case reasons.OVER_BUDGET: {
+                funding = translation.proposalOverBudget;
+                statusClass = 'votesOverAllocted';
+                break;
+            }
+            case reasons.TOO_YOUNG: {
+                funding = translation.proposalTooYoung;
+                statusClass = 'votesNo';
+                break;
+            }
+        }
     }
+
     return {
         status,
         statusClass,
         funding,
-        netYesPercent: (netYes / props.nMasternodes) * 100,
+        netYesPercent: (netYes / nMasternodes.value) * 100,
     };
 });
 </script>

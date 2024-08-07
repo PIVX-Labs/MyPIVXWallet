@@ -1,31 +1,52 @@
 <script setup>
 import { COIN, cChainParams } from '../chain_params';
-import { watch, ref } from 'vue';
-import ProposalsTable from './ProposalsTable.vue';
+import { watch, ref, computed } from 'vue';
+import { cOracle } from '../prices';
+import { ProposalValidator } from './status';
+import { blockCount } from '../global';
 import Masternode from '../masternode.js';
-/** A lock to prevent rendering the Governance Dashboard multiple times */
-let fRenderingGovernance = false;
-watch(cChainParams.current.isTestnet, () => {
-    if (cChainParams.current.isTestnet) {
-        // Reset flipdown
-        governanceFlipdown = null;
-        doms.domFlipdown.innerHTML = '';
-    }
-});
+import ProposalsTable from './ProposalsTable.vue';
+import Flipdown from './Flipdown.vue';
+
+const strCurrency = 'usd';
+const price = ref(0);
+watch(
+    strCurrency,
+    async () => {
+        price.value = await cOracle.getPrice(strCurrency);
+    },
+    { immediate: true }
+);
+
 const proposals = ref([]);
 const contestedProposals = ref([]);
 const nextSuperBlock = ref(0);
 const masternodeCount = ref(1);
+const allocatedBudget = computed(() => {
+    const proposalValidator = new ProposalValidator(masternodeCount.value);
+    return proposals.value.reduce(
+        (acc, p) =>
+            acc + p.Allotted * Number(proposalValidator.validate(p).passing),
+        0
+    );
+});
+const flipdownTimeStamp = ref(0);
+
+function numberToCurrency(number, price) {
+    return (number * price).toLocaleString('en-gb', ',', '.', {
+        style: 'currency',
+    });
+}
 
 async function fetchProposals() {
     const arrProposals = await Masternode.getProposals({
-        fAllowFinished: true,
+        fAllowFinished: false,
     });
-    const nSuperblock = await Masternode.getNextSuperblock();
-    // The estimated time to the superblock (using the block target and remaining blocks)
-    /*const nTimestamp =
-         Date.now() / 1000 + (nSuperblock - blockCount) * 60;
-     governanceFlipdown = new FlipDown(nTimestamp).start();*/
+    nextSuperBlock.value = await Masternode.getNextSuperblock();
+    masternodeCount.value = (await Masternode.getMasternodeCount()).total;
+
+    flipdownTimeStamp.value =
+        Date.now() / 1000 + (nextSuperBlock.value - blockCount) * 60;
     proposals.value = arrProposals.filter(
         (a) => a.Yeas + a.Nays < 100 || a.Ratio > 0.25
     );
@@ -137,441 +158,6 @@ function addProposalToFinalisationCache(cProposal) {
 
     // Return the object 'pointer' in the array for further updating
     return cPropCache;
-}
-
-/**
- * Render Governance proposal objects to a given Proposal category
- * @param {Array<object>} arrProposals - The proposals to render
- * @param {boolean} fContested - The proposal category
- */
-async function renderProposals(arrProposals, fContested) {
-    // Update tota budget in user's currency
-    const nPrice = cOracle.getCachedPrice(strCurrency);
-    const nCurrencyValue = (cChainParams.current.maxPayment / COIN) * nPrice;
-    const { nValue, cLocale } = optimiseCurrencyLocale(nCurrencyValue);
-    doms.domTotalGovernanceBudgetValue.innerHTML =
-        nValue.toLocaleString('en-gb', cLocale) +
-        ' <span style="color:#7C1DEA;">' +
-        strCurrency.toUpperCase() +
-        '</span>';
-
-    // Select the table based on the proposal category
-    const domTable = fContested
-        ? doms.domGovProposalsContestedTableBody
-        : doms.domGovProposalsTableBody;
-
-    // Render the proposals in the relevent table
-    const database = await Database.getInstance();
-    const cMasternode = await database.getMasternode();
-
-    if (!fContested) {
-        const localProposals =
-            (await database.getAccount())?.localProposals?.map((p) => {
-                return {
-                    Name: p.name,
-                    URL: p.url,
-                    PaymentAddress: p.address,
-                    MonthlyPayment: p.monthlyPayment / COIN,
-                    RemainingPaymentCount: p.nPayments,
-                    TotalPayment: p.nPayments * (p.monthlyPayment / COIN),
-                    Yeas: 0,
-                    Nays: 0,
-                    local: true,
-                    Ratio: 0,
-                    IsEstablished: false,
-                    mpw: p,
-                };
-            }) || [];
-        arrProposals = localProposals.concat(arrProposals);
-    }
-    arrProposals = await Promise.all(
-        arrProposals.map(async (p) => {
-            return {
-                YourVote:
-                    cMasternode && p.Hash
-                        ? await cMasternode.getVote(p.Name, p.Hash)
-                        : null,
-                ...p,
-            };
-        })
-    );
-
-    // Fetch the Masternode count for proposal status calculations
-    const cMasternodes = await Masternode.getMasternodeCount();
-
-    let totalAllocatedAmount = 0;
-
-    // Wipe the current table and start rendering proposals
-    let i = 0;
-    domTable.innerHTML = '';
-    for (const cProposal of arrProposals) {
-        const domRow = domTable.insertRow();
-
-        const domStatus = domRow.insertCell();
-        domStatus.classList.add('governStatusCol');
-        if (!fContested) {
-            domStatus.setAttribute(
-                'onclick',
-                `if(document.getElementById('governMob${i}').classList.contains('d-none')) { document.getElementById('governMob${i}').classList.remove('d-none'); } else { document.getElementById('governMob${i}').classList.add('d-none'); }`
-            );
-        } else {
-            domStatus.setAttribute(
-                'onclick',
-                `if(document.getElementById('governMobCon${i}').classList.contains('d-none')) { document.getElementById('governMobCon${i}').classList.remove('d-none'); } else { document.getElementById('governMobCon${i}').classList.add('d-none'); }`
-            );
-        }
-
-        // Add border radius to last row
-        if (arrProposals.length - 1 == i) {
-            domStatus.classList.add('bblr-7p');
-        }
-
-        // Net Yes calculation
-        const { Yeas, Nays } = cProposal;
-        const nNetYes = Yeas - Nays;
-        const nNetYesPercent = (nNetYes / cMasternodes.enabled) * 100;
-
-        // Proposal Status calculation
-        const nRequiredVotes = cMasternodes.enabled / 10;
-        const nMonthlyPayment = parseInt(cProposal.MonthlyPayment);
-
-        // Initial state is assumed to be "Not enough votes"
-        let strStatus = translation.proposalFailing;
-        let strFundingStatus = translation.proposalNotFunded;
-        let strColourClass = 'No';
-
-        // Proposal Status calculations
-        if (nNetYes < nRequiredVotes) {
-            // Scenario 1: Not enough votes, default scenario
-        } else if (!cProposal.IsEstablished) {
-            // Scenario 2: Enough votes, but not established
-            strFundingStatus = translation.proposalTooYoung;
-        } else if (
-            nMonthlyPayment + totalAllocatedAmount >
-            cChainParams.current.maxPayment / COIN
-        ) {
-            // Scenario 3: Enough votes, and established, but over-allocating the budget
-            strStatus = translation.proposalPassing;
-            strFundingStatus = translation.proposalOverBudget;
-            strColourClass = 'OverAllocated';
-        } else {
-            // Scenario 4: Enough votes, and established
-            strStatus = translation.proposalPassing;
-            strFundingStatus = translation.proposalFunded;
-            strColourClass = 'Yes';
-
-            // Allocate this with the budget
-            totalAllocatedAmount += nMonthlyPayment;
-        }
-
-        // Funding Status and allocation calculations
-        if (cProposal.local) {
-            // Check the finalisation cache
-            const cPropCache = addProposalToFinalisationCache(cProposal);
-            if (!cPropCache.fFetching) {
-                waitForSubmissionBlockHeight(cPropCache).then(
-                    updateGovernanceTab
-                );
-            }
-            const strLocalStatus = getProposalFinalisationStatus(cPropCache);
-            const finalizeButton = document.createElement('button');
-            finalizeButton.className = 'pivx-button-small ';
-            finalizeButton.innerHTML = '<i class="fas fa-check"></i>';
-
-            if (
-                strLocalStatus === translation.proposalFinalisationReady ||
-                strLocalStatus === translation.proposalFinalisationExpired
-            ) {
-                finalizeButton.addEventListener('click', async () => {
-                    const result = await Masternode.finalizeProposal(
-                        cProposal.mpw
-                    );
-
-                    const deleteProposal = async () => {
-                        // Fetch Account
-                        const account = await database.getAccount();
-
-                        // Find index of Account local proposal to remove
-                        const nProposalIndex = account.localProposals.findIndex(
-                            (p) => p.txid === cProposal.mpw.txid
-                        );
-
-                        // If found, remove the proposal and update the account with the modified localProposals array
-                        if (nProposalIndex > -1) {
-                            // Remove our proposal from it
-                            account.localProposals.splice(nProposalIndex, 1);
-
-                            // Update the DB
-                            await database.updateAccount(account, true);
-                        }
-                    };
-
-                    if (result.ok) {
-                        deleteProposal();
-                        // Create a prompt showing the finalisation success, vote hash, and further details
-                        confirmPopup({
-                            title: translation.PROPOSAL_FINALISED + ' 🚀',
-                            html: `<p><span style="opacity: 0.65; margin: 10px;">${
-                                translation.popupProposalFinalisedNote
-                            }</span><br><br>${
-                                translation.popupProposalVoteHash
-                            }<br><span class="mono" style="font-size: small;">${sanitizeHTML(
-                                result.hash
-                            )}</span><br><br>${
-                                translation.popupProposalFinalisedSignoff
-                            } 👋</p>`,
-                            hideConfirm: true,
-                        });
-                        updateGovernanceTab();
-                    } else {
-                        if (result.err === 'unconfirmed') {
-                            createAlert(
-                                'warning',
-                                ALERTS.PROPOSAL_UNCONFIRMED,
-                                5000
-                            );
-                        } else if (result.err === 'invalid') {
-                            createAlert(
-                                'warning',
-                                ALERTS.PROPOSAL_EXPIRED,
-                                5000
-                            );
-                            deleteProposal();
-                            updateGovernanceTab();
-                        } else {
-                            createAlert(
-                                'warning',
-                                ALERTS.PROPOSAL_FINALISE_FAIL
-                            );
-                        }
-                    }
-                });
-            } else {
-                finalizeButton.style.opacity = 0.5;
-                finalizeButton.style.cursor = 'default';
-            }
-
-            domStatus.innerHTML = `
-            <span style="font-size:12px; line-height: 15px; display: block; margin-bottom:15px;">
-                <span style="color:#fff; font-weight:700;">${strLocalStatus}</span><br>
-            </span>
-            <span class="governArrow for-mobile ptr">
-                <i class="fa-solid fa-angle-down"></i>
-            </span>`;
-            domStatus.appendChild(finalizeButton);
-        } else {
-            domStatus.innerHTML = `
-`;
-        }
-
-        // Name, Payment Address and URL hyperlink
-        const domNameAndURL = domRow.insertCell();
-        domNameAndURL.style = 'vertical-align: middle;';
-
-        // IMPORTANT: Sanitise all of our HTML or a rogue server or malicious proposal could perform a cross-site scripting attack
-        domNameAndURL.innerHTML = `<a class="governLink" style="color: white" href="${sanitizeHTML(
-            cProposal.URL
-        )}" target="_blank" rel="noopener noreferrer"><b>${sanitizeHTML(
-            cProposal.Name
-        )} <span class="governLinkIco"><i class="fa-solid fa-arrow-up-right-from-square"></i></b></a></span><br>
-        <a class="governLink" style="border-radius: 8px; background-color:#1A122D; padding: 6px 9px; font-size: 14px; color:#861ff7;" onclick="MPW.openExplorer('${
-            cProposal.PaymentAddress
-        }')"><i class="fa-solid fa-user-large" style="margin-right: 5px"></i><b>${sanitizeHTML(
-            cProposal.PaymentAddress.slice(0, 10) + '...'
-        )}`;
-
-        // Convert proposal amount to user's currency
-        const nProposalValue = nMonthlyPayment * nPrice;
-        const { nValue } = optimiseCurrencyLocale(nProposalValue);
-        const strProposalCurrency = nValue.toLocaleString('en-gb', cLocale);
-
-        // Payment Schedule and Amounts
-        const domPayments = domRow.insertCell();
-        domPayments.classList.add('for-desktop');
-        domPayments.style = 'vertical-align: middle;';
-        domPayments.innerHTML = `<span class="governValues"><b>${sanitizeHTML(
-            nMonthlyPayment.toLocaleString('en-gb', ',', '.')
-        )}</b> <span class="governMarked">${
-            cChainParams.current.TICKER
-        }</span> <br>
-        <b class="governFiatSize">${strProposalCurrency} <span style="color:#7C1DEA;">${strCurrency.toUpperCase()}</span></b></span>
-
-        <span class="governInstallments"> ${sanitizeHTML(
-            cProposal['RemainingPaymentCount']
-        )} ${
-            translation.proposalPaymentsRemaining
-        } <span style="font-weight:500;">${sanitizeHTML(
-            parseInt(cProposal.TotalPayment).toLocaleString('en-gb', ',', '.')
-        )} ${cChainParams.current.TICKER}</span> ${
-            translation.proposalPaymentTotal
-        }</span>`;
-
-        // Vote Counts and Consensus Percentages
-        const domVoteCounters = domRow.insertCell();
-        domVoteCounters.classList.add('for-desktop');
-        domVoteCounters.style = 'vertical-align: middle;';
-
-        const nLocalPercent = cProposal.Ratio * 100;
-        domVoteCounters.innerHTML = `<b>${parseFloat(
-            nLocalPercent
-        ).toLocaleString(
-            'en-gb',
-            { minimumFractionDigits: 0, maximumFractionDigits: 1 },
-            ',',
-            '.'
-        )}%</b> <br>
-        <small class="votesBg"> <b><div class="votesYes" style="display:inline;"> ${sanitizeHTML(
-            Yeas
-        )} </div></b> /
-        <b><div class="votesNo" style="display:inline;"> ${sanitizeHTML(
-            Nays
-        )} </div></b></small>
-        `;
-
-        // Voting Buttons for Masternode owners (MNOs)
-        let voteBtn;
-        if (cProposal.local) {
-            const domVoteBtns = domRow.insertCell();
-            domVoteBtns.classList.add('for-desktop');
-            domVoteBtns.style = 'vertical-align: middle;';
-            voteBtn = '';
-        } else {
-            let btnYesClass = 'pivx-button-small govYesBtnMob';
-            let btnNoClass =
-                'pivx-button-outline pivx-button-outline-small govNoBtnMob';
-            if (cProposal.YourVote) {
-                if (cProposal.YourVote === 1) {
-                    btnYesClass += ' pivx-button-big-yes-gov';
-                } else {
-                    btnNoClass += ' pivx-button-big-no-gov';
-                }
-            }
-
-            /*
-
-            <div></div>
-            */
-
-            const domVoteBtns = domRow.insertCell();
-            domVoteBtns.style =
-                'padding-top: 30px; vertical-align: middle; display: flex; justify-content: center; align-items: center;';
-            const domNoBtn = document.createElement('div');
-            domNoBtn.className = btnNoClass;
-            domNoBtn.style.width = 'fit-content';
-            domNoBtn.innerHTML = `<span>${translation.no}</span>`;
-            domNoBtn.onclick = () => govVote(cProposal.Hash, 2);
-
-            const domYesBtn = document.createElement('button');
-            domYesBtn.className = btnYesClass;
-            domYesBtn.innerText = translation.yes;
-            domYesBtn.onclick = () => govVote(cProposal.Hash, 1);
-
-            // Add border radius to last row
-            if (arrProposals.length - 1 == i) {
-                domVoteBtns.classList.add('bbrr-7p');
-            }
-
-            domVoteBtns.classList.add('for-desktop');
-            domVoteBtns.appendChild(domNoBtn);
-            domVoteBtns.appendChild(domYesBtn);
-
-            domNoBtn.setAttribute(
-                'onclick',
-                `MPW.govVote('${cProposal.Hash}', 2)`
-            );
-            domYesBtn.setAttribute(
-                'onclick',
-                `MPW.govVote('${cProposal.Hash}', 1);`
-            );
-            voteBtn = domNoBtn.outerHTML + domYesBtn.outerHTML;
-        }
-
-        // Create extended row for mobile
-        const mobileDomRow = domTable.insertRow();
-        const mobileExtended = mobileDomRow.insertCell();
-        mobileExtended.style = 'vertical-align: middle;';
-        if (!fContested) {
-            mobileExtended.id = `governMob${i}`;
-        } else {
-            mobileExtended.id = `governMobCon${i}`;
-        }
-        mobileExtended.colSpan = '2';
-        mobileExtended.classList.add('text-left');
-        mobileExtended.classList.add('d-none');
-        mobileExtended.classList.add('for-mobile');
-        mobileExtended.innerHTML = `
-        <div class="row pt-2">
-            <div class="col-5 fs-13 fw-600">
-                <div class="governMobDot"></div> ${translation.govTablePayment}
-            </div>
-            <div class="col-7">
-                <span class="governValues"><b>${sanitizeHTML(
-                    nMonthlyPayment.toLocaleString('en-gb', ',', '.')
-                )}</b> <span class="governMarked">${
-            cChainParams.current.TICKER
-        }</span> <span style="margin-left:10px; margin-right: 2px;" class="governMarked governFiatSize">${strProposalCurrency}</span></b></span>
-        
-                <span class="governInstallments"> ${sanitizeHTML(
-                    cProposal['RemainingPaymentCount']
-                )} ${translation.proposalPaymentsRemaining} <b>${sanitizeHTML(
-            parseInt(cProposal.TotalPayment).toLocaleString('en-gb', ',', '.')
-        )} ${cChainParams.current.TICKER}</b> ${
-            translation.proposalPaymentTotal
-        }</span>
-            </div>
-        </div>
-        <hr class="governHr">
-        <div class="row">
-            <div class="col-5 fs-13 fw-600">
-                <div class="governMobDot"></div> ${translation.govTableVotes}
-            </div>
-            <div class="col-7">
-                <b>${parseFloat(nLocalPercent).toLocaleString(
-                    'en-gb',
-                    { minimumFractionDigits: 0, maximumFractionDigits: 1 },
-                    ',',
-                    '.'
-                )}%</b>
-                <small class="votesBg"> <b><div class="votesYes" style="display:inline;"> ${sanitizeHTML(
-                    Yeas
-                )} </div></b> /
-                <b><div class="votesNo" style="display:inline;"> ${sanitizeHTML(
-                    Nays
-                )} </div></b></small>
-            </div>
-        </div>
-        <hr class="governHr">
-        <div class="row pb-2">
-            <div class="col-5 fs-13 fw-600">
-                <div class="governMobDot"></div> ${translation.govTableVote}
-            </div>
-            <div class="col-7">
-                ${voteBtn}
-            </div>
-        </div>`;
-
-        i++;
-    }
-
-    // Show allocated budget
-    if (!fContested) {
-        const strAlloc = sanitizeHTML(
-            totalAllocatedAmount.toLocaleString('en-gb')
-        );
-        doms.domAllocatedGovernanceBudget.innerHTML = strAlloc;
-        doms.domAllocatedGovernanceBudget2.innerHTML = strAlloc;
-
-        // Update allocated budget in user's currency
-        const nCurrencyValue = totalAllocatedAmount * nPrice;
-        const { nValue } = optimiseCurrencyLocale(nCurrencyValue);
-        const strAllocCurrency =
-            nValue.toLocaleString('en-gb', cLocale) +
-            ' <span style="color:#7C1DEA;">' +
-            strCurrency.toUpperCase() +
-            '</span>';
-        doms.domAllocatedGovernanceBudgetValue.innerHTML = strAllocCurrency;
-        doms.domAllocatedGovernanceBudgetValue2.innerHTML = strAllocCurrency;
-    }
 }
 
 async function createProposal() {
@@ -748,7 +334,14 @@ async function createProposal() {
                     "
                 >
                     <span style="font-size: 19px; color: #e9deff"
-                        ><span>-</span>
+                        ><span>
+                            {{
+                                (
+                                    cChainParams.current.maxPayment / COIN
+                                ).toLocaleString('en-gb', ',', '.')
+                            }}
+                            {{ ' ' }}
+                        </span>
                         <span
                             style="
                                 color: #9131ea;
@@ -771,9 +364,18 @@ async function createProposal() {
                     />
                     <span style="font-size: 12px; color: #af9cc6"
                         ><span>
-                            {{ cChainParams.current.maxPayment / COIN }}
-                        </span></span
-                    >
+                            {{
+                                numberToCurrency(
+                                    cChainParams.current.maxPayment / COIN,
+                                    price
+                                )
+                            }}
+                            {{ ' ' }}
+                        </span>
+                        <span style="color: #7c1dea"
+                            >{{ strCurrency.toUpperCase() }}
+                        </span>
+                    </span>
                 </div>
             </div>
             <div class="col-6 col-lg-3 text-center governBudgetCard for-mobile">
@@ -796,7 +398,7 @@ async function createProposal() {
                     "
                 >
                     <span style="font-size: 19px; color: #e9deff"
-                        ><span id="allocatedGovernanceBudget">-</span>
+                        ><span id="allocatedGovernanceBudget"> </span>
                         <span
                             style="
                                 color: #9131ea;
@@ -818,7 +420,7 @@ async function createProposal() {
                         "
                     />
                     <span style="font-size: 12px; color: #af9cc6"
-                        ><span id="allocatedGovernanceBudgetValue">-</span>
+                        ><span>{{ allocatedBudget }} {{ 'hi' }}</span>
                     </span>
                 </div>
             </div>
@@ -830,7 +432,7 @@ async function createProposal() {
                     style="font-weight: 400; color: #e9deff; font-size: 20px"
                     >Next Treasury Payout</span
                 >
-                <div id="flipdown" class="flipdown"></div>
+                <Flipdown :timeStamp="flipdownTimeStamp" />
             </div>
             <div
                 class="col-12 col-lg-3 text-center governBudgetCard for-desktop"
@@ -854,7 +456,10 @@ async function createProposal() {
                     "
                 >
                     <span style="font-size: 19px; color: #e9deff"
-                        ><span id="allocatedGovernanceBudget2">-</span>
+                        ><span id="allocatedGovernanceBudget2">{{
+                            allocatedBudget.toLocaleString('en-gb', ',', '.') +
+                            ' '
+                        }}</span>
                         <span
                             style="
                                 color: #9131ea;
@@ -876,7 +481,13 @@ async function createProposal() {
                         "
                     />
                     <span style="font-size: 12px; color: #af9cc6"
-                        ><span id="allocatedGovernanceBudgetValue2">-</span>
+                        ><span id="allocatedGovernanceBudgetValue2">{{
+                            numberToCurrency(allocatedBudget, price)
+                        }}</span>
+                        {{ ' ' }}
+                        <span style="color: #7c1dea"
+                            >{{ strCurrency.toUpperCase() }}
+                        </span>
                     </span>
                 </div>
             </div>
@@ -887,7 +498,12 @@ async function createProposal() {
         </div>
 
         <div class="dcWallet-activity" style="padding: 16px">
-            <ProposalsTable :proposals="proposals" />
+            <ProposalsTable
+                :proposals="proposals"
+                :masternodeCount="masternodeCount"
+                :strCurrency="strCurrency"
+                :price="price"
+            />
         </div>
 
         <hr />
@@ -906,6 +522,11 @@ async function createProposal() {
             downvotes, making it likely spam or a highly contestable proposal.
         </p>
         <br />
-        <ProposalsTable :proposals="contestedProposals" />
+        <ProposalsTable
+            :proposals="contestedProposals"
+            :masternodeCount="masternodeCount"
+            :strCurrency="strCurrency"
+            :price="price"
+        />
     </div>
 </template>
