@@ -4091,6 +4091,10 @@ textarea::placeholder {
         width:68px;
         margin-left: 0px;
     }
+
+    #foot {
+        position: relative!important;
+    }
 }
 
 .modal-body {
