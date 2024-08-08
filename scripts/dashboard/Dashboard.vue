@@ -52,7 +52,9 @@ const needsToEncrypt = computed(() => {
     }
 });
 const showTransferMenu = ref(false);
-const { advancedMode, displayDecimals, autoLockWallet } = useSettings();
+const { advancedMode, displayDecimals, autoLockWallet } = storeToRefs(
+    useSettings()
+);
 const showExportModal = ref(false);
 const showEncryptModal = ref(false);
 const keyToBackup = ref('');

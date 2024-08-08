@@ -17,7 +17,7 @@ import { ALERTS } from '../i18n';
 const wallet = useWallet();
 const { balance, coldBalance, price, currency, isViewOnly } =
     storeToRefs(wallet);
-const { advancedMode, displayDecimals } = useSettings();
+const { advancedMode, displayDecimals } = storeToRefs(useSettings());
 const showUnstake = ref(false);
 const showStake = ref(false);
 const coldStakingAddress = ref('');
