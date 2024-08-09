@@ -4,6 +4,7 @@ import { ref, watch, computed } from 'vue';
 import { getAddressColor } from '../contacts-book';
 import { promptForContact } from '../contacts-book';
 import { sanitizeHTML } from '../misc';
+import { useWallet } from '../composables/use_wallet.js';
 import BottomPopup from '../BottomPopup.vue';
 import qrIcon from '../../assets/icons/icon-qr-code.svg';
 import addressbookIcon from '../../assets/icons/icon-address-book.svg';
@@ -18,8 +19,9 @@ const emit = defineEmits([
 ]);
 // Amount of PIVs to send in the selected currency (e.g. USD)
 const amountCurrency = ref('');
-const useShieldInputs = ref(false);
 const color = ref('');
+
+const wallet = useWallet();
 
 const props = defineProps({
     show: Boolean,
@@ -58,7 +60,7 @@ function send() {
             'send',
             sanitizeHTML(address.value),
             amount.value,
-            useShieldInputs.value
+            !wallet.publicMode
         );
 }
 
@@ -172,7 +174,7 @@ async function selectContact() {
                                     font-weight: 700;
                                     padding: 0px 10px 0px 10px !important;
                                 "
-                                @click="$emit('max-balance', useShieldInputs)"
+                                @click="$emit('max-balance', !publicMode)"
                             >
                                 {{ translation.sendAmountCoinsMax }}
                             </span>
@@ -262,24 +264,6 @@ async function selectContact() {
                             14 sat/B
                         </div>
                     </div>
-                </div>
-                <br />
-            </div>
-
-            <div v-if="shieldEnabled">
-                <!-- shieldEnabled -->
-                <div class="custom-control custom-switch d-none">
-                    <input
-                        type="checkbox"
-                        class="custom-control-input"
-                        data-testid="useShieldInputs"
-                        id="useShieldInputs"
-                        v-model="useShieldInputs"
-                        :checked="!publicMode"
-                    />
-                    <label class="custom-control-label" for="useShieldInputs">{{
-                        translation.useShieldInputs
-                    }}</label>
                 </div>
                 <br />
             </div>

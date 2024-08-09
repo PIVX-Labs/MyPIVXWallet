@@ -103,12 +103,12 @@ const secondBalanceStr = computed(() => {
     return nCoins.toFixed(displayDecimals.value);
 });
 
-const pendingSecondBalanceStr = computed(() => {
+const pendingShieldImmatureBalanceStr = computed(() => {
     let nCoins;
     if (publicMode.value) {
         nCoins = pendingShieldBalance.value / COIN;
     } else {
-        nCoins = pendingBalance.value / COIN;
+        nCoins = immatureBalance.value / COIN;
     }
 
     return nCoins.toFixed(displayDecimals.value);
@@ -118,6 +118,12 @@ const immatureBalanceStr = computed(() => {
     const nCoins = immatureBalance.value / COIN;
     const strBal = nCoins.toFixed(displayDecimals.value);
     return strBal + ' ' + cChainParams.current.TICKER;
+});
+
+const pendingShieldBalanceStr = computed(() => {
+    const nCoins = pendingShieldBalance.value / COIN;
+    const strBal = nCoins.toFixed(displayDecimals.value);
+    return strBal + ' S-' + cChainParams.current.TICKER;
 });
 
 const balanceValue = computed(() => {
@@ -341,7 +347,10 @@ function restoreWallet() {
                 >
                     <div
                         class="immatureBalanceSpan"
-                        v-if="immatureBalance != 0"
+                        v-if="
+                            (publicMode && immatureBalance != 0) ||
+                            (!publicMode && pendingShieldBalance != 0)
+                        "
                     >
                         <span
                             v-html="iHourglass"
@@ -353,8 +362,12 @@ function restoreWallet() {
                                 left: 4px;
                                 font-size: 14px;
                             "
-                            v-html="immatureBalanceStr"
-                        ></span>
+                            >{{
+                                publicMode
+                                    ? immatureBalanceStr
+                                    : pendingShieldBalanceStr
+                            }}</span
+                        >
                     </div>
                 </div>
                 <div
@@ -434,8 +447,14 @@ function restoreWallet() {
                             <span v-if="publicMode">&nbsp;S-</span>{{ ticker }}
                             <span
                                 style="opacity: 0.75"
-                                v-if="pendingShieldBalance != 0"
-                                >({{ pendingSecondBalanceStr }} Pending)</span
+                                v-if="
+                                    (!publicMode && immatureBalance != 0) ||
+                                    (publicMode && pendingShieldBalance != 0)
+                                "
+                                >&nbsp;({{
+                                    pendingShieldImmatureBalanceStr
+                                }}
+                                Pending)</span
                             >
                         </span>
                     </div>
