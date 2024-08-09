@@ -31,7 +31,7 @@ describe('access wallet tests', () => {
 
         //click the access Wallet button
         await accWalletButton.trigger('click');
-        expect(accWalletButton.isVisible()).toBeFalsy();
+        expect(accWalletButton.isVisible()).toBeTruthy();
         // button clicked, so now everything should be visible apart the passwordInp
         expect(passwordInp.isVisible()).toBeFalsy();
         expect(secretInp.isVisible()).toBeTruthy();
@@ -93,7 +93,7 @@ describe('access wallet tests', () => {
 
         //click the access Wallet button
         await accWalletButton.trigger('click');
-        expect(accWalletButton.isVisible()).toBeFalsy();
+        expect(accWalletButton.isVisible()).toBeTruthy();
         // button clicked, so now everything should be visible apart the passwordInp
         expect(passwordInp.isVisible()).toBeFalsy();
         expect(secretInp.isVisible()).toBeTruthy();

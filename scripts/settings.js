@@ -277,7 +277,7 @@ export async function start() {
         // Disabled
         setAnalytics(arrAnalytics[0], true);
         doms.domAnalyticsDescriptor.innerHTML =
-            '<h6 style="color:#dcdf6b;font-family:mono !important;"><pre style="color: inherit;">Analytics disabled to honour "Do Not Track" browser setting, you may manually enable if desired, though!</pre></h6>';
+            '<h6 style="color:#dcdf6b;font-family:mono !important;"><pre style="color: #421180; background-color:#9481B0; border:2px solid #AF9CC6; padding: 12px;">Analytics disabled to honour "Do Not Track" browser setting, you may manually enable if desired, though!</pre></h6>';
     } else {
         // Load from storage, or use defaults
         setAnalytics(
@@ -293,6 +293,11 @@ export async function start() {
 
     // Subscribe to events
     subscribeToNetworkEvents();
+
+    // Check if password is encrypted
+    if (await hasEncryptedWallet()) {
+        doms.domChangePasswordContainer.classList.remove('d-none');
+    }
 }
 
 function subscribeToNetworkEvents() {
@@ -467,7 +472,7 @@ async function setAnalytics(level, fSilent = false) {
     doms.domAnalyticsDescriptor.innerHTML =
         cAnalyticsLevel.name === arrAnalytics[0].name
             ? ''
-            : '<h6 style="color:#dcdf6b;font-family:mono !important;"><pre style="color: inherit;">' +
+            : '<h6 style="color:#dcdf6b;font-family:mono !important;"><pre style="color: #421180; background-color:#9481B0; border:2px solid #AF9CC6; padding: 12px; border-radius:8px;">' +
               strDesc +
               '</pre></h6>';
     if (!fSilent)
@@ -491,13 +496,17 @@ export async function logOut() {
     const fContinue = await confirmPopup({
         title: `${ALERTS.CONFIRM_POPUP_DELETE_ACCOUNT_TITLE}`,
         html: `
-        <b>${tr(translation.netSwitchUnsavedWarningSubtitle, [
-            { network: cChainParams.current.name },
-        ])}</b>
-        <br>
-        ${ALERTS.CONFIRM_POPUP_DELETE_ACCOUNT}
-        <br>
-        <br>
+        <div class="modalContents">
+            <span class="topText">
+                <b>${tr(translation.netSwitchUnsavedWarningSubtitle, [
+                    { network: cChainParams.current.name },
+                ])}</b><br><br>
+
+                <span class="textGradientKeys">${
+                    ALERTS.CONFIRM_POPUP_DELETE_ACCOUNT
+                }</span>
+            </span>
+        </div>
     `,
     });
     if (!fContinue) return;
@@ -528,7 +537,7 @@ export async function toggleTestnet() {
             title: tr(translation.netSwitchUnsavedWarningTitle, [
                 { network: cChainParams.current.name },
             ]),
-            html: `
+            html: `<div style="color:#af9cc6;">
             <b>${tr(translation.netSwitchUnsavedWarningSubtitle, [
                 { network: cChainParams.current.name },
             ])}</b>
@@ -541,7 +550,7 @@ export async function toggleTestnet() {
             <i style="opacity:0.65">${
                 translation.netSwitchUnsavedWarningConfirmation
             }</i>
-        `,
+        </div>`,
         });
 
         if (!fContinue) {

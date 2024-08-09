@@ -72,11 +72,11 @@ function close() {
                 </button>
                 <button
                     type="button"
-                    class="pivx-button-big"
-                    style="float: right; opacity: 0.7"
+                    class="pivx-button-big-cancel"
+                    style="float: right"
                     @click="close()"
                 >
-                    Cancel
+                    {{ translation.popupCancel }}
                 </button>
             </template>
         </Modal>

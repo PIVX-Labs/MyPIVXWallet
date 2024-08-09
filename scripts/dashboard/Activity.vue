@@ -8,7 +8,11 @@ import { Database } from '../database.js';
 import { HistoricalTx, HistoricalTxType } from '../historical_tx.js';
 import { getNameOrAddress } from '../contacts-book.js';
 import { getEventEmitter } from '../event_bus';
-import { blockCount } from '../global.js';
+import { beautifyNumber } from '../misc';
+
+import iCheck from '../../assets/icons/icon-check.svg';
+import iHourglass from '../../assets/icons/icon-hourglass.svg';
+import { blockCount, optimiseCurrencyLocale } from '../global.js';
 
 const props = defineProps({
     title: String,
@@ -19,9 +23,6 @@ const txs = ref([]);
 let txCount = 0;
 const updating = ref(false);
 const isHistorySynced = ref(false);
-const rewardsText = computed(
-    () => `${isHistorySynced.value ? '' : '≥'}${rewardAmount.value.toFixed(2)}`
-);
 const rewardAmount = ref(0);
 const ticker = computed(() => cChainParams.current.TICKER);
 const explorerUrl = ref(getNetwork()?.strUrl);
@@ -164,11 +165,14 @@ async function parseTXs(arrTXs) {
         // Format the amount to reduce text size
         let formattedAmt = '';
         if (cTx.amount < 0.01) {
-            formattedAmt = '<0.01';
+            formattedAmt = beautifyNumber('0.01', '13px');
         } else if (cTx.amount >= 100) {
-            formattedAmt = Math.round(cTx.amount).toString();
+            formattedAmt = beautifyNumber(
+                Math.round(cTx.amount).toString(),
+                '13px'
+            );
         } else {
-            formattedAmt = cTx.amount.toFixed(2);
+            formattedAmt = beautifyNumber(`${cTx.amount.toFixed(2)}`, '13px');
         }
 
         // For 'Send' TXs: Check if this is a send-to-self transaction
@@ -239,6 +243,16 @@ if (props.rewards) {
     );
 }
 
+const rewardsText = computed(() => {
+    const nCoins = rewardAmount.value / COIN;
+    const strBal = nCoins.toFixed(displayDecimals.value);
+    const nLen = strBal.length;
+    return `${beautifyNumber(
+        strBal,
+        nLen >= 10 ? '15px' : '15px'
+    )} <span style="font-size:15px; opacity: 0.55;">${ticker.value}</span>`;
+});
+
 function reset() {
     txs.value = [];
     txCount = 0;
@@ -251,11 +265,11 @@ function getTxCount() {
 
 getEventEmitter().on(
     'transparent-sync-status-update',
-    (_str, done) => done && update()
+    (_str, progress, done) => done && update()
 );
 getEventEmitter().on(
     'shield-sync-status-update',
-    (_str, done) => done && update()
+    (blocks, totalBlocks, done) => done && update()
 );
 onMounted(() => update());
 
@@ -263,16 +277,31 @@ defineExpose({ update, reset, getTxCount });
 </script>
 
 <template>
-    <div>
-        <center>
-            <span class="dcWallet-activityLbl"
-                ><span :data-i18n="rewards ? 'rewardHistory' : 'activity'">{{
-                    title
-                }}</span>
-                <span v-if="rewards"> ({{ rewardsText }} {{ ticker }}) </span>
-            </span>
-        </center>
+    <center>
         <div class="dcWallet-activity">
+            <span
+                style="
+                    font-family: 'Montserrat Regular';
+                    color: rgb(233, 222, 255);
+                    display: flex;
+                    justify-content: center;
+                    margin-bottom: 24px;
+                    margin-top: 20px;
+                "
+            >
+                <span
+                    style="font-size: 24px"
+                    :data-i18n="rewards ? 'rewardHistory' : 'activity'"
+                    >{{ title }}</span
+                >
+                <span
+                    style="font-size: 20px"
+                    class="rewardsBadge"
+                    v-if="rewards"
+                    v-html="rewardsText"
+                ></span>
+            </span>
+
             <div class="scrollTable">
                 <div>
                     <table
@@ -302,7 +331,9 @@ defineExpose({ update, reset, getTxCount });
                                     class="align-middle pr-10px"
                                     style="font-size: 12px"
                                 >
-                                    <i style="opacity: 0.75">{{ tx.date }}</i>
+                                    <span style="opacity: 50%">{{
+                                        tx.date
+                                    }}</span>
                                 </td>
                                 <td class="align-middle pr-10px txcode">
                                     <a
@@ -318,14 +349,29 @@ defineExpose({ update, reset, getTxCount });
                                     </a>
                                 </td>
                                 <td class="align-middle pr-10px">
-                                    <b style="font-family: monospace"
+                                    <b
+                                        style="
+                                            font-family: 'Montserrat Medium';
+                                            font-size: 13px;
+                                            font-weight: 100;
+                                        "
                                         ><i
                                             class="fa-solid"
-                                            style="padding-right: 3px"
+                                            style="padding-right: 5px"
                                             :class="[tx.icon]"
                                             :style="{ color: tx.colour }"
                                         ></i>
-                                        {{ tx.formattedAmt }} {{ ticker }}</b
+                                        <span
+                                            style="font-weight: 300"
+                                            v-html="tx.formattedAmt"
+                                        ></span>
+                                        <span
+                                            style="
+                                                font-weight: 300;
+                                                opacity: 0.55;
+                                            "
+                                            >&nbsp;{{ ticker }}</span
+                                        ></b
                                     >
                                 </td>
                                 <td class="text-right pr-10px align-middle">
@@ -333,17 +379,19 @@ defineExpose({ update, reset, getTxCount });
                                         class="badge mb-0"
                                         :class="{
                                             'badge-purple': tx.confirmed,
-                                            'bg-danger': !tx.confirmed,
+                                            'badge-danger': !tx.confirmed,
                                         }"
                                     >
-                                        <i
+                                        <span
+                                            class="checkIcon"
                                             v-if="tx.confirmed"
-                                            class="fas fa-check"
-                                        ></i>
-                                        <i
+                                            v-html="iCheck"
+                                        ></span>
+                                        <span
+                                            class="checkIcon"
                                             v-else
-                                            class="fas fa-hourglass-end"
-                                        ></i>
+                                            v-html="iHourglass"
+                                        ></span>
                                     </span>
                                 </td>
                             </tr>
@@ -369,5 +417,5 @@ defineExpose({ update, reset, getTxCount });
                 </center>
             </div>
         </div>
-    </div>
+    </center>
 </template>

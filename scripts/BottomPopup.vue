@@ -10,15 +10,8 @@ defineEmits(['close']);
     <div v-show="show" class="v-mask">
         <Transition name="bottomPopup">
             <div v-show="show" class="exportKeysModalColor bottomPopup">
-                <div class="bottomPopupHeader">
+                <div class="bottomPopupHeader" style="justify-content: center">
                     <div class="sendHeaderoText">{{ title }}</div>
-                    <div
-                        class="bottomPopupExit ptr"
-                        @click="$emit('close')"
-                        data-testid="closeButton"
-                    >
-                        <i class="fa-solid fa-xmark"></i>
-                    </div>
                 </div>
 
                 <div class="popupBody">
@@ -51,10 +44,8 @@ defineEmits(['close']);
     border-top-right-radius: 10px;
     min-height: 155px;
     transition: 0.4s;
-    /*background-color:rgba(255, 255, 255, 12%)!important;*/
-    background-color: #5d2f83c9;
-
     font-size: 15px;
+    border: 1px solid #42117e;
 }
 @media (min-width: 768px) {
     .bottomPopup {
@@ -73,6 +64,15 @@ defineEmits(['close']);
     display: flex;
 }
 
+.bottomPopup .sendHeaderoText {
+    color: #e9deff;
+    font-size: 21px;
+    font-weight: 500;
+    font-family: Montserrat, sans-serif !important;
+    margin-top: 20px;
+    margin-bottom: 15px;
+}
+
 .bottomPopup .bottomPopupHeader .bottomPopupHeaderText {
     width: 100%;
 }
@@ -86,6 +86,6 @@ defineEmits(['close']);
 }
 
 .popupBody {
-    padding: 9px 12px;
+    padding: 9px 17px;
 }
 </style>

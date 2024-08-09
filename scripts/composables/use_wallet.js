@@ -1,6 +1,6 @@
 import { getEventEmitter } from '../event_bus.js';
 import { hasEncryptedWallet, wallet } from '../wallet.js';
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import { strCurrency } from '../settings.js';
 import { cOracle } from '../prices.js';
 import { ledgerSignTransaction } from '../ledger.js';
@@ -16,6 +16,17 @@ export const useWallet = defineStore('wallet', () => {
     // Eventually we want to create a new wallet
     // For now we'll just import the existing one
     // const wallet = new Wallet();
+
+    const publicMode = ref(true);
+    watch(publicMode, (publicMode) => {
+        if (publicMode) {
+            document.getElementById('navbar').classList.toggle('active');
+            document.getElementById('page-container-light').style.opacity = '1';
+        } else {
+            document.getElementById('navbar').classList.toggle('active');
+            document.getElementById('page-container-light').style.opacity = '0';
+        }
+    });
 
     const isImported = ref(wallet.isLoaded());
     const isViewOnly = ref(wallet.isViewOnly());
@@ -107,6 +118,7 @@ export const useWallet = defineStore('wallet', () => {
     });
 
     return {
+        publicMode,
         isImported,
         isViewOnly,
         isEncrypted,

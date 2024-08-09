@@ -239,6 +239,9 @@ export class ExplorerNetwork extends Network {
                     { current: totalPages - i + 1 },
                     { total: totalPages },
                 ]),
+                ((totalPages - i) / totalPages) * 100 < 0
+                    ? 0
+                    : ((totalPages - i) / totalPages) * 100,
                 false
             );
 

@@ -119,10 +119,11 @@ export async function setPromoMode(fMode) {
     // Modify the UI to match the mode
     if (fPromoRedeem) {
         // Swap the buttons
-        doms.domRedeemCodeModeRedeemBtn.style.opacity = '0.5';
-        doms.domRedeemCodeModeRedeemBtn.style.cursor = 'default';
-        doms.domRedeemCodeModeCreateBtn.style.opacity = '0.8';
-        doms.domRedeemCodeModeCreateBtn.style.cursor = 'pointer';
+        doms.domRedeemCodeModeRedeemBtn.classList.add('active');
+        doms.domRedeemCodeModeCreateBtn.classList.remove('active');
+
+        // Show camera button
+        doms.domRedeemCameraBtn.classList.remove('d-none');
 
         // Show the redeem box, hide create box
         doms.domRedeemCodeUse.style.display = '';
@@ -141,10 +142,11 @@ export async function setPromoMode(fMode) {
         }, 100);
     } else {
         // Swap the buttons
-        doms.domRedeemCodeModeRedeemBtn.style.opacity = '0.8';
-        doms.domRedeemCodeModeRedeemBtn.style.cursor = 'pointer';
-        doms.domRedeemCodeModeCreateBtn.style.opacity = '0.5';
-        doms.domRedeemCodeModeCreateBtn.style.cursor = 'default';
+        doms.domRedeemCodeModeRedeemBtn.classList.remove('active');
+        doms.domRedeemCodeModeCreateBtn.classList.add('active');
+
+        // Hide camera button
+        doms.domRedeemCameraBtn.classList.add('d-none');
 
         // Show the redeem box, hide create box
         doms.domRedeemCodeUse.style.display = 'none';
@@ -397,7 +399,7 @@ export async function renderSavedPromos() {
                      cCode.address
                  }', this)" class="fas fa-clipboard" style="cursor: pointer; margin-right: 10px;"></i><code id="copy${
             cCode.address
-        }" class="wallet-code" style="display: inline !important; color: purple;">${
+        }" class="wallet-code" style="display: inline !important; color: #e83e8c;">${
             cCode.code
         }</code></td>
                  <td>${

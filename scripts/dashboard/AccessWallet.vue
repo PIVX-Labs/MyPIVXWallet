@@ -1,5 +1,5 @@
 <script setup>
-import coinPlant from '../../assets/coin_plant.svg';
+import loginIcon from '../../assets/icons/icon-login.svg';
 import pLogo from '../../assets/p_logo.svg';
 import { ref, watch, toRefs } from 'vue';
 import { translation } from '../i18n.js';
@@ -62,78 +62,55 @@ function importWallet() {
 </script>
 
 <template>
-    <div class="col-12 col-lg-6 p-2">
+    <div class="col-12 col-md-6 col-xl-3 p-2">
         <div
-            class="h-100 dashboard-item dashboard-display"
-            style="margin-bottom: 100px"
+            class="dashboard-item dashboard-display"
+            @click="showInput = true"
+            data-testid="accWalletButton"
         >
-            <div class="container">
-                <div class="coinstat-icon" v-html="coinPlant"></div>
+            <div class="coinstat-icon" v-html="loginIcon"></div>
 
-                <div class="col-md-12 dashboard-title">
-                    <h3 class="pivx-bold-title-smaller">
-                        <span>{{ translation.dCardFourTitle }}</span>
-                        <div>{{ translation.dCardFourSubTitle }}</div>
-                    </h3>
-                    <p>
-                        {{ translation.dCardFourDesc }}
-                    </p>
-                </div>
+            <div class="col-md-12 dashboard-title">
+                <h3 class="pivx-bold-title-smaller">
+                    <span>{{ translation.dCardFourTitle }}</span>
+                    <div>{{ translation.dCardFourSubTitle }}</div>
+                </h3>
+                <p>
+                    {{ translation.dCardFourDesc }}
+                </p>
+            </div>
 
-                <!-- IMPORT WALLET -->
-                <input class="hide-element" type="text" id="clipboard" />
-                <div v-show="showInput">
-                    <input
-                        v-model="secret"
-                        :type="cloakSecret ? 'password' : 'text'"
-                        placeholder="Seed Phrase, XPriv or WIF Private Key"
-                        data-testid="secretInp"
-                    />
-                    <input
-                        v-show="showPassword"
-                        v-model="password"
-                        type="password"
-                        :placeholder="passwordPlaceholder"
-                        data-testid="passwordInp"
-                    />
-                    <button
-                        class="pivx-button-big"
-                        @click="importWallet()"
-                        data-testid="importWalletButton"
-                    >
-                        <span class="buttoni-icon"
-                            ><i class="fas fa-file-upload fa-tiny-margin"></i
-                        ></span>
-                        <span class="buttoni-text" data-i18n="dCardFourButtonI"
-                            >Import Wallet</span
-                        >
-                        <span class="buttoni-arrow">
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 32 32"
-                            >
-                                <path
-                                    d="M23.328 16.707L13.121 26.914a.5.5 0 01-.707 0l-2.828-2.828a.5.5 0 010-.707L16.964 16 9.586 8.621a.5.5 0 010-.707l2.828-2.828a.5.5 0 01.707 0l10.207 10.207a1 1 0 010 1.414z"
-                                ></path>
-                            </svg>
-                        </span>
-                    </button>
-                </div>
-                <!-- // IMPORT WALLET -->
-
+            <!-- IMPORT WALLET -->
+            <input class="hide-element" type="text" id="clipboard" />
+            <div v-show="showInput">
+                <input
+                    v-model="secret"
+                    :type="cloakSecret ? 'password' : 'text'"
+                    placeholder="Seed Phrase, XPriv or WIF Private Key"
+                    data-testid="secretInp"
+                />
+                <input
+                    v-show="showPassword"
+                    v-model="password"
+                    type="password"
+                    :placeholder="passwordPlaceholder"
+                    data-testid="passwordInp"
+                />
                 <button
-                    v-show="!showInput"
                     class="pivx-button-big"
-                    @click="showInput = true"
-                    data-testid="accWalletButton"
+                    @click="importWallet()"
+                    data-testid="importWalletButton"
                 >
-                    <span class="buttoni-icon" v-html="pLogo"> </span>
-
-                    <span class="buttoni-text" data-i18n="dCardFourButtonA"
-                        >Access My Wallet</span
+                    <span
+                        class="buttoni-icon goToWalletIco"
+                        v-html="loginIcon"
+                    ></span>
+                    <span class="buttoni-text" data-i18n="dCardFourButtonI"
+                        >Import</span
                     >
                 </button>
             </div>
+            <!-- // IMPORT WALLET -->
         </div>
     </div>
 </template>

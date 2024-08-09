@@ -13,6 +13,7 @@ import { Database } from './database.js';
 import { translation } from './i18n.js';
 import { wallet } from './wallet.js';
 import { COutpoint } from './transaction.js';
+import { beautifyNumber } from './misc.js';
 
 Chart.register(
     Colors,
@@ -50,7 +51,7 @@ async function getWalletDataset() {
         arrBreakdown.push({
             type: translation.chartPublicAvailable,
             balance: spendable_bal / COIN,
-            colour: '#9236e2',
+            colour: '#C898F5',
         });
     }
 
@@ -60,7 +61,7 @@ async function getWalletDataset() {
         arrBreakdown.push({
             type: 'Shield Available',
             balance: shield_spendable / COIN,
-            colour: '#781dc9',
+            colour: '#9131EA',
         });
     }
 
@@ -79,7 +80,7 @@ async function getWalletDataset() {
         arrBreakdown.push({
             type: translation.chartImmatureBalance,
             balance: immature_bal / COIN,
-            colour: 'rgba(127, 17, 151, 1)',
+            colour: '#4A1399',
         });
     }
     // Staking (Locked)
@@ -88,7 +89,7 @@ async function getWalletDataset() {
         arrBreakdown.push({
             type: 'Staking',
             balance: spendable_cold_bal / COIN,
-            colour: '#360c5a',
+            colour: '#721DEA',
         });
     }
 
@@ -120,7 +121,7 @@ async function getWalletDataset() {
 export async function generateWalletBreakdown(arrBreakdown) {
     // Render the PIVX logo in the centre of the "Wallet Doughnut"
     const image = new Image();
-    const svg = (await import('../assets/logo-circle.svg')).default;
+    const svg = (await import('../assets/icons/image-pivx-logo.svg')).default;
     const url = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' }));
     image.src = url;
     const logo_plugin = {
@@ -128,10 +129,10 @@ export async function generateWalletBreakdown(arrBreakdown) {
         beforeDraw: (chart) => {
             const ctx = chart.ctx;
             const { top, left, width, height } = chart.chartArea;
-            const x = left + width / 2 - image.width / 2;
-            const y = top + height / 2 - image.height / 2;
-            ctx.globalAlpha = 0.25;
-            ctx.drawImage(image, x, y, image.width, image.height);
+            const x = left + width / 2 - (image.width - 30) / 2;
+            const y = top + height / 2 - (image.height - 30) / 2;
+            ctx.globalAlpha = 1;
+            ctx.drawImage(image, x, y, image.width - 30, image.height - 30);
             ctx.globalAlpha = 1;
         },
     };
@@ -150,14 +151,16 @@ export async function generateWalletBreakdown(arrBreakdown) {
         },
         plugins: [logo_plugin],
         options: {
+            borderWidth: 0,
             backgroundColor: arrBreakdown.map((data) => data.colour),
-            radius: '75%',
-            cutout: '75%',
+            radius: '85%',
+            cutout: '60%',
             animation: {
                 duration: 500,
             },
             plugins: {
                 legend: {
+                    display: false,
                     labels: {
                         color: '#FFFFFF',
                         font: {
@@ -168,6 +171,28 @@ export async function generateWalletBreakdown(arrBreakdown) {
             },
         },
     });
+
+    let breakdownLegendStr = '';
+    for (let i = 0; i < arrBreakdown.length; i++) {
+        breakdownLegendStr += `<div style="display: flex; margin-bottom: 12px;">
+            <div style="width:40px; height:40px; border-radius:5px; background-color:${
+                arrBreakdown[i]['colour']
+            };"></div>
+            <div style="padding-left: 13px; text-align: left; display: flex; flex-direction: column; font-size: 16px;">
+                <span>${beautifyNumber(
+                    arrBreakdown[i]['balance'].toFixed(2),
+                    '13px'
+                )} <span style="opacity:0.55; font-size:13px;">${
+            cChainParams.current.TICKER
+        }</span></span>
+                <span style="font-size:13px; color:#c0b1d2;">${
+                    arrBreakdown[i]['type']
+                }</span>
+            </div>
+        </div>`;
+    }
+
+    doms.domWalletBreakdownLegend.innerHTML = breakdownLegendStr;
 
     // Set an interval internally to refresh the chart in real-time
     chartWalletBreakdown.interval = setInterval(renderWalletBreakdown, 2500);
@@ -196,4 +221,27 @@ export async function renderWalletBreakdown() {
         (data) => data.colour
     );
     chartWalletBreakdown.update();
+
+    // Update the wallet breakdown
+    let breakdownLegendStr = '';
+    for (let i = 0; i < arrBreakdown.length; i++) {
+        breakdownLegendStr += `<div style="display: flex; margin-bottom: 12px;">
+            <div style="width:40px; height:40px; border-radius:5px; background-color:${
+                arrBreakdown[i]['colour']
+            };"></div>
+            <div style="padding-left: 13px; text-align: left; display: flex; flex-direction: column; font-size: 16px;">
+                <span>${beautifyNumber(
+                    arrBreakdown[i]['balance'].toFixed(2),
+                    '13px'
+                )} <span style="opacity:0.55; font-size:13px;">${
+            cChainParams.current.TICKER
+        }</span></span>
+                <span style="font-size:13px; color:#c0b1d2;">${
+                    arrBreakdown[i]['type']
+                }</span>
+            </div>
+        </div>`;
+    }
+
+    doms.domWalletBreakdownLegend.innerHTML = breakdownLegendStr;
 }
