@@ -715,7 +715,7 @@ export class Wallet {
         if (!this.isLoaded() || this.#isSynced) return;
         const cNet = getNetwork();
         await cNet.getLatestTxs(this);
-        getEventEmitter().emit('transparent-sync-status-update', '', true);
+        getEventEmitter().emit('transparent-sync-status-update', '', '', true);
     }
 
     /**

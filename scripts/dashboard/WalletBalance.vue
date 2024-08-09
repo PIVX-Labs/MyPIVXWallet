@@ -66,11 +66,13 @@ const {
 
 // Transparent sync status
 const transparentSyncing = ref(false);
+const transparentProgressSyncing = ref(0.0);
 const syncTStr = ref('');
 
 // Shield sync status
 const shieldSyncing = ref(false);
 const shieldPercentageSyncing = ref(0.0);
+const shieldBlockRemainingSyncing = ref(0);
 
 // Shield transaction creation
 const isCreatingTx = ref(false);
@@ -147,10 +149,14 @@ const emit = defineEmits([
     'restoreWallet',
 ]);
 
-getEventEmitter().on('transparent-sync-status-update', (str, finished) => {
-    syncTStr.value = str;
-    transparentSyncing.value = !finished;
-});
+getEventEmitter().on(
+    'transparent-sync-status-update',
+    (str, progress, finished) => {
+        syncTStr.value = str;
+        transparentProgressSyncing.value = progress;
+        transparentSyncing.value = !finished;
+    }
+);
 
 getEventEmitter().on(
     'shield-sync-status-update',
@@ -158,6 +164,9 @@ getEventEmitter().on(
         shieldPercentageSyncing.value = Math.round(
             (blocks / totalBlocks) * 100
         );
+        shieldBlockRemainingSyncing.value = (
+            totalBlocks - blocks
+        ).toLocaleString('en-GB');
         shieldSyncing.value = !finished;
     }
 );
@@ -504,10 +513,18 @@ function restoreWallet() {
                     <i class="fas fa-spinner spinningLoading"></i>
                 </div>
                 <div style="width: 100%">
-                    {{ transparentSyncing ? syncTStr : 'Syncing Blocks...' }}
+                    {{
+                        transparentSyncing
+                            ? syncTStr
+                            : `Syncing ${shieldBlockRemainingSyncing} Blocks...`
+                    }}
                     <LoadingBar
                         :show="true"
-                        :percentage="shieldPercentageSyncing"
+                        :percentage="
+                            transparentSyncing
+                                ? transparentProgressSyncing
+                                : shieldPercentageSyncing
+                        "
                         style="
                             border: 1px solid #932ecd;
                             border-radius: 4px;
