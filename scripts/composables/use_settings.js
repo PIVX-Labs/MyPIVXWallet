@@ -18,13 +18,9 @@ export const useSettings = defineStore('settings', () => {
     getEventEmitter().on('auto-lock-wallet', (fAutoLockWallet) => {
         autoLockWallet.value = fAutoLockWallet;
     });
-    getEventEmitter().on('account-index', (accountIndex) => {
-        accountIndex.value = accountIndex;
-    });
     return {
         advancedMode,
         displayDecimals,
         autoLockWallet,
-        accountIndex,
     };
 });

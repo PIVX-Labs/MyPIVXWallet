@@ -162,7 +162,7 @@ export async function start() {
         ),
 
         masternodeLegacyAccessText:
-            'Access the masternode linked to this address<br> Note: the masternode MUST have been already created (however it can be online or offline)<br>  If you want to create a new masternode access with a HD wallet',
+            'Access the masternode linked to this addresss<br> Note: the masternode MUST have been already created (however it can be online or offline)<br>  If you want to create a new masternode access with a HD wallet',
         masternodeHDAccessText:
             "Access your masternodes if you have any! If you don't you can create one",
         // Aggregate menu screens and links for faster switching
@@ -386,7 +386,6 @@ export async function openExplorer(strAddress = '') {
 async function loadImages() {
     const images = [
         ['mpw-main-logo', import('../assets/new_logo.png')],
-        ['plus-icon', import('../assets/icons/icon-plus.svg')],
         ['plus-icon2', import('../assets/icons/icon-plus.svg')],
         ['plus-icon3', import('../assets/icons/icon-plus.svg')],
         ['del-wallet-icon', import('../assets/icons/icon-bin.svg')],
