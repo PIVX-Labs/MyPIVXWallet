@@ -5,12 +5,14 @@ import { ALERTS, translation } from '../i18n.js';
 import { Database } from '../database.js';
 import { decrypt } from '../aes-gcm';
 import { createAlert } from '../misc';
+import { ParsedSecret } from '../parsed_secret';
 
 const props = defineProps({
     show: Boolean,
     reason: String,
+    wallet: Object,
 });
-const { show, reason } = toRefs(props);
+const { show, reason, wallet } = toRefs(props);
 const emit = defineEmits(['close', 'import']);
 const password = ref('');
 const passwordInput = ref(null);
@@ -22,12 +24,27 @@ watch(show, (show) => {
     if (!show) password.value = '';
 });
 
+async function importWif(wif, extsk) {
+    const secret = await ParsedSecret.parse(wif);
+    if (secret.masterKey) {
+        await wallet.setMasterKey({ mk: secret.masterKey, extsk });
+        if (wallet.hasShield && !extsk) {
+            createAlert(
+                'warning',
+                'Could not decrypt sk even if password is correct, please contact a developer'
+            );
+        }
+        createAlert('success', ALERTS.WALLET_UNLOCKED, 1500);
+    }
+}
+
 async function submit() {
     const db = await Database.getInstance();
     const account = await db.getAccount();
     const wif = await decrypt(account.encWif, password.value);
     const extsk = await decrypt(account.encExtsk, password.value);
     if (wif) {
+        await importWif(wif, extsk);
         emit('import', wif, extsk);
     } else {
         createAlert('warning', ALERTS.FAILED_TO_IMPORT);

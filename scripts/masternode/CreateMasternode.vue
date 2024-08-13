@@ -24,13 +24,13 @@ const error = computed(() => {
         ]);
     }
     return '';
- });
+});
 
- const emit = defineEmits(['createMasternode'])
- const selection = ref()
+const emit = defineEmits(['createMasternode']);
+const selection = ref();
 function createMasternode() {
-     emit('createMasternode', {isVPS: selection.value === 'VPS'})
- }
+    emit('createMasternode', { isVPS: selection.value === 'VPS' });
+}
 </script>
 
 <template>
@@ -107,7 +107,7 @@ function createMasternode() {
                             style="display: block; text-align: left"
                             placeholder="Masternode collateral tx"
                             class="form-control"
-			    :ref="selection"
+                            :ref="selection"
                         >
                             <option value="VPS">
                                 Self-hosted (a masternode server ran by you)

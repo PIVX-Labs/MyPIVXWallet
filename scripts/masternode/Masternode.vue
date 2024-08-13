@@ -3,12 +3,16 @@ import { useMasternode } from '../composables/use_masternode.js';
 import { storeToRefs } from 'pinia';
 import CreateMasternode from './CreateMasternode.vue';
 import { useWallet } from '../composables/use_wallet';
+import Masternode from '../masternode.js';
+import RestoreWallet from '../dashboard/RestoreWallet.vue';
 
 /**
  * @type{{masternode: import('vue').Ref<import('../masternode.js').default?>}}
  */
 const { masternode } = storeToRefs(useMasternode());
-const { isSynced, balance } = storeToRefs(useWallet());
+const wallet = useWallet();
+const { isSynced, balance } = storeToRefs(wallet);
+const showRestoreWallet = ref(false);
 /**
  * Start a Masternode via a signed network broadcast
  * @param {boolean} fRestart - Whether this is a Restart or a first Start
@@ -354,9 +358,19 @@ async function refreshMasternodeData(cMasternode, fAlert = false) {
 </script>
 
 <template>
+    <RestoreWallet
+        :show="showRestoreWallet"
+        @close="showRestoreWallet = false"
+        @import="
+            () => {
+                /*todo*/
+            }
+        "
+    />
     <CreateMasternode
         v-if="!masternode"
         :synced="isSynced"
         :balance="balance"
+        @createMasternode="createMasternode()"
     />
 </template>
