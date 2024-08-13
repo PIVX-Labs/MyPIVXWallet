@@ -5,14 +5,32 @@ import CreateMasternode from './CreateMasternode.vue';
 import { useWallet } from '../composables/use_wallet';
 import Masternode from '../masternode.js';
 import RestoreWallet from '../dashboard/RestoreWallet.vue';
+import { cChainParams } from '../chain_params';
+import Modal from '../Modal.vue';
+import { ref, watch, reactive } from 'vue';
+import { getNetwork } from '../network';
+import { translation } from '../i18n.js';
+import { generateMasternodePrivkey } from '../misc';
 
 /**
  * @type{{masternode: import('vue').Ref<import('../masternode.js').default?>}}
  */
 const { masternode } = storeToRefs(useMasternode());
 const wallet = useWallet();
-const { isSynced, balance } = storeToRefs(wallet);
+const { isSynced, balance, isViewOnly } = storeToRefs(wallet);
 const showRestoreWallet = ref(false);
+const showMasternodePrivateKey = ref(false);
+const masternodePrivKey = ref('');
+// Array of possible masternode UTXOs
+const possibleUTXOs = ref(wallet.getMasternodeUTXOs());
+
+function updatePossibleUTXOs() {
+    possibleUTXOs.value = wallet.getMasternodeUTXOs();
+}
+
+watch(isSynced, () => {
+    updatePossibleUTXOs();
+});
 /**
  * Start a Masternode via a signed network broadcast
  * @param {boolean} fRestart - Whether this is a Restart or a first Start
@@ -355,22 +373,73 @@ async function refreshMasternodeData(cMasternode, fAlert = false) {
     // Return the data in case the caller needs additional context
     return cMasternodeData;
 }
+async function restoreWallet() {
+    if (!wallet.isEncrypted) return false;
+    if (wallet.isHardwareWallet) return true;
+    showRestoreWallet.value = true;
+    return await new Promise((res) => {
+        watch(
+            [showRestoreWallet, isViewOnly],
+            () => {
+                showRestoreWallet.value = false;
+                res(!isViewOnly.value);
+            },
+            { once: true }
+        );
+    });
+}
+
+async function createMasternode({ isVPS }) {
+    // Ensure wallet is unlocked
+    if (!isViewOnly.value && (await restoreWallet())) return;
+    const [address] = wallet.getNewAddress(1);
+    const res = await wallet.createAndSendTransaction(
+        getNetwork(),
+        address,
+        cChainParams.current.collateralInSats
+    );
+    if (!res) createAlert('warning', translation.ALERTS.TRANSACTION_FAILED);
+
+    if (isVPS) openShowPrivKeyModal();
+}
+
+function openShowPrivKeyModal() {
+    masternodePrivKey.value = generateMasternodePrivkey();
+    showMasternodePrivateKey.value = true;
+}
+function closeShowPrivKeyModal() {}
 </script>
 
 <template>
     <RestoreWallet
         :show="showRestoreWallet"
         @close="showRestoreWallet = false"
-        @import="
-            () => {
-                /*todo*/
-            }
-        "
     />
     <CreateMasternode
         v-if="!masternode"
         :synced="isSynced"
         :balance="balance"
-        @createMasternode="createMasternode()"
+        :possibleUTXOs="possibleUTXOs"
+        @createMasternode="createMasternode"
     />
+    <Modal :show="showMasternodePrivateKey">
+        <template #header>
+            <b>{{ translation?.ALERTS?.CONFIRM_POPUP_MN_P_KEY }}</b>
+            <button
+                @click="showModal = false"
+                type="button"
+                class="close"
+                data-dismiss="modal"
+                aria-label="Close"
+            >
+                <i class="fa-solid fa-xmark closeCross"></i>
+            </button>
+        </template>
+        <template #body>
+            <code>{{ masternodePrivKey }}</code>
+            <span
+                v-html="translation?.ALERTS?.CONFIRM_POPUP_MN_P_KEY_HTML"
+            ></span>
+        </template>
+    </Modal>
 </template>

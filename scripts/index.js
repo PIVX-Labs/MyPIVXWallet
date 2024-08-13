@@ -21,11 +21,7 @@ export {
     playMusic,
     openExplorer,
     doms,
-    importMasternode,
-    destroyMasternode,
-    startMasternode,
     toggleDropDown,
-    createProposal,
     switchSettings,
     govVote,
 } from './global.js';
@@ -39,7 +35,6 @@ export {
     toggleAutoLockWallet,
     changePassword,
 } from './settings.js';
-export { createMasternode } from './legacy.js';
 export {
     promoConfirm,
     setPromoMode,

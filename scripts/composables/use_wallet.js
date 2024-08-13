@@ -35,6 +35,7 @@ export const useWallet = defineStore('wallet', () => {
     const isEncrypted = ref(true);
     const loadFromDisk = () => wallet.loadFromDisk();
     const hasShield = ref(wallet.hasShield());
+    const getNewAddress = (nReceiving) => wallet.getNewAddress(nReceiving);
 
     const setMasterKey = async ({ mk, extsk }) => {
         wallet.setMasterKey({ mk, extsk });
@@ -102,6 +103,7 @@ export const useWallet = defineStore('wallet', () => {
         }
     );
     const isCreatingTransaction = () => createAndSendTransaction.isLocked();
+    const getMasternodeUTXOs = () => wallet.getMasternodeUTXOs();
 
     getEventEmitter().on('toggle-network', async () => {
         isEncrypted.value = await hasEncryptedWallet();
@@ -131,6 +133,7 @@ export const useWallet = defineStore('wallet', () => {
         checkDecryptPassword,
         encrypt,
         getAddress,
+        getNewAddress,
         wipePrivateData: () => {
             wallet.wipePrivateData();
             isViewOnly.value = wallet.isViewOnly();
@@ -148,5 +151,6 @@ export const useWallet = defineStore('wallet', () => {
         createAndSendTransaction,
         loadFromDisk,
         coldBalance,
+        getMasternodeUTXOs,
     };
 });

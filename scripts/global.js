@@ -290,11 +290,6 @@ function subscribeToNetworkEvents() {
 
     getEventEmitter().on('new-block', (block) => {
         debugLog(DebugTopics.GLOBAL, `New block detected! ${block}`);
-
-        // If it's open: update the Governance Dashboard
-        if (doms.domGovTab.classList.contains('active')) {
-            updateGovernanceTab();
-        }
     });
 
     getEventEmitter().on('transaction-sent', (success, result) => {
@@ -472,7 +467,6 @@ export async function govVote(hash, voteCode) {
             if (result.includes('Voted successfully')) {
                 //good vote
                 cMasternode.storeVote(hash.toString(), voteCode);
-                await updateGovernanceTab();
                 createAlert('success', ALERTS.VOTE_SUBMITTED, 6000);
             } else if (result.includes('Error voting :')) {
                 //If you already voted return an alert

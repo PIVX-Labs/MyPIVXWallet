@@ -1,16 +1,19 @@
 <script setup>
-import { toRefs, computed, ref } from 'vue';
+import { toRefs, computed, ref, watch } from 'vue';
 import { tr, translation } from '../i18n.js';
 import { COIN, cChainParams } from '../chain_params';
+import IconArrow from '../../assets/icons/icon-arrow.svg';
 const props = defineProps({
     synced: Boolean,
     balance: Number,
+    possibleUTXOs: Array,
 });
 import PlusIcon from '../../assets/icons/icon-plus.svg';
 import Modal from '../Modal.vue';
 
-const { synced, balance } = toRefs(props);
+const { synced, balance, possibleUTXOs } = toRefs(props);
 const showModal = ref(false);
+watch(possibleUTXOs, console.log);
 
 const error = computed(() => {
     if (!synced.value) {
@@ -26,10 +29,14 @@ const error = computed(() => {
     return '';
 });
 
-const emit = defineEmits(['createMasternode']);
+const emit = defineEmits(['createMasternode', 'importMasternode']);
 const selection = ref();
 function createMasternode() {
     emit('createMasternode', { isVPS: selection.value === 'VPS' });
+}
+
+function importMasternode() {
+    emit('importMasternode');
 }
 </script>
 
@@ -55,7 +62,7 @@ function createMasternode() {
     </div>
     <div
         style="display: flex; justify-content: center; width: 100%"
-        v-if="!error"
+        v-if="!error && !possibleUTXOs.length"
     >
         <button
             class="pivx-button-small"
@@ -70,6 +77,51 @@ function createMasternode() {
             >
         </button>
     </div>
+    <center>
+        <div
+            id="accessMasternode"
+            class="dashboard-item"
+            style="display: inline-block; float: inherit"
+            v-if="!error && possibleUTXOs.length"
+        >
+            <div class="container">
+                <div id="accessMasternodeText"></div>
+                <br />
+                <input class="hide-element" type="text" />
+                <div style="display: block">
+                    <input
+                        type="password"
+                        id="mnPrivateKey"
+                        placeholder="Masternode Private Key"
+                    />
+                    <input
+                        type="text"
+                        id="mnIP"
+                        placeholder="Masternode ip address"
+                    />
+                    <select
+                        style="display: block"
+                        placeholder="Masternode collateral tx"
+                        class="form-control"
+                    >
+                        <option disabled value="">Select an UTXO</option>
+                        <option v-for="utxo in possibleUTXOs">
+                            {{ `${utxo.outpoint.txid}/${utxo.outpoint.n}` }}
+                        </option>
+                    </select>
+                    <button class="pivx-button-big" @click="importMasternode()">
+                        <span class="buttoni-icon"
+                            ><i class="fas fa-file-upload fa-tiny-margin"></i
+                        ></span>
+                        <span class="buttoni-text" id="importMnText"
+                            >Access Masternode</span
+                        >
+                        <span class="buttoni-arrow" v-html="IconArrow"> </span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </center>
     <Modal :show="showModal" @close="showModal = false">
         <template #header>
             <button
