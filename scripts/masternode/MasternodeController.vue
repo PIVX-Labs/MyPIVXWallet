@@ -1,4 +1,19 @@
-<script setup></script>
+<script setup>
+import { toRefs, ref } from 'vue';
+import Masternode from '../masternode';
+
+const props = defineProps({ masternode: Masternode });
+const emit = defineEmits(['start']);
+const { masternode } = toRefs(props);
+const status = ref();
+const lastSeen = ref();
+async function updateMasternodeData() {
+    const data = await masternode.value.getFullData();
+    const lastSeen = new Date(data.lastseen).toLocaleTimeString();
+    status.value = await masternode.value.getStatus();
+}
+updateMasternodeData();
+</script>
 
 <template>
     <div>
@@ -14,7 +29,9 @@
                         style="background-color: #2c0044; border-radius: 10px"
                     >
                         Status
-                        <small id="mnProtocol" style="opacity: 0.5"></small>
+                        <small id="mnProtocol" style="opacity: 0.5">
+                            {{ status }}
+                        </small>
                     </h4>
                     <h2
                         id="mnStatus"

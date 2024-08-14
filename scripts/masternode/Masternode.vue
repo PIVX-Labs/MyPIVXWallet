@@ -98,7 +98,7 @@ function importMasternode(privateKey, ip, utxo) {
     masternode.value = new Masternode({
         walletPrivateKeyPath: wallet.getPath(utxo.script),
         mnPrivateKey: privateKey,
-        collateralTxId: utxo.outpoint.toUnique,
+        collateralTxId: utxo.outpoint.toUnique(),
         outidx: utxo.outpoint.n,
         addr: address,
     });

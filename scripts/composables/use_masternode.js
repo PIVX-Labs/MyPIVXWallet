@@ -19,9 +19,7 @@ export const useMasternode = defineStore('masternode', () => {
     });
     watch(masternode, async () => {
         const database = await Database.getInstance();
-        await database.addMasternode(
-            JSON.parse(JSON.stringify(masternode.value))
-        );
+        await database.addMasternode(toRaw(masternode.value));
     });
     return { masternode };
 });
