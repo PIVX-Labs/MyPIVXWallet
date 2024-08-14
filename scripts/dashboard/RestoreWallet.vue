@@ -27,8 +27,8 @@ watch(show, (show) => {
 async function importWif(wif, extsk) {
     const secret = await ParsedSecret.parse(wif);
     if (secret.masterKey) {
-        await wallet.setMasterKey({ mk: secret.masterKey, extsk });
-        if (wallet.hasShield && !extsk) {
+        await wallet.value.setMasterKey({ mk: secret.masterKey, extsk });
+        if (wallet.value.hasShield && !extsk) {
             createAlert(
                 'warning',
                 'Could not decrypt sk even if password is correct, please contact a developer'

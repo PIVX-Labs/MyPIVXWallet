@@ -10,7 +10,7 @@ import { cChainParams } from '../chain_params';
 import Modal from '../Modal.vue';
 import { ref, watch, reactive } from 'vue';
 import { getNetwork } from '../network';
-import { translation } from '../i18n.js';
+import { translation, ALERTS } from '../i18n.js';
 import {
     generateMasternodePrivkey,
     parseIpAddress,
@@ -41,42 +41,22 @@ watch(isSynced, () => {
  * @param {boolean} fRestart - Whether this is a Restart or a first Start
  */
 async function startMasternode(fRestart = false) {
-    const database = await Database.getInstance();
-    const cMasternode = await database.getMasternode(wallet.getMasterKey());
-    if (cMasternode) {
-        if (
-            wallet.isViewOnly() &&
-            !(await restoreWallet(translation.walletUnlockMNStart))
-        )
-            return;
-        if (await cMasternode.start()) {
-            const strMsg = fRestart ? ALERTS.MN_RESTARTED : ALERTS.MN_STARTED;
-            createAlert('success', strMsg, 4000);
-        } else {
-            const strMsg = fRestart
-                ? ALERTS.MN_RESTART_FAILED
-                : ALERTS.MN_START_FAILED;
-            createAlert('warning', strMsg, 4000);
-        }
+    if (isViewOnly.value && !(await restoreWallet())) {
+        return;
+    }
+    if (await masternode.value.start()) {
+        const strMsg = fRestart ? ALERTS.MN_RESTARTED : ALERTS.MN_STARTED;
+        createAlert('success', strMsg, 4000);
+    } else {
+        const strMsg = fRestart
+            ? ALERTS.MN_RESTART_FAILED
+            : ALERTS.MN_START_FAILED;
+        createAlert('warning', strMsg, 4000);
     }
 }
 
 async function destroyMasternode() {
-    const database = await Database.getInstance();
-    const cMasternode = await database.getMasternode(wallet.getMasterKey());
-    if (cMasternode) {
-        // Unlock the coin and update the balance
-        wallet.unlockCoin(
-            new COutpoint({
-                txid: cMasternode.collateralTxId,
-                n: cMasternode.outidx,
-            })
-        );
-
-        database.removeMasternode(wallet.getMasterKey());
-        createAlert('success', ALERTS.MN_DESTROYED, 5000);
-        updateMasternodeTab();
-    }
+    masternode.value = null;
 }
 
 /**
@@ -98,7 +78,7 @@ function importMasternode(privateKey, ip, utxo) {
     masternode.value = new Masternode({
         walletPrivateKeyPath: wallet.getPath(utxo.script),
         mnPrivateKey: privateKey,
-        collateralTxId: utxo.outpoint.toUnique(),
+        collateralTxId: utxo.outpoint.txid,
         outidx: utxo.outpoint.n,
         addr: address,
     });
@@ -341,7 +321,7 @@ async function refreshMasternodeData(cMasternode, fAlert = false) {
         doms.domMnTextErrors.innerHTML =
             'Masternode is currently <b>OFFLINE</b>';
         if (
-            !wallet.isViewOnly() ||
+            !wallet.isViewOnly ||
             (await restoreWallet(translation.walletUnlockCreateMN))
         ) {
             createAlert('warning', ALERTS.MN_OFFLINE_STARTING, 6000);
@@ -443,6 +423,7 @@ function closeShowPrivKeyModal() {}
 <template>
     <RestoreWallet
         :show="showRestoreWallet"
+        :wallet="wallet"
         @close="showRestoreWallet = false"
     />
     <CreateMasternode
@@ -453,7 +434,12 @@ function closeShowPrivKeyModal() {}
         @createMasternode="createMasternode"
         @importMasternode="importMasternode"
     />
-    <MasternodeController v-if="masternode" :masternode="masternode" />
+    <MasternodeController
+        v-if="masternode"
+        :masternode="masternode"
+        @start="({ restart }) => startMasternode(restart)"
+        @destroy="destroyMasternode"
+    />
     <Modal :show="showMasternodePrivateKey">
         <template #header>
             <b>{{ translation?.ALERTS?.CONFIRM_POPUP_MN_P_KEY }}</b>
