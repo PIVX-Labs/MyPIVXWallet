@@ -10,7 +10,11 @@ import Modal from '../Modal.vue';
 import { ref, watch, reactive } from 'vue';
 import { getNetwork } from '../network';
 import { translation } from '../i18n.js';
-import { generateMasternodePrivkey } from '../misc';
+import {
+    generateMasternodePrivkey,
+    parseIpAddress,
+    createAlert,
+} from '../misc';
 
 /**
  * @type{{masternode: import('vue').Ref<import('../masternode.js').default?>}}
@@ -74,7 +78,32 @@ async function destroyMasternode() {
     }
 }
 
-async function importMasternode() {
+/**
+ * @param {string} privateKey - masternode private key
+ * @param {string} ip - Ip to connect to. Can be ipv6 or ipv4
+ * @param {import('../transaction.js').UTXO} utxo - Masternode utxo. Must be of exactly `cChainParams.current.collateralInSats` of value
+ */
+function importMasternode(privateKey, ip, utxo) {
+    console.log(privateKey, ip, utxo);
+    const address = parseIpAddress(ip);
+    if (!address) {
+        createAlert('warning', ALERTS.MN_BAD_IP, 5000);
+        return;
+    }
+    if (!privateKey) {
+        createAlert('warning', ALERTS.MN_BAD_PRIVKEY, 5000);
+        return;
+    }
+    masternode.value = new Masternode({
+        walletPrivateKeyPath: wallet.getPath(utxo.script),
+        mnPrivateKey: privateKey,
+        collateralTxId: utxo.outpoint.toUnique,
+        outidx: utxo.outpoint.n,
+        addr: address,
+    });
+}
+
+async function importMasternodelegacy() {
     const mnPrivKey = doms.domMnPrivateKey.value;
     const address = parseIpAddress(doms.domMnIP.value);
     if (!address) {
@@ -421,6 +450,7 @@ function closeShowPrivKeyModal() {}
         :balance="balance"
         :possibleUTXOs="possibleUTXOs"
         @createMasternode="createMasternode"
+        @importMasternode="importMasternode"
     />
     <Modal :show="showMasternodePrivateKey">
         <template #header>

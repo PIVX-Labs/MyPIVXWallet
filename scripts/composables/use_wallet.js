@@ -104,6 +104,7 @@ export const useWallet = defineStore('wallet', () => {
     );
     const isCreatingTransaction = () => createAndSendTransaction.isLocked();
     const getMasternodeUTXOs = () => wallet.getMasternodeUTXOs();
+    const getPath = (script) => wallet.getPath(script);
 
     getEventEmitter().on('toggle-network', async () => {
         isEncrypted.value = await hasEncryptedWallet();
@@ -152,5 +153,6 @@ export const useWallet = defineStore('wallet', () => {
         loadFromDisk,
         coldBalance,
         getMasternodeUTXOs,
+        getPath,
     };
 });
