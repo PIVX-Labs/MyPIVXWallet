@@ -1,4 +1,4 @@
-import { ref, watch } from 'vue';
+import { ref, watch, toRaw } from 'vue';
 import { defineStore } from 'pinia';
 import Masternode from '../masternode.js';
 import { Database } from '../database.js';
@@ -19,7 +19,9 @@ export const useMasternode = defineStore('masternode', () => {
     });
     watch(masternode, async () => {
         const database = await Database.getInstance();
-        await database.addMasternode(masternode.value);
+        await database.addMasternode(
+            JSON.parse(JSON.stringify(masternode.value))
+        );
     });
     return { masternode };
 });

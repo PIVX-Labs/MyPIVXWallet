@@ -2,6 +2,7 @@
 import { useMasternode } from '../composables/use_masternode.js';
 import { storeToRefs } from 'pinia';
 import CreateMasternode from './CreateMasternode.vue';
+import MasternodeController from './MasternodeController.vue';
 import { useWallet } from '../composables/use_wallet';
 import Masternode from '../masternode.js';
 import RestoreWallet from '../dashboard/RestoreWallet.vue';
@@ -452,6 +453,7 @@ function closeShowPrivKeyModal() {}
         @createMasternode="createMasternode"
         @importMasternode="importMasternode"
     />
+    <MasternodeController v-if="masternode" :masternode="masternode" />
     <Modal :show="showMasternodePrivateKey">
         <template #header>
             <b>{{ translation?.ALERTS?.CONFIRM_POPUP_MN_P_KEY }}</b>

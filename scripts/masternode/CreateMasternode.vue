@@ -38,15 +38,7 @@ function createMasternode() {
 }
 
 function importMasternode() {
-    emit(
-        'importMasternode',
-        privateKey.value,
-        ip.value,
-        possibleUTXOs.value.find((u) => {
-            const [txid, n] = utxo.value.split('/');
-            return u.outpoint.txid === txid && u.outpoint.n === n;
-        })
-    );
+    emit('importMasternode', privateKey.value, ip.value, utxo.value);
 }
 </script>
 
@@ -88,50 +80,50 @@ function importMasternode() {
         </button>
     </div>
     <center>
-    <div
-        id="accessMasternode"
-        class="dashboard-item"
-        style="display: inline-block; float: inherit"
-        v-if="!error && possibleUTXOs.length"
-    >
-        <div class="container">
-            <div id="accessMasternodeText"></div>
-            <br />
-            <input class="hide-element" type="text" />
-            <div style="display: block">
-                <input
-                    type="password"
-                    :ref="privateKey"
-                    placeholder="Masternode Private Key"
-                />
-                <input
-                    type="text"
-                    :ref="ip"
-                    placeholder="Masternode ip address"
-                />
-                <select
-                    style="display: block"
-                    :ref="utxo"
-                    placeholder="Masternode collateral tx"
-                    class="form-control"
-                >
-                    <option disabled value="">Select an UTXO</option>
-                    <option v-for="utxo in possibleUTXOs">
-                        {{ `${utxo.outpoint.txid}/${utxo.outpoint.n}` }}
-                    </option>
-                </select>
-                <button class="pivx-button-big" @click="importMasternode()">
-                    <span class="buttoni-icon"
-                        ><i class="fas fa-file-upload fa-tiny-margin"></i
-                    ></span>
-                    <span class="buttoni-text" id="importMnText"
-                        >Access Masternode</span
+        <div
+            id="accessMasternode"
+            class="dashboard-item"
+            style="display: inline-block; float: inherit"
+            v-if="!error && possibleUTXOs.length"
+        >
+            <div class="container">
+                <div id="accessMasternodeText"></div>
+                <br />
+                <input class="hide-element" type="text" />
+                <div style="display: block">
+                    <input
+                        type="password"
+                        v-model="privateKey"
+                        placeholder="Masternode Private Key"
+                    />
+                    <input
+                        type="text"
+                        v-model="ip"
+                        placeholder="Masternode ip address"
+                    />
+                    <select
+                        style="display: block"
+                        v-model="utxo"
+                        placeholder="Masternode collateral tx"
+                        class="form-control"
                     >
-                    <span class="buttoni-arrow" v-html="IconArrow"> </span>
-                </button>
+                        <option disabled value="">Select an UTXO</option>
+                        <option v-for="utxo in possibleUTXOs" :value="utxo">
+                            {{ `${utxo.outpoint.txid}/${utxo.outpoint.n}` }}
+                        </option>
+                    </select>
+                    <button class="pivx-button-big" @click="importMasternode()">
+                        <span class="buttoni-icon"
+                            ><i class="fas fa-file-upload fa-tiny-margin"></i
+                        ></span>
+                        <span class="buttoni-text" id="importMnText"
+                            >Access Masternode</span
+                        >
+                        <span class="buttoni-arrow" v-html="IconArrow"> </span>
+                    </button>
+                </div>
             </div>
         </div>
-    </div>
     </center>
     <Modal :show="showModal" @close="showModal = false">
         <template #header>
