@@ -7,6 +7,7 @@ import {
     createAlert,
     createQR,
     getImageFile,
+    isShieldAddress,
     isValidPIVXAddress,
     isXPub,
     sanitizeHTML,
@@ -935,8 +936,12 @@ export async function guiSetAccountName(strDOM) {
 /**
  * Get the address color based on the validity of an address/contact
  * @param {string} address
+ * @param {boolean} [invalidateShieldAddresses] - if set to true, shield addresses will return as invalid color
  */
-export async function getAddressColor(address) {
+export async function getAddressColor(
+    address,
+    invalidateShieldAddresses = false
+) {
     // If the value is empty, we don't do any checks and simply reset the colourcoding
     if (!address) {
         return '';
@@ -954,6 +959,9 @@ export async function getAddressColor(address) {
     if (cContact) {
         // Yep, nice!
         return 'green';
+    }
+    if (invalidateShieldAddresses && isShieldAddress(address)) {
+        return '#b20000';
     }
     if (isValidPIVXAddress(address)) {
         // Yep!

@@ -4,6 +4,7 @@ import { OP } from './script.js';
 import { hexToBytes, bytesToHex, dSHA256 } from './utils.js';
 import { isShieldAddress, isExchangeAddress } from './misc.js';
 import { SAPLING_TX_VERSION } from './chain_params.js';
+import { numToVarInt } from './encoding.js';
 /**
  * @class Builds a non-signed transaction
  */
@@ -14,9 +15,9 @@ export class TransactionBuilder {
 
     // Part of the tx fee that has been already handled
     #handledFee = 0;
-    MIN_FEE_PER_BYTE = 10;
+    static MIN_FEE_PER_BYTE = 10;
     // This number is larger or equal than the max size of the script sig for a P2CS and P2PKH transaction
-    SCRIPT_SIG_MAX_SIZE = 108;
+    static SCRIPT_SIG_MAX_SIZE = 108;
 
     get valueIn() {
         return this.#valueIn;
@@ -35,7 +36,9 @@ export class TransactionBuilder {
      */
     isDust({ out, value }) {
         // Dust is a transaction such that its creation costs more than its value
-        return value < out.serialize().length * this.MIN_FEE_PER_BYTE;
+        return (
+            value < out.serialize().length * TransactionBuilder.MIN_FEE_PER_BYTE
+        );
     }
 
     constructor() {
@@ -52,18 +55,37 @@ export class TransactionBuilder {
         return new TransactionBuilder();
     }
 
+    /**
+     * @returns {number} Amount of fee in sats of a standard transaction based on the
+     * number of inputs and outputs
+     */
+    static getStandardTxFee(nInputs, nOutputs) {
+        const inputVarIntLength = numToVarInt(nInputs).length;
+        const outputVarIntLength = numToVarInt(nOutputs).length;
+        return (
+            (nInputs * (TransactionBuilder.SCRIPT_SIG_MAX_SIZE + 41) +
+                nOutputs * 34 +
+                8 +
+                inputVarIntLength +
+                outputVarIntLength) *
+            TransactionBuilder.MIN_FEE_PER_BYTE
+        );
+    }
+
     getFee() {
         //TODO: find a cleaner way to add the dummy signature
         let scriptSig = [];
         for (let vin of this.#transaction.vin) {
             scriptSig.push(vin.scriptSig);
             // Insert a dummy signature just to compute fees
-            vin.scriptSig = bytesToHex(Array(this.SCRIPT_SIG_MAX_SIZE).fill(0));
+            vin.scriptSig = bytesToHex(
+                Array(TransactionBuilder.SCRIPT_SIG_MAX_SIZE).fill(0)
+            );
         }
 
         const fee =
             Math.ceil(this.#transaction.serialize().length / 2) *
-                this.MIN_FEE_PER_BYTE -
+                TransactionBuilder.MIN_FEE_PER_BYTE -
             this.#handledFee;
         // Re-insert whatever was inside before
         for (let i = 0; i < scriptSig.length; i++) {
@@ -174,7 +196,8 @@ export class TransactionBuilder {
         if (this.isDust({ out, value }) && subtractFeeFromAmt) {
             return;
         }
-        const fee = out.serialize().length * this.MIN_FEE_PER_BYTE;
+        const fee =
+            out.serialize().length * TransactionBuilder.MIN_FEE_PER_BYTE;
         // We have subtracted fees from the value, mark this fee as handled (don't pay them again)
         if (subtractFeeFromAmt) {
             out.value -= fee;

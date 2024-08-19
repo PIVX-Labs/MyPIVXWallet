@@ -63,7 +63,7 @@ it('Sends transaction correctly', async () => {
     expect(wrapper.emitted('send')).toBeUndefined();
     await wrapper.find('[data-testid=sendButton]').trigger('click');
     expect(wrapper.emitted('send')).toStrictEqual([
-        ['DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bc', '60', false],
+        ['DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bc', '60', false, false],
     ]);
 });
 
@@ -74,6 +74,6 @@ it('Sends transaction with shield inputs', async () => {
     await wrapper.find('[data-testid=sendButton]').trigger('click');
 
     expect(wrapper.emitted('send')).toStrictEqual([
-        ['DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bc', '60', true],
+        ['DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bc', '60', true, false],
     ]);
 });
