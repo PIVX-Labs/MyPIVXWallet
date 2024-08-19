@@ -207,7 +207,8 @@ export async function start() {
     };
 
     // Set Copyright year on footer
-    document.getElementById('copyrightYear').innerHTML = new Date().getFullYear();
+    document.getElementById('copyrightYear').innerHTML =
+        new Date().getFullYear();
 
     await i18nStart();
     await loadImages();
