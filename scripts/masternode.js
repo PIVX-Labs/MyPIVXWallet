@@ -571,7 +571,7 @@ export default class Masternode {
      * @param {Number} options.start - Superblock of when the proposal is going to start
      * @param {String} options.address - Base58 encoded PIVX address
      * @param {Number} options.monthlyPayment - Payment amount per cycle in satoshi
-     * @returns {boolean} If the proposal is valid
+     * @returns {{ok:boolean, err: string}} If the proposal is valid
      */
     static isValidProposal({
         name,

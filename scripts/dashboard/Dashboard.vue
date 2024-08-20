@@ -896,6 +896,7 @@ defineExpose({
     <RestoreWallet
         :show="showRestoreWallet"
         :reason="restoreWalletReason"
+        :wallet="wallet"
         @close="showRestoreWallet = false"
     />
 </template>

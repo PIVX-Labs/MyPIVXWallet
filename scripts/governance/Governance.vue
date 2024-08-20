@@ -4,12 +4,22 @@ import { watch, ref, computed } from 'vue';
 import { cOracle } from '../prices';
 import { ProposalValidator } from './status';
 import { blockCount } from '../global';
+import { useWallet } from '../composables/use_wallet';
 import Masternode from '../masternode.js';
 import ProposalsTable from './ProposalsTable.vue';
 import Flipdown from './Flipdown.vue';
+import ProposalCreateModal from './ProposalCreateModal.vue';
+import { hasEncryptedWallet } from '../wallet';
+import { createAlert } from '../misc';
+import { ALERTS, tr, translation } from '../i18n';
+import { Database } from '../database';
+import { storeToRefs } from 'pinia';
+import { useSettings } from '../composables/use_settings';
+import { getNetwork } from '../network';
 
 const strCurrency = 'usd';
 const price = ref(0);
+const showCreateProposalModal = ref(false);
 watch(
     strCurrency,
     async () => {
@@ -18,6 +28,9 @@ watch(
     { immediate: true }
 );
 
+const wallet = useWallet();
+const settings = useSettings();
+const { advancedMode } = storeToRefs(settings);
 const proposals = ref([]);
 const contestedProposals = ref([]);
 const nextSuperBlock = ref(0);
@@ -160,9 +173,9 @@ function addProposalToFinalisationCache(cProposal) {
     return cPropCache;
 }
 
-async function createProposal() {
+async function openCreateProposal() {
     // Must have a wallet
-    if (!wallet.isLoaded()) {
+    if (!wallet.isImported) {
         return createAlert('warning', ALERTS.PROPOSAL_IMPORT_FIRST, 4500);
     }
     // Wallet must be encrypted
@@ -175,109 +188,47 @@ async function createProposal() {
             4500
         );
     }
-    // Wallet must be unlocked
-    if (
-        wallet.isViewOnly() &&
-        !(await restoreWallet(translation.walletUnlockProposal))
-    ) {
-        return;
-    }
     // Must have enough funds
     if (wallet.balance * COIN < cChainParams.current.proposalFee) {
         return createAlert('warning', ALERTS.PROPOSAL_NOT_ENOUGH_FUNDS, 4500);
     }
 
-    // Create the popup, wait for the user to confirm or cancel
-    const fConfirmed = await confirmPopup({
-        title: `<h4>${translation.popupCreateProposal}</h4>
-        <span style="color: #af9cc6; font-size: 1rem; margin-bottom: 23px; display: block;">${
-            translation.popupCreateProposalCost
-        } <b>${cChainParams.current.proposalFee / COIN} ${
-            cChainParams.current.TICKER
-        }</b></span>`,
-        html: `<div style="padding-left: 10px; padding-right: 10px;">
-            <p style="margin-bottom: 12px; color: #af9cc6; font-size: 1rem; font-weight: 500;">Proposal name</p>
-            <input id="proposalTitle" maxlength="20" placeholder="${
-                translation.popupProposalName
-            }" style="text-align: start; margin-bottom: 25px;"><br>
-            
-            <p style="margin-bottom: 12px; color: #af9cc6; font-size: 1rem; font-weight: 500;">URL</p>
-            <input id="proposalUrl" maxlength="64" placeholder="https://forum.pivx.org/..." style=" margin-bottom: 25px; text-align: start;"><br>
-            
-            <p style="margin-bottom: 12px; color: #af9cc6; font-size: 1rem; font-weight: 500;">Duration in cycles</p>
-            <input type="number" id="proposalCycles" min="1" max="${
-                cChainParams.current.maxPaymentCycles
-            }" placeholder="${
-            translation.popupProposalDuration
-        }" style=" margin-bottom: 25px; text-align: start;"><br>
-            
-            <p style="margin-bottom: 12px; color: #af9cc6; font-size: 1rem; font-weight: 500;">${
-                cChainParams.current.TICKER
-            } per cycle</p>
-            <input type="number" id="proposalPayment" min="10" max="${
-                cChainParams.current.maxPayment / COIN
-            }" placeholder="${cChainParams.current.TICKER} ${
-            translation.popupProposalPerCycle
-        }" style=" margin-bottom: 25px; text-align: start;">${
-            !fAdvancedMode ? '<br>' : ''
-        }
-            
-            <p style="margin-bottom: 12px; color: #af9cc6; font-size: 1rem; font-weight: 500; ${
-                !fAdvancedMode ? 'display: none' : ''
-            }">Proposal Address</p>
-            <input id="proposalAddress" maxlength="34" placeholder="${
-                translation.popupProposalAddress
-            }" style=" margin-bottom: 25px; text-align: start; ${
-            !fAdvancedMode ? 'display: none' : ''
-        }">
-        </div>`,
-        wideModal: true,
-    });
+    showCreateProposalModal.value = true;
+}
 
-    // If the user cancelled, then we return
-    if (!fConfirmed) return;
-
-    const strTitle = document.getElementById('proposalTitle').value.trim();
-    const strUrl = document.getElementById('proposalUrl').value.trim();
-    const numCycles = parseInt(
-        document.getElementById('proposalCycles').value.trim()
-    );
-    const numPayment = parseInt(
-        document.getElementById('proposalPayment').value.trim()
-    );
-
-    // If Advanced Mode is enabled and an address is given, use the provided address, otherwise, generate a new one
-    const strAddress =
-        document.getElementById('proposalAddress').value.trim() ||
-        wallet.getNewAddress(1)[0];
-    const nextSuperblock = await Masternode.getNextSuperblock();
+async function createProposal(name, url, payments, monthlyPayment, address) {
+    debugger;
+    address = address || wallet.getNewAddress(1)[0];
+    const start = await Masternode.getNextSuperblock();
     const proposal = {
-        name: strTitle,
-        url: strUrl,
-        nPayments: numCycles,
-        start: nextSuperblock,
-        address: strAddress,
-        monthlyPayment: numPayment * COIN,
+        name,
+        url,
+        nPayments: payments,
+        start,
+        address,
+        monthlyPayment: monthlyPayment * COIN,
     };
-
-    const isValid = Masternode.isValidProposal(proposal);
-    if (!isValid.ok) {
+    const validation = Masternode.isValidProposal(proposal);
+    if (!validation.ok) {
         createAlert(
             'warning',
-            `${ALERTS.PROPOSAL_INVALID_ERROR} ${isValid.err}`,
+            `${ALERTS.PROPOSAL_INVALID_ERROR} ${validation.err}`,
             7500
         );
         return;
     }
-
     const hash = Masternode.createProposalHash(proposal);
-    const { ok, txid } = await createAndSendTransaction({
-        address: hash,
-        amount: cChainParams.current.proposalFee,
-        isProposal: true,
-    });
+    const { ok, txid } = await wallet.createAndSendTransaction(
+        getNetwork(),
+        hash,
+        cChainParams.current.proposalFee,
+        {
+            isProposal: true,
+        }
+    );
     if (ok) {
         proposal.txid = txid;
+        // TODO: Update database using vue reactivity
         const database = await Database.getInstance();
 
         // Fetch our Account, add the proposal to it
@@ -287,12 +238,18 @@ async function createProposal() {
         // Update the DB
         await database.updateAccount(account);
         createAlert('success', translation.PROPOSAL_CREATED, 10000);
-        updateGovernanceTab();
+        showCreateProposalModal.value = false;
     }
 }
 </script>
 
 <template>
+    <ProposalCreateModal
+        v-show="showCreateProposalModal"
+        :advancedMode="advancedMode"
+        @close="showCreateProposalModal = false"
+        @create="createProposal"
+    />
     <div>
         <div class="col-md-12 title-section float-left rm-pd">
             <span
@@ -493,7 +450,7 @@ async function createProposal() {
             </div>
         </div>
 
-        <div class="pivx-button-small governAdd" onclick="MPW.createProposal()">
+        <div class="pivx-button-small governAdd" @click="openCreateProposal()">
             <i class="fas fa-plus"></i>
         </div>
 
