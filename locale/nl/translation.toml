@@ -255,8 +255,6 @@ MN_OFFLINE_STARTING = "Je masternode is offline, we zullen proberen deze te star
 MN_STARTED = "<b>Masternode gestart!</b>" # <b>Masternode started!</b>
 MN_RESTARTED = "<b>Masternode opnieuw gestart!</b>" # <b>Masternode restarted!</b>
 MN_STARTED_ONLINE_SOON = "<b>Masternode gestart!</b><br>Hij zal binnenkort online zijn" # <b>Masternode started!</b><br>It'll be online soon
-MN_START_FAILED = "<b>Masternode gestart!</b>" # <b>Masternode started!</b>
-MN_RESTART_FAILED = "<b>Masternode opnieuw gestart!</b>" # <b>Masternode restarted!</b>
 MN_DESTROYED = "<b>Masternode vernietigd!</b><br>Je munten zijn nu uitgeefbaar." # <b>Masternode destroyed!</b><br>Your coins are now spendable.
 MN_STATUS_IS = "De status van je masternode is" # Your masternode status is
 MN_STATE = "Je masternode is in de staat <b>{state}</b>" # Your masternode is in <b>{state}</b> state
@@ -323,3 +321,5 @@ CONFIRM_LEDGER_TX = "" # Confirm this transaction matches the one on your {hardw
 CONFIRM_LEDGER_TX_OUT = "" # You will send {value} {ticker} to <div class="inline-address">{address}</div>
 MISSING_FUNDS = "" # Balance is too small! Missing {sats} sats!
 MISSING_SHIELD = "" # Shield is not enabled in this wallet!
+MN_START_FAILED = "" # <b>Masternode failed to start!</b>
+MN_RESTART_FAILED = "" # <b>Masternode failed to restart!</b>

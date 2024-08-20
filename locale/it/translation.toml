@@ -255,8 +255,6 @@ MN_OFFLINE_STARTING = "Il tuo masternode è offline, proviamo ad avviarlo" # You
 MN_STARTED = "<b>Il Masternode è stato avviato!</b>" # <b>Masternode started!</b>
 MN_RESTARTED = "<b>Il Masternode è stato riavviato<b/>" # <b>Masternode restarted!</b>
 MN_STARTED_ONLINE_SOON = "<b>Il Masternode è stato avviato!</b><br>Sarà presto online" # <b>Masternode started!</b><br>It'll be online soon
-MN_START_FAILED = "<b>Il Masternode è stato avviato!</b>" # <b>Masternode started!</b>
-MN_RESTART_FAILED = "<b>Masternode riavviato!</b>" # <b>Masternode restarted!</b>
 MN_DESTROYED = "<b>Il distrutto!</b><br>Le tue monete ora sono spendibili." # <b>Masternode destroyed!</b><br>Your coins are now spendable.
 MN_STATUS_IS = "Lo stato del tuo Masternode è " # Your masternode status is
 MN_STATE = "Il tuo masternode è <b>{state}</b>" # Your masternode is in <b>{state}</b> state
@@ -323,3 +321,5 @@ CONFIRM_LEDGER_TX = "Conferma che questa transazione combacia quella nel tuo {ha
 CONFIRM_LEDGER_TX_OUT = "Manderai {value} {ticker} a <div class=\"inline-address\">{address}</div>" # You will send {value} {ticker} to <div class="inline-address">{address}</div>
 MISSING_FUNDS = "Il bilancio non è sufficiente! Mancano {sats} sats!" # Balance is too small! Missing {sats} sats!
 MISSING_SHIELD = "Lo Shield non è abilitato nel wallet!" # Shield is not enabled in this wallet!
+MN_START_FAILED = "" # <b>Masternode failed to start!</b>
+MN_RESTART_FAILED = "" # <b>Masternode failed to restart!</b>

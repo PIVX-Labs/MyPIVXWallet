@@ -255,8 +255,6 @@ MN_OFFLINE_STARTING = "Vaš glavni čvor je van mreže, pokušaćemo da ga pokre
 MN_STARTED = "<b>Glavni čvor je pokrenut!</b>" # <b>Masternode started!</b>
 MN_RESTARTED = "<b>Glavni čvor je restartovan!</b>" # <b>Masternode restarted!</b>
 MN_STARTED_ONLINE_SOON = "<b>Glavni čvor je pokrenut!</b><br>Uskoro će biti dostupan na mreži" # <b>Masternode started!</b><br>It'll be online soon
-MN_START_FAILED = "<b>Glavni čvor je pokrenut!</b>" # <b>Masternode started!</b>
-MN_RESTART_FAILED = "<b>Glavni čvor je ponovo pokrenut!</b>" # <b>Masternode restarted!</b>
 MN_DESTROYED = "<b>Glavni čvor je uništen!</b><br>Vaše kovanice sada mogu biti potrošene." # <b>Masternode destroyed!</b><br>Your coins are now spendable.
 MN_STATUS_IS = "Status vašeg glavnog čvora je" # Your masternode status is
 MN_STATE = "Vaš glavni čvor je u <b>{state}</b> stanju" # Your masternode is in <b>{state}</b> state
@@ -323,3 +321,5 @@ CONFIRM_LEDGER_TX = "" # Confirm this transaction matches the one on your {hardw
 CONFIRM_LEDGER_TX_OUT = "" # You will send {value} {ticker} to <div class="inline-address">{address}</div>
 MISSING_FUNDS = "" # Balance is too small! Missing {sats} sats!
 MISSING_SHIELD = "" # Shield is not enabled in this wallet!
+MN_START_FAILED = "" # <b>Masternode failed to start!</b>
+MN_RESTART_FAILED = "" # <b>Masternode failed to restart!</b>
