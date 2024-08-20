@@ -10,6 +10,10 @@ def copy_template_internal(res, template):
     for key in template:
         if key not in res and key != 'ALERTS':
             res[key] = ''
+    for key in res:
+        if key not in template and key != 'ALERTS':
+            # If key is no longer in template file, delete it
+            res[key] = None
 
 def copy_template(file_path, template_path):
     template = toml.load(template_path)
