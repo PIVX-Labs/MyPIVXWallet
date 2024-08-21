@@ -1249,11 +1249,6 @@ async function renderProposals(arrProposals, fContested) {
                 }
             }
 
-            /*
-
-            <div></div>
-            */
-
             const domVoteBtns = domRow.insertCell();
             domVoteBtns.style =
                 'padding-top: 30px; vertical-align: middle; display: flex; justify-content: center; align-items: center;';
