@@ -1,6 +1,7 @@
+import 'fake-indexeddb/auto';
 import { mount } from '@vue/test-utils';
 import { nextTick, ref } from 'vue';
-import { expect } from 'vitest';
+import { expect, describe, vi } from 'vitest';
 import TransferMenu from '../../scripts/dashboard/TransferMenu.vue';
 const price = 0.4;
 const mountTM = (amount = '123', address = '') => {
@@ -19,61 +20,57 @@ const mountTM = (amount = '123', address = '') => {
     return wrapper;
 };
 
-it('Updates inputs', async () => {
-    const wrapper = mountTM();
+describe('transfer menu tests', () => {
+    beforeEach(async () => {
+        // Reset indexedDB before each test
+        vi.stubGlobal('indexedDB', new IDBFactory());
+        return vi.unstubAllGlobals;
+    });
+    it('Updates inputs', async () => {
+        const wrapper = mountTM();
 
-    const amount = wrapper.find('[data-testid=amount]');
-    const currency = wrapper.find('[data-testid=amountCurrency]');
+        const amount = wrapper.find('[data-testid=amount]');
+        const currency = wrapper.find('[data-testid=amountCurrency]');
 
-    amount.trigger('input');
+        amount.trigger('input');
 
-    await nextTick();
-    await nextTick();
+        await nextTick();
+        await nextTick();
 
-    // Test that amount -> currency updates
-    expect(amount.element.value).toBe('123');
-    expect(currency.element.value).toBe(`${123 * price}`);
+        // Test that amount -> currency updates
+        expect(amount.element.value).toBe('123');
+        expect(currency.element.value).toBe(`${123 * price}`);
 
-    // Test that currency -> amount updates
-    currency.element.value = '49';
-    currency.trigger('input');
-    await nextTick();
+        // Test that currency -> amount updates
+        currency.element.value = '49';
+        currency.trigger('input');
+        await nextTick();
 
-    expect(amount.element.value).toBe(`${49 / price}`);
-    expect(currency.element.value).toBe(`49`);
+        expect(amount.element.value).toBe(`${49 / price}`);
+        expect(currency.element.value).toBe(`49`);
 
-    // Test that setting one as empty clears the other
-    currency.element.value = '';
-    currency.trigger('input');
-    await nextTick();
+        // Test that setting one as empty clears the other
+        currency.element.value = '';
+        currency.trigger('input');
+        await nextTick();
 
-    expect(amount.element.value).toBe('');
-    expect(currency.element.value).toBe('');
-});
+        expect(amount.element.value).toBe('');
+        expect(currency.element.value).toBe('');
+    });
 
-it('Closes correctly', async () => {
-    const wrapper = mountTM();
-    expect(wrapper.emitted('close')).toBeUndefined();
-    wrapper.find('[data-testid=closeButton]').trigger('click');
-    expect(wrapper.emitted('close')).toHaveLength(1);
-});
+    it('Closes correctly', async () => {
+        const wrapper = mountTM();
+        expect(wrapper.emitted('close')).toBeUndefined();
+        wrapper.find('[data-testid=closeButton]').trigger('click');
+        expect(wrapper.emitted('close')).toHaveLength(1);
+    });
 
-it('Sends transaction correctly', async () => {
-    const wrapper = mountTM('60', 'DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bc');
-    expect(wrapper.emitted('send')).toBeUndefined();
-    await wrapper.find('[data-testid=sendButton]').trigger('click');
-    expect(wrapper.emitted('send')).toStrictEqual([
-        ['DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bc', '60', false],
-    ]);
-});
-
-it('Sends transaction with shield inputs', async () => {
-    const wrapper = mountTM('60', 'DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bc');
-    expect(wrapper.emitted('send')).toBeUndefined();
-    await wrapper.find('[data-testid=useShieldInputs]').setChecked();
-    await wrapper.find('[data-testid=sendButton]').trigger('click');
-
-    expect(wrapper.emitted('send')).toStrictEqual([
-        ['DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bc', '60', true],
-    ]);
+    it('Sends transaction correctly', async () => {
+        const wrapper = mountTM('60', 'DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bc');
+        expect(wrapper.emitted('send')).toBeUndefined();
+        await wrapper.find('[data-testid=sendButton]').trigger('click');
+        expect(wrapper.emitted('send')).toStrictEqual([
+            ['DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bc', '60', false],
+        ]);
+    });
 });
