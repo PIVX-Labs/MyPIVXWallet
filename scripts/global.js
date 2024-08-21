@@ -50,6 +50,8 @@ createApp(Stake).use(pinia).mount('#StakingTab');
 
 export async function start() {
     doms = {
+        domLightBackground: document.getElementById('page-container-light'),
+        domNavbar: document.getElementById('navbar'),
         domNavbarToggler: document.getElementById('navbarToggler'),
         domDashboard: document.getElementById('dashboard'),
         domStakeTab: document.getElementById('stakeTab'),

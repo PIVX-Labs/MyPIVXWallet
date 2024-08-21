@@ -6,6 +6,7 @@ import { cOracle } from '../prices.js';
 import { ledgerSignTransaction } from '../ledger.js';
 import { defineStore } from 'pinia';
 import { lockableFunction } from '../lock.js';
+import { doms } from '../global.js';
 
 /**
  * This is the middle ground between vue and the wallet class
@@ -19,13 +20,8 @@ export const useWallet = defineStore('wallet', () => {
 
     const publicMode = ref(true);
     watch(publicMode, (publicMode) => {
-        if (publicMode) {
-            document.getElementById('navbar').classList.toggle('active');
-            document.getElementById('page-container-light').style.opacity = '1';
-        } else {
-            document.getElementById('navbar').classList.toggle('active');
-            document.getElementById('page-container-light').style.opacity = '0';
-        }
+        doms.domNavbar.classList.toggle('active');
+        doms.domLightBackground.style.opacity = publicMode ? '1' : '0';
     });
 
     const isImported = ref(wallet.isLoaded());
