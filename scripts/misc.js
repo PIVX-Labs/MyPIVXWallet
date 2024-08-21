@@ -272,7 +272,7 @@ export function isExchangeAddress(strAddress) {
 
 /**
  * @param {string} strAddress - The address to check
- * @returns {boolean} if strAddress is a valid shiled address
+ * @returns {boolean} if strAddress is a valid Shield address
  */
 export function isShieldAddress(strAddress) {
     return verifyBech32(strAddress, cChainParams.current.SHIELD_PREFIX);
@@ -288,7 +288,8 @@ export function isValidPIVXAddress(strAddress) {
         isStandardAddress(strAddress) ||
         isColdAddress(strAddress) ||
         isShieldAddress(strAddress) ||
-        isExchangeAddress(strAddress)
+        isExchangeAddress(strAddress) ||
+        isXPub(strAddress)
     );
 }
 
