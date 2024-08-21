@@ -117,6 +117,7 @@ async function getWalletDataset() {
 
 /**
  * Create the initial Wallet Breakdown chart configuration and UI rendering
+ * @param {Array<WalletDatasetPoint>} arrBreakdown - The dataset to render
  */
 export async function generateWalletBreakdown(arrBreakdown) {
     // Render the PIVX logo in the centre of the "Wallet Doughnut"
@@ -172,30 +173,39 @@ export async function generateWalletBreakdown(arrBreakdown) {
         },
     });
 
-    let breakdownLegendStr = '';
-    for (let i = 0; i < arrBreakdown.length; i++) {
-        breakdownLegendStr += `<div style="display: flex; margin-bottom: 12px;">
+    // Render the Legend
+    doms.domWalletBreakdownLegend.innerHTML =
+        generateLegendBreakdown(arrBreakdown);
+
+    // Set an interval internally to refresh the chart in real-time
+    chartWalletBreakdown.interval = setInterval(renderWalletBreakdown, 2500);
+}
+
+/**
+ * Generate a HTML 'Legend' list for a wallet breakdown dataset
+ * @param {Array<WalletDatasetPoint>} arrBreakdown - The dataset to render
+ */
+export function generateLegendBreakdown(arrBreakdown) {
+    let strLegend = '';
+    for (const cPoint of arrBreakdown) {
+        strLegend += `<div style="display: flex; margin-bottom: 12px;">
             <div style="width:40px; height:40px; border-radius:5px; background-color:${
-                arrBreakdown[i]['colour']
+                cPoint.colour
             };"></div>
             <div style="padding-left: 13px; text-align: left; display: flex; flex-direction: column; font-size: 16px;">
                 <span>${beautifyNumber(
-                    arrBreakdown[i]['balance'].toFixed(2),
+                    cPoint.balance.toFixed(2),
                     '13px'
                 )} <span style="opacity:0.55; font-size:13px;">${
             cChainParams.current.TICKER
         }</span></span>
                 <span style="font-size:13px; color:#c0b1d2;">${
-                    arrBreakdown[i]['type']
+                    cPoint.type
                 }</span>
             </div>
         </div>`;
     }
-
-    doms.domWalletBreakdownLegend.innerHTML = breakdownLegendStr;
-
-    // Set an interval internally to refresh the chart in real-time
-    chartWalletBreakdown.interval = setInterval(renderWalletBreakdown, 2500);
+    return strLegend;
 }
 
 /**
@@ -222,26 +232,7 @@ export async function renderWalletBreakdown() {
     );
     chartWalletBreakdown.update();
 
-    // Update the wallet breakdown
-    let breakdownLegendStr = '';
-    for (let i = 0; i < arrBreakdown.length; i++) {
-        breakdownLegendStr += `<div style="display: flex; margin-bottom: 12px;">
-            <div style="width:40px; height:40px; border-radius:5px; background-color:${
-                arrBreakdown[i]['colour']
-            };"></div>
-            <div style="padding-left: 13px; text-align: left; display: flex; flex-direction: column; font-size: 16px;">
-                <span>${beautifyNumber(
-                    arrBreakdown[i]['balance'].toFixed(2),
-                    '13px'
-                )} <span style="opacity:0.55; font-size:13px;">${
-            cChainParams.current.TICKER
-        }</span></span>
-                <span style="font-size:13px; color:#c0b1d2;">${
-                    arrBreakdown[i]['type']
-                }</span>
-            </div>
-        </div>`;
-    }
-
-    doms.domWalletBreakdownLegend.innerHTML = breakdownLegendStr;
+    // Update the Legend
+    doms.domWalletBreakdownLegend.innerHTML =
+        generateLegendBreakdown(arrBreakdown);
 }
