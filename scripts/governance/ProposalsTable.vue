@@ -8,12 +8,14 @@ import { toRefs, computed, ref } from 'vue';
 import { translation } from '../i18n.js';
 import { ProposalValidator } from './status';
 const props = defineProps({
-    proposals: Object,
+    proposals: Array,
+    localProposals: Array,
     masternodeCount: Number,
     strCurrency: String,
     price: Number,
 });
-const { proposals, masternodeCount, strCurrency, price } = toRefs(props);
+const { proposals, localProposals, masternodeCount, strCurrency, price } =
+    toRefs(props);
 const proposalValidator = computed(
     () => new ProposalValidator(masternodeCount.value)
 );

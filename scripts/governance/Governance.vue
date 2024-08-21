@@ -10,12 +10,13 @@ import ProposalsTable from './ProposalsTable.vue';
 import Flipdown from './Flipdown.vue';
 import ProposalCreateModal from './ProposalCreateModal.vue';
 import { hasEncryptedWallet } from '../wallet';
-import { createAlert } from '../misc';
+import { createAlert, sanitizeHTML } from '../misc';
 import { ALERTS, tr, translation } from '../i18n';
 import { Database } from '../database';
 import { storeToRefs } from 'pinia';
 import { useSettings } from '../composables/use_settings';
 import { getNetwork } from '../network';
+import { useMasternode } from '../composables/use_masternode';
 
 const strCurrency = 'usd';
 const price = ref(0);
@@ -30,6 +31,7 @@ watch(
 
 const wallet = useWallet();
 const settings = useSettings();
+const { localProposals } = storeToRefs(useMasternode());
 const { advancedMode } = storeToRefs(settings);
 const proposals = ref([]);
 const contestedProposals = ref([]);
@@ -197,7 +199,6 @@ async function openCreateProposal() {
 }
 
 async function createProposal(name, url, payments, monthlyPayment, address) {
-    debugger;
     address = address || wallet.getNewAddress(1)[0];
     const start = await Masternode.getNextSuperblock();
     const proposal = {
@@ -228,17 +229,44 @@ async function createProposal(name, url, payments, monthlyPayment, address) {
     );
     if (ok) {
         proposal.txid = txid;
-        // TODO: Update database using vue reactivity
-        const database = await Database.getInstance();
+        localProposals.value.push(proposal);
 
-        // Fetch our Account, add the proposal to it
-        const account = await database.getAccount();
-        account.localProposals.push(proposal);
-
-        // Update the DB
-        await database.updateAccount(account);
         createAlert('success', translation.PROPOSAL_CREATED, 10000);
         showCreateProposalModal.value = false;
+        let proposalBlockHeight = null;
+        // TODO: abort if changed networks
+        const unwatch = watch(wallet.blockCount, async () => {
+            if (!proposalBlockHeight) {
+                let tx;
+                try {
+                    tx = await getNetwork().getTxInfo(txid);
+                } catch (_) {}
+                if (!tx || !tx.blockHeight) {
+                    // Tx hasn't been confirmed yet, wait for next block
+                    return;
+                }
+                proposalBlockHeight = tx.blockHeight;
+            }
+            if (
+                wallet.blockCount - proposalBlockHeight >=
+                cChainParams.current.proposalFeeConfirmRequirement
+            ) {
+                // Proposal fee has the required amounts of confirms, stop watching and try to finalize
+                unwatch();
+                finalizeProposal(proposal);
+            }
+        });
+    }
+}
+async function finalizeProposal(proposal) {
+    const { ok, err } = await Masternode.finalizeProposal(proposal);
+    if (ok) {
+        createAlert('success', translation.PROPOSAL_FINALISED);
+    } else {
+        createAlert(
+            'warning',
+            translation.PROPOSAL_FINALISE_FAIL + '<br>' + sanitizeHTML(err)
+        );
     }
 }
 </script>
@@ -457,6 +485,7 @@ async function createProposal(name, url, payments, monthlyPayment, address) {
         <div class="dcWallet-activity" style="padding: 16px">
             <ProposalsTable
                 :proposals="proposals"
+                :localProposals="localProposals"
                 :masternodeCount="masternodeCount"
                 :strCurrency="strCurrency"
                 :price="price"

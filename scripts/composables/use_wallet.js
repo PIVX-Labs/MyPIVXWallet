@@ -6,6 +6,7 @@ import { cOracle } from '../prices.js';
 import { ledgerSignTransaction } from '../ledger.js';
 import { defineStore } from 'pinia';
 import { lockableFunction } from '../lock.js';
+import { blockCount as rawBlockCount } from '../global';
 
 /**
  * This is the middle ground between vue and the wallet class
@@ -36,6 +37,7 @@ export const useWallet = defineStore('wallet', () => {
     const loadFromDisk = () => wallet.loadFromDisk();
     const hasShield = ref(wallet.hasShield());
     const getNewAddress = (nReceiving) => wallet.getNewAddress(nReceiving);
+    const blockCount = ref(0);
 
     const setMasterKey = async ({ mk, extsk }) => {
         wallet.setMasterKey({ mk, extsk });
@@ -108,6 +110,7 @@ export const useWallet = defineStore('wallet', () => {
 
     getEventEmitter().on('toggle-network', async () => {
         isEncrypted.value = await hasEncryptedWallet();
+        blockCount.value = rawBlockCount;
     });
 
     getEventEmitter().on('balance-update', async () => {
@@ -118,6 +121,10 @@ export const useWallet = defineStore('wallet', () => {
         pendingShieldBalance.value = await wallet.getPendingShieldBalance();
         coldBalance.value = wallet.coldBalance;
         price.value = cOracle.getCachedPrice(strCurrency);
+    });
+
+    getEventEmitter().on('new-block', () => {
+        blockCount.value = rawBlockCount;
     });
 
     return {
@@ -154,5 +161,6 @@ export const useWallet = defineStore('wallet', () => {
         coldBalance,
         getMasternodeUTXOs,
         getPath,
+        blockCount,
     };
 });
