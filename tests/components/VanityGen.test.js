@@ -29,6 +29,10 @@ describe('VanityGen tests', () => {
         const wrapper = mount(VanityGen, {
             attachTo: document.getElementById('app'),
         });
+        const vanityWalletButton = wrapper.find(
+            '[data-testid=vanityWalletButton]'
+        );
+        await vanityWalletButton.trigger('click');
         const generateBtn = wrapper.find('[data-testid=generateBtn]');
         await generateBtn.trigger('click');
         await nextTick();
@@ -63,12 +67,12 @@ describe('VanityGen tests', () => {
         });
 
         expect(wrapper.emitted('import-wallet')).toBeUndefined();
+        const vanityWalletButton = wrapper.find(
+            '[data-testid=vanityWalletButton]'
+        );
+        await vanityWalletButton.trigger('click');
         const generateBtn = wrapper.find('[data-testid=generateBtn]');
         const prefixInput = wrapper.find('[data-testid=prefixInput]');
-        // we can see the generateBtn but not the prefix input box
-        expect(wrapper.emitted('import-wallet')).toBeUndefined();
-        expect(generateBtn.isVisible()).toBeTruthy();
-        expect(prefixInput.isVisible()).toBeFalsy();
 
         //click and now the prefix input box should be visible
         await generateBtn.trigger('click');
@@ -97,7 +101,9 @@ describe('VanityGen tests', () => {
         expect(misc.createAlert).toHaveBeenCalled();
         expect(misc.createAlert).toHaveReturnedWith('unsupported_character$');
 
-        // Now insert a long prefix, so we can stop the webworker:
+        // Click again to stop the search
+        await generateBtn.trigger('click');
+        prefixInput.trigger('input');
         expect(prefixInput.element.disabled).toBe(false);
         prefixInput.element.value = 'panle';
         prefixInput.trigger('input');

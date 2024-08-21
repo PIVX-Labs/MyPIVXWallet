@@ -27,6 +27,9 @@ import Stake from './stake/Stake.vue';
 import { createPinia } from 'pinia';
 import { cOracle } from './prices.js';
 
+import pIconCopy from '../assets/icons/icon-copy.svg';
+import pIconCheck from '../assets/icons/icon-check.svg';
+
 /** A flag showing if base MPW is fully loaded or not */
 export let fIsLoaded = false;
 
@@ -63,6 +66,9 @@ export async function start() {
         ),
         domWalletBreakdownCanvas: document.getElementById(
             'walletBreakdownCanvas'
+        ),
+        domWalletBreakdownLegend: document.getElementById(
+            'walletBreakdownLegend'
         ),
         domGenHardwareWallet: document.getElementById('generateHardwareWallet'),
         //GOVERNANCE ELEMENTS
@@ -197,7 +203,12 @@ export async function start() {
         domTestnetToggler: document.getElementById('testnetToggler'),
         domAdvancedModeToggler: document.getElementById('advancedModeToggler'),
         domAutoLockModeToggler: document.getElementById('autoLockModeToggler'),
+        domRedeemCameraBtn: document.getElementById('redeemCameraBtn'),
     };
+
+    // Set Copyright year on footer
+    document.getElementById('copyrightYear').innerHTML =
+        new Date().getFullYear();
 
     await i18nStart();
     await loadImages();
@@ -396,11 +407,26 @@ export async function openExplorer(strAddress = '') {
 }
 
 async function loadImages() {
-    const images = [['mpw-main-logo', import('../assets/logo.png')]];
+    const images = [
+        ['mpw-main-logo', import('../assets/new_logo.png')],
+        ['plus-icon', import('../assets/icons/icon-plus.svg')],
+        ['plus-icon2', import('../assets/icons/icon-plus.svg')],
+        ['plus-icon3', import('../assets/icons/icon-plus.svg')],
+        ['del-wallet-icon', import('../assets/icons/icon-bin.svg')],
+        ['change-pwd-icon', import('../assets/icons/icon-key.svg')],
+    ];
 
     const promises = images.map(([id, path]) =>
         (async () => {
-            document.getElementById(id).src = (await path).default;
+            try {
+                if ((await path).default.includes('<svg')) {
+                    document.getElementById(id).innerHTML = (
+                        await path
+                    ).default;
+                } else {
+                    document.getElementById(id).src = (await path).default;
+                }
+            } catch (e) {}
         })()
     );
     await Promise.all(promises);
@@ -444,12 +470,10 @@ export function toClipboard(source, caller) {
     }
 
     // Display a temporary checkmark response
-    caller.classList.add('fa-check');
-    caller.classList.remove('fa-clipboard');
+    caller.innerHTML = pIconCheck;
     caller.style.cursor = 'default';
     setTimeout(() => {
-        caller.classList.add('fa-clipboard');
-        caller.classList.remove('fa-check');
+        caller.innerHTML = pIconCopy;
         caller.style.cursor = 'pointer';
     }, 1000);
 }
@@ -919,7 +943,7 @@ async function renderProposals(arrProposals, fContested) {
     const { nValue, cLocale } = optimiseCurrencyLocale(nCurrencyValue);
     doms.domTotalGovernanceBudgetValue.innerHTML =
         nValue.toLocaleString('en-gb', cLocale) +
-        ' <span style="color:#8b38ff;">' +
+        ' <span style="color:#7C1DEA;">' +
         strCurrency.toUpperCase() +
         '</span>';
 
@@ -1043,7 +1067,7 @@ async function renderProposals(arrProposals, fContested) {
             }
             const strLocalStatus = getProposalFinalisationStatus(cPropCache);
             const finalizeButton = document.createElement('button');
-            finalizeButton.className = 'pivx-button-small';
+            finalizeButton.className = 'pivx-button-small ';
             finalizeButton.innerHTML = '<i class="fas fa-check"></i>';
 
             if (
@@ -1131,10 +1155,10 @@ async function renderProposals(arrProposals, fContested) {
             domStatus.innerHTML = `
             <span style="text-transform:uppercase; font-size:12px; line-height: 15px; display: block; margin-bottom:15px;">
                 <span style="font-weight:700;" class="votes${strColourClass}">${strStatus}</span><br>
-                <span style="color:hsl(265 100% 67% / 1);">(${strFundingStatus})</span><br>
+                <span style="color:#9482b1;">(${strFundingStatus})</span><br>
             </span>
-            <span style="font-size:12px; line-height: 15px; display: block; color:#d1d1d1;">
-                <b>${nNetYesPercent.toFixed(1)}%</b><br>
+            <span style="font-size:12px; line-height: 15px; display: block; color:#9482b1;">
+                <b style="color:#e9deff;">${nNetYesPercent.toFixed(1)}%</b><br>
                 ${translation.proposalNetYes}
             </span>
             <span class="governArrow for-mobile ptr">
@@ -1151,10 +1175,11 @@ async function renderProposals(arrProposals, fContested) {
             cProposal.URL
         )}" target="_blank" rel="noopener noreferrer"><b>${sanitizeHTML(
             cProposal.Name
-        )} <span class="governLinkIco"><i class="fa-solid fa-arrow-up-right-from-square"></i></b></a></span><br><a class="governLink" style="font-size: small; color:#8b38ff;" onclick="MPW.openExplorer('${
+        )} <span class="governLinkIco"><i class="fa-solid fa-arrow-up-right-from-square"></i></b></a></span><br>
+        <a class="governLink" style="border-radius: 8px; background-color:#1A122D; padding: 6px 9px; font-size: 14px; color:#861ff7;" onclick="MPW.openExplorer('${
             cProposal.PaymentAddress
         }')"><i class="fa-solid fa-user-large" style="margin-right: 5px"></i><b>${sanitizeHTML(
-            cProposal.PaymentAddress.slice(0, 6) + '...'
+            cProposal.PaymentAddress.slice(0, 10) + '...'
         )}`;
 
         // Convert proposal amount to user's currency
@@ -1171,13 +1196,15 @@ async function renderProposals(arrProposals, fContested) {
         )}</b> <span class="governMarked">${
             cChainParams.current.TICKER
         }</span> <br>
-        <b class="governFiatSize">(${strProposalCurrency} <span style="color:#8b38ff;">${strCurrency.toUpperCase()}</span>)</b></span>
+        <b class="governFiatSize">${strProposalCurrency} <span style="color:#7C1DEA;">${strCurrency.toUpperCase()}</span></b></span>
 
         <span class="governInstallments"> ${sanitizeHTML(
             cProposal['RemainingPaymentCount']
-        )} ${translation.proposalPaymentsRemaining} <b>${sanitizeHTML(
+        )} ${
+            translation.proposalPaymentsRemaining
+        } <span style="font-weight:500;">${sanitizeHTML(
             parseInt(cProposal.TotalPayment).toLocaleString('en-gb', ',', '.')
-        )} ${cChainParams.current.TICKER}</b> ${
+        )} ${cChainParams.current.TICKER}</span> ${
             translation.proposalPaymentTotal
         }</span>`;
 
@@ -1211,8 +1238,9 @@ async function renderProposals(arrProposals, fContested) {
             domVoteBtns.style = 'vertical-align: middle;';
             voteBtn = '';
         } else {
-            let btnYesClass = 'pivx-button-small';
-            let btnNoClass = 'pivx-button-small';
+            let btnYesClass = 'pivx-button-small govYesBtnMob';
+            let btnNoClass =
+                'pivx-button-outline pivx-button-outline-small govNoBtnMob';
             if (cProposal.YourVote) {
                 if (cProposal.YourVote === 1) {
                     btnYesClass += ' pivx-button-big-yes-gov';
@@ -1220,11 +1248,19 @@ async function renderProposals(arrProposals, fContested) {
                     btnNoClass += ' pivx-button-big-no-gov';
                 }
             }
+
+            /*
+
+            <div></div>
+            */
+
             const domVoteBtns = domRow.insertCell();
-            domVoteBtns.style = 'vertical-align: middle;';
-            const domNoBtn = document.createElement('button');
+            domVoteBtns.style =
+                'padding-top: 30px; vertical-align: middle; display: flex; justify-content: center; align-items: center;';
+            const domNoBtn = document.createElement('div');
             domNoBtn.className = btnNoClass;
-            domNoBtn.innerText = translation.no;
+            domNoBtn.style.width = 'fit-content';
+            domNoBtn.innerHTML = `<span>${translation.no}</span>`;
             domNoBtn.onclick = () => govVote(cProposal.Hash, 2);
 
             const domYesBtn = document.createElement('button');
@@ -1332,7 +1368,7 @@ async function renderProposals(arrProposals, fContested) {
         const { nValue } = optimiseCurrencyLocale(nCurrencyValue);
         const strAllocCurrency =
             nValue.toLocaleString('en-gb', cLocale) +
-            ' <span style="color:#8b38ff;">' +
+            ' <span style="color:#7C1DEA;">' +
             strCurrency.toUpperCase() +
             '</span>';
         doms.domAllocatedGovernanceBudgetValue.innerHTML = strAllocCurrency;
@@ -1407,7 +1443,7 @@ export async function updateMasternodeTab() {
                 '</b> to create a Masternode!';
         } else {
             // The user has the funds, but not an exact collateral, prompt for them to create one
-            doms.domCreateMasternode.style.display = 'block';
+            doms.domCreateMasternode.style.display = 'flex';
             doms.domMnTxId.style.display = 'none';
             doms.domMnTxId.innerHTML = '';
         }
@@ -1439,7 +1475,7 @@ export async function updateMasternodeTab() {
 
         // If there's no collateral found, display the creation UI
         if (!fHasCollateral && !cMasternode)
-            doms.domCreateMasternode.style.display = 'block';
+            doms.domCreateMasternode.style.display = 'flex';
 
         // If we a loaded Masternode, display the Dashboard
         if (cMasternode) {
@@ -1569,32 +1605,49 @@ export async function createProposal() {
 
     // Create the popup, wait for the user to confirm or cancel
     const fConfirmed = await confirmPopup({
-        title: `${translation.popupCreateProposal} (${
+        title: `<h4>${translation.popupCreateProposal}</h4>
+        <span style="color: #af9cc6; font-size: 1rem; margin-bottom: 23px; display: block;">${
             translation.popupCreateProposalCost
-        } ${cChainParams.current.proposalFee / COIN} ${
+        } <b>${cChainParams.current.proposalFee / COIN} ${
             cChainParams.current.TICKER
-        })`,
-        html: `<input id="proposalTitle" maxlength="20" placeholder="${
-            translation.popupProposalName
-        }" style="text-align: center;"><br>
-               <input id="proposalUrl" maxlength="64" placeholder="${
-                   translation.popupExample
-               } https://forum.pivx.org/..." style="text-align: center;"><br>
-               <input type="number" id="proposalCycles" min="1" max="${
-                   cChainParams.current.maxPaymentCycles
-               }" placeholder="${
+        }</b></span>`,
+        html: `<div style="padding-left: 10px; padding-right: 10px;">
+            <p style="margin-bottom: 12px; color: #af9cc6; font-size: 1rem; font-weight: 500;">Proposal name</p>
+            <input id="proposalTitle" maxlength="20" placeholder="${
+                translation.popupProposalName
+            }" style="text-align: start; margin-bottom: 25px;"><br>
+            
+            <p style="margin-bottom: 12px; color: #af9cc6; font-size: 1rem; font-weight: 500;">URL</p>
+            <input id="proposalUrl" maxlength="64" placeholder="https://forum.pivx.org/..." style=" margin-bottom: 25px; text-align: start;"><br>
+            
+            <p style="margin-bottom: 12px; color: #af9cc6; font-size: 1rem; font-weight: 500;">Duration in cycles</p>
+            <input type="number" id="proposalCycles" min="1" max="${
+                cChainParams.current.maxPaymentCycles
+            }" placeholder="${
             translation.popupProposalDuration
-        }" style="text-align: center;"><br>
-               <input type="number" id="proposalPayment" min="10" max="${
-                   cChainParams.current.maxPayment / COIN
-               }" placeholder="${cChainParams.current.TICKER} ${
+        }" style=" margin-bottom: 25px; text-align: start;"><br>
+            
+            <p style="margin-bottom: 12px; color: #af9cc6; font-size: 1rem; font-weight: 500;">${
+                cChainParams.current.TICKER
+            } per cycle</p>
+            <input type="number" id="proposalPayment" min="10" max="${
+                cChainParams.current.maxPayment / COIN
+            }" placeholder="${cChainParams.current.TICKER} ${
             translation.popupProposalPerCycle
-        }" style="text-align: center;"><br>
-               <input id="proposalAddress" maxlength="34" placeholder="${
-                   translation.popupProposalAddress
-               }" style="text-align: center; ${
+        }" style=" margin-bottom: 25px; text-align: start;">${
+            !fAdvancedMode ? '<br>' : ''
+        }
+            
+            <p style="margin-bottom: 12px; color: #af9cc6; font-size: 1rem; font-weight: 500; ${
+                !fAdvancedMode ? 'display: none' : ''
+            }">Proposal Address</p>
+            <input id="proposalAddress" maxlength="34" placeholder="${
+                translation.popupProposalAddress
+            }" style=" margin-bottom: 25px; text-align: start; ${
             !fAdvancedMode ? 'display: none' : ''
-        }"><br>`,
+        }">
+        </div>`,
+        wideModal: true,
     });
 
     // If the user cancelled, then we return

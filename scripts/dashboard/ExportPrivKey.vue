@@ -3,7 +3,7 @@ import Modal from '../Modal.vue';
 import { ref } from 'vue';
 import { translation } from '../i18n.js';
 import { downloadBlob } from '../misc';
-import KeyPng from '../../assets/key.png';
+import pIconExport from '../../assets/icons/icon-export.svg';
 const props = defineProps({
     privateKey: String,
     // Note: isJSON should probably be temporary, maybe we have a "Wallet Type" enum that determines the export UI?
@@ -28,25 +28,16 @@ function close() {
     <Teleport to="body">
         <Modal :show="show" modalClass="exportKeysModalColor">
             <template #header>
-                <h5 class="modal-title">
+                <h5 class="modal-title modal-title-new">
                     {{ translation.privateKey }}
                 </h5>
-                <button
-                    type="button"
-                    class="close"
-                    @click="close()"
-                    aria-label="Close"
-                    data-testid="closeBtn"
-                >
-                    <i class="fa-solid fa-xmark closeCross"></i>
-                </button>
             </template>
             <template #body>
                 <div class="dcWallet-privateKeyDiv text-center">
-                    <img :src="KeyPng" /><br />
-                    <h3>{{ translation.viewPrivateKey }}</h3>
-                    <span class="span1">{{ translation.privateWarning1 }}</span>
-                    <span class="span2">{{ translation.privateWarning2 }}</span>
+                    <span class="span2"
+                        >{{ translation.privateWarning1 }}
+                        {{ translation.privateWarning2 }}</span
+                    >
                     <code
                         :class="{ blurred: blur }"
                         data-testid="privateKeyText"
@@ -56,6 +47,14 @@ function close() {
             </template>
             <template #footer>
                 <center>
+                    <button
+                        type="button"
+                        class="pivx-button-big-cancel"
+                        data-testid="closeBtn"
+                        @click="close()"
+                    >
+                        {{ translation.popupClose }}
+                    </button>
                     <button
                         class="pivx-button-big"
                         @click="blur = !blur"
@@ -70,8 +69,11 @@ function close() {
                         class="pivx-button-big"
                         @click="downloadWalletFile()"
                     >
-                        <span data-i18n="saveWalletFile" class="buttoni-text"
-                            >{{ translation.saveWalletFile }}
+                        <span
+                            data-i18n="saveWalletFile"
+                            class="buttoni-text"
+                            v-html="pIconExport"
+                        >
                         </span>
                     </button>
                 </center>
