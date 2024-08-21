@@ -6,7 +6,7 @@ import { cOracle } from '../prices.js';
 import { ledgerSignTransaction } from '../ledger.js';
 import { defineStore } from 'pinia';
 import { lockableFunction } from '../lock.js';
-import { blockCount as rawBlockCount } from '../global';
+import { blockCount as rawBlockCount } from '../global.js';
 
 /**
  * This is the middle ground between vue and the wallet class

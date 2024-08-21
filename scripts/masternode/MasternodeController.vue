@@ -11,7 +11,7 @@ const status = ref();
 watch(status, (status) => {
     if (status === 'MISSING') {
         createAlert('warning', ALERTS.MN_OFFLINE_STARTING, 6000);
-        emit('start');
+        emit('start', { restart: false });
     }
 });
 const lastSeen = ref();
