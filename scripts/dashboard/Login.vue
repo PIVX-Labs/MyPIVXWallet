@@ -43,7 +43,7 @@ const { advancedMode } = toRefs(props);
             <div
                 id="generateHardwareWallet"
                 class="dashboard-item dashboard-display"
-                :style='{ opacity: isFirefox ? 0.5 : 1 }'
+                :style="{ opacity: isFirefox ? 0.5 : 1 }"
                 @click="$emit('import-wallet', { type: 'hardware' })"
                 data-testid="hardwareWalletBtn"
             >

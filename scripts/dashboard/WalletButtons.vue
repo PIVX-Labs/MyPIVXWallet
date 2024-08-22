@@ -51,10 +51,10 @@ onMounted(() => {
             </div>
             <div
                 class="col-3 p-0 cur-pointer"
-                :style='{ opacity: wallet.isEncrypted ? 1 : 0.75 }'
+                :style="{ opacity: wallet.isEncrypted ? 1 : 0.75 }"
                 @click="guiRenderContacts()"
-                :data-toggle='wallet.isEncrypted ? "modal" : null'
-                :data-target='wallet.isEncrypted ? "#contactsModal" : null'
+                :data-toggle="wallet.isEncrypted ? 'modal' : null"
+                :data-target="wallet.isEncrypted ? '#contactsModal' : null"
             >
                 <span class="dashboardActionIcon" v-html="pAddressBook"></span
                 ><br />
