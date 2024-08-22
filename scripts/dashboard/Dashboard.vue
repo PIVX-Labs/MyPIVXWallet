@@ -85,7 +85,7 @@ async function importWallet({ type, secret, password = '' }) {
     let parsedSecret;
     if (type === 'hardware') {
         if (!navigator.usb) {
-            createAlert('warning', ALERTS.WALLET_FIREFOX_UNSUPPORTED, 7500);
+            createAlert('warning', ALERTS.WALLET_HARDWARE_USB_UNSUPPORTED, 7500);
             return false;
         }
         parsedSecret = new ParsedSecret(await HardwareWalletMasterKey.create());
