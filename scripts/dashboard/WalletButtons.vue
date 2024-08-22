@@ -51,7 +51,7 @@ onMounted(() => {
             </div>
             <div
                 class="col-3 p-0 cur-pointer"
-                :style="{ opacity: wallet.isEncrypted ? 1 : 0.75 }"
+                :style="{ opacity: wallet.isEncrypted ? 1 : 0.5 }"
                 @click="guiRenderContacts()"
                 :data-toggle="wallet.isEncrypted ? 'modal' : null"
                 :data-target="wallet.isEncrypted ? '#contactsModal' : null"
