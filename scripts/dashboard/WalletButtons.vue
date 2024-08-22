@@ -9,6 +9,9 @@ import pStats from '../../assets/icons/icon-stats-circle.svg';
 import pCompass from '../../assets/icons/icon-compass.svg';
 import pAddressBook from '../../assets/icons/icon-address-book.svg';
 import pGift from '../../assets/icons/icon-gift.svg';
+import { useWallet } from '../composables/use_wallet.js';
+
+const wallet = useWallet();
 
 const props = defineProps({
     jdenticonValue: String,
@@ -48,9 +51,10 @@ onMounted(() => {
             </div>
             <div
                 class="col-3 p-0 cur-pointer"
+                :style='{ opacity: wallet.isEncrypted ? 1 : 0.75 }'
                 @click="guiRenderContacts()"
-                data-toggle="modal"
-                data-target="#contactsModal"
+                :data-toggle='wallet.isEncrypted ? "modal" : null'
+                :data-target='wallet.isEncrypted ? "#contactsModal" : null'
             >
                 <span class="dashboardActionIcon" v-html="pAddressBook"></span
                 ><br />
