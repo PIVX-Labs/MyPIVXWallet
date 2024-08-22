@@ -84,7 +84,7 @@ async function importWallet({ type, secret, password = '' }) {
      */
     let parsedSecret;
     if (type === 'hardware') {
-        if (navigator.userAgent.includes('Firefox')) {
+        if (!navigator.usb) {
             createAlert('warning', ALERTS.WALLET_FIREFOX_UNSUPPORTED, 7500);
             return false;
         }

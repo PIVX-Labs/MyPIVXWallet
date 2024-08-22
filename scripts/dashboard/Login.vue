@@ -8,7 +8,7 @@ import { watch, toRefs } from 'vue';
 
 defineEmits(['import-wallet']);
 
-const isFirefox = navigator.userAgent.includes('Firefox');
+const isUSBSupported = !!navigator.usb;
 
 const props = defineProps({
     advancedMode: Boolean,
@@ -43,7 +43,7 @@ const { advancedMode } = toRefs(props);
             <div
                 id="generateHardwareWallet"
                 class="dashboard-item dashboard-display"
-                :style="{ opacity: isFirefox ? 0.5 : 1 }"
+                :style="{ opacity: isUSBSupported ? 1 : 0.5 }"
                 @click="$emit('import-wallet', { type: 'hardware' })"
                 data-testid="hardwareWalletBtn"
             >
