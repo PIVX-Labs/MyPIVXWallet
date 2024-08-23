@@ -394,6 +394,13 @@ onMounted(async () => {
             transferAmount.value = parseFloat(urlParams.get('amount')) ?? 0;
             showTransferMenu.value = true;
         }
+
+        // Remove any URL 'commands' after running, so that they don't re-run if a user refreshes
+        window.history.replaceState(
+            {},
+            document.title,
+            window.location.pathname
+        );
     }
     updateLogOutButton();
 });
