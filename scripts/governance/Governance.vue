@@ -1,6 +1,6 @@
 <script setup>
 import { COIN, cChainParams } from '../chain_params';
-import { watch, ref, computed, reactive } from 'vue';
+import { watch, ref, computed, reactive, toRaw } from 'vue';
 import { cOracle } from '../prices';
 import { ProposalValidator } from './status';
 import { useWallet } from '../composables/use_wallet';
@@ -38,13 +38,17 @@ const nextSuperBlock = ref(0);
 const masternodeCount = ref(1);
 const allocatedBudget = computed(() => {
     const proposalValidator = new ProposalValidator(masternodeCount.value);
+
     return proposals.value.reduce(
         (acc, p) =>
-            acc + p.Allotted * Number(proposalValidator.validate(p).passing),
+            acc +
+            p.MonthlyPayment * Number(proposalValidator.validate(p).passing),
         0
     );
-});
-const flipdownTimeStamp = ref(0);
+ });
+ // This updates the timestamp every block. Should be fine
+ const flipdownTimeStamp = computed(() => Date.now() / 1000 + (nextSuperBlock.value - (blockCount.value)) * 60)
+ watch(flipdownTimeStamp, console.log, {immediate: true})
 // Each block update check if we have local proposals to update or finalize
 watch(blockCount, async () => {
     for (const proposal of localProposals.value) {
@@ -84,8 +88,6 @@ async function fetchProposals() {
     nextSuperBlock.value = await Masternode.getNextSuperblock();
     masternodeCount.value = (await Masternode.getMasternodeCount()).total;
 
-    flipdownTimeStamp.value =
-        Date.now() / 1000 + (nextSuperBlock.value - blockCount.value) * 60;
     proposals.value = arrProposals.filter(
         (a) => a.Yeas + a.Nays < 100 || a.Ratio > 0.25
     );
@@ -365,8 +367,16 @@ async function vote(hash, voteCode) {
                             margin-right: -13px;
                         "
                     />
-                    <span style="font-size: 12px; color: #af9cc6"
-                        ><span>{{ allocatedBudget }} {{ 'hi' }}</span>
+                    <span style="font-size: 12px; color: #af9cc6">
+                        <span>
+                            {{
+                                allocatedBudget.toLocaleString(
+                                    'en-gb',
+                                    ',',
+                                    '.'
+                                ) + ' '
+                            }}</span
+                        >
                     </span>
                 </div>
             </div>
