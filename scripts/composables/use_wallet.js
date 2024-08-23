@@ -20,7 +20,7 @@ export const useWallet = defineStore('wallet', () => {
 
     const publicMode = ref(true);
     watch(publicMode, (publicMode) => {
-        doms.domNavbar.classList.toggle('active');
+        doms.domNavbar.classList.toggle('active', !publicMode);
         doms.domLightBackground.style.opacity = publicMode ? '1' : '0';
     });
 
