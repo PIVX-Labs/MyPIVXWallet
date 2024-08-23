@@ -21,6 +21,8 @@ const proposalValidator = computed(
     () => new ProposalValidator(masternodeCount.value)
 );
 
+const emit = defineEmits(['finalizeProposal', 'vote']);
+
 /**
  * @param{localProposal} Local proposal to convert
  * @returns Returns the proposal in the format the RPC node sends us
@@ -42,6 +44,7 @@ function localProposalToRPC(localProposal) {
         MonthlyPayment: localProposal.monthlyPayment / COIN,
         IsEstablished: false,
         IsValid: true,
+        blockHeight: localProposal.blockHeight,
     };
 }
 /**
@@ -90,14 +93,18 @@ function openOrCloseRow(i) {
                     :masternodeCount="masternodeCount"
                     :strCurrency="strCurrency"
                     :price="price"
+                    :localProposal="true"
                     :proposalValidator="proposalValidator"
                     @click="openOrCloseRow(i)"
+                    @finalizeProposal="emit('finalizeProposal', proposal)"
                 />
                 <MobileProposalRow
                     v-if="opened == i"
                     :proposal="localProposalToRPC(proposal)"
                     :price="price"
+                    :localProposal="true"
                     :strCurrency="strCurrency"
+                    @finalizeProposal="emit('finalizeProposal', proposal)"
                 />
             </template>
             <template v-for="(proposal, i) of proposals">

@@ -1,9 +1,8 @@
 <script setup>
 import { COIN, cChainParams } from '../chain_params';
-import { watch, ref, computed } from 'vue';
+import { watch, ref, computed, reactive } from 'vue';
 import { cOracle } from '../prices';
 import { ProposalValidator } from './status';
-import { blockCount } from '../global';
 import { useWallet } from '../composables/use_wallet';
 import Masternode from '../masternode.js';
 import ProposalsTable from './ProposalsTable.vue';
@@ -31,7 +30,10 @@ watch(
 const wallet = useWallet();
 const settings = useSettings();
 const { localProposals } = storeToRefs(useMasternode());
+console.log(localProposals.value);
+watch(localProposals, console.log);
 const { advancedMode } = storeToRefs(settings);
+const { blockCount } = storeToRefs(wallet);
 const proposals = ref([]);
 const contestedProposals = ref([]);
 const nextSuperBlock = ref(0);
@@ -45,6 +47,30 @@ const allocatedBudget = computed(() => {
     );
 });
 const flipdownTimeStamp = ref(0);
+// Each block update check if we have local proposals to update or finalize
+watch(blockCount, async () => {
+    for (const proposal of localProposals.value) {
+        if (!proposal.blockHeight) {
+            let tx;
+            try {
+                tx = await getNetwork().getTxInfo(txid);
+            } catch (_) {}
+            if (!tx || !tx.blockHeight) {
+                // Tx hasn't been confirmed yet, wait for next block
+                continue;
+            }
+            proposal.blockHeight = tx.blockHeight;
+        }
+        if (
+            blockCount.value - proposal.blockHeight >=
+            cChainParams.current.proposalFeeConfirmRequirement
+        ) {
+            // Proposal fee has the required amounts of confirms, stop watching and try to finalize
+            // TODO: remove propsal
+            finalizeProposal(proposal);
+        }
+    }
+});
 
 function numberToCurrency(number, price) {
     return (number * price).toLocaleString('en-gb', ',', '.', {
@@ -61,7 +87,7 @@ async function fetchProposals() {
     masternodeCount.value = (await Masternode.getMasternodeCount()).total;
 
     flipdownTimeStamp.value =
-        Date.now() / 1000 + (nextSuperBlock.value - blockCount) * 60;
+        Date.now() / 1000 + (nextSuperBlock.value - blockCount.value) * 60;
     proposals.value = arrProposals.filter(
         (a) => a.Yeas + a.Nays < 100 || a.Ratio > 0.25
     );
@@ -71,19 +97,6 @@ async function fetchProposals() {
 }
 fetchProposals();
 watch(cChainParams, () => fetchProposals());
-
-/**
- * @typedef {Object} ProposalCache
- * @property {number} nSubmissionHeight - The submission height of the proposal.
- * @property {string} txid - The transaction ID of the proposal (string).
- * @property {boolean} fFetching - Indicates whether the proposal is currently being fetched or not.
- */
-
-/**
- * An array of Proposal Finalisation caches
- * @type {Array<ProposalCache>}
- */
-const arrProposalFinalisationCache = [];
 
 /**
  * Asynchronously wait for a Proposal Tx to confirm, then cache the height.
@@ -120,35 +133,6 @@ async function waitForSubmissionBlockHeight(cProposalCache) {
     cProposalCache.nSubmissionHeight = nHeight;
 
     return true;
-}
-
-/**
- * Create a Status String for a proposal's finalisation status
- * @param {ProposalCache} cPropCache - The proposal cache to check
- * @returns {string} The string status, for display purposes
- */
-function getProposalFinalisationStatus(cPropCache) {
-    // Confirmations left until finalisation, by network consensus
-    const nConfsLeft =
-        cPropCache.nSubmissionHeight +
-        cChainParams.current.proposalFeeConfirmRequirement -
-        blockCount;
-
-    if (cPropCache.nSubmissionHeight === 0 || blockCount === 0) {
-        return translation.proposalFinalisationConfirming;
-    } else if (nConfsLeft > 0) {
-        return (
-            nConfsLeft +
-            ' block' +
-            (nConfsLeft === 1 ? '' : 's') +
-            ' ' +
-            translation.proposalFinalisationRemaining
-        );
-    } else if (Math.abs(nConfsLeft) >= cChainParams.current.budgetCycleBlocks) {
-        return translation.proposalFinalisationExpired;
-    } else {
-        return translation.proposalFinalisationReady;
-    }
 }
 
 /**
@@ -228,40 +212,16 @@ async function createProposal(name, url, payments, monthlyPayment, address) {
             isProposal: true,
         }
     );
-    console.log(txid);
     if (txid) {
         proposal.txid = txid;
         localProposals.value = [...localProposals.value, proposal];
-        console.log(localProposals.value);
 
         createAlert('success', translation.PROPOSAL_CREATED, 10000);
         showCreateProposalModal.value = false;
-        let proposalBlockHeight = null;
-        // TODO: abort if changed networks
-        const unwatch = watch(wallet.blockCount, async () => {
-            if (!proposalBlockHeight) {
-                let tx;
-                try {
-                    tx = await getNetwork().getTxInfo(txid);
-                } catch (_) {}
-                if (!tx || !tx.blockHeight) {
-                    // Tx hasn't been confirmed yet, wait for next block
-                    return;
-                }
-                proposalBlockHeight = tx.blockHeight;
-            }
-            if (
-                wallet.blockCount - proposalBlockHeight >=
-                cChainParams.current.proposalFeeConfirmRequirement
-            ) {
-                // Proposal fee has the required amounts of confirms, stop watching and try to finalize
-                unwatch();
-                finalizeProposal(proposal);
-            }
-        });
     }
 }
 async function finalizeProposal(proposal) {
+    console.log('hi');
     const { ok, err } = await Masternode.finalizeProposal(proposal);
     if (ok) {
         createAlert('success', translation.PROPOSAL_FINALISED);
@@ -492,6 +452,7 @@ async function finalizeProposal(proposal) {
                 :masternodeCount="masternodeCount"
                 :strCurrency="strCurrency"
                 :price="price"
+                @finalizeProposal="(proposal) => finalizeProposal(proposal)"
             />
         </div>
 
@@ -516,7 +477,6 @@ async function finalizeProposal(proposal) {
             :masternodeCount="masternodeCount"
             :strCurrency="strCurrency"
             :price="price"
-            @finalizeProposal="finalizeProposal"
         />
     </div>
 </template>

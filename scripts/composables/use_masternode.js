@@ -10,15 +10,23 @@ export const useMasternode = defineStore('masternode', () => {
      */
     const masternode = ref(null);
     const localProposals = ref([]);
-    watch(localProposals, async () => {
-        const database = await Database.getInstance();
-        const account = await database.getAccount();
-        debugger;
-        if (account) {
-            account.localProposals = toRaw(localProposals.value);
-            await database.updateAccount(account);
+    watch(
+        localProposals,
+        async () => {
+            console.log('db update');
+            const database = await Database.getInstance();
+            const account = await database.getAccount();
+            if (account) {
+                account.localProposals = toRaw(localProposals.value);
+                await database.updateAccount(account);
+            }
+        },
+        {
+            // We need deep reactivity to detect proposal changes e.g. proposalHeight update when it gets confirmed
+            deep: true,
         }
-    });
+    );
+    watch(localProposals, () => console.log('hi'));
     const fetchProposalsFromDatabase = async () => {
         const database = await Database.getInstance();
         const account = await database.getAccount();
