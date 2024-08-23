@@ -1,15 +1,16 @@
 <script setup>
-import ProposalStatus from './ProposalStatus.vue';
-import ProposalName from './ProposalName.vue';
-import ProposalPayment from './ProposalPayment.vue';
-import ProposalVotes from './ProposalVotes.vue';
 import MobileProposalRow from './MobileProposalRow.vue';
+import ProposalRow from './ProposalRow.vue';
 import { toRefs, computed, ref } from 'vue';
-import { translation } from '../i18n.js';
+
 import { ProposalValidator } from './status';
+import { COIN } from '../chain_params';
 const props = defineProps({
     proposals: Array,
-    localProposals: Array,
+    localProposals: {
+        type: Array,
+        default: [],
+    },
     masternodeCount: Number,
     strCurrency: String,
     price: Number,
@@ -20,6 +21,29 @@ const proposalValidator = computed(
     () => new ProposalValidator(masternodeCount.value)
 );
 
+/**
+ * @param{localProposal} Local proposal to convert
+ * @returns Returns the proposal in the format the RPC node sends us
+ */
+function localProposalToRPC(localProposal) {
+    return {
+        Name: localProposal.name,
+        URL: localProposal.url,
+        BlockStart: localProposal.start,
+        // Remaining count is equal to total payments since it hasn't been finalized yet
+        RemainingPaymentCount: localProposal.nPayments,
+        TotalPaymentCount: localProposal.nPayments,
+        PaymentAddress: localProposal.address,
+        Ratio: 0,
+        Yeas: 0,
+        Nays: 0,
+        TotalPayment:
+            (localProposal.monthlyPayment * localProposal.nPayments) / COIN,
+        MonthlyPayment: localProposal.monthlyPayment / COIN,
+        IsEstablished: false,
+        IsValid: true,
+    };
+}
 /**
  * @type{import('vue').Ref<number?>} Index of the row opened on mobile mode. Null if nothing is open
  */
@@ -60,46 +84,31 @@ function openOrCloseRow(i) {
             id="proposalsTableBody"
             style="text-align: center; vertical-align: middle"
         >
+            <template v-for="(proposal, i) of localProposals">
+                <ProposalRow
+                    :proposal="localProposalToRPC(proposal)"
+                    :masternodeCount="masternodeCount"
+                    :strCurrency="strCurrency"
+                    :price="price"
+                    :proposalValidator="proposalValidator"
+                    @click="openOrCloseRow(i)"
+                />
+                <MobileProposalRow
+                    v-if="opened == i"
+                    :proposal="localProposalToRPC(proposal)"
+                    :price="price"
+                    :strCurrency="strCurrency"
+                />
+            </template>
             <template v-for="(proposal, i) of proposals">
-                <tr>
-                    <td class="governStatusCol" @click="openOrCloseRow(i)">
-                        <!-- REMEMBER TO UPDATE THIS!!! -->
-                        <ProposalStatus
-                            :proposal="proposal"
-                            :proposalValidator="proposalValidator"
-                            :nMasternodes="masternodeCount"
-                        />
-                    </td>
-                    <td style="vertical-align: middle">
-                        <ProposalName :proposal="proposal" />
-                    </td>
-                    <td style="vertical-align: middle" class="for-desktop">
-                        <ProposalPayment
-                            :proposal="proposal"
-                            :price="price"
-                            :strCurrency="strCurrency"
-                        />
-                    </td>
-                    <td style="vertical-align: middle" class="for-desktop">
-                        <ProposalVotes :proposal="proposal" />
-                    </td>
-                    <td style="vertical-align: middle" class="for-desktop">
-                        <div class="proposalVoteButtons">
-                            <div
-                                class="pivx-button-outline pivx-button-outline-small govNoBtnMob"
-                                style="width: fit-content"
-                            >
-                                <span> {{ translation.no }} </span>
-                            </div>
-                            <div
-                                class="pivx-button-small govYesBtnMob"
-                                style="width: fit-content"
-                            >
-                                <span> {{ translation.yes }} </span>
-                            </div>
-                        </div>
-                    </td>
-                </tr>
+                <ProposalRow
+                    :proposal="proposal"
+                    :masternodeCount="masternodeCount"
+                    :strCurrency="strCurrency"
+                    :price="price"
+                    :proposalValidator="proposalValidator"
+                    @click="openOrCloseRow(i)"
+                />
                 <MobileProposalRow
                     v-if="opened == i"
                     :proposal="proposal"

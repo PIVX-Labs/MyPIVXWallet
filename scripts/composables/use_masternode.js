@@ -9,10 +9,11 @@ export const useMasternode = defineStore('masternode', () => {
      * @type{import('vue').Ref<Masternode?>}
      */
     const masternode = ref(null);
-    const localProposals = ref(null);
+    const localProposals = ref([]);
     watch(localProposals, async () => {
         const database = await Database.getInstance();
         const account = await database.getAccount();
+        debugger;
         if (account) {
             account.localProposals = toRaw(localProposals.value);
             await database.updateAccount(account);
@@ -21,7 +22,7 @@ export const useMasternode = defineStore('masternode', () => {
     const fetchProposalsFromDatabase = async () => {
         const database = await Database.getInstance();
         const account = await database.getAccount();
-        localProposals.value = account?.localProposals;
+        localProposals.value = account?.localProposals ?? [];
     };
 
     const fetchMasternodeFromDatabase = async () => {

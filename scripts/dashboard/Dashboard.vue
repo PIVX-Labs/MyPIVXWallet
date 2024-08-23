@@ -33,7 +33,7 @@ import { getNetwork } from '../network.js';
 import { strHardwareName } from '../ledger';
 import { guiAddContactPrompt } from '../contacts-book';
 import { scanQRCode } from '../scanner';
-import { useWallet } from '../composablpes/use_wallet.js';
+import { useWallet } from '../composables/use_wallet.js';
 import { useSettings } from '../composables/use_settings.js';
 import pLogo from '../../assets/p_logo.svg';
 import pShieldLogo from '../../assets/icons/icon_shield_pivx.svg';

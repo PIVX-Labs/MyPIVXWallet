@@ -12,7 +12,6 @@ import ProposalCreateModal from './ProposalCreateModal.vue';
 import { hasEncryptedWallet } from '../wallet';
 import { createAlert, sanitizeHTML } from '../misc';
 import { ALERTS, tr, translation } from '../i18n';
-import { Database } from '../database';
 import { storeToRefs } from 'pinia';
 import { useSettings } from '../composables/use_settings';
 import { getNetwork } from '../network';
@@ -54,6 +53,7 @@ function numberToCurrency(number, price) {
 }
 
 async function fetchProposals() {
+    console.log('updating');
     const arrProposals = await Masternode.getProposals({
         fAllowFinished: false,
     });
@@ -70,6 +70,7 @@ async function fetchProposals() {
     );
 }
 fetchProposals();
+watch(cChainParams, () => fetchProposals());
 
 /**
  * @typedef {Object} ProposalCache
@@ -219,7 +220,7 @@ async function createProposal(name, url, payments, monthlyPayment, address) {
         return;
     }
     const hash = Masternode.createProposalHash(proposal);
-    const { ok, txid } = await wallet.createAndSendTransaction(
+    const txid = await wallet.createAndSendTransaction(
         getNetwork(),
         hash,
         cChainParams.current.proposalFee,
@@ -227,9 +228,11 @@ async function createProposal(name, url, payments, monthlyPayment, address) {
             isProposal: true,
         }
     );
-    if (ok) {
+    console.log(txid);
+    if (txid) {
         proposal.txid = txid;
-        localProposals.value.push(proposal);
+        localProposals.value = [...localProposals.value, proposal];
+        console.log(localProposals.value);
 
         createAlert('success', translation.PROPOSAL_CREATED, 10000);
         showCreateProposalModal.value = false;
@@ -513,6 +516,7 @@ async function finalizeProposal(proposal) {
             :masternodeCount="masternodeCount"
             :strCurrency="strCurrency"
             :price="price"
+            @finalizeProposal="finalizeProposal"
         />
     </div>
 </template>
