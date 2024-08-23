@@ -29,9 +29,7 @@ watch(
 
 const wallet = useWallet();
 const settings = useSettings();
-const { localProposals } = storeToRefs(useMasternode());
-console.log(localProposals.value);
-watch(localProposals, console.log);
+const { localProposals, masternode } = storeToRefs(useMasternode());
 const { advancedMode } = storeToRefs(settings);
 const { blockCount } = storeToRefs(wallet);
 const proposals = ref([]);
@@ -135,31 +133,6 @@ async function waitForSubmissionBlockHeight(cProposalCache) {
     return true;
 }
 
-/**
- *
- * @param {Object} cProposal - A local proposal to add to the cache tracker
- * @returns {ProposalCache} - The finalisation cache object pointer of the local proposal
- */
-function addProposalToFinalisationCache(cProposal) {
-    // If it exists, return the existing cache
-    /** @type ProposalCache */
-    let cPropCache = arrProposalFinalisationCache.find(
-        (a) => a.txid === cProposal.mpw.txid
-    );
-    if (cPropCache) return cPropCache;
-
-    // Create a new cache
-    cPropCache = {
-        nSubmissionHeight: 0,
-        txid: cProposal.mpw.txid,
-        fFetching: false,
-    };
-    arrProposalFinalisationCache.push(cPropCache);
-
-    // Return the object 'pointer' in the array for further updating
-    return cPropCache;
-}
-
 async function openCreateProposal() {
     // Must have a wallet
     if (!wallet.isImported) {
@@ -230,6 +203,31 @@ async function finalizeProposal(proposal) {
             'warning',
             translation.PROPOSAL_FINALISE_FAIL + '<br>' + sanitizeHTML(err)
         );
+    }
+}
+
+async function vote(hash, voteCode) {
+    if (masternode.value) {
+        if ((await masternode.value.getStatus()) !== 'ENABLED') {
+            createAlert('warning', ALERTS.MN_NOT_ENABLED, 6000);
+            return;
+        }
+        const result = await masternode.value.vote(hash, voteCode);
+        if (result.includes('Voted successfully')) {
+            // Good vote
+            masternode.value.storeVote(hash.toString(), voteCode);
+            createAlert('success', ALERTS.VOTE_SUBMITTED, 6000);
+        } else if (result.includes('Error voting :')) {
+            // If you already voted return an alert
+            createAlert('warning', ALERTS.VOTED_ALREADY, 6000);
+        } else if (result.includes('Failure to verify signature.')) {
+            // wrong masternode private key
+            createAlert('warning', ALERTS.VOTE_SIG_BAD, 6000);
+        } else {
+            // this could be everything
+            console.error(result);
+            createAlert('warning', ALERTS.INTERNAL_ERROR, 6000);
+        }
     }
 }
 </script>
@@ -452,6 +450,7 @@ async function finalizeProposal(proposal) {
                 :masternodeCount="masternodeCount"
                 :strCurrency="strCurrency"
                 :price="price"
+                @vote="vote"
                 @finalizeProposal="(proposal) => finalizeProposal(proposal)"
             />
         </div>
@@ -477,6 +476,7 @@ async function finalizeProposal(proposal) {
             :masternodeCount="masternodeCount"
             :strCurrency="strCurrency"
             :price="price"
+            @vote="vote"
         />
     </div>
 </template>

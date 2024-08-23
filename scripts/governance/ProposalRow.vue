@@ -4,8 +4,9 @@ import LocalProposalStatus from './LocalProposalStatus.vue';
 import ProposalName from './ProposalName.vue';
 import ProposalPayment from './ProposalPayment.vue';
 import ProposalVotes from './ProposalVotes.vue';
+import Modal from '../Modal.vue';
 import { translation } from '../i18n.js';
-import { computed, toRefs } from 'vue';
+import { toRefs, ref } from 'vue';
 import { ProposalValidator } from './status';
 const props = defineProps({
     proposal: Object,
@@ -20,7 +21,13 @@ const props = defineProps({
 });
 const { proposal, masternodeCount, strCurrency, price, proposalValidator } =
     toRefs(props);
-const emit = defineEmits(['click', 'finalizeProposal']);
+const emit = defineEmits(['click', 'finalizeProposal', 'vote']);
+const showConfirmVoteModal = ref(false);
+const selectedVoteCode = ref(0);
+function vote(voteCode) {
+    selectedVoteCode.value = voteCode;
+    showConfirmVoteModal.value = true;
+}
 </script>
 
 <template>
@@ -57,12 +64,14 @@ const emit = defineEmits(['click', 'finalizeProposal']);
                     <div
                         class="pivx-button-outline pivx-button-outline-small govNoBtnMob"
                         style="width: fit-content"
+                        @click="vote(2)"
                     >
                         <span> {{ translation.no }} </span>
                     </div>
                     <div
                         class="pivx-button-small govYesBtnMob"
                         style="width: fit-content"
+                        @click="vote(1)"
                     >
                         <span> {{ translation.yes }} </span>
                     </div>
@@ -70,4 +79,31 @@ const emit = defineEmits(['click', 'finalizeProposal']);
             </td>
         </template>
     </tr>
+    <Modal :show="showConfirmVoteModal">
+        <template #header>
+            <span> {{ translation.ALERTS.CONFIRM_POPUP_VOTE }} </span>
+        </template>
+        <template #body>
+            <span v-html="translation.ALERTS.CONFIRM_POPUP_VOTE_HTML"></span>
+        </template>
+        <template #footer>
+            <button
+                @click="
+                    emit('vote', selectedVoteCode);
+                    showConfirmVoteModal = false;
+                "
+                class="pivx-button-small"
+                style="height: 42px; width: 228px"
+            >
+                {{ translation.popupConfirm }}
+            </button>
+            <button
+                @click="showConfirmVoteModal = false"
+                class="pivx-button-small"
+                style="height: 42px; width: 228px"
+            >
+                {{ translation.popupCancel }}
+            </button>
+        </template>
+    </Modal>
 </template>

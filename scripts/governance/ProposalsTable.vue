@@ -115,12 +115,14 @@ function openOrCloseRow(i) {
                     :price="price"
                     :proposalValidator="proposalValidator"
                     @click="openOrCloseRow(i)"
+                    @vote="(code) => emit('vote', proposal, code)"
                 />
                 <MobileProposalRow
                     v-if="opened == i"
                     :proposal="proposal"
                     :price="price"
                     :strCurrency="strCurrency"
+                    @vote="(code) => emit('vote', proposal, code)"
                 />
             </template>
         </tbody>
