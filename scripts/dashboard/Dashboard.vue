@@ -438,7 +438,8 @@ async function openSendQRScanner() {
             return;
         }
         if (data.includes('addcontact=')) {
-            const urlParams = new URLSearchParams(data);
+            const strParams = data.substring(data.indexOf('addcontact='));
+            const urlParams = new URLSearchParams(strParams);
             await handleContactRequest(urlParams);
             return;
         }
