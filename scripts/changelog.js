@@ -49,7 +49,9 @@ export function renderChangelog() {
                 break;
             case '-':
                 // `-` is a list element, for each 'New Feature' or 'Bug Fix' to be listed with
-                strHTML += `<p>- ${sanitizeHTML(line)}</p>`;
+                strHTML += `<p><span class="dotSpan"></span>${sanitizeHTML(
+                    line
+                )}</p>`;
                 break;
             default:
                 // If no element was recognised, it's just a plaintext line
@@ -62,9 +64,10 @@ export function renderChangelog() {
     const strFinalHTML = `<div class="changelog">${strHTML}</div>`;
 
     confirmPopup({
-        title: translation.changelogTitle + ' ' + VERSION + '?',
+        title: translation.changelogTitle + '<br><b>' + VERSION + '</b>?',
         html: strFinalHTML,
         resolvePromise: false,
         hideConfirm: true,
+        centerButtons: true,
     });
 }

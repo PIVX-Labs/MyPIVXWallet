@@ -7,6 +7,7 @@ import { COIN } from '../chain_params';
 import { getAddressColor, promptForContact } from '../contacts-book';
 const props = defineProps({
     unstake: Boolean,
+    currency: String,
     showOwnerAddress: Boolean,
     show: Boolean,
     price: Number,
@@ -70,66 +71,78 @@ async function selectContact() {
         @close="emit('close')"
     >
         <div class="transferBody">
-            <label
-                ><span data-i18n="amount">Amount</span> (<span>-</span>)</label
+            <label><span data-i18n="amount">Amount</span></label
             ><br />
 
             <div class="row">
-                <div class="col-7 pr-2">
+                <div class="col-12 pr-2">
                     <div class="input-group mb-3">
                         <input
-                            class="btn-group-input"
-                            style="padding-right: 0px"
+                            class="btn-group-input balanceInput"
+                            style="padding-right: 0px; border-right: 0px"
                             type="number"
-                            data-testid="amount"
                             placeholder="0.00"
                             autocomplete="nope"
                             onkeydown="javascript: return event.keyCode == 69 ? false : true"
-                            v-model="amount"
+                            data-testid="amount"
                             @input="$nextTick(syncAmountCurrency)"
+                            v-model="amount"
                         />
                         <div class="input-group-append">
-                            <span class="input-group-text p-0">
-                                <div
-                                    data-i18n="sendAmountCoinsMax"
-                                    @click="maxBalance()"
-                                    style="
-                                        cursor: pointer;
-                                        border: 0px;
-                                        border-radius: 7px;
-                                        padding: 3px 6px;
-                                        margin: 0px 1px;
-                                        background: linear-gradient(
-                                            183deg,
-                                            #9621ff9c,
-                                            #7d21ffc7
-                                        );
-                                        color: #fff;
-                                        font-weight: bold;
-                                    "
-                                >
-                                    MAX
-                                </div>
+                            <span
+                                class="input-group-text"
+                                style="
+                                    background-color: #e9deff;
+                                    color: #af9cc6;
+                                    border: 2px solid #af9cc6;
+                                    border-left: 0px;
+                                "
+                            >
+                                PIVX
                             </span>
-                            <span class="input-group-text">PIV</span>
+                            <span
+                                class="input-group-text p-0"
+                                data-i18n="sendAmountCoinsMax"
+                                style="
+                                    cursor: pointer;
+                                    background-color: #7f20ff;
+                                    border: 2px solid #af9cc6;
+                                    color: #e9deff;
+                                    font-weight: 700;
+                                    padding: 0px 10px 0px 10px !important;
+                                "
+                                @click="maxBalance()"
+                            >
+                                {{ translation.sendAmountCoinsMax }}
+                            </span>
                         </div>
                     </div>
                 </div>
 
-                <div class="col-5 pl-2">
+                <div class="col-12 pr-2">
                     <div class="input-group mb-3">
                         <input
-                            class="btn-group-input"
+                            class="btn-group-input balanceInput"
                             type="text"
-                            data-testid="amountCurrency"
                             placeholder="0.00"
                             autocomplete="nope"
                             onkeydown="javascript: return event.keyCode == 69 ? false : true"
-                            v-model="amountCurrency"
+                            data-testid="amountCurrency"
                             @input="syncAmount"
+                            v-model="amountCurrency"
+                            style="border-right: 0px"
                         />
                         <div class="input-group-append">
-                            <span class="input-group-text pl-0">USD</span>
+                            <span
+                                class="input-group-text pl-0"
+                                style="
+                                    background-color: #e9deff;
+                                    color: #af9cc6;
+                                    border: 2px solid #af9cc6;
+                                    border-left: 0px;
+                                "
+                                >{{ currency }}</span
+                            >
                         </div>
                     </div>
                 </div>
@@ -161,20 +174,45 @@ async function selectContact() {
                 </div>
             </div>
 
-            <div class="text-right pb-2">
-                <button
-                    class="pivx-button-medium w-100"
-                    style="margin: 0px"
-                    data-testid="sendButton"
-                    @click="submit()"
-                >
-                    <span class="buttoni-icon"
-                        ><i class="fas fa-paper-plane fa-tiny-margin"></i
-                    ></span>
-                    <span data-i18n="stake" class="buttoni-text">{{
-                        unstake ? translation.stakeUnstake : translation.stake
-                    }}</span>
-                </button>
+            <div class="pb-2">
+                <div class="row">
+                    <div class="col-6 col-md-6">
+                        <button
+                            class="pivx-button-small-cancel"
+                            style="height: 42px; width: 97px"
+                            @click="$emit('close')"
+                            data-testid="closeButton"
+                        >
+                            <span class="buttoni-text">
+                                {{ translation.cancel }} Cancel
+                            </span>
+                        </button>
+                    </div>
+
+                    <div class="col-6 col-md-6 text-right">
+                        <button
+                            class="pivx-button-small"
+                            style="height: 42px; width: 106px"
+                            @click="submit()"
+                            data-testid="sendButton"
+                        >
+                            <span
+                                class="buttoni-text"
+                                :data-i18n="
+                                    unstake
+                                        ? translation.stakeUnstake
+                                        : translation.stake
+                                "
+                            >
+                                {{
+                                    unstake
+                                        ? translation.stakeUnstake
+                                        : translation.stake
+                                }}
+                            </span>
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </BottomPopup>

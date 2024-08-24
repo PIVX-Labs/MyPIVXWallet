@@ -116,6 +116,8 @@ export async function confirmPopup({
     textLeft,
     noPadding,
     maxHeight,
+    centerButtons,
+    wideModal,
 }) {
     // If there's a title provided: display the header and text
     doms.domConfirmModalHeader.style.display = title ? 'block' : 'none';
@@ -131,9 +133,10 @@ export async function confirmPopup({
 
     // Show or hide the confirm button, and replace 'Cancel' with 'Close'
     doms.domConfirmModalConfirmButton.style.display = hideConfirm ? 'none' : '';
-    doms.domConfirmModalCancelButton.innerText = hideConfirm
-        ? translation.popupClose
-        : translation.popupCancel;
+    doms.domConfirmModalCancelButton.innerHTML =
+        '<span>' +
+        (hideConfirm ? translation.popupClose : translation.popupCancel) +
+        '</span>';
 
     // Set content display
     doms.domConfirmModalContent.innerHTML = html;
@@ -150,6 +153,14 @@ export async function confirmPopup({
         doms.domConfirmModalMain.classList.add('exportKeysModalColor');
     } else {
         doms.domConfirmModalMain.classList.remove('exportKeysModalColor');
+    }
+
+    // If modal is wide
+    if (wideModal) {
+        doms.domConfirmModalDialog.classList.add('masternodeModalDialog');
+        doms.domConfirmModalDialog.classList.add('masternodeModalDialog2');
+
+        doms.domConfirmModalContent.classList.remove('center-text');
     }
 
     // Remove padding
@@ -171,6 +182,11 @@ export async function confirmPopup({
             domElement.focus();
             break;
         }
+    }
+
+    // Center the buttons
+    if (centerButtons) {
+        doms.domConfirmModalButtons.classList.add('centerFlex');
     }
 
     // Wait for the promise to resolve OR create a new one which resolves upon a modal button click
@@ -355,18 +371,25 @@ export function sanitizeHTML(text) {
  * @param {string?} strDecFontSize - The optional font size to display decimals in
  * @returns {string} - A HTML string with beautified number handling
  */
-export function beautifyNumber(strNumber, strDecFontSize = '') {
+export function beautifyNumber(
+    strNumber,
+    strDecFontSize = '',
+    showFirstNumber = true
+) {
     if (typeof strNumber === 'number') strNumber = strNumber.toString();
 
     // Only run this for numbers with decimals
-    if (!strNumber.includes('.')) return strNumber;
+    if (!strNumber.includes('.'))
+        return parseInt(strNumber).toLocaleString('en-GB');
 
     // Split the number in to Full and Decimal parts
     const arrNumParts = strNumber.split('.');
 
     // Return a HTML that renders the decimal in a lower opacity
     const strFontSize = strDecFontSize ? 'font-size: ' + strDecFontSize : '';
-    return `${arrNumParts[0]}<span style="opacity: 0.55; ${strFontSize}">.${arrNumParts[1]}</span>`;
+    return `${
+        showFirstNumber ? parseInt(arrNumParts[0]).toLocaleString('en-GB') : ''
+    }<span style="opacity: 0.55; ${strFontSize}">.${arrNumParts[1]}</span>`;
 }
 
 /**

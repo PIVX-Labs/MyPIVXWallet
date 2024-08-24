@@ -4,7 +4,10 @@ import { ref, watch, computed } from 'vue';
 import { getAddressColor } from '../contacts-book';
 import { promptForContact } from '../contacts-book';
 import { sanitizeHTML } from '../misc';
+import { useWallet } from '../composables/use_wallet.js';
 import BottomPopup from '../BottomPopup.vue';
+import qrIcon from '../../assets/icons/icon-qr-code.svg';
+import addressbookIcon from '../../assets/icons/icon-address-book.svg';
 
 const emit = defineEmits([
     'send',
@@ -16,8 +19,9 @@ const emit = defineEmits([
 ]);
 // Amount of PIVs to send in the selected currency (e.g. USD)
 const amountCurrency = ref('');
-const useShieldInputs = ref(false);
 const color = ref('');
+
+const wallet = useWallet();
 
 const props = defineProps({
     show: Boolean,
@@ -27,6 +31,7 @@ const props = defineProps({
     desc: String,
     address: String,
     shieldEnabled: Boolean,
+    publicMode: Boolean,
 });
 
 const address = computed({
@@ -55,7 +60,7 @@ function send() {
             'send',
             sanitizeHTML(address.value),
             amount.value,
-            useShieldInputs.value
+            !wallet.publicMode
         );
 }
 
@@ -96,15 +101,21 @@ async function selectContact() {
                     v-model="address"
                     autocomplete="nope"
                 />
-                <div class="input-group-append">
+                <div class="input-group-append tranferModal">
                     <span
-                        class="input-group-text ptr"
+                        class="input-group-text ptr buttonj-icon"
+                        style="padding-left: 7px; padding-right: 12px"
                         @click="$emit('openQrScan')"
-                        ><i class="fa-solid fa-qrcode fa-2xl"></i
-                    ></span>
-                    <span class="input-group-text ptr" @click="selectContact()"
-                        ><i class="fa-solid fa-address-book fa-2xl"></i
-                    ></span>
+                        v-html="qrIcon"
+                    >
+                    </span>
+                    <span
+                        class="input-group-text ptr buttonj-icon"
+                        style="padding-left: 7px; padding-right: 12px"
+                        @click="selectContact()"
+                        v-html="addressbookIcon"
+                    >
+                    </span>
                 </div>
             </div>
 
@@ -124,16 +135,15 @@ async function selectContact() {
                 </div>
             </div>
 
-            <label
-                ><span>{{ translation.amount }}</span></label
+            <label>{{ translation.amount }}</label
             ><br />
 
             <div class="row">
-                <div class="col-7 pr-2">
+                <div class="col-12">
                     <div class="input-group mb-3">
                         <input
-                            class="btn-group-input"
-                            style="padding-right: 0px"
+                            class="btn-group-input balanceInput"
+                            style="padding-right: 0px; border-right: 0px"
                             type="number"
                             placeholder="0.00"
                             autocomplete="nope"
@@ -143,38 +153,39 @@ async function selectContact() {
                             v-model="amount"
                         />
                         <div class="input-group-append">
-                            <span class="input-group-text p-0">
-                                <div
-                                    @click="
-                                        $emit('max-balance', useShieldInputs)
-                                    "
-                                    style="
-                                        cursor: pointer;
-                                        border: 0px;
-                                        border-radius: 7px;
-                                        padding: 3px 6px;
-                                        margin: 0px 1px;
-                                        background: linear-gradient(
-                                            183deg,
-                                            #9621ff9c,
-                                            #7d21ffc7
-                                        );
-                                        color: #fff;
-                                        font-weight: bold;
-                                    "
-                                >
-                                    {{ translation.sendAmountCoinsMax }}
-                                </div>
+                            <span
+                                class="input-group-text"
+                                style="
+                                    background-color: #e9deff;
+                                    color: #af9cc6;
+                                    border: 2px solid #af9cc6;
+                                    border-left: 0px;
+                                "
+                            >
+                                PIVX
                             </span>
-                            <span class="input-group-text">PIVX</span>
+                            <span
+                                class="input-group-text p-0"
+                                style="
+                                    cursor: pointer;
+                                    background-color: #7f20ff;
+                                    border: 2px solid #af9cc6;
+                                    color: #e9deff;
+                                    font-weight: 700;
+                                    padding: 0px 10px 0px 10px !important;
+                                "
+                                @click="$emit('max-balance', !publicMode)"
+                            >
+                                {{ translation.sendAmountCoinsMax }}
+                            </span>
                         </div>
                     </div>
                 </div>
 
-                <div class="col-5 pl-2">
+                <div class="col-12">
                     <div class="input-group mb-3">
                         <input
-                            class="btn-group-input"
+                            class="btn-group-input balanceInput"
                             type="text"
                             placeholder="0.00"
                             autocomplete="nope"
@@ -182,11 +193,19 @@ async function selectContact() {
                             data-testid="amountCurrency"
                             @input="syncAmount"
                             v-model="amountCurrency"
+                            style="border-right: 0px"
                         />
                         <div class="input-group-append">
-                            <span class="input-group-text pl-0">{{
-                                currency
-                            }}</span>
+                            <span
+                                class="input-group-text pl-0"
+                                style="
+                                    background-color: #e9deff;
+                                    color: #af9cc6;
+                                    border: 2px solid #af9cc6;
+                                    border-left: 0px;
+                                "
+                                >{{ currency }}</span
+                            >
                         </div>
                     </div>
                     <div v-if="desc && desc.length > 0">
@@ -208,6 +227,15 @@ async function selectContact() {
                         </div>
                     </div>
                 </div>
+            </div>
+
+            <div v-if="!publicMode && false">
+                <label>SHIELD Message</label><br />
+
+                <textarea
+                    style="padding-top: 11px; height: 110px"
+                    placeholder="Max. 512 characters"
+                ></textarea>
             </div>
 
             <div v-if="false">
@@ -240,34 +268,34 @@ async function selectContact() {
                 <br />
             </div>
 
-            <div v-if="shieldEnabled">
-                <div class="custom-control custom-switch">
-                    <input
-                        type="checkbox"
-                        class="custom-control-input"
-                        data-testid="useShieldInputs"
-                        id="useShieldInputs"
-                        v-model="useShieldInputs"
-                    />
-                    <label class="custom-control-label" for="useShieldInputs">{{
-                        translation.useShieldInputs
-                    }}</label>
-                </div>
-                <br />
-            </div>
+            <div class="pb-2">
+                <div class="row">
+                    <div class="col-6">
+                        <button
+                            class="pivx-button-small-cancel"
+                            style="height: 42px; width: 97px"
+                            @click="$emit('close')"
+                            data-testid="closeButton"
+                        >
+                            <span class="buttoni-text">
+                                {{ translation.cancel }} Cancel
+                            </span>
+                        </button>
+                    </div>
 
-            <div class="text-right pb-2">
-                <button
-                    class="pivx-button-medium w-100"
-                    style="margin: 0px"
-                    @click="send()"
-                    data-testid="sendButton"
-                >
-                    <span class="buttoni-icon"
-                        ><i class="fas fa-paper-plane fa-tiny-margin"></i
-                    ></span>
-                    <span class="buttoni-text">{{ translation.send }}</span>
-                </button>
+                    <div class="col-6 text-right">
+                        <button
+                            class="pivx-button-small"
+                            style="height: 42px; width: 97px"
+                            @click="send()"
+                            data-testid="sendButton"
+                        >
+                            <span class="buttoni-text">
+                                {{ translation.send }}
+                            </span>
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </BottomPopup>

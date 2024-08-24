@@ -14,7 +14,18 @@ import {
 import { getNewAddress } from '../wallet.js';
 import LoadingBar from '../Loadingbar.vue';
 import { sleep } from '../utils.js';
-import shieldLogo from '../../assets/shield_logo.svg';
+
+import iShieldLock from '../../assets/icons/icon_shield_lock_locked.svg';
+import iShieldLogo from '../../assets/icons/icon_shield_pivx.svg';
+import iHourglass from '../../assets/icons/icon-hourglass.svg';
+import pLogo from '../../assets/p_logo.svg';
+import logo from '../../assets/pivx.png';
+
+import pLocked from '../../assets/icons/icon-lock-locked.svg';
+import pUnlocked from '../../assets/icons/icon-lock-unlocked.svg';
+import pExport from '../../assets/icons/icon-export.svg';
+import pShieldCheck from '../../assets/icons/icon-shield-check.svg';
+import pRefresh from '../../assets/icons/icon-refresh.svg';
 
 const props = defineProps({
     jdenticonValue: String,
@@ -23,11 +34,16 @@ const props = defineProps({
     pendingShieldBalance: Number,
     immatureBalance: Number,
     isHdWallet: Boolean,
+    isViewOnly: Boolean,
+    isEncrypted: Boolean,
+    needsToEncrypt: Boolean,
+    isImported: Boolean,
     isHardwareWallet: Boolean,
     currency: String,
     price: Number,
     displayDecimals: Number,
     shieldEnabled: Boolean,
+    publicMode: Boolean,
 });
 const {
     jdenticonValue,
@@ -36,33 +52,27 @@ const {
     pendingShieldBalance,
     immatureBalance,
     isHdWallet,
+    isViewOnly,
+    isEncrypted,
+    isImported,
+    needsToEncrypt,
     isHardwareWallet,
     currency,
     price,
     displayDecimals,
     shieldEnabled,
+    publicMode,
 } = toRefs(props);
-
-onMounted(() => {
-    jdenticon.configure();
-    watch(
-        jdenticonValue,
-        () => {
-            jdenticon.update('#identicon', jdenticonValue.value);
-        },
-        {
-            immediate: true,
-        }
-    );
-});
 
 // Transparent sync status
 const transparentSyncing = ref(false);
+const transparentProgressSyncing = ref(0.0);
 const syncTStr = ref('');
 
 // Shield sync status
 const shieldSyncing = ref(false);
-const syncSStr = ref('');
+const shieldPercentageSyncing = ref(0.0);
+const shieldBlockRemainingSyncing = ref(0);
 
 // Shield transaction creation
 const isCreatingTx = ref(false);
@@ -70,48 +80,102 @@ const txPercentageCreation = ref(0.0);
 const txCreationStr = ref('Creating SHIELD transaction...');
 
 const balanceStr = computed(() => {
-    const nCoins = balance.value / COIN;
+    let nCoins;
+    if (publicMode.value) {
+        nCoins = balance.value / COIN;
+    } else {
+        nCoins = shieldBalance.value / COIN;
+    }
+
     const strBal = nCoins.toFixed(displayDecimals.value);
     const nLen = strBal.length;
     return beautifyNumber(strBal, nLen >= 10 ? '17px' : '25px');
 });
-const shieldBalanceStr = computed(() => {
-    const nCoins = shieldBalance.value / COIN;
+
+const secondBalanceStr = computed(() => {
+    let nCoins;
+    if (publicMode.value) {
+        nCoins = shieldBalance.value / COIN;
+    } else {
+        nCoins = balance.value / COIN;
+    }
+
     return nCoins.toFixed(displayDecimals.value);
 });
 
-const pendingShieldBalanceStr = computed(() => {
-    const nCoins = pendingShieldBalance.value / COIN;
+const pendingShieldImmatureBalanceStr = computed(() => {
+    let nCoins;
+    if (publicMode.value) {
+        nCoins = pendingShieldBalance.value / COIN;
+    } else {
+        nCoins = immatureBalance.value / COIN;
+    }
+
     return nCoins.toFixed(displayDecimals.value);
 });
 
 const immatureBalanceStr = computed(() => {
     const nCoins = immatureBalance.value / COIN;
     const strBal = nCoins.toFixed(displayDecimals.value);
-    return beautifyNumber(strBal);
+    return strBal + ' ' + cChainParams.current.TICKER;
+});
+
+const pendingShieldBalanceStr = computed(() => {
+    const nCoins = pendingShieldBalance.value / COIN;
+    const strBal = nCoins.toFixed(displayDecimals.value);
+    return strBal + ' S-' + cChainParams.current.TICKER;
 });
 
 const balanceValue = computed(() => {
-    const { nValue, cLocale } = optimiseCurrencyLocale(
-        (balance.value / COIN) * price.value
-    );
+    let balanceVal;
+    if (publicMode.value) {
+        balanceVal = (balance.value / COIN) * price.value;
+    } else {
+        balanceVal = (shieldBalance.value / COIN) * price.value;
+    }
 
-    return nValue.toLocaleString('en-gb', cLocale);
+    const { nValue, cLocale } = optimiseCurrencyLocale(balanceVal);
+
+    cLocale.minimumFractionDigits = 0;
+    cLocale.maximumFractionDigits = 0;
+
+    return `${nValue.toLocaleString('en-gb', cLocale)}${beautifyNumber(
+        nValue.toFixed(2),
+        '13px',
+        false
+    )}`;
 });
 
 const ticker = computed(() => cChainParams.current.TICKER);
 
-const emit = defineEmits(['send', 'exportPrivKeyOpen']);
+const emit = defineEmits([
+    'send',
+    'exportPrivKeyOpen',
+    'displayLockWalletModal',
+    'restoreWallet',
+]);
 
-getEventEmitter().on('transparent-sync-status-update', (str, finished) => {
-    syncTStr.value = str;
-    transparentSyncing.value = !finished;
-});
+getEventEmitter().on(
+    'transparent-sync-status-update',
+    (str, progress, finished) => {
+        syncTStr.value = str;
+        transparentProgressSyncing.value = progress;
+        transparentSyncing.value = !finished;
+    }
+);
 
-getEventEmitter().on('shield-sync-status-update', (str, finished) => {
-    syncSStr.value = str;
-    shieldSyncing.value = !finished;
-});
+getEventEmitter().on(
+    'shield-sync-status-update',
+    (blocks, totalBlocks, finished) => {
+        shieldPercentageSyncing.value = Math.round(
+            (blocks / totalBlocks) * 100
+        );
+        shieldBlockRemainingSyncing.value = (
+            totalBlocks - blocks
+        ).toLocaleString('en-GB');
+        shieldSyncing.value = !finished;
+    }
+);
 
 getEventEmitter().on(
     'shield-transaction-creation-update',
@@ -131,6 +195,14 @@ getEventEmitter().on(
         txPercentageCreation.value = percentage;
     }
 );
+
+function displayLockWalletModal() {
+    emit('displayLockWalletModal');
+}
+
+function restoreWallet() {
+    emit('restoreWallet');
+}
 </script>
 
 <template>
@@ -141,6 +213,28 @@ getEventEmitter().on(
                     class="col-6 d-flex dcWallet-topLeftMenu"
                     style="justify-content: flex-start"
                 >
+                    <h3 class="noselect balance-title">
+                        <span
+                            class="reload"
+                            v-if="isViewOnly && isEncrypted && isImported"
+                            @click="restoreWallet()"
+                        >
+                            <span
+                                class="dcWallet-topLeftIcons buttoni-icon topCol"
+                                v-html="pLocked"
+                            ></span>
+                        </span>
+                        <span
+                            class="reload"
+                            v-if="!isViewOnly && !needsToEncrypt && isImported"
+                            @click="displayLockWalletModal()"
+                        >
+                            <span
+                                class="dcWallet-topLeftIcons buttoni-icon topCol"
+                                v-html="pUnlocked"
+                            ></span>
+                        </span>
+                    </h3>
                     <h3 class="noselect balance-title"></h3>
                 </div>
 
@@ -150,7 +244,7 @@ getEventEmitter().on(
                 >
                     <div class="btn-group dropleft">
                         <i
-                            class="fa-solid fa-ellipsis-vertical"
+                            class="fa-solid fa-ellipsis-vertical topCol"
                             style="width: 20px"
                             data-toggle="dropdown"
                             aria-haspopup="true"
@@ -160,47 +254,9 @@ getEventEmitter().on(
                             <div class="dropdown-move">
                                 <div
                                     class="dropdown-menu"
+                                    style="border-radius: 10px"
                                     aria-labelledby="dropdownMenuButton"
                                 >
-                                    <a
-                                        class="dropdown-item ptr"
-                                        @click="renderWalletBreakdown()"
-                                        data-toggle="modal"
-                                        data-target="#walletBreakdownModal"
-                                    >
-                                        <i class="fa-solid fa-chart-pie"></i>
-                                        <span
-                                            >&nbsp;{{
-                                                translation.balanceBreakdown
-                                            }}</span
-                                        >
-                                    </a>
-                                    <a
-                                        class="dropdown-item ptr"
-                                        @click="openExplorer()"
-                                    >
-                                        <i
-                                            class="fa-solid fa-magnifying-glass"
-                                        ></i>
-                                        <span
-                                            >&nbsp;{{
-                                                translation.viewOnExplorer
-                                            }}</span
-                                        >
-                                    </a>
-                                    <a
-                                        class="dropdown-item ptr"
-                                        @click="guiRenderContacts()"
-                                        data-toggle="modal"
-                                        data-target="#contactsModal"
-                                    >
-                                        <i class="fa-solid fa-address-book"></i>
-                                        <span
-                                            >&nbsp;{{
-                                                translation.contacts
-                                            }}</span
-                                        >
-                                    </a>
                                     <a
                                         class="dropdown-item ptr"
                                         data-toggle="modal"
@@ -210,7 +266,10 @@ getEventEmitter().on(
                                         v-if="!isHardwareWallet"
                                         @click="$emit('exportPrivKeyOpen')"
                                     >
-                                        <i class="fas fa-key"></i>
+                                        <span
+                                            class="buttoni-icon iconList"
+                                            v-html="pExport"
+                                        ></span>
                                         <span
                                             >&nbsp;{{
                                                 translation.export
@@ -230,7 +289,10 @@ getEventEmitter().on(
                                             })
                                         "
                                     >
-                                        <i class="fas fa-sync-alt"></i>
+                                        <span
+                                            class="buttoni-icon iconList"
+                                            v-html="pRefresh"
+                                        ></span>
                                         <span
                                             >&nbsp;{{
                                                 translation.refreshAddress
@@ -250,22 +312,13 @@ getEventEmitter().on(
                                             })
                                         "
                                     >
-                                        <i class="fas fa-shield"></i>
+                                        <span
+                                            class="buttoni-icon iconList"
+                                            v-html="pShieldCheck"
+                                        ></span>
                                         <span
                                             >&nbsp;{{
                                                 translation.newShieldAddress
-                                            }}</span
-                                        >
-                                    </a>
-                                    <a
-                                        class="dropdown-item ptr"
-                                        data-toggle="modal"
-                                        data-target="#redeemCodeModal"
-                                    >
-                                        <i class="fa-solid fa-gift"></i>
-                                        <span
-                                            >&nbsp;{{
-                                                translation.redeemOrCreateCode
                                             }}</span
                                         >
                                     </a>
@@ -276,76 +329,174 @@ getEventEmitter().on(
                 </div>
             </div>
 
-            <canvas
-                id="identicon"
-                class="innerShadow"
-                width="65"
-                height="65"
-                style="width: 65px; height: 65px"
-            ></canvas
-            ><br />
-            <span
-                class="ptr"
-                @click="renderWalletBreakdown()"
-                data-toggle="modal"
-                data-target="#walletBreakdownModal"
+            <div
+                style="
+                    margin-top: 22px;
+                    padding-left: 15px;
+                    padding-right: 15px;
+                    margin-bottom: 35px;
+                "
             >
-                <span class="dcWallet-pivxBalance" v-html="balanceStr"> </span>
-                <i
-                    class="fa-solid fa-plus"
-                    v-if="immatureBalance != 0"
-                    style="opacity: 0.5; position: relative; left: 2px"
-                ></i>
-                <span
-                    style="position: relative; left: 4px; font-size: 17px"
-                    v-if="immatureBalance != 0"
-                    v-html="immatureBalanceStr"
-                ></span>
-                <span
-                    class="dcWallet-pivxTicker"
-                    style="position: relative; left: 4px"
-                    >&nbsp;{{ ticker }}&nbsp;</span
+                <div
+                    style="
+                        background-color: #32224e61;
+                        border: 2px solid #361562;
+                        border-top-left-radius: 10px;
+                        border-top-right-radius: 10px;
+                    "
                 >
-            </span>
-            <br />
-            <div class="dcWallet-usdBalance">
-                <span class="dcWallet-usdValue" v-if="shieldEnabled">
-                    <i
-                        class="fas fa-shield fa-xs"
-                        style="margin-right: 4px"
-                        v-if="shieldEnabled"
+                    <div
+                        class="immatureBalanceSpan"
+                        v-if="
+                            (publicMode && immatureBalance != 0) ||
+                            (!publicMode && pendingShieldBalance != 0)
+                        "
                     >
-                    </i
-                    >{{ shieldBalanceStr }}
-                    <span
-                        style="opacity: 0.75"
-                        v-if="pendingShieldBalance != 0"
-                    >
-                        ({{ pendingShieldBalanceStr }} Pending)</span
-                    ></span
-                >
-            </div>
-            <div class="dcWallet-usdBalance">
-                <span class="dcWallet-usdValue">{{ balanceValue }}</span>
-                <span class="dcWallet-usdValue">&nbsp;{{ currency }}</span>
-            </div>
-
-            <div class="row lessTop p-0">
-                <div class="col-6 d-flex" style="justify-content: flex-start">
-                    <div class="dcWallet-btn-left" @click="$emit('send')">
-                        {{ translation.send }}
+                        <span
+                            v-html="iHourglass"
+                            class="hourglassImmatureIcon"
+                        ></span>
+                        <span
+                            style="
+                                position: relative;
+                                left: 4px;
+                                font-size: 14px;
+                            "
+                            >{{
+                                publicMode
+                                    ? immatureBalanceStr
+                                    : pendingShieldBalanceStr
+                            }}</span
+                        >
                     </div>
                 </div>
+                <div
+                    style="
+                        background-color: #32224e61;
+                        border: 2px solid #361562;
+                        border-bottom: none;
+                        border-top: none;
+                    "
+                >
+                    <div>
+                        <img
+                            :src="logo"
+                            style="height: 60px; margin-top: 14px"
+                        />
+                    </div>
+                    <span
+                        class="ptr"
+                        data-toggle="modal"
+                        data-target="#walletBreakdownModal"
+                        @click="renderWalletBreakdown()"
+                    >
+                        <span
+                            class="logo-pivBal"
+                            v-html="publicMode ? pLogo : iShieldLogo"
+                        ></span>
+                        <span class="dcWallet-pivxBalance" v-html="balanceStr">
+                        </span>
+                        <span
+                            class="dcWallet-pivxTicker"
+                            style="position: relative; left: 4px"
+                            >&nbsp;<span v-if="!publicMode">S-</span
+                            >{{ ticker }}&nbsp;</span
+                        >
+                    </span>
 
-                <div class="col-6 d-flex" style="justify-content: flex-end">
                     <div
-                        class="dcWallet-btn-right"
+                        class="dcWallet-usdBalance"
+                        style="padding-bottom: 12px; padding-top: 3px"
+                    >
+                        <span
+                            class="dcWallet-usdValue"
+                            style="color: #d7d7d7; font-weight: 500"
+                            v-html="balanceValue"
+                        ></span>
+                        <span class="dcWallet-usdValue" style="opacity: 0.55"
+                            >&nbsp;{{ currency }}</span
+                        >
+                    </div>
+                </div>
+                <div
+                    style="
+                        background-color: #32224e61;
+                        border: 2px solid #361562;
+                        border-bottom-left-radius: 10px;
+                        border-bottom-right-radius: 10px;
+                    "
+                >
+                    <div class="dcWallet-usdBalance">
+                        <span
+                            class="dcWallet-usdValue"
+                            style="
+                                display: flex;
+                                justify-content: center;
+                                color: #9221ff;
+                                font-weight: 500;
+                                padding-top: 21px;
+                                padding-bottom: 11px;
+                                font-size: 16px;
+                            "
+                        >
+                            <span
+                                class="shieldBalanceLogo"
+                                v-html="publicMode ? iShieldLogo : pLogo"
+                            ></span
+                            >&nbsp;{{ secondBalanceStr }}
+                            <span v-if="publicMode">&nbsp;S-</span>{{ ticker }}
+                            <span
+                                style="opacity: 0.75"
+                                v-if="
+                                    (!publicMode && immatureBalance != 0) ||
+                                    (publicMode && pendingShieldBalance != 0)
+                                "
+                                >&nbsp;({{
+                                    pendingShieldImmatureBalanceStr
+                                }}
+                                Pending)</span
+                            >
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div
+                class="row lessTop p-0"
+                style="
+                    margin-left: 15px;
+                    margin-right: 15px;
+                    margin-bottom: 19px;
+                    margin-top: -16px;
+                "
+            >
+                <div
+                    class="col-6 d-flex p-0"
+                    style="justify-content: flex-start"
+                >
+                    <button
+                        class="pivx-button-small"
+                        style="height: 42px; width: 97px"
+                        @click="$emit('send')"
+                    >
+                        <span class="buttoni-text">
+                            {{ translation.send }}
+                        </span>
+                    </button>
+                </div>
+
+                <div class="col-6 d-flex p-0" style="justify-content: flex-end">
+                    <button
+                        class="pivx-button-small"
+                        style="height: 42px; width: 97px"
                         @click="guiRenderCurrentReceiveModal()"
                         data-toggle="modal"
                         data-target="#qrModal"
                     >
-                        {{ translation.receive }}
-                    </div>
+                        <span class="buttoni-text">
+                            {{ translation.receive }}
+                        </span>
+                    </button>
                 </div>
             </div>
         </div>
@@ -353,7 +504,7 @@ getEventEmitter().on(
             <div
                 v-if="transparentSyncing || shieldSyncing"
                 style="
-                    display: block;
+                    display: flex;
                     font-size: 15px;
                     background-color: #3a0c60;
                     border: 1px solid #9f00f9;
@@ -361,10 +512,45 @@ getEventEmitter().on(
                     border-radius: 10px;
                     color: #d3bee5;
                     width: 310px;
-                    text-align: center;
+                    text-align: left;
+                    margin-bottom: 20px;
                 "
             >
-                {{ transparentSyncing ? syncTStr : syncSStr }}
+                <div
+                    style="
+                        width: 48px;
+                        height: 38px;
+                        background-color: #310b51;
+                        margin-right: 9px;
+                        border-radius: 9px;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        font-size: 20px;
+                    "
+                >
+                    <i class="fas fa-spinner spinningLoading"></i>
+                </div>
+                <div style="width: 100%">
+                    {{
+                        transparentSyncing
+                            ? syncTStr
+                            : `Syncing ${shieldBlockRemainingSyncing} Blocks...`
+                    }}
+                    <LoadingBar
+                        :show="true"
+                        :percentage="
+                            transparentSyncing
+                                ? transparentProgressSyncing
+                                : shieldPercentageSyncing
+                        "
+                        style="
+                            border: 1px solid #932ecd;
+                            border-radius: 4px;
+                            background-color: #2b003a;
+                        "
+                    ></LoadingBar>
+                </div>
             </div>
         </center>
         <center>
@@ -380,11 +566,12 @@ getEventEmitter().on(
                     color: #d3bee5;
                     width: 310px;
                     text-align: left;
+                    margin-bottom: 20px;
                 "
             >
                 <div
                     style="
-                        width: 38px;
+                        width: 48px;
                         height: 38px;
                         background-color: #310b51;
                         margin-right: 9px;
@@ -394,10 +581,10 @@ getEventEmitter().on(
                     <span
                         class="dcWallet-svgIconPurple"
                         style="margin-left: 1px; top: 14px; left: 7px"
-                        v-html="shieldLogo"
+                        v-html="iShieldLock"
                     ></span>
                 </div>
-                <div style="width: -webkit-fill-available">
+                <div style="width: 100%">
                     {{ txCreationStr }}
                     <LoadingBar
                         :show="true"
