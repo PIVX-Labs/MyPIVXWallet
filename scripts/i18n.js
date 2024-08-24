@@ -199,6 +199,7 @@ export const arrActiveLangs = [
     { code: 'cnr', display: 'Montenegrin', emoji: '🇲🇪' },
     { code: 'es-mx', display: 'Mexican Spanish', emoji: '🇲🇽' },
     { code: 'ph', display: 'Filipino', emoji: '🇵🇭' },
+    { code: 'hi', display: 'Hindi', emoji: '🇮🇳' },
     { code: 'uwu', display: 'UwU', emoji: '🐈' },
 ];
 
