@@ -8,8 +8,10 @@ import Masternode from '../masternode.js';
 import ProposalsTable from './ProposalsTable.vue';
 import Flipdown from './Flipdown.vue';
 import ProposalCreateModal from './ProposalCreateModal.vue';
+import MonthlyBudget from './MonthlyBudget.vue';
+import BudgetAllocated from './BudgetAllocated.vue';
 import { hasEncryptedWallet } from '../wallet';
-import { createAlert, sanitizeHTML } from '../misc';
+import { createAlert, sanitizeHTML, numberToCurrency } from '../misc';
 import { ALERTS, tr, translation } from '../i18n';
 import { storeToRefs } from 'pinia';
 import { useSettings } from '../composables/use_settings';
@@ -45,10 +47,12 @@ const allocatedBudget = computed(() => {
             p.MonthlyPayment * Number(proposalValidator.validate(p).passing),
         0
     );
- });
- // This updates the timestamp every block. Should be fine
- const flipdownTimeStamp = computed(() => Date.now() / 1000 + (nextSuperBlock.value - (blockCount.value)) * 60)
- watch(flipdownTimeStamp, console.log, {immediate: true})
+});
+// This updates the timestamp every block. Should be fine
+const flipdownTimeStamp = computed(
+    () => Date.now() / 1000 + (nextSuperBlock.value - blockCount.value) * 60
+);
+watch(flipdownTimeStamp, console.log, { immediate: true });
 // Each block update check if we have local proposals to update or finalize
 watch(blockCount, async () => {
     for (const proposal of localProposals.value) {
@@ -73,12 +77,6 @@ watch(blockCount, async () => {
         }
     }
 });
-
-function numberToCurrency(number, price) {
-    return (number * price).toLocaleString('en-gb', ',', '.', {
-        style: 'currency',
-    });
-}
 
 async function fetchProposals() {
     console.log('updating');
@@ -262,123 +260,13 @@ async function vote(hash, voteCode) {
         </div>
 
         <div class="row mb-5">
-            <div class="col-6 col-lg-3 text-center governBudgetCard">
-                <span
-                    data-i18n="govMonthlyBudget"
-                    style="font-weight: 400; color: #e9deff; font-size: 18px"
-                    >Monthly Budget</span
-                >
-
-                <div
-                    style="
-                        width: 180px;
-                        background-color: #3b1170;
-                        margin-top: 11px;
-                        border-radius: 9px;
-                        padding-left: 13px;
-                        padding-right: 13px;
-                        padding-bottom: 6px;
-                        padding-top: 4px;
-                    "
-                >
-                    <span style="font-size: 19px; color: #e9deff"
-                        ><span>
-                            {{
-                                (
-                                    cChainParams.current.maxPayment / COIN
-                                ).toLocaleString('en-gb', ',', '.')
-                            }}
-                            {{ ' ' }}
-                        </span>
-                        <span
-                            style="
-                                color: #9131ea;
-                                font-size: 16px;
-                                position: relative;
-                                top: 1px;
-                            "
-                            >{{ cChainParams.current.TICKER }}</span
-                        ></span
-                    >
-                    <hr
-                        style="
-                            border-top-width: 2px;
-                            background-color: #201431;
-                            margin-top: 5px;
-                            margin-bottom: -2px;
-                            margin-left: -13px;
-                            margin-right: -13px;
-                        "
-                    />
-                    <span style="font-size: 12px; color: #af9cc6"
-                        ><span>
-                            {{
-                                numberToCurrency(
-                                    cChainParams.current.maxPayment / COIN,
-                                    price
-                                )
-                            }}
-                            {{ ' ' }}
-                        </span>
-                        <span style="color: #7c1dea"
-                            >{{ strCurrency.toUpperCase() }}
-                        </span>
-                    </span>
-                </div>
-            </div>
+            <MonthlyBudget :price="price" :currency="strCurrency" />
             <div class="col-6 col-lg-3 text-center governBudgetCard for-mobile">
-                <span
-                    data-i18n="govAllocBudget"
-                    style="font-weight: 400; color: #e9deff; font-size: 18px"
-                    >Budget Allocated</span
-                >
-
-                <div
-                    style="
-                        width: 180px;
-                        background-color: #3b1170;
-                        margin-top: 11px;
-                        border-radius: 9px;
-                        padding-left: 13px;
-                        padding-right: 13px;
-                        padding-bottom: 6px;
-                        padding-top: 4px;
-                    "
-                >
-                    <span style="font-size: 19px; color: #e9deff"
-                        ><span id="allocatedGovernanceBudget"> </span>
-                        <span
-                            style="
-                                color: #9131ea;
-                                font-size: 16px;
-                                position: relative;
-                                top: 1px;
-                            "
-                            >PIV</span
-                        ></span
-                    >
-                    <hr
-                        style="
-                            border-top-width: 2px;
-                            background-color: #201431;
-                            margin-top: 5px;
-                            margin-bottom: -2px;
-                            margin-left: -13px;
-                            margin-right: -13px;
-                        "
-                    />
-                    <span style="font-size: 12px; color: #af9cc6">
-                        <span>
-                            {{
-                                allocatedBudget.toLocaleString(
-                                    'en-gb',
-                                    ',',
-                                    '.'
-                                ) + ' '
-                            }}</span
-                        >
-                    </span>
-                </div>
+                <BudgetAllocated
+                    :currency="strCurrency"
+                    :price="price"
+                    :allocatedBudget="allocatedBudget"
+                />
             </div>
             <div
                 class="col-12 col-lg-6 text-center governPayoutTime for-desktopTime"
@@ -393,59 +281,11 @@ async function vote(hash, voteCode) {
             <div
                 class="col-12 col-lg-3 text-center governBudgetCard for-desktop"
             >
-                <span
-                    data-i18n="govAllocBudget"
-                    style="font-weight: 400; color: #e9deff; font-size: 18px"
-                    >Budget Allocated</span
-                >
-
-                <div
-                    style="
-                        width: 180px;
-                        background-color: #3b1170;
-                        margin-top: 11px;
-                        border-radius: 9px;
-                        padding-left: 13px;
-                        padding-right: 13px;
-                        padding-bottom: 6px;
-                        padding-top: 4px;
-                    "
-                >
-                    <span style="font-size: 19px; color: #e9deff"
-                        ><span id="allocatedGovernanceBudget2">{{
-                            allocatedBudget.toLocaleString('en-gb', ',', '.') +
-                            ' '
-                        }}</span>
-                        <span
-                            style="
-                                color: #9131ea;
-                                font-size: 16px;
-                                position: relative;
-                                top: 1px;
-                            "
-                            >PIV</span
-                        ></span
-                    >
-                    <hr
-                        style="
-                            border-top-width: 2px;
-                            background-color: #201431;
-                            margin-top: 5px;
-                            margin-bottom: -2px;
-                            margin-left: -13px;
-                            margin-right: -13px;
-                        "
-                    />
-                    <span style="font-size: 12px; color: #af9cc6"
-                        ><span id="allocatedGovernanceBudgetValue2">{{
-                            numberToCurrency(allocatedBudget, price)
-                        }}</span>
-                        {{ ' ' }}
-                        <span style="color: #7c1dea"
-                            >{{ strCurrency.toUpperCase() }}
-                        </span>
-                    </span>
-                </div>
+                <BudgetAllocated
+                    :currency="strCurrency"
+                    :price="price"
+                    :allocatedBudget="allocatedBudget"
+                />
             </div>
         </div>
 

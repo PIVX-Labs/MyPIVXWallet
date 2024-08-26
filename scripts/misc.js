@@ -495,3 +495,9 @@ export function parseIpAddress(ip) {
     // If we haven't returned yet, the address was invalid.
     return null;
 }
+
+export function numberToCurrency(number, price) {
+    return (number * price).toLocaleString('en-gb', ',', '.', {
+        style: 'currency',
+    });
+}
