@@ -3,10 +3,9 @@ import { ALERTS, start as i18nStart, translation } from './i18n.js';
 import { wallet, hasEncryptedWallet, Wallet } from './wallet.js';
 import { getNetwork } from './network.js';
 import { start as settingsStart, cExplorer, strCurrency } from './settings.js';
-import { createAlert, confirmPopup, sanitizeHTML } from './misc.js';
+import { createAlert, sanitizeHTML } from './misc.js';
 import { registerWorker } from './native.js';
 import { getEventEmitter } from './event_bus.js';
-import { Database } from './database.js';
 import { checkForUpgrades } from './changelog.js';
 import { createApp } from 'vue';
 import Dashboard from './dashboard/Dashboard.vue';
@@ -63,53 +62,6 @@ export async function start() {
             'walletBreakdownLegend'
         ),
         domGenHardwareWallet: document.getElementById('generateHardwareWallet'),
-        //GOVERNANCE ELEMENTS
-        domGovTab: document.getElementById('governanceTab'),
-        domGovProposalsTable: document.getElementById('proposalsTable'),
-        domGovProposalsTableBody: document.getElementById('proposalsTableBody'),
-        domTotalGovernanceBudget: document.getElementById(
-            'totalGovernanceBudget'
-        ),
-        domTotalGovernanceBudgetValue: document.getElementById(
-            'totalGovernanceBudgetValue'
-        ),
-        domAllocatedGovernanceBudget: document.getElementById(
-            'allocatedGovernanceBudget'
-        ),
-        domAllocatedGovernanceBudgetValue: document.getElementById(
-            'allocatedGovernanceBudgetValue'
-        ),
-        domAllocatedGovernanceBudget2: document.getElementById(
-            'allocatedGovernanceBudget2'
-        ),
-        domAllocatedGovernanceBudgetValue2: document.getElementById(
-            'allocatedGovernanceBudgetValue2'
-        ),
-        domGovProposalsContestedTable: document.getElementById(
-            'proposalsContestedTable'
-        ),
-        domGovProposalsContestedTableBody: document.getElementById(
-            'proposalsContestedTableBody'
-        ),
-        //MASTERNODE ELEMENTS
-        domCreateMasternode: document.getElementById('createMasternode'),
-        domControlMasternode: document.getElementById('controlMasternode'),
-        domAccessMasternode: document.getElementById('accessMasternode'),
-        domMnAccessMasternodeText: document.getElementById(
-            'accessMasternodeText'
-        ),
-        domMnCreateType: document.getElementById('mnCreateType'),
-        domMnTextErrors: document.getElementById('mnTextErrors'),
-        domMnIP: document.getElementById('mnIP'),
-        domMnTxId: document.getElementById('mnTxId'),
-        domMnPrivateKey: document.getElementById('mnPrivateKey'),
-        domMnDashboard: document.getElementById('mnDashboard'),
-        domMnProtocol: document.getElementById('mnProtocol'),
-        domMnStatus: document.getElementById('mnStatus'),
-        domMnNetType: document.getElementById('mnNetType'),
-        domMnNetIP: document.getElementById('mnNetIP'),
-        domMnLastSeen: document.getElementById('mnLastSeen'),
-
         domEncryptWalletLabel: document.getElementById('encryptWalletLabel'),
         domEncryptPasswordCurrent: document.getElementById(
             'changePassword-current'
@@ -160,11 +112,6 @@ export async function start() {
         domConfirmModalCancelButton: document.getElementById(
             'confirmModalCancelButton'
         ),
-
-        masternodeLegacyAccessText:
-            'Access the masternode linked to this addresss<br> Note: the masternode MUST have been already created (however it can be online or offline)<br>  If you want to create a new masternode access with a HD wallet',
-        masternodeHDAccessText:
-            "Access your masternodes if you have any! If you don't you can create one",
         // Aggregate menu screens and links for faster switching
         arrDomScreens: document.getElementsByClassName('tabcontent'),
         arrDomScreenLinks: document.getElementsByClassName('tablinks'),
@@ -191,7 +138,6 @@ export async function start() {
         domWalletSettingsBtn: document.getElementById('settingsWalletBtn'),
         domDisplaySettingsBtn: document.getElementById('settingsDisplayBtn'),
         domVersion: document.getElementById('version'),
-        domFlipdown: document.getElementById('flipdown'),
         domTestnetToggler: document.getElementById('testnetToggler'),
         domAdvancedModeToggler: document.getElementById('advancedModeToggler'),
         domAutoLockModeToggler: document.getElementById('autoLockModeToggler'),
@@ -447,42 +393,6 @@ export function toClipboard(source, caller) {
         caller.innerHTML = pIconCopy;
         caller.style.cursor = 'pointer';
     }, 1000);
-}
-
-export async function govVote(hash, voteCode) {
-    if (
-        (await confirmPopup({
-            title: ALERTS.CONFIRM_POPUP_VOTE,
-            html: ALERTS.CONFIRM_POPUP_VOTE_HTML,
-        })) == true
-    ) {
-        const database = await Database.getInstance();
-        const cMasternode = await database.getMasternode();
-        if (cMasternode) {
-            if ((await cMasternode.getStatus()) !== 'ENABLED') {
-                createAlert('warning', ALERTS.MN_NOT_ENABLED, 6000);
-                return;
-            }
-            const result = await cMasternode.vote(hash.toString(), voteCode); //1 yes 2 no
-            if (result.includes('Voted successfully')) {
-                //good vote
-                cMasternode.storeVote(hash.toString(), voteCode);
-                createAlert('success', ALERTS.VOTE_SUBMITTED, 6000);
-            } else if (result.includes('Error voting :')) {
-                //If you already voted return an alert
-                createAlert('warning', ALERTS.VOTED_ALREADY, 6000);
-            } else if (result.includes('Failure to verify signature.')) {
-                //wrong masternode private key
-                createAlert('warning', ALERTS.VOTE_SIG_BAD, 6000);
-            } else {
-                //this could be everything
-                console.error(result);
-                createAlert('warning', ALERTS.INTERNAL_ERROR, 6000);
-            }
-        } else {
-            createAlert('warning', ALERTS.MN_ACCESS_BEFORE_VOTE, 6000);
-        }
-    }
 }
 
 export async function accessOrImportWallet() {
