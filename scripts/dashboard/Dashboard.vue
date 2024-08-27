@@ -40,6 +40,7 @@ import pShieldLogo from '../../assets/icons/icon_shield_pivx.svg';
 import pIconCamera from '../../assets/icons/icon-camera.svg';
 import { ParsedSecret } from '../parsed_secret.js';
 import { storeToRefs } from 'pinia';
+import { Account } from '../accounts';
 
 const wallet = useWallet();
 const activity = ref(null);
@@ -88,7 +89,11 @@ async function importWallet({ type, secret, password = '' }) {
             createAlert('warning', ALERTS.WALLET_FIREFOX_UNSUPPORTED, 7500);
             return false;
         }
-        parsedSecret = new ParsedSecret(await HardwareWalletMasterKey.create());
+        parsedSecret = new ParsedSecret(
+            secret
+                ? HardwareWalletMasterKey.fromXPub(secret)
+                : await HardwareWalletMasterKey.create()
+        );
 
         createAlert(
             'info',
@@ -110,6 +115,19 @@ async function importWallet({ type, secret, password = '' }) {
         jdenticonValue.value = wallet.getAddress();
 
         if (needsToEncrypt.value) showEncryptModal.value = true;
+        if (wallet.isHardwareWallet) {
+            // Save the xpub without needing encryption if it's ledger
+            const database = await Database.getInstance();
+            const account = new Account({
+                publicKey: wallet.getKeyToExport(),
+                isHardware: true,
+            });
+            if (await database.getAccount()) {
+                await database.updateAccount(account);
+            } else {
+                await database.addAccount(account);
+            }
+        }
 
         // Start syncing in the background
         wallet.sync().then(() => {
@@ -359,28 +377,31 @@ function getMaxBalance(useShieldInputs) {
     transferAmount.value = (coinSatoshi / COIN).toString();
 }
 
-getEventEmitter().on('toggle-network', async () => {
+async function importFromDatabase() {
     const database = await Database.getInstance();
     const account = await database.getAccount();
     await wallet.setMasterKey({ mk: null });
     activity.value?.reset();
-
-    if (wallet.isEncrypted) {
+    if (account?.isHardware) {
+        await importWallet({ type: 'hardware', secret: account.publicKey });
+    } else if (wallet.isEncrypted) {
         await importWallet({ type: 'hd', secret: account.publicKey });
     }
+
     updateLogOutButton();
+}
+
+getEventEmitter().on('toggle-network', async () => {
+    importFromDatabase();
     // TODO: When tab component is written, simply emit an event
     doms.domDashboard.click();
 });
 
 onMounted(async () => {
     await start();
+    await importFromDatabase();
 
     if (wallet.isEncrypted) {
-        const database = await Database.getInstance();
-        const { publicKey } = await database.getAccount();
-        await importWallet({ type: 'hd', secret: publicKey });
-
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.has('addcontact')) {
             await handleContactRequest(urlParams);
