@@ -56,7 +56,6 @@ const { advancedMode, displayDecimals, autoLockWallet } = useSettings();
 const showExportModal = ref(false);
 const showEncryptModal = ref(false);
 const keyToBackup = ref('');
-const jdenticonValue = ref('');
 const transferAddress = ref('');
 const transferDescription = ref('');
 const transferAmount = ref('');
@@ -111,7 +110,6 @@ async function importWallet({ type, secret, password = '' }) {
     if (parsedSecret) {
         await wallet.setMasterKey({ mk: parsedSecret.masterKey });
         wallet.setShield(parsedSecret.shield);
-        jdenticonValue.value = wallet.getAddress();
 
         if (needsToEncrypt.value) showEncryptModal.value = true;
 
@@ -874,7 +872,6 @@ defineExpose({
                         :shieldBalance="shieldBalance"
                         :pendingShieldBalance="pendingShieldBalance"
                         :immatureBalance="immatureBalance"
-                        :jdenticonValue="jdenticonValue"
                         :isHdWallet="wallet.isHD"
                         :isViewOnly="wallet.isViewOnly"
                         :isEncrypted="wallet.isEncrypted"

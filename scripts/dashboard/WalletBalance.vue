@@ -4,7 +4,6 @@ import { tr, translation } from '../i18n';
 import { ref, computed, toRefs, onMounted, watch } from 'vue';
 import { beautifyNumber } from '../misc';
 import { getEventEmitter } from '../event_bus';
-import * as jdenticon from 'jdenticon';
 import { optimiseCurrencyLocale, openExplorer } from '../global';
 import { renderWalletBreakdown } from '../charting.js';
 import {
@@ -28,7 +27,6 @@ import pShieldCheck from '../../assets/icons/icon-shield-check.svg';
 import pRefresh from '../../assets/icons/icon-refresh.svg';
 
 const props = defineProps({
-    jdenticonValue: String,
     balance: Number,
     shieldBalance: Number,
     pendingShieldBalance: Number,
@@ -46,7 +44,6 @@ const props = defineProps({
     publicMode: Boolean,
 });
 const {
-    jdenticonValue,
     balance,
     shieldBalance,
     pendingShieldBalance,

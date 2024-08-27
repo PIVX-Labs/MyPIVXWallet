@@ -1,6 +1,4 @@
 <script setup>
-import { toRefs, onMounted, watch } from 'vue';
-import * as jdenticon from 'jdenticon';
 import { renderWalletBreakdown } from '../charting.js';
 import { openExplorer } from '../global';
 import { guiRenderContacts } from '../contacts-book';
@@ -12,24 +10,6 @@ import pGift from '../../assets/icons/icon-gift.svg';
 import { useWallet } from '../composables/use_wallet.js';
 
 const wallet = useWallet();
-
-const props = defineProps({
-    jdenticonValue: String,
-});
-const { jdenticonValue } = toRefs(props);
-
-onMounted(() => {
-    jdenticon.configure();
-    watch(
-        jdenticonValue,
-        () => {
-            jdenticon.update('#identicon', jdenticonValue.value);
-        },
-        {
-            immediate: true,
-        }
-    );
-});
 </script>
 
 <template>
