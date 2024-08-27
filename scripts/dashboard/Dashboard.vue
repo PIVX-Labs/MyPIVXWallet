@@ -57,7 +57,6 @@ const { advancedMode, displayDecimals, autoLockWallet } = useSettings();
 const showExportModal = ref(false);
 const showEncryptModal = ref(false);
 const keyToBackup = ref('');
-const jdenticonValue = ref('');
 const transferAddress = ref('');
 const transferDescription = ref('');
 const transferAmount = ref('');
@@ -85,8 +84,12 @@ async function importWallet({ type, secret, password = '' }) {
      */
     let parsedSecret;
     if (type === 'hardware') {
-        if (navigator.userAgent.includes('Firefox')) {
-            createAlert('warning', ALERTS.WALLET_FIREFOX_UNSUPPORTED, 7500);
+        if (!navigator.usb) {
+            createAlert(
+                'warning',
+                ALERTS.WALLET_HARDWARE_USB_UNSUPPORTED,
+                7500
+            );
             return false;
         }
         parsedSecret = new ParsedSecret(
@@ -112,7 +115,6 @@ async function importWallet({ type, secret, password = '' }) {
     if (parsedSecret) {
         await wallet.setMasterKey({ mk: parsedSecret.masterKey });
         wallet.setShield(parsedSecret.shield);
-        jdenticonValue.value = wallet.getAddress();
 
         if (needsToEncrypt.value) showEncryptModal.value = true;
         if (wallet.isHardwareWallet) {
@@ -411,6 +413,13 @@ onMounted(async () => {
             transferAmount.value = parseFloat(urlParams.get('amount')) ?? 0;
             showTransferMenu.value = true;
         }
+
+        // Remove any URL 'commands' after running, so that they don't re-run if a user refreshes
+        window.history.replaceState(
+            {},
+            document.title,
+            window.location.pathname
+        );
     }
     updateLogOutButton();
 });
@@ -455,7 +464,8 @@ async function openSendQRScanner() {
             return;
         }
         if (data.includes('addcontact=')) {
-            const urlParams = new URLSearchParams(data);
+            const strParams = data.substring(data.indexOf('addcontact='));
+            const urlParams = new URLSearchParams(strParams);
             await handleContactRequest(urlParams);
             return;
         }
@@ -883,7 +893,6 @@ defineExpose({
                         :shieldBalance="shieldBalance"
                         :pendingShieldBalance="pendingShieldBalance"
                         :immatureBalance="immatureBalance"
-                        :jdenticonValue="jdenticonValue"
                         :isHdWallet="wallet.isHD"
                         :isViewOnly="wallet.isViewOnly"
                         :isEncrypted="wallet.isEncrypted"

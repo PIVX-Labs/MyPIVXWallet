@@ -400,7 +400,7 @@ export class Wallet {
     }
 
     /**
-     * @returns {Promsie<string>} new shield address
+     * @returns {Promise<string>} new shield address
      */
     async getNewShieldAddress() {
         return await this.#shield.getNewAddress();

@@ -3993,7 +3993,11 @@ textarea::placeholder {
     border-radius: 7px;
     border: 1px solid #af9cc6;
     padding: 7px 10px;
-    display:block;
+    display: block;
+    /* Allow addresses to nicely cut-off to encourage Clipboard usage */
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
 }
 
 .mnTopConfigured {

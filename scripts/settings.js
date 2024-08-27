@@ -459,13 +459,10 @@ async function setAnalytics(level, fSilent = false) {
     for (i; i < cAnalyticsLevel.stats.length; i++) {
         const cStat = cAnalyticsLevel.stats[i];
         // This formats Stat keys into { $key $(padding) $description }
-        strDesc +=
-            cStatKeys
-                .find((a) => STATS[a] === cStat)
-                .padEnd(nLongestKeyLen, ' ') +
-            ': ' +
-            cStat +
-            '<br>';
+        const key = cStatKeys.find((a) => STATS[a] === cStat);
+        if (key) {
+            strDesc += key.padEnd(nLongestKeyLen, ' ') + ': ' + cStat + '<br>';
+        }
     }
 
     // Set display + notify if allowed
