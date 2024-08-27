@@ -37,6 +37,19 @@ async function generateWallet() {
     mnemonic.value = '';
     passphrase.value = '';
 }
+
+const current_password_visibility = ref('password');
+const current_password_visibility_icon = ref('fa-solid fa-eye-slash');
+function toggleCurrentPasswordVisibility() {
+    const fVisible = current_password_visibility.value === 'text';
+
+    // Toggle the password visibility
+    current_password_visibility.value = fVisible ? 'password' : 'text';
+
+    // Toggle the 'eye' icon to open/closed
+    const strIcon = fVisible ? 'eye-slash' : 'eye';
+    current_password_visibility_icon.value = 'fa-solid fa-' + strIcon;
+}
 </script>
 
 <template>
@@ -91,12 +104,23 @@ async function generateWallet() {
                     <div v-if="advancedMode">
                         <br />
                         <input
-                            class="center-text"
-                            type="password"
+                            class="center-text textboxTransparency"
+                            :type="current_password_visibility"
                             :placeholder="translation.optionalPassphrase"
                             v-model="passphrase"
+                            style="
+                                width: 85%;
+                                font-family: monospace;
+                                border-top-right-radius: 0;
+                                border-bottom-right-radius: 0;
+                            "
                             data-testid="passPhrase"
-                        />
+                        /><span
+                            @click="toggleCurrentPasswordVisibility()"
+                            class="input-group-toggle input-group-text p-0"
+                        >
+                            <i :class="current_password_visibility_icon"></i>
+                        </span>
                     </div>
                 </div>
             </template>

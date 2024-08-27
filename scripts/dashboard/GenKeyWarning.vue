@@ -26,6 +26,32 @@ function close() {
     emit('close');
 }
 
+const current_password_visibility = ref('password');
+const current_password_visibility_icon = ref('fa-solid fa-eye-slash');
+function toggleCurrentPasswordVisibility() {
+    const fVisible = current_password_visibility.value === 'text';
+
+    // Toggle the password visibility
+    current_password_visibility.value = fVisible ? 'password' : 'text';
+
+    // Toggle the 'eye' icon to open/closed
+    const strIcon = fVisible ? 'eye-slash' : 'eye';
+    current_password_visibility_icon.value = 'fa-solid fa-' + strIcon;
+}
+
+const new_password_visibility = ref('password');
+const new_password_visibility_icon = ref('fa-solid fa-eye-slash');
+function toggleNewPasswordVisibility() {
+    const fVisible = new_password_visibility.value === 'text';
+
+    // Toggle the password visibility
+    new_password_visibility.value = fVisible ? 'password' : 'text';
+
+    // Toggle the 'eye' icon to open/closed
+    const strIcon = fVisible ? 'eye-slash' : 'eye';
+    new_password_visibility_icon.value = 'fa-solid fa-' + strIcon;
+}
+
 /**
  * Perform basic checks, then emit the event to our parent
  */
@@ -90,35 +116,56 @@ function submit() {
                 </h5>
             </template>
             <template #body>
+                <div v-show="isEncrypt">
+                    <input
+                        class="center-text textboxTransparency"
+                        data-i18n="encryptPasswordCurrent"
+                        v-model="currentPassword"
+                        style="
+                            width: 85%;
+                            font-family: monospace;
+                            border-top-right-radius: 0;
+                            border-bottom-right-radius: 0;
+                        "
+                        :type="current_password_visibility"
+                        :placeholder="translation.encryptPasswordCurrent"
+                        data-testid="currentPasswordModal"
+                    /><span
+                        @click="toggleCurrentPasswordVisibility()"
+                        class="input-group-toggle input-group-text p-0"
+                    >
+                        <i :class="current_password_visibility_icon"></i>
+                    </span>
+                </div>
                 <input
-                    class="center-text textboxTransparency passwordTxtbox"
-                    data-i18n="encryptPasswordCurrent"
-                    v-model="currentPassword"
-                    style="width: 100%; font-family: monospace"
-                    type="password"
-                    :placeholder="translation.encryptPasswordCurrent"
-                    v-show="isEncrypt"
-                    data-testid="currentPasswordModal"
-                />
-                <input
-                    class="center-text textboxTransparency passwordTxtbox"
+                    class="center-text textboxTransparency"
                     v-model="password"
                     data-i18n="encryptPasswordFirst"
-                    style="width: 100%; font-family: monospace"
-                    type="password"
+                    style="
+                        width: 85%;
+                        font-family: monospace;
+                        border-top-right-radius: 0;
+                        border-bottom-right-radius: 0;
+                    "
+                    :type="new_password_visibility"
                     :placeholder="translation.encryptPasswordFirst"
                     data-testid="newPasswordModal"
-                />
+                /><span
+                    @click="toggleNewPasswordVisibility()"
+                    class="input-group-toggle input-group-text p-0"
+                >
+                    <i :class="new_password_visibility_icon"></i>
+                </span>
                 <input
-                    class="center-text textboxTransparency passwordTxtbox"
+                    class="center-text textboxTransparency"
                     v-model="passwordConfirm"
                     data-i18n="encryptPasswordSecond"
                     style="
-                        width: 100%;
+                        width: 95%;
                         font-family: monospace;
                         margin-bottom: 0px;
                     "
-                    type="password"
+                    :type="new_password_visibility"
                     :placeholder="translation.encryptPasswordSecond"
                     data-testid="confirmPasswordModal"
                 />
