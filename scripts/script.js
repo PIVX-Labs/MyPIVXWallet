@@ -191,7 +191,7 @@ export function isP2PKH(dataBytes) {
 
 /**
  * Is a given script pay to cold stake?
- * @param {Uint8Array} dataBytes - script as byte aray
+ * @param {Uint8Array} dataBytes - script as byte array
  * @returns {Boolean} True if the given script is P2CS
  */
 export function isP2CS(dataBytes) {
@@ -211,17 +211,37 @@ export function isP2CS(dataBytes) {
         dataBytes[50] == OP['CHECKSIG']
     );
 }
+
+/**
+ * @param {Uint8Array} dataBytes - script as byte array
+ * @returns {boolean} true if the script is p2exc, false otherwise
+ */
+export function isP2EXC(dataBytes) {
+    return (
+        dataBytes.length >= 26 &&
+        dataBytes[0] == OP['EXCHANGEADDR'] &&
+        dataBytes[1] == OP['DUP'] &&
+        dataBytes[2] == OP['HASH160'] &&
+        dataBytes[3] == 0x14 &&
+        dataBytes[24] == OP['EQUALVERIFY'] &&
+        dataBytes[25] == OP['CHECKSIG']
+    );
+}
 /**
  * Get address from the corresponding public key hash
  * @param {Uint8Array} pkhBytes - public key hash
- * @param isColdStake true if the hash corresponds to a cold stake owner address
+ * @param {'pubkeyhash'|'coldaddress'|'exchangeaddress'} type - Type of hash
  * @return {String} Base58 encoded address
  */
-export function getAddressFromHash(pkhBytes, isColdStake) {
-    const prefix = isColdStake
-        ? cChainParams.current.STAKING_ADDRESS
-        : cChainParams.current.PUBKEY_ADDRESS;
-    const buffer = new Uint8Array([prefix, ...pkhBytes]);
+export function getAddressFromHash(pkhBytes, type = 'pubkeyhash') {
+    const prefixes = {
+        pubkeyhash: cChainParams.current.PUBKEY_ADDRESS,
+        coldaddress: cChainParams.current.STAKING_ADDRESS,
+        exchangeaddress: cChainParams.current.EXCHANGE_ADDRESS_PREFIX,
+    };
+    const prefix = prefixes[type];
+    if (!prefix) throw new Error('invalid prefix');
+    const buffer = new Uint8Array([...prefix, ...pkhBytes]);
     const checksum = dSHA256(buffer);
     return bs58.encode([
         ...Array.from(buffer),

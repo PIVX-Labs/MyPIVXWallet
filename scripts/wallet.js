@@ -20,10 +20,10 @@ import { strHardwareName } from './ledger.js';
 import { OutpointState, Mempool } from './mempool.js';
 import { getEventEmitter } from './event_bus.js';
 import { lockableFunction } from './lock.js';
-
 import {
     isP2CS,
     isP2PKH,
+    isP2EXC,
     getAddressFromHash,
     COLD_START_INDEX,
     P2PK_START_INDEX,
@@ -418,8 +418,7 @@ export class Wallet {
         const dataBytes = hexToBytes(vout.script);
         const iStart = isP2PKH(dataBytes) ? P2PK_START_INDEX : COLD_START_INDEX;
         const address = this.getAddressFromHashCache(
-            bytesToHex(dataBytes.slice(iStart, iStart + 20)),
-            false
+            bytesToHex(dataBytes.slice(iStart, iStart + 20))
         );
         const path = this.isOwnAddress(address);
         if (path) {
@@ -511,8 +510,7 @@ export class Wallet {
         // At the moment we support only P2PKH and P2CS
         const iStart = isP2PKH(dataBytes) ? P2PK_START_INDEX : COLD_START_INDEX;
         const address = this.getAddressFromHashCache(
-            bytesToHex(dataBytes.slice(iStart, iStart + 20)),
-            false
+            bytesToHex(dataBytes.slice(iStart, iStart + 20))
         );
         return this.isOwnAddress(address);
     }
@@ -545,8 +543,7 @@ export class Wallet {
             const address = this.getAddressFromHashCache(
                 bytesToHex(
                     dataBytes.slice(P2PK_START_INDEX, P2PK_START_INDEX + 20)
-                ),
-                false
+                )
             );
             return {
                 type: 'p2pkh',
@@ -560,21 +557,37 @@ export class Wallet {
                     this.getAddressFromHashCache(
                         bytesToHex(dataBytes.slice(iStart, iStart + 20)),
                         iStart === OWNER_START_INDEX
+                            ? 'coldaddress'
+                            : 'pubkeyhash'
                     )
                 );
             }
             return { type: 'p2cs', addresses };
+        } else if (isP2EXC(dataBytes)) {
+            const address = this.getAddressFromHashCache(
+                bytesToHex(
+                    dataBytes.slice(
+                        P2PK_START_INDEX + 1,
+                        P2PK_START_INDEX + 20 + 1
+                    )
+                ),
+                'exchangeaddress'
+            );
+            return {
+                type: 'exchange',
+                addresses: [address],
+            };
         } else {
             return { type: 'unknown', addresses: [] };
         }
     }
 
     // Avoid calculating over and over the same getAddressFromHash by saving the result in a map
-    getAddressFromHashCache(pkh_hex, isColdStake) {
+    getAddressFromHashCache(pkh_hex, type) {
         if (!this.#knownPKH.has(pkh_hex)) {
             this.#knownPKH.set(
                 pkh_hex,
-                getAddressFromHash(hexToBytes(pkh_hex), isColdStake)
+                getAddressFromHash(hexToBytes(pkh_hex), type)
             );
         }
         return this.#knownPKH.get(pkh_hex);
