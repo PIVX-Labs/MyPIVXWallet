@@ -40,7 +40,11 @@ watch(password, (newVal) => {
             v-model="password"
             :placeholder="translation.walletPassword"
             class="center-text textboxTransparency"
-            :style="`${show_toggle ? 'width: 85%; border-top-right-radius: 0; border-bottom-right-radius: 0;' : 'width: 100%;'} font-family: monospace;`"
+            :style="`${
+                show_toggle
+                    ? 'width: 85%; border-top-right-radius: 0; border-bottom-right-radius: 0;'
+                    : 'width: 100%;'
+            } font-family: monospace;`"
         />
         <span
             v-if="show_toggle"
