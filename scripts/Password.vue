@@ -1,11 +1,14 @@
 <script setup>
 import { translation } from './i18n.js';
-import { ref, defineProps, watch } from 'vue';
+import { ref, watch } from 'vue';
 
 const emit = defineEmits(['update:modelValue']);
 
 const password = defineModel('password', {
     default: '',
+});
+const show_toggle = defineModel('show_toggle', {
+    default: true,
 });
 const passwordInput = ref(null);
 const password_visibility = ref('password');
@@ -37,14 +40,10 @@ watch(password, (newVal) => {
             v-model="password"
             :placeholder="translation.walletPassword"
             class="center-text textboxTransparency"
-            style="
-                width: 85%;
-                font-family: monospace;
-                border-top-right-radius: 0;
-                border-bottom-right-radius: 0;
-            "
+            :style="`${show_toggle ? 'width: 85%; border-top-right-radius: 0; border-bottom-right-radius: 0;' : 'width: 100%;'} font-family: monospace;`"
         />
         <span
+            v-if="show_toggle"
             @click="togglePasswordVisibility()"
             class="input-group-toggle input-group-text p-0"
             style="height: 100%"
