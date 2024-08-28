@@ -7,6 +7,7 @@ const emit = defineEmits(['update:modelValue']);
 const password = defineModel('password', {
     default: '',
 });
+const passwordInput = ref(null);
 const password_visibility = ref('password');
 const password_visibility_icon = ref('fa-solid fa-eye-slash');
 
@@ -16,6 +17,12 @@ function togglePasswordVisibility() {
     const strIcon = fVisible ? 'eye-slash' : 'eye';
     password_visibility_icon.value = 'fa-solid fa-' + strIcon;
 }
+
+function focus() {
+    passwordInput?.value?.focus();
+}
+
+defineExpose({ focus });
 
 watch(password, (newVal) => {
     emit('update:modelValue', newVal);
