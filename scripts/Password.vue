@@ -2,10 +2,11 @@
 import { translation } from './i18n.js';
 import { ref, defineProps, watch } from 'vue';
 
-const props = defineProps(['password']);
 const emit = defineEmits(['update:modelValue']);
 
-const password = ref('');
+const password = defineModel('password', {
+    default: '',
+});
 const password_visibility = ref('password');
 const password_visibility_icon = ref('fa-solid fa-eye-slash');
 
