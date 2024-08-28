@@ -1,6 +1,7 @@
 <script setup>
 import { nextTick, ref, toRefs, watch } from 'vue';
 import Modal from '../Modal.vue';
+import Password from '../Password.vue';
 import { ALERTS, translation } from '../i18n.js';
 import { Database } from '../database.js';
 import { decrypt } from '../aes-gcm';
@@ -38,19 +39,6 @@ function close() {
     emit('close');
     password.value = '';
 }
-
-const password_visibility = ref('password');
-const password_visibility_icon = ref('fa-solid fa-eye-slash');
-function togglePasswordVisibility() {
-    const fVisible = password_visibility.value === 'text';
-
-    // Toggle the password visibility
-    password_visibility.value = fVisible ? 'password' : 'text';
-
-    // Toggle the 'eye' icon to open/closed
-    const strIcon = fVisible ? 'eye-slash' : 'eye';
-    password_visibility_icon.value = 'fa-solid fa-' + strIcon;
-}
 </script>
 <template>
     <Teleport to="body">
@@ -66,23 +54,7 @@ function togglePasswordVisibility() {
 
             <template #body>
                 <p style="opacity: 0.75" v-if="!!reason">{{ reason }}</p>
-                <input
-                    :type="password_visibility"
-                    ref="passwordInput"
-                    v-model="password"
-                    :placeholder="translation.walletPassword"
-                    style="
-                        text-align: center;
-                        width: 80%;
-                        border-top-right-radius: 0;
-                        border-bottom-right-radius: 0;
-                    "
-                /><span
-                    @click="togglePasswordVisibility()"
-                    class="input-group-toggle input-group-text p-0"
-                >
-                    <i :class="password_visibility_icon"></i>
-                </span>
+                <Password v-model="password" />
             </template>
             <template #footer>
                 <button
