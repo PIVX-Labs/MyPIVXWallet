@@ -10,16 +10,10 @@ const password = defineModel('password', {
 const show_toggle = defineModel('show_toggle', {
     default: true,
 });
+const is_visible = defineModel('is_visible', {
+    default: false,
+});
 const passwordInput = ref(null);
-const password_visibility = ref('password');
-const password_visibility_icon = ref('fa-solid fa-eye-slash');
-
-function togglePasswordVisibility() {
-    const fVisible = password_visibility.value === 'text';
-    password_visibility.value = fVisible ? 'password' : 'text';
-    const strIcon = fVisible ? 'eye-slash' : 'eye';
-    password_visibility_icon.value = 'fa-solid fa-' + strIcon;
-}
 
 function focus() {
     passwordInput?.value?.focus();
@@ -35,7 +29,7 @@ watch(password, (newVal) => {
 <template>
     <div class="input-group">
         <input
-            :type="password_visibility"
+            :type="is_visible ? 'text' : 'password'"
             ref="passwordInput"
             v-model="password"
             :placeholder="translation.walletPassword"
@@ -48,11 +42,11 @@ watch(password, (newVal) => {
         />
         <span
             v-if="show_toggle"
-            @click="togglePasswordVisibility()"
+            @click="is_visible = !is_visible"
             class="input-group-toggle input-group-text p-0"
             style="height: 100%"
         >
-            <i :class="password_visibility_icon"></i>
+            <i :class="'fa-solid fa-' + (is_visible ? 'eye' : 'eye-slash')"></i>
         </span>
     </div>
 </template>
