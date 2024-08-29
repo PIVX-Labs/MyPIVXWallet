@@ -1,4 +1,4 @@
-import { cChainParams } from '../chain_params.js';
+import { cChainParams, COIN } from '../chain_params.js';
 
 /**
  * @enum {number}
@@ -36,7 +36,7 @@ export class ProposalValidator {
             return { passing: false, reason: reasons.TOO_YOUNG };
         } else if (
             this.#allocatedBudget + proposal.MonthlyPayment >
-            cChainParams.current.maxPayment
+            cChainParams.current.maxPayment / COIN
         ) {
             return { passing: false, reason: reasons.OVER_BUDGET };
         } else {
