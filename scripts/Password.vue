@@ -4,11 +4,15 @@ import { ref, watch } from 'vue';
 
 const emit = defineEmits(['update:modelValue']);
 
+const props = defineProps({
+  show_toggle: {
+    type: Boolean,
+    default: true
+  }
+});
+
 const password = defineModel('password', {
     default: '',
-});
-const show_toggle = defineModel('show_toggle', {
-    default: true,
 });
 const is_visible = defineModel('is_visible', {
     default: false,

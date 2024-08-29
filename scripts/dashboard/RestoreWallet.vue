@@ -56,7 +56,6 @@ function close() {
                 <p style="opacity: 0.75" v-if="!!reason">{{ reason }}</p>
                 <Password
                     v-model="password"
-                    :show_toggle="true"
                     ref="passwordInput"
                 />
             </template>
