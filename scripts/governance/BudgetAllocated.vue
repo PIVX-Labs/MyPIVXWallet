@@ -1,6 +1,5 @@
 <script setup>
 import { toRefs } from 'vue';
-import { COIN } from '../chain_params';
 import { numberToCurrency } from '../misc.js';
 const props = defineProps({
     currency: String,
@@ -30,7 +29,7 @@ const { currency, price, allocatedBudget } = toRefs(props);
         "
     >
         <span style="font-size: 19px; color: #e9deff"
-            ><span id="allocatedGovernanceBudget2">{{
+            ><span data-testid="allocatedGovernanceBudget">{{
                 allocatedBudget.toLocaleString('en-gb', ',', '.') + ' '
             }}</span>
             <span
@@ -54,11 +53,15 @@ const { currency, price, allocatedBudget } = toRefs(props);
             "
         />
         <span style="font-size: 12px; color: #af9cc6"
-            ><span id="allocatedGovernanceBudgetValue2">{{
+            ><span data-testid="allocatedGovernanceBudgetValue">{{
                 numberToCurrency(allocatedBudget, price)
             }}</span>
             {{ ' ' }}
-            <span style="color: #7c1dea">{{ currency.toUpperCase() }} </span>
+            <span
+                style="color: #7c1dea"
+                data-testid="allocatedGovernanceBudgetCurrency"
+                >{{ currency.toUpperCase() }}
+            </span>
         </span>
     </div>
 </template>

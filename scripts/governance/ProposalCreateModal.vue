@@ -2,7 +2,7 @@
 import Modal from '../Modal.vue';
 import { translation } from '../i18n.js';
 import { COIN, cChainParams } from '../chain_params';
-import { toRefs, ref } from 'vue';
+import { toRefs, ref, watch } from 'vue';
 
 const props = defineProps({
     advancedMode: Boolean,
@@ -24,6 +24,7 @@ function submit() {
         address.value
     );
 }
+watch(advancedMode, () => (address.value = ''));
 </script>
 
 <template>
@@ -57,7 +58,7 @@ function submit() {
                     Proposal name
                 </p>
                 <input
-                    id="proposalTitle"
+                    data-testid="proposalTitle"
                     maxlength="20"
                     :placeholder="translation.popupProposalName"
                     style="text-align: start; margin-bottom: 25px"
@@ -75,7 +76,7 @@ function submit() {
                     URL
                 </p>
                 <input
-                    id="proposalUrl"
+                    data-testid="proposalUrl"
                     maxlength="64"
                     placeholder="https://forum.pivx.org/..."
                     style="margin-bottom: 25px; text-align: start"
@@ -94,7 +95,7 @@ function submit() {
                 </p>
                 <input
                     type="number"
-                    id="proposalCycles"
+                    data-testid="proposalCycles"
                     min="1"
                     :max="cChainParams.current.maxPaymentCycles"
                     :placeholder="translation.popupProposalDuration"
@@ -114,7 +115,7 @@ function submit() {
                 </p>
                 <input
                     type="number"
-                    id="proposalPayment"
+                    data-testid="proposalPayment"
                     min="10"
                     :max="cChainParams.current.maxPayment / COIN"
                     :placeholder="
@@ -138,7 +139,7 @@ function submit() {
                         Proposal Address
                     </p>
                     <input
-                        id="proposalAddress"
+                        data-testid="proposalAddress"
                         maxlength="34"
                         :placeholder="translation.popupProposalAddress"
                         style="margin-bottom: 25px; text-align: start"
@@ -152,6 +153,7 @@ function submit() {
                 type="button"
                 class="pivx-button-big-cancel"
                 style="float: left"
+                data-testid="proposalCancel"
                 @click="emit('close')"
             >
                 {{ translation.popupCancel }}
@@ -160,7 +162,7 @@ function submit() {
                 type="button"
                 class="pivx-button-big"
                 style="float: right"
-                data-testid="csAddrSubmit"
+                data-testid="proposalSubmit"
                 @click="submit()"
             >
                 {{ translation.popupConfirm }}

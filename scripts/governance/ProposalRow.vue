@@ -92,6 +92,7 @@ function vote(voteCode) {
                     emit('vote', selectedVoteCode);
                     showConfirmVoteModal = false;
                 "
+                data-testid="confirmVote"
                 class="pivx-button-small"
                 style="height: 42px; width: 228px"
             >

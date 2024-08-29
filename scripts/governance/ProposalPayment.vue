@@ -3,7 +3,7 @@ import { cChainParams } from '../chain_params';
 import { translation } from '../i18n';
 import { toRef, computed } from 'vue';
 import { optimiseCurrencyLocale } from '../global.js';
-//const {  } = useSettings()
+
 const props = defineProps({
     proposal: Object,
     price: Number,
@@ -20,10 +20,12 @@ const nProposalValue = computed(
 <template>
     <div class="for-desktop">
         <span class="governValues"
-            ><b>{{ nMonthlyPayment.toLocaleString('en-gb', ',', '.') }}</b>
+            ><b data-testid="proposalMonthlyPayment">{{
+                nMonthlyPayment.toLocaleString('en-gb', ',', '.')
+            }}</b>
             <span class="governMarked">{{ cChainParams.current.TICKER }}</span>
             <br />
-            <b class="governFiatSize"
+            <b class="governFiatSize" data-testid="proposalFiat"
                 >{{ nProposalValue.toLocaleString('en-gb') }}
                 <span style="color: #7c1dea">{{
                     strCurrency.toUpperCase()
@@ -31,7 +33,7 @@ const nProposalValue = computed(
             ></span
         >
 
-        <span class="governInstallments">
+        <span class="governInstallments" data-testid="governInstallments">
             {{ proposal.RemainingPaymentCount }} {{ ' ' }}
             <span v-html="translation.proposalPaymentsRemaining"></span>
             {{ ' ' }}

@@ -25,5 +25,10 @@ watch(
 </script>
 
 <template>
-    <div :id="uniqueId" class="flipdown" ref="flipDownElement"></div>
+    <div
+        :id="uniqueId"
+        data-testid="flipdown"
+        class="flipdown"
+        ref="flipDownElement"
+    ></div>
 </template>

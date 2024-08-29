@@ -15,7 +15,7 @@ const votePercentage = computed(() =>
 </script>
 
 <template>
-    <div class="for-desktop">
+    <div class="for-desktop" data-testid="proposalVotes">
         <b>{{ votePercentage }}%</b> <br />
         <small class="votesBg">
             <b

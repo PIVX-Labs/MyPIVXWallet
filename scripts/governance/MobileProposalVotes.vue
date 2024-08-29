@@ -20,20 +20,20 @@ const votePercentage = computed(() =>
             <div class="governMobDot"></div>
             {{ translation.govTableVotes }}
         </div>
-        <div class="col-7">
+        <div class="col-7" data-testid="proposalVotes">
             <b>{{ votePercentage }}%</b>
             <small class="votesBg">
-                <b
-                    ><div class="votesYes" style="display: inline">
+                <b>
+                    <div class="votesYes" style="display: inline">
                         {{ proposal.Yeas }}
-                    </div></b
-                >
+                    </div>
+                </b>
                 /
-                <b
-                    ><div class="votesNo" style="display: inline">
+                <b>
+                    <div class="votesNo" style="display: inline">
                         {{ proposal.Nays }}
-                    </div></b
-                ></small
+                    </div>
+                </b></small
             >
         </div>
     </div>

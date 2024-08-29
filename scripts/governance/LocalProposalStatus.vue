@@ -44,13 +44,20 @@ const emit = defineEmits(['finalizeProposal']);
             margin-bottom: 15px;
         "
     >
-        <span style="color: #fff; font-weight: 700">{{ status }}</span
+        <span
+            style="color: #fff; font-weight: 700"
+            data-testid="localProposalStatus"
+            >{{ status }}</span
         ><br />
     </span>
     <span class="governArrow for-mobile ptr">
         <i class="fa-solid fa-angle-down"></i>
     </span>
-    <button class="pivx-button-small" @click="emit('finalizeProposal')">
+    <button
+        data-testid="finalizeProposalButton"
+        class="pivx-button-small"
+        @click="emit('finalizeProposal')"
+    >
         <i class="fas fa-check"></i>
     </button>
 </template>

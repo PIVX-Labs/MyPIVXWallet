@@ -25,16 +25,22 @@ const nProposalValue = computed(
         </div>
         <div class="col-7">
             <span class="governValues"
-                ><b>{{ proposal.MonthlyPayment }}</b>
+                ><b data-testid="proposalMonthlyPayment">{{
+                    proposal.MonthlyPayment.toLocaleString('en-gb', ',', '.')
+                }}</b>
                 <span class="governMarked">PIV</span>
                 <span
                     style="margin-left: 10px; margin-right: 2px"
                     class="governMarked governFiatSize"
-                    >{{ nProposalValue.toLocaleString('en-gb') }}</span
-                ></span
-            >
+                    data-testid="proposalFiat"
+                    >{{ nProposalValue.toLocaleString('en-gb') }}
+                    <span style="color: #7c1dea">{{
+                        strCurrency.toUpperCase()
+                    }}</span>
+                </span>
+            </span>
 
-            <span class="governInstallments">
+            <span class="governInstallments" data-testid="governInstallments">
                 {{ proposal.RemainingPaymentCount }} {{ ' ' }}
                 <span v-html="translation.proposalPaymentsRemaining"></span>
                 <span style="font-weight: 500"

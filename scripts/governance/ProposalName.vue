@@ -4,6 +4,7 @@ const props = defineProps({
     proposal: Object,
 });
 const proposal = toRef(props, 'proposal');
+const emit = defineEmits(['openExplorer']);
 </script>
 <template>
     <div style="vertical-align: middle">
@@ -13,7 +14,7 @@ const proposal = toRef(props, 'proposal');
             :href="proposal.URL"
             target="_blank"
             rel="noopener noreferrer"
-            ><b
+            ><b data-testid="proposalName"
                 >{{ proposal.Name }}
                 <span class="governLinkIco"
                     ><i
@@ -29,9 +30,8 @@ const proposal = toRef(props, 'proposal');
                 font-size: 14px;
                 color: #861ff7;
             "
-            onclick="MPW.openExplorer('${
-            cProposal.PaymentAddress
-        }')"
+            @click="emit('openExplorer', proposal.PaymentAddress)"
+            data-testid="proposalLink"
             ><i class="fa-solid fa-user-large" style="margin-right: 5px"></i
             ><b>{{ proposal.PaymentAddress.slice(0, 10) }}...</b>
         </a>

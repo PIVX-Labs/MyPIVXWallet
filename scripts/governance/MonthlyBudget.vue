@@ -61,7 +61,7 @@ const { currency, price } = toRefs(props);
                 "
             />
             <span style="font-size: 12px; color: #af9cc6"
-                ><span>
+                ><span data-testid="monthlyBudgetValue">
                     {{
                         numberToCurrency(
                             cChainParams.current.maxPayment / COIN,
@@ -70,7 +70,7 @@ const { currency, price } = toRefs(props);
                     }}
                     {{ ' ' }}
                 </span>
-                <span style="color: #7c1dea"
+                <span style="color: #7c1dea" data-testid="monthlyBudgetCurrency"
                     >{{ currency.toUpperCase() }}
                 </span>
             </span>

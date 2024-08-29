@@ -7,7 +7,7 @@ const props = defineProps({
     nMasternodes: Number,
     proposalValidator: ProposalValidator,
 });
-const { proposal, nMasternodes, overBudget, proposalValidator } = toRefs(props);
+const { proposal, nMasternodes, proposalValidator } = toRefs(props);
 const proposalStatus = computed(() => {
     const { Yeas, Nays } = proposal.value;
     const netYes = Yeas - Nays;
@@ -33,7 +33,7 @@ const proposalStatus = computed(() => {
             }
             case reasons.OVER_BUDGET: {
                 funding = translation.proposalOverBudget;
-                statusClass = 'votesOverAllocted';
+                statusClass = 'votesOverAllocated';
                 break;
             }
             case reasons.TOO_YOUNG: {
@@ -63,11 +63,15 @@ const proposalStatus = computed(() => {
             margin-bottom: 15px;
         "
     >
-        <span style="font-weight: 700" :class="proposalStatus.statusClass">{{
-            proposalStatus.status
-        }}</span
+        <span
+            style="font-weight: 700"
+            data-testid="proposalStatus"
+            :class="proposalStatus.statusClass"
+            >{{ proposalStatus.status }}</span
         ><br />
-        <span style="color: #9482b1">({{ proposalStatus.funding }})</span><br />
+        <span style="color: #9482b1" data-testid="proposalFunding"
+            >({{ proposalStatus.funding }})</span
+        ><br />
     </span>
     <span
         style="
@@ -76,6 +80,7 @@ const proposalStatus = computed(() => {
             display: block;
             color: #9482b1;
         "
+        data-testid="proposalPercentage"
     >
         <b style="color: #e9deff"
             >{{ proposalStatus.netYesPercent.toFixed(1) }}%</b
