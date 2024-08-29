@@ -2,6 +2,7 @@
 import { translation, tr, ALERTS } from '../i18n.js';
 import { ref } from 'vue';
 import Modal from '../Modal.vue';
+import Password from '../Password.vue';
 import { MIN_PASS_LENGTH } from '../chain_params.js';
 import { createAlert } from '../misc';
 
@@ -11,6 +12,10 @@ const props = defineProps({
     showModal: Boolean,
     showBox: Boolean,
     isEncrypt: Boolean,
+});
+
+const isDualPasswordVisible = defineModel('isVisible', {
+    default: false,
 });
 
 const currentPassword = ref('');
@@ -117,57 +122,21 @@ function submit() {
             </template>
             <template #body>
                 <div v-show="isEncrypt">
-                    <input
-                        class="center-text textboxTransparency"
-                        data-i18n="encryptPasswordCurrent"
+                    <Password
                         v-model="currentPassword"
-                        style="
-                            width: 85%;
-                            font-family: monospace;
-                            border-top-right-radius: 0;
-                            border-bottom-right-radius: 0;
-                        "
-                        :type="current_password_visibility"
                         :placeholder="translation.encryptPasswordCurrent"
-                        data-testid="currentPasswordModal"
-                    /><span
-                        @click="toggleCurrentPasswordVisibility()"
-                        class="input-group-toggle input-group-text p-0"
-                    >
-                        <i :class="current_password_visibility_icon"></i>
-                    </span>
+                    />
                 </div>
-                <input
-                    class="center-text textboxTransparency"
+                <Password
                     v-model="password"
-                    data-i18n="encryptPasswordFirst"
-                    style="
-                        width: 85%;
-                        font-family: monospace;
-                        border-top-right-radius: 0;
-                        border-bottom-right-radius: 0;
-                    "
-                    :type="new_password_visibility"
+                    v-model:isVisible="isDualPasswordVisible"
                     :placeholder="translation.encryptPasswordFirst"
-                    data-testid="newPasswordModal"
-                /><span
-                    @click="toggleNewPasswordVisibility()"
-                    class="input-group-toggle input-group-text p-0"
-                >
-                    <i :class="new_password_visibility_icon"></i>
-                </span>
-                <input
-                    class="center-text textboxTransparency"
+                />
+                <Password
                     v-model="passwordConfirm"
-                    data-i18n="encryptPasswordSecond"
-                    style="
-                        width: 95%;
-                        font-family: monospace;
-                        margin-bottom: 0px;
-                    "
-                    :type="new_password_visibility"
+                    v-model:isVisible="isDualPasswordVisible"
+                    :showToggle="false"
                     :placeholder="translation.encryptPasswordSecond"
-                    data-testid="confirmPasswordModal"
                 />
             </template>
             <template #footer>
