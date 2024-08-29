@@ -40,7 +40,7 @@ defineExpose({ focus });
             class="center-text textboxTransparency"
             :style="`${
                 showToggle
-                    ? 'width: 85%; border-top-right-radius: 0; border-bottom-right-radius: 0;'
+                    ? 'width: 90%; border-top-right-radius: 0; border-bottom-right-radius: 0;'
                     : 'width: 100%;'
             } font-family: monospace;`"
             :data-testid="testid || null"
