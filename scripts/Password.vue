@@ -1,8 +1,6 @@
 <script setup>
 import { translation } from './i18n.js';
-import { ref, watch } from 'vue';
-
-const emit = defineEmits(['update:modelValue']);
+import { ref } from 'vue';
 
 const props = defineProps({
     showToggle: {
@@ -30,10 +28,6 @@ function focus() {
 }
 
 defineExpose({ focus });
-
-watch(password, (newVal) => {
-    emit('update:modelValue', newVal);
-});
 </script>
 
 <template>

@@ -92,7 +92,7 @@ async function generateWallet() {
                     <div v-if="advancedMode">
                         <br />
                         <Password
-                            v-model="passphrase"
+                            v-model:password="passphrase"
                             testid="passPhrase"
                             :placeholder="translation.optionalPassphrase"
                         />

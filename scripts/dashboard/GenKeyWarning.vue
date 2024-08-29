@@ -97,19 +97,19 @@ function submit() {
             <template #body>
                 <div v-show="isEncrypt">
                     <Password
-                        v-model="currentPassword"
+                        v-model:password="currentPassword"
                         testid="currentPasswordModal"
                         :placeholder="translation.encryptPasswordCurrent"
                     />
                 </div>
                 <Password
-                    v-model="password"
+                    v-model:password="password"
                     v-model:isVisible="isDualPasswordVisible"
                     testid="newPasswordModal"
                     :placeholder="translation.encryptPasswordFirst"
                 />
                 <Password
-                    v-model="passwordConfirm"
+                    v-model:password="passwordConfirm"
                     v-model:isVisible="isDualPasswordVisible"
                     :showToggle="false"
                     testid="confirmPasswordModal"
