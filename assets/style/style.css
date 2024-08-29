@@ -2824,6 +2824,19 @@ input {
     border: 0px;
 }
 
+.input-group-toggle {
+    cursor: pointer;
+    background-color: rgb(127, 32, 255);
+    border: 2px solid #AF9CC6;
+    color: rgb(233, 222, 255);
+    padding: 10px 8px !important;
+    display: inline-block;
+    width: 10%;
+    border-left-width: 0;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
 .cur-pointer {
     cursor: pointer;
 }

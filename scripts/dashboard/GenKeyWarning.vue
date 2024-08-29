@@ -2,6 +2,7 @@
 import { translation, tr, ALERTS } from '../i18n.js';
 import { ref } from 'vue';
 import Modal from '../Modal.vue';
+import Password from '../Password.vue';
 import { MIN_PASS_LENGTH } from '../chain_params.js';
 import { createAlert } from '../misc';
 
@@ -11,6 +12,10 @@ const props = defineProps({
     showModal: Boolean,
     showBox: Boolean,
     isEncrypt: Boolean,
+});
+
+const isDualPasswordVisible = defineModel('isVisible', {
+    default: false,
 });
 
 const currentPassword = ref('');
@@ -90,37 +95,25 @@ function submit() {
                 </h5>
             </template>
             <template #body>
-                <input
-                    class="center-text textboxTransparency passwordTxtbox"
-                    data-i18n="encryptPasswordCurrent"
-                    v-model="currentPassword"
-                    style="width: 100%; font-family: monospace"
-                    type="password"
-                    :placeholder="translation.encryptPasswordCurrent"
-                    v-show="isEncrypt"
-                    data-testid="currentPasswordModal"
-                />
-                <input
-                    class="center-text textboxTransparency passwordTxtbox"
-                    v-model="password"
-                    data-i18n="encryptPasswordFirst"
-                    style="width: 100%; font-family: monospace"
-                    type="password"
+                <div v-show="isEncrypt">
+                    <Password
+                        v-model:password="currentPassword"
+                        testid="currentPasswordModal"
+                        :placeholder="translation.encryptPasswordCurrent"
+                    />
+                </div>
+                <Password
+                    v-model:password="password"
+                    v-model:isVisible="isDualPasswordVisible"
+                    testid="newPasswordModal"
                     :placeholder="translation.encryptPasswordFirst"
-                    data-testid="newPasswordModal"
                 />
-                <input
-                    class="center-text textboxTransparency passwordTxtbox"
-                    v-model="passwordConfirm"
-                    data-i18n="encryptPasswordSecond"
-                    style="
-                        width: 100%;
-                        font-family: monospace;
-                        margin-bottom: 0px;
-                    "
-                    type="password"
+                <Password
+                    v-model:password="passwordConfirm"
+                    v-model:isVisible="isDualPasswordVisible"
+                    :showToggle="false"
+                    testid="confirmPasswordModal"
                     :placeholder="translation.encryptPasswordSecond"
-                    data-testid="confirmPasswordModal"
                 />
             </template>
             <template #footer>
