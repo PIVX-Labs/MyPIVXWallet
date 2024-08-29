@@ -93,6 +93,7 @@ async function generateWallet() {
                         <br />
                         <Password
                             v-model="passphrase"
+                            testid="passPhrase"
                             :placeholder="translation.optionalPassphrase"
                         />
                     </div>

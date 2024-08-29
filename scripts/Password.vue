@@ -12,6 +12,9 @@ const props = defineProps({
     placeholder: {
         type: String,
     },
+    testid: {
+        type: String,
+    },
 });
 
 const password = defineModel('password', {
@@ -46,6 +49,7 @@ watch(password, (newVal) => {
                     ? 'width: 85%; border-top-right-radius: 0; border-bottom-right-radius: 0;'
                     : 'width: 100%;'
             } font-family: monospace;`"
+            :data-testid="testid || null"
         />
         <span
             v-if="showToggle"
