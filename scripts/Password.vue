@@ -9,6 +9,9 @@ const props = defineProps({
         type: Boolean,
         default: true,
     },
+    placeholder: {
+        type: String,
+    },
 });
 
 const password = defineModel('password', {
@@ -36,7 +39,7 @@ watch(password, (newVal) => {
             :type="isVisible ? 'text' : 'password'"
             ref="passwordInput"
             v-model="password"
-            :placeholder="translation.walletPassword"
+            :placeholder="placeholder || translation.walletPassword"
             class="center-text textboxTransparency"
             :style="`${
                 showToggle

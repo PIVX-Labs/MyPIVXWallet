@@ -5,6 +5,7 @@ import { generateMnemonic } from 'bip39';
 import { translation } from '../i18n.js';
 import { ref, watch, toRefs } from 'vue';
 import newWalletIcon from '../../assets/icons/icon-new-wallet.svg';
+import Password from '../Password.vue';
 
 const emit = defineEmits(['importWallet']);
 const showModal = ref(false);
@@ -36,19 +37,6 @@ async function generateWallet() {
     // Erase mnemonic and passphrase from memory, just in case
     mnemonic.value = '';
     passphrase.value = '';
-}
-
-const current_password_visibility = ref('password');
-const current_password_visibility_icon = ref('fa-solid fa-eye-slash');
-function toggleCurrentPasswordVisibility() {
-    const fVisible = current_password_visibility.value === 'text';
-
-    // Toggle the password visibility
-    current_password_visibility.value = fVisible ? 'password' : 'text';
-
-    // Toggle the 'eye' icon to open/closed
-    const strIcon = fVisible ? 'eye-slash' : 'eye';
-    current_password_visibility_icon.value = 'fa-solid fa-' + strIcon;
 }
 </script>
 
@@ -103,24 +91,10 @@ function toggleCurrentPasswordVisibility() {
                     <br />
                     <div v-if="advancedMode">
                         <br />
-                        <input
-                            class="center-text textboxTransparency"
-                            :type="current_password_visibility"
-                            :placeholder="translation.optionalPassphrase"
+                        <Password
                             v-model="passphrase"
-                            style="
-                                width: 85%;
-                                font-family: monospace;
-                                border-top-right-radius: 0;
-                                border-bottom-right-radius: 0;
-                            "
-                            data-testid="passPhrase"
-                        /><span
-                            @click="toggleCurrentPasswordVisibility()"
-                            class="input-group-toggle input-group-text p-0"
-                        >
-                            <i :class="current_password_visibility_icon"></i>
-                        </span>
+                            :placeholder="translation.optionalPassphrase"
+                        />
                     </div>
                 </div>
             </template>
