@@ -54,10 +54,7 @@ function close() {
 
             <template #body>
                 <p style="opacity: 0.75" v-if="!!reason">{{ reason }}</p>
-                <Password
-                    v-model="password"
-                    ref="passwordInput"
-                />
+                <Password v-model="password" ref="passwordInput" />
             </template>
             <template #footer>
                 <button
