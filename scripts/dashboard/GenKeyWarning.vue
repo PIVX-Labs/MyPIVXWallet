@@ -31,32 +31,6 @@ function close() {
     emit('close');
 }
 
-const current_password_visibility = ref('password');
-const current_password_visibility_icon = ref('fa-solid fa-eye-slash');
-function toggleCurrentPasswordVisibility() {
-    const fVisible = current_password_visibility.value === 'text';
-
-    // Toggle the password visibility
-    current_password_visibility.value = fVisible ? 'password' : 'text';
-
-    // Toggle the 'eye' icon to open/closed
-    const strIcon = fVisible ? 'eye-slash' : 'eye';
-    current_password_visibility_icon.value = 'fa-solid fa-' + strIcon;
-}
-
-const new_password_visibility = ref('password');
-const new_password_visibility_icon = ref('fa-solid fa-eye-slash');
-function toggleNewPasswordVisibility() {
-    const fVisible = new_password_visibility.value === 'text';
-
-    // Toggle the password visibility
-    new_password_visibility.value = fVisible ? 'password' : 'text';
-
-    // Toggle the 'eye' icon to open/closed
-    const strIcon = fVisible ? 'eye-slash' : 'eye';
-    new_password_visibility_icon.value = 'fa-solid fa-' + strIcon;
-}
-
 /**
  * Perform basic checks, then emit the event to our parent
  */
