@@ -411,6 +411,7 @@ const {
     currency,
     price,
     isViewOnly,
+    hasShield,
 } = storeToRefs(wallet);
 
 getEventEmitter().on('sync-status', (status) => {
@@ -490,7 +491,7 @@ defineExpose({
             <br />
 
             <!-- Switch to Public/Private -->
-            <div class="col-12 p-0" v-show="wallet.isImported && wallet.hasShield">
+            <div class="col-12 p-0" v-show="wallet.isImported && hasShield">
                 <center>
                     <div
                         :class="{
@@ -852,7 +853,7 @@ defineExpose({
             <ExportPrivKey
                 :show="showExportModal"
                 :privateKey="keyToBackup"
-                :isJSON="wallet.hasShield && !wallet.isEncrypted"
+                :isJSON="hasShield && !wallet.isEncrypted"
                 @close="showExportModal = false"
             />
             <!-- WALLET FEATURES -->
@@ -883,7 +884,7 @@ defineExpose({
                         :currency="currency"
                         :price="price"
                         :displayDecimals="displayDecimals"
-                        :shieldEnabled="wallet.hasShield"
+                        :shieldEnabled="hasShield"
                         @send="showTransferMenu = true"
                         @exportPrivKeyOpen="showExportModal = true"
                         :publicMode="wallet.publicMode"
@@ -904,7 +905,7 @@ defineExpose({
             :publicMode="wallet.publicMode"
             :price="price"
             :currency="currency"
-            :shieldEnabled="wallet.hasShield"
+            :shieldEnabled="hasShield"
             v-model:amount="transferAmount"
             :desc="transferDescription"
             v-model:address="transferAddress"
