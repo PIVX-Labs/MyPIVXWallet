@@ -1,5 +1,5 @@
 <script setup>
-import { toRefs, computed, ref, watch } from 'vue';
+import { toRefs, computed, ref } from 'vue';
 import { tr, translation } from '../i18n.js';
 import { COIN, cChainParams } from '../chain_params';
 import IconArrow from '../../assets/icons/icon-arrow.svg';
@@ -24,7 +24,7 @@ const error = computed(() => {
     const collat = cChainParams.current.collateralInSats / COIN;
     if (balance.value < collat) {
         return tr(translation?.ALERTS?.MN_NOT_ENOUGH_COLLAT, [
-            { amount: collat - balance.value },
+            { amount: (collat - balance.value).toFixed(2) },
             { ticker: cChainParams.current.TICKER },
         ]);
     }
@@ -60,7 +60,7 @@ function importMasternode() {
 
     <div style="display: block">
         <br />
-        <p class="center-text" v-html="error"></p>
+        <p class="center-text" data-testid="error" v-html="error"></p>
     </div>
     <div
         style="display: flex; justify-content: center; width: 100%"
@@ -69,8 +69,7 @@ function importMasternode() {
         <button
             class="pivx-button-small"
             style="height: 42px; width: 228px"
-            data-toggle="modal"
-            data-target="#createMasternodeModal"
+            data-testid="createMasternodeButton"
             @click="showModal = true"
         >
             <span class="buttoni-text">
@@ -95,30 +94,35 @@ function importMasternode() {
                         type="password"
                         v-model="privateKey"
                         placeholder="Masternode Private Key"
+                        data-testid="importPrivateKey"
                     />
                     <input
                         type="text"
                         v-model="ip"
                         placeholder="Masternode ip address"
+                        data-testid="importIpAddress"
                     />
                     <select
                         style="display: block"
                         v-model="utxo"
                         placeholder="Masternode collateral tx"
                         class="form-control"
+                        data-testid="selectUTXO"
                     >
                         <option disabled value="">Select an UTXO</option>
                         <option v-for="utxo in possibleUTXOs" :value="utxo">
                             {{ `${utxo.outpoint.txid}/${utxo.outpoint.n}` }}
                         </option>
                     </select>
-                    <button class="pivx-button-big" @click="importMasternode()">
+                    <button
+                        data-testid="importMasternodeButton"
+                        class="pivx-button-big"
+                        @click="importMasternode()"
+                    >
                         <span class="buttoni-icon"
                             ><i class="fas fa-file-upload fa-tiny-margin"></i
                         ></span>
-                        <span class="buttoni-text" id="importMnText"
-                            >Access Masternode</span
-                        >
+                        <span class="buttoni-text">Access Masternode</span>
                         <span class="buttoni-arrow" v-html="IconArrow"> </span>
                     </button>
                 </div>
@@ -162,7 +166,8 @@ function importMasternode() {
                             style="display: block; text-align: left"
                             placeholder="Masternode collateral tx"
                             class="form-control"
-                            :ref="selection"
+                            data-testid="masternodeTypeSelection"
+                            v-model="selection"
                         >
                             <option value="VPS">
                                 Self-hosted (a masternode server ran by you)
@@ -178,6 +183,7 @@ function importMasternode() {
 
                     <button
                         @click="createMasternode()"
+                        data-testid="createMasternodeModalButton"
                         class="pivx-button-small"
                         style="height: 42px; width: 228px"
                     >

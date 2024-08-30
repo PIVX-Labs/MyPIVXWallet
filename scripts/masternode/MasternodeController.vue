@@ -26,14 +26,12 @@ async function updateMasternodeData() {
     netType.value = data?.network?.toUpperCase() || 'Unknown';
     ip.value = masternode.value.addr;
 }
-updateMasternodeData();
+watch(masternode, updateMasternodeData, { immediate: true });
 </script>
 
 <template>
     <div>
         <div class="">
-            <!-- IMPORT MASTERNODE -->
-            <!-- // IMPORT MASTERNODE -->
             <br />
 
             <div id="mnDashboard" class="staking-banner-bottom">
@@ -43,7 +41,11 @@ updateMasternodeData();
                         style="background-color: #2c0044; border-radius: 10px"
                     >
                         Status
-                        <small id="mnProtocol" style="opacity: 0.5">
+                        <small
+                            id="mnProtocol"
+                            style="opacity: 0.5"
+                            data-testid="mnProtocol"
+                        >
                             {{ protocol }}
                         </small>
                     </h4>
@@ -59,6 +61,7 @@ updateMasternodeData();
                             width: 100%;
                             padding: 10px;
                         "
+                        data-testid="mnStatus"
                     >
                         {{ status }}
                     </h2>
@@ -67,6 +70,7 @@ updateMasternodeData();
                     <h4
                         class="stake-balances"
                         style="background-color: #2c0044; border-radius: 10px"
+                        data-testid="mnNetType"
                     >
                         {{ netType }}
                     </h4>
@@ -83,6 +87,7 @@ updateMasternodeData();
                             font-family: mono !important;
                             font-size: x-large;
                         "
+                        data-testid="mnIp"
                     >
                         {{ ip }}
                     </h2>
@@ -107,6 +112,7 @@ updateMasternodeData();
                             padding: 10px;
                             font-size: xx-large;
                         "
+                        data-testid="mnLastSeen"
                     >
                         {{ lastSeen }}
                     </h2>
@@ -120,6 +126,7 @@ updateMasternodeData();
                     class="pivx-button-big"
                     @click="emit('destroy')"
                     style="margin: 20px; font-weight: 550 !important"
+                    data-testid="destroyButton"
                 >
                     <span class="buttoni-icon"
                         ><i class="fas fa-burn fa-tiny-margin"></i
@@ -133,6 +140,7 @@ updateMasternodeData();
                     class="pivx-button-big"
                     @click="emit('start', { restart: true })"
                     style="margin: 20px; font-weight: 550 !important"
+                    data-testid="restartButton"
                 >
                     <span class="buttoni-icon"
                         ><i class="fas fa-redo-alt fa-tiny-margin"></i
