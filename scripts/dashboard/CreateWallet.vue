@@ -5,6 +5,7 @@ import { generateMnemonic } from 'bip39';
 import { translation } from '../i18n.js';
 import { ref, watch, toRefs } from 'vue';
 import newWalletIcon from '../../assets/icons/icon-new-wallet.svg';
+import Password from '../Password.vue';
 
 const emit = defineEmits(['importWallet']);
 const showModal = ref(false);
@@ -90,12 +91,10 @@ async function generateWallet() {
                     <br />
                     <div v-if="advancedMode">
                         <br />
-                        <input
-                            class="center-text"
-                            type="password"
+                        <Password
+                            v-model:password="passphrase"
+                            testid="passPhrase"
                             :placeholder="translation.optionalPassphrase"
-                            v-model="passphrase"
-                            data-testid="passPhrase"
                         />
                     </div>
                 </div>
