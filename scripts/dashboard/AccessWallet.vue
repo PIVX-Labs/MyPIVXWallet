@@ -1,5 +1,5 @@
 <script setup>
-import loginIcon from '../../assets/icons/icon-login.svg';
+import loginIcon from '../../assets/icons/icon-my-wallet.svg';
 import pLogo from '../../assets/p_logo.svg';
 import { ref, watch, toRefs } from 'vue';
 import { translation } from '../i18n.js';
