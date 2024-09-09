@@ -48,7 +48,9 @@ watch(coldStakingAddress, async (coldStakingAddress) => {
     await db.updateAccount(cAccount, true);
 });
 async function stake(value, ownerAddress) {
-    if (wallet.isViewOnly && !(await restoreWallet())) {
+    if (wallet.isHardwareWallet && !advancedMode.value) {
+        return createAlert('warning', ALERTS.STAKING_LEDGER_NO_SUPPORT);
+    } else if (wallet.isViewOnly && !(await restoreWallet())) {
         return;
     }
     const cDB = await Database.getInstance();
@@ -88,8 +90,8 @@ async function unstake(value) {
 }
 
 async function restoreWallet(strReason) {
-    if (!wallet.isEncrypted) return false;
     if (wallet.isHardwareWallet) return true;
+    if (!wallet.isEncrypted) return false;
     showRestoreWallet.value = true;
     return await new Promise((res) => {
         watch(

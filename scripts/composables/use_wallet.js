@@ -1,7 +1,7 @@
 import { getEventEmitter } from '../event_bus.js';
 import { hasEncryptedWallet, wallet } from '../wallet.js';
 import { ref, watch } from 'vue';
-import { strCurrency } from '../settings.js';
+import { fAdvancedMode, strCurrency } from '../settings.js';
 import { cOracle } from '../prices.js';
 import { ledgerSignTransaction } from '../ledger.js';
 import { defineStore } from 'pinia';
@@ -84,7 +84,7 @@ export const useWallet = defineStore('wallet', () => {
         async (network, address, value, opts) => {
             const tx = wallet.createTransaction(address, value, opts);
             if (wallet.isHardwareWallet()) {
-                await ledgerSignTransaction(wallet, tx);
+                await ledgerSignTransaction(wallet, tx, fAdvancedMode);
             } else {
                 await wallet.sign(tx);
             }

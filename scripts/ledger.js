@@ -139,11 +139,15 @@ export async function getHardwareWalletKeys(path, xpub = false, verify = true) {
  * @param {import('./wallet.js').Wallet} wallet
  * @param {import('./transaction.js').Transaction} transaction - tx to sign
  */
-export async function ledgerSignTransaction(wallet, transaction) {
+export async function ledgerSignTransaction(
+    wallet,
+    transaction,
+    allowColdStake = false
+) {
     const ledgerTx = cHardwareWallet.splitTransaction(transaction.serialize());
     const outputs = transaction.vout.map((o) => {
         const { addresses, type } = wallet.getAddressesFromScript(o.script);
-        if (type !== 'p2pkh') {
+        if (!allowColdStake && type !== 'p2pkh') {
             throw new Error(
                 'Invalid script. Ledger supports p2pkh scripts only'
             );
