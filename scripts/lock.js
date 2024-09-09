@@ -6,6 +6,9 @@
  */
 export const lockableFunction = (f) => {
     let lock = false;
+    /**
+     * @type{T & {isLocked: () => bool}}
+     */
     const g = async (...args) => {
         try {
             if (!lock) {
