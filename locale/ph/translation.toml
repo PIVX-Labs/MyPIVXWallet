@@ -121,7 +121,6 @@ settingsExplorer = "Pumili ng explorer:" # Choose an explorer:
 settingsLanguage = "Pumili ng Wika:" # Choose a Language:
 settingsPivxNode = "Pumili ng PIVX node:" # Choose a PIVX node:
 settingsAutoSelectNet = "Automatikong pagpili ng Explorers at Nodes" # Auto-select Explorers and Nodes
-settingsAnalytics = "Pumili ng iyong analytics contribution level:" # Choose your analytics contribution level:
 settingsToggleDebug = "Debug Mode" # Debug Mode
 settingsToggleTestnet = "Testnet Mode" # Testnet Mode
 settingsToggleAdvancedMode = "Advance Mode" # Advanced Mode

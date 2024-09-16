@@ -126,7 +126,6 @@ export async function start() {
         ),
         domEncryptPasswordFirst: document.getElementById('newPassword'),
         domEncryptPasswordSecond: document.getElementById('newPasswordRetype'),
-        domAnalyticsDescriptor: document.getElementById('analyticsDescriptor'),
         domRedeemTitle: document.getElementById('redeemCodeModalTitle'),
         domRedeemCodeUse: document.getElementById('redeemCodeUse'),
         domRedeemCodeCreate: document.getElementById('redeemCodeCreate'),
@@ -264,8 +263,6 @@ export async function start() {
     // Load the price manager
     cOracle.load();
 
-    // If allowed by settings: submit a simple 'hit' (app load) to Labs Analytics
-    getNetwork().submitAnalytics('hit');
     setInterval(() => {
         // Refresh blockchain data
         refreshChainData();
@@ -314,8 +311,6 @@ function subscribeToNetworkEvents() {
                 `${ALERTS.TX_SENT}<br>${sanitizeHTML(result)}`,
                 result ? 1250 + result.length * 50 : 3000
             );
-            // If allowed by settings: submit a simple 'tx' ping to Labs Analytics
-            getNetwork().submitAnalytics('transaction');
         } else {
             console.error('Error sending transaction:');
             console.error(result);

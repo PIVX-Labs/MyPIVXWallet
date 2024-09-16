@@ -120,7 +120,6 @@ priceProvidedBy = "Pwice data pwovided by" # Price data provided by
 settingsDecimals = "Balance Decimawls:" # Balance Decimals:
 settingsExplorer = "Chowose an expwower:" # Choose an explorer:
 settingsLanguage = "Chowose a Languwuage:" # Choose a Language:
-settingsAnalytics = "Chowose your anawytics contwibution wevel:" # Choose your analytics contribution level:
 settingsPivxNode = "Chowose a PIVX nowode pwease:" # Choose a PIVX node:
 settingsAutoSelectNet = "Auto-select Expwowers and Nowodes" # Auto-select Explorers and Nodes
 settingsToggleDebug = "Debug Mowode" # Debug Mode

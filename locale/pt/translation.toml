@@ -67,7 +67,6 @@ settingsExplorer = "Escolha um explorador:" # Choose an explorer:
 settingsLanguage = "Escolha um Idioma:" # Choose a Language:
 settingsPivxNode = "Escolha um node PIVX:" # Choose a PIVX node:
 settingsAutoSelectNet = "Seleção automática de Exploradores e Nodes" # Auto-select Explorers and Nodes
-settingsAnalytics = "Escolha o seu nível de contribuição analítica:" # Choose your analytics contribution level:
 settingsToggleDebug = "Modo de depuração" # Debug Mode
 settingsToggleTestnet = "Modo Testnet" # Testnet Mode
 settingsToggleAdvancedMode = "Modo avançado" # Advanced Mode

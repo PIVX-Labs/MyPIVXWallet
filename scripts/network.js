@@ -8,13 +8,7 @@ import {
 } from './debug.js';
 import { sleep } from './utils.js';
 import { getEventEmitter } from './event_bus.js';
-import {
-    STATS,
-    cStatKeys,
-    cAnalyticsLevel,
-    setExplorer,
-    fAutoSwitch,
-} from './settings.js';
+import { setExplorer, fAutoSwitch } from './settings.js';
 import { cNode } from './settings.js';
 import { ALERTS, tr, translation } from './i18n.js';
 import { Transaction } from './transaction.js';
@@ -96,10 +90,6 @@ export class Network {
 
     sendTransaction() {
         throw new Error('sendTransaction must be implemented');
-    }
-
-    submitAnalytics(_strType, _cData = {}) {
-        throw new Error('submitAnalytics must be implemented');
     }
 
     async getTxInfo(_txHash) {
@@ -340,38 +330,6 @@ export class ExplorerNetwork extends Network {
      */
     async getShieldBlockList() {
         return await (await fetch(`${cNode.url}/getshieldblocks`)).json();
-    }
-
-    // PIVX Labs Analytics: if you are a user, you can disable this FULLY via the Settings.
-    // ... if you're a developer, we ask you to keep these stats to enhance upstream development,
-    // ... but you are free to completely strip MPW of any analytics, if you wish, no hard feelings.
-    submitAnalytics(strType, cData = {}) {
-        if (!this.enabled) return;
-
-        // TODO: rebuild Labs Analytics, submitAnalytics() will be disabled at code-level until this is live again
-        /* eslint-disable */
-        return;
-
-        // Limit analytics here to prevent 'leakage' even if stats are implemented incorrectly or forced
-        let i = 0,
-            arrAllowedKeys = [];
-        for (i; i < cAnalyticsLevel.stats.length; i++) {
-            const cStat = cAnalyticsLevel.stats[i];
-            arrAllowedKeys.push(cStatKeys.find((a) => STATS[a] === cStat));
-        }
-
-        // Check if this 'stat type' was granted permissions
-        if (!arrAllowedKeys.includes(strType)) return false;
-
-        // Format
-        const cStats = { type: strType, ...cData };
-
-        // Send to Labs Analytics
-        const request = new XMLHttpRequest();
-        request.open('POST', 'https://scpscan.net/mpw/statistic', true);
-        request.setRequestHeader('Content-Type', 'application/json');
-        request.send(JSON.stringify(cStats));
-        return true;
     }
 }
 

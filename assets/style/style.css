@@ -3149,10 +3149,6 @@ select.form-control option {
     box-shadow: 0 0 0 0.2rem #9169b575;
 }
 
-#analyticsDescriptor {
-    margin-bottom: 27px;
-}
-
 #foot {
     z-index: 200;
 }
