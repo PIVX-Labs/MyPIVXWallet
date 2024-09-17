@@ -121,6 +121,10 @@ export class ExplorerNetwork extends Network {
             block.txs = newTxs;
             return block;
         } catch (e) {
+            // Don't display block not found errors to user
+            if (e.message.match(/block not found/i)) {
+                return;
+            }
             this.error();
             throw e;
         }
@@ -148,10 +152,16 @@ export class ExplorerNetwork extends Network {
     async safeFetchFromExplorer(strCommand, sleepTime = 20000) {
         let trials = 0;
         const maxTrials = 6;
+        let error;
         while (trials < maxTrials) {
             trials += 1;
             const res = await retryWrapper(fetchBlockbook, strCommand);
             if (!res.ok) {
+                try {
+                    error = (await res.json()).error;
+                } catch (e) {
+                    error = 'Cannot safe fetch from explorer!';
+                }
                 debugLog(
                     DebugTopics.NET,
                     'Blockbook internal error! sleeping for ' +
@@ -163,7 +173,7 @@ export class ExplorerNetwork extends Network {
             }
             return await res.json();
         }
-        throw new Error('Cannot safe fetch from explorer!');
+        throw new Error(error);
     }
 
     /**
