@@ -51,33 +51,6 @@ export class Network {
         if (this.constructor === Network) {
             throw new Error('Initializing virtual class');
         }
-        this._enabled = true;
-    }
-
-    /**
-     * @param {boolean} value
-     */
-    set enabled(value) {
-        if (value !== this._enabled) {
-            getEventEmitter().emit('network-toggle', value);
-            this._enabled = value;
-        }
-    }
-
-    get enabled() {
-        return this._enabled;
-    }
-
-    enable() {
-        this.enabled = true;
-    }
-
-    disable() {
-        this.enabled = false;
-    }
-
-    toggle() {
-        this.enabled = !this.enabled;
     }
 
     error() {
@@ -114,10 +87,7 @@ export class ExplorerNetwork extends Network {
     }
 
     error() {
-        if (this.enabled) {
-            this.disable();
-            createAlert('warning', ALERTS.CONNECTION_FAILED);
-        }
+        createAlert('warning', ALERTS.CONNECTION_FAILED);
     }
 
     /**
