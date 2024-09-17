@@ -1696,12 +1696,6 @@ export async function createProposal() {
 
 export async function refreshChainData() {
     const cNet = getNetwork();
-    // If in offline mode: don't sync ANY data or connect to the internet
-    if (!cNet.enabled)
-        return console.warn(
-            'Offline mode active: For your security, the wallet will avoid ALL internet requests.'
-        );
-
     // Fetch block count
     const newBlockCount = await cNet.getBlockCount();
     if (newBlockCount !== blockCount) {
