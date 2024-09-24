@@ -7,9 +7,6 @@ const settings = useSettings();
 const show = computed(() => {
     return settings.isTestnet.value || settings.debug.value;
 });
-watch(settings.debug, () => {
-    console.log(settings.debug.value);
-});
 </script>
 
 <template>
