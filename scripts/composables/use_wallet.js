@@ -28,12 +28,13 @@ export const useWallet = defineStore('wallet', () => {
     const isViewOnly = ref(wallet.isViewOnly());
     const isSynced = ref(wallet.isSynced);
     const getKeyToBackup = async () => await wallet.getKeyToBackup();
+    const getKeyToExport = () => wallet.getKeyToExport();
     const isEncrypted = ref(true);
     const loadFromDisk = () => wallet.loadFromDisk();
     const hasShield = ref(wallet.hasShield());
 
     const setMasterKey = async ({ mk, extsk }) => {
-        wallet.setMasterKey({ mk, extsk });
+        await wallet.setMasterKey({ mk, extsk });
         isImported.value = wallet.isLoaded();
         isHardwareWallet.value = wallet.isHardwareWallet();
         isHD.value = wallet.isHD();
@@ -120,6 +121,7 @@ export const useWallet = defineStore('wallet', () => {
         isEncrypted,
         isSynced,
         getKeyToBackup,
+        getKeyToExport,
         setMasterKey,
         setExtsk,
         setShield,
