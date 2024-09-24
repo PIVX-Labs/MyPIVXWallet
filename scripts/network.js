@@ -122,7 +122,7 @@ export class ExplorerNetwork extends Network {
             return block;
         } catch (e) {
             // Don't display block not found errors to user
-            if (e.message.match(/block not found/i)) {
+            if (e?.message?.match(/block not found/i)) {
                 return;
             }
             this.error();
