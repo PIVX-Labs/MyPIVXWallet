@@ -122,7 +122,13 @@ export class ExplorerNetwork extends Network {
             return block;
         } catch (e) {
             // Don't display block not found errors to user
-            if (e?.message?.match(/block not found/i)) {
+            // This is a bug with blockbook, where it sends a bad
+            // request error or newly minted blocks
+            if (
+                e.message.match(/block not found/i) ||
+                e.message.match(/safe fetch/) ||
+                e.message.match(/bad request/i)
+            ) {
                 return;
             }
             this.error();
@@ -367,7 +373,7 @@ async function retryWrapper(func, ...args) {
             const res = await func(...args);
 
             // If the endpoint is non-OK, assume it's an error
-            if (!res.ok) throw res;
+            if (!res.ok) throw new Error(res.statusText);
 
             // Return the result if successful
             return res;
