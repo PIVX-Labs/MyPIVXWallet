@@ -392,9 +392,6 @@ progress[value]::-moz-progress-bar {
 }
 
 @media (max-width: 768px) {
-    #content-wrap {
-        margin-top: 40px
-    }
 
     #page-container {
         min-height: calc(100vh - 40px);
@@ -1834,9 +1831,6 @@ a {
 
 @media screen and (max-width: 600px) {
 
-    .containerMobileApp {
-        padding-top: 25px;
-    }
 
     /* Buttons - Hide icons or it will be deformed */
     .buttoni-arrow,
