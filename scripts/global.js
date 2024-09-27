@@ -208,7 +208,7 @@ export async function start() {
     };
 
     return;
-
+    
     // Set Copyright year on footer
     document.getElementById('copyrightYear').innerHTML =
         new Date().getFullYear();
@@ -1298,7 +1298,7 @@ async function renderProposals(arrProposals, fContested) {
         mobileExtended.innerHTML = `
         <div class="row pt-2">
             <div class="col-5 fs-13 fw-600">
-                <div class="governMobDot"></div> ${translation.govTablePayment}
+                ${translation.govTablePayment}
             </div>
             <div class="col-7">
                 <span class="governValues"><b>${sanitizeHTML(
@@ -1319,7 +1319,7 @@ async function renderProposals(arrProposals, fContested) {
         <hr class="governHr">
         <div class="row">
             <div class="col-5 fs-13 fw-600">
-                <div class="governMobDot"></div> ${translation.govTableVotes}
+                ${translation.govTableVotes}
             </div>
             <div class="col-7">
                 <b>${parseFloat(nLocalPercent).toLocaleString(
@@ -1339,7 +1339,7 @@ async function renderProposals(arrProposals, fContested) {
         <hr class="governHr">
         <div class="row pb-2">
             <div class="col-5 fs-13 fw-600">
-                <div class="governMobDot"></div> ${translation.govTableVote}
+                ${translation.govTableVote}
             </div>
             <div class="col-7">
                 ${voteBtn}
