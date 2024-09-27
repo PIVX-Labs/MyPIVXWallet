@@ -1109,10 +1109,15 @@ progress[value]::-moz-progress-bar {
 
 .pivx-bold-title span,
 .pivx-bold-title-smaller span {
-    font-size: .8em;
+    font-size: 26px;
     display: block;
     line-height: 1.2em;
     font-weight: 300;
+    color:#E9DEFF;
+}
+
+.pivx-bold-title div {
+    color:#E9DEFF;
 }
 
 .center-text {
@@ -4129,3 +4134,46 @@ textarea::placeholder {
     animation-iteration-count: infinite;
     animation-timing-function: linear; 
 }
+
+.loadingDots {
+    display: flex;
+    justify-content: center;
+    margin-bottom:25px;
+}
+
+.loadingDots span {
+    height:16px;
+    width:16px;
+    background-color:#9621FF;
+    border-radius:100px;
+    animation: fade 1.5s infinite ease-in-out;
+}
+
+.loadingDots span:nth-child(2) {
+    margin-left:15px;
+    margin-right:15px;
+}
+
+
+/* Delay for each dot */
+.loadingDots span:nth-child(1) {
+    animation-delay: 0s;
+  }
+  
+  .loadingDots span:nth-child(2) {
+    animation-delay: 0.3s;
+  }
+  
+  .loadingDots span:nth-child(3) {
+    animation-delay: 0.6s;
+  }
+  
+  /* Animation keyframes */
+  @keyframes fade {
+    0%, 100% {
+      opacity: 25%;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
