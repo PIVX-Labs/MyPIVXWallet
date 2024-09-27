@@ -4133,6 +4133,7 @@ textarea::placeholder {
 @media (max-width:768px) {
     .mobileVote {
         display:flex;
+        align-items: center;
     }
 
     .mobileVote .pivx-button-outline {

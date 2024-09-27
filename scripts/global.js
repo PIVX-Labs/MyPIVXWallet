@@ -1277,6 +1277,11 @@ async function renderProposals(arrProposals, fContested) {
                 'onclick',
                 `MPW.govVote('${cProposal.Hash}', 1);`
             );
+            
+            domYesBtn.setAttribute(
+                'style',
+                `height:36px;`
+            );
             voteBtn = domNoBtn.outerHTML + domYesBtn.outerHTML;
         }
 
