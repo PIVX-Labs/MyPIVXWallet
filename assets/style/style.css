@@ -3331,7 +3331,7 @@ select.form-control option {
 
 @media (max-width: 550px) {
     .flipdown {
-        width: 312px;
+        width: 316px;
         height: 70px;
     }
 
@@ -4128,4 +4128,14 @@ textarea::placeholder {
     animation-duration: 2500ms;
     animation-iteration-count: infinite;
     animation-timing-function: linear; 
+}
+
+@media (max-width:768px) {
+    .mobileVote {
+        display:flex;
+    }
+
+    .mobileVote .pivx-button-outline {
+        margin-right:7px;
+    }
 }
