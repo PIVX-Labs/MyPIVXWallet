@@ -4201,6 +4201,9 @@ textarea::placeholder {
     .textCenterMob {
         text-align: center;
     }
+    .showMenuMobile {
+        display:none;
+    }
 }
 
 @media (max-width:768px) {
