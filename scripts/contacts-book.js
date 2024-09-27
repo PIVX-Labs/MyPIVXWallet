@@ -424,8 +424,15 @@ function renderAddress(strAddress) {
     doms.domModalQrLabel.innerHTML =
         // SanitzeHTML shouldn't be necessary, but let's keep it just in case
         sanitizeHTML(strAddress) +
-        `<i onclick="MPW.toClipboard('${strAddress}', this)" id="guiAddressCopy" class="pColor" style="position: absolute; right: 27px; margin-top: -1px; cursor: pointer; width: 20px;">${pIconCopy}</i>`;
+        `<i onclick="MPW.toClipboard('${strAddress}', this)" id="guiAddressCopy" class="pColor" style="position: absolute; right: 55px; margin-top: -1px; cursor: pointer; width: 20px;">${pIconCopy}</i>`;
     document.getElementById('clipboard').value = strAddress;
+
+    // HD wallets gain a 'Refresh' button for quick address rotation
+    const cWallet = useWallet();
+    if (cWallet.isHD) {
+        doms.domModalQrLabel.style['padding-right'] = '65px';
+        doms.domModalQrLabel.innerHTML += `<i onclick="MPW.getNewAddress({ updateGUI: true, verify: true, shield: ${!cWallet.publicMode} })" class="pColor fa-solid fa-arrows-rotate fa-lg" style="position: absolute; right: 27px; margin-top: 10px; cursor: pointer; width: 20px;"></i>`;
+    }
 }
 
 /**
@@ -436,6 +443,8 @@ export async function guiRenderReceiveModal(
     cReceiveType = RECEIVE_TYPES.CONTACT
 ) {
     doms.domModalQR.hidden = false;
+    // Default the width to fit non-rotatable Contacts, XPub and non-HD
+    doms.domModalQrLabel.style['padding-right'] = '35px';
     switch (cReceiveType) {
         case RECEIVE_TYPES.CONTACT:
             await renderContactModal();
@@ -451,6 +460,7 @@ export async function guiRenderReceiveModal(
             const strXPub = wallet.getXPub();
 
             // Update the QR Label (we'll show the address here for now, user can set Contact "Name" optionally later)
+
             doms.domModalQrLabel.innerHTML =
                 sanitizeHTML(strXPub) +
                 `<i onclick="MPW.toClipboard('${strXPub}', this)" id="guiAddressCopy" class="pColor" style="position: absolute; right: 27px; margin-top: -1px; cursor: pointer; width: 20px;">${pIconCopy}</i>`;
