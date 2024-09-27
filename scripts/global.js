@@ -1277,6 +1277,8 @@ async function renderProposals(arrProposals, fContested) {
                 'onclick',
                 `MPW.govVote('${cProposal.Hash}', 1);`
             );
+
+            domYesBtn.setAttribute('style', `height:36px;`);
             voteBtn = domNoBtn.outerHTML + domYesBtn.outerHTML;
         }
 
@@ -1339,7 +1341,7 @@ async function renderProposals(arrProposals, fContested) {
             <div class="col-5 fs-13 fw-600">
                 ${translation.govTableVote}
             </div>
-            <div class="col-7">
+            <div class="col-7 mobileVote">
                 ${voteBtn}
             </div>
         </div>`;

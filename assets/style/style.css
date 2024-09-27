@@ -3323,7 +3323,7 @@ select.form-control option {
 
 @media (max-width: 550px) {
     .flipdown {
-        width: 312px;
+        width: 316px;
         height: 70px;
     }
 
@@ -4141,7 +4141,6 @@ textarea::placeholder {
     margin-right:15px;
 }
 
-
 /* Delay for each dot */
 .loadingDots span:nth-child(1) {
     animation-delay: 0s;
@@ -4200,5 +4199,16 @@ textarea::placeholder {
 @media (max-width:992px) {
     .footer-icons i {
         font-size: 18px;
+    }
+}
+
+@media (max-width:768px) {
+    .mobileVote {
+        display:flex;
+        align-items: center;
+    }
+
+    .mobileVote .pivx-button-outline {
+        margin-right:7px;
     }
 }
