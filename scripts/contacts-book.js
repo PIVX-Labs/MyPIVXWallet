@@ -421,14 +421,17 @@ function renderAddress(strAddress) {
     } catch (e) {
         doms.domModalQR.hidden = true;
     }
+
+    const cWallet = useWallet();
     doms.domModalQrLabel.innerHTML =
-        // SanitzeHTML shouldn't be necessary, but let's keep it just in case
+        // SanitizeHTML shouldn't be necessary, but let's keep it just in case
         sanitizeHTML(strAddress) +
-        `<i onclick="MPW.toClipboard('${strAddress}', this)" id="guiAddressCopy" class="pColor" style="position: absolute; right: 55px; margin-top: -1px; cursor: pointer; width: 20px;">${pIconCopy}</i>`;
+        `<i onclick="MPW.toClipboard('${strAddress}', this)" id="guiAddressCopy" class="pColor" style="position: absolute; ${
+            cWallet.isHD ? 'right: 55px;' : ''
+        } margin-top: -1px; cursor: pointer; width: 20px;">${pIconCopy}</i>`;
     document.getElementById('clipboard').value = strAddress;
 
     // HD wallets gain a 'Refresh' button for quick address rotation
-    const cWallet = useWallet();
     if (cWallet.isHD) {
         doms.domModalQrLabel.style['padding-right'] = '65px';
         doms.domModalQrLabel.innerHTML += `<i onclick="MPW.getNewAddress({ updateGUI: true, verify: true, shield: ${!cWallet.publicMode} })" class="pColor fa-solid fa-arrows-rotate fa-lg" style="position: absolute; right: 27px; margin-top: 10px; cursor: pointer; width: 20px;"></i>`;
