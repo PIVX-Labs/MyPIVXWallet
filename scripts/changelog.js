@@ -18,6 +18,9 @@ export function checkForUpgrades() {
         renderChangelog();
     }
 
+    // Update the footer with our version
+    doms.domVersion.innerText = `v${VERSION}`;
+
     // Update the last-used app version
     localStorage.setItem('version', VERSION.split('-')[0]);
 }
