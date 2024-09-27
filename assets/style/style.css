@@ -798,15 +798,11 @@ progress[value]::-moz-progress-bar {
     bottom: 0;
     width: 100%;
     padding: 10px;
-    border-top: solid #521186 1px;
-    background-color: #2b09508c;
-    backdrop-filter: blur(4px);
 }
 
 .footer {
     width: 100%;
     color: white;
-    text-align: center;
     padding: 0;
 }
 
@@ -4158,22 +4154,57 @@ textarea::placeholder {
 /* Delay for each dot */
 .loadingDots span:nth-child(1) {
     animation-delay: 0s;
-  }
-  
-  .loadingDots span:nth-child(2) {
+}
+
+.loadingDots span:nth-child(2) {
     animation-delay: 0.3s;
-  }
-  
-  .loadingDots span:nth-child(3) {
+}
+
+.loadingDots span:nth-child(3) {
     animation-delay: 0.6s;
-  }
-  
-  /* Animation keyframes */
-  @keyframes fade {
+}
+
+/* Animation keyframes */
+@keyframes fade {
     0%, 100% {
-      opacity: 25%;
+        opacity: 25%;
     }
     50% {
-      opacity: 1;
+        opacity: 1;
     }
-  }
+}
+
+.footer-icons i {
+    color:#7F20FF;
+}
+
+.footer-icons a {
+    margin-left: 3px;
+    margin-right: 3px;
+}
+
+.footer-icons a:first-child {
+    margin-left:0px;
+}
+
+.footer-icons a:last-child {
+    margin-right:0px;
+}
+
+@media (min-width:768px) {
+    .w-50-mob {
+        width:50%;
+    }
+    .footFlexMob {
+        display:flex;
+    }
+    .textCenterMob {
+        text-align: center;
+    }
+}
+
+@media (max-width:768px) {
+    .footer-icons i {
+        font-size: 18px;
+    }
+}
