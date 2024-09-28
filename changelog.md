@@ -15,7 +15,9 @@ There are over 15k line changes in v2.0, this changelog will only show a small s
 - Added persistance for Ledger users.
 - Added Exchange Address activity.
 - Contacts are now Shield-based.
+- Added address quick-refresh button.
 - Moved from CoinGecko to Labs Oracle.
+- Added Official PIVX Labs RPC Node.
 - Added visibility toggle to Password fields.
 - Fixed Over-Allocated proposal display.
 - Gray-out Ledger if browser is unsupported.
