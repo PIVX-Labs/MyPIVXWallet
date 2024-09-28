@@ -29,6 +29,7 @@ import { cOracle } from './prices.js';
 
 import pIconCopy from '../assets/icons/icon-copy.svg';
 import pIconCheck from '../assets/icons/icon-check.svg';
+import SideNavbar from './SideNavbar.vue';
 
 /** A flag showing if base MPW is fully loaded or not */
 export let fIsLoaded = false;
@@ -47,6 +48,7 @@ const pinia = createPinia();
 
 export const dashboard = createApp(Dashboard).use(pinia).mount('#DashboardTab');
 createApp(Stake).use(pinia).mount('#StakingTab');
+createApp(SideNavbar).use(pinia).mount('#SideNavbar');
 
 export async function start() {
     doms = {
@@ -179,13 +181,11 @@ export async function start() {
         arrDomScreenLinks: document.getElementsByClassName('tablinks'),
         // Alert DOM element
         domAlertPos: document.getElementsByClassName('alertPositioning')[0],
-        domNetwork: document.getElementById('Network'),
         domChangePasswordContainer: document.getElementById(
             'changePassword-container'
         ),
         domLogOutContainer: document.getElementById('logOut-container'),
         domDebug: document.getElementById('Debug'),
-        domTestnet: document.getElementById('Testnet'),
         domCurrencySelect: document.getElementById('currency'),
         domExplorerSelect: document.getElementById('explorer'),
         domNodeSelect: document.getElementById('node'),
@@ -290,11 +290,6 @@ async function refreshPriceDisplay() {
 }
 
 function subscribeToNetworkEvents() {
-    getEventEmitter().on('network-toggle', (value) => {
-        doms.domNetwork.innerHTML =
-            '<i class="fa-solid fa-' + (value ? 'wifi' : 'ban') + '"></i>';
-    });
-
     getEventEmitter().on('new-block', (block) => {
         debugLog(DebugTopics.GLOBAL, `New block detected! ${block}`);
 
@@ -1298,7 +1293,7 @@ async function renderProposals(arrProposals, fContested) {
         mobileExtended.innerHTML = `
         <div class="row pt-2">
             <div class="col-5 fs-13 fw-600">
-                <div class="governMobDot"></div> ${translation.govTablePayment}
+                ${translation.govTablePayment}
             </div>
             <div class="col-7">
                 <span class="governValues"><b>${sanitizeHTML(
@@ -1319,7 +1314,7 @@ async function renderProposals(arrProposals, fContested) {
         <hr class="governHr">
         <div class="row">
             <div class="col-5 fs-13 fw-600">
-                <div class="governMobDot"></div> ${translation.govTableVotes}
+                ${translation.govTableVotes}
             </div>
             <div class="col-7">
                 <b>${parseFloat(nLocalPercent).toLocaleString(
@@ -1339,7 +1334,7 @@ async function renderProposals(arrProposals, fContested) {
         <hr class="governHr">
         <div class="row pb-2">
             <div class="col-5 fs-13 fw-600">
-                <div class="governMobDot"></div> ${translation.govTableVote}
+                ${translation.govTableVote}
             </div>
             <div class="col-7 mobileVote">
                 ${voteBtn}
@@ -1703,12 +1698,6 @@ export async function createProposal() {
 
 export async function refreshChainData() {
     const cNet = getNetwork();
-    // If in offline mode: don't sync ANY data or connect to the internet
-    if (!cNet.enabled)
-        return console.warn(
-            'Offline mode active: For your security, the wallet will avoid ALL internet requests.'
-        );
-
     // Fetch block count
     const newBlockCount = await cNet.getBlockCount();
     if (newBlockCount !== blockCount) {
