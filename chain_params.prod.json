@@ -20,8 +20,8 @@
             { "name": "zkBitcoin", "url": "https://zkbitcoin.com" }
         ],
         "Nodes": [
-            { "name": "Duddino", "url": "https://rpc.duddino.com/mainnet" },
-            { "name": "PIVX Labs", "url": "https://rpc.pivxla.bz/mainnet" }
+            { "name": "PIVX Labs", "url": "https://rpc.pivxla.bz/mainnet" },
+            { "name": "Duddino", "url": "https://rpc.duddino.com/mainnet" }
         ],
         "Consensus": {},
         "coinbaseMaturity": 100,
