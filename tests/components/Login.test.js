@@ -28,7 +28,7 @@ describe('Login tests', () => {
         // Make sure the Login component relays the right event
         expect(wrapper.emitted('import-wallet')).toHaveLength(1);
         expect(wrapper.emitted('import-wallet')).toStrictEqual([
-            [{ password: '', secret: 'mySecret', type: 'hd' }],
+            [{ password: '', secret: 'mySecret', type: 'hd', blockCount: undefined }],
         ]);
     });
     test('Create wallet login (advanced)', async () => {
@@ -50,7 +50,7 @@ describe('Login tests', () => {
         // Make sure the Login component relays the right event
         expect(wrapper.emitted('import-wallet')).toHaveLength(1);
         expect(wrapper.emitted('import-wallet')).toStrictEqual([
-            [{ password: 'myPass', secret: 'mySecret', type: 'hd' }],
+            [{ password: 'myPass', secret: 'mySecret', type: 'hd', blockCount: undefined }],
         ]);
     });
     test('Vanity gen login', async () => {
