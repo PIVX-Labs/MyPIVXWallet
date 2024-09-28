@@ -845,6 +845,7 @@ export class Wallet {
             ) {
                 try {
                     block = await cNet.getBlock(blockHeight);
+                    if (!block) return;
                     if (block.txs) {
                         if (
                             this.hasShield() &&

@@ -122,10 +122,6 @@ export class Settings {
 export async function start() {
     //TRANSLATIONS
     //to make translations work we need to change it so that we just enable or disable the visibility of the text
-    doms.domTestnet.style.display = cChainParams.current.isTestnet
-        ? ''
-        : 'none';
-    doms.domDebug.style.display = debug ? '' : 'none';
 
     // Hook up the 'currency' select UI
     document.getElementById('currency').onchange = function (evt) {
@@ -209,12 +205,6 @@ export async function start() {
     nDisplayDecimals = displayDecimals;
     doms.domDisplayDecimalsSlider.value = nDisplayDecimals;
 
-    // Initialise status icons as their default variables
-    doms.domNetwork.innerHTML =
-        '<i class="fa-solid fa-' +
-        (getNetwork().enabled ? 'wifi' : 'ban') +
-        '"></i>';
-
     // Subscribe to events
     subscribeToNetworkEvents();
 
@@ -260,8 +250,6 @@ async function setNode(node, fSilent = false) {
     const database = await Database.getInstance();
     database.setSettings({ node: node.url });
 
-    // Enable networking + notify if allowed
-    getNetwork().enable();
     if (!fSilent)
         createAlert(
             'success',
@@ -390,15 +378,15 @@ export async function logOut() {
 /**
  * Toggle between Mainnet and Testnet
  */
-export async function toggleTestnet() {
+export async function toggleTestnet(
+    wantTestnet = !cChainParams.current.isTestnet
+) {
     if (wallet.isLoaded() && !wallet.isSynced) {
         createAlert('warning', `${ALERTS.WALLET_NOT_SYNCED}`, 3000);
         doms.domTestnetToggler.checked = cChainParams.current.isTestnet;
         return;
     }
-    const cNextNetwork = cChainParams.current.isTestnet
-        ? cChainParams.main
-        : cChainParams.testnet;
+    const cNextNetwork = wantTestnet ? cChainParams.testnet : cChainParams.main;
 
     // If the current wallet is not saved, we'll ask the user for confirmation, since they'll lose their wallet if they switch with an unsaved wallet!
     if (wallet.isLoaded() && !(await hasEncryptedWallet())) {
@@ -432,10 +420,6 @@ export async function toggleTestnet() {
     // Update current chain config
     cChainParams.current = cNextNetwork;
 
-    // Update UI and static tickers
-    doms.domTestnet.style.display = cChainParams.current.isTestnet
-        ? ''
-        : 'none';
     // Update testnet toggle in settings
     doms.domTestnetToggler.checked = cChainParams.current.isTestnet;
     await start();
@@ -445,9 +429,9 @@ export async function toggleTestnet() {
     await updateGovernanceTab();
 }
 
-export function toggleDebug() {
-    debug = !debug;
-    doms.domDebug.style.display = debug ? '' : 'none';
+export function toggleDebug(newValue = !debug) {
+    debug = newValue;
+    getEventEmitter().emit('toggle-debug', debug);
 }
 
 /**

@@ -51,33 +51,6 @@ export class Network {
         if (this.constructor === Network) {
             throw new Error('Initializing virtual class');
         }
-        this._enabled = true;
-    }
-
-    /**
-     * @param {boolean} value
-     */
-    set enabled(value) {
-        if (value !== this._enabled) {
-            getEventEmitter().emit('network-toggle', value);
-            this._enabled = value;
-        }
-    }
-
-    get enabled() {
-        return this._enabled;
-    }
-
-    enable() {
-        this.enabled = true;
-    }
-
-    disable() {
-        this.enabled = false;
-    }
-
-    toggle() {
-        this.enabled = !this.enabled;
     }
 
     error() {
@@ -114,10 +87,7 @@ export class ExplorerNetwork extends Network {
     }
 
     error() {
-        if (this.enabled) {
-            this.disable();
-            createAlert('warning', ALERTS.CONNECTION_FAILED);
-        }
+        createAlert('warning', ALERTS.CONNECTION_FAILED);
     }
 
     /**
@@ -151,6 +121,16 @@ export class ExplorerNetwork extends Network {
             block.txs = newTxs;
             return block;
         } catch (e) {
+            // Don't display block not found errors to user
+            // This is a bug with blockbook, where it sends a bad
+            // request error or newly minted blocks
+            if (
+                e.message.match(/block not found/i) ||
+                e.message.match(/safe fetch/) ||
+                e.message.match(/bad request/i)
+            ) {
+                return;
+            }
             this.error();
             throw e;
         }
@@ -178,10 +158,16 @@ export class ExplorerNetwork extends Network {
     async safeFetchFromExplorer(strCommand, sleepTime = 20000) {
         let trials = 0;
         const maxTrials = 6;
+        let error;
         while (trials < maxTrials) {
             trials += 1;
             const res = await retryWrapper(fetchBlockbook, strCommand);
             if (!res.ok) {
+                try {
+                    error = (await res.json()).error;
+                } catch (e) {
+                    error = 'Cannot safe fetch from explorer!';
+                }
                 debugLog(
                     DebugTopics.NET,
                     'Blockbook internal error! sleeping for ' +
@@ -193,7 +179,7 @@ export class ExplorerNetwork extends Network {
             }
             return await res.json();
         }
-        throw new Error('Cannot safe fetch from explorer!');
+        throw new Error(error);
     }
 
     /**
@@ -387,7 +373,7 @@ async function retryWrapper(func, ...args) {
             const res = await func(...args);
 
             // If the endpoint is non-OK, assume it's an error
-            if (!res.ok) throw res;
+            if (!res.ok) throw new Error(res.statusText);
 
             // Return the result if successful
             return res;
