@@ -98,7 +98,7 @@ export class ParsedSecret {
                         if (obj.shield)
                             shield = await PIVXShield.create({
                                 extendedSpendingKey: obj.shield,
-                                blockHeight: 4200000,
+                                blockHeight: 4_200_000,
                                 coinType: cChainParams.current.BIP44_TYPE,
                                 accountIndex: 0,
                                 loadSaplingData: false,

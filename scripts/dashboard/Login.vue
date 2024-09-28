@@ -21,11 +21,12 @@ const { advancedMode } = toRefs(props);
         <CreateWallet
             :advanced-mode="advancedMode"
             @import-wallet="
-                (mnemonic, password) =>
+                (mnemonic, password, blockCount) =>
                     $emit('import-wallet', {
                         type: 'hd',
                         secret: mnemonic,
                         password,
+                        blockCount,
                     })
             "
         />
