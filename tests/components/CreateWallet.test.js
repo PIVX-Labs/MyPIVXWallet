@@ -5,9 +5,8 @@ import Modal from '../../scripts/Modal.vue';
 import { vi, it, describe } from 'vitest';
 import 'fake-indexeddb/auto';
 
-vi.mock("../../scripts/network.js");
+vi.mock('../../scripts/network.js');
 vi.stubGlobal('indexedDB', new IDBFactory());
-
 
 describe('create wallet tests', () => {
     it('Generates wallet', async () => {
@@ -46,7 +45,7 @@ describe('create wallet tests', () => {
                 .findComponent(Modal)
                 .findAll('[data-testid=seedphraseModal]')
         ).toHaveLength(0);
-	await flushPromises();
+        await flushPromises();
         // Ok We emitted exactly one event importWallet
         expect(wrapper.emitted('importWallet')).toHaveLength(1);
         // We emitted exactly the seedphrase with empty passphrase
@@ -99,8 +98,8 @@ describe('create wallet tests', () => {
                 .findComponent(Modal)
                 .findAll('[data-testid=seedphraseModal]')
         ).toHaveLength(0);
-	
-	await flushPromises();
+
+        await flushPromises();
         // Ok We emitted exactly one event importWallet
         expect(wrapper.emitted('importWallet')).toHaveLength(1);
         // We emitted exactly the seedphrase with empty passphrase
