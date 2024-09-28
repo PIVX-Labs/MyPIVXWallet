@@ -146,6 +146,13 @@ export async function start() {
         );
     };
 
+    // Hook up the 'node' select UI
+    document.getElementById('node').onchange = function (evt) {
+        setNode(
+            cChainParams.current.Nodes.find((a) => a.url === evt.target.value)
+        );
+    };
+
     // Hook up the 'translation' select UI
     document.getElementById('translation').onchange = function (evt) {
         setTranslation(evt.target.value);
