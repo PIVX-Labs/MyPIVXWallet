@@ -76,9 +76,15 @@ watch(showExportModal, async (showExportModal) => {
  * @param {Object} o - Options
  * @param {'legacy'|'hd'|'hardware'} o.type - type of import
  * @param {string} o.secret
+ * @param {nubmer?} [o.blockCount] Creation block count. Defaults to 4_200_000
  * @param {string} [o.password]
  */
-async function importWallet({ type, secret, password = '' }) {
+async function importWallet({
+    type,
+    secret,
+    password = '',
+    blockCount = 4_200_000,
+}) {
     /**
      * @type{ParsedSecret?}
      */
@@ -114,6 +120,9 @@ async function importWallet({ type, secret, password = '' }) {
     }
     if (parsedSecret) {
         await wallet.setMasterKey({ mk: parsedSecret.masterKey });
+        if (parsedSecret.shield) {
+            await parsedSecret.shield.reloadFromCheckpoint(blockCount);
+        }
         wallet.setShield(parsedSecret.shield);
 
         if (needsToEncrypt.value) showEncryptModal.value = true;
