@@ -1502,6 +1502,7 @@ async function refreshMasternodeData(cMasternode, fAlert = false) {
         doms.domMnTextErrors.innerHTML =
             'Masternode is currently <b>OFFLINE</b>';
         if (
+            wallet.isHardwareWallet() ||
             !wallet.isViewOnly() ||
             (await restoreWallet(translation.walletUnlockCreateMN))
         ) {
