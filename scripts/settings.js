@@ -557,8 +557,8 @@ export async function toggleAutoLockWallet() {
  * Toggle the Transaction Mode at runtime and in DB
  * @param {boolean?} fForce - Optionally force the setting to a value
  */
-export async function togglePublicMode(fForce) {
-    fPublicMode = typeof fForce === 'boolean' ? fForce : !fPublicMode;
+export async function togglePublicMode(fNewPublicMode = !fPublicMode) {
+    fPublicMode = fNewPublicMode;
 
     // Update the setting in the DB
     const database = await Database.getInstance();
