@@ -106,7 +106,7 @@ export class Settings {
         advancedMode = false,
         coldAddress = '',
         autoLockWallet = false,
-        publicMode = true
+        publicMode = true,
     } = {}) {
         this.explorer = explorer;
         this.node = node;

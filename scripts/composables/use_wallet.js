@@ -23,7 +23,7 @@ export const useWallet = defineStore('wallet', () => {
     // For now we'll just import the existing one
     // const wallet = new Wallet();
 
-    // Public/Private Mode will be loaded from disk after 'import-wallet' is emitted 
+    // Public/Private Mode will be loaded from disk after 'import-wallet' is emitted
     const publicMode = ref(true);
     watch(publicMode, (publicMode) => {
         doms.domNavbar.classList.toggle('active', !publicMode);
