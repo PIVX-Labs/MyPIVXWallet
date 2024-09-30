@@ -86,10 +86,6 @@ export class ExplorerNetwork extends Network {
         this.strUrl = strUrl;
     }
 
-    error() {
-        createAlert('warning', ALERTS.CONNECTION_FAILED);
-    }
-
     /**
      * Fetch a block from the explorer given the height
      * @param {number} blockHeight
@@ -131,7 +127,6 @@ export class ExplorerNetwork extends Network {
             ) {
                 return;
             }
-            this.error();
             throw e;
         }
     }
@@ -144,7 +139,6 @@ export class ExplorerNetwork extends Network {
 
             return backend.blocks;
         } catch (e) {
-            this.error();
             throw e;
         }
     }
@@ -270,7 +264,6 @@ export class ExplorerNetwork extends Network {
             return arrUTXOs;
         } catch (e) {
             console.error(e);
-            this.error();
         }
     }
 
