@@ -4042,6 +4042,7 @@ textarea::placeholder {
     height: 18px;
     position: relative;
     top: 2px;
+    right: 6px;
 }
 
 .tooltip {
