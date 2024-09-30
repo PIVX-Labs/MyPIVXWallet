@@ -9,7 +9,7 @@ const props = defineProps({
     strCurrency: String,
 });
 const { proposal, price, strCurrency } = toRefs(props);
-const emit = defineEmit(['vote']);
+const emit = defineEmits(['vote']);
 </script>
 
 <template>

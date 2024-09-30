@@ -1,3 +1,4 @@
+import { defineStore } from 'pinia';
 import { getEventEmitter } from '../event_bus.js';
 import { ref, watch } from 'vue';
 import {

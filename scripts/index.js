@@ -23,7 +23,6 @@ export {
     doms,
     toggleDropDown,
     switchSettings,
-    govVote,
 } from './global.js';
 export { wallet, getNewAddress } from './wallet.js';
 export {
