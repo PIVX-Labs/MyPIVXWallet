@@ -128,15 +128,11 @@ export class ExplorerNetwork extends Network {
     }
 
     async getBlockCount() {
-        try {
-            const { backend } = await (
-                await retryWrapper(fetchBlockbook, `/api/v2/api`)
-            ).json();
+        const { backend } = await (
+            await retryWrapper(fetchBlockbook, `/api/v2/api`)
+        ).json();
 
-            return backend.blocks;
-        } catch (e) {
-            throw e;
-        }
+        return backend.blocks;
     }
 
     /**
