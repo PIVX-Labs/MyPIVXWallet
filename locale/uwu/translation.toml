@@ -242,7 +242,6 @@ SAVE_WALLET_PLEASE = "<b>Save yowour wawwet!</b><br>Dashbowed ➜ Secure your wa
 BACKUP_OR_ENCRYPT_WALLET = "Pwease ENCWYPT and/or BACKUP yowour keys befowe weaving, or you may lose dem! Oh noes!" # Please ENCRYPT and/or BACKUP your keys before leaving, or you may lose them!
 NO_CAMERAS = "Dis device has nwo camwera!" # This device has no camera!
 STAKING_LEDGER_NO_SUPPORT = "Ledger is not supported for Cold Staking" # Ledger is not supported for Cold Staking
-CONNECTION_FAILED = "<b>Failed to synchronize!</b> Please try again later.<br>You can attempt re-connect via the Settings." # <b>Failed to synchronize!</b> Please try again later.<br>You can attempt re-connect via the Settings.
 MN_NOT_ENABLED = "Ur masternowode is nawt enabled yet!" # Your masternode is not enabled yet!
 VOTE_SUBMITTED = "Vowote submitted!" # Vote submitted!
 VOTED_ALREADY = "Yew already vowoted for dis pwoposal! Pwease wait 1 hour" # You already voted for this proposal! Please wait 1 hour
