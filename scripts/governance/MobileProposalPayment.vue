@@ -20,7 +20,6 @@ const nProposalValue = computed(
 <template>
     <div class="row pt-2">
         <div class="col-5 fs-13 fw-600">
-            <div class="governMobDot"></div>
             {{ translation.govTablePayment }}
         </div>
         <div class="col-7">

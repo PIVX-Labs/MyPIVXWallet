@@ -6,7 +6,6 @@ const emit = defineEmits(['vote']);
 <template>
     <div class="row pb-2">
         <div class="col-5 fs-13 fw-600">
-            <div class="governMobDot"></div>
             {{ translation.govTableVote }}
         </div>
         <div class="col-7">

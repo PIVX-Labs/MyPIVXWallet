@@ -17,7 +17,6 @@ const votePercentage = computed(() =>
 <template>
     <div class="row">
         <div class="col-5 fs-13 fw-600">
-            <div class="governMobDot"></div>
             {{ translation.govTableVotes }}
         </div>
         <div class="col-7" data-testid="proposalVotes">
