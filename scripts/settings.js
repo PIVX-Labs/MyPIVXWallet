@@ -555,7 +555,7 @@ export async function toggleAutoLockWallet() {
 
 /**
  * Toggle the Transaction Mode at runtime and in DB
- * @param {boolean?} fForce - Optionally force the setting to a value
+ * @param {boolean?} fNewPublicMode - Optionally force the setting to a value
  */
 export async function togglePublicMode(fNewPublicMode = !fPublicMode) {
     fPublicMode = fNewPublicMode;
