@@ -5,7 +5,6 @@ import {
     fAdvancedMode,
     debug as rawDebug,
     toggleDebug,
-    toggleTestnet,
 } from '../settings.js';
 import { cChainParams } from '../chain_params.js';
 
@@ -29,7 +28,6 @@ export function useSettings() {
     });
 
     watch(isTestnet, async () => {
-        await toggleTestnet(isTestnet.value);
         isTestnet.value = cChainParams.current === cChainParams.testnet;
     });
 
