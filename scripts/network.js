@@ -53,10 +53,6 @@ export class Network {
         }
     }
 
-    error() {
-        throw new Error('Error must be implemented');
-    }
-
     getBlockCount() {
         throw new Error('getBlockCount must be implemented');
     }
@@ -84,10 +80,6 @@ export class ExplorerNetwork extends Network {
          * @public
          */
         this.strUrl = strUrl;
-    }
-
-    error() {
-        createAlert('warning', ALERTS.CONNECTION_FAILED);
     }
 
     /**
@@ -131,22 +123,16 @@ export class ExplorerNetwork extends Network {
             ) {
                 return;
             }
-            this.error();
             throw e;
         }
     }
 
     async getBlockCount() {
-        try {
-            const { backend } = await (
-                await retryWrapper(fetchBlockbook, `/api/v2/api`)
-            ).json();
+        const { backend } = await (
+            await retryWrapper(fetchBlockbook, `/api/v2/api`)
+        ).json();
 
-            return backend.blocks;
-        } catch (e) {
-            this.error();
-            throw e;
-        }
+        return backend.blocks;
     }
 
     /**
@@ -270,7 +256,6 @@ export class ExplorerNetwork extends Network {
             return arrUTXOs;
         } catch (e) {
             console.error(e);
-            this.error();
         }
     }
 

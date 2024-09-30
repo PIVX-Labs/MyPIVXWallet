@@ -242,7 +242,6 @@ SAVE_WALLET_PLEASE = "<b>I-save ang iyong wallet!</b><br>Dashboard ➜ I-secure 
 BACKUP_OR_ENCRYPT_WALLET = "Pakiusap i-ENCRYPT at/o i-BACKUP ang iyong keys bago umalis, o mawawala mo ang mga ito!" # Please ENCRYPT and/or BACKUP your keys before leaving, or you may lose them!
 NO_CAMERAS = "Ang device na ito ay walang camera!" # This device has no camera!
 STAKING_LEDGER_NO_SUPPORT = "Ang ledger ay hindi suportado para sa Cold Staking" # Ledger is not supported for Cold Staking
-CONNECTION_FAILED = "<b>Nabigong i-synchronize! Pakiusap ulitin itong muli.<br> Maaari mo itong i-konektang muli via the Settings. " # <b>Failed to synchronize!</b> Please try again later.<br>You can attempt re-connect via the Settings.
 MN_NOT_ENABLED = "Ang iyong masternode ay hindi pa gumagana!" # Your masternode is not enabled yet!
 VOTE_SUBMITTED = "Naipasa na ang iyong Boto!" # Vote submitted!
 VOTED_ALREADY = "Ikaw ay bumoto na sa proposal na ito! Pakiusap maghintay ng 1 oras" # You already voted for this proposal! Please wait 1 hour

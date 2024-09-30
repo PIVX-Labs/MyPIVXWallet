@@ -1,5 +1,7 @@
 import { getEventEmitter } from '../event_bus.js';
 import { ref, watch } from 'vue';
+import { watchIgnorable } from '@vueuse/core';
+
 import {
     nDisplayDecimals,
     fAdvancedMode,
@@ -16,8 +18,21 @@ export function useSettings() {
     const debug = ref(rawDebug);
     const isTestnet = ref(cChainParams.current === cChainParams.testnet);
 
+    const { ignoreUpdates: ignoreTestnetWatch } = watchIgnorable(
+        isTestnet,
+        async () => {
+            await toggleTestnet(isTestnet.value);
+            isTestnet.value = cChainParams.current === cChainParams.testnet;
+        }
+    );
+
     getEventEmitter().on('toggle-network', () => {
-        isTestnet.value = cChainParams.current === cChainParams.testnet;
+        // At the moment the only emitter of this event is the function toggleTestnet
+        // Therefore we can safely ignore the watch.
+        // TODO: change as we finish the VUE rewriting
+        ignoreTestnetWatch(() => {
+            isTestnet.value = cChainParams.current === cChainParams.testnet;
+        });
     });
 
     getEventEmitter().on('toggle-debug', () => {
@@ -26,11 +41,6 @@ export function useSettings() {
 
     watch(debug, () => {
         toggleDebug(debug.value);
-    });
-
-    watch(isTestnet, async () => {
-        await toggleTestnet(isTestnet.value);
-        isTestnet.value = cChainParams.current === cChainParams.testnet;
     });
 
     getEventEmitter().on('advanced-mode', (fAdvancedMode) => {

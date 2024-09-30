@@ -152,7 +152,6 @@ BAD_ADDR_PREFIX = "<b>Endereço PIVX inválido!<b><br>Prefixo inválido {address
 SENT_NOTHING = "Você não pode enviar 'nada'!" # You can't send 'nothing'!
 BACKUP_OR_ENCRYPT_WALLET = "Criptografe e/ou faça backup das suas chaves antes de sair, ou você pode perdê-las!" # Please ENCRYPT and/or BACKUP your keys before leaving, or you may lose them!
 STAKING_LEDGER_NO_SUPPORT = "A Ledger não é compatível com Cold Staking" # Ledger is not supported for Cold Staking
-CONNECTION_FAILED = "<b>Falha ao sincronizar!</b> Tente novamente mais tarde.<br>Pode tentar reconectar através das Configurações." # <b>Failed to synchronize!</b> Please try again later.<br>You can attempt re-connect via the Settings.
 MN_NOT_ENABLED = "O seu masternode ainda não está ativado!" # Your masternode is not enabled yet!
 VOTE_SUBMITTED = "Voto enviado!" # Vote submitted!
 VOTED_ALREADY = "Você já votou nesta proposta! Aguarde 1 hora" # You already voted for this proposal! Please wait 1 hour
