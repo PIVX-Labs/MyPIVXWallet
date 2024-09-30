@@ -50,7 +50,7 @@ export let fAutoSwitch = true;
 export let nDisplayDecimals = 2;
 /** A mode which configures MPW towards Advanced users, with low-level feature access and less restrictions (Potentially dangerous) */
 export let fAdvancedMode = false;
-/** automatically lock the wallet after any operation  that requires unlocking */
+/** Automatically lock the wallet after any operation that requires unlocking */
 export let fAutoLockWallet = false;
 /** The user's transaction mode, `true` for public, `false` for private */
 export let fPublicMode = true;
@@ -541,9 +541,13 @@ export async function toggleAdvancedMode() {
     await database.setSettings({ advancedMode: fAdvancedMode });
 }
 
+/**
+ * Toggle Advanced Mode at runtime and in DB
+ */
 export async function toggleAutoLockWallet() {
     fAutoLockWallet = !fAutoLockWallet;
     configureAutoLockWallet();
+
     // Update the setting in the DB
     const database = await Database.getInstance();
     await database.setSettings({ autoLockWallet: fAutoLockWallet });
