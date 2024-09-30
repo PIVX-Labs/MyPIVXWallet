@@ -685,6 +685,10 @@ export class Wallet {
         if (this.#isSynced) {
             throw new Error('Attempting to sync when already synced');
         }
+        // While syncing the wallet ( DB read + network sync) disable the event balance-update
+        // This is done to avoid a huge spam of event.
+        getEventEmitter().disableEvent('balance-update');
+
         await this.loadFromDisk();
         await this.loadShieldFromDisk();
         // Let's set the last processed block 5 blocks behind the actual chain tip
@@ -697,6 +701,8 @@ export class Wallet {
         }
         this.#isSynced = true;
         // Update both activities post sync
+        getEventEmitter().enableEvent('balance-update');
+        getEventEmitter().emit('balance-update');
         getEventEmitter().emit('new-tx');
     });
 
