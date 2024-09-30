@@ -53,10 +53,6 @@ export class Network {
         }
     }
 
-    error() {
-        throw new Error('Error must be implemented');
-    }
-
     getBlockCount() {
         throw new Error('getBlockCount must be implemented');
     }
