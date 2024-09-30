@@ -186,30 +186,6 @@ export class Wallet {
         return this.#masterKey.isHD;
     }
 
-    async hasWalletUnlocked(fIncludeNetwork = false) {
-        if (fIncludeNetwork && !getNetwork().enabled)
-            return createAlert(
-                'warning',
-                ALERTS.WALLET_OFFLINE_AUTOMATIC,
-                5500
-            );
-        if (!this.isLoaded()) {
-            return createAlert(
-                'warning',
-                tr(ALERTS.WALLET_UNLOCK_IMPORT, [
-                    {
-                        unlock: (await hasEncryptedWallet())
-                            ? 'unlock '
-                            : 'import/create',
-                    },
-                ]),
-                3500
-            );
-        } else {
-            return true;
-        }
-    }
-
     /**
      * Set or replace the active Master Key with a new Master Key
      * @param {object} o - Object to be destructured
