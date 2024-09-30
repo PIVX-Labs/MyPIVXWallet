@@ -1,8 +1,12 @@
-import { mount } from '@vue/test-utils';
+import { flushPromises, mount } from '@vue/test-utils';
 import { expect } from 'vitest';
 import CreateWallet from '../../scripts/dashboard/CreateWallet.vue';
 import Modal from '../../scripts/Modal.vue';
 import { vi, it, describe } from 'vitest';
+import 'fake-indexeddb/auto';
+
+vi.mock('../../scripts/network.js');
+vi.stubGlobal('indexedDB', new IDBFactory());
 
 describe('create wallet tests', () => {
     it('Generates wallet', async () => {
@@ -41,12 +45,12 @@ describe('create wallet tests', () => {
                 .findComponent(Modal)
                 .findAll('[data-testid=seedphraseModal]')
         ).toHaveLength(0);
-
+        await flushPromises();
         // Ok We emitted exactly one event importWallet
         expect(wrapper.emitted('importWallet')).toHaveLength(1);
         // We emitted exactly the seedphrase with empty passphrase
         expect(wrapper.emitted('importWallet')).toStrictEqual([
-            [seedphrase, ''],
+            [seedphrase, '', 1504903],
         ]);
     });
     it('Generates wallet advanced mode', async () => {
@@ -95,11 +99,12 @@ describe('create wallet tests', () => {
                 .findAll('[data-testid=seedphraseModal]')
         ).toHaveLength(0);
 
+        await flushPromises();
         // Ok We emitted exactly one event importWallet
         expect(wrapper.emitted('importWallet')).toHaveLength(1);
         // We emitted exactly the seedphrase with empty passphrase
         expect(wrapper.emitted('importWallet')).toStrictEqual([
-            [seedphrase, 'panleone'],
+            [seedphrase, 'panleone', 1504903],
         ]);
     });
 });

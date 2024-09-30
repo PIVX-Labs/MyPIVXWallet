@@ -1,6 +1,6 @@
 import template from '../locale/template/translation.toml';
 import { Database } from './database.js';
-import { fillAnalyticSelect, setTranslation } from './settings.js';
+import { setTranslation } from './settings.js';
 import { wallet } from './wallet.js';
 import { cReceiveType, guiToggleReceiveType } from './contacts-book.js';
 import { reactive } from 'vue';
@@ -122,7 +122,6 @@ export async function switchTranslation(langName) {
 
         // Translate any dynamic elements necessary
         ALERTS = translation['ALERTS'];
-        fillAnalyticSelect();
         if (wallet.isLoaded()) {
             await guiToggleReceiveType(cReceiveType);
         }
@@ -199,6 +198,7 @@ export const arrActiveLangs = [
     { code: 'cnr', display: 'Montenegrin', emoji: '🇲🇪' },
     { code: 'es-mx', display: 'Mexican Spanish', emoji: '🇲🇽' },
     { code: 'ph', display: 'Filipino', emoji: '🇵🇭' },
+    { code: 'hi', display: 'Hindi', emoji: '🇮🇳' },
     { code: 'uwu', display: 'UwU', emoji: '🐈' },
 ];
 

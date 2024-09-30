@@ -231,23 +231,7 @@ export class Mempool {
         this.#balances.immatureBalance.invalidate();
         this.#balances.balance.invalidate();
         this.#balances.coldBalance.invalidate();
-        this.#emitBalanceUpdate();
-    }
-
-    #emittingBalanceUpdate = false;
-
-    #emitBalanceUpdate() {
-        if (this.#emittingBalanceUpdate) return;
-        this.#emittingBalanceUpdate = true;
-        // TODO: This is not ideal, we are limiting the mempool to only emit 1 balance-update per frame,
-        // but we don't want the mempool to know about animation frames. This is needed during
-        // sync to avoid spamming balance-updates and slowing down the sync.
-        // The best course of action is to probably add a loading page/state and avoid
-        // listening to the balance-update event until the sync is done
-        requestAnimationFrame(() => {
-            getEventEmitter().emit('balance-update');
-            this.#emittingBalanceUpdate = false;
-        });
+        getEventEmitter().emit('balance-update');
     }
 
     /**

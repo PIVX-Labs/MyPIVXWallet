@@ -8,13 +8,7 @@ import {
 } from './debug.js';
 import { sleep } from './utils.js';
 import { getEventEmitter } from './event_bus.js';
-import {
-    STATS,
-    cStatKeys,
-    cAnalyticsLevel,
-    setExplorer,
-    fAutoSwitch,
-} from './settings.js';
+import { setExplorer, fAutoSwitch } from './settings.js';
 import { cNode } from './settings.js';
 import { ALERTS, tr, translation } from './i18n.js';
 import { Transaction } from './transaction.js';
@@ -57,33 +51,6 @@ export class Network {
         if (this.constructor === Network) {
             throw new Error('Initializing virtual class');
         }
-        this._enabled = true;
-    }
-
-    /**
-     * @param {boolean} value
-     */
-    set enabled(value) {
-        if (value !== this._enabled) {
-            getEventEmitter().emit('network-toggle', value);
-            this._enabled = value;
-        }
-    }
-
-    get enabled() {
-        return this._enabled;
-    }
-
-    enable() {
-        this.enabled = true;
-    }
-
-    disable() {
-        this.enabled = false;
-    }
-
-    toggle() {
-        this.enabled = !this.enabled;
     }
 
     error() {
@@ -96,10 +63,6 @@ export class Network {
 
     sendTransaction() {
         throw new Error('sendTransaction must be implemented');
-    }
-
-    submitAnalytics(_strType, _cData = {}) {
-        throw new Error('submitAnalytics must be implemented');
     }
 
     async getTxInfo(_txHash) {
@@ -124,10 +87,7 @@ export class ExplorerNetwork extends Network {
     }
 
     error() {
-        if (this.enabled) {
-            this.disable();
-            createAlert('warning', ALERTS.CONNECTION_FAILED);
-        }
+        createAlert('warning', ALERTS.CONNECTION_FAILED);
     }
 
     /**
@@ -161,6 +121,16 @@ export class ExplorerNetwork extends Network {
             block.txs = newTxs;
             return block;
         } catch (e) {
+            // Don't display block not found errors to user
+            // This is a bug with blockbook, where it sends a bad
+            // request error or newly minted blocks
+            if (
+                e.message.match(/block not found/i) ||
+                e.message.match(/safe fetch/) ||
+                e.message.match(/bad request/i)
+            ) {
+                return;
+            }
             this.error();
             throw e;
         }
@@ -188,10 +158,16 @@ export class ExplorerNetwork extends Network {
     async safeFetchFromExplorer(strCommand, sleepTime = 20000) {
         let trials = 0;
         const maxTrials = 6;
+        let error;
         while (trials < maxTrials) {
             trials += 1;
             const res = await retryWrapper(fetchBlockbook, strCommand);
             if (!res.ok) {
+                try {
+                    error = (await res.json()).error;
+                } catch (e) {
+                    error = 'Cannot safe fetch from explorer!';
+                }
                 debugLog(
                     DebugTopics.NET,
                     'Blockbook internal error! sleeping for ' +
@@ -203,7 +179,7 @@ export class ExplorerNetwork extends Network {
             }
             return await res.json();
         }
-        throw new Error('Cannot safe fetch from explorer!');
+        throw new Error(error);
     }
 
     /**
@@ -341,38 +317,6 @@ export class ExplorerNetwork extends Network {
     async getShieldBlockList() {
         return await (await fetch(`${cNode.url}/getshieldblocks`)).json();
     }
-
-    // PIVX Labs Analytics: if you are a user, you can disable this FULLY via the Settings.
-    // ... if you're a developer, we ask you to keep these stats to enhance upstream development,
-    // ... but you are free to completely strip MPW of any analytics, if you wish, no hard feelings.
-    submitAnalytics(strType, cData = {}) {
-        if (!this.enabled) return;
-
-        // TODO: rebuild Labs Analytics, submitAnalytics() will be disabled at code-level until this is live again
-        /* eslint-disable */
-        return;
-
-        // Limit analytics here to prevent 'leakage' even if stats are implemented incorrectly or forced
-        let i = 0,
-            arrAllowedKeys = [];
-        for (i; i < cAnalyticsLevel.stats.length; i++) {
-            const cStat = cAnalyticsLevel.stats[i];
-            arrAllowedKeys.push(cStatKeys.find((a) => STATS[a] === cStat));
-        }
-
-        // Check if this 'stat type' was granted permissions
-        if (!arrAllowedKeys.includes(strType)) return false;
-
-        // Format
-        const cStats = { type: strType, ...cData };
-
-        // Send to Labs Analytics
-        const request = new XMLHttpRequest();
-        request.open('POST', 'https://scpscan.net/mpw/statistic', true);
-        request.setRequestHeader('Content-Type', 'application/json');
-        request.send(JSON.stringify(cStats));
-        return true;
-    }
 }
 
 let _network = null;
@@ -429,7 +373,7 @@ async function retryWrapper(func, ...args) {
             const res = await func(...args);
 
             // If the endpoint is non-OK, assume it's an error
-            if (!res.ok) throw res;
+            if (!res.ok) throw new Error(res.statusText);
 
             // Return the result if successful
             return res;

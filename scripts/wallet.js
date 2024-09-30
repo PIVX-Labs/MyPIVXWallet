@@ -20,10 +20,10 @@ import { strHardwareName } from './ledger.js';
 import { OutpointState, Mempool } from './mempool.js';
 import { getEventEmitter } from './event_bus.js';
 import { lockableFunction } from './lock.js';
-
 import {
     isP2CS,
     isP2PKH,
+    isP2EXC,
     getAddressFromHash,
     COLD_START_INDEX,
     P2PK_START_INDEX,
@@ -184,30 +184,6 @@ export class Wallet {
     isHD() {
         if (!this.#masterKey) return false;
         return this.#masterKey.isHD;
-    }
-
-    async hasWalletUnlocked(fIncludeNetwork = false) {
-        if (fIncludeNetwork && !getNetwork().enabled)
-            return createAlert(
-                'warning',
-                ALERTS.WALLET_OFFLINE_AUTOMATIC,
-                5500
-            );
-        if (!this.isLoaded()) {
-            return createAlert(
-                'warning',
-                tr(ALERTS.WALLET_UNLOCK_IMPORT, [
-                    {
-                        unlock: (await hasEncryptedWallet())
-                            ? 'unlock '
-                            : 'import/create',
-                    },
-                ]),
-                3500
-            );
-        } else {
-            return true;
-        }
     }
 
     /**
@@ -400,7 +376,7 @@ export class Wallet {
     }
 
     /**
-     * @returns {Promsie<string>} new shield address
+     * @returns {Promise<string>} new shield address
      */
     async getNewShieldAddress() {
         return await this.#shield.getNewAddress();
@@ -418,8 +394,7 @@ export class Wallet {
         const dataBytes = hexToBytes(vout.script);
         const iStart = isP2PKH(dataBytes) ? P2PK_START_INDEX : COLD_START_INDEX;
         const address = this.getAddressFromHashCache(
-            bytesToHex(dataBytes.slice(iStart, iStart + 20)),
-            false
+            bytesToHex(dataBytes.slice(iStart, iStart + 20))
         );
         const path = this.isOwnAddress(address);
         if (path) {
@@ -511,8 +486,7 @@ export class Wallet {
         // At the moment we support only P2PKH and P2CS
         const iStart = isP2PKH(dataBytes) ? P2PK_START_INDEX : COLD_START_INDEX;
         const address = this.getAddressFromHashCache(
-            bytesToHex(dataBytes.slice(iStart, iStart + 20)),
-            false
+            bytesToHex(dataBytes.slice(iStart, iStart + 20))
         );
         return this.isOwnAddress(address);
     }
@@ -545,8 +519,7 @@ export class Wallet {
             const address = this.getAddressFromHashCache(
                 bytesToHex(
                     dataBytes.slice(P2PK_START_INDEX, P2PK_START_INDEX + 20)
-                ),
-                false
+                )
             );
             return {
                 type: 'p2pkh',
@@ -560,21 +533,37 @@ export class Wallet {
                     this.getAddressFromHashCache(
                         bytesToHex(dataBytes.slice(iStart, iStart + 20)),
                         iStart === OWNER_START_INDEX
+                            ? 'coldaddress'
+                            : 'pubkeyhash'
                     )
                 );
             }
             return { type: 'p2cs', addresses };
+        } else if (isP2EXC(dataBytes)) {
+            const address = this.getAddressFromHashCache(
+                bytesToHex(
+                    dataBytes.slice(
+                        P2PK_START_INDEX + 1,
+                        P2PK_START_INDEX + 20 + 1
+                    )
+                ),
+                'exchangeaddress'
+            );
+            return {
+                type: 'exchange',
+                addresses: [address],
+            };
         } else {
             return { type: 'unknown', addresses: [] };
         }
     }
 
     // Avoid calculating over and over the same getAddressFromHash by saving the result in a map
-    getAddressFromHashCache(pkh_hex, isColdStake) {
+    getAddressFromHashCache(pkh_hex, type) {
         if (!this.#knownPKH.has(pkh_hex)) {
             this.#knownPKH.set(
                 pkh_hex,
-                getAddressFromHash(hexToBytes(pkh_hex), isColdStake)
+                getAddressFromHash(hexToBytes(pkh_hex), type)
             );
         }
         return this.#knownPKH.get(pkh_hex);
@@ -696,6 +685,10 @@ export class Wallet {
         if (this.#isSynced) {
             throw new Error('Attempting to sync when already synced');
         }
+        // While syncing the wallet ( DB read + network sync) disable the event balance-update
+        // This is done to avoid a huge spam of event.
+        getEventEmitter().disableEvent('balance-update');
+
         await this.loadFromDisk();
         await this.loadShieldFromDisk();
         // Let's set the last processed block 5 blocks behind the actual chain tip
@@ -708,6 +701,8 @@ export class Wallet {
         }
         this.#isSynced = true;
         // Update both activities post sync
+        getEventEmitter().enableEvent('balance-update');
+        getEventEmitter().emit('balance-update');
         getEventEmitter().emit('new-tx');
     });
 
@@ -832,6 +827,7 @@ export class Wallet {
             ) {
                 try {
                     block = await cNet.getBlock(blockHeight);
+                    if (!block) return;
                     if (block.txs) {
                         if (
                             this.hasShield() &&

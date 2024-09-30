@@ -17,6 +17,7 @@ export function checkForUpgrades() {
         // Old user's first time on this update; display the changelog
         renderChangelog();
     }
+
     // Update the footer with our version
     doms.domVersion.innerText = `v${VERSION}`;
 

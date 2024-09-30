@@ -18,6 +18,7 @@ import { cOracle } from './prices.js';
 
 import pIconCopy from '../assets/icons/icon-copy.svg';
 import pIconCheck from '../assets/icons/icon-check.svg';
+import SideNavbar from './SideNavbar.vue';
 
 /** A flag showing if base MPW is fully loaded or not */
 export let fIsLoaded = false;
@@ -38,9 +39,12 @@ export const dashboard = createApp(Dashboard).use(pinia).mount('#DashboardTab');
 createApp(Stake).use(pinia).mount('#StakingTab');
 createApp(MasternodeComponent).use(pinia).mount('#Masternode');
 createApp(Governance).use(pinia).mount('#Governance');
+createApp(SideNavbar).use(pinia).mount('#SideNavbar');
 
 export async function start() {
     doms = {
+        domLightBackground: document.getElementById('page-container-light'),
+        domNavbar: document.getElementById('navbar'),
         domNavbarToggler: document.getElementById('navbarToggler'),
         domDashboard: document.getElementById('dashboard'),
         domStakeTab: document.getElementById('stakeTab'),
@@ -68,7 +72,6 @@ export async function start() {
         ),
         domEncryptPasswordFirst: document.getElementById('newPassword'),
         domEncryptPasswordSecond: document.getElementById('newPasswordRetype'),
-        domAnalyticsDescriptor: document.getElementById('analyticsDescriptor'),
         domRedeemTitle: document.getElementById('redeemCodeModalTitle'),
         domRedeemCodeUse: document.getElementById('redeemCodeUse'),
         domRedeemCodeCreate: document.getElementById('redeemCodeCreate'),
@@ -117,13 +120,11 @@ export async function start() {
         arrDomScreenLinks: document.getElementsByClassName('tablinks'),
         // Alert DOM element
         domAlertPos: document.getElementsByClassName('alertPositioning')[0],
-        domNetwork: document.getElementById('Network'),
         domChangePasswordContainer: document.getElementById(
             'changePassword-container'
         ),
         domLogOutContainer: document.getElementById('logOut-container'),
         domDebug: document.getElementById('Debug'),
-        domTestnet: document.getElementById('Testnet'),
         domCurrencySelect: document.getElementById('currency'),
         domExplorerSelect: document.getElementById('explorer'),
         domNodeSelect: document.getElementById('node'),
@@ -200,8 +201,6 @@ export async function start() {
     // Load the price manager
     cOracle.load();
 
-    // If allowed by settings: submit a simple 'hit' (app load) to Labs Analytics
-    getNetwork().submitAnalytics('hit');
     setInterval(() => {
         // Refresh blockchain data
         refreshChainData();
@@ -229,11 +228,6 @@ async function refreshPriceDisplay() {
 }
 
 function subscribeToNetworkEvents() {
-    getEventEmitter().on('network-toggle', (value) => {
-        doms.domNetwork.innerHTML =
-            '<i class="fa-solid fa-' + (value ? 'wifi' : 'ban') + '"></i>';
-    });
-
     getEventEmitter().on('new-block', (block) => {
         debugLog(DebugTopics.GLOBAL, `New block detected! ${block}`);
     });
@@ -245,8 +239,6 @@ function subscribeToNetworkEvents() {
                 `${ALERTS.TX_SENT}<br>${sanitizeHTML(result)}`,
                 result ? 1250 + result.length * 50 : 3000
             );
-            // If allowed by settings: submit a simple 'tx' ping to Labs Analytics
-            getNetwork().submitAnalytics('transaction');
         } else {
             console.error('Error sending transaction:');
             console.error(result);
@@ -470,12 +462,6 @@ export async function restoreWallet(strReason = '') {
 
 export async function refreshChainData() {
     const cNet = getNetwork();
-    // If in offline mode: don't sync ANY data or connect to the internet
-    if (!cNet.enabled)
-        return console.warn(
-            'Offline mode active: For your security, the wallet will avoid ALL internet requests.'
-        );
-
     // Fetch block count
     const newBlockCount = await cNet.getBlockCount();
     if (newBlockCount !== blockCount) {

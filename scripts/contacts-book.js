@@ -354,37 +354,41 @@ async function renderContactModal() {
 
     // Check that a local Contact name was set
     if (cAccount?.name) {
-        // Derive our Public Key
-        let strPubkey = '';
-
-        // If HD: use xpub, otherwise we'll fallback to our single address
-        strPubkey = await wallet.getKeyToExport();
+        // Use rotated Shield, otherwise we'll fallback to our current public address
+        const strSharedKey = wallet.hasShield()
+            ? await wallet.getNewShieldAddress()
+            : wallet.getCurrentAddress();
 
         // Construct the Contact Share URI
-        const strContactURI = await localContactToURI(cAccount, strPubkey);
+        const strContactURI = await localContactToURI(cAccount, strSharedKey);
 
         // Render Copy Button
         doms.domModalQrLabel.innerHTML = `${translation.shareContactURL}<i onclick="MPW.localContactToClipboard(event)" id="guiAddressCopy" class="pColor" style="position: absolute; right: 27px; margin-top: -1px; cursor: pointer; width: 20px;">${pIconCopy}</i>`;
 
-        // We'll render a short informational text, alongside a QR below for Contact scanning
-        doms.domModalQR.innerHTML = `
-                <!--<p>${translation.onlyShareContactPrivately}</p>-->
-                <div id="receiveModalEmbeddedQR"></div>
-            `;
+        // We'll render a short informational text (for Public addresses), alongside a QR below for Contact scanning
+        const strInfo = wallet.hasShield()
+            ? ''
+            : `<p>${translation.onlyShareContactPrivately}</p>`;
+        doms.domModalQR.innerHTML =
+            strInfo + '<div id="receiveModalEmbeddedQR"></div>';
+
+        // Render the QR
         const domQR = document.getElementById('receiveModalEmbeddedQR');
         createQR(strContactURI, domQR, 10);
         domQR.firstChild.style.width = '100%';
         domQR.firstChild.style.height = 'auto';
         domQR.firstChild.classList.add('no-antialias');
-        document.getElementById('clipboard').value = strPubkey;
+        document.getElementById('clipboard').value = strSharedKey;
     } else {
         // Get our current wallet address
-        const strAddress = wallet.getCurrentAddress();
+        const strSharedKey = wallet.hasShield()
+            ? await wallet.getNewShieldAddress()
+            : wallet.getCurrentAddress();
 
         // Update the QR Label (we'll show the address here for now, user can set Contact "Name" optionally later)
         doms.domModalQrLabel.innerHTML =
-            strAddress +
-            `<i onclick="MPW.toClipboard('${strAddress}', this)" id="guiAddressCopy" class="pColor" style="position: absolute; right: 27px; margin-top: -1px; cursor: pointer; width: 20px;">
+            strSharedKey +
+            `<i onclick="MPW.toClipboard('${strSharedKey}', this)" id="guiAddressCopy" class="pColor" style="position: absolute; right: 27px; margin-top: -1px; cursor: pointer; width: 20px;">
                 ${pIconCopy}
             </i>`;
 
@@ -417,11 +421,21 @@ function renderAddress(strAddress) {
     } catch (e) {
         doms.domModalQR.hidden = true;
     }
+
+    const cWallet = useWallet();
     doms.domModalQrLabel.innerHTML =
-        // SanitzeHTML shouldn't be necessary, but let's keep it just in case
+        // SanitizeHTML shouldn't be necessary, but let's keep it just in case
         sanitizeHTML(strAddress) +
-        `<i onclick="MPW.toClipboard('${strAddress}', this)" id="guiAddressCopy" class="pColor" style="position: absolute; right: 27px; margin-top: -1px; cursor: pointer; width: 20px;">${pIconCopy}</i>`;
+        `<i onclick="MPW.toClipboard('${strAddress}', this)" id="guiAddressCopy" class="pColor" style="position: absolute; ${
+            cWallet.isHD ? 'right: 55px;' : ''
+        } margin-top: -1px; cursor: pointer; width: 20px;">${pIconCopy}</i>`;
     document.getElementById('clipboard').value = strAddress;
+
+    // HD wallets gain a 'Refresh' button for quick address rotation
+    if (cWallet.isHD) {
+        doms.domModalQrLabel.style['padding-right'] = '65px';
+        doms.domModalQrLabel.innerHTML += `<i onclick="MPW.getNewAddress({ updateGUI: true, verify: true, shield: ${!cWallet.publicMode} })" class="pColor fa-solid fa-arrows-rotate fa-lg" style="position: absolute; right: 27px; margin-top: 10px; cursor: pointer; width: 20px;"></i>`;
+    }
 }
 
 /**
@@ -432,6 +446,8 @@ export async function guiRenderReceiveModal(
     cReceiveType = RECEIVE_TYPES.CONTACT
 ) {
     doms.domModalQR.hidden = false;
+    // Default the width to fit non-rotatable Contacts, XPub and non-HD
+    doms.domModalQrLabel.style['padding-right'] = '35px';
     switch (cReceiveType) {
         case RECEIVE_TYPES.CONTACT:
             await renderContactModal();
@@ -447,6 +463,7 @@ export async function guiRenderReceiveModal(
             const strXPub = wallet.getXPub();
 
             // Update the QR Label (we'll show the address here for now, user can set Contact "Name" optionally later)
+
             doms.domModalQrLabel.innerHTML =
                 sanitizeHTML(strXPub) +
                 `<i onclick="MPW.toClipboard('${strXPub}', this)" id="guiAddressCopy" class="pColor" style="position: absolute; right: 27px; margin-top: -1px; cursor: pointer; width: 20px;">${pIconCopy}</i>`;
@@ -1035,8 +1052,11 @@ export async function localContactToURI(account, pubkey) {
     // Use the given pubkey; but if none is passed, we'll derive our loaded Public Key
     let strPubkey = pubkey || '';
 
-    // If HD: use xpub, otherwise we'll fallback to our single address
-    if (!strPubkey) strPubkey = await wallet.getKeyToExport();
+    // Use rotated Shield, otherwise we'll fallback to our single address
+    if (!strPubkey)
+        strPubkey = wallet.hasShield()
+            ? await wallet.getNewShieldAddress()
+            : wallet.getCurrentAddress();
 
     // Construct the Contact URI Root
     const strURL = window.location.origin + window.location.pathname;

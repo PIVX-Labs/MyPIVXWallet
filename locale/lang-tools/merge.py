@@ -3,6 +3,8 @@
 import argparse
 import toml
 import os
+import sys
+from lang_common import default_template_path
 
 ## Unmerges a file
 def unmerge(path):
@@ -22,7 +24,7 @@ def unmerge(path):
     parent['ALERTS'] = alerts
     return parent
 
-def merge_internal(obj1, obj2, res):
+def merge_internal(obj1, obj2, res, template):
     for (k1, k2) in zip(obj1.copy(), obj2.copy()):
         if k1 != k2:
             raise ValueError('Files are out of order. \nKey1 {} != Key2 {}'.format(k1, k2))
@@ -37,9 +39,18 @@ def merge_internal(obj1, obj2, res):
         else:
             if k1 in res:
                 del res[k1]
+    for key in res:
+        if key not in template:
+            if key == 'info':
+                continue
+            # if key is no longer in template, delete it.
+            res[key] = None
 
 
-def merge(filename1, filename2, output_path):
+
+def merge(filename1, filename2, output_path, template_path):
+    template = toml.load(template_path)
+
     f1 = unmerge(filename1)
     f2 = unmerge(filename2)
     try:
@@ -49,8 +60,8 @@ def merge(filename1, filename2, output_path):
     if 'ALERTS' not in merged:
         merged['ALERTS'] = {}
     
-    merge_internal(f1, f2, merged)
-    merge_internal(f1['ALERTS'], f2['ALERTS'], merged['ALERTS'])
+    merge_internal(f1, f2, merged, template)
+    merge_internal(f1['ALERTS'], f2['ALERTS'], merged['ALERTS'], template['ALERTS'])
     if 'info' not in merged:
         merged['info'] = {}
     merged['info']['merged'] = True
@@ -71,8 +82,9 @@ def main():
     parser.add_argument('filename1', help='First file to merge')
     parser.add_argument('filename2', help='Second file to merge')
     parser.add_argument('output_path', help='Where to store the output')
+    parser.add_argument('--template-path', '-t', help='Template path', default=default_template_path(sys.argv[0]))
     args = parser.parse_args()
-    merge(args.filename1, args.filename2, args.output_path)
+    merge(args.filename1, args.filename2, args.output_path, args.template_path)
 
 
 if __name__ == '__main__':

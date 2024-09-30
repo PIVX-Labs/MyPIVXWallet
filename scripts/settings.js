@@ -52,13 +52,7 @@ export let fAdvancedMode = false;
 /** automatically lock the wallet after any operation  that requires unlocking */
 export let fAutoLockWallet = false;
 
-let transparencyReport;
-
 export class Settings {
-    /**
-     * @type {String} analytics level
-     */
-    analytics;
     /**
      * @type {String} Explorer url to use
      */
@@ -96,7 +90,6 @@ export class Settings {
      */
     autoLockWallet;
     constructor({
-        analytics,
         explorer,
         node,
         autoswitch = true,
@@ -107,7 +100,6 @@ export class Settings {
         coldAddress = '',
         autoLockWallet = false,
     } = {}) {
-        this.analytics = analytics;
         this.explorer = explorer;
         this.node = node;
         this.autoswitch = autoswitch;
@@ -121,31 +113,6 @@ export class Settings {
     }
 }
 
-// A list of statistic keys and their descriptions
-export let STATS = {
-    // Stat key   // Description of the stat, it's data, and it's purpose
-    hit: 'A ping indicating an app load, no unique data is sent.',
-    time_to_sync: 'The time in seconds it took for MPW to last synchronise.',
-    transaction:
-        'A ping indicating a Tx, no unique data is sent, but may be inferred from on-chain time.',
-};
-
-export const cStatKeys = Object.keys(STATS);
-
-// A list of Analytics 'levels' at which the user may set depending on their privacy preferences
-// NOTE: When changing Level Names, ensure the i18n system is updated to support them too
-let arrAnalytics = [
-    // Statistic level  // Allowed statistics
-    { name: 'Disabled', stats: [] },
-    { name: 'Minimal', stats: [STATS.hit, STATS.time_to_sync] },
-    {
-        name: 'Balanced',
-        stats: [STATS.hit, STATS.time_to_sync, STATS.transaction],
-    },
-];
-
-export let cAnalyticsLevel = arrAnalytics[2];
-
 // Users need not look below here.
 // ------------------------------
 // Global Keystore / Wallet Information
@@ -154,10 +121,6 @@ export let cAnalyticsLevel = arrAnalytics[2];
 export async function start() {
     //TRANSLATIONS
     //to make translations work we need to change it so that we just enable or disable the visibility of the text
-    doms.domTestnet.style.display = cChainParams.current.isTestnet
-        ? ''
-        : 'none';
-    doms.domDebug.style.display = debug ? '' : 'none';
 
     // Hook up the 'currency' select UI
     document.getElementById('currency').onchange = function (evt) {
@@ -178,14 +141,16 @@ export async function start() {
         );
     };
 
+    // Hook up the 'node' select UI
+    document.getElementById('node').onchange = function (evt) {
+        setNode(
+            cChainParams.current.Nodes.find((a) => a.url === evt.target.value)
+        );
+    };
+
     // Hook up the 'translation' select UI
     document.getElementById('translation').onchange = function (evt) {
         setTranslation(evt.target.value);
-    };
-
-    // Hook up the 'analytics' select UI
-    document.getElementById('analytics').onchange = function (evt) {
-        setAnalytics(arrAnalytics.find((a) => a.name === evt.target.value));
     };
 
     await Promise.all([
@@ -198,7 +163,6 @@ export async function start() {
 
     // Fetch settings from Database
     const {
-        analytics: strSettingAnalytics,
         autoswitch,
         displayCurrency,
         displayDecimals,
@@ -247,49 +211,6 @@ export async function start() {
     nDisplayDecimals = displayDecimals;
     doms.domDisplayDecimalsSlider.value = nDisplayDecimals;
 
-    // Apply translations to the transparency report
-    STATS = {
-        // Stat key   // Description of the stat, it's data, and it's purpose
-        hit: translation.hit,
-        time_to_sync: translation.time_to_sync,
-        transaction: translation.transaction,
-    };
-    transparencyReport = translation.transparencyReport;
-    arrAnalytics = [
-        // Statistic level  // Allowed statistics
-        { name: 'Disabled', stats: [] },
-        { name: 'Minimal', stats: [STATS.hit, STATS.time_to_sync] },
-        {
-            name: 'Balanced',
-            stats: [STATS.hit, STATS.time_to_sync, STATS.transaction],
-        },
-    ];
-
-    // Initialise status icons as their default variables
-    doms.domNetwork.innerHTML =
-        '<i class="fa-solid fa-' +
-        (getNetwork().enabled ? 'wifi' : 'ban') +
-        '"></i>';
-
-    // Honour the "Do Not Track" header by default
-    if (!strSettingAnalytics && navigator.doNotTrack === '1') {
-        // Disabled
-        setAnalytics(arrAnalytics[0], true);
-        doms.domAnalyticsDescriptor.innerHTML =
-            '<h6 style="color:#dcdf6b;font-family:mono !important;"><pre style="color: #421180; background-color:#9481B0; border:2px solid #AF9CC6; padding: 12px;">Analytics disabled to honour "Do Not Track" browser setting, you may manually enable if desired, though!</pre></h6>';
-    } else {
-        // Load from storage, or use defaults
-        setAnalytics(
-            (cAnalyticsLevel =
-                arrAnalytics.find((a) => a.name === strSettingAnalytics) ||
-                cAnalyticsLevel),
-            true
-        );
-    }
-
-    // Add each analytics level into the UI selector
-    fillAnalyticSelect();
-
     // Subscribe to events
     subscribeToNetworkEvents();
 
@@ -335,8 +256,6 @@ async function setNode(node, fSilent = false) {
     const database = await Database.getInstance();
     database.setSettings({ node: node.url });
 
-    // Enable networking + notify if allowed
-    getNetwork().enable();
     if (!fSilent)
         createAlert(
             'success',
@@ -430,61 +349,6 @@ async function fillCurrencySelect(mapCurrencies) {
 }
 
 /**
- * Fills the Analytics Settings UI
- */
-export function fillAnalyticSelect() {
-    const domAnalyticsSelect = document.getElementById('analytics');
-    domAnalyticsSelect.innerHTML = '';
-    for (const analLevel of arrAnalytics) {
-        const opt = document.createElement('option');
-        // Apply translation to the display HTML
-        opt.value = analLevel.name;
-        opt.innerHTML = translation['analytic' + analLevel.name];
-        domAnalyticsSelect.appendChild(opt);
-    }
-}
-
-async function setAnalytics(level, fSilent = false) {
-    cAnalyticsLevel = level;
-    const database = await Database.getInstance();
-    await database.setSettings({ analytics: level.name });
-
-    // For total transparency, we'll 'describe' the various analytic keys of this chosen level
-    let strDesc = '<center>--- ' + transparencyReport + ' ---</center><br>',
-        i = 0;
-    const nLongestKeyLen = cStatKeys.reduce((prev, e) =>
-        prev.length >= e.length ? prev : e
-    ).length;
-    for (i; i < cAnalyticsLevel.stats.length; i++) {
-        const cStat = cAnalyticsLevel.stats[i];
-        // This formats Stat keys into { $key $(padding) $description }
-        strDesc +=
-            cStatKeys
-                .find((a) => STATS[a] === cStat)
-                .padEnd(nLongestKeyLen, ' ') +
-            ': ' +
-            cStat +
-            '<br>';
-    }
-
-    // Set display + notify if allowed
-    doms.domAnalyticsDescriptor.innerHTML =
-        cAnalyticsLevel.name === arrAnalytics[0].name
-            ? ''
-            : '<h6 style="color:#dcdf6b;font-family:mono !important;"><pre style="color: #421180; background-color:#9481B0; border:2px solid #AF9CC6; padding: 12px; border-radius:8px;">' +
-              strDesc +
-              '</pre></h6>';
-    if (!fSilent)
-        createAlert(
-            'success',
-            tr(ALERTS.SWITCHED_ANALYTICS, [
-                { level: translation['analytic' + cAnalyticsLevel.name] },
-            ]),
-            2250
-        );
-}
-
-/**
  * Log out from the current wallet
  */
 export async function logOut() {
@@ -520,15 +384,15 @@ export async function logOut() {
 /**
  * Toggle between Mainnet and Testnet
  */
-export async function toggleTestnet() {
+export async function toggleTestnet(
+    wantTestnet = !cChainParams.current.isTestnet
+) {
     if (wallet.isLoaded() && !wallet.isSynced) {
         createAlert('warning', `${ALERTS.WALLET_NOT_SYNCED}`, 3000);
         doms.domTestnetToggler.checked = cChainParams.current.isTestnet;
         return;
     }
-    const cNextNetwork = cChainParams.current.isTestnet
-        ? cChainParams.main
-        : cChainParams.testnet;
+    const cNextNetwork = wantTestnet ? cChainParams.testnet : cChainParams.main;
 
     // If the current wallet is not saved, we'll ask the user for confirmation, since they'll lose their wallet if they switch with an unsaved wallet!
     if (wallet.isLoaded() && !(await hasEncryptedWallet())) {
@@ -562,10 +426,6 @@ export async function toggleTestnet() {
     // Update current chain config
     cChainParams.current = cNextNetwork;
 
-    // Update UI and static tickers
-    doms.domTestnet.style.display = cChainParams.current.isTestnet
-        ? ''
-        : 'none';
     // Update testnet toggle in settings
     doms.domTestnetToggler.checked = cChainParams.current.isTestnet;
     await start();
@@ -574,9 +434,9 @@ export async function toggleTestnet() {
     getEventEmitter().emit('toggle-network');
 }
 
-export function toggleDebug() {
-    debug = !debug;
-    doms.domDebug.style.display = debug ? '' : 'none';
+export function toggleDebug(newValue = !debug) {
+    debug = newValue;
+    getEventEmitter().emit('toggle-debug', debug);
 }
 
 /**

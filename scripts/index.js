@@ -65,7 +65,5 @@ export { renderChangelog } from './changelog.js';
 export { Masternode };
 
 export { getNetwork } from './network.js';
-const toggleNetwork = () => getNetwork().toggle();
-export { toggleNetwork };
 
 export { FlipDown } from './flipdown.js';

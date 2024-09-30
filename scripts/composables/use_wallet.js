@@ -7,6 +7,12 @@ import { ledgerSignTransaction } from '../ledger.js';
 import { defineStore } from 'pinia';
 import { lockableFunction } from '../lock.js';
 import { blockCount as rawBlockCount } from '../global.js';
+import { doms } from '../global.js';
+import {
+    RECEIVE_TYPES,
+    cReceiveType,
+    guiToggleReceiveType,
+} from '../contacts-book.js';
 
 /**
  * This is the middle ground between vue and the wallet class
@@ -20,12 +26,20 @@ export const useWallet = defineStore('wallet', () => {
 
     const publicMode = ref(true);
     watch(publicMode, (publicMode) => {
-        if (publicMode) {
-            document.getElementById('navbar').classList.toggle('active');
-            document.getElementById('page-container-light').style.opacity = '1';
-        } else {
-            document.getElementById('navbar').classList.toggle('active');
-            document.getElementById('page-container-light').style.opacity = '0';
+        doms.domNavbar.classList.toggle('active', !publicMode);
+        doms.domLightBackground.style.opacity = publicMode ? '1' : '0';
+        // Depending on our Receive type, flip to the opposite type.
+        // i.e: from `address` to `shield`, `shield contact` to `address`, etc
+        // This reduces steps for someone trying to grab their opposite-type address, which is the primary reason to mode-toggle.
+        const arrFlipTypes = [
+            RECEIVE_TYPES.CONTACT,
+            RECEIVE_TYPES.ADDRESS,
+            RECEIVE_TYPES.SHIELD,
+        ];
+        if (arrFlipTypes.includes(cReceiveType)) {
+            guiToggleReceiveType(
+                publicMode ? RECEIVE_TYPES.ADDRESS : RECEIVE_TYPES.SHIELD
+            );
         }
     });
 
@@ -33,6 +47,7 @@ export const useWallet = defineStore('wallet', () => {
     const isViewOnly = ref(wallet.isViewOnly());
     const isSynced = ref(wallet.isSynced);
     const getKeyToBackup = async () => await wallet.getKeyToBackup();
+    const getKeyToExport = () => wallet.getKeyToExport();
     const isEncrypted = ref(true);
     const loadFromDisk = () => wallet.loadFromDisk();
     const hasShield = ref(wallet.hasShield());
@@ -40,7 +55,7 @@ export const useWallet = defineStore('wallet', () => {
     const blockCount = ref(0);
 
     const setMasterKey = async ({ mk, extsk }) => {
-        wallet.setMasterKey({ mk, extsk });
+        await wallet.setMasterKey({ mk, extsk });
         isImported.value = wallet.isLoaded();
         isHardwareWallet.value = wallet.isHardwareWallet();
         isHD.value = wallet.isHD();
@@ -134,6 +149,7 @@ export const useWallet = defineStore('wallet', () => {
         isEncrypted,
         isSynced,
         getKeyToBackup,
+        getKeyToExport,
         setMasterKey,
         setExtsk,
         setShield,

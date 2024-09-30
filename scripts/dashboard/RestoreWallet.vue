@@ -1,6 +1,7 @@
 <script setup>
 import { nextTick, ref, toRefs, watch } from 'vue';
 import Modal from '../Modal.vue';
+import Password from '../Password.vue';
 import { ALERTS, translation } from '../i18n.js';
 import { Database } from '../database.js';
 import { decrypt } from '../aes-gcm';
@@ -50,6 +51,7 @@ async function submit() {
         createAlert('warning', ALERTS.FAILED_TO_IMPORT);
     }
 }
+
 function close() {
     emit('close');
     password.value = '';
@@ -69,13 +71,7 @@ function close() {
 
             <template #body>
                 <p style="opacity: 0.75" v-if="!!reason">{{ reason }}</p>
-                <input
-                    type="password"
-                    ref="passwordInput"
-                    v-model="password"
-                    :placeholder="translation.walletPassword"
-                    style="text-align: center"
-                />
+                <Password v-model:password="password" ref="passwordInput" />
             </template>
             <template #footer>
                 <button

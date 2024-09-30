@@ -406,7 +406,6 @@ export class Database {
     async #migrateLocalStorage() {
         if (localStorage.length === 0) return;
         const settings = new Settings({
-            analytics: localStorage.analytics,
             explorer: localStorage.explorer,
             node: localStorage.node,
             translation: localStorage.translation,

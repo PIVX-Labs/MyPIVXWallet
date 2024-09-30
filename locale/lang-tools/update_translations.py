@@ -26,7 +26,7 @@ def tame(template_path, locale_path, comment, do_merge, sync):
             if len(paths) == 2:
                 split_path = paths[0].split('/')
                 parent_path = '/'.join(split_path[:-2] + [split_path[-2].split('-')[0]] + [split_path[-1]])
-                merge(paths[0], paths[1], parent_path)
+                merge(paths[0], paths[1], parent_path, template_path)
     if comment:
         for path in glob(locale_path + '/*/*.toml'):
             if 'template' not in path:

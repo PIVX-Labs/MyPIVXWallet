@@ -20,6 +20,7 @@
             { "name": "zkBitcoin", "url": "https://zkbitcoin.com" }
         ],
         "Nodes": [
+            { "name": "PIVX Labs", "url": "https://rpc.pivxla.bz/mainnet" },
             { "name": "Duddino", "url": "https://rpc.duddino.com/mainnet" }
         ],
         "Consensus": {},
