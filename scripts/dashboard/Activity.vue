@@ -24,6 +24,7 @@ let txCount = 0;
 const updating = ref(false);
 const isHistorySynced = ref(false);
 const rewardAmount = ref(0);
+let nRewardUpdateHeight = 0;
 const ticker = computed(() => cChainParams.current.TICKER);
 const explorerUrl = ref(getNetwork()?.strUrl);
 const txMap = computed(() => {
@@ -86,16 +87,35 @@ async function update(txToAdd = 0) {
     const orderedTxs = Array.from(wallet.getTransactions()).sort(
         (a, b) => a.blockHeight - b.blockHeight
     );
-    while (found < txCount + txToAdd) {
+    // For Rewards, we loop the history with height-aware scanning, otherwise, only loop what's necessary
+    while (props.rewards ? true : found < txCount + txToAdd) {
         if (orderedTxs.length == 0) {
-            isHistorySynced.value = true;
+            if (!props.rewards) {
+                isHistorySynced.value = true;
+            }
             break;
         }
         const tx = orderedTxs.pop();
-        if (props.rewards && !tx.isCoinStake()) continue;
+        if (props.rewards) {
+            // Only compute rewards
+            if (!tx.isCoinStake()) continue;
+            // If this Tx Height is over the last scanned height, we aggregate it
+            if (tx.blockHeight >= nRewardUpdateHeight) {
+                // Aggregate the total rewards
+                rewardAmount.value += wallet.toHistoricalTXs([tx])[0].amount;
+            }
+            // Skip adding to the Tx List once we hit the display limit
+            if (found === txCount + txToAdd) continue;
+        }
         newTxs.push(tx);
         found++;
     }
+    // Update the reward cache blockheight so we never re-calculate old rewards
+    if (props.rewards) {
+        nRewardUpdateHeight = blockCount;
+    }
+
+    // Convert to MPW's Activity format and render it
     const arrTXs = wallet.toHistoricalTXs(newTxs);
     await parseTXs(arrTXs);
     txCount = found;
@@ -235,17 +255,9 @@ async function parseTXs(arrTXs) {
 
     txs.value = newTxs;
 }
-if (props.rewards) {
-    watch(
-        txs,
-        (txs) =>
-            (rewardAmount.value = txs.reduce((acc, tx) => acc + tx.amount, 0))
-    );
-}
 
 const rewardsText = computed(() => {
-    const nCoins = rewardAmount.value / COIN;
-    const strBal = nCoins.toFixed(displayDecimals.value);
+    const strBal = rewardAmount.value.toFixed(0);
     const nLen = strBal.length;
     return `${beautifyNumber(
         strBal,
