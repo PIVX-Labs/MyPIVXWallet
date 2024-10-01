@@ -400,7 +400,7 @@ export async function openExplorer(strAddress = '') {
 
 async function loadImages() {
     const images = [
-        ['mpw-main-logo', import('../assets/new_logo.png')],
+        ['mpw-main-logo', import('../assets/logo.png')],
         ['plus-icon', import('../assets/icons/icon-plus.svg')],
         ['plus-icon2', import('../assets/icons/icon-plus.svg')],
         ['plus-icon3', import('../assets/icons/icon-plus.svg')],
