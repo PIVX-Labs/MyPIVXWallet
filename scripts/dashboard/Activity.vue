@@ -265,6 +265,7 @@ const rewardsText = computed(() => {
 function reset() {
     txs.value = [];
     txCount = 0;
+    nRewardUpdateHeight = 0;
     update(0);
 }
 
