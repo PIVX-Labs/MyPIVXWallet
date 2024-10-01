@@ -734,11 +734,6 @@ export async function sweepAddress(arrUTXOs, sweepingMasterKey, nFixedFee) {
     return await getNetwork().sendTransaction(tx.serialize());
 }
 
-export function toggleDropDown(id) {
-    const domID = document.getElementById(id);
-    domID.style.display = domID.style.display === 'block' ? 'none' : 'block';
-}
-
 export function isMasternodeUTXO(cUTXO, cMasternode) {
     if (cMasternode?.collateralTxId) {
         const { collateralTxId, outidx } = cMasternode;

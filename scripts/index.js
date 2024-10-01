@@ -24,7 +24,6 @@ export {
     importMasternode,
     destroyMasternode,
     startMasternode,
-    toggleDropDown,
     createProposal,
     switchSettings,
     govVote,
