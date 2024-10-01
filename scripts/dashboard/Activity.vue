@@ -258,12 +258,8 @@ async function parseTXs(arrTXs) {
 }
 
 const rewardsText = computed(() => {
-    const strBal = rewardAmount.value.toFixed(0);
-    const nLen = strBal.length;
-    return `${beautifyNumber(
-        strBal,
-        nLen >= 10 ? '15px' : '15px'
-    )} <span style="font-size:15px; opacity: 0.55;">${ticker.value}</span>`;
+    const strBal = rewardAmount.value.toLocaleString('en-GB');
+    return `${strBal} <span style="font-size:15px; opacity: 0.55;">${ticker.value}</span>`;
 });
 
 function reset() {
