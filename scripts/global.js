@@ -29,6 +29,7 @@ import { cOracle } from './prices.js';
 
 import pIconCopy from '../assets/icons/icon-copy.svg';
 import pIconCheck from '../assets/icons/icon-check.svg';
+import SideNavbar from './SideNavbar.vue';
 
 /** A flag showing if base MPW is fully loaded or not */
 export let fIsLoaded = false;
@@ -47,6 +48,7 @@ const pinia = createPinia();
 
 export const dashboard = createApp(Dashboard).use(pinia).mount('#DashboardTab');
 createApp(Stake).use(pinia).mount('#StakingTab');
+createApp(SideNavbar).use(pinia).mount('#SideNavbar');
 
 export async function start() {
     doms = {
@@ -126,7 +128,6 @@ export async function start() {
         ),
         domEncryptPasswordFirst: document.getElementById('newPassword'),
         domEncryptPasswordSecond: document.getElementById('newPasswordRetype'),
-        domAnalyticsDescriptor: document.getElementById('analyticsDescriptor'),
         domRedeemTitle: document.getElementById('redeemCodeModalTitle'),
         domRedeemCodeUse: document.getElementById('redeemCodeUse'),
         domRedeemCodeCreate: document.getElementById('redeemCodeCreate'),
@@ -180,13 +181,11 @@ export async function start() {
         arrDomScreenLinks: document.getElementsByClassName('tablinks'),
         // Alert DOM element
         domAlertPos: document.getElementsByClassName('alertPositioning')[0],
-        domNetwork: document.getElementById('Network'),
         domChangePasswordContainer: document.getElementById(
             'changePassword-container'
         ),
         domLogOutContainer: document.getElementById('logOut-container'),
         domDebug: document.getElementById('Debug'),
-        domTestnet: document.getElementById('Testnet'),
         domCurrencySelect: document.getElementById('currency'),
         domExplorerSelect: document.getElementById('explorer'),
         domNodeSelect: document.getElementById('node'),
@@ -264,8 +263,6 @@ export async function start() {
     // Load the price manager
     cOracle.load();
 
-    // If allowed by settings: submit a simple 'hit' (app load) to Labs Analytics
-    getNetwork().submitAnalytics('hit');
     setInterval(() => {
         // Refresh blockchain data
         refreshChainData();
@@ -293,11 +290,6 @@ async function refreshPriceDisplay() {
 }
 
 function subscribeToNetworkEvents() {
-    getEventEmitter().on('network-toggle', (value) => {
-        doms.domNetwork.innerHTML =
-            '<i class="fa-solid fa-' + (value ? 'wifi' : 'ban') + '"></i>';
-    });
-
     getEventEmitter().on('new-block', (block) => {
         debugLog(DebugTopics.GLOBAL, `New block detected! ${block}`);
 
@@ -314,8 +306,6 @@ function subscribeToNetworkEvents() {
                 `${ALERTS.TX_SENT}<br>${sanitizeHTML(result)}`,
                 result ? 1250 + result.length * 50 : 3000
             );
-            // If allowed by settings: submit a simple 'tx' ping to Labs Analytics
-            getNetwork().submitAnalytics('transaction');
         } else {
             console.error('Error sending transaction:');
             console.error(result);
@@ -1282,6 +1272,8 @@ async function renderProposals(arrProposals, fContested) {
                 'onclick',
                 `MPW.govVote('${cProposal.Hash}', 1);`
             );
+
+            domYesBtn.setAttribute('style', `height:36px;`);
             voteBtn = domNoBtn.outerHTML + domYesBtn.outerHTML;
         }
 
@@ -1301,7 +1293,7 @@ async function renderProposals(arrProposals, fContested) {
         mobileExtended.innerHTML = `
         <div class="row pt-2">
             <div class="col-5 fs-13 fw-600">
-                <div class="governMobDot"></div> ${translation.govTablePayment}
+                ${translation.govTablePayment}
             </div>
             <div class="col-7">
                 <span class="governValues"><b>${sanitizeHTML(
@@ -1322,7 +1314,7 @@ async function renderProposals(arrProposals, fContested) {
         <hr class="governHr">
         <div class="row">
             <div class="col-5 fs-13 fw-600">
-                <div class="governMobDot"></div> ${translation.govTableVotes}
+                ${translation.govTableVotes}
             </div>
             <div class="col-7">
                 <b>${parseFloat(nLocalPercent).toLocaleString(
@@ -1342,9 +1334,9 @@ async function renderProposals(arrProposals, fContested) {
         <hr class="governHr">
         <div class="row pb-2">
             <div class="col-5 fs-13 fw-600">
-                <div class="governMobDot"></div> ${translation.govTableVote}
+                ${translation.govTableVote}
             </div>
-            <div class="col-7">
+            <div class="col-7 mobileVote">
                 ${voteBtn}
             </div>
         </div>`;
@@ -1510,6 +1502,7 @@ async function refreshMasternodeData(cMasternode, fAlert = false) {
         doms.domMnTextErrors.innerHTML =
             'Masternode is currently <b>OFFLINE</b>';
         if (
+            wallet.isHardwareWallet() ||
             !wallet.isViewOnly() ||
             (await restoreWallet(translation.walletUnlockCreateMN))
         ) {
@@ -1706,12 +1699,6 @@ export async function createProposal() {
 
 export async function refreshChainData() {
     const cNet = getNetwork();
-    // If in offline mode: don't sync ANY data or connect to the internet
-    if (!cNet.enabled)
-        return console.warn(
-            'Offline mode active: For your security, the wallet will avoid ALL internet requests.'
-        );
-
     // Fetch block count
     const newBlockCount = await cNet.getBlockCount();
     if (newBlockCount !== blockCount) {

@@ -48,7 +48,7 @@ describe('useWallet tests', () => {
     });
 
     it('is synced after importing key', async () => {
-        walletComposable.setMasterKey({
+        await walletComposable.setMasterKey({
             mk: new LegacyMasterKey({
                 pkBytes: new Uint8Array([
                     181, 66, 141, 90, 213, 58, 137, 158, 160, 57, 109, 252, 51,

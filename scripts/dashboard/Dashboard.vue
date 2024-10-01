@@ -40,6 +40,7 @@ import pShieldLogo from '../../assets/icons/icon_shield_pivx.svg';
 import pIconCamera from '../../assets/icons/icon-camera.svg';
 import { ParsedSecret } from '../parsed_secret.js';
 import { storeToRefs } from 'pinia';
+import { Account } from '../accounts';
 
 const wallet = useWallet();
 const activity = ref(null);
@@ -75,9 +76,15 @@ watch(showExportModal, async (showExportModal) => {
  * @param {Object} o - Options
  * @param {'legacy'|'hd'|'hardware'} o.type - type of import
  * @param {string} o.secret
+ * @param {nubmer?} [o.blockCount] Creation block count. Defaults to 4_200_000
  * @param {string} [o.password]
  */
-async function importWallet({ type, secret, password = '' }) {
+async function importWallet({
+    type,
+    secret,
+    password = '',
+    blockCount = 4_200_000,
+}) {
     /**
      * @type{ParsedSecret?}
      */
@@ -91,7 +98,11 @@ async function importWallet({ type, secret, password = '' }) {
             );
             return false;
         }
-        parsedSecret = new ParsedSecret(await HardwareWalletMasterKey.create());
+        parsedSecret = new ParsedSecret(
+            secret
+                ? HardwareWalletMasterKey.fromXPub(secret)
+                : await HardwareWalletMasterKey.create()
+        );
 
         createAlert(
             'info',
@@ -109,9 +120,25 @@ async function importWallet({ type, secret, password = '' }) {
     }
     if (parsedSecret) {
         await wallet.setMasterKey({ mk: parsedSecret.masterKey });
+        if (parsedSecret.shield) {
+            await parsedSecret.shield.reloadFromCheckpoint(blockCount);
+        }
         wallet.setShield(parsedSecret.shield);
 
         if (needsToEncrypt.value) showEncryptModal.value = true;
+        if (wallet.isHardwareWallet) {
+            // Save the xpub without needing encryption if it's ledger
+            const database = await Database.getInstance();
+            const account = new Account({
+                publicKey: wallet.getKeyToExport(),
+                isHardware: true,
+            });
+            if (await database.getAccount()) {
+                await database.updateAccount(account);
+            } else {
+                await database.addAccount(account);
+            }
+        }
 
         // Start syncing in the background
         wallet.sync().then(() => {
@@ -361,28 +388,31 @@ function getMaxBalance(useShieldInputs) {
     transferAmount.value = (coinSatoshi / COIN).toString();
 }
 
-getEventEmitter().on('toggle-network', async () => {
+async function importFromDatabase() {
     const database = await Database.getInstance();
     const account = await database.getAccount();
     await wallet.setMasterKey({ mk: null });
     activity.value?.reset();
-
-    if (wallet.isEncrypted) {
+    if (account?.isHardware) {
+        await importWallet({ type: 'hardware', secret: account.publicKey });
+    } else if (wallet.isEncrypted) {
         await importWallet({ type: 'hd', secret: account.publicKey });
     }
+
     updateLogOutButton();
+}
+
+getEventEmitter().on('toggle-network', async () => {
+    importFromDatabase();
     // TODO: When tab component is written, simply emit an event
     doms.domDashboard.click();
 });
 
 onMounted(async () => {
     await start();
+    await importFromDatabase();
 
     if (wallet.isEncrypted) {
-        const database = await Database.getInstance();
-        const { publicKey } = await database.getAccount();
-        await importWallet({ type: 'hd', secret: publicKey });
-
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.has('addcontact')) {
             await handleContactRequest(urlParams);
@@ -411,6 +441,7 @@ const {
     currency,
     price,
     isViewOnly,
+    hasShield,
 } = storeToRefs(wallet);
 
 getEventEmitter().on('sync-status', (status) => {
@@ -490,7 +521,7 @@ defineExpose({
             <br />
 
             <!-- Switch to Public/Private -->
-            <div class="col-12 p-0" v-show="wallet.isImported && wallet.isHD">
+            <div class="col-12 p-0" v-show="wallet.isImported && hasShield">
                 <center>
                     <div
                         :class="{
@@ -852,7 +883,7 @@ defineExpose({
             <ExportPrivKey
                 :show="showExportModal"
                 :privateKey="keyToBackup"
-                :isJSON="wallet.hasShield && !wallet.isEncrypted"
+                :isJSON="hasShield && !wallet.isEncrypted"
                 @close="showExportModal = false"
             />
             <!-- WALLET FEATURES -->
@@ -883,7 +914,7 @@ defineExpose({
                         :currency="currency"
                         :price="price"
                         :displayDecimals="displayDecimals"
-                        :shieldEnabled="wallet.hasShield"
+                        :shieldEnabled="hasShield"
                         @send="showTransferMenu = true"
                         @exportPrivKeyOpen="showExportModal = true"
                         :publicMode="wallet.publicMode"
@@ -904,7 +935,7 @@ defineExpose({
             :publicMode="wallet.publicMode"
             :price="price"
             :currency="currency"
-            :shieldEnabled="wallet.hasShield"
+            :shieldEnabled="hasShield"
             v-model:amount="transferAmount"
             :desc="transferDescription"
             v-model:address="transferAddress"

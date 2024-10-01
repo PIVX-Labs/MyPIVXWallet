@@ -13,6 +13,7 @@ export class Account {
      * @param {String} [accountData.coldAddress] - The Cold Address that this account delegates to.
      * @param {String} [accountData.shieldData] - Shield data necessary to load shielding
      * @param {String} [accountData.encExtsk] - Encrypted extended spending key
+     * @param {boolean} [accountData.isHardware] - Whether this is a hardware wallet
      */
     constructor(accountData) {
         // Keys take the Constructor as priority, but if missing, default to their "Type" in empty form for type-safety
@@ -24,6 +25,7 @@ export class Account {
         this.coldAddress = accountData?.coldAddress || '';
         this.shieldData = accountData?.shieldData || '';
         this.encExtsk = accountData?.encExtsk || '';
+        this.isHardware = accountData?.isHardware || false;
     }
 
     /** @type {String} The public key. */
@@ -49,6 +51,9 @@ export class Account {
 
     /** @type {String} Encrypted extended spending key*/
     encExtsk = '';
+
+    /** @type{boolean} whether this is a hardware/ledger account */
+    isHardware = false;
 
     /**
      * Search for a Contact in this account, by specific properties

@@ -1,6 +1,6 @@
 <script setup>
-import loginIcon from '../../assets/icons/icon-login.svg';
-import pLogo from '../../assets/p_logo.svg';
+import loginIcon from '../../assets/icons/icon-my-wallet.svg';
+import importIcon from '../../assets/icons/icon-import.svg';
 import { ref, watch, toRefs } from 'vue';
 import { translation } from '../i18n.js';
 import { isBase64 } from '../misc';
@@ -103,7 +103,7 @@ function importWallet() {
                 >
                     <span
                         class="buttoni-icon goToWalletIco"
-                        v-html="loginIcon"
+                        v-html="importIcon"
                     ></span>
                     <span class="buttoni-text" data-i18n="dCardFourButtonI"
                         >Import</span

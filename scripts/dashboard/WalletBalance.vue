@@ -401,7 +401,7 @@ function restoreWallet() {
                         border-bottom-right-radius: 10px;
                     "
                 >
-                    <div class="dcWallet-usdBalance">
+                    <div class="dcWallet-usdBalance" v-if="shieldEnabled">
                         <span
                             class="dcWallet-usdValue"
                             style="
@@ -416,7 +416,7 @@ function restoreWallet() {
                         >
                             <span
                                 class="shieldBalanceLogo"
-                                v-html="publicMode ? iShieldLogo : pLogo"
+                                v-if="shieldEnabled"
                             ></span
                             >&nbsp;{{ secondaryBalanceStr }}
                             <span v-if="publicMode">&nbsp;S-</span>{{ ticker }}

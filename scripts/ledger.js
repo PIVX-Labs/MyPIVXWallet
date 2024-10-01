@@ -16,6 +16,20 @@ let transport;
  */
 export let cHardwareWallet = null;
 export let strHardwareName = '';
+
+/**
+ * Setup ledger connection. Must be called at the beginning of each ledger function
+ */
+async function setupConnection() {
+    // Check if we haven't setup a connection yet OR the previous connection disconnected
+    if (!cHardwareWallet || transport._disconnectEmitted) {
+        const AppBtc = (await import('@ledgerhq/hw-app-btc')).default;
+        const TransportWebUSB = (await import('@ledgerhq/hw-transport-webusb'))
+            .default;
+        transport = await TransportWebUSB.create();
+        cHardwareWallet = new AppBtc({ transport, currency: 'PIVX' });
+    }
+}
 /**
  * Get hardware wallet keys.
  * @param {string} path - bip32 path to the key
@@ -23,15 +37,7 @@ export let strHardwareName = '';
  */
 export async function getHardwareWalletKeys(path, xpub = false, verify = true) {
     try {
-        // Check if we haven't setup a connection yet OR the previous connection disconnected
-        if (!cHardwareWallet || transport._disconnectEmitted) {
-            const AppBtc = (await import('@ledgerhq/hw-app-btc')).default;
-            const TransportWebUSB = (
-                await import('@ledgerhq/hw-transport-webusb')
-            ).default;
-            transport = await TransportWebUSB.create();
-            cHardwareWallet = new AppBtc({ transport, currency: 'PIVX' });
-        }
+        await setupConnection();
 
         // Update device info and fetch the pubkey
         strHardwareName =
@@ -144,6 +150,7 @@ export async function ledgerSignTransaction(
     transaction,
     allowColdStake = false
 ) {
+    await setupConnection();
     const ledgerTx = cHardwareWallet.splitTransaction(transaction.serialize());
     const outputs = transaction.vout.map((o) => {
         const { addresses, type } = wallet.getAddressesFromScript(o.script);

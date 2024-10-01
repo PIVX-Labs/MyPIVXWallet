@@ -392,9 +392,6 @@ progress[value]::-moz-progress-bar {
 }
 
 @media (max-width: 768px) {
-    #content-wrap {
-        margin-top: 40px
-    }
 
     #page-container {
         min-height: calc(100vh - 40px);
@@ -793,20 +790,13 @@ progress[value]::-moz-progress-bar {
 
 #foot {
     display: block;
-    position: fixed;
-    left: 0;
-    bottom: 0;
     width: 100%;
     padding: 10px;
-    border-top: solid #521186 1px;
-    background-color: #2b09508c;
-    backdrop-filter: blur(4px);
 }
 
 .footer {
     width: 100%;
     color: white;
-    text-align: center;
     padding: 0;
 }
 
@@ -1109,10 +1099,15 @@ progress[value]::-moz-progress-bar {
 
 .pivx-bold-title span,
 .pivx-bold-title-smaller span {
-    font-size: .8em;
+    font-size: 26px;
     display: block;
     line-height: 1.2em;
     font-weight: 300;
+    color:#E9DEFF;
+}
+
+.pivx-bold-title div {
+    color:#E9DEFF;
 }
 
 .center-text {
@@ -1836,9 +1831,6 @@ a {
 
 @media screen and (max-width: 600px) {
 
-    .containerMobileApp {
-        padding-top: 25px;
-    }
 
     /* Buttons - Hide icons or it will be deformed */
     .buttoni-arrow,
@@ -3149,10 +3141,6 @@ select.form-control option {
     box-shadow: 0 0 0 0.2rem #9169b575;
 }
 
-#analyticsDescriptor {
-    margin-bottom: 27px;
-}
-
 #foot {
     z-index: 200;
 }
@@ -3335,7 +3323,7 @@ select.form-control option {
 
 @media (max-width: 550px) {
     .flipdown {
-        width: 312px;
+        width: 316px;
         height: 70px;
     }
 
@@ -4054,6 +4042,7 @@ textarea::placeholder {
     height: 18px;
     position: relative;
     top: 2px;
+    right: 6px;
 }
 
 .tooltip {
@@ -4132,4 +4121,95 @@ textarea::placeholder {
     animation-duration: 2500ms;
     animation-iteration-count: infinite;
     animation-timing-function: linear; 
+}
+
+.loadingDots {
+    display: flex;
+    justify-content: center;
+    margin-bottom:25px;
+}
+
+.loadingDots span {
+    height:16px;
+    width:16px;
+    background-color:#9621FF;
+    border-radius:100px;
+    animation: fade 1.5s infinite ease-in-out;
+}
+
+.loadingDots span:nth-child(2) {
+    margin-left:15px;
+    margin-right:15px;
+}
+
+/* Delay for each dot */
+.loadingDots span:nth-child(1) {
+    animation-delay: 0s;
+}
+
+.loadingDots span:nth-child(2) {
+    animation-delay: 0.3s;
+}
+
+.loadingDots span:nth-child(3) {
+    animation-delay: 0.6s;
+}
+
+/* Animation keyframes */
+@keyframes fade {
+    0%, 100% {
+        opacity: 25%;
+    }
+    50% {
+        opacity: 1;
+    }
+}
+
+.footer-icons i {
+    color:#7F20FF;
+}
+
+.footer-icons a {
+    margin-left: 3px;
+    margin-right: 3px;
+}
+
+.footer-icons a:first-child {
+    margin-left:0px;
+}
+
+.footer-icons a:last-child {
+    margin-right:0px;
+}
+
+@media (min-width:992px) {
+    .w-50-mob {
+        width:50%;
+    }
+    .footFlexMob {
+        display:flex;
+    }
+    .textCenterMob {
+        text-align: center;
+    }
+    .showMenuMobile {
+        display:none;
+    }
+}
+
+@media (max-width:992px) {
+    .footer-icons i {
+        font-size: 18px;
+    }
+}
+
+@media (max-width:768px) {
+    .mobileVote {
+        display:flex;
+        align-items: center;
+    }
+
+    .mobileVote .pivx-button-outline {
+        margin-right:7px;
+    }
 }

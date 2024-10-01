@@ -7,6 +7,11 @@ import { ledgerSignTransaction } from '../ledger.js';
 import { defineStore } from 'pinia';
 import { lockableFunction } from '../lock.js';
 import { doms } from '../global.js';
+import {
+    RECEIVE_TYPES,
+    cReceiveType,
+    guiToggleReceiveType,
+} from '../contacts-book.js';
 
 /**
  * This is the middle ground between vue and the wallet class
@@ -22,18 +27,32 @@ export const useWallet = defineStore('wallet', () => {
     watch(publicMode, (publicMode) => {
         doms.domNavbar.classList.toggle('active', !publicMode);
         doms.domLightBackground.style.opacity = publicMode ? '1' : '0';
+        // Depending on our Receive type, flip to the opposite type.
+        // i.e: from `address` to `shield`, `shield contact` to `address`, etc
+        // This reduces steps for someone trying to grab their opposite-type address, which is the primary reason to mode-toggle.
+        const arrFlipTypes = [
+            RECEIVE_TYPES.CONTACT,
+            RECEIVE_TYPES.ADDRESS,
+            RECEIVE_TYPES.SHIELD,
+        ];
+        if (arrFlipTypes.includes(cReceiveType)) {
+            guiToggleReceiveType(
+                publicMode ? RECEIVE_TYPES.ADDRESS : RECEIVE_TYPES.SHIELD
+            );
+        }
     });
 
     const isImported = ref(wallet.isLoaded());
     const isViewOnly = ref(wallet.isViewOnly());
     const isSynced = ref(wallet.isSynced);
     const getKeyToBackup = async () => await wallet.getKeyToBackup();
+    const getKeyToExport = () => wallet.getKeyToExport();
     const isEncrypted = ref(true);
     const loadFromDisk = () => wallet.loadFromDisk();
     const hasShield = ref(wallet.hasShield());
 
     const setMasterKey = async ({ mk, extsk }) => {
-        wallet.setMasterKey({ mk, extsk });
+        await wallet.setMasterKey({ mk, extsk });
         isImported.value = wallet.isLoaded();
         isHardwareWallet.value = wallet.isHardwareWallet();
         isHD.value = wallet.isHD();
@@ -120,6 +139,7 @@ export const useWallet = defineStore('wallet', () => {
         isEncrypted,
         isSynced,
         getKeyToBackup,
+        getKeyToExport,
         setMasterKey,
         setExtsk,
         setShield,
