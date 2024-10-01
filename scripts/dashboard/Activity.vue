@@ -91,16 +91,17 @@ async function update(txToAdd = 0) {
     // For Rewards: aggregate the total amount
     if (props.rewards) {
         for (const tx of orderedTxs) {
+            // If this Tx Height is under our last scanned height, we stop
+            if (tx.blockHeight <= nRewardUpdateHeight) break;
             // Only compute rewards
             if (!tx.isCoinStake()) continue;
-            // If this Tx Height is over the last scanned height, we aggregate it
-            if (tx.blockHeight > nRewardUpdateHeight) {
-                // Aggregate the total rewards
-                rewardAmount.value += wallet.toHistoricalTXs([tx])[0].amount;
-            }
+            // Aggregate the total rewards
+            rewardAmount.value += wallet.toHistoricalTXs([tx])[0].amount;
         }
         // Keep track of the scan block height
-        nRewardUpdateHeight = blockCount;
+        if (orderedTxs.length) {
+            nRewardUpdateHeight = orderedTxs[0].blockHeight;
+        }
     }
 
     // Prepare the Tx History list
