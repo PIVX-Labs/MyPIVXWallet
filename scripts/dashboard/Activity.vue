@@ -87,32 +87,32 @@ async function update(txToAdd = 0) {
     const orderedTxs = Array.from(wallet.getTransactions()).sort(
         (a, b) => a.blockHeight - b.blockHeight
     );
-    // For Rewards, we loop the history with height-aware scanning, otherwise, only loop what's necessary
-    while (props.rewards ? true : found < txCount + txToAdd) {
-        if (orderedTxs.length == 0) {
-            if (!props.rewards) {
-                isHistorySynced.value = true;
-            }
-            break;
-        }
-        const tx = orderedTxs.pop();
-        if (props.rewards) {
+
+    // For Rewards: aggregate the total amount
+    if (props.rewards) {
+        for (const tx of orderedTxs) {
             // Only compute rewards
             if (!tx.isCoinStake()) continue;
             // If this Tx Height is over the last scanned height, we aggregate it
-            if (tx.blockHeight >= nRewardUpdateHeight) {
+            if (tx.blockHeight > nRewardUpdateHeight) {
                 // Aggregate the total rewards
                 rewardAmount.value += wallet.toHistoricalTXs([tx])[0].amount;
             }
-            // Skip adding to the Tx List once we hit the display limit
-            if (found === txCount + txToAdd) continue;
         }
+        // Keep track of the scan block height
+        nRewardUpdateHeight = blockCount;
+    }
+
+    // Prepare the Tx History list
+    while (found < txCount + txToAdd) {
+        if (orderedTxs.length == 0) {
+            isHistorySynced.value = true;
+            break;
+        }
+        const tx = orderedTxs.pop();
+        if (props.rewards && !tx.isCoinStake()) continue;
         newTxs.push(tx);
         found++;
-    }
-    // Update the reward cache blockheight so we never re-calculate old rewards
-    if (props.rewards) {
-        nRewardUpdateHeight = blockCount;
     }
 
     // Convert to MPW's Activity format and render it
