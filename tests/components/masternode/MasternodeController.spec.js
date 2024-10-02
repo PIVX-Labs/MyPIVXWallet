@@ -43,9 +43,8 @@ describe('MasternodeController component tests', () => {
         expect(wrapper.find('[data-testid="mnStatus"]').text()).toBe('ENABLED');
         expect(wrapper.find('[data-testid="mnNetType"]').text()).toBe('IPV6');
         expect(wrapper.find('[data-testid="mnIp"]').text()).toBe('::1');
-        // Does this rely on time zone?
         expect(wrapper.find('[data-testid="mnLastSeen"]').text()).toBe(
-            '11:22:08 AM'
+            '9:22:08 AM'
         );
     });
 

@@ -14,3 +14,5 @@ document.body.innerHTML = `
 
 // Mock indexDB
 vi.stubGlobal('indexedDB', new IDBFactory());
+
+process.env.TZ = 'UTC';
