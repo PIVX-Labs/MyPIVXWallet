@@ -21,10 +21,6 @@ export {
     playMusic,
     openExplorer,
     doms,
-    importMasternode,
-    destroyMasternode,
-    startMasternode,
-    createProposal,
     switchSettings,
 } from './global.js';
 export { wallet, getNewAddress } from './wallet.js';
