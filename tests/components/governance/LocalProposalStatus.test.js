@@ -17,24 +17,37 @@ describe('LocalProposalStatus component tests', () => {
         expect(wrapper.find('[data-testid="localProposalStatus"]').text()).toBe(
             '1 block proposalFinalisationRemaining'
         );
+        expect(
+            wrapper.find('[data-testid="finalizeProposalButton"]').exists()
+        ).toBe(false);
         await wrapper.setProps({ proposal: { blockHeight: 99_999 } });
         expect(wrapper.find('[data-testid="localProposalStatus"]').text()).toBe(
             'proposalFinalisationReady'
         );
+        expect(
+            wrapper.find('[data-testid="finalizeProposalButton"]').exists()
+        ).toBe(true);
         await wrapper.setProps({ proposal: { blockHeight: 99_998 } });
         expect(wrapper.find('[data-testid="localProposalStatus"]').text()).toBe(
             'proposalFinalisationReady'
         );
+        expect(
+            wrapper.find('[data-testid="finalizeProposalButton"]').exists()
+        ).toBe(true);
         await wrapper.setProps({ proposal: { blockHeight: 1000 } });
         expect(wrapper.find('[data-testid="localProposalStatus"]').text()).toBe(
             'proposalFinalisationExpired'
         );
+        expect(
+            wrapper.find('[data-testid="finalizeProposalButton"]').exists()
+        ).toBe(false);
     });
+
     it('emits finalize event when button is clicked', async () => {
         const wrapper = mount(LocalProposalStatus, {
             props: {
                 proposal: {
-                    blockHeight: 100_100,
+                    blockHeight: 99_998,
                 },
                 blockCount: 100_105,
             },
