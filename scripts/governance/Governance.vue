@@ -38,7 +38,7 @@ const allocatedBudget = computed(() => {
         0
     );
 });
-// This updates the timestamp every block. Should be fine
+// This updates the timestamp every block.
 const flipdownTimeStamp = computed(
     () => Date.now() / 1000 + (nextSuperBlock.value - blockCount.value) * 60
 );
