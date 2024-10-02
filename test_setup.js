@@ -7,6 +7,8 @@ document.body.innerHTML = `
   <div>
       <div id="app"></div>
       <div id="analytics"></div>
+      <div id="masternodeTab"></div>
+      <div id="governanceTab"></div>
   </div>
 `;
 
