@@ -318,7 +318,7 @@ export async function openExplorer(strAddress = '') {
 
 async function loadImages() {
     const images = [
-        ['mpw-main-logo', import('../assets/new_logo.png')],
+        ['mpw-main-logo', import('../assets/logo.png')],
         ['plus-icon2', import('../assets/icons/icon-plus.svg')],
         ['plus-icon3', import('../assets/icons/icon-plus.svg')],
         ['del-wallet-icon', import('../assets/icons/icon-bin.svg')],
@@ -442,7 +442,6 @@ export async function sweepAddress(arrUTXOs, sweepingMasterKey, nFixedFee) {
     await sweepingWallet.sign(tx);
     return await getNetwork().sendTransaction(tx.serialize());
 }
-
 
 export function isMasternodeUTXO(cUTXO, cMasternode) {
     if (cMasternode?.collateralTxId) {

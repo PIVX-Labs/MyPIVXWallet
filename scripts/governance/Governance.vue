@@ -22,7 +22,7 @@ const showCreateProposalModal = ref(false);
 const wallet = useWallet();
 const settings = useSettings();
 const { localProposals, masternode } = storeToRefs(useMasternode());
-const { advancedMode,  } = storeToRefs(settings);
+const { advancedMode } = storeToRefs(settings);
 const { blockCount, currency: strCurrency, price } = storeToRefs(wallet);
 const proposals = ref([]);
 const contestedProposals = ref([]);
@@ -42,7 +42,7 @@ const allocatedBudget = computed(() => {
 const flipdownTimeStamp = computed(
     () => Date.now() / 1000 + (nextSuperBlock.value - blockCount.value) * 60
 );
-watch(flipdownTimeStamp, console.log, { immediate: true });
+
 // Each block update check if we have local proposals to update or finalize
 watch(
     [blockCount, localProposals],
@@ -73,7 +73,6 @@ watch(
 );
 
 async function fetchProposals() {
-    console.log('updating');
     const arrProposals = await Masternode.getProposals({
         fAllowFinished: false,
     });
@@ -89,43 +88,6 @@ async function fetchProposals() {
 }
 fetchProposals();
 watch(cChainParams, () => fetchProposals());
-
-/**
- * Asynchronously wait for a Proposal Tx to confirm, then cache the height.
- *
- * Do NOT await unless you want to lock the thread for a long time.
- * @param {ProposalCache} cProposalCache - The proposal cache to wait for
- * @returns {Promise<boolean>} Returns `true` once the block height is cached
- */
-async function waitForSubmissionBlockHeight(cProposalCache) {
-    let nHeight = null;
-
-    // Wait in a permanent throttled loop until we successfully fetch the block
-    const cNet = getNetwork();
-    while (true) {
-        // If a proposal is already fetching, then consequtive calls will be rejected
-        cProposalCache.fFetching = true;
-
-        // Attempt to fetch the submission Tx (may not exist yet!)
-        let cTx = null;
-        try {
-            cTx = await cNet.getTxInfo(cProposalCache.txid);
-        } catch (_) {}
-
-        if (!cTx || !cTx.blockHeight) {
-            // Didn't get the TX, throttle the thread by sleeping for a bit, then try again.
-            await sleep(30000);
-        } else {
-            nHeight = cTx.blockHeight;
-            break;
-        }
-    }
-
-    // Update the proposal finalisation cache
-    cProposalCache.nSubmissionHeight = nHeight;
-
-    return true;
-}
 
 async function openCreateProposal() {
     // Must have a wallet
@@ -188,7 +150,6 @@ async function createProposal(name, url, payments, monthlyPayment, address) {
     }
 }
 async function finalizeProposal(proposal) {
-    console.log('hi');
     const { ok, err } = await Masternode.finalizeProposal(proposal);
     if (ok) {
         createAlert('success', translation.PROPOSAL_FINALISED);

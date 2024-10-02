@@ -57,8 +57,6 @@ const opened = ref(null);
 function openOrCloseRow(i) {
     opened.value = opened.value === i ? null : i;
 }
-
-//TODO: fetch currency from settings
 </script>
 <template>
     <table
