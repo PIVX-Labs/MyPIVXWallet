@@ -85,7 +85,7 @@ class TestNetwork {
          * @param{number} blockHeight
          * @param{boolean} skipCoinstake
          */
-        (blockHeight, skipCoinstake = false) => {
+        (blockHeight, _skipCoinstake = false) => {
             if (!this.#mapBlocks.has(blockHeight)) {
                 throw new Error('Requested block does not exist!');
             }

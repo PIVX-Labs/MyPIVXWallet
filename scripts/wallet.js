@@ -9,7 +9,7 @@ import { COutpoint, Transaction } from './transaction.js';
 import { confirmPopup, createAlert, isShieldAddress } from './misc.js';
 import { cChainParams } from './chain_params.js';
 import { COIN } from './chain_params.js';
-import { ALERTS, tr, translation } from './i18n.js';
+import { ALERTS, translation } from './i18n.js';
 import { encrypt } from './aes-gcm.js';
 import { Database } from './database.js';
 import { RECEIVE_TYPES } from './contacts-book.js';

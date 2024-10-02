@@ -15,4 +15,5 @@ document.body.innerHTML = `
 // Mock indexDB
 vi.stubGlobal('indexedDB', new IDBFactory());
 
+// eslint-disable-next-line
 process.env.TZ = 'UTC';

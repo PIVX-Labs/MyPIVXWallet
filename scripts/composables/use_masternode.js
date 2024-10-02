@@ -1,12 +1,11 @@
-import { ref, watch, toRaw, reactive } from 'vue';
+import { ref, watch, toRaw } from 'vue';
 import { defineStore } from 'pinia';
-import Masternode from '../masternode.js';
 import { Database } from '../database.js';
 import { getEventEmitter } from '../event_bus.js';
 
 export const useMasternode = defineStore('masternode', () => {
     /**
-     * @type{import('vue').Ref<Masternode?>}
+     * @type{import('vue').Ref<import('../masternode.js').default?>}
      */
     const masternode = ref(null);
     const localProposals = ref([]);

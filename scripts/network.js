@@ -1,5 +1,4 @@
 import { cChainParams } from './chain_params.js';
-import { createAlert } from './misc.js';
 import {
     debugLog,
     debugTimerEnd,
@@ -10,7 +9,7 @@ import { sleep } from './utils.js';
 import { getEventEmitter } from './event_bus.js';
 import { setExplorer, fAutoSwitch } from './settings.js';
 import { cNode } from './settings.js';
-import { ALERTS, tr, translation } from './i18n.js';
+import { tr, translation } from './i18n.js';
 import { Transaction } from './transaction.js';
 
 /**
