@@ -18,9 +18,16 @@ const props = defineProps({
         type: Boolean,
     },
     proposalValidator: ProposalValidator,
+    blockCount: Number,
 });
-const { proposal, masternodeCount, strCurrency, price, proposalValidator } =
-    toRefs(props);
+const {
+    proposal,
+    masternodeCount,
+    strCurrency,
+    price,
+    proposalValidator,
+    blockCount,
+} = toRefs(props);
 const emit = defineEmits(['click', 'finalizeProposal', 'vote']);
 const showConfirmVoteModal = ref(false);
 const selectedVoteCode = ref(0);
@@ -42,6 +49,7 @@ function vote(voteCode) {
             <LocalProposalStatus
                 v-else
                 :proposal="proposal"
+                :blockCount="blockCount"
                 @finalizeProposal="emit('finalizeProposal')"
             />
         </td>

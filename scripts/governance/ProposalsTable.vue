@@ -5,6 +5,7 @@ import { toRefs, computed, ref } from 'vue';
 
 import { ProposalValidator } from './status';
 import { COIN } from '../chain_params';
+import { useWallet } from '../composables/use_wallet';
 const props = defineProps({
     proposals: Array,
     localProposals: {
@@ -20,6 +21,7 @@ const { proposals, localProposals, masternodeCount, strCurrency, price } =
 const proposalValidator = computed(
     () => new ProposalValidator(masternodeCount.value)
 );
+const wallet = useWallet();
 
 const emit = defineEmits(['finalizeProposal', 'vote']);
 
@@ -95,6 +97,7 @@ function openOrCloseRow(i) {
                     :price="price"
                     :localProposal="true"
                     :proposalValidator="proposalValidator"
+                    :blockCount="wallet.blockCount"
                     @click="openOrCloseRow(i)"
                     @finalizeProposal="emit('finalizeProposal', proposal)"
                 />

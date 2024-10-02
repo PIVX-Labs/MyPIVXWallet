@@ -54,6 +54,7 @@ const emit = defineEmits(['finalizeProposal']);
         <i class="fa-solid fa-angle-down"></i>
     </span>
     <button
+        v-if="status === translation.proposalFinalisationReady"
         data-testid="finalizeProposalButton"
         class="pivx-button-small"
         @click="emit('finalizeProposal')"

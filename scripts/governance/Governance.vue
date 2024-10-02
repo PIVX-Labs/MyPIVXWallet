@@ -54,29 +54,33 @@ const flipdownTimeStamp = computed(
 );
 watch(flipdownTimeStamp, console.log, { immediate: true });
 // Each block update check if we have local proposals to update or finalize
-watch(blockCount, async () => {
-    for (const proposal of localProposals.value) {
-        if (!proposal.blockHeight) {
-            let tx;
-            try {
-                tx = await getNetwork().getTxInfo(txid);
-            } catch (_) {}
-            if (!tx || !tx.blockHeight) {
-                // Tx hasn't been confirmed yet, wait for next block
-                continue;
+watch(
+    [blockCount, localProposals],
+    async () => {
+        for (const proposal of localProposals.value) {
+            if (!proposal.blockHeight) {
+                let tx;
+                try {
+                    tx = await getNetwork().getTxInfo(proposal.txid);
+                } catch (_) {}
+                if (!tx || !tx.blockHeight) {
+                    // Tx hasn't been confirmed yet, wait for next block
+                    continue;
+                }
+                proposal.blockHeight = tx.blockHeight;
             }
-            proposal.blockHeight = tx.blockHeight;
+            if (
+                blockCount.value - proposal.blockHeight >=
+                cChainParams.current.proposalFeeConfirmRequirement
+            ) {
+                // Proposal fee has the required amounts of confirms, stop watching and try to finalize
+                // TODO: remove propsal
+                finalizeProposal(proposal);
+            }
         }
-        if (
-            blockCount.value - proposal.blockHeight >=
-            cChainParams.current.proposalFeeConfirmRequirement
-        ) {
-            // Proposal fee has the required amounts of confirms, stop watching and try to finalize
-            // TODO: remove propsal
-            finalizeProposal(proposal);
-        }
-    }
-});
+    },
+    { immediate: true }
+);
 
 async function fetchProposals() {
     console.log('updating');
