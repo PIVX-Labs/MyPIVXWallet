@@ -1,7 +1,6 @@
 <script setup>
 import { COIN, cChainParams } from '../chain_params';
-import { watch, ref, computed, reactive, toRaw } from 'vue';
-import { cOracle } from '../prices';
+import { watch, ref, computed } from 'vue';
 import { ProposalValidator } from './status';
 import { useWallet } from '../composables/use_wallet';
 import Masternode from '../masternode.js';
@@ -11,29 +10,20 @@ import ProposalCreateModal from './ProposalCreateModal.vue';
 import MonthlyBudget from './MonthlyBudget.vue';
 import BudgetAllocated from './BudgetAllocated.vue';
 import { hasEncryptedWallet } from '../wallet';
-import { createAlert, sanitizeHTML, numberToCurrency } from '../misc';
+import { createAlert, sanitizeHTML } from '../misc';
 import { ALERTS, tr, translation } from '../i18n';
 import { storeToRefs } from 'pinia';
 import { useSettings } from '../composables/use_settings';
 import { getNetwork } from '../network';
 import { useMasternode } from '../composables/use_masternode';
 
-const strCurrency = 'usd';
-const price = ref(0);
 const showCreateProposalModal = ref(false);
-watch(
-    strCurrency,
-    async () => {
-        price.value = await cOracle.getPrice(strCurrency);
-    },
-    { immediate: true }
-);
 
 const wallet = useWallet();
 const settings = useSettings();
 const { localProposals, masternode } = storeToRefs(useMasternode());
-const { advancedMode } = storeToRefs(settings);
-const { blockCount } = storeToRefs(wallet);
+const { advancedMode,  } = storeToRefs(settings);
+const { blockCount, currency: strCurrency, price } = storeToRefs(wallet);
 const proposals = ref([]);
 const contestedProposals = ref([]);
 const nextSuperBlock = ref(0);
