@@ -1,6 +1,6 @@
 <script setup>
 import { COIN, cChainParams } from '../chain_params';
-import { watch, ref, computed } from 'vue';
+import { watch, ref, computed, onMounted } from 'vue';
 import { ProposalValidator } from './status';
 import { useWallet } from '../composables/use_wallet';
 import Masternode from '../masternode.js';
@@ -86,8 +86,14 @@ async function fetchProposals() {
         (a) => a.Yeas + a.Nays >= 100 && a.Ratio <= 0.25
     );
 }
+
 fetchProposals();
 watch(cChainParams, () => fetchProposals());
+onMounted(() =>
+    document
+        .getElementById('governanceTab')
+        .addEventListener('click', fetchProposals)
+);
 
 async function openCreateProposal() {
     // Must have a wallet
