@@ -327,7 +327,19 @@ export class Database {
         const store = this.#db
             .transaction('txs', 'readonly')
             .objectStore('txs');
-        return (await store.getAll())
+
+        // We'll manually cursor iterate to merge the Index (TXID) with it's components
+        const cursor = await store.openCursor();
+        const txs = [];
+        while (cursor.key) {
+            // Append the TXID from the Index key
+            cursor.value.txid = cursor.key;
+            txs.push(cursor.value);
+            await cursor.continue();
+        }
+
+        // Now convert the raw TX components to Transaction Classes
+        return txs
             .map((tx) => {
                 const vin = tx.vin.map(
                     (x) =>
@@ -358,10 +370,12 @@ export class Database {
                     shieldOutput: tx.shieldOutput,
                     bindingSig: tx.bindingSig,
                     lockTime: tx.lockTime,
+                    txid: tx.txid,
                 });
             })
             .sort((a, b) => a.blockHeight - b.blockHeight);
     }
+
     /**
      * Remove all txs from db
      */
