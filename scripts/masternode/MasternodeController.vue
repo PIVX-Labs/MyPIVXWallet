@@ -1,5 +1,5 @@
 <script setup>
-import { toRefs, ref, watch } from 'vue';
+import { toRefs, ref, watch, onMounted } from 'vue';
 import Masternode from '../masternode';
 import { createAlert } from '../misc';
 import { ALERTS } from '../i18n';
@@ -26,6 +26,11 @@ async function updateMasternodeData() {
     netType.value = data?.network?.toUpperCase() || 'Unknown';
     ip.value = masternode.value.addr;
 }
+onMounted(() =>
+    document
+        .getElementById('masternodeTab')
+        .addEventListener('click', updateMasternodeData)
+);
 watch(masternode, updateMasternodeData, { immediate: true });
 </script>
 
