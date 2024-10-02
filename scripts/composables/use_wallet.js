@@ -1,7 +1,7 @@
 import { getEventEmitter } from '../event_bus.js';
 import { hasEncryptedWallet, wallet } from '../wallet.js';
 import { ref, watch } from 'vue';
-import { strCurrency } from '../settings.js';
+import { fPublicMode, strCurrency, togglePublicMode } from '../settings.js';
 import { cOracle } from '../prices.js';
 import { ledgerSignTransaction } from '../ledger.js';
 import { defineStore } from 'pinia';
@@ -24,6 +24,7 @@ export const useWallet = defineStore('wallet', () => {
     // For now we'll just import the existing one
     // const wallet = new Wallet();
 
+    // Public/Private Mode will be loaded from disk after 'import-wallet' is emitted
     const publicMode = ref(true);
     watch(publicMode, (publicMode) => {
         doms.domNavbar.classList.toggle('active', !publicMode);
@@ -41,6 +42,9 @@ export const useWallet = defineStore('wallet', () => {
                 publicMode ? RECEIVE_TYPES.ADDRESS : RECEIVE_TYPES.SHIELD
             );
         }
+
+        // Save the mode state to DB
+        togglePublicMode(publicMode);
     });
 
     const isImported = ref(wallet.isLoaded());
@@ -126,6 +130,10 @@ export const useWallet = defineStore('wallet', () => {
     getEventEmitter().on('toggle-network', async () => {
         isEncrypted.value = await hasEncryptedWallet();
         blockCount.value = rawBlockCount;
+    });
+
+    getEventEmitter().on('wallet-import', async () => {
+        publicMode.value = fPublicMode;
     });
 
     getEventEmitter().on('balance-update', async () => {

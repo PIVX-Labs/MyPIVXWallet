@@ -243,7 +243,6 @@ SAVE_WALLET_PLEASE = "<b>Chroń swój portfel!</b><br>Panel ➜ Zabezpiecz swój
 BACKUP_OR_ENCRYPT_WALLET = "Proszę ZASZYFRUJ i/lub ZRÓB KOPIĘ ZAPASOWĄ swoich kluczy przed opuszczeniem, aby ich nie stracić" # Please ENCRYPT and/or BACKUP your keys before leaving, or you may lose them!
 NO_CAMERAS = "To urządzenie nie ma kamery!" # This device has no camera!
 STAKING_LEDGER_NO_SUPPORT = "Ledger nie jest obsługiwany w przypadku cold stakingu" # Ledger is not supported for Cold Staking
-CONNECTION_FAILED = "<b>Synchronizacja nie powiodła się!</b> Spróbuj ponownie później.<br>Możesz spróbować ponownie połączyć się za pomocą Ustawień." # <b>Failed to synchronize!</b> Please try again later.<br>You can attempt re-connect via the Settings.
 MN_NOT_ENABLED = "Twój masternode nie jest jeszcze włączony!" # Your masternode is not enabled yet!
 VOTE_SUBMITTED = "Głos oddany!" # Vote submitted!
 VOTED_ALREADY = "Oddałeś już głos na tę propozycję! Poczekaj 1 godzinę" # You already voted for this proposal! Please wait 1 hour
