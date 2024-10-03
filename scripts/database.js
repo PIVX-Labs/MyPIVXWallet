@@ -327,6 +327,9 @@ export class Database {
         const store = this.#db
             .transaction('txs', 'readonly')
             .objectStore('txs');
+        // Put unconfirmed txs (blockHeight -1) as last
+        const heightScore = (height) =>
+            height === -1 ? Number.POSITIVE_INFINITY : height;
         return (await store.getAll())
             .map((tx) => {
                 const vin = tx.vin.map(
@@ -360,7 +363,10 @@ export class Database {
                     lockTime: tx.lockTime,
                 });
             })
-            .sort((a, b) => a.blockHeight - b.blockHeight);
+            .sort(
+                (a, b) =>
+                    heightScore(a.blockHeight) - heightScore(b.blockHeight)
+            );
     }
     /**
      * Remove all txs from db
