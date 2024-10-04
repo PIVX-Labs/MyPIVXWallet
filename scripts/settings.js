@@ -69,10 +69,6 @@ export class Settings {
      */
     autoswitch;
     /**
-     * @type {String} The user's active Cold Staking address
-     */
-    coldAddress;
-    /**
      * @type {String} translation to use
      */
     translation;
@@ -104,7 +100,6 @@ export class Settings {
         displayCurrency = getDefaultCurrency(),
         displayDecimals = nDisplayDecimals,
         advancedMode = false,
-        coldAddress = '',
         autoLockWallet = false,
         publicMode = true,
     } = {}) {
@@ -117,8 +112,6 @@ export class Settings {
         this.advancedMode = advancedMode;
         this.autoLockWallet = autoLockWallet;
         this.publicMode = publicMode;
-        // DEPRECATED: Read-only below here, for migration only
-        this.coldAddress = coldAddress;
     }
 }
 
@@ -178,27 +171,8 @@ export async function start() {
         advancedMode,
         autoLockWallet,
         publicMode,
-        // DEPRECATED: Below here are entries that are read-only due to being moved to a different location in the DB
-        coldAddress,
     } = await database.getSettings();
 
-    // Cold Staking: As of v1.2.1 this was moved to the Account class, if any exists here, we'll migrate it then wipe it
-    // Note: We also only migrate Mainnet addresses, to keep the migration logic simple
-    if (
-        coldAddress &&
-        coldAddress.startsWith(cChainParams.main.STAKING_PREFIX)
-    ) {
-        const cAccount = await database.getAccount();
-        // Ensure an account exists (it is possible that a Cold Address was set without a wallet being encrypted)
-        if (cAccount) {
-            // We'll add the Cold Address to the account
-            cAccount.coldAddress = coldAddress;
-            // Save the changes
-            await database.updateAccount(cAccount);
-            // And wipe the old setting
-            await database.setSettings({ coldAddress: '' });
-        }
-    }
     // Transaction Mode (Public/Private)
     fPublicMode = publicMode;
 

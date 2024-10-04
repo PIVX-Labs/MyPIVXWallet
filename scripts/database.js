@@ -327,10 +327,23 @@ export class Database {
         const store = this.#db
             .transaction('txs', 'readonly')
             .objectStore('txs');
+
         // Put unconfirmed txs (blockHeight -1) as last
         const heightScore = (height) =>
             height === -1 ? Number.POSITIVE_INFINITY : height;
-        return (await store.getAll())
+
+        // We'll manually cursor iterate to merge the Index (TXID) with it's components
+        const cursor = await store.openCursor();
+        const txs = [];
+        while (cursor.key) {
+            // Append the TXID from the Index key
+            cursor.value.txid = cursor.key;
+            txs.push(cursor.value);
+            await cursor.continue();
+        }
+
+        // Now convert the raw TX components to Transaction Classes
+        return txs
             .map((tx) => {
                 const vin = tx.vin.map(
                     (x) =>
@@ -361,6 +374,7 @@ export class Database {
                     shieldOutput: tx.shieldOutput,
                     bindingSig: tx.bindingSig,
                     lockTime: tx.lockTime,
+                    txid: tx.txid,
                 });
             })
             .sort(
@@ -368,6 +382,7 @@ export class Database {
                     heightScore(a.blockHeight) - heightScore(b.blockHeight)
             );
     }
+
     /**
      * Remove all txs from db
      */
@@ -406,63 +421,7 @@ export class Database {
         );
     }
 
-    /**
-     * Migrates from local storage
-     */
-    async #migrateLocalStorage() {
-        if (localStorage.length === 0) return;
-        const settings = new Settings({
-            explorer: localStorage.explorer,
-            node: localStorage.node,
-            translation: localStorage.translation,
-            displayCurrency: localStorage.displayCurrency,
-        });
-        await this.setSettings(settings);
-
-        if (localStorage.masternode) {
-            try {
-                const masternode = JSON.parse(localStorage.masternode);
-                await this.addMasternode(masternode);
-            } catch (e) {
-                console.error(e);
-                createAlert('warning', ALERTS.MIGRATION_MASTERNODE_FAILURE);
-            }
-        }
-
-        if (localStorage.encwif || localStorage.publicKey) {
-            try {
-                const localProposals = JSON.parse(
-                    localStorage.localProposals || '[]'
-                );
-
-                // Update and format the old Account data
-                const cAccount = new Account({
-                    publicKey: localStorage.publicKey,
-                    encWif: localStorage.encwif,
-                    localProposals: localProposals,
-                });
-
-                // Migrate the old Account data to the new DB
-                await this.addAccount(cAccount);
-            } catch (e) {
-                console.error(e);
-                createAlert('warning', ALERTS.MIGRATION_ACCOUNT_FAILURE);
-                if (localStorage.encwif) {
-                    await confirmPopup({
-                        title: translation.MIGRATION_ACCOUNT_FAILURE_TITLE,
-                        html: `${
-                            translation.MIGRATION_ACCOUNT_FAILURE_HTML
-                        } <code id="exportPrivateKeyText">${sanitizeHTML(
-                            localStorage.encwif
-                        )} </code>`,
-                    });
-                }
-            }
-        }
-    }
-
     static async create(name) {
-        let migrate = false;
         const database = new Database({ db: null });
         const db = await openDB(`MPW-${name}`, Database.version, {
             upgrade: (db, oldVersion) => {
@@ -476,7 +435,6 @@ export class Database {
                     db.createObjectStore('masternodes');
                     db.createObjectStore('accounts');
                     db.createObjectStore('settings');
-                    migrate = true;
                 }
 
                 // The introduction of PIVXPromos (safely added during <v2 upgrades)
@@ -502,9 +460,6 @@ export class Database {
             },
         });
         database.#db = db;
-        if (migrate) {
-            await database.#migrateLocalStorage();
-        }
         return database;
     }
 
