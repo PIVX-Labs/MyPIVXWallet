@@ -742,6 +742,8 @@ export class Wallet {
                         syncing = true;
                         handled++;
                         await this.#shield.handleBlock(blocks[j]);
+                        // Backup every 500 handled blocks
+                        if (handled % 500 == 0) await this.saveShieldOnDisk();
                         // Delete so we don't have to hold all blocks in memory
                         // until we finish syncing
                         delete blocks[j];

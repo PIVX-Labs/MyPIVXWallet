@@ -112,6 +112,7 @@ export class Transaction {
         shieldSpend = [],
         shieldOutput = [],
         bindingSig = '',
+        txid = '',
     } = {}) {
         this.version = version;
         this.blockHeight = blockHeight;
@@ -125,6 +126,8 @@ export class Transaction {
         this.valueBalance = valueBalance;
         /** Handle to the unproxied tx for when we need to clone it */
         this.__original = this;
+        // If a TXID is provided (i.e: loaded from DB), cache it
+        if (txid) this.__original.#txid = txid;
         return new Proxy(this, {
             set(obj, p) {
                 if (p !== 'blockHeight' && p !== 'blockTime') {
