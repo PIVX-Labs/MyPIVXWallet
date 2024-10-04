@@ -22,9 +22,10 @@ export class Database {
      * Version 3 = TX Database (#235)
      * Version 4 = Tx Refactor (#284)
      * Version 5 = Tx shield data (#295)
-     * @type{Number}
+     * Version 6 = Filter unconfirmed txs (#415)
+     * @type {number}
      */
-    static version = 5;
+    static version = 6;
 
     /**
      * @type{import('idb').IDBPDatabase}
@@ -328,8 +329,6 @@ export class Database {
             .transaction('txs', 'readonly')
             .objectStore('txs');
         // Put unconfirmed txs (blockHeight -1) as last
-        const heightScore = (height) =>
-            height === -1 ? Number.POSITIVE_INFINITY : height;
         return (await store.getAll())
             .map((tx) => {
                 const vin = tx.vin.map(
@@ -363,10 +362,7 @@ export class Database {
                     lockTime: tx.lockTime,
                 });
             })
-            .sort(
-                (a, b) =>
-                    heightScore(a.blockHeight) - heightScore(b.blockHeight)
-            );
+            .sort((a, b) => a.blockHeight - b.blockHeight);
     }
     /**
      * Remove all txs from db
@@ -465,7 +461,7 @@ export class Database {
         let migrate = false;
         const database = new Database({ db: null });
         const db = await openDB(`MPW-${name}`, Database.version, {
-            upgrade: (db, oldVersion) => {
+            upgrade: (db, oldVersion, _, transaction) => {
                 console.log(
                     'DB: Upgrading from ' +
                         oldVersion +
@@ -490,6 +486,20 @@ export class Database {
                     // Recreate tx db due to transaction class changes
                     db.deleteObjectStore('txs');
                     db.createObjectStore('txs');
+                }
+
+                if (oldVersion < 6) {
+                    // Delete all txs with -1 as blockHeight (unconfirmed)
+                    (async () => {
+                        const store = transaction.objectStore('txs');
+                        let cursor = await store.openCursor();
+                        while (cursor) {
+                            if (cursor.value.blockHeight === -1) {
+                                await cursor.delete();
+                            }
+                            cursor = await cursor.continue();
+                        }
+                    })();
                 }
             },
             blocking: () => {

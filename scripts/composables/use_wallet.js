@@ -113,7 +113,8 @@ export const useWallet = defineStore('wallet', () => {
             }
             const res = await network.sendTransaction(tx.serialize());
             if (res) {
-                await wallet.addTransaction(tx);
+                // Don't add unconfirmed txs to the database
+                await wallet.addTransaction(tx, true);
             } else {
                 wallet.discardTransaction(tx);
             }

@@ -205,7 +205,10 @@ export class ExplorerNetwork extends Network {
                     const parsed = Transaction.fromHex(tx.hex);
                     parsed.blockHeight = tx.blockHeight;
                     parsed.blockTime = tx.blockTime;
-                    await wallet.addTransaction(parsed);
+                    await wallet.addTransaction(
+                        parsed,
+                        parsed.blockHeight === -1
+                    );
                 }
             }
         }
