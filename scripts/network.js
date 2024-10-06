@@ -18,6 +18,7 @@ import {
 import { cNode } from './settings.js';
 import { ALERTS, tr, translation } from './i18n.js';
 import { Transaction } from './transaction.js';
+import { TauriNetwork } from './tauri_network.js';
 
 /**
  * @typedef {Object} XPUBAddress
@@ -382,7 +383,7 @@ let _network = null;
  * @param {ExplorerNetwork} network - network to use
  */
 export function setNetwork(network) {
-    _network = network;
+    //    _network = network;
 }
 
 /**
@@ -390,6 +391,9 @@ export function setNetwork(network) {
  * @returns {ExplorerNetwork?} Returns the network in use, may be null if MPW hasn't properly loaded yet.
  */
 export function getNetwork() {
+    if (!_network) {
+        _network = new TauriNetwork();
+    }
     return _network;
 }
 
