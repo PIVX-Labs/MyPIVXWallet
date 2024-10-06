@@ -213,7 +213,11 @@ export async function confirmPopup({
 
     // A prompt wrapper for dialogListener so we avoid unremovable anon-func listeners
     function promptWrapperListener(evt) {
-        dialogListener(evt, hideConfirm ? null : doms.domConfirmModalConfirmButton, doms.domConfirmModalCancelButton);
+        dialogListener(
+            evt,
+            hideConfirm ? null : doms.domConfirmModalConfirmButton,
+            doms.domConfirmModalCancelButton
+        );
     }
 
     // If a final text input is available, listen for 'Enter' and 'Esc' keys to allow for mouse-less dialog interaction
