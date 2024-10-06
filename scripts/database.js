@@ -69,6 +69,7 @@ export class Database {
      * @param {Transaction} tx
      */
     async storeTx(tx) {
+        if (!tx) throw new Error('Cannot store undefined');
         const store = this.#db
             .transaction('txs', 'readwrite')
             .objectStore('txs');
@@ -333,6 +334,7 @@ export class Database {
         const cursor = await store.openCursor();
         const txs = [];
         while (cursor) {
+            if (!cursor.value) break;
             // Append the TXID from the Index key
             cursor.value.txid = cursor.key;
             txs.push(cursor.value);
@@ -450,6 +452,7 @@ export class Database {
                         const store = transaction.objectStore('txs');
                         let cursor = await store.openCursor();
                         while (cursor) {
+                            if (!cursor.value) break;
                             if (cursor.value.blockHeight === -1) {
                                 await cursor.delete();
                             }
