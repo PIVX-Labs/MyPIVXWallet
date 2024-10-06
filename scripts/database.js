@@ -332,7 +332,7 @@ export class Database {
         // We'll manually cursor iterate to merge the Index (TXID) with it's components
         const cursor = await store.openCursor();
         const txs = [];
-        while (cursor.key) {
+        while (cursor) {
             // Append the TXID from the Index key
             cursor.value.txid = cursor.key;
             txs.push(cursor.value);
