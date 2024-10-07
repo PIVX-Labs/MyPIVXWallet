@@ -10,7 +10,6 @@ import.meta.webpackContext('@fontsource/montserrat/', {
     regExp: /\.css$/,
 });
 import './global.js';
-import { getNetwork } from './network.js';
 
 // Export global functions to the MPW namespace so we can use them in html
 export {
@@ -21,12 +20,7 @@ export {
     playMusic,
     openExplorer,
     doms,
-    importMasternode,
-    destroyMasternode,
-    startMasternode,
-    createProposal,
     switchSettings,
-    govVote,
 } from './global.js';
 export { wallet, getNewAddress } from './wallet.js';
 export {
@@ -38,7 +32,6 @@ export {
     toggleAutoLockWallet,
     changePassword,
 } from './settings.js';
-export { createMasternode } from './legacy.js';
 export {
     promoConfirm,
     setPromoMode,

@@ -1,3 +1,4 @@
+import { defineStore } from 'pinia';
 import { getEventEmitter } from '../event_bus.js';
 import { ref, watch } from 'vue';
 import { watchIgnorable } from '@vueuse/core';
@@ -11,7 +12,7 @@ import {
 } from '../settings.js';
 import { cChainParams } from '../chain_params.js';
 
-export function useSettings() {
+export const useSettings = defineStore('settings', () => {
     const advancedMode = ref(fAdvancedMode);
     const displayDecimals = ref(0);
     const autoLockWallet = ref(false);
@@ -59,4 +60,4 @@ export function useSettings() {
         debug,
         isTestnet,
     };
-}
+});
