@@ -727,12 +727,14 @@ export class Wallet {
             );
             const batchSize = SHIELD_BATCH_SYNC_SIZE;
             let handled = 0;
+            let downloaded = 0;
             const blocks = [];
             let syncing = false;
             await startBatch(
                 async (i) => {
                     let block;
                     block = await cNet.getBlock(blockHeights[i], true);
+                    downloaded++;
                     blocks[i] = block;
                     // We need to process blocks monotically
                     // When we get a block, start from the first unhandled
@@ -752,7 +754,7 @@ export class Wallet {
 
                     getEventEmitter().emit(
                         'shield-sync-status-update',
-                        handled - 1,
+                        downloaded - 1,
                         blockHeights.length,
                         false
                     );
