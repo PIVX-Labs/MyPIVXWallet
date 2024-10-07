@@ -88,42 +88,28 @@ export class ExplorerNetwork extends Network {
      * @returns {Promise<Object>} the block fetched from explorer
      */
     async getBlock(blockHeight, skipCoinstake = false) {
-        try {
-            const block = await this.safeFetchFromExplorer(
-                `/api/v2/block/${blockHeight}`
+        const block = await this.safeFetchFromExplorer(
+            `/api/v2/block/${blockHeight}`
+        );
+        const newTxs = [];
+        // This is bad. We're making so many requests
+        // This is a quick fix to try to be compliant with the blockbook
+        // API, and not the PIVX extension.
+        // In the Blockbook API /block doesn't have any chain specific information
+        // Like hex, shield info or what not.
+        // We could change /getshieldblocks to /getshieldtxs?
+        // In addition, always skip the coinbase transaction and in case the coinstake one
+        // TODO: once v6.0 and shield stake is activated we might need to change this optimization
+        for (const tx of block.txs.slice(skipCoinstake ? 2 : 1)) {
+            const r = await fetch(
+                `${this.strUrl}/api/v2/tx-specific/${tx.txid}`
             );
-            const newTxs = [];
-            // This is bad. We're making so many requests
-            // This is a quick fix to try to be compliant with the blockbook
-            // API, and not the PIVX extension.
-            // In the Blockbook API /block doesn't have any chain specific information
-            // Like hex, shield info or what not.
-            // We could change /getshieldblocks to /getshieldtxs?
-            // In addition, always skip the coinbase transaction and in case the coinstake one
-            // TODO: once v6.0 and shield stake is activated we might need to change this optimization
-            for (const tx of block.txs.slice(skipCoinstake ? 2 : 1)) {
-                const r = await fetch(
-                    `${this.strUrl}/api/v2/tx-specific/${tx.txid}`
-                );
-                if (!r.ok) throw new Error('failed');
-                const newTx = await r.json();
-                newTxs.push(newTx);
-            }
-            block.txs = newTxs;
-            return block;
-        } catch (e) {
-            // Don't display block not found errors to user
-            // This is a bug with blockbook, where it sends a bad
-            // request error or newly minted blocks
-            if (
-                e.message.match(/block not found/i) ||
-                e.message.match(/safe fetch/) ||
-                e.message.match(/bad request/i)
-            ) {
-                return;
-            }
-            throw e;
+            if (!r.ok) throw new Error('failed');
+            const newTx = await r.json();
+            newTxs.push(newTx);
         }
+        block.txs = newTxs;
+        return block;
     }
 
     async getBlockCount() {
@@ -218,7 +204,10 @@ export class ExplorerNetwork extends Network {
                     const parsed = Transaction.fromHex(tx.hex);
                     parsed.blockHeight = tx.blockHeight;
                     parsed.blockTime = tx.blockTime;
-                    await wallet.addTransaction(parsed);
+                    await wallet.addTransaction(
+                        parsed,
+                        parsed.blockHeight === -1
+                    );
                 }
             }
         }

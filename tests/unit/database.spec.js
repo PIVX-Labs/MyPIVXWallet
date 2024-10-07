@@ -199,36 +199,6 @@ describe('database tests', () => {
         );
     });
 
-    it('migrates from local storage correctly', async () => {
-        vi.stubGlobal('localStorage', {
-            explorer: 'duddino.com',
-            translation: 'DE',
-            encwif: 'ENCRYPTED_WIF',
-            publicKey: 'PUB_KEY',
-            masternode: JSON.stringify(
-                new Masternode({ collateralTxId: 'mntxid' })
-            ),
-        });
-        const db = await Database.create('test');
-        expect(await db.getAccount()).toStrictEqual(
-            new Account({
-                publicKey: 'PUB_KEY',
-                encWif: 'ENCRYPTED_WIF',
-            })
-        );
-        expect(await db.getSettings()).toStrictEqual(
-            new Settings({
-                explorer: 'duddino.com',
-                translation: 'DE',
-            })
-        );
-        expect(await db.getMasternode()).toStrictEqual(
-            new Masternode({ collateralTxId: 'mntxid' })
-        );
-
-        vi.unstubAllGlobals();
-    });
-
     it('is isolated between different instances', async () => {
         const db = await Database.create('test');
         const db2 = await Database.create('test2');

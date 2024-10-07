@@ -72,8 +72,6 @@ settingsToggleTestnet = "Modo Testnet" # Testnet Mode
 settingsToggleAdvancedMode = "Modo avançado" # Advanced Mode
 transparencyReport = "\"Relatório de Transparência\"" # Transparency Report
 transaction = "\"Um ping indicando uma Tx, nenhum dado exclusivo é enviado, mas pode ser inferido a partir do tempo na rede.\"" # A ping indicating a Tx, no unique data is sent, but may be inferred from on-chain time.
-MIGRATION_ACCOUNT_FAILURE_TITLE = "Falha ao recuperar conta" # Failed to recover account
-MIGRATION_ACCOUNT_FAILURE_HTML = "Ocorreu um erro ao recuperar a sua conta. <br> Por favor reimporte sua carteira usando a seguinte chave:" # There was an error recovering your account. <br> Please reimport your wallet using the following key:
 time = "Tempo" # Time
 description = "Descrição" # Description
 activityBlockReward = "Bloco Recompensa" # Block Reward
@@ -188,8 +186,6 @@ CONFIRM_POPUP_TRANSACTION = "Confirme a sua transação" # Confirm your transact
 CONFIRM_POPUP_MN_P_KEY = "A chave privada do seu Masternode" # Your Masternode Private Key
 CONFIRM_POPUP_MN_P_KEY_HTML = "<br> Guarde esta chave privada e copie-a para a sua configuração no VPS <br>" # <br> Save this private key and copy it to your VPS config <br>
 CONFIRM_POPUP_VERIFY_ADDR = "Verifique o seu endereço" # Verify your address
-MIGRATION_MASTERNODE_FAILURE = "Falha ao recuperar o seu masternode. Por favor, reimporte-o." # Failed to recover your masternode. Please reimport it.
-MIGRATION_ACCOUNT_FAILURE = "Falha ao recuperar a sua conta. Por favor, reimporte-a." # Failed to recover your account. Please reimport it.
 APP_INSTALLED = "Aplicação instalada!" # App Installed!
 
 [info]

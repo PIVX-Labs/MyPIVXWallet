@@ -727,12 +727,14 @@ export class Wallet {
             );
             const batchSize = SHIELD_BATCH_SYNC_SIZE;
             let handled = 0;
+            let downloaded = 0;
             const blocks = [];
             let syncing = false;
             await startBatch(
                 async (i) => {
                     let block;
                     block = await cNet.getBlock(blockHeights[i], true);
+                    downloaded++;
                     blocks[i] = block;
                     // We need to process blocks monotically
                     // When we get a block, start from the first unhandled
@@ -742,6 +744,8 @@ export class Wallet {
                         syncing = true;
                         handled++;
                         await this.#shield.handleBlock(blocks[j]);
+                        // Backup every 500 handled blocks
+                        if (handled % 500 == 0) await this.saveShieldOnDisk();
                         // Delete so we don't have to hold all blocks in memory
                         // until we finish syncing
                         delete blocks[j];
@@ -750,7 +754,7 @@ export class Wallet {
 
                     getEventEmitter().emit(
                         'shield-sync-status-update',
-                        handled - 1,
+                        downloaded - 1,
                         blockHeights.length,
                         false
                     );
@@ -827,7 +831,6 @@ export class Wallet {
             ) {
                 try {
                     block = await cNet.getBlock(blockHeight);
-                    if (!block) return;
                     if (block.txs) {
                         if (
                             this.hasShield() &&
@@ -1230,7 +1233,7 @@ export class Wallet {
         }
         const txs = await db.getTxs();
         for (const tx of txs) {
-            this.addTransaction(tx, true);
+            await this.addTransaction(tx, true);
         }
     }
 }
