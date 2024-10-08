@@ -1,4 +1,21 @@
-# The Big Upgrade
+# Patch 1
+A patch for MPW v2.0, primarily resolving stability, performance and minor UX issues.
+
+# Improvements
+- Persistant Wallet Mode.
+- Shield sync is visually smoother.
+- Shield sync is persisted better between restarts.
+- Faster TXDB initialisation.
+
+# Removals
+- Legacy DB migration system.
+
+# Bug Fixes
+- Fixed issues with persisted unconfirmed Txs.
+- Fixed a case in which Txs load in an incorrect order.
+- Fixed old v1.0 branding remnant.
+
+# v2.0 - Major Update
 This is the largest MPW upgrade since Shield; containing an incredible array of improvements and polish, with the aim of bringing MPW to a professional wallet standard, welcome to v2.0.
 
 There are over 15k line changes in v2.0, this changelog will only show a small subset of notable changes, for more, head to GitHub.
