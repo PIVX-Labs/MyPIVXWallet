@@ -13,6 +13,7 @@ A patch for MPW v2.0, primarily resolving stability, performance and minor UX is
 # Bug Fixes
 - Fixed issues with persisted unconfirmed Txs.
 - Fixed a case in which Txs load in an incorrect order.
+- Fixed Total Rewards counter.
 - Fixed old v1.0 branding remnant.
 
 # v2.0 - Major Update
