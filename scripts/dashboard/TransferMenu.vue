@@ -143,6 +143,7 @@ async function selectContact() {
                             autocomplete="nope"
                             onkeydown="javascript: return event.keyCode == 69 ? false : true"
                             data-testid="amount"
+                            @input="syncAmountCurrency"
                             v-model="amount"
                         />
                         <div class="input-group-append">
