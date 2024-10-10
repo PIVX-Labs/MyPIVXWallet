@@ -9,7 +9,9 @@ export class HistoricalTx {
      * @param {boolean} shieldedOutputs - If this transaction contains Shield outputs.
      * @param {number} time - The block time of the transaction.
      * @param {number} blockHeight - The block height of the transaction.
-     * @param {number} amount - The amount transacted, in coins.
+     * @param {number} amount - The transparent amount transacted, in coins.
+     * @param {number} shieldAmount - The shielded amount transacted, in coins.
+     * @param {boolean} isToSelf - If the transaction is to self.
      */
     constructor(
         type,
@@ -18,7 +20,9 @@ export class HistoricalTx {
         shieldedOutputs,
         time,
         blockHeight,
-        amount
+        amount,
+        shieldAmount,
+        isToSelf
     ) {
         this.type = type;
         this.id = id;
@@ -27,6 +31,8 @@ export class HistoricalTx {
         this.time = time;
         this.blockHeight = blockHeight;
         this.amount = amount;
+        this.shieldAmount = shieldAmount;
+        this.isToSelf = isToSelf;
     }
 }
 

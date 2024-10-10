@@ -15,7 +15,13 @@ import { Database } from './database.js';
 import { RECEIVE_TYPES } from './contacts-book.js';
 import { Account } from './accounts.js';
 import { fAdvancedMode } from './settings.js';
-import { bytesToHex, hexToBytes, sleep, startBatch } from './utils.js';
+import {
+    bytesToHex,
+    hexToBytes,
+    reverseAndSwapEndianess,
+    sleep,
+    startBatch,
+} from './utils.js';
 import { strHardwareName } from './ledger.js';
 import { OutpointState, Mempool } from './mempool.js';
 import { getEventEmitter } from './event_bus.js';
@@ -620,20 +626,24 @@ export class Wallet {
     /**
      * Convert a list of Blockbook transactions to HistoricalTxs
      * @param {import('./transaction.js').Transaction[]} arrTXs - An array of the Blockbook TXs
-     * @returns {Array<HistoricalTx>} - A new array of `HistoricalTx`-formatted transactions
+     * @returns {Promise<Array<HistoricalTx>>} - A new array of `HistoricalTx`-formatted transactions
      */
-    // TODO: add shield data to txs
-    toHistoricalTXs(arrTXs) {
+    async toHistoricalTXs(arrTXs) {
         let histTXs = [];
         for (const tx of arrTXs) {
+            const { credit, ownAllVout } = this.#mempool.getCredit(tx);
+            const { debit, ownAllVin } = this.#mempool.getDebit(tx);
             // The total 'delta' or change in balance, from the Tx's sums
-            let nAmount =
-                (this.#mempool.getCredit(tx) - this.#mempool.getDebit(tx)) /
-                COIN;
+            let nAmount = (credit - debit) / COIN;
 
+            // Shielded data
+            const { shieldCredit, shieldDebit, arrShieldReceivers } =
+                await this.extractSaplingAmounts(tx);
+            const nShieldAmount = (shieldCredit - shieldDebit) / COIN;
+            const ownAllShield = shieldDebit - shieldCredit === tx.valueBalance;
             // The receiver addresses, if any
-            let arrReceivers = this.getOutAddress(tx);
-
+            let arrReceivers =
+                this.getOutAddress(tx).concat(arrShieldReceivers);
             const getFilteredCredit = (filter) => {
                 return tx.vout
                     .filter((_, i) => {
@@ -661,9 +671,9 @@ export class Wallet {
                     return addr[0] === cChainParams.current.STAKING_PREFIX;
                 });
                 nAmount = getFilteredCredit(OutpointState.P2CS) / COIN;
-            } else if (nAmount > 0) {
+            } else if (nAmount + nShieldAmount > 0) {
                 type = HistoricalTxType.RECEIVED;
-            } else if (nAmount < 0) {
+            } else if (nAmount + nShieldAmount < 0) {
                 type = HistoricalTxType.SENT;
             }
 
@@ -672,14 +682,45 @@ export class Wallet {
                     type,
                     tx.txid,
                     arrReceivers,
-                    false,
+                    tx.hasShieldData,
                     tx.blockTime,
                     tx.blockHeight,
-                    Math.abs(nAmount)
+                    nAmount,
+                    nShieldAmount,
+                    ownAllVin && ownAllVout && ownAllShield
                 )
             );
         }
         return histTXs;
+    }
+
+    /**
+     * Extract the sapling spent, received and shield addressed, regarding the wallet, from a tx
+     * @param {import('./transaction.js').Transaction} tx - a Transaction object
+     */
+    async extractSaplingAmounts(tx) {
+        let shieldCredit = 0;
+        let shieldDebit = 0;
+        let arrShieldReceivers = [];
+        if (!tx.hasShieldData || !wallet.hasShield()) {
+            return { shieldCredit, shieldDebit, arrShieldReceivers };
+        }
+
+        for (const shieldSpend of tx.shieldSpend) {
+            const nullifier = reverseAndSwapEndianess(shieldSpend.nullifier);
+            const spentNote = this.#shield.getNoteFromNullifier(nullifier);
+            if (spentNote) {
+                shieldDebit += spentNote.value;
+            }
+        }
+        const myOutputNotes = await this.#shield.decryptTransactionOutputs(
+            tx.serialize()
+        );
+        for (const note of myOutputNotes) {
+            shieldCredit += note.value;
+            arrShieldReceivers.push(note.recipient);
+        }
+        return { shieldCredit, shieldDebit, arrShieldReceivers };
     }
     sync = lockableFunction(async () => {
         if (this.#isSynced) {
@@ -736,14 +777,20 @@ export class Wallet {
                     block = await cNet.getBlock(blockHeights[i], true);
                     downloaded++;
                     blocks[i] = block;
-                    // We need to process blocks monotically
+                    // We need to process blocks monotonically
                     // When we get a block, start from the first unhandled
                     // One and handle as many as possible
                     for (let j = handled; blocks[j]; j = handled) {
                         if (syncing) break;
                         syncing = true;
                         handled++;
-                        await this.#shield.handleBlock(blocks[j]);
+                        // Transactions belonging to the transparent wallet has already been added
+                        // in the initial transparent sync. Therefore, set allowOwn = false.
+                        await this.#handleBlock(
+                            blocks[j],
+                            blockHeights[j],
+                            false
+                        );
                         // Backup every 500 handled blocks
                         if (handled % 500 == 0) await this.saveShieldOnDisk();
                         // Delete so we don't have to hold all blocks in memory
@@ -831,25 +878,7 @@ export class Wallet {
             ) {
                 try {
                     block = await cNet.getBlock(blockHeight);
-                    if (block.txs) {
-                        if (
-                            this.hasShield() &&
-                            blockHeight > this.#shield.getLastSyncedBlock()
-                        ) {
-                            await this.#shield.handleBlock(block);
-                        }
-                        for (const tx of block.txs) {
-                            const parsed = Transaction.fromHex(tx.hex);
-                            parsed.blockHeight = blockHeight;
-                            parsed.blockTime = tx.blocktime;
-                            // Avoid wasting memory on txs that do not regard our wallet
-                            if (this.ownTransaction(parsed)) {
-                                await this.addTransaction(parsed);
-                            }
-                        }
-                    } else {
-                        break;
-                    }
+                    await this.#handleBlock(block, blockHeight);
                     this.#lastProcessedBlock = blockHeight;
                 } catch (e) {
                     console.error(e);
@@ -873,15 +902,14 @@ export class Wallet {
     );
 
     async #checkShieldSaplingRoot(networkSaplingRoot) {
-        const saplingRoot = bytesToHex(
-            hexToBytes(await this.#shield.getSaplingRoot()).reverse()
+        const saplingRoot = reverseAndSwapEndianess(
+            await this.#shield.getSaplingRoot()
         );
         // If explorer sapling root is different from ours, there must be a sync error
         if (saplingRoot !== networkSaplingRoot) {
             createAlert('warning', translation.badSaplingRoot, 5000);
             this.#mempool = new Mempool();
-            // TODO: take the wallet creation height in input from users
-            await this.#shield.reloadFromCheckpoint(4200000);
+            await this.#resetShield();
             await this.#transparentSync();
             await this.#syncShield();
             return false;
@@ -915,9 +943,23 @@ export class Wallet {
         if (!cAccount || cAccount.shieldData == '') {
             return;
         }
-        this.#shield = await PIVXShield.load(cAccount.shieldData);
+        const loadRes = await PIVXShield.load(cAccount.shieldData);
+        this.#shield = loadRes.pivxShield;
+        // Load operation was not successful!
+        // Provided data are not compatible with the latest PIVX shield version.
+        // Resetting the shield object is required
+        if (!loadRes.success) {
+            await this.#resetShield();
+        }
+
         getEventEmitter().emit('shield-loaded-from-disk');
         return;
+    }
+
+    async #resetShield() {
+        // TODO: take the wallet creation height in input from users
+        await this.#shield.reloadFromCheckpoint(4200000);
+        await this.saveShieldOnDisk();
     }
 
     /**
@@ -1153,6 +1195,32 @@ export class Wallet {
         if (!skipDatabase) {
             const db = await Database.getInstance();
             await db.storeTx(transaction);
+        }
+    }
+
+    /**
+     * Handle the various transactions of a block
+     * @param block - block outputted from any PIVX node
+     * @param {number} blockHeight - the height of the block in the chain
+     * @param {boolean} allowOwn - whether to add transaction that satisfy ownTransaction()
+     */
+    async #handleBlock(block, blockHeight, allowOwn = true) {
+        let shieldTxs = [];
+        if (
+            this.hasShield() &&
+            blockHeight > this.#shield.getLastSyncedBlock()
+        ) {
+            shieldTxs = await this.#shield.handleBlock(block);
+        }
+        for (const tx of block.txs) {
+            const parsed = Transaction.fromHex(tx.hex);
+            parsed.blockHeight = blockHeight;
+            parsed.blockTime = tx.blocktime;
+            // Avoid wasting memory on txs that do not regard our wallet
+            const isOwned = allowOwn ? this.ownTransaction(parsed) : false;
+            if (isOwned || shieldTxs.includes(tx.hex)) {
+                await this.addTransaction(parsed);
+            }
         }
     }
 
