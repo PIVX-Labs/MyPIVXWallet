@@ -2,7 +2,9 @@ import QrScanner from 'qr-scanner';
 
 import { doms } from './global.js';
 import { ALERTS } from './i18n.js';
-import { createAlert } from './misc.js';
+import { AlertController } from './alerts/alert.js'
+
+ const alertController = AlertController.getInstance();
 
 /**
  * The active QR scanner (if one exists)
@@ -20,7 +22,7 @@ export async function scanQRCode() {
 
     // Check for Camera support
     if (!QrScanner.hasCamera()) {
-        createAlert('warning', ALERTS.NO_CAMERAS, 3000);
+        alertController.createAlert('warning', ALERTS.NO_CAMERAS, 3000);
         return false;
     }
 
@@ -48,7 +50,7 @@ export async function scanQRCode() {
                 doms.domModalQRReader.style.display = 'block';
             })
             .catch((err) => {
-                createAlert('warning', err, 2500);
+                alertController.createAlert('warning', err, 2500);
                 stopQRScan();
                 resolve();
             });

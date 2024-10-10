@@ -4,10 +4,12 @@ import vanityWalletIcon from '../../assets/icons/icon-vanity-wallet.svg';
 import { ALERTS, translation, tr } from '../i18n.js';
 import { ref, computed, watch, nextTick } from 'vue';
 import { cChainParams } from '../chain_params.js';
-import { MAP_B58, createAlert } from '../misc.js';
-
-const addressPrefix = ref('');
-const addressPrefixElement = ref({});
+import { MAP_B58 } from '../misc.js';
+ import { useAlerts } from '../composables/use_alerts.js';
+ 
+ const { createAlerts } = useAlerts();
+ const addressPrefix = ref('');
+ const addressPrefixElement = ref({});
 const isGenerating = ref(false);
 const addressPrefixShow = ref(false);
 const attempts = ref(0);

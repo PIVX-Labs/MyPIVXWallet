@@ -8,7 +8,6 @@ import TransferMenu from './TransferMenu.vue';
 import ExportPrivKey from './ExportPrivKey.vue';
 import RestoreWallet from './RestoreWallet.vue';
 import {
-    createAlert,
     isExchangeAddress,
     isShieldAddress,
     isValidPIVXAddress,
@@ -41,9 +40,10 @@ import pIconCamera from '../../assets/icons/icon-camera.svg';
 import { ParsedSecret } from '../parsed_secret.js';
 import { storeToRefs } from 'pinia';
 import { Account } from '../accounts';
-
-const wallet = useWallet();
-const activity = ref(null);
+ import { useAlerts } from '../composables/use_alerts.js';
+ const { createAlert } = useAlerts();
+ const wallet = useWallet();
+ const activity = ref(null);
 
 const needsToEncrypt = computed(() => {
     if (wallet.isHardwareWallet) {

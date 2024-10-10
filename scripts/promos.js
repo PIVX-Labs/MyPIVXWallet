@@ -1,7 +1,7 @@
 import { cChainParams, COIN } from './chain_params.js';
 import { Database } from './database.js';
 import { doms, restoreWallet, sweepAddress } from './global.js';
-import { createAlert, downloadBlob } from './misc.js';
+import { downloadBlob } from './misc.js';
 import { getAlphaNumericRand, arrayToCSV } from './utils.js';
 import { ALERTS, translation, tr } from './i18n.js';
 import { getNetwork } from './network.js';
@@ -12,6 +12,10 @@ import { wallet } from './wallet.js';
 import { LegacyMasterKey } from './masterkey.js';
 import { deriveAddress } from './encoding.js';
 import { getP2PKHScript } from './script.js';
+import { AlertController } from './alerts/alert.js'
+
+ const alertController = AlertController.getInstance();
+
 
 /** The fee in Sats to use for Creating or Redeeming PIVX Promos */
 export const PROMO_FEE = 10000;
@@ -226,7 +230,7 @@ export async function createPromoCode(strCode, nAmount, fAddRandomness = true) {
     // Ensure the amount is sane
     const min = 0.01;
     if (nAmount < min) {
-        return createAlert(
+        return alertController.createAlert(
             'warning',
             tr(ALERTS.PROMO_MIN, [
                 { min },
@@ -237,7 +241,7 @@ export async function createPromoCode(strCode, nAmount, fAddRandomness = true) {
 
     // Ensure there's no more than half the device's cores used
     if (arrPromoCreationThreads.length >= navigator.hardwareConcurrency)
-        return createAlert(
+        return alertController.createAlert(
             'warning',
             tr(ALERTS.PROMO_MAX_QUANTITY, [
                 { quantity: navigator.hardwareConcurrency },
@@ -251,7 +255,7 @@ export async function createPromoCode(strCode, nAmount, fAddRandomness = true) {
         0
     );
     if (wallet.balance - nReservedBalance < nAmount * COIN + PROMO_FEE * 2) {
-        return createAlert(
+        return alertController.createAlert(
             'warning',
             tr(ALERTS.PROMO_NOT_ENOUGH, [
                 { ticker: cChainParams.current.TICKER },
@@ -264,7 +268,7 @@ export async function createPromoCode(strCode, nAmount, fAddRandomness = true) {
     const db = await Database.getInstance();
     const arrCodes = (await db.getAllPromos()).concat(arrPromoCreationThreads);
     if (arrCodes.some((a) => a.code === strFinalCode)) {
-        return createAlert('warning', ALERTS.PROMO_ALREADY_CREATED, 3000);
+        return alertController.createAlert('warning', ALERTS.PROMO_ALREADY_CREATED, 3000);
     }
 
     // Create a new thread

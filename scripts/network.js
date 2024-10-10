@@ -1,5 +1,4 @@
 import { cChainParams } from './chain_params.js';
-import { createAlert } from './misc.js';
 import {
     debugLog,
     debugTimerEnd,
@@ -12,6 +11,9 @@ import { setExplorer, fAutoSwitch } from './settings.js';
 import { cNode } from './settings.js';
 import { ALERTS, tr, translation } from './i18n.js';
 import { Transaction } from './transaction.js';
+import { AlertController } from './alerts/alert.js'
+
+const alertController = AlertController.getInstance();
 
 /**
  * @typedef {Object} XPUBAddress

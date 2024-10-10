@@ -1,11 +1,12 @@
 import createXpub from 'create-xpub';
 import { ALERTS, tr } from './i18n.js';
-import { confirmPopup, createAlert } from './misc.js';
+import { confirmPopup } from './misc.js';
 import { getNetwork } from './network.js';
 import { Transaction } from './transaction.js';
 import { COIN, cChainParams } from './chain_params.js';
 import { hexToBytes, bytesToHex } from './utils.js';
 import { OP } from './script.js';
+import { AlertController } from './alerts/alert.js'
 
 /**
  * @type{import('@ledgerhq/hw-transport-webusb').default}
@@ -16,6 +17,7 @@ let transport;
  */
 export let cHardwareWallet = null;
 export let strHardwareName = '';
+ const alertController = AlertController.getInstance();
 
 /**
  * Setup ledger connection. Must be called at the beginning of each ledger function
@@ -46,7 +48,7 @@ export async function getHardwareWalletKeys(path, xpub = false, verify = true) {
             transport.device.productName;
 
         // Prompt the user in both UIs
-        if (verify) createAlert('info', ALERTS.WALLET_CONFIRM_L, 3500);
+        if (verify) alertController.createAlert('info', ALERTS.WALLET_CONFIRM_L, 3500);
         const cPubKey = await cHardwareWallet.getWalletPublicKey(path, {
             verify,
             format: 'legacy',
@@ -70,13 +72,13 @@ export async function getHardwareWalletKeys(path, xpub = false, verify = true) {
 
         // If there's no device, nudge the user to plug it in.
         if (e.message.toLowerCase().includes('no device selected')) {
-            createAlert('info', ALERTS.WALLET_NO_HARDWARE, 10000);
+            alertController.createAlert('info', ALERTS.WALLET_NO_HARDWARE, 10000);
             return null;
         }
 
         // If the device is unplugged, or connection lost through other means (such as spontanious device explosion)
         if (e.message.includes("Failed to execute 'transferIn'")) {
-            createAlert(
+            alertController.createAlert(
                 'info',
                 tr(ALERTS.WALLET_HARDWARE_CONNECTION_LOST, [
                     {
@@ -90,7 +92,7 @@ export async function getHardwareWalletKeys(path, xpub = false, verify = true) {
 
         // If the ledger is busy, just nudge the user.
         if (e.message.includes('is busy')) {
-            createAlert(
+            alertController.createAlert(
                 'info',
                 tr(ALERTS.WALLET_HARDWARE_BUSY, [
                     {
@@ -106,9 +108,9 @@ export async function getHardwareWalletKeys(path, xpub = false, verify = true) {
         // It's likely caused by faulty udev rules on linux
         if (e instanceof DOMException && e.message.match(/access denied/i)) {
             if (navigator.userAgent.toLowerCase().includes('linux')) {
-                createAlert('warning', ALERTS.WALLET_HARDWARE_UDEV, 5500);
+                alertController.createAlert('warning', ALERTS.WALLET_HARDWARE_UDEV, 5500);
             } else {
-                createAlert('warning', ALERTS.WALLET_HARDWARE_NO_ACCESS, 5500);
+                alertController.createAlert('warning', ALERTS.WALLET_HARDWARE_NO_ACCESS, 5500);
             }
 
             console.error(e);
@@ -124,7 +126,7 @@ export async function getHardwareWalletKeys(path, xpub = false, verify = true) {
         }
 
         // Translate the error to a user-friendly string (if possible)
-        createAlert(
+        alertController.createAlert(
             'warning',
             tr(ALERTS.WALLET_HARDWARE_ERROR, [
                 {

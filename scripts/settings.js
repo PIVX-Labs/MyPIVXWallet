@@ -8,7 +8,7 @@ import {
 import { wallet, hasEncryptedWallet } from './wallet.js';
 import { cChainParams } from './chain_params.js';
 import { setNetwork, ExplorerNetwork, getNetwork } from './network.js';
-import { confirmPopup, createAlert } from './misc.js';
+import { confirmPopup } from './misc.js';
 import {
     switchTranslation,
     ALERTS,
@@ -16,6 +16,7 @@ import {
     arrActiveLangs,
     tr,
 } from './i18n.js';
+import { AlertController } from './alerts/alert.js'
 import { Database } from './database.js';
 import { getEventEmitter } from './event_bus.js';
 import countries from 'country-locale-map/countries.json';
@@ -23,6 +24,8 @@ import countries from 'country-locale-map/countries.json';
 // --- Default Settings
 /** A mode that emits verbose console info for internal MPW operations */
 export let debug = false;
+
+const alertController = AlertController.getInstance();
 /**
  * The user-selected display currency from Oracle
  * @type {string}
@@ -231,7 +234,7 @@ export async function setExplorer(explorer, fSilent = false) {
     doms.domExplorerSelect.value = cExplorer.url;
 
     if (!fSilent)
-        createAlert(
+        alertController.createAlert(
             'success',
             tr(ALERTS.SWITCHED_EXPLORERS, [{ explorerName: cExplorer.name }]),
             2250
@@ -244,7 +247,7 @@ async function setNode(node, fSilent = false) {
     database.setSettings({ node: node.url });
 
     if (!fSilent)
-        createAlert(
+        alertController.createAlert(
             'success',
             tr(ALERTS.SWITCHED_NODE, [{ node: cNode.name }]),
             2250
@@ -340,7 +343,7 @@ async function fillCurrencySelect(mapCurrencies) {
  */
 export async function logOut() {
     if (wallet.isSyncing) {
-        createAlert('warning', `${ALERTS.WALLET_NOT_SYNCED}`, 3000);
+        alertController.createAlert('warning', `${ALERTS.WALLET_NOT_SYNCED}`, 3000);
         return;
     }
     const fContinue = await confirmPopup({
@@ -365,7 +368,7 @@ export async function logOut() {
 
     getEventEmitter().emit('toggle-network');
     updateLogOutButton();
-    createAlert('success', translation.accountDeleted, 3000);
+    alertController.createAlert('success', translation.accountDeleted, 3000);
 }
 
 /**
@@ -375,7 +378,7 @@ export async function toggleTestnet(
     wantTestnet = !cChainParams.current.isTestnet
 ) {
     if (wallet.isLoaded() && !wallet.isSynced) {
-        createAlert('warning', `${ALERTS.WALLET_NOT_SYNCED}`, 3000);
+        alertController.createAlert('warning', `${ALERTS.WALLET_NOT_SYNCED}`, 3000);
         doms.domTestnetToggler.checked = cChainParams.current.isTestnet;
         return;
     }

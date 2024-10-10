@@ -6,14 +6,15 @@ import { doms, restoreWallet } from './global.js';
 import { wallet, getNewAddress } from './wallet.js';
 import { cChainParams, COIN, COIN_DECIMALS } from './chain_params.js';
 import {
-    createAlert,
     generateMasternodePrivkey,
     confirmPopup,
 } from './misc.js';
 import { Database } from './database.js';
 import { getNetwork } from './network.js';
 import { ledgerSignTransaction } from './ledger.js';
+import { AlertController } from './alerts/alert.js'
 
+const alertController = AlertController.getInstance();
 /**
  * @deprecated use the new wallet method instead
  */
@@ -84,7 +85,7 @@ export async function createMasternode() {
                 ALERTS.CONFIRM_POPUP_MN_P_KEY_HTML,
         });
     }
-    createAlert('success', ALERTS.MN_CREATED_WAIT_CONFS);
+    alertController.createAlert('success', ALERTS.MN_CREATED_WAIT_CONFS);
     // Remove any previous Masternode data, if there were any
     const database = await Database.getInstance();
     database.removeMasternode();
@@ -96,7 +97,7 @@ export async function createMasternode() {
 export function validateAmount(nAmountSats, nMinSats = 10000) {
     // Validate the amount is a valid number, and meets the minimum (if any)
     if (nAmountSats < nMinSats || isNaN(nAmountSats)) {
-        createAlert(
+        alertController.createAlert(
             'warning',
             tr(ALERTS.INVALID_AMOUNT + ALERTS.VALIDATE_AMOUNT_LOW, [
                 { minimumAmount: nMinSats / COIN },
@@ -109,7 +110,7 @@ export function validateAmount(nAmountSats, nMinSats = 10000) {
 
     // Validate the amount in Satoshi terms meets the coin's native decimal depth
     if (!Number.isSafeInteger(nAmountSats)) {
-        createAlert(
+        alertController.createAlert(
             'warning',
             tr(
                 ALERTS.INVALID_AMOUNT + '<br>' + ALERTS.VALIDATE_AMOUNT_DECIMAL,

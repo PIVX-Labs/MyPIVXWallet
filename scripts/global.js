@@ -11,7 +11,8 @@ import {
     fAdvancedMode,
 } from './settings.js';
 import { createAndSendTransaction } from './legacy.js';
-import { createAlert, confirmPopup, sanitizeHTML } from './misc.js';
+import { AlertController } from './alerts/alert.js'
+import { confirmPopup, sanitizeHTML } from './misc.js';
 import { cChainParams, COIN } from './chain_params.js';
 import { sleep } from './utils.js';
 import { registerWorker } from './native.js';
@@ -22,6 +23,7 @@ import { checkForUpgrades } from './changelog.js';
 import { FlipDown } from './flipdown.js';
 import { createApp } from 'vue';
 import Dashboard from './dashboard/Dashboard.vue';
+import Alerts from './alerts/Alerts.vue'
 import { loadDebug, debugLog, DebugTopics } from './debug.js';
 import Stake from './stake/Stake.vue';
 import { createPinia } from 'pinia';
@@ -45,10 +47,12 @@ export let blockCount = 0;
 export let doms = {};
 
 const pinia = createPinia();
+const alertController = AlertController.getInstance();
 
 export const dashboard = createApp(Dashboard).use(pinia).mount('#DashboardTab');
 createApp(Stake).use(pinia).mount('#StakingTab');
 createApp(SideNavbar).use(pinia).mount('#SideNavbar');
+createApp(Alerts).use(pinia).mount('#Alerts');
 
 export async function start() {
     doms = {
@@ -301,7 +305,7 @@ function subscribeToNetworkEvents() {
 
     getEventEmitter().on('transaction-sent', (success, result) => {
         if (success) {
-            createAlert(
+            alertController.createAlert(
                 'success',
                 `${ALERTS.TX_SENT}<br>${sanitizeHTML(result)}`,
                 result ? 1250 + result.length * 50 : 3000
@@ -309,7 +313,7 @@ function subscribeToNetworkEvents() {
         } else {
             console.error('Error sending transaction:');
             console.error(result);
-            createAlert('warning', ALERTS.TX_FAILED, 2500);
+            alertController.createAlert('warning', ALERTS.TX_FAILED, 2500);
         }
     });
 }
@@ -481,7 +485,7 @@ export async function govVote(hash, voteCode) {
         const cMasternode = await database.getMasternode();
         if (cMasternode) {
             if ((await cMasternode.getStatus()) !== 'ENABLED') {
-                createAlert('warning', ALERTS.MN_NOT_ENABLED, 6000);
+                alertController.createAlert('warning', ALERTS.MN_NOT_ENABLED, 6000);
                 return;
             }
             const result = await cMasternode.vote(hash.toString(), voteCode); //1 yes 2 no
@@ -489,20 +493,20 @@ export async function govVote(hash, voteCode) {
                 //good vote
                 cMasternode.storeVote(hash.toString(), voteCode);
                 await updateGovernanceTab();
-                createAlert('success', ALERTS.VOTE_SUBMITTED, 6000);
+                alertController.createAlert('success', ALERTS.VOTE_SUBMITTED, 6000);
             } else if (result.includes('Error voting :')) {
                 //If you already voted return an alert
-                createAlert('warning', ALERTS.VOTED_ALREADY, 6000);
+                alertController.createAlert('warning', ALERTS.VOTED_ALREADY, 6000);
             } else if (result.includes('Failure to verify signature.')) {
                 //wrong masternode private key
-                createAlert('warning', ALERTS.VOTE_SIG_BAD, 6000);
+                alertController.createAlert('warning', ALERTS.VOTE_SIG_BAD, 6000);
             } else {
                 //this could be everything
                 console.error(result);
-                createAlert('warning', ALERTS.INTERNAL_ERROR, 6000);
+                alertController.createAlert('warning', ALERTS.INTERNAL_ERROR, 6000);
             }
         } else {
-            createAlert('warning', ALERTS.MN_ACCESS_BEFORE_VOTE, 6000);
+            alertController.createAlert('warning', ALERTS.MN_ACCESS_BEFORE_VOTE, 6000);
         }
     }
 }
@@ -522,12 +526,12 @@ export async function startMasternode(fRestart = false) {
             return;
         if (await cMasternode.start()) {
             const strMsg = fRestart ? ALERTS.MN_RESTARTED : ALERTS.MN_STARTED;
-            createAlert('success', strMsg, 4000);
+            alertController.createAlert('success', strMsg, 4000);
         } else {
             const strMsg = fRestart
                 ? ALERTS.MN_RESTART_FAILED
                 : ALERTS.MN_START_FAILED;
-            createAlert('warning', strMsg, 4000);
+            alertController.createAlert('warning', strMsg, 4000);
         }
     }
 }
@@ -545,7 +549,7 @@ export async function destroyMasternode() {
         );
 
         database.removeMasternode(wallet.getMasterKey());
-        createAlert('success', ALERTS.MN_DESTROYED, 5000);
+        alertController.createAlert('success', ALERTS.MN_DESTROYED, 5000);
         updateMasternodeTab();
     }
 }
@@ -590,11 +594,11 @@ export async function importMasternode() {
     const mnPrivKey = doms.domMnPrivateKey.value;
     const address = parseIpAddress(doms.domMnIP.value);
     if (!address) {
-        createAlert('warning', ALERTS.MN_BAD_IP, 5000);
+        alertController.createAlert('warning', ALERTS.MN_BAD_IP, 5000);
         return;
     }
     if (!mnPrivKey) {
-        createAlert('warning', ALERTS.MN_BAD_PRIVKEY, 5000);
+        alertController.createAlert('warning', ALERTS.MN_BAD_PRIVKEY, 5000);
         return;
     }
 
@@ -615,7 +619,7 @@ export async function importMasternode() {
                 const amount =
                     (cChainParams.current.collateralInSats - balance) / COIN;
                 const ticker = cChainParams.current.TICKER;
-                createAlert(
+                alertController.createAlert(
                     'warning',
                     tr(ALERTS.MN_NOT_ENOUGH_COLLAT, [
                         { amount: amount },
@@ -628,7 +632,7 @@ export async function importMasternode() {
                 // TODO: this UX flow is weird, is it even possible? perhaps we can re-design this entire function accordingly
                 const amount = cChainParams.current.collateralInSats / COIN;
                 const ticker = cChainParams.current.TICKER;
-                createAlert(
+                alertController.createAlert(
                     'warning',
                     tr(ALERTS.MN_ENOUGH_BUT_NO_COLLAT, [
                         { amount },
@@ -658,7 +662,7 @@ export async function importMasternode() {
 
         // sanity check:
         if (masterUtxo.value !== cChainParams.current.collateralInSats) {
-            return createAlert('warning', ALERTS.MN_COLLAT_NOT_SUITABLE, 10000);
+            return alertController.createAlert('warning', ALERTS.MN_COLLAT_NOT_SUITABLE, 10000);
         }
         collateralTxId = masterUtxo.outpoint.txid;
         outidx = masterUtxo.outpoint.n;
@@ -1104,13 +1108,13 @@ async function renderProposals(arrProposals, fContested) {
                         updateGovernanceTab();
                     } else {
                         if (result.err === 'unconfirmed') {
-                            createAlert(
+                            alertController.createAlert(
                                 'warning',
                                 ALERTS.PROPOSAL_UNCONFIRMED,
                                 5000
                             );
                         } else if (result.err === 'invalid') {
-                            createAlert(
+                            alertController.createAlert(
                                 'warning',
                                 ALERTS.PROPOSAL_EXPIRED,
                                 5000
@@ -1118,7 +1122,7 @@ async function renderProposals(arrProposals, fContested) {
                             deleteProposal();
                             updateGovernanceTab();
                         } else {
-                            createAlert(
+                            alertController.createAlert(
                                 'warning',
                                 ALERTS.PROPOSAL_FINALISE_FAIL
                             );
@@ -1501,12 +1505,12 @@ async function refreshMasternodeData(cMasternode, fAlert = false) {
             !wallet.isViewOnly() ||
             (await restoreWallet(translation.walletUnlockCreateMN))
         ) {
-            createAlert('warning', ALERTS.MN_OFFLINE_STARTING, 6000);
+            alertController.createAlert('warning', ALERTS.MN_OFFLINE_STARTING, 6000);
             // try to start the masternode
             const started = await cMasternode.start();
             if (started) {
                 doms.domMnTextErrors.innerHTML = ALERTS.MN_STARTED;
-                createAlert('success', ALERTS.MN_STARTED_ONLINE_SOON, 6000);
+                alertController.createAlert('success', ALERTS.MN_STARTED_ONLINE_SOON, 6000);
                 const database = await Database.getInstance();
                 await database.addMasternode(cMasternode);
                 wallet.lockCoin(
@@ -1517,7 +1521,7 @@ async function refreshMasternodeData(cMasternode, fAlert = false) {
                 );
             } else {
                 doms.domMnTextErrors.innerHTML = ALERTS.MN_START_FAILED;
-                createAlert('warning', ALERTS.MN_START_FAILED, 6000);
+                alertController.createAlert('warning', ALERTS.MN_START_FAILED, 6000);
             }
         }
     } else if (
@@ -1525,7 +1529,7 @@ async function refreshMasternodeData(cMasternode, fAlert = false) {
         cMasternodeData.status === 'PRE_ENABLED'
     ) {
         if (fAlert)
-            createAlert(
+            alertController.createAlert(
                 'success',
                 `${ALERTS.MN_STATUS_IS} <b> ${sanitizeHTML(
                     cMasternodeData.status
@@ -1546,7 +1550,7 @@ async function refreshMasternodeData(cMasternode, fAlert = false) {
             { state: state },
         ]);
         if (fAlert)
-            createAlert(
+            alertController.createAlert(
                 'warning',
                 tr(ALERTS.MN_STATE, [{ state: state }]),
                 6000
@@ -1554,7 +1558,7 @@ async function refreshMasternodeData(cMasternode, fAlert = false) {
     } else {
         // connection problem
         doms.domMnTextErrors.innerHTML = ALERTS.MN_CANT_CONNECT;
-        if (fAlert) createAlert('warning', ALERTS.MN_CANT_CONNECT, 6000);
+        if (fAlert) alertController.createAlert('warning', ALERTS.MN_CANT_CONNECT, 6000);
     }
 
     // Return the data in case the caller needs additional context
@@ -1564,11 +1568,11 @@ async function refreshMasternodeData(cMasternode, fAlert = false) {
 export async function createProposal() {
     // Must have a wallet
     if (!wallet.isLoaded()) {
-        return createAlert('warning', ALERTS.PROPOSAL_IMPORT_FIRST, 4500);
+        return alertController.createAlert('warning', ALERTS.PROPOSAL_IMPORT_FIRST, 4500);
     }
     // Wallet must be encrypted
     if (!(await hasEncryptedWallet())) {
-        return createAlert(
+        return alertController.createAlert(
             'warning',
             tr(translation.popupProposalEncryptFirst, [
                 { button: translation.secureYourWallet },
@@ -1585,7 +1589,7 @@ export async function createProposal() {
     }
     // Must have enough funds
     if (wallet.balance * COIN < cChainParams.current.proposalFee) {
-        return createAlert('warning', ALERTS.PROPOSAL_NOT_ENOUGH_FUNDS, 4500);
+        return alertController.createAlert('warning', ALERTS.PROPOSAL_NOT_ENOUGH_FUNDS, 4500);
     }
 
     // Create the popup, wait for the user to confirm or cancel
@@ -1663,7 +1667,7 @@ export async function createProposal() {
 
     const isValid = Masternode.isValidProposal(proposal);
     if (!isValid.ok) {
-        createAlert(
+        alertController.createAlert(
             'warning',
             `${ALERTS.PROPOSAL_INVALID_ERROR} ${isValid.err}`,
             7500
@@ -1687,7 +1691,7 @@ export async function createProposal() {
 
         // Update the DB
         await database.updateAccount(account);
-        createAlert('success', translation.PROPOSAL_CREATED, 10000);
+        alertController.createAlert('success', translation.PROPOSAL_CREATED, 10000);
         updateGovernanceTab();
     }
 }
@@ -1706,7 +1710,7 @@ export async function refreshChainData() {
 export const beforeUnloadListener = (evt) => {
     evt.preventDefault();
     // Disable Save your wallet warning on unload
-    createAlert('warning', ALERTS.SAVE_WALLET_PLEASE, 10000);
+    alertController.createAlert('warning', ALERTS.SAVE_WALLET_PLEASE, 10000);
     // Most browsers ignore this nowadays, but still, keep it 'just incase'
     return (evt.returnValue = translation.BACKUP_OR_ENCRYPT_WALLET);
 };
@@ -1779,11 +1783,12 @@ export function switchSettings(page) {
 }
 
 function errorHandler(e) {
+    debugger;
     const message = `${translation.unhandledException} <br> ${sanitizeHTML(
         e.message || e.reason
     )}`;
     try {
-        createAlert('warning', message);
+        alertController.createAlert('warning', message);
     } catch (_) {
         // Something as gone wrong, so we fall back to the default alert
         // This can happen on early errors for example

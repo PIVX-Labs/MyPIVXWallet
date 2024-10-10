@@ -5,14 +5,16 @@ import { cChainParams } from './chain_params.js';
 import {
     confirmPopup,
     sanitizeHTML,
-    createAlert,
     isSameType,
     isEmpty,
 } from './misc.js';
+import { AlertController } from './alerts/alert.js'
 import { PromoWallet } from './promos.js';
 import { ALERTS, translation } from './i18n.js';
 import { Account } from './accounts.js';
 import { COutpoint, CTxIn, CTxOut, Transaction } from './transaction.js';
+
+ const alertController = AlertController.getInstance();
 
 export class Database {
     /**
@@ -123,7 +125,7 @@ export class Database {
             );
             console.error(account);
             console.error('---- end of account dump ----');
-            createAlert(
+            alertController.createAlert(
                 'warning',
                 '<b>Account Creation Error</b><br>Logs were dumped in your Browser Console<br>Please submit these privately to PIVX Labs Developers!'
             );
@@ -188,7 +190,7 @@ export class Database {
             );
             console.error(account);
             console.error('---- end of account dump ----');
-            createAlert(
+            alertController.createAlert(
                 'warning',
                 '<b>DB Update Error</b><br>Your wallet is safe, logs were dumped in your Browser Console<br>Please submit these privately to PIVX Labs Developers!'
             );
@@ -208,7 +210,7 @@ export class Database {
             );
             console.error(account);
             console.error('---- end of input dump ----');
-            createAlert(
+            alertController.createAlert(
                 'warning',
                 '<b>DB Update Error</b><br>Logs were dumped in your Browser Console<br>Please submit these privately to PIVX Labs Developers!'
             );

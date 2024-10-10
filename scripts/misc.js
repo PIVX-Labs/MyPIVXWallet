@@ -37,8 +37,9 @@ export function downloadBlob(content, filename, contentType) {
  * @param {'success'|'info'|'warning'} type - The styling type of the alert
  * @param {string} message - The message to relay to the user
  * @param {number?} timeout - The time in `ms` until the alert expires (Defaults to never expiring)
+ * TODO: remove
  */
-export function createAlert(type, message, timeout = 0) {
+function createAlert(type, message, timeout = 0) {
     const domAlert = document.createElement('div');
     domAlert.classList.add('notifyWrapper');
     domAlert.classList.add(type);
