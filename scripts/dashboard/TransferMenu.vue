@@ -36,7 +36,9 @@ const props = defineProps({
 
 const address = defineModel('address');
 
-watch(address, () => getAddressColor(value).then((c) => (color.value = c)));
+watch(address, (value) =>
+    getAddressColor(value).then((c) => (color.value = `${c} !important`))
+);
 
 const amount = defineModel('amount', {
     set(value) {
