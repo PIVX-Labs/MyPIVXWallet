@@ -32,7 +32,7 @@ import {
 import { PIVXShield } from 'pivx-shield';
 import { guiToggleReceiveType } from './contacts-book.js';
 import { TransactionBuilder } from './transaction_builder.js';
-
+import { AsyncInterval } from './async_interval.js';
 /**
  * Class Wallet, at the moment it is just a "realization" of Masterkey with a given nAccount
  * it also remembers which addresses we generated.
@@ -1060,8 +1060,7 @@ export class Wallet {
                 'trying to create a shield transaction without having shield enable'
             );
         }
-
-        const periodicFunction = setInterval(async () => {
+        const periodicFunction = new AsyncInterval(async () => {
             const percentage = (await this.#shield.getTxStatus()) * 100;
             getEventEmitter().emit(
                 'shield-transaction-creation-update',
@@ -1090,7 +1089,7 @@ export class Wallet {
             await sleep(500);
             throw e;
         } finally {
-            clearInterval(periodicFunction);
+            await periodicFunction.clearInterval(500);
             getEventEmitter().emit(
                 'shield-transaction-creation-update',
                 0.0,
