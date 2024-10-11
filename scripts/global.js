@@ -30,6 +30,7 @@ import { cOracle } from './prices.js';
 import pIconCopy from '../assets/icons/icon-copy.svg';
 import pIconCheck from '../assets/icons/icon-check.svg';
 import SideNavbar from './SideNavbar.vue';
+import { AsyncInterval } from './async_interval.js';
 
 /** A flag showing if base MPW is fully loaded or not */
 export let fIsLoaded = false;
@@ -262,13 +263,12 @@ export async function start() {
     await refreshChainData();
     // Load the price manager
     cOracle.load();
-
-    setInterval(() => {
+    new AsyncInterval(async () => {
         // Refresh blockchain data
-        refreshChainData();
+        await refreshChainData();
 
         // Fetch the PIVX prices
-        refreshPriceDisplay();
+        await refreshPriceDisplay();
     }, 15000);
 
     // Check for recent upgrades, display the changelog
