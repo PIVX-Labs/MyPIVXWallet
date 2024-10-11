@@ -338,7 +338,11 @@ export class Database {
             // Append the TXID from the Index key
             cursor.value.txid = cursor.key;
             txs.push(cursor.value);
-            await cursor.continue();
+            try {
+                await cursor.continue();
+            } catch {
+                break;
+            }
         }
 
         // Now convert the raw TX components to Transaction Classes
@@ -456,7 +460,11 @@ export class Database {
                             if (cursor.value.blockHeight === -1) {
                                 await cursor.delete();
                             }
-                            cursor = await cursor.continue();
+                            try {
+                                cursor = await cursor.continue();
+                            } catch {
+                                break;
+                            }
                         }
                     })();
                 }

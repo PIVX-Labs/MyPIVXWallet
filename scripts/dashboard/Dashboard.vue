@@ -385,7 +385,7 @@ async function send(address, amount, useShieldInputs) {
  */
 function getMaxBalance(useShieldInputs) {
     const coinSatoshi = useShieldInputs ? wallet.shieldBalance : wallet.balance;
-    transferAmount.value = (coinSatoshi / COIN).toString();
+    transferAmount.value = coinSatoshi / COIN;
 }
 
 async function importFromDatabase() {
