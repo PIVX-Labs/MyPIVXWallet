@@ -20,6 +20,9 @@ watch(alerts, () => {
                 ...previousAlert,
                 message: `${previousAlert.message}${countStr}`,
                 show,
+		// Store original message so we can use it as key.
+		// This skips the animation in case of multiple errors
+		original: previousAlert.message,
             });
 
             res.push(alert);
@@ -49,10 +52,9 @@ watch(alerts, () => {
     <transition-group name="alert">
         <div
             v-for="alert of foldedAlerts.filter((a) => a.value.show)"
-            :key="alert.value.message + alert.value.created"
+            :key="alert.value.original"
         >
             <Alert
-                :key="alert.value.message"
                 :message="alert.value.message"
                 :level="alert.value.level"
                 @click="alert.value.show = false"
