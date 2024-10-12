@@ -43,11 +43,7 @@ export function registerWorker() {
         // Listen for successful installs
         window.addEventListener('appinstalled', (_event) => {
             // Notify!
-            return createAlert(
-                'success',
-                ALERTS.APP_INSTALLED,
-                2500
-            );
+            return createAlert('success', ALERTS.APP_INSTALLED, 2500);
         });
     }
 }

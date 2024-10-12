@@ -9,7 +9,6 @@ import { ALERTS, translation } from './i18n.js';
 import { Account } from './accounts.js';
 import { COutpoint, CTxIn, CTxOut, Transaction } from './transaction.js';
 
-
 export class Database {
     /**
      * The current version of the DB - increasing this will prompt the Upgrade process for clients with an older version

@@ -342,11 +342,7 @@ async function fillCurrencySelect(mapCurrencies) {
  */
 export async function logOut() {
     if (wallet.isSyncing) {
-        createAlert(
-            'warning',
-            `${ALERTS.WALLET_NOT_SYNCED}`,
-            3000
-        );
+        createAlert('warning', `${ALERTS.WALLET_NOT_SYNCED}`, 3000);
         return;
     }
     const fContinue = await confirmPopup({
@@ -381,11 +377,7 @@ export async function toggleTestnet(
     wantTestnet = !cChainParams.current.isTestnet
 ) {
     if (wallet.isLoaded() && !wallet.isSynced) {
-        createAlert(
-            'warning',
-            `${ALERTS.WALLET_NOT_SYNCED}`,
-            3000
-        );
+        createAlert('warning', `${ALERTS.WALLET_NOT_SYNCED}`, 3000);
         doms.domTestnetToggler.checked = cChainParams.current.isTestnet;
         return;
     }

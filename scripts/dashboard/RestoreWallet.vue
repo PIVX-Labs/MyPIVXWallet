@@ -6,7 +6,7 @@ import { ALERTS, translation } from '../i18n.js';
 import { Database } from '../database.js';
 import { decrypt } from '../aes-gcm';
 import { useAlerts } from '../composables/use_alerts.js';
-const { createAlerts } = useAlerts();
+const { createAlert } = useAlerts();
 
 const props = defineProps({
     show: Boolean,

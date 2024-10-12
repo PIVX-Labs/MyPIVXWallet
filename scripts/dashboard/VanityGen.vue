@@ -7,7 +7,7 @@ import { cChainParams } from '../chain_params.js';
 import { MAP_B58 } from '../misc.js';
 import { useAlerts } from '../composables/use_alerts.js';
 
-const { createAlerts } = useAlerts();
+const { createAlert } = useAlerts();
 const addressPrefix = ref('');
 const addressPrefixElement = ref({});
 const isGenerating = ref(false);

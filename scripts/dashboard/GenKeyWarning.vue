@@ -5,7 +5,7 @@ import Modal from '../Modal.vue';
 import Password from '../Password.vue';
 import { MIN_PASS_LENGTH } from '../chain_params.js';
 import { useAlerts } from '../composables/use_alerts.js';
-const { createAlerts } = useAlerts();
+const { createAlert } = useAlerts();
 
 import pLock from '../../assets/icons/icon-lock-locked.svg';
 

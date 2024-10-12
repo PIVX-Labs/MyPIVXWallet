@@ -484,11 +484,7 @@ export async function govVote(hash, voteCode) {
         const cMasternode = await database.getMasternode();
         if (cMasternode) {
             if ((await cMasternode.getStatus()) !== 'ENABLED') {
-                createAlert(
-                    'warning',
-                    ALERTS.MN_NOT_ENABLED,
-                    6000
-                );
+                createAlert('warning', ALERTS.MN_NOT_ENABLED, 6000);
                 return;
             }
             const result = await cMasternode.vote(hash.toString(), voteCode); //1 yes 2 no
@@ -496,40 +492,20 @@ export async function govVote(hash, voteCode) {
                 //good vote
                 cMasternode.storeVote(hash.toString(), voteCode);
                 await updateGovernanceTab();
-                createAlert(
-                    'success',
-                    ALERTS.VOTE_SUBMITTED,
-                    6000
-                );
+                createAlert('success', ALERTS.VOTE_SUBMITTED, 6000);
             } else if (result.includes('Error voting :')) {
                 //If you already voted return an alert
-                createAlert(
-                    'warning',
-                    ALERTS.VOTED_ALREADY,
-                    6000
-                );
+                createAlert('warning', ALERTS.VOTED_ALREADY, 6000);
             } else if (result.includes('Failure to verify signature.')) {
                 //wrong masternode private key
-                createAlert(
-                    'warning',
-                    ALERTS.VOTE_SIG_BAD,
-                    6000
-                );
+                createAlert('warning', ALERTS.VOTE_SIG_BAD, 6000);
             } else {
                 //this could be everything
                 console.error(result);
-                createAlert(
-                    'warning',
-                    ALERTS.INTERNAL_ERROR,
-                    6000
-                );
+                createAlert('warning', ALERTS.INTERNAL_ERROR, 6000);
             }
         } else {
-            createAlert(
-                'warning',
-                ALERTS.MN_ACCESS_BEFORE_VOTE,
-                6000
-            );
+            createAlert('warning', ALERTS.MN_ACCESS_BEFORE_VOTE, 6000);
         }
     }
 }
@@ -685,11 +661,7 @@ export async function importMasternode() {
 
         // sanity check:
         if (masterUtxo.value !== cChainParams.current.collateralInSats) {
-            return createAlert(
-                'warning',
-                ALERTS.MN_COLLAT_NOT_SUITABLE,
-                10000
-            );
+            return createAlert('warning', ALERTS.MN_COLLAT_NOT_SUITABLE, 10000);
         }
         collateralTxId = masterUtxo.outpoint.txid;
         outidx = masterUtxo.outpoint.n;
@@ -1532,20 +1504,12 @@ async function refreshMasternodeData(cMasternode, fAlert = false) {
             !wallet.isViewOnly() ||
             (await restoreWallet(translation.walletUnlockCreateMN))
         ) {
-            createAlert(
-                'warning',
-                ALERTS.MN_OFFLINE_STARTING,
-                6000
-            );
+            createAlert('warning', ALERTS.MN_OFFLINE_STARTING, 6000);
             // try to start the masternode
             const started = await cMasternode.start();
             if (started) {
                 doms.domMnTextErrors.innerHTML = ALERTS.MN_STARTED;
-                createAlert(
-                    'success',
-                    ALERTS.MN_STARTED_ONLINE_SOON,
-                    6000
-                );
+                createAlert('success', ALERTS.MN_STARTED_ONLINE_SOON, 6000);
                 const database = await Database.getInstance();
                 await database.addMasternode(cMasternode);
                 wallet.lockCoin(
@@ -1556,11 +1520,7 @@ async function refreshMasternodeData(cMasternode, fAlert = false) {
                 );
             } else {
                 doms.domMnTextErrors.innerHTML = ALERTS.MN_START_FAILED;
-                createAlert(
-                    'warning',
-                    ALERTS.MN_START_FAILED,
-                    6000
-                );
+                createAlert('warning', ALERTS.MN_START_FAILED, 6000);
             }
         }
     } else if (
@@ -1597,12 +1557,7 @@ async function refreshMasternodeData(cMasternode, fAlert = false) {
     } else {
         // connection problem
         doms.domMnTextErrors.innerHTML = ALERTS.MN_CANT_CONNECT;
-        if (fAlert)
-            createAlert(
-                'warning',
-                ALERTS.MN_CANT_CONNECT,
-                6000
-            );
+        if (fAlert) createAlert('warning', ALERTS.MN_CANT_CONNECT, 6000);
     }
 
     // Return the data in case the caller needs additional context
@@ -1612,11 +1567,7 @@ async function refreshMasternodeData(cMasternode, fAlert = false) {
 export async function createProposal() {
     // Must have a wallet
     if (!wallet.isLoaded()) {
-        return createAlert(
-            'warning',
-            ALERTS.PROPOSAL_IMPORT_FIRST,
-            4500
-        );
+        return createAlert('warning', ALERTS.PROPOSAL_IMPORT_FIRST, 4500);
     }
     // Wallet must be encrypted
     if (!(await hasEncryptedWallet())) {
@@ -1637,11 +1588,7 @@ export async function createProposal() {
     }
     // Must have enough funds
     if (wallet.balance * COIN < cChainParams.current.proposalFee) {
-        return createAlert(
-            'warning',
-            ALERTS.PROPOSAL_NOT_ENOUGH_FUNDS,
-            4500
-        );
+        return createAlert('warning', ALERTS.PROPOSAL_NOT_ENOUGH_FUNDS, 4500);
     }
 
     // Create the popup, wait for the user to confirm or cancel
@@ -1743,11 +1690,7 @@ export async function createProposal() {
 
         // Update the DB
         await database.updateAccount(account);
-        createAlert(
-            'success',
-            translation.PROPOSAL_CREATED,
-            10000
-        );
+        createAlert('success', translation.PROPOSAL_CREATED, 10000);
         updateGovernanceTab();
     }
 }
@@ -1839,7 +1782,6 @@ export function switchSettings(page) {
 }
 
 function errorHandler(e) {
-    debugger;
     const message = `${translation.unhandledException} <br> ${sanitizeHTML(
         e.message || e.reason
     )}`;

@@ -34,7 +34,6 @@ import { guiToggleReceiveType } from './contacts-book.js';
 import { TransactionBuilder } from './transaction_builder.js';
 import { createAlert } from './alerts/alert.js';
 
-
 /**
  * Class Wallet, at the moment it is just a "realization" of Masterkey with a given nAccount
  * it also remembers which addresses we generated.

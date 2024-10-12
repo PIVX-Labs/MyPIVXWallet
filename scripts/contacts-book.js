@@ -18,7 +18,6 @@ import pIconCamera from '../assets/icons/icon-camera.svg';
 import pIconBin from '../assets/icons/icon-bin.svg';
 import { createAlert } from './alerts/alert.js';
 
-
 /**
  * Represents an Account contact
  */
@@ -297,11 +296,7 @@ export async function promptForContact() {
     const cDB = await Database.getInstance();
     const cAccount = await cDB.getAccount();
     if (!cAccount || (cAccount.contacts && cAccount.contacts.length === 0))
-        return createAlert(
-            'warning',
-            ALERTS.CONTACTS_YOU_HAVE_NONE,
-            2500
-        );
+        return createAlert('warning', ALERTS.CONTACTS_YOU_HAVE_NONE, 2500);
     return renderContacts(cAccount, true);
 }
 
@@ -593,17 +588,9 @@ export async function guiAddContact() {
 
     // Verify the name
     if (strName.length < 1)
-        return createAlert(
-            'warning',
-            ALERTS.CONTACTS_NAME_REQUIRED,
-            2500
-        );
+        return createAlert('warning', ALERTS.CONTACTS_NAME_REQUIRED, 2500);
     if (strName.length > 32)
-        return createAlert(
-            'warning',
-            ALERTS.CONTACTS_NAME_TOO_LONG,
-            2500
-        );
+        return createAlert('warning', ALERTS.CONTACTS_NAME_TOO_LONG, 2500);
 
     // Verify the address
     if (!isValidPIVXAddress(strAddr))
@@ -629,11 +616,7 @@ export async function guiAddContact() {
     } else {
         // Ensure we're not adding (one of) our own address(es)
         if (wallet.isOwnAddress(strAddr)) {
-            createAlert(
-                'warning',
-                ALERTS.CONTACTS_CANNOT_ADD_YOURSELF,
-                3500
-            );
+            createAlert('warning', ALERTS.CONTACTS_CANNOT_ADD_YOURSELF, 3500);
             return false;
         }
     }
@@ -648,21 +631,13 @@ export async function guiAddContact() {
 
     // If both Name and Key are saved, then they just tried re-adding the same Contact twice
     if (cContactByName && cContactByPubkey) {
-        createAlert(
-            'warning',
-            ALERTS.CONTACTS_ALREADY_EXISTS,
-            3000
-        );
+        createAlert('warning', ALERTS.CONTACTS_ALREADY_EXISTS, 3000);
         return true;
     }
 
     // If the Name is saved, but not key, then this *could* be a kind of Username-based phishing attempt
     if (cContactByName && !cContactByPubkey) {
-        createAlert(
-            'warning',
-            ALERTS.CONTACTS_NAME_ALREADY_EXISTS,
-            4000
-        );
+        createAlert('warning', ALERTS.CONTACTS_NAME_ALREADY_EXISTS, 4000);
         return true;
     }
 
@@ -704,17 +679,9 @@ export async function guiAddContactPrompt(
 ) {
     // Verify the name
     if (strName.length < 1)
-        return createAlert(
-            'warning',
-            ALERTS.CONTACTS_NAME_REQUIRED,
-            2500
-        );
+        return createAlert('warning', ALERTS.CONTACTS_NAME_REQUIRED, 2500);
     if (strName.length > 32)
-        return createAlert(
-            'warning',
-            ALERTS.CONTACTS_NAME_TOO_LONG,
-            2500
-        );
+        return createAlert('warning', ALERTS.CONTACTS_NAME_TOO_LONG, 2500);
 
     // Verify the address
     if (!isValidPIVXAddress(strPubkey))
@@ -741,11 +708,7 @@ export async function guiAddContactPrompt(
     } else {
         // Ensure we're not adding (one of) our own address(es)
         if (wallet.isOwnAddress(strPubkey)) {
-            createAlert(
-                'warning',
-                ALERTS.CONTACTS_CANNOT_ADD_YOURSELF,
-                3500
-            );
+            createAlert('warning', ALERTS.CONTACTS_CANNOT_ADD_YOURSELF, 3500);
             return false;
         }
     }
@@ -760,22 +723,14 @@ export async function guiAddContactPrompt(
     // If both Name and Key are saved, then they just tried re-adding the same Contact twice
     if (cContactByName && cContactByPubkey) {
         if (fDuplicateNotif)
-            createAlert(
-                'warning',
-                ALERTS.CONTACTS_ALREADY_EXISTS,
-                3000
-            );
+            createAlert('warning', ALERTS.CONTACTS_ALREADY_EXISTS, 3000);
         return true;
     }
 
     // If the Name is saved, but not key, then this *could* be a kind of Username-based phishing attempt
     if (cContactByName && !cContactByPubkey) {
         if (fDuplicateNotif)
-            createAlert(
-                'warning',
-                ALERTS.CONTACTS_NAME_ALREADY_EXISTS,
-                4000
-            );
+            createAlert('warning', ALERTS.CONTACTS_NAME_ALREADY_EXISTS, 4000);
         return true;
     }
 
@@ -862,19 +817,11 @@ export async function guiEditContactNamePrompt(nIndex) {
     // Verify the name
     const strNewName = document.getElementById('contactsNewNameInput').value;
     if (strNewName.length < 1) {
-        createAlert(
-            'warning',
-            ALERTS.CONTACTS_NAME_REQUIRED,
-            2500
-        );
+        createAlert('warning', ALERTS.CONTACTS_NAME_REQUIRED, 2500);
         return false;
     }
     if (strNewName.length > 32) {
-        createAlert(
-            'warning',
-            ALERTS.CONTACTS_NAME_TOO_LONG,
-            2500
-        );
+        createAlert('warning', ALERTS.CONTACTS_NAME_TOO_LONG, 2500);
         return false;
     }
 
@@ -972,11 +919,7 @@ export async function guiAddContactQRPrompt() {
             return fAdded;
         }
     } else {
-        createAlert(
-            'warning',
-            ALERTS.CONTACTS_NOT_A_CONTACT_QR,
-            2500
-        );
+        createAlert('warning', ALERTS.CONTACTS_NOT_A_CONTACT_QR, 2500);
         return false;
     }
 }
@@ -1022,19 +965,11 @@ export async function guiSetAccountName(strDOM) {
     // Verify the name
     const strNewName = domInput.value.trim();
     if (strNewName.length < 1) {
-        createAlert(
-            'warning',
-            ALERTS.CONTACTS_NAME_REQUIRED,
-            2500
-        );
+        createAlert('warning', ALERTS.CONTACTS_NAME_REQUIRED, 2500);
         return false;
     }
     if (strNewName.length > 32) {
-        createAlert(
-            'warning',
-            ALERTS.CONTACTS_NAME_TOO_LONG,
-            2500
-        );
+        createAlert('warning', ALERTS.CONTACTS_NAME_TOO_LONG, 2500);
         return false;
     }
 

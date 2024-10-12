@@ -12,7 +12,6 @@ import { cNode } from './settings.js';
 import { ALERTS, tr, translation } from './i18n.js';
 import { Transaction } from './transaction.js';
 
-
 /**
  * @typedef {Object} XPUBAddress
  * @property {string} type - Type of address (always 'XPUBAddress' for XPUBInfo classes)
