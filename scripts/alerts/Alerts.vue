@@ -20,9 +20,9 @@ watch(alerts, () => {
                 ...previousAlert,
                 message: `${previousAlert.message}${countStr}`,
                 show,
-		// Store original message so we can use it as key.
-		// This skips the animation in case of multiple errors
-		original: previousAlert.message,
+                // Store original message so we can use it as key.
+                // This skips the animation in case of multiple errors
+                original: previousAlert.message,
             });
 
             res.push(alert);
