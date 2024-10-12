@@ -8,7 +8,7 @@ import {
 } from './debug.js';
 import { sleep } from './utils.js';
 import { getEventEmitter } from './event_bus.js';
-import { setExplorer, fAutoSwitch } from './settings.js';
+import { setExplorer, fAutoSwitch, setNode } from './settings.js';
 import { cNode } from './settings.js';
 import { ALERTS, tr, translation } from './i18n.js';
 import { Transaction } from './transaction.js';
@@ -115,7 +115,7 @@ export class ExplorerNetwork extends Network {
 
     async getBlockCount() {
         const { backend } = await (
-            await retryWrapper(fetchBlockbook, `/api/v2/api`)
+            await retryWrapper(fetchBlockbook, true, `/api/v2/api`)
         ).json();
 
         return backend.blocks;
@@ -133,7 +133,7 @@ export class ExplorerNetwork extends Network {
         let error;
         while (trials < maxTrials) {
             trials += 1;
-            const res = await retryWrapper(fetchBlockbook, strCommand);
+            const res = await retryWrapper(fetchBlockbook, true, strCommand);
             if (!res.ok) {
                 try {
                     error = (await res.json()).error;
@@ -240,7 +240,11 @@ export class ExplorerNetwork extends Network {
             let publicKey = strAddress;
             // Fetch UTXOs for the key
             const arrUTXOs = await (
-                await retryWrapper(fetchBlockbook, `/api/v2/utxo/${publicKey}`)
+                await retryWrapper(
+                    fetchBlockbook,
+                    true,
+                    `/api/v2/utxo/${publicKey}`
+                )
             ).json();
             return arrUTXOs;
         } catch (e) {
@@ -255,14 +259,14 @@ export class ExplorerNetwork extends Network {
      */
     async getXPubInfo(strXPUB) {
         return await (
-            await retryWrapper(fetchBlockbook, `/api/v2/xpub/${strXPUB}`)
+            await retryWrapper(fetchBlockbook, true, `/api/v2/xpub/${strXPUB}`)
         ).json();
     }
 
     async sendTransaction(hex) {
         try {
             const data = await (
-                await retryWrapper(fetchBlockbook, '/api/v2/sendtx/', {
+                await retryWrapper(fetchBlockbook, true, '/api/v2/sendtx/', {
                     method: 'post',
                     body: hex,
                 })
@@ -281,7 +285,11 @@ export class ExplorerNetwork extends Network {
     }
 
     async getTxInfo(txHash) {
-        const req = await retryWrapper(fetchBlockbook, `/api/v2/tx/${txHash}`);
+        const req = await retryWrapper(
+            fetchBlockbook,
+            true,
+            `/api/v2/tx/${txHash}`
+        );
         return await req.json();
     }
 
@@ -289,7 +297,9 @@ export class ExplorerNetwork extends Network {
      * @return {Promise<Number[]>} The list of blocks which have at least one shield transaction
      */
     async getShieldBlockList() {
-        return await (await fetch(`${cNode.url}/getshieldblocks`)).json();
+        return await (
+            await retryWrapper(fetchNode, false, `/getshieldblocks`)
+        ).json();
     }
 }
 
@@ -322,22 +332,38 @@ export function fetchBlockbook(api, options) {
 }
 
 /**
- * A wrapper for Blockbook calls which can, in the event of an unresponsive explorer,
- * seamlessly attempt the same call on multiple other explorers until success.
+ * A Fetch wrapper which uses the current Node's base URL
+ * @param {string} api - The specific Node api to call
+ * @param {RequestInit} options - The Fetch options
+ * @returns {Promise<Response>} - The unresolved Fetch promise
+ */
+export function fetchNode(api, options) {
+    return fetch(cNode.url + api, options);
+}
+
+/**
+ * A wrapper for Blockbook and Node calls which can, in the event of an unresponsive instance,
+ * seamlessly attempt the same call on multiple other instances until success.
  * @param {Function} func - The function to re-attempt with
+ * @param {boolean} isExplorer - Whether this is an Explorer or Node call
  * @param  {...any} args - The arguments to pass to the function
  */
-async function retryWrapper(func, ...args) {
+export async function retryWrapper(func, isExplorer, ...args) {
     // Track internal errors from the wrapper
     let err;
 
-    // If allowed by the user, Max Tries is ALL MPW-supported explorers, otherwise, restrict to only the current one.
-    let nMaxTries = cChainParams.current.Explorers.length;
+    // Select the instances list to use - Explorers or Nodes
+    const arrInstances = isExplorer
+        ? cChainParams.current.Explorers
+        : cChainParams.current.Nodes;
+
+    // If allowed by the user, Max Tries is ALL MPW-supported instances, otherwise, restrict to only the current one.
+    let nMaxTries = arrInstances.length + 1;
     let retries = 0;
 
-    // The explorer index we started at
-    let nIndex = cChainParams.current.Explorers.findIndex(
-        (a) => a.url === getNetwork().strUrl
+    // The instance index we started at
+    let nIndex = arrInstances.findIndex((a) =>
+        a.url === isExplorer ? getNetwork().strUrl : cNode.url
     );
 
     // Run the call until successful, or all attempts exhausted
@@ -354,15 +380,20 @@ async function retryWrapper(func, ...args) {
         } catch (error) {
             err = error;
 
-            // If allowed, switch explorers
+            // If allowed, switch instances
             if (!fAutoSwitch) throw err;
-            nIndex = (nIndex + 1) % cChainParams.current.Explorers.length;
-            const cNewExplorer = cChainParams.current.Explorers[nIndex];
+            nIndex = (nIndex + 1) % arrInstances.length;
+            const cNewInstance = arrInstances[nIndex];
 
-            // Set the explorer at Network-class level, then as a hacky workaround for the current callback; we
-            // ... adjust the internal URL to the new explorer.
-            getNetwork().strUrl = cNewExplorer.url;
-            setExplorer(cNewExplorer, true);
+            if (isExplorer) {
+                // Set the explorer at Network-class level, then as a hacky workaround for the current callback; we
+                // ... adjust the internal URL to the new explorer.
+                getNetwork().strUrl = cNewInstance.url;
+                setExplorer(cNewInstance, true);
+            } else {
+                // For the Node, we change the setting directly
+                setNode(cNewInstance, true);
+            }
 
             // Bump the attempts, and re-try next loop
             retries++;

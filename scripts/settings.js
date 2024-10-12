@@ -238,10 +238,13 @@ export async function setExplorer(explorer, fSilent = false) {
         );
 }
 
-async function setNode(node, fSilent = false) {
+export async function setNode(node, fSilent = false) {
     cNode = node;
     const database = await Database.getInstance();
     database.setSettings({ node: node.url });
+
+    // Update the selector UI
+    doms.domNodeSelect.value = cNode.url;
 
     if (!fSilent)
         createAlert(
