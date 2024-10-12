@@ -6,7 +6,6 @@ import { wallet, hasEncryptedWallet, Wallet } from './wallet.js';
 import { getNetwork } from './network.js';
 import {
     start as settingsStart,
-    cExplorer,
     strCurrency,
     fAdvancedMode,
 } from './settings.js';
@@ -389,12 +388,13 @@ export function optimiseCurrencyLocale(nAmount) {
  * @param {string?} strAddress - Optional address to open, if void, the master key is used
  */
 export async function openExplorer(strAddress = '') {
+    const strExplorerURL = getNetwork().strUrl;
     if (wallet.isLoaded() && wallet.isHD() && !strAddress) {
         const xpub = wallet.getXPub();
-        window.open(cExplorer.url + '/xpub/' + xpub, '_blank');
+        window.open(strExplorerURL + '/xpub/' + xpub, '_blank');
     } else {
         const address = strAddress || wallet.getAddress();
-        window.open(cExplorer.url + '/address/' + address, '_blank');
+        window.open(strExplorerURL + '/address/' + address, '_blank');
     }
 }
 
