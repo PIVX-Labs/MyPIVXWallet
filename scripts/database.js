@@ -3,13 +3,12 @@ import Masternode from './masternode.js';
 import { Settings } from './settings.js';
 import { cChainParams } from './chain_params.js';
 import { confirmPopup, sanitizeHTML, isSameType, isEmpty } from './misc.js';
-import { AlertController } from './alerts/alert.js';
+import { createAlert } from './alerts/alert.js';
 import { PromoWallet } from './promos.js';
 import { ALERTS, translation } from './i18n.js';
 import { Account } from './accounts.js';
 import { COutpoint, CTxIn, CTxOut, Transaction } from './transaction.js';
 
-const alertController = AlertController.getInstance();
 
 export class Database {
     /**
@@ -120,7 +119,7 @@ export class Database {
             );
             console.error(account);
             console.error('---- end of account dump ----');
-            alertController.createAlert(
+            createAlert(
                 'warning',
                 '<b>Account Creation Error</b><br>Logs were dumped in your Browser Console<br>Please submit these privately to PIVX Labs Developers!'
             );
@@ -185,7 +184,7 @@ export class Database {
             );
             console.error(account);
             console.error('---- end of account dump ----');
-            alertController.createAlert(
+            createAlert(
                 'warning',
                 '<b>DB Update Error</b><br>Your wallet is safe, logs were dumped in your Browser Console<br>Please submit these privately to PIVX Labs Developers!'
             );
@@ -205,7 +204,7 @@ export class Database {
             );
             console.error(account);
             console.error('---- end of input dump ----');
-            alertController.createAlert(
+            createAlert(
                 'warning',
                 '<b>DB Update Error</b><br>Logs were dumped in your Browser Console<br>Please submit these privately to PIVX Labs Developers!'
             );

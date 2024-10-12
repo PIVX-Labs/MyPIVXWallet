@@ -16,7 +16,7 @@ import {
     arrActiveLangs,
     tr,
 } from './i18n.js';
-import { AlertController } from './alerts/alert.js';
+import { createAlert } from './alerts/alert.js';
 import { Database } from './database.js';
 import { getEventEmitter } from './event_bus.js';
 import countries from 'country-locale-map/countries.json';
@@ -25,7 +25,6 @@ import countries from 'country-locale-map/countries.json';
 /** A mode that emits verbose console info for internal MPW operations */
 export let debug = false;
 
-const alertController = AlertController.getInstance();
 /**
  * The user-selected display currency from Oracle
  * @type {string}
@@ -234,7 +233,7 @@ export async function setExplorer(explorer, fSilent = false) {
     doms.domExplorerSelect.value = cExplorer.url;
 
     if (!fSilent)
-        alertController.createAlert(
+        createAlert(
             'success',
             tr(ALERTS.SWITCHED_EXPLORERS, [{ explorerName: cExplorer.name }]),
             2250
@@ -247,7 +246,7 @@ async function setNode(node, fSilent = false) {
     database.setSettings({ node: node.url });
 
     if (!fSilent)
-        alertController.createAlert(
+        createAlert(
             'success',
             tr(ALERTS.SWITCHED_NODE, [{ node: cNode.name }]),
             2250
@@ -343,7 +342,7 @@ async function fillCurrencySelect(mapCurrencies) {
  */
 export async function logOut() {
     if (wallet.isSyncing) {
-        alertController.createAlert(
+        createAlert(
             'warning',
             `${ALERTS.WALLET_NOT_SYNCED}`,
             3000
@@ -372,7 +371,7 @@ export async function logOut() {
 
     getEventEmitter().emit('toggle-network');
     updateLogOutButton();
-    alertController.createAlert('success', translation.accountDeleted, 3000);
+    createAlert('success', translation.accountDeleted, 3000);
 }
 
 /**
@@ -382,7 +381,7 @@ export async function toggleTestnet(
     wantTestnet = !cChainParams.current.isTestnet
 ) {
     if (wallet.isLoaded() && !wallet.isSynced) {
-        alertController.createAlert(
+        createAlert(
             'warning',
             `${ALERTS.WALLET_NOT_SYNCED}`,
             3000

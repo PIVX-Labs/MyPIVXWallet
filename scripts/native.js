@@ -1,9 +1,8 @@
 import { ALERTS } from './i18n.js';
-import { AlertController } from './alerts/alert.js';
+import { createAlert } from './alerts/alert.js';
 
 // Register a service worker, if it's supported
 export function registerWorker() {
-    const alertController = AlertController.getInstance();
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker
             .register('./native-worker.js')
@@ -44,7 +43,7 @@ export function registerWorker() {
         // Listen for successful installs
         window.addEventListener('appinstalled', (_event) => {
             // Notify!
-            return alertController.createAlert(
+            return createAlert(
                 'success',
                 ALERTS.APP_INSTALLED,
                 2500

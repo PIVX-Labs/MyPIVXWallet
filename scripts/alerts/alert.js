@@ -84,3 +84,17 @@ export class AlertController {
         return this.#instance;
     }
 }
+
+/**
+ * Create a custom GUI Alert popup
+ *
+ * ### Do NOT display arbitrary / external errors:
+ * - The use of `.innerHTML` allows for input styling at this cost.
+ * @param {'success'|'info'|'warning'} type - The alert level
+ * @param {string} message - The message to relay to the user
+ * @param {number?} [timeout] - The time in `ms` until the alert expires (Defaults to never expiring)
+ */
+export function createAlert(type, message, timeout = 0) {
+    const alertController = AlertController.getInstance();
+    return alertController.createAlert(type, message, timeout);
+}

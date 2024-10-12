@@ -32,9 +32,8 @@ import {
 import { PIVXShield } from 'pivx-shield';
 import { guiToggleReceiveType } from './contacts-book.js';
 import { TransactionBuilder } from './transaction_builder.js';
-import { AlertController } from './alerts/alert.js';
+import { createAlert } from './alerts/alert.js';
 
-const alertController = AlertController.getInstance();
 
 /**
  * Class Wallet, at the moment it is just a "realization" of Masterkey with a given nAccount
