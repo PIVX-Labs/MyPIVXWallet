@@ -12,10 +12,9 @@ import { wallet } from './wallet.js';
 import { LegacyMasterKey } from './masterkey.js';
 import { deriveAddress } from './encoding.js';
 import { getP2PKHScript } from './script.js';
-import { AlertController } from './alerts/alert.js'
+import { AlertController } from './alerts/alert.js';
 
- const alertController = AlertController.getInstance();
-
+const alertController = AlertController.getInstance();
 
 /** The fee in Sats to use for Creating or Redeeming PIVX Promos */
 export const PROMO_FEE = 10000;
@@ -268,7 +267,11 @@ export async function createPromoCode(strCode, nAmount, fAddRandomness = true) {
     const db = await Database.getInstance();
     const arrCodes = (await db.getAllPromos()).concat(arrPromoCreationThreads);
     if (arrCodes.some((a) => a.code === strFinalCode)) {
-        return alertController.createAlert('warning', ALERTS.PROMO_ALREADY_CREATED, 3000);
+        return alertController.createAlert(
+            'warning',
+            ALERTS.PROMO_ALREADY_CREATED,
+            3000
+        );
     }
 
     // Create a new thread

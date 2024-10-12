@@ -11,14 +11,20 @@ export class Alert {
     level;
 
     /**
-     * @type{number} timeout of the alert
+     * @type{number} timeout of the alert, in milliseconds
      */
     timeout;
 
-    constructor({message, level, timeout = 0}) {
-	this.message = message;
-	this.level = level;
-	this.timeout = timeout;
+    /**
+     * @type{number} Time of creation in ms since unix epoch. Defaults to `Date.now()`
+     */
+    created;
+
+    constructor({ message, level, timeout = 0, created = Date.now() }) {
+        this.message = message;
+        this.level = level;
+        this.timeout = timeout;
+        this.created = created;
     }
 }
 
@@ -31,16 +37,16 @@ export class AlertController {
     /**
      * @param{((alert: Alert)=>void)[]} array of subscribers
      */
-    #subscribers = []
+    #subscribers = [];
 
     /**
      * @returns the array of alerts
      * DO NOT PUSH TO THIS ARRAY. Use `createAlert` or `addAlert` instead
      */
     getAlerts() {
-	return this.#alerts;
+        return this.#alerts;
     }
-    
+
     /**
      * Create a custom GUI Alert popup
      *
@@ -51,30 +57,30 @@ export class AlertController {
      * @param {number?} timeout - The time in `ms` until the alert expires (Defaults to never expiring)
      */
     createAlert(level, message, timeout = 0) {
-	this.addAlert(new Alert({level, message, timeout}));
+        this.addAlert(new Alert({ level, message, timeout }));
     }
 
     /**
      * @param {Alert} alert - alert to add
      */
     addAlert(alert) {
-	this.#alerts.push(alert);
-	for (const sub of this.#subscribers) {
-	    // Notify subscribers of the new alert
-	    sub(alert);
-	}
+        this.#alerts.push(alert);
+        for (const sub of this.#subscribers) {
+            // Notify subscribers of the new alert
+            sub(alert);
+        }
     }
 
     /**
      * @param {(alert: Alert) => void} When a new alert is created, calls the `fn` callback
      */
     subscribe(fn) {
-	this.#subscribers.push(fn);
+        this.#subscribers.push(fn);
     }
 
     static #instance = new AlertController();
-    
+
     static getInstance() {
-	return this.#instance;
+        return this.#instance;
     }
 }

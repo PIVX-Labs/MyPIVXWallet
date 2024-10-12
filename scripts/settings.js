@@ -16,7 +16,7 @@ import {
     arrActiveLangs,
     tr,
 } from './i18n.js';
-import { AlertController } from './alerts/alert.js'
+import { AlertController } from './alerts/alert.js';
 import { Database } from './database.js';
 import { getEventEmitter } from './event_bus.js';
 import countries from 'country-locale-map/countries.json';
@@ -343,7 +343,11 @@ async function fillCurrencySelect(mapCurrencies) {
  */
 export async function logOut() {
     if (wallet.isSyncing) {
-        alertController.createAlert('warning', `${ALERTS.WALLET_NOT_SYNCED}`, 3000);
+        alertController.createAlert(
+            'warning',
+            `${ALERTS.WALLET_NOT_SYNCED}`,
+            3000
+        );
         return;
     }
     const fContinue = await confirmPopup({
@@ -378,7 +382,11 @@ export async function toggleTestnet(
     wantTestnet = !cChainParams.current.isTestnet
 ) {
     if (wallet.isLoaded() && !wallet.isSynced) {
-        alertController.createAlert('warning', `${ALERTS.WALLET_NOT_SYNCED}`, 3000);
+        alertController.createAlert(
+            'warning',
+            `${ALERTS.WALLET_NOT_SYNCED}`,
+            3000
+        );
         doms.domTestnetToggler.checked = cChainParams.current.isTestnet;
         return;
     }

@@ -11,7 +11,7 @@ import {
     fAdvancedMode,
 } from './settings.js';
 import { createAndSendTransaction } from './legacy.js';
-import { AlertController } from './alerts/alert.js'
+import { AlertController } from './alerts/alert.js';
 import { confirmPopup, sanitizeHTML } from './misc.js';
 import { cChainParams, COIN } from './chain_params.js';
 import { sleep } from './utils.js';
@@ -23,7 +23,7 @@ import { checkForUpgrades } from './changelog.js';
 import { FlipDown } from './flipdown.js';
 import { createApp } from 'vue';
 import Dashboard from './dashboard/Dashboard.vue';
-import Alerts from './alerts/Alerts.vue'
+import Alerts from './alerts/Alerts.vue';
 import { loadDebug, debugLog, DebugTopics } from './debug.js';
 import Stake from './stake/Stake.vue';
 import { createPinia } from 'pinia';
@@ -485,7 +485,11 @@ export async function govVote(hash, voteCode) {
         const cMasternode = await database.getMasternode();
         if (cMasternode) {
             if ((await cMasternode.getStatus()) !== 'ENABLED') {
-                alertController.createAlert('warning', ALERTS.MN_NOT_ENABLED, 6000);
+                alertController.createAlert(
+                    'warning',
+                    ALERTS.MN_NOT_ENABLED,
+                    6000
+                );
                 return;
             }
             const result = await cMasternode.vote(hash.toString(), voteCode); //1 yes 2 no
@@ -493,20 +497,40 @@ export async function govVote(hash, voteCode) {
                 //good vote
                 cMasternode.storeVote(hash.toString(), voteCode);
                 await updateGovernanceTab();
-                alertController.createAlert('success', ALERTS.VOTE_SUBMITTED, 6000);
+                alertController.createAlert(
+                    'success',
+                    ALERTS.VOTE_SUBMITTED,
+                    6000
+                );
             } else if (result.includes('Error voting :')) {
                 //If you already voted return an alert
-                alertController.createAlert('warning', ALERTS.VOTED_ALREADY, 6000);
+                alertController.createAlert(
+                    'warning',
+                    ALERTS.VOTED_ALREADY,
+                    6000
+                );
             } else if (result.includes('Failure to verify signature.')) {
                 //wrong masternode private key
-                alertController.createAlert('warning', ALERTS.VOTE_SIG_BAD, 6000);
+                alertController.createAlert(
+                    'warning',
+                    ALERTS.VOTE_SIG_BAD,
+                    6000
+                );
             } else {
                 //this could be everything
                 console.error(result);
-                alertController.createAlert('warning', ALERTS.INTERNAL_ERROR, 6000);
+                alertController.createAlert(
+                    'warning',
+                    ALERTS.INTERNAL_ERROR,
+                    6000
+                );
             }
         } else {
-            alertController.createAlert('warning', ALERTS.MN_ACCESS_BEFORE_VOTE, 6000);
+            alertController.createAlert(
+                'warning',
+                ALERTS.MN_ACCESS_BEFORE_VOTE,
+                6000
+            );
         }
     }
 }
@@ -662,7 +686,11 @@ export async function importMasternode() {
 
         // sanity check:
         if (masterUtxo.value !== cChainParams.current.collateralInSats) {
-            return alertController.createAlert('warning', ALERTS.MN_COLLAT_NOT_SUITABLE, 10000);
+            return alertController.createAlert(
+                'warning',
+                ALERTS.MN_COLLAT_NOT_SUITABLE,
+                10000
+            );
         }
         collateralTxId = masterUtxo.outpoint.txid;
         outidx = masterUtxo.outpoint.n;
@@ -1505,12 +1533,20 @@ async function refreshMasternodeData(cMasternode, fAlert = false) {
             !wallet.isViewOnly() ||
             (await restoreWallet(translation.walletUnlockCreateMN))
         ) {
-            alertController.createAlert('warning', ALERTS.MN_OFFLINE_STARTING, 6000);
+            alertController.createAlert(
+                'warning',
+                ALERTS.MN_OFFLINE_STARTING,
+                6000
+            );
             // try to start the masternode
             const started = await cMasternode.start();
             if (started) {
                 doms.domMnTextErrors.innerHTML = ALERTS.MN_STARTED;
-                alertController.createAlert('success', ALERTS.MN_STARTED_ONLINE_SOON, 6000);
+                alertController.createAlert(
+                    'success',
+                    ALERTS.MN_STARTED_ONLINE_SOON,
+                    6000
+                );
                 const database = await Database.getInstance();
                 await database.addMasternode(cMasternode);
                 wallet.lockCoin(
@@ -1521,7 +1557,11 @@ async function refreshMasternodeData(cMasternode, fAlert = false) {
                 );
             } else {
                 doms.domMnTextErrors.innerHTML = ALERTS.MN_START_FAILED;
-                alertController.createAlert('warning', ALERTS.MN_START_FAILED, 6000);
+                alertController.createAlert(
+                    'warning',
+                    ALERTS.MN_START_FAILED,
+                    6000
+                );
             }
         }
     } else if (
@@ -1558,7 +1598,12 @@ async function refreshMasternodeData(cMasternode, fAlert = false) {
     } else {
         // connection problem
         doms.domMnTextErrors.innerHTML = ALERTS.MN_CANT_CONNECT;
-        if (fAlert) alertController.createAlert('warning', ALERTS.MN_CANT_CONNECT, 6000);
+        if (fAlert)
+            alertController.createAlert(
+                'warning',
+                ALERTS.MN_CANT_CONNECT,
+                6000
+            );
     }
 
     // Return the data in case the caller needs additional context
@@ -1568,7 +1613,11 @@ async function refreshMasternodeData(cMasternode, fAlert = false) {
 export async function createProposal() {
     // Must have a wallet
     if (!wallet.isLoaded()) {
-        return alertController.createAlert('warning', ALERTS.PROPOSAL_IMPORT_FIRST, 4500);
+        return alertController.createAlert(
+            'warning',
+            ALERTS.PROPOSAL_IMPORT_FIRST,
+            4500
+        );
     }
     // Wallet must be encrypted
     if (!(await hasEncryptedWallet())) {
@@ -1589,7 +1638,11 @@ export async function createProposal() {
     }
     // Must have enough funds
     if (wallet.balance * COIN < cChainParams.current.proposalFee) {
-        return alertController.createAlert('warning', ALERTS.PROPOSAL_NOT_ENOUGH_FUNDS, 4500);
+        return alertController.createAlert(
+            'warning',
+            ALERTS.PROPOSAL_NOT_ENOUGH_FUNDS,
+            4500
+        );
     }
 
     // Create the popup, wait for the user to confirm or cancel
@@ -1691,7 +1744,11 @@ export async function createProposal() {
 
         // Update the DB
         await database.updateAccount(account);
-        alertController.createAlert('success', translation.PROPOSAL_CREATED, 10000);
+        alertController.createAlert(
+            'success',
+            translation.PROPOSAL_CREATED,
+            10000
+        );
         updateGovernanceTab();
     }
 }

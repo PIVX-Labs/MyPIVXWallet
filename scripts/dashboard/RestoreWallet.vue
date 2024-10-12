@@ -5,13 +5,13 @@ import Password from '../Password.vue';
 import { ALERTS, translation } from '../i18n.js';
 import { Database } from '../database.js';
 import { decrypt } from '../aes-gcm';
- import { useAlerts } from '../composables/use_alerts.js';
- const { createAlerts } = useAlerts();
+import { useAlerts } from '../composables/use_alerts.js';
+const { createAlerts } = useAlerts();
 
- const props = defineProps({
-     show: Boolean,
-     reason: String,
- });
+const props = defineProps({
+    show: Boolean,
+    reason: String,
+});
 const { show, reason } = toRefs(props);
 const emit = defineEmits(['close', 'import']);
 const password = ref('');

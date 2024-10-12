@@ -1,5 +1,5 @@
 import { ALERTS } from './i18n.js';
-import { AlertController } from './alerts/alert.js'
+import { AlertController } from './alerts/alert.js';
 
 // Register a service worker, if it's supported
 export function registerWorker() {
@@ -44,7 +44,11 @@ export function registerWorker() {
         // Listen for successful installs
         window.addEventListener('appinstalled', (_event) => {
             // Notify!
-            return alertController.createAlert('success', ALERTS.APP_INSTALLED, 2500);
+            return alertController.createAlert(
+                'success',
+                ALERTS.APP_INSTALLED,
+                2500
+            );
         });
     }
 }
