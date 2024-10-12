@@ -10,7 +10,7 @@ import { OP } from './script.js';
 import bs58 from 'bs58';
 import base32 from 'base32';
 import { isStandardAddress } from './misc.js';
-import { fetchBlockbook, fetchNode, retryWrapper } from './network.js';
+import { fetchBlockbook, getNetwork, retryWrapper } from './network.js';
 
 /**
  * Construct a Masternode
@@ -51,9 +51,9 @@ export default class Masternode {
     async getFullData() {
         const strURL = `/listmasternodes?params=${this.collateralTxId}`;
         try {
-            const cMasternodes = (
-                await (await retryWrapper(fetchNode, false, strURL)).json()
-            ).filter((m) => m.outidx === this.outidx);
+            const cMasternodes = (await getNetwork().callRPC(strURL)).filter(
+                (m) => m.outidx === this.outidx
+            );
             if (cMasternodes.length > 0) {
                 return cMasternodes[0];
             } else {
@@ -344,9 +344,7 @@ export default class Masternode {
     async start() {
         const message = await this.broadcastMessageToHex();
         const url = `/relaymasternodebroadcast?params=${message}`;
-        const response = await (
-            await retryWrapper(fetchNode, false, url)
-        ).text();
+        const response = await getNetwork().callRPC(url, true);
         return response.includes('Masternode broadcast sent');
     }
 
@@ -358,9 +356,7 @@ export default class Masternode {
      */
     static async getProposals({ fAllowFinished = false } = {}) {
         const url = `/getbudgetinfo`;
-        let arrProposals = await (
-            await retryWrapper(fetchNode, false, url)
-        ).json();
+        let arrProposals = await getNetwork().callRPC(url);
 
         // Apply optional filters
         if (!fAllowFinished) {
@@ -416,9 +412,7 @@ export default class Masternode {
             `${this.collateralTxId}-${this.outidx}")`;
         const url = `/getbudgetvotes?params=${proposalName}&filter=${filter}`;
         try {
-            const { Vote: vote } = await (
-                await retryWrapper(fetchNode, false, url)
-            ).json();
+            const { Vote: vote } = await getNetwork().callRPC(url);
             return vote === 'YES' ? 1 : 2;
         } catch (e) {
             //Cannot parse JSON! This means that you did not vote hence return null
@@ -458,7 +452,7 @@ export default class Masternode {
         },${hash},${voteCode === 1 ? 'yes' : 'no'},${sigTime},${encodeURI(
             signature
         ).replaceAll('+', '%2b')}`;
-        const text = await (await retryWrapper(fetchNode, false, url)).text();
+        const text = await getNetwork().callRPC(url, true);
         return text;
     }
 
@@ -528,17 +522,14 @@ export default class Masternode {
         txid,
     }) {
         try {
-            const res = await (
-                await retryWrapper(
-                    fetchNode,
-                    false,
-                    `/submitbudget?params=${encodeURI(name)},${encodeURI(
-                        url
-                    )},${nPayments},${start},${encodeURI(address)},${
-                        monthlyPayment / COIN
-                    },${txid}`
-                )
-            ).text();
+            const res = await getNetwork().callRPC(
+                `/submitbudget?params=${encodeURI(name)},${encodeURI(
+                    url
+                )},${nPayments},${start},${encodeURI(address)},${
+                    monthlyPayment / COIN
+                },${txid}`,
+                true
+            );
 
             if (/^"[a-f0-9]"$/ && res.length == 64 + 2) {
                 return { ok: true, hash: res };
@@ -562,11 +553,7 @@ export default class Masternode {
     }
 
     static async getNextSuperblock() {
-        return parseInt(
-            await (
-                await retryWrapper(fetchNode, false, `/getnextsuperblock`)
-            ).text()
-        );
+        return parseInt(await getNetwork().callRPC(`/getnextsuperblock`, true));
     }
 
     /**
@@ -574,9 +561,7 @@ export default class Masternode {
      * @returns {Promise<{total:number, stable:number, enabled:number, inqueue:number, ipv4:number, ipv6:number, onion:number}>} - The masternode count object
      */
     static async getMasternodeCount() {
-        return await (
-            await retryWrapper(fetchNode, false, `/getmasternodecount`)
-        ).json();
+        return await getNetwork().callRPC('/getmasternodecount');
     }
 
     /**

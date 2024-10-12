@@ -64,6 +64,17 @@ export class Network {
     async getTxInfo(_txHash) {
         throw new Error('getTxInfo must be implemented');
     }
+
+    /**
+     * A safety-wrapped RPC interface for calling Node RPCs with automatic correction handling
+     * @param {string} api - The API endpoint to call
+     * @param {boolean} isText - Optionally parse the result as Text rather than JSON
+     * @returns {Promise<object|string>} - The RPC response; JSON by default, text if `isText` is true.
+     */
+    async callRPC(api, isText = false) {
+        const cRes = await retryWrapper(fetchNode, false, api);
+        return isText ? await cRes.text() : await cRes.json();
+    }
 }
 
 /**
@@ -297,9 +308,7 @@ export class ExplorerNetwork extends Network {
      * @return {Promise<Number[]>} The list of blocks which have at least one shield transaction
      */
     async getShieldBlockList() {
-        return await (
-            await retryWrapper(fetchNode, false, `/getshieldblocks`)
-        ).json();
+        return await this.callRPC('/getshieldblocks');
     }
 }
 
