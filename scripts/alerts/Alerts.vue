@@ -4,14 +4,12 @@ import { computed, watch, ref } from 'vue';
 import Alert from './Alert.vue';
 
 const alerts = useAlerts();
-setTimeout(() => alerts.createAlert('success', 'hi', 1000), 1000);
 const foldedAlerts = ref([]);
 watch(alerts, () => {
     const res = [];
     let previousAlert;
     let count = 1;
     const pushAlert = () => {
-        console.log(previousAlert);
         if (previousAlert) {
             const countStr = count === 1 ? '' : ` (x${count})`;
             const timeout =
@@ -51,7 +49,7 @@ watch(alerts, () => {
     <transition-group name="alert">
         <div
             v-for="alert of foldedAlerts.filter((a) => a.value.show)"
-            :key="alert.value.created"
+            :key="alert.value.message + alert.value.created"
         >
             <Alert
                 :key="alert.value.message"
