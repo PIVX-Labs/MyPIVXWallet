@@ -4,6 +4,7 @@ import { computed, watch, ref } from 'vue';
 import Alert from './Alert.vue';
 
 const alerts = useAlerts();
+setTimeout(() => alerts.createAlert('success', 'hi', 1000), 1000);
 const foldedAlerts = ref([]);
 watch(alerts, () => {
     const res = [];
@@ -15,16 +16,19 @@ watch(alerts, () => {
             const countStr = count === 1 ? '' : ` (x${count})`;
             const timeout =
                 previousAlert.created + previousAlert.timeout - Date.now();
+            const show = timeout > 0;
+            if (!show) return;
             const alert = ref({
                 ...previousAlert,
                 message: `${previousAlert.message}${countStr}`,
-                show: timeout > 0,
+                show,
             });
-	    
+
             res.push(alert);
             if (timeout > 0) {
                 setTimeout(() => {
-                  //  alert.value.show = false;
+                    console.log(alert.value);
+                    alert.value.show = false;
                 }, timeout);
             }
         }
@@ -44,26 +48,28 @@ watch(alerts, () => {
 </script>
 
 <template>
-    <div v-for="alert of foldedAlerts">
-	<Transition name="alert"> 
+    <transition-group name="alert">
+        <div
+            v-for="alert of foldedAlerts.filter((a) => a.value.show)"
+            :key="alert.value.created"
+        >
             <Alert
-		v-show="alert.value.show"
-		:message="alert.value.message"
-		:level="alert.value.level"
-		@click="alert.value.show = false"
+                :key="alert.value.message"
+                :message="alert.value.message"
+                :level="alert.value.level"
+                @click="alert.value.show = false"
             />
-	</Transition>
-    </div>
+        </div>
+    </transition-group>
 </template>
 
 <style>
- .alert-enter-active,
- .alert-leave-active {
-     transition: opacity 0.5s ease;
- }
-
- .alert-enter-from,
- .alert-leave-to {
-     opacity: 0;
- }
+.alert-enter-active,
+.alert-leave-active {
+    transition: all 0.5s ease;
+}
+.alert-enter-from,
+.alert-leave-to {
+    opacity: 0;
+}
 </style>

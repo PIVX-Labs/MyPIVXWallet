@@ -9,7 +9,6 @@ const props = defineProps({
 const { message, level } = toRefs(props);
 
 const icon = computed(() => {
-    console.log(level.value);
     switch (level.value) {
         case 'warning':
             return 'fa-exclamation';
