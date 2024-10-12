@@ -10,7 +10,7 @@ import { OP } from './script.js';
 import bs58 from 'bs58';
 import base32 from 'base32';
 import { isStandardAddress } from './misc.js';
-import { fetchBlockbook, getNetwork, retryWrapper } from './network.js';
+import { getNetwork } from './network.js';
 
 /**
  * Construct a Masternode
@@ -187,16 +187,6 @@ export default class Masternode {
     }
 
     /**
-     * @return {Promise<string>} The last block hash
-     */
-    static async getLastBlockHash() {
-        const status = await (
-            await retryWrapper(fetchBlockbook, true, `/api/`)
-        ).json();
-        return status.backend.bestBlockHash;
-    }
-
-    /**
      * @return {Promise<string>} The signed message signed with the collateral private key
      */
     async getSignedMessage(sigTime) {
@@ -278,7 +268,7 @@ export default class Masternode {
      */
     async broadcastMessageToHex() {
         const sigTime = Math.round(Date.now() / 1000);
-        const blockHash = await Masternode.getLastBlockHash();
+        const blockHash = await getNetwork().getBestBlockHash();
         let ip, port;
         if (this.addr.includes('.')) {
             // IPv4

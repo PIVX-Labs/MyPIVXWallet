@@ -57,6 +57,10 @@ export class Network {
         throw new Error('getBlockCount must be implemented');
     }
 
+    getBestBlockHash() {
+        throw new Error('getBestBlockHash must be implemented');
+    }
+
     sendTransaction() {
         throw new Error('sendTransaction must be implemented');
     }
@@ -124,12 +128,28 @@ export class ExplorerNetwork extends Network {
         return block;
     }
 
+    /**
+     * Fetch the block height of the current explorer
+     * @returns {Promise<number>} - Block height
+     */
     async getBlockCount() {
         const { backend } = await (
             await retryWrapper(fetchBlockbook, true, `/api/v2/api`)
         ).json();
 
         return backend.blocks;
+    }
+
+    /**
+     * Fetch the latest block hash of the current explorer
+     * @returns {Promise<string>} - Block hash
+     */
+    async getBestBlockHash() {
+        const { backend } = await (
+            await retryWrapper(fetchBlockbook, true, `/api/v2/api`)
+        ).json();
+
+        return backend.bestBlockHash;
     }
 
     /**
