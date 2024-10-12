@@ -43,7 +43,7 @@ import { Transaction } from './transaction.js';
  */
 
 /**
- * Virtual class rapresenting any network backend
+ * Virtual class representing any network backend
  *
  */
 export class Network {
