@@ -30,6 +30,26 @@ export function downloadBlob(content, filename, contentType) {
 }
 
 /**
+ * A listener utility for adding keyboard-only interaction to prompts (i.e: close or confirm dialogs without mouse)
+ * @param {KeyboardEvent} evt - The `keydown` event from the attached listener
+ * @param {HTMLButtonElement?} confirmBtn - The 'confirm' button, if one exists
+ * @param {HTMLButtonElement} closeBtn - The 'close' button
+ */
+export function dialogListener(evt, confirmBtn, closeBtn) {
+    if (evt.key === 'Enter') {
+        // If there's no 'confirm' button, we treat it as a close-only dialog (i.e: informational)
+        if (confirmBtn) {
+            confirmBtn.click();
+        } else {
+            closeBtn.click();
+        }
+    } else if (evt.key === 'Escape') {
+        // Close the dialog
+        closeBtn.click();
+    }
+}
+
+/**
  * Create a custom GUI Alert popup
  *
  * ### Do NOT display arbitrary / external errors:
@@ -176,12 +196,33 @@ export async function confirmPopup({
     if (maxHeight)
         doms.domConfirmModalDialog.classList.add(`max-w-${maxHeight}`);
 
-    // If there's an input in the prompt, focus the cursor upon it
+    // If there's an input in the prompt, focus the cursor upon it, and apply confirmation listeners
+    let isFocused = false;
+    let domFinalInput = null;
     for (const domElement of doms.domConfirmModalContent.children) {
-        if (domElement.type === 'text' || domElement.type === 'password') {
-            domElement.focus();
-            break;
+        if (domElement.type?.includes('text', 'password')) {
+            // Focus the cursor/keyboard on the first input
+            if (!isFocused) {
+                domElement.focus();
+                isFocused = true;
+            }
+            // Keep track of the inputs until we reach the final one
+            domFinalInput = domElement;
         }
+    }
+
+    // A prompt wrapper for dialogListener so we avoid unremovable anon-func listeners
+    function promptWrapperListener(evt) {
+        dialogListener(
+            evt,
+            hideConfirm ? null : doms.domConfirmModalConfirmButton,
+            doms.domConfirmModalCancelButton
+        );
+    }
+
+    // If a final text input is available, listen for 'Enter' and 'Esc' keys to allow for mouse-less dialog interaction
+    if (domFinalInput) {
+        domFinalInput.addEventListener('keydown', promptWrapperListener);
     }
 
     // Center the buttons
@@ -208,6 +249,11 @@ export async function confirmPopup({
 
         // Reset any modal settings
         doms.domConfirmModalDialog.classList.remove(`max-w-${maxHeight}`);
+
+        // Remove any dialog listeners
+        if (domFinalInput) {
+            domFinalInput.removeEventListener('keydown', promptWrapperListener);
+        }
     }
 }
 
