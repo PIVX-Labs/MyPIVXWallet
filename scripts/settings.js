@@ -216,7 +216,7 @@ function subscribeToNetworkEvents() {
 // --- Settings Functions
 export async function setExplorer(explorer, fSilent = false) {
     const database = await Database.getInstance();
-    database.setSettings({ explorer: explorer.url });
+    await database.setSettings({ explorer: explorer.url });
     cExplorer = explorer;
 
     // Enable networking + notify if allowed
@@ -236,6 +236,7 @@ export async function setExplorer(explorer, fSilent = false) {
             tr(ALERTS.SWITCHED_EXPLORERS, [{ explorerName: cExplorer.name }]),
             2250
         );
+    getEventEmitter().emit('explorer_changed', cExplorer.url);
 }
 
 export async function setNode(node, fSilent = false) {

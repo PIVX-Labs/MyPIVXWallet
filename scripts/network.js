@@ -417,8 +417,7 @@ export async function retryWrapper(func, isExplorer, ...args) {
             if (isExplorer) {
                 // Set the explorer at Network-class level, then as a hacky workaround for the current callback; we
                 // ... adjust the internal URL to the new explorer.
-                getNetwork().strUrl = cNewInstance.url;
-                setExplorer(cNewInstance, true);
+                await setExplorer(cNewInstance, true);
             } else {
                 // For the Node, we change the setting directly
                 setNode(cNewInstance, true);
