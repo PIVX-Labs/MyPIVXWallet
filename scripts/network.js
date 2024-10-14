@@ -115,14 +115,19 @@ export class ExplorerNetwork extends Network {
             // Use Nodes as fallback
             fUseNodes = true;
             // First we fetch the blockhash
-            let strHash = await this.callRPC(`/getblockhash?params=${blockHeight}`, true);
+            let strHash = await this.callRPC(
+                `/getblockhash?params=${blockHeight}`,
+                true
+            );
             // Strip quotes from the RPC response
             strHash = strHash.replace(/"/g, '');
             // Fetch the full block (verbose)
             block = await this.callRPC(`/getblock?params=${strHash},true`);
             // Fetch every Tx of the block (verbose)
-            block.txs = block.tx.map(async a => {
-                return await this.callRPC(`/getrawtransaction?params=${a},true`)
+            block.txs = block.tx.map(async (a) => {
+                return await this.callRPC(
+                    `/getrawtransaction?params=${a},true`
+                );
             });
         }
         const newTxs = [];

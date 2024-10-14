@@ -516,7 +516,7 @@ function restoreWallet() {
                         :show="true"
                         :percentage="
                             shieldSyncing
-                                ? shieldPercentageSyncing 
+                                ? shieldPercentageSyncing
                                 : transparentProgressSyncing
                         "
                         style="

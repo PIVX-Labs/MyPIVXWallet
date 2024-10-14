@@ -716,7 +716,14 @@ export class Wallet {
         } catch {
             // If all Explorers are down, we'll just rely on the local TXDB and display a warning
         }
-        getEventEmitter().emit('transparent-sync-status-update', fSynced ? '' : 'Explorers are unreachable, your wallet may not be fully synced!', fSynced ? 100 : 0, fSynced);
+        getEventEmitter().emit(
+            'transparent-sync-status-update',
+            fSynced
+                ? ''
+                : 'Explorers are unreachable, your wallet may not be fully synced!',
+            fSynced ? 100 : 0,
+            fSynced
+        );
     }
 
     /**
