@@ -1,8 +1,8 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
-import { getNetwork } from '../network.js';
+import { useNetwork } from '../composables/use_network.js';
 import { wallet } from '../wallet.js';
-import { COIN, cChainParams } from '../chain_params.js';
+import { cChainParams } from '../chain_params.js';
 import { translation } from '../i18n.js';
 import { Database } from '../database.js';
 import { HistoricalTx, HistoricalTxType } from '../historical_tx.js';
@@ -12,7 +12,7 @@ import { beautifyNumber } from '../misc';
 
 import iCheck from '../../assets/icons/icon-check.svg';
 import iHourglass from '../../assets/icons/icon-hourglass.svg';
-import { blockCount, optimiseCurrencyLocale } from '../global.js';
+import { blockCount } from '../global.js';
 
 const props = defineProps({
     title: String,
@@ -26,7 +26,10 @@ const isHistorySynced = ref(false);
 const rewardAmount = ref(0);
 let nRewardUpdateHeight = 0;
 const ticker = computed(() => cChainParams.current.TICKER);
-const explorerUrl = ref(getNetwork()?.strUrl);
+const network = useNetwork();
+function getActivityUrl(tx) {
+    return network.explorerUrl + '/tx/' + tx.id;
+}
 const txMap = computed(() => {
     return {
         [HistoricalTxType.STAKE]: {
@@ -63,13 +66,10 @@ const txMap = computed(() => {
 });
 
 async function update(txToAdd = 0) {
-    const cNet = getNetwork();
     // Return if wallet is not synced yet
     if (!wallet.isSynced) {
         return;
     }
-
-    explorerUrl.value = cNet?.strUrl;
 
     // Prevent the user from spamming refreshes
     if (updating.value) return;
@@ -347,7 +347,7 @@ defineExpose({ update, reset, getTxCount });
                                 </td>
                                 <td class="align-middle pr-10px txcode">
                                     <a
-                                        :href="explorerUrl + '/tx/' + tx.id"
+                                        :href="getActivityUrl(tx)"
                                         target="_blank"
                                         rel="noopener noreferrer"
                                     >
