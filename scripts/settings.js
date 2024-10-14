@@ -223,7 +223,7 @@ export async function setExplorer(explorer, fSilent = false) {
     if (getNetwork()) {
         getNetwork().strUrl = cExplorer.url;
     } else {
-        const network = new ExplorerNetwork(cExplorer.url, wallet);
+        const network = new ExplorerNetwork(cExplorer.url);
         setNetwork(network);
     }
 

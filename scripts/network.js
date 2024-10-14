@@ -88,8 +88,8 @@ export class ExplorerNetwork extends Network {
     /**
      * @param {string} strUrl - Url pointing to the blockbook explorer
      */
-    constructor(strUrl, wallet) {
-        super(wallet);
+    constructor(strUrl) {
+        super();
         /**
          * @type{string}
          * @public
