@@ -1089,7 +1089,7 @@ export class Wallet {
             await sleep(500);
             throw e;
         } finally {
-            await periodicFunction.clearInterval(500);
+            await periodicFunction.clearInterval();
             getEventEmitter().emit(
                 'shield-transaction-creation-update',
                 0.0,
