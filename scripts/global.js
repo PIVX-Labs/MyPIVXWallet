@@ -6,7 +6,6 @@ import { wallet, hasEncryptedWallet, Wallet } from './wallet.js';
 import { getNetwork } from './network.js';
 import {
     start as settingsStart,
-    cExplorer,
     strCurrency,
     fAdvancedMode,
 } from './settings.js';
@@ -32,6 +31,7 @@ import { cOracle } from './prices.js';
 import pIconCopy from '../assets/icons/icon-copy.svg';
 import pIconCheck from '../assets/icons/icon-check.svg';
 import SideNavbar from './SideNavbar.vue';
+import { AsyncInterval } from './async_interval.js';
 
 /** A flag showing if base MPW is fully loaded or not */
 export let fIsLoaded = false;
@@ -265,13 +265,12 @@ export async function start() {
     await refreshChainData();
     // Load the price manager
     cOracle.load();
-
-    setInterval(() => {
+    new AsyncInterval(async () => {
         // Refresh blockchain data
-        refreshChainData();
+        await refreshChainData();
 
         // Fetch the PIVX prices
-        refreshPriceDisplay();
+        await refreshPriceDisplay();
     }, 15000);
 
     // Check for recent upgrades, display the changelog
@@ -392,12 +391,13 @@ export function optimiseCurrencyLocale(nAmount) {
  * @param {string?} strAddress - Optional address to open, if void, the master key is used
  */
 export async function openExplorer(strAddress = '') {
+    const strExplorerURL = getNetwork().strUrl;
     if (wallet.isLoaded() && wallet.isHD() && !strAddress) {
         const xpub = wallet.getXPub();
-        window.open(cExplorer.url + '/xpub/' + xpub, '_blank');
+        window.open(strExplorerURL + '/xpub/' + xpub, '_blank');
     } else {
         const address = strAddress || wallet.getAddress();
-        window.open(cExplorer.url + '/address/' + address, '_blank');
+        window.open(strExplorerURL + '/address/' + address, '_blank');
     }
 }
 
