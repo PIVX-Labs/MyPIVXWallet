@@ -124,11 +124,13 @@ export class ExplorerNetwork extends Network {
             // Fetch the full block (verbose)
             block = await this.callRPC(`/getblock?params=${strHash},true`);
             // Fetch every Tx of the block (verbose)
-            block.txs = await Promise.all(block.tx.map(async (a) => {
-                return await this.callRPC(
-                    `/getrawtransaction?params=${a},true`
-                );
-            }));
+            block.txs = await Promise.all(
+                block.tx.map(async (a) => {
+                    return await this.callRPC(
+                        `/getrawtransaction?params=${a},true`
+                    );
+                })
+            );
         }
         const newTxs = [];
         // This is bad. We're making so many requests
@@ -336,19 +338,38 @@ export class ExplorerNetwork extends Network {
 
     async sendTransaction(hex) {
         try {
-            const data = await (
-                await retryWrapper(fetchBlockbook, true, '/api/v2/sendtx/', {
-                    method: 'post',
-                    body: hex,
-                })
-            ).json();
+            // Attempt via Explorer first
+            let strTXID = '';
+            try {
+                const cData = await (
+                    await retryWrapper(
+                        fetchBlockbook,
+                        true,
+                        '/api/v2/sendtx/',
+                        {
+                            method: 'post',
+                            body: hex,
+                        }
+                    )
+                ).json();
+                // If there's no TXID, we throw any potential Blockbook errors
+                if (!cData.result || cData.result.length !== 64) throw cData;
+                strTXID = cData.result;
+            } catch {
+                // Use Nodes as a fallback
+                strTXID = await this.callRPC(
+                    '/sendrawtransaction?params=' + hex,
+                    true
+                );
+                strTXID = strTXID.replace(/"/g, '');
+            }
 
-            // Throw and catch if the data is not a TXID
-            if (!data.result || data.result.length !== 64) throw data;
+            // Throw and catch if there's no TXID
+            if (!strTXID || strTXID.length !== 64) throw strTXID;
 
-            console.log('Transaction sent! ' + data.result);
-            getEventEmitter().emit('transaction-sent', true, data.result);
-            return data.result;
+            console.log('Transaction sent! ' + strTXID);
+            getEventEmitter().emit('transaction-sent', true, strTXID);
+            return strTXID;
         } catch (e) {
             getEventEmitter().emit('transaction-sent', false, e);
             return false;
