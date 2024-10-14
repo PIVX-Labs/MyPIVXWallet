@@ -1,3 +1,4 @@
+import { DebugTopics, debugWarn } from './debug.js';
 import { getEventEmitter } from './event_bus.js';
 import { sleep } from './utils.js';
 
@@ -71,12 +72,13 @@ export class Oracle {
             // And finally return it
             return cCurrency.value;
         } catch (e) {
-            console.warn(
+            debugWarn(
+                DebugTopics.NET,
                 'Oracle: Failed to fetch ' +
                     strCurrency.toUpperCase() +
                     ' price!'
-            );
-            console.warn(e);
+            ),
+                debugWarn(DebugTopics.NET, e);
             return this.getCachedPrice(strCurrency);
         }
     }
@@ -108,8 +110,9 @@ export class Oracle {
             this.#fLoadedCurrencies = true;
             return arrCurrencies;
         } catch (e) {
-            console.warn('Oracle: Failed to fetch currencies!');
-            console.warn(e);
+            debugWarn(DebugTopics.NET, 'Oracle: Failed to fetch currencies!'),
+                debugWarn(DebugTopics.NET, e);
+
             return this.getCachedCurrencies();
         }
     }

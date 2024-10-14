@@ -1,5 +1,6 @@
 import { vi } from 'vitest';
 import { Transaction } from '../transaction.js';
+import { DebugTopics, debugWarn } from '../debug.js';
 
 export const getNetwork = vi.fn(() => {
     return globalNetwork;
@@ -62,7 +63,8 @@ class TestNetwork {
                     '0100000001458de14f4f4fecfdeebfef09fb16e761bbd15029f37bec0a63b86808cbb8a512010000006b483045022100ef4f4364aea7604d749aaff7a2609e3a51a12f49500b7910b34ced0d0837e1db022012d153d96ebcb94e9b905a609c0ea97cdc99ae961be2848e0e8f2f695379c21201210371eca6799221b82cbba9e880a8a5a0f47d811f3ff5cad346931406ab0a0469eeffffffff0200e1f505000000001976a9148952bf31104625a7b3e6fcf4c79b35c6849ef74d88ac905cfb2f010000001976a9144e8d2fcf6d909c62597e4defd1c26d50842d73df88ac00000000';
                 await wallet.addTransaction(Transaction.fromHex(tx_1));
             } else {
-                console.warn(
+                debugWarn(
+                    DebugTopics.NET,
                     'getLatestTxs did not find any txs this wallet! ' +
                         wallet.getKeyToExport()
                 );

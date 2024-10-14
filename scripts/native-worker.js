@@ -1,3 +1,5 @@
+/* eslint-disable no-console */
+
 // Listen for native worker installs
 self.addEventListener('install', function (_event) {
     console.log('[ServiceWorker] Install');

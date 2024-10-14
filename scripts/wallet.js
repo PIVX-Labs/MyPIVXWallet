@@ -33,6 +33,7 @@ import { PIVXShield } from 'pivx-shield';
 import { guiToggleReceiveType } from './contacts-book.js';
 import { TransactionBuilder } from './transaction_builder.js';
 import { AsyncInterval } from './async_interval.js';
+import { debugError, DebugTopics } from './debug.js';
 /**
  * Class Wallet, at the moment it is just a "realization" of Masterkey with a given nAccount
  * it also remembers which addresses we generated.
@@ -764,7 +765,7 @@ export class Wallet {
             );
             getEventEmitter().emit('shield-sync-status-update', 0, 0, true);
         } catch (e) {
-            console.error(e);
+            debugError(DebugTopics.WALLET, e);
         }
 
         // At this point it should be safe to assume that shield is ready to use
@@ -852,7 +853,7 @@ export class Wallet {
                     }
                     this.#lastProcessedBlock = blockHeight;
                 } catch (e) {
-                    console.error(e);
+                    debugError(DebugTopics.WALLET, e);
                     break;
                 }
             }

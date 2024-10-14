@@ -11,6 +11,7 @@ import bs58 from 'bs58';
 import base32 from 'base32';
 import { isStandardAddress } from './misc.js';
 import { getNetwork } from './network.js';
+import { debugError, DebugTopics } from './debug.js';
 
 /**
  * Construct a Masternode
@@ -61,7 +62,7 @@ export default class Masternode {
             }
         } catch (e) {
             //this is the unfortunate state in which the node is not reachable
-            console.error(e);
+            debugError(DebugTopics.MASTERNODE, e);
             return 'EXPLORER_DOWN';
         }
     }
@@ -537,7 +538,7 @@ export default class Masternode {
                 return { ok: false, err: 'other' };
             }
         } catch (e) {
-            console.error(e);
+            debugError(DebugTopics.MASTERNODE, e);
             return { ok: false, err: e };
         }
     }

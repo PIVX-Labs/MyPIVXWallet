@@ -5,6 +5,7 @@ import { wallet } from './wallet.js';
 import { cReceiveType, guiToggleReceiveType } from './contacts-book.js';
 import { reactive } from 'vue';
 import { negotiateLanguages } from '@fluent/langneg';
+import { debugLog, DebugTopics } from './debug.js';
 
 /**
  * @type {translation_template}
@@ -127,7 +128,8 @@ export async function switchTranslation(langName) {
         }
         return true;
     } else {
-        console.log(
+        debugLog(
+            DebugTopics.I18N,
             'i18n: The language (' +
                 langName +
                 ") is not supported yet, if you'd like to contribute translations (for rewards!) contact us on GitHub or Discord!"
