@@ -93,6 +93,7 @@ describe('Wallet signature tests', () => {
                 },
             ],
         });
+        expect(PIVXShield.prototype.getTxStatus).toHaveBeenCalled();
     });
     it('signs a s->t tx correctly', async () => {
         const tx = new Transaction({
@@ -127,6 +128,7 @@ describe('Wallet signature tests', () => {
                 },
             ],
         });
+        expect(PIVXShield.prototype.getTxStatus).toHaveBeenCalled();
     });
     it('signs a t->s tx correctly', async () => {
         const tx = new Transaction({
@@ -169,5 +171,6 @@ describe('Wallet signature tests', () => {
                 },
             ],
         });
+        expect(PIVXShield.prototype.getTxStatus).toHaveBeenCalled();
     });
 });
