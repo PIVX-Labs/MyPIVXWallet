@@ -1,3 +1,5 @@
+import { sleep } from './utils.js';
+
 /**
  * Async alternative to setInterval() and clearInterval().
  */
@@ -8,13 +10,10 @@ export class AsyncInterval {
         this.#setInterval(cb, timeOut);
     }
     async #setInterval(cb, timeOut) {
-        if (!this.#active) {
-            return;
+        while (this.#active) {
+            await cb();
+            await sleep(timeOut);
         }
-        await cb();
-        setTimeout(() => {
-            this.#setInterval(cb, timeOut);
-        }, timeOut);
     }
     clearInterval(timeOut) {
         setTimeout(() => {
