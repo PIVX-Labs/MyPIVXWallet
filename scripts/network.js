@@ -121,16 +121,16 @@ export class ExplorerNetwork extends Network {
             );
             // Strip quotes from the RPC response
             strHash = strHash.replace(/"/g, '');
+            // Craft a filter to retrieve only raw Tx hex and txid
+            const strFilter =
+                '&filter=' +
+                encodeURI(`. | .tx = [.tx[] | { hex: .hex, txid: .txid}]`);
             // Fetch the full block (verbose)
-            block = await this.callRPC(`/getblock?params=${strHash},true`);
-            // Fetch every Tx of the block (verbose)
-            block.txs = await Promise.all(
-                block.tx.map(async (a) => {
-                    return await this.callRPC(
-                        `/getrawtransaction?params=${a},true`
-                    );
-                })
+            block = await this.callRPC(
+                `/getblock?params=${strHash},2${strFilter}`
             );
+            // Shift the array to `txs` to match Blockbook format
+            block.txs = block.tx;
         }
         const newTxs = [];
         // This is bad. We're making so many requests
