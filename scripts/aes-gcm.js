@@ -1,4 +1,4 @@
-import { debugError, DebugTopics } from './debug';
+import { debugError, DebugTopics } from './debug.js';
 
 const buff_to_base64 = (buff) => btoa(String.fromCharCode.apply(null, buff));
 
