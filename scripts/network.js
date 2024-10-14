@@ -124,11 +124,11 @@ export class ExplorerNetwork extends Network {
             // Fetch the full block (verbose)
             block = await this.callRPC(`/getblock?params=${strHash},true`);
             // Fetch every Tx of the block (verbose)
-            block.txs = block.tx.map(async (a) => {
+            block.txs = await Promise.all(block.tx.map(async (a) => {
                 return await this.callRPC(
                     `/getrawtransaction?params=${a},true`
                 );
-            });
+            }));
         }
         const newTxs = [];
         // This is bad. We're making so many requests
