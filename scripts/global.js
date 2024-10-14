@@ -383,21 +383,6 @@ export function optimiseCurrencyLocale(nAmount) {
     return { nValue, cLocale };
 }
 
-/**
- * Open the Explorer in a new tab for the current wallet, or a specific address
- * @param {string?} strAddress - Optional address to open, if void, the master key is used
- */
-export async function openExplorer(strAddress = '') {
-    const strExplorerURL = getNetwork().strUrl;
-    if (wallet.isLoaded() && wallet.isHD() && !strAddress) {
-        const xpub = wallet.getXPub();
-        window.open(strExplorerURL + '/xpub/' + xpub, '_blank');
-    } else {
-        const address = strAddress || wallet.getAddress();
-        window.open(strExplorerURL + '/address/' + address, '_blank');
-    }
-}
-
 async function loadImages() {
     const images = [
         ['mpw-main-logo', import('../assets/logo.png')],

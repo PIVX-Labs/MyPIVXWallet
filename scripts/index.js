@@ -18,7 +18,6 @@ export {
     toClipboard,
     restoreWallet,
     playMusic,
-    openExplorer,
     doms,
     importMasternode,
     destroyMasternode,
