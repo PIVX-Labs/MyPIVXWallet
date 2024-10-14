@@ -709,8 +709,14 @@ export class Wallet {
     async #transparentSync() {
         if (!this.isLoaded() || this.#isSynced) return;
         const cNet = getNetwork();
-        await cNet.getLatestTxs(this);
-        getEventEmitter().emit('transparent-sync-status-update', '', '', true);
+        let fSynced = false;
+        try {
+            await cNet.getLatestTxs(this);
+            fSynced = true;
+        } catch {
+            // If all Explorers are down, we'll just rely on the local TXDB and display a warning
+        }
+        getEventEmitter().emit('transparent-sync-status-update', fSynced ? '' : 'Explorers are unreachable, your wallet may not be fully synced!', fSynced ? 100 : 0, fSynced);
     }
 
     /**

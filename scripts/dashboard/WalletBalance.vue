@@ -508,16 +508,16 @@ function restoreWallet() {
                 </div>
                 <div style="width: 100%">
                     {{
-                        transparentSyncing
-                            ? syncTStr
-                            : `Syncing ${shieldBlockRemainingSyncing} Blocks...`
+                        shieldSyncing
+                            ? `Syncing ${shieldBlockRemainingSyncing} Blocks...`
+                            : syncTStr
                     }}
                     <LoadingBar
                         :show="true"
                         :percentage="
-                            transparentSyncing
-                                ? transparentProgressSyncing
-                                : shieldPercentageSyncing
+                            shieldSyncing
+                                ? shieldPercentageSyncing 
+                                : transparentProgressSyncing
                         "
                         style="
                             border: 1px solid #932ecd;

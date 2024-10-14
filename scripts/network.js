@@ -104,9 +104,27 @@ export class ExplorerNetwork extends Network {
      * @returns {Promise<Object>} the block fetched from explorer
      */
     async getBlock(blockHeight, skipCoinstake = false) {
-        const block = await this.safeFetchFromExplorer(
-            `/api/v2/block/${blockHeight}`
-        );
+        let block = null;
+        let fUseNodes = false;
+        try {
+            // Attempt via Explorer first
+            block = await this.safeFetchFromExplorer(
+                `/api/v2/block/${blockHeight}`
+            );
+        } catch {
+            // Use Nodes as fallback
+            fUseNodes = true;
+            // First we fetch the blockhash
+            let strHash = await this.callRPC(`/getblockhash?params=${blockHeight}`, true);
+            // Strip quotes from the RPC response
+            strHash = strHash.replace(/"/g, '');
+            // Fetch the full block (verbose)
+            block = await this.callRPC(`/getblock?params=${strHash},true`);
+            // Fetch every Tx of the block (verbose)
+            block.txs = block.tx.map(async a => {
+                return await this.callRPC(`/getrawtransaction?params=${a},true`)
+            });
+        }
         const newTxs = [];
         // This is bad. We're making so many requests
         // This is a quick fix to try to be compliant with the blockbook
@@ -117,39 +135,56 @@ export class ExplorerNetwork extends Network {
         // In addition, always skip the coinbase transaction and in case the coinstake one
         // TODO: once v6.0 and shield stake is activated we might need to change this optimization
         for (const tx of block.txs.slice(skipCoinstake ? 2 : 1)) {
-            const r = await fetch(
-                `${this.strUrl}/api/v2/tx-specific/${tx.txid}`
-            );
-            if (!r.ok) throw new Error('failed');
-            const newTx = await r.json();
-            newTxs.push(newTx);
+            // Pull raw Tx from explorer - unless we used Nodes, then the full tx is already loaded
+            if (!fUseNodes) {
+                const r = await fetch(
+                    `${this.strUrl}/api/v2/tx-specific/${tx.txid}`
+                );
+                if (!r.ok) throw new Error('failed');
+                const newTx = await r.json();
+                newTxs.push(newTx);
+            } else {
+                newTxs.push(tx);
+            }
         }
         block.txs = newTxs;
         return block;
     }
 
     /**
-     * Fetch the block height of the current explorer
+     * Fetch the block height of the current explorer or fallback node
      * @returns {Promise<number>} - Block height
      */
     async getBlockCount() {
-        const { backend } = await (
-            await retryWrapper(fetchBlockbook, true, `/api/v2/api`)
-        ).json();
+        try {
+            // Attempt via Explorer first
+            const { backend } = await (
+                await retryWrapper(fetchBlockbook, true, `/api/v2/api`)
+            ).json();
 
-        return backend.blocks;
+            return backend.blocks;
+        } catch {
+            // Use Nodes as a fallback
+            return parseInt(await this.callRPC('/getblockcount', true));
+        }
     }
 
     /**
-     * Fetch the latest block hash of the current explorer
+     * Fetch the latest block hash of the current explorer or fallback node
      * @returns {Promise<string>} - Block hash
      */
     async getBestBlockHash() {
-        const { backend } = await (
-            await retryWrapper(fetchBlockbook, true, `/api/v2/api`)
-        ).json();
+        try {
+            // Attempt via Explorer first
+            const { backend } = await (
+                await retryWrapper(fetchBlockbook, true, `/api/v2/api`)
+            ).json();
 
-        return backend.bestBlockHash;
+            return backend.bestBlockHash;
+        } catch {
+            // Use Nodes as a fallback
+            return await this.callRPC('/getbestblockhash', true);
+        }
     }
 
     /**
