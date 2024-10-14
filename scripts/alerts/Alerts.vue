@@ -28,7 +28,6 @@ watch(alerts, () => {
             res.push(alert);
             if (timeout > 0) {
                 setTimeout(() => {
-                    console.log(alert.value);
                     alert.value.show = false;
                 }, timeout);
             }

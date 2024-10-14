@@ -22,7 +22,6 @@ export const useAlerts = defineStore('alerts', () => {
 
     alertController.subscribe(() => {
         alerts.value = [...alertController.getAlerts()];
-        console.log(alerts.value);
     });
 
     return {
