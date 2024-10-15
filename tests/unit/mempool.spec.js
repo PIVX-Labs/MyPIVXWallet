@@ -121,20 +121,20 @@ describe('mempool tests', () => {
             vout: [],
         });
         mempool.addTransaction(spendTx);
-        expect(mempool.getDebit(spendTx)).toBe(5000000 + 4992400);
+        expect(mempool.getDebit(spendTx).debit).toBe(5000000 + 4992400);
 
-        expect(mempool.getDebit(new Transaction())).toBe(0);
+        expect(mempool.getDebit(new Transaction()).debit).toBe(0);
     });
 
     it('gives correct credit', () => {
-        expect(mempool.getCredit(tx)).toBe(5000000 + 4992400);
+        expect(mempool.getCredit(tx).credit).toBe(5000000 + 4992400);
 
         // Result should stay the same even if the UTXOs are spent
         mempool.setSpent(new COutpoint({ txid: tx.txid, n: 1 }));
-        expect(mempool.getCredit(tx)).toBe(5000000 + 4992400);
+        expect(mempool.getCredit(tx).credit).toBe(5000000 + 4992400);
         mempool.setSpent(new COutpoint({ txid: tx.txid, n: 0 }));
-        expect(mempool.getCredit(tx)).toBe(5000000 + 4992400);
-        expect(mempool.getCredit(new Transaction())).toBe(0);
+        expect(mempool.getCredit(tx).credit).toBe(5000000 + 4992400);
+        expect(mempool.getCredit(new Transaction()).credit).toBe(0);
     });
 
     it('marks outpoint as spent correctly', () => {
