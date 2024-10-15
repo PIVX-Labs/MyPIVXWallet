@@ -710,7 +710,32 @@ export class Wallet {
     async #transparentSync() {
         if (!this.isLoaded() || this.#isSynced) return;
         const cNet = getNetwork();
-        await cNet.getLatestTxs(this);
+        const addr = this.getKeyToExport();
+        let nStartHeight = Math.max(
+            ...this.getTransactions().map((tx) => tx.blockHeight)
+        );
+        const txNumber =
+            (await cNet.getNumPages(nStartHeight, addr)) -
+            this.getTransactions().length;
+        // Compute the total pages and iterate through them until we've synced everything
+        const totalPages = Math.ceil(txNumber / 1000);
+        for (let i = totalPages; i > 0; i--) {
+            getEventEmitter().emit(
+                'transparent-sync-status-update',
+                tr(translation.syncStatusHistoryProgress, [
+                    { current: totalPages - i + 1 },
+                    { total: totalPages },
+                ]),
+                ((totalPages - i) / totalPages) * 100,
+                false
+            );
+
+            // Fetch this page of transactions
+            const iPageTxs = await cNet.getTxPage(nStartHeight, addr, i);
+            for (const tx of iPageTxs.reverse()) {
+                await this.addTransaction(tx, tx.blockHeight === -1);
+            }
+        }
         getEventEmitter().emit('transparent-sync-status-update', '', '', true);
     }
 

@@ -1,17 +1,10 @@
 import { cChainParams } from './chain_params.js';
-import { createAlert } from './misc.js';
-import {
-    debugError,
-    debugLog,
-    debugTimerEnd,
-    debugTimerStart,
-    DebugTopics,
-} from './debug.js';
+import { isStandardAddress, isXPub } from './misc.js';
+import { debugLog, DebugTopics, debugError } from './debug.js';
 import { sleep } from './utils.js';
 import { getEventEmitter } from './event_bus.js';
 import { setExplorer, fAutoSwitch, setNode } from './settings.js';
 import { cNode } from './settings.js';
-import { ALERTS, tr, translation } from './i18n.js';
 import { Transaction } from './transaction.js';
 
 /**
@@ -187,70 +180,52 @@ export class ExplorerNetwork extends Network {
     }
 
     /**
-     * //TODO: do not take the wallet as parameter but instead something weaker like a public key or address?
-     * Must be called only for initial wallet sync
-     * @param {import('./wallet.js').Wallet} wallet - Wallet that we are getting the txs of
-     * @returns {Promise<void>}
+     * Returns the n-th page of transactions belonging to addr
+     * @param {number} nStartHeight - The minimum transaction block height
+     * @param {string} addr - a PIVX address or xpub
+     * @param {number} n - index of the page
+     * @param {number} pageSize - the maximum number of transactions in the page
+     * @returns {Promise<Object>}
      */
-    async getLatestTxs(wallet) {
-        if (wallet.isSynced) {
-            throw new Error('getLatestTxs must only be for initial sync');
+    async #getPage(nStartHeight, addr, n, pageSize) {
+        if (!(isXPub(addr) || isStandardAddress(addr))) {
+            throw new Error('must provide either a PIVX address or a xpub');
         }
-        let nStartHeight = Math.max(
-            ...wallet.getTransactions().map((tx) => tx.blockHeight)
-        );
-        debugTimerStart(DebugTopics.NET, 'getLatestTxsTimer');
-        // Form the API call using our wallet information
-        const strKey = wallet.getKeyToExport();
-        const strRoot = `/api/v2/${
-            wallet.isHD() ? 'xpub/' : 'address/'
-        }${strKey}`;
-        const strCoreParams = `?details=txs&from=${nStartHeight}`;
-        const probePage = await this.safeFetchFromExplorer(
-            `${strRoot + strCoreParams}&pageSize=1`
-        );
-        const txNumber = probePage.txs - wallet.getTransactions().length;
-        // Compute the total pages and iterate through them until we've synced everything
-        const totalPages = Math.ceil(txNumber / 1000);
-        for (let i = totalPages; i > 0; i--) {
-            getEventEmitter().emit(
-                'transparent-sync-status-update',
-                tr(translation.syncStatusHistoryProgress, [
-                    { current: totalPages - i + 1 },
-                    { total: totalPages },
-                ]),
-                ((totalPages - i) / totalPages) * 100 < 0
-                    ? 0
-                    : ((totalPages - i) / totalPages) * 100,
-                false
-            );
+        const strRoot = `/api/v2/${isXPub(addr) ? 'xpub/' : 'address/'}${addr}`;
+        const strCoreParams = `?details=txs&from=${nStartHeight}&pageSize=${pageSize}&page=${n}`;
+        return await this.safeFetchFromExplorer(strRoot + strCoreParams);
+    }
 
-            // Fetch this page of transactions
-            const iPage = await this.safeFetchFromExplorer(
-                `${strRoot + strCoreParams}&page=${i}`
-            );
-
-            // Update the internal mempool if there's new transactions
-            // Note: Extra check since Blockbook sucks and removes `.transactions` instead of an empty array if there's no transactions
-            if (iPage?.transactions?.length > 0) {
-                for (const tx of iPage.transactions.reverse()) {
-                    const parsed = Transaction.fromHex(tx.hex);
-                    parsed.blockHeight = tx.blockHeight;
-                    parsed.blockTime = tx.blockTime;
-                    await wallet.addTransaction(
-                        parsed,
-                        parsed.blockHeight === -1
-                    );
-                }
+    /**
+     * Returns the n-th page of transactions belonging to addr
+     * @param {number} nStartHeight - The minimum transaction block height
+     * @param {string} addr - a PIVX address or xpub
+     * @param {number} n - index of the page
+     * @returns {Promise<Array<Transaction>>}
+     */
+    async getTxPage(nStartHeight, addr, n) {
+        const page = await this.#getPage(nStartHeight, addr, n, 1000);
+        let txRet = [];
+        if (page?.transactions?.length > 0) {
+            for (const tx of page.transactions) {
+                const parsed = Transaction.fromHex(tx.hex);
+                parsed.blockHeight = tx.blockHeight;
+                parsed.blockTime = tx.blockTime;
+                txRet.push(parsed);
             }
         }
+        return txRet;
+    }
 
-        debugLog(
-            DebugTopics.NET,
-            'Fetched latest txs: total number of pages was ',
-            totalPages
-        );
-        debugTimerEnd(DebugTopics.NET, 'getLatestTxsTimer');
+    /**
+     * Returns the number of pages of transactions belonging to addr
+     * @param {number} nStartHeight - The minimum transaction block height
+     * @param {string} addr - a PIVX address or xpub
+     * @returns {Promise<number>}
+     */
+    async getNumPages(nStartHeight, addr) {
+        const page = await this.#getPage(nStartHeight, addr, 1, 1);
+        return page.txs;
     }
 
     /**
