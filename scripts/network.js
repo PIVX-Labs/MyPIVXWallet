@@ -1,6 +1,7 @@
 import { cChainParams } from './chain_params.js';
 import { createAlert } from './misc.js';
 import {
+    debugError,
     debugLog,
     debugTimerEnd,
     debugTimerStart,
@@ -321,7 +322,7 @@ export class ExplorerNetwork extends Network {
             ).json();
             return arrUTXOs;
         } catch (e) {
-            console.error(e);
+            debugError(DebugTopics.NET, e);
         }
     }
 
@@ -367,7 +368,7 @@ export class ExplorerNetwork extends Network {
             // Throw and catch if there's no TXID
             if (!strTXID || strTXID.length !== 64) throw strTXID;
 
-            console.log('Transaction sent! ' + strTXID);
+            debugLog(DebugTopics.NET, 'Transaction sent! ' + strTXID);
             getEventEmitter().emit('transaction-sent', true, strTXID);
             return strTXID;
         } catch (e) {
