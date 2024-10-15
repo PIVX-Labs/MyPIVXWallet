@@ -275,7 +275,7 @@ function getTxCount() {
 
 getEventEmitter().on(
     'transparent-sync-status-update',
-    (_str, progress, done) => done && update()
+    (i, totalPages, done) => done && update()
 );
 getEventEmitter().on(
     'shield-sync-status-update',

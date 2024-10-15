@@ -133,7 +133,12 @@ const emit = defineEmits([
 
 getEventEmitter().on(
     'transparent-sync-status-update',
-    (str, progress, finished) => {
+    (i, totalPages, finished) => {
+        const str = tr(translation.syncStatusHistoryProgress, [
+            { current: totalPages - i + 1 },
+            { total: totalPages },
+        ]);
+        const progress = ((totalPages - i) / totalPages) * 100;
         syncTStr.value = str;
         transparentProgressSyncing.value = progress;
         transparentSyncing.value = !finished;

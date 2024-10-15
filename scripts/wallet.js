@@ -9,7 +9,7 @@ import { COutpoint, Transaction } from './transaction.js';
 import { confirmPopup, createAlert, isShieldAddress } from './misc.js';
 import { cChainParams } from './chain_params.js';
 import { COIN } from './chain_params.js';
-import { ALERTS, tr, translation } from './i18n.js';
+import { ALERTS, translation } from './i18n.js';
 import { encrypt } from './aes-gcm.js';
 import { Database } from './database.js';
 import { RECEIVE_TYPES } from './contacts-book.js';
@@ -722,11 +722,8 @@ export class Wallet {
         for (let i = totalPages; i > 0; i--) {
             getEventEmitter().emit(
                 'transparent-sync-status-update',
-                tr(translation.syncStatusHistoryProgress, [
-                    { current: totalPages - i + 1 },
-                    { total: totalPages },
-                ]),
-                ((totalPages - i) / totalPages) * 100,
+                i,
+                totalPages,
                 false
             );
 
