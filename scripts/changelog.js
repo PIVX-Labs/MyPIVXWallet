@@ -56,7 +56,7 @@ export function renderChangelog() {
                 break;
             default:
                 // If no element was recognised, it's just a plaintext line
-                strHTML += `<p>${sanitizeHTML(type + line)}</p>`;
+                strHTML += `<p>${sanitizeHTML(rawLine)}</p>`;
                 break;
         }
     }
