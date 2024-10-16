@@ -23,7 +23,7 @@ import { FlipDown } from './flipdown.js';
 import { createApp } from 'vue';
 import Dashboard from './dashboard/Dashboard.vue';
 import Alerts from './alerts/Alerts.vue';
-import { loadDebug, debugLog, DebugTopics } from './debug.js';
+import { loadDebug, debugLog, DebugTopics, debugError } from './debug.js';
 import Stake from './stake/Stake.vue';
 import { createPinia } from 'pinia';
 import { cOracle } from './prices.js';
@@ -309,8 +309,8 @@ function subscribeToNetworkEvents() {
                 result ? 1250 + result.length * 50 : 3000
             );
         } else {
-            console.error('Error sending transaction:');
-            console.error(result);
+            debugError(DebugTopics.NET, 'Error sending transaction:');
+            debugError(DebugTopics.NET, result);
             createAlert('warning', ALERTS.TX_FAILED, 2500);
         }
     });
@@ -501,7 +501,7 @@ export async function govVote(hash, voteCode) {
                 createAlert('warning', ALERTS.VOTE_SIG_BAD, 6000);
             } else {
                 //this could be everything
-                console.error(result);
+                debugError(DebugTopics.GOVERNANCE, result);
                 createAlert('warning', ALERTS.INTERNAL_ERROR, 6000);
             }
         } else {

@@ -1,5 +1,6 @@
 import { cChainParams } from './chain_params.js';
 import {
+    debugError,
     debugLog,
     debugTimerEnd,
     debugTimerStart,
@@ -278,7 +279,7 @@ export class ExplorerNetwork extends Network {
             ).json();
             return arrUTXOs;
         } catch (e) {
-            console.error(e);
+            debugError(DebugTopics.NET, e);
         }
     }
 
@@ -305,7 +306,7 @@ export class ExplorerNetwork extends Network {
             // Throw and catch if the data is not a TXID
             if (!data.result || data.result.length !== 64) throw data;
 
-            console.log('Transaction sent! ' + data.result);
+            debugLog(DebugTopics.NET, 'Transaction sent! ' + data.result);
             getEventEmitter().emit('transaction-sent', true, data.result);
             return data.result;
         } catch (e) {

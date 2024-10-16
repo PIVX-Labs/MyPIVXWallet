@@ -7,6 +7,7 @@ import { COIN, cChainParams } from './chain_params.js';
 import { hexToBytes, bytesToHex } from './utils.js';
 import { OP } from './script.js';
 import { createAlert } from './alerts/alert.js';
+import { debugError, DebugTopics } from './debug.js';
 
 /**
  * @type{import('@ledgerhq/hw-transport-webusb').default}
@@ -112,13 +113,15 @@ export async function getHardwareWalletKeys(path, xpub = false, verify = true) {
                 createAlert('warning', ALERTS.WALLET_HARDWARE_NO_ACCESS, 5500);
             }
 
-            console.error(e);
+            debugError(DebugTopics.LEDGER, e);
             return;
         }
 
         // Check if this is an expected error
         if (!e.statusCode || !LEDGER_ERRS.has(e.statusCode)) {
-            console.error(
+            debugError(DebugTopics.LEDGER, e);
+            debugError(
+                DebugTopics.LEDGER,
                 'MISSING LEDGER ERROR-CODE TRANSLATION! - Please report this below error on our GitHub so we can handle it more nicely!'
             );
             throw e;
