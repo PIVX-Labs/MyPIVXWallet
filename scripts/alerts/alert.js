@@ -65,6 +65,7 @@ export class AlertController {
      */
     addAlert(alert) {
         this.#alerts.push(alert);
+        this.#alerts.splice(0, this.#alerts.length - 1000);
         for (const sub of this.#subscribers) {
             // Notify subscribers of the new alert
             sub(alert);
