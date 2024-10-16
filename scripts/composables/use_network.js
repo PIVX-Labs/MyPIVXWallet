@@ -1,4 +1,4 @@
-import { ref } from 'vue';
+import { readonly, ref } from 'vue';
 import { getEventEmitter } from '../event_bus.js';
 import { defineStore } from 'pinia';
 
@@ -9,6 +9,6 @@ export const useNetwork = defineStore('network', () => {
         explorerUrl.value = url;
     });
     return {
-        explorerUrl,
+        explorerUrl: readonly(explorerUrl),
     };
 });
