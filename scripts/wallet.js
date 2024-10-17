@@ -1,6 +1,6 @@
 import { validateMnemonic } from 'bip39';
 import { decrypt } from './aes-gcm.js';
-import { parseWIF } from './encoding.js';
+import { bytesToNum, mergeUint8Arrays, parseWIF } from './encoding.js';
 import { beforeUnloadListener, blockCount } from './global.js';
 import { getNetwork } from './network.js';
 import { MAX_ACCOUNT_GAP, SHIELD_BATCH_SYNC_SIZE } from './chain_params.js';
@@ -721,48 +721,88 @@ export class Wallet {
         if (!this.#shield || this.#isSynced) {
             return;
         }
-        const cNet = getNetwork();
-        try {
-            const blockHeights = (await cNet.getShieldBlockList()).filter(
-                (b) => b > this.#shield.getLastSyncedBlock()
-            );
-            const batchSize = SHIELD_BATCH_SYNC_SIZE;
-            let handled = 0;
-            let downloaded = 0;
-            const blocks = [];
-            let syncing = false;
-            await startBatch(
-                async (i) => {
-                    let block;
-                    block = await cNet.getBlock(blockHeights[i], true);
-                    downloaded++;
-                    blocks[i] = block;
-                    // We need to process blocks monotically
-                    // When we get a block, start from the first unhandled
-                    // One and handle as many as possible
-                    for (let j = handled; blocks[j]; j = handled) {
-                        if (syncing) break;
-                        syncing = true;
-                        handled++;
-                        await this.#shield.handleBlock(blocks[j]);
-                        // Backup every 500 handled blocks
-                        if (handled % 500 == 0) await this.saveShieldOnDisk();
-                        // Delete so we don't have to hold all blocks in memory
-                        // until we finish syncing
-                        delete blocks[j];
-                        syncing = false;
-                    }
 
-                    getEventEmitter().emit(
-                        'shield-sync-status-update',
-                        downloaded - 1,
-                        blockHeights.length,
-                        false
-                    );
-                },
-                blockHeights.length,
-                batchSize
+        try {
+            const req = await fetch(
+                `http://127.0.0.1:3000/mainnet/getshielddata?startBlock=${
+                    wallet.#shield.getLastSyncedBlock() + 1
+                }`
             );
+            const reader = req.body.getReader();
+            /** @type {number[]} Array of bytes that we are processing **/
+            let processing = [];
+            /** @type{string[]} Array of txs in the current block */
+            let txs = [];
+            let processedBytes = 0;
+            const length = req.headers.get('Content-Length');
+            getEventEmitter().emit(
+                'shield-sync-status-update',
+                0,
+                length,
+                false
+            );
+            let i = 0;
+            while (true) {
+                /**
+                 * @type {{done: boolean, value: Uint8Array?}}
+                 */
+                const { done, value } = await reader.read();
+                /**
+                 * Array of blocks ready to pass to the shield library
+                 * @type {{txs: string[]; height: number; time: number}[]}
+                 */
+                const blocksArray = [];
+
+                if (value) {
+                    // Append received bytes in the processing array
+                    value.forEach((v) => processing.push(v));
+                    processedBytes += value.length;
+                    // Loop until we have less than 4 bytes (length)
+                    while (processing.length - i >= 4) {
+                        const length = Number(
+                            bytesToNum(processing.slice(i, i + 4))
+                        );
+                        // If we have less bytes than the length break and wait for the next
+                        // batch of bytes
+                        if (processing.length - i < length) break;
+
+                        i += 4;
+                        const bytes = processing.slice(i, length + i);
+                        i += length;
+                        // 0x5d rapresents the block
+                        if (bytes[0] === 0x5d) {
+                            const height = Number(
+                                bytesToNum(bytes.slice(1, 5))
+                            );
+                            const time = Number(bytesToNum(bytes.slice(9, 13)));
+
+                            blocksArray.push({ txs, height, time });
+                            txs = [];
+                        } else if (bytes[0] == 0x03) {
+                            // 0x03 is the tx version. We should only get v3 transactions
+                            const hex = bytesToHex(bytes);
+                            txs.push(hex);
+                        } else {
+                            // This is neither a block or a tx.
+                            throw new Error('Failed to parse shield binary');
+                        }
+                    }
+                    console.log(processing.length - i);
+                }
+
+                console.log(blocksArray);
+                // Process the current batch of blocks before starting to parse the next one
+                await this.#shield.handleBlocks(blocksArray);
+                // Emit status update
+                getEventEmitter().emit(
+                    'shield-sync-status-update',
+                    processedBytes,
+                    length,
+                    false
+                );
+                if (done) break;
+            }
+
             getEventEmitter().emit('shield-sync-status-update', 0, 0, true);
         } catch (e) {
             debugError(DebugTopics.WALLET, e);
