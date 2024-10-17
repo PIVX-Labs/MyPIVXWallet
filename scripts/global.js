@@ -387,6 +387,7 @@ export function optimiseCurrencyLocale(nAmount) {
 }
 
 /**
+ * //TODO: remove in Governance VUE PR
  * Open the Explorer in a new tab for the current wallet, or a specific address
  * @param {string?} strAddress - Optional address to open, if void, the master key is used
  */

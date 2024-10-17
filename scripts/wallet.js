@@ -9,7 +9,7 @@ import { COutpoint, Transaction } from './transaction.js';
 import { confirmPopup, isShieldAddress } from './misc.js';
 import { cChainParams } from './chain_params.js';
 import { COIN } from './chain_params.js';
-import { ALERTS, tr, translation } from './i18n.js';
+import { ALERTS, translation } from './i18n.js';
 import { encrypt } from './aes-gcm.js';
 import { Database } from './database.js';
 import { RECEIVE_TYPES } from './contacts-book.js';
@@ -669,6 +669,10 @@ export class Wallet {
             } else if (nAmount < 0) {
                 type = HistoricalTxType.SENT;
             }
+            const isCoinSpecial = tx.isCoinStake() || tx.isCoinBase();
+            const isConfirmed =
+                blockCount - tx.blockHeight >=
+                (isCoinSpecial ? cChainParams.current.coinbaseMaturity : 6);
 
             histTXs.push(
                 new HistoricalTx(
@@ -678,7 +682,8 @@ export class Wallet {
                     false,
                     tx.blockTime,
                     tx.blockHeight,
-                    Math.abs(nAmount)
+                    Math.abs(nAmount),
+                    isConfirmed
                 )
             );
         }
@@ -712,7 +717,29 @@ export class Wallet {
     async #transparentSync() {
         if (!this.isLoaded() || this.#isSynced) return;
         const cNet = getNetwork();
-        await cNet.getLatestTxs(this);
+        const addr = this.getKeyToExport();
+        let nStartHeight = Math.max(
+            ...this.getTransactions().map((tx) => tx.blockHeight)
+        );
+        const txNumber =
+            (await cNet.getNumPages(nStartHeight, addr)) -
+            this.getTransactions().length;
+        // Compute the total pages and iterate through them until we've synced everything
+        const totalPages = Math.ceil(txNumber / 1000);
+        for (let i = totalPages; i > 0; i--) {
+            getEventEmitter().emit(
+                'transparent-sync-status-update',
+                i,
+                totalPages,
+                false
+            );
+
+            // Fetch this page of transactions
+            const iPageTxs = await cNet.getTxPage(nStartHeight, addr, i);
+            for (const tx of iPageTxs.reverse()) {
+                await this.addTransaction(tx, tx.blockHeight === -1);
+            }
+        }
         getEventEmitter().emit('transparent-sync-status-update', '', '', true);
     }
 
