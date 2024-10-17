@@ -5,7 +5,7 @@ import Modal from '../../scripts/Modal.vue';
 import { vi, it, describe } from 'vitest';
 import { nextTick } from 'vue';
 import * as translation from '../../scripts/i18n.js';
-import * as misc from '../../scripts/misc.js';
+import { AlertController } from '../../scripts/alerts/alert.js';
 import { MIN_PASS_LENGTH } from '../../scripts/chain_params.js';
 
 const checkEventsEmitted = (wrapper, nClose, nOnEncrypt, nOpen) => {
@@ -54,11 +54,6 @@ describe('GenKeyWarning tests', () => {
         vi.spyOn(translation, 'tr').mockImplementation((message, variables) => {
             return message + variables[0].MIN_PASS_LENGTH;
         });
-        vi.spyOn(misc, 'createAlert').mockImplementation(
-            (type, message, timeout = 0) => {
-                return message;
-            }
-        );
         vi.spyOn(translation, 'ALERTS', 'get').mockReturnValue({
             PASSWORD_TOO_SMALL: 'pass_too_small',
             PASSWORD_DOESNT_MATCH: 'pass_doesnt_match',
@@ -101,6 +96,7 @@ describe('GenKeyWarning tests', () => {
         checkEventsEmitted(wrapper, 0, 0, 1);
     });
     it('GenKeyWarning (no encrypt)', async () => {
+        const alertController = AlertController.getInstance();
         const wrapper = mount(GenKeyWarning, {
             props: {
                 showModal: true,
@@ -149,8 +145,8 @@ describe('GenKeyWarning tests', () => {
         await nextTick();
         // no event should have been emitted
         checkEventsEmitted(wrapper, 0, 0, 0);
-        expect(misc.createAlert).toHaveBeenCalled();
-        expect(misc.createAlert).toHaveReturnedWith(
+
+        expect(alertController.getAlerts().at(-1).message).toBe(
             'pass_too_small' + MIN_PASS_LENGTH
         );
 
@@ -163,8 +159,9 @@ describe('GenKeyWarning tests', () => {
         await nextTick();
         // no event should have been emitted
         checkEventsEmitted(wrapper, 0, 0, 0);
-        expect(misc.createAlert).toHaveBeenCalled();
-        expect(misc.createAlert).toHaveReturnedWith('pass_doesnt_match');
+        expect(alertController.getAlerts().at(-1).message).toBe(
+            'pass_doesnt_match'
+        );
         // Finally passwords match
         confirmPassword.element.value = safePassword;
         confirmPassword.trigger('input');
@@ -184,6 +181,7 @@ describe('GenKeyWarning tests', () => {
         expect(wrapper.emitted('close')).toStrictEqual([[], []]);
     });
     it('GenKeyWarning (with encrypt)', async () => {
+        const alertController = AlertController.getInstance();
         const wrapper = mount(GenKeyWarning, {
             props: {
                 showModal: true,
@@ -232,8 +230,7 @@ describe('GenKeyWarning tests', () => {
         await nextTick();
         // no event should have been emitted
         checkEventsEmitted(wrapper, 0, 0, 0);
-        expect(misc.createAlert).toHaveBeenCalled();
-        expect(misc.createAlert).toHaveReturnedWith(
+        expect(alertController.getAlerts().at(-1).message).toBe(
             'pass_too_small' + MIN_PASS_LENGTH
         );
 
@@ -246,8 +243,9 @@ describe('GenKeyWarning tests', () => {
         await nextTick();
         // no event should have been emitted
         checkEventsEmitted(wrapper, 0, 0, 0);
-        expect(misc.createAlert).toHaveBeenCalled();
-        expect(misc.createAlert).toHaveReturnedWith('pass_doesnt_match');
+        expect(alertController.getAlerts().at(-1).message).toBe(
+            'pass_doesnt_match'
+        );
         // Finally passwords matches and verify also current password
         currentPassword.element.value = 'panleon';
         currentPassword.trigger('input');

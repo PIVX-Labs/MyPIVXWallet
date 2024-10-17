@@ -13,7 +13,7 @@ import {
     isShieldAddress,
     isStandardAddress,
     isValidPIVXAddress,
-} from '../../scripts/misc';
+} from '../../scripts/misc.js';
 
 describe('parse WIF tests', () => {
     it('Parses WIF correctly', () => {

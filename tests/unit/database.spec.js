@@ -3,14 +3,14 @@ import { PromoWallet } from '../../scripts/promos.js';
 import { it, describe, vi, expect } from 'vitest';
 import { Database } from '../../scripts/database.js';
 import { Account } from '../../scripts/accounts';
-import * as misc from '../../scripts/misc.js';
+import * as alert from '../../scripts/alerts/alert.js';
 import { Settings } from '../../scripts/settings';
 import Masternode from '../../scripts/masternode';
 import { Transaction } from '../../scripts/transaction';
 describe('database tests', () => {
     beforeAll(() => {
         // Mock createAlert
-        vi.spyOn(misc, 'createAlert').mockImplementation(vi.fn());
+        vi.spyOn(alert, 'createAlert').mockImplementation(vi.fn());
         vi.stubGlobal(global.console, 'error');
         return () => {
             vi.restoreAllMocks();

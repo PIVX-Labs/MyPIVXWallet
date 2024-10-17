@@ -5,14 +5,11 @@ import { ALERTS, translation, tr } from './i18n.js';
 import { doms, restoreWallet } from './global.js';
 import { wallet, getNewAddress } from './wallet.js';
 import { cChainParams, COIN, COIN_DECIMALS } from './chain_params.js';
-import {
-    createAlert,
-    generateMasternodePrivkey,
-    confirmPopup,
-} from './misc.js';
+import { generateMasternodePrivkey, confirmPopup } from './misc.js';
 import { Database } from './database.js';
 import { getNetwork } from './network.js';
 import { ledgerSignTransaction } from './ledger.js';
+import { createAlert } from './alerts/alert.js';
 
 /**
  * @deprecated use the new wallet method instead

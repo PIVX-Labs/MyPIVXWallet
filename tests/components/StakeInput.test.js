@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import * as misc from '../../scripts/misc.js';
+import * as alert from '../../scripts/alerts/alert.js';
 import { nextTick } from 'vue';
 import { mount } from '@vue/test-utils';
 import StakeInput from '../../scripts/stake/StakeInput.vue';

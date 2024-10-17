@@ -1,6 +1,6 @@
 import { cChainParams } from './chain_params.js';
+import { debugError, debugLog, DebugTopics } from './debug.js';
 import { isStandardAddress, isXPub } from './misc.js';
-import { debugLog, DebugTopics, debugError } from './debug.js';
 import { sleep } from './utils.js';
 import { getEventEmitter } from './event_bus.js';
 import { setExplorer, fAutoSwitch, setNode } from './settings.js';

@@ -2,13 +2,8 @@ import { openDB } from 'idb';
 import Masternode from './masternode.js';
 import { Settings } from './settings.js';
 import { cChainParams } from './chain_params.js';
-import {
-    confirmPopup,
-    sanitizeHTML,
-    createAlert,
-    isSameType,
-    isEmpty,
-} from './misc.js';
+import { confirmPopup, sanitizeHTML, isSameType, isEmpty } from './misc.js';
+import { createAlert } from './alerts/alert.js';
 import { PromoWallet } from './promos.js';
 import { ALERTS, translation } from './i18n.js';
 import { Account } from './accounts.js';

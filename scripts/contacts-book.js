@@ -4,7 +4,6 @@ import { doms, toClipboard } from './global.js';
 import { ALERTS, tr, translation } from './i18n.js';
 import {
     confirmPopup,
-    createAlert,
     createQR,
     getImageFile,
     isValidPIVXAddress,
@@ -17,6 +16,7 @@ import { useWallet } from './composables/use_wallet.js';
 import pIconCopy from '../assets/icons/icon-copy.svg';
 import pIconCamera from '../assets/icons/icon-camera.svg';
 import pIconBin from '../assets/icons/icon-bin.svg';
+import { createAlert } from './alerts/alert.js';
 
 /**
  * Represents an Account contact

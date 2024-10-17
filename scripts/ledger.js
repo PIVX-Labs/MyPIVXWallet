@@ -1,11 +1,12 @@
 import createXpub from 'create-xpub';
 import { ALERTS, tr } from './i18n.js';
-import { confirmPopup, createAlert } from './misc.js';
+import { confirmPopup } from './misc.js';
 import { getNetwork } from './network.js';
 import { Transaction } from './transaction.js';
 import { COIN, cChainParams } from './chain_params.js';
 import { hexToBytes, bytesToHex } from './utils.js';
 import { OP } from './script.js';
+import { createAlert } from './alerts/alert.js';
 import { debugError, DebugTopics } from './debug.js';
 
 /**
