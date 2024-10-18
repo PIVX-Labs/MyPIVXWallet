@@ -876,11 +876,9 @@ export class Wallet {
         async (blockCount) => {
             const cNet = getNetwork();
             let block;
-            // Don't ask for the exact last block that arrived,
-            // since it takes around 1 minute for blockbook to make it API available
             for (
-                let blockHeight = this.#lastProcessedBlock + 1;
-                blockHeight < blockCount;
+                let blockHeight = this.#lastProcessedBlock;
+                blockHeight <= blockCount;
                 blockHeight++
             ) {
                 try {

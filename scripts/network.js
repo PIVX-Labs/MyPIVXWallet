@@ -98,76 +98,30 @@ export class ExplorerNetwork extends Network {
      * @returns {Promise<Object>} the block fetched from explorer
      */
     async getBlock(blockHeight, skipCoinstake = false) {
-        let block = null;
-        let fUseNodes = false;
-        try {
-            // Attempt via Explorer first
-            block = await this.safeFetchFromExplorer(
-                `/api/v2/block/${blockHeight}`
-            );
-        } catch {
-            // Use Nodes as fallback
-            fUseNodes = true;
-            // First we fetch the blockhash
-            let strHash = await this.callRPC(
-                `/getblockhash?params=${blockHeight}`,
-                true
-            );
-            // Strip quotes from the RPC response
-            strHash = strHash.replace(/"/g, '');
-            // Craft a filter to retrieve only raw Tx hex and txid
-            const strFilter =
-                '&filter=' +
-                encodeURI(`. | .tx = [.tx[] | { hex: .hex, txid: .txid}]`);
-            // Fetch the full block (verbose)
-            block = await this.callRPC(
-                `/getblock?params=${strHash},2${strFilter}`
-            );
-            // Shift the array to `txs` to match Blockbook format
-            block.txs = block.tx;
-        }
-        const newTxs = [];
-        // This is bad. We're making so many requests
-        // This is a quick fix to try to be compliant with the blockbook
-        // API, and not the PIVX extension.
-        // In the Blockbook API /block doesn't have any chain specific information
-        // Like hex, shield info or what not.
-        // We could change /getshieldblocks to /getshieldtxs?
-        // In addition, always skip the coinbase transaction and in case the coinstake one
+        // First we fetch the blockhash (and strip RPC's quotes)
+        const strHash = (
+            await this.callRPC(`/getblockhash?params=${blockHeight}`, true)
+        ).replace(/"/g, '');
+        // Craft a filter to retrieve only raw Tx hex and txid, also change "tx" to "txs"
+        const strFilter =
+            '&filter=' +
+            encodeURI(`. | .txs = [.tx[] | { hex: .hex, txid: .txid}]`);
+        // Fetch the full block (verbose)
+        const block = await this.callRPC(
+            `/getblock?params=${strHash},2${strFilter}`
+        );
+        // Always skip the coinbase transaction and in case the coinstake one
         // TODO: once v6.0 and shield stake is activated we might need to change this optimization
-        for (const tx of block.txs.slice(skipCoinstake ? 2 : 1)) {
-            // Pull raw Tx from explorer - unless we used Nodes, then the full tx is already loaded
-            if (!fUseNodes) {
-                const r = await fetch(
-                    `${this.strUrl}/api/v2/tx-specific/${tx.txid}`
-                );
-                if (!r.ok) throw new Error('failed');
-                const newTx = await r.json();
-                newTxs.push(newTx);
-            } else {
-                newTxs.push(tx);
-            }
-        }
-        block.txs = newTxs;
+        block.txs = block.txs.slice(skipCoinstake ? 2 : 1);
         return block;
     }
 
     /**
-     * Fetch the block height of the current explorer or fallback node
+     * Fetch the block height of the current node
      * @returns {Promise<number>} - Block height
      */
     async getBlockCount() {
-        try {
-            // Attempt via Explorer first
-            const { backend } = await (
-                await retryWrapper(fetchBlockbook, true, `/api/v2/api`)
-            ).json();
-
-            return backend.blocks;
-        } catch {
-            // Use Nodes as a fallback
-            return parseInt(await this.callRPC('/getblockcount', true));
-        }
+        return parseInt(await this.callRPC('/getblockcount', true));
     }
 
     /**
