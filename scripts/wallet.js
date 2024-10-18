@@ -6,7 +6,7 @@ import { getNetwork } from './network.js';
 import { MAX_ACCOUNT_GAP, SHIELD_BATCH_SYNC_SIZE } from './chain_params.js';
 import { HistoricalTx, HistoricalTxType } from './historical_tx.js';
 import { COutpoint, Transaction } from './transaction.js';
-import { confirmPopup, createAlert, isShieldAddress } from './misc.js';
+import { confirmPopup, isShieldAddress } from './misc.js';
 import { cChainParams } from './chain_params.js';
 import { COIN } from './chain_params.js';
 import { ALERTS, translation } from './i18n.js';
@@ -32,8 +32,10 @@ import {
 import { PIVXShield } from 'pivx-shield';
 import { guiToggleReceiveType } from './contacts-book.js';
 import { TransactionBuilder } from './transaction_builder.js';
+import { createAlert } from './alerts/alert.js';
 import { AsyncInterval } from './async_interval.js';
 import { debugError, DebugTopics } from './debug.js';
+
 /**
  * Class Wallet, at the moment it is just a "realization" of Masterkey with a given nAccount
  * it also remembers which addresses we generated.

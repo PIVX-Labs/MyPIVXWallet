@@ -12,8 +12,9 @@ import StakeInput from './StakeInput.vue';
 import { onMounted, ref, watch, nextTick } from 'vue';
 import { ParsedSecret } from '../parsed_secret.js';
 import { storeToRefs } from 'pinia';
-import { createAlert } from '../misc';
 import { ALERTS } from '../i18n';
+import { useAlerts } from '../composables/use_alerts.js';
+const { createAlert } = useAlerts();
 const wallet = useWallet();
 const { balance, coldBalance, price, currency, isViewOnly } =
     storeToRefs(wallet);
