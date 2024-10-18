@@ -9,12 +9,12 @@ import { describe, it, vi, expect, afterAll } from 'vitest';
 import {
     getNetwork,
     resetNetwork,
-} from '../../../scripts/__mocks__/network.js';
+} from '../../../scripts/__mocks__/network_manager.js';
 import { refreshChainData } from '../../../scripts/global.js';
 import { sleep } from '../../../scripts/utils.js';
 import { COIN } from '../../../scripts/chain_params.js';
 
-vi.mock('../../../scripts/network.js');
+vi.mock('../../../scripts/network_manager.js');
 
 /**
  * @param{import('scripts/wallet').Wallet} wallet - wallet that will generate the transaction

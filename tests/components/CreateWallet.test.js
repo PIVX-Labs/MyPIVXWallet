@@ -5,7 +5,7 @@ import Modal from '../../scripts/Modal.vue';
 import { vi, it, describe } from 'vitest';
 import 'fake-indexeddb/auto';
 
-vi.mock('../../scripts/network.js');
+vi.mock('../../scripts/network_manager.js');
 vi.stubGlobal('indexedDB', new IDBFactory());
 
 describe('create wallet tests', () => {
