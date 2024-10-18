@@ -70,12 +70,8 @@ describe('Wallet sync tests', () => {
             walletHD.getCurrentAddress(),
             0.05 * 10 ** 8
         );
+
         // Mint the block with the transaction
-        await mineAndSync();
-        // getLatestBlocks sync up until chain tip - 1 block,
-        // so at this point walletHD doesn't still know about the UTXO he received
-        expect(walletHD.balance).toBe(1 * 10 ** 8);
-        // mine an empty block and verify that the tx arrived
         await mineAndSync();
         expect(walletHD.balance).toBe((1 + 0.05) * 10 ** 8);
 
@@ -103,13 +99,16 @@ describe('Wallet sync tests', () => {
             let newAddress = walletHD.getAddressFromPath(
                 path.slice(0, -1) + String(nAddress)
             );
+            // Create a Tx to the new account address
             await crateAndSendTransaction(
                 walletLegacy,
                 newAddress,
                 0.01 * 10 ** 8
             );
-            await mineAndSync();
+            // Validate the balance of the HD wallet pre-tx-confirm
             expect(walletHD.balance).toBe((1 + 0.01 * i) * 10 ** 8);
+            // Mine a block with the Tx
+            await mineAndSync();
         }
     });
     it('recognizes immature balance', async () => {
