@@ -1,26 +1,17 @@
+/* eslint-disable no-console */
+
 import { debug } from './settings.js';
 import debugParams from '../debug_config.json';
 
 /**
- * Execute a given function if we are in debug mode
- * @param {Function} func - a function we want to execute
- * @param {...any} args - The arguments to pass to the function
- */
-function debugEval(func, ...args) {
-    if (debug) {
-        func(...args);
-    }
-}
-
-/**
- * Execute a given function if we are in debug mode and the provided topic is in the filtered list
+ * Execute a given function if the provided topic is in the filtered list
  * @param {Function} func - a function we want to execute
  * @param {DebugTopic} topic - the topic of the debug
  * @param {...any} args - The arguments to pass to the function
  */
 function debugEvalFilter(func, topic, ...args) {
     if (topic.value & enabledDebug) {
-        debugEval(func, ...args);
+        func(...args);
     }
 }
 /**
@@ -29,11 +20,13 @@ function debugEvalFilter(func, topic, ...args) {
  * @param args - arguments to print
  */
 export function debugLog(topic, ...args) {
-    debugEvalFilter(console.log, topic, topic.name, ...args);
+    if (debug) {
+        debugEvalFilter(console.log, topic, topic.name, ...args);
+    }
 }
 
 /**
- * call console.warn if we are in debug mode
+ * call console.warn
  * @param {DebugTopic} topic - topic of the debug
  * @param args - arguments to print
  */
@@ -42,7 +35,7 @@ export function debugWarn(topic, ...args) {
 }
 
 /**
- * call console.error if we are in debug mode
+ * call console.error
  * @param {DebugTopic} topic - topic of the debug
  * @param args - arguments to print
  */
@@ -56,7 +49,9 @@ export function debugError(topic, ...args) {
  * @param {String} label - the label of the timer
  */
 export function debugTimerStart(topic, label) {
-    debugEvalFilter(console.time, topic, topic.name + ' ' + label);
+    if (debug) {
+        debugEvalFilter(console.time, topic, topic.name + ' ' + label);
+    }
 }
 
 /**
@@ -65,7 +60,9 @@ export function debugTimerStart(topic, label) {
  * @param {String} label - the label of the timer
  */
 export function debugTimerEnd(topic, label) {
-    debugEvalFilter(console.timeEnd, topic, topic.name + ' ' + label);
+    if (debug) {
+        debugEvalFilter(console.timeEnd, topic, topic.name + ' ' + label);
+    }
 }
 
 class DebugTopic {
@@ -79,6 +76,12 @@ export const DebugTopics = {
     GLOBAL: new DebugTopic('[GLOBAL]', 1 << 1),
     WALLET: new DebugTopic('[WALLET]', 1 << 2),
     MEMPOOL: new DebugTopic('[MEMPOOL]', 1 << 3),
+    AES_GCM: new DebugTopic('[AES_GMC]', 1 << 4),
+    DATABASE: new DebugTopic('[DATABASE]', 1 << 5),
+    GOVERNANCE: new DebugTopic('[GOVERNANCE]', 1 << 6),
+    I18N: new DebugTopic('[I18N]', 1 << 7),
+    LEDGER: new DebugTopic('[LEDGER]', 1 << 8),
+    MASTERNODE: new DebugTopic('[MASTERNODE]', 1 << 9),
 };
 
 let enabledDebug = 0;

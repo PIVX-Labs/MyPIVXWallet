@@ -8,7 +8,7 @@ import {
 import { wallet, hasEncryptedWallet } from './wallet.js';
 import { cChainParams } from './chain_params.js';
 import { setNetwork, ExplorerNetwork, getNetwork } from './network.js';
-import { confirmPopup, createAlert } from './misc.js';
+import { confirmPopup } from './misc.js';
 import {
     switchTranslation,
     ALERTS,
@@ -16,6 +16,7 @@ import {
     arrActiveLangs,
     tr,
 } from './i18n.js';
+import { createAlert } from './alerts/alert.js';
 import { Database } from './database.js';
 import { getEventEmitter } from './event_bus.js';
 import countries from 'country-locale-map/countries.json';
@@ -23,6 +24,7 @@ import countries from 'country-locale-map/countries.json';
 // --- Default Settings
 /** A mode that emits verbose console info for internal MPW operations */
 export let debug = false;
+
 /**
  * The user-selected display currency from Oracle
  * @type {string}
@@ -216,14 +218,14 @@ function subscribeToNetworkEvents() {
 // --- Settings Functions
 export async function setExplorer(explorer, fSilent = false) {
     const database = await Database.getInstance();
-    database.setSettings({ explorer: explorer.url });
+    await database.setSettings({ explorer: explorer.url });
     cExplorer = explorer;
 
     // Enable networking + notify if allowed
     if (getNetwork()) {
         getNetwork().strUrl = cExplorer.url;
     } else {
-        const network = new ExplorerNetwork(cExplorer.url, wallet);
+        const network = new ExplorerNetwork(cExplorer.url);
         setNetwork(network);
     }
 
@@ -236,12 +238,16 @@ export async function setExplorer(explorer, fSilent = false) {
             tr(ALERTS.SWITCHED_EXPLORERS, [{ explorerName: cExplorer.name }]),
             2250
         );
+    getEventEmitter().emit('explorer_changed', cExplorer.url);
 }
 
-async function setNode(node, fSilent = false) {
+export async function setNode(node, fSilent = false) {
     cNode = node;
     const database = await Database.getInstance();
     database.setSettings({ node: node.url });
+
+    // Update the selector UI
+    doms.domNodeSelect.value = cNode.url;
 
     if (!fSilent)
         createAlert(

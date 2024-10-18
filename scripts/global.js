@@ -6,12 +6,12 @@ import { wallet, hasEncryptedWallet, Wallet } from './wallet.js';
 import { getNetwork } from './network.js';
 import {
     start as settingsStart,
-    cExplorer,
     strCurrency,
     fAdvancedMode,
 } from './settings.js';
 import { createAndSendTransaction } from './legacy.js';
-import { createAlert, confirmPopup, sanitizeHTML } from './misc.js';
+import { createAlert } from './alerts/alert.js';
+import { confirmPopup, sanitizeHTML } from './misc.js';
 import { cChainParams, COIN } from './chain_params.js';
 import { sleep } from './utils.js';
 import { registerWorker } from './native.js';
@@ -22,7 +22,8 @@ import { checkForUpgrades } from './changelog.js';
 import { FlipDown } from './flipdown.js';
 import { createApp } from 'vue';
 import Dashboard from './dashboard/Dashboard.vue';
-import { loadDebug, debugLog, DebugTopics } from './debug.js';
+import Alerts from './alerts/Alerts.vue';
+import { loadDebug, debugLog, DebugTopics, debugError } from './debug.js';
 import Stake from './stake/Stake.vue';
 import { createPinia } from 'pinia';
 import { cOracle } from './prices.js';
@@ -30,6 +31,7 @@ import { cOracle } from './prices.js';
 import pIconCopy from '../assets/icons/icon-copy.svg';
 import pIconCheck from '../assets/icons/icon-check.svg';
 import SideNavbar from './SideNavbar.vue';
+import { AsyncInterval } from './async_interval.js';
 
 /** A flag showing if base MPW is fully loaded or not */
 export let fIsLoaded = false;
@@ -49,6 +51,7 @@ const pinia = createPinia();
 export const dashboard = createApp(Dashboard).use(pinia).mount('#DashboardTab');
 createApp(Stake).use(pinia).mount('#StakingTab');
 createApp(SideNavbar).use(pinia).mount('#SideNavbar');
+createApp(Alerts).use(pinia).mount('#Alerts');
 
 export async function start() {
     doms = {
@@ -262,13 +265,12 @@ export async function start() {
     await refreshChainData();
     // Load the price manager
     cOracle.load();
-
-    setInterval(() => {
+    new AsyncInterval(async () => {
         // Refresh blockchain data
-        refreshChainData();
+        await refreshChainData();
 
         // Fetch the PIVX prices
-        refreshPriceDisplay();
+        await refreshPriceDisplay();
     }, 15000);
 
     // Check for recent upgrades, display the changelog
@@ -307,8 +309,8 @@ function subscribeToNetworkEvents() {
                 result ? 1250 + result.length * 50 : 3000
             );
         } else {
-            console.error('Error sending transaction:');
-            console.error(result);
+            debugError(DebugTopics.NET, 'Error sending transaction:');
+            debugError(DebugTopics.NET, result);
             createAlert('warning', ALERTS.TX_FAILED, 2500);
         }
     });
@@ -385,16 +387,18 @@ export function optimiseCurrencyLocale(nAmount) {
 }
 
 /**
+ * //TODO: remove in Governance VUE PR
  * Open the Explorer in a new tab for the current wallet, or a specific address
  * @param {string?} strAddress - Optional address to open, if void, the master key is used
  */
 export async function openExplorer(strAddress = '') {
+    const strExplorerURL = getNetwork().strUrl;
     if (wallet.isLoaded() && wallet.isHD() && !strAddress) {
         const xpub = wallet.getXPub();
-        window.open(cExplorer.url + '/xpub/' + xpub, '_blank');
+        window.open(strExplorerURL + '/xpub/' + xpub, '_blank');
     } else {
         const address = strAddress || wallet.getAddress();
-        window.open(cExplorer.url + '/address/' + address, '_blank');
+        window.open(strExplorerURL + '/address/' + address, '_blank');
     }
 }
 
@@ -498,7 +502,7 @@ export async function govVote(hash, voteCode) {
                 createAlert('warning', ALERTS.VOTE_SIG_BAD, 6000);
             } else {
                 //this could be everything
-                console.error(result);
+                debugError(DebugTopics.GOVERNANCE, result);
                 createAlert('warning', ALERTS.INTERNAL_ERROR, 6000);
             }
         } else {

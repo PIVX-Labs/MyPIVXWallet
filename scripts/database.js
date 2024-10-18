@@ -2,17 +2,13 @@ import { openDB } from 'idb';
 import Masternode from './masternode.js';
 import { Settings } from './settings.js';
 import { cChainParams } from './chain_params.js';
-import {
-    confirmPopup,
-    sanitizeHTML,
-    createAlert,
-    isSameType,
-    isEmpty,
-} from './misc.js';
+import { confirmPopup, sanitizeHTML, isSameType, isEmpty } from './misc.js';
+import { createAlert } from './alerts/alert.js';
 import { PromoWallet } from './promos.js';
 import { ALERTS, translation } from './i18n.js';
 import { Account } from './accounts.js';
 import { COutpoint, CTxIn, CTxOut, Transaction } from './transaction.js';
+import { debugError, debugLog, DebugTopics } from './debug.js';
 
 export class Database {
     /**
@@ -118,11 +114,11 @@ export class Database {
     async addAccount(account) {
         // Critical: Ensure the input is an Account instance
         if (!(account instanceof Account)) {
-            console.error(
+            debugError(
                 '---- addAccount() called with invalid input, input dump below ----'
             );
-            console.error(account);
-            console.error('---- end of account dump ----');
+            debugError(DebugTopics.DATABASE, account);
+            debugError(DebugTopics.DATABASE, '---- end of account dump ----');
             createAlert(
                 'warning',
                 '<b>Account Creation Error</b><br>Logs were dumped in your Browser Console<br>Please submit these privately to PIVX Labs Developers!'
@@ -141,7 +137,8 @@ export class Database {
         for (const strKey of Object.keys(cDBAccount)) {
             // Ensure the Type is correct for the Key against the Account class
             if (!isSameType(account[strKey], cDBAccount[strKey])) {
-                console.error(
+                debugError(
+                    DebugTopics.DATABASE,
                     'DB: addAccount() key "' +
                         strKey +
                         '" does NOT match the correct class type, likely data mismatch, please report!'
@@ -183,11 +180,12 @@ export class Database {
     async updateAccount(account, allowDeletion = false) {
         // Critical: Ensure the input is an Account instance
         if (!(account instanceof Account)) {
-            console.error(
+            debugError(
+                DebugTopics.DATABASE,
                 '---- updateAccount() called with invalid input, input dump below ----'
             );
-            console.error(account);
-            console.error('---- end of account dump ----');
+            debugError(DebugTopics.DATABASE, account);
+            debugError(DebugTopics.DATABASE, '---- end of account dump ----');
             createAlert(
                 'warning',
                 '<b>DB Update Error</b><br>Your wallet is safe, logs were dumped in your Browser Console<br>Please submit these privately to PIVX Labs Developers!'
@@ -203,11 +201,12 @@ export class Database {
         // If none exists; we should throw an error, as there's no reason for MPW to call `updateAccount` before an account was added using `addAccount`
         // Note: This is mainly to force "good standards" in which we don't lazily use `updateAccount` to create NEW accounts.
         if (!cDBAccount) {
-            console.error(
+            debugError(
+                DebugTopics.DATABASE,
                 '---- updateAccount() called without an account existing, input dump below ----'
             );
-            console.error(account);
-            console.error('---- end of input dump ----');
+            debugError(DebugTopics.DATABASE, account);
+            debugError(DebugTopics.DATABASE, '---- end of input dump ----');
             createAlert(
                 'warning',
                 '<b>DB Update Error</b><br>Logs were dumped in your Browser Console<br>Please submit these privately to PIVX Labs Developers!'
@@ -223,7 +222,8 @@ export class Database {
         for (const strKey of Object.keys(cDBAccount)) {
             // Ensure the Type is correct for the Key against the Account class
             if (!isSameType(account[strKey], cDBAccount[strKey])) {
-                console.error(
+                debugError(
+                    DebugTopics.DATABASE,
                     'DB: updateAccount() key "' +
                         strKey +
                         '" does NOT match the correct class type, likely data mismatch, please report!'
@@ -283,7 +283,8 @@ export class Database {
 
             // Ensure the Type is correct for the Key against the Account class (with instanceof to also check Class validity)
             if (!isSameType(cDBAccount[strKey], cAccount[strKey])) {
-                console.error(
+                debugError(
+                    DebugTopics.DATABASE,
                     'DB: getAccount() key "' +
                         strKey +
                         '" does NOT match the correct class type, likely bad data saved, please report!'
@@ -425,7 +426,8 @@ export class Database {
         const database = new Database({ db: null });
         const db = await openDB(`MPW-${name}`, Database.version, {
             upgrade: (db, oldVersion, _, transaction) => {
-                console.log(
+                debugLog(
+                    DebugTopics.DATABASE,
                     'DB: Upgrading from ' +
                         oldVersion +
                         ' to ' +

@@ -1,16 +1,10 @@
 import { cChainParams } from './chain_params.js';
-import { createAlert } from './misc.js';
-import {
-    debugLog,
-    debugTimerEnd,
-    debugTimerStart,
-    DebugTopics,
-} from './debug.js';
+import { debugError, debugLog, DebugTopics } from './debug.js';
+import { isStandardAddress, isXPub } from './misc.js';
 import { sleep } from './utils.js';
 import { getEventEmitter } from './event_bus.js';
-import { setExplorer, fAutoSwitch } from './settings.js';
+import { setExplorer, fAutoSwitch, setNode } from './settings.js';
 import { cNode } from './settings.js';
-import { ALERTS, tr, translation } from './i18n.js';
 import { Transaction } from './transaction.js';
 
 /**
@@ -43,7 +37,7 @@ import { Transaction } from './transaction.js';
  */
 
 /**
- * Virtual class rapresenting any network backend
+ * Virtual class representing any network backend
  *
  */
 export class Network {
@@ -57,12 +51,27 @@ export class Network {
         throw new Error('getBlockCount must be implemented');
     }
 
+    getBestBlockHash() {
+        throw new Error('getBestBlockHash must be implemented');
+    }
+
     sendTransaction() {
         throw new Error('sendTransaction must be implemented');
     }
 
     async getTxInfo(_txHash) {
         throw new Error('getTxInfo must be implemented');
+    }
+
+    /**
+     * A safety-wrapped RPC interface for calling Node RPCs with automatic correction handling
+     * @param {string} api - The API endpoint to call
+     * @param {boolean} isText - Optionally parse the result as Text rather than JSON
+     * @returns {Promise<object|string>} - The RPC response; JSON by default, text if `isText` is true.
+     */
+    async callRPC(api, isText = false) {
+        const cRes = await retryWrapper(fetchNode, false, api);
+        return isText ? await cRes.text() : await cRes.json();
     }
 }
 
@@ -73,8 +82,8 @@ export class ExplorerNetwork extends Network {
     /**
      * @param {string} strUrl - Url pointing to the blockbook explorer
      */
-    constructor(strUrl, wallet) {
-        super(wallet);
+    constructor(strUrl) {
+        super();
         /**
          * @type{string}
          * @public
@@ -113,12 +122,28 @@ export class ExplorerNetwork extends Network {
         return block;
     }
 
+    /**
+     * Fetch the block height of the current explorer
+     * @returns {Promise<number>} - Block height
+     */
     async getBlockCount() {
         const { backend } = await (
-            await retryWrapper(fetchBlockbook, `/api/v2/api`)
+            await retryWrapper(fetchBlockbook, true, `/api/v2/api`)
         ).json();
 
         return backend.blocks;
+    }
+
+    /**
+     * Fetch the latest block hash of the current explorer
+     * @returns {Promise<string>} - Block hash
+     */
+    async getBestBlockHash() {
+        const { backend } = await (
+            await retryWrapper(fetchBlockbook, true, `/api/v2/api`)
+        ).json();
+
+        return backend.bestBlockHash;
     }
 
     /**
@@ -133,7 +158,7 @@ export class ExplorerNetwork extends Network {
         let error;
         while (trials < maxTrials) {
             trials += 1;
-            const res = await retryWrapper(fetchBlockbook, strCommand);
+            const res = await retryWrapper(fetchBlockbook, true, strCommand);
             if (!res.ok) {
                 try {
                     error = (await res.json()).error;
@@ -155,70 +180,52 @@ export class ExplorerNetwork extends Network {
     }
 
     /**
-     * //TODO: do not take the wallet as parameter but instead something weaker like a public key or address?
-     * Must be called only for initial wallet sync
-     * @param {import('./wallet.js').Wallet} wallet - Wallet that we are getting the txs of
-     * @returns {Promise<void>}
+     * Returns the n-th page of transactions belonging to addr
+     * @param {number} nStartHeight - The minimum transaction block height
+     * @param {string} addr - a PIVX address or xpub
+     * @param {number} n - index of the page
+     * @param {number} pageSize - the maximum number of transactions in the page
+     * @returns {Promise<Object>}
      */
-    async getLatestTxs(wallet) {
-        if (wallet.isSynced) {
-            throw new Error('getLatestTxs must only be for initial sync');
+    async #getPage(nStartHeight, addr, n, pageSize) {
+        if (!(isXPub(addr) || isStandardAddress(addr))) {
+            throw new Error('must provide either a PIVX address or a xpub');
         }
-        let nStartHeight = Math.max(
-            ...wallet.getTransactions().map((tx) => tx.blockHeight)
-        );
-        debugTimerStart(DebugTopics.NET, 'getLatestTxsTimer');
-        // Form the API call using our wallet information
-        const strKey = wallet.getKeyToExport();
-        const strRoot = `/api/v2/${
-            wallet.isHD() ? 'xpub/' : 'address/'
-        }${strKey}`;
-        const strCoreParams = `?details=txs&from=${nStartHeight}`;
-        const probePage = await this.safeFetchFromExplorer(
-            `${strRoot + strCoreParams}&pageSize=1`
-        );
-        const txNumber = probePage.txs - wallet.getTransactions().length;
-        // Compute the total pages and iterate through them until we've synced everything
-        const totalPages = Math.ceil(txNumber / 1000);
-        for (let i = totalPages; i > 0; i--) {
-            getEventEmitter().emit(
-                'transparent-sync-status-update',
-                tr(translation.syncStatusHistoryProgress, [
-                    { current: totalPages - i + 1 },
-                    { total: totalPages },
-                ]),
-                ((totalPages - i) / totalPages) * 100 < 0
-                    ? 0
-                    : ((totalPages - i) / totalPages) * 100,
-                false
-            );
+        const strRoot = `/api/v2/${isXPub(addr) ? 'xpub/' : 'address/'}${addr}`;
+        const strCoreParams = `?details=txs&from=${nStartHeight}&pageSize=${pageSize}&page=${n}`;
+        return await this.safeFetchFromExplorer(strRoot + strCoreParams);
+    }
 
-            // Fetch this page of transactions
-            const iPage = await this.safeFetchFromExplorer(
-                `${strRoot + strCoreParams}&page=${i}`
-            );
-
-            // Update the internal mempool if there's new transactions
-            // Note: Extra check since Blockbook sucks and removes `.transactions` instead of an empty array if there's no transactions
-            if (iPage?.transactions?.length > 0) {
-                for (const tx of iPage.transactions.reverse()) {
-                    const parsed = Transaction.fromHex(tx.hex);
-                    parsed.blockHeight = tx.blockHeight;
-                    parsed.blockTime = tx.blockTime;
-                    await wallet.addTransaction(
-                        parsed,
-                        parsed.blockHeight === -1
-                    );
-                }
+    /**
+     * Returns the n-th page of transactions belonging to addr
+     * @param {number} nStartHeight - The minimum transaction block height
+     * @param {string} addr - a PIVX address or xpub
+     * @param {number} n - index of the page
+     * @returns {Promise<Array<Transaction>>}
+     */
+    async getTxPage(nStartHeight, addr, n) {
+        const page = await this.#getPage(nStartHeight, addr, n, 1000);
+        let txRet = [];
+        if (page?.transactions?.length > 0) {
+            for (const tx of page.transactions) {
+                const parsed = Transaction.fromHex(tx.hex);
+                parsed.blockHeight = tx.blockHeight;
+                parsed.blockTime = tx.blockTime;
+                txRet.push(parsed);
             }
         }
+        return txRet;
+    }
 
-        debugLog(
-            DebugTopics.NET,
-            'Fetched latest txs: total number of pages was ',
-            totalPages
-        );
-        debugTimerEnd(DebugTopics.NET, 'getLatestTxsTimer');
+    /**
+     * Returns the number of pages of transactions belonging to addr
+     * @param {number} nStartHeight - The minimum transaction block height
+     * @param {string} addr - a PIVX address or xpub
+     * @returns {Promise<number>}
+     */
+    async getNumPages(nStartHeight, addr) {
+        const page = await this.#getPage(nStartHeight, addr, 1, 1);
+        return page.txs;
     }
 
     /**
@@ -240,11 +247,15 @@ export class ExplorerNetwork extends Network {
             let publicKey = strAddress;
             // Fetch UTXOs for the key
             const arrUTXOs = await (
-                await retryWrapper(fetchBlockbook, `/api/v2/utxo/${publicKey}`)
+                await retryWrapper(
+                    fetchBlockbook,
+                    true,
+                    `/api/v2/utxo/${publicKey}`
+                )
             ).json();
             return arrUTXOs;
         } catch (e) {
-            console.error(e);
+            debugError(DebugTopics.NET, e);
         }
     }
 
@@ -255,14 +266,14 @@ export class ExplorerNetwork extends Network {
      */
     async getXPubInfo(strXPUB) {
         return await (
-            await retryWrapper(fetchBlockbook, `/api/v2/xpub/${strXPUB}`)
+            await retryWrapper(fetchBlockbook, true, `/api/v2/xpub/${strXPUB}`)
         ).json();
     }
 
     async sendTransaction(hex) {
         try {
             const data = await (
-                await retryWrapper(fetchBlockbook, '/api/v2/sendtx/', {
+                await retryWrapper(fetchBlockbook, true, '/api/v2/sendtx/', {
                     method: 'post',
                     body: hex,
                 })
@@ -271,7 +282,7 @@ export class ExplorerNetwork extends Network {
             // Throw and catch if the data is not a TXID
             if (!data.result || data.result.length !== 64) throw data;
 
-            console.log('Transaction sent! ' + data.result);
+            debugLog(DebugTopics.NET, 'Transaction sent! ' + data.result);
             getEventEmitter().emit('transaction-sent', true, data.result);
             return data.result;
         } catch (e) {
@@ -281,7 +292,11 @@ export class ExplorerNetwork extends Network {
     }
 
     async getTxInfo(txHash) {
-        const req = await retryWrapper(fetchBlockbook, `/api/v2/tx/${txHash}`);
+        const req = await retryWrapper(
+            fetchBlockbook,
+            true,
+            `/api/v2/tx/${txHash}`
+        );
         return await req.json();
     }
 
@@ -289,7 +304,7 @@ export class ExplorerNetwork extends Network {
      * @return {Promise<Number[]>} The list of blocks which have at least one shield transaction
      */
     async getShieldBlockList() {
-        return await (await fetch(`${cNode.url}/getshieldblocks`)).json();
+        return await this.callRPC('/getshieldblocks');
     }
 }
 
@@ -322,22 +337,38 @@ export function fetchBlockbook(api, options) {
 }
 
 /**
- * A wrapper for Blockbook calls which can, in the event of an unresponsive explorer,
- * seamlessly attempt the same call on multiple other explorers until success.
+ * A Fetch wrapper which uses the current Node's base URL
+ * @param {string} api - The specific Node api to call
+ * @param {RequestInit} options - The Fetch options
+ * @returns {Promise<Response>} - The unresolved Fetch promise
+ */
+export function fetchNode(api, options) {
+    return fetch(cNode.url + api, options);
+}
+
+/**
+ * A wrapper for Blockbook and Node calls which can, in the event of an unresponsive instance,
+ * seamlessly attempt the same call on multiple other instances until success.
  * @param {Function} func - The function to re-attempt with
+ * @param {boolean} isExplorer - Whether this is an Explorer or Node call
  * @param  {...any} args - The arguments to pass to the function
  */
-async function retryWrapper(func, ...args) {
+export async function retryWrapper(func, isExplorer, ...args) {
     // Track internal errors from the wrapper
     let err;
 
-    // If allowed by the user, Max Tries is ALL MPW-supported explorers, otherwise, restrict to only the current one.
-    let nMaxTries = cChainParams.current.Explorers.length;
+    // Select the instances list to use - Explorers or Nodes
+    const arrInstances = isExplorer
+        ? cChainParams.current.Explorers
+        : cChainParams.current.Nodes;
+
+    // If allowed by the user, Max Tries is ALL MPW-supported instances, otherwise, restrict to only the current one.
+    let nMaxTries = arrInstances.length + 1;
     let retries = 0;
 
-    // The explorer index we started at
-    let nIndex = cChainParams.current.Explorers.findIndex(
-        (a) => a.url === getNetwork().strUrl
+    // The instance index we started at
+    let nIndex = arrInstances.findIndex((a) =>
+        a.url === isExplorer ? getNetwork().strUrl : cNode.url
     );
 
     // Run the call until successful, or all attempts exhausted
@@ -354,15 +385,19 @@ async function retryWrapper(func, ...args) {
         } catch (error) {
             err = error;
 
-            // If allowed, switch explorers
+            // If allowed, switch instances
             if (!fAutoSwitch) throw err;
-            nIndex = (nIndex + 1) % cChainParams.current.Explorers.length;
-            const cNewExplorer = cChainParams.current.Explorers[nIndex];
+            nIndex = (nIndex + 1) % arrInstances.length;
+            const cNewInstance = arrInstances[nIndex];
 
-            // Set the explorer at Network-class level, then as a hacky workaround for the current callback; we
-            // ... adjust the internal URL to the new explorer.
-            getNetwork().strUrl = cNewExplorer.url;
-            setExplorer(cNewExplorer, true);
+            if (isExplorer) {
+                // Set the explorer at Network-class level, then as a hacky workaround for the current callback; we
+                // ... adjust the internal URL to the new explorer.
+                await setExplorer(cNewInstance, true);
+            } else {
+                // For the Node, we change the setting directly
+                setNode(cNewInstance, true);
+            }
 
             // Bump the attempts, and re-try next loop
             retries++;
