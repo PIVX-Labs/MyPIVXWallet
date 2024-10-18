@@ -691,16 +691,13 @@ export class Wallet {
         if (this.#isSynced) {
             throw new Error('Attempting to sync when already synced');
         }
-        // While syncing the wallet ( DB read + network sync) disable the event balance-update
+        // While syncing the wallet (DB read + network sync) disable the event balance-update
         // This is done to avoid a huge spam of event.
         getEventEmitter().disableEvent('balance-update');
 
         await this.loadFromDisk();
         await this.loadShieldFromDisk();
-        // Let's set the last processed block 5 blocks behind the actual chain tip
-        // This is just to be sure since blockbook (as we know)
-        // usually does not return txs of the actual last block.
-        this.#lastProcessedBlock = blockCount - 5;
+        this.#lastProcessedBlock = blockCount;
         // Transparent sync is inherently less stable than Shield since it requires heavy
         // explorer indexing, so we'll attempt once asynchronously, and if it fails, set a
         // recurring "background" sync interval until it's finally successful.
