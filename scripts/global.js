@@ -3,7 +3,7 @@ import { TransactionBuilder } from './transaction_builder.js';
 import Masternode from './masternode.js';
 import { ALERTS, tr, start as i18nStart, translation } from './i18n.js';
 import { wallet, hasEncryptedWallet, Wallet } from './wallet.js';
-import { getNetwork } from './network.js';
+import { getNetwork } from './network_manager.js';
 import {
     start as settingsStart,
     strCurrency,
@@ -32,6 +32,7 @@ import pIconCopy from '../assets/icons/icon-copy.svg';
 import pIconCheck from '../assets/icons/icon-check.svg';
 import SideNavbar from './SideNavbar.vue';
 import { AsyncInterval } from './async_interval.js';
+import { networkManager } from './network_manager.js';
 
 /** A flag showing if base MPW is fully loaded or not */
 export let fIsLoaded = false;
@@ -259,7 +260,6 @@ export async function start() {
     // Register native app service
     registerWorker();
     await settingsStart();
-
     subscribeToNetworkEvents();
     // Make sure we know the correct number of blocks
     await refreshChainData();

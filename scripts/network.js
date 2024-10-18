@@ -1,9 +1,6 @@
-import { cChainParams } from './chain_params.js';
-import { debugError, debugLog, DebugTopics } from './debug.js';
+import { debugLog, DebugTopics } from './debug.js';
 import { isStandardAddress, isXPub } from './misc.js';
-import { sleep } from './utils.js';
 import { getEventEmitter } from './event_bus.js';
-import { setExplorer, fAutoSwitch, setNode } from './settings.js';
 import { cNode } from './settings.js';
 import { Transaction } from './transaction.js';
 
@@ -86,17 +83,6 @@ export class Network {
     async getTxInfo(_txHash) {
         throw new Error('getTxInfo must be implemented');
     }
-
-    /**
-     * A safety-wrapped RPC interface for calling Node RPCs with automatic correction handling
-     * @param {string} api - The API endpoint to call
-     * @param {boolean} isText - Optionally parse the result as Text rather than JSON
-     * @returns {Promise<object|string>} - The RPC response; JSON by default, text if `isText` is true.
-     */
-    async callRPC(api, isText = false) {
-        const cRes = await retryWrapper(fetchNode, false, api);
-        return isText ? await cRes.text() : await cRes.json();
-    }
 }
 
 /**
@@ -122,9 +108,8 @@ export class ExplorerNetwork extends Network {
      * @returns {Promise<Object>} the block fetched from explorer
      */
     async getBlock(blockHeight, skipCoinstake = false) {
-        const block = await this.safeFetchFromExplorer(
-            `/api/v2/block/${blockHeight}`
-        );
+        const req = await this.fetchBlockbook(`/api/v2/block/${blockHeight}`);
+        const block = await req.json();
         const newTxs = [];
         // This is bad. We're making so many requests
         // This is a quick fix to try to be compliant with the blockbook
@@ -151,10 +136,8 @@ export class ExplorerNetwork extends Network {
      * @returns {Promise<number>} - Block height
      */
     async getBlockCount() {
-        const { backend } = await (
-            await retryWrapper(this.fetchBlockbook, true, `/api/v2/api`)
-        ).json();
-
+        const req = await this.fetchBlockbook(`/api/v2/api`);
+        const { backend } = await req.json();
         return backend.blocks;
     }
 
@@ -163,48 +146,9 @@ export class ExplorerNetwork extends Network {
      * @returns {Promise<string>} - Block hash
      */
     async getBestBlockHash() {
-        const { backend } = await (
-            await retryWrapper(this.fetchBlockbook, true, `/api/v2/api`)
-        ).json();
-
+        const req = await this.fetchBlockbook(`/api/v2/api`);
+        const { backend } = await req.json();
         return backend.bestBlockHash;
-    }
-
-    /**
-     * Sometimes blockbook might return internal error, in this case this function will sleep for some times and retry
-     * @param {string} strCommand - The specific Blockbook api to call
-     * @param {number} sleepTime - How many milliseconds sleep between two calls. Default value is 20000ms
-     * @returns {Promise<Object>} Explorer result in json
-     */
-    async safeFetchFromExplorer(strCommand, sleepTime = 20000) {
-        let trials = 0;
-        const maxTrials = 6;
-        let error;
-        while (trials < maxTrials) {
-            trials += 1;
-            const res = await retryWrapper(
-                this.fetchBlockbook,
-                true,
-                strCommand
-            );
-            if (!res.ok) {
-                try {
-                    error = (await res.json()).error;
-                } catch (e) {
-                    error = 'Cannot safe fetch from explorer!';
-                }
-                debugLog(
-                    DebugTopics.NET,
-                    'Blockbook internal error! sleeping for ' +
-                        sleepTime +
-                        ' seconds'
-                );
-                await sleep(sleepTime);
-                continue;
-            }
-            return await res.json();
-        }
-        throw new Error(error);
     }
 
     /**
@@ -221,7 +165,8 @@ export class ExplorerNetwork extends Network {
         }
         const strRoot = `/api/v2/${isXPub(addr) ? 'xpub/' : 'address/'}${addr}`;
         const strCoreParams = `?details=txs&from=${nStartHeight}&pageSize=${pageSize}&page=${n}`;
-        return await this.safeFetchFromExplorer(strRoot + strCoreParams);
+        const req = await this.fetchBlockbook(strRoot + strCoreParams);
+        return await req.json();
     }
 
     /**
@@ -271,20 +216,10 @@ export class ExplorerNetwork extends Network {
      * @returns {Promise<Array<BlockbookUTXO>>} Resolves when it has finished fetching UTXOs
      */
     async getUTXOs(strAddress) {
-        try {
-            let publicKey = strAddress;
-            // Fetch UTXOs for the key
-            const arrUTXOs = await (
-                await retryWrapper(
-                    this.fetchBlockbook,
-                    true,
-                    `/api/v2/utxo/${publicKey}`
-                )
-            ).json();
-            return arrUTXOs;
-        } catch (e) {
-            debugError(DebugTopics.NET, e);
-        }
+        let publicKey = strAddress;
+        // Fetch UTXOs for the key
+        const req = await this.fetchBlockbook(`/api/v2/utxo/${publicKey}`);
+        return await req.json();
     }
 
     /**
@@ -293,27 +228,17 @@ export class ExplorerNetwork extends Network {
      * @returns {Promise<XPUBInfo>} - A JSON class of aggregated XPUB info
      */
     async getXPubInfo(strXPUB) {
-        return await (
-            await retryWrapper(
-                this.fetchBlockbook,
-                true,
-                `/api/v2/xpub/${strXPUB}`
-            )
-        ).json();
+        const req = await this.fetchBlockbook(`/api/v2/xpub/${strXPUB}`);
+        return await req.json();
     }
 
     async sendTransaction(hex) {
         try {
             const data = await (
-                await retryWrapper(
-                    this.fetchBlockbook,
-                    true,
-                    '/api/v2/sendtx/',
-                    {
-                        method: 'post',
-                        body: hex,
-                    }
-                )
+                await this.fetchBlockbook('/api/v2/sendtx/', {
+                    method: 'post',
+                    body: hex,
+                })
             ).json();
 
             // Throw and catch if the data is not a TXID
@@ -329,13 +254,23 @@ export class ExplorerNetwork extends Network {
     }
 
     async getTxInfo(txHash) {
-        const req = await retryWrapper(
-            this.fetchBlockbook,
-            true,
-            `/api/v2/tx/${txHash}`
-        );
+        const req = await this.fetchBlockbook(`/api/v2/tx/${txHash}`);
         return await req.json();
     }
+
+    /**
+     * A Fetch wrapper which uses the current Blockbook Network's base URL
+     * @param {string} api - The specific Blockbook api to call
+     * @param {RequestInit?} options - The Fetch options
+     * @returns {Promise<Response>} - The unresolved Fetch promise
+     */
+    fetchBlockbook(api, options) {
+        return fetch(this.strUrl + api, options);
+    }
+
+    /////////////////////////////////////////////////////////////////////
+    // TODO: REMOVE ALL FUNCTIONS BELOW THIS COMMENT ONCE #427 IS MERGED
+    /////////////////////////////////////////////////////////////////////
 
     /**
      * @return {Promise<Number[]>} The list of blocks which have at least one shield transaction
@@ -345,116 +280,22 @@ export class ExplorerNetwork extends Network {
     }
 
     /**
-     * A Fetch wrapper which uses the current Blockbook Network's base URL
-     * @param {string} api - The specific Blockbook api to call
-     * @param {RequestInit} options - The Fetch options
+     * A Fetch wrapper which uses the current Node's base URL
+     * @param {string} api - The specific Node api to call
+     * @param {RequestInit?} options - The Fetch options
      * @returns {Promise<Response>} - The unresolved Fetch promise
      */
-    fetchBlockbook(api, options) {
-        return fetch(this.strUrl + api, options);
+    fetchNode(api, options) {
+        return fetch(cNode.url + api, options);
     }
-}
-
-/**
- * @type {Network} - Current selected network
- */
-let currentNetwork = null;
-
-/**
- * @type {Array<Network>} - List of all available Networks
- */
-let networks = [];
-/**
- * Sets the network in use by MPW.
- * @param {ExplorerNetwork} network - network to use
- */
-export function setNetwork(strUrl) {
-    currentNetwork = networks.find((network) => (network.strUrl = strUrl));
-}
-
-export function setUpNetworks() {
-    networks = [];
-    for (let network of cChainParams.current.Explorers) {
-        networks.push(new ExplorerNetwork(network.url));
+    /**
+     * A safety-wrapped RPC interface for calling Node RPCs with automatic correction handling
+     * @param {string} api - The API endpoint to call
+     * @param {boolean} isText - Optionally parse the result as Text rather than JSON
+     * @returns {Promise<object|string>} - The RPC response; JSON by default, text if `isText` is true.
+     */
+    async callRPC(api, isText = false) {
+        const cRes = await this.fetchNode(api);
+        return isText ? await cRes.text() : await cRes.json();
     }
-}
-
-/**
- * Gets the network in use by MPW.
- * @returns {ExplorerNetwork?} Returns the network in use, may be null if MPW hasn't properly loaded yet.
- */
-export function getNetwork() {
-    return currentNetwork;
-}
-
-/**
- * A Fetch wrapper which uses the current Node's base URL
- * @param {string} api - The specific Node api to call
- * @param {RequestInit} options - The Fetch options
- * @returns {Promise<Response>} - The unresolved Fetch promise
- */
-export function fetchNode(api, options) {
-    return fetch(cNode.url + api, options);
-}
-
-/**
- * A wrapper for Blockbook and Node calls which can, in the event of an unresponsive instance,
- * seamlessly attempt the same call on multiple other instances until success.
- * @param {Function} func - The function to re-attempt with
- * @param {boolean} isExplorer - Whether this is an Explorer or Node call
- * @param  {...any} args - The arguments to pass to the function
- */
-export async function retryWrapper(func, isExplorer, ...args) {
-    // Track internal errors from the wrapper
-    let err;
-
-    // Select the instances list to use - Explorers or Nodes
-    const arrInstances = isExplorer
-        ? cChainParams.current.Explorers
-        : cChainParams.current.Nodes;
-
-    // If allowed by the user, Max Tries is ALL MPW-supported instances, otherwise, restrict to only the current one.
-    let nMaxTries = arrInstances.length + 1;
-    let retries = 0;
-
-    // The instance index we started at
-    let nIndex = arrInstances.findIndex((a) =>
-        a.url === isExplorer ? getNetwork().strUrl : cNode.url
-    );
-
-    // Run the call until successful, or all attempts exhausted
-    while (retries < nMaxTries) {
-        try {
-            // Call the passed function with the arguments
-            const res = await func(...args);
-
-            // If the endpoint is non-OK, assume it's an error
-            if (!res.ok) throw new Error(res.statusText);
-
-            // Return the result if successful
-            return res;
-        } catch (error) {
-            err = error;
-
-            // If allowed, switch instances
-            if (!fAutoSwitch) throw err;
-            nIndex = (nIndex + 1) % arrInstances.length;
-            const cNewInstance = arrInstances[nIndex];
-
-            if (isExplorer) {
-                // Set the explorer at Network-class level, then as a hacky workaround for the current callback; we
-                // ... adjust the internal URL to the new explorer.
-                await setExplorer(cNewInstance, true);
-            } else {
-                // For the Node, we change the setting directly
-                setNode(cNewInstance, true);
-            }
-
-            // Bump the attempts, and re-try next loop
-            retries++;
-        }
-    }
-
-    // Throw an error so the calling code knows the operation failed
-    throw err;
 }

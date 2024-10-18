@@ -7,7 +7,6 @@ import {
 } from './global.js';
 import { wallet, hasEncryptedWallet } from './wallet.js';
 import { cChainParams } from './chain_params.js';
-import { setNetwork, ExplorerNetwork, getNetwork } from './network.js';
 import { confirmPopup } from './misc.js';
 import {
     switchTranslation,
@@ -20,6 +19,7 @@ import { createAlert } from './alerts/alert.js';
 import { Database } from './database.js';
 import { getEventEmitter } from './event_bus.js';
 import countries from 'country-locale-map/countries.json';
+import { networkManager } from './network_manager.js';
 
 // --- Default Settings
 /** A mode that emits verbose console info for internal MPW operations */
@@ -220,7 +220,7 @@ export async function setExplorer(explorer) {
     const database = await Database.getInstance();
     await database.setSettings({ explorer: explorer.url });
     cExplorer = explorer;
-    setNetwork(cExplorer.url);
+    networkManager.setNetwork(cExplorer.url);
 
     // Update the selector UI
     doms.domExplorerSelect.value = cExplorer.url;
