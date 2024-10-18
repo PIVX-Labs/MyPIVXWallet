@@ -701,7 +701,29 @@ export class Wallet {
         // This is just to be sure since blockbook (as we know)
         // usually does not return txs of the actual last block.
         this.#lastProcessedBlock = blockCount - 5;
-        await this.#transparentSync();
+        // Transparent sync is inherently less stable than Shield since it requires heavy
+        // explorer indexing, so we'll attempt once asynchronously, and if it fails, set a
+        // recurring "background" sync interval until it's finally successful.
+        try {
+            await this.#transparentSync();
+        } catch {
+            // We'll set a 5s interval sync until it's finally successful, then nuke the 'thread'.
+            const cThread = new AsyncInterval(async () => {
+                try {
+                    await this.#transparentSync(true);
+                    cThread.clearInterval();
+                } catch {
+                    // Emit a transparent sync warning
+                    getEventEmitter().emit(
+                        'transparent-sync-status-update',
+                        0,
+                        0,
+                        false,
+                        'Explorers are unreachable, your wallet may not be fully synced!'
+                    );
+                }
+            }, 5000);
+        }
         if (this.hasShield()) {
             await this.#syncShield();
         }
@@ -712,8 +734,12 @@ export class Wallet {
         getEventEmitter().emit('new-tx');
     });
 
-    async #transparentSync() {
-        if (!this.isLoaded() || this.#isSynced) return;
+    /**
+     * Synchronise UTXOs via xpub/address from the current explorer.
+     * @param {boolean} [force=false] - Force transparent sync, regardless of state
+     */
+    async #transparentSync(force = false) {
+        if ((!this.isLoaded() || this.#isSynced) && !force) return;
         const cNet = getNetwork();
         const addr = this.getKeyToExport();
         let nStartHeight = Math.max(
