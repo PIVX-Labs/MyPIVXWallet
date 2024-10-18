@@ -47,6 +47,30 @@ export class Network {
         }
     }
 
+    async getBlock(blockHeight, skipCoinstake) {
+        throw new Error('getBlockCount must be implemented');
+    }
+
+    async getTxPage(nStartHeight, addr, n) {
+        throw new Error('getTxPage must be implemented');
+    }
+
+    async getNumPages(nStartHeight, addr) {
+        throw new Error('getNumPages must be implemented');
+    }
+
+    async getUTXOs(strAddress) {
+        throw new Error('getUTXOs must be implemented');
+    }
+
+    async getXPubInfo(strXPUB) {
+        throw new Error('getXPubInfo must be implemented');
+    }
+
+    async getShieldBlockList() {
+        throw new Error('getShieldBlockList must be implemented');
+    }
+
     getBlockCount() {
         throw new Error('getBlockCount must be implemented');
     }
@@ -55,7 +79,7 @@ export class Network {
         throw new Error('getBestBlockHash must be implemented');
     }
 
-    sendTransaction() {
+    sendTransaction(hex) {
         throw new Error('sendTransaction must be implemented');
     }
 
