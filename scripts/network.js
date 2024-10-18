@@ -100,7 +100,7 @@ export class Network {
 }
 
 /**
- *
+ * Network realization with a blockbook Explorer
  */
 export class ExplorerNetwork extends Network {
     /**
