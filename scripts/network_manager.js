@@ -3,6 +3,7 @@ import { cChainParams } from './chain_params.js';
 import { fAutoSwitch } from './settings.js';
 import { debugLog, DebugTopics } from './debug.js';
 import { sleep } from './utils.js';
+import { getEventEmitter } from './event_bus.js';
 
 class NetWorkManager {
     /**
@@ -146,10 +147,22 @@ class NetWorkManager {
     }
 
     async sendTransaction(hex) {
-        return await this.retryWrapper(
-            this.currentNetwork.sendTransaction,
-            hex
-        );
+        try {
+            const data = await this.retryWrapper(
+                this.currentNetwork.sendTransaction,
+                hex
+            );
+
+            // Throw and catch if the data is not a TXID
+            if (!data.result || data.result.length !== 64) throw data;
+
+            debugLog(DebugTopics.NET, 'Transaction sent! ' + data.result);
+            getEventEmitter().emit('transaction-sent', true, data.result);
+            return data.result;
+        } catch (e) {
+            getEventEmitter().emit('transaction-sent', false, e);
+            return false;
+        }
     }
 
     async getTxInfo(_txHash) {

@@ -1,6 +1,4 @@
-import { debugLog, DebugTopics } from './debug.js';
 import { isStandardAddress, isXPub } from './misc.js';
-import { getEventEmitter } from './event_bus.js';
 import { cNode } from './settings.js';
 import { Transaction } from './transaction.js';
 
@@ -233,24 +231,11 @@ export class ExplorerNetwork extends Network {
     }
 
     async sendTransaction(hex) {
-        try {
-            const data = await (
-                await this.fetchBlockbook('/api/v2/sendtx/', {
-                    method: 'post',
-                    body: hex,
-                })
-            ).json();
-
-            // Throw and catch if the data is not a TXID
-            if (!data.result || data.result.length !== 64) throw data;
-
-            debugLog(DebugTopics.NET, 'Transaction sent! ' + data.result);
-            getEventEmitter().emit('transaction-sent', true, data.result);
-            return data.result;
-        } catch (e) {
-            getEventEmitter().emit('transaction-sent', false, e);
-            return false;
-        }
+        const req = await this.fetchBlockbook('/api/v2/sendtx/', {
+            method: 'post',
+            body: hex,
+        });
+        return await req.json();
     }
 
     async getTxInfo(txHash) {
