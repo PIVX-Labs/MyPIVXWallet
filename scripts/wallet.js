@@ -786,7 +786,7 @@ export class Wallet {
             await startBatch(
                 async (i) => {
                     let block;
-                    block = await cNet.getBlock(blockHeights[i], true);
+                    block = await cNet.getBlock(blockHeights[i]);
                     downloaded++;
                     blocks[i] = block;
                     // We need to process blocks monotically

@@ -92,12 +92,11 @@ export class ExplorerNetwork extends Network {
     }
 
     /**
-     * Fetch a block from the explorer given the height
+     * Fetch a block from the current node given the height
      * @param {number} blockHeight
-     * @param {boolean} skipCoinstake - if true coinstake tx will be skipped
-     * @returns {Promise<Object>} the block fetched from explorer
+     * @returns {Promise<Object>} the block
      */
-    async getBlock(blockHeight, skipCoinstake = false) {
+    async getBlock(blockHeight) {
         // First we fetch the blockhash (and strip RPC's quotes)
         const strHash = (
             await this.callRPC(`/getblockhash?params=${blockHeight}`, true)
