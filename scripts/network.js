@@ -66,15 +66,15 @@ export class Network {
         throw new Error('getShieldBlockList must be implemented');
     }
 
-    getBlockCount() {
+    async getBlockCount() {
         throw new Error('getBlockCount must be implemented');
     }
 
-    getBestBlockHash() {
+    async getBestBlockHash() {
         throw new Error('getBestBlockHash must be implemented');
     }
 
-    sendTransaction(hex) {
+    async sendTransaction(hex) {
         throw new Error('sendTransaction must be implemented');
     }
 
