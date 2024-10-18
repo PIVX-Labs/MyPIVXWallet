@@ -1,15 +1,12 @@
 <script setup>
 import { cChainParams, COIN } from '../chain_params.js';
-import { tr, translation } from '../i18n';
-import { ref, computed, toRefs, onMounted, watch } from 'vue';
+import { translation } from '../i18n';
+import { ref, computed, toRefs } from 'vue';
 import { beautifyNumber } from '../misc';
 import { getEventEmitter } from '../event_bus';
-import { optimiseCurrencyLocale, openExplorer } from '../global';
+import { optimiseCurrencyLocale } from '../global';
 import { renderWalletBreakdown } from '../charting.js';
-import {
-    guiRenderCurrentReceiveModal,
-    guiRenderContacts,
-} from '../contacts-book';
+import { guiRenderCurrentReceiveModal } from '../contacts-book';
 import { getNewAddress } from '../wallet.js';
 import LoadingBar from '../Loadingbar.vue';
 import { sleep } from '../utils.js';
@@ -133,7 +130,12 @@ const emit = defineEmits([
 
 getEventEmitter().on(
     'transparent-sync-status-update',
-    (str, progress, finished) => {
+    (i, totalPages, finished) => {
+        const str = tr(translation.syncStatusHistoryProgress, [
+            { current: totalPages - i + 1 },
+            { total: totalPages },
+        ]);
+        const progress = ((totalPages - i) / totalPages) * 100;
         syncTStr.value = str;
         transparentProgressSyncing.value = progress;
         transparentSyncing.value = !finished;

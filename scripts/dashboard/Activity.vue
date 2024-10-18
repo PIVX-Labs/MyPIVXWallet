@@ -1,8 +1,8 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
-import { getNetwork } from '../network.js';
+import { useNetwork } from '../composables/use_network.js';
 import { wallet } from '../wallet.js';
-import { COIN, cChainParams } from '../chain_params.js';
+import { cChainParams } from '../chain_params.js';
 import { translation } from '../i18n.js';
 import { Database } from '../database.js';
 import { HistoricalTx, HistoricalTxType } from '../historical_tx.js';
@@ -12,7 +12,6 @@ import { beautifyNumber } from '../misc';
 
 import iCheck from '../../assets/icons/icon-check.svg';
 import iHourglass from '../../assets/icons/icon-hourglass.svg';
-import { blockCount, optimiseCurrencyLocale } from '../global.js';
 
 const props = defineProps({
     title: String,
@@ -26,7 +25,10 @@ const isHistorySynced = ref(false);
 const rewardAmount = ref(0);
 let nRewardUpdateHeight = 0;
 const ticker = computed(() => cChainParams.current.TICKER);
-const explorerUrl = ref(getNetwork()?.strUrl);
+const network = useNetwork();
+function getActivityUrl(tx) {
+    return network.explorerUrl + '/tx/' + tx.id;
+}
 const txMap = computed(() => {
     return {
         [HistoricalTxType.STAKE]: {
@@ -63,13 +65,10 @@ const txMap = computed(() => {
 });
 
 async function update(txToAdd = 0) {
-    const cNet = getNetwork();
     // Return if wallet is not synced yet
     if (!wallet.isSynced) {
         return;
     }
-
-    explorerUrl.value = cNet?.strUrl;
 
     // Prevent the user from spamming refreshes
     if (updating.value) return;
@@ -175,11 +174,6 @@ async function parseTXs(arrTXs) {
         // Update the time cache
         prevTimestamp = cTx.time * 1000;
 
-        // Coinbase Transactions (rewards) require coinbaseMaturity confs
-        const fConfirmed =
-            blockCount - cTx.blockHeight >=
-            (props.rewards ? cChainParams.current.coinbaseMaturity : 6);
-
         // Choose the content type, for the Dashboard; use a generative description, otherwise, a TX-ID
         // let txContent = props.rewards ? cTx.id : 'Block Reward';
 
@@ -248,7 +242,7 @@ async function parseTXs(arrTXs) {
             content: props.rewards ? cTx.id : content,
             formattedAmt,
             amount: cTx.amount,
-            confirmed: fConfirmed,
+            confirmed: cTx.isConfirmed,
             icon,
             colour,
         });
@@ -275,7 +269,7 @@ function getTxCount() {
 
 getEventEmitter().on(
     'transparent-sync-status-update',
-    (_str, progress, done) => done && update()
+    (i, totalPages, done) => done && update()
 );
 getEventEmitter().on(
     'shield-sync-status-update',
@@ -347,7 +341,7 @@ defineExpose({ update, reset, getTxCount });
                                 </td>
                                 <td class="align-middle pr-10px txcode">
                                     <a
-                                        :href="explorerUrl + '/tx/' + tx.id"
+                                        :href="getActivityUrl(tx)"
                                         target="_blank"
                                         rel="noopener noreferrer"
                                     >
