@@ -88,6 +88,7 @@ class NetWorkManager {
                         sleepTime +
                         ' seconds'
                 );
+                await sleep(sleepTime);
             }
         }
         throw new Error('Cannot safe fetch');
