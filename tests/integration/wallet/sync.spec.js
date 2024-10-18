@@ -22,7 +22,7 @@ vi.mock('../../../scripts/network.js');
  * @param{number} value - amounts to transfer
  * @returns {Promise<void>}
  */
-async function crateAndSendTransaction(wallet, address, value) {
+async function createAndSendTransaction(wallet, address, value) {
     const tx = wallet.createTransaction(address, value);
     await wallet.sign(tx);
     expect(getNetwork().sendTransaction(tx.serialize())).toBeTruthy();
@@ -65,7 +65,7 @@ describe('Wallet sync tests', () => {
     it('Basic 2 wallets sync test', async () => {
         // --- Verify that funds are received after sending a transaction ---
         // The legacy wallet sends the HD wallet 0.05 PIVs
-        await crateAndSendTransaction(
+        await createAndSendTransaction(
             walletLegacy,
             walletHD.getCurrentAddress(),
             0.05 * 10 ** 8
@@ -77,7 +77,7 @@ describe('Wallet sync tests', () => {
 
         // Sends funds back to the legacy wallet and verify that he also correctly receives funds
         const legacyBalance = walletLegacy.balance;
-        await crateAndSendTransaction(
+        await createAndSendTransaction(
             walletHD,
             walletLegacy.getCurrentAddress(),
             1 * 10 ** 8
@@ -100,7 +100,7 @@ describe('Wallet sync tests', () => {
                 path.slice(0, -1) + String(nAddress)
             );
             // Create a Tx to the new account address
-            await crateAndSendTransaction(
+            await createAndSendTransaction(
                 walletLegacy,
                 newAddress,
                 0.01 * 10 ** 8
