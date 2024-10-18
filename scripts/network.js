@@ -152,7 +152,7 @@ export class ExplorerNetwork extends Network {
      */
     async getBlockCount() {
         const { backend } = await (
-            await retryWrapper(fetchBlockbook, true, `/api/v2/api`)
+            await retryWrapper(this.fetchBlockbook, true, `/api/v2/api`)
         ).json();
 
         return backend.blocks;
@@ -164,7 +164,7 @@ export class ExplorerNetwork extends Network {
      */
     async getBestBlockHash() {
         const { backend } = await (
-            await retryWrapper(fetchBlockbook, true, `/api/v2/api`)
+            await retryWrapper(this.fetchBlockbook, true, `/api/v2/api`)
         ).json();
 
         return backend.bestBlockHash;
@@ -182,7 +182,11 @@ export class ExplorerNetwork extends Network {
         let error;
         while (trials < maxTrials) {
             trials += 1;
-            const res = await retryWrapper(fetchBlockbook, true, strCommand);
+            const res = await retryWrapper(
+                this.fetchBlockbook,
+                true,
+                strCommand
+            );
             if (!res.ok) {
                 try {
                     error = (await res.json()).error;
@@ -272,7 +276,7 @@ export class ExplorerNetwork extends Network {
             // Fetch UTXOs for the key
             const arrUTXOs = await (
                 await retryWrapper(
-                    fetchBlockbook,
+                    this.fetchBlockbook,
                     true,
                     `/api/v2/utxo/${publicKey}`
                 )
@@ -290,17 +294,26 @@ export class ExplorerNetwork extends Network {
      */
     async getXPubInfo(strXPUB) {
         return await (
-            await retryWrapper(fetchBlockbook, true, `/api/v2/xpub/${strXPUB}`)
+            await retryWrapper(
+                this.fetchBlockbook,
+                true,
+                `/api/v2/xpub/${strXPUB}`
+            )
         ).json();
     }
 
     async sendTransaction(hex) {
         try {
             const data = await (
-                await retryWrapper(fetchBlockbook, true, '/api/v2/sendtx/', {
-                    method: 'post',
-                    body: hex,
-                })
+                await retryWrapper(
+                    this.fetchBlockbook,
+                    true,
+                    '/api/v2/sendtx/',
+                    {
+                        method: 'post',
+                        body: hex,
+                    }
+                )
             ).json();
 
             // Throw and catch if the data is not a TXID
@@ -317,7 +330,7 @@ export class ExplorerNetwork extends Network {
 
     async getTxInfo(txHash) {
         const req = await retryWrapper(
-            fetchBlockbook,
+            this.fetchBlockbook,
             true,
             `/api/v2/tx/${txHash}`
         );
@@ -329,6 +342,16 @@ export class ExplorerNetwork extends Network {
      */
     async getShieldBlockList() {
         return await this.callRPC('/getshieldblocks');
+    }
+
+    /**
+     * A Fetch wrapper which uses the current Blockbook Network's base URL
+     * @param {string} api - The specific Blockbook api to call
+     * @param {RequestInit} options - The Fetch options
+     * @returns {Promise<Response>} - The unresolved Fetch promise
+     */
+    fetchBlockbook(api, options) {
+        return fetch(this.strUrl + api, options);
     }
 }
 
@@ -362,16 +385,6 @@ export function setUpNetworks() {
  */
 export function getNetwork() {
     return currentNetwork;
-}
-
-/**
- * A Fetch wrapper which uses the current Blockbook Network's base URL
- * @param {string} api - The specific Blockbook api to call
- * @param {RequestInit} options - The Fetch options
- * @returns {Promise<Response>} - The unresolved Fetch promise
- */
-export function fetchBlockbook(api, options) {
-    return fetch(currentNetwork.strUrl + api, options);
 }
 
 /**
