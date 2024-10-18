@@ -5,6 +5,7 @@ A patch for MPW v2.0, primarily resolving stability, performance and minor UX is
 - Persistant Wallet Mode.
 - Shield sync is visually smoother.
 - Shield sync is persisted better between restarts.
+- Automatic Node switching.
 - Faster TXDB initialisation.
 
 # Removals
