@@ -216,28 +216,20 @@ function subscribeToNetworkEvents() {
 }
 
 // --- Settings Functions
-export async function setExplorer(explorer, fSilent = false) {
+export async function setExplorer(explorer) {
     const database = await Database.getInstance();
     await database.setSettings({ explorer: explorer.url });
     cExplorer = explorer;
-
-    // Enable networking + notify if allowed
-    if (getNetwork()) {
-        getNetwork().strUrl = cExplorer.url;
-    } else {
-        const network = new ExplorerNetwork(cExplorer.url);
-        setNetwork(network);
-    }
+    setNetwork(cExplorer.url);
 
     // Update the selector UI
     doms.domExplorerSelect.value = cExplorer.url;
 
-    if (!fSilent)
-        createAlert(
-            'success',
-            tr(ALERTS.SWITCHED_EXPLORERS, [{ explorerName: cExplorer.name }]),
-            2250
-        );
+    createAlert(
+        'success',
+        tr(ALERTS.SWITCHED_EXPLORERS, [{ explorerName: cExplorer.name }]),
+        2250
+    );
     getEventEmitter().emit('explorer_changed', cExplorer.url);
 }
 

@@ -332,14 +332,28 @@ export class ExplorerNetwork extends Network {
     }
 }
 
-let _network = null;
+/**
+ * @type {Network} - Current selected network
+ */
+let currentNetwork = null;
 
+/**
+ * @type {Array<Network>} - List of all available Networks
+ */
+let networks = [];
 /**
  * Sets the network in use by MPW.
  * @param {ExplorerNetwork} network - network to use
  */
-export function setNetwork(network) {
-    _network = network;
+export function setNetwork(strUrl) {
+    currentNetwork = networks.find((network) => (network.strUrl = strUrl));
+}
+
+export function setUpNetworks() {
+    networks = [];
+    for (let network of cChainParams.current.Explorers) {
+        networks.push(new ExplorerNetwork(network.url));
+    }
 }
 
 /**
@@ -347,7 +361,7 @@ export function setNetwork(network) {
  * @returns {ExplorerNetwork?} Returns the network in use, may be null if MPW hasn't properly loaded yet.
  */
 export function getNetwork() {
-    return _network;
+    return currentNetwork;
 }
 
 /**
@@ -357,7 +371,7 @@ export function getNetwork() {
  * @returns {Promise<Response>} - The unresolved Fetch promise
  */
 export function fetchBlockbook(api, options) {
-    return fetch(_network.strUrl + api, options);
+    return fetch(currentNetwork.strUrl + api, options);
 }
 
 /**
