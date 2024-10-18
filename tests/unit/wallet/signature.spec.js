@@ -13,7 +13,7 @@ import {
 } from '../../../scripts/transaction.js';
 import { hexToBytes } from '../../../scripts/utils';
 
-vi.mock('../../../scripts/network.js');
+vi.mock('../../../scripts/network_manager.js');
 vi.mock('../../../scripts/global.js');
 
 describe('Wallet signature tests', () => {
