@@ -107,13 +107,7 @@ export class ExplorerNetwork extends Network {
             '&filter=' +
             encodeURI(`. | .txs = [.tx[] | { hex: .hex, txid: .txid}]`);
         // Fetch the full block (verbose)
-        const block = await this.callRPC(
-            `/getblock?params=${strHash},2${strFilter}`
-        );
-        // Always skip the coinbase transaction and in case the coinstake one
-        // TODO: once v6.0 and shield stake is activated we might need to change this optimization
-        block.txs = block.txs.slice(skipCoinstake ? 2 : 1);
-        return block;
+        return await this.callRPC(`/getblock?params=${strHash},2${strFilter}`);
     }
 
     /**
