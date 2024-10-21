@@ -689,20 +689,38 @@ export class Wallet {
         }
         return histTXs;
     }
-    sync = lockableFunction(async () => {
-        if (!this.isLoaded()) {
-            throw new Error('Attempting to sync without a wallet loaded');
-        }
+
+    /**
+     * Sync the wallet
+     */
+    async sync() {
         if (this.#isSynced) {
             throw new Error('Attempting to sync when already synced');
+        }
+        if (!this.isLoaded()) {
+            throw new Error('Attempting to sync without a wallet loaded');
         }
         // While syncing the wallet (DB read + network sync) disable the event balance-update
         // This is done to avoid a huge spam of event.
         getEventEmitter().disableEvent('balance-update');
+        await this.#syncInternal();
+        const networkSaplingRoot = (
+            await getNetwork().getBlock(this.#shield.getLastSyncedBlock())
+        ).finalsaplingroot;
+        if (networkSaplingRoot) {
+            while (!(await this.#checkShieldSaplingRoot(networkSaplingRoot))) {}
+        }
+        this.#isSynced = true;
+        // Update both activities post sync
+        getEventEmitter().enableEvent('balance-update');
+        getEventEmitter().emit('balance-update');
+        getEventEmitter().emit('new-tx');
+    }
 
+    #syncInternal = lockableFunction(async () => {
         await this.loadFromDisk();
         await this.loadShieldFromDisk();
-        this.#lastProcessedBlock = blockCount;
+        this.#lastProcessedBlock = await getNetwork().getBlockHeight();
         // Transparent sync is inherently less stable than Shield since it requires heavy
         // explorer indexing, so we'll attempt once asynchronously, and if it fails, set a
         // recurring "background" sync interval until it's finally successful.
@@ -727,13 +745,9 @@ export class Wallet {
             }, 5000);
         }
         if (this.hasShield()) {
-            await this.#syncShield();
+            await this.#syncShield(this.#lastProcessedBlock);
+            await this.getLatestBlocks(await getNetwork().getBlockCount());
         }
-        this.#isSynced = true;
-        // Update both activities post sync
-        getEventEmitter().enableEvent('balance-update');
-        getEventEmitter().emit('balance-update');
-        getEventEmitter().emit('new-tx');
     });
 
     /**
@@ -769,15 +783,16 @@ export class Wallet {
 
     /**
      * Initial block and prover sync for the shield object
+     * @param {number} blockHeight - Height at which we stop syncing
      */
-    async #syncShield() {
+    async #syncShield(blockHeight = this.#lastProcessedBlock) {
         if (!this.#shield || this.#isSynced) {
             return;
         }
         const cNet = getNetwork();
         try {
             const blockHeights = (await cNet.getShieldBlockList()).filter(
-                (b) => b > this.#shield.getLastSyncedBlock()
+                (b) => b > this.#shield.getLastSyncedBlock() && b <= blockHeight
             );
             const batchSize = SHIELD_BATCH_SYNC_SIZE;
             let handled = 0;
@@ -823,11 +838,7 @@ export class Wallet {
 
         // At this point it should be safe to assume that shield is ready to use
         await this.saveShieldOnDisk();
-        const networkSaplingRoot = (
-            await getNetwork().getBlock(this.#shield.getLastSyncedBlock())
-        ).finalsaplingroot;
-        if (networkSaplingRoot)
-            await this.#checkShieldSaplingRoot(networkSaplingRoot);
+
         this.#isSynced = true;
     }
 
@@ -912,7 +923,7 @@ export class Wallet {
             // SHIELD-only checks
             if (this.hasShield()) {
                 if (block?.finalSaplingRoot) {
-                    if (
+                    while (
                         !(await this.#checkShieldSaplingRoot(
                             block.finalsaplingroot
                         ))
@@ -929,13 +940,13 @@ export class Wallet {
             hexToBytes(await this.#shield.getSaplingRoot()).reverse()
         );
         // If explorer sapling root is different from ours, there must be a sync error
+        // This can happen for example if an explorer is forked and we switched to another one
         if (saplingRoot !== networkSaplingRoot) {
             createAlert('warning', translation.badSaplingRoot, 5000);
             this.#mempool = new Mempool();
-            // TODO: take the wallet creation height in input from users
+            // Resync from scratch
             await this.#shield.reloadFromCheckpoint(4200000);
-            await this.#transparentSync();
-            await this.#syncShield();
+            await this.#syncInternal();
             return false;
         }
         return true;

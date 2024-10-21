@@ -118,6 +118,17 @@ export class ExplorerNetwork extends Network {
     }
 
     /**
+     * FIXME this is going to be merged in getBlockCount once explorer and RPC are separated
+     * @returns {number} last indexed block of blockbook
+     */
+    async getBlockHeight() {
+        const { blockbook } = await (
+            await retryWrapper(fetchBlockbook, true, `/api/v2/api`)
+        ).json();
+        return blockbook.bestHeight;
+    }
+
+    /**
      * Fetch the latest block hash of the current explorer or fallback node
      * @returns {Promise<string>} - Block hash
      */
