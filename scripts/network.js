@@ -119,7 +119,7 @@ export class ExplorerNetwork extends Network {
 
     /**
      * FIXME this is going to be merged in getBlockCount once explorer and RPC are separated
-     * @returns {number} last indexed block of blockbook
+     * @returns {Promise<number>} last indexed block of blockbook
      */
     async getBlockHeight() {
         const { blockbook } = await (
