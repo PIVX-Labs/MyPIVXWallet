@@ -12,6 +12,7 @@ class TestNetwork {
     getBlockCount = vi.fn(() => {
         return this.#blockHeight;
     });
+    getBlockHeight = vi.fn(() => this.#blockHeight);
     /**
      * map blockHeight -> block
      * @type {Map<number, TestBlock>}

@@ -169,7 +169,7 @@ export class Wallet {
     }
 
     get isSyncing() {
-        return this.sync.isLocked();
+        return this.#syncInternal.isLocked();
     }
 
     wipePrivateData() {
@@ -704,12 +704,16 @@ export class Wallet {
         // This is done to avoid a huge spam of event.
         getEventEmitter().disableEvent('balance-update');
         await this.#syncInternal();
-        const networkSaplingRoot = (
-            await getNetwork().getBlock(this.#shield.getLastSyncedBlock())
-        ).finalsaplingroot;
-        if (networkSaplingRoot) {
-            while (!(await this.#checkShieldSaplingRoot(networkSaplingRoot))) {
-                /* checkShieldSaplingRoot automatically tries to resync */
+        if (this.hasShield()) {
+            const networkSaplingRoot = (
+                await getNetwork().getBlock(this.#shield.getLastSyncedBlock())
+            ).finalsaplingroot;
+            if (networkSaplingRoot) {
+                while (
+                    !(await this.#checkShieldSaplingRoot(networkSaplingRoot))
+                ) {
+                    /* checkShieldSaplingRoot automatically tries to resync */
+                }
             }
         }
         this.#isSynced = true;
