@@ -28,7 +28,7 @@ import {
     isColdAddress,
     isStandardAddress,
 } from '../misc.js';
-import { getNetwork } from '../network_manager.js';
+import { getNetwork } from '../network/network_manager.js';
 import { strHardwareName } from '../ledger';
 import { guiAddContactPrompt } from '../contacts-book';
 import { scanQRCode } from '../scanner';

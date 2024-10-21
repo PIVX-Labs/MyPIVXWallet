@@ -1,9 +1,9 @@
 import { ExplorerNetwork, Network } from './network.js';
-import { cChainParams } from './chain_params.js';
-import { fAutoSwitch } from './settings.js';
-import { debugLog, DebugTopics } from './debug.js';
-import { sleep } from './utils.js';
-import { getEventEmitter } from './event_bus.js';
+import { cChainParams } from '../chain_params.js';
+import { fAutoSwitch } from '../settings.js';
+import { debugLog, DebugTopics } from '../debug.js';
+import { sleep } from '../utils.js';
+import { getEventEmitter } from '../event_bus.js';
 
 class NetWorkManager {
     /**

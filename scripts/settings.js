@@ -19,7 +19,7 @@ import { createAlert } from './alerts/alert.js';
 import { Database } from './database.js';
 import { getEventEmitter } from './event_bus.js';
 import countries from 'country-locale-map/countries.json';
-import { networkManager } from './network_manager.js';
+import { networkManager } from './network/network_manager.js';
 
 // --- Default Settings
 /** A mode that emits verbose console info for internal MPW operations */

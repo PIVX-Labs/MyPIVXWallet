@@ -4,11 +4,11 @@ import { describe, it, beforeEach, vi } from 'vitest';
 import { useWallet } from '../../scripts/composables/use_wallet.js';
 import { hasEncryptedWallet, wallet } from '../../scripts/wallet.js';
 import { LegacyMasterKey } from '../../scripts/masterkey.js';
-import { getNetwork } from '../../scripts/network_manager.js';
+import { getNetwork } from '../../scripts/network/__mocks__/network_manager.js';
 import { strCurrency } from '../../scripts/settings.js';
 import { setUpLegacyMainnetWallet } from '../utils/test_utils';
 
-vi.mock('../../scripts/network_manager.js');
+vi.mock('../../scripts/network/network_manager.js');
 
 describe('useWallet tests', () => {
     let walletComposable;

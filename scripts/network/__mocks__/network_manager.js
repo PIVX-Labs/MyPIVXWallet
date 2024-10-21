@@ -1,6 +1,6 @@
 import { vi } from 'vitest';
-import { Transaction } from '../transaction.js';
-import { DebugTopics, debugWarn } from '../debug.js';
+import { Transaction } from '../../transaction.js';
+import { DebugTopics, debugWarn } from '../../debug.js';
 
 export const getNetwork = vi.fn(() => {
     return globalNetwork;

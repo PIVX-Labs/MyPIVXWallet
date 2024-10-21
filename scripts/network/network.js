@@ -1,6 +1,6 @@
-import { isStandardAddress, isXPub } from './misc.js';
-import { cNode } from './settings.js';
-import { Transaction } from './transaction.js';
+import { isStandardAddress, isXPub } from '../misc.js';
+import { cNode } from '../settings.js';
+import { Transaction } from '../transaction.js';
 
 /**
  * @typedef {Object} XPUBAddress

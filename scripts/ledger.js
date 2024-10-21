@@ -1,7 +1,7 @@
 import createXpub from 'create-xpub';
 import { ALERTS, tr } from './i18n.js';
 import { confirmPopup } from './misc.js';
-import { getNetwork } from './network_manager.js';
+import { getNetwork } from './network/network_manager.js';
 import { Transaction } from './transaction.js';
 import { COIN, cChainParams } from './chain_params.js';
 import { hexToBytes, bytesToHex } from './utils.js';

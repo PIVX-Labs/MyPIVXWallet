@@ -7,7 +7,7 @@ import { wallet, getNewAddress } from './wallet.js';
 import { cChainParams, COIN, COIN_DECIMALS } from './chain_params.js';
 import { generateMasternodePrivkey, confirmPopup } from './misc.js';
 import { Database } from './database.js';
-import { getNetwork } from './network_manager.js';
+import { getNetwork } from './network/network_manager.js';
 import { ledgerSignTransaction } from './ledger.js';
 import { createAlert } from './alerts/alert.js';
 

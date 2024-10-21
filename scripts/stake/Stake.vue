@@ -6,7 +6,7 @@ import Activity from '../dashboard/Activity.vue';
 import RestoreWallet from '../dashboard/RestoreWallet.vue';
 import { Database } from '../database';
 import { getEventEmitter } from '../event_bus';
-import { getNetwork } from '../network_manager';
+import { getNetwork } from '../network/network_manager';
 import StakeBalance from './StakeBalance.vue';
 import StakeInput from './StakeInput.vue';
 import { onMounted, ref, watch, nextTick } from 'vue';

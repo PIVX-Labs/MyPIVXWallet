@@ -2,7 +2,7 @@ import { validateMnemonic } from 'bip39';
 import { decrypt } from './aes-gcm.js';
 import { parseWIF } from './encoding.js';
 import { beforeUnloadListener, blockCount } from './global.js';
-import { getNetwork } from './network_manager.js';
+import { getNetwork } from './network/network_manager.js';
 import { MAX_ACCOUNT_GAP, SHIELD_BATCH_SYNC_SIZE } from './chain_params.js';
 import { HistoricalTx, HistoricalTxType } from './historical_tx.js';
 import { COutpoint, Transaction } from './transaction.js';
