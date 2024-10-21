@@ -746,8 +746,8 @@ export class Wallet {
         }
         if (this.hasShield()) {
             await this.#syncShield(this.#lastProcessedBlock);
-            await this.getLatestBlocks(await getNetwork().getBlockCount());
         }
+        await this.getLatestBlocks(await getNetwork().getBlockCount());
     });
 
     /**
