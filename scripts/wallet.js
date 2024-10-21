@@ -787,10 +787,8 @@ export class Wallet {
                             throw new Error('Failed to parse shield binary');
                         }
                     }
-                    console.log(processing.length - i);
                 }
 
-                console.log(blocksArray);
                 // Process the current batch of blocks before starting to parse the next one
                 await this.#shield.handleBlocks(blocksArray);
                 // Emit status update
