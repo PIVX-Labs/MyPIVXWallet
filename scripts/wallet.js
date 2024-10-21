@@ -35,6 +35,7 @@ import { TransactionBuilder } from './transaction_builder.js';
 import { createAlert } from './alerts/alert.js';
 import { AsyncInterval } from './async_interval.js';
 import { debugError, DebugTopics } from './debug.js';
+import { cNode } from './settings.js';
 
 /**
  * Class Wallet, at the moment it is just a "realization" of Masterkey with a given nAccount
@@ -753,7 +754,7 @@ export class Wallet {
 
         try {
             const req = await fetch(
-                `http://127.0.0.1:3000/mainnet/getshielddata?startBlock=${
+                `${cNode.url}/getshielddata?startBlock=${
                     wallet.#shield.getLastSyncedBlock() + 1
                 }`
             );
