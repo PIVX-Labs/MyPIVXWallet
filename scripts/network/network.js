@@ -41,12 +41,6 @@ export class Network {
         }
     }
 
-    lookupMethod(fName) {
-        if (fName == 'getShieldBlockList') {
-            return this.hasOwnProperty();
-        }
-    }
-
     async getBlock(blockHeight) {
         throw new Error('getBlockCount must be implemented');
     }
