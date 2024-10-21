@@ -1,6 +1,6 @@
 <script setup>
 import { cChainParams, COIN } from '../chain_params.js';
-import { translation } from '../i18n';
+import { translation, tr } from '../i18n';
 import { ref, computed, toRefs } from 'vue';
 import { beautifyNumber } from '../misc';
 import { getEventEmitter } from '../event_bus';
@@ -130,11 +130,13 @@ const emit = defineEmits([
 
 getEventEmitter().on(
     'transparent-sync-status-update',
-    (i, totalPages, finished) => {
-        const str = tr(translation.syncStatusHistoryProgress, [
-            { current: totalPages - i + 1 },
-            { total: totalPages },
-        ]);
+    (i, totalPages, finished, warning) => {
+        const str =
+            warning ||
+            tr(translation.syncStatusHistoryProgress, [
+                { current: totalPages - i + 1 },
+                { total: totalPages },
+            ]);
         const progress = ((totalPages - i) / totalPages) * 100;
         syncTStr.value = str;
         transparentProgressSyncing.value = progress;
@@ -510,16 +512,16 @@ function restoreWallet() {
                 </div>
                 <div style="width: 100%">
                     {{
-                        transparentSyncing
-                            ? syncTStr
-                            : `Syncing ${shieldBlockRemainingSyncing} Blocks...`
+                        shieldSyncing
+                            ? `Syncing ${shieldBlockRemainingSyncing} Blocks...`
+                            : syncTStr
                     }}
                     <LoadingBar
                         :show="true"
                         :percentage="
-                            transparentSyncing
-                                ? transparentProgressSyncing
-                                : shieldPercentageSyncing
+                            shieldSyncing
+                                ? shieldPercentageSyncing
+                                : transparentProgressSyncing
                         "
                         style="
                             border: 1px solid #932ecd;
