@@ -130,9 +130,9 @@ const emit = defineEmits([
 
 getEventEmitter().on(
     'transparent-sync-status-update',
-    (i, totalPages, finished, message) => {
+    (i, totalPages, finished, warning) => {
         const str =
-            message ||
+            warning ||
             tr(translation.syncStatusHistoryProgress, [
                 { current: totalPages - i + 1 },
                 { total: totalPages },
