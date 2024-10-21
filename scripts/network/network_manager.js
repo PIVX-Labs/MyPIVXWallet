@@ -1,15 +1,20 @@
 import { ExplorerNetwork, Network, RPCNodeNetwork } from './network.js';
 import { cChainParams } from '../chain_params.js';
 import { fAutoSwitch } from '../settings.js';
-import { debugLog, DebugTopics } from '../debug.js';
+import { debugLog, DebugTopics, debugWarn } from '../debug.js';
 import { sleep } from '../utils.js';
 import { getEventEmitter } from '../event_bus.js';
 
 class NetWorkManager {
     /**
-     * @type {Network} - Current selected network
+     * @type {Network} - Current selected Explorer
      */
-    currentNetwork;
+    currentExplorer;
+
+    /**
+     * @type {Network} - Current selected RPC node
+     */
+    currentNode;
 
     /**
      * @type {Array<Network>} - List of all available Networks
@@ -28,31 +33,44 @@ class NetWorkManager {
 
     /**
      * Sets the network in use by MPW.
-     * @param {ExplorerNetwork} network - network to use
+     * @param {string} strUrl - network to use
+     * @param {boolean} isRPC - whether we are setting the explorer or the RPC node
      */
-    setNetwork(strUrl) {
+    setNetwork(strUrl, isRPC) {
         if (this.networks.length === 0) {
             this.start();
         }
-        this.currentNetwork = this.networks.find(
+        const found = this.networks.find(
             (network) => network.strUrl === strUrl
         );
+        if (!found) throw new Error('Cannot find provided Network!');
+        if (isRPC) {
+            this.currentNode = found;
+        } else {
+            this.currentExplorer = found;
+        }
     }
 
     /**
      * Call all networks until one is succesful
      * seamlessly attempt the same call on multiple other instances until success.
      * @param {string} funcName - The function to re-attempt with
+     * @param {boolean} isRPC - Whether to begin with the selected explorer or RPC node
      * @param  {...any} args - The arguments to pass to the function
      */
-    async retryWrapper(funcName, ...args) {
+    async retryWrapper(funcName, isRPC, ...args) {
         let nMaxTries = this.networks.length;
-        let i = this.networks.findIndex((net) =>
-            this.currentNetwork.equal(net)
-        );
+        let attemptNet = isRPC
+            ? this.currentNode.copy()
+            : this.currentExplorer.copy();
+
+        let i = this.networks.findIndex((net) => attemptNet.equal(net));
+        if (i == -1) {
+            debugWarn(DebugTopics.NET, 'Cannot find index in networks array');
+            i = 0;
+        }
 
         // Run the call until successful, or all attempts exhausted
-        let attemptNet = this.currentNetwork.copy();
         for (let attempts = 1; attempts <= nMaxTries; attempts++) {
             try {
                 debugLog(
@@ -77,18 +95,19 @@ class NetWorkManager {
 
     /**
      * Sometimes blockbook might return internal error, in this case this function will sleep for some times and retry
-     * @param {string} strCommand - The specific Blockbook api to call
-     * @param {number} sleepTime - How many milliseconds sleep between two calls. Default value is 20000ms
+     * @param {string} funcName - The function to call
+     * @param {boolean} isRPC - Whether to begin with the selected explorer or RPC node
+     * @param  {...any} args - The arguments to pass to the function
      * @returns {Promise<Object>} Explorer result in json
      */
-    async safeFetch(funcName, ...args) {
+    async safeFetch(funcName, isRPC, ...args) {
         let trials = 0;
         const sleepTime = 20000;
         const maxTrials = 6;
         while (trials < maxTrials) {
             trials += 1;
             try {
-                return await this.retryWrapper(funcName, ...args);
+                return await this.retryWrapper(funcName, isRPC, ...args);
             } catch (e) {
                 debugLog(
                     DebugTopics.NET,
@@ -103,40 +122,40 @@ class NetWorkManager {
     }
 
     async getBlock(blockHeight) {
-        return await this.safeFetch('getBlock', blockHeight);
+        return await this.safeFetch('getBlock', true, blockHeight);
     }
 
     async getTxPage(nStartHeight, addr, n) {
-        return await this.safeFetch('getTxPage', nStartHeight, addr, n);
+        return await this.safeFetch('getTxPage', false, nStartHeight, addr, n);
     }
 
     async getNumPages(nStartHeight, addr) {
-        return await this.safeFetch('getNumPages', nStartHeight, addr);
+        return await this.safeFetch('getNumPages', false, nStartHeight, addr);
     }
 
     async getUTXOs(strAddress) {
-        return await this.retryWrapper('getUTXOs', strAddress);
+        return await this.retryWrapper('getUTXOs', false, strAddress);
     }
 
     async getXPubInfo(strXPUB) {
-        return await this.retryWrapper('getXPubInfo', strXPUB);
+        return await this.retryWrapper('getXPubInfo', false, strXPUB);
     }
 
     async getShieldBlockList() {
-        return await this.retryWrapper('getShieldBlockList');
+        return await this.retryWrapper('getShieldBlockList', true);
     }
 
     async getBlockCount() {
-        return await this.retryWrapper('getBlockCount');
+        return await this.retryWrapper('getBlockCount', true);
     }
 
     async getBestBlockHash() {
-        return await this.retryWrapper('getBestBlockHash');
+        return await this.retryWrapper('getBestBlockHash', true);
     }
 
     async sendTransaction(hex) {
         try {
-            const data = await this.retryWrapper('sendTransaction', hex);
+            const data = await this.retryWrapper('sendTransaction', true, hex);
 
             // Throw and catch if the data is not a TXID
             if (!data.result || data.result.length !== 64) throw data;
@@ -151,7 +170,7 @@ class NetWorkManager {
     }
 
     async getTxInfo(_txHash) {
-        return await this.retryWrapper('getTxInfo', _txHash);
+        return await this.retryWrapper('getTxInfo', false, _txHash);
     }
 }
 

@@ -220,7 +220,7 @@ export async function setExplorer(explorer) {
     const database = await Database.getInstance();
     await database.setSettings({ explorer: explorer.url });
     cExplorer = explorer;
-    networkManager.setNetwork(cExplorer.url);
+    networkManager.setNetwork(cExplorer.url, false);
 
     // Update the selector UI
     doms.domExplorerSelect.value = cExplorer.url;
@@ -235,6 +235,7 @@ export async function setExplorer(explorer) {
 
 export async function setNode(node, fSilent = false) {
     cNode = node;
+    networkManager.setNetwork(node.url, true);
     const database = await Database.getInstance();
     database.setSettings({ node: node.url });
 
