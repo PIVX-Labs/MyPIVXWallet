@@ -10,7 +10,8 @@ import {
     fAdvancedMode,
 } from './settings.js';
 import { createAndSendTransaction } from './legacy.js';
-import { createAlert, confirmPopup, sanitizeHTML } from './misc.js';
+import { createAlert } from './alerts/alert.js';
+import { confirmPopup, sanitizeHTML } from './misc.js';
 import { cChainParams, COIN } from './chain_params.js';
 import { sleep } from './utils.js';
 import { registerWorker } from './native.js';
@@ -21,6 +22,7 @@ import { checkForUpgrades } from './changelog.js';
 import { FlipDown } from './flipdown.js';
 import { createApp } from 'vue';
 import Dashboard from './dashboard/Dashboard.vue';
+import Alerts from './alerts/Alerts.vue';
 import { loadDebug, debugLog, DebugTopics, debugError } from './debug.js';
 import Stake from './stake/Stake.vue';
 import { createPinia } from 'pinia';
@@ -49,6 +51,7 @@ const pinia = createPinia();
 export const dashboard = createApp(Dashboard).use(pinia).mount('#DashboardTab');
 createApp(Stake).use(pinia).mount('#StakingTab');
 createApp(SideNavbar).use(pinia).mount('#SideNavbar');
+createApp(Alerts).use(pinia).mount('#Alerts');
 
 export async function start() {
     doms = {
@@ -384,6 +387,7 @@ export function optimiseCurrencyLocale(nAmount) {
 }
 
 /**
+ * //TODO: remove in Governance VUE PR
  * Open the Explorer in a new tab for the current wallet, or a specific address
  * @param {string?} strAddress - Optional address to open, if void, the master key is used
  */

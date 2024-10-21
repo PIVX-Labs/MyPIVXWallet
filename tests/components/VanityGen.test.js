@@ -4,18 +4,13 @@ import { expect } from 'vitest';
 import VanityGen from '../../scripts/dashboard/VanityGen.vue';
 import { vi, it, describe } from 'vitest';
 import * as translation from '../../scripts/i18n.js';
-import * as misc from '../../scripts/misc.js';
+import { AlertController } from '../../scripts/alerts/alert.js';
 
 describe('VanityGen tests', () => {
     beforeEach(() => {
         vi.spyOn(translation, 'tr').mockImplementation((message, variables) => {
             return message + variables[0].char;
         });
-        vi.spyOn(misc, 'createAlert').mockImplementation(
-            (type, message, timeout = 0) => {
-                return message;
-            }
-        );
         vi.spyOn(translation, 'ALERTS', 'get').mockReturnValue({
             UNSUPPORTED_WEBWORKERS: 'unsupported_web_worker',
             UNSUPPORTED_CHARACTER: 'unsupported_character',
@@ -26,6 +21,7 @@ describe('VanityGen tests', () => {
         vi.unstubAllGlobals();
     });
     it('Unsupported worker test', async () => {
+        const alertController = AlertController.getInstance();
         const wrapper = mount(VanityGen, {
             attachTo: document.getElementById('app'),
         });
@@ -37,9 +33,12 @@ describe('VanityGen tests', () => {
         await generateBtn.trigger('click');
         await nextTick();
         // We don't have a valid webworker
-        expect(misc.createAlert).toHaveReturnedWith('unsupported_web_worker');
+        expect(alertController.getAlerts().at(-1).message).toBe(
+            'unsupported_web_worker'
+        );
     });
     it('Vanity Gen test', async () => {
+        const alertController = AlertController.getInstance();
         // Mock the vanity gen worker
         // NB: we are taking for granted that the Worker of VanityGen works as intended,
         // and we are just mocking it with random stuff
@@ -88,8 +87,10 @@ describe('VanityGen tests', () => {
         //click again and verify the createAlert
         await generateBtn.trigger('click');
         await nextTick();
-        expect(misc.createAlert).toHaveBeenCalled();
-        expect(misc.createAlert).toHaveReturnedWith('unsupported_character%');
+        expect(alertController.getAlerts().at(-1).message).toBe(
+            'unsupported_character%'
+        );
+
         expect(generateBtn.isVisible()).toBeTruthy();
         expect(prefixInput.isVisible()).toBeTruthy();
         expect(wrapper.emitted('import-wallet')).toBeUndefined();
@@ -98,8 +99,10 @@ describe('VanityGen tests', () => {
         prefixInput.element.value = 'd%a$';
         prefixInput.trigger('input');
         await nextTick();
-        expect(misc.createAlert).toHaveBeenCalled();
-        expect(misc.createAlert).toHaveReturnedWith('unsupported_character$');
+
+        expect(alertController.getAlerts().at(-1).message).toBe(
+            'unsupported_character$'
+        );
 
         // Click again to stop the search
         await generateBtn.trigger('click');

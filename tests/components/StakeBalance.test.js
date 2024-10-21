@@ -1,12 +1,12 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import * as misc from '../../scripts/misc.js';
+import * as alert from '../../scripts/alerts/alert.js';
 import { nextTick } from 'vue';
 import { mount as vueMount } from '@vue/test-utils';
 import StakeBalance from '../../scripts/stake/StakeBalance.vue';
 import Modal from '../../scripts/Modal.vue';
 describe('stake balance tests', () => {
     beforeAll(() => {
-        vi.spyOn(misc, 'createAlert').mockImplementation(
+        vi.spyOn(alert, 'createAlert').mockImplementation(
             (type, message, timeout = 0) => {
                 return message;
             }
