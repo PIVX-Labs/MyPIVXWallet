@@ -116,12 +116,12 @@ export class RPCNodeNetwork extends Network {
      * @param {RequestInit?} options - The Fetch options
      * @returns {Promise<Response>} - The unresolved Fetch promise
      */
-    fetchNode(api, options) {
+    #fetchNode(api, options) {
         return fetch(this.strUrl + api, options);
     }
 
     async callRPC(api, isText = false) {
-        const cRes = await this.fetchNode(api);
+        const cRes = await this.#fetchNode(api);
         return isText ? await cRes.text() : await cRes.json();
     }
 
@@ -204,7 +204,7 @@ export class ExplorerNetwork extends Network {
      * @returns {Promise<number>} - Block height
      */
     async getBlockCount() {
-        const req = await this.fetchBlockbook(`/api/v2/api`);
+        const req = await this.#fetchBlockbook(`/api/v2/api`);
         const { backend } = await req.json();
         return backend.blocks;
     }
@@ -214,7 +214,7 @@ export class ExplorerNetwork extends Network {
      * @returns {Promise<string>} - Block hash
      */
     async getBestBlockHash() {
-        const req = await this.fetchBlockbook(`/api/v2/api`);
+        const req = await this.#fetchBlockbook(`/api/v2/api`);
         const { backend } = await req.json();
         return backend.bestBlockHash;
     }
@@ -233,7 +233,7 @@ export class ExplorerNetwork extends Network {
         }
         const strRoot = `/api/v2/${isXPub(addr) ? 'xpub/' : 'address/'}${addr}`;
         const strCoreParams = `?details=txs&from=${nStartHeight}&pageSize=${pageSize}&page=${n}`;
-        const req = await this.fetchBlockbook(strRoot + strCoreParams);
+        const req = await this.#fetchBlockbook(strRoot + strCoreParams);
         return await req.json();
     }
 
@@ -286,7 +286,7 @@ export class ExplorerNetwork extends Network {
     async getUTXOs(strAddress) {
         let publicKey = strAddress;
         // Fetch UTXOs for the key
-        const req = await this.fetchBlockbook(`/api/v2/utxo/${publicKey}`);
+        const req = await this.#fetchBlockbook(`/api/v2/utxo/${publicKey}`);
         return await req.json();
     }
 
@@ -296,12 +296,12 @@ export class ExplorerNetwork extends Network {
      * @returns {Promise<XPUBInfo>} - A JSON class of aggregated XPUB info
      */
     async getXPubInfo(strXPUB) {
-        const req = await this.fetchBlockbook(`/api/v2/xpub/${strXPUB}`);
+        const req = await this.#fetchBlockbook(`/api/v2/xpub/${strXPUB}`);
         return await req.json();
     }
 
     async sendTransaction(hex) {
-        const req = await this.fetchBlockbook('/api/v2/sendtx/', {
+        const req = await this.#fetchBlockbook('/api/v2/sendtx/', {
             method: 'post',
             body: hex,
         });
@@ -309,7 +309,7 @@ export class ExplorerNetwork extends Network {
     }
 
     async getTxInfo(txHash) {
-        const req = await this.fetchBlockbook(`/api/v2/tx/${txHash}`);
+        const req = await this.#fetchBlockbook(`/api/v2/tx/${txHash}`);
         return await req.json();
     }
 
@@ -319,7 +319,7 @@ export class ExplorerNetwork extends Network {
      * @param {RequestInit?} options - The Fetch options
      * @returns {Promise<Response>} - The unresolved Fetch promise
      */
-    fetchBlockbook(api, options) {
+    #fetchBlockbook(api, options) {
         return fetch(this.strUrl + api, options);
     }
 
