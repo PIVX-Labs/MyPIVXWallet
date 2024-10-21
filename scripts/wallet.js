@@ -289,8 +289,8 @@ export class Wallet {
     }
 
     /**
-     * Derive xpub (given nReceiving and nIndex)
-     * @return {boolean} Return true if a masterKey has been loaded in the wallet
+     * Check if the wallet (masterKey) is loaded in memory
+     * @return {boolean} Return `true` if a masterKey has been loaded in the wallet
      */
     isLoaded() {
         return !!this.#masterKey;
@@ -690,6 +690,9 @@ export class Wallet {
         return histTXs;
     }
     sync = lockableFunction(async () => {
+        if (!this.isLoaded()) {
+            throw new Error('Attempting to sync without a wallet loaded');
+        }
         if (this.#isSynced) {
             throw new Error('Attempting to sync when already synced');
         }
@@ -709,7 +712,7 @@ export class Wallet {
             // We'll set a 5s interval sync until it's finally successful, then nuke the 'thread'.
             const cThread = new AsyncInterval(async () => {
                 try {
-                    await this.#transparentSync(true);
+                    await this.#transparentSync();
                     cThread.clearInterval();
                 } catch {
                     // Emit a transparent sync warning
@@ -735,10 +738,8 @@ export class Wallet {
 
     /**
      * Synchronise UTXOs via xpub/address from the current explorer.
-     * @param {boolean} [force=false] - Force transparent sync, regardless of state
      */
-    async #transparentSync(force = false) {
-        if ((!this.isLoaded() || this.#isSynced) && !force) return;
+    async #transparentSync() {
         const cNet = getNetwork();
         const addr = this.getKeyToExport();
         let nStartHeight = Math.max(
