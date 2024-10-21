@@ -1,4 +1,4 @@
-import { ExplorerNetwork, Network } from './network.js';
+import { ExplorerNetwork, Network, RPCNodeNetwork } from './network.js';
 import { cChainParams } from '../chain_params.js';
 import { fAutoSwitch } from '../settings.js';
 import { debugLog, DebugTopics } from '../debug.js';
@@ -21,6 +21,9 @@ class NetWorkManager {
         for (let network of cChainParams.current.Explorers) {
             this.networks.push(new ExplorerNetwork(network.url));
         }
+        for (let network of cChainParams.current.Nodes) {
+            this.networks.push(new RPCNodeNetwork(network.url));
+        }
     }
 
     /**
@@ -39,21 +42,34 @@ class NetWorkManager {
     /**
      * Call all networks until one is succesful
      * seamlessly attempt the same call on multiple other instances until success.
-     * @param {Function} func - The function to re-attempt with
+     * @param {string} funcName - The function to re-attempt with
      * @param  {...any} args - The arguments to pass to the function
      */
-    async retryWrapper(func, ...args) {
-        const startingUrl = this.currentNetwork.strUrl;
+    async retryWrapper(funcName, ...args) {
+        const initialNetwork = this.currentNetwork.copy();
         let nMaxTries = this.networks.length;
-        let i = this.networks.findIndex((net) => net === this.currentNetwork);
+        let i = this.networks.findIndex((net) =>
+            this.currentNetwork.equal(net)
+        );
 
         // Run the call until successful, or all attempts exhausted
         try {
-            for (let attempts = 0; attempts < nMaxTries; attempts++) {
+            for (let attempts = 1; attempts <= nMaxTries; attempts++) {
                 try {
-                    const res = await func.call(this.currentNetwork, ...args);
+                    debugLog(
+                        DebugTopics.NET,
+                        'attempting ' +
+                            funcName +
+                            ' on ' +
+                            this.currentNetwork.strUrl
+                    );
+                    const res = await this.currentNetwork[funcName](...args);
                     return res;
                 } catch (error) {
+                    debugLog(
+                        DebugTopics.NET,
+                        this.currentNetwork.strUrl + ' failed on ' + funcName
+                    );
                     // If allowed, switch instances
                     if (!fAutoSwitch || attempts == nMaxTries) {
                         throw error;
@@ -63,8 +79,7 @@ class NetWorkManager {
                 }
             }
         } finally {
-            // TODO: Change once there are more types of explorers
-            this.currentNetwork = new ExplorerNetwork(startingUrl);
+            this.currentNetwork = initialNetwork;
         }
     }
 
@@ -74,14 +89,14 @@ class NetWorkManager {
      * @param {number} sleepTime - How many milliseconds sleep between two calls. Default value is 20000ms
      * @returns {Promise<Object>} Explorer result in json
      */
-    async safeFetch(func, ...args) {
+    async safeFetch(funcName, ...args) {
         let trials = 0;
         const sleepTime = 20000;
         const maxTrials = 6;
         while (trials < maxTrials) {
             trials += 1;
             try {
-                return await func.call(this.currentNetwork, ...args);
+                return await this.retryWrapper(funcName, ...args);
             } catch (e) {
                 debugLog(
                     DebugTopics.NET,
@@ -95,63 +110,41 @@ class NetWorkManager {
         throw new Error('Cannot safe fetch');
     }
 
-    async getBlock(blockHeight, skipCoinstake) {
-        return await this.safeFetch(
-            this.currentNetwork.getBlock,
-            blockHeight,
-            skipCoinstake
-        );
+    async getBlock(blockHeight) {
+        return await this.safeFetch('getBlock', blockHeight);
     }
 
     async getTxPage(nStartHeight, addr, n) {
-        return await this.safeFetch(
-            this.currentNetwork.getTxPage,
-            nStartHeight,
-            addr,
-            n
-        );
+        return await this.safeFetch('getTxPage', nStartHeight, addr, n);
     }
 
     async getNumPages(nStartHeight, addr) {
-        return await this.safeFetch(
-            this.currentNetwork.getNumPages,
-            nStartHeight,
-            addr
-        );
+        return await this.safeFetch('getNumPages', nStartHeight, addr);
     }
 
     async getUTXOs(strAddress) {
-        return await this.retryWrapper(
-            this.currentNetwork.getUTXOs,
-            strAddress
-        );
+        return await this.retryWrapper('getUTXOs', strAddress);
     }
 
     async getXPubInfo(strXPUB) {
-        return await this.retryWrapper(
-            this.currentNetwork.getXPubInfo,
-            strXPUB
-        );
+        return await this.retryWrapper('getXPubInfo', strXPUB);
     }
 
     async getShieldBlockList() {
-        return await this.retryWrapper(this.currentNetwork.getShieldBlockList);
+        return await this.retryWrapper('getShieldBlockList');
     }
 
     async getBlockCount() {
-        return await this.retryWrapper(this.currentNetwork.getBlockCount);
+        return await this.retryWrapper('getBlockCount');
     }
 
     async getBestBlockHash() {
-        return await this.retryWrapper(this.currentNetwork.getBestBlockHash);
+        return await this.retryWrapper('getBestBlockHash');
     }
 
     async sendTransaction(hex) {
         try {
-            const data = await this.retryWrapper(
-                this.currentNetwork.sendTransaction,
-                hex
-            );
+            const data = await this.retryWrapper('sendTransaction', hex);
 
             // Throw and catch if the data is not a TXID
             if (!data.result || data.result.length !== 64) throw data;
@@ -166,7 +159,7 @@ class NetWorkManager {
     }
 
     async getTxInfo(_txHash) {
-        return await this.retryWrapper(this.currentNetwork.getTxInfo, _txHash);
+        return await this.retryWrapper('getTxInfo', _txHash);
     }
 }
 
@@ -174,7 +167,7 @@ export const networkManager = new NetWorkManager();
 
 /**
  * Gets the network in use by MPW.
- * @returns {ExplorerNetwork?} Returns the network in use, may be null if MPW hasn't properly loaded yet.
+ * @returns {Network?} Returns the network in use, may be null if MPW hasn't properly loaded yet.
  */
 export function getNetwork() {
     return networkManager;

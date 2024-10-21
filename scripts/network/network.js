@@ -1,5 +1,4 @@
 import { isStandardAddress, isXPub } from '../misc.js';
-import { cNode } from '../settings.js';
 import { Transaction } from '../transaction.js';
 
 /**
@@ -42,7 +41,13 @@ export class Network {
         }
     }
 
-    async getBlock(blockHeight, skipCoinstake) {
+    lookupMethod(fName) {
+        if (fName == 'getShieldBlockList') {
+            return this.hasOwnProperty();
+        }
+    }
+
+    async getBlock(blockHeight) {
         throw new Error('getBlockCount must be implemented');
     }
 
@@ -81,6 +86,107 @@ export class Network {
     async getTxInfo(_txHash) {
         throw new Error('getTxInfo must be implemented');
     }
+
+    // TODO: this should be just a private function of RPCNodeNetwork
+    // However we use this in masternode.js, let's solve this in a future refactor
+    async callRPC(api, isText = false) {
+        throw new Error('callRPC must be implemented');
+    }
+
+    /**
+     * @returns{Network} - a deep copy of the original network
+     */
+    copy() {
+        throw new Error('copy must be implemented');
+    }
+    equal(network) {
+        throw new Error('equal must be implemented');
+    }
+}
+
+export class RPCNodeNetwork extends Network {
+    /**
+     * @param {string} strUrl - Url pointing to the RPC node
+     */
+    constructor(strUrl) {
+        super();
+        /**
+         * @type{string}
+         * @public
+         */
+        this.strUrl = strUrl;
+    }
+    /**
+     * A Fetch wrapper which uses the current Node's base URL
+     * @param {string} api - The specific Node api to call
+     * @param {RequestInit?} options - The Fetch options
+     * @returns {Promise<Response>} - The unresolved Fetch promise
+     */
+    fetchNode(api, options) {
+        return fetch(this.strUrl + api, options);
+    }
+
+    async callRPC(api, isText = false) {
+        const cRes = await this.fetchNode(api);
+        return isText ? await cRes.text() : await cRes.json();
+    }
+
+    /**
+     * Fetch a block from the current node given the height
+     * @param {number} blockHeight
+     * @returns {Promise<Object>} the block
+     */
+    async getBlock(blockHeight) {
+        // First we fetch the blockhash (and strip RPC's quotes)
+        const strHash = (
+            await this.callRPC(`/getblockhash?params=${blockHeight}`, true)
+        ).replace(/"/g, '');
+        // Craft a filter to retrieve only raw Tx hex and txid, also change "tx" to "txs"
+        const strFilter =
+            '&filter=' +
+            encodeURI(`. | .txs = [.tx[] | { hex: .hex, txid: .txid}]`);
+        // Fetch the full block (verbose)
+        return await this.callRPC(`/getblock?params=${strHash},2${strFilter}`);
+    }
+
+    /**
+     * Fetch the block height of the current node
+     * @returns {Promise<number>} - Block height
+     */
+    async getBlockCount() {
+        return parseInt(await this.callRPC('/getblockcount', true));
+    }
+
+    async getBestBlockHash() {
+        return await this.callRPC('/getbestblockhash', true);
+    }
+
+    async sendTransaction(hex) {
+        // Use Nodes as a fallback
+        let strTXID = await this.callRPC(
+            '/sendrawtransaction?params=' + hex,
+            true
+        );
+        strTXID = strTXID.replace(/"/g, '');
+        return { result: strTXID };
+    }
+
+    /**
+     * @return {Promise<Number[]>} The list of blocks which have at least one shield transaction
+     */
+    async getShieldBlockList() {
+        return await this.callRPC('/getshieldblocks');
+    }
+
+    copy() {
+        return new RPCNodeNetwork(this.strUrl);
+    }
+    /**
+     * @param {RPCNodeNetwork} network
+     */
+    equal(network) {
+        return this.strUrl === network.strUrl;
+    }
 }
 
 /**
@@ -97,36 +203,6 @@ export class ExplorerNetwork extends Network {
          * @public
          */
         this.strUrl = strUrl;
-    }
-
-    /**
-     * Fetch a block from the explorer given the height
-     * @param {number} blockHeight
-     * @param {boolean} skipCoinstake - if true coinstake tx will be skipped
-     * @returns {Promise<Object>} the block fetched from explorer
-     */
-    async getBlock(blockHeight, skipCoinstake = false) {
-        const req = await this.fetchBlockbook(`/api/v2/block/${blockHeight}`);
-        const block = await req.json();
-        const newTxs = [];
-        // This is bad. We're making so many requests
-        // This is a quick fix to try to be compliant with the blockbook
-        // API, and not the PIVX extension.
-        // In the Blockbook API /block doesn't have any chain specific information
-        // Like hex, shield info or what not.
-        // We could change /getshieldblocks to /getshieldtxs?
-        // In addition, always skip the coinbase transaction and in case the coinstake one
-        // TODO: once v6.0 and shield stake is activated we might need to change this optimization
-        for (const tx of block.txs.slice(skipCoinstake ? 2 : 1)) {
-            const r = await fetch(
-                `${this.strUrl}/api/v2/tx-specific/${tx.txid}`
-            );
-            if (!r.ok) throw new Error('failed');
-            const newTx = await r.json();
-            newTxs.push(newTx);
-        }
-        block.txs = newTxs;
-        return block;
     }
 
     /**
@@ -253,34 +329,14 @@ export class ExplorerNetwork extends Network {
         return fetch(this.strUrl + api, options);
     }
 
-    /////////////////////////////////////////////////////////////////////
-    // TODO: REMOVE ALL FUNCTIONS BELOW THIS COMMENT ONCE #427 IS MERGED
-    /////////////////////////////////////////////////////////////////////
-
-    /**
-     * @return {Promise<Number[]>} The list of blocks which have at least one shield transaction
-     */
-    async getShieldBlockList() {
-        return await this.callRPC('/getshieldblocks');
+    copy() {
+        return new ExplorerNetwork(this.strUrl);
     }
 
     /**
-     * A Fetch wrapper which uses the current Node's base URL
-     * @param {string} api - The specific Node api to call
-     * @param {RequestInit?} options - The Fetch options
-     * @returns {Promise<Response>} - The unresolved Fetch promise
+     * @param {ExplorerNetwork} network
      */
-    fetchNode(api, options) {
-        return fetch(cNode.url + api, options);
-    }
-    /**
-     * A safety-wrapped RPC interface for calling Node RPCs with automatic correction handling
-     * @param {string} api - The API endpoint to call
-     * @param {boolean} isText - Optionally parse the result as Text rather than JSON
-     * @returns {Promise<object|string>} - The RPC response; JSON by default, text if `isText` is true.
-     */
-    async callRPC(api, isText = false) {
-        const cRes = await this.fetchNode(api);
-        return isText ? await cRes.text() : await cRes.json();
+    equal(network) {
+        return this.strUrl === network.strUrl;
     }
 }
