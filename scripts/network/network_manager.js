@@ -32,6 +32,13 @@ class NetWorkManager {
     }
 
     /**
+     * Reset the list of available networks
+     */
+    reset() {
+        this.networks = [];
+    }
+
+    /**
      * Sets the network in use by MPW.
      * @param {string} strUrl - network to use
      * @param {boolean} isRPC - whether we are setting the explorer or the RPC node

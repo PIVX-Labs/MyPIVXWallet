@@ -414,6 +414,7 @@ export async function toggleTestnet(
 
     // Update testnet toggle in settings
     doms.domTestnetToggler.checked = cChainParams.current.isTestnet;
+    networkManager.reset();
     await start();
     // Make sure we have the correct number of blocks before loading any wallet
     await refreshChainData();
