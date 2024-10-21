@@ -1,6 +1,6 @@
 <script setup>
 import { cChainParams, COIN } from '../chain_params.js';
-import { translation } from '../i18n';
+import { tr, translation } from '../i18n';
 import { ref, computed, toRefs } from 'vue';
 import { beautifyNumber } from '../misc';
 import { getEventEmitter } from '../event_bus';
