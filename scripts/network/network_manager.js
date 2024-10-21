@@ -46,40 +46,32 @@ class NetWorkManager {
      * @param  {...any} args - The arguments to pass to the function
      */
     async retryWrapper(funcName, ...args) {
-        const initialNetwork = this.currentNetwork.copy();
         let nMaxTries = this.networks.length;
         let i = this.networks.findIndex((net) =>
             this.currentNetwork.equal(net)
         );
 
         // Run the call until successful, or all attempts exhausted
-        try {
-            for (let attempts = 1; attempts <= nMaxTries; attempts++) {
-                try {
-                    debugLog(
-                        DebugTopics.NET,
-                        'attempting ' +
-                            funcName +
-                            ' on ' +
-                            this.currentNetwork.strUrl
-                    );
-                    const res = await this.currentNetwork[funcName](...args);
-                    return res;
-                } catch (error) {
-                    debugLog(
-                        DebugTopics.NET,
-                        this.currentNetwork.strUrl + ' failed on ' + funcName
-                    );
-                    // If allowed, switch instances
-                    if (!fAutoSwitch || attempts == nMaxTries) {
-                        throw error;
-                    }
-                    this.currentNetwork =
-                        this.networks[(i + attempts) % nMaxTries];
+        let attemptNet = this.currentNetwork.copy();
+        for (let attempts = 1; attempts <= nMaxTries; attempts++) {
+            try {
+                debugLog(
+                    DebugTopics.NET,
+                    'attempting ' + funcName + ' on ' + attemptNet.strUrl
+                );
+                const res = await attemptNet[funcName](...args);
+                return res;
+            } catch (error) {
+                debugLog(
+                    DebugTopics.NET,
+                    attemptNet.strUrl + ' failed on ' + funcName
+                );
+                // If allowed, switch instances
+                if (!fAutoSwitch || attempts == nMaxTries) {
+                    throw error;
                 }
+                attemptNet = this.networks[(i + attempts) % nMaxTries];
             }
-        } finally {
-            this.currentNetwork = initialNetwork;
         }
     }
 
