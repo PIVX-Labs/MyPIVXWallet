@@ -708,7 +708,9 @@ export class Wallet {
             await getNetwork().getBlock(this.#shield.getLastSyncedBlock())
         ).finalsaplingroot;
         if (networkSaplingRoot) {
-            while (!(await this.#checkShieldSaplingRoot(networkSaplingRoot))) {}
+            while (!(await this.#checkShieldSaplingRoot(networkSaplingRoot))) {
+                /* checkShieldSaplingRoot automatically tries to resync */
+            }
         }
         this.#isSynced = true;
         // Update both activities post sync
@@ -927,8 +929,9 @@ export class Wallet {
                         !(await this.#checkShieldSaplingRoot(
                             block.finalsaplingroot
                         ))
-                    )
-                        return;
+                    ) {
+                        /* checkShieldSaplingRoot automatically tries to resync */
+                    }
                 }
                 await this.saveShieldOnDisk();
             }
