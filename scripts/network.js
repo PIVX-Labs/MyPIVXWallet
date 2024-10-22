@@ -92,47 +92,58 @@ export class ExplorerNetwork extends Network {
     }
 
     /**
-     * Fetch a block from the current node given the height
+     * Fetch a block from the explorer given the height
      * @param {number} blockHeight
-     * @returns {Promise<Object>} the block
+     * @param {boolean} skipCoinstake - if true coinstake tx will be skipped
+     * @returns {Promise<Object>} the block fetched from explorer
      */
-    async getBlock(blockHeight) {
-        // First we fetch the blockhash (and strip RPC's quotes)
-        const strHash = (
-            await this.callRPC(`/getblockhash?params=${blockHeight}`, true)
-        ).replace(/"/g, '');
-        // Craft a filter to retrieve only raw Tx hex and txid, also change "tx" to "txs"
-        const strFilter =
-            '&filter=' +
-            encodeURI(`. | .txs = [.tx[] | { hex: .hex, txid: .txid}]`);
-        // Fetch the full block (verbose)
-        return await this.callRPC(`/getblock?params=${strHash},2${strFilter}`);
+    async getBlock(blockHeight, skipCoinstake = false) {
+        const block = await this.safeFetchFromExplorer(
+            `/api/v2/block/${blockHeight}`
+        );
+        const newTxs = [];
+        // This is bad. We're making so many requests
+        // This is a quick fix to try to be compliant with the blockbook
+        // API, and not the PIVX extension.
+        // In the Blockbook API /block doesn't have any chain specific information
+        // Like hex, shield info or what not.
+        // We could change /getshieldblocks to /getshieldtxs?
+        // In addition, always skip the coinbase transaction and in case the coinstake one
+        // TODO: once v6.0 and shield stake is activated we might need to change this optimization
+        for (const tx of block.txs.slice(skipCoinstake ? 2 : 1)) {
+            const r = await fetch(
+                `${this.strUrl}/api/v2/tx-specific/${tx.txid}`
+            );
+            if (!r.ok) throw new Error('failed');
+            const newTx = await r.json();
+            newTxs.push(newTx);
+        }
+        block.txs = newTxs;
+        return block;
     }
 
     /**
-     * Fetch the block height of the current node
+     * Fetch the block height of the current explorer
      * @returns {Promise<number>} - Block height
      */
     async getBlockCount() {
-        return parseInt(await this.callRPC('/getblockcount', true));
+        const { backend } = await (
+            await retryWrapper(fetchBlockbook, true, `/api/v2/api`)
+        ).json();
+
+        return backend.blocks;
     }
 
     /**
-     * Fetch the latest block hash of the current explorer or fallback node
+     * Fetch the latest block hash of the current explorer
      * @returns {Promise<string>} - Block hash
      */
     async getBestBlockHash() {
-        try {
-            // Attempt via Explorer first
-            const { backend } = await (
-                await retryWrapper(fetchBlockbook, true, `/api/v2/api`)
-            ).json();
+        const { backend } = await (
+            await retryWrapper(fetchBlockbook, true, `/api/v2/api`)
+        ).json();
 
-            return backend.bestBlockHash;
-        } catch {
-            // Use Nodes as a fallback
-            return await this.callRPC('/getbestblockhash', true);
-        }
+        return backend.bestBlockHash;
     }
 
     /**
@@ -261,38 +272,19 @@ export class ExplorerNetwork extends Network {
 
     async sendTransaction(hex) {
         try {
-            // Attempt via Explorer first
-            let strTXID = '';
-            try {
-                const cData = await (
-                    await retryWrapper(
-                        fetchBlockbook,
-                        true,
-                        '/api/v2/sendtx/',
-                        {
-                            method: 'post',
-                            body: hex,
-                        }
-                    )
-                ).json();
-                // If there's no TXID, we throw any potential Blockbook errors
-                if (!cData.result || cData.result.length !== 64) throw cData;
-                strTXID = cData.result;
-            } catch {
-                // Use Nodes as a fallback
-                strTXID = await this.callRPC(
-                    '/sendrawtransaction?params=' + hex,
-                    true
-                );
-                strTXID = strTXID.replace(/"/g, '');
-            }
+            const data = await (
+                await retryWrapper(fetchBlockbook, true, '/api/v2/sendtx/', {
+                    method: 'post',
+                    body: hex,
+                })
+            ).json();
 
-            // Throw and catch if there's no TXID
-            if (!strTXID || strTXID.length !== 64) throw strTXID;
+            // Throw and catch if the data is not a TXID
+            if (!data.result || data.result.length !== 64) throw data;
 
-            debugLog(DebugTopics.NET, 'Transaction sent! ' + strTXID);
-            getEventEmitter().emit('transaction-sent', true, strTXID);
-            return strTXID;
+            debugLog(DebugTopics.NET, 'Transaction sent! ' + data.result);
+            getEventEmitter().emit('transaction-sent', true, data.result);
+            return data.result;
         } catch (e) {
             getEventEmitter().emit('transaction-sent', false, e);
             return false;
