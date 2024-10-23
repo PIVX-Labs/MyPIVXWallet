@@ -7,7 +7,6 @@ import {
 } from './global.js';
 import { wallet, hasEncryptedWallet } from './wallet.js';
 import { cChainParams } from './chain_params.js';
-import { setNetwork, ExplorerNetwork, getNetwork } from './network.js';
 import { confirmPopup } from './misc.js';
 import {
     switchTranslation,
@@ -20,6 +19,7 @@ import { createAlert } from './alerts/alert.js';
 import { Database } from './database.js';
 import { getEventEmitter } from './event_bus.js';
 import countries from 'country-locale-map/countries.json';
+import { networkManager } from './network/network_manager.js';
 
 // --- Default Settings
 /** A mode that emits verbose console info for internal MPW operations */
@@ -216,33 +216,26 @@ function subscribeToNetworkEvents() {
 }
 
 // --- Settings Functions
-export async function setExplorer(explorer, fSilent = false) {
+export async function setExplorer(explorer) {
     const database = await Database.getInstance();
     await database.setSettings({ explorer: explorer.url });
     cExplorer = explorer;
-
-    // Enable networking + notify if allowed
-    if (getNetwork()) {
-        getNetwork().strUrl = cExplorer.url;
-    } else {
-        const network = new ExplorerNetwork(cExplorer.url);
-        setNetwork(network);
-    }
+    networkManager.setNetwork(cExplorer.url, false);
 
     // Update the selector UI
     doms.domExplorerSelect.value = cExplorer.url;
 
-    if (!fSilent)
-        createAlert(
-            'success',
-            tr(ALERTS.SWITCHED_EXPLORERS, [{ explorerName: cExplorer.name }]),
-            2250
-        );
+    createAlert(
+        'success',
+        tr(ALERTS.SWITCHED_EXPLORERS, [{ explorerName: cExplorer.name }]),
+        2250
+    );
     getEventEmitter().emit('explorer_changed', cExplorer.url);
 }
 
 export async function setNode(node, fSilent = false) {
     cNode = node;
+    networkManager.setNetwork(node.url, true);
     const database = await Database.getInstance();
     database.setSettings({ node: node.url });
 
@@ -421,6 +414,7 @@ export async function toggleTestnet(
 
     // Update testnet toggle in settings
     doms.domTestnetToggler.checked = cChainParams.current.isTestnet;
+    networkManager.reset();
     await start();
     // Make sure we have the correct number of blocks before loading any wallet
     await refreshChainData();
