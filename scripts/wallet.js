@@ -690,42 +690,20 @@ export class Wallet {
         return histTXs;
     }
     sync = lockableFunction(async () => {
-        if (!this.isLoaded()) {
-            throw new Error('Attempting to sync without a wallet loaded');
-        }
         if (this.#isSynced) {
             throw new Error('Attempting to sync when already synced');
         }
-        // While syncing the wallet (DB read + network sync) disable the event balance-update
+        // While syncing the wallet ( DB read + network sync) disable the event balance-update
         // This is done to avoid a huge spam of event.
         getEventEmitter().disableEvent('balance-update');
 
         await this.loadFromDisk();
         await this.loadShieldFromDisk();
-        this.#lastProcessedBlock = blockCount;
-        // Transparent sync is inherently less stable than Shield since it requires heavy
-        // explorer indexing, so we'll attempt once asynchronously, and if it fails, set a
-        // recurring "background" sync interval until it's finally successful.
-        try {
-            await this.#transparentSync();
-        } catch {
-            // We'll set a 5s interval sync until it's finally successful, then nuke the 'thread'.
-            const cThread = new AsyncInterval(async () => {
-                try {
-                    await this.#transparentSync();
-                    cThread.clearInterval();
-                } catch {
-                    // Emit a transparent sync warning
-                    getEventEmitter().emit(
-                        'transparent-sync-status-update',
-                        0,
-                        0,
-                        false,
-                        'Explorers are unreachable, your wallet may not be fully synced!'
-                    );
-                }
-            }, 5000);
-        }
+        // Let's set the last processed block 5 blocks behind the actual chain tip
+        // This is just to be sure since blockbook (as we know)
+        // usually does not return txs of the actual last block.
+        this.#lastProcessedBlock = blockCount - 5;
+        await this.#transparentSync();
         if (this.hasShield()) {
             await this.#syncShield();
         }
@@ -736,10 +714,8 @@ export class Wallet {
         getEventEmitter().emit('new-tx');
     });
 
-    /**
-     * Synchronise UTXOs via xpub/address from the current explorer.
-     */
     async #transparentSync() {
+        if (!this.isLoaded() || this.#isSynced) return;
         const cNet = getNetwork();
         const addr = this.getKeyToExport();
         let nStartHeight = Math.max(
@@ -876,9 +852,11 @@ export class Wallet {
         async (blockCount) => {
             const cNet = getNetwork();
             let block;
+            // Don't ask for the exact last block that arrived,
+            // since it takes around 1 minute for blockbook to make it API available
             for (
-                let blockHeight = this.#lastProcessedBlock;
-                blockHeight <= blockCount;
+                let blockHeight = this.#lastProcessedBlock + 1;
+                blockHeight < blockCount;
                 blockHeight++
             ) {
                 try {
