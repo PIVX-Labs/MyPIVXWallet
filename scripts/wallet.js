@@ -289,8 +289,8 @@ export class Wallet {
     }
 
     /**
-     * Derive xpub (given nReceiving and nIndex)
-     * @return {boolean} Return true if a masterKey has been loaded in the wallet
+     * Check if the wallet (masterKey) is loaded in memory
+     * @return {boolean} Return `true` if a masterKey has been loaded in the wallet
      */
     isLoaded() {
         return !!this.#masterKey;
@@ -763,7 +763,7 @@ export class Wallet {
             await startBatch(
                 async (i) => {
                     let block;
-                    block = await cNet.getBlock(blockHeights[i], true);
+                    block = await cNet.getBlock(blockHeights[i]);
                     downloaded++;
                     blocks[i] = block;
                     // We need to process blocks monotically
