@@ -11,8 +11,8 @@ import {
     resetNetwork,
 } from '../../../scripts/__mocks__/network.js';
 import { refreshChainData } from '../../../scripts/global.js';
-import { sleep } from '../../../scripts/utils.js';
 import { COIN } from '../../../scripts/chain_params.js';
+import { flushPromises } from '@vue/test-utils';
 
 vi.mock('../../../scripts/network.js');
 
@@ -30,10 +30,8 @@ async function createAndSendTransaction(wallet, address, value) {
 }
 
 async function mineAndSync() {
-    getNetwork().mintBlock();
+    await mineBlocks(1);
     await refreshChainData();
-    // 500 milliseconds are enough time to make the wallets sync and handle the new blocks
-    await sleep(500);
 }
 
 /**
@@ -46,7 +44,13 @@ async function mineBlocks(nBlocks) {
         getNetwork().mintBlock();
     }
     await refreshChainData();
-    await sleep(500);
+    /*
+     * This is the amount of flushes we need
+     * To let the wallet sync.
+     * This is implementation-depended, so it's not ideal. Increase this number
+     * If tests don't pass
+     */
+    for (let i = 0; i < 4; i++) await flushPromises();
 }
 
 describe('Wallet sync tests', () => {
