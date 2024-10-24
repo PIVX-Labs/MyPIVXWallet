@@ -1,7 +1,7 @@
 import { Buffer } from 'buffer';
 import { bytesToNum, numToBytes, numToVarInt, parseWIF } from './encoding.js';
 import { hexToBytes, bytesToHex, dSHA256 } from './utils.js';
-import { OP } from './script.js';
+import { isProposalFee, OP } from './script.js';
 import { varIntToNum, deriveAddress } from './encoding.js';
 import * as nobleSecp256k1 from '@noble/secp256k1';
 import { cChainParams, SAPLING_TX_VERSION } from './chain_params.js';
@@ -168,6 +168,16 @@ export class Transaction {
         return (
             this.vin.length == 1 && !!this.vin[0].outpoint.txid.match(/^0*$/)
         );
+    }
+
+    isProposalFee() {
+        for (let out of this.vout) {
+            if (out.value === cChainParams.current.proposalFee) {
+                const dataBytes = hexToBytes(out.script);
+                if (isProposalFee(dataBytes)) return true;
+            }
+        }
+        return false;
     }
 
     /**
