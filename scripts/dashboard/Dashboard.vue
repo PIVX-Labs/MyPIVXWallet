@@ -725,17 +725,6 @@ defineExpose({
                                                         "
                                                         class="text-center"
                                                     >
-                                                        <b> Manage </b>
-                                                    </td>
-                                                    <td
-                                                        style="
-                                                            width: 100px;
-                                                            border-top: 0px;
-                                                            border-bottom: 1px
-                                                                solid #534270;
-                                                        "
-                                                        class="text-center"
-                                                    >
                                                         <b> Promo Code </b>
                                                     </td>
                                                     <td
@@ -751,21 +740,12 @@ defineExpose({
                                                     </td>
                                                     <td
                                                         style="
-                                                            width: 100px;
                                                             border-top: 0px;
                                                             border-bottom: 1px
                                                                 solid #534270;
                                                         "
                                                         class="text-center"
                                                     >
-                                                        <b> State </b
-                                                        ><i
-                                                            onclick="MPW.promosToCSV()"
-                                                            style="
-                                                                margin-left: 5px;
-                                                            "
-                                                            class="fa-solid fa-lg fa-file-csv ptr"
-                                                        ></i>
                                                     </td>
                                                 </tr>
                                             </thead>

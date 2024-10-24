@@ -2733,6 +2733,20 @@ a {
     margin-bottom: 6px;
 }
 
+.giftIcons svg {
+    height:16px;
+    fill:#7A7387;
+    position:relative;
+    top:-4px;
+}
+
+.giftIconsClosed svg {
+    height:16px;
+    fill:#9621FF;
+    position:relative;
+    top:-2px;
+}
+
 .textboxTransparency {
     background-color: rgba(255, 255, 255, 15%);
     color: #fff;
