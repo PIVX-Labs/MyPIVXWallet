@@ -12,6 +12,7 @@ import { wallet } from './wallet.js';
 import { LegacyMasterKey } from './masterkey.js';
 import { deriveAddress } from './encoding.js';
 import { getP2PKHScript } from './script.js';
+import { createAlert } from './alerts/alert.js';
 
 import pIconGift from '../assets/icons/icon-gift.svg';
 import pIconGiftOpen from '../assets/icons/icon-gift-opened.svg';
@@ -371,7 +372,7 @@ export async function renderSavedPromos() {
 
         // Sync only the balance of the code (not full data)
         cCode.getUTXOs(false);
-        const nBal = ((await cCode.getBalance(true)) - PROMO_FEE) / COIN;
+        const nBal = (await cCode.getBalance(true)) / COIN;
 
         // A code younger than ~3 minutes without a balance will just say 'confirming', since Blockbook does not return a balance for NEW codes
         const fNew = cCode.time.getTime() > Date.now() - 60000 * 3;
@@ -383,13 +384,21 @@ export async function renderSavedPromos() {
         let strStatus = 'Confirming...';
         if (!fNew) {
             if (cCode.fSynced) {
-                strStatus = nBal > 0 ? '<span class="giftIconsClosed">' + pIconGift + '</span>' : '<span class="giftIcons">' + pIconGiftOpen + '</span>';
+                strStatus = nBal > 0 ? 'Unclaimed' : 'Claimed';
             } else {
-                strStatus = '<i class="fa-solid fa-spinner spinningLoading"></i>';
+                strStatus = 'Syncing';
             }
         }
         strHTML += `
              <tr>
+                 <td>${
+                     fCannotDelete
+                         ? '<i class="fa-solid fa-ban" style="opacity: 0.4; cursor: default;">'
+                         : '<i class="fa-solid fa-ban ptr" onclick="MPW.deletePromoCode(\'' +
+                           cCode.code +
+                           '\')"></i>'
+                 }
+                 </td>
                  <td><i onclick="MPW.toClipboard('copy${
                      cCode.address
                  }', this)" class="fas fa-clipboard" style="cursor: pointer; margin-right: 10px;"></i><code id="copy${
@@ -402,13 +411,9 @@ export async function renderSavedPromos() {
                          ? '...'
                          : nBal + ' ' + cChainParams.current.TICKER
                  }</td>
-                 <td>
-                 ${ fCannotDelete
-                    ? '<i class="fa-solid fa-ban" style="opacity: 0.4; cursor: default;">'
-                    : '<i class="fa-solid fa-ban ptr" onclick="MPW.deletePromoCode(\'' + cCode.code + '\')">' }</i>
-                 <a style="margin-left:6px; margin-right:6px; width:auto!important;" class="ptr active" href="${
+                 <td><a class="ptr active" style="margin-right: 10px;" href="${
                      getNetwork().strUrl + '/address/' + cCode.address
-                 }" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-up-right-from-square"></i></a><span style="margin-left:4px;">${strStatus}</span></td>
+                 }" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-up-right-from-square"></i></a>${strStatus}</td>
              </tr>
          `;
     }
