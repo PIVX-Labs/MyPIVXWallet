@@ -889,10 +889,10 @@ export class Wallet {
 
             // SHIELD-only checks
             if (this.hasShield()) {
+                const saplingRoot = block?.finalsaplingroot;
                 if (
-                    !(await this.#checkShieldSaplingRoot(
-                        block.finalsaplingroot
-                    ))
+                    saplingRoot &&
+                    !(await this.#checkShieldSaplingRoot(saplingRoot))
                 )
                     return;
                 await this.saveShieldOnDisk();
@@ -901,6 +901,7 @@ export class Wallet {
     );
 
     async #checkShieldSaplingRoot(networkSaplingRoot) {
+        console.log(networkSaplingRoot, 'ASDASDADASD');
         const saplingRoot = bytesToHex(
             hexToBytes(await this.#shield.getSaplingRoot()).reverse()
         );
