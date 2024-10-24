@@ -11,8 +11,8 @@ import {
     resetNetwork,
 } from '../../../scripts/__mocks__/network.js';
 import { refreshChainData } from '../../../scripts/global.js';
-import { sleep } from '../../../scripts/utils.js';
 import { COIN } from '../../../scripts/chain_params.js';
+import { flushPromises } from '@vue/test-utils';
 
 vi.mock('../../../scripts/network.js');
 
@@ -22,7 +22,7 @@ vi.mock('../../../scripts/network.js');
  * @param{number} value - amounts to transfer
  * @returns {Promise<void>}
  */
-async function crateAndSendTransaction(wallet, address, value) {
+async function createAndSendTransaction(wallet, address, value) {
     const tx = wallet.createTransaction(address, value);
     await wallet.sign(tx);
     expect(getNetwork().sendTransaction(tx.serialize())).toBeTruthy();
@@ -30,10 +30,8 @@ async function crateAndSendTransaction(wallet, address, value) {
 }
 
 async function mineAndSync() {
-    getNetwork().mintBlock();
+    await mineBlocks(1);
     await refreshChainData();
-    // 500 milliseconds are enough time to make the wallets sync and handle the new blocks
-    await sleep(500);
 }
 
 /**
@@ -46,7 +44,13 @@ async function mineBlocks(nBlocks) {
         getNetwork().mintBlock();
     }
     await refreshChainData();
-    await sleep(500);
+    /*
+     * This is the amount of flushes we need
+     * To let the wallet sync.
+     * This is implementation-depended, so it's not ideal. Increase this number
+     * If tests don't pass
+     */
+    for (let i = 0; i < 4; i++) await flushPromises();
 }
 
 describe('Wallet sync tests', () => {
@@ -65,7 +69,7 @@ describe('Wallet sync tests', () => {
     it('Basic 2 wallets sync test', async () => {
         // --- Verify that funds are received after sending a transaction ---
         // The legacy wallet sends the HD wallet 0.05 PIVs
-        await crateAndSendTransaction(
+        await createAndSendTransaction(
             walletLegacy,
             walletHD.getCurrentAddress(),
             0.05 * 10 ** 8
@@ -81,7 +85,7 @@ describe('Wallet sync tests', () => {
 
         // Sends funds back to the legacy wallet and verify that he also correctly receives funds
         const legacyBalance = walletLegacy.balance;
-        await crateAndSendTransaction(
+        await createAndSendTransaction(
             walletHD,
             walletLegacy.getCurrentAddress(),
             1 * 10 ** 8
@@ -103,13 +107,17 @@ describe('Wallet sync tests', () => {
             let newAddress = walletHD.getAddressFromPath(
                 path.slice(0, -1) + String(nAddress)
             );
-            await crateAndSendTransaction(
+            // Create a Tx to the new account address
+            await createAndSendTransaction(
                 walletLegacy,
                 newAddress,
                 0.01 * 10 ** 8
             );
             await mineAndSync();
+            // Validate the balance of the HD wallet pre-tx-confirm
             expect(walletHD.balance).toBe((1 + 0.01 * i) * 10 ** 8);
+            // Mine a block with the Tx
+            await mineAndSync();
         }
     });
     it('recognizes immature balance', async () => {
