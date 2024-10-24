@@ -901,7 +901,6 @@ export class Wallet {
     );
 
     async #checkShieldSaplingRoot(networkSaplingRoot) {
-        console.log(networkSaplingRoot, 'ASDASDADASD');
         const saplingRoot = bytesToHex(
             hexToBytes(await this.#shield.getSaplingRoot()).reverse()
         );
@@ -909,6 +908,7 @@ export class Wallet {
         if (saplingRoot !== networkSaplingRoot) {
             createAlert('warning', translation.badSaplingRoot, 5000);
             this.#mempool = new Mempool();
+            this.#isSynced = false;
             // TODO: take the wallet creation height in input from users
             await this.#shield.reloadFromCheckpoint(4200000);
             await this.#transparentSync();
