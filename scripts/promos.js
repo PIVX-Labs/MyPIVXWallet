@@ -14,6 +14,9 @@ import { deriveAddress } from './encoding.js';
 import { getP2PKHScript } from './script.js';
 import { createAlert } from './alerts/alert.js';
 
+import pIconGift from '../assets/icons/icon-gift.svg';
+import pIconGiftOpen from '../assets/icons/icon-gift-opened.svg';
+
 /** The fee in Sats to use for Creating or Redeeming PIVX Promos */
 export const PROMO_FEE = 10000;
 
