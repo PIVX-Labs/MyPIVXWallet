@@ -745,8 +745,7 @@ defineExpose({
                                                                 solid #534270;
                                                         "
                                                         class="text-center"
-                                                    >
-                                                    </td>
+                                                    ></td>
                                                 </tr>
                                             </thead>
                                             <tbody
