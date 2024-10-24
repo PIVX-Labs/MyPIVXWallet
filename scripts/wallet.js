@@ -655,6 +655,8 @@ export class Wallet {
             let type = HistoricalTxType.UNKNOWN;
             if (tx.isCoinStake()) {
                 type = HistoricalTxType.STAKE;
+            } else if (tx.isProposalFee()) {
+                type = HistoricalTxType.PROPOSAL_FEE;
             } else if (this.checkForUndelegations(tx)) {
                 type = HistoricalTxType.UNDELEGATION;
                 nAmount = getFilteredCredit(OutpointState.P2PKH) / COIN;
