@@ -374,7 +374,7 @@ export async function renderSavedPromos() {
         cCode.getUTXOs(false);
 
         let nBal = ((await cCode.getBalance(true)) - PROMO_FEE) / COIN;
-        nBal = (nBal < 0 ? 0 : nBal);
+        nBal = nBal < 0 ? 0 : nBal;
 
         // A code younger than ~3 minutes without a balance will just say 'confirming', since Blockbook does not return a balance for NEW codes
         const fNew = cCode.time.getTime() > Date.now() - 60000 * 3;
@@ -386,9 +386,17 @@ export async function renderSavedPromos() {
         let strStatus = 'Confirming...';
         if (!fNew) {
             if (cCode.fSynced) {
-                strStatus = nBal > 0 ? '<span class="giftIconsClosed">' + pIconGift + '</span>' : '<span class="giftIcons">' + pIconGiftOpen + '</span>';
+                strStatus =
+                    nBal > 0
+                        ? '<span class="giftIconsClosed">' +
+                          pIconGift +
+                          '</span>'
+                        : '<span class="giftIcons">' +
+                          pIconGiftOpen +
+                          '</span>';
             } else {
-                strStatus = '<i class="fa-solid fa-spinner spinningLoading"></i>';
+                strStatus =
+                    '<i class="fa-solid fa-spinner spinningLoading"></i>';
             }
         }
         strHTML += `
@@ -406,9 +414,13 @@ export async function renderSavedPromos() {
                          : nBal + ' ' + cChainParams.current.TICKER
                  }</td>
                  <td>
-                 ${ fCannotDelete
-                    ? '<i class="fa-solid fa-ban" style="opacity: 0.4; cursor: default;">'
-                    : '<i class="fa-solid fa-ban ptr" onclick="MPW.deletePromoCode(\'' + cCode.code + '\')">' }</i>
+                 ${
+                     fCannotDelete
+                         ? '<i class="fa-solid fa-ban" style="opacity: 0.4; cursor: default;">'
+                         : '<i class="fa-solid fa-ban ptr" onclick="MPW.deletePromoCode(\'' +
+                           cCode.code +
+                           '\')">'
+                 }</i>
                  <a style="margin-left:6px; margin-right:6px; width:auto!important;" class="ptr active" href="${
                      getNetwork().strUrl + '/address/' + cCode.address
                  }" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-up-right-from-square"></i></a><span style="margin-left:4px;">${strStatus}</span></td>
@@ -479,7 +491,8 @@ export async function updatePromoCreationTick(fRecursive = false) {
                     amount: Math.round(cThread.amount * COIN + PROMO_FEE),
                 }).catch((_) => {
                     // Failed to create this code - mark it as errored
-                    cThread.end_state = '<i class="fas fa-exclamation-triangle"></i>';
+                    cThread.end_state =
+                        '<i class="fas fa-exclamation-triangle"></i>';
                 });
                 if (res && res.ok) {
                     cThread.txid = res.txid;
