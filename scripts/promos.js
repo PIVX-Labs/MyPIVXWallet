@@ -372,7 +372,9 @@ export async function renderSavedPromos() {
 
         // Sync only the balance of the code (not full data)
         cCode.getUTXOs(false);
-        const nBal = ((await cCode.getBalance(true)) - PROMO_FEE) / COIN;
+
+        let nBal = ((await cCode.getBalance(true)) - PROMO_FEE) / COIN;
+        nBal = (nBal < 0 ? 0 : nBal);
 
         // A code younger than ~3 minutes without a balance will just say 'confirming', since Blockbook does not return a balance for NEW codes
         const fNew = cCode.time.getTime() > Date.now() - 60000 * 3;
@@ -477,14 +479,14 @@ export async function updatePromoCreationTick(fRecursive = false) {
                     amount: Math.round(cThread.amount * COIN + PROMO_FEE),
                 }).catch((_) => {
                     // Failed to create this code - mark it as errored
-                    cThread.end_state = 'Errored';
+                    cThread.end_state = '<i class="fas fa-exclamation-triangle"></i>';
                 });
                 if (res && res.ok) {
                     cThread.txid = res.txid;
-                    cThread.end_state = 'Done';
+                    cThread.end_state = '<i class="fas fa-check"></i>';
                 } else {
                     // If it looks like it was purposefully cancelled, then mark it as such
-                    cThread.end_state = 'Cancelled';
+                    cThread.end_state = '<i class="fas fa-times-circle"></i>';
                 }
             }
         }
@@ -493,14 +495,14 @@ export async function updatePromoCreationTick(fRecursive = false) {
         let strState = '';
         if (cThread.txid) {
             // Complete state
-            strState = 'Confirming...';
+            strState = '<i class="fa-solid fa-spinner spinningLoading"></i>';
         } else if (cThread.end_state) {
             // Errored state (failed to broadcast, etc)
             strState = cThread.end_state;
         } else {
             // Display progress
             strState =
-                '<span id="c' +
+                '<i class="fa-solid fa-spinner spinningLoading" style="margin-right:4px;"></i> <span id="c' +
                 cThread.code +
                 '">' +
                 (cThread.thread.progress || 0) +
@@ -511,10 +513,12 @@ export async function updatePromoCreationTick(fRecursive = false) {
         strHTML =
             `
              <tr>
-                 <td><i class="fa-solid fa-ban ptr" onclick="MPW.deletePromoCode('${cThread.code}')"></i></td>
-                 <td><code class="wallet-code active" style="display: inline !important;">${cThread.code}</code></td>
+                 <td><code class="wallet-code active" style="display: inline !important; color: #e83e8c!important;">${cThread.code}</code></td>
                  <td>${cThread.amount} ${cChainParams.current.TICKER}</td>
-                 <td>${strState}</td>
+                 <td>
+                    <i class="fa-solid fa-ban ptr" style="margin-right:4px;" onclick="MPW.deletePromoCode('${cThread.code}')"></i>
+                    ${strState}
+                </td>
              </tr>
          ` + strHTML;
     }
