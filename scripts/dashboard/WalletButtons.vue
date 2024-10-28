@@ -1,15 +1,21 @@
 <script setup>
 import { renderWalletBreakdown } from '../charting.js';
-import { openExplorer } from '../global';
 import { guiRenderContacts } from '../contacts-book';
 
 import pStats from '../../assets/icons/icon-stats-circle.svg';
 import pCompass from '../../assets/icons/icon-compass.svg';
 import pAddressBook from '../../assets/icons/icon-address-book.svg';
 import pGift from '../../assets/icons/icon-gift.svg';
+import { useNetwork } from '../composables/use_network.js';
 import { useWallet } from '../composables/use_wallet.js';
 
 const wallet = useWallet();
+const network = useNetwork();
+
+function getWalletUrl() {
+    const urlPart = wallet.isHD ? '/xpub/' : '/address/';
+    return network.explorerUrl + urlPart + wallet.getKeyToExport();
+}
 </script>
 
 <template>
@@ -24,10 +30,12 @@ const wallet = useWallet();
                 <span class="dashboardActionIcon" v-html="pStats"></span><br />
                 <span style="color: #eddaffc7">Balance</span>
             </div>
-            <div class="col-3 p-0 cur-pointer" @click="openExplorer()">
-                <span class="dashboardActionIcon" v-html="pCompass"></span
-                ><br />
-                <span style="color: #eddaffc7">Explorer</span>
+            <div class="col-3 p-0 cur-pointer">
+                <a :href="getWalletUrl()" target="_blank">
+                    <span class="dashboardActionIcon" v-html="pCompass"></span
+                    ><br />
+                    <span style="color: #eddaffc7">Explorer</span>
+                </a>
             </div>
             <div
                 class="col-3 p-0 cur-pointer"

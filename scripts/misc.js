@@ -31,65 +31,6 @@ export function downloadBlob(content, filename, contentType) {
 }
 
 /**
- * Create a custom GUI Alert popup
- *
- * ### Do NOT display arbitrary / external errors:
- * - The use of `.innerHTML` allows for input styling at this cost.
- * @param {'success'|'info'|'warning'} type - The styling type of the alert
- * @param {string} message - The message to relay to the user
- * @param {number?} timeout - The time in `ms` until the alert expires (Defaults to never expiring)
- */
-export function createAlert(type, message, timeout = 0) {
-    const domAlert = document.createElement('div');
-    domAlert.classList.add('notifyWrapper');
-    domAlert.classList.add(type);
-    setTimeout(() => {
-        domAlert.style.opacity = '1';
-        domAlert.style.zIndex = '999999';
-        domAlert.classList.add('bounce-ani');
-        domAlert.classList.add('bounce');
-    }, 100);
-
-    // Colors for types
-    let typeIcon;
-    switch (type) {
-        case 'warning':
-            typeIcon = 'fa-exclamation';
-            break;
-        case 'info':
-            typeIcon = 'fa-info';
-            break;
-        default:
-            // If no valid type is set, default to success
-            type == 'success';
-            typeIcon = 'fa-check';
-            break;
-    }
-
-    // Message
-    domAlert.innerHTML = `
-    <div class="notifyIcon notify-${type}">
-        <i class="fas ${typeIcon} fa-xl"></i>
-    </div>
-    <div class="notifyText">
-        ${message}
-    </div>`;
-    domAlert.destroy = () => {
-        // Fully destroy timers + DOM elements, no memory leaks!
-        clearTimeout(domAlert.timer);
-        domAlert.style.opacity = '0';
-        setTimeout(() => {
-            domAlert.remove();
-        }, 600);
-    };
-    // On Click: Delete alert from DOM after close animation.
-    domAlert.addEventListener('click', domAlert.destroy);
-    // On Timeout: Delete alert from DOM after a period of inactive time.
-    if (timeout > 0) domAlert.timer = setTimeout(domAlert.destroy, timeout);
-    doms.domAlertPos.appendChild(domAlert);
-}
-
-/**
  * Shows a Confirm popup with custom HTML.
  *
  * If `resolvePromise` has a value, the popup won't have

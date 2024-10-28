@@ -6,7 +6,7 @@ import { getNetwork } from './network.js';
 import { MAX_ACCOUNT_GAP, SHIELD_BATCH_SYNC_SIZE } from './chain_params.js';
 import { HistoricalTx, HistoricalTxType } from './historical_tx.js';
 import { COutpoint, Transaction } from './transaction.js';
-import { confirmPopup, createAlert, isShieldAddress } from './misc.js';
+import { confirmPopup, isShieldAddress } from './misc.js';
 import { cChainParams } from './chain_params.js';
 import { COIN } from './chain_params.js';
 import { ALERTS, translation } from './i18n.js';
@@ -32,6 +32,9 @@ import {
 import { PIVXShield } from 'pivx-shield';
 import { guiToggleReceiveType } from './contacts-book.js';
 import { TransactionBuilder } from './transaction_builder.js';
+import { createAlert } from './alerts/alert.js';
+import { AsyncInterval } from './async_interval.js';
+import { debugError, DebugTopics } from './debug.js';
 
 /**
  * Class Wallet, at the moment it is just a "realization" of Masterkey with a given nAccount
@@ -286,8 +289,8 @@ export class Wallet {
     }
 
     /**
-     * Derive xpub (given nReceiving and nIndex)
-     * @return {boolean} Return true if a masterKey has been loaded in the wallet
+     * Check if the wallet (masterKey) is loaded in memory
+     * @return {boolean} Return `true` if a masterKey has been loaded in the wallet
      */
     isLoaded() {
         return !!this.#masterKey;
@@ -666,6 +669,10 @@ export class Wallet {
             } else if (nAmount < 0) {
                 type = HistoricalTxType.SENT;
             }
+            const isCoinSpecial = tx.isCoinStake() || tx.isCoinBase();
+            const isConfirmed =
+                blockCount - tx.blockHeight >=
+                (isCoinSpecial ? cChainParams.current.coinbaseMaturity : 6);
 
             histTXs.push(
                 new HistoricalTx(
@@ -675,7 +682,8 @@ export class Wallet {
                     false,
                     tx.blockTime,
                     tx.blockHeight,
-                    Math.abs(nAmount)
+                    Math.abs(nAmount),
+                    isConfirmed
                 )
             );
         }
@@ -709,7 +717,29 @@ export class Wallet {
     async #transparentSync() {
         if (!this.isLoaded() || this.#isSynced) return;
         const cNet = getNetwork();
-        await cNet.getLatestTxs(this);
+        const addr = this.getKeyToExport();
+        let nStartHeight = Math.max(
+            ...this.getTransactions().map((tx) => tx.blockHeight)
+        );
+        const txNumber =
+            (await cNet.getNumPages(nStartHeight, addr)) -
+            this.getTransactions().length;
+        // Compute the total pages and iterate through them until we've synced everything
+        const totalPages = Math.ceil(txNumber / 1000);
+        for (let i = totalPages; i > 0; i--) {
+            getEventEmitter().emit(
+                'transparent-sync-status-update',
+                i,
+                totalPages,
+                false
+            );
+
+            // Fetch this page of transactions
+            const iPageTxs = await cNet.getTxPage(nStartHeight, addr, i);
+            for (const tx of iPageTxs.reverse()) {
+                await this.addTransaction(tx, tx.blockHeight === -1);
+            }
+        }
         getEventEmitter().emit('transparent-sync-status-update', '', '', true);
     }
 
@@ -733,7 +763,7 @@ export class Wallet {
             await startBatch(
                 async (i) => {
                     let block;
-                    block = await cNet.getBlock(blockHeights[i], true);
+                    block = await cNet.getBlock(blockHeights[i]);
                     downloaded++;
                     blocks[i] = block;
                     // We need to process blocks monotically
@@ -764,7 +794,7 @@ export class Wallet {
             );
             getEventEmitter().emit('shield-sync-status-update', 0, 0, true);
         } catch (e) {
-            console.error(e);
+            debugError(DebugTopics.WALLET, e);
         }
 
         // At this point it should be safe to assume that shield is ready to use
@@ -852,21 +882,19 @@ export class Wallet {
                     }
                     this.#lastProcessedBlock = blockHeight;
                 } catch (e) {
-                    console.error(e);
+                    debugError(DebugTopics.WALLET, e);
                     break;
                 }
             }
 
             // SHIELD-only checks
             if (this.hasShield()) {
-                if (block?.finalSaplingRoot) {
-                    if (
-                        !(await this.#checkShieldSaplingRoot(
-                            block.finalsaplingroot
-                        ))
-                    )
-                        return;
-                }
+                const saplingRoot = block?.finalsaplingroot;
+                if (
+                    saplingRoot &&
+                    !(await this.#checkShieldSaplingRoot(saplingRoot))
+                )
+                    return;
                 await this.saveShieldOnDisk();
             }
         }
@@ -880,6 +908,7 @@ export class Wallet {
         if (saplingRoot !== networkSaplingRoot) {
             createAlert('warning', translation.badSaplingRoot, 5000);
             this.#mempool = new Mempool();
+            this.#isSynced = false;
             // TODO: take the wallet creation height in input from users
             await this.#shield.reloadFromCheckpoint(4200000);
             await this.#transparentSync();
@@ -1060,8 +1089,7 @@ export class Wallet {
                 'trying to create a shield transaction without having shield enable'
             );
         }
-
-        const periodicFunction = setInterval(async () => {
+        const periodicFunction = new AsyncInterval(async () => {
             const percentage = (await this.#shield.getTxStatus()) * 100;
             getEventEmitter().emit(
                 'shield-transaction-creation-update',
@@ -1090,7 +1118,7 @@ export class Wallet {
             await sleep(500);
             throw e;
         } finally {
-            clearInterval(periodicFunction);
+            await periodicFunction.clearInterval();
             getEventEmitter().emit(
                 'shield-transaction-creation-update',
                 0.0,

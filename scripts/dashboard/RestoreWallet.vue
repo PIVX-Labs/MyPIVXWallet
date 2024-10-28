@@ -5,8 +5,10 @@ import Password from '../Password.vue';
 import { ALERTS, translation } from '../i18n.js';
 import { Database } from '../database.js';
 import { decrypt } from '../aes-gcm';
-import { createAlert } from '../misc';
 import { ParsedSecret } from '../parsed_secret';
+import { useAlerts } from '../composables/use_alerts.js';
+
+const { createAlert } = useAlerts();
 
 const props = defineProps({
     show: Boolean,
