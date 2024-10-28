@@ -574,7 +574,7 @@ export async function updatePromoCreationTick(fRecursive = false) {
     // After the update completes, await another update in one second
     if (!fPromoIntervalStarted || fRecursive) {
         fPromoIntervalStarted = true;
-        setTimeout(() => updatePromoCreationTick(true), 10000);
+        setTimeout(() => updatePromoCreationTick(true), 1000);
     }
 }
 
