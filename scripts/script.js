@@ -230,7 +230,7 @@ export function isP2EXC(dataBytes) {
 
 /**
  * @param {Uint8Array} dataBytes - script as byte array
- * @returns {boolean} true if the script is a proposal feee, false otherwise
+ * @returns {boolean} true if the script is a proposal fee, false otherwise
  */
 export function isProposalFee(dataBytes) {
     return (
