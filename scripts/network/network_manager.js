@@ -107,7 +107,7 @@ class NetWorkManager {
      * @param  {...any} args - The arguments to pass to the function
      * @returns {Promise<Object>} Explorer result in json
      */
-    async safeFetch(funcName, isRPC, ...args) {
+    async #safeFetch(funcName, isRPC, ...args) {
         let trials = 0;
         const sleepTime = 20000;
         const maxTrials = 6;
@@ -129,15 +129,15 @@ class NetWorkManager {
     }
 
     async getBlock(blockHeight) {
-        return await this.safeFetch('getBlock', true, blockHeight);
+        return await this.#safeFetch('getBlock', true, blockHeight);
     }
 
     async getTxPage(nStartHeight, addr, n) {
-        return await this.safeFetch('getTxPage', false, nStartHeight, addr, n);
+        return await this.#safeFetch('getTxPage', false, nStartHeight, addr, n);
     }
 
     async getNumPages(nStartHeight, addr) {
-        return await this.safeFetch('getNumPages', false, nStartHeight, addr);
+        return await this.#safeFetch('getNumPages', false, nStartHeight, addr);
     }
 
     async getUTXOs(strAddress) {
