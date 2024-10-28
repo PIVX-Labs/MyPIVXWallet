@@ -18,9 +18,8 @@ const props = defineProps({
 });
 const { proposals, localProposals, masternodeCount, strCurrency, price } =
     toRefs(props);
-const proposalValidator = computed(
-    () => new ProposalValidator(masternodeCount.value)
-);
+// this is a method rather than a computed property so it updates each re-render
+const getProposalValidator = () => new ProposalValidator(masternodeCount.value);
 const wallet = useWallet();
 
 const emit = defineEmits(['finalizeProposal', 'vote']);
@@ -94,7 +93,7 @@ function openOrCloseRow(i) {
                     :strCurrency="strCurrency"
                     :price="price"
                     :localProposal="true"
-                    :proposalValidator="proposalValidator"
+                    :proposalValidator="getProposalValidator()"
                     :blockCount="wallet.blockCount"
                     @click="openOrCloseRow(i)"
                     @finalizeProposal="emit('finalizeProposal', proposal)"
@@ -114,7 +113,7 @@ function openOrCloseRow(i) {
                     :masternodeCount="masternodeCount"
                     :strCurrency="strCurrency"
                     :price="price"
-                    :proposalValidator="proposalValidator"
+                    :proposalValidator="getProposalValidator()"
                     @click="openOrCloseRow(i)"
                     @vote="(code) => emit('vote', proposal, code)"
                 />
