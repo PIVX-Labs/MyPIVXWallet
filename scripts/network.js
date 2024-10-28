@@ -104,7 +104,9 @@ export class ExplorerNetwork extends Network {
         // Craft a filter to retrieve only raw Tx hex and txid, also change "tx" to "txs"
         const strFilter =
             '&filter=' +
-            encodeURI(`. | .txs = [.tx[] | { hex: .hex, txid: .txid}]`);
+            encodeURI(
+                `. | .txs = [.tx[] | { hex: .hex, txid: .txid}] | del(.tx)`
+            );
         // Fetch the full block (verbose)
         return await this.callRPC(`/getblock?params=${strHash},2${strFilter}`);
     }

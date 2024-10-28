@@ -871,7 +871,7 @@ export class Wallet {
                         for (const tx of block.txs) {
                             const parsed = Transaction.fromHex(tx.hex);
                             parsed.blockHeight = blockHeight;
-                            parsed.blockTime = tx.blocktime;
+                            parsed.blockTime = block.mediantime;
                             // Avoid wasting memory on txs that do not regard our wallet
                             if (this.ownTransaction(parsed)) {
                                 await this.addTransaction(parsed);
