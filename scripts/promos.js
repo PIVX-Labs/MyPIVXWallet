@@ -383,7 +383,7 @@ export async function renderSavedPromos() {
         const fCannotDelete = !cCode.fSynced || fNew || nBal > 0;
 
         // Status calculation (defaults to 'fNew' condition)
-        let strStatus = 'Confirming...';
+        let strStatus = '<i class="fa-solid fa-spinner spinningLoading"></i>';
         if (!fNew) {
             if (cCode.fSynced) {
                 strStatus =
@@ -491,15 +491,14 @@ export async function updatePromoCreationTick(fRecursive = false) {
                     amount: Math.round(cThread.amount * COIN + PROMO_FEE),
                 }).catch((_) => {
                     // Failed to create this code - mark it as errored
-                    cThread.end_state =
-                        '<i class="fas fa-exclamation-triangle"></i>';
+                    cThread.end_state = 'Errored';
                 });
                 if (res && res.ok) {
                     cThread.txid = res.txid;
-                    cThread.end_state = '<i class="fas fa-check"></i>';
+                    cThread.end_state = 'Done';
                 } else {
                     // If it looks like it was purposefully cancelled, then mark it as such
-                    cThread.end_state = '<i class="fas fa-times-circle"></i>';
+                    cThread.end_state = 'Cancelled';
                 }
             }
         }
@@ -511,7 +510,13 @@ export async function updatePromoCreationTick(fRecursive = false) {
             strState = '<i class="fa-solid fa-spinner spinningLoading"></i>';
         } else if (cThread.end_state) {
             // Errored state (failed to broadcast, etc)
-            strState = cThread.end_state;
+            if(cThread.end_state == "Errored") {
+                strState = `<i class="fas fa-exclamation-triangle"></i>`;
+            } else if(cThread.end_state == "Done") {
+                strState = `<i class="fas fa-check"></i>`;
+            } else if(cThread.end_state == "Cancelled") {
+                strState = `<i class="fas fa-times-circle"></i>`;
+            }
         } else {
             // Display progress
             strState =
