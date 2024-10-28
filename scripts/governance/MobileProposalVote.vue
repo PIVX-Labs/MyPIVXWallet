@@ -17,7 +17,7 @@ const emit = defineEmits(['vote']);
                 <span>No</span>
             </div>
             <button
-		style="height: 36px;"
+                style="height: 36px"
                 class="pivx-button-small govYesBtnMob mobileVote"
                 @click="emit('vote', true)"
             >

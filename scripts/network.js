@@ -1,5 +1,5 @@
 import { cChainParams } from './chain_params.js';
-import { debugLog, DebugTopics } from './debug.js';
+import { debugLog, debugError, DebugTopics } from './debug.js';
 import { isStandardAddress, isXPub } from './misc.js';
 import { sleep } from './utils.js';
 import { getEventEmitter } from './event_bus.js';
