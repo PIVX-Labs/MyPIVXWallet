@@ -11,8 +11,8 @@ import {
     resetNetwork,
 } from '../../../scripts/network/__mocks__/network_manager.js';
 import { refreshChainData } from '../../../scripts/global.js';
-import { sleep } from '../../../scripts/utils.js';
 import { COIN } from '../../../scripts/chain_params.js';
+import { flushPromises } from '@vue/test-utils';
 
 vi.mock('../../../scripts/network/network_manager.js');
 
@@ -30,10 +30,8 @@ async function createAndSendTransaction(wallet, address, value) {
 }
 
 async function mineAndSync() {
-    getNetwork().mintBlock();
+    await mineBlocks(1);
     await refreshChainData();
-    // 500 milliseconds are enough time to make the wallets sync and handle the new blocks
-    await sleep(500);
 }
 
 /**
@@ -46,7 +44,13 @@ async function mineBlocks(nBlocks) {
         getNetwork().mintBlock();
     }
     await refreshChainData();
-    await sleep(500);
+    /*
+     * This is the amount of flushes we need
+     * To let the wallet sync.
+     * This is implementation-depended, so it's not ideal. Increase this number
+     * If tests don't pass
+     */
+    for (let i = 0; i < 4; i++) await flushPromises();
 }
 
 describe('Wallet sync tests', () => {
@@ -70,8 +74,12 @@ describe('Wallet sync tests', () => {
             walletHD.getCurrentAddress(),
             0.05 * 10 ** 8
         );
-
         // Mint the block with the transaction
+        await mineAndSync();
+        // getLatestBlocks sync up until chain tip - 1 block,
+        // so at this point walletHD doesn't still know about the UTXO he received
+        expect(walletHD.balance).toBe(1 * 10 ** 8);
+        // mine an empty block and verify that the tx arrived
         await mineAndSync();
         expect(walletHD.balance).toBe((1 + 0.05) * 10 ** 8);
 
@@ -105,6 +113,7 @@ describe('Wallet sync tests', () => {
                 newAddress,
                 0.01 * 10 ** 8
             );
+            await mineAndSync();
             // Validate the balance of the HD wallet pre-tx-confirm
             expect(walletHD.balance).toBe((1 + 0.01 * i) * 10 ** 8);
             // Mine a block with the Tx

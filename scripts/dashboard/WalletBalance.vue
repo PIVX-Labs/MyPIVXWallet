@@ -130,13 +130,11 @@ const emit = defineEmits([
 
 getEventEmitter().on(
     'transparent-sync-status-update',
-    (i, totalPages, finished, warning) => {
-        const str =
-            warning ||
-            tr(translation.syncStatusHistoryProgress, [
-                { current: totalPages - i + 1 },
-                { total: totalPages },
-            ]);
+    (i, totalPages, finished) => {
+        const str = tr(translation.syncStatusHistoryProgress, [
+            { current: totalPages - i + 1 },
+            { total: totalPages },
+        ]);
         const progress = ((totalPages - i) / totalPages) * 100;
         syncTStr.value = str;
         transparentProgressSyncing.value = progress;
@@ -512,16 +510,16 @@ function restoreWallet() {
                 </div>
                 <div style="width: 100%">
                     {{
-                        shieldSyncing
-                            ? `Syncing ${shieldBlockRemainingSyncing} Blocks...`
-                            : syncTStr
+                        transparentSyncing
+                            ? syncTStr
+                            : `Syncing ${shieldBlockRemainingSyncing} Blocks...`
                     }}
                     <LoadingBar
                         :show="true"
                         :percentage="
-                            shieldSyncing
-                                ? shieldPercentageSyncing
-                                : transparentProgressSyncing
+                            transparentSyncing
+                                ? transparentProgressSyncing
+                                : shieldPercentageSyncing
                         "
                         style="
                             border: 1px solid #932ecd;
