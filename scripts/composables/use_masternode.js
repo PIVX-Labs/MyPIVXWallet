@@ -12,7 +12,6 @@ export const useMasternode = defineStore('masternode', () => {
     watch(
         localProposals,
         async () => {
-            console.log('db update');
             const database = await Database.getInstance();
             const account = await database.getAccount();
             if (account) {
@@ -25,7 +24,6 @@ export const useMasternode = defineStore('masternode', () => {
             deep: true,
         }
     );
-    watch(localProposals, () => console.log('hi'));
     const fetchProposalsFromDatabase = async () => {
         const database = await Database.getInstance();
         const account = await database.getAccount();
