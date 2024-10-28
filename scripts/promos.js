@@ -373,7 +373,8 @@ export async function renderSavedPromos() {
         // Sync only the balance of the code (not full data)
         cCode.getUTXOs(false);
 
-        const nBal = Math.max((await cCode.getBalance(true)) - PROMO_FEE, 0) / COIN;
+        const nBal =
+            Math.max((await cCode.getBalance(true)) - PROMO_FEE, 0) / COIN;
 
         // A code younger than ~3 minutes without a balance will just say 'confirming', since Blockbook does not return a balance for NEW codes
         const fNew = cCode.time.getTime() > Date.now() - 60000 * 3;
@@ -509,11 +510,11 @@ export async function updatePromoCreationTick(fRecursive = false) {
             strState = '<i class="fa-solid fa-spinner spinningLoading"></i>';
         } else if (cThread.end_state) {
             // Errored state (failed to broadcast, etc)
-            if(cThread.end_state == "Errored") {
+            if (cThread.end_state == 'Errored') {
                 strState = `<i class="fas fa-exclamation-triangle"></i>`;
-            } else if(cThread.end_state == "Done") {
+            } else if (cThread.end_state == 'Done') {
                 strState = `<i class="fas fa-check"></i>`;
-            } else if(cThread.end_state == "Cancelled") {
+            } else if (cThread.end_state == 'Cancelled') {
                 strState = `<i class="fas fa-times-circle"></i>`;
             }
         } else {
