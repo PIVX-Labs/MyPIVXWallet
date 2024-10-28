@@ -153,7 +153,7 @@ async function createProposal(name, url, payments, monthlyPayment, address) {
         proposal.txid = txid;
         localProposals.value = [...localProposals.value, proposal];
 
-        createAlert('success', translation.PROPOSAL_CREATED, 10000);
+        createAlert('success', ALERTS.PROPOSAL_CREATED, 10000);
         showCreateProposalModal.value = false;
     }
 }
