@@ -1,13 +1,14 @@
 <script setup>
 import { toRefs, ref, watch, onMounted } from 'vue';
 import Masternode from '../masternode';
-import { createAlert } from '../misc';
+import { useAlerts } from '../composables/use_alerts.js';
 import { ALERTS } from '../i18n';
 
 const props = defineProps({ masternode: Masternode });
 const emit = defineEmits(['start', 'destroy']);
 const { masternode } = toRefs(props);
 const status = ref();
+const { createAlert } = useAlerts();
 watch(status, (status) => {
     if (status === 'MISSING') {
         createAlert('warning', ALERTS.MN_OFFLINE_STARTING, 6000);

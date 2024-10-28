@@ -11,11 +11,10 @@ import Modal from '../Modal.vue';
 import { ref, watch } from 'vue';
 import { getNetwork } from '../network';
 import { translation, ALERTS } from '../i18n.js';
-import {
-    generateMasternodePrivkey,
-    parseIpAddress,
-    createAlert,
-} from '../misc';
+import { generateMasternodePrivkey, parseIpAddress } from '../misc';
+import { useAlerts } from '../composables/use_alerts.js';
+
+const { createAlert } = useAlerts();
 
 /**
  * @type{{masternode: import('vue').Ref<import('../masternode.js').default?>}}

@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { flushPromises, mount } from '@vue/test-utils';
 import MasternodeController from '../../../scripts/masternode/MasternodeController.vue';
-import * as misc from '../../../scripts/misc.js';
 import { nextTick } from 'vue';
 
 vi.mock('../../../scripts/i18n.js');
@@ -30,11 +29,6 @@ describe('MasternodeController component tests', () => {
             },
         });
 
-        vi.spyOn(misc, 'createAlert').mockImplementation(
-            (type, message, timeout = 0) => {
-                return message;
-            }
-        );
         return vi.clearAllMocks;
     });
 
