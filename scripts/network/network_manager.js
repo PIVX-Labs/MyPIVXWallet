@@ -67,11 +67,9 @@ class NetWorkManager {
      */
     async #retryWrapper(funcName, isRPC, ...args) {
         let nMaxTries = this.networks.length;
-        let attemptNet = isRPC
-            ? this.currentNode.copy()
-            : this.currentExplorer.copy();
+        let attemptNet = isRPC ? this.currentNode : this.currentExplorer;
 
-        let i = this.networks.findIndex((net) => attemptNet.equal(net));
+        let i = this.networks.findIndex((net) => attemptNet === net);
         if (i == -1) {
             debugWarn(DebugTopics.NET, 'Cannot find index in networks array');
             i = 0;

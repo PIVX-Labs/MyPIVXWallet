@@ -86,16 +86,6 @@ export class Network {
     async callRPC(api, isText = false) {
         throw new Error('callRPC must be implemented');
     }
-
-    /**
-     * @returns{Network} - a deep copy of the original network
-     */
-    copy() {
-        throw new Error('copy must be implemented');
-    }
-    equal(network) {
-        throw new Error('equal must be implemented');
-    }
 }
 
 export class RPCNodeNetwork extends Network {
@@ -172,16 +162,6 @@ export class RPCNodeNetwork extends Network {
      */
     async getShieldBlockList() {
         return await this.callRPC('/getshieldblocks');
-    }
-
-    copy() {
-        return new RPCNodeNetwork(this.strUrl);
-    }
-    /**
-     * @param {RPCNodeNetwork} network
-     */
-    equal(network) {
-        return this.strUrl === network.strUrl;
     }
 }
 
@@ -323,16 +303,5 @@ export class ExplorerNetwork extends Network {
      */
     #fetchBlockbook(api, options) {
         return fetch(this.strUrl + api, options);
-    }
-
-    copy() {
-        return new ExplorerNetwork(this.strUrl);
-    }
-
-    /**
-     * @param {ExplorerNetwork} network
-     */
-    equal(network) {
-        return this.strUrl === network.strUrl;
     }
 }
