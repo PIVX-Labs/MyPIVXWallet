@@ -65,7 +65,7 @@ class NetWorkManager {
      * @param {boolean} isRPC - Whether to begin with the selected explorer or RPC node
      * @param  {...any} args - The arguments to pass to the function
      */
-    async retryWrapper(funcName, isRPC, ...args) {
+    async #retryWrapper(funcName, isRPC, ...args) {
         let nMaxTries = this.networks.length;
         let attemptNet = isRPC
             ? this.currentNode.copy()
@@ -114,7 +114,7 @@ class NetWorkManager {
         while (trials < maxTrials) {
             trials += 1;
             try {
-                return await this.retryWrapper(funcName, isRPC, ...args);
+                return await this.#retryWrapper(funcName, isRPC, ...args);
             } catch (e) {
                 debugLog(
                     DebugTopics.NET,
@@ -141,28 +141,28 @@ class NetWorkManager {
     }
 
     async getUTXOs(strAddress) {
-        return await this.retryWrapper('getUTXOs', false, strAddress);
+        return await this.#retryWrapper('getUTXOs', false, strAddress);
     }
 
     async getXPubInfo(strXPUB) {
-        return await this.retryWrapper('getXPubInfo', false, strXPUB);
+        return await this.#retryWrapper('getXPubInfo', false, strXPUB);
     }
 
     async getShieldBlockList() {
-        return await this.retryWrapper('getShieldBlockList', true);
+        return await this.#retryWrapper('getShieldBlockList', true);
     }
 
     async getBlockCount() {
-        return await this.retryWrapper('getBlockCount', true);
+        return await this.#retryWrapper('getBlockCount', true);
     }
 
     async getBestBlockHash() {
-        return await this.retryWrapper('getBestBlockHash', true);
+        return await this.#retryWrapper('getBestBlockHash', true);
     }
 
     async sendTransaction(hex) {
         try {
-            const data = await this.retryWrapper('sendTransaction', true, hex);
+            const data = await this.#retryWrapper('sendTransaction', true, hex);
 
             // Throw and catch if the data is not a TXID
             if (!data.result || data.result.length !== 64) throw data;
@@ -177,7 +177,7 @@ class NetWorkManager {
     }
 
     async getTxInfo(_txHash) {
-        return await this.retryWrapper('getTxInfo', false, _txHash);
+        return await this.#retryWrapper('getTxInfo', false, _txHash);
     }
 }
 
