@@ -373,8 +373,7 @@ export async function renderSavedPromos() {
         // Sync only the balance of the code (not full data)
         cCode.getUTXOs(false);
 
-        let nBal = ((await cCode.getBalance(true)) - PROMO_FEE) / COIN;
-        nBal = nBal < 0 ? 0 : nBal;
+        const nBal = Math.max((await cCode.getBalance(true)) - PROMO_FEE, 0) / COIN;
 
         // A code younger than ~3 minutes without a balance will just say 'confirming', since Blockbook does not return a balance for NEW codes
         const fNew = cCode.time.getTime() > Date.now() - 60000 * 3;
