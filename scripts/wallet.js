@@ -708,6 +708,9 @@ export class Wallet {
             await this.#syncShield();
         }
         this.#isSynced = true;
+        // At this point download the last missing blocks in the range (blockCount -5, blockCount]
+        await this.getLatestBlocks(blockCount);
+
         // Update both activities post sync
         getEventEmitter().enableEvent('balance-update');
         getEventEmitter().emit('balance-update');
