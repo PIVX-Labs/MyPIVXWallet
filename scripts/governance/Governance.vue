@@ -10,12 +10,14 @@ import ProposalCreateModal from './ProposalCreateModal.vue';
 import MonthlyBudget from './MonthlyBudget.vue';
 import BudgetAllocated from './BudgetAllocated.vue';
 import { hasEncryptedWallet } from '../wallet';
-import { createAlert, sanitizeHTML } from '../misc';
+import { sanitizeHTML } from '../misc';
 import { ALERTS, tr, translation } from '../i18n';
 import { storeToRefs } from 'pinia';
 import { useSettings } from '../composables/use_settings';
 import { getNetwork } from '../network';
 import { useMasternode } from '../composables/use_masternode';
+import { useAlerts } from '../composables/use_alerts.js';
+const { createAlert } = useAlerts();
 
 const showCreateProposalModal = ref(false);
 
