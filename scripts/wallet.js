@@ -856,7 +856,7 @@ export class Wallet {
             // since it takes around 1 minute for blockbook to make it API available
             for (
                 let blockHeight = this.#lastProcessedBlock + 1;
-                blockHeight < blockCount;
+                blockHeight <= blockCount;
                 blockHeight++
             ) {
                 try {
