@@ -5,7 +5,7 @@ import { debugLog, DebugTopics, debugWarn } from '../debug.js';
 import { sleep } from '../utils.js';
 import { getEventEmitter } from '../event_bus.js';
 
-class NetWorkManager {
+class NetworkManager {
     /**
      * @type {Network} - Current selected Explorer
      */
@@ -179,11 +179,11 @@ class NetWorkManager {
     }
 }
 
-const networkManager = new NetWorkManager();
+const networkManager = new NetworkManager();
 
 /**
  * Gets the network in use by MPW.
- * @returns {Network?} Returns the network in use, may be null if MPW hasn't properly loaded yet.
+ * @returns {NetworkManager} Returns the network manager in use.
  */
 export function getNetwork() {
     return networkManager;
