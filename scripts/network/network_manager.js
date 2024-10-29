@@ -179,7 +179,7 @@ class NetWorkManager {
     }
 }
 
-export const networkManager = new NetWorkManager();
+const networkManager = new NetWorkManager();
 
 /**
  * Gets the network in use by MPW.
