@@ -177,14 +177,18 @@ class NetworkManager {
     async getTxInfo(_txHash) {
         return await this.#retryWrapper('getTxInfo', false, _txHash);
     }
-}
 
-const networkManager = new NetworkManager();
+    static #instance = new NetworkManager();
+
+    static getInstance() {
+        return this.#instance;
+    }
+}
 
 /**
  * Gets the network in use by MPW.
  * @returns {NetworkManager} Returns the network manager in use.
  */
 export function getNetwork() {
-    return networkManager;
+    return NetworkManager.getInstance();
 }

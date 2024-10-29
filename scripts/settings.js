@@ -19,7 +19,7 @@ import { createAlert } from './alerts/alert.js';
 import { Database } from './database.js';
 import { getEventEmitter } from './event_bus.js';
 import countries from 'country-locale-map/countries.json';
-import { networkManager } from './network/network_manager.js';
+import { getNetwork } from './network/network_manager.js';
 
 // --- Default Settings
 /** A mode that emits verbose console info for internal MPW operations */
@@ -220,7 +220,7 @@ export async function setExplorer(explorer) {
     const database = await Database.getInstance();
     await database.setSettings({ explorer: explorer.url });
     cExplorer = explorer;
-    networkManager.setNetwork(cExplorer.url, false);
+    getNetwork().setNetwork(cExplorer.url, false);
 
     // Update the selector UI
     doms.domExplorerSelect.value = cExplorer.url;
@@ -235,7 +235,7 @@ export async function setExplorer(explorer) {
 
 export async function setNode(node, fSilent = false) {
     cNode = node;
-    networkManager.setNetwork(node.url, true);
+    getNetwork().setNetwork(node.url, true);
     const database = await Database.getInstance();
     database.setSettings({ node: node.url });
 
@@ -414,7 +414,7 @@ export async function toggleTestnet(
 
     // Update testnet toggle in settings
     doms.domTestnetToggler.checked = cChainParams.current.isTestnet;
-    networkManager.reset();
+    getNetwork().reset();
     await start();
     // Make sure we have the correct number of blocks before loading any wallet
     await refreshChainData();
