@@ -178,6 +178,10 @@ class NetworkManager {
         return await this.#retryWrapper('getTxInfo', false, _txHash);
     }
 
+    async callRPC(api, isText = false) {
+        return await this.#retryWrapper('callRPC', true, api, isText);
+    }
+
     static #instance = new NetworkManager();
 
     static getInstance() {
