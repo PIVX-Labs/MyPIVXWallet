@@ -9,25 +9,25 @@ class NetworkManager {
     /**
      * @type {Network} - Current selected Explorer
      */
-    currentExplorer;
+    #currentExplorer;
 
     /**
      * @type {Network} - Current selected RPC node
      */
-    currentNode;
+    #currentNode;
 
     /**
      * @type {Array<Network>} - List of all available Networks
      */
-    networks = [];
+    #networks = [];
 
     start() {
-        this.networks = [];
+        this.#networks = [];
         for (let network of cChainParams.current.Explorers) {
-            this.networks.push(new ExplorerNetwork(network.url));
+            this.#networks.push(new ExplorerNetwork(network.url));
         }
         for (let network of cChainParams.current.Nodes) {
-            this.networks.push(new RPCNodeNetwork(network.url));
+            this.#networks.push(new RPCNodeNetwork(network.url));
         }
     }
 
@@ -35,7 +35,7 @@ class NetworkManager {
      * Reset the list of available networks
      */
     reset() {
-        this.networks = [];
+        this.#networks = [];
     }
 
     /**
@@ -44,17 +44,17 @@ class NetworkManager {
      * @param {boolean} isRPC - whether we are setting the explorer or the RPC node
      */
     setNetwork(strUrl, isRPC) {
-        if (this.networks.length === 0) {
+        if (this.#networks.length === 0) {
             this.start();
         }
-        const found = this.networks.find(
+        const found = this.#networks.find(
             (network) => network.strUrl === strUrl
         );
         if (!found) throw new Error('Cannot find provided Network!');
         if (isRPC) {
-            this.currentNode = found;
+            this.#currentNode = found;
         } else {
-            this.currentExplorer = found;
+            this.#currentExplorer = found;
         }
     }
 
@@ -66,10 +66,10 @@ class NetworkManager {
      * @param  {...any} args - The arguments to pass to the function
      */
     async #retryWrapper(funcName, isRPC, ...args) {
-        let nMaxTries = this.networks.length;
-        let attemptNet = isRPC ? this.currentNode : this.currentExplorer;
+        let nMaxTries = this.#networks.length;
+        let attemptNet = isRPC ? this.#currentNode : this.#currentExplorer;
 
-        let i = this.networks.findIndex((net) => attemptNet === net);
+        let i = this.#networks.findIndex((net) => attemptNet === net);
         if (i == -1) {
             debugWarn(DebugTopics.NET, 'Cannot find index in networks array');
             i = 0;
@@ -93,7 +93,7 @@ class NetworkManager {
                 if (!fAutoSwitch || attempts == nMaxTries) {
                     throw error;
                 }
-                attemptNet = this.networks[(i + attempts) % nMaxTries];
+                attemptNet = this.#networks[(i + attempts) % nMaxTries];
             }
         }
     }
