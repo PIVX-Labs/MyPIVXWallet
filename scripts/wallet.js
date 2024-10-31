@@ -1062,7 +1062,7 @@ export class Wallet {
             }
 
             const fee = transactionBuilder.getFee();
-            const changeValue = transactionBuilder.valueIn - value - fee;
+            const changeValue = transactionBuilder.valueIn - transactionBuilder.valueOut - fee;
             if (changeValue < 0) {
                 if (!subtractFeeFromAmt) {
                     throw new Error('Not enough balance');
