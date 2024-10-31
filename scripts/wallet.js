@@ -290,8 +290,8 @@ export class Wallet {
     }
 
     /**
-     * Derive xpub (given nReceiving and nIndex)
-     * @return {boolean} Return true if a masterKey has been loaded in the wallet
+     * Check if the wallet (masterKey) is loaded in memory
+     * @return {boolean} Return `true` if a masterKey has been loaded in the wallet
      */
     isLoaded() {
         return !!this.#masterKey;
@@ -910,7 +910,7 @@ export class Wallet {
                         for (const tx of block.txs) {
                             const parsed = Transaction.fromHex(tx.hex);
                             parsed.blockHeight = blockHeight;
-                            parsed.blockTime = tx.blocktime;
+                            parsed.blockTime = block.mediantime;
                             // Avoid wasting memory on txs that do not regard our wallet
                             if (this.ownTransaction(parsed)) {
                                 await this.addTransaction(parsed);
@@ -928,14 +928,12 @@ export class Wallet {
 
             // SHIELD-only checks
             if (this.hasShield()) {
-                if (block?.finalSaplingRoot) {
-                    if (
-                        !(await this.#checkShieldSaplingRoot(
-                            block.finalsaplingroot
-                        ))
-                    )
-                        return;
-                }
+                const saplingRoot = block?.finalsaplingroot;
+                if (
+                    saplingRoot &&
+                    !(await this.#checkShieldSaplingRoot(saplingRoot))
+                )
+                    return;
                 await this.saveShieldOnDisk();
             }
         }
@@ -949,6 +947,7 @@ export class Wallet {
         if (saplingRoot !== networkSaplingRoot) {
             createAlert('warning', translation.badSaplingRoot, 5000);
             this.#mempool = new Mempool();
+            this.#isSynced = false;
             // TODO: take the wallet creation height in input from users
             await this.#shield.reloadFromCheckpoint(4200000);
             await this.#transparentSync();
