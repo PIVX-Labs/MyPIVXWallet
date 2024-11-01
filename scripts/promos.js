@@ -383,10 +383,10 @@ export async function renderSavedPromos() {
         const fCannotDelete = !cCode.fSynced || fNew || nBal > 0;
 
         // Trimmed code
-        let trimmedCode = cCode.code.length > 10
-            ? cCode.code.slice(0, 7) + "..." 
-            : cCode.code;
-
+        let trimmedCode =
+            cCode.code.length > 10
+                ? cCode.code.slice(0, 7) + '...'
+                : cCode.code;
 
         // Status calculation (defaults to 'fNew' condition)
         let strStatus = '<i class="fa-solid fa-spinner spinningLoading"></i>';
@@ -411,9 +411,7 @@ export async function renderSavedPromos() {
                      cCode.address
                  }', this)" class="fas fa-clipboard" style="cursor: pointer; margin-right: 10px;"></i><code id="copy${
             cCode.address
-        }" class="wallet-code" style="display: inline !important; color: #e83e8c;">${
-            trimmedCode
-        }</code></td>
+        }" class="wallet-code" style="display: inline !important; color: #e83e8c;">${trimmedCode}</code></td>
                  <td>${
                      fNew || !cCode.fSynced
                          ? '...'
@@ -682,8 +680,13 @@ export async function redeemPromoCode(strCode) {
         if (evt.data.type === 'progress') {
             doms.domRedeemCodeDiv.style.display = 'flex';
             doms.domRedeemCodeProgress.style.display = '';
-            doms.domRedeemCodeETA.innerHTML = evt.data.res.eta.toFixed(0) + 's remaining to unwrap...';
-            doms.domRedeemCodeProgress.style.setProperty("width", `${evt.data.res.progress}%`, "important");
+            doms.domRedeemCodeETA.innerHTML =
+                evt.data.res.eta.toFixed(0) + 's remaining to unwrap...';
+            doms.domRedeemCodeProgress.style.setProperty(
+                'width',
+                `${evt.data.res.progress}%`,
+                'important'
+            );
         } else {
             // The finished key!
             promoThread.terminate();
