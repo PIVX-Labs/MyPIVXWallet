@@ -661,18 +661,22 @@ defineExpose({
                                                 "
                                             ></i>
                                         </div>
-
-                                        <p
-                                            id="redeemCodeETA"
-                                            style="
-                                                margin-bottom: 0;
-                                                display: none;
-                                            "
-                                        >
-                                            <br /><br />
-                                        </p>
+                                        
+                                        
+                                        <div id="redeemCodeDiv" style="margin-top:50px; display: none; font-size: 15px; background-color: rgb(58, 12, 96); border: 1px solid rgb(159, 0, 249); padding: 8px 15px 10px; border-radius: 10px; color: rgb(211, 190, 229); width: 310px; text-align: left; margin-bottom: 20px;">
+                                            <div style="width: 48px; height: 38px; background-color: rgb(49, 11, 81); margin-right: 9px; border-radius: 9px; display: flex; justify-content: center; align-items: center; font-size: 20px;">
+                                                <i class="fas fa-spinner spinningLoading"></i>
+                                            </div>
+                                            <div style="width: 100%;">
+                                                <div id="redeemCodeETA">Calculating...</div>
+                                                <div div="" class="progress" style="max-width: 310px; border: 1px solid rgb(147, 46, 205); border-radius: 4px; background-color: rgb(43, 0, 58);">
+                                                    <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" id="redeemCodeProgress" aria-valuenow="42" aria-valuemin="0" aria-valuemax="100" style="width: 42% !important;">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
                                         <progress
-                                            id="redeemCodeProgress"
                                             min="0"
                                             max="100"
                                             value="50"

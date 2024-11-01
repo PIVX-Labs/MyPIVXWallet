@@ -160,6 +160,7 @@ export async function start() {
         domRedeemCodeCreatePendingList: document.getElementById(
             'redeemCodeCreatePendingList'
         ),
+        domRedeemCodeDiv: document.getElementById('redeemCodeDiv'),
         domPromoTable: document.getElementById('promo-table'),
         domContactsTable: document.getElementById('contactsList'),
         domConfirmModalDialog: document.getElementById('confirmModalDialog'),

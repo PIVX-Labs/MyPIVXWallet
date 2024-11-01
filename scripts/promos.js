@@ -382,6 +382,12 @@ export async function renderSavedPromos() {
         // If this code is allowed to be deleted or not
         const fCannotDelete = !cCode.fSynced || fNew || nBal > 0;
 
+        // Trimmed code
+        let trimmedCode = cCode.code.length > 10
+            ? cCode.code.slice(0, 7) + "..." 
+            : cCode.code;
+
+
         // Status calculation (defaults to 'fNew' condition)
         let strStatus = '<i class="fa-solid fa-spinner spinningLoading"></i>';
         if (!fNew) {
@@ -406,7 +412,7 @@ export async function renderSavedPromos() {
                  }', this)" class="fas fa-clipboard" style="cursor: pointer; margin-right: 10px;"></i><code id="copy${
             cCode.address
         }" class="wallet-code" style="display: inline !important; color: #e83e8c;">${
-            cCode.code
+            trimmedCode
         }</code></td>
                  <td>${
                      fNew || !cCode.fSynced
@@ -674,14 +680,10 @@ export async function redeemPromoCode(strCode) {
     // Listen for and report derivation progress
     promoThread.onmessage = async (evt) => {
         if (evt.data.type === 'progress') {
+            doms.domRedeemCodeDiv.style.display = 'flex';
             doms.domRedeemCodeProgress.style.display = '';
-            doms.domRedeemCodeETA.innerHTML =
-                '<br><br>' +
-                evt.data.res.eta.toFixed(0) +
-                's remaining to unwrap...<br><br>' +
-                evt.data.res.progress +
-                '%';
-            doms.domRedeemCodeProgress.value = evt.data.res.progress;
+            doms.domRedeemCodeETA.innerHTML = evt.data.res.eta.toFixed(0) + 's remaining to unwrap...';
+            doms.domRedeemCodeProgress.style.setProperty("width", `${evt.data.res.progress}%`, "important");
         } else {
             // The finished key!
             promoThread.terminate();
@@ -689,8 +691,8 @@ export async function redeemPromoCode(strCode) {
 
             // Pause animations and finish 'unwrapping' by checking the derived Promo Key for a balance
             doms.domRedeemCodeGiftIcon.classList.remove('fa-bounce');
-            doms.domRedeemCodeProgress.style.display = 'none';
-            doms.domRedeemCodeETA.innerHTML = '<br><br>Final checks...';
+            doms.domRedeemCodeDiv.style.display = 'none';
+            doms.domRedeemCodeETA.innerHTML = 'Final checks...';
 
             // Prepare the global Promo Wallet
             cPromoWallet = new PromoWallet({
