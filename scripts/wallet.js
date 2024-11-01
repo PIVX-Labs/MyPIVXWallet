@@ -1014,23 +1014,12 @@ export class Wallet {
             if (!returnAddress) [returnAddress] = this.getNewAddress(1);
             // The per-output target for maximum staking efficiency
             const nTarget = cChainParams.current.stakeSplitTarget;
-            // Keep track of the remainder, which is the 'unoptimal' output (or change/non-output, if too small)
-            let nRemainder = value;
             // Generate optimal staking outputs
-            while (nRemainder > nTarget) {
+            for (let i = 0; i < Math.floor(value / nTarget); i++) {
                 transactionBuilder.addColdStakeOutput({
                     address: returnAddress,
                     addressColdStake: address,
-                    value: nTarget,
-                });
-                nRemainder -= nTarget;
-            }
-            // If the remainder is larger than one coin, we create the 'unoptimal' output
-            if (nRemainder >= COIN) {
-                transactionBuilder.addColdStakeOutput({
-                    address: returnAddress,
-                    addressColdStake: address,
-                    value: nRemainder,
+                    value: i == 0 ? nTarget + (value % nTarget) : nTarget,
                 });
             }
         } else if (isProposal) {
