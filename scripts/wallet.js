@@ -753,11 +753,14 @@ export class Wallet {
         }
 
         try {
-            const req = await fetch(
-                `${cNode.url}/getshielddata?startBlock=${
+            const network = getNetwork();
+            const req = await network.callRPC(
+                `/getshielddata?startBlock=${
                     wallet.#shield.getLastSyncedBlock() + 1
-                }`
+                }`,
+                'raw'
             );
+            if (!req.ok) throw new Error("Couldn't sync shield");
             const reader = req.body.getReader();
             /** @type {number[]} Array of bytes that we are processing **/
             let processing = [];

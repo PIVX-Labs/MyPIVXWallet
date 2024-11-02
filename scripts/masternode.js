@@ -335,7 +335,7 @@ export default class Masternode {
     async start() {
         const message = await this.broadcastMessageToHex();
         const url = `/relaymasternodebroadcast?params=${message}`;
-        const response = await getNetwork().callRPC(url, true);
+        const response = await getNetwork().callRPC(url, 'text');
         return response.includes('Masternode broadcast sent');
     }
 
@@ -443,7 +443,7 @@ export default class Masternode {
         },${hash},${voteCode === 1 ? 'yes' : 'no'},${sigTime},${encodeURI(
             signature
         ).replaceAll('+', '%2b')}`;
-        const text = await getNetwork().callRPC(url, true);
+        const text = await getNetwork().callRPC(url, 'text');
         return text;
     }
 
@@ -519,7 +519,7 @@ export default class Masternode {
                 )},${nPayments},${start},${encodeURI(address)},${
                     monthlyPayment / COIN
                 },${txid}`,
-                true
+                'text'
             );
 
             if (/^"[a-f0-9]"$/ && res.length == 64 + 2) {
@@ -544,7 +544,9 @@ export default class Masternode {
     }
 
     static async getNextSuperblock() {
-        return parseInt(await getNetwork().callRPC(`/getnextsuperblock`, true));
+        return parseInt(
+            await getNetwork().callRPC(`/getnextsuperblock`, 'text')
+        );
     }
 
     /**

@@ -66,12 +66,19 @@ export class Network {
     /**
      * A safety-wrapped RPC interface for calling Node RPCs with automatic correction handling
      * @param {string} api - The API endpoint to call
-     * @param {boolean} isText - Optionally parse the result as Text rather than JSON
+     * @param {"json"|"text"|"raw"} [isText] - Parse the result as text, JSON or return the raw stream. JSON by default
      * @returns {Promise<object|string>} - The RPC response; JSON by default, text if `isText` is true.
      */
-    async callRPC(api, isText = false) {
+    async callRPC(api, mode = 'json') {
         const cRes = await retryWrapper(fetchNode, false, api);
-        return isText ? await cRes.text() : await cRes.json();
+        switch (mode) {
+            case 'json':
+                return await cRes.json();
+            case 'text':
+                return await cRes.text();
+            case 'raw':
+                return cRes;
+        }
     }
 }
 
@@ -99,7 +106,7 @@ export class ExplorerNetwork extends Network {
     async getBlock(blockHeight) {
         // First we fetch the blockhash (and strip RPC's quotes)
         const strHash = (
-            await this.callRPC(`/getblockhash?params=${blockHeight}`, true)
+            await this.callRPC(`/getblockhash?params=${blockHeight}`, 'text')
         ).replace(/"/g, '');
         // Craft a filter to retrieve only raw Tx hex and txid, also change "tx" to "txs"
         const strFilter =
@@ -116,7 +123,7 @@ export class ExplorerNetwork extends Network {
      * @returns {Promise<number>} - Block height
      */
     async getBlockCount() {
-        return parseInt(await this.callRPC('/getblockcount', true));
+        return parseInt(await this.callRPC('/getblockcount', 'text'));
     }
 
     /**
@@ -133,7 +140,7 @@ export class ExplorerNetwork extends Network {
             return backend.bestBlockHash;
         } catch {
             // Use Nodes as a fallback
-            return await this.callRPC('/getbestblockhash', true);
+            return await this.callRPC('/getbestblockhash', 'text');
         }
     }
 
@@ -284,7 +291,7 @@ export class ExplorerNetwork extends Network {
                 // Use Nodes as a fallback
                 strTXID = await this.callRPC(
                     '/sendrawtransaction?params=' + hex,
-                    true
+                    'text'
                 );
                 strTXID = strTXID.replace(/"/g, '');
             }
