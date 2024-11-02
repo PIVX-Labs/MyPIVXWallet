@@ -242,6 +242,14 @@ export class Mempool {
     }
 
     /**
+     * @param {string} txid - transaction id
+     * @returns {import('./transaction.js').Transaction | undefined}
+     */
+    getTransaction(txid) {
+        return this.#txmap.get(txid);
+    }
+
+    /**
      * @param blockCount - chain height
      */
     getBalance(blockCount) {

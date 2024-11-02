@@ -99,6 +99,12 @@ export class Wallet {
      * @type {number}
      */
     #lastProcessedBlock = 0;
+    /**
+     * Array of historical txs, ordered by block height
+     * @type HistoricalTx[]
+     */
+    #historicalTxs;
+
     constructor({ nAccount, masterKey, shield, mempool = new Mempool() }) {
         this.#nAccount = nAccount;
         this.#mempool = mempool;
@@ -247,6 +253,7 @@ export class Wallet {
         }
         this.#mempool = new Mempool();
         this.#lastProcessedBlock = 0;
+        this.#historicalTxs = [];
     }
 
     /**
@@ -690,6 +697,32 @@ export class Wallet {
             );
         }
         return histTXs;
+    }
+
+    /**
+     * @param {Transaction} tx
+     */
+    #pushToHistoricalTx(tx) {
+        const historicalTx = this.toHistoricalTXs([tx])[0];
+        let prevHeight = Number.POSITIVE_INFINITY;
+        for (const [i, hTx] of this.#historicalTxs.entries()) {
+            if (
+                historicalTx.blockHeight <= prevHeight &&
+                historicalTx.blockHeight >= hTx.blockHeight
+            ) {
+                this.#historicalTxs.splice(i, 0, historicalTx);
+                return;
+            }
+            prevHeight = hTx.blockHeight;
+        }
+        this.#historicalTxs.push(historicalTx);
+    }
+
+    /**
+     * @returns {HistoricalTx[]}
+     */
+    getHistoricalTxs() {
+        return this.#historicalTxs;
     }
     sync = lockableFunction(async () => {
         if (this.#isSynced) {
@@ -1159,6 +1192,7 @@ export class Wallet {
      * @param {import('./transaction.js').Transaction} transaction
      */
     async addTransaction(transaction, skipDatabase = false) {
+        const tx = this.#mempool.getTransaction(transaction.txid);
         this.#mempool.addTransaction(transaction);
         let i = 0;
         for (const out of transaction.vout) {
@@ -1183,6 +1217,11 @@ export class Wallet {
         if (!skipDatabase) {
             const db = await Database.getInstance();
             await db.storeTx(transaction);
+        }
+        if (!tx || tx.blockHeight === -1) {
+            // Do not add unconfirmed txs to history
+            if (transaction.blockHeight !== -1)
+                this.#pushToHistoricalTx(transaction);
         }
     }
 
