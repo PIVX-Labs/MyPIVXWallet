@@ -247,8 +247,24 @@ export class ExplorerNetwork extends Network {
      * @returns {Promise<number>}
      */
     async getNumPages(nStartHeight, addr) {
-        const page = await this.#getPage(nStartHeight, addr, 1, 1);
-        return page.txs;
+        // 1) Find the total number of Blockbook txs
+        const walletTxs = (await this.#getPage(nStartHeight, addr, 1, 1)).txs;
+        // 2) This integer is larger than the number of pages
+        const nPageOverflow = walletTxs + 1;
+        // 3) In case of page overflow, Blockbook will return the actual last page.
+        const nPage = (
+            await this.#getPage(nStartHeight, addr, nPageOverflow, 1)
+        ).page;
+
+        // This should not really happen, but just to be sure...
+        if (nPage >= nPageOverflow) {
+            throw new Error(
+                'Blockbook getNumPages failed! please contact a developer'
+            );
+        }
+
+        // Convert to pageSize = 1000
+        return Math.ceil(nPage / 1000);
     }
 
     /**
