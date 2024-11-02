@@ -754,7 +754,7 @@ export class Wallet {
         const cNet = getNetwork();
         const addr = this.getKeyToExport();
         let nStartHeight = Math.max(
-            ...this.getTransactions().map((tx) => tx.blockHeight)
+            ...this.#mempool.getTransactions().map((tx) => tx.blockHeight)
         );
         // Compute the total pages and iterate through them until we've synced everything
         const totalPages = await cNet.getNumPages(nStartHeight, addr);
@@ -1261,13 +1261,6 @@ export class Wallet {
                 blockCount,
             })
             .filter((u) => u.value === collateralValue);
-    }
-
-    /**
-     * @returns {import('./transaction.js').Transaction[]} a list of all transactions
-     */
-    getTransactions() {
-        return this.#mempool.getTransactions();
     }
 
     get balance() {
