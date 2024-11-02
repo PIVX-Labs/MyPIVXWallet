@@ -181,11 +181,11 @@ export function getScriptForBurn(data) {
 export function isP2PKH(dataBytes) {
     return (
         dataBytes.length >= 25 &&
-        dataBytes[0] == OP['DUP'] &&
-        dataBytes[1] == OP['HASH160'] &&
-        dataBytes[2] == 0x14 &&
-        dataBytes[23] == OP['EQUALVERIFY'] &&
-        dataBytes[24] == OP['CHECKSIG']
+        dataBytes[0] === OP['DUP'] &&
+        dataBytes[1] === OP['HASH160'] &&
+        dataBytes[2] === 0x14 &&
+        dataBytes[23] === OP['EQUALVERIFY'] &&
+        dataBytes[24] === OP['CHECKSIG']
     );
 }
 
@@ -197,18 +197,18 @@ export function isP2PKH(dataBytes) {
 export function isP2CS(dataBytes) {
     return (
         dataBytes.length >= 51 &&
-        dataBytes[0] == OP['DUP'] &&
-        dataBytes[1] == OP['HASH160'] &&
-        dataBytes[2] == OP['ROT'] &&
-        dataBytes[3] == OP['IF'] &&
-        (dataBytes[4] == OP['CHECKCOLDSTAKEVERIFY'] ||
-            dataBytes[4] == OP['CHECKCOLDSTAKEVERIFY_LOF']) &&
-        dataBytes[5] == 0x14 &&
-        dataBytes[26] == OP['ELSE'] &&
-        dataBytes[27] == 0x14 &&
-        dataBytes[48] == OP['ENDIF'] &&
-        dataBytes[49] == OP['EQUALVERIFY'] &&
-        dataBytes[50] == OP['CHECKSIG']
+        dataBytes[0] === OP['DUP'] &&
+        dataBytes[1] === OP['HASH160'] &&
+        dataBytes[2] === OP['ROT'] &&
+        dataBytes[3] === OP['IF'] &&
+        (dataBytes[4] === OP['CHECKCOLDSTAKEVERIFY'] ||
+            dataBytes[4] === OP['CHECKCOLDSTAKEVERIFY_LOF']) &&
+        dataBytes[5] === 0x14 &&
+        dataBytes[26] === OP['ELSE'] &&
+        dataBytes[27] === 0x14 &&
+        dataBytes[48] === OP['ENDIF'] &&
+        dataBytes[49] === OP['EQUALVERIFY'] &&
+        dataBytes[50] === OP['CHECKSIG']
     );
 }
 
@@ -219,12 +219,12 @@ export function isP2CS(dataBytes) {
 export function isP2EXC(dataBytes) {
     return (
         dataBytes.length >= 26 &&
-        dataBytes[0] == OP['EXCHANGEADDR'] &&
-        dataBytes[1] == OP['DUP'] &&
-        dataBytes[2] == OP['HASH160'] &&
-        dataBytes[3] == 0x14 &&
-        dataBytes[24] == OP['EQUALVERIFY'] &&
-        dataBytes[25] == OP['CHECKSIG']
+        dataBytes[0] === OP['EXCHANGEADDR'] &&
+        dataBytes[1] === OP['DUP'] &&
+        dataBytes[2] === OP['HASH160'] &&
+        dataBytes[3] === 0x14 &&
+        dataBytes[24] === OP['EQUALVERIFY'] &&
+        dataBytes[25] === OP['CHECKSIG']
     );
 }
 
@@ -234,9 +234,9 @@ export function isP2EXC(dataBytes) {
  */
 export function isProposalFee(dataBytes) {
     return (
-        dataBytes.length == 34 &&
-        dataBytes[0] == OP['RETURN'] &&
-        dataBytes[1] == 32
+        dataBytes.length === 34 &&
+        dataBytes[0] === OP['RETURN'] &&
+        dataBytes[1] === 32
     );
 }
 /**

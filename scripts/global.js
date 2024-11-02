@@ -478,7 +478,7 @@ export async function govVote(hash, voteCode) {
         (await confirmPopup({
             title: ALERTS.CONFIRM_POPUP_VOTE,
             html: ALERTS.CONFIRM_POPUP_VOTE_HTML,
-        })) == true
+        })) === true
     ) {
         const database = await Database.getInstance();
         const cMasternode = await database.getMasternode();
@@ -769,7 +769,7 @@ export async function updateGovernanceTab() {
     fRenderingGovernance = true;
 
     // Setup the Superblock countdown (if not already done), no need to block thread with await, either.
-    if (!isTestnetLastState == cChainParams.current.isTestnet) {
+    if (!isTestnetLastState === cChainParams.current.isTestnet) {
         // Reset flipdown
         governanceFlipdown = null;
         doms.domFlipdown.innerHTML = '';
@@ -1004,7 +1004,7 @@ async function renderProposals(arrProposals, fContested) {
         }
 
         // Add border radius to last row
-        if (arrProposals.length - 1 == i) {
+        if (arrProposals.length - 1 === i) {
             domStatus.classList.add('bblr-7p');
         }
 
@@ -1254,7 +1254,7 @@ async function renderProposals(arrProposals, fContested) {
             domYesBtn.onclick = () => govVote(cProposal.Hash, 1);
 
             // Add border radius to last row
-            if (arrProposals.length - 1 == i) {
+            if (arrProposals.length - 1 === i) {
                 domVoteBtns.classList.add('bbrr-7p');
             }
 
@@ -1753,7 +1753,7 @@ export function switchSettings(page) {
 
     Object.values(SETTINGS).forEach(({ section, btn }) => {
         // Set the slider to the proper location
-        if (page == 'display') {
+        if (page === 'display') {
             doms.domDisplayDecimalsSlider.oninput = function () {
                 doms.domDisplayDecimalsSliderDisplay.innerHTML = this.value;
                 //let val =  ((((doms.domDisplayDecimalsSlider.offsetWidth - 24) / 9) ) * parseInt(this.value));

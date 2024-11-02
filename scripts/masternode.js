@@ -522,7 +522,7 @@ export default class Masternode {
                 true
             );
 
-            if (/^"[a-f0-9]"$/ && res.length == 64 + 2) {
+            if (/^"[a-f0-9]"$/ && res.length === 64 + 2) {
                 return { ok: true, hash: res };
             } else if (
                 res.includes('is unconfirmed') ||

@@ -70,7 +70,7 @@ class NetworkManager {
         let attemptNet = isRPC ? this.#currentNode : this.#currentExplorer;
 
         let i = this.#networks.findIndex((net) => attemptNet === net);
-        if (i == -1) {
+        if (i === -1) {
             debugWarn(DebugTopics.NET, 'Cannot find index in networks array');
             i = 0;
         }
@@ -90,7 +90,7 @@ class NetworkManager {
                     attemptNet.strUrl + ' failed on ' + funcName
                 );
                 // If allowed, switch instances
-                if (!fAutoSwitch || attempts == nMaxTries) {
+                if (!fAutoSwitch || attempts === nMaxTries) {
                     throw error;
                 }
                 attemptNet = this.#networks[(i + attempts) % nMaxTries];
