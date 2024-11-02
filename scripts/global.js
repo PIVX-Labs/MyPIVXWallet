@@ -769,7 +769,7 @@ export async function updateGovernanceTab() {
     fRenderingGovernance = true;
 
     // Setup the Superblock countdown (if not already done), no need to block thread with await, either.
-    if (!isTestnetLastState === cChainParams.current.isTestnet) {
+    if (isTestnetLastState !== cChainParams.current.isTestnet) {
         // Reset flipdown
         governanceFlipdown = null;
         doms.domFlipdown.innerHTML = '';
