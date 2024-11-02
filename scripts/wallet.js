@@ -840,9 +840,9 @@ export class Wallet {
     subscribeToNetworkEvents() {
         getEventEmitter().on('new-block', async (block) => {
             if (this.#isSynced) {
+                await this.getLatestBlocks(block);
                 // Invalidate the balance cache to keep immature balance updated
                 this.#mempool.invalidateBalanceCache();
-                await this.getLatestBlocks(block);
                 getEventEmitter().emit('new-tx');
             }
         });
