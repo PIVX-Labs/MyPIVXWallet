@@ -125,7 +125,7 @@ activityReceivedWith = "Recebido com {s}" # Received with {s}
 
 [ALERTS]
 INTERNAL_ERROR = "Erro interno, por favor tente novamente mais tarde" # Internal error, please try again later
-FAILED_TO_IMPORT = "<b>Falha ao importar!</b> Senha inválida" # <b>Failed to import!</b> Invalid password
+FAILED_TO_IMPORT = "Senha inválida" # Invalid password
 UNSUPPORTED_CHARACTER = "O caracter {char} não é suportado em endereços! (Não é compatível com Base58)" # The character '{char}' is unsupported in addresses! (Not Base58 compatible)
 UNSUPPORTED_WEBWORKERS = "Este navegador não suporta Web Workers (JS multi-threaded), infelizmente você não pode gerar carteiras Vanity!" # This browser doesn't support Web Workers (multi-threaded JS), unfortunately you cannot generate Vanity wallets!
 INVALID_ADDRESS = "<b>Endereço PIVX inválido!</b><br> {address}" # <b>Invalid PIVX address!</b><br> {address}

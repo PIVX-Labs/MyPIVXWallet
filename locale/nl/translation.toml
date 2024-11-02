@@ -211,7 +211,7 @@ creatingShieldTransaction = "" # Creating SHIELD transaction...
 
 [ALERTS]
 INTERNAL_ERROR = "Interne fout, probeer het later opnieuw" # Internal error, please try again later
-FAILED_TO_IMPORT = "<b>Importeren mislukt!</b> Ongeldig wachtwoord" # <b>Failed to import!</b> Invalid password
+FAILED_TO_IMPORT = "Ongeldig wachtwoord" # Invalid password
 FAILED_TO_IMPORT_HARDWARE = "<b> Hardware Wallet importeren mislukt </b>." # <b> Failed to import Hardware Wallet</b>.
 TESTNET_ENCRYPTION_DISABLED = "<b>Testnet-modus is AAN!</b><br>Portemonneeversleuteling uitgeschakeld" # <b>Testnet Mode is ON!</b><br>Wallet encryption disabled
 PASSWORD_TOO_SMALL = "Dat wachtwoord is een beetje kort!<br>Gebruik minstens <b>{MIN_PASS_LENGTH} tekens.</b>" # That password is a little short!<br>Use at least <b>{MIN_PASS_LENGTH} characters.</b>

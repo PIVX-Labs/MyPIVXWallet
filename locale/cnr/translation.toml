@@ -211,7 +211,7 @@ creatingShieldTransaction = "" # Creating SHIELD transaction...
 
 [ALERTS]
 INTERNAL_ERROR = "Interna greška, molimo pokušajte ponovo kasnije" # Internal error, please try again later
-FAILED_TO_IMPORT = "<b>Neuspešan uvoz!</b> Neispravna lozinka" # <b>Failed to import!</b> Invalid password
+FAILED_TO_IMPORT = "Neispravna lozinka" # Invalid password
 FAILED_TO_IMPORT_HARDWARE = "<b>Neuspešan uvoz Hardverskog Novčanika</b>." # <b> Failed to import Hardware Wallet</b>.
 TESTNET_ENCRYPTION_DISABLED = "<b>Režim testne mreže je UKLJUČEN!</b><br>Enkripcija novčanika je onemogućena" # <b>Testnet Mode is ON!</b><br>Wallet encryption disabled
 PASSWORD_TOO_SMALL = "Ta lozinka je malo kratka!<br>Koristite najmanje <b>{MIN_PASS_LENGTH} karaktera.</b>" # That password is a little short!<br>Use at least <b>{MIN_PASS_LENGTH} characters.</b>

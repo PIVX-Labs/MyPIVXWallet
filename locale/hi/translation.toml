@@ -211,7 +211,7 @@ creatingShieldTransaction = "क्रिएटिंग शील्ड ट्�
 
 [ALERTS]
 INTERNAL_ERROR = "आंतरिक त्रुटि, कृपया कुछ समय बाद पुनः प्रयास करें" # Internal error, please try again later
-FAILED_TO_IMPORT = "<b>इम्पोर्ट में विफल!</b> अवैध पासवर्ड" # <b>Failed to import!</b> Invalid password
+FAILED_TO_IMPORT = "अवैध पासवर्ड" # Invalid password
 FAILED_TO_IMPORT_HARDWARE = "<b> हार्डवेयर वॉलेट इम्पोर्ट में विफल</b>।" # <b> Failed to import Hardware Wallet</b>.
 TESTNET_ENCRYPTION_DISABLED = "<b>टेस्टनेट मोड चालू है!</b><br>वॉलेट एन्क्रिप्शन निष्क्रिय" # <b>Testnet Mode is ON!</b><br>Wallet encryption disabled
 PASSWORD_TOO_SMALL = "वह पासवर्ड थोड़ी छोटी है!<br>कम से कम <b>{MIN_PASS_LENGTH} अक्षर</b> का उपयोग करें।" # That password is a little short!<br>Use at least <b>{MIN_PASS_LENGTH} characters.</b>

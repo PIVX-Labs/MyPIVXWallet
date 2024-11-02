@@ -211,7 +211,7 @@ creatingShieldTransaction = "" # Creating SHIELD transaction...
 
 [ALERTS]
 INTERNAL_ERROR = "Błąd wewnętrzny, spróbuj ponownie później" # Internal error, please try again later
-FAILED_TO_IMPORT = "<b>Nieprawidłowe hasło</b> Nie udało się zaimportować!" # <b>Failed to import!</b> Invalid password
+FAILED_TO_IMPORT = "Nie udało się zaimportować!" # Invalid password
 FAILED_TO_IMPORT_HARDWARE = "<b>Import portfela sprzętowego (Hardware Wallet) nie powiódł się</b>." # <b> Failed to import Hardware Wallet</b>.
 TESTNET_ENCRYPTION_DISABLED = "<b>Tryb testnet jest włączony!</b><br>Szyfrowanie portfela wyłączone" # <b>Testnet Mode is ON!</b><br>Wallet encryption disabled
 PASSWORD_TOO_SMALL = "To hasło jest za krótkie!<br>Użyj co najmniej <b>{MIN_PASS_LENGTH} znaków.</b>" # That password is a little short!<br>Use at least <b>{MIN_PASS_LENGTH} characters.</b>
