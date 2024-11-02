@@ -211,7 +211,7 @@ creatingShieldTransaction = "" # Creating SHIELD transaction...
 
 [ALERTS]
 INTERNAL_ERROR = "Internal error, Pakiusap uliting muli" # Internal error, please try again later
-FAILED_TO_IMPORT = "Ang password na ito ay hindi wasto" # Invalid password
+INVALID_PASSWORD = "Ang password na ito ay hindi wasto" # Invalid password
 UNSUPPORTED_CHARACTER = "Ang karakter na ito ‘{char}’ay hindi supportado sa mga address! (Not Base58 compatible)" # The character '{char}' is unsupported in addresses! (Not Base58 compatible)
 UNSUPPORTED_WEBWORKERS = "Hindi supportado ng browser na ito ang Web Workers (multi-threaded JS)sa kasamaang palad ay hindi ka makakagawa ng Vanity wallets!" # This browser doesn't support Web Workers (multi-threaded JS), unfortunately you cannot generate Vanity wallets!
 INVALID_ADDRESS = "<b>Ang PIVX address na ito ay hindi wasto!</b><br> {address}" # <b>Invalid PIVX address!</b><br> {address}

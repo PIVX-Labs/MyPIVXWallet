@@ -32,7 +32,7 @@ async function submit() {
     if (wif) {
         emit('import', wif, extsk);
     } else {
-        createAlert('warning', ALERTS.FAILED_TO_IMPORT, 2000);
+        createAlert('warning', ALERTS.INVALID_PASSWORD, 2000);
     }
 }
 
