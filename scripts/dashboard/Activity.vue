@@ -12,6 +12,7 @@ import { beautifyNumber } from '../misc';
 
 import iCheck from '../../assets/icons/icon-check.svg';
 import iHourglass from '../../assets/icons/icon-hourglass.svg';
+import { blockCount } from '../global.js';
 
 const props = defineProps({
     title: String,
@@ -174,6 +175,13 @@ async function parseTXs(arrTXs) {
         // Update the time cache
         prevTimestamp = cTx.time * 1000;
 
+        // Coinbase Transactions (rewards) require coinbaseMaturity confs
+        const fConfirmed =
+            blockCount - cTx.blockHeight >=
+            (cTx.type === HistoricalTxType.STAKE
+                ? cChainParams.current.coinbaseMaturity
+                : 6);
+
         // Choose the content type, for the Dashboard; use a generative description, otherwise, a TX-ID
         // let txContent = props.rewards ? cTx.id : 'Block Reward';
 
@@ -242,7 +250,7 @@ async function parseTXs(arrTXs) {
             content: props.rewards ? cTx.id : content,
             formattedAmt,
             amount: cTx.amount,
-            confirmed: cTx.isConfirmed,
+            confirmed: fConfirmed,
             icon,
             colour,
         });
