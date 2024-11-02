@@ -250,7 +250,7 @@ export class ExplorerNetwork extends Network {
         // 1) Find the total number of Blockbook txs
         const walletTxs = (await this.#getPage(nStartHeight, addr, 1, 1)).txs;
         // 2) This integer is larger than the number of pages
-        const nPageOverflow = walletTxs + 1;
+        const nPageOverflow = walletTxs + 2;
         // 3) In case of page overflow, Blockbook will return the actual last page.
         const nPage = (
             await this.#getPage(nStartHeight, addr, nPageOverflow, 1)
