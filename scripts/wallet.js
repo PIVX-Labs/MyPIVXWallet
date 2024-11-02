@@ -811,7 +811,10 @@ export class Wallet {
                         } else if (bytes[0] == 0x03) {
                             // 0x03 is the tx version. We should only get v3 transactions
                             const hex = bytesToHex(bytes);
-                            txs.push(hex);
+                            txs.push({
+                                hex,
+                                txid: Transaction.getTxidFromHex(hex),
+                            });
                         } else {
                             // This is neither a block or a tx.
                             throw new Error('Failed to parse shield binary');

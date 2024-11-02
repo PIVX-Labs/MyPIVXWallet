@@ -142,13 +142,24 @@ export class Transaction {
         return this.version >= SAPLING_TX_VERSION;
     }
 
+    /**
+     * @returns {string} txid of the transaction
+     */
     get txid() {
         if (!this.__original.#txid) {
-            this.__original.#txid = bytesToHex(
-                dSHA256(hexToBytes(this.serialize())).reverse()
+            this.__original.#txid = Transaction.getTxidFromHex(
+                this.serialize()
             );
         }
         return this.__original.#txid;
+    }
+
+    /**
+     * @param {string} hex - Hex encoded transaction
+     * @returns {string} txid
+     */
+    static getTxidFromHex(hex) {
+        return bytesToHex(dSHA256(hexToBytes(hex)).reverse());
     }
 
     get hasShieldData() {
