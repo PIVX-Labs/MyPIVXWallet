@@ -15,6 +15,6 @@
         "no-constant-condition": "off",
         "@typescript-eslint/no-empty-function": "off",
         "no-console": "error",
-	"eqeqeq": ["error", "smart"]
+        "eqeqeq": ["error", "smart"]
     }
 }
