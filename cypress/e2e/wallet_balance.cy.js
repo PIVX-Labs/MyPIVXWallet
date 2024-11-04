@@ -10,6 +10,7 @@ describe('Wallet balance tests', () => {
             cy.wait('@sync');
         }
         cy.get('[data-testid="primaryBalance"]').contains('1,297');
+	cy.get('[data-testid="alert"]').click().should('not.exist');
 
         for (let i = 0; i < 10; i++) {
             cy.get('[data-testid="activity"]')
