@@ -361,7 +361,7 @@ export class FlipDown {
 
         function rotorTopFlip() {
             this.rotorTop.forEach((el, i) => {
-                if (el.textContent != this.clockValuesAsString[i]) {
+                if (el.textContent !== this.clockValuesAsString[i]) {
                     el.textContent = this.clockValuesAsString[i];
                 }
             });
@@ -369,7 +369,7 @@ export class FlipDown {
 
         function rotorLeafRearFlip() {
             this.rotorLeafRear.forEach((el, i) => {
-                if (el.textContent != this.clockValuesAsString[i]) {
+                if (el.textContent !== this.clockValuesAsString[i]) {
                     el.textContent = this.clockValuesAsString[i];
                     el.parentElement.classList.add('flipped');
                     var flip = setInterval(

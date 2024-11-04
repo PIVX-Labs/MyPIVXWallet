@@ -10,7 +10,7 @@ import { OP } from './script.js';
 import bs58 from 'bs58';
 import base32 from 'base32';
 import { isStandardAddress } from './misc.js';
-import { getNetwork } from './network.js';
+import { getNetwork } from './network/network_manager.js';
 import { debugError, DebugTopics } from './debug.js';
 
 /**
@@ -522,7 +522,7 @@ export default class Masternode {
                 true
             );
 
-            if (/^"[a-f0-9]"$/ && res.length == 64 + 2) {
+            if (/^"[a-f0-9]"$/ && res.length === 64 + 2) {
                 return { ok: true, hash: res };
             } else if (
                 res.includes('is unconfirmed') ||
