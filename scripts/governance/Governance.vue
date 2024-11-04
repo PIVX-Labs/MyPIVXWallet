@@ -191,6 +191,8 @@ async function vote(hash, voteCode) {
             console.error(result);
             createAlert('warning', ALERTS.INTERNAL_ERROR, 6000);
         }
+    } else {
+        createAlert('warning', ALERTS.MN_ACCESS_BEFORE_VOTE, 6000);
     }
 }
 </script>
