@@ -227,6 +227,18 @@ export function isP2EXC(dataBytes) {
         dataBytes[25] == OP['CHECKSIG']
     );
 }
+
+/**
+ * @param {Uint8Array} dataBytes - script as byte array
+ * @returns {boolean} true if the script is a proposal fee, false otherwise
+ */
+export function isProposalFee(dataBytes) {
+    return (
+        dataBytes.length == 34 &&
+        dataBytes[0] == OP['RETURN'] &&
+        dataBytes[1] == 32
+    );
+}
 /**
  * Get address from the corresponding public key hash
  * @param {Uint8Array} pkhBytes - public key hash

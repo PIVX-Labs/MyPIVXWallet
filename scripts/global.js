@@ -1,7 +1,7 @@
 import { TransactionBuilder } from './transaction_builder.js';
 import { ALERTS, start as i18nStart, translation } from './i18n.js';
 import { wallet, hasEncryptedWallet, Wallet } from './wallet.js';
-import { getNetwork } from './network.js';
+import { getNetwork } from './network/network_manager.js';
 import {
     start as settingsStart,
     strCurrency,
@@ -205,7 +205,6 @@ export async function start() {
     // Register native app service
     registerWorker();
     await settingsStart();
-
     subscribeToNetworkEvents();
     // Make sure we know the correct number of blocks
     await refreshChainData();

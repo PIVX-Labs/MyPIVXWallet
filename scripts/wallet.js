@@ -2,7 +2,7 @@ import { validateMnemonic } from 'bip39';
 import { decrypt } from './aes-gcm.js';
 import { parseWIF } from './encoding.js';
 import { beforeUnloadListener, blockCount } from './global.js';
-import { getNetwork } from './network.js';
+import { getNetwork } from './network/network_manager.js';
 import { MAX_ACCOUNT_GAP, SHIELD_BATCH_SYNC_SIZE } from './chain_params.js';
 import { HistoricalTx, HistoricalTxType } from './historical_tx.js';
 import { COutpoint, Transaction } from './transaction.js';
@@ -655,6 +655,8 @@ export class Wallet {
             let type = HistoricalTxType.UNKNOWN;
             if (tx.isCoinStake()) {
                 type = HistoricalTxType.STAKE;
+            } else if (tx.isProposalFee()) {
+                type = HistoricalTxType.PROPOSAL_FEE;
             } else if (this.checkForUndelegations(tx)) {
                 type = HistoricalTxType.UNDELEGATION;
                 nAmount = getFilteredCredit(OutpointState.P2PKH) / COIN;
@@ -721,11 +723,8 @@ export class Wallet {
         let nStartHeight = Math.max(
             ...this.getTransactions().map((tx) => tx.blockHeight)
         );
-        const txNumber =
-            (await cNet.getNumPages(nStartHeight, addr)) -
-            this.getTransactions().length;
         // Compute the total pages and iterate through them until we've synced everything
-        const totalPages = Math.ceil(txNumber / 1000);
+        const totalPages = await cNet.getNumPages(nStartHeight, addr);
         for (let i = totalPages; i > 0; i--) {
             getEventEmitter().emit(
                 'transparent-sync-status-update',

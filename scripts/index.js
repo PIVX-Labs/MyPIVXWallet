@@ -61,6 +61,6 @@ import Masternode from './masternode.js';
 export { renderChangelog } from './changelog.js';
 export { Masternode };
 
-export { getNetwork } from './network.js';
+export { getNetwork } from './network/network_manager.js';
 
 export { FlipDown } from './flipdown.js';

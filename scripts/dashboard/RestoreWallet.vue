@@ -50,7 +50,7 @@ async function submit() {
         await importWif(wif, extsk);
         emit('import', wif, extsk);
     } else {
-        createAlert('warning', ALERTS.FAILED_TO_IMPORT);
+        createAlert('warning', ALERTS.INVALID_PASSWORD);
     }
 }
 

@@ -6,7 +6,6 @@ import {
 } from './global.js';
 import { wallet, hasEncryptedWallet } from './wallet.js';
 import { cChainParams } from './chain_params.js';
-import { setNetwork, ExplorerNetwork, getNetwork } from './network.js';
 import { confirmPopup } from './misc.js';
 import {
     switchTranslation,
@@ -19,6 +18,7 @@ import { createAlert } from './alerts/alert.js';
 import { Database } from './database.js';
 import { getEventEmitter } from './event_bus.js';
 import countries from 'country-locale-map/countries.json';
+import { getNetwork } from './network/network_manager.js';
 
 // --- Default Settings
 /** A mode that emits verbose console info for internal MPW operations */
@@ -41,10 +41,6 @@ function getDefaultCurrency() {
     );
 }
 
-/** The user-selected explorer, used for most of MPW's data synchronisation */
-export let cExplorer = cChainParams.current.Explorers[0];
-/** The user-selected MPW node, used for alternative blockchain data */
-export let cNode = cChainParams.current.Nodes[0];
 /** A mode which allows MPW to automatically select it's data sources */
 export let fAutoSwitch = true;
 /** The decimals to display for the wallet balance */
@@ -215,43 +211,34 @@ function subscribeToNetworkEvents() {
 }
 
 // --- Settings Functions
-export async function setExplorer(explorer, fSilent = false) {
+export async function setExplorer(explorer) {
     const database = await Database.getInstance();
     await database.setSettings({ explorer: explorer.url });
-    cExplorer = explorer;
-
-    // Enable networking + notify if allowed
-    if (getNetwork()) {
-        getNetwork().strUrl = cExplorer.url;
-    } else {
-        const network = new ExplorerNetwork(cExplorer.url);
-        setNetwork(network);
-    }
+    getNetwork().setNetwork(explorer.url, false);
 
     // Update the selector UI
-    doms.domExplorerSelect.value = cExplorer.url;
+    doms.domExplorerSelect.value = explorer.url;
 
-    if (!fSilent)
-        createAlert(
-            'success',
-            tr(ALERTS.SWITCHED_EXPLORERS, [{ explorerName: cExplorer.name }]),
-            2250
-        );
-    getEventEmitter().emit('explorer_changed', cExplorer.url);
+    createAlert(
+        'success',
+        tr(ALERTS.SWITCHED_EXPLORERS, [{ explorerName: explorer.name }]),
+        2250
+    );
+    getEventEmitter().emit('explorer_changed', explorer.url);
 }
 
 export async function setNode(node, fSilent = false) {
-    cNode = node;
+    getNetwork().setNetwork(node.url, true);
     const database = await Database.getInstance();
     database.setSettings({ node: node.url });
 
     // Update the selector UI
-    doms.domNodeSelect.value = cNode.url;
+    doms.domNodeSelect.value = node.url;
 
     if (!fSilent)
         createAlert(
             'success',
-            tr(ALERTS.SWITCHED_NODE, [{ node: cNode.name }]),
+            tr(ALERTS.SWITCHED_NODE, [{ node: node.name }]),
             2250
         );
 }
@@ -420,6 +407,7 @@ export async function toggleTestnet(
 
     // Update testnet toggle in settings
     doms.domTestnetToggler.checked = cChainParams.current.isTestnet;
+    getNetwork().reset();
     await start();
     // Make sure we have the correct number of blocks before loading any wallet
     await refreshChainData();
@@ -443,7 +431,7 @@ export async function toggleAutoSwitch() {
 }
 
 async function fillExplorerSelect() {
-    cExplorer = cChainParams.current.Explorers[0];
+    const firstExplorer = cChainParams.current.Explorers[0];
 
     while (doms.domExplorerSelect.options.length > 0) {
         doms.domExplorerSelect.remove(0);
@@ -466,16 +454,13 @@ async function fillExplorerSelect() {
     await setExplorer(
         cChainParams.current.Explorers.find(
             (a) => a.url === strSettingExplorer
-        ) || cExplorer,
+        ) || firstExplorer,
         true
     );
-
-    // And update the UI to reflect them
-    doms.domExplorerSelect.value = cExplorer.url;
 }
 
 async function fillNodeSelect() {
-    cNode = cChainParams.current.Nodes[0];
+    const firstNode = cChainParams.current.Nodes[0];
 
     while (doms.domNodeSelect.options.length > 0) {
         doms.domNodeSelect.remove(0);
@@ -497,12 +482,9 @@ async function fillNodeSelect() {
     // For any that exist: load them, or use the defaults
     setNode(
         cChainParams.current.Nodes.find((a) => a.url === strSettingNode) ||
-            cNode,
+            firstNode,
         true
     );
-
-    // And update the UI to reflect them
-    doms.domNodeSelect.value = cNode.url;
 }
 
 /**
