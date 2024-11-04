@@ -15,7 +15,10 @@
         "prettier": "prettier --write --cache .",
         "lint": "eslint .",
         "test": "vitest",
-        "coverage": "vitest --coverage"
+        "coverage": "vitest --coverage",
+        "cy:open": "npx cypress open",
+        "cy:run": "npx cypress run --browser chromium",
+        "cy:ci": "start-server-and-test dev http://localhost:5500 cy:run"
     },
     "repository": {
         "type": "git",
@@ -58,6 +61,7 @@
         "prettier": "^2.8.1",
         "raw-loader": "^4.0.2",
         "resource-loader": "^4.0.0-rc4",
+        "start-server-and-test": "^2.0.8",
         "toml": "^3.0.0",
         "vitest": "^1.0.2",
         "vue-loader": "^17.2.2",
