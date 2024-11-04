@@ -4,7 +4,6 @@ import { ref, watch, computed } from 'vue';
 import { getAddressColor } from '../contacts-book';
 import { promptForContact } from '../contacts-book';
 import { sanitizeHTML } from '../misc';
-import { useWallet } from '../composables/use_wallet.js';
 import BottomPopup from '../BottomPopup.vue';
 import qrIcon from '../../assets/icons/icon-qr-code.svg';
 import addressbookIcon from '../../assets/icons/icon-address-book.svg';
@@ -20,8 +19,6 @@ const emit = defineEmits([
 // Amount of PIVs to send in the selected currency (e.g. USD)
 const amountCurrency = ref('');
 const color = ref('');
-
-const wallet = useWallet();
 
 const props = defineProps({
     show: Boolean,
@@ -62,7 +59,7 @@ function send() {
             'send',
             sanitizeHTML(address.value),
             amount.value,
-            !wallet.publicMode
+            !props.publicMode
         );
 }
 
