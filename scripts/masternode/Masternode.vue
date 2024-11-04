@@ -9,7 +9,7 @@ import RestoreWallet from '../dashboard/RestoreWallet.vue';
 import { cChainParams } from '../chain_params';
 import Modal from '../Modal.vue';
 import { ref, watch } from 'vue';
-import { getNetwork } from '../network';
+import { getNetwork } from '../network/network_manager.js';
 import { translation, ALERTS } from '../i18n.js';
 import { generateMasternodePrivkey, parseIpAddress } from '../misc';
 import { useAlerts } from '../composables/use_alerts.js';

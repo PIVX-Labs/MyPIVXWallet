@@ -14,7 +14,7 @@ import { sanitizeHTML } from '../misc';
 import { ALERTS, tr, translation } from '../i18n';
 import { storeToRefs } from 'pinia';
 import { useSettings } from '../composables/use_settings';
-import { getNetwork } from '../network';
+import { getNetwork } from '../network/network_manager.js';
 import { useMasternode } from '../composables/use_masternode';
 import { useAlerts } from '../composables/use_alerts.js';
 const { createAlert } = useAlerts();
