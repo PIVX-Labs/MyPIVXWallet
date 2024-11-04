@@ -30,7 +30,6 @@ const props = defineProps({
     amount: String,
     desc: String,
     address: String,
-    shieldEnabled: Boolean,
     publicMode: Boolean,
 });
 
