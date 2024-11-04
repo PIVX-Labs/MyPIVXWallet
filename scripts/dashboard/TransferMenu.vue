@@ -40,6 +40,13 @@ watch(address, (value) =>
     getAddressColor(value).then((c) => (color.value = `${c} !important`))
 );
 
+watch(
+    () => props.price,
+    () => {
+        syncAmountCurrency();
+    }
+);
+
 const amount = defineModel('amount', {
     set(value) {
         return value.toString();
