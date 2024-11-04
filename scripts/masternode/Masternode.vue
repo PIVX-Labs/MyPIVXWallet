@@ -101,7 +101,7 @@ async function restoreWallet() {
 
 async function createMasternode({ isVPS }) {
     // Ensure wallet is unlocked
-    if (!isViewOnly.value && (await restoreWallet())) return;
+    if (isViewOnly.value && !(await restoreWallet())) return;
     const [address] = wallet.getNewAddress(1);
     const res = await wallet.createAndSendTransaction(
         getNetwork(),
