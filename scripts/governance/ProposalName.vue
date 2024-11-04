@@ -6,7 +6,6 @@ const props = defineProps({
     proposal: Object,
 });
 const proposal = toRef(props, 'proposal');
-const emit = defineEmits(['openExplorer']);
 const network = useNetwork();
 </script>
 <template>
@@ -37,7 +36,6 @@ const network = useNetwork();
                 font-size: 14px;
                 color: #861ff7;
             "
-            @click="emit('openExplorer', proposal.PaymentAddress)"
             data-testid="proposalLink"
             ><i class="fa-solid fa-user-large" style="margin-right: 5px"></i
             ><b>{{ proposal.PaymentAddress.slice(0, 10) }}...</b>
