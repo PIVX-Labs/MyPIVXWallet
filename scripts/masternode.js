@@ -10,7 +10,7 @@ import { OP } from './script.js';
 import bs58 from 'bs58';
 import base32 from 'base32';
 import { isStandardAddress } from './misc.js';
-import { getNetwork } from './network.js';
+import { getNetwork } from './network/network_manager.js';
 import { debugError, DebugTopics } from './debug.js';
 
 /**

@@ -56,6 +56,11 @@ const txMap = computed(() => {
             colour: 'white',
             content: translation.activityUndelegated,
         },
+        [HistoricalTxType.PROPOSAL_FEE]: {
+            icon: 'fa-minus',
+            colour: '#f93c4c',
+            content: 'Proposal Submission Fee',
+        },
         [HistoricalTxType.UNKNOWN]: {
             icon: 'fa-question',
             colour: 'white',

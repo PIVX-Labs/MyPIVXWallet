@@ -44,4 +44,5 @@ export const HistoricalTxType = {
     UNDELEGATION: 3,
     RECEIVED: 4,
     SENT: 5,
+    PROPOSAL_FEE: 6,
 };
