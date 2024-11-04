@@ -433,7 +433,7 @@ export class Database {
                         ' to ' +
                         Database.version
                 );
-                if (oldVersion == 0) {
+                if (oldVersion === 0) {
                     db.createObjectStore('masternodes');
                     db.createObjectStore('accounts');
                     db.createObjectStore('settings');
