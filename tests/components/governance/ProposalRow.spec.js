@@ -4,6 +4,7 @@ import ProposalStatus from '../../../scripts/governance/ProposalStatus.vue';
 import LocalProposalStatus from '../../../scripts/governance/LocalProposalStatus.vue';
 import ProposalName from '../../../scripts/governance/ProposalName.vue';
 import { ProposalValidator } from '../../../scripts/governance/status.js';
+import Modal from '../../../scripts/Modal.vue';
 
 vi.mock('../../../scripts/i18n.js');
 
@@ -76,14 +77,20 @@ describe('ProposalRow component tests', () => {
 
     it('emits vote event with 2 when No button is clicked', async () => {
         await wrapper.find('.govNoBtnMob').trigger('click');
-        await wrapper.find('[data-testid="confirmVote"]').trigger('click');
+        await wrapper
+            .getComponent(Modal)
+            .find('[data-testid="confirmVote"]')
+            .trigger('click');
 
         expect(wrapper.emitted().vote[0]).toEqual([2]);
     });
 
     it('emits vote event with 1 when Yes button is clicked', async () => {
         await wrapper.find('.govYesBtnMob').trigger('click');
-        await wrapper.find('[data-testid="confirmVote"]').trigger('click');
+        await wrapper
+            .getComponent(Modal)
+            .find('[data-testid="confirmVote"]')
+            .trigger('click');
         expect(wrapper.emitted().vote[0]).toEqual([1]);
     });
 });
