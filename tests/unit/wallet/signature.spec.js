@@ -13,7 +13,7 @@ import {
 } from '../../../scripts/transaction.js';
 import { hexToBytes } from '../../../scripts/utils';
 
-vi.mock('../../../scripts/network.js');
+vi.mock('../../../scripts/network/network_manager.js');
 vi.mock('../../../scripts/global.js');
 
 describe('Wallet signature tests', () => {
@@ -93,6 +93,7 @@ describe('Wallet signature tests', () => {
                 },
             ],
         });
+        expect(PIVXShield.prototype.getTxStatus).toHaveBeenCalled();
     });
     it('signs a s->t tx correctly', async () => {
         const tx = new Transaction({
@@ -127,6 +128,7 @@ describe('Wallet signature tests', () => {
                 },
             ],
         });
+        expect(PIVXShield.prototype.getTxStatus).toHaveBeenCalled();
     });
     it('signs a t->s tx correctly', async () => {
         const tx = new Transaction({
@@ -169,5 +171,6 @@ describe('Wallet signature tests', () => {
                 },
             ],
         });
+        expect(PIVXShield.prototype.getTxStatus).toHaveBeenCalled();
     });
 });

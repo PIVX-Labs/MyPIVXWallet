@@ -1,8 +1,8 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
-import { getNetwork } from '../network.js';
+import { useNetwork } from '../composables/use_network.js';
 import { wallet } from '../wallet.js';
-import { COIN, cChainParams } from '../chain_params.js';
+import { cChainParams } from '../chain_params.js';
 import { translation } from '../i18n.js';
 import { Database } from '../database.js';
 import { HistoricalTx, HistoricalTxType } from '../historical_tx.js';
@@ -12,7 +12,6 @@ import { beautifyNumber } from '../misc';
 
 import iCheck from '../../assets/icons/icon-check.svg';
 import iHourglass from '../../assets/icons/icon-hourglass.svg';
-import { blockCount, optimiseCurrencyLocale } from '../global.js';
 
 const props = defineProps({
     title: String,
@@ -24,8 +23,12 @@ let txCount = 0;
 const updating = ref(false);
 const isHistorySynced = ref(false);
 const rewardAmount = ref(0);
+let nRewardUpdateHeight = 0;
 const ticker = computed(() => cChainParams.current.TICKER);
-const explorerUrl = ref(getNetwork()?.strUrl);
+const network = useNetwork();
+function getActivityUrl(tx) {
+    return network.explorerUrl + '/tx/' + tx.id;
+}
 const txMap = computed(() => {
     return {
         [HistoricalTxType.STAKE]: {
@@ -53,6 +56,11 @@ const txMap = computed(() => {
             colour: 'white',
             content: translation.activityUndelegated,
         },
+        [HistoricalTxType.PROPOSAL_FEE]: {
+            icon: 'fa-minus',
+            colour: '#f93c4c',
+            content: 'Proposal Submission Fee',
+        },
         [HistoricalTxType.UNKNOWN]: {
             icon: 'fa-question',
             colour: 'white',
@@ -62,13 +70,10 @@ const txMap = computed(() => {
 });
 
 async function update(txToAdd = 0) {
-    const cNet = getNetwork();
     // Return if wallet is not synced yet
     if (!wallet.isSynced) {
         return;
     }
-
-    explorerUrl.value = cNet?.strUrl;
 
     // Prevent the user from spamming refreshes
     if (updating.value) return;
@@ -86,6 +91,24 @@ async function update(txToAdd = 0) {
     const orderedTxs = Array.from(wallet.getTransactions()).sort(
         (a, b) => a.blockHeight - b.blockHeight
     );
+
+    // For Rewards: aggregate the total amount
+    if (props.rewards) {
+        for (const tx of orderedTxs) {
+            // If this Tx Height is under our last scanned height, we stop
+            if (tx.blockHeight <= nRewardUpdateHeight) break;
+            // Only compute rewards
+            if (!tx.isCoinStake()) continue;
+            // Aggregate the total rewards
+            rewardAmount.value += wallet.toHistoricalTXs([tx])[0].amount;
+        }
+        // Keep track of the scan block height
+        if (orderedTxs.length) {
+            nRewardUpdateHeight = orderedTxs[0].blockHeight;
+        }
+    }
+
+    // Prepare the Tx History list
     while (found < txCount + txToAdd) {
         if (orderedTxs.length == 0) {
             isHistorySynced.value = true;
@@ -96,6 +119,8 @@ async function update(txToAdd = 0) {
         newTxs.push(tx);
         found++;
     }
+
+    // Convert to MPW's Activity format and render it
     const arrTXs = wallet.toHistoricalTXs(newTxs);
     await parseTXs(arrTXs);
     txCount = found;
@@ -153,11 +178,6 @@ async function parseTXs(arrTXs) {
         }
         // Update the time cache
         prevTimestamp = cTx.time * 1000;
-
-        // Coinbase Transactions (rewards) require coinbaseMaturity confs
-        const fConfirmed =
-            blockCount - cTx.blockHeight >=
-            (props.rewards ? cChainParams.current.coinbaseMaturity : 6);
 
         // Choose the content type, for the Dashboard; use a generative description, otherwise, a TX-ID
         // let txContent = props.rewards ? cTx.id : 'Block Reward';
@@ -227,7 +247,7 @@ async function parseTXs(arrTXs) {
             content: props.rewards ? cTx.id : content,
             formattedAmt,
             amount: cTx.amount,
-            confirmed: fConfirmed,
+            confirmed: cTx.isConfirmed,
             icon,
             colour,
         });
@@ -235,27 +255,16 @@ async function parseTXs(arrTXs) {
 
     txs.value = newTxs;
 }
-if (props.rewards) {
-    watch(
-        txs,
-        (txs) =>
-            (rewardAmount.value = txs.reduce((acc, tx) => acc + tx.amount, 0))
-    );
-}
 
 const rewardsText = computed(() => {
-    const nCoins = rewardAmount.value / COIN;
-    const strBal = nCoins.toFixed(displayDecimals.value);
-    const nLen = strBal.length;
-    return `${beautifyNumber(
-        strBal,
-        nLen >= 10 ? '15px' : '15px'
-    )} <span style="font-size:15px; opacity: 0.55;">${ticker.value}</span>`;
+    const strBal = rewardAmount.value.toLocaleString('en-GB');
+    return `${strBal} <span style="font-size:15px; opacity: 0.55;">${ticker.value}</span>`;
 });
 
 function reset() {
     txs.value = [];
     txCount = 0;
+    nRewardUpdateHeight = 0;
     update(0);
 }
 
@@ -265,7 +274,7 @@ function getTxCount() {
 
 getEventEmitter().on(
     'transparent-sync-status-update',
-    (_str, progress, done) => done && update()
+    (i, totalPages, done) => done && update()
 );
 getEventEmitter().on(
     'shield-sync-status-update',
@@ -337,7 +346,7 @@ defineExpose({ update, reset, getTxCount });
                                 </td>
                                 <td class="align-middle pr-10px txcode">
                                     <a
-                                        :href="explorerUrl + '/tx/' + tx.id"
+                                        :href="getActivityUrl(tx)"
                                         target="_blank"
                                         rel="noopener noreferrer"
                                     >

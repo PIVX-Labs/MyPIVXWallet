@@ -10,6 +10,7 @@ export class HistoricalTx {
      * @param {number} time - The block time of the transaction.
      * @param {number} blockHeight - The block height of the transaction.
      * @param {number} amount - The amount transacted, in coins.
+     * @param {boolean} isConfirmed - Whether the transaction has been confirmed.
      */
     constructor(
         type,
@@ -18,7 +19,8 @@ export class HistoricalTx {
         shieldedOutputs,
         time,
         blockHeight,
-        amount
+        amount,
+        isConfirmed
     ) {
         this.type = type;
         this.id = id;
@@ -27,6 +29,7 @@ export class HistoricalTx {
         this.time = time;
         this.blockHeight = blockHeight;
         this.amount = amount;
+        this.isConfirmed = isConfirmed;
     }
 }
 
@@ -41,4 +44,5 @@ export const HistoricalTxType = {
     UNDELEGATION: 3,
     RECEIVED: 4,
     SENT: 5,
+    PROPOSAL_FEE: 6,
 };

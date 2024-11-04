@@ -3,7 +3,8 @@ import { computed, defineEmits, ref, toRefs, watch, nextTick } from 'vue';
 import { optimiseCurrencyLocale } from '../global.js';
 import { translation, ALERTS } from '../i18n.js';
 import Modal from '../Modal.vue';
-import { createAlert, isColdAddress } from '../misc';
+import { isColdAddress } from '../misc';
+import { useAlerts } from '../composables/use_alerts.js';
 import { COIN, cChainParams } from '../chain_params';
 import { beautifyNumber } from '../misc';
 import { renderWalletBreakdown } from '../charting.js';
@@ -11,6 +12,7 @@ import { renderWalletBreakdown } from '../charting.js';
 import pLogo from '../../assets/p_logo.svg';
 import logo from '../../assets/pivx.png';
 
+const { createAlert } = useAlerts();
 const coldStakingAddress = defineModel('coldStakingAddress');
 const csAddrInternal = ref(coldStakingAddress.value);
 watch(coldStakingAddress, (addr) => (csAddrInternal.value = addr));

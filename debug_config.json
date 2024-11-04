@@ -2,5 +2,11 @@
     "net": true,
     "global": true,
     "wallet": true,
-    "mempool": true
+    "mempool": true,
+    "aes_gcm": true,
+    "database": true,
+    "governance": true,
+    "i18n": true,
+    "ledger": true,
+    "masternode": true
 }

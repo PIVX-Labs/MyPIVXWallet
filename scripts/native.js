@@ -1,5 +1,5 @@
 import { ALERTS } from './i18n.js';
-import { createAlert } from './misc.js';
+import { createAlert } from './alerts/alert.js';
 
 // Register a service worker, if it's supported
 export function registerWorker() {

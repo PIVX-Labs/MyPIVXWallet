@@ -1,3 +1,5 @@
+import { debugError, DebugTopics } from './debug.js';
+
 const buff_to_base64 = (buff) => btoa(String.fromCharCode.apply(null, buff));
 
 const base64_to_buf = (b64) =>
@@ -73,7 +75,8 @@ async function encryptData(secretData, password) {
         buff.set(encryptedContentArr, salt.byteLength + iv.byteLength);
         return buff_to_base64(buff);
     } catch (e) {
-        console.log(`Error - ${e}`);
+        debugError(DebugTopics.AES_GCM, `Error while encrypting`);
+        debugError(DebugTopics.AES_GCM, e);
         return '';
     }
 }
@@ -96,7 +99,8 @@ async function decryptData(encryptedData, password) {
         );
         return dec.decode(decryptedContent);
     } catch (e) {
-        console.log(`Error - ${e}`);
+        debugError(DebugTopics.AES_GCM, `Error while decrypting`);
+        debugError(DebugTopics.AES_GCM, e);
         return '';
     }
 }

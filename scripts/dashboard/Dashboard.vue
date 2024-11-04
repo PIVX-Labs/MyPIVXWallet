@@ -8,7 +8,6 @@ import TransferMenu from './TransferMenu.vue';
 import ExportPrivKey from './ExportPrivKey.vue';
 import RestoreWallet from './RestoreWallet.vue';
 import {
-    createAlert,
     isExchangeAddress,
     isShieldAddress,
     isValidPIVXAddress,
@@ -29,7 +28,7 @@ import {
     isColdAddress,
     isStandardAddress,
 } from '../misc.js';
-import { getNetwork } from '../network.js';
+import { getNetwork } from '../network/network_manager.js';
 import { strHardwareName } from '../ledger';
 import { guiAddContactPrompt } from '../contacts-book';
 import { scanQRCode } from '../scanner';
@@ -40,7 +39,9 @@ import pShieldLogo from '../../assets/icons/icon_shield_pivx.svg';
 import pIconCamera from '../../assets/icons/icon-camera.svg';
 import { ParsedSecret } from '../parsed_secret.js';
 import { storeToRefs } from 'pinia';
-
+import { Account } from '../accounts';
+import { useAlerts } from '../composables/use_alerts.js';
+const { createAlert } = useAlerts();
 const wallet = useWallet();
 const activity = ref(null);
 
@@ -56,7 +57,6 @@ const { advancedMode, displayDecimals, autoLockWallet } = useSettings();
 const showExportModal = ref(false);
 const showEncryptModal = ref(false);
 const keyToBackup = ref('');
-const jdenticonValue = ref('');
 const transferAddress = ref('');
 const transferDescription = ref('');
 const transferAmount = ref('');
@@ -76,19 +76,33 @@ watch(showExportModal, async (showExportModal) => {
  * @param {Object} o - Options
  * @param {'legacy'|'hd'|'hardware'} o.type - type of import
  * @param {string} o.secret
+ * @param {nubmer?} [o.blockCount] Creation block count. Defaults to 4_200_000
  * @param {string} [o.password]
  */
-async function importWallet({ type, secret, password = '' }) {
+async function importWallet({
+    type,
+    secret,
+    password = '',
+    blockCount = 4_200_000,
+}) {
     /**
      * @type{ParsedSecret?}
      */
     let parsedSecret;
     if (type === 'hardware') {
-        if (navigator.userAgent.includes('Firefox')) {
-            createAlert('warning', ALERTS.WALLET_FIREFOX_UNSUPPORTED, 7500);
+        if (!navigator.usb) {
+            createAlert(
+                'warning',
+                ALERTS.WALLET_HARDWARE_USB_UNSUPPORTED,
+                7500
+            );
             return false;
         }
-        parsedSecret = new ParsedSecret(await HardwareWalletMasterKey.create());
+        parsedSecret = new ParsedSecret(
+            secret
+                ? HardwareWalletMasterKey.fromXPub(secret)
+                : await HardwareWalletMasterKey.create()
+        );
 
         createAlert(
             'info',
@@ -106,10 +120,25 @@ async function importWallet({ type, secret, password = '' }) {
     }
     if (parsedSecret) {
         await wallet.setMasterKey({ mk: parsedSecret.masterKey });
+        if (parsedSecret.shield) {
+            await parsedSecret.shield.reloadFromCheckpoint(blockCount);
+        }
         wallet.setShield(parsedSecret.shield);
-        jdenticonValue.value = wallet.getAddress();
 
         if (needsToEncrypt.value) showEncryptModal.value = true;
+        if (wallet.isHardwareWallet) {
+            // Save the xpub without needing encryption if it's ledger
+            const database = await Database.getInstance();
+            const account = new Account({
+                publicKey: wallet.getKeyToExport(),
+                isHardware: true,
+            });
+            if (await database.getAccount()) {
+                await database.updateAccount(account);
+            } else {
+                await database.addAccount(account);
+            }
+        }
 
         // Start syncing in the background
         wallet.sync().then(() => {
@@ -356,31 +385,34 @@ async function send(address, amount, useShieldInputs) {
  */
 function getMaxBalance(useShieldInputs) {
     const coinSatoshi = useShieldInputs ? wallet.shieldBalance : wallet.balance;
-    transferAmount.value = (coinSatoshi / COIN).toString();
+    transferAmount.value = coinSatoshi / COIN;
 }
 
-getEventEmitter().on('toggle-network', async () => {
+async function importFromDatabase() {
     const database = await Database.getInstance();
     const account = await database.getAccount();
     await wallet.setMasterKey({ mk: null });
     activity.value?.reset();
-
-    if (wallet.isEncrypted) {
+    if (account?.isHardware) {
+        await importWallet({ type: 'hardware', secret: account.publicKey });
+    } else if (wallet.isEncrypted) {
         await importWallet({ type: 'hd', secret: account.publicKey });
     }
+
     updateLogOutButton();
+}
+
+getEventEmitter().on('toggle-network', async () => {
+    importFromDatabase();
     // TODO: When tab component is written, simply emit an event
     doms.domDashboard.click();
 });
 
 onMounted(async () => {
     await start();
+    await importFromDatabase();
 
     if (wallet.isEncrypted) {
-        const database = await Database.getInstance();
-        const { publicKey } = await database.getAccount();
-        await importWallet({ type: 'hd', secret: publicKey });
-
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.has('addcontact')) {
             await handleContactRequest(urlParams);
@@ -390,6 +422,13 @@ onMounted(async () => {
             transferAmount.value = parseFloat(urlParams.get('amount')) ?? 0;
             showTransferMenu.value = true;
         }
+
+        // Remove any URL 'commands' after running, so that they don't re-run if a user refreshes
+        window.history.replaceState(
+            {},
+            document.title,
+            window.location.pathname
+        );
     }
     updateLogOutButton();
 });
@@ -402,6 +441,7 @@ const {
     currency,
     price,
     isViewOnly,
+    hasShield,
 } = storeToRefs(wallet);
 
 getEventEmitter().on('sync-status', (status) => {
@@ -434,7 +474,8 @@ async function openSendQRScanner() {
             return;
         }
         if (data.includes('addcontact=')) {
-            const urlParams = new URLSearchParams(data);
+            const strParams = data.substring(data.indexOf('addcontact='));
+            const urlParams = new URLSearchParams(strParams);
             await handleContactRequest(urlParams);
             return;
         }
@@ -480,7 +521,7 @@ defineExpose({
             <br />
 
             <!-- Switch to Public/Private -->
-            <div class="col-12 p-0" v-show="wallet.isImported && wallet.isHD">
+            <div class="col-12 p-0" v-show="wallet.isImported && hasShield">
                 <center>
                     <div
                         :class="{
@@ -842,7 +883,7 @@ defineExpose({
             <ExportPrivKey
                 :show="showExportModal"
                 :privateKey="keyToBackup"
-                :isJSON="wallet.hasShield && !wallet.isEncrypted"
+                :isJSON="hasShield && !wallet.isEncrypted"
                 @close="showExportModal = false"
             />
             <!-- WALLET FEATURES -->
@@ -862,7 +903,6 @@ defineExpose({
                         :shieldBalance="shieldBalance"
                         :pendingShieldBalance="pendingShieldBalance"
                         :immatureBalance="immatureBalance"
-                        :jdenticonValue="jdenticonValue"
                         :isHdWallet="wallet.isHD"
                         :isViewOnly="wallet.isViewOnly"
                         :isEncrypted="wallet.isEncrypted"
@@ -874,7 +914,7 @@ defineExpose({
                         :currency="currency"
                         :price="price"
                         :displayDecimals="displayDecimals"
-                        :shieldEnabled="wallet.hasShield"
+                        :shieldEnabled="hasShield"
                         @send="showTransferMenu = true"
                         @exportPrivKeyOpen="showExportModal = true"
                         :publicMode="wallet.publicMode"
@@ -895,7 +935,7 @@ defineExpose({
             :publicMode="wallet.publicMode"
             :price="price"
             :currency="currency"
-            :shieldEnabled="wallet.hasShield"
+            :shieldEnabled="hasShield"
             v-model:amount="transferAmount"
             :desc="transferDescription"
             v-model:address="transferAddress"

@@ -1,11 +1,13 @@
 import createXpub from 'create-xpub';
 import { ALERTS, tr } from './i18n.js';
-import { confirmPopup, createAlert } from './misc.js';
-import { getNetwork } from './network.js';
+import { confirmPopup } from './misc.js';
+import { getNetwork } from './network/network_manager.js';
 import { Transaction } from './transaction.js';
 import { COIN, cChainParams } from './chain_params.js';
 import { hexToBytes, bytesToHex } from './utils.js';
 import { OP } from './script.js';
+import { createAlert } from './alerts/alert.js';
+import { debugError, DebugTopics } from './debug.js';
 
 /**
  * @type{import('@ledgerhq/hw-transport-webusb').default}
@@ -16,6 +18,20 @@ let transport;
  */
 export let cHardwareWallet = null;
 export let strHardwareName = '';
+
+/**
+ * Setup ledger connection. Must be called at the beginning of each ledger function
+ */
+async function setupConnection() {
+    // Check if we haven't setup a connection yet OR the previous connection disconnected
+    if (!cHardwareWallet || transport._disconnectEmitted) {
+        const AppBtc = (await import('@ledgerhq/hw-app-btc')).default;
+        const TransportWebUSB = (await import('@ledgerhq/hw-transport-webusb'))
+            .default;
+        transport = await TransportWebUSB.create();
+        cHardwareWallet = new AppBtc({ transport, currency: 'PIVX' });
+    }
+}
 /**
  * Get hardware wallet keys.
  * @param {string} path - bip32 path to the key
@@ -23,15 +39,7 @@ export let strHardwareName = '';
  */
 export async function getHardwareWalletKeys(path, xpub = false, verify = true) {
     try {
-        // Check if we haven't setup a connection yet OR the previous connection disconnected
-        if (!cHardwareWallet || transport._disconnectEmitted) {
-            const AppBtc = (await import('@ledgerhq/hw-app-btc')).default;
-            const TransportWebUSB = (
-                await import('@ledgerhq/hw-transport-webusb')
-            ).default;
-            transport = await TransportWebUSB.create();
-            cHardwareWallet = new AppBtc({ transport, currency: 'PIVX' });
-        }
+        await setupConnection();
 
         // Update device info and fetch the pubkey
         strHardwareName =
@@ -105,13 +113,15 @@ export async function getHardwareWalletKeys(path, xpub = false, verify = true) {
                 createAlert('warning', ALERTS.WALLET_HARDWARE_NO_ACCESS, 5500);
             }
 
-            console.error(e);
+            debugError(DebugTopics.LEDGER, e);
             return;
         }
 
         // Check if this is an expected error
         if (!e.statusCode || !LEDGER_ERRS.has(e.statusCode)) {
-            console.error(
+            debugError(DebugTopics.LEDGER, e);
+            debugError(
+                DebugTopics.LEDGER,
                 'MISSING LEDGER ERROR-CODE TRANSLATION! - Please report this below error on our GitHub so we can handle it more nicely!'
             );
             throw e;
@@ -140,6 +150,7 @@ export async function getHardwareWalletKeys(path, xpub = false, verify = true) {
  * @param {import('./transaction.js').Transaction} transaction - tx to sign
  */
 export async function ledgerSignTransaction(wallet, transaction) {
+    await setupConnection();
     const ledgerTx = cHardwareWallet.splitTransaction(transaction.serialize());
     const outputs = transaction.vout.map((o) => {
         const { addresses, type } = wallet.getAddressesFromScript(o.script);

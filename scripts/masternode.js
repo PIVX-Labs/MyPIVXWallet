@@ -1,4 +1,3 @@
-import { cNode, cExplorer } from './settings.js';
 import { cChainParams, COIN } from './chain_params.js';
 import { wallet } from './wallet.js';
 import { parseWIF, deriveAddress } from './encoding.js';
@@ -11,6 +10,8 @@ import { OP } from './script.js';
 import bs58 from 'bs58';
 import base32 from 'base32';
 import { isStandardAddress } from './misc.js';
+import { getNetwork } from './network/network_manager.js';
+import { debugError, DebugTopics } from './debug.js';
 
 /**
  * Construct a Masternode
@@ -49,9 +50,9 @@ export default class Masternode {
        @return {Promise<Object>} The object containing masternode information for this masternode
      */
     async getFullData() {
-        const strURL = `${cNode.url}/listmasternodes?params=${this.collateralTxId}`;
+        const strURL = `/listmasternodes?params=${this.collateralTxId}`;
         try {
-            const cMasternodes = (await (await fetch(strURL)).json()).filter(
+            const cMasternodes = (await getNetwork().callRPC(strURL)).filter(
                 (m) => m.outidx === this.outidx
             );
             if (cMasternodes.length > 0) {
@@ -61,7 +62,7 @@ export default class Masternode {
             }
         } catch (e) {
             //this is the unfortunate state in which the node is not reachable
-            console.error(e);
+            debugError(DebugTopics.MASTERNODE, e);
             return 'EXPLORER_DOWN';
         }
     }
@@ -187,14 +188,6 @@ export default class Masternode {
     }
 
     /**
-     * @return {Promise<string>} The last block hash
-     */
-    static async getLastBlockHash() {
-        const status = await (await fetch(`${cExplorer.url}/api/`)).json();
-        return status.backend.bestBlockHash;
-    }
-
-    /**
      * @return {Promise<string>} The signed message signed with the collateral private key
      */
     async getSignedMessage(sigTime) {
@@ -276,7 +269,7 @@ export default class Masternode {
      */
     async broadcastMessageToHex() {
         const sigTime = Math.round(Date.now() / 1000);
-        const blockHash = await Masternode.getLastBlockHash();
+        const blockHash = await getNetwork().getBestBlockHash();
         let ip, port;
         if (this.addr.includes('.')) {
             // IPv4
@@ -341,8 +334,8 @@ export default class Masternode {
      */
     async start() {
         const message = await this.broadcastMessageToHex();
-        const url = `${cNode.url}/relaymasternodebroadcast?params=${message}`;
-        const response = await (await fetch(url)).text();
+        const url = `/relaymasternodebroadcast?params=${message}`;
+        const response = await getNetwork().callRPC(url, true);
         return response.includes('Masternode broadcast sent');
     }
 
@@ -353,8 +346,8 @@ export default class Masternode {
      * @return {Promise<Array<object>} A list of currently active proposal
      */
     static async getProposals({ fAllowFinished = false } = {}) {
-        const url = `${cNode.url}/getbudgetinfo`;
-        let arrProposals = await (await fetch(url)).json();
+        const url = `/getbudgetinfo`;
+        let arrProposals = await getNetwork().callRPC(url);
 
         // Apply optional filters
         if (!fAllowFinished) {
@@ -408,9 +401,9 @@ export default class Masternode {
         const filter =
             `${encodeURI(filterString)}` +
             `${this.collateralTxId}-${this.outidx}")`;
-        const url = `${cNode.url}/getbudgetvotes?params=${proposalName}&filter=${filter}`;
+        const url = `/getbudgetvotes?params=${proposalName}&filter=${filter}`;
         try {
-            const { Vote: vote } = await (await fetch(url)).json();
+            const { Vote: vote } = await getNetwork().callRPC(url);
             return vote === 'YES' ? 1 : 2;
         } catch (e) {
             //Cannot parse JSON! This means that you did not vote hence return null
@@ -445,12 +438,12 @@ export default class Masternode {
             voteCode,
             sigTime
         );
-        const url = `${cNode.url}/mnbudgetrawvote?params=${
-            this.collateralTxId
-        },${this.outidx},${hash},${
-            voteCode === 1 ? 'yes' : 'no'
-        },${sigTime},${encodeURI(signature).replaceAll('+', '%2b')}`;
-        const text = await (await fetch(url)).text();
+        const url = `/mnbudgetrawvote?params=${this.collateralTxId},${
+            this.outidx
+        },${hash},${voteCode === 1 ? 'yes' : 'no'},${sigTime},${encodeURI(
+            signature
+        ).replaceAll('+', '%2b')}`;
+        const text = await getNetwork().callRPC(url, true);
         return text;
     }
 
@@ -520,17 +513,16 @@ export default class Masternode {
         txid,
     }) {
         try {
-            const res = await (
-                await fetch(
-                    `${cNode.url}/submitbudget?params=${encodeURI(
-                        name
-                    )},${encodeURI(url)},${nPayments},${start},${encodeURI(
-                        address
-                    )},${monthlyPayment / COIN},${txid}`
-                )
-            ).text();
+            const res = await getNetwork().callRPC(
+                `/submitbudget?params=${encodeURI(name)},${encodeURI(
+                    url
+                )},${nPayments},${start},${encodeURI(address)},${
+                    monthlyPayment / COIN
+                },${txid}`,
+                true
+            );
 
-            if (/^"[a-f0-9]"$/ && res.length == 64 + 2) {
+            if (/^"[a-f0-9]"$/ && res.length === 64 + 2) {
                 return { ok: true, hash: res };
             } else if (
                 res.includes('is unconfirmed') ||
@@ -546,15 +538,13 @@ export default class Masternode {
                 return { ok: false, err: 'other' };
             }
         } catch (e) {
-            console.error(e);
+            debugError(DebugTopics.MASTERNODE, e);
             return { ok: false, err: e };
         }
     }
 
     static async getNextSuperblock() {
-        return parseInt(
-            await (await fetch(`${cNode.url}/getnextsuperblock`)).text()
-        );
+        return parseInt(await getNetwork().callRPC(`/getnextsuperblock`, true));
     }
 
     /**
@@ -562,7 +552,7 @@ export default class Masternode {
      * @returns {Promise<{total:number, stable:number, enabled:number, inqueue:number, ipv4:number, ipv6:number, onion:number}>} - The masternode count object
      */
     static async getMasternodeCount() {
-        return await (await fetch(`${cNode.url}/getmasternodecount`)).json();
+        return await getNetwork().callRPC('/getmasternodecount');
     }
 
     /**

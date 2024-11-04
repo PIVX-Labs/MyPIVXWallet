@@ -1,10 +1,12 @@
 <script setup>
 import { nextTick, ref, toRefs, watch } from 'vue';
 import Modal from '../Modal.vue';
+import Password from '../Password.vue';
 import { ALERTS, translation } from '../i18n.js';
 import { Database } from '../database.js';
 import { decrypt } from '../aes-gcm';
-import { createAlert } from '../misc';
+import { useAlerts } from '../composables/use_alerts.js';
+const { createAlert } = useAlerts();
 
 const props = defineProps({
     show: Boolean,
@@ -30,9 +32,10 @@ async function submit() {
     if (wif) {
         emit('import', wif, extsk);
     } else {
-        createAlert('warning', ALERTS.FAILED_TO_IMPORT);
+        createAlert('warning', ALERTS.INVALID_PASSWORD);
     }
 }
+
 function close() {
     emit('close');
     password.value = '';
@@ -52,13 +55,7 @@ function close() {
 
             <template #body>
                 <p style="opacity: 0.75" v-if="!!reason">{{ reason }}</p>
-                <input
-                    type="password"
-                    ref="passwordInput"
-                    v-model="password"
-                    :placeholder="translation.walletPassword"
-                    style="text-align: center"
-                />
+                <Password v-model:password="password" ref="passwordInput" />
             </template>
             <template #footer>
                 <button

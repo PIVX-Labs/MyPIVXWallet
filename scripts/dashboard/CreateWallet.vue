@@ -4,7 +4,10 @@ import Modal from '../Modal.vue';
 import { generateMnemonic } from 'bip39';
 import { translation } from '../i18n.js';
 import { ref, watch, toRefs } from 'vue';
+import { useWallet } from '../composables/use_wallet.js';
 import newWalletIcon from '../../assets/icons/icon-new-wallet.svg';
+import Password from '../Password.vue';
+import { getNetwork } from '../network/network_manager.js';
 
 const emit = defineEmits(['importWallet']);
 const showModal = ref(false);
@@ -15,6 +18,7 @@ const props = defineProps({
     advancedMode: Boolean,
 });
 const { advancedMode } = toRefs(props);
+const wallet = useWallet();
 
 async function informUserOfMnemonic() {
     return await new Promise((res, _) => {
@@ -30,9 +34,15 @@ async function informUserOfMnemonic() {
 
 async function generateWallet() {
     mnemonic.value = generateMnemonic();
+    const network = getNetwork();
 
     await informUserOfMnemonic();
-    emit('importWallet', mnemonic.value, passphrase.value);
+    emit(
+        'importWallet',
+        mnemonic.value,
+        passphrase.value,
+        await network.getBlockCount()
+    );
     // Erase mnemonic and passphrase from memory, just in case
     mnemonic.value = '';
     passphrase.value = '';
@@ -90,12 +100,10 @@ async function generateWallet() {
                     <br />
                     <div v-if="advancedMode">
                         <br />
-                        <input
-                            class="center-text"
-                            type="password"
+                        <Password
+                            v-model:password="passphrase"
+                            testid="passPhrase"
                             :placeholder="translation.optionalPassphrase"
-                            v-model="passphrase"
-                            data-testid="passPhrase"
                         />
                     </div>
                 </div>

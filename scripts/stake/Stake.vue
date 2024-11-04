@@ -6,14 +6,15 @@ import Activity from '../dashboard/Activity.vue';
 import RestoreWallet from '../dashboard/RestoreWallet.vue';
 import { Database } from '../database';
 import { getEventEmitter } from '../event_bus';
-import { getNetwork } from '../network';
+import { getNetwork } from '../network/network_manager';
 import StakeBalance from './StakeBalance.vue';
 import StakeInput from './StakeInput.vue';
 import { onMounted, ref, watch, nextTick } from 'vue';
 import { ParsedSecret } from '../parsed_secret.js';
 import { storeToRefs } from 'pinia';
-import { createAlert } from '../misc';
 import { ALERTS } from '../i18n';
+import { useAlerts } from '../composables/use_alerts.js';
+const { createAlert } = useAlerts();
 const wallet = useWallet();
 const { balance, coldBalance, price, currency, isViewOnly } =
     storeToRefs(wallet);

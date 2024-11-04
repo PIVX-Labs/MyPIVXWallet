@@ -1,10 +1,10 @@
 import { cChainParams, COIN } from './chain_params.js';
 import { Database } from './database.js';
 import { doms, restoreWallet, sweepAddress } from './global.js';
-import { createAlert, downloadBlob } from './misc.js';
+import { downloadBlob } from './misc.js';
 import { getAlphaNumericRand, arrayToCSV } from './utils.js';
 import { ALERTS, translation, tr } from './i18n.js';
-import { getNetwork } from './network.js';
+import { getNetwork } from './network/network_manager.js';
 import { scanQRCode } from './scanner.js';
 import { createAndSendTransaction } from './legacy.js';
 import { UTXO, COutpoint } from './transaction.js';
@@ -12,6 +12,7 @@ import { wallet } from './wallet.js';
 import { LegacyMasterKey } from './masterkey.js';
 import { deriveAddress } from './encoding.js';
 import { getP2PKHScript } from './script.js';
+import { createAlert } from './alerts/alert.js';
 
 /** The fee in Sats to use for Creating or Redeeming PIVX Promos */
 export const PROMO_FEE = 10000;

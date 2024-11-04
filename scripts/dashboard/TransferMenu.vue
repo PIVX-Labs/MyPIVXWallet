@@ -34,23 +34,19 @@ const props = defineProps({
     publicMode: Boolean,
 });
 
-const address = computed({
-    get() {
-        return props.address;
-    },
+const address = defineModel('address');
+
+watch(address, (value) =>
+    getAddressColor(value).then((c) => (color.value = `${c} !important`))
+);
+
+const amount = defineModel('amount', {
     set(value) {
-        emit('update:address', value);
-        getAddressColor(value).then((c) => (color.value = c));
+        return value.toString();
     },
 });
-const amount = computed({
-    get() {
-        return props.amount;
-    },
-    set(value) {
-        emit('update:amount', value.toString());
-    },
-});
+
+watch(amount, () => syncAmountCurrency());
 
 function send() {
     // TODO: Maybe in the future do one of those cool animation that set the
@@ -149,7 +145,7 @@ async function selectContact() {
                             autocomplete="nope"
                             onkeydown="javascript: return event.keyCode == 69 ? false : true"
                             data-testid="amount"
-                            @input="$nextTick(syncAmountCurrency)"
+                            @input="syncAmountCurrency"
                             v-model="amount"
                         />
                         <div class="input-group-append">

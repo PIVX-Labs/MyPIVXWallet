@@ -13,6 +13,8 @@
         ],
         "no-empty": ["error", { "allowEmptyCatch": true }],
         "no-constant-condition": "off",
-        "@typescript-eslint/no-empty-function": "off"
+        "@typescript-eslint/no-empty-function": "off",
+        "no-console": "error",
+        "eqeqeq": ["error", "smart"]
     }
 }

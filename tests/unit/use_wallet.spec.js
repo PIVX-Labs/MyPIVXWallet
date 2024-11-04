@@ -4,11 +4,11 @@ import { describe, it, beforeEach, vi } from 'vitest';
 import { useWallet } from '../../scripts/composables/use_wallet.js';
 import { hasEncryptedWallet, wallet } from '../../scripts/wallet.js';
 import { LegacyMasterKey } from '../../scripts/masterkey.js';
-import { getNetwork } from '../../scripts/network.js';
+import { getNetwork } from '../../scripts/network/__mocks__/network_manager.js';
 import { strCurrency } from '../../scripts/settings.js';
 import { setUpLegacyMainnetWallet } from '../utils/test_utils';
 
-vi.mock('../../scripts/network.js');
+vi.mock('../../scripts/network/network_manager.js');
 
 describe('useWallet tests', () => {
     let walletComposable;
@@ -48,7 +48,7 @@ describe('useWallet tests', () => {
     });
 
     it('is synced after importing key', async () => {
-        walletComposable.setMasterKey({
+        await walletComposable.setMasterKey({
             mk: new LegacyMasterKey({
                 pkBytes: new Uint8Array([
                     181, 66, 141, 90, 213, 58, 137, 158, 160, 57, 109, 252, 51,

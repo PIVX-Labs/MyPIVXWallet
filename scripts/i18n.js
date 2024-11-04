@@ -1,10 +1,11 @@
 import template from '../locale/template/translation.toml';
 import { Database } from './database.js';
-import { fillAnalyticSelect, setTranslation } from './settings.js';
+import { setTranslation } from './settings.js';
 import { wallet } from './wallet.js';
 import { cReceiveType, guiToggleReceiveType } from './contacts-book.js';
 import { reactive } from 'vue';
 import { negotiateLanguages } from '@fluent/langneg';
+import { debugLog, DebugTopics } from './debug.js';
 
 /**
  * @type {translation_template}
@@ -122,13 +123,13 @@ export async function switchTranslation(langName) {
 
         // Translate any dynamic elements necessary
         ALERTS = translation['ALERTS'];
-        fillAnalyticSelect();
         if (wallet.isLoaded()) {
             await guiToggleReceiveType(cReceiveType);
         }
         return true;
     } else {
-        console.log(
+        debugLog(
+            DebugTopics.I18N,
             'i18n: The language (' +
                 langName +
                 ") is not supported yet, if you'd like to contribute translations (for rewards!) contact us on GitHub or Discord!"
@@ -199,6 +200,7 @@ export const arrActiveLangs = [
     { code: 'cnr', display: 'Montenegrin', emoji: '🇲🇪' },
     { code: 'es-mx', display: 'Mexican Spanish', emoji: '🇲🇽' },
     { code: 'ph', display: 'Filipino', emoji: '🇵🇭' },
+    { code: 'hi', display: 'Hindi', emoji: '🇮🇳' },
     { code: 'uwu', display: 'UwU', emoji: '🐈' },
 ];
 

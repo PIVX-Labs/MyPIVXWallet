@@ -2,17 +2,13 @@ import { openDB } from 'idb';
 import Masternode from './masternode.js';
 import { Settings } from './settings.js';
 import { cChainParams } from './chain_params.js';
-import {
-    confirmPopup,
-    sanitizeHTML,
-    createAlert,
-    isSameType,
-    isEmpty,
-} from './misc.js';
+import { confirmPopup, sanitizeHTML, isSameType, isEmpty } from './misc.js';
+import { createAlert } from './alerts/alert.js';
 import { PromoWallet } from './promos.js';
 import { ALERTS, translation } from './i18n.js';
 import { Account } from './accounts.js';
 import { COutpoint, CTxIn, CTxOut, Transaction } from './transaction.js';
+import { debugError, debugLog, DebugTopics } from './debug.js';
 
 export class Database {
     /**
@@ -22,9 +18,10 @@ export class Database {
      * Version 3 = TX Database (#235)
      * Version 4 = Tx Refactor (#284)
      * Version 5 = Tx shield data (#295)
-     * @type{Number}
+     * Version 6 = Filter unconfirmed txs (#415)
+     * @type {number}
      */
-    static version = 5;
+    static version = 6;
 
     /**
      * @type{import('idb').IDBPDatabase}
@@ -68,6 +65,7 @@ export class Database {
      * @param {Transaction} tx
      */
     async storeTx(tx) {
+        if (!tx) throw new Error('Cannot store undefined');
         const store = this.#db
             .transaction('txs', 'readwrite')
             .objectStore('txs');
@@ -116,11 +114,11 @@ export class Database {
     async addAccount(account) {
         // Critical: Ensure the input is an Account instance
         if (!(account instanceof Account)) {
-            console.error(
+            debugError(
                 '---- addAccount() called with invalid input, input dump below ----'
             );
-            console.error(account);
-            console.error('---- end of account dump ----');
+            debugError(DebugTopics.DATABASE, account);
+            debugError(DebugTopics.DATABASE, '---- end of account dump ----');
             createAlert(
                 'warning',
                 '<b>Account Creation Error</b><br>Logs were dumped in your Browser Console<br>Please submit these privately to PIVX Labs Developers!'
@@ -139,7 +137,8 @@ export class Database {
         for (const strKey of Object.keys(cDBAccount)) {
             // Ensure the Type is correct for the Key against the Account class
             if (!isSameType(account[strKey], cDBAccount[strKey])) {
-                console.error(
+                debugError(
+                    DebugTopics.DATABASE,
                     'DB: addAccount() key "' +
                         strKey +
                         '" does NOT match the correct class type, likely data mismatch, please report!'
@@ -181,11 +180,12 @@ export class Database {
     async updateAccount(account, allowDeletion = false) {
         // Critical: Ensure the input is an Account instance
         if (!(account instanceof Account)) {
-            console.error(
+            debugError(
+                DebugTopics.DATABASE,
                 '---- updateAccount() called with invalid input, input dump below ----'
             );
-            console.error(account);
-            console.error('---- end of account dump ----');
+            debugError(DebugTopics.DATABASE, account);
+            debugError(DebugTopics.DATABASE, '---- end of account dump ----');
             createAlert(
                 'warning',
                 '<b>DB Update Error</b><br>Your wallet is safe, logs were dumped in your Browser Console<br>Please submit these privately to PIVX Labs Developers!'
@@ -201,11 +201,12 @@ export class Database {
         // If none exists; we should throw an error, as there's no reason for MPW to call `updateAccount` before an account was added using `addAccount`
         // Note: This is mainly to force "good standards" in which we don't lazily use `updateAccount` to create NEW accounts.
         if (!cDBAccount) {
-            console.error(
+            debugError(
+                DebugTopics.DATABASE,
                 '---- updateAccount() called without an account existing, input dump below ----'
             );
-            console.error(account);
-            console.error('---- end of input dump ----');
+            debugError(DebugTopics.DATABASE, account);
+            debugError(DebugTopics.DATABASE, '---- end of input dump ----');
             createAlert(
                 'warning',
                 '<b>DB Update Error</b><br>Logs were dumped in your Browser Console<br>Please submit these privately to PIVX Labs Developers!'
@@ -221,7 +222,8 @@ export class Database {
         for (const strKey of Object.keys(cDBAccount)) {
             // Ensure the Type is correct for the Key against the Account class
             if (!isSameType(account[strKey], cDBAccount[strKey])) {
-                console.error(
+                debugError(
+                    DebugTopics.DATABASE,
                     'DB: updateAccount() key "' +
                         strKey +
                         '" does NOT match the correct class type, likely data mismatch, please report!'
@@ -281,7 +283,8 @@ export class Database {
 
             // Ensure the Type is correct for the Key against the Account class (with instanceof to also check Class validity)
             if (!isSameType(cDBAccount[strKey], cAccount[strKey])) {
-                console.error(
+                debugError(
+                    DebugTopics.DATABASE,
                     'DB: getAccount() key "' +
                         strKey +
                         '" does NOT match the correct class type, likely bad data saved, please report!'
@@ -327,7 +330,24 @@ export class Database {
         const store = this.#db
             .transaction('txs', 'readonly')
             .objectStore('txs');
-        return (await store.getAll())
+
+        // We'll manually cursor iterate to merge the Index (TXID) with it's components
+        const cursor = await store.openCursor();
+        const txs = [];
+        while (cursor) {
+            if (!cursor.value) break;
+            // Append the TXID from the Index key
+            cursor.value.txid = cursor.key;
+            txs.push(cursor.value);
+            try {
+                await cursor.continue();
+            } catch {
+                break;
+            }
+        }
+
+        // Now convert the raw TX components to Transaction Classes
+        return txs
             .map((tx) => {
                 const vin = tx.vin.map(
                     (x) =>
@@ -358,10 +378,12 @@ export class Database {
                     shieldOutput: tx.shieldOutput,
                     bindingSig: tx.bindingSig,
                     lockTime: tx.lockTime,
+                    txid: tx.txid,
                 });
             })
             .sort((a, b) => a.blockHeight - b.blockHeight);
     }
+
     /**
      * Remove all txs from db
      */
@@ -400,78 +422,21 @@ export class Database {
         );
     }
 
-    /**
-     * Migrates from local storage
-     */
-    async #migrateLocalStorage() {
-        if (localStorage.length === 0) return;
-        const settings = new Settings({
-            analytics: localStorage.analytics,
-            explorer: localStorage.explorer,
-            node: localStorage.node,
-            translation: localStorage.translation,
-            displayCurrency: localStorage.displayCurrency,
-        });
-        await this.setSettings(settings);
-
-        if (localStorage.masternode) {
-            try {
-                const masternode = JSON.parse(localStorage.masternode);
-                await this.addMasternode(masternode);
-            } catch (e) {
-                console.error(e);
-                createAlert('warning', ALERTS.MIGRATION_MASTERNODE_FAILURE);
-            }
-        }
-
-        if (localStorage.encwif || localStorage.publicKey) {
-            try {
-                const localProposals = JSON.parse(
-                    localStorage.localProposals || '[]'
-                );
-
-                // Update and format the old Account data
-                const cAccount = new Account({
-                    publicKey: localStorage.publicKey,
-                    encWif: localStorage.encwif,
-                    localProposals: localProposals,
-                });
-
-                // Migrate the old Account data to the new DB
-                await this.addAccount(cAccount);
-            } catch (e) {
-                console.error(e);
-                createAlert('warning', ALERTS.MIGRATION_ACCOUNT_FAILURE);
-                if (localStorage.encwif) {
-                    await confirmPopup({
-                        title: translation.MIGRATION_ACCOUNT_FAILURE_TITLE,
-                        html: `${
-                            translation.MIGRATION_ACCOUNT_FAILURE_HTML
-                        } <code id="exportPrivateKeyText">${sanitizeHTML(
-                            localStorage.encwif
-                        )} </code>`,
-                    });
-                }
-            }
-        }
-    }
-
     static async create(name) {
-        let migrate = false;
         const database = new Database({ db: null });
         const db = await openDB(`MPW-${name}`, Database.version, {
-            upgrade: (db, oldVersion) => {
-                console.log(
+            upgrade: (db, oldVersion, _, transaction) => {
+                debugLog(
+                    DebugTopics.DATABASE,
                     'DB: Upgrading from ' +
                         oldVersion +
                         ' to ' +
                         Database.version
                 );
-                if (oldVersion == 0) {
+                if (oldVersion === 0) {
                     db.createObjectStore('masternodes');
                     db.createObjectStore('accounts');
                     db.createObjectStore('settings');
-                    migrate = true;
                 }
 
                 // The introduction of PIVXPromos (safely added during <v2 upgrades)
@@ -486,6 +451,25 @@ export class Database {
                     db.deleteObjectStore('txs');
                     db.createObjectStore('txs');
                 }
+
+                if (oldVersion < 6) {
+                    // Delete all txs with -1 as blockHeight (unconfirmed)
+                    (async () => {
+                        const store = transaction.objectStore('txs');
+                        let cursor = await store.openCursor();
+                        while (cursor) {
+                            if (!cursor.value) break;
+                            if (cursor.value.blockHeight === -1) {
+                                await cursor.delete();
+                            }
+                            try {
+                                cursor = await cursor.continue();
+                            } catch {
+                                break;
+                            }
+                        }
+                    })();
+                }
             },
             blocking: () => {
                 // Another instance is waiting to upgrade, and we're preventing it
@@ -497,9 +481,6 @@ export class Database {
             },
         });
         database.#db = db;
-        if (migrate) {
-            await database.#migrateLocalStorage();
-        }
         return database;
     }
 

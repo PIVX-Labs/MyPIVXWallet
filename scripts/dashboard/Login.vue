@@ -8,6 +8,8 @@ import { watch, toRefs } from 'vue';
 
 defineEmits(['import-wallet']);
 
+const isUSBSupported = !!navigator.usb;
+
 const props = defineProps({
     advancedMode: Boolean,
 });
@@ -19,11 +21,12 @@ const { advancedMode } = toRefs(props);
         <CreateWallet
             :advanced-mode="advancedMode"
             @import-wallet="
-                (mnemonic, password) =>
+                (mnemonic, password, blockCount) =>
                     $emit('import-wallet', {
                         type: 'hd',
                         secret: mnemonic,
                         password,
+                        blockCount,
                     })
             "
         />
@@ -41,6 +44,7 @@ const { advancedMode } = toRefs(props);
             <div
                 id="generateHardwareWallet"
                 class="dashboard-item dashboard-display"
+                :style="{ opacity: isUSBSupported ? 1 : 0.5 }"
                 @click="$emit('import-wallet', { type: 'hardware' })"
                 data-testid="hardwareWalletBtn"
             >

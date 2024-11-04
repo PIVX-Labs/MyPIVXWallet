@@ -10,7 +10,6 @@ import.meta.webpackContext('@fontsource/montserrat/', {
     regExp: /\.css$/,
 });
 import './global.js';
-import { getNetwork } from './network.js';
 
 // Export global functions to the MPW namespace so we can use them in html
 export {
@@ -24,7 +23,6 @@ export {
     importMasternode,
     destroyMasternode,
     startMasternode,
-    toggleDropDown,
     createProposal,
     switchSettings,
     govVote,
@@ -69,8 +67,6 @@ import Masternode from './masternode.js';
 export { renderChangelog } from './changelog.js';
 export { Masternode };
 
-export { getNetwork } from './network.js';
-const toggleNetwork = () => getNetwork().toggle();
-export { toggleNetwork };
+export { getNetwork } from './network/network_manager.js';
 
 export { FlipDown } from './flipdown.js';

@@ -1,16 +1,12 @@
 <script setup>
 import { cChainParams, COIN } from '../chain_params.js';
-import { tr, translation } from '../i18n';
-import { ref, computed, toRefs, onMounted, watch } from 'vue';
+import { translation, tr } from '../i18n';
+import { ref, computed, toRefs } from 'vue';
 import { beautifyNumber } from '../misc';
 import { getEventEmitter } from '../event_bus';
-import * as jdenticon from 'jdenticon';
-import { optimiseCurrencyLocale, openExplorer } from '../global';
+import { optimiseCurrencyLocale } from '../global';
 import { renderWalletBreakdown } from '../charting.js';
-import {
-    guiRenderCurrentReceiveModal,
-    guiRenderContacts,
-} from '../contacts-book';
+import { guiRenderCurrentReceiveModal } from '../contacts-book';
 import { getNewAddress } from '../wallet.js';
 import LoadingBar from '../Loadingbar.vue';
 import { sleep } from '../utils.js';
@@ -28,7 +24,6 @@ import pShieldCheck from '../../assets/icons/icon-shield-check.svg';
 import pRefresh from '../../assets/icons/icon-refresh.svg';
 
 const props = defineProps({
-    jdenticonValue: String,
     balance: Number,
     shieldBalance: Number,
     pendingShieldBalance: Number,
@@ -46,7 +41,6 @@ const props = defineProps({
     publicMode: Boolean,
 });
 const {
-    jdenticonValue,
     balance,
     shieldBalance,
     pendingShieldBalance,
@@ -79,62 +73,41 @@ const isCreatingTx = ref(false);
 const txPercentageCreation = ref(0.0);
 const txCreationStr = ref('Creating SHIELD transaction...');
 
-const balanceStr = computed(() => {
-    let nCoins;
-    if (publicMode.value) {
-        nCoins = balance.value / COIN;
-    } else {
-        nCoins = shieldBalance.value / COIN;
-    }
-
+const primaryBalanceStr = computed(() => {
+    // Get the primary balance, depending on the user's mode
+    const nCoins = (publicMode.value ? balance : shieldBalance).value / COIN;
     const strBal = nCoins.toFixed(displayDecimals.value);
-    const nLen = strBal.length;
-    return beautifyNumber(strBal, nLen >= 10 ? '17px' : '25px');
+    return beautifyNumber(strBal, strBal.length >= 10 ? '17px' : '25px');
 });
 
-const secondBalanceStr = computed(() => {
-    let nCoins;
-    if (publicMode.value) {
-        nCoins = shieldBalance.value / COIN;
-    } else {
-        nCoins = balance.value / COIN;
-    }
-
+const secondaryBalanceStr = computed(() => {
+    // Get the secondary balance
+    const nCoins = (publicMode.value ? shieldBalance : balance).value / COIN;
     return nCoins.toFixed(displayDecimals.value);
 });
 
-const pendingShieldImmatureBalanceStr = computed(() => {
-    let nCoins;
-    if (publicMode.value) {
-        nCoins = pendingShieldBalance.value / COIN;
-    } else {
-        nCoins = immatureBalance.value / COIN;
-    }
-
+const secondaryImmatureBalanceStr = computed(() => {
+    // Get the secondary immature balance
+    const nCoins =
+        (publicMode.value ? pendingShieldBalance : immatureBalance).value /
+        COIN;
     return nCoins.toFixed(displayDecimals.value);
 });
 
-const immatureBalanceStr = computed(() => {
-    const nCoins = immatureBalance.value / COIN;
-    const strBal = nCoins.toFixed(displayDecimals.value);
-    return strBal + ' ' + cChainParams.current.TICKER;
-});
+const primaryImmatureBalanceStr = computed(() => {
+    // Get the primary immature balance
+    const nCoins =
+        (publicMode.value ? immatureBalance : pendingShieldBalance).value /
+        COIN;
+    const strPrefix = publicMode.value ? ' ' : ' S-';
 
-const pendingShieldBalanceStr = computed(() => {
-    const nCoins = pendingShieldBalance.value / COIN;
-    const strBal = nCoins.toFixed(displayDecimals.value);
-    return strBal + ' S-' + cChainParams.current.TICKER;
+    return nCoins.toFixed(displayDecimals.value) + strPrefix + ticker.value;
 });
 
 const balanceValue = computed(() => {
-    let balanceVal;
-    if (publicMode.value) {
-        balanceVal = (balance.value / COIN) * price.value;
-    } else {
-        balanceVal = (shieldBalance.value / COIN) * price.value;
-    }
-
-    const { nValue, cLocale } = optimiseCurrencyLocale(balanceVal);
+    // Convert our primary balance to the user's currency
+    const nCoins = (publicMode.value ? balance : shieldBalance).value / COIN;
+    const { nValue, cLocale } = optimiseCurrencyLocale(nCoins * price.value);
 
     cLocale.minimumFractionDigits = 0;
     cLocale.maximumFractionDigits = 0;
@@ -157,7 +130,12 @@ const emit = defineEmits([
 
 getEventEmitter().on(
     'transparent-sync-status-update',
-    (str, progress, finished) => {
+    (i, totalPages, finished) => {
+        const str = tr(translation.syncStatusHistoryProgress, [
+            { current: totalPages - i + 1 },
+            { total: totalPages },
+        ]);
+        const progress = ((totalPages - i) / totalPages) * 100;
         syncTStr.value = str;
         transparentProgressSyncing.value = progress;
         transparentSyncing.value = !finished;
@@ -362,11 +340,7 @@ function restoreWallet() {
                                 left: 4px;
                                 font-size: 14px;
                             "
-                            >{{
-                                publicMode
-                                    ? immatureBalanceStr
-                                    : pendingShieldBalanceStr
-                            }}</span
+                            >{{ primaryImmatureBalanceStr }}</span
                         >
                     </div>
                 </div>
@@ -394,7 +368,10 @@ function restoreWallet() {
                             class="logo-pivBal"
                             v-html="publicMode ? pLogo : iShieldLogo"
                         ></span>
-                        <span class="dcWallet-pivxBalance" v-html="balanceStr">
+                        <span
+                            class="dcWallet-pivxBalance"
+                            v-html="primaryBalanceStr"
+                        >
                         </span>
                         <span
                             class="dcWallet-pivxTicker"
@@ -426,7 +403,7 @@ function restoreWallet() {
                         border-bottom-right-radius: 10px;
                     "
                 >
-                    <div class="dcWallet-usdBalance">
+                    <div class="dcWallet-usdBalance" v-if="shieldEnabled">
                         <span
                             class="dcWallet-usdValue"
                             style="
@@ -441,9 +418,9 @@ function restoreWallet() {
                         >
                             <span
                                 class="shieldBalanceLogo"
-                                v-html="publicMode ? iShieldLogo : pLogo"
+                                v-if="shieldEnabled"
                             ></span
-                            >&nbsp;{{ secondBalanceStr }}
+                            >&nbsp;{{ secondaryBalanceStr }}
                             <span v-if="publicMode">&nbsp;S-</span>{{ ticker }}
                             <span
                                 style="opacity: 0.75"
@@ -452,7 +429,7 @@ function restoreWallet() {
                                     (publicMode && pendingShieldBalance != 0)
                                 "
                                 >&nbsp;({{
-                                    pendingShieldImmatureBalanceStr
+                                    secondaryImmatureBalanceStr
                                 }}
                                 Pending)</span
                             >

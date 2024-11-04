@@ -3,15 +3,15 @@ import { TransactionBuilder } from './transaction_builder.js';
 import Masternode from './masternode.js';
 import { ALERTS, tr, start as i18nStart, translation } from './i18n.js';
 import { wallet, hasEncryptedWallet, Wallet } from './wallet.js';
-import { getNetwork } from './network.js';
+import { getNetwork } from './network/network_manager.js';
 import {
     start as settingsStart,
-    cExplorer,
     strCurrency,
     fAdvancedMode,
 } from './settings.js';
 import { createAndSendTransaction } from './legacy.js';
-import { createAlert, confirmPopup, sanitizeHTML } from './misc.js';
+import { createAlert } from './alerts/alert.js';
+import { confirmPopup, sanitizeHTML } from './misc.js';
 import { cChainParams, COIN } from './chain_params.js';
 import { sleep } from './utils.js';
 import { registerWorker } from './native.js';
@@ -22,13 +22,16 @@ import { checkForUpgrades } from './changelog.js';
 import { FlipDown } from './flipdown.js';
 import { createApp } from 'vue';
 import Dashboard from './dashboard/Dashboard.vue';
-import { loadDebug, debugLog, DebugTopics } from './debug.js';
+import Alerts from './alerts/Alerts.vue';
+import { loadDebug, debugLog, DebugTopics, debugError } from './debug.js';
 import Stake from './stake/Stake.vue';
 import { createPinia } from 'pinia';
 import { cOracle } from './prices.js';
 
 import pIconCopy from '../assets/icons/icon-copy.svg';
 import pIconCheck from '../assets/icons/icon-check.svg';
+import SideNavbar from './SideNavbar.vue';
+import { AsyncInterval } from './async_interval.js';
 
 /** A flag showing if base MPW is fully loaded or not */
 export let fIsLoaded = false;
@@ -47,9 +50,13 @@ const pinia = createPinia();
 
 export const dashboard = createApp(Dashboard).use(pinia).mount('#DashboardTab');
 createApp(Stake).use(pinia).mount('#StakingTab');
+createApp(SideNavbar).use(pinia).mount('#SideNavbar');
+createApp(Alerts).use(pinia).mount('#Alerts');
 
 export async function start() {
     doms = {
+        domLightBackground: document.getElementById('page-container-light'),
+        domNavbar: document.getElementById('navbar'),
         domNavbarToggler: document.getElementById('navbarToggler'),
         domDashboard: document.getElementById('dashboard'),
         domStakeTab: document.getElementById('stakeTab'),
@@ -124,7 +131,6 @@ export async function start() {
         ),
         domEncryptPasswordFirst: document.getElementById('newPassword'),
         domEncryptPasswordSecond: document.getElementById('newPasswordRetype'),
-        domAnalyticsDescriptor: document.getElementById('analyticsDescriptor'),
         domRedeemTitle: document.getElementById('redeemCodeModalTitle'),
         domRedeemCodeUse: document.getElementById('redeemCodeUse'),
         domRedeemCodeCreate: document.getElementById('redeemCodeCreate'),
@@ -178,13 +184,11 @@ export async function start() {
         arrDomScreenLinks: document.getElementsByClassName('tablinks'),
         // Alert DOM element
         domAlertPos: document.getElementsByClassName('alertPositioning')[0],
-        domNetwork: document.getElementById('Network'),
         domChangePasswordContainer: document.getElementById(
             'changePassword-container'
         ),
         domLogOutContainer: document.getElementById('logOut-container'),
         domDebug: document.getElementById('Debug'),
-        domTestnet: document.getElementById('Testnet'),
         domCurrencySelect: document.getElementById('currency'),
         domExplorerSelect: document.getElementById('explorer'),
         domNodeSelect: document.getElementById('node'),
@@ -255,21 +259,17 @@ export async function start() {
     // Register native app service
     registerWorker();
     await settingsStart();
-
     subscribeToNetworkEvents();
     // Make sure we know the correct number of blocks
     await refreshChainData();
     // Load the price manager
     cOracle.load();
-
-    // If allowed by settings: submit a simple 'hit' (app load) to Labs Analytics
-    getNetwork().submitAnalytics('hit');
-    setInterval(() => {
+    new AsyncInterval(async () => {
         // Refresh blockchain data
-        refreshChainData();
+        await refreshChainData();
 
         // Fetch the PIVX prices
-        refreshPriceDisplay();
+        await refreshPriceDisplay();
     }, 15000);
 
     // Check for recent upgrades, display the changelog
@@ -291,11 +291,6 @@ async function refreshPriceDisplay() {
 }
 
 function subscribeToNetworkEvents() {
-    getEventEmitter().on('network-toggle', (value) => {
-        doms.domNetwork.innerHTML =
-            '<i class="fa-solid fa-' + (value ? 'wifi' : 'ban') + '"></i>';
-    });
-
     getEventEmitter().on('new-block', (block) => {
         debugLog(DebugTopics.GLOBAL, `New block detected! ${block}`);
 
@@ -312,11 +307,9 @@ function subscribeToNetworkEvents() {
                 `${ALERTS.TX_SENT}<br>${sanitizeHTML(result)}`,
                 result ? 1250 + result.length * 50 : 3000
             );
-            // If allowed by settings: submit a simple 'tx' ping to Labs Analytics
-            getNetwork().submitAnalytics('transaction');
         } else {
-            console.error('Error sending transaction:');
-            console.error(result);
+            debugError(DebugTopics.NET, 'Error sending transaction:');
+            debugError(DebugTopics.NET, result);
             createAlert('warning', ALERTS.TX_FAILED, 2500);
         }
     });
@@ -393,22 +386,24 @@ export function optimiseCurrencyLocale(nAmount) {
 }
 
 /**
+ * //TODO: remove in Governance VUE PR
  * Open the Explorer in a new tab for the current wallet, or a specific address
  * @param {string?} strAddress - Optional address to open, if void, the master key is used
  */
 export async function openExplorer(strAddress = '') {
+    const strExplorerURL = getNetwork().strUrl;
     if (wallet.isLoaded() && wallet.isHD() && !strAddress) {
         const xpub = wallet.getXPub();
-        window.open(cExplorer.url + '/xpub/' + xpub, '_blank');
+        window.open(strExplorerURL + '/xpub/' + xpub, '_blank');
     } else {
         const address = strAddress || wallet.getAddress();
-        window.open(cExplorer.url + '/address/' + address, '_blank');
+        window.open(strExplorerURL + '/address/' + address, '_blank');
     }
 }
 
 async function loadImages() {
     const images = [
-        ['mpw-main-logo', import('../assets/new_logo.png')],
+        ['mpw-main-logo', import('../assets/logo.png')],
         ['plus-icon', import('../assets/icons/icon-plus.svg')],
         ['plus-icon2', import('../assets/icons/icon-plus.svg')],
         ['plus-icon3', import('../assets/icons/icon-plus.svg')],
@@ -483,7 +478,7 @@ export async function govVote(hash, voteCode) {
         (await confirmPopup({
             title: ALERTS.CONFIRM_POPUP_VOTE,
             html: ALERTS.CONFIRM_POPUP_VOTE_HTML,
-        })) == true
+        })) === true
     ) {
         const database = await Database.getInstance();
         const cMasternode = await database.getMasternode();
@@ -506,7 +501,7 @@ export async function govVote(hash, voteCode) {
                 createAlert('warning', ALERTS.VOTE_SIG_BAD, 6000);
             } else {
                 //this could be everything
-                console.error(result);
+                debugError(DebugTopics.GOVERNANCE, result);
                 createAlert('warning', ALERTS.INTERNAL_ERROR, 6000);
             }
         } else {
@@ -742,11 +737,6 @@ export async function sweepAddress(arrUTXOs, sweepingMasterKey, nFixedFee) {
     return await getNetwork().sendTransaction(tx.serialize());
 }
 
-export function toggleDropDown(id) {
-    const domID = document.getElementById(id);
-    domID.style.display = domID.style.display === 'block' ? 'none' : 'block';
-}
-
 export function isMasternodeUTXO(cUTXO, cMasternode) {
     if (cMasternode?.collateralTxId) {
         const { collateralTxId, outidx } = cMasternode;
@@ -779,7 +769,7 @@ export async function updateGovernanceTab() {
     fRenderingGovernance = true;
 
     // Setup the Superblock countdown (if not already done), no need to block thread with await, either.
-    if (!isTestnetLastState == cChainParams.current.isTestnet) {
+    if (isTestnetLastState !== cChainParams.current.isTestnet) {
         // Reset flipdown
         governanceFlipdown = null;
         doms.domFlipdown.innerHTML = '';
@@ -1014,7 +1004,7 @@ async function renderProposals(arrProposals, fContested) {
         }
 
         // Add border radius to last row
-        if (arrProposals.length - 1 == i) {
+        if (arrProposals.length - 1 === i) {
             domStatus.classList.add('bblr-7p');
         }
 
@@ -1249,11 +1239,6 @@ async function renderProposals(arrProposals, fContested) {
                 }
             }
 
-            /*
-
-            <div></div>
-            */
-
             const domVoteBtns = domRow.insertCell();
             domVoteBtns.style =
                 'padding-top: 30px; vertical-align: middle; display: flex; justify-content: center; align-items: center;';
@@ -1269,7 +1254,7 @@ async function renderProposals(arrProposals, fContested) {
             domYesBtn.onclick = () => govVote(cProposal.Hash, 1);
 
             // Add border radius to last row
-            if (arrProposals.length - 1 == i) {
+            if (arrProposals.length - 1 === i) {
                 domVoteBtns.classList.add('bbrr-7p');
             }
 
@@ -1285,6 +1270,8 @@ async function renderProposals(arrProposals, fContested) {
                 'onclick',
                 `MPW.govVote('${cProposal.Hash}', 1);`
             );
+
+            domYesBtn.setAttribute('style', `height:36px;`);
             voteBtn = domNoBtn.outerHTML + domYesBtn.outerHTML;
         }
 
@@ -1304,7 +1291,7 @@ async function renderProposals(arrProposals, fContested) {
         mobileExtended.innerHTML = `
         <div class="row pt-2">
             <div class="col-5 fs-13 fw-600">
-                <div class="governMobDot"></div> ${translation.govTablePayment}
+                ${translation.govTablePayment}
             </div>
             <div class="col-7">
                 <span class="governValues"><b>${sanitizeHTML(
@@ -1325,7 +1312,7 @@ async function renderProposals(arrProposals, fContested) {
         <hr class="governHr">
         <div class="row">
             <div class="col-5 fs-13 fw-600">
-                <div class="governMobDot"></div> ${translation.govTableVotes}
+                ${translation.govTableVotes}
             </div>
             <div class="col-7">
                 <b>${parseFloat(nLocalPercent).toLocaleString(
@@ -1345,9 +1332,9 @@ async function renderProposals(arrProposals, fContested) {
         <hr class="governHr">
         <div class="row pb-2">
             <div class="col-5 fs-13 fw-600">
-                <div class="governMobDot"></div> ${translation.govTableVote}
+                ${translation.govTableVote}
             </div>
-            <div class="col-7">
+            <div class="col-7 mobileVote">
                 ${voteBtn}
             </div>
         </div>`;
@@ -1513,6 +1500,7 @@ async function refreshMasternodeData(cMasternode, fAlert = false) {
         doms.domMnTextErrors.innerHTML =
             'Masternode is currently <b>OFFLINE</b>';
         if (
+            wallet.isHardwareWallet() ||
             !wallet.isViewOnly() ||
             (await restoreWallet(translation.walletUnlockCreateMN))
         ) {
@@ -1709,12 +1697,6 @@ export async function createProposal() {
 
 export async function refreshChainData() {
     const cNet = getNetwork();
-    // If in offline mode: don't sync ANY data or connect to the internet
-    if (!cNet.enabled)
-        return console.warn(
-            'Offline mode active: For your security, the wallet will avoid ALL internet requests.'
-        );
-
     // Fetch block count
     const newBlockCount = await cNet.getBlockCount();
     if (newBlockCount !== blockCount) {
@@ -1771,7 +1753,7 @@ export function switchSettings(page) {
 
     Object.values(SETTINGS).forEach(({ section, btn }) => {
         // Set the slider to the proper location
-        if (page == 'display') {
+        if (page === 'display') {
             doms.domDisplayDecimalsSlider.oninput = function () {
                 doms.domDisplayDecimalsSliderDisplay.innerHTML = this.value;
                 //let val =  ((((doms.domDisplayDecimalsSlider.offsetWidth - 24) / 9) ) * parseInt(this.value));

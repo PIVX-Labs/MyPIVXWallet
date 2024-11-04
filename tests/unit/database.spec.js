@@ -3,14 +3,14 @@ import { PromoWallet } from '../../scripts/promos.js';
 import { it, describe, vi, expect } from 'vitest';
 import { Database } from '../../scripts/database.js';
 import { Account } from '../../scripts/accounts';
-import * as misc from '../../scripts/misc.js';
+import * as alert from '../../scripts/alerts/alert.js';
 import { Settings } from '../../scripts/settings';
 import Masternode from '../../scripts/masternode';
 import { Transaction } from '../../scripts/transaction';
 describe('database tests', () => {
     beforeAll(() => {
         // Mock createAlert
-        vi.spyOn(misc, 'createAlert').mockImplementation(vi.fn());
+        vi.spyOn(alert, 'createAlert').mockImplementation(vi.fn());
         vi.stubGlobal(global.console, 'error');
         return () => {
             vi.restoreAllMocks();
@@ -197,36 +197,6 @@ describe('database tests', () => {
         expect(() => db.updateAccount(new Account())).rejects.toThrow(
             /account doesn't exist/
         );
-    });
-
-    it('migrates from local storage correctly', async () => {
-        vi.stubGlobal('localStorage', {
-            explorer: 'duddino.com',
-            translation: 'DE',
-            encwif: 'ENCRYPTED_WIF',
-            publicKey: 'PUB_KEY',
-            masternode: JSON.stringify(
-                new Masternode({ collateralTxId: 'mntxid' })
-            ),
-        });
-        const db = await Database.create('test');
-        expect(await db.getAccount()).toStrictEqual(
-            new Account({
-                publicKey: 'PUB_KEY',
-                encWif: 'ENCRYPTED_WIF',
-            })
-        );
-        expect(await db.getSettings()).toStrictEqual(
-            new Settings({
-                explorer: 'duddino.com',
-                translation: 'DE',
-            })
-        );
-        expect(await db.getMasternode()).toStrictEqual(
-            new Masternode({ collateralTxId: 'mntxid' })
-        );
-
-        vi.unstubAllGlobals();
     });
 
     it('is isolated between different instances', async () => {

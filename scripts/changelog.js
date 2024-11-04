@@ -17,6 +17,7 @@ export function checkForUpgrades() {
         // Old user's first time on this update; display the changelog
         renderChangelog();
     }
+
     // Update the footer with our version
     doms.domVersion.innerText = `v${VERSION}`;
 
@@ -55,7 +56,7 @@ export function renderChangelog() {
                 break;
             default:
                 // If no element was recognised, it's just a plaintext line
-                strHTML += `<p>${sanitizeHTML(type + line)}</p>`;
+                strHTML += `<p>${sanitizeHTML(rawLine)}</p>`;
                 break;
         }
     }
