@@ -211,7 +211,7 @@ creatingShieldTransaction = "" # Creating SHIELD transaction...
 
 [ALERTS]
 INTERNAL_ERROR = "Internal error, pwease try again later" # Internal error, please try again later
-FAILED_TO_IMPORT = "<b>Faiwed to impawt!</b> Invawed password! Baka!" # <b>Failed to import!</b> Invalid password
+INVALID_PASSWORD = "Invawed password! Baka!" # Invalid password
 TESTNET_ENCRYPTION_DISABLED = "<b>Testnet Mowode in ON!</b><br>Wawwet encwyption disabwed" # <b>Testnet Mode is ON!</b><br>Wallet encryption disabled
 PASSWORD_TOO_SMALL = "Dat password is a wittle short!<br>Pwease use at least<b> {MIN_PASS_LENGTH} chawacters!</b>" # That password is a little short!<br>Use at least <b>{MIN_PASS_LENGTH} characters.</b>
 PASSWORD_DOESNT_MATCH = "Yowour passwords dun match!! baka!!" # Your passwords don't match!

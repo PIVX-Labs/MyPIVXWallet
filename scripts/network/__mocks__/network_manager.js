@@ -1,6 +1,6 @@
 import { vi } from 'vitest';
-import { Transaction } from '../transaction.js';
-import { DebugTopics, debugWarn } from '../debug.js';
+import { Transaction } from '../../transaction.js';
+import { DebugTopics, debugWarn } from '../../debug.js';
 
 export const getNetwork = vi.fn(() => {
     return globalNetwork;
@@ -122,7 +122,7 @@ class TestBlock {
      */
     addTransaction(txHex, blockHeight) {
         // Sanity check
-        if (blockHeight != this.blockHeight) {
+        if (blockHeight !== this.blockHeight) {
             throw new Error('Transaction and block have a different height!');
         }
         this.txs.push(new TestTransaction(txHex, blockHeight));

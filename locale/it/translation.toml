@@ -211,7 +211,7 @@ creatingShieldTransaction = "" # Creating SHIELD transaction...
 
 [ALERTS]
 INTERNAL_ERROR = "Errore interno, rirova più tardi" # Internal error, please try again later
-FAILED_TO_IMPORT = "<b>Impossibile importare!</b> Password non valida" # <b>Failed to import!</b> Invalid password
+INVALID_PASSWORD = "Password non valida" # Invalid password
 FAILED_TO_IMPORT_HARDWARE = "<b>Impossibile importare il wallet Hardware!</b>" # <b> Failed to import Hardware Wallet</b>.
 UNSUPPORTED_CHARACTER = "Il carattere '{char}' non è supportato negli indirizzi! (Non compatibile con Base58)" # The character '{char}' is unsupported in addresses! (Not Base58 compatible)
 UNSUPPORTED_WEBWORKERS = "Questo browser non supporta i Web Worker (JS multi-thread), sfortunatamente non puoi generare portafogli Vanity!" # This browser doesn't support Web Workers (multi-threaded JS), unfortunately you cannot generate Vanity wallets!

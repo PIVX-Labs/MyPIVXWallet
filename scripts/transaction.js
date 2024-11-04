@@ -1,7 +1,7 @@
 import { Buffer } from 'buffer';
 import { bytesToNum, numToBytes, numToVarInt, parseWIF } from './encoding.js';
 import { hexToBytes, bytesToHex, dSHA256 } from './utils.js';
-import { OP } from './script.js';
+import { isProposalFee, OP } from './script.js';
 import { varIntToNum, deriveAddress } from './encoding.js';
 import * as nobleSecp256k1 from '@noble/secp256k1';
 import { cChainParams, SAPLING_TX_VERSION } from './chain_params.js';
@@ -56,7 +56,7 @@ export class CTxOut {
     }
 
     isEmpty() {
-        return this.value == 0 && (this.script === 'f8' || this.script === '');
+        return this.value === 0 && (this.script === 'f8' || this.script === '');
     }
 
     serialize() {
@@ -156,7 +156,7 @@ export class Transaction {
     }
 
     isConfirmed() {
-        return this.blockHeight != -1;
+        return this.blockHeight !== -1;
     }
 
     isCoinStake() {
@@ -166,8 +166,18 @@ export class Transaction {
     isCoinBase() {
         // txid is full of 0s for coinbase inputs
         return (
-            this.vin.length == 1 && !!this.vin[0].outpoint.txid.match(/^0*$/)
+            this.vin.length === 1 && !!this.vin[0].outpoint.txid.match(/^0*$/)
         );
+    }
+
+    isProposalFee() {
+        for (let out of this.vout) {
+            if (out.value === cChainParams.current.proposalFee) {
+                const dataBytes = hexToBytes(out.script);
+                if (isProposalFee(dataBytes)) return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -419,7 +429,7 @@ export class Transaction {
         const copy = structuredClone(this.__original);
         // Black out all inputs
         for (let i = 0; i < copy.vin.length; i++) {
-            if (i != index) copy.vin[i].scriptSig = '';
+            if (i !== index) copy.vin[i].scriptSig = '';
         }
         return bytesToHex(
             dSHA256([

@@ -56,7 +56,7 @@ export class AlertController {
      * @param {string} message - The message to relay to the user
      * @param {number?} timeout - The time in `ms` until the alert expires (Defaults to never expiring)
      */
-    createAlert(level, message, timeout = 0) {
+    createAlert(level, message, timeout = 2000) {
         this.addAlert(new Alert({ level, message, timeout }));
     }
 
