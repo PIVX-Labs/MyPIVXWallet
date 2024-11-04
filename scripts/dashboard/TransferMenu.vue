@@ -1,6 +1,6 @@
 <script setup>
 import { translation } from '../i18n.js';
-import { ref, watch, computed } from 'vue';
+import { ref, watch } from 'vue';
 import { getAddressColor } from '../contacts-book';
 import { promptForContact } from '../contacts-book';
 import { sanitizeHTML } from '../misc';

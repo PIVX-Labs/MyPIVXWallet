@@ -1,6 +1,6 @@
 import 'fake-indexeddb/auto';
 import { mount } from '@vue/test-utils';
-import { nextTick, ref } from 'vue';
+import { nextTick } from 'vue';
 import { expect, describe, vi } from 'vitest';
 import TransferMenu from '../../scripts/dashboard/TransferMenu.vue';
 const price = 0.4;
