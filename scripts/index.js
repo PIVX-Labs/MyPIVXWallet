@@ -18,7 +18,6 @@ export {
     toClipboard,
     restoreWallet,
     playMusic,
-    openExplorer,
     doms,
     switchSettings,
 } from './global.js';

@@ -137,3 +137,13 @@ export async function startBatch(
 export function sleep(ms) {
     return new Promise((res, _) => setTimeout(res, ms));
 }
+
+/**
+ * @param {string} blockbookUrl - Blockbook base URL
+ * @param {string} address
+ * @returns {string} URL to blockbook address
+ */
+export function getBlockbookUrl(blockbookUrl, address) {
+    const urlPart = address.startsWith('xpub') ? 'xpub' : 'address';
+    return `${blockbookUrl.replace(/\/$/, '')}/${urlPart}/${address}`;
+}

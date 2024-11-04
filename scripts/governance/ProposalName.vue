@@ -1,10 +1,13 @@
 <script setup>
 import { toRef } from 'vue';
+import { useNetwork } from '../composables/use_network.js';
+import { getBlockbookUrl } from '../utils.js';
 const props = defineProps({
     proposal: Object,
 });
 const proposal = toRef(props, 'proposal');
 const emit = defineEmits(['openExplorer']);
+const network = useNetwork();
 </script>
 <template>
     <div style="vertical-align: middle">
@@ -23,6 +26,10 @@ const emit = defineEmits(['openExplorer']);
         ><br />
         <a
             class="governLink"
+            :href="
+                getBlockbookUrl(network.explorerUrl, proposal.PaymentAddress)
+            "
+            target="_blank"
             style="
                 border-radius: 8px;
                 background-color: #1a122d;
