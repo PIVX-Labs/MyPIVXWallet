@@ -14,7 +14,7 @@ const mountTM = (amount = '123', address = '') => {
             address,
 
             'onUpdate:amount': (e) => wrapper.setProps({ amount: e }),
-            shieldEnabled: true,
+            publicMode: true,
         },
     });
     return wrapper;
