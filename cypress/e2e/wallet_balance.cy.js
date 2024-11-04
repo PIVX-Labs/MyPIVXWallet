@@ -1,12 +1,12 @@
 describe('Wallet balance tests', () => {
     beforeEach(() => {
         cy.clearDb();
+	cy.playback('GET', /explorer/, { toBeCalledAtLeast: 4 }).as('sync');
         cy.visit('/');
         cy.importWallet('DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb');
     });
     it('calculates balance correctly', () => {
-        cy.playback('GET', /explorer/, { toBeCalledAtLeast: 4 }).as('sync');
-        for (let i = 0; i < 4; i++) {
+        for (let i = 0; i < 5; i++) {
             cy.wait('@sync');
         }
         cy.get('[data-testid="primaryBalance"]').contains('1,297');
