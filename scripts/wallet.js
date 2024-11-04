@@ -655,6 +655,8 @@ export class Wallet {
             let type = HistoricalTxType.UNKNOWN;
             if (tx.isCoinStake()) {
                 type = HistoricalTxType.STAKE;
+            } else if (tx.isProposalFee()) {
+                type = HistoricalTxType.PROPOSAL_FEE;
             } else if (this.checkForUndelegations(tx)) {
                 type = HistoricalTxType.UNDELEGATION;
                 nAmount = getFilteredCredit(OutpointState.P2PKH) / COIN;
@@ -721,11 +723,8 @@ export class Wallet {
         let nStartHeight = Math.max(
             ...this.getTransactions().map((tx) => tx.blockHeight)
         );
-        const txNumber =
-            (await cNet.getNumPages(nStartHeight, addr)) -
-            this.getTransactions().length;
         // Compute the total pages and iterate through them until we've synced everything
-        const totalPages = Math.ceil(txNumber / 1000);
+        const totalPages = await cNet.getNumPages(nStartHeight, addr);
         for (let i = totalPages; i > 0; i--) {
             getEventEmitter().emit(
                 'transparent-sync-status-update',
