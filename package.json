@@ -34,6 +34,8 @@
     "homepage": "https://github.com/PIVX-Labs/MyPIVXWallet#readme",
     "devDependencies": {
         "@fluent/langneg": "^0.7.0",
+        "@oreillymedia/cypress-playback": "^3.0.9",
+        "@simonsmith/cypress-image-snapshot": "^9.1.0",
         "@typescript-eslint/eslint-plugin": "^5.48.0",
         "@typescript-eslint/parser": "^5.48.0",
         "@vitejs/plugin-vue": "^4.4.1",
