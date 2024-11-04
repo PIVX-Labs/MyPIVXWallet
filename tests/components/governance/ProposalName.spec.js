@@ -1,13 +1,15 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { mount } from '@vue/test-utils';
+import { flushPromises, mount } from '@vue/test-utils';
 import ProposalName from '../../../scripts/governance/ProposalName.vue';
-
+import { setActivePinia, createPinia } from 'pinia';
 describe('ProposalName component tests', () => {
     /**
      * @type{import('@vue/test-utils').VueWrapper<ProposalName>}
      */
     let wrapper;
     beforeEach(() => {
+        // Create test pinia instance
+        setActivePinia(createPinia());
         wrapper = mount(ProposalName, {
             props: {
                 proposal: {
@@ -19,11 +21,20 @@ describe('ProposalName component tests', () => {
         });
     });
 
-    it('emits openExplorer event when clicking link', async () => {
-        await wrapper.find('[data-testid="proposalLink"]').trigger('click');
-        expect(wrapper.emitted().openExplorer).toStrictEqual([
-            ['Dlabsaddress'],
-        ]);
+    it('Has correct href link', async () => {
+        expect(
+            wrapper.find('[data-testid="proposalLink"]').attributes('href')
+        ).toBe('/address/Dlabsaddress');
+        await wrapper.setProps({
+            proposal: {
+                PaymentAddress: 'xpubdlabs',
+                URL: 'https://proposal.com',
+                Name: 'ProposalName',
+            },
+        });
+        expect(
+            wrapper.find('[data-testid="proposalLink"]').attributes('href')
+        ).toBe('/xpub/xpubdlabs');
     });
 
     it('renders correctly', async () => {
