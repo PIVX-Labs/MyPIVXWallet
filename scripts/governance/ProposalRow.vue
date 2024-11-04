@@ -87,32 +87,36 @@ function vote(voteCode) {
             </td>
         </template>
     </tr>
-    <Modal :show="showConfirmVoteModal">
-        <template #header>
-            <span> {{ translation.ALERTS.CONFIRM_POPUP_VOTE }} </span>
-        </template>
-        <template #body>
-            <span v-html="translation.ALERTS.CONFIRM_POPUP_VOTE_HTML"></span>
-        </template>
-        <template #footer>
-            <button
-                @click="
-                    emit('vote', selectedVoteCode);
-                    showConfirmVoteModal = false;
-                "
-                data-testid="confirmVote"
-                class="pivx-button-small"
-                style="height: 42px; width: 228px"
-            >
-                {{ translation.popupConfirm }}
-            </button>
-            <button
-                @click="showConfirmVoteModal = false"
-                class="pivx-button-small"
-                style="height: 42px; width: 228px"
-            >
-                {{ translation.popupCancel }}
-            </button>
-        </template>
-    </Modal>
+    <Teleport to="body">
+        <Modal :show="showConfirmVoteModal">
+            <template #header>
+                <span> {{ translation.ALERTS.CONFIRM_POPUP_VOTE }} </span>
+            </template>
+            <template #body>
+                <span
+                    v-html="translation.ALERTS.CONFIRM_POPUP_VOTE_HTML"
+                ></span>
+            </template>
+            <template #footer>
+                <button
+                    @click="showConfirmVoteModal = false"
+                    class="pivx-button-small-cancel"
+                    style="height: 42px; width: 228px"
+                >
+                    {{ translation.popupCancel }}
+                </button>
+                <button
+                    @click="
+                        emit('vote', selectedVoteCode);
+                        showConfirmVoteModal = false;
+                    "
+                    data-testid="confirmVote"
+                    class="pivx-button-small"
+                    style="height: 42px; width: 228px"
+                >
+                    {{ translation.popupConfirm }}
+                </button>
+            </template>
+        </Modal>
+    </Teleport>
 </template>
