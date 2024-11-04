@@ -295,7 +295,7 @@ class CachableBalance {
     value = -1;
 
     isValid() {
-        return this.value != -1;
+        return this.value !== -1;
     }
     invalidate() {
         this.value = -1;
