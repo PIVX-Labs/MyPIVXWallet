@@ -1,7 +1,7 @@
 describe('Wallet balance tests', () => {
     beforeEach(() => {
         cy.clearDb();
-	cy.playback('GET', /explorer/, { toBeCalledAtLeast: 4 }).as('sync');
+        cy.playback('GET', /explorer/, { toBeCalledAtLeast: 4 }).as('sync');
         cy.visit('/');
         cy.importWallet('DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb');
     });
@@ -9,9 +9,9 @@ describe('Wallet balance tests', () => {
         for (let i = 0; i < 5; i++) {
             cy.wait('@sync');
         }
-	cy.wait(10000)
+        cy.wait(10000);
         cy.get('[data-testid="primaryBalance"]').contains('1,297');
-	cy.get('[data-testid="alert"]').click().should('not.exist');
+        cy.get('[data-testid="alert"]').click().should('not.exist');
 
         for (let i = 0; i < 10; i++) {
             cy.get('[data-testid="activity"]')

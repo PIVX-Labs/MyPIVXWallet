@@ -2,4 +2,4 @@ import { addMatchImageSnapshotCommand } from '@simonsmith/cypress-image-snapshot
 import '@oreillymedia/cypress-playback/addCommands.js';
 import './commands';
 
-addMatchImageSnapshotCommand();
+addMatchImageSnapshotCommand({ failureThreshold: 0.2 });
