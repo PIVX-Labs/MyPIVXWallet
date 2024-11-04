@@ -1,6 +1,12 @@
 {
     "env": { "browser": true, "es2021": true, "jquery": true },
-    "ignorePatterns": ["tests/", "dist/", "node_modules/", "coverage/", "cypress/"],
+    "ignorePatterns": [
+        "tests/",
+        "dist/",
+        "node_modules/",
+        "coverage/",
+        "cypress/"
+    ],
     "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended"],
     "overrides": [],
     "parser": "@typescript-eslint/parser",
