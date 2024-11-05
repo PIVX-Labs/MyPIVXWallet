@@ -78,10 +78,12 @@ function vote(voteCode) {
                     </div>
                     <div
                         class="pivx-button-small govYesBtnMob"
-                        style="width: fit-content"
+                        style="width: fit-content; height: 36px"
                         @click="vote(1)"
                     >
-                        <span> {{ translation.yes }} </span>
+                        <span style="vertical-align: middle">
+                            {{ translation.yes }}
+                        </span>
                     </div>
                 </div>
             </td>
