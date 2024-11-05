@@ -9,7 +9,7 @@ Alternatively, you can run `npx cypress run --browser chromium` to run all the s
 
 Commands are defined in `cypress/support/commands.js` and provide common actions, like `createWallet` and `goToTab`. To add a command, call `Cypress.Commands.add`. To call a command, `cy.[command name]`.
 
-## Playback and screenshot snapshots
+## Playback and snapshots
 
 To avoid relying on the actual blockchain data, we can take a snapshot of the explorer response and play it back on subsequent runs.
 To tell cypress to playback a request, use `cy.playback(METHOD, URL, OPTIONS)`.
@@ -24,14 +24,14 @@ Plays back 4 calls to explorer and waits for MPW to make the requests (for examp
 To tell cypress to record the requests, open it with the environment variable `CYPRESS_PLAYBACK_MODE=record`.
 Do not update other tests' playbacks unless necesarry, as you might have to update the tests.
 
-You can take screenshot snapshots with `.matchImageSnapshot`, for example:
+You can take snapshots with `.matchHtmlSnapshot`, for example:
 ```javascript
 cy.get('[data-testid="activity"]')
     .filter(':visible')
-    .matchImageSnapshot();
+    .matchHtmlSnapshot('activity');
 ```
-Takes a screenshot snapshot of the activity table.
-If you need to update the snapshots, run cypress with `--env updateSnapshots=true`. Check that the screenshots look good before committing.
+Takes the HTML of the visible activity and matches it against the old version.
+If you need to update the snapshots, remove the outdated one and rerun the tests.
 
 ## Should I write an e2e test?
 E2e tests are very expensive compared to other ones. If you are writing tests for a minor bug, try to write a unit test first.
