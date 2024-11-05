@@ -105,7 +105,8 @@ async function restoreWallet() {
 
 async function createMasternode({ isVPS }) {
     // Ensure wallet is unlocked
-    if (isViewOnly.value && !(await restoreWallet())) return;
+    if (!isHardwareWallet.value && isViewOnly.value && !(await restoreWallet()))
+        return;
     const [address] = wallet.getNewAddress(1);
     const res = await wallet.createAndSendTransaction(
         getNetwork(),
@@ -147,7 +148,7 @@ function openShowPrivKeyModal() {
         <template #header>
             <b>{{ translation?.ALERTS?.CONFIRM_POPUP_MN_P_KEY }}</b>
             <button
-                @click="showModal = false"
+                @click="showMasternodePrivateKey = false"
                 type="button"
                 class="close"
                 data-dismiss="modal"
