@@ -923,7 +923,6 @@ defineExpose({
             :publicMode="wallet.publicMode"
             :price="price"
             :currency="currency"
-            :shieldEnabled="hasShield"
             v-model:amount="transferAmount"
             :desc="transferDescription"
             v-model:address="transferAddress"

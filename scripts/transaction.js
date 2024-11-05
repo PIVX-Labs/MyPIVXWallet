@@ -56,7 +56,7 @@ export class CTxOut {
     }
 
     isEmpty() {
-        return this.value == 0 && (this.script === 'f8' || this.script === '');
+        return this.value === 0 && (this.script === 'f8' || this.script === '');
     }
 
     serialize() {
@@ -156,7 +156,7 @@ export class Transaction {
     }
 
     isConfirmed() {
-        return this.blockHeight != -1;
+        return this.blockHeight !== -1;
     }
 
     isCoinStake() {
@@ -166,7 +166,7 @@ export class Transaction {
     isCoinBase() {
         // txid is full of 0s for coinbase inputs
         return (
-            this.vin.length == 1 && !!this.vin[0].outpoint.txid.match(/^0*$/)
+            this.vin.length === 1 && !!this.vin[0].outpoint.txid.match(/^0*$/)
         );
     }
 
@@ -429,7 +429,7 @@ export class Transaction {
         const copy = structuredClone(this.__original);
         // Black out all inputs
         for (let i = 0; i < copy.vin.length; i++) {
-            if (i != index) copy.vin[i].scriptSig = '';
+            if (i !== index) copy.vin[i].scriptSig = '';
         }
         return bytesToHex(
             dSHA256([

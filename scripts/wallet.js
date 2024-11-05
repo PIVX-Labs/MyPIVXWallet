@@ -531,7 +531,7 @@ export class Wallet {
         } else if (isP2CS(dataBytes)) {
             const addresses = [];
             for (let i = 0; i < 2; i++) {
-                const iStart = i == 0 ? OWNER_START_INDEX : COLD_START_INDEX;
+                const iStart = i === 0 ? OWNER_START_INDEX : COLD_START_INDEX;
                 addresses.push(
                     this.getAddressFromHashCache(
                         bytesToHex(dataBytes.slice(iStart, iStart + 20)),
@@ -710,6 +710,9 @@ export class Wallet {
             await this.#syncShield();
         }
         this.#isSynced = true;
+        // At this point download the last missing blocks in the range (blockCount -5, blockCount]
+        await this.getLatestBlocks(blockCount);
+
         // Update both activities post sync
         getEventEmitter().enableEvent('balance-update');
         getEventEmitter().emit('balance-update');
@@ -774,7 +777,7 @@ export class Wallet {
                         handled++;
                         await this.#shield.handleBlock(blocks[j]);
                         // Backup every 500 handled blocks
-                        if (handled % 500 == 0) await this.saveShieldOnDisk();
+                        if (handled % 500 === 0) await this.saveShieldOnDisk();
                         // Delete so we don't have to hold all blocks in memory
                         // until we finish syncing
                         delete blocks[j];
@@ -836,9 +839,9 @@ export class Wallet {
     subscribeToNetworkEvents() {
         getEventEmitter().on('new-block', async (block) => {
             if (this.#isSynced) {
+                await this.getLatestBlocks(block);
                 // Invalidate the balance cache to keep immature balance updated
                 this.#mempool.invalidateBalanceCache();
-                await this.getLatestBlocks(block);
                 getEventEmitter().emit('new-tx');
             }
         });
@@ -851,11 +854,9 @@ export class Wallet {
         async (blockCount) => {
             const cNet = getNetwork();
             let block;
-            // Don't ask for the exact last block that arrived,
-            // since it takes around 1 minute for blockbook to make it API available
             for (
                 let blockHeight = this.#lastProcessedBlock + 1;
-                blockHeight < blockCount;
+                blockHeight <= blockCount;
                 blockHeight++
             ) {
                 try {
@@ -940,7 +941,7 @@ export class Wallet {
         const cDB = await Database.getInstance();
         const cAccount = await cDB.getAccount();
         // If the account has not been created yet or there is no shield data return
-        if (!cAccount || cAccount.shieldData == '') {
+        if (!cAccount || cAccount.shieldData === '') {
             return;
         }
         this.#shield = await PIVXShield.load(cAccount.shieldData);

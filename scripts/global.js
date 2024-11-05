@@ -233,7 +233,7 @@ export async function start() {
 
 async function refreshPriceDisplay() {
     await cOracle.getPrice(strCurrency);
-    getEventEmitter().emit('balance-update');
+    getEventEmitter().emit('price-update');
 }
 
 function subscribeToNetworkEvents() {
@@ -517,7 +517,7 @@ export function switchSettings(page) {
 
     Object.values(SETTINGS).forEach(({ section, btn }) => {
         // Set the slider to the proper location
-        if (page == 'display') {
+        if (page === 'display') {
             doms.domDisplayDecimalsSlider.oninput = function () {
                 doms.domDisplayDecimalsSliderDisplay.innerHTML = this.value;
                 //let val =  ((((doms.domDisplayDecimalsSlider.offsetWidth - 24) / 9) ) * parseInt(this.value));

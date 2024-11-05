@@ -264,7 +264,7 @@ async function setCurrency(currency) {
     const database = await Database.getInstance();
     database.setSettings({ displayCurrency: strCurrency });
     // Update the UI to reflect the new currency
-    getEventEmitter().emit('balance-update');
+    getEventEmitter().emit('price-update');
 }
 
 /**
@@ -276,7 +276,7 @@ async function setDecimals(decimals) {
     const database = await Database.getInstance();
     database.setSettings({ displayDecimals: nDisplayDecimals });
     // Update the UI to reflect the new decimals
-    getEventEmitter().emit('balance-update');
+    getEventEmitter().emit('price-update');
 }
 
 /**

@@ -19,7 +19,7 @@ import { bech32 } from 'bech32';
  * @returns {Array<Number>} The compressed public key bytes
  */
 export function compressPublicKey(pubKeyBytes) {
-    if (pubKeyBytes.length != 65)
+    if (pubKeyBytes.length !== 65)
         throw new Error('Attempting to compress an invalid uncompressed key');
     const x = pubKeyBytes.slice(1, 33);
     const y = pubKeyBytes.slice(33);
@@ -94,7 +94,7 @@ export function deriveAddress({ pkBytes, publicKey, output = 'ENCODED' }) {
         pubKeyBytes = compressPublicKey(pubKeyBytes);
     }
 
-    if (pubKeyBytes.length != 33) {
+    if (pubKeyBytes.length !== 33) {
         throw new Error('Invalid public key');
     }
 
@@ -244,9 +244,9 @@ export function parseWIF(strWIF, skipVerification = false) {
  * @returns {number[]} - Encoded numbers
  */
 export function numToBytes(num, bytes = 8) {
-    if (bytes == 0) {
+    if (bytes === 0) {
         return [];
-    } else if (num == -1n) {
+    } else if (num === -1n) {
         return hexToBytes('ffffffffffffffff');
     } else {
         return [Number(num % 256n)].concat(numToBytes(num / 256n, bytes - 1));
@@ -270,7 +270,7 @@ export function numToByteArray(num) {
  * @returns {BigInt} converted number from bytes
  */
 export function bytesToNum(bytes) {
-    if (bytes.length == 0) return 0n;
+    if (bytes.length === 0) return 0n;
     else return BigInt(bytes[0]) + 256n * bytesToNum(bytes.slice(1));
 }
 

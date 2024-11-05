@@ -140,10 +140,12 @@ export const useWallet = defineStore('wallet', () => {
     getEventEmitter().on('balance-update', async () => {
         balance.value = wallet.balance;
         immatureBalance.value = wallet.immatureBalance;
-        currency.value = strCurrency.toUpperCase();
         shieldBalance.value = await wallet.getShieldBalance();
         pendingShieldBalance.value = await wallet.getPendingShieldBalance();
         coldBalance.value = wallet.coldBalance;
+    });
+    getEventEmitter().on('price-update', async () => {
+        currency.value = strCurrency.toUpperCase();
         price.value = cOracle.getCachedPrice(strCurrency);
     });
 

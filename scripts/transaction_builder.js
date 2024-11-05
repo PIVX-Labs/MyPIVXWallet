@@ -124,7 +124,7 @@ export class TransactionBuilder {
         const front = bytes.slice(0, bytes.length - 4);
         const back = bytes.slice(bytes.length - 4);
         const checksum = dSHA256(front).slice(0, 4);
-        if (checksum + '' == back + '') {
+        if (checksum + '' === back + '') {
             return Array.from(front.slice(isExchangeAddress(address) ? 3 : 1));
         }
         throw new Error('Invalid address');
@@ -271,7 +271,7 @@ export class TransactionBuilder {
         const tx = this.#transaction;
         let first = true;
         const outputs = tx.vout.length;
-        if (!outputs || outputs == 0) {
+        if (!outputs || outputs === 0) {
             throw new Error('tx has no outputs!');
         }
         for (let vout of tx.vout) {
