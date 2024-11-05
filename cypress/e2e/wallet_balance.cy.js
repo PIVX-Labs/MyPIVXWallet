@@ -1,6 +1,8 @@
 describe('Wallet balance tests', () => {
     beforeEach(() => {
         cy.clearDb();
+        const now = new Date(2024, 11, 5);
+        cy.clock(now);
         cy.playback('GET', /explorer/, { toBeCalledAtLeast: 4 }).as('sync');
         cy.visit('/');
         cy.importWallet('DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb');
