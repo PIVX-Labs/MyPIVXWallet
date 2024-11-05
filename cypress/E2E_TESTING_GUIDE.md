@@ -2,8 +2,8 @@
 
 MPW uses cypress to do e2e tests.
 To open the gui, run `npm run dev` to open the dev server.
-Then, run `npx cypress open`. Click on e2e testing and select a browser. From there, you can select a test file to run.
-Alternatively, you can run `npx cypress run --browser chromium` to run all the specs in headless mode.
+Then, run `npm run cy:open`. Click on e2e testing and select a browser. From there, you can select a test file to run.
+Alternatively, you can run `npm run cy:ci` to run all the specs in headless mode.
 
 ## Commands
 

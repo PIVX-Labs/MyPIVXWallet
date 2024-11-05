@@ -16,8 +16,8 @@
         "lint": "eslint .",
         "test": "vitest",
         "coverage": "vitest --coverage",
-        "cy:open": "npx cypress open",
-        "cy:run": "npx cypress run --browser chromium",
+        "cy:open": "TZ=Europe/London npx cypress open",
+        "cy:run": "TZ=Europe/London npx cypress run --browser chromium",
         "cy:ci": "TZ=Europe/London start-server-and-test dev http://localhost:5500 cy:run"
     },
     "repository": {
