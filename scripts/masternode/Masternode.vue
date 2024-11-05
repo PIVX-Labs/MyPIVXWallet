@@ -21,7 +21,7 @@ const { createAlert } = useAlerts();
  */
 const { masternode } = storeToRefs(useMasternode());
 const wallet = useWallet();
-const { isSynced, balance, isViewOnly } = storeToRefs(wallet);
+const { isSynced, balance, isViewOnly, isHardwareWallet } = storeToRefs(wallet);
 const showRestoreWallet = ref(false);
 const showMasternodePrivateKey = ref(false);
 const masternodePrivKey = ref('');
@@ -40,7 +40,11 @@ watch(isSynced, () => {
  * @param {boolean} fRestart - Whether this is a Restart or a first Start
  */
 async function startMasternode(fRestart = false) {
-    if (isViewOnly.value && !(await restoreWallet())) {
+    if (
+        !isHardwareWallet.value &&
+        isViewOnly.value &&
+        !(await restoreWallet())
+    ) {
         return;
     }
     if (await masternode.value.start()) {
