@@ -32,6 +32,7 @@ import pIconCopy from '../assets/icons/icon-copy.svg';
 import pIconCheck from '../assets/icons/icon-check.svg';
 import SideNavbar from './SideNavbar.vue';
 import { AsyncInterval } from './async_interval.js';
+import { useNetwork } from './composables/use_network.js';
 
 /** A flag showing if base MPW is fully loaded or not */
 export let fIsLoaded = false;
@@ -392,13 +393,13 @@ export function optimiseCurrencyLocale(nAmount) {
  * @param {string?} strAddress - Optional address to open, if void, the master key is used
  */
 export async function openExplorer(strAddress = '') {
-    const strExplorerURL = getNetwork().strUrl;
+    const network = useNetwork();
     if (wallet.isLoaded() && wallet.isHD() && !strAddress) {
         const xpub = wallet.getXPub();
-        window.open(strExplorerURL + '/xpub/' + xpub, '_blank');
+        window.open(network.explorerUrl + '/xpub/' + xpub, '_blank');
     } else {
         const address = strAddress || wallet.getAddress();
-        window.open(strExplorerURL + '/address/' + address, '_blank');
+        window.open(network.explorerUrl + '/address/' + address, '_blank');
     }
 }
 

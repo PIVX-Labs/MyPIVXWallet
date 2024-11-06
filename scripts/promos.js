@@ -13,6 +13,7 @@ import { LegacyMasterKey } from './masterkey.js';
 import { deriveAddress } from './encoding.js';
 import { getP2PKHScript } from './script.js';
 import { createAlert } from './alerts/alert.js';
+import { useNetwork } from './composables/use_network.js';
 
 import pIconGift from '../assets/icons/icon-gift.svg';
 import pIconGiftOpen from '../assets/icons/icon-gift-opened.svg';
@@ -361,6 +362,7 @@ export async function renderSavedPromos() {
     const arrCodes = await db.getAllPromos();
 
     // Render each code; sorted by Newest First, Oldest Last.
+    const network = useNetwork();
     for (const cDiskCode of arrCodes.sort((a, b) => b.time - a.time)) {
         // Move on-disk promos to a memory representation for quick state computation
         let cCode = arrPromoCodes.find((code) => code.code === cDiskCode.code);
@@ -426,7 +428,7 @@ export async function renderSavedPromos() {
                            '\')">'
                  }</i>
                  <a style="margin-left:6px; margin-right:6px; width:auto!important;" class="ptr active" href="${
-                     getNetwork().strUrl + '/address/' + cCode.address
+                     network.explorerUrl + '/address/' + cCode.address
                  }" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-up-right-from-square"></i></a><span style="margin-left:4px;">${strStatus}</span></td>
              </tr>
          `;
