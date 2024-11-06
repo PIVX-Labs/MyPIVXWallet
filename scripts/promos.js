@@ -1,7 +1,7 @@
 import { cChainParams, COIN } from './chain_params.js';
 import { Database } from './database.js';
 import { doms, restoreWallet, sweepAddress } from './global.js';
-import { downloadBlob } from './misc.js';
+import { downloadBlob, sanitizeHTML } from './misc.js';
 import { getAlphaNumericRand, arrayToCSV } from './utils.js';
 import { ALERTS, translation, tr } from './i18n.js';
 import { getNetwork } from './network/network_manager.js';
@@ -221,6 +221,11 @@ let fPromoIntervalStarted = false;
  * @param {boolean} fAddRandomness - Whether to append Randomness to the code
  */
 export async function createPromoCode(strCode, nAmount, fAddRandomness = true) {
+    // Ensure the code doesn't have any weird potential-XSS characters
+    if (strCode !== sanitizeHTML(strCode)) {
+        return createAlert('warning', 'Invalid code name!', 2000);
+    }
+
     // Determine if we're adding randomness - and if so, if it's appended entropy or full randomness
     const strFinalCode = fAddRandomness
         ? strCode
@@ -385,7 +390,7 @@ export async function renderSavedPromos() {
         const fCannotDelete = !cCode.fSynced || fNew || nBal > 0;
 
         // Trimmed code
-        let trimmedCode =
+        const trimmedCode =
             cCode.code.length > 10
                 ? cCode.code.slice(0, 7) + '...'
                 : cCode.code;
@@ -409,11 +414,11 @@ export async function renderSavedPromos() {
         }
         strHTML += `
              <tr>
-                 <td><i onclick="MPW.toClipboard('copy${
+                 <td><code id="copy${
                      cCode.address
-                 }', this)" class="fas fa-clipboard" style="cursor: pointer; margin-right: 10px;"></i><code id="copy${
-            cCode.address
-        }" class="wallet-code" style="display: inline !important; color: #e83e8c;">${trimmedCode}</code></td>
+                 }" class="wallet-code ptr" onclick="MPW.toClipboard(this)" data-copy="${
+            cCode.code
+        }" style="display: inline !important; color: #e83e8c;">${trimmedCode}</code></td>
                  <td>${
                      fNew || !cCode.fSynced
                          ? '...'
@@ -516,11 +521,11 @@ export async function updatePromoCreationTick(fRecursive = false) {
             strState = '<i class="fa-solid fa-spinner spinningLoading"></i>';
         } else if (cThread.end_state) {
             // Errored state (failed to broadcast, etc)
-            if (cThread.end_state == 'Errored') {
+            if (cThread.end_state === 'Errored') {
                 strState = `<i class="fas fa-exclamation-triangle"></i>`;
-            } else if (cThread.end_state == 'Done') {
+            } else if (cThread.end_state === 'Done') {
                 strState = `<i class="fas fa-check"></i>`;
-            } else if (cThread.end_state == 'Cancelled') {
+            } else if (cThread.end_state === 'Cancelled') {
                 strState = `<i class="fas fa-times-circle"></i>`;
             }
         } else {
@@ -533,11 +538,17 @@ export async function updatePromoCreationTick(fRecursive = false) {
                 '</span>%';
         }
 
+        // Trimmed code
+        const trimmedCode =
+            cThread.code.length > 10
+                ? cThread.code.slice(0, 7) + '...'
+                : cThread.code;
+
         // Render the table row
         strHTML =
             `
              <tr>
-                 <td><code class="wallet-code active" style="display: inline !important; color: #e83e8c!important;">${cThread.code}</code></td>
+                 <td><code class="wallet-code active" style="display: inline !important; color: #e83e8c!important;">${trimmedCode}</code></td>
                  <td>${cThread.amount} ${cChainParams.current.TICKER}</td>
                  <td>
                     <i class="fa-solid fa-ban ptr" style="margin-right:4px;" onclick="MPW.deletePromoCode('${cThread.code}')"></i>
