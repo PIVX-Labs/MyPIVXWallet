@@ -288,7 +288,7 @@ export async function start() {
 
 async function refreshPriceDisplay() {
     await cOracle.getPrice(strCurrency);
-    getEventEmitter().emit('balance-update');
+    getEventEmitter().emit('price-update');
 }
 
 function subscribeToNetworkEvents() {
