@@ -70,7 +70,7 @@ class NetworkManager {
         let attemptNet = isRPC ? this.#currentNode : this.#currentExplorer;
 
         let i = this.#networks.findIndex((net) => attemptNet === net);
-        if (i == -1) {
+        if (i === -1) {
             debugWarn(DebugTopics.NET, 'Cannot find index in networks array');
             i = 0;
         }
@@ -87,10 +87,14 @@ class NetworkManager {
             } catch (error) {
                 debugLog(
                     DebugTopics.NET,
-                    attemptNet.strUrl + ' failed on ' + funcName
+                    attemptNet.strUrl +
+                        ' failed on ' +
+                        funcName +
+                        ' with error ' +
+                        error
                 );
                 // If allowed, switch instances
-                if (!fAutoSwitch || attempts == nMaxTries) {
+                if (!fAutoSwitch || attempts === nMaxTries) {
                     throw error;
                 }
                 attemptNet = this.#networks[(i + attempts) % nMaxTries];
@@ -174,12 +178,116 @@ class NetworkManager {
         }
     }
 
-    async getTxInfo(_txHash) {
-        return await this.#retryWrapper('getTxInfo', false, _txHash);
+    async getTxInfo(txHash) {
+        return await this.#retryWrapper('getTxInfo', false, txHash);
     }
 
-    async callRPC(api, mode = 'json') {
-        return await this.#retryWrapper('callRPC', true, api, mode);
+    /**
+     * @param{string} collateralTxId - masternode collateral transaction id
+     * @param{number} outidx - masternode collateral output index
+     */
+    async getMasternodeInfo(collateralTxId, outidx) {
+        return await this.#retryWrapper(
+            'getMasternodeInfo',
+            true,
+            collateralTxId,
+            outidx
+        );
+    }
+
+    async getMasternodeCount() {
+        return await this.#retryWrapper('getMasternodeCount', true);
+    }
+
+    async getNextSuperblock() {
+        return await this.#retryWrapper('getNextSuperblock', true);
+    }
+
+    async startMasternode(broadcastMsg) {
+        return await this.#retryWrapper('startMasternode', true, broadcastMsg);
+    }
+
+    async getProposals() {
+        return await this.#retryWrapper('getProposals', true);
+    }
+
+    /**
+     * Returns the proposal vote of a given masternode
+     * @param {string} proposalName - name of the proposal
+     * @param{string} collateralTxId - masternode collateral transaction id
+     * @param{number} outidx - masternode collateral output index
+     */
+    async getProposalVote(proposalName, collateralTxId, outidx) {
+        return await this.#retryWrapper(
+            'getProposalVote',
+            true,
+            proposalName,
+            collateralTxId,
+            outidx
+        );
+    }
+
+    /**
+     * @param {string} collateralTxId - masternode collateral transaction id
+     * @param {number} outidx - masternode collateral output index
+     * @param {string} hash - the hash of the proposal to vote
+     * @param {number} voteCode - the vote code. "Yes" is 1, "No" is 2
+     * @param {number} sigTime - vote signature time
+     * @param {string} signature - vote signature
+     */
+    async voteProposal(
+        collateralTxId,
+        outidx,
+        hash,
+        voteCode,
+        sigTime,
+        signature
+    ) {
+        return await this.#retryWrapper(
+            'voteProposal',
+            true,
+            collateralTxId,
+            outidx,
+            hash,
+            voteCode,
+            sigTime,
+            signature
+        );
+    }
+
+    async getShieldData(initialBlock = 0) {
+	return await this.#retryWrapper('getShieldData', true, initialBlock);
+    }
+
+    /**
+     * Submit a proposal
+     * @param {Object} options
+     * @param {String} options.name - Name of the proposal
+     * @param {String} options.url - Url of the proposal
+     * @param {Number} options.nPayments - Number of cycles this proposal is gonna last
+     * @param {Number} options.start - Superblock of when the proposal is going to start
+     * @param {String} options.address - Base58 encoded PIVX address
+     * @param {Number} options.monthlyPayment - Payment amount per cycle in satoshi
+     * @param {String} options.txid - Transaction id of the proposal fee
+     */
+    async submitProposal({
+        name,
+        url,
+        nPayments,
+        start,
+        address,
+        monthlyPayment,
+        txid,
+    }) {
+        return await this.#retryWrapper('submitProposal', true, {
+            name,
+            url,
+            nPayments,
+            start,
+            address,
+            monthlyPayment,
+            txid,
+        });
     }
 
     static #instance = new NetworkManager();

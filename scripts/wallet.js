@@ -100,6 +100,12 @@ export class Wallet {
      * @type {number}
      */
     #lastProcessedBlock = 0;
+    /**
+     * Array of historical txs, ordered by block height
+     * @type HistoricalTx[]
+     */
+    #historicalTxs;
+
     constructor({ nAccount, masterKey, shield, mempool = new Mempool() }) {
         this.#nAccount = nAccount;
         this.#mempool = mempool;
@@ -248,6 +254,7 @@ export class Wallet {
         }
         this.#mempool = new Mempool();
         this.#lastProcessedBlock = 0;
+        this.#historicalTxs = [];
     }
 
     /**
@@ -532,7 +539,7 @@ export class Wallet {
         } else if (isP2CS(dataBytes)) {
             const addresses = [];
             for (let i = 0; i < 2; i++) {
-                const iStart = i == 0 ? OWNER_START_INDEX : COLD_START_INDEX;
+                const iStart = i === 0 ? OWNER_START_INDEX : COLD_START_INDEX;
                 addresses.push(
                     this.getAddressFromHashCache(
                         bytesToHex(dataBytes.slice(iStart, iStart + 20)),
@@ -672,10 +679,6 @@ export class Wallet {
             } else if (nAmount < 0) {
                 type = HistoricalTxType.SENT;
             }
-            const isCoinSpecial = tx.isCoinStake() || tx.isCoinBase();
-            const isConfirmed =
-                blockCount - tx.blockHeight >=
-                (isCoinSpecial ? cChainParams.current.coinbaseMaturity : 6);
 
             histTXs.push(
                 new HistoricalTx(
@@ -685,12 +688,37 @@ export class Wallet {
                     false,
                     tx.blockTime,
                     tx.blockHeight,
-                    Math.abs(nAmount),
-                    isConfirmed
+                    Math.abs(nAmount)
                 )
             );
         }
         return histTXs;
+    }
+
+    /**
+     * @param {Transaction} tx
+     */
+    #pushToHistoricalTx(tx) {
+        const historicalTx = this.toHistoricalTXs([tx])[0];
+        let prevHeight = Number.POSITIVE_INFINITY;
+        for (const [i, hTx] of this.#historicalTxs.entries()) {
+            if (
+                historicalTx.blockHeight <= prevHeight &&
+                historicalTx.blockHeight >= hTx.blockHeight
+            ) {
+                this.#historicalTxs.splice(i, 0, historicalTx);
+                return;
+            }
+            prevHeight = hTx.blockHeight;
+        }
+        this.#historicalTxs.push(historicalTx);
+    }
+
+    /**
+     * @returns {HistoricalTx[]}
+     */
+    getHistoricalTxs() {
+        return this.#historicalTxs;
     }
     sync = lockableFunction(async () => {
         if (this.#isSynced) {
@@ -711,6 +739,9 @@ export class Wallet {
             await this.#syncShield();
         }
         this.#isSynced = true;
+        // At this point download the last missing blocks in the range (blockCount -5, blockCount]
+        await this.getLatestBlocks(blockCount);
+
         // Update both activities post sync
         getEventEmitter().enableEvent('balance-update');
         getEventEmitter().emit('balance-update');
@@ -722,7 +753,7 @@ export class Wallet {
         const cNet = getNetwork();
         const addr = this.getKeyToExport();
         let nStartHeight = Math.max(
-            ...this.getTransactions().map((tx) => tx.blockHeight)
+            ...this.#mempool.getTransactions().map((tx) => tx.blockHeight)
         );
         // Compute the total pages and iterate through them until we've synced everything
         const totalPages = await cNet.getNumPages(nStartHeight, addr);
@@ -881,9 +912,9 @@ export class Wallet {
     subscribeToNetworkEvents() {
         getEventEmitter().on('new-block', async (block) => {
             if (this.#isSynced) {
+                await this.getLatestBlocks(block);
                 // Invalidate the balance cache to keep immature balance updated
                 this.#mempool.invalidateBalanceCache();
-                await this.getLatestBlocks(block);
                 getEventEmitter().emit('new-tx');
             }
         });
@@ -896,11 +927,9 @@ export class Wallet {
         async (blockCount) => {
             const cNet = getNetwork();
             let block;
-            // Don't ask for the exact last block that arrived,
-            // since it takes around 1 minute for blockbook to make it API available
             for (
                 let blockHeight = this.#lastProcessedBlock + 1;
-                blockHeight < blockCount;
+                blockHeight <= blockCount;
                 blockHeight++
             ) {
                 try {
@@ -985,7 +1014,7 @@ export class Wallet {
         const cDB = await Database.getInstance();
         const cAccount = await cDB.getAccount();
         // If the account has not been created yet or there is no shield data return
-        if (!cAccount || cAccount.shieldData == '') {
+        if (!cAccount || cAccount.shieldData === '') {
             return;
         }
         this.#shield = await PIVXShield.load(cAccount.shieldData);
@@ -1201,6 +1230,7 @@ export class Wallet {
      * @param {import('./transaction.js').Transaction} transaction
      */
     async addTransaction(transaction, skipDatabase = false) {
+        const tx = this.#mempool.getTransaction(transaction.txid);
         this.#mempool.addTransaction(transaction);
         let i = 0;
         for (const out of transaction.vout) {
@@ -1225,6 +1255,11 @@ export class Wallet {
         if (!skipDatabase) {
             const db = await Database.getInstance();
             await db.storeTx(transaction);
+        }
+        if (!tx || tx.blockHeight === -1) {
+            // Do not add unconfirmed txs to history
+            if (transaction.blockHeight !== -1)
+                this.#pushToHistoricalTx(transaction);
         }
     }
 
@@ -1267,13 +1302,6 @@ export class Wallet {
                 blockCount,
             })
             .filter((u) => u.value === collateralValue);
-    }
-
-    /**
-     * @returns {import('./transaction.js').Transaction[]} a list of all transactions
-     */
-    getTransactions() {
-        return this.#mempool.getTransactions();
     }
 
     get balance() {

@@ -1,6 +1,6 @@
 import 'fake-indexeddb/auto';
 import { mount } from '@vue/test-utils';
-import { nextTick, ref } from 'vue';
+import { nextTick } from 'vue';
 import { expect, describe, vi } from 'vitest';
 import TransferMenu from '../../scripts/dashboard/TransferMenu.vue';
 const price = 0.4;
@@ -14,7 +14,7 @@ const mountTM = (amount = '123', address = '') => {
             address,
 
             'onUpdate:amount': (e) => wrapper.setProps({ amount: e }),
-            shieldEnabled: true,
+            publicMode: true,
         },
     });
     return wrapper;

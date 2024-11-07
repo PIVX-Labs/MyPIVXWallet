@@ -242,6 +242,14 @@ export class Mempool {
     }
 
     /**
+     * @param {string} txid - transaction id
+     * @returns {import('./transaction.js').Transaction | undefined}
+     */
+    getTransaction(txid) {
+        return this.#txmap.get(txid);
+    }
+
+    /**
      * @param blockCount - chain height
      */
     getBalance(blockCount) {
@@ -287,7 +295,7 @@ class CachableBalance {
     value = -1;
 
     isValid() {
-        return this.value != -1;
+        return this.value !== -1;
     }
     invalidate() {
         this.value = -1;

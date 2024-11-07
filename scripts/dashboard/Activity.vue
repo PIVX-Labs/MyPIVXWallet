@@ -12,6 +12,7 @@ import { beautifyNumber } from '../misc';
 
 import iCheck from '../../assets/icons/icon-check.svg';
 import iHourglass from '../../assets/icons/icon-hourglass.svg';
+import { blockCount } from '../global.js';
 
 const props = defineProps({
     title: String,
@@ -85,45 +86,40 @@ async function update(txToAdd = 0) {
     // If there are less than 10 txs loaded, append rather than update the list
     if (txCount < 10 && txToAdd == 0) txToAdd = 10;
 
-    let found = 0;
-    // Since ECMAScript 2019 .sort is stable.
-    // https://caniuse.com/mdn-javascript_builtins_array_sort_stable
-    const orderedTxs = Array.from(wallet.getTransactions()).sort(
-        (a, b) => a.blockHeight - b.blockHeight
-    );
+    const historicalTxs = wallet.getHistoricalTxs();
 
     // For Rewards: aggregate the total amount
     if (props.rewards) {
-        for (const tx of orderedTxs) {
+        for (const tx of historicalTxs) {
             // If this Tx Height is under our last scanned height, we stop
             if (tx.blockHeight <= nRewardUpdateHeight) break;
             // Only compute rewards
-            if (!tx.isCoinStake()) continue;
+            if (tx.type != HistoricalTxType.STAKE) continue;
             // Aggregate the total rewards
-            rewardAmount.value += wallet.toHistoricalTXs([tx])[0].amount;
+            rewardAmount.value += tx.amount;
         }
         // Keep track of the scan block height
-        if (orderedTxs.length) {
-            nRewardUpdateHeight = orderedTxs[0].blockHeight;
+        if (historicalTxs.length) {
+            nRewardUpdateHeight = historicalTxs[0].blockHeight;
         }
     }
 
-    // Prepare the Tx History list
+    let i = 0;
+    let found = 0;
     while (found < txCount + txToAdd) {
-        if (orderedTxs.length == 0) {
+        if (i === historicalTxs.length) {
             isHistorySynced.value = true;
             break;
         }
-        const tx = orderedTxs.pop();
-        if (props.rewards && !tx.isCoinStake()) continue;
+        const tx = historicalTxs[i];
+        i += 1;
+        if (props.rewards && tx.type != HistoricalTxType.STAKE) continue;
         newTxs.push(tx);
         found++;
     }
 
-    // Convert to MPW's Activity format and render it
-    const arrTXs = wallet.toHistoricalTXs(newTxs);
-    await parseTXs(arrTXs);
     txCount = found;
+    await parseTXs(newTxs);
     updating.value = false;
 }
 
@@ -178,6 +174,13 @@ async function parseTXs(arrTXs) {
         }
         // Update the time cache
         prevTimestamp = cTx.time * 1000;
+
+        // Coinbase Transactions (rewards) require coinbaseMaturity confs
+        const fConfirmed =
+            blockCount - cTx.blockHeight >=
+            (cTx.type === HistoricalTxType.STAKE
+                ? cChainParams.current.coinbaseMaturity
+                : 6);
 
         // Choose the content type, for the Dashboard; use a generative description, otherwise, a TX-ID
         // let txContent = props.rewards ? cTx.id : 'Block Reward';
@@ -247,7 +250,7 @@ async function parseTXs(arrTXs) {
             content: props.rewards ? cTx.id : content,
             formattedAmt,
             amount: cTx.amount,
-            confirmed: cTx.isConfirmed,
+            confirmed: fConfirmed,
             icon,
             colour,
         });
