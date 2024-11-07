@@ -416,9 +416,11 @@ export async function renderSavedPromos() {
              <tr>
                  <td><code id="copy${
                      cCode.address
-                 }" class="wallet-code ptr" onclick="MPW.toClipboard(this)" data-copy="${
+                 }" class="wallet-code ptr" onclick="MPW.toClipboard(this)" data-copy="${sanitizeHTML(
             cCode.code
-        }" style="display: inline !important; color: #e83e8c;">${trimmedCode}</code></td>
+        )}" style="display: inline !important; color: #e83e8c;">${sanitizeHTML(
+            trimmedCode
+        )}</code></td>
                  <td>${
                      fNew || !cCode.fSynced
                          ? '...'
@@ -429,7 +431,7 @@ export async function renderSavedPromos() {
                      fCannotDelete
                          ? '<i class="fa-solid fa-ban" style="opacity: 0.4; cursor: default;">'
                          : '<i class="fa-solid fa-ban ptr" onclick="MPW.deletePromoCode(\'' +
-                           cCode.code +
+                           sanitizeHTML(cCode.code) +
                            '\')">'
                  }</i>
                  <a style="margin-left:6px; margin-right:6px; width:auto!important;" class="ptr active" href="${
