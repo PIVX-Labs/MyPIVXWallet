@@ -170,16 +170,16 @@ async function finalizeProposal(proposal) {
     }
 }
 
-async function vote(hash, voteCode) {
+async function vote(proposal, voteCode) {
     if (masternode.value) {
         if ((await masternode.value.getStatus()) !== 'ENABLED') {
             createAlert('warning', ALERTS.MN_NOT_ENABLED, 6000);
             return;
         }
-        const result = await masternode.value.vote(hash, voteCode);
+        const result = await masternode.value.vote(proposal.Hash, voteCode);
         if (result.includes('Voted successfully')) {
             // Good vote
-            masternode.value.storeVote(hash.toString(), voteCode);
+            masternode.value.storeVote(proposal.Hash.toString(), voteCode);
             createAlert('success', ALERTS.VOTE_SUBMITTED, 6000);
         } else if (result.includes('Error voting :')) {
             // If you already voted return an alert

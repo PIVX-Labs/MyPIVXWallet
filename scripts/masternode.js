@@ -326,7 +326,7 @@ export default class Masternode {
      */
     async start() {
         const message = await this.broadcastMessageToHex();
-        return (await getNetwork().start(message)).includes(
+        return (await getNetwork().startMasternode(message)).includes(
             'Masternode broadcast sent'
         );
     }
