@@ -332,6 +332,10 @@ export class RPCNodeNetwork extends Network {
             true
         );
     }
+
+    async getShieldData(startBlock) {
+	return await this.#fetchNode(`/getshielddata?startBlock=${startBlock}`);
+    }
 }
 
 /**

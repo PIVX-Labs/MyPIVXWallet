@@ -784,11 +784,8 @@ export class Wallet {
 
         try {
             const network = getNetwork();
-            const req = await network.callRPC(
-                `/getshielddata?startBlock=${
+            const req = await network.getShieldData(
                     wallet.#shield.getLastSyncedBlock() + 1
-                }`,
-                'raw'
             );
             if (!req.ok) throw new Error("Couldn't sync shield");
             const reader = req.body.getReader();
@@ -1017,7 +1014,8 @@ export class Wallet {
         if (!cAccount || cAccount.shieldData === '') {
             return;
         }
-        this.#shield = await PIVXShield.load(cAccount.shieldData);
+	debugger;
+        this.#shield = (await PIVXShield.load(cAccount.shieldData)).pivxShieldpp;
         getEventEmitter().emit('shield-loaded-from-disk');
         return;
     }
