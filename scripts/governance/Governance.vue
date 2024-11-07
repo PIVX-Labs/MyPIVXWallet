@@ -75,11 +75,12 @@ watch(
 );
 
 async function fetchProposals() {
-    const arrProposals = await Masternode.getProposals({
+    const arrProposals = await getNetwork().getProposals({
         fAllowFinished: false,
     });
-    nextSuperBlock.value = await Masternode.getNextSuperblock();
-    masternodeCount.value = (await Masternode.getMasternodeCount()).total;
+    if (!arrProposals) return;
+    nextSuperBlock.value = await getNetwork().getNextSuperblock();
+    masternodeCount.value = (await getNetwork().getMasternodeCount())?.total;
 
     proposals.value = arrProposals.filter(
         (a) => a.Yeas + a.Nays < 100 || a.Ratio > 0.25
@@ -89,13 +90,13 @@ async function fetchProposals() {
     );
 }
 
-fetchProposals();
 watch(cChainParams, () => fetchProposals());
-onMounted(() =>
+onMounted(() => {
     document
         .getElementById('governanceTab')
-        .addEventListener('click', fetchProposals)
-);
+        .addEventListener('click', fetchProposals);
+    fetchProposals();
+});
 
 async function openCreateProposal() {
     // Must have a wallet
@@ -122,7 +123,7 @@ async function openCreateProposal() {
 
 async function createProposal(name, url, payments, monthlyPayment, address) {
     address = address || wallet.getNewAddress(1)[0];
-    const start = await Masternode.getNextSuperblock();
+    const start = await getNetwork().getNextSuperblock();
     const proposal = {
         name,
         url,

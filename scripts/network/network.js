@@ -41,23 +41,23 @@ export class Network {
         }
     }
 
-    async getBlock(blockHeight) {
+    async getBlock(_blockHeight) {
         throw new Error('getBlockCount must be implemented');
     }
 
-    async getTxPage(nStartHeight, addr, n) {
+    async getTxPage(_nStartHeight, _addr, _n) {
         throw new Error('getTxPage must be implemented');
     }
 
-    async getNumPages(nStartHeight, addr) {
+    async getNumPages(_nStartHeight, _addr) {
         throw new Error('getNumPages must be implemented');
     }
 
-    async getUTXOs(strAddress) {
+    async getUTXOs(_strAddress) {
         throw new Error('getUTXOs must be implemented');
     }
 
-    async getXPubInfo(strXPUB) {
+    async getXPubInfo(_strXPUB) {
         throw new Error('getXPubInfo must be implemented');
     }
 
@@ -73,7 +73,7 @@ export class Network {
         throw new Error('getBestBlockHash must be implemented');
     }
 
-    async sendTransaction(hex) {
+    async sendTransaction(_hex) {
         throw new Error('sendTransaction must be implemented');
     }
 
@@ -81,10 +81,51 @@ export class Network {
         throw new Error('getTxInfo must be implemented');
     }
 
-    // TODO: this should be just a private function of RPCNodeNetwork
-    // However we use this in masternode.js, let's solve this in a future refactor
-    async callRPC(api, isText = false) {
-        throw new Error('callRPC must be implemented');
+    async getMasternodeInfo(_collateralTxId) {
+        throw new Error('getMasternodeInfo must be implemented');
+    }
+
+    async getMasternodeCount() {
+        throw new Error('getMasternodeCount must be implemented');
+    }
+
+    async getNextSuperblock() {
+        throw new Error('getNextSuperblock must be implemented');
+    }
+
+    async startMasternode(_broadcastMsg) {
+        throw new Error('startMasternode must be implemented');
+    }
+
+    async getProposals() {
+        throw new Error('getProposals must be implemented');
+    }
+
+    async getProposalVote(_proposalName, _collateralTxId, _outidx) {
+        throw new Error('getProposalVote must be implemented');
+    }
+
+    async voteProposal(
+        _collateralTxId,
+        _outidx,
+        _hash,
+        _voteCode,
+        _sigTime,
+        _signature
+    ) {
+        throw new Error('voteProposal must be implemented');
+    }
+
+    async submitProposal({
+        name,
+        url,
+        nPayments,
+        start,
+        address,
+        monthlyPayment,
+        txid,
+    }) {
+        throw new Error('submitProposal must be implemented');
     }
 }
 
@@ -110,9 +151,16 @@ export class RPCNodeNetwork extends Network {
         return fetch(this.strUrl + api, options);
     }
 
-    async callRPC(api, isText = false) {
+    async #callRPC(api, isText = false) {
         const cRes = await this.#fetchNode(api);
-        return isText ? await cRes.text() : await cRes.json();
+        const cResTxt = await cRes.text();
+        if (isText) return cResTxt;
+        // RPC calls with filters might return empty string instead of empty JSON,
+        // In that case return an empty object
+        if (cResTxt.length === 0) {
+            return {};
+        }
+        return await JSON.parse(cResTxt);
     }
 
     /**
@@ -123,7 +171,7 @@ export class RPCNodeNetwork extends Network {
     async getBlock(blockHeight) {
         // First we fetch the blockhash (and strip RPC's quotes)
         const strHash = (
-            await this.callRPC(`/getblockhash?params=${blockHeight}`, true)
+            await this.#callRPC(`/getblockhash?params=${blockHeight}`, true)
         ).replace(/"/g, '');
         // Craft a filter to retrieve only raw Tx hex and txid, also change "tx" to "txs"
         const strFilter =
@@ -132,7 +180,7 @@ export class RPCNodeNetwork extends Network {
                 `. | .txs = [.tx[] | { hex: .hex, txid: .txid}] | del(.tx)`
             );
         // Fetch the full block (verbose)
-        return await this.callRPC(`/getblock?params=${strHash},2${strFilter}`);
+        return await this.#callRPC(`/getblock?params=${strHash},2${strFilter}`);
     }
 
     /**
@@ -140,11 +188,11 @@ export class RPCNodeNetwork extends Network {
      * @returns {Promise<number>} - Block height
      */
     async getBlockCount() {
-        return parseInt(await this.callRPC('/getblockcount', true));
+        return parseInt(await this.#callRPC('/getblockcount', true));
     }
 
     async getBestBlockHash() {
-        return (await this.callRPC('/getbestblockhash', true)).replaceAll(
+        return (await this.#callRPC('/getbestblockhash', true)).replaceAll(
             '"',
             ''
         );
@@ -152,7 +200,7 @@ export class RPCNodeNetwork extends Network {
 
     async sendTransaction(hex) {
         // Use Nodes as a fallback
-        let strTXID = await this.callRPC(
+        let strTXID = await this.#callRPC(
             '/sendrawtransaction?params=' + hex,
             true
         );
@@ -164,7 +212,111 @@ export class RPCNodeNetwork extends Network {
      * @return {Promise<Number[]>} The list of blocks which have at least one shield transaction
      */
     async getShieldBlockList() {
-        return await this.callRPC('/getshieldblocks');
+        return await this.#callRPC('/getshieldblocks');
+    }
+
+    /**
+     * @param{string} collateralTxId - masternode collateral transaction id
+     * @param{number} outidx - masternode collateral output index
+     */
+    async getMasternodeInfo(collateralTxId, outidx) {
+        return (
+            await this.#callRPC(`/listmasternodes?params=${collateralTxId}`)
+        ).filter((m) => m.outidx === outidx);
+    }
+
+    async getMasternodeCount() {
+        return await this.#callRPC('/getmasternodecount');
+    }
+
+    /**
+     * @returns {Promise<number>} the block height of the next superblock
+     */
+    async getNextSuperblock() {
+        return parseInt(await this.#callRPC(`/getnextsuperblock`, true));
+    }
+
+    /**
+     * @param {string} broadcastMsg
+     */
+    async startMasternode(broadcastMsg) {
+        return await this.#callRPC(
+            `/relaymasternodebroadcast?params=${broadcastMsg}`,
+            true
+        );
+    }
+
+    async getProposals() {
+        return (await this.#callRPC(`/getbudgetinfo`)).filter(
+            (a) => a.RemainingPaymentCount > 0
+        );
+    }
+
+    /**
+     * Returns the proposal vote of a given masternode
+     * @param {string} proposalName - name of the proposal
+     * @param{string} collateralTxId - masternode collateral transaction id
+     * @param{number} outidx - masternode collateral output index
+     */
+    async getProposalVote(proposalName, collateralTxId, outidx) {
+        const filterString = `.[] | select(.mnId=="`;
+        const filter =
+            `${encodeURI(filterString)}` + `${collateralTxId}-${outidx}")`;
+        return await this.#callRPC(
+            `/getbudgetvotes?params=${proposalName}&filter=${filter}`
+        );
+    }
+
+    /**
+     * @param {string} collateralTxId - masternode collateral transaction id
+     * @param {number} outidx - masternode collateral output index
+     * @param {string} hash - the hash of the proposal to vote
+     * @param {number} voteCode - the vote code. "Yes" is 1, "No" is 2
+     * @param {number} sigTime - vote signature time
+     * @param {string} signature - vote signature
+     */
+    async voteProposal(
+        collateralTxId,
+        outidx,
+        hash,
+        voteCode,
+        sigTime,
+        signature
+    ) {
+        const url = `/mnbudgetrawvote?params=${collateralTxId},${outidx},${hash},${
+            voteCode === 1 ? 'yes' : 'no'
+        },${sigTime},${signature}`;
+        return await this.#callRPC(url, true);
+    }
+
+    /**
+     * Submit a proposal
+     * @param {Object} options
+     * @param {String} options.name - Name of the proposal
+     * @param {String} options.url - Url of the proposal
+     * @param {Number} options.nPayments - Number of cycles this proposal is gonna last
+     * @param {Number} options.start - Superblock of when the proposal is going to start
+     * @param {String} options.address - Base58 encoded PIVX address
+     * @param {Number} options.monthlyPayment - Payment amount per cycle in satoshi
+     * @param {String} options.txid - Transaction id of the proposal fee
+     */
+    async submitProposal({
+        name,
+        url,
+        nPayments,
+        start,
+        address,
+        monthlyPayment,
+        txid,
+    }) {
+        return await this.#callRPC(
+            `/submitbudget?params=${encodeURI(name)},${encodeURI(
+                url
+            )},${nPayments},${start},${encodeURI(
+                address
+            )},${monthlyPayment},${txid}`,
+            true
+        );
     }
 }
 
