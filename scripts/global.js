@@ -287,7 +287,7 @@ export async function start() {
 
 async function refreshPriceDisplay() {
     await cOracle.getPrice(strCurrency);
-    getEventEmitter().emit('balance-update');
+    getEventEmitter().emit('price-update');
 }
 
 function subscribeToNetworkEvents() {
@@ -777,19 +777,19 @@ export async function updateGovernanceTab() {
 
     // Update governance counter when testnet/mainnet has been switched
     if (!governanceFlipdown && blockCount > 0) {
-        Masternode.getNextSuperblock().then((nSuperblock) => {
-            // The estimated time to the superblock (using the block target and remaining blocks)
-            const nTimestamp =
-                Date.now() / 1000 + (nSuperblock - blockCount) * 60;
-            governanceFlipdown = new FlipDown(nTimestamp).start();
-        });
+        getNetwork()
+            .getNextSuperblock()
+            .then((nSuperblock) => {
+                // The estimated time to the superblock (using the block target and remaining blocks)
+                const nTimestamp =
+                    Date.now() / 1000 + (nSuperblock - blockCount) * 60;
+                governanceFlipdown = new FlipDown(nTimestamp).start();
+            });
         isTestnetLastState = cChainParams.current.isTestnet;
     }
 
     // Fetch all proposals from the network
-    const arrProposals = await Masternode.getProposals({
-        fAllowFinished: false,
-    });
+    const arrProposals = await getNetwork().getProposals();
 
     /* Sort proposals into two categories
         - Standard (Proposal is either new with <100 votes, or has a healthy vote count)
@@ -979,7 +979,7 @@ async function renderProposals(arrProposals, fContested) {
     );
 
     // Fetch the Masternode count for proposal status calculations
-    const cMasternodes = await Masternode.getMasternodeCount();
+    const cMasternodes = await getNetwork().getMasternodeCount();
 
     let totalAllocatedAmount = 0;
 
@@ -1654,7 +1654,7 @@ export async function createProposal() {
     const strAddress =
         document.getElementById('proposalAddress').value.trim() ||
         wallet.getNewAddress(1)[0];
-    const nextSuperblock = await Masternode.getNextSuperblock();
+    const nextSuperblock = await getNetwork().getNextSuperblock();
     const proposal = {
         name: strTitle,
         url: strUrl,
