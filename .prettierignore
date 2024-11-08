@@ -7,3 +7,4 @@ LICENSE
 package-lock.json
 dist/
 coverage/
+cypress/snapshots/html

@@ -1,10 +1,9 @@
 <script setup>
 import { translation } from '../i18n.js';
-import { ref, watch, computed } from 'vue';
+import { ref, watch } from 'vue';
 import { getAddressColor } from '../contacts-book';
 import { promptForContact } from '../contacts-book';
 import { sanitizeHTML } from '../misc';
-import { useWallet } from '../composables/use_wallet.js';
 import BottomPopup from '../BottomPopup.vue';
 import qrIcon from '../../assets/icons/icon-qr-code.svg';
 import addressbookIcon from '../../assets/icons/icon-address-book.svg';
@@ -21,8 +20,6 @@ const emit = defineEmits([
 const amountCurrency = ref('');
 const color = ref('');
 
-const wallet = useWallet();
-
 const props = defineProps({
     show: Boolean,
     price: Number,
@@ -30,7 +27,6 @@ const props = defineProps({
     amount: String,
     desc: String,
     address: String,
-    shieldEnabled: Boolean,
     publicMode: Boolean,
 });
 
@@ -38,6 +34,13 @@ const address = defineModel('address');
 
 watch(address, (value) =>
     getAddressColor(value).then((c) => (color.value = `${c} !important`))
+);
+
+watch(
+    () => props.price,
+    () => {
+        syncAmountCurrency();
+    }
 );
 
 const amount = defineModel('amount', {
@@ -56,7 +59,7 @@ function send() {
             'send',
             sanitizeHTML(address.value),
             amount.value,
-            !wallet.publicMode
+            !props.publicMode
         );
 }
 

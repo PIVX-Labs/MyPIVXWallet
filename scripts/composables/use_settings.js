@@ -46,7 +46,7 @@ export function useSettings() {
     getEventEmitter().on('advanced-mode', (fAdvancedMode) => {
         advancedMode.value = fAdvancedMode;
     });
-    getEventEmitter().on('balance-update', async () => {
+    getEventEmitter().on('price-update', async () => {
         displayDecimals.value = nDisplayDecimals;
     });
     getEventEmitter().on('auto-lock-wallet', (fAutoLockWallet) => {

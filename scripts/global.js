@@ -32,6 +32,7 @@ import pIconCopy from '../assets/icons/icon-copy.svg';
 import pIconCheck from '../assets/icons/icon-check.svg';
 import SideNavbar from './SideNavbar.vue';
 import { AsyncInterval } from './async_interval.js';
+import { useNetwork } from './composables/use_network.js';
 
 /** A flag showing if base MPW is fully loaded or not */
 export let fIsLoaded = false;
@@ -160,6 +161,7 @@ export async function start() {
         domRedeemCodeCreatePendingList: document.getElementById(
             'redeemCodeCreatePendingList'
         ),
+        domRedeemCodeDiv: document.getElementById('redeemCodeDiv'),
         domPromoTable: document.getElementById('promo-table'),
         domContactsTable: document.getElementById('contactsList'),
         domConfirmModalDialog: document.getElementById('confirmModalDialog'),
@@ -287,7 +289,7 @@ export async function start() {
 
 async function refreshPriceDisplay() {
     await cOracle.getPrice(strCurrency);
-    getEventEmitter().emit('balance-update');
+    getEventEmitter().emit('price-update');
 }
 
 function subscribeToNetworkEvents() {
@@ -391,13 +393,13 @@ export function optimiseCurrencyLocale(nAmount) {
  * @param {string?} strAddress - Optional address to open, if void, the master key is used
  */
 export async function openExplorer(strAddress = '') {
-    const strExplorerURL = getNetwork().strUrl;
+    const network = useNetwork();
     if (wallet.isLoaded() && wallet.isHD() && !strAddress) {
         const xpub = wallet.getXPub();
-        window.open(strExplorerURL + '/xpub/' + xpub, '_blank');
+        window.open(network.explorerUrl + '/xpub/' + xpub, '_blank');
     } else {
         const address = strAddress || wallet.getAddress();
-        window.open(strExplorerURL + '/address/' + address, '_blank');
+        window.open(network.explorerUrl + '/address/' + address, '_blank');
     }
 }
 
@@ -447,12 +449,31 @@ export async function playMusic() {
     }
 }
 
+/**
+ * Copy a text element or string to the clipboard
+ * @param {HTMLTextAreaElement} source - The source Element or String to copy
+ * @param {HTMLElement} caller - The visual representation of the caller, for UI responses
+ * @returns
+ */
 export function toClipboard(source, caller) {
-    // Fetch the text/value source
-    const domCopy = document.getElementById(source) || source;
+    if (caller?.innerHTML === pIconCheck) return;
+    if (source?.innerHTML === 'Copied!') return;
 
-    // Use an invisible textbox as the clipboard source
-    const domClipboard = document.getElementById('clipboard');
+    // Fetch the text/value source
+    const domElementTest = document.getElementById(source);
+    const domCustomCopy =
+        domElementTest?.dataset?.copy || source?.dataset?.copy;
+    const domCopy = domCustomCopy || domElementTest || source;
+
+    // Create and reuse an off-screen textbox as the clipboard source
+    let domClipboard = document.getElementById('clipboard');
+    if (!domClipboard) {
+        domClipboard = document.createElement('textarea');
+        domClipboard.id = 'clipboard';
+        domClipboard.style.position = 'absolute';
+        domClipboard.style.left = '-9999px';
+        document.body.appendChild(domClipboard);
+    }
     domClipboard.value = domCopy.value || domCopy.innerHTML || domCopy;
     domClipboard.select();
     domClipboard.setSelectionRange(0, 99999);
@@ -461,15 +482,19 @@ export function toClipboard(source, caller) {
     if (!navigator.clipboard) {
         document.execCommand('copy');
     } else {
-        navigator.clipboard.writeText(domCopy.innerHTML || domCopy);
+        navigator.clipboard.writeText(
+            domCopy.value || domCopy.innerHTML || domCopy
+        );
     }
 
     // Display a temporary checkmark response
-    caller.innerHTML = pIconCheck;
-    caller.style.cursor = 'default';
+    const cResponseCaller = caller || source;
+    const strPrev = cResponseCaller.innerHTML;
+    cResponseCaller.innerHTML = caller ? pIconCheck : 'Copied!';
+    cResponseCaller.style.cursor = 'default';
     setTimeout(() => {
-        caller.innerHTML = pIconCopy;
-        caller.style.cursor = 'pointer';
+        cResponseCaller.innerHTML = strPrev;
+        cResponseCaller.style.cursor = 'pointer';
     }, 1000);
 }
 
@@ -777,19 +802,19 @@ export async function updateGovernanceTab() {
 
     // Update governance counter when testnet/mainnet has been switched
     if (!governanceFlipdown && blockCount > 0) {
-        Masternode.getNextSuperblock().then((nSuperblock) => {
-            // The estimated time to the superblock (using the block target and remaining blocks)
-            const nTimestamp =
-                Date.now() / 1000 + (nSuperblock - blockCount) * 60;
-            governanceFlipdown = new FlipDown(nTimestamp).start();
-        });
+        getNetwork()
+            .getNextSuperblock()
+            .then((nSuperblock) => {
+                // The estimated time to the superblock (using the block target and remaining blocks)
+                const nTimestamp =
+                    Date.now() / 1000 + (nSuperblock - blockCount) * 60;
+                governanceFlipdown = new FlipDown(nTimestamp).start();
+            });
         isTestnetLastState = cChainParams.current.isTestnet;
     }
 
     // Fetch all proposals from the network
-    const arrProposals = await Masternode.getProposals({
-        fAllowFinished: false,
-    });
+    const arrProposals = await getNetwork().getProposals();
 
     /* Sort proposals into two categories
         - Standard (Proposal is either new with <100 votes, or has a healthy vote count)
@@ -979,7 +1004,7 @@ async function renderProposals(arrProposals, fContested) {
     );
 
     // Fetch the Masternode count for proposal status calculations
-    const cMasternodes = await Masternode.getMasternodeCount();
+    const cMasternodes = await getNetwork().getMasternodeCount();
 
     let totalAllocatedAmount = 0;
 
@@ -1654,7 +1679,7 @@ export async function createProposal() {
     const strAddress =
         document.getElementById('proposalAddress').value.trim() ||
         wallet.getNewAddress(1)[0];
-    const nextSuperblock = await Masternode.getNextSuperblock();
+    const nextSuperblock = await getNetwork().getNextSuperblock();
     const proposal = {
         name: strTitle,
         url: strUrl,

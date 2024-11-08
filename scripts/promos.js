@@ -1,7 +1,7 @@
 import { cChainParams, COIN } from './chain_params.js';
 import { Database } from './database.js';
 import { doms, restoreWallet, sweepAddress } from './global.js';
-import { downloadBlob } from './misc.js';
+import { downloadBlob, sanitizeHTML } from './misc.js';
 import { getAlphaNumericRand, arrayToCSV } from './utils.js';
 import { ALERTS, translation, tr } from './i18n.js';
 import { getNetwork } from './network/network_manager.js';
@@ -13,6 +13,10 @@ import { LegacyMasterKey } from './masterkey.js';
 import { deriveAddress } from './encoding.js';
 import { getP2PKHScript } from './script.js';
 import { createAlert } from './alerts/alert.js';
+import { useNetwork } from './composables/use_network.js';
+
+import pIconGift from '../assets/icons/icon-gift.svg';
+import pIconGiftOpen from '../assets/icons/icon-gift-opened.svg';
 
 /** The fee in Sats to use for Creating or Redeeming PIVX Promos */
 export const PROMO_FEE = 10000;
@@ -217,6 +221,11 @@ let fPromoIntervalStarted = false;
  * @param {boolean} fAddRandomness - Whether to append Randomness to the code
  */
 export async function createPromoCode(strCode, nAmount, fAddRandomness = true) {
+    // Ensure the code doesn't have any weird potential-XSS characters
+    if (strCode !== sanitizeHTML(strCode)) {
+        return createAlert('warning', 'Invalid code name!', 2000);
+    }
+
     // Determine if we're adding randomness - and if so, if it's appended entropy or full randomness
     const strFinalCode = fAddRandomness
         ? strCode
@@ -358,6 +367,7 @@ export async function renderSavedPromos() {
     const arrCodes = await db.getAllPromos();
 
     // Render each code; sorted by Newest First, Oldest Last.
+    const network = useNetwork();
     for (const cDiskCode of arrCodes.sort((a, b) => b.time - a.time)) {
         // Move on-disk promos to a memory representation for quick state computation
         let cCode = arrPromoCodes.find((code) => code.code === cDiskCode.code);
@@ -369,7 +379,9 @@ export async function renderSavedPromos() {
 
         // Sync only the balance of the code (not full data)
         cCode.getUTXOs(false);
-        const nBal = (await cCode.getBalance(true)) / COIN;
+
+        const nBal =
+            Math.max((await cCode.getBalance(true)) - PROMO_FEE, 0) / COIN;
 
         // A code younger than ~3 minutes without a balance will just say 'confirming', since Blockbook does not return a balance for NEW codes
         const fNew = cCode.time.getTime() > Date.now() - 60000 * 3;
@@ -377,40 +389,54 @@ export async function renderSavedPromos() {
         // If this code is allowed to be deleted or not
         const fCannotDelete = !cCode.fSynced || fNew || nBal > 0;
 
+        // Trimmed code
+        const trimmedCode =
+            cCode.code.length > 10
+                ? cCode.code.slice(0, 7) + '...'
+                : cCode.code;
+
         // Status calculation (defaults to 'fNew' condition)
-        let strStatus = 'Confirming...';
+        let strStatus = '<i class="fa-solid fa-spinner spinningLoading"></i>';
         if (!fNew) {
             if (cCode.fSynced) {
-                strStatus = nBal > 0 ? 'Unclaimed' : 'Claimed';
+                strStatus =
+                    nBal > 0
+                        ? '<span class="giftIconsClosed">' +
+                          pIconGift +
+                          '</span>'
+                        : '<span class="giftIcons">' +
+                          pIconGiftOpen +
+                          '</span>';
             } else {
-                strStatus = 'Syncing';
+                strStatus =
+                    '<i class="fa-solid fa-spinner spinningLoading"></i>';
             }
         }
         strHTML += `
              <tr>
-                 <td>${
-                     fCannotDelete
-                         ? '<i class="fa-solid fa-ban" style="opacity: 0.4; cursor: default;">'
-                         : '<i class="fa-solid fa-ban ptr" onclick="MPW.deletePromoCode(\'' +
-                           cCode.code +
-                           '\')"></i>'
-                 }
-                 </td>
-                 <td><i onclick="MPW.toClipboard('copy${
+                 <td><code id="copy${
                      cCode.address
-                 }', this)" class="fas fa-clipboard" style="cursor: pointer; margin-right: 10px;"></i><code id="copy${
-            cCode.address
-        }" class="wallet-code" style="display: inline !important; color: #e83e8c;">${
+                 }" class="wallet-code ptr" onclick="MPW.toClipboard(this)" data-copy="${sanitizeHTML(
             cCode.code
-        }</code></td>
+        )}" style="display: inline !important; color: #e83e8c;">${sanitizeHTML(
+            trimmedCode
+        )}</code></td>
                  <td>${
                      fNew || !cCode.fSynced
                          ? '...'
                          : nBal + ' ' + cChainParams.current.TICKER
                  }</td>
-                 <td><a class="ptr active" style="margin-right: 10px;" href="${
-                     getNetwork().strUrl + '/address/' + cCode.address
-                 }" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-up-right-from-square"></i></a>${strStatus}</td>
+                 <td>
+                 ${
+                     fCannotDelete
+                         ? '<i class="fa-solid fa-ban" style="opacity: 0.4; cursor: default;">'
+                         : '<i class="fa-solid fa-ban ptr" onclick="MPW.deletePromoCode(\'' +
+                           sanitizeHTML(cCode.code) +
+                           '\')">'
+                 }</i>
+                 <a style="margin-left:6px; margin-right:6px; width:auto!important;" class="ptr active" href="${
+                     network.explorerUrl + '/address/' + cCode.address
+                 }" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-up-right-from-square"></i></a><span style="margin-left:4px;">${strStatus}</span></td>
              </tr>
          `;
     }
@@ -494,28 +520,42 @@ export async function updatePromoCreationTick(fRecursive = false) {
         let strState = '';
         if (cThread.txid) {
             // Complete state
-            strState = 'Confirming...';
+            strState = '<i class="fa-solid fa-spinner spinningLoading"></i>';
         } else if (cThread.end_state) {
             // Errored state (failed to broadcast, etc)
-            strState = cThread.end_state;
+            if (cThread.end_state === 'Errored') {
+                strState = `<i class="fas fa-exclamation-triangle"></i>`;
+            } else if (cThread.end_state === 'Done') {
+                strState = `<i class="fas fa-check"></i>`;
+            } else if (cThread.end_state === 'Cancelled') {
+                strState = `<i class="fas fa-times-circle"></i>`;
+            }
         } else {
             // Display progress
             strState =
-                '<span id="c' +
+                '<i class="fa-solid fa-spinner spinningLoading" style="margin-right:4px;"></i> <span id="c' +
                 cThread.code +
                 '">' +
                 (cThread.thread.progress || 0) +
                 '</span>%';
         }
 
+        // Trimmed code
+        const trimmedCode =
+            cThread.code.length > 10
+                ? cThread.code.slice(0, 7) + '...'
+                : cThread.code;
+
         // Render the table row
         strHTML =
             `
              <tr>
-                 <td><i class="fa-solid fa-ban ptr" onclick="MPW.deletePromoCode('${cThread.code}')"></i></td>
-                 <td><code class="wallet-code active" style="display: inline !important;">${cThread.code}</code></td>
+                 <td><code class="wallet-code active" style="display: inline !important; color: #e83e8c!important;">${trimmedCode}</code></td>
                  <td>${cThread.amount} ${cChainParams.current.TICKER}</td>
-                 <td>${strState}</td>
+                 <td>
+                    <i class="fa-solid fa-ban ptr" style="margin-right:4px;" onclick="MPW.deletePromoCode('${cThread.code}')"></i>
+                    ${strState}
+                </td>
              </tr>
          ` + strHTML;
     }
@@ -653,14 +693,15 @@ export async function redeemPromoCode(strCode) {
     // Listen for and report derivation progress
     promoThread.onmessage = async (evt) => {
         if (evt.data.type === 'progress') {
+            doms.domRedeemCodeDiv.style.display = 'flex';
             doms.domRedeemCodeProgress.style.display = '';
             doms.domRedeemCodeETA.innerHTML =
-                '<br><br>' +
-                evt.data.res.eta.toFixed(0) +
-                's remaining to unwrap...<br><br>' +
-                evt.data.res.progress +
-                '%';
-            doms.domRedeemCodeProgress.value = evt.data.res.progress;
+                evt.data.res.eta.toFixed(0) + 's remaining to unwrap...';
+            doms.domRedeemCodeProgress.style.setProperty(
+                'width',
+                `${evt.data.res.progress}%`,
+                'important'
+            );
         } else {
             // The finished key!
             promoThread.terminate();
@@ -668,8 +709,8 @@ export async function redeemPromoCode(strCode) {
 
             // Pause animations and finish 'unwrapping' by checking the derived Promo Key for a balance
             doms.domRedeemCodeGiftIcon.classList.remove('fa-bounce');
-            doms.domRedeemCodeProgress.style.display = 'none';
-            doms.domRedeemCodeETA.innerHTML = '<br><br>Final checks...';
+            doms.domRedeemCodeDiv.style.display = 'none';
+            doms.domRedeemCodeETA.innerHTML = 'Final checks...';
 
             // Prepare the global Promo Wallet
             cPromoWallet = new PromoWallet({

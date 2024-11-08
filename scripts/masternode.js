@@ -50,20 +50,14 @@ export default class Masternode {
        @return {Promise<Object>} The object containing masternode information for this masternode
      */
     async getFullData() {
-        const strURL = `/listmasternodes?params=${this.collateralTxId}`;
-        try {
-            const cMasternodes = (await getNetwork().callRPC(strURL)).filter(
-                (m) => m.outidx === this.outidx
-            );
-            if (cMasternodes.length > 0) {
-                return cMasternodes[0];
-            } else {
-                return { status: 'MISSING' };
-            }
-        } catch (e) {
-            //this is the unfortunate state in which the node is not reachable
-            debugError(DebugTopics.MASTERNODE, e);
-            return 'EXPLORER_DOWN';
+        const cMasternodes = await getNetwork().getMasternodeInfo(
+            this.collateralTxId,
+            this.outidx
+        );
+        if (cMasternodes.length > 0) {
+            return cMasternodes[0];
+        } else {
+            return { status: 'MISSING' };
         }
     }
 
@@ -334,28 +328,9 @@ export default class Masternode {
      */
     async start() {
         const message = await this.broadcastMessageToHex();
-        const url = `/relaymasternodebroadcast?params=${message}`;
-        const response = await getNetwork().callRPC(url, true);
-        return response.includes('Masternode broadcast sent');
-    }
-
-    /**
-     *
-     * @param {object} options
-     * @param {bool} options.fAllowFinished - Pass `true` to stop filtering proposals if finished
-     * @return {Promise<Array<object>} A list of currently active proposal
-     */
-    static async getProposals({ fAllowFinished = false } = {}) {
-        const url = `/getbudgetinfo`;
-        let arrProposals = await getNetwork().callRPC(url);
-
-        // Apply optional filters
-        if (!fAllowFinished) {
-            arrProposals = arrProposals.filter(
-                (a) => a.RemainingPaymentCount > 0
-            );
-        }
-        return arrProposals;
+        return (await getNetwork().start(message)).includes(
+            'Masternode broadcast sent'
+        );
     }
 
     /**
@@ -396,19 +371,17 @@ export default class Masternode {
             //Found it! return the vote
             return Masternode.sessionVotes[index][1];
         }
-        //Haven't voted yet, fetch the result from Duddino's node
-        const filterString = `.[] | select(.mnId=="`;
-        const filter =
-            `${encodeURI(filterString)}` +
-            `${this.collateralTxId}-${this.outidx}")`;
-        const url = `/getbudgetvotes?params=${proposalName}&filter=${filter}`;
-        try {
-            const { Vote: vote } = await getNetwork().callRPC(url);
-            return vote === 'YES' ? 1 : 2;
-        } catch (e) {
-            //Cannot parse JSON! This means that you did not vote hence return null
+        const vote = (
+            await getNetwork().getProposalVote(
+                proposalName,
+                this.collateralTxId,
+                this.outidx
+            )
+        ).Vote;
+        if (!vote) {
             return null;
         }
+        return vote === 'YES' ? 1 : 2;
     }
     /**
      * Stores a vote for the current session
@@ -433,18 +406,17 @@ export default class Masternode {
      */
     async vote(hash, voteCode) {
         const sigTime = Math.round(Date.now() / 1000);
-        const signature = await this.getSignedVoteMessage(
+        const signature = encodeURI(
+            await this.getSignedVoteMessage(hash, voteCode, sigTime)
+        ).replaceAll('+', '%2b');
+        return await getNetwork().voteProposal(
+            this.collateralTxId,
+            this.outidx,
             hash,
             voteCode,
-            sigTime
-        );
-        const url = `/mnbudgetrawvote?params=${this.collateralTxId},${
-            this.outidx
-        },${hash},${voteCode === 1 ? 'yes' : 'no'},${sigTime},${encodeURI(
+            sigTime,
             signature
-        ).replaceAll('+', '%2b')}`;
-        const text = await getNetwork().callRPC(url, true);
-        return text;
+        );
     }
 
     /**
@@ -513,14 +485,15 @@ export default class Masternode {
         txid,
     }) {
         try {
-            const res = await getNetwork().callRPC(
-                `/submitbudget?params=${encodeURI(name)},${encodeURI(
-                    url
-                )},${nPayments},${start},${encodeURI(address)},${
-                    monthlyPayment / COIN
-                },${txid}`,
-                true
-            );
+            const res = await getNetwork().submitProposal({
+                name,
+                url,
+                nPayments,
+                start,
+                address,
+                monthlyPayment: monthlyPayment / COIN,
+                txid,
+            });
 
             if (/^"[a-f0-9]"$/ && res.length === 64 + 2) {
                 return { ok: true, hash: res };
@@ -541,18 +514,6 @@ export default class Masternode {
             debugError(DebugTopics.MASTERNODE, e);
             return { ok: false, err: e };
         }
-    }
-
-    static async getNextSuperblock() {
-        return parseInt(await getNetwork().callRPC(`/getnextsuperblock`, true));
-    }
-
-    /**
-     * Fetches the masternode count object, containing each status and network.
-     * @returns {Promise<{total:number, stable:number, enabled:number, inqueue:number, ipv4:number, ipv6:number, onion:number}>} - The masternode count object
-     */
-    static async getMasternodeCount() {
-        return await getNetwork().callRPC('/getmasternodecount');
     }
 
     /**

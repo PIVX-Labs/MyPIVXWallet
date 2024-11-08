@@ -662,17 +662,83 @@ defineExpose({
                                             ></i>
                                         </div>
 
-                                        <p
-                                            id="redeemCodeETA"
+                                        <div
+                                            id="redeemCodeDiv"
                                             style="
-                                                margin-bottom: 0;
+                                                margin-top: 50px;
                                                 display: none;
+                                                font-size: 15px;
+                                                background-color: rgb(
+                                                    58,
+                                                    12,
+                                                    96
+                                                );
+                                                border: 1px solid
+                                                    rgb(159, 0, 249);
+                                                padding: 8px 15px 10px;
+                                                border-radius: 10px;
+                                                color: rgb(211, 190, 229);
+                                                width: 310px;
+                                                text-align: left;
+                                                margin-bottom: 20px;
                                             "
                                         >
-                                            <br /><br />
-                                        </p>
+                                            <div
+                                                style="
+                                                    width: 48px;
+                                                    height: 38px;
+                                                    background-color: rgb(
+                                                        49,
+                                                        11,
+                                                        81
+                                                    );
+                                                    margin-right: 9px;
+                                                    border-radius: 9px;
+                                                    display: flex;
+                                                    justify-content: center;
+                                                    align-items: center;
+                                                    font-size: 20px;
+                                                "
+                                            >
+                                                <i
+                                                    class="fas fa-spinner spinningLoading"
+                                                ></i>
+                                            </div>
+                                            <div style="width: 100%">
+                                                <div id="redeemCodeETA">
+                                                    Calculating...
+                                                </div>
+                                                <div
+                                                    div=""
+                                                    class="progress"
+                                                    style="
+                                                        max-width: 310px;
+                                                        border: 1px solid
+                                                            rgb(147, 46, 205);
+                                                        border-radius: 4px;
+                                                        background-color: rgb(
+                                                            43,
+                                                            0,
+                                                            58
+                                                        );
+                                                    "
+                                                >
+                                                    <div
+                                                        class="progress-bar progress-bar-striped progress-bar-animated"
+                                                        role="progressbar"
+                                                        id="redeemCodeProgress"
+                                                        aria-valuenow="42"
+                                                        aria-valuemin="0"
+                                                        aria-valuemax="100"
+                                                        style="
+                                                            width: 42% !important;
+                                                        "
+                                                    ></div>
+                                                </div>
+                                            </div>
+                                        </div>
+
                                         <progress
-                                            id="redeemCodeProgress"
                                             min="0"
                                             max="100"
                                             value="50"
@@ -725,17 +791,6 @@ defineExpose({
                                                         "
                                                         class="text-center"
                                                     >
-                                                        <b> Manage </b>
-                                                    </td>
-                                                    <td
-                                                        style="
-                                                            width: 100px;
-                                                            border-top: 0px;
-                                                            border-bottom: 1px
-                                                                solid #534270;
-                                                        "
-                                                        class="text-center"
-                                                    >
                                                         <b> Promo Code </b>
                                                     </td>
                                                     <td
@@ -751,22 +806,12 @@ defineExpose({
                                                     </td>
                                                     <td
                                                         style="
-                                                            width: 100px;
                                                             border-top: 0px;
                                                             border-bottom: 1px
                                                                 solid #534270;
                                                         "
                                                         class="text-center"
-                                                    >
-                                                        <b> State </b
-                                                        ><i
-                                                            onclick="MPW.promosToCSV()"
-                                                            style="
-                                                                margin-left: 5px;
-                                                            "
-                                                            class="fa-solid fa-lg fa-file-csv ptr"
-                                                        ></i>
-                                                    </td>
+                                                    ></td>
                                                 </tr>
                                             </thead>
                                             <tbody
@@ -935,7 +980,6 @@ defineExpose({
             :publicMode="wallet.publicMode"
             :price="price"
             :currency="currency"
-            :shieldEnabled="hasShield"
             v-model:amount="transferAmount"
             :desc="transferDescription"
             v-model:address="transferAddress"
