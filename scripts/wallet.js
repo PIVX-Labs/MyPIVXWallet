@@ -1014,11 +1014,15 @@ export class Wallet {
             // The per-output target for maximum staking efficiency
             const nTarget = cChainParams.current.stakeSplitTarget;
             // Generate optimal staking outputs
-            for (let i = 0; i < Math.floor(value / nTarget); i++) {
+            for (let i = 0; i <= Math.floor(value / nTarget); i++) {
+                const nOutAmount = i === 0 ? value % nTarget : nTarget;
+                // Skip 'dust' outputs (TODO: this should be `1 * COIN` as it is the consensus minimum, but tests are below this and will break)
+                // ... it's still better than no check, or `Stake 5 PIV` would create a 0-value remainder and fail.
+                if (nOutAmount < 0.05 * COIN) continue;
                 transactionBuilder.addColdStakeOutput({
                     address: returnAddress,
                     addressColdStake: address,
-                    value: i === 0 ? nTarget + (value % nTarget) : nTarget,
+                    value: nOutAmount,
                 });
             }
         } else if (isProposal) {

@@ -165,6 +165,7 @@ describe('Wallet transaction tests', () => {
     });
 
     it('Creates a cold stake tx correctly', async () => {
+        // TODO: rewrite this test over >1 PIV to match PIVX Consensus, and to also test Stake Splitting
         const tx = wallet.createTransaction(
             'SR3L4TFUKKGNsnv2Q4hWTuET2a4vHpm1b9',
             0.05 * 10 ** 8,
