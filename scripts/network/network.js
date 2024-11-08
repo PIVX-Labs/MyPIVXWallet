@@ -151,7 +151,7 @@ export class RPCNodeNetwork extends Network {
         return fetch(this.strUrl + api, options);
     }
 
-/*    /**
+    /*    /**
      * A safety-wrapped RPC interface for calling Node RPCs with automatic correction handling
      * @param {string} api - The API endpoint to call
      * @param {"json"|"text"|"raw"} [isText] - Parse the result as text, JSON or return the raw stream. JSON by default
@@ -334,7 +334,7 @@ export class RPCNodeNetwork extends Network {
     }
 
     async getShieldData(startBlock) {
-	return await this.#fetchNode(`/getshielddata?startBlock=${startBlock}`);
+        return await this.#fetchNode(`/getshielddata?startBlock=${startBlock}`);
     }
 }
 

@@ -785,16 +785,17 @@ export class Wallet {
         try {
             const network = getNetwork();
             const req = await network.getShieldData(
-                    wallet.#shield.getLastSyncedBlock() + 1
+                wallet.#shield.getLastSyncedBlock() + 1
             );
             if (!req.ok) throw new Error("Couldn't sync shield");
             const reader = req.body.getReader();
-            /** @type {number[]} Array of bytes that we are processing **/
-            let processing = [];
+
             /** @type{string[]} Array of txs in the current block */
             let txs = [];
             let processedBytes = 0;
             const length = req.headers.get('Content-Length');
+            /** @type {Uint8Array} Array of bytes that we are processing **/
+            const processing = new Uint8Array(length);
             getEventEmitter().emit(
                 'shield-sync-status-update',
                 0,
@@ -802,6 +803,7 @@ export class Wallet {
                 false
             );
             let i = 0;
+            let max = 0;
             while (true) {
                 /**
                  * @type {{done: boolean, value: Uint8Array?}}
@@ -815,19 +817,21 @@ export class Wallet {
 
                 if (value) {
                     // Append received bytes in the processing array
-                    value.forEach((v) => processing.push(v));
+                    processing.set(value, max);
+                    max += value.length;
+                    // value.forEach((v) => processing.push(v));
                     processedBytes += value.length;
                     // Loop until we have less than 4 bytes (length)
-                    while (processing.length - i >= 4) {
+                    while (max - i >= 4) {
                         const length = Number(
-                            bytesToNum(processing.slice(i, i + 4))
+                            bytesToNum(processing.subarray(i, i + 4))
                         );
                         // If we have less bytes than the length break and wait for the next
                         // batch of bytes
-                        if (processing.length - i < length) break;
+                        if (max - i < length) break;
 
                         i += 4;
-                        const bytes = processing.slice(i, length + i);
+                        const bytes = processing.subarray(i, length + i);
                         i += length;
                         // 0x5d rapresents the block
                         if (bytes[0] === 0x5d) {
@@ -853,7 +857,10 @@ export class Wallet {
                 }
 
                 // Process the current batch of blocks before starting to parse the next one
-                await this.#shield.handleBlocks(blocksArray);
+                if (blocksArray.length) {
+                    await this.#shield.handleBlocks(blocksArray);
+                } else {
+                }
                 // Emit status update
                 getEventEmitter().emit(
                     'shield-sync-status-update',
@@ -1014,8 +1021,10 @@ export class Wallet {
         if (!cAccount || cAccount.shieldData === '') {
             return;
         }
-	debugger;
-        this.#shield = (await PIVXShield.load(cAccount.shieldData)).pivxShieldpp;
+        debugger;
+        this.#shield = (
+            await PIVXShield.load(cAccount.shieldData)
+        ).pivxShieldpp;
         getEventEmitter().emit('shield-loaded-from-disk');
         return;
     }

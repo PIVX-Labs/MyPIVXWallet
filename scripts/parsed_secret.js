@@ -63,7 +63,6 @@ export class ParsedSecret {
                     );
                     if (!ok) throw new Error(msg);
                     const seed = await mnemonicToSeed(phrase, password);
-		    debugger;
                     const pivxShield = await PIVXShield.create({
                         seed,
                         // hardcoded value considering the last checkpoint, this is good both for mainnet and testnet
@@ -96,16 +95,14 @@ export class ParsedSecret {
                     const mk = (await ParsedSecret.parse(obj.mk)).masterKey;
                     let shield;
                     try {
-						    debugger;
-
                         if (obj.shield)
-                            shield = (await PIVXShield.create({
+                            shield = await PIVXShield.create({
                                 extendedSpendingKey: obj.shield,
                                 blockHeight: 4_200_000,
                                 coinType: cChainParams.current.BIP44_TYPE,
                                 accountIndex: 0,
                                 loadSaplingData: false,
-                            }));
+                            });
                     } catch (_) {}
                     return new ParsedSecret(mk, shield);
                 },

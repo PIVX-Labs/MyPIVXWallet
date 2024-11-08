@@ -256,7 +256,7 @@ class NetworkManager {
     }
 
     async getShieldData(initialBlock = 0) {
-	return await this.#retryWrapper('getShieldData', true, initialBlock);
+        return await this.#retryWrapper('getShieldData', true, initialBlock);
     }
 
     /**
