@@ -1018,7 +1018,7 @@ export class Wallet {
                 transactionBuilder.addColdStakeOutput({
                     address: returnAddress,
                     addressColdStake: address,
-                    value: i == 0 ? nTarget + (value % nTarget) : nTarget,
+                    value: i === 0 ? nTarget + (value % nTarget) : nTarget,
                 });
             }
         } else if (isProposal) {
