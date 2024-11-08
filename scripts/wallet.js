@@ -105,7 +105,7 @@ export class Wallet {
      * @type OrderedArray<HistoricalTx>
      */
     #historicalTxs = new OrderedArray(
-        (hTx1, hTx2) => hTx1.blockHeight > hTx2.blockHeight
+        (hTx1, hTx2) => hTx1.blockHeight >= hTx2.blockHeight
     );
 
     constructor({ nAccount, masterKey, shield, mempool = new Mempool() }) {
