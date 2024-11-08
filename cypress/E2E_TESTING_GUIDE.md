@@ -33,6 +33,8 @@ cy.get('[data-testid="activity"]')
 Takes the HTML of the visible activity and matches it against the old version.
 If you need to update the snapshots, remove the outdated one and rerun the tests.
 
+You can also run `npm run cy:record`, and then check the appropriate `git diff`.
+
 ## Should I write an e2e test?
 E2e tests are very expensive compared to other ones. If you are writing tests for a minor bug, try to write a unit test first.
 You should write e2e tests for:
