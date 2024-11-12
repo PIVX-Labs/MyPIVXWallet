@@ -34,7 +34,6 @@ import { guiToggleReceiveType } from './contacts-book.js';
 import { TransactionBuilder } from './transaction_builder.js';
 import { createAlert } from './alerts/alert.js';
 import { AsyncInterval } from './async_interval.js';
-import { cNode } from './settings.js';
 import { debugError, debugLog, DebugTopics } from './debug.js';
 import { OrderedArray } from './ordered_array.js';
 
