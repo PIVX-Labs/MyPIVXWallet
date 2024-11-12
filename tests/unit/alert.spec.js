@@ -75,7 +75,7 @@ describe('createAlert function', () => {
         const level = 'info';
         createAlert(level, message);
 
-        expect(createAlertSpy).toHaveBeenCalledWith(level, message, 0);
+        expect(createAlertSpy).toHaveBeenCalledWith(level, message, undefined);
 
         createAlertSpy.mockRestore();
     });
