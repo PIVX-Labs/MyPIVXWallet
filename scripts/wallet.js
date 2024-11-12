@@ -1012,9 +1012,7 @@ export class Wallet {
         if (!cAccount || cAccount.shieldData === '') {
             return;
         }
-        this.#shield = (
-            await PIVXShield.load(cAccount.shieldData)
-        ).pivxShield;
+        this.#shield = (await PIVXShield.load(cAccount.shieldData)).pivxShield;
         getEventEmitter().emit('shield-loaded-from-disk');
         return;
     }
