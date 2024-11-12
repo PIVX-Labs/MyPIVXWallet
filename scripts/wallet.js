@@ -834,7 +834,7 @@ export class Wallet {
 
                             blocksArray.push({ txs, height, time });
                             txs = [];
-                        } else if (bytes[0] == 0x03) {
+                        } else if (bytes[0] === 0x03) {
                             // 0x03 is the tx version. We should only get v3 transactions
                             const hex = bytesToHex(bytes);
                             txs.push({
@@ -851,7 +851,6 @@ export class Wallet {
                 // Process the current batch of blocks before starting to parse the next one
                 if (blocksArray.length) {
                     await this.#shield.handleBlocks(blocksArray);
-                } else {
                 }
                 // Emit status update
                 getEventEmitter().emit(
@@ -1013,7 +1012,6 @@ export class Wallet {
         if (!cAccount || cAccount.shieldData === '') {
             return;
         }
-        debugger;
         this.#shield = (
             await PIVXShield.load(cAccount.shieldData)
         ).pivxShieldpp;
