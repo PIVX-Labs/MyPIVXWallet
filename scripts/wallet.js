@@ -811,7 +811,6 @@ export class Wallet {
                     // Append received bytes in the processing array
                     processing.set(value, max);
                     max += value.length;
-                    // value.forEach((v) => processing.push(v));
                     processedBytes += value.length;
                     // Loop until we have less than 4 bytes (length)
                     while (max - i >= 4) {
@@ -830,7 +829,7 @@ export class Wallet {
                             const height = Number(
                                 bytesToNum(bytes.slice(1, 5))
                             );
-                            const time = Number(bytesToNum(bytes.slice(9, 13)));
+                            const time = Number(bytesToNum(bytes.slice(5, 9)));
 
                             blocksArray.push({ txs, height, time });
                             txs = [];
