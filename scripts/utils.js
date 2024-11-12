@@ -139,11 +139,20 @@ export function sleep(ms) {
 }
 
 /**
- * @param {string} blockbookUrl - Blockbook base URL
- * @param {string} address
- * @returns {string} URL to blockbook address
+ * Returns a random number in the range [0, N)
+ * @param {number} N
+ * @returns {number}
  */
-export function getBlockbookUrl(blockbookUrl, address) {
-    const urlPart = address.startsWith('xpub') ? 'xpub' : 'address';
-    return `${blockbookUrl.replace(/\/$/, '')}/${urlPart}/${address}`;
+export function getRandomInt(N) {
+    return Math.floor(Math.random() * N);
+}
+
+/**
+ * Returns a random element of arr
+ * @template T
+ * @param {T[]} arr
+ * @returns T
+ */
+export function getRandomElement(arr) {
+    return arr[getRandomInt(arr.length)];
 }

@@ -29,6 +29,7 @@ import pIconCopy from '../assets/icons/icon-copy.svg';
 import pIconCheck from '../assets/icons/icon-check.svg';
 import SideNavbar from './SideNavbar.vue';
 import { AsyncInterval } from './async_interval.js';
+import { useNetwork } from './composables/use_network.js';
 
 /** A flag showing if base MPW is fully loaded or not */
 export let fIsLoaded = false;
@@ -112,6 +113,7 @@ export async function start() {
         domRedeemCodeCreatePendingList: document.getElementById(
             'redeemCodeCreatePendingList'
         ),
+        domRedeemCodeDiv: document.getElementById('redeemCodeDiv'),
         domPromoTable: document.getElementById('promo-table'),
         domContactsTable: document.getElementById('contactsList'),
         domConfirmModalDialog: document.getElementById('confirmModalDialog'),
@@ -356,12 +358,31 @@ export async function playMusic() {
     }
 }
 
+/**
+ * Copy a text element or string to the clipboard
+ * @param {HTMLTextAreaElement} source - The source Element or String to copy
+ * @param {HTMLElement} caller - The visual representation of the caller, for UI responses
+ * @returns
+ */
 export function toClipboard(source, caller) {
-    // Fetch the text/value source
-    const domCopy = document.getElementById(source) || source;
+    if (caller?.innerHTML === pIconCheck) return;
+    if (source?.innerHTML === 'Copied!') return;
 
-    // Use an invisible textbox as the clipboard source
-    const domClipboard = document.getElementById('clipboard');
+    // Fetch the text/value source
+    const domElementTest = document.getElementById(source);
+    const domCustomCopy =
+        domElementTest?.dataset?.copy || source?.dataset?.copy;
+    const domCopy = domCustomCopy || domElementTest || source;
+
+    // Create and reuse an off-screen textbox as the clipboard source
+    let domClipboard = document.getElementById('clipboard');
+    if (!domClipboard) {
+        domClipboard = document.createElement('textarea');
+        domClipboard.id = 'clipboard';
+        domClipboard.style.position = 'absolute';
+        domClipboard.style.left = '-9999px';
+        document.body.appendChild(domClipboard);
+    }
     domClipboard.value = domCopy.value || domCopy.innerHTML || domCopy;
     domClipboard.select();
     domClipboard.setSelectionRange(0, 99999);
@@ -370,15 +391,19 @@ export function toClipboard(source, caller) {
     if (!navigator.clipboard) {
         document.execCommand('copy');
     } else {
-        navigator.clipboard.writeText(domCopy.innerHTML || domCopy);
+        navigator.clipboard.writeText(
+            domCopy.value || domCopy.innerHTML || domCopy
+        );
     }
 
     // Display a temporary checkmark response
-    caller.innerHTML = pIconCheck;
-    caller.style.cursor = 'default';
+    const cResponseCaller = caller || source;
+    const strPrev = cResponseCaller.innerHTML;
+    cResponseCaller.innerHTML = caller ? pIconCheck : 'Copied!';
+    cResponseCaller.style.cursor = 'default';
     setTimeout(() => {
-        caller.innerHTML = pIconCopy;
-        caller.style.cursor = 'pointer';
+        cResponseCaller.innerHTML = strPrev;
+        cResponseCaller.style.cursor = 'pointer';
     }, 1000);
 }
 
