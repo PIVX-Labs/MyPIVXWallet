@@ -151,23 +151,6 @@ export class RPCNodeNetwork extends Network {
         return fetch(this.strUrl + api, options);
     }
 
-    /*    /**
-     * A safety-wrapped RPC interface for calling Node RPCs with automatic correction handling
-     * @param {string} api - The API endpoint to call
-     * @param {"json"|"text"|"raw"} [isText] - Parse the result as text, JSON or return the raw stream. JSON by default
-     * @returns {Promise<object|string>} - The RPC response; JSON by default, text if `isText` is true.
-     /
-    async callRPC(api, mode = 'json') {
-        const cRes = await this.#fetchNode(api);
-        if (!cRes.ok) throw new Error('failed to call RPC');
-        switch (mode) {
-            case 'json':
-                return await cRes.json();
-            case 'text':
-                return await cRes.text();
-            case 'raw':
-                return cRes;
-        }*/
     async #callRPC(api, isText = false) {
         const cRes = await this.#fetchNode(api);
         if (!cRes.ok) throw new Error('Failed to call rpc');
