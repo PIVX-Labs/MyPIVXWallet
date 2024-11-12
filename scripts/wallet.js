@@ -34,7 +34,7 @@ import { guiToggleReceiveType } from './contacts-book.js';
 import { TransactionBuilder } from './transaction_builder.js';
 import { createAlert } from './alerts/alert.js';
 import { AsyncInterval } from './async_interval.js';
-import { debugError, DebugTopics } from './debug.js';
+import { debugError, debugLog, DebugTopics } from './debug.js';
 import { OrderedArray } from './ordered_array.js';
 
 /**
@@ -929,8 +929,7 @@ export class Wallet {
             createAlert('warning', translation.badSaplingRoot, 5000);
             this.#mempool = new Mempool();
             this.#isSynced = false;
-            // TODO: take the wallet creation height in input from users
-            await this.#shield.reloadFromCheckpoint(4200000);
+            await this.#resetShield();
             await this.#transparentSync();
             await this.#syncShield();
             return false;
@@ -964,9 +963,24 @@ export class Wallet {
         if (!cAccount || cAccount.shieldData === '') {
             return;
         }
-        this.#shield = await PIVXShield.load(cAccount.shieldData);
-        getEventEmitter().emit('shield-loaded-from-disk');
-        return;
+        const loadRes = await PIVXShield.load(cAccount.shieldData);
+        this.#shield = loadRes.pivxShield;
+        // Load operation was not successful!
+        // Provided data are not compatible with the latest PIVX shield version.
+        // Resetting the shield object is required
+        if (!loadRes.success) {
+            debugLog(
+                DebugTopics.WALLET,
+                'Shield backup is not compatible with latest library version'
+            );
+            await this.#resetShield();
+        }
+    }
+
+    async #resetShield() {
+        // TODO: take the wallet creation height in input from users
+        await this.#shield.reloadFromCheckpoint(4200000);
+        await this.saveShieldOnDisk();
     }
 
     /**
