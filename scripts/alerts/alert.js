@@ -54,9 +54,9 @@ export class AlertController {
      * - The use of `.innerHTML` allows for input styling at this cost.
      * @param {'success'|'info'|'warning'} type - The alert level
      * @param {string} message - The message to relay to the user
-     * @param {number?} timeout - The time in `ms` until the alert expires (Defaults to never expiring)
+     * @param {number?} timeout - The time in `ms` until the alert expires
      */
-    createAlert(level, message, timeout = 2000) {
+    createAlert(level, message, timeout = 10000) {
         this.addAlert(new Alert({ level, message, timeout }));
     }
 
@@ -93,9 +93,9 @@ export class AlertController {
  * - The use of `.innerHTML` allows for input styling at this cost.
  * @param {'success'|'info'|'warning'} type - The alert level
  * @param {string} message - The message to relay to the user
- * @param {number?} [timeout] - The time in `ms` until the alert expires (Defaults to never expiring)
+ * @param {number?} [timeout] - The time in `ms` until the alert expires
  */
-export function createAlert(type, message, timeout = 0) {
+export function createAlert(type, message, timeout) {
     const alertController = AlertController.getInstance();
     return alertController.createAlert(type, message, timeout);
 }

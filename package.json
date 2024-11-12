@@ -18,7 +18,8 @@
         "coverage": "vitest --coverage",
         "cy:open": "TZ=Europe/London npx cypress open",
         "cy:run": "TZ=Europe/London npx cypress run --browser chromium",
-        "cy:ci": "TZ=Europe/London start-server-and-test dev http://localhost:5500 cy:run"
+        "cy:ci": "TZ=Europe/London start-server-and-test dev http://localhost:5500 cy:run",
+        "cy:record": "CYPRESS_PLAYBACK_MODE=record start-server-and-test dev http://localhost:5500 cy:run"
     },
     "repository": {
         "type": "git",
