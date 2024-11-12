@@ -137,3 +137,22 @@ export async function startBatch(
 export function sleep(ms) {
     return new Promise((res, _) => setTimeout(res, ms));
 }
+
+/**
+ * Returns a random number in the range [0, N)
+ * @param {number} N
+ * @returns {number}
+ */
+export function getRandomInt(N) {
+    return Math.floor(Math.random() * N);
+}
+
+/**
+ * Returns a random element of arr
+ * @template T
+ * @param {T[]} arr
+ * @returns T
+ */
+export function getRandomElement(arr) {
+    return arr[getRandomInt(arr.length)];
+}

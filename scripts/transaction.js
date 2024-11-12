@@ -98,7 +98,10 @@ export class Transaction {
     blockTime;
     /** @type{number} */
     lockTime;
-    /** Cached txid */
+    /**
+     * Cached txid
+     * @type {string}
+     */
     #txid = '';
 
     constructor({

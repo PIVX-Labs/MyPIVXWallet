@@ -20,6 +20,7 @@ import { Database } from './database.js';
 import { getEventEmitter } from './event_bus.js';
 import countries from 'country-locale-map/countries.json';
 import { getNetwork } from './network/network_manager.js';
+import { getRandomElement } from './utils.js';
 
 // --- Default Settings
 /** A mode that emits verbose console info for internal MPW operations */
@@ -212,7 +213,7 @@ function subscribeToNetworkEvents() {
 }
 
 // --- Settings Functions
-export async function setExplorer(explorer) {
+export async function setExplorer(explorer, fSilent = false) {
     const database = await Database.getInstance();
     await database.setSettings({ explorer: explorer.url });
     getNetwork().setNetwork(explorer.url, false);
@@ -220,11 +221,13 @@ export async function setExplorer(explorer) {
     // Update the selector UI
     doms.domExplorerSelect.value = explorer.url;
 
-    createAlert(
-        'success',
-        tr(ALERTS.SWITCHED_EXPLORERS, [{ explorerName: explorer.name }]),
-        2250
-    );
+    if (!fSilent) {
+        createAlert(
+            'success',
+            tr(ALERTS.SWITCHED_EXPLORERS, [{ explorerName: explorer.name }]),
+            2250
+        );
+    }
     getEventEmitter().emit('explorer_changed', explorer.url);
 }
 
@@ -433,7 +436,7 @@ export async function toggleAutoSwitch() {
 }
 
 async function fillExplorerSelect() {
-    const firstExplorer = cChainParams.current.Explorers[0];
+    const firstExplorer = getRandomElement(cChainParams.current.Explorers);
 
     while (doms.domExplorerSelect.options.length > 0) {
         doms.domExplorerSelect.remove(0);
@@ -452,7 +455,7 @@ async function fillExplorerSelect() {
     const database = await Database.getInstance();
     const { explorer: strSettingExplorer } = await database.getSettings();
 
-    // For any that exist: load them, or use the defaults
+    // For any that exist: load them, or use the default
     await setExplorer(
         cChainParams.current.Explorers.find(
             (a) => a.url === strSettingExplorer
@@ -462,7 +465,7 @@ async function fillExplorerSelect() {
 }
 
 async function fillNodeSelect() {
-    const firstNode = cChainParams.current.Nodes[0];
+    const firstNode = getRandomElement(cChainParams.current.Nodes);
 
     while (doms.domNodeSelect.options.length > 0) {
         doms.domNodeSelect.remove(0);

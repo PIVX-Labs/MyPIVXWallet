@@ -170,6 +170,7 @@ export class RPCNodeNetwork extends Network {
         }*/
     async #callRPC(api, isText = false) {
         const cRes = await this.#fetchNode(api);
+        if (!cRes.ok) throw new Error('Failed to call rpc');
         const cResTxt = await cRes.text();
         if (isText) return cResTxt;
         // RPC calls with filters might return empty string instead of empty JSON,

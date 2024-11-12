@@ -369,6 +369,7 @@ function restoreWallet() {
                         ></span>
                         <span
                             class="dcWallet-pivxBalance"
+                            data-testid="primaryBalance"
                             v-html="primaryBalanceStr"
                         >
                         </span>

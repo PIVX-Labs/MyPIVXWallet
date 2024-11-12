@@ -28,6 +28,7 @@ const icon = computed(() => {
         @click="$emit('click')"
         :class="{ [level]: true }"
         :style="{ opacity: 1 }"
+        data-testid="alert"
     >
         <div class="notifyIcon" :class="{ ['notify-' + level]: true }">
             <i class="fas fa-xl" :class="{ [icon]: true }"> </i>
