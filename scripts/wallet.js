@@ -1011,6 +1011,7 @@ export class Wallet {
         }
         const loadRes = await PIVXShield.load(cAccount.shieldData);
         this.#shield = loadRes.pivxShield;
+        getEventEmitter().emit('shield-loaded-from-disk');
         // Load operation was not successful!
         // Provided data are not compatible with the latest PIVX shield version.
         // Resetting the shield object is required
