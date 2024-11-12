@@ -1014,7 +1014,7 @@ export class Wallet {
         }
         this.#shield = (
             await PIVXShield.load(cAccount.shieldData)
-        ).pivxShieldpp;
+        ).pivxShield;
         getEventEmitter().emit('shield-loaded-from-disk');
         return;
     }
