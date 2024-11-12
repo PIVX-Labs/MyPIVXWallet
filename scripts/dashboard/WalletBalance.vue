@@ -148,8 +148,8 @@ getEventEmitter().on(
         const mb = bytes / 1_000_000;
         const totalMb = totalBytes / 1_000_000;
         shieldSyncingStr.value = `Syncing Shield (${mb.toFixed(
-            2
-        )}MB/${totalMb.toFixed(2)}MB)`;
+            1
+        )}MB/${totalMb.toFixed(1)}MB)`;
         shieldSyncing.value = !finished;
     }
 );
