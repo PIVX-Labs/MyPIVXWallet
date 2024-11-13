@@ -259,6 +259,10 @@ class NetworkManager {
         );
     }
 
+    async getShieldData(initialBlock = 0) {
+        return await this.#retryWrapper('getShieldData', true, initialBlock);
+    }
+
     /**
      * Submit a proposal
      * @param {Object} options

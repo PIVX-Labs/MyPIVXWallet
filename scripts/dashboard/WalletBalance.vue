@@ -60,13 +60,12 @@ const {
 
 // Transparent sync status
 const transparentSyncing = ref(false);
-const transparentProgressSyncing = ref(0.0);
+const percentage = ref(0.0);
 const syncTStr = ref('');
 
 // Shield sync status
 const shieldSyncing = ref(false);
-const shieldPercentageSyncing = ref(0.0);
-const shieldBlockRemainingSyncing = ref(0);
+const shieldSyncingStr = ref('');
 
 // Shield transaction creation
 const isCreatingTx = ref(false);
@@ -137,20 +136,20 @@ getEventEmitter().on(
         ]);
         const progress = ((totalPages - i) / totalPages) * 100;
         syncTStr.value = str;
-        transparentProgressSyncing.value = progress;
+        percentage.value = progress;
         transparentSyncing.value = !finished;
     }
 );
 
 getEventEmitter().on(
     'shield-sync-status-update',
-    (blocks, totalBlocks, finished) => {
-        shieldPercentageSyncing.value = Math.round(
-            (blocks / totalBlocks) * 100
-        );
-        shieldBlockRemainingSyncing.value = (
-            totalBlocks - blocks
-        ).toLocaleString('en-GB');
+    (bytes, totalBytes, finished) => {
+        percentage.value = Math.round((100 * bytes) / totalBytes);
+        const mb = bytes / 1_000_000;
+        const totalMb = totalBytes / 1_000_000;
+        shieldSyncingStr.value = `Syncing Shield (${mb.toFixed(
+            1
+        )}MB/${totalMb.toFixed(1)}MB)`;
         shieldSyncing.value = !finished;
     }
 );
@@ -510,18 +509,10 @@ function restoreWallet() {
                     <i class="fas fa-spinner spinningLoading"></i>
                 </div>
                 <div style="width: 100%">
-                    {{
-                        transparentSyncing
-                            ? syncTStr
-                            : `Syncing ${shieldBlockRemainingSyncing} Blocks...`
-                    }}
+                    {{ transparentSyncing ? syncTStr : shieldSyncingStr }}
                     <LoadingBar
                         :show="true"
-                        :percentage="
-                            transparentSyncing
-                                ? transparentProgressSyncing
-                                : shieldPercentageSyncing
-                        "
+                        :percentage="percentage"
                         style="
                             border: 1px solid #932ecd;
                             border-radius: 4px;
