@@ -81,4 +81,4 @@ Cypress.Commands.add('deleteWallet', () => {
 Cypress.Commands.add('setExplorer', (explorerNameOrIndex) => {
     cy.goToTab('settings');
     cy.get('#explorer').select(explorerNameOrIndex);
-})
+});

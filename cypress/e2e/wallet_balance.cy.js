@@ -8,9 +8,9 @@ describe('Wallet balance tests', () => {
             matching: { ignores: ['hostname', 'port'] },
         }).as('sync');
         cy.visit('/');
-	cy.waitForLoading().should('be.visible');
-	cy.setExplorer(0);
-	cy.goToTab("dashboard");
+        cy.waitForLoading().should('be.visible');
+        cy.setExplorer(0);
+        cy.goToTab('dashboard');
         cy.importWallet('DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb');
     });
     it('calculates balance correctly', () => {
