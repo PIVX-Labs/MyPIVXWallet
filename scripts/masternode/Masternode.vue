@@ -8,7 +8,7 @@ import Masternode from '../masternode.js';
 import RestoreWallet from '../dashboard/RestoreWallet.vue';
 import { cChainParams } from '../chain_params';
 import Modal from '../Modal.vue';
-import { ref, watch } from 'vue';
+import { ref, watch, onMounted } from 'vue';
 import { getNetwork } from '../network/network_manager.js';
 import { translation, ALERTS } from '../i18n.js';
 import { generateMasternodePrivkey, parseIpAddress } from '../misc';
