@@ -32,6 +32,12 @@ function updatePossibleUTXOs() {
     possibleUTXOs.value = wallet.getMasternodeUTXOs();
 }
 
+onMounted(() => {
+    document
+        .getElementById('masternodeTab')
+        .addEventListener('click', updatePossibleUTXOs);
+});
+
 watch(isSynced, () => {
     updatePossibleUTXOs();
 });
@@ -113,9 +119,13 @@ async function createMasternode({ isVPS }) {
         address,
         cChainParams.current.collateralInSats
     );
-    if (!res) createAlert('warning', translation.ALERTS.TRANSACTION_FAILED);
+    if (!res) {
+        createAlert('warning', translation.ALERTS.TRANSACTION_FAILED);
+        return;
+    }
 
     if (isVPS) openShowPrivKeyModal();
+    updatePossibleUTXOs();
 }
 
 function openShowPrivKeyModal() {
