@@ -139,7 +139,7 @@ async function parseTXs(arrTXs) {
 
     for (const cTx of arrTXs) {
         const dateTime = new Date(cTx.time * 1000);
-        // If this Tx is older than 24h, then hit the `Date` cache logic, otherwise, use a `Time` and skip it
+        // If this Tx is older than 24h, then format as `Date`, otherwise, use `Time` format.
         let strDate =
             Date.now() / 1000 - cTx.time > 86400
                 ? dateTime.toLocaleDateString(undefined, dateOptions)
@@ -155,9 +155,6 @@ async function parseTXs(arrTXs) {
                 (cTx.type === HistoricalTxType.STAKE
                     ? cChainParams.current.coinbaseMaturity
                     : 6);
-
-        // Choose the content type, for the Dashboard; use a generative description, otherwise, a TX-ID
-        // let txContent = props.rewards ? cTx.id : 'Block Reward';
 
         // Format the amount to reduce text size
         let formattedAmt = '';
