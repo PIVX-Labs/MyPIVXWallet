@@ -126,9 +126,8 @@ async function parseTXs(arrTXs) {
 
     // Prepare time formatting
     const dateOptions = {
-        year: '2-digit',
-        month: '2-digit',
-        day: '2-digit',
+        month: 'short',
+        day: 'numeric',
     };
     const timeOptions = {
         hour: '2-digit',
