@@ -121,13 +121,13 @@ export class Network {
     }
 
     async submitProposal({
-        name,
-        url,
-        nPayments,
-        start,
-        address,
-        monthlyPayment,
-        txid,
+        _name,
+        _url,
+        _nPayments,
+        _start,
+        _address,
+        _monthlyPayment,
+        _txid,
     }) {
         throw new Error('submitProposal must be implemented');
     }
