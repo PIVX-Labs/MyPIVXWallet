@@ -3641,30 +3641,29 @@ select.form-control option {
 }
 
 .notifyWrapper .notifyIcon {
-    padding: 20px 11px;
     border-top-left-radius: 5px;
     border-bottom-left-radius: 5px;
     border-top-right-radius: 10px;
     border-bottom-right-radius: 10px;
     display: flex;
-    align-items: center;
     height: 45px;
     margin-top: 17px;
     margin-left: -5px;
+    width: 45px;
+    justify-content: center;
+    align-items: center;
 }
 
 .notifyWrapper .notify-warning {
-    background-color: #630808;
-    border-top: 1px solid #FF0000;
-    border-left: 1px solid #FF0000;
-    border-bottom: 1px solid #FF0000;
+    background: rgb(138,0,29);
+    background: linear-gradient(0deg, rgba(138,0,29,1) 0%, rgba(181,0,0,1) 100%);
+    border: 1px solid #FF1C50;
 }
 
 .notifyWrapper .notify-info {
-    background-color: #084363;
-    border-top: 1px solid #0095ff;
-    border-left: 1px solid #0095ff;
-    border-bottom: 1px solid #0095ff;
+    background: rgb(47,18,83);
+    background: linear-gradient(341deg, rgba(47,18,83,1) 0%, rgba(123,101,157,1) 100%);
+    border: 1px solid #906DB1;
 }
 
 .notifyWrapper .notify-success {
