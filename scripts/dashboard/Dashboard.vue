@@ -142,7 +142,12 @@ async function importWallet({
 
         // Start syncing in the background
         wallet.sync().then(() => {
-            createAlert('success', translation.syncStatusFinished, 12500);
+            createAlert(
+                'success',
+                translation.syncStatusFinished,
+                12500,
+                'Test Button'
+            );
         });
         getEventEmitter().emit('wallet-import');
         return true;

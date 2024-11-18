@@ -5,6 +5,7 @@ const props = defineProps({
     message: String,
     level: String,
     notificationCount: Number,
+    actionName: String,
 });
 
 const { message, level } = toRefs(props);
@@ -47,6 +48,14 @@ const icon = computed(() => {
                 @click="$emit('hideAlert')"
             >
                 CLOSE
+            </button>
+        </div>
+        <div v-if="actionName" style="display: flex; flex-direction: column">
+            <button
+                class="btn btn-notification-close"
+                @click="$emit('hideAlert')"
+            >
+                {{ actionName }}
             </button>
         </div>
     </div>
