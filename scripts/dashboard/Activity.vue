@@ -125,27 +125,41 @@ async function parseTXs(arrTXs) {
     const newTxs = [];
 
     // Prepare time formatting
-    const dateOptions = {
-        month: 'short',
-        day: 'numeric',
-    };
     const timeOptions = {
         hour: '2-digit',
         minute: '2-digit',
         hour12: true,
     };
+    const dateOptions = {
+        month: 'short',
+        day: 'numeric',
+    };
+    const yearOptions = {
+        month: 'short',
+        day: 'numeric',
+        year: '2-digit',
+    };
     const cDB = await Database.getInstance();
     const cAccount = await cDB.getAccount();
 
+    const cDate = new Date();
     for (const cTx of arrTXs) {
-        const dateTime = new Date(cTx.time * 1000);
-        // If this Tx is older than 24h, then format as `Date`, otherwise, use `Time` format.
-        let strDate =
-            Date.now() / 1000 - cTx.time > 86400
-                ? dateTime.toLocaleDateString(undefined, dateOptions)
-                : dateTime.toLocaleTimeString(undefined, timeOptions);
-        if (cTx.blockHeight === -1) {
-            strDate = 'Pending';
+        const cTxDate = new Date(cTx.time * 1000);
+
+        // Unconfirmed Txs are simply 'Pending'
+        let strDate = 'Pending';
+        if (cTx.blockHeight !== -1) {
+            // Figure out the most convenient time display for this Tx
+            if (cTxDate.getDate() === cDate.getDate()) {
+                // TXs made today are displayed by time (02:13 pm)
+                strDate = cTxDate.toLocaleTimeString(undefined, timeOptions);
+            } else if (cTxDate.getFullYear() === cDate.getFullYear()) {
+                // TXs older than today are displayed by short date (18 Nov)
+                strDate = cTxDate.toLocaleDateString(undefined, dateOptions);
+            } else {
+                // TXs in previous years are displayed by their short date and year (18 Nov 2023)
+                strDate = cTxDate.toLocaleDateString(undefined, yearOptions);
+            }
         }
 
         // Coinbase Transactions (rewards) require coinbaseMaturity confs
