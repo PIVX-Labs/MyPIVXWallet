@@ -373,12 +373,8 @@ export class Wallet {
      */
     getNewAddress(nReceiving = 0) {
         const last = this.#highestUsedIndices.get(nReceiving);
-        this.#addressIndices.set(
-            nReceiving,
-            (this.#addressIndices.get(nReceiving) > last
-                ? this.#addressIndices.get(nReceiving)
-                : last) + 1
-        );
+        const curr = this.#addressIndices.get(nReceiving);
+        this.#addressIndices.set(nReceiving, Math.max(curr, last) + 1);
         if (this.#addressIndices.get(nReceiving) - last > MAX_ACCOUNT_GAP) {
             // If the user creates more than ${MAX_ACCOUNT_GAP} empty wallets we will not be able to sync them!
             this.#addressIndices.set(nReceiving, last);
@@ -739,6 +735,11 @@ export class Wallet {
         this.#isSynced = true;
         // At this point download the last missing blocks in the range (blockCount -5, blockCount]
         await this.getLatestBlocks(blockCount);
+
+        // Finally avoid address re-use by updating the map #addressIndices
+        for (let i = 0; i < Wallet.chains; i++) {
+            this.getNewAddress(i);
+        }
 
         // Update both activities post sync
         getEventEmitter().enableEvent('balance-update');
