@@ -143,7 +143,7 @@ export function sleep(ms) {
  * @param {number} N
  * @returns {number}
  */
-function getRandomInt(N) {
+export function getRandomInt(N) {
     return Math.floor(Math.random() * N);
 }
 

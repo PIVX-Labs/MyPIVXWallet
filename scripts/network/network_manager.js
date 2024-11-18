@@ -164,7 +164,11 @@ class NetworkManager {
 
     async sendTransaction(hex) {
         try {
-            const data = await this.#retryWrapper('sendTransaction', true, hex);
+            const data = await this.#retryWrapper(
+                'sendTransaction',
+                false,
+                hex
+            );
 
             // Throw and catch if the data is not a TXID
             if (!data.result || data.result.length !== 64) throw data;
@@ -253,6 +257,10 @@ class NetworkManager {
             sigTime,
             signature
         );
+    }
+
+    async getShieldData(initialBlock = 0) {
+        return await this.#retryWrapper('getShieldData', true, initialBlock);
     }
 
     /**

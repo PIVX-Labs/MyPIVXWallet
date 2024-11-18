@@ -24,8 +24,11 @@ Cypress.Commands.add(
     }
 );
 
+Cypress.Commands.add('waitForLoading', () => {
+    cy.get('[data-testid="generateWallet"]');
+});
+
 Cypress.Commands.add('createWallet', (password) => {
-    cy.visit('');
     cy.get('[data-testid="generateWallet"]').click();
     const seedPhrase = cy.get('.seed-phrase').invoke('text');
     cy.get('[data-testid="seedphraseModal"]').click();
@@ -33,14 +36,12 @@ Cypress.Commands.add('createWallet', (password) => {
     return seedPhrase;
 });
 Cypress.Commands.add('createVanityWallet', (prefix, password) => {
-    cy.visit('');
     cy.get('[data-testid="vanityWalletButton"]').click();
     cy.get('[data-testid="prefixInput"]').should('be.visible').type(prefix);
     cy.get('[data-testid="generateBtn"]').click();
     cy.encryptWallet(password);
 });
 Cypress.Commands.add('importWallet', (key, password) => {
-    cy.visit('');
     cy.get('[data-testid="accWalletButton"]').click();
     cy.get('[data-testid="secretInp"]').should('be.visible').type(key);
     if (password)
@@ -76,4 +77,8 @@ Cypress.Commands.add('deleteWallet', () => {
     cy.goToTab('settings');
     cy.get('[data-testid="deleteWalletButton"]').click();
     cy.get('[data-i18n="popupConfirm"]').click();
+});
+Cypress.Commands.add('setExplorer', (explorerNameOrIndex) => {
+    cy.goToTab('settings');
+    cy.get('#explorer').select(explorerNameOrIndex);
 });

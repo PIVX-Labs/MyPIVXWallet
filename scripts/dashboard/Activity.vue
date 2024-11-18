@@ -24,7 +24,6 @@ let txCount = 0;
 const updating = ref(false);
 const isHistorySynced = ref(false);
 const rewardAmount = ref(0);
-let nRewardUpdateHeight = 0;
 const ticker = computed(() => cChainParams.current.TICKER);
 const network = useNetwork();
 function getActivityUrl(tx) {
@@ -70,6 +69,15 @@ const txMap = computed(() => {
     };
 });
 
+function updateReward() {
+    if (!props.rewards) return;
+    let res = 0;
+    for (const tx of wallet.getHistoricalTxs()) {
+        if (tx.type !== HistoricalTxType.STAKE) continue;
+        res += tx.amount;
+    }
+    rewardAmount.value = res;
+}
 async function update(txToAdd = 0) {
     // Return if wallet is not synced yet
     if (!wallet.isSynced) {
@@ -87,22 +95,6 @@ async function update(txToAdd = 0) {
     if (txCount < 10 && txToAdd == 0) txToAdd = 10;
 
     const historicalTxs = wallet.getHistoricalTxs();
-
-    // For Rewards: aggregate the total amount
-    if (props.rewards) {
-        for (const tx of historicalTxs) {
-            // If this Tx Height is under our last scanned height, we stop
-            if (tx.blockHeight <= nRewardUpdateHeight) break;
-            // Only compute rewards
-            if (tx.type != HistoricalTxType.STAKE) continue;
-            // Aggregate the total rewards
-            rewardAmount.value += tx.amount;
-        }
-        // Keep track of the scan block height
-        if (historicalTxs.length) {
-            nRewardUpdateHeight = historicalTxs[0].blockHeight;
-        }
-    }
 
     let i = 0;
     let found = 0;
@@ -143,9 +135,6 @@ async function parseTXs(arrTXs) {
         minute: '2-digit',
         hour12: true,
     };
-    // And also keep track of our last Tx's timestamp, to re-use a cache, which is much faster than the slow `.toLocaleDateString`
-    let prevDateString = '';
-    let prevTimestamp = 0;
     const cDB = await Database.getInstance();
     const cAccount = await cDB.getAccount();
 
@@ -154,33 +143,19 @@ async function parseTXs(arrTXs) {
         // If this Tx is older than 24h, then hit the `Date` cache logic, otherwise, use a `Time` and skip it
         let strDate =
             Date.now() / 1000 - cTx.time > 86400
-                ? ''
+                ? dateTime.toLocaleDateString(undefined, dateOptions)
                 : dateTime.toLocaleTimeString(undefined, timeOptions);
-        if (!strDate) {
-            if (
-                prevDateString &&
-                prevTimestamp - cTx.time * 1000 < 12 * 60 * 60 * 1000
-            ) {
-                // Use our date cache
-                strDate = prevDateString;
-            } else {
-                // Create a new date, this Tx is too old to use the cache
-                prevDateString = dateTime.toLocaleDateString(
-                    undefined,
-                    dateOptions
-                );
-                strDate = prevDateString;
-            }
+        if (cTx.blockHeight === -1) {
+            strDate = 'Pending';
         }
-        // Update the time cache
-        prevTimestamp = cTx.time * 1000;
 
         // Coinbase Transactions (rewards) require coinbaseMaturity confs
-        const fConfirmed =
+        let fConfirmed =
+            cTx.blockHeight > 0 &&
             blockCount - cTx.blockHeight >=
-            (cTx.type === HistoricalTxType.STAKE
-                ? cChainParams.current.coinbaseMaturity
-                : 6);
+                (cTx.type === HistoricalTxType.STAKE
+                    ? cChainParams.current.coinbaseMaturity
+                    : 6);
 
         // Choose the content type, for the Dashboard; use a generative description, otherwise, a TX-ID
         // let txContent = props.rewards ? cTx.id : 'Block Reward';
@@ -267,7 +242,7 @@ const rewardsText = computed(() => {
 function reset() {
     txs.value = [];
     txCount = 0;
-    nRewardUpdateHeight = 0;
+    rewardAmount.value = 0;
     update(0);
 }
 
@@ -275,17 +250,9 @@ function getTxCount() {
     return txCount;
 }
 
-getEventEmitter().on(
-    'transparent-sync-status-update',
-    (i, totalPages, done) => done && update()
-);
-getEventEmitter().on(
-    'shield-sync-status-update',
-    (blocks, totalBlocks, done) => done && update()
-);
 onMounted(() => update());
 
-defineExpose({ update, reset, getTxCount });
+defineExpose({ update, reset, getTxCount, updateReward });
 </script>
 
 <template>

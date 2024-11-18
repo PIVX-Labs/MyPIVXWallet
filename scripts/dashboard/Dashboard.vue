@@ -393,6 +393,7 @@ async function importFromDatabase() {
     const account = await database.getAccount();
     await wallet.setMasterKey({ mk: null });
     activity.value?.reset();
+    getEventEmitter().emit('reset-activity');
     if (account?.isHardware) {
         await importWallet({ type: 'hardware', secret: account.publicKey });
     } else if (wallet.isEncrypted) {

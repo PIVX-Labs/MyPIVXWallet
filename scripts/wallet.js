@@ -1,6 +1,6 @@
 import { validateMnemonic } from 'bip39';
 import { decrypt } from './aes-gcm.js';
-import { parseWIF } from './encoding.js';
+import { bytesToNum, mergeUint8Arrays, parseWIF } from './encoding.js';
 import { beforeUnloadListener, blockCount } from './global.js';
 import { getNetwork } from './network/network_manager.js';
 import { MAX_ACCOUNT_GAP, SHIELD_BATCH_SYNC_SIZE } from './chain_params.js';
@@ -34,7 +34,8 @@ import { guiToggleReceiveType } from './contacts-book.js';
 import { TransactionBuilder } from './transaction_builder.js';
 import { createAlert } from './alerts/alert.js';
 import { AsyncInterval } from './async_interval.js';
-import { debugError, DebugTopics } from './debug.js';
+import { debugError, debugLog, DebugTopics } from './debug.js';
+import { OrderedArray } from './ordered_array.js';
 
 /**
  * Class Wallet, at the moment it is just a "realization" of Masterkey with a given nAccount
@@ -101,9 +102,17 @@ export class Wallet {
     #lastProcessedBlock = 0;
     /**
      * Array of historical txs, ordered by block height
-     * @type HistoricalTx[]
+     * @type OrderedArray<HistoricalTx>
      */
-    #historicalTxs;
+    #historicalTxs = new OrderedArray((hTx1, hTx2) => {
+        if (hTx1.blockHeight === -1) {
+            return hTx1;
+        }
+        if (hTx2.blockHeight === -1) {
+            return hTx2;
+        }
+        return hTx1.blockHeight >= hTx2.blockHeight;
+    });
 
     constructor({ nAccount, masterKey, shield, mempool = new Mempool() }) {
         this.#nAccount = nAccount;
@@ -253,7 +262,7 @@ export class Wallet {
         }
         this.#mempool = new Mempool();
         this.#lastProcessedBlock = 0;
-        this.#historicalTxs = [];
+        this.#historicalTxs.clear();
     }
 
     /**
@@ -698,26 +707,15 @@ export class Wallet {
      * @param {Transaction} tx
      */
     #pushToHistoricalTx(tx) {
-        const historicalTx = this.toHistoricalTXs([tx])[0];
-        let prevHeight = Number.POSITIVE_INFINITY;
-        for (const [i, hTx] of this.#historicalTxs.entries()) {
-            if (
-                historicalTx.blockHeight <= prevHeight &&
-                historicalTx.blockHeight >= hTx.blockHeight
-            ) {
-                this.#historicalTxs.splice(i, 0, historicalTx);
-                return;
-            }
-            prevHeight = hTx.blockHeight;
-        }
-        this.#historicalTxs.push(historicalTx);
+        const hTx = this.toHistoricalTXs([tx])[0];
+        this.#historicalTxs.insert(hTx);
     }
 
     /**
      * @returns {HistoricalTx[]}
      */
     getHistoricalTxs() {
-        return this.#historicalTxs;
+        return this.#historicalTxs.get();
     }
     sync = lockableFunction(async () => {
         if (this.#isSynced) {
@@ -726,6 +724,7 @@ export class Wallet {
         // While syncing the wallet ( DB read + network sync) disable the event balance-update
         // This is done to avoid a huge spam of event.
         getEventEmitter().disableEvent('balance-update');
+        getEventEmitter().disableEvent('new-tx');
 
         await this.loadFromDisk();
         await this.loadShieldFromDisk();
@@ -743,6 +742,7 @@ export class Wallet {
 
         // Update both activities post sync
         getEventEmitter().enableEvent('balance-update');
+        getEventEmitter().enableEvent('new-tx');
         getEventEmitter().emit('balance-update');
         getEventEmitter().emit('new-tx');
     });
@@ -780,48 +780,94 @@ export class Wallet {
         if (!this.#shield || this.#isSynced) {
             return;
         }
-        const cNet = getNetwork();
-        try {
-            const blockHeights = (await cNet.getShieldBlockList()).filter(
-                (b) => b > this.#shield.getLastSyncedBlock()
-            );
-            const batchSize = SHIELD_BATCH_SYNC_SIZE;
-            let handled = 0;
-            let downloaded = 0;
-            const blocks = [];
-            let syncing = false;
-            await startBatch(
-                async (i) => {
-                    let block;
-                    block = await cNet.getBlock(blockHeights[i]);
-                    downloaded++;
-                    blocks[i] = block;
-                    // We need to process blocks monotically
-                    // When we get a block, start from the first unhandled
-                    // One and handle as many as possible
-                    for (let j = handled; blocks[j]; j = handled) {
-                        if (syncing) break;
-                        syncing = true;
-                        handled++;
-                        await this.#shield.handleBlock(blocks[j]);
-                        // Backup every 500 handled blocks
-                        if (handled % 500 === 0) await this.saveShieldOnDisk();
-                        // Delete so we don't have to hold all blocks in memory
-                        // until we finish syncing
-                        delete blocks[j];
-                        syncing = false;
-                    }
 
-                    getEventEmitter().emit(
-                        'shield-sync-status-update',
-                        downloaded - 1,
-                        blockHeights.length,
-                        false
-                    );
-                },
-                blockHeights.length,
-                batchSize
+        try {
+            const network = getNetwork();
+            const req = await network.getShieldData(
+                wallet.#shield.getLastSyncedBlock() + 1
             );
+            if (!req.ok) throw new Error("Couldn't sync shield");
+            const reader = req.body.getReader();
+
+            /** @type{string[]} Array of txs in the current block */
+            let txs = [];
+            let processedBytes = 0;
+            const length = req.headers.get('Content-Length');
+            /** @type {Uint8Array} Array of bytes that we are processing **/
+            const processing = new Uint8Array(length);
+            getEventEmitter().emit(
+                'shield-sync-status-update',
+                0,
+                length,
+                false
+            );
+            let i = 0;
+            let max = 0;
+            while (true) {
+                /**
+                 * @type {{done: boolean, value: Uint8Array?}}
+                 */
+                const { done, value } = await reader.read();
+                /**
+                 * Array of blocks ready to pass to the shield library
+                 * @type {{txs: string[]; height: number; time: number}[]}
+                 */
+                const blocksArray = [];
+
+                if (value) {
+                    // Append received bytes in the processing array
+                    processing.set(value, max);
+                    max += value.length;
+                    processedBytes += value.length;
+                    // Loop until we have less than 4 bytes (length)
+                    while (max - i >= 4) {
+                        const length = Number(
+                            bytesToNum(processing.subarray(i, i + 4))
+                        );
+                        // If we have less bytes than the length break and wait for the next
+                        // batch of bytes
+                        if (max - i < length) break;
+
+                        i += 4;
+                        const bytes = processing.subarray(i, length + i);
+                        i += length;
+                        // 0x5d rapresents the block
+                        if (bytes[0] === 0x5d) {
+                            const height = Number(
+                                bytesToNum(bytes.slice(1, 5))
+                            );
+                            const time = Number(bytesToNum(bytes.slice(5, 9)));
+
+                            blocksArray.push({ txs, height, time });
+                            txs = [];
+                        } else if (bytes[0] === 0x03) {
+                            // 0x03 is the tx version. We should only get v3 transactions
+                            const hex = bytesToHex(bytes);
+                            txs.push({
+                                hex,
+                                txid: Transaction.getTxidFromHex(hex),
+                            });
+                        } else {
+                            // This is neither a block or a tx.
+                            throw new Error('Failed to parse shield binary');
+                        }
+                    }
+                }
+
+                // Process the current batch of blocks before starting to parse the next one
+                if (blocksArray.length) {
+                    await this.#shield.handleBlocks(blocksArray);
+                }
+                // Emit status update
+                getEventEmitter().emit(
+                    'shield-sync-status-update',
+                    processedBytes,
+                    length,
+                    false
+                );
+                if (done) break;
+            }
+
             getEventEmitter().emit('shield-sync-status-update', 0, 0, true);
         } catch (e) {
             debugError(DebugTopics.WALLET, e);
@@ -870,7 +916,6 @@ export class Wallet {
                 await this.getLatestBlocks(block);
                 // Invalidate the balance cache to keep immature balance updated
                 this.#mempool.invalidateBalanceCache();
-                getEventEmitter().emit('new-tx');
             }
         });
     }
@@ -937,8 +982,7 @@ export class Wallet {
             createAlert('warning', translation.badSaplingRoot, 5000);
             this.#mempool = new Mempool();
             this.#isSynced = false;
-            // TODO: take the wallet creation height in input from users
-            await this.#shield.reloadFromCheckpoint(4200000);
+            await this.#resetShield();
             await this.#transparentSync();
             await this.#syncShield();
             return false;
@@ -972,9 +1016,25 @@ export class Wallet {
         if (!cAccount || cAccount.shieldData === '') {
             return;
         }
-        this.#shield = await PIVXShield.load(cAccount.shieldData);
+        const loadRes = await PIVXShield.load(cAccount.shieldData);
+        this.#shield = loadRes.pivxShield;
         getEventEmitter().emit('shield-loaded-from-disk');
-        return;
+        // Load operation was not successful!
+        // Provided data are not compatible with the latest PIVX shield version.
+        // Resetting the shield object is required
+        if (!loadRes.success) {
+            debugLog(
+                DebugTopics.WALLET,
+                'Shield backup is not compatible with latest library version'
+            );
+            await this.#resetShield();
+        }
+    }
+
+    async #resetShield() {
+        // TODO: take the wallet creation height in input from users
+        await this.#shield.reloadFromCheckpoint(4200000);
+        await this.saveShieldOnDisk();
     }
 
     /**
@@ -1221,11 +1281,12 @@ export class Wallet {
             const db = await Database.getInstance();
             await db.storeTx(transaction);
         }
-        if (!tx || tx.blockHeight === -1) {
-            // Do not add unconfirmed txs to history
-            if (transaction.blockHeight !== -1)
-                this.#pushToHistoricalTx(transaction);
+
+        if (tx) {
+            this.#historicalTxs.remove((hTx) => hTx.id === tx.txid);
         }
+        this.#pushToHistoricalTx(transaction);
+        getEventEmitter().emit('new-tx');
     }
 
     /**
