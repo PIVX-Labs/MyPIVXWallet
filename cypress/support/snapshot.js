@@ -11,7 +11,7 @@ Cypress.Commands.add(
         const snapshotPath = `cypress/snapshots/html/${snapshotName}.html`;
 
         cy.task('fileExists', snapshotPath).then((exists) => {
-            if (exists && !process.env.CYPRESS_PLAYBACK_MODE === 'record') {
+            if (exists && process.env.CYPRESS_PLAYBACK_MODE !== 'record') {
                 cy.readFile(snapshotPath).then((expectedHtml) => {
                     expect(htmlContent === expectedHtml).to.equal(true);
                 });
