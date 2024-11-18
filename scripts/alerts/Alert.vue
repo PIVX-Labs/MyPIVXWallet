@@ -4,6 +4,7 @@ import { computed, toRefs } from 'vue';
 const props = defineProps({
     message: String,
     level: String,
+    notificationCount: Number,
 });
 
 const { message, level } = toRefs(props);
@@ -29,6 +30,7 @@ const icon = computed(() => {
         :style="{ opacity: 1 }"
         data-testid="alert"
     >
+        <div class="notifyBadgeCount" v-if="notificationCount > 1" v-html="notificationCount"></div>
         <div style="display: inline-flex; align-items: stretch;">
             <div class="notifyIcon" :class="{ ['notify-' + level]: true }">
                 <i class="fas fa-xl" :class="{ [icon]: true }"> </i>

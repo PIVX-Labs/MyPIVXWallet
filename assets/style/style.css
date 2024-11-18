@@ -3612,6 +3612,21 @@ select.form-control option {
     color: #c7bbdd;
 }
 
+.notifyWrapper .notifyBadgeCount {
+    position: absolute;
+    right: 0px;
+    border: 2px solid #9A21FF;
+    background-color: #431180;
+    border-radius: 100px;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 13px;
+    font-weight: 500;
+}
+
 .notifyWrapper {
     opacity: 1;
     z-index: 999999;

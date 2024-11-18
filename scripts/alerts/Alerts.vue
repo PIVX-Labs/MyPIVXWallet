@@ -11,15 +11,15 @@ watch(alerts, () => {
     let count = 1;
     const pushAlert = () => {
         if (previousAlert) {
-            const countStr = count === 1 ? '' : ` (x${count})`;
             const timeout =
                 previousAlert.created + previousAlert.timeout - Date.now();
             const show = timeout > 0;
             if (!show) return;
             const alert = ref({
                 ...previousAlert,
-                message: `${previousAlert.message}${countStr}`,
+                message: `${previousAlert.message}`,
                 show,
+                count,
                 // Store original message so we can use it as key.
                 // This skips the animation in case of multiple errors
                 original: previousAlert.message,
@@ -56,6 +56,7 @@ watch(alerts, () => {
             <Alert
                 :message="alert.value.message"
                 :level="alert.value.level"
+                :notificationCount="alert.value.count"
                 @hideAlert="alert.value.show = false"
             />
         </div>
