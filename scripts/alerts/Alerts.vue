@@ -56,7 +56,7 @@ watch(alerts, () => {
             <Alert
                 :message="alert.value.message"
                 :level="alert.value.level"
-                @click="alert.value.show = false"
+                @hideAlert="alert.value.show = false"
             />
         </div>
     </transition-group>
