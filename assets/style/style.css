@@ -2286,7 +2286,7 @@ a {
     position: fixed;
     z-index: 10000;
     right: 15px;
-    bottom: 0px;
+    top: 100px;
     display: flex;
     flex-direction: column;
 }
@@ -3593,15 +3593,33 @@ select.form-control option {
     }
 }
 
+.btn-notification-close {
+    color: #D5C9EC;
+    border: 2px solid #9C34FC;
+    border-radius: 0px;
+    border-bottom-left-radius: 20px;
+    border-bottom-right-radius: 20px;
+    margin-left: -1px;
+    margin-bottom: -1px;
+    margin-right: -1px;
+    background: rgb(30,20,49);
+    background: linear-gradient(0deg, rgba(30,20,49,1) 0%, rgba(44,16,79,1) 100%);
+    font-weight: 500;
+}
+
+.btn-notification-close:hover {
+    border: 2px solid #8d29eb;
+    color: #c7bbdd;
+}
+
 .notifyWrapper {
     opacity: 1;
     z-index: 999999;
-    background-color: #320044;
-    border-radius: 5px;
-    display: inline-flex;
-    align-items: stretch;
-    border: 1px solid #9F00F9;
-    cursor: pointer;
+    background-color: #260a47;
+    border-radius: 11px;
+    border-bottom-left-radius: 20px;
+    border-bottom-right-radius: 20px;
+    border: 1px solid #51199f;
     margin-bottom: 15px;
     opacity: 0;
     transition: all 0.250s ease-in-out;
@@ -3611,11 +3629,13 @@ select.form-control option {
     padding: 20px 11px;
     border-top-left-radius: 5px;
     border-bottom-left-radius: 5px;
-    margin-top: -1px;
-    margin-left: -1px;
-    margin-bottom: -1px;
+    border-top-right-radius: 10px;
+    border-bottom-right-radius: 10px;
     display: flex;
     align-items: center;
+    height: 45px;
+    margin-top: 17px;
+    margin-left: -5px;
 }
 
 .notifyWrapper .notify-warning {
@@ -3633,17 +3653,21 @@ select.form-control option {
 }
 
 .notifyWrapper .notify-success {
-    background-color: #1c6308;
-    border-top: 1px solid #1aff00;
-    border-left: 1px solid #1aff00;
-    border-bottom: 1px solid #1aff00;
+    background: rgb(46,82,0);
+    background: linear-gradient(341deg, rgba(46,82,0,1) 0%, rgba(95,168,0,1) 100%);
+    border: 1px solid #69BB00;
 }
 
 .notifyWrapper .notifyText {
-    padding-left: 11px;
-    padding-right: 17px;
-    padding-top: 14px;
-    padding-bottom: 14px;
+    padding-left: 14px;
+    padding-right: 40px;
+    padding-top: 19px;
+    padding-bottom: 19px;
+    color: #8c7aa8;
+}
+
+.notifyWrapper .notifyText b {
+    color:#DCD1F3;
 }
 
 .sliderStyle .arrow {
