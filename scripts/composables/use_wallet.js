@@ -52,7 +52,6 @@ export const useWallet = defineStore('wallet', () => {
     const getKeyToBackup = async () => await wallet.getKeyToBackup();
     const getKeyToExport = () => wallet.getKeyToExport();
     const isEncrypted = ref(true);
-    const loadFromDisk = () => wallet.loadFromDisk();
     const hasShield = ref(wallet.hasShield());
 
     const setMasterKey = async ({ mk, extsk }) => {
@@ -173,7 +172,6 @@ export const useWallet = defineStore('wallet', () => {
         price,
         sync,
         createAndSendTransaction,
-        loadFromDisk,
         coldBalance,
     };
 });

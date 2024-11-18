@@ -394,12 +394,11 @@ export function optimiseCurrencyLocale(nAmount) {
  */
 export async function openExplorer(strAddress = '') {
     const network = useNetwork();
+    const toExport = wallet.getKeyToExport();
     if (wallet.isLoaded() && wallet.isHD() && !strAddress) {
-        const xpub = wallet.getXPub();
-        window.open(network.explorerUrl + '/xpub/' + xpub, '_blank');
+        window.open(network.explorerUrl + '/xpub/' + toExport, '_blank');
     } else {
-        const address = strAddress || wallet.getAddress();
-        window.open(network.explorerUrl + '/address/' + address, '_blank');
+        window.open(network.explorerUrl + '/address/' + toExport, '_blank');
     }
 }
 
