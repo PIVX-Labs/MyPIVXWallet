@@ -20,11 +20,30 @@ export class Alert {
      */
     created;
 
-    constructor({ message, level, timeout = 0, created = Date.now() }) {
+    /**
+     * @type{string} The user-readable button title for an Action
+     */
+    actionName;
+
+    /**
+     * @type{function} The function to be executed if the user runs the Action
+     */
+    actionFunc;
+
+    constructor({
+        message,
+        level,
+        timeout = 0,
+        created = Date.now(),
+        actionName,
+        actionFunc,
+    }) {
         this.message = message;
         this.level = level;
         this.timeout = timeout;
         this.created = created;
+        this.actionName = actionName;
+        this.actionFunc = actionFunc;
     }
 }
 
@@ -55,9 +74,13 @@ export class AlertController {
      * @param {'success'|'info'|'warning'} type - The alert level
      * @param {string} message - The message to relay to the user
      * @param {number?} timeout - The time in `ms` until the alert expires
+     * @param {string?} actionName - The button title of an optional Action to perform
+     * @param {function?} actionFunc - The function to execute if the Action button is used
      */
-    createAlert(level, message, timeout = 10000) {
-        this.addAlert(new Alert({ level, message, timeout }));
+    createAlert(level, message, timeout = 10000, actionName, actionFunc) {
+        this.addAlert(
+            new Alert({ level, message, timeout, actionName, actionFunc })
+        );
     }
 
     /**
@@ -94,8 +117,16 @@ export class AlertController {
  * @param {'success'|'info'|'warning'} type - The alert level
  * @param {string} message - The message to relay to the user
  * @param {number?} [timeout] - The time in `ms` until the alert expires
+ * @param {string?} actionName - The button title of an optional Action to perform
+ * @param {function?} actionFunc - The function to execute if the Action button is used
  */
-export function createAlert(type, message, timeout) {
+export function createAlert(type, message, timeout, actionName, actionFunc) {
     const alertController = AlertController.getInstance();
-    return alertController.createAlert(type, message, timeout);
+    return alertController.createAlert(
+        type,
+        message,
+        timeout,
+        actionName,
+        actionFunc
+    );
 }
