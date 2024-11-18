@@ -275,6 +275,18 @@ export class Wallet {
     }
 
     /**
+     * Update the current address.
+     */
+    #updateCurrentAddress() {
+        // No need to update the change address, as it is only handled internally by the wallet.
+        const last = this.#highestUsedIndices.get(0);
+        const curr = this.#addressIndices.get(0);
+        if (curr <= last) {
+            this.#addressIndices.set(0, last + 1);
+        }
+    }
+
+    /**
      * Derive a generic address (given nReceiving and nIndex)
      * @return {string} Address
      */
@@ -745,9 +757,7 @@ export class Wallet {
         await this.getLatestBlocks(blockCount);
 
         // Finally avoid address re-use by updating the map #addressIndices
-        for (let i = 0; i < Wallet.chains; i++) {
-            this.getNewAddress(i);
-        }
+        this.#updateCurrentAddress();
 
         // Update both activities post sync
         getEventEmitter().enableEvent('balance-update');
@@ -1283,6 +1293,9 @@ export class Wallet {
 
         if (tx) {
             this.#historicalTxs.remove((hTx) => hTx.id === tx.txid);
+        }
+        if (this.#isSynced) {
+            this.#updateCurrentAddress();
         }
         this.#pushToHistoricalTx(transaction);
         getEventEmitter().emit('new-tx');
