@@ -746,7 +746,7 @@ export async function sweepAddress(arrUTXOs, sweepingMasterKey, nFixedFee) {
     const txBuilder = TransactionBuilder.create().addUTXOs(arrUTXOs);
 
     const outputValue = txBuilder.valueIn - (nFixedFee || txBuilder.getFee());
-    const [address] = wallet.getNewAddress(1);
+    const address = wallet.getNewChangeAddress();
     const tx = txBuilder
         .addOutput({
             address,
@@ -1678,7 +1678,7 @@ export async function createProposal() {
     // If Advanced Mode is enabled and an address is given, use the provided address, otherwise, generate a new one
     const strAddress =
         document.getElementById('proposalAddress').value.trim() ||
-        wallet.getNewAddress(1)[0];
+        wallet.getNewChangeAddress();
     const nextSuperblock = await getNetwork().getNextSuperblock();
     const proposal = {
         name: strTitle,

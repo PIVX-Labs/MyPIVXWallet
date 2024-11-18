@@ -391,6 +391,14 @@ export class Wallet {
     }
 
     /**
+     * Generates a new change address
+     * @returns {string}
+     */
+    getNewChangeAddress() {
+        return this.getNewAddress(1)[0];
+    }
+
+    /**
      * @returns {Promise<string>} new shield address
      */
     async getNewShieldAddress() {
@@ -1100,7 +1108,7 @@ export class Wallet {
 
         // Add primary output
         if (isDelegation) {
-            if (!returnAddress) [returnAddress] = this.getNewAddress(1);
+            if (!returnAddress) returnAddress = this.getNewChangeAddress();
             transactionBuilder.addColdStakeOutput({
                 address: returnAddress,
                 addressColdStake: address,
@@ -1143,7 +1151,7 @@ export class Wallet {
                 transactionBuilder.equallySubtractAmt(Math.abs(changeValue));
             } else if (changeValue > 0) {
                 // TransactionBuilder will internally add the change only if it is not dust
-                if (!changeAddress) [changeAddress] = this.getNewAddress(1);
+                if (!changeAddress) changeAddress = this.getNewChangeAddress();
                 if (delegateChange && changeValue >= 1 * COIN) {
                     transactionBuilder.addColdStakeOutput({
                         address: changeAddress,
@@ -1199,7 +1207,7 @@ export class Wallet {
                 blockHeight: blockCount + 1,
                 useShieldInputs: transaction.vin.length === 0,
                 utxos: this.#getUTXOsForShield(value),
-                transparentChangeAddress: this.getNewAddress(1)[0],
+                transparentChangeAddress: this.getNewChangeAddress(),
             });
             return transaction.fromHex(hex);
         } catch (e) {

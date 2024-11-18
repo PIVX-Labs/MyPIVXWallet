@@ -80,7 +80,7 @@ async function unstake(value) {
     }
     const res = await wallet.createAndSendTransaction(
         getNetwork(),
-        wallet.getAddress(1),
+        wallet.getNewChangeAddress(),
         value,
         {
             useDelegatedInputs: true,
