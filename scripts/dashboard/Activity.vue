@@ -146,15 +146,15 @@ async function parseTXs(arrTXs) {
     for (const cTx of arrTXs) {
         const cTxDate = new Date(cTx.time * 1000);
 
-        // Check if it was today (same day, month and year)
-        const fToday =
-            cTxDate.getDate() === cDate.getDate() &&
-            cTxDate.getMonth() === cDate.getMonth() &&
-            cTxDate.getFullYear() === cDate.getFullYear();
-
         // Unconfirmed Txs are simply 'Pending'
         let strDate = 'Pending';
         if (cTx.blockHeight !== -1) {
+            // Check if it was today (same day, month and year)
+            const fToday =
+                cTxDate.getDate() === cDate.getDate() &&
+                cTxDate.getMonth() === cDate.getMonth() &&
+                cTxDate.getFullYear() === cDate.getFullYear();
+
             // Figure out the most convenient time display for this Tx
             if (fToday) {
                 // TXs made today are displayed by time (02:13 pm)
