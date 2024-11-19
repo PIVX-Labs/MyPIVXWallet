@@ -73,14 +73,19 @@ describe('createAlert function', () => {
 
         const message = 'Singleton Alert';
         const level = 'info';
-        createAlert(level, message);
+        const timeout = 10000;
+        const actionName = 'Example Calculation';
+        const actionExampleFunc = () => {
+            return 5 + 5;
+        };
+        createAlert(level, message, timeout, actionName, actionExampleFunc);
 
         expect(createAlertSpy).toHaveBeenCalledWith(
             level,
             message,
-            undefined,
-            undefined,
-            undefined
+            timeout,
+            actionName,
+            actionExampleFunc
         );
 
         createAlertSpy.mockRestore();
