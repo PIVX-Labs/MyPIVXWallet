@@ -1,5 +1,5 @@
 import { defineConfig } from 'cypress';
-import { existsSync, readFileSync } from 'fs';
+import { existsSync } from 'fs';
 import cypressPlayback from '@oreillymedia/cypress-playback/addTasks.js';
 export default defineConfig({
     e2e: {
