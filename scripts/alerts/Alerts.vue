@@ -56,7 +56,6 @@ function runAction(cAlert) {
     cAlert.actionFunc();
     cAlert.show = false;
 }
-
 </script>
 
 <template>
