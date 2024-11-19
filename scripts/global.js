@@ -304,10 +304,20 @@ function subscribeToNetworkEvents() {
 
     getEventEmitter().on('transaction-sent', (success, result) => {
         if (success) {
+            // Prepare an Alert action function to open the TX in the explorer
+            const network = useNetwork();
+            const openTxExplorer = () =>
+                window.open(network.explorerUrl + '/tx/' + result, '_blank');
+
+            // Notify the user of their transaction
             createAlert(
                 'success',
-                `${ALERTS.TX_SENT}<br>${sanitizeHTML(result)}`,
-                result ? 1250 + result.length * 50 : 3000
+                `<b>${ALERTS.TX_SENT}</b><br>${sanitizeHTML(
+                    result.substring(0, 24)
+                )}...`,
+                15000,
+                'Open In Explorer',
+                openTxExplorer
             );
         } else {
             debugError(DebugTopics.NET, 'Error sending transaction:');
