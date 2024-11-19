@@ -53,7 +53,7 @@ const icon = computed(() => {
             </button>
             <button v-if="actionName"
                 class="btn btn-notification-action notifyButtonSecond"
-                @click="$emit('hideAlert')"
+                @click="$emit('runAction')"
             >
                 {{ actionName }}
             </button>

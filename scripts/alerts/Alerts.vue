@@ -21,6 +21,7 @@ watch(alerts, () => {
                 show,
                 count,
                 actionName: previousAlert.actionName,
+                actionFunc: previousAlert.actionFunc,
                 // Store original message so we can use it as key.
                 // This skips the animation in case of multiple errors
                 original: previousAlert.message,
@@ -46,6 +47,16 @@ watch(alerts, () => {
     pushAlert();
     foldedAlerts.value = res;
 });
+
+/**
+ * Run an 'action' connected to an alert
+ * @param {import('./alert.js').Alert} cAlert - The caller alert which is running an action
+ */
+function runAction(cAlert) {
+    cAlert.actionFunc();
+    cAlert.show = false;
+}
+
 </script>
 
 <template>
@@ -60,6 +71,7 @@ watch(alerts, () => {
                 :notificationCount="alert.value.count"
                 :actionName="alert.value.actionName"
                 @hideAlert="alert.value.show = false"
+                @runAction="runAction(alert.value)"
             />
         </div>
     </transition-group>
