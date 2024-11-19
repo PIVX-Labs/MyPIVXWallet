@@ -1,4 +1,4 @@
-import { ExplorerNetwork, Network, RPCNodeNetwork } from './network.js';
+import { ExplorerNetwork, RPCNodeNetwork } from './network.js';
 import { cChainParams } from '../chain_params.js';
 import { fAutoSwitch } from '../settings.js';
 import { debugLog, DebugTopics, debugWarn } from '../debug.js';
@@ -7,17 +7,17 @@ import { getEventEmitter } from '../event_bus.js';
 
 class NetworkManager {
     /**
-     * @type {Network} - Current selected Explorer
+     * @type {import('./network.js').Network} - Current selected Explorer
      */
     #currentExplorer;
 
     /**
-     * @type {Network} - Current selected RPC node
+     * @type {import('./network.js').Network} - Current selected RPC node
      */
     #currentNode;
 
     /**
-     * @type {Array<Network>} - List of all available Networks
+     * @type {Array<import('./network.js').Network>} - List of all available Networks
      */
     #networks = [];
 

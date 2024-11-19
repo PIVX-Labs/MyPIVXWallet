@@ -1,9 +1,9 @@
 import { validateMnemonic } from 'bip39';
 import { decrypt } from './aes-gcm.js';
-import { bytesToNum, mergeUint8Arrays, parseWIF } from './encoding.js';
+import { bytesToNum, parseWIF } from './encoding.js';
 import { beforeUnloadListener, blockCount } from './global.js';
 import { getNetwork } from './network/network_manager.js';
-import { MAX_ACCOUNT_GAP, SHIELD_BATCH_SYNC_SIZE } from './chain_params.js';
+import { MAX_ACCOUNT_GAP } from './chain_params.js';
 import { HistoricalTx, HistoricalTxType } from './historical_tx.js';
 import { COutpoint, Transaction } from './transaction.js';
 import { confirmPopup, isShieldAddress } from './misc.js';
@@ -15,7 +15,7 @@ import { Database } from './database.js';
 import { RECEIVE_TYPES } from './contacts-book.js';
 import { Account } from './accounts.js';
 import { fAdvancedMode } from './settings.js';
-import { bytesToHex, hexToBytes, sleep, startBatch } from './utils.js';
+import { bytesToHex, hexToBytes, sleep } from './utils.js';
 import { strHardwareName } from './ledger.js';
 import { OutpointState, Mempool } from './mempool.js';
 import { getEventEmitter } from './event_bus.js';
@@ -104,9 +104,15 @@ export class Wallet {
      * Array of historical txs, ordered by block height
      * @type OrderedArray<HistoricalTx>
      */
-    #historicalTxs = new OrderedArray(
-        (hTx1, hTx2) => hTx1.blockHeight >= hTx2.blockHeight
-    );
+    #historicalTxs = new OrderedArray((hTx1, hTx2) => {
+        if (hTx1.blockHeight === -1) {
+            return hTx1;
+        }
+        if (hTx2.blockHeight === -1) {
+            return hTx2;
+        }
+        return hTx1.blockHeight >= hTx2.blockHeight;
+    });
 
     constructor({ nAccount, masterKey, shield, mempool = new Mempool() }) {
         this.#nAccount = nAccount;
@@ -718,6 +724,7 @@ export class Wallet {
         // While syncing the wallet ( DB read + network sync) disable the event balance-update
         // This is done to avoid a huge spam of event.
         getEventEmitter().disableEvent('balance-update');
+        getEventEmitter().disableEvent('new-tx');
 
         await this.loadFromDisk();
         await this.loadShieldFromDisk();
@@ -735,6 +742,7 @@ export class Wallet {
 
         // Update both activities post sync
         getEventEmitter().enableEvent('balance-update');
+        getEventEmitter().enableEvent('new-tx');
         getEventEmitter().emit('balance-update');
         getEventEmitter().emit('new-tx');
     });
@@ -908,7 +916,6 @@ export class Wallet {
                 await this.getLatestBlocks(block);
                 // Invalidate the balance cache to keep immature balance updated
                 this.#mempool.invalidateBalanceCache();
-                getEventEmitter().emit('new-tx');
             }
         });
     }
@@ -1265,12 +1272,11 @@ export class Wallet {
             await db.storeTx(transaction);
         }
 
-        if (tx && tx.blockHeight !== -1) {
+        if (tx) {
             this.#historicalTxs.remove((hTx) => hTx.id === tx.txid);
-            this.#pushToHistoricalTx(transaction);
-        } else if (transaction.blockHeight !== -1) {
-            this.#pushToHistoricalTx(transaction);
         }
+        this.#pushToHistoricalTx(transaction);
+        getEventEmitter().emit('new-tx');
     }
 
     /**
