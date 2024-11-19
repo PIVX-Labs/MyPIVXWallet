@@ -3593,9 +3593,22 @@ select.form-control option {
     }
 }
 
+.notifyButtonFirst {
+    border-bottom-right-radius:0px!important;
+    margin-right:1px!important;
+    padding: 0px 21px;
+}
+
+.notifyButtonSecond {
+    border-bottom-left-radius:0px!important;
+    margin-left:1px!important;
+    width:100%;
+    text-transform: uppercase;
+}
+
 .btn-notification-close {
     color: #D5C9EC;
-    border: 2px solid #9C34FC;
+    border: 2px solid #8529ED;
     border-radius: 0px;
     border-bottom-left-radius: 20px;
     border-bottom-right-radius: 20px;
@@ -3608,7 +3621,24 @@ select.form-control option {
 }
 
 .btn-notification-close:hover {
-    border: 2px solid #8d29eb;
+    border: 2px solid #8529ED;
+    color: #c7bbdd;
+}
+
+.btn-notification-action {
+    color: #D5C9EC;
+    border-radius: 0px;
+    border-bottom-left-radius: 20px;
+    border-bottom-right-radius: 20px;
+    margin-left: -1px;
+    margin-bottom: -1px;
+    margin-right: -1px;
+    background: rgb(30,20,49);
+    background: linear-gradient(0deg, #741EEA 0%, #9231EE 100%);
+    font-weight: 500;
+}
+
+.btn-notification-action:hover {
     color: #c7bbdd;
 }
 

@@ -42,17 +42,17 @@ const icon = computed(() => {
             </div>
             <div class="notifyText" v-html="message"></div>
         </div>
-        <div style="display: flex; flex-direction: column">
+        <div style="display: flex;"
+        :style="(actionName ? 'flex-direction: row' : 'flex-direction: column')">
             <button
+                :class="(actionName ? 'notifyButtonFirst' : '')"
                 class="btn btn-notification-close"
                 @click="$emit('hideAlert')"
             >
                 CLOSE
             </button>
-        </div>
-        <div v-if="actionName" style="display: flex; flex-direction: column">
-            <button
-                class="btn btn-notification-close"
+            <button v-if="actionName"
+                class="btn btn-notification-action notifyButtonSecond"
                 @click="$emit('hideAlert')"
             >
                 {{ actionName }}
