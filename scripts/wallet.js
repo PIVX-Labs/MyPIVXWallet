@@ -35,7 +35,13 @@ import { guiToggleReceiveType } from './contacts-book.js';
 import { TransactionBuilder } from './transaction_builder.js';
 import { createAlert } from './alerts/alert.js';
 import { AsyncInterval } from './async_interval.js';
-import { debugError, debugLog, DebugTopics } from './debug.js';
+import {
+    debugError,
+    debugLog,
+    debugTimerEnd,
+    debugTimerStart,
+    DebugTopics,
+} from './debug.js';
 import { OrderedArray } from './ordered_array.js';
 
 /**
@@ -735,7 +741,9 @@ export class Wallet {
         this.#lastProcessedBlock = blockCount - 5;
         await this.#transparentSync();
         if (this.hasShield()) {
+            debugTimerStart(DebugTopics.WALLET, 'syncShield');
             await this.#syncShield();
+            debugTimerEnd(DebugTopics.WALLET, 'syncShield');
         }
         this.#isSynced = true;
         // At this point download the last missing blocks in the range (blockCount -5, blockCount]
@@ -806,11 +814,14 @@ export class Wallet {
              * @type {{txs: string[]; height: number; time: number}[]}
              */
             let blocksArray = [];
+            let handleBlocksTime = 0;
             const handleAllBlocks = async () => {
+                const start = performance.now();
                 // Process the current batch of blocks before starting to parse the next one
                 if (blocksArray.length) {
                     await this.#shield.handleBlocks(blocksArray);
                 }
+                handleBlocksTime += performance.now() - start;
                 blocksArray = [];
                 // Emit status update
                 getEventEmitter().emit(
@@ -844,11 +855,15 @@ export class Wallet {
                     // This is neither a block or a tx.
                     throw new Error('Failed to parse shield binary');
                 }
-                if (blocksArray.length > 1000) {
+                if (blocksArray.length >= 10) {
                     await handleAllBlocks();
                 }
             }
             await handleAllBlocks();
+            debugLog(
+                DebugTopics.WALLET,
+                `syncShield rust internal ${handleBlocksTime} ms`
+            );
             // At this point it should be safe to assume that shield is ready to use
             await this.saveShieldOnDisk();
         } catch (e) {
