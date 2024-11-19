@@ -1,4 +1,5 @@
 import { validateMnemonic } from 'bip39';
+import { Reader } from './reader.js';
 import { decrypt } from './aes-gcm.js';
 import { bytesToNum, mergeUint8Arrays, parseWIF } from './encoding.js';
 import { beforeUnloadListener, blockCount } from './global.js';
@@ -787,100 +788,81 @@ export class Wallet {
                 wallet.#shield.getLastSyncedBlock() + 1
             );
             if (!req.ok) throw new Error("Couldn't sync shield");
-            const reader = req.body.getReader();
+            const reader = new Reader(req);
 
             /** @type{string[]} Array of txs in the current block */
             let txs = [];
-            let processedBytes = 0;
-            const length = req.headers.get('Content-Length');
+            const length = reader.contentLength;
             /** @type {Uint8Array} Array of bytes that we are processing **/
-            const processing = new Uint8Array(length);
             getEventEmitter().emit(
                 'shield-sync-status-update',
                 0,
                 length,
                 false
             );
-            let i = 0;
-            let max = 0;
-            while (true) {
-                /**
-                 * @type {{done: boolean, value: Uint8Array?}}
-                 */
-                const { done, value } = await reader.read();
-                /**
-                 * Array of blocks ready to pass to the shield library
-                 * @type {{txs: string[]; height: number; time: number}[]}
-                 */
-                const blocksArray = [];
 
-                if (value) {
-                    // Append received bytes in the processing array
-                    processing.set(value, max);
-                    max += value.length;
-                    processedBytes += value.length;
-                    // Loop until we have less than 4 bytes (length)
-                    while (max - i >= 4) {
-                        const length = Number(
-                            bytesToNum(processing.subarray(i, i + 4))
-                        );
-                        // If we have less bytes than the length break and wait for the next
-                        // batch of bytes
-                        if (max - i < length) break;
-
-                        i += 4;
-                        const bytes = processing.subarray(i, length + i);
-                        i += length;
-                        // 0x5d rapresents the block
-                        if (bytes[0] === 0x5d) {
-                            const height = Number(
-                                bytesToNum(bytes.slice(1, 5))
-                            );
-                            const time = Number(bytesToNum(bytes.slice(5, 9)));
-
-                            blocksArray.push({ txs, height, time });
-                            txs = [];
-                        } else if (bytes[0] === 0x03) {
-                            // 0x03 is the tx version. We should only get v3 transactions
-                            const hex = bytesToHex(bytes);
-                            txs.push({
-                                hex,
-                                txid: Transaction.getTxidFromHex(hex),
-                            });
-                        } else {
-                            // This is neither a block or a tx.
-                            throw new Error('Failed to parse shield binary');
-                        }
-                    }
-                }
-
+            /**
+             * Array of blocks ready to pass to the shield library
+             * @type {{txs: string[]; height: number; time: number}[]}
+             */
+            let blocksArray = [];
+            const handleAllBlocks = async () => {
                 // Process the current batch of blocks before starting to parse the next one
                 if (blocksArray.length) {
                     await this.#shield.handleBlocks(blocksArray);
                 }
+                blocksArray = [];
                 // Emit status update
                 getEventEmitter().emit(
                     'shield-sync-status-update',
-                    processedBytes,
+                    reader.readBytes,
                     length,
                     false
                 );
-                if (done) break;
-            }
+            };
+            while (true) {
+                const packetLengthBytes = await reader.read(4);
+                if (!packetLengthBytes) break;
+                const packetLength = Number(bytesToNum(packetLengthBytes));
 
-            getEventEmitter().emit('shield-sync-status-update', 0, 0, true);
+                const bytes = await reader.read(packetLength);
+                if (!bytes) throw new Error('Stream was cut short');
+                if (bytes[0] === 0x5d) {
+                    const height = Number(bytesToNum(bytes.slice(1, 5)));
+                    const time = Number(bytesToNum(bytes.slice(5, 9)));
+
+                    blocksArray.push({ txs, height, time });
+                    txs = [];
+                } else if (bytes[0] === 0x03) {
+                    // 0x03 is the tx version. We should only get v3 transactions
+                    const hex = bytesToHex(bytes);
+                    txs.push({
+                        hex,
+                        txid: Transaction.getTxidFromHex(hex),
+                    });
+                } else {
+                    // This is neither a block or a tx.
+                    throw new Error('Failed to parse shield binary');
+                }
+                if (blocksArray.length > 1000) {
+                    await handleAllBlocks();
+                }
+            }
+            await handleAllBlocks();
+            // At this point it should be safe to assume that shield is ready to use
+            await this.saveShieldOnDisk();
         } catch (e) {
             debugError(DebugTopics.WALLET, e);
         }
 
-        // At this point it should be safe to assume that shield is ready to use
-        await this.saveShieldOnDisk();
         const networkSaplingRoot = (
             await getNetwork().getBlock(this.#shield.getLastSyncedBlock())
         ).finalsaplingroot;
         if (networkSaplingRoot)
             await this.#checkShieldSaplingRoot(networkSaplingRoot);
         this.#isSynced = true;
+
+        getEventEmitter().emit('shield-sync-status-update', 0, 0, true);
     }
 
     /**
