@@ -71,7 +71,7 @@ export class Reader {
 
     /**
      * @param{number} byteLength
-     * @returns {Promise<Uint8Array>}
+     * @returns {Promise<Uint8Array | null>} bytes or null if there are no more bytes
      */
     async read(byteLength) {
         if (this.#awaiter) throw new Error('Called read more than once');
