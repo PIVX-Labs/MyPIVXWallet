@@ -39,7 +39,7 @@ class TestNetwork {
         return 1;
     });
 
-    getTxPage = vi.fn((nStartHeight, addr, n) => {
+    getTxPage = vi.fn((nStartHeight, addr, _n) => {
         if (addr === 'DTSTGkncpC86sbEUZ2rCBLEe2aXSeZPLnC') {
             // 1) Legacy mainnet wallet
             // tx_1 provides a spendable balance of 0.1 * 10^8 satoshi
