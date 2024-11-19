@@ -38,6 +38,9 @@ export class Reader {
                 }
                 if (done) {
                     this.#done = true;
+                    if (this.#awaiter) {
+                        this.#awaiter();
+                    }
                     break;
                 }
             }
