@@ -376,7 +376,10 @@ function restoreWallet() {
                         <span
                             class="dcWallet-pivxTicker"
                             style="position: relative; left: 4px"
-                            >&nbsp;<span v-if="!publicMode">S-</span
+                            >&nbsp;<span
+                                data-testid="shieldModePrefix"
+                                v-if="!publicMode"
+                                >S-</span
                             >{{ ticker }}&nbsp;</span
                         >
                     </span>
