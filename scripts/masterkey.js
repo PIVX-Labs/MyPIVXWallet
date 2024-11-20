@@ -205,7 +205,7 @@ export class HardwareWalletMasterKey extends HdMasterKey {
      * @returns {Promise<HardwareWalletMasterKey>}
      */
     static async create(nAccount = 0) {
-        const path = this.getDerivationPath(nAccount, 0, 0)
+        const path = this.getDerivationPath(1, 0, 0)
             .split('/')
             .slice(0, 4)
             .join('/');
