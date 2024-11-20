@@ -1,6 +1,6 @@
 import { getEventEmitter } from '../event_bus.js';
 import { hasEncryptedWallet, wallet } from '../wallet.js';
-import { ref, watch, computed } from 'vue';
+import { ref, computed } from 'vue';
 import { fPublicMode, strCurrency, togglePublicMode } from '../settings.js';
 import { cOracle } from '../prices.js';
 import { ledgerSignTransaction } from '../ledger.js';
