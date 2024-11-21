@@ -52,6 +52,10 @@ watch(coldStakingAddress, async (coldStakingAddress) => {
     await db.updateAccount(cAccount, true);
 });
 async function stake(value, ownerAddress) {
+    if (wallet.isHardwareWallet) {
+        createAlert('warning', ALERTS.STAKING_LEDGER_NO_SUPPORT, 5000);
+        return;
+    }
     if (wallet.isViewOnly && !(await restoreWallet())) {
         return;
     }
