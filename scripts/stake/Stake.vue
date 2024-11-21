@@ -75,7 +75,11 @@ async function stake(value, ownerAddress) {
 }
 
 async function unstake(value) {
-    if (wallet.isViewOnly && !(await restoreWallet())) {
+    if (
+        !wallet.isHardwareWallet &&
+        wallet.isViewOnly &&
+        !(await restoreWallet())
+    ) {
         return;
     }
     const res = await wallet.createAndSendTransaction(
