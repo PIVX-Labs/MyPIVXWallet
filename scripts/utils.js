@@ -13,6 +13,10 @@ export function bytesToHex(bytes) {
     return Buffer.from(bytes).toString('hex');
 }
 
+export function reverseAndSwapEndianess(hex) {
+    return bytesToHex(hexToBytes(hex).reverse());
+}
+
 /**
  * Double SHA256 hash a byte array
  * @param {Array<number>} buff - Bytes to hash
@@ -73,56 +77,6 @@ export function arrayToCSV(data) {
                     .join(',') // comma-separated
         )
         .join('\r\n'); // rows starting on new lines
-}
-
-/**
- * Start a batch of promises, processing them concurrently up to `batchSize`.
- * This does *not* run them in parallel. Only 1 CPU core is used
- * @template T
- * @param {(number)=>Promise<T>} promiseFactory - Function that spawns promises based
- * on a number. 0 is the first, length-1 is the last one.
- * @param {number} length - How many promises to spawn
- * @param {number} batchSize - How many promises to spawn at a time
- * @returns {Promise<T[]>} array of the return value of the promise.
- * It's guaranteed to be sorted, i.e. it will contain
- * [ await promsieFactory(0), await promisefactory(1), ... ]
- * If the promises depend on each other, then behavior is undefined
- */
-export async function startBatch(
-    promiseFactory,
-    length,
-    batchSize,
-    retryTime = 10000
-) {
-    if (length === 0) {
-        return;
-    }
-    return new Promise((res) => {
-        const running = [];
-        let i = 0;
-        const startNext = async (current) => {
-            let result;
-            try {
-                result = await promiseFactory(current);
-            } catch (e) {
-                // Try again later
-                await sleep(retryTime);
-                return await startNext(current);
-            }
-            i++;
-            if (i < length) {
-                running.push(startNext(i));
-            } else {
-                (async () => res(await Promise.all(running)))();
-            }
-            return result;
-        };
-        // Start fisrt batchsize promises
-        for (i = 0; i < batchSize && i < length; i++) {
-            running.push(startNext(i));
-        }
-        --i;
-    });
 }
 
 /**

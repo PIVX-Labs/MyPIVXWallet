@@ -12,9 +12,6 @@ export const COIN = 10 ** 8;
 /** The maximum gap (absence of transactions within a range of derived addresses) before an account search ends */
 export const MAX_ACCOUNT_GAP = 20;
 
-/** The batch size of Shield block synchronisation */
-export const SHIELD_BATCH_SYNC_SIZE = 32;
-
 /** Transaction Sapling Version */
 export const SAPLING_TX_VERSION = 3;
 
