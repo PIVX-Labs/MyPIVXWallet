@@ -122,7 +122,7 @@ export class Wallet {
     });
 
     constructor({ nAccount, masterKey, shield, mempool = new Mempool() }) {
-        this.#nAccount = nAccount;
+        this.#nAccount = 1;
         this.#mempool = mempool;
         this.#masterKey = masterKey;
         this.#shield = shield;
@@ -223,7 +223,7 @@ export class Wallet {
             mk?.getKeyToExport(nAccount) !==
             this.#masterKey?.getKeyToExport(this.#nAccount);
         this.#masterKey = mk;
-        this.#nAccount = nAccount;
+        this.#nAccount = 1;
         if (extsk) await this.setExtsk(extsk);
         if (isNewAcc) {
             this.reset();
@@ -1354,7 +1354,7 @@ export class Wallet {
 /**
  * @type{Wallet}
  */
-export const wallet = new Wallet({ nAccount: 0 }); // For now we are using only the 0-th account, (TODO: update once account system is done)
+export const wallet = new Wallet({ nAccount: 1 }); // For now we are using only the 0-th account, (TODO: update once account system is done)
 
 /**
  * Clean a Seed Phrase string and verify it's integrity
