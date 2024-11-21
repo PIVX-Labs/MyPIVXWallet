@@ -135,7 +135,7 @@ export class Wallet {
             this.#highestUsedIndices.set(i, 0);
             this.#loadedIndexes.set(i, 0);
         }
-        this.subscribeToNetworkEvents();
+        this.#subscribeToNetworkEvents();
     }
 
     /**
@@ -654,7 +654,7 @@ export class Wallet {
      * Return the output addresses for a given transaction
      * @param {import('./transaction.js').Transaction} tx
      */
-    getOutAddress(tx) {
+    #getOutAddress(tx) {
         return tx.vout.reduce(
             (acc, vout) => [
                 ...acc,
@@ -683,7 +683,7 @@ export class Wallet {
             const nShieldAmount = (shieldCredit - shieldDebit) / COIN;
             const ownAllShield = shieldDebit - shieldCredit === tx.valueBalance;
             // The receiver addresses, if any
-            let arrReceivers = this.getOutAddress(tx);
+            let arrReceivers = this.#getOutAddress(tx);
             const getFilteredCredit = (filter) => {
                 return tx.vout
                     .filter((_, i) => {
@@ -935,7 +935,7 @@ export class Wallet {
                 `syncShield rust internal ${handleBlocksTime} ms`
             );
             // At this point it should be safe to assume that shield is ready to use
-            await this.saveShieldOnDisk();
+            await this.#saveShieldOnDisk();
         } catch (e) {
             debugError(DebugTopics.WALLET, e);
         }
@@ -977,7 +977,7 @@ export class Wallet {
             });
     }
 
-    subscribeToNetworkEvents() {
+    #subscribeToNetworkEvents() {
         getEventEmitter().on('new-block', async (block) => {
             if (this.#isSynced) {
                 await this.#getLatestBlocks(block);
@@ -1017,7 +1017,7 @@ export class Wallet {
                     !(await this.#checkShieldSaplingRoot(saplingRoot))
                 )
                     return;
-                await this.saveShieldOnDisk();
+                await this.#saveShieldOnDisk();
             }
         }
     );
@@ -1042,7 +1042,7 @@ export class Wallet {
     /**
      * Save shield data on database
      */
-    async saveShieldOnDisk() {
+    async #saveShieldOnDisk() {
         const cDB = await Database.getInstance();
         const cAccount = await cDB.getAccount();
         // If the account has not been created yet (for example no encryption) return
@@ -1084,7 +1084,7 @@ export class Wallet {
     async #resetShield() {
         // TODO: take the wallet creation height in input from users
         await this.#shield.reloadFromCheckpoint(4200000);
-        await this.saveShieldOnDisk();
+        await this.#saveShieldOnDisk();
     }
 
     /**
