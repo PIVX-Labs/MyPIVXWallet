@@ -13,6 +13,10 @@ export function bytesToHex(bytes) {
     return Buffer.from(bytes).toString('hex');
 }
 
+export function reverseAndSwapEndianess(hex) {
+    return bytesToHex(hexToBytes(hex).reverse());
+}
+
 /**
  * Double SHA256 hash a byte array
  * @param {Array<number>} buff - Bytes to hash
