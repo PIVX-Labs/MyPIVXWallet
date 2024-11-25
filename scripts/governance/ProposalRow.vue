@@ -69,14 +69,14 @@ function vote(voteCode) {
         <template v-if="!localProposal">
             <td style="vertical-align: middle" class="for-desktop">
                 <div class="proposalVoteButtons">
-                    <div
+                    <button
                         class="pivx-button-outline pivx-button-outline-small govNoBtnMob"
                         style="width: fit-content"
                         @click="vote(2)"
                     >
                         <span> {{ translation.no }} </span>
-                    </div>
-                    <div
+                    </button>
+                    <button
                         class="pivx-button-small govYesBtnMob"
                         style="width: fit-content; height: 36px"
                         @click="vote(1)"
@@ -84,7 +84,7 @@ function vote(voteCode) {
                         <span style="vertical-align: middle">
                             {{ translation.yes }}
                         </span>
-                    </div>
+                    </button>
                 </div>
             </td>
         </template>

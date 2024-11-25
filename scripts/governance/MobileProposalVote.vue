@@ -8,7 +8,7 @@ const emit = defineEmits(['vote']);
         <div class="col-5 fs-13 fw-600">
             {{ translation.govTableVote }}
         </div>
-        <div class="col-7">
+        <div class="col-7 mobileVote">
             <div
                 class="pivx-button-outline pivx-button-outline-small govNoBtnMob"
                 style="width: fit-content"
