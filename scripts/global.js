@@ -393,12 +393,11 @@ export function optimiseCurrencyLocale(nAmount) {
  */
 export async function openExplorer(strAddress = '') {
     const network = useNetwork();
+    const toExport = wallet.getKeyToExport();
     if (wallet.isLoaded() && wallet.isHD() && !strAddress) {
-        const xpub = wallet.getXPub();
-        window.open(network.explorerUrl + '/xpub/' + xpub, '_blank');
+        window.open(network.explorerUrl + '/xpub/' + toExport, '_blank');
     } else {
-        const address = strAddress || wallet.getAddress();
-        window.open(network.explorerUrl + '/address/' + address, '_blank');
+        window.open(network.explorerUrl + '/address/' + toExport, '_blank');
     }
 }
 
@@ -745,7 +744,7 @@ export async function sweepAddress(arrUTXOs, sweepingMasterKey, nFixedFee) {
     const txBuilder = TransactionBuilder.create().addUTXOs(arrUTXOs);
 
     const outputValue = txBuilder.valueIn - (nFixedFee || txBuilder.getFee());
-    const [address] = wallet.getNewAddress(1);
+    const address = wallet.getNewChangeAddress();
     const tx = txBuilder
         .addOutput({
             address,
@@ -1677,7 +1676,7 @@ export async function createProposal() {
     // If Advanced Mode is enabled and an address is given, use the provided address, otherwise, generate a new one
     const strAddress =
         document.getElementById('proposalAddress').value.trim() ||
-        wallet.getNewAddress(1)[0];
+        wallet.getNewChangeAddress();
     const nextSuperblock = await getNetwork().getNextSuperblock();
     const proposal = {
         name: strTitle,

@@ -50,7 +50,7 @@ async function mineBlocks(nBlocks) {
      * This is implementation-depended, so it's not ideal. Increase this number
      * If tests don't pass
      */
-    for (let i = 0; i < 4; i++) await flushPromises();
+    for (let i = 0; i < 10; i++) await flushPromises();
 }
 
 describe('Wallet sync tests', () => {
@@ -186,6 +186,41 @@ describe('Wallet sync tests', () => {
         expect(DLabsWatchOnly.coldBalance - initialColdBalance).toBe(
             coldStakeProfit
         );
+    });
+    it('correctly rotates addresses', async () => {
+        let rotatedAddresses = [walletHD.getCurrentAddress()];
+        // 1) walletHD receives a tx to his current address
+        await createAndSendTransaction(
+            walletLegacy,
+            rotatedAddresses[0],
+            0.01 * 10 ** 8
+        );
+        // Transaction sent but not received. current address must remain the same.
+        expect(walletHD.getCurrentAddress()).toBe(rotatedAddresses[0]);
+        // Mine the block
+        await mineBlocks(1);
+        // Current address now must be different.
+        let newAddress = walletHD.getCurrentAddress();
+        expect(rotatedAddresses.includes(newAddress)).toBeFalsy();
+        rotatedAddresses.push(newAddress);
+
+        // 2) The owner of the wallet sends a transaction to himself
+        await createAndSendTransaction(walletHD, newAddress, 0.01 * 10 ** 8);
+        // Since the transaction is to self, rotation already happened!
+        newAddress = walletHD.getCurrentAddress();
+        expect(rotatedAddresses.includes(newAddress)).toBeFalsy();
+        rotatedAddresses.push(newAddress);
+        await mineBlocks(1);
+        expect(walletHD.getCurrentAddress()).toBe(newAddress);
+
+        // 3) Send a tx to a previous current address and verify that rotation doesn't happen
+        await createAndSendTransaction(
+            walletLegacy,
+            rotatedAddresses[0],
+            0.01 * 10 ** 8
+        );
+        await mineBlocks(1);
+        expect(walletHD.getCurrentAddress()).toBe(newAddress);
     });
     afterAll(() => {
         vi.clearAllMocks();

@@ -8,11 +8,11 @@ import { Database } from '../database.js';
 import { HistoricalTx, HistoricalTxType } from '../historical_tx.js';
 import { getNameOrAddress } from '../contacts-book.js';
 import { getEventEmitter } from '../event_bus';
-import { beautifyNumber } from '../misc';
 
 import iCheck from '../../assets/icons/icon-check.svg';
 import iHourglass from '../../assets/icons/icon-hourglass.svg';
 import { blockCount } from '../global.js';
+import { beautifyNumber } from '../misc.js';
 
 const props = defineProps({
     title: String,
@@ -69,6 +69,39 @@ const txMap = computed(() => {
     };
 });
 
+/**
+ * Returns the information that we need to show (icon + label + amount) for a self transaction
+ * @param {number} amount - The net amount of transparent PIVs in a transaction
+ * @param {number} shieldAmount - The net amount of shielded PIVs in a transaction
+ */
+function txSelfMap(amount, shieldAmount) {
+    if (shieldAmount == 0 || amount == 0) {
+        return {
+            icon: 'fa-recycle',
+            colour: 'white',
+            content:
+                shieldAmount == 0
+                    ? translation.activitySentTo
+                    : 'Shield sent to self',
+            amount: Math.abs(shieldAmount + amount),
+        };
+    } else if (shieldAmount > 0) {
+        return {
+            icon: 'fa-shield',
+            colour: 'white',
+            content: 'Shielding',
+            amount: shieldAmount,
+        };
+    } else if (shieldAmount < 0) {
+        return {
+            icon: 'fa-shield',
+            colour: 'white',
+            content: 'De-Shielding',
+            amount: amount,
+        };
+    }
+}
+
 function updateReward() {
     if (!props.rewards) return;
     let res = 0;
@@ -78,6 +111,7 @@ function updateReward() {
     }
     rewardAmount.value = res;
 }
+
 async function update(txToAdd = 0) {
     // Return if wallet is not synced yet
     if (!wallet.isSynced) {
@@ -168,6 +202,8 @@ async function parseTXs(arrTXs) {
             }
         }
 
+        let amountToShow = Math.abs(cTx.amount + cTx.shieldAmount);
+
         // Coinbase Transactions (rewards) require coinbaseMaturity confs
         let fConfirmed =
             cTx.blockHeight > 0 &&
@@ -176,44 +212,20 @@ async function parseTXs(arrTXs) {
                     ? cChainParams.current.coinbaseMaturity
                     : 6);
 
-        // Format the amount to reduce text size
-        let formattedAmt = '';
-        if (cTx.amount < 0.01) {
-            formattedAmt = beautifyNumber('0.01', '13px');
-        } else if (cTx.amount >= 100) {
-            formattedAmt = beautifyNumber(
-                Math.round(cTx.amount).toString(),
-                '13px'
-            );
-        } else {
-            formattedAmt = beautifyNumber(`${cTx.amount.toFixed(2)}`, '13px');
-        }
-
-        // For 'Send' TXs: Check if this is a send-to-self transaction
-        let fSendToSelf = false;
-        if (cTx.type === HistoricalTxType.SENT) {
-            fSendToSelf = true;
-            // Check all addresses to find our own, caching them for performance
-            for (const strAddr of cTx.receivers) {
-                // If a previous Tx checked this address, skip it, otherwise, check it against our own address(es)
-                if (!wallet.isOwnAddress(strAddr)) {
-                    // External address, this is not a self-only Tx
-                    fSendToSelf = false;
-                }
-            }
-        }
-
         // Take the icon, colour and content based on the type of the transaction
         let { icon, colour, content } = txMap.value[cTx.type];
         const match = content.match(/{(.)}/);
         if (match) {
             let who = '';
-            if (fSendToSelf) {
+            if (cTx.isToSelf && cTx.type !== HistoricalTxType.DELEGATION) {
                 who = translation.activitySelf;
-            } else if (cTx.shieldedOutputs) {
-                who = translation.activityShieldedAddress;
+                const descriptor = txSelfMap(cTx.amount, cTx.shieldAmount);
+                icon = descriptor.icon;
+                colour = descriptor.colour;
+                content = descriptor.content;
+                amountToShow = descriptor.amount;
             } else {
-                const arrAddresses = cTx.receivers
+                let arrAddresses = cTx.receivers
                     .map((addr) => [wallet.isOwnAddress(addr), addr])
                     .filter(([isOwnAddress, _]) => {
                         return cTx.type === HistoricalTxType.RECEIVED
@@ -221,6 +233,9 @@ async function parseTXs(arrTXs) {
                             : !isOwnAddress;
                     })
                     .map(([_, addr]) => getNameOrAddress(cAccount, addr));
+                if (cTx.type == HistoricalTxType.RECEIVED) {
+                    arrAddresses = arrAddresses.concat(cTx.shieldReceivers);
+                }
                 who =
                     [
                         ...new Set(
@@ -231,8 +246,29 @@ async function parseTXs(arrTXs) {
                             )
                         ),
                     ].join(', ') + '...';
+                if (
+                    cTx.type == HistoricalTxType.SENT &&
+                    arrAddresses.length == 0
+                ) {
+                    // We sent a shield note to someone, but we cannot decrypt the recipient
+                    // So show a generic "Sent to shield address"
+                    who = translation.activityShieldedAddress;
+                }
             }
             content = content.replace(/{.}/, who);
+        }
+
+        // Format the amount to reduce text size
+        let formattedAmt = '';
+        if (amountToShow < 0.01) {
+            formattedAmt = beautifyNumber('0.01', '13px');
+        } else if (amountToShow >= 100) {
+            formattedAmt = beautifyNumber(
+                Math.round(amountToShow).toString(),
+                '13px'
+            );
+        } else {
+            formattedAmt = beautifyNumber(`${amountToShow.toFixed(2)}`, '13px');
         }
 
         newTxs.push({
@@ -240,7 +276,7 @@ async function parseTXs(arrTXs) {
             id: cTx.id,
             content: props.rewards ? cTx.id : content,
             formattedAmt,
-            amount: cTx.amount,
+            amount: amountToShow,
             confirmed: fConfirmed,
             icon,
             colour,
