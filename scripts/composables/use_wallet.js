@@ -53,7 +53,6 @@ export const useWallet = defineStore('wallet', () => {
     const getKeyToBackup = async () => await wallet.getKeyToBackup();
     const getKeyToExport = () => wallet.getKeyToExport();
     const isEncrypted = ref(true);
-    const loadFromDisk = () => wallet.loadFromDisk();
     const hasShield = ref(wallet.hasShield());
     const getNewAddress = (nReceiving) => wallet.getNewAddress(nReceiving);
     const blockCount = ref(0);
@@ -74,7 +73,7 @@ export const useWallet = defineStore('wallet', () => {
         wallet.setShield(shield);
         hasShield.value = wallet.hasShield();
     };
-    const getAddress = () => wallet.getAddress();
+    const getNewChangeAddress = () => wallet.getNewChangeAddress();
     const isHardwareWallet = ref(wallet.isHardwareWallet());
     const isHD = ref(wallet.isHD());
     const checkDecryptPassword = async (passwd) =>
@@ -167,8 +166,8 @@ export const useWallet = defineStore('wallet', () => {
         isHardwareWallet,
         checkDecryptPassword,
         encrypt,
-        getAddress,
         getNewAddress,
+        getNewChangeAddress,
         wipePrivateData: () => {
             wallet.wipePrivateData();
             isViewOnly.value = wallet.isViewOnly();
@@ -184,7 +183,6 @@ export const useWallet = defineStore('wallet', () => {
         price,
         sync,
         createAndSendTransaction,
-        loadFromDisk,
         coldBalance,
         getMasternodeUTXOs,
         getPath,

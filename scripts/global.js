@@ -446,7 +446,7 @@ export async function sweepAddress(arrUTXOs, sweepingMasterKey, nFixedFee) {
     const txBuilder = TransactionBuilder.create().addUTXOs(arrUTXOs);
 
     const outputValue = txBuilder.valueIn - (nFixedFee || txBuilder.getFee());
-    const [address] = wallet.getNewAddress(1);
+    const address = wallet.getNewChangeAddress();
     const tx = txBuilder
         .addOutput({
             address,
