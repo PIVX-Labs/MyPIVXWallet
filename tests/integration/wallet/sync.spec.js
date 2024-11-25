@@ -237,9 +237,11 @@ describe('Wallet sync tests', () => {
         let addr = walletHD.getCurrentAddress();
         let blockHeight = getNetwork().getBlockCount() + 1;
         await createAndSendTransaction(walletLegacy, addr, 0.01 * 10 ** 8);
+
         // Sanity check: Before mining the block the history is unchanged (receiving from external wallet)
         getHistDiff(walletHD.getHistoricalTxs(), prevIds, 0);
         checkHistPersistence(walletHD.getHistoricalTxs(), diffCache);
+
         // Mine and assert that a new tx has been added
         await mineBlocks(1);
         let diff = getHistDiff(walletHD.getHistoricalTxs(), prevIds, 1);
@@ -252,10 +254,12 @@ describe('Wallet sync tests', () => {
             type: HistoricalTxType.RECEIVED,
             receivers: [addr, walletLegacy.getCurrentAddress()],
         });
+
         // 2) This time send a transaction (To external wallet)
         blockHeight = getNetwork().getBlockCount() + 1;
         addr = walletLegacy.getCurrentAddress();
         await createAndSendTransaction(walletHD, addr, 0.5 * 10 ** 8);
+
         // Since walletHD created the tx, it must already be in its history... even without mining a block
         diff = getHistDiff(walletHD.getHistoricalTxs(), prevIds, 1);
         checkHistPersistence(walletHD.getHistoricalTxs(), diffCache);
@@ -265,6 +269,7 @@ describe('Wallet sync tests', () => {
             type: HistoricalTxType.SENT,
             receivers: [addr],
         });
+
         await mineBlocks(1);
         diff = getHistDiff(walletHD.getHistoricalTxs(), prevIds, 1);
         checkHistPersistence(walletHD.getHistoricalTxs(), diffCache);
@@ -276,10 +281,12 @@ describe('Wallet sync tests', () => {
         });
         diffCache.push(diff[0]);
         prevIds.push(diff[0].id);
+
         // 3) Create a self transaction
         blockHeight = getNetwork().getBlockCount() + 1;
         addr = walletHD.getCurrentAddress();
         await createAndSendTransaction(walletHD, addr, 0.2 * 10 ** 8);
+
         diff = getHistDiff(walletHD.getHistoricalTxs(), prevIds, 1);
         checkHistPersistence(walletHD.getHistoricalTxs(), diffCache);
         checkHistDiff(diff[0], {
@@ -288,6 +295,7 @@ describe('Wallet sync tests', () => {
             type: HistoricalTxType.SENT,
             receivers: [addr],
         });
+
         await mineBlocks(1);
         diff = getHistDiff(walletHD.getHistoricalTxs(), prevIds, 1);
         checkHistPersistence(walletHD.getHistoricalTxs(), diffCache);
