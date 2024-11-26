@@ -13,6 +13,7 @@ import {
 import { refreshChainData } from '../../../scripts/global.js';
 import { COIN } from '../../../scripts/chain_params.js';
 import { flushPromises } from '@vue/test-utils';
+import { HistoricalTxType } from '../../../scripts/historical_tx.js';
 
 vi.mock('../../../scripts/network/network_manager.js');
 
@@ -50,7 +51,7 @@ async function mineBlocks(nBlocks) {
      * This is implementation-depended, so it's not ideal. Increase this number
      * If tests don't pass
      */
-    for (let i = 0; i < 4; i++) await flushPromises();
+    for (let i = 0; i < 10; i++) await flushPromises();
 }
 
 describe('Wallet sync tests', () => {
@@ -187,7 +188,169 @@ describe('Wallet sync tests', () => {
             coldStakeProfit
         );
     });
+    it('correctly rotates addresses', async () => {
+        let rotatedAddresses = [walletHD.getCurrentAddress()];
+        // 1) walletHD receives a tx to his current address
+        await createAndSendTransaction(
+            walletLegacy,
+            rotatedAddresses[0],
+            0.01 * 10 ** 8
+        );
+        // Transaction sent but not received. current address must remain the same.
+        expect(walletHD.getCurrentAddress()).toBe(rotatedAddresses[0]);
+        // Mine the block
+        await mineBlocks(1);
+        // Current address now must be different.
+        let newAddress = walletHD.getCurrentAddress();
+        expect(rotatedAddresses.includes(newAddress)).toBeFalsy();
+        rotatedAddresses.push(newAddress);
+
+        // 2) The owner of the wallet sends a transaction to himself
+        await createAndSendTransaction(walletHD, newAddress, 0.01 * 10 ** 8);
+        // Since the transaction is to self, rotation already happened!
+        newAddress = walletHD.getCurrentAddress();
+        expect(rotatedAddresses.includes(newAddress)).toBeFalsy();
+        rotatedAddresses.push(newAddress);
+        await mineBlocks(1);
+        expect(walletHD.getCurrentAddress()).toBe(newAddress);
+
+        // 3) Send a tx to a previous current address and verify that rotation doesn't happen
+        await createAndSendTransaction(
+            walletLegacy,
+            rotatedAddresses[0],
+            0.01 * 10 ** 8
+        );
+        await mineBlocks(1);
+        expect(walletHD.getCurrentAddress()).toBe(newAddress);
+    });
+    it('correctly updates historical txs', async () => {
+        // Keep track of previous historical txs
+        let prevIds = walletHD.getHistoricalTxs().map((hTx) => {
+            return hTx.id;
+        });
+        /**
+         * @type {HistoricalTx[]}
+         */
+        let diffCache = [].concat(walletHD.getHistoricalTxs());
+
+        // 1) Receive a transaction to the current address
+        let addr = walletHD.getCurrentAddress();
+        let blockHeight = getNetwork().getBlockCount() + 1;
+        await createAndSendTransaction(walletLegacy, addr, 0.01 * 10 ** 8);
+
+        // Sanity check: Before mining the block the history is unchanged (receiving from external wallet)
+        getHistDiff(walletHD.getHistoricalTxs(), prevIds, 0);
+        checkHistPersistence(walletHD.getHistoricalTxs(), diffCache);
+
+        // Mine and assert that a new tx has been added
+        await mineBlocks(1);
+        let diff = getHistDiff(walletHD.getHistoricalTxs(), prevIds, 1);
+        checkHistPersistence(walletHD.getHistoricalTxs(), diffCache);
+        prevIds.push(diff[0].id);
+        diffCache.push(diff[0]);
+        checkHistDiff(diff[0], {
+            blockHeight,
+            isToSelf: false,
+            type: HistoricalTxType.RECEIVED,
+            receivers: [addr, walletLegacy.getCurrentAddress()],
+        });
+
+        // 2) This time send a transaction (To external wallet)
+        blockHeight = getNetwork().getBlockCount() + 1;
+        addr = walletLegacy.getCurrentAddress();
+        await createAndSendTransaction(walletHD, addr, 0.5 * 10 ** 8);
+
+        // Since walletHD created the tx, it must already be in its history... even without mining a block
+        diff = getHistDiff(walletHD.getHistoricalTxs(), prevIds, 1);
+        checkHistPersistence(walletHD.getHistoricalTxs(), diffCache);
+        checkHistDiff(diff[0], {
+            blockHeight: -1, // pending block height
+            isToSelf: false,
+            type: HistoricalTxType.SENT,
+            receivers: [addr],
+        });
+
+        await mineBlocks(1);
+        diff = getHistDiff(walletHD.getHistoricalTxs(), prevIds, 1);
+        checkHistPersistence(walletHD.getHistoricalTxs(), diffCache);
+        checkHistDiff(diff[0], {
+            blockHeight,
+            isToSelf: false,
+            type: HistoricalTxType.SENT,
+            receivers: [walletLegacy.getCurrentAddress()],
+        });
+        diffCache.push(diff[0]);
+        prevIds.push(diff[0].id);
+
+        // 3) Create a self transaction
+        blockHeight = getNetwork().getBlockCount() + 1;
+        addr = walletHD.getCurrentAddress();
+        await createAndSendTransaction(walletHD, addr, 0.2 * 10 ** 8);
+
+        diff = getHistDiff(walletHD.getHistoricalTxs(), prevIds, 1);
+        checkHistPersistence(walletHD.getHistoricalTxs(), diffCache);
+        checkHistDiff(diff[0], {
+            blockHeight: -1, // pending block height
+            isToSelf: true,
+            type: HistoricalTxType.SENT,
+            receivers: [addr],
+        });
+
+        await mineBlocks(1);
+        diff = getHistDiff(walletHD.getHistoricalTxs(), prevIds, 1);
+        checkHistPersistence(walletHD.getHistoricalTxs(), diffCache);
+        checkHistDiff(diff[0], {
+            blockHeight,
+            isToSelf: true,
+            type: HistoricalTxType.SENT,
+            receivers: [addr],
+        });
+    });
     afterAll(() => {
         vi.clearAllMocks();
     });
+
+    /**
+     * @param {HistoricalTx[]} historicalTxs
+     * @param {string[]} txIds
+     * @param {number} expectedLength - expected size of the diff
+     * @returns {HistoricalTx[]} the history difference
+     */
+    function getHistDiff(historicalTxs, txIds, expectedLength) {
+        const diff = historicalTxs.filter((hTx) => {
+            return !txIds.includes(hTx.id);
+        });
+        expect(diff.length).toBe(expectedLength);
+        return diff;
+    }
+
+    /**
+     * @typedef {Object} SimplifiedHistoricalTx
+     * @property {number} blockHeight
+     * @property {HistoricalTxType} type
+     * @property {boolean} isToSelf
+     * @property {string[]} receivers - a SUBSET of the receivers of a historical tx
+     */
+
+    /**
+     * @param {HistoricalTx} historicalTx
+     * @param {SimplifiedHistoricalTx} exp
+     */
+    function checkHistDiff(historicalTx, exp) {
+        expect(historicalTx.blockHeight).toStrictEqual(exp.blockHeight);
+        expect(historicalTx.type).toStrictEqual(exp.type);
+        expect(historicalTx.isToSelf).toStrictEqual(exp.isToSelf);
+        for (let r of exp.receivers) {
+            expect(historicalTx.receivers.includes(r)).toBeTruthy();
+        }
+    }
+    /**
+     * @param {HistoricalTx[]} historicalTxs
+     * @param {HistoricalTx[]} diffCache
+     */
+    function checkHistPersistence(historicalTxs, diffCache) {
+        for (let hTx of diffCache) {
+            expect(historicalTxs.includes(hTx)).toBeTruthy();
+        }
+    }
 });

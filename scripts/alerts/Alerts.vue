@@ -63,6 +63,7 @@ function runAction(cAlert) {
         <div
             v-for="alert of foldedAlerts.filter((a) => a.value.show)"
             :key="alert.value.original"
+            data-testid="alerts"
         >
             <Alert
                 :message="alert.value.message"

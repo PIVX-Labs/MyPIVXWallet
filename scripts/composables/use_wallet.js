@@ -1,6 +1,6 @@
 import { getEventEmitter } from '../event_bus.js';
 import { hasEncryptedWallet, wallet } from '../wallet.js';
-import { ref, watch } from 'vue';
+import { ref, computed } from 'vue';
 import { fPublicMode, strCurrency, togglePublicMode } from '../settings.js';
 import { cOracle } from '../prices.js';
 import { ledgerSignTransaction } from '../ledger.js';
@@ -23,36 +23,12 @@ export const useWallet = defineStore('wallet', () => {
     // For now we'll just import the existing one
     // const wallet = new Wallet();
 
-    // Public/Private Mode will be loaded from disk after 'import-wallet' is emitted
-    const publicMode = ref(true);
-    watch(publicMode, (publicMode) => {
-        doms.domNavbar.classList.toggle('active', !publicMode);
-        doms.domLightBackground.style.opacity = publicMode ? '1' : '0';
-        // Depending on our Receive type, flip to the opposite type.
-        // i.e: from `address` to `shield`, `shield contact` to `address`, etc
-        // This reduces steps for someone trying to grab their opposite-type address, which is the primary reason to mode-toggle.
-        const arrFlipTypes = [
-            RECEIVE_TYPES.CONTACT,
-            RECEIVE_TYPES.ADDRESS,
-            RECEIVE_TYPES.SHIELD,
-        ];
-        if (arrFlipTypes.includes(cReceiveType)) {
-            guiToggleReceiveType(
-                publicMode ? RECEIVE_TYPES.ADDRESS : RECEIVE_TYPES.SHIELD
-            );
-        }
-
-        // Save the mode state to DB
-        togglePublicMode(publicMode);
-    });
-
     const isImported = ref(wallet.isLoaded());
     const isViewOnly = ref(wallet.isViewOnly());
     const isSynced = ref(wallet.isSynced);
     const getKeyToBackup = async () => await wallet.getKeyToBackup();
     const getKeyToExport = () => wallet.getKeyToExport();
     const isEncrypted = ref(true);
-    const loadFromDisk = () => wallet.loadFromDisk();
     const hasShield = ref(wallet.hasShield());
 
     const setMasterKey = async ({ mk, extsk }) => {
@@ -71,7 +47,7 @@ export const useWallet = defineStore('wallet', () => {
         wallet.setShield(shield);
         hasShield.value = wallet.hasShield();
     };
-    const getAddress = () => wallet.getAddress();
+    const getNewChangeAddress = () => wallet.getNewChangeAddress();
     const isHardwareWallet = ref(wallet.isHardwareWallet());
     const isHD = ref(wallet.isHD());
     const checkDecryptPassword = async (passwd) =>
@@ -121,6 +97,40 @@ export const useWallet = defineStore('wallet', () => {
             return res;
         }
     );
+
+    const _publicMode = ref(true);
+    // Public/Private Mode will be loaded from disk after 'import-wallet' is emitted
+    const publicMode = computed({
+        get() {
+            // If the wallet is not shield capable, always return true
+            if (!hasShield.value) return true;
+            return _publicMode.value;
+        },
+
+        set(newValue) {
+            _publicMode.value = newValue;
+            const publicMode = _publicMode.value;
+            doms.domNavbar.classList.toggle('active', !publicMode);
+            doms.domLightBackground.style.opacity = publicMode ? '1' : '0';
+            // Depending on our Receive type, flip to the opposite type.
+            // i.e: from `address` to `shield`, `shield contact` to `address`, etc
+            // This reduces steps for someone trying to grab their opposite-type address, which is the primary reason to mode-toggle.
+            const arrFlipTypes = [
+                RECEIVE_TYPES.CONTACT,
+                RECEIVE_TYPES.ADDRESS,
+                RECEIVE_TYPES.SHIELD,
+            ];
+            if (arrFlipTypes.includes(cReceiveType)) {
+                guiToggleReceiveType(
+                    publicMode ? RECEIVE_TYPES.ADDRESS : RECEIVE_TYPES.SHIELD
+                );
+            }
+
+            // Save the mode state to DB
+            togglePublicMode(publicMode);
+        },
+    });
+
     const isCreatingTransaction = () => createAndSendTransaction.isLocked();
 
     getEventEmitter().on('toggle-network', async () => {
@@ -157,7 +167,7 @@ export const useWallet = defineStore('wallet', () => {
         isHardwareWallet,
         checkDecryptPassword,
         encrypt,
-        getAddress,
+        getNewChangeAddress,
         wipePrivateData: () => {
             wallet.wipePrivateData();
             isViewOnly.value = wallet.isViewOnly();
@@ -173,7 +183,6 @@ export const useWallet = defineStore('wallet', () => {
         price,
         sync,
         createAndSendTransaction,
-        loadFromDisk,
         coldBalance,
     };
 });

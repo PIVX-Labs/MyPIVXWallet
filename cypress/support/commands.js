@@ -82,3 +82,18 @@ Cypress.Commands.add('setExplorer', (explorerNameOrIndex) => {
     cy.goToTab('settings');
     cy.get('#explorer').select(explorerNameOrIndex);
 });
+Cypress.Commands.add('setNode', (nodeNameOrIndex) => {
+    cy.goToTab('settings');
+    cy.get('#node').select(nodeNameOrIndex);
+});
+
+Cypress.Commands.add('togglePrivateMode', () => {
+    cy.goToTab('dashboard');
+    cy.get('#publicPrivateText').click();
+});
+
+Cypress.Commands.add('waitForSync', () => {
+    cy.contains('[data-testid="alerts"]', 'Sync Finished!', {
+        timeout: 1000 * 60 * 5,
+    });
+});
