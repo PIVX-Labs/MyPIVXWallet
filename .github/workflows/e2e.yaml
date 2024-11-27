@@ -34,7 +34,9 @@ jobs:
         uses: actions/setup-node@v4
 
       - name: Install Node.js dependencies
-        run: npm ci
+        run: |
+          cp chain_params.test.json chain_params.json
+          npm ci
 
       - name: Run e2e tests
         run: npm run cy:ci
