@@ -190,7 +190,7 @@ describe('Wallet transaction tests', () => {
         expect(tx.vout[0]).toStrictEqual(
             new CTxOut({
                 script: '76a97b63d114291a25b5b4d1802e0611e9bf724a1e57d9210e826714f49b25384b79685227be5418f779b98a6be4c7386888ac',
-                value: 25000000000,
+                value: 75000000000,
             })
         );
         // The split outputs (depending on chainparam 'stakeSplitTarget')
@@ -202,13 +202,6 @@ describe('Wallet transaction tests', () => {
                 })
             );
         }
-        // Undelegated change
-        expect(tx.vout[11]).toStrictEqual(
-            new CTxOut({
-                script: '76a914f49b25384b79685227be5418f779b98a6be4c73888ac',
-                value: 475009989980,
-            })
-        );
         await checkFees(wallet, tx, MIN_FEE_PER_BYTE);
     });
 
@@ -229,16 +222,15 @@ describe('Wallet transaction tests', () => {
                 scriptSig: '76a914f49b25384b79685227be5418f779b98a6be4c73888ac', // Script sig must be the UTXO script since it's not signed
             })
         );
-        // Cold Stake split outputs
-        expect(tx.vout).toHaveLength(21);
-        // Undelegated dust change (<1 coin, too small to stake)
-        const fees = await checkFees(wallet, tx, MIN_FEE_PER_BYTE);
-        expect(tx.vout[20]).toStrictEqual(
+        // The 'after split' output
+        expect(tx.vout[0]).toStrictEqual(
             new CTxOut({
-                script: '76a914f49b25384b79685227be5418f779b98a6be4c73888ac',
-                value: 10000000 - fees,
+                script: '76a97b63d114291a25b5b4d1802e0611e9bf724a1e57d9210e826714f49b25384b79685227be5418f779b98a6be4c7386888ac',
+                value: 50009999246,
             })
         );
+        // Cold Stake split outputs
+        expect(tx.vout).toHaveLength(20);
     });
 
     it('creates a t->s tx correctly', () => {

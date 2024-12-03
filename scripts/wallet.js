@@ -1167,15 +1167,22 @@ export class Wallet {
             // The per-output target for maximum staking efficiency
             const nTarget = cChainParams.current.stakeSplitTarget;
             // Generate optimal staking outputs
-            for (let i = 0; i <= Math.floor(value / nTarget); i++) {
-                const nOutAmount = i === 0 ? value % nTarget : nTarget;
-                // Skip unstakeable outputs < 1 COIN
-                if (nOutAmount < COIN) continue;
+            if (value < COIN) {
+                throw new Error('below consensus');
+            } else if (value < nTarget) {
                 transactionBuilder.addColdStakeOutput({
                     address: returnAddress,
                     addressColdStake: address,
-                    value: nOutAmount,
+                    value,
                 });
+            } else {
+                for (let i = 0; i < Math.floor(value / nTarget); i++) {
+                    transactionBuilder.addColdStakeOutput({
+                        address: returnAddress,
+                        addressColdStake: address,
+                        value: i === 0 ? nTarget + (value % nTarget) : nTarget,
+                    });
+                }
             }
         } else if (isProposal) {
             transactionBuilder.addProposalOutput({
