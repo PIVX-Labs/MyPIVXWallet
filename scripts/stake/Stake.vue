@@ -18,7 +18,7 @@ const { createAlert } = useAlerts();
 const wallet = useWallet();
 const { balance, coldBalance, price, currency, isViewOnly } =
     storeToRefs(wallet);
-const { advancedMode, displayDecimals } = useSettings();
+const { advancedMode, displayDecimals } = storeToRefs(useSettings());
 const showUnstake = ref(false);
 const showStake = ref(false);
 const coldStakingAddress = ref('');
@@ -52,6 +52,10 @@ watch(coldStakingAddress, async (coldStakingAddress) => {
     await db.updateAccount(cAccount, true);
 });
 async function stake(value, ownerAddress) {
+    if (wallet.isHardwareWallet) {
+        createAlert('warning', ALERTS.STAKING_LEDGER_NO_SUPPORT, 5000);
+        return;
+    }
     if (wallet.isViewOnly && !(await restoreWallet())) {
         return;
     }
@@ -75,12 +79,16 @@ async function stake(value, ownerAddress) {
 }
 
 async function unstake(value) {
-    if (wallet.isViewOnly && !(await restoreWallet())) {
+    if (
+        !wallet.isHardwareWallet &&
+        wallet.isViewOnly &&
+        !(await restoreWallet())
+    ) {
         return;
     }
     const res = await wallet.createAndSendTransaction(
         getNetwork(),
-        wallet.getAddress(1),
+        wallet.getNewChangeAddress(),
         value,
         {
             useDelegatedInputs: true,
@@ -105,20 +113,6 @@ async function restoreWallet(strReason) {
             { once: true }
         );
     });
-}
-
-async function importWif(wif, extsk) {
-    const secret = await ParsedSecret.parse(wif);
-    if (secret.masterKey) {
-        await wallet.setMasterKey({ mk: secret.masterKey, extsk });
-        if (wallet.hasShield && !extsk) {
-            createAlert(
-                'warning',
-                'Could not decrypt sk even if password is correct, please contact a developer'
-            );
-        }
-        createAlert('success', ALERTS.WALLET_UNLOCKED, 1500);
-    }
 }
 </script>
 
@@ -167,7 +161,6 @@ async function importWif(wif, extsk) {
     <RestoreWallet
         :show="showRestoreWallet"
         :reason="restoreWalletReason"
-        @import="importWif"
         @close="showRestoreWallet = false"
     />
 </template>

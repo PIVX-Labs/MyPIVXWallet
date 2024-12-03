@@ -53,7 +53,9 @@ const needsToEncrypt = computed(() => {
     }
 });
 const showTransferMenu = ref(false);
-const { advancedMode, displayDecimals, autoLockWallet } = useSettings();
+const { advancedMode, displayDecimals, autoLockWallet } = storeToRefs(
+    useSettings()
+);
 const showExportModal = ref(false);
 const showEncryptModal = ref(false);
 const keyToBackup = ref('');
@@ -184,20 +186,6 @@ async function restoreWallet(strReason) {
             { once: true }
         );
     });
-}
-
-async function importWif(wif, extsk) {
-    const secret = await ParsedSecret.parse(wif);
-    if (secret.masterKey) {
-        await wallet.setMasterKey({ mk: secret.masterKey, extsk });
-        if (wallet.hasShield && !extsk) {
-            createAlert(
-                'warning',
-                'Could not decrypt sk even if password is correct, please contact a developer'
-            );
-        }
-        createAlert('success', ALERTS.WALLET_UNLOCKED, 1500);
-    }
 }
 
 /**
@@ -993,7 +981,7 @@ defineExpose({
     <RestoreWallet
         :show="showRestoreWallet"
         :reason="restoreWalletReason"
+        :wallet="wallet"
         @close="showRestoreWallet = false"
-        @import="importWif"
     />
 </template>

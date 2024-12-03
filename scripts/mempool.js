@@ -117,13 +117,15 @@ export class Mempool {
      * @param {import('./transaction.js').Transaction} tx
      */
     getDebit(tx) {
-        return tx.vin
-            .filter(
-                (input) =>
-                    this.getOutpointStatus(input.outpoint) & OutpointState.OURS
-            )
+        const filteredVin = tx.vin.filter(
+            (input) =>
+                this.getOutpointStatus(input.outpoint) & OutpointState.OURS
+        );
+        const debit = filteredVin
             .map((i) => this.outpointToUTXO(i.outpoint))
             .reduce((acc, u) => acc + (u?.value || 0), 0);
+        const ownAllVin = tx.vin.length === filteredVin.length;
+        return { debit, ownAllVin };
     }
 
     /**
@@ -133,17 +135,21 @@ export class Mempool {
     getCredit(tx) {
         const txid = tx.txid;
 
-        return tx.vout
-            .filter(
-                (_, i) =>
-                    this.getOutpointStatus(
-                        new COutpoint({
-                            txid,
-                            n: i,
-                        })
-                    ) & OutpointState.OURS
-            )
-            .reduce((acc, u) => acc + u?.value ?? 0, 0);
+        const filteredVout = tx.vout.filter(
+            (_, i) =>
+                this.getOutpointStatus(
+                    new COutpoint({
+                        txid,
+                        n: i,
+                    })
+                ) & OutpointState.OURS
+        );
+        const credit = filteredVout.reduce((acc, u) => acc + u?.value ?? 0, 0);
+        const ownAllVout = tx.vout.length === filteredVout.length;
+        return {
+            credit,
+            ownAllVout,
+        };
     }
 
     /**

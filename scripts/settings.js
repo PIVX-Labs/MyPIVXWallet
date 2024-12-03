@@ -1,7 +1,6 @@
 import {
     doms,
     updateLogOutButton,
-    updateGovernanceTab,
     dashboard,
     refreshChainData,
 } from './global.js';
@@ -416,7 +415,6 @@ export async function toggleTestnet(
     // Make sure we have the correct number of blocks before loading any wallet
     await refreshChainData();
     getEventEmitter().emit('toggle-network');
-    await updateGovernanceTab();
 }
 
 export function toggleDebug(newValue = !debug) {

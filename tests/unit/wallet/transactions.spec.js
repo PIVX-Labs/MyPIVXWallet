@@ -1,6 +1,9 @@
 import { Wallet } from '../../../scripts/wallet.js';
 import { Mempool } from '../../../scripts/mempool.js';
-import { setUpLegacyMainnetWallet } from '../../utils/test_utils';
+import {
+    legacyMainnetInitialBalance,
+    setUpLegacyMainnetWallet,
+} from '../../utils/test_utils';
 import { describe, it, vi, afterAll, expect } from 'vitest';
 import {
     COutpoint,
@@ -34,6 +37,7 @@ async function checkFees(wallet, tx, feesPerBytes) {
     const nBytes = (await wallet.sign(tx)).serialize().length / 2;
     expect(fees).toBeGreaterThanOrEqual(feesPerBytes * nBytes);
     expect(fees).toBeLessThanOrEqual((feesPerBytes + 1) * nBytes);
+    return fees;
 }
 describe('Wallet transaction tests', () => {
     let wallet;
@@ -199,11 +203,11 @@ describe('Wallet transaction tests', () => {
     it('creates a tx with max balance', async () => {
         const tx = wallet.createTransaction(
             'SR3L4TFUKKGNsnv2Q4hWTuET2a4vHpm1b9',
-            0.1 * 10 ** 8,
+            legacyMainnetInitialBalance(),
             { isDelegation: true }
         );
         expect(tx.version).toBe(1);
-        expect(tx.vin).toHaveLength(1);
+        expect(tx.vin).toHaveLength(2);
         expect(tx.vin[0]).toStrictEqual(
             new CTxIn({
                 outpoint: new COutpoint({
@@ -214,13 +218,13 @@ describe('Wallet transaction tests', () => {
             })
         );
         expect(tx.vout).toHaveLength(1);
+        const fees = await checkFees(wallet, tx, MIN_FEE_PER_BYTE);
         expect(tx.vout[0]).toStrictEqual(
             new CTxOut({
                 script: '76a97b63d114291a25b5b4d1802e0611e9bf724a1e57d9210e826714f49b25384b79685227be5418f779b98a6be4c7386888ac',
-                value: 9997810, // 0.1 PIV - fee
+                value: legacyMainnetInitialBalance() - fees,
             })
         );
-        await checkFees(wallet, tx, MIN_FEE_PER_BYTE);
     });
 
     it('creates a t->s tx correctly', () => {
@@ -252,16 +256,15 @@ describe('Wallet transaction tests', () => {
 
     it('it does not insert dust change', async () => {
         // The tipical output has 34 bytes, so a 200 satoshi change is surely going to be dust
-        // a P2PKH with 1 input and 1 output will have more or less 190 bytes in size and 1900 satoshi of fees
-        // Finally 0.1*10**8 is the value of the UTXO we are spending (0.1 PIVs)
-        const value = 0.1 * 10 ** 8 - 1900 - 200;
+        // a P2PKH with 2 inputs and 1 output will have more or less 346 bytes in size and 3460 satoshi of fees
+        const value = legacyMainnetInitialBalance() - 3460 - 200;
         const tx = wallet.createTransaction(
             'DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb',
             value,
             { subtractFeeFromAmt: false }
         );
         expect(tx.version).toBe(1);
-        expect(tx.vin).toHaveLength(1);
+        expect(tx.vin).toHaveLength(2);
         expect(tx.vin[0]).toStrictEqual(
             new CTxIn({
                 outpoint: new COutpoint({
@@ -320,23 +323,24 @@ describe('Wallet transaction tests', () => {
     });
 
     it('throws when balance is insufficient', () => {
+        const value = legacyMainnetInitialBalance() + 1;
         expect(() =>
             wallet.createTransaction(
                 'SR3L4TFUKKGNsnv2Q4hWTuET2a4vHpm1b9',
-                20 * 10 ** 8,
+                value,
                 { isDelegation: true }
             )
         ).toThrow(/not enough balance/i);
         expect(() =>
             wallet.createTransaction(
                 'DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb',
-                20 * 10 ** 8
+                value
             )
         ).toThrow(/not enough balance/i);
         expect(() =>
             wallet.createTransaction(
                 'DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb',
-                50 * 10 ** 8,
+                value,
                 { useShieldInputs: true }
             )
         ).toThrow(/not enough balance/i);
@@ -353,7 +357,7 @@ describe('Wallet transaction tests', () => {
         expect(() =>
             wallet.createTransaction(
                 'DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb',
-                0.1 * 10 ** 8,
+                legacyMainnetInitialBalance(),
                 { subtractFeeFromAmt: false }
             )
         ).toThrow(/not enough balance/i);

@@ -121,13 +121,13 @@ export class Network {
     }
 
     async submitProposal({
-        name,
-        url,
-        nPayments,
-        start,
-        address,
-        monthlyPayment,
-        txid,
+        _name,
+        _url,
+        _nPayments,
+        _start,
+        _address,
+        _monthlyPayment,
+        _txid,
     }) {
         throw new Error('submitProposal must be implemented');
     }
@@ -197,7 +197,10 @@ export class RPCNodeNetwork extends Network {
     }
 
     async getBestBlockHash() {
-        return await this.#callRPC('/getbestblockhash', true);
+        return (await this.#callRPC('/getbestblockhash', true)).replaceAll(
+            '"',
+            ''
+        );
     }
 
     async sendTransaction(hex) {

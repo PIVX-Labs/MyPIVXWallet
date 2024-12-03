@@ -8,13 +8,13 @@ import pAddressBook from '../../assets/icons/icon-address-book.svg';
 import pGift from '../../assets/icons/icon-gift.svg';
 import { useNetwork } from '../composables/use_network.js';
 import { useWallet } from '../composables/use_wallet.js';
+import { getBlockbookUrl } from '../utils.js';
 
 const wallet = useWallet();
 const network = useNetwork();
 
 function getWalletUrl() {
-    const urlPart = wallet.isHD ? '/xpub/' : '/address/';
-    return network.explorerUrl + urlPart + wallet.getKeyToExport();
+    return getBlockbookUrl(network.explorerUrl, wallet.getKeyToExport());
 }
 </script>
 

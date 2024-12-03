@@ -50,6 +50,10 @@ async function setUpWallet(masterKey, includeShield) {
     expect(wallet.isSyncing).toBeFalsy();
     return wallet;
 }
+
+export function legacyMainnetInitialBalance() {
+    return 10 ** 7 + 10 ** 12;
+}
 /**
  * Creates a mainnet wallet with a legacy master key and a spendable UTXO and a dummy PIVXShield
  * @returns {Promise<Wallet>}
@@ -59,7 +63,7 @@ export async function setUpLegacyMainnetWallet() {
     const wallet = await setUpWallet(getLegacyMainnet(), true);
 
     // sanity check on the balance
-    expect(wallet.balance).toBe(0.1 * 10 ** 8);
+    expect(wallet.balance).toBe(legacyMainnetInitialBalance());
     expect(wallet.coldBalance).toBe(0);
     expect(wallet.immatureBalance).toBe(0);
 
