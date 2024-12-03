@@ -5,6 +5,7 @@ import bs58 from 'bs58';
 import { BIP21_PREFIX, cChainParams } from './chain_params.js';
 import { dSHA256 } from './utils.js';
 import { verifyPubkey, verifyBech32 } from './encoding.js';
+import { Address6 } from 'ip-address';
 
 // Base58 Encoding Map
 export const MAP_B58 =
@@ -399,4 +400,46 @@ export function isEmpty(val) {
         (Array.isArray(val) && val.length === 0) ||
         (typeof val === 'object' && Object.keys(val).length === 0)
     );
+}
+
+/**
+ * Takes an ip address and adds the port.
+ * If it's a tor address, ip.onion:port will be used (e.g. expyuzz4wqqyqhjn.onion:12345)
+ * If it's an IPv4 address, ip:port will be used, (e.g. 127.0.0.1:12345)
+ * If it's an IPv6 address, [ip]:port will be used, (e.g. [::1]:12345)
+ * @param {String} ip - Ip address with or without port
+ * @returns {String}
+ */
+export function parseIpAddress(ip) {
+    // IPv4 or tor without port
+    if (ip.match(/\d+\.\d+\.\d+\.\d+/) || ip.match(/\w+\.onion/)) {
+        return `${ip}:${cChainParams.current.MASTERNODE_PORT}`;
+    }
+
+    // IPv4 or tor with port
+    if (ip.match(/\d+\.\d+\.\d+\.\d+:\d+/) || ip.match(/\w+\.onion:\d+/)) {
+        return ip;
+    }
+
+    // IPv6 without port
+    if (Address6.isValid(ip)) {
+        return `[${ip}]:${cChainParams.current.MASTERNODE_PORT}`;
+    }
+
+    const groups = /\[(.*)\]:\d+/.exec(ip);
+    if (groups !== null && groups.length > 1) {
+        // IPv6 with port
+        if (Address6.isValid(groups[1])) {
+            return ip;
+        }
+    }
+
+    // If we haven't returned yet, the address was invalid.
+    return null;
+}
+
+export function numberToCurrency(number, price) {
+    return (number * price).toLocaleString('en-gb', ',', '.', {
+        style: 'currency',
+    });
 }

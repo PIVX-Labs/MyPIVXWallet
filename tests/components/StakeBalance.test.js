@@ -11,7 +11,7 @@ describe('stake balance tests', () => {
                 return message;
             }
         );
-        return vi.clearAllMocks();
+        return vi.clearAllMocks;
     });
     function mount(props) {
         return vueMount(StakeBalance, {

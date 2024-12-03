@@ -197,7 +197,10 @@ export class RPCNodeNetwork extends Network {
     }
 
     async getBestBlockHash() {
-        return await this.#callRPC('/getbestblockhash', true);
+        return (await this.#callRPC('/getbestblockhash', true)).replaceAll(
+            '"',
+            ''
+        );
     }
 
     async sendTransaction(hex) {

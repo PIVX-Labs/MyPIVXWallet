@@ -18,14 +18,8 @@ export {
     toClipboard,
     restoreWallet,
     playMusic,
-    openExplorer,
     doms,
-    importMasternode,
-    destroyMasternode,
-    startMasternode,
-    createProposal,
     switchSettings,
-    govVote,
 } from './global.js';
 export { wallet, getNewAddress } from './wallet.js';
 export {
@@ -37,7 +31,6 @@ export {
     toggleAutoLockWallet,
     changePassword,
 } from './settings.js';
-export { createMasternode } from './legacy.js';
 export {
     promoConfirm,
     setPromoMode,

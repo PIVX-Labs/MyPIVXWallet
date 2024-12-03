@@ -11,15 +11,17 @@ watch(alerts, () => {
     let count = 1;
     const pushAlert = () => {
         if (previousAlert) {
-            const countStr = count === 1 ? '' : ` (x${count})`;
             const timeout =
                 previousAlert.created + previousAlert.timeout - Date.now();
             const show = timeout > 0;
             if (!show) return;
             const alert = ref({
                 ...previousAlert,
-                message: `${previousAlert.message}${countStr}`,
+                message: `${previousAlert.message}`,
                 show,
+                count,
+                actionName: previousAlert.actionName,
+                actionFunc: previousAlert.actionFunc,
                 // Store original message so we can use it as key.
                 // This skips the animation in case of multiple errors
                 original: previousAlert.message,
@@ -45,6 +47,15 @@ watch(alerts, () => {
     pushAlert();
     foldedAlerts.value = res;
 });
+
+/**
+ * Run an 'action' connected to an alert
+ * @param {import('./alert.js').Alert} cAlert - The caller alert which is running an action
+ */
+function runAction(cAlert) {
+    cAlert.actionFunc();
+    cAlert.show = false;
+}
 </script>
 
 <template>
@@ -52,11 +63,15 @@ watch(alerts, () => {
         <div
             v-for="alert of foldedAlerts.filter((a) => a.value.show)"
             :key="alert.value.original"
+            data-testid="alerts"
         >
             <Alert
                 :message="alert.value.message"
                 :level="alert.value.level"
-                @click="alert.value.show = false"
+                :notificationCount="alert.value.count"
+                :actionName="alert.value.actionName"
+                @hideAlert="alert.value.show = false"
+                @runAction="runAction(alert.value)"
             />
         </div>
     </transition-group>

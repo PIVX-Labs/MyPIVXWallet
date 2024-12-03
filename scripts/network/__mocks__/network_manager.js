@@ -45,7 +45,10 @@ class TestNetwork {
             // tx_1 provides a spendable balance of 0.1 * 10^8 satoshi
             const tx_1 =
                 '010000000138f9c8ac1b4c6ad54e487206daad1fd12bae510dd70fbd2dc928f617ef6b4a47010000006a47304402200d01891ac5dc6d25452cadbe7ba7edd98143631cc2922da45dde94919593b222022066ef14c01c165a1530e2acf74bcd8648d7151b555fa0bfd0222c33e983091678012102033a004cb71693e809c45e1e491bc797654fa0c012be9dd46401ce8368beb705ffffffff02d02c5d05000000001976a91463fa54dad2e215ec21c54ff45a195d49b570b97988ac80969800000000001976a914f49b25384b79685227be5418f779b98a6be4c73888ac00000000';
-            return [Transaction.fromHex(tx_1)];
+            // tx_2 provides a spendable balance of 10000 PIVs
+            const tx_2 =
+                '010000000198bb641ffb74cf14e4f3e3c329fa7f97d605ca1b89d2c61a1e6d728da49342e2020000006a4730440220437d04f65dbc1e23cab38c1a6d2d2b4905ccfdea9d6e33429af8d58d3a689f41022039830fcae7545d8b5964b7c078b3d158e72e01642d274f9c3b38639d3ed292b9012103109bab9e66c51cb5da0dcc200fa7a336b8a3890489026ba7bbdf8ad379cf0251ffffffff020010a5d4e80000001976a914f49b25384b79685227be5418f779b98a6be4c73888ac228ff73e5d0100001976a914f8e77779f1787490e1459f4bde3afde5c057f6f888ac00000000';
+            return [Transaction.fromHex(tx_2), Transaction.fromHex(tx_1)];
         } else if (
             addr ===
             'xpub6DVaPT3irDwUth7Y6Ff137FgA9jjvsmA2CHD7g2vjvvuMiNSUJRs9F8jSoPpXpc1s7ohR93dNAuzR5T2oPZFDTn7G2mHKYtpwtk7krNZmnV'

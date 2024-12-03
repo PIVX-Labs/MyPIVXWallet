@@ -15,9 +15,17 @@ export const useAlerts = defineStore('alerts', () => {
      * @param {'success'|'info'|'warning'} type - The alert level
      * @param {string} message - The message to relay to the user
      * @param {number?} timeout - The time in `ms` until the alert expires (Defaults to never expiring)
+     * @param {string?} actionName - The button title of an optional Action to perform
+     * @param {function?} actionFunc - The function to execute if the Action button is used
      */
-    const createAlert = (type, message, timeout) => {
-        alertController.createAlert(type, message, timeout);
+    const createAlert = (type, message, timeout, actionName, actionFunc) => {
+        alertController.createAlert(
+            type,
+            message,
+            timeout,
+            actionName,
+            actionFunc
+        );
     };
 
     alertController.subscribe(() => {

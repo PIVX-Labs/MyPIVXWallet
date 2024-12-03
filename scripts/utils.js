@@ -110,3 +110,13 @@ export function getRandomInt(N) {
 export function getRandomElement(arr) {
     return arr[getRandomInt(arr.length)];
 }
+
+/**
+ * @param {string} blockbookUrl - Blockbook base URL
+ * @param {string} address
+ * @returns {string} URL to blockbook address
+ */
+export function getBlockbookUrl(blockbookUrl, address) {
+    const urlPart = address.startsWith('xpub') ? 'xpub' : 'address';
+    return `${blockbookUrl.replace(/\/$/, '')}/${urlPart}/${address}`;
+}
