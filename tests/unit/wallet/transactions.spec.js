@@ -14,6 +14,7 @@ import {
 
 import 'fake-indexeddb/auto';
 import { TransactionBuilder } from '../../../scripts/transaction_builder.js';
+import { cChainParams } from '../../../scripts/chain_params.js';
 
 vi.stubGlobal('localStorage', { length: 0 });
 vi.mock('../../../scripts/global.js');
@@ -169,10 +170,10 @@ describe('Wallet transaction tests', () => {
     });
 
     it('Creates a cold stake tx correctly', async () => {
-        // TODO: rewrite this test over >1 PIV to match PIVX Consensus, and to also test Stake Splitting
+        // Delegate 5250 PIV to test Stake Pre-Splitting
         const tx = wallet.createTransaction(
             'SR3L4TFUKKGNsnv2Q4hWTuET2a4vHpm1b9',
-            0.05 * 10 ** 8,
+            5250 * 10 ** 8,
             { isDelegation: true }
         );
         expect(tx.version).toBe(1);
@@ -185,22 +186,33 @@ describe('Wallet transaction tests', () => {
                 scriptSig: '76a914f49b25384b79685227be5418f779b98a6be4c73888ac', // Script sig must be the UTXO script since it's not signed
             })
         );
-        expect(tx.vout[1]).toStrictEqual(
-            new CTxOut({
-                script: '76a914f49b25384b79685227be5418f779b98a6be4c73888ac',
-                value: 4997470,
-            })
-        );
+        // The 'after split' output
         expect(tx.vout[0]).toStrictEqual(
             new CTxOut({
                 script: '76a97b63d114291a25b5b4d1802e0611e9bf724a1e57d9210e826714f49b25384b79685227be5418f779b98a6be4c7386888ac',
-                value: 5000000,
+                value: 25000000000,
+            })
+        );
+        // The split outputs (depending on chainparam 'stakeSplitTarget')
+        for (const cOut of tx.vout.slice(1, tx.vout.length - 1)) {
+            expect(cOut).toStrictEqual(
+                new CTxOut({
+                    script: '76a97b63d114291a25b5b4d1802e0611e9bf724a1e57d9210e826714f49b25384b79685227be5418f779b98a6be4c7386888ac',
+                    value: cChainParams.current.stakeSplitTarget,
+                })
+            );
+        }
+        // Undelegated change
+        expect(tx.vout[11]).toStrictEqual(
+            new CTxOut({
+                script: '76a914f49b25384b79685227be5418f779b98a6be4c73888ac',
+                value: 475009989980,
             })
         );
         await checkFees(wallet, tx, MIN_FEE_PER_BYTE);
     });
 
-    it('creates a tx with max balance', async () => {
+    it('Creates a cold stake tx with max balance', async () => {
         const tx = wallet.createTransaction(
             'SR3L4TFUKKGNsnv2Q4hWTuET2a4vHpm1b9',
             legacyMainnetInitialBalance(),
@@ -217,12 +229,14 @@ describe('Wallet transaction tests', () => {
                 scriptSig: '76a914f49b25384b79685227be5418f779b98a6be4c73888ac', // Script sig must be the UTXO script since it's not signed
             })
         );
-        expect(tx.vout).toHaveLength(1);
+        // Cold Stake split outputs
+        expect(tx.vout).toHaveLength(21);
+        // Undelegated dust change (<1 coin, too small to stake)
         const fees = await checkFees(wallet, tx, MIN_FEE_PER_BYTE);
-        expect(tx.vout[0]).toStrictEqual(
+        expect(tx.vout[20]).toStrictEqual(
             new CTxOut({
-                script: '76a97b63d114291a25b5b4d1802e0611e9bf724a1e57d9210e826714f49b25384b79685227be5418f779b98a6be4c7386888ac',
-                value: legacyMainnetInitialBalance() - fees,
+                script: '76a914f49b25384b79685227be5418f779b98a6be4c73888ac',
+                value: 10000000 - fees,
             })
         );
     });
