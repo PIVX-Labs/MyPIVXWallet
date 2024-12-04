@@ -8,5 +8,6 @@
     "governance": true,
     "i18n": true,
     "ledger": true,
-    "masternode": true
+    "masternode": true,
+    "vanity_gen": true
 }

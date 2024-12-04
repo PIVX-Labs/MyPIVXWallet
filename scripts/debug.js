@@ -82,6 +82,7 @@ export const DebugTopics = {
     I18N: new DebugTopic('[I18N]', 1 << 7),
     LEDGER: new DebugTopic('[LEDGER]', 1 << 8),
     MASTERNODE: new DebugTopic('[MASTERNODE]', 1 << 9),
+    VANITY_GEN: new DebugTopic('[VANITY_GEN]', 1 << 10),
 };
 
 let enabledDebug = 0;
