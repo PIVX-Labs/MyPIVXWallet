@@ -245,7 +245,7 @@ export class Wallet {
         this.#nAccount = nAccount;
         if (extsk) await this.setExtsk(extsk);
         if (isNewAcc) {
-            this.reset();
+            await this.reset();
             this.#iterChains((chain) => {
                 this.#loadAddresses(chain);
             });
@@ -276,7 +276,7 @@ export class Wallet {
     /**
      * Reset the wallet, indexes address map and so on
      */
-    reset() {
+    async reset() {
         this.#highestUsedIndices = new Map();
         this.#loadedIndexes = new Map();
         this.#ownAddresses = new Map();
@@ -291,6 +291,7 @@ export class Wallet {
         this.#mempool = new Mempool();
         this.#lastProcessedBlock = 0;
         this.#historicalTxs.clear();
+        await db.removeAllTxs();
     }
 
     /**
