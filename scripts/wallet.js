@@ -291,6 +291,7 @@ export class Wallet {
         this.#mempool = new Mempool();
         this.#lastProcessedBlock = 0;
         this.#historicalTxs.clear();
+        const db = await Database.getInstance();
         await db.removeAllTxs();
     }
 
