@@ -171,9 +171,10 @@ describe('Wallet transaction tests', () => {
 
     it('Creates a cold stake tx correctly', async () => {
         // Delegate 5250 PIV to test Stake Pre-Splitting
+        const value = 5250 * 10 ** 8;
         const tx = wallet.createTransaction(
             'SR3L4TFUKKGNsnv2Q4hWTuET2a4vHpm1b9',
-            5250 * 10 ** 8,
+            value,
             { isDelegation: true }
         );
         expect(tx.version).toBe(1);
@@ -190,7 +191,9 @@ describe('Wallet transaction tests', () => {
         expect(tx.vout[0]).toStrictEqual(
             new CTxOut({
                 script: '76a97b63d114291a25b5b4d1802e0611e9bf724a1e57d9210e826714f49b25384b79685227be5418f779b98a6be4c7386888ac',
-                value: 75000000000,
+                value:
+                    cChainParams.current.stakeSplitTarget +
+                    (value % cChainParams.current.stakeSplitTarget),
             })
         );
         // The split outputs (depending on chainparam 'stakeSplitTarget')
