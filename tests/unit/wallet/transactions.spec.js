@@ -208,11 +208,11 @@ describe('Wallet transaction tests', () => {
         await checkFees(wallet, tx, MIN_FEE_PER_BYTE);
     });
 
-    it('Creates a cold stake tx with max balance', async () => {
+    it('Creates a tx with max balance', async () => {
         const tx = wallet.createTransaction(
             'SR3L4TFUKKGNsnv2Q4hWTuET2a4vHpm1b9',
             legacyMainnetInitialBalance(),
-            { isDelegation: true }
+            { isDelegation: false }
         );
         expect(tx.version).toBe(1);
         expect(tx.vin).toHaveLength(2);
@@ -225,15 +225,15 @@ describe('Wallet transaction tests', () => {
                 scriptSig: '76a914f49b25384b79685227be5418f779b98a6be4c73888ac', // Script sig must be the UTXO script since it's not signed
             })
         );
+        expect(tx.vout).toHaveLength(1);
+        const fees = await checkFees(wallet, tx, MIN_FEE_PER_BYTE);
         // The 'after split' output
         expect(tx.vout[0]).toStrictEqual(
             new CTxOut({
-                script: '76a97b63d114291a25b5b4d1802e0611e9bf724a1e57d9210e826714f49b25384b79685227be5418f779b98a6be4c7386888ac',
-                value: 50009999246,
+                script: '76a914291a25b5b4d1802e0611e9bf724a1e57d9210e8288ac',
+                value: legacyMainnetInitialBalance() - fees,
             })
         );
-        // Cold Stake split outputs
-        expect(tx.vout).toHaveLength(20);
     });
 
     it('creates a t->s tx correctly', () => {
