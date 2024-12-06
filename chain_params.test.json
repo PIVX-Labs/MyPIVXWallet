@@ -28,7 +28,8 @@
         "proposalFeeConfirmRequirement": 6,
         "maxPaymentCycles": 6,
         "maxPayment": 43200000000000,
-        "defaultColdStakingAddress": "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy"
+        "defaultColdStakingAddress": "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+        "stakeSplitTarget": 50000000000
     },
     "testnet": {
         "name": "testnet",
@@ -60,6 +61,7 @@
         "proposalFeeConfirmRequirement": 3,
         "maxPaymentCycles": 20,
         "maxPayment": 144000000000,
-        "defaultColdStakingAddress": "WmNziUEPyhnUkiVdfsiNX93H6rSJnios44"
+        "defaultColdStakingAddress": "WmNziUEPyhnUkiVdfsiNX93H6rSJnios44",
+        "stakeSplitTarget": 50000000000
     }
 }

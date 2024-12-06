@@ -1164,11 +1164,26 @@ export class Wallet {
         // Add primary output
         if (isDelegation) {
             if (!returnAddress) returnAddress = this.getNewChangeAddress();
-            transactionBuilder.addColdStakeOutput({
-                address: returnAddress,
-                addressColdStake: address,
-                value,
-            });
+            // The per-output target for maximum staking efficiency
+            const nTarget = cChainParams.current.stakeSplitTarget;
+            // Generate optimal staking outputs
+            if (value < COIN) {
+                throw new Error('below consensus');
+            } else if (value < nTarget) {
+                transactionBuilder.addColdStakeOutput({
+                    address: returnAddress,
+                    addressColdStake: address,
+                    value,
+                });
+            } else {
+                for (let i = 0; i < Math.floor(value / nTarget); i++) {
+                    transactionBuilder.addColdStakeOutput({
+                        address: returnAddress,
+                        addressColdStake: address,
+                        value: i === 0 ? nTarget + (value % nTarget) : nTarget,
+                    });
+                }
+            }
         } else if (isProposal) {
             transactionBuilder.addProposalOutput({
                 hash: address,
@@ -1198,7 +1213,8 @@ export class Wallet {
             }
 
             const fee = transactionBuilder.getFee();
-            const changeValue = transactionBuilder.valueIn - value - fee;
+            const changeValue =
+                transactionBuilder.valueIn - transactionBuilder.valueOut - fee;
             if (changeValue < 0) {
                 if (!subtractFeeFromAmt) {
                     throw new Error('Not enough balance');

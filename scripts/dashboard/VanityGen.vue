@@ -6,6 +6,7 @@ import { ref, computed, watch, nextTick } from 'vue';
 import { cChainParams } from '../chain_params.js';
 import { MAP_B58 } from '../misc.js';
 import { useAlerts } from '../composables/use_alerts.js';
+import { debugLog, DebugTopics } from '../debug.js';
 
 const { createAlert } = useAlerts();
 const addressPrefix = ref('');
@@ -72,7 +73,10 @@ function generate() {
         Math.floor(window.navigator.hardwareConcurrency * 0.75),
         1
     );
-    console.log('Spawning ' + nThreads + ' vanity search threads!');
+    debugLog(
+        DebugTopics.VANITY_GEN,
+        'Spawning ' + nThreads + ' vanity search threads!'
+    );
     for (let i = 0; i < nThreads; i++) {
         const worker = new Worker(
             new URL('../vanitygen_worker.js', import.meta.url)
@@ -83,7 +87,8 @@ function generate() {
             if (data.pub.substr(1, prefix.length).toLowerCase() === prefix) {
                 try {
                     emit('import-wallet', data.priv);
-                    console.log(
+                    debugLog(
+                        DebugTopics.VANITY_GEN,
                         `VANITY: Found an address after ${attempts.value} attempts!`
                     );
                 } finally {
