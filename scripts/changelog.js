@@ -48,12 +48,22 @@ export function renderChangelog() {
                 // `#` is a header, for titles like "New Features" or "Bug Fixes"
                 strHTML += `<h3>${sanitizeHTML(line)}</h3>`;
                 break;
-            case '-':
+            case '-': {
                 // `-` is a list element, for each 'New Feature' or 'Bug Fix' to be listed with
-                strHTML += `<p><span class="dotSpan"></span>${sanitizeHTML(
-                    line
-                )}</p>`;
+                const match = line.match(/^(.*?):/);
+                if (match) {
+                    // Format as a highlighted Title + Content pair
+                    const title = sanitizeHTML(match[1]);
+                    const content = sanitizeHTML(line.slice(title.length + 1));
+                    strHTML += `<p><span class="dotSpan"></span><b>${title}</b>:${content}</p>`;
+                } else {
+                    // Otherwise, it's just a plaintext line
+                    strHTML += `<p><span class="dotSpan"></span>${sanitizeHTML(
+                        line
+                    )}</p>`;
+                }
                 break;
+            }
             default:
                 // If no element was recognised, it's just a plaintext line
                 strHTML += `<p>${sanitizeHTML(rawLine)}</p>`;

@@ -220,6 +220,10 @@ progress[value]::-moz-progress-bar {
     font-size: 15px;
 }
 
+.changelog b {
+    color: #A77BFF;
+}
+
 .changelog p .dotSpan {
     padding-left: 7px;
     border-left-style: solid;
