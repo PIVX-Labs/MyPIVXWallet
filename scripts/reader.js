@@ -27,7 +27,9 @@ export class Reader {
      */
     constructor(req) {
         this.#availableBytes = new Uint8Array(
-            req.headers?.get('Content-Length') || 1024
+            req.headers?.get('Content-Length') ||
+                req.headers?.get('X-Content-Length') ||
+                1024
         );
         const stream = req.body.getReader();
         (async () => {
