@@ -151,7 +151,12 @@ export async function getHardwareWalletKeys(path, xpub = false, verify = true) {
  */
 export async function ledgerSignTransaction(wallet, transaction) {
     await setupConnection();
-    const ledgerTx = cHardwareWallet.splitTransaction(transaction.serialize());
+    const txHex = transaction.serialize();
+    if (txHex.length / 2 > 9000) {
+        createAlert('warning', ALERTS.LEDGER_TX_TOO_BIG, 10_000);
+        return false;
+    }
+    const ledgerTx = cHardwareWallet.splitTransaction(txHex);
     const outputs = transaction.vout.map((o) => {
         const { addresses, type } = wallet.getAddressesFromScript(o.script);
         if (type !== 'p2pkh') {
