@@ -342,3 +342,4 @@ CONFIRM_LEDGER_TX = 'Confirm this transaction matches the one on your {hardwareW
 CONFIRM_LEDGER_TX_OUT = 'You will send {value} {ticker} to <div class="inline-address">{address}</div>'
 MISSING_FUNDS = 'Balance is too small! Missing {sats} sats!'
 MISSING_SHIELD = "Shield is not enabled in this wallet!"
+LEDGER_TX_TOO_BIG = 'Transaction length exceeds 9000 bytes'
