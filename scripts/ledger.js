@@ -154,7 +154,7 @@ export async function ledgerSignTransaction(wallet, transaction) {
     const txHex = transaction.serialize();
     if (txHex.length / 2 > 9000) {
         createAlert('warning', ALERTS.LEDGER_TX_TOO_BIG, 10_000);
-        return;
+        return false;
     }
     const ledgerTx = cHardwareWallet.splitTransaction(txHex);
     const outputs = transaction.vout.map((o) => {
