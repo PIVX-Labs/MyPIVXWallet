@@ -580,7 +580,7 @@ export function switchSettings(page) {
 }
 
 function errorHandler(e) {
-    const message = `${translation.unhandledException} <br> ${sanitizeHTML(
+    const message = `<b>${translation.unhandledException}</b><br>${sanitizeHTML(
         e.message || e.reason
     )}`;
     try {
