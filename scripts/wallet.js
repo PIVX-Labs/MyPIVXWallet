@@ -766,9 +766,12 @@ export class Wallet {
                 shieldDebit += spentNote.value;
             }
         }
-        const myOutputNotes = await this.#shield.decryptTransactionOutputs(
-            tx.serialize()
-        );
+        let myOutputNotes = [];
+        try {
+            myOutputNotes = await this.#shield.decryptTransactionOutputs(
+                tx.serialize()
+            );
+        } catch (e) {}
         for (const note of myOutputNotes) {
             shieldCredit += note.value;
             arrShieldReceivers.push(note.recipient);
