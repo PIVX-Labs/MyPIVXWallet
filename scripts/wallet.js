@@ -804,12 +804,13 @@ export class Wallet {
         // This is just to be sure since blockbook (as we know)
         // usually does not return txs of the actual last block.
         this.#lastProcessedBlock = blockCount - 5;
-        await this.#transparentSync();
+
         if (this.hasShield()) {
             debugTimerStart(DebugTopics.WALLET, 'syncShield');
             await this.#syncShield();
             debugTimerEnd(DebugTopics.WALLET, 'syncShield');
         }
+        await this.#transparentSync();
         this.#isSynced = true;
         // At this point download the last missing blocks in the range (blockCount -5, blockCount]
         await this.#getLatestBlocks(blockCount);
@@ -1046,8 +1047,8 @@ export class Wallet {
             this.#mempool = new Mempool();
             await this.#resetShield();
             this.#isSynced = false;
-            await this.#transparentSync();
             await this.#syncShield();
+            await this.#transparentSync();
             return false;
         }
         return true;
