@@ -15,7 +15,7 @@ const blur = ref(true);
 const emit = defineEmits(['close']);
 
 function downloadWalletFile() {
-    downloadBlob(props.privateKey, 'wallet.json', 'text/csv;charset=utf-8;');
+    downloadBlob(props.privateKey, 'wallet.json', 'application/json;charset=utf-8;');
 }
 
 function close() {
