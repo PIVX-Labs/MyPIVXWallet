@@ -71,7 +71,7 @@ function close() {
                     >
                         <span
                             data-i18n="saveWalletFile"
-                            class="buttoni-text"
+                            class="buttoni-icon"
                             v-html="pIconExport"
                         >
                         </span>
