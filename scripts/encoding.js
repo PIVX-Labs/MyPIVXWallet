@@ -272,7 +272,7 @@ export function numToByteArray(num) {
 export function bytesToNum(bytes) {
     let result = 0n;
     for (let i = 0n; i < BigInt(bytes.length); i++) {
-        result += BigInt(bytes[i]) * (256n ** i);
+        result += BigInt(bytes[i]) * 256n ** i;
     }
     return result;
 }
