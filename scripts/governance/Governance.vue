@@ -206,7 +206,7 @@ async function vote(proposal, voteCode) {
         @create="createProposal"
     />
     <div>
-        <div class="col-md-12 title-section float-left rm-pd">
+        <div class="col-md-12 title-section rm-pd">
             <span
                 style="
                     font: 23px 'Montserrat Regular';
