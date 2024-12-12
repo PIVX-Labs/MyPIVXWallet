@@ -2685,6 +2685,7 @@ a {
     width: 85%;
     text-align: center;
     transition: all .2s ease-in-out;
+    word-break: break-all;
 }
 
 .dcWallet-privateKeyDiv .blurred {
