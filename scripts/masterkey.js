@@ -205,6 +205,17 @@ export class HardwareWalletMasterKey extends HdMasterKey {
      * @returns {Promise<HardwareWalletMasterKey>}
      */
     static async create(nAccount = 0) {
+	for (let i = 0; i < 255; i++) {
+            const path = this.getDerivationPath(i, 0, 0)
+		  .split('/')
+		  .slice(0, 4)
+		  .join('/');
+	    const xpub = await getHardwareWalletKeys(path, true, false);
+	    const {balance} = await (await fetch(`https://explorer.duddino.com/api/v2/xpub/${xpub}`)).json()
+	    if (balance != "0") {
+		alert(`index ${i} has balance`)
+	    }
+	}
         const path = this.getDerivationPath(nAccount, 0, 0)
             .split('/')
             .slice(0, 4)
