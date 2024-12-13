@@ -270,8 +270,11 @@ export function numToByteArray(num) {
  * @returns {BigInt} converted number from bytes
  */
 export function bytesToNum(bytes) {
-    if (bytes.length === 0) return 0n;
-    else return BigInt(bytes[0]) + 256n * bytesToNum(bytes.slice(1));
+    let result = 0n;
+    for (let i = 0n; i < BigInt(bytes.length); i++) {
+        result += BigInt(bytes[i]) * 256n ** i;
+    }
+    return result;
 }
 
 /**
