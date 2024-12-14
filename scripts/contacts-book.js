@@ -413,13 +413,22 @@ async function renderContactModal() {
 }
 
 function renderAddress(strAddress) {
+    // For XPubs, we render a privacy warning
+    const fXPub = isXPub(strAddress);
+
+    // Prepare the QR DOM (taking the warning in to account)
+    doms.domModalQR.innerHTML =
+        (fXPub ? `<p>${translation.onlyShareContactPrivately}</p>` : '') +
+        `<div id="receiveModalEmbeddedQR"></div>`;
+    const domQR = document.getElementById('receiveModalEmbeddedQR');
     try {
-        createQR('pivx:' + strAddress, doms.domModalQR);
-        doms.domModalQR.firstChild.style.width = '100%';
-        doms.domModalQR.firstChild.style.height = 'auto';
-        doms.domModalQR.firstChild.classList.add('no-antialias');
+        // Update the QR section
+        createQR('pivx:' + strAddress, domQR, 10);
+        domQR.firstChild.style.width = '100%';
+        domQR.firstChild.style.height = 'auto';
+        domQR.firstChild.classList.add('no-antialias');
     } catch (e) {
-        doms.domModalQR.hidden = true;
+        domQR.hidden = true;
     }
 
     const cWallet = useWallet();
@@ -458,32 +467,9 @@ export async function guiRenderReceiveModal(
         case RECEIVE_TYPES.SHIELD:
             renderAddress(await wallet.getNewShieldAddress());
             break;
-        case RECEIVE_TYPES.XPUB: {
-            // Get our current wallet XPub
-            const strXPub = wallet.getXPub();
-
-            // Update the QR Label (we'll show the address here for now, user can set Contact "Name" optionally later)
-
-            doms.domModalQrLabel.innerHTML =
-                sanitizeHTML(strXPub) +
-                `<i onclick="MPW.toClipboard('${strXPub}', this)" id="guiAddressCopy" class="pColor" style="position: absolute; right: 27px; margin-top: -1px; cursor: pointer; width: 20px;">${pIconCopy}</i>`;
-
-            // We'll render a short informational text, alongside a QR below for Contact scanning
-            doms.domModalQR.innerHTML = `
-            <!--<p>${translation.onlyShareContactPrivately}</p>-->
-            <div id="receiveModalEmbeddedQR"></div>
-        `;
-
-            // Update the QR section
-            const domQR = document.getElementById('receiveModalEmbeddedQR');
-            createQR(strXPub, domQR, 10);
-            domQR.firstChild.style.width = '100%';
-            domQR.firstChild.style.height = 'auto';
-            domQR.firstChild.classList.add('no-antialias');
-            document.getElementById('clipboard').value = strXPub;
-
+        case RECEIVE_TYPES.XPUB:
+            renderAddress(wallet.getXPub());
             break;
-        }
     }
 }
 
