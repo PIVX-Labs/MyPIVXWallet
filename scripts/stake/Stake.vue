@@ -161,6 +161,7 @@ async function restoreWallet(strReason) {
     <RestoreWallet
         :show="showRestoreWallet"
         :reason="restoreWalletReason"
+        :wallet="wallet"
         @close="showRestoreWallet = false"
     />
 </template>
