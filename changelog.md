@@ -11,6 +11,7 @@ We are aware of a slight degredation in 'time-to-boot' for MPW when opened in a 
 
 # Bug Fixes
 - Fixed a rare serialisation issue causing failed syncs on Firefox (potentially a bug in Firefox's engine!).
+- Fixed ability to unlock wallet in the Staking UI.
 - Fixed Wallet Export file type.
 - Fixed Wallet Export button icon.
 - Fixed private key wrapping consistency.
