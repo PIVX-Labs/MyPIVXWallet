@@ -14,6 +14,7 @@ import { ParsedSecret } from '../parsed_secret.js';
 import { storeToRefs } from 'pinia';
 import { ALERTS } from '../i18n';
 import { useAlerts } from '../composables/use_alerts.js';
+import { validateAmount } from '../legacy.js';
 const { createAlert } = useAlerts();
 const wallet = useWallet();
 const { balance, coldBalance, price, currency, isViewOnly } =
@@ -52,6 +53,11 @@ watch(coldStakingAddress, async (coldStakingAddress) => {
     await db.updateAccount(cAccount, true);
 });
 async function stake(value, ownerAddress) {
+    // Ensure the stake value meets the minimum delegation size
+    if (!validateAmount(value, COIN)) {
+        return;
+    }
+
     // Don't allow attempts to stake using Ledger
     if (wallet.isHardwareWallet) {
         createAlert('warning', ALERTS.STAKING_LEDGER_NO_SUPPORT, 5000);
