@@ -52,13 +52,18 @@ watch(coldStakingAddress, async (coldStakingAddress) => {
     await db.updateAccount(cAccount, true);
 });
 async function stake(value, ownerAddress) {
+    // Don't allow attempts to stake using Ledger
     if (wallet.isHardwareWallet) {
         createAlert('warning', ALERTS.STAKING_LEDGER_NO_SUPPORT, 5000);
         return;
     }
+
+    // Ensure the wallet is unlocked
     if (wallet.isViewOnly && !(await restoreWallet())) {
         return;
     }
+
+    // Prepare the Owner address
     const cDB = await Database.getInstance();
     const cAccount = await cDB.getAccount();
     const returnAddress =
@@ -66,6 +71,8 @@ async function stake(value, ownerAddress) {
             name: ownerAddress,
             pubkey: ownerAddress,
         })?.pubkey || ownerAddress;
+
+    // Create the delegation
     const res = await wallet.createAndSendTransaction(
         getNetwork(),
         coldStakingAddress.value,
@@ -79,6 +86,7 @@ async function stake(value, ownerAddress) {
 }
 
 async function unstake(value) {
+    // Ensure the wallet is unlocked
     if (
         !wallet.isHardwareWallet &&
         wallet.isViewOnly &&
@@ -86,6 +94,8 @@ async function unstake(value) {
     ) {
         return;
     }
+
+    // Create the delegation redeem transaction (unstake)
     const res = await wallet.createAndSendTransaction(
         getNetwork(),
         wallet.getNewChangeAddress(),
