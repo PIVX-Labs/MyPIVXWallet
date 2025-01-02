@@ -1345,7 +1345,6 @@ export class Wallet {
 
             stream.bytes = await request.bytes();
         }
-        debugger;
         await this.#shield.loadSaplingProverWithBytes(
             streams[0].bytes,
             streams[1].bytes
