@@ -5,6 +5,7 @@ import { ProposalValidator } from './status';
 import { useWallet } from '../composables/use_wallet';
 import Masternode from '../masternode.js';
 import ProposalsTable from './ProposalsTable.vue';
+import RestoreWallet from '../dashboard/RestoreWallet.vue';
 import Flipdown from './Flipdown.vue';
 import ProposalCreateModal from './ProposalCreateModal.vue';
 import MonthlyBudget from './MonthlyBudget.vue';
@@ -25,7 +26,12 @@ const wallet = useWallet();
 const settings = useSettings();
 const { localProposals, masternode } = storeToRefs(useMasternode());
 const { advancedMode } = storeToRefs(settings);
-const { blockCount, currency: strCurrency, price } = storeToRefs(wallet);
+const {
+    blockCount,
+    currency: strCurrency,
+    price,
+    isViewOnly,
+} = storeToRefs(wallet);
 const proposals = ref([]);
 const contestedProposals = ref([]);
 const nextSuperBlock = ref(0);
@@ -44,6 +50,8 @@ const allocatedBudget = computed(() => {
 const flipdownTimeStamp = computed(
     () => Date.now() / 1000 + (nextSuperBlock.value - blockCount.value) * 60
 );
+const showRestoreWallet = ref(false);
+const restoreWalletReason = ref('');
 
 // Each block update check if we have local proposals to update or finalize
 watch(
@@ -73,6 +81,22 @@ watch(
     },
     { immediate: true }
 );
+
+async function restoreWallet(strReason) {
+    if (!wallet.isEncrypted) return false;
+    if (wallet.isHardwareWallet) return true;
+    showRestoreWallet.value = true;
+    return await new Promise((res) => {
+        watch(
+            [showRestoreWallet, isViewOnly],
+            () => {
+                showRestoreWallet.value = false;
+                res(!isViewOnly.value);
+            },
+            { once: true }
+        );
+    });
+}
 
 async function fetchProposals() {
     const arrProposals = await getNetwork().getProposals({
@@ -112,6 +136,10 @@ async function openCreateProposal() {
             ]),
             4500
         );
+    }
+    // Ensure the wallet is unlocked
+    if (wallet.isViewOnly && !(await restoreWallet())) {
+        return;
     }
     // Must have enough funds
     if (wallet.balance * COIN < cChainParams.current.proposalFee) {
@@ -295,4 +323,10 @@ async function vote(proposal, voteCode) {
             @vote="vote"
         />
     </div>
+    <RestoreWallet
+        :show="showRestoreWallet"
+        :reason="restoreWalletReason"
+        :wallet="wallet"
+        @close="showRestoreWallet = false"
+    />
 </template>
