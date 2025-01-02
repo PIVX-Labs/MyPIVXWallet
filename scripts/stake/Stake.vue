@@ -12,7 +12,7 @@ import StakeInput from './StakeInput.vue';
 import { onMounted, ref, watch, nextTick } from 'vue';
 import { ParsedSecret } from '../parsed_secret.js';
 import { storeToRefs } from 'pinia';
-import { ALERTS } from '../i18n';
+import { ALERTS, tr } from '../i18n';
 import { useAlerts } from '../composables/use_alerts.js';
 import { validateAmount } from '../legacy.js';
 const { createAlert } = useAlerts();
@@ -69,6 +69,15 @@ async function stake(value, ownerAddress) {
         return;
     }
 
+    const availableBalance = wallet.balance;
+    if (value > availableBalance) {
+        createAlert(
+            'warning',
+            tr(ALERTS.MISSING_FUNDS, [{ sats: value - availableBalance }])
+        );
+        return;
+    }
+
     // Prepare the Owner address
     const cDB = await Database.getInstance();
     const cAccount = await cDB.getAccount();
@@ -98,6 +107,15 @@ async function unstake(value) {
         wallet.isViewOnly &&
         !(await restoreWallet())
     ) {
+        return;
+    }
+
+    const availableBalance = wallet.coldBalance;
+    if (value > availableBalance) {
+        createAlert(
+            'warning',
+            tr(ALERTS.MISSING_FUNDS, [{ sats: value - availableBalance }])
+        );
         return;
     }
 
