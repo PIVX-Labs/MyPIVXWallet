@@ -1257,12 +1257,20 @@ export class Wallet {
                 'trying to create a shield transaction without having shield enable'
             );
         }
+
+        if (!(await this.#shield.proverIsLoaded())) {
+            await this.#loadProver();
+        }
+
         const periodicFunction = new AsyncInterval(async () => {
             const percentage = (await this.#shield.getTxStatus()) * 100;
             getEventEmitter().emit(
                 'shield-transaction-creation-update',
                 percentage,
-                false
+                // state: 0 = loading shield params
+                //        1 = proving tx
+                //        2 = finished
+                1
             );
         }, 500);
 
@@ -1290,9 +1298,59 @@ export class Wallet {
             getEventEmitter().emit(
                 'shield-transaction-creation-update',
                 0.0,
-                true
+                // state: 0 = loading shield params
+                //        1 = proving tx
+                //        2 = finished
+                2
             );
         }
+    }
+
+    async #loadProver() {
+        const network = getNetwork();
+        const streams = [
+            {
+                start: () => network.getSaplingOutput(),
+                ratio: 0.1,
+            },
+            {
+                start: () => network.getSaplingSpend(),
+                ratio: 0.9,
+            },
+        ];
+
+        let percentage = 0;
+
+        for (const stream of streams) {
+            const { start, ratio } = stream;
+            const request = await start();
+            const reader = request.clone().body.getReader();
+            const totalBytes = request.headers?.get('Content-Length');
+
+            while (true) {
+                //		debugger;
+                const { done, value } = await reader.read();
+                if (value) {
+                    percentage += (100 * ratio * value.length) / totalBytes;
+                    getEventEmitter().emit(
+                        'shield-transaction-creation-update',
+                        percentage,
+                        // state: 0 = loading shield params
+                        //        1 = proving tx
+                        //        2 = finished
+                        0
+                    );
+                }
+                if (done) break;
+            }
+
+            stream.bytes = await request.bytes();
+        }
+        debugger;
+        await this.#shield.loadSaplingProverWithBytes(
+            streams[0].bytes,
+            streams[1].bytes
+        );
     }
 
     /**
