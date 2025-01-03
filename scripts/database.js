@@ -18,9 +18,10 @@ export class Database {
      * Version 4 = Tx Refactor (#284)
      * Version 5 = Tx shield data (#295)
      * Version 6 = Filter unconfirmed txs (#415)
+     * Version 7 = Store shield params in indexed db (#511)
      * @type {number}
      */
-    static version = 6;
+    static version = 7;
 
     /**
      * @type{import('idb').IDBPDatabase}
@@ -469,6 +470,9 @@ export class Database {
                         }
                     })();
                 }
+                if (oldVersion < 7) {
+                    db.createObjectStore('shieldParams');
+                }
             },
             blocking: () => {
                 // Another instance is waiting to upgrade, and we're preventing it
@@ -484,7 +488,34 @@ export class Database {
     }
 
     /**
-     * Map name->instnace
+     * @returns {Promise<[Uint8Array, Uint8Array] | null>} Respectively sapling output and spend
+     * or null if they haven't been cached
+     */
+    async getShieldParams() {
+        const store = this.#db
+            .transaction('shieldParams', 'readonly')
+            .objectStore('shieldParams');
+        const saplingOutput = await store.get('saplingOutput');
+        const saplingSpend = await store.get('saplingSpend');
+        if (!saplingOutput || !saplingSpend) return null;
+        return [saplingOutput, saplingSpend];
+    }
+
+    /**
+     * @param {Uint8Array} saplingOutput - Sapling output bytes
+     * @param {Uint8Array} saplingSpend - Sapling spend bytes
+     * @returns {Promise<void>} Resolves when db write has completed
+     */
+    async setShieldParams(saplingOutput, saplingSpend) {
+        const store = this.#db
+            .transaction('shieldParams', 'readwrite')
+            .objectStore('shieldParams');
+        await store.put(saplingOutput, 'saplingOutput');
+        await store.put(saplingSpend, 'saplingSpend');
+    }
+
+    /**
+     * Map name->instance
      * @type{Map<String, Database>}
      */
     static #instances = new Map();

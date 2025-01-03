@@ -156,19 +156,22 @@ getEventEmitter().on(
 
 getEventEmitter().on(
     'shield-transaction-creation-update',
-    async (percentage, finished) => {
-        if (percentage === 0.0 && !finished) {
+    // state: 0 = loading shield params
+    //        1 = proving tx
+    //        2 = finished
+    async (percentage, state) => {
+        if (state === 0) {
             txCreationStr.value = translation.syncLoadingSaplingProver;
         } else {
             txCreationStr.value = translation.creatingShieldTransaction;
         }
 
         // If it just finished sleep for 1 second before making everything invisible
-        if (finished) {
+        if (state === 2) {
             txPercentageCreation.value = 100.0;
             await sleep(1000);
         }
-        isCreatingTx.value = !finished;
+        isCreatingTx.value = state !== 2;
         txPercentageCreation.value = percentage;
     }
 );

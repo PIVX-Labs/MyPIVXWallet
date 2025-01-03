@@ -263,6 +263,14 @@ class NetworkManager {
         return await this.#retryWrapper('getShieldData', true, initialBlock);
     }
 
+    async getSaplingOutput() {
+        return await this.#retryWrapper('getSaplingOutput', true);
+    }
+
+    async getSaplingSpend() {
+        return await this.#retryWrapper('getSaplingSpend', true);
+    }
+
     /**
      * Submit a proposal
      * @param {Object} options
