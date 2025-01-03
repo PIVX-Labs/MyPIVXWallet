@@ -24,13 +24,13 @@ watch(alerts, () => {
                 actionFunc: previousAlert.actionFunc,
                 // Store original message so we can use it as key.
                 // This skips the animation in case of multiple errors
-                original: previousAlert.message,
+                original: previousAlert,
             });
 
             res.push(alert);
             if (timeout > 0) {
                 setTimeout(() => {
-                    alert.value.show = false;
+                    alert.value.original.show = false;
                 }, timeout);
             }
         }
@@ -54,15 +54,17 @@ watch(alerts, () => {
  */
 function runAction(cAlert) {
     cAlert.actionFunc();
-    cAlert.show = false;
+    cAlert.original.show = false;
 }
 </script>
 
 <template>
     <transition-group name="alert">
         <div
-            v-for="alert of foldedAlerts.filter((a) => a.value.show)"
-            :key="alert.value.original"
+            v-for="alert of foldedAlerts.filter(
+                (a) => a.value.original.show !== false
+            )"
+            :key="alert.value.original.message"
             data-testid="alerts"
         >
             <Alert
@@ -70,7 +72,7 @@ function runAction(cAlert) {
                 :level="alert.value.level"
                 :notificationCount="alert.value.count"
                 :actionName="alert.value.actionName"
-                @hideAlert="alert.value.show = false"
+                @hideAlert="alert.value.original.show = false"
                 @runAction="runAction(alert.value)"
             />
         </div>
