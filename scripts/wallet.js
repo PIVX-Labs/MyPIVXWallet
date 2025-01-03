@@ -48,6 +48,7 @@ import {
     DebugTopics,
 } from './debug.js';
 import { OrderedArray } from './ordered_array.js';
+import { SaplingParams } from './sapling_params.js';
 
 /**
  * Class Wallet, at the moment it is just a "realization" of Masterkey with a given nAccount
@@ -1307,48 +1308,11 @@ export class Wallet {
     }
 
     async #loadProver() {
-        const network = getNetwork();
-        const streams = [
-            {
-                start: () => network.getSaplingOutput(),
-                ratio: 0.1,
-            },
-            {
-                start: () => network.getSaplingSpend(),
-                ratio: 0.9,
-            },
-        ];
-
-        let percentage = 0;
-
-        for (const stream of streams) {
-            const { start, ratio } = stream;
-            const request = await start();
-            const reader = request.clone().body.getReader();
-            const totalBytes = request.headers?.get('Content-Length');
-
-            while (true) {
-                const { done, value } = await reader.read();
-                if (value) {
-                    percentage += (100 * ratio * value.length) / totalBytes;
-                    getEventEmitter().emit(
-                        'shield-transaction-creation-update',
-                        percentage,
-                        // state: 0 = loading shield params
-                        //        1 = proving tx
-                        //        2 = finished
-                        0
-                    );
-                }
-                if (done) break;
-            }
-
-            stream.bytes = await request.bytes();
-        }
-        await this.#shield.loadSaplingProverWithBytes(
-            streams[0].bytes,
-            streams[1].bytes
+        const params = new SaplingParams(
+            getNetwork(),
+            await Database.getInstance()
         );
+        await params.fetch(this.#shield);
     }
 
     /**
