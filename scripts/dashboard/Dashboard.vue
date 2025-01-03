@@ -16,7 +16,7 @@ import {
 } from '../misc.js';
 import { ALERTS, translation, tr } from '../i18n.js';
 import { HardwareWalletMasterKey, HdMasterKey } from '../masterkey';
-import { COIN } from '../chain_params';
+import { COIN, cChainParams } from '../chain_params';
 import { onMounted, ref, watch, computed } from 'vue';
 import { getEventEmitter } from '../event_bus';
 import { Database } from '../database';
@@ -791,7 +791,13 @@ defineExpose({
                                                         "
                                                         class="text-center"
                                                     >
-                                                        <b> Amount </b>
+                                                        <b>
+                                                            {{
+                                                                cChainParams
+                                                                    .current
+                                                                    .TICKER
+                                                            }}
+                                                        </b>
                                                     </td>
                                                     <td
                                                         style="
@@ -800,7 +806,12 @@ defineExpose({
                                                                 solid #534270;
                                                         "
                                                         class="text-center"
-                                                    ></td>
+                                                    >
+                                                        <i
+                                                            onclick="MPW.promosToCSV()"
+                                                            class="fa-solid fa-lg fa-file-csv ptr"
+                                                        ></i>
+                                                    </td>
                                                 </tr>
                                             </thead>
                                             <tbody

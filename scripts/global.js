@@ -2,16 +2,9 @@ import { TransactionBuilder } from './transaction_builder.js';
 import { ALERTS, start as i18nStart, translation } from './i18n.js';
 import { wallet, hasEncryptedWallet, Wallet } from './wallet.js';
 import { getNetwork } from './network/network_manager.js';
-import {
-    start as settingsStart,
-    strCurrency,
-    fAdvancedMode,
-} from './settings.js';
-import { createAndSendTransaction } from './legacy.js';
+import { start as settingsStart, strCurrency } from './settings.js';
 import { createAlert } from './alerts/alert.js';
-import { confirmPopup, sanitizeHTML } from './misc.js';
-import { cChainParams, COIN } from './chain_params.js';
-import { sleep } from './utils.js';
+import { sanitizeHTML } from './misc.js';
 import { registerWorker } from './native.js';
 import { getEventEmitter } from './event_bus.js';
 import { checkForUpgrades } from './changelog.js';
@@ -580,7 +573,7 @@ export function switchSettings(page) {
 }
 
 function errorHandler(e) {
-    const message = `${translation.unhandledException} <br> ${sanitizeHTML(
+    const message = `<b>${translation.unhandledException}</b><br>${sanitizeHTML(
         e.message || e.reason
     )}`;
     try {

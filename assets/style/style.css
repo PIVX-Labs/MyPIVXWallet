@@ -220,6 +220,10 @@ progress[value]::-moz-progress-bar {
     font-size: 15px;
 }
 
+.changelog b {
+    color: #A77BFF;
+}
+
 .changelog p .dotSpan {
     padding-left: 7px;
     border-left-style: solid;
@@ -2681,6 +2685,7 @@ a {
     width: 85%;
     text-align: center;
     transition: all .2s ease-in-out;
+    word-break: break-all;
 }
 
 .dcWallet-privateKeyDiv .blurred {

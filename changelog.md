@@ -1,63 +1,45 @@
 # Patch 1
-A patch for MPW v2.0, primarily resolving stability, performance and minor UX issues.
+This patch is primarily an immediate response to a newly discovered Tx serialisation bug affecting syncing - making it impossible to sync on Firefox, research by Duddino suggests this may actually be a bug in Firefox's Gecko engine, as the bug has only been replicatable on Firefox.
+
+Additionally, various minor fixes and improvements were added to resolve some UX issues.
+
+We are aware of a slight degredation in 'time-to-boot' for MPW when opened in a new tab, and issues on extremely slow networks, however, this will be resolved in early 2025.
 
 # Improvements
-- Persistant Wallet Mode.
-- Shield sync is visually smoother.
-- Shield sync is persisted better between restarts.
-- Shield now syncs faster, via Nodes.
-- Added notification stacking (no more spam!).
-- Automatic Node switching.
-- Added Duddino2 Node & Explorer.
-- Faster TXDB initialisation.
-
-# Removals
-- Legacy DB migration system.
+- Added Privacy warning on XPub sharing.
+- Improved space-use for PIVX Promos UI.
 
 # Bug Fixes
-- Fixed missed Sapling Root validation.
-- Fixed issues with persisted unconfirmed Txs.
-- Fixed a case in which Txs load in an incorrect order.
-- Fixed Total Rewards counter.
-- Fixed 'Max' button not updating currency.
-- Fixed old v1.0 branding remnant.
+- Fixed a rare serialisation issue causing failed syncs on Firefox (potentially a bug in Firefox's engine!).
+- Fixed ability to unlock wallet in the Staking UI.
+- Fixed Wallet Export file type.
+- Fixed Wallet Export button icon.
+- Fixed private key wrapping consistency.
+- Re-added CSV Exports to PIVX Promos after UI regression.
+- Fixed Governance display on iOS.
 
-# v2.0 - Major Update
-This is the largest MPW upgrade since Shield; containing an incredible array of improvements and polish, with the aim of bringing MPW to a professional wallet standard, welcome to v2.0.
+# v2.1 - Feature Update
+This upgrade contains huge Shield Improvements; a 10-30x faster Shield Sync (device-dependent) and full Shield Activity support.
 
-There are over 15k line changes in v2.0, this changelog will only show a small subset of notable changes, for more, head to GitHub.
+It also brings real-time activity for internal transactions, more efficient staking with automatic UTXO splitting, and a redesigned notification system.
 
 # New Features
-- Wallet Modes: Public and Private, a simplified experience.
-
-# New Language
-- 🇮🇳 Hindi (by Rushali Padhiary).
+- Shield Activity: Shield TXs are now supported in your Activity.
+- Real-time Activity: internal TXs now instantly show in your Activity.
+- Stake Pre-Splitting: automatic UTXO splitting for max staking efficiency.
+- New Notifications: beautified, with in-notif actions and prompts.
 
 # Improvements
-- Completely redesigned theme.
-- A dozen Shield sync improvements.
-- Added persistance for Ledger users.
-- Added Exchange Address activity.
-- Contacts are now Shield-based.
-- Added address quick-refresh button.
-- Moved from CoinGecko to Labs Oracle.
-- Added Official PIVX Labs RPC Node.
-- Added visibility toggle to Password fields.
-- Fixed Over-Allocated proposal display.
-- Gray-out Ledger if browser is unsupported.
-- Gray-out Contact button until wallet is saved.
-- Improved User Debug system.
-
-# Removals
-- Removed the Analytics system.
-- Removed address identicons.
-- Removed the 'disconnection' ability.
-- Removed manual 'refresh' ability.
+- Proposal Fees are now recognised in your Activity.
+- Nicer Activity date format.
+- Randomise initial Explorer + Node selections.
+- Improved space-optimised PIVX Promos interface.
 
 # Bug Fixes
-- Fixed excessive blockbook error notifications.
-- Fixed Shield getting stuck in a bad state with sapling root validation auto-resyncs.
-- Fix Tx discarding on failed broadcasts.
-- Fix some Legacy wallet syncing errors.
-- Fixed inconsistent modal scrollbars.
-- Fixed iOS auto-zoom.
+- Fixed Unstaking for Ledger devices.
+- Fixed Currency failing to render in certain conditions.
+- Fixed getting stuck in Private mode when swapping to a public-only wallet.
+- Fixed automatic HD address rotation.
+- Fixed 'Total Rewards' counter computing wrong amounts.
+- Fixed large-byte-size Txs failing due to using RPC GET requests.
+- Fixed certain notifications failing to show.

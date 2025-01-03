@@ -21,6 +21,9 @@ import pIconGiftOpen from '../assets/icons/icon-gift-opened.svg';
 /** The fee in Sats to use for Creating or Redeeming PIVX Promos */
 export const PROMO_FEE = 10000;
 
+/** The maximum length of a rendered code before cutting off with a unicode ellipsis (…) */
+const MAX_CODE_RENDER_LENGTH = 10;
+
 /**
  * The global storage for temporary Promo Code wallets, this is used for sweeping funds
  * @type {PromoWallet}
@@ -196,9 +199,14 @@ export function promoConfirm() {
             doms.domPromoTable.style.maxHeight = 'min-content';
         }, 100);
 
+        // If the code is at least MAX_LENGTH, then we won't add security-randomness
+        const strCode = doms.domRedeemCodeCreateInput.value;
+        const fAddRandomness = strCode.length < MAX_CODE_RENDER_LENGTH;
+
         createPromoCode(
-            doms.domRedeemCodeCreateInput.value,
-            Number(doms.domRedeemCodeCreateAmountInput.value)
+            strCode,
+            Number(doms.domRedeemCodeCreateAmountInput.value),
+            fAddRandomness
         );
     }
 }
@@ -230,7 +238,7 @@ export async function createPromoCode(strCode, nAmount, fAddRandomness = true) {
     const strFinalCode = fAddRandomness
         ? strCode
             ? strCode + '-' + getAlphaNumericRand(5).toUpperCase()
-            : getAlphaNumericRand(10).toUpperCase()
+            : getAlphaNumericRand(MAX_CODE_RENDER_LENGTH).toUpperCase()
         : strCode;
 
     // Ensure the amount is sane
@@ -391,8 +399,8 @@ export async function renderSavedPromos() {
 
         // Trimmed code
         const trimmedCode =
-            cCode.code.length > 10
-                ? cCode.code.slice(0, 7) + '...'
+            cCode.code.length > MAX_CODE_RENDER_LENGTH
+                ? cCode.code.slice(0, MAX_CODE_RENDER_LENGTH - 1) + '…'
                 : cCode.code;
 
         // Status calculation (defaults to 'fNew' condition)
@@ -421,11 +429,7 @@ export async function renderSavedPromos() {
         )}" style="display: inline !important; color: #e83e8c;">${sanitizeHTML(
             trimmedCode
         )}</code></td>
-                 <td>${
-                     fNew || !cCode.fSynced
-                         ? '...'
-                         : nBal + ' ' + cChainParams.current.TICKER
-                 }</td>
+                 <td>${fNew || !cCode.fSynced ? '...' : nBal}</td>
                  <td>
                  ${
                      fCannotDelete
@@ -542,8 +546,8 @@ export async function updatePromoCreationTick(fRecursive = false) {
 
         // Trimmed code
         const trimmedCode =
-            cThread.code.length > 10
-                ? cThread.code.slice(0, 7) + '...'
+            cThread.code.length > MAX_CODE_RENDER_LENGTH
+                ? cThread.code.slice(0, MAX_CODE_RENDER_LENGTH - 1) + '…'
                 : cThread.code;
 
         // Render the table row
@@ -551,7 +555,7 @@ export async function updatePromoCreationTick(fRecursive = false) {
             `
              <tr>
                  <td><code class="wallet-code active" style="display: inline !important; color: #e83e8c!important;">${trimmedCode}</code></td>
-                 <td>${cThread.amount} ${cChainParams.current.TICKER}</td>
+                 <td>${cThread.amount}</td>
                  <td>
                     <i class="fa-solid fa-ban ptr" style="margin-right:4px;" onclick="MPW.deletePromoCode('${cThread.code}')"></i>
                     ${strState}
