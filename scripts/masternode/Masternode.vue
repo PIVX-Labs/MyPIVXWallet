@@ -13,6 +13,7 @@ import { getNetwork } from '../network/network_manager.js';
 import { translation, ALERTS } from '../i18n.js';
 import { generateMasternodePrivkey, parseIpAddress } from '../misc';
 import { useAlerts } from '../composables/use_alerts.js';
+import { COutpoint } from '../transaction.js';
 
 const { createAlert } = useAlerts();
 
@@ -28,6 +29,22 @@ const masternodePrivKey = ref('');
 // Array of possible masternode UTXOs
 const possibleUTXOs = ref(wallet.getMasternodeUTXOs());
 
+watch(masternode, (masternode, oldValue) => {
+    if (oldValue?.collateralTxId) {
+        wallet.unlockCoin(
+            new COutpoint({ txid: oldValue.collateralTxId, n: oldValue.outidx })
+        );
+    }
+
+    if (masternode?.collateralTxId) {
+        wallet.lockCoin(
+            new COutpoint({
+                txid: masternode.collateralTxId,
+                n: masternode.outidx,
+            })
+        );
+    }
+});
 function updatePossibleUTXOs() {
     possibleUTXOs.value = wallet.getMasternodeUTXOs();
 }
