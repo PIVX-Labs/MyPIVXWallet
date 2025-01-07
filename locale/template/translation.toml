@@ -232,6 +232,10 @@ shieldAddress = "Shield address"
 cantShieldToExc = "This address does not support shield transfers"
 badSaplingRoot = "There was an error while syncing. Resyncing from scratch (Bad sapling root)"
 creatingShieldTransaction = "Creating SHIELD transaction..."
+masternodeRestartConfirmation = "Are you sure you want to restart your masternode?"
+masternodeRestartTitle = "Restart Masternode"
+masternodeDeleteConfirmation = "Are you sure you want to delete your masternode?"
+masternodeDeleteTitle = "Delete Masternode"
 
 [ALERTS]
 INTERNAL_ERROR = "Internal error, please try again later"

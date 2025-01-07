@@ -1,6 +1,7 @@
 <script setup>
 import { useMasternode } from '../composables/use_masternode.js';
 import { storeToRefs } from 'pinia';
+import NewMasternodeList from './NewMasternodeList.vue';
 import CreateMasternode from './CreateMasternode.vue';
 import MasternodeController from './MasternodeController.vue';
 import { useWallet } from '../composables/use_wallet';
@@ -18,9 +19,9 @@ import { COutpoint } from '../transaction.js';
 const { createAlert } = useAlerts();
 
 /**
- * @type{{masternode: import('vue').Ref<import('../masternode.js').default?>}}
+ * @type{{masternodes: import('vue').Ref<import('../masternode.js').default?>[]}}
  */
-const { masternode } = storeToRefs(useMasternode());
+const { masternodes } = storeToRefs(useMasternode());
 const wallet = useWallet();
 const { isSynced, balance, isViewOnly, isHardwareWallet } = storeToRefs(wallet);
 const showRestoreWallet = ref(false);
@@ -29,20 +30,23 @@ const masternodePrivKey = ref('');
 // Array of possible masternode UTXOs
 const possibleUTXOs = ref(wallet.getMasternodeUTXOs());
 
-watch(masternode, (masternode, oldValue) => {
-    if (oldValue?.collateralTxId) {
-        wallet.unlockCoin(
-            new COutpoint({ txid: oldValue.collateralTxId, n: oldValue.outidx })
-        );
+watch(masternodes, (masternodes, oldValue) => {
+    for (const oldMn of oldValue) {
+        if (oldMn?.collateralTxId) {
+            wallet.unlockCoin(
+                new COutpoint({ txid: oldMn.collateralTxId, n: oldMn.outidx })
+            );
+        }
     }
-
-    if (masternode?.collateralTxId) {
-        wallet.lockCoin(
-            new COutpoint({
-                txid: masternode.collateralTxId,
-                n: masternode.outidx,
-            })
-        );
+    for (const masternode of masternodes) {
+        if (masternode?.collateralTxId) {
+            wallet.lockCoin(
+                new COutpoint({
+                    txid: masternode.collateralTxId,
+                    n: masternode.outidx,
+                })
+            );
+        }
     }
 });
 function updatePossibleUTXOs() {
@@ -70,19 +74,22 @@ async function startMasternode(fRestart = false) {
     ) {
         return;
     }
-    if (await masternode.value.start()) {
-        const strMsg = fRestart ? ALERTS.MN_RESTARTED : ALERTS.MN_STARTED;
-        createAlert('success', strMsg, 4000);
-    } else {
-        const strMsg = fRestart
-            ? ALERTS.MN_RESTART_FAILED
-            : ALERTS.MN_START_FAILED;
-        createAlert('warning', strMsg, 4000);
+    for (const masternode of masternodes.value) {
+        if (await masternode.start()) {
+            const strMsg = fRestart ? ALERTS.MN_RESTARTED : ALERTS.MN_STARTED;
+            createAlert('success', strMsg, 4000);
+        } else {
+            const strMsg = fRestart
+                ? ALERTS.MN_RESTART_FAILED
+                : ALERTS.MN_START_FAILED;
+            createAlert('warning', strMsg, 4000);
+        }
     }
 }
 
 async function destroyMasternode() {
-    masternode.value = null;
+    // TODO: Only delete 1
+    masternodes.value = [];
 }
 
 /**
@@ -101,13 +108,15 @@ function importMasternode(privateKey, ip, utxo) {
         createAlert('warning', ALERTS.MN_BAD_PRIVKEY, 5000);
         return;
     }
-    masternode.value = new Masternode({
-        walletPrivateKeyPath: wallet.getPath(utxo.script),
-        mnPrivateKey: privateKey,
-        collateralTxId: utxo.outpoint.txid,
-        outidx: utxo.outpoint.n,
-        addr: address,
-    });
+    masternodes.value.push(
+        new Masternode({
+            walletPrivateKeyPath: wallet.getPath(utxo.script),
+            mnPrivateKey: privateKey,
+            collateralTxId: utxo.outpoint.txid,
+            outidx: utxo.outpoint.n,
+            addr: address,
+        })
+    );
 }
 
 async function restoreWallet() {
@@ -158,7 +167,7 @@ function openShowPrivKeyModal() {
         @close="showRestoreWallet = false"
     />
     <CreateMasternode
-        v-if="!masternode"
+        v-if="!masternodes.length"
         :synced="isSynced"
         :balance="balance"
         :possibleUTXOs="possibleUTXOs"
@@ -166,11 +175,13 @@ function openShowPrivKeyModal() {
         @importMasternode="importMasternode"
     />
     <MasternodeController
-        v-if="masternode"
-        :masternode="masternode"
+        v-if="masternodes.length"
+        :masternode="masternodes[0]"
         @start="({ restart }) => startMasternode(restart)"
         @destroy="destroyMasternode"
     />
+
+    <NewMasternodeList :masternodes="masternodes" />
     <Modal :show="showMasternodePrivateKey">
         <template #header>
             <b>{{ translation?.ALERTS?.CONFIRM_POPUP_MN_P_KEY }}</b>

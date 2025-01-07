@@ -5,9 +5,9 @@ import { getEventEmitter } from '../event_bus.js';
 
 export const useMasternode = defineStore('masternode', () => {
     /**
-     * @type{import('vue').Ref<import('../masternode.js').default?>}
+     * @type{import('vue').Ref<import('../masternode.js').default[]?>}
      */
-    const masternode = ref(null);
+    const masternodes = ref([]);
     const localProposals = ref([]);
     watch(
         localProposals,
@@ -32,13 +32,25 @@ export const useMasternode = defineStore('masternode', () => {
 
     const fetchMasternodeFromDatabase = async () => {
         const database = await Database.getInstance();
-        masternode.value = await database.getMasternode();
+        masternodes.value = await database.getMasternodes();
     };
 
-    watch(masternode, async () => {
-        const database = await Database.getInstance();
-        await database.addMasternode(toRaw(masternode.value));
-    });
+    watch(
+        masternodes,
+        async () => {
+            console.log('Adding mns:');
+            console.log(masternodes.value);
+            debugger;
+            const database = await Database.getInstance();
+            // TODO: Only check the diff and change value accordingly
+            for (const mn of masternodes.value) {
+                await database.addMasternode(toRaw(mn));
+            }
+        },
+        {
+            deep: true,
+        }
+    );
 
     getEventEmitter().on('wallet-import', () => {
         fetchProposalsFromDatabase().then(() => {});
@@ -48,5 +60,5 @@ export const useMasternode = defineStore('masternode', () => {
         fetchProposalsFromDatabase().then(() => {});
         fetchMasternodeFromDatabase().then(() => {});
     });
-    return { masternode, localProposals };
+    return { masternodes, localProposals };
 });
