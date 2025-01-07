@@ -22,6 +22,7 @@ import { getEventEmitter } from '../event_bus';
 import { Database } from '../database';
 import { start, doms, updateLogOutButton } from '../global';
 import { validateAmount } from '../legacy';
+import { debugError, DebugTopics } from '../debug.js';
 import {
     confirmPopup,
     isXPub,
@@ -100,11 +101,17 @@ async function importWallet({
             );
             return false;
         }
-        parsedSecret = new ParsedSecret(
-            secret
-                ? HardwareWalletMasterKey.fromXPub(secret)
-                : await HardwareWalletMasterKey.create()
-        );
+        try {
+            parsedSecret = new ParsedSecret(
+                secret
+                    ? HardwareWalletMasterKey.fromXPub(secret)
+                    : await HardwareWalletMasterKey.create()
+            );
+        } catch (e) {
+            // The user has already been notified in `ledger.js`
+            debugError(DebugTopics.LEDGER, e);
+            return;
+        }
 
         createAlert(
             'info',
