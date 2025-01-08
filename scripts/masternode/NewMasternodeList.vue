@@ -1,11 +1,24 @@
 <script setup>
-import { toRefs, computed, ref, watch } from 'vue';
+import { toRefs, ref } from 'vue';
 import MasternodeRow from './MasternodeRow.vue';
+import CreateMasternodeModal from './CreateMasternodeModal.vue';
 // New masternode list for multi-masternode.
 // Currently unused. It will be implemented in a subsequent PR
 const props = defineProps({
     masternodes: Array,
+    possibleUTXOs: Array,
+    balance: Number,
+    synced: Boolean,
 });
+
+const emit = defineEmits([
+    'restartMasternode',
+    'deleteMasternode',
+    'createMasternode',
+    'importMasternode',
+]);
+
+const showCreateMasternodeModal = ref(false);
 
 /**
  * @type {{masternodes: import('vue').Ref<import('../masternode.js').default[]>}}
@@ -35,7 +48,15 @@ const { masternodes } = toRefs(props);
                     </thead>
                     <tbody>
                         <template v-for="mn of masternodes">
-                            <MasternodeRow :masternode="mn" />
+                            <MasternodeRow
+                                :masternode="mn"
+                                @restartMasternode="
+                                    (mn) => emit('restartMasternode', mn)
+                                "
+                                @deleteMasternode="
+                                    (mn) => emit('deleteMasternode', mn)
+                                "
+                            />
                         </template>
                     </tbody>
                 </table>
@@ -57,6 +78,7 @@ const { masternodes } = toRefs(props);
             style="height: 42px; width: 228px"
             data-toggle="modal"
             data-target="#createMasternodeModal"
+            @click="showCreateMasternodeModal = true"
         >
             <span class="buttoni-text">
                 <span id="plus-icon3" class="plus-icon"></span>
@@ -64,6 +86,18 @@ const { masternodes } = toRefs(props);
             >
         </button>
     </div>
+
+    <CreateMasternodeModal
+        :synced="synced"
+        :balance="balance"
+        :possibleUTXOs="possibleUTXOs"
+        @createMasternode="(o) => emit('createMasternode', o)"
+        @importMasternode="
+            (privKey, ip, utxo) => emit('importMasternode', privKey, ip, utxo)
+        "
+        @close="showCreateMasternodeModal = false"
+        :show="showCreateMasternodeModal"
+    />
 
     <div class="dcWallet-activity">
         <span

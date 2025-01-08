@@ -66,7 +66,7 @@ watch(isSynced, () => {
  * Start a Masternode via a signed network broadcast
  * @param {boolean} fRestart - Whether this is a Restart or a first Start
  */
-async function startMasternode(fRestart = false) {
+async function startMasternode(mn, fRestart = false) {
     if (
         !isHardwareWallet.value &&
         isViewOnly.value &&
@@ -74,20 +74,18 @@ async function startMasternode(fRestart = false) {
     ) {
         return;
     }
-    for (const masternode of masternodes.value) {
-        if (await masternode.start()) {
-            const strMsg = fRestart ? ALERTS.MN_RESTARTED : ALERTS.MN_STARTED;
-            createAlert('success', strMsg, 4000);
-        } else {
-            const strMsg = fRestart
-                ? ALERTS.MN_RESTART_FAILED
-                : ALERTS.MN_START_FAILED;
-            createAlert('warning', strMsg, 4000);
-        }
+    if (await mn.start()) {
+        const strMsg = fRestart ? ALERTS.MN_RESTARTED : ALERTS.MN_STARTED;
+        createAlert('success', strMsg, 4000);
+    } else {
+        const strMsg = fRestart
+            ? ALERTS.MN_RESTART_FAILED
+            : ALERTS.MN_START_FAILED;
+        createAlert('warning', strMsg, 4000);
     }
 }
 
-async function destroyMasternode() {
+async function destroyMasternode(mn) {
     // TODO: Only delete 1
     masternodes.value = [];
 }
@@ -139,6 +137,7 @@ async function createMasternode({ isVPS }) {
     // Ensure wallet is unlocked
     if (!isHardwareWallet.value && isViewOnly.value && !(await restoreWallet()))
         return;
+    console.log(cChainParams.current.collateralInSats);
     const [address] = wallet.getNewAddress(1);
     const res = await wallet.createAndSendTransaction(
         getNetwork(),
@@ -166,6 +165,7 @@ function openShowPrivKeyModal() {
         :wallet="wallet"
         @close="showRestoreWallet = false"
     />
+    <!--
     <CreateMasternode
         v-if="!masternodes.length"
         :synced="isSynced"
@@ -179,9 +179,18 @@ function openShowPrivKeyModal() {
         :masternode="masternodes[0]"
         @start="({ restart }) => startMasternode(restart)"
         @destroy="destroyMasternode"
-    />
+	 /> -->
 
-    <NewMasternodeList :masternodes="masternodes" />
+    <NewMasternodeList
+        :masternodes="masternodes"
+        :possibleUTXOs="possibleUTXOs"
+        :balance="balance"
+        :synced="isSynced"
+        @restartMasternode="(mn) => startMasternode(mn)"
+        @destroyMasternode="(mn) => destroyMasternode(mn)"
+        @createMasternode="createMasternode"
+        @importMasternode="importMasternode"
+    />
     <Modal :show="showMasternodePrivateKey">
         <template #header>
             <b>{{ translation?.ALERTS?.CONFIRM_POPUP_MN_P_KEY }}</b>
