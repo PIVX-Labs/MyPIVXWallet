@@ -256,11 +256,7 @@ function importMasternode() {
                     class="pivx-button-big"
                     @click="importMasternode()"
                 >
-                    <span class="buttoni-icon"
-                        ><i class="fas fa-file-upload fa-tiny-margin"></i
-                    ></span>
                     <span class="buttoni-text">Access Masternode</span>
-                    <span class="buttoni-arrow" v-html="IconArrow"> </span>
                 </button>
                 <button
                     type="button"
