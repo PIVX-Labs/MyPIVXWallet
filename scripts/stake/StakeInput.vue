@@ -77,7 +77,7 @@ async function selectContact() {
                         <input
                             class="btn-group-input balanceInput"
                             style="padding-right: 0px; border-right: 0px"
-                            inputmode="numeric"
+                            inputmode="decimal"
                             onkeypress="return event.charCode >= 46 && event.charCode <= 57"
                             placeholder="0.00"
                             autocomplete="nope"
@@ -121,7 +121,7 @@ async function selectContact() {
                     <div class="input-group mb-3">
                         <input
                             class="btn-group-input balanceInput"
-                            inputmode="numeric"
+                            inputmode="decimal"
                             onkeypress="return event.charCode >= 46 && event.charCode <= 57"
                             placeholder="0.00"
                             autocomplete="nope"
