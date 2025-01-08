@@ -212,6 +212,7 @@ masternodeRestartConfirmation = "Are you sure you want to restart your masternod
 masternodeDeleteConfirmation = "Are you sure you want to delete your masternode?" # Are you sure you want to delete your masternode?
 masternodeRestartTitle = "Restart Masternode" # Restart Masternode
 masternodeDeleteTitle = "Delete Masternode" # Delete Masternode
+votedMultiMn = "Voted with {successfulVotes} out of {totalVotes} masternodes" # Voted with {successfulVotes} out of {totalVotes} masternodes
 
 [ALERTS]
 INTERNAL_ERROR = "Internal error, please try again later" # Internal error, please try again later

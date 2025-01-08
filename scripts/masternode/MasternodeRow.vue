@@ -1,16 +1,18 @@
 <script setup>
 import Refresh from '../../assets/icons/icon-refresh.svg';
 import Trash from '../../assets/icons/icon-trash.svg';
-import { translation } from '../i18n';
+import { translation, ALERTS } from '../i18n';
+import { useAlerts } from '../composables/use_alerts.js';
 import Masternode from '../masternode.js';
 import Modal from '../Modal.vue';
 
 import { toRefs, ref, watch, onMounted } from 'vue';
+import { nextTick } from 'vue';
 
 const props = defineProps({
     masternode: Masternode,
 });
-
+const { createAlert } = useAlerts();
 const emit = defineEmits(['restartMasternode', 'deleteMasternode']);
 
 const { masternode } = toRefs(props);
@@ -34,7 +36,13 @@ onMounted(() => {
         .addEventListener('click', () => updateMnData(masternode.value));
 });
 watch(masternode, updateMnData, { immediate: true });
-
+watch(info, (info) => {
+    if (info.status === 'MISSING') {
+        createAlert('warning', ALERTS.MN_OFFLINE_STARTING, 6000);
+        emit('restartMasternode', masternode.value, { restart: false });
+        nextTick(() => updateMnData);
+    }
+});
 function getClassByStatus(status) {
     switch (status) {
         case 'ENABLED':

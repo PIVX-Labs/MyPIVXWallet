@@ -99,7 +99,8 @@ const { masternodes } = toRefs(props);
         :show="showCreateMasternodeModal"
     />
 
-    <div class="dcWallet-activity">
+    <!-- TODO: Implement mn reward history here -->
+    <div class="dcWallet-activity" v-if="false">
         <span
             style="
                 color: rgb(233, 222, 255);

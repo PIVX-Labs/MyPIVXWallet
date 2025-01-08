@@ -212,6 +212,7 @@ masternodeRestartConfirmation = "" # Are you sure you want to restart your maste
 masternodeDeleteConfirmation = "" # Are you sure you want to delete your masternode?
 masternodeRestartTitle = "" # Restart Masternode
 masternodeDeleteTitle = "" # Delete Masternode
+votedMultiMn = "" # Voted with {successfulVotes} out of {totalVotes} masternodes
 
 [ALERTS]
 INTERNAL_ERROR = "Erreur interne, veuillez réessayer plus tard" # Internal error, please try again later
