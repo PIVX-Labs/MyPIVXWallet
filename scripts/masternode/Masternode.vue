@@ -19,7 +19,7 @@ import { COutpoint } from '../transaction.js';
 const { createAlert } = useAlerts();
 
 /**
- * @type{{masternodes: import('vue').Ref<import('../masternode.js').default?>[]}}
+ * @type{{masternodes: import('vue').Ref<import('../masternode.js').default[]>}}
  */
 const { masternodes } = storeToRefs(useMasternode());
 const wallet = useWallet();
@@ -86,8 +86,11 @@ async function startMasternode(mn, fRestart = false) {
 }
 
 async function destroyMasternode(mn) {
+    console.log('HIIII');
     // TODO: Only delete 1
-    masternodes.value = [];
+    masternodes.value = masternodes.value.filter(
+        (masternode) => masternode.mnPrivateKey !== mn.mnPrivateKey
+    );
 }
 
 /**
@@ -187,7 +190,7 @@ function openShowPrivKeyModal() {
         :balance="balance"
         :synced="isSynced"
         @restartMasternode="(mn) => startMasternode(mn)"
-        @destroyMasternode="(mn) => destroyMasternode(mn)"
+        @deleteMasternode="(mn) => destroyMasternode(mn)"
         @createMasternode="createMasternode"
         @importMasternode="importMasternode"
     />

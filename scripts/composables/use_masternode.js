@@ -38,13 +38,31 @@ export const useMasternode = defineStore('masternode', () => {
     watch(
         masternodes,
         async () => {
-            console.log('Adding mns:');
-            console.log(masternodes.value);
-            debugger;
             const database = await Database.getInstance();
-            // TODO: Only check the diff and change value accordingly
-            for (const mn of masternodes.value) {
+            // Ideally we would avoid this db read,
+            // but since adding and removing an array is a relatively rare occurrance
+            // This shouldn't be much of a problem
+            const storedMns = await database.getMasternodes();
+
+            const hasMn = (mn, array) => {
+                return array
+                    .map((arrayMn) => arrayMn.mnPrivateKey)
+                    .includes(mn.mnPrivateKey);
+            };
+
+            const toAdd = masternodes.value.filter(
+                (mn) => !hasMn(mn, storedMns)
+            );
+            const toRemove = storedMns.filter(
+                (storedMn) => !hasMn(storedMn, masternodes.value)
+            );
+
+            for (const mn of toAdd) {
                 await database.addMasternode(toRaw(mn));
+            }
+
+            for (const mn of toRemove) {
+                await database.removeMasternode(toRaw(mn));
             }
         },
         {
