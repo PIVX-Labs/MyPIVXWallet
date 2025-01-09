@@ -56,7 +56,7 @@ export class Database {
         const store = this.#db
             .transaction('masternodes', 'readwrite')
             .objectStore('masternodes');
-        await store.delete(mn.walletPrivateKeyPath);
+        await store.delete(mn.mnPrivateKey);
     }
 
     /**
@@ -479,7 +479,7 @@ export class Database {
 
                         db.deleteObjectStore('masternodes');
                         const newStore = db.createObjectStore('masternodes', {
-                            keyPath: 'walletPrivateKeyPath',
+                            keyPath: 'mnPrivateKey',
                         });
                         if (mn) {
                             await newStore.add(mn);
