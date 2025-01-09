@@ -2,6 +2,8 @@ import { mount } from '@vue/test-utils';
 import { describe, it, expect, vi } from 'vitest';
 import MasternodeRow from '../../scripts/masternode/MasternodeRow.vue';
 
+vi.mock('../../scripts/i18n.js');
+
 class MockMasternode {
     async getFullData() {
         return { status: 'ENABLED', lastseen: Date.now() };
