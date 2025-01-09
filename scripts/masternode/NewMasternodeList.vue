@@ -35,7 +35,7 @@ function openCreateMasternodeModal() {
         );
         return;
     }
-    showCreateMasternodeModal = true;
+    showCreateMasternodeModal.value = true;
 }
 
 /**
