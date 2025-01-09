@@ -2,8 +2,6 @@
 import { useMasternode } from '../composables/use_masternode.js';
 import { storeToRefs } from 'pinia';
 import NewMasternodeList from './NewMasternodeList.vue';
-import CreateMasternode from './CreateMasternode.vue';
-import MasternodeController from './MasternodeController.vue';
 import { useWallet } from '../composables/use_wallet';
 import Masternode from '../masternode.js';
 import RestoreWallet from '../dashboard/RestoreWallet.vue';
