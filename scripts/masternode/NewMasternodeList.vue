@@ -96,6 +96,7 @@ const { masternodes } = toRefs(props);
             style="height: 42px; width: 228px"
             data-toggle="modal"
             data-target="#createMasternodeModal"
+            data-testid="addMasternodeButton"
             :style="{
                 opacity:
                     props.balance < cChainParams.current.collateralInSats
