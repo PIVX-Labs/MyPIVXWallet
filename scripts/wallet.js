@@ -1379,6 +1379,7 @@ export class Wallet {
         }
         await this.#pushToHistoricalTx(transaction);
         getEventEmitter().emit('new-tx');
+        getEventEmitter().emit('balance-update');
     }
 
     /**
