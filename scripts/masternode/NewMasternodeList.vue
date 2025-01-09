@@ -2,6 +2,9 @@
 import { toRefs, ref } from 'vue';
 import MasternodeRow from './MasternodeRow.vue';
 import CreateMasternodeModal from './CreateMasternodeModal.vue';
+import { cChainParams, COIN } from '../chain_params';
+import { createAlert } from '../alerts/alert';
+import { tr, translation } from '../i18n';
 // New masternode list for multi-masternode.
 // Currently unused. It will be implemented in a subsequent PR
 const props = defineProps({
@@ -19,6 +22,21 @@ const emit = defineEmits([
 ]);
 
 const showCreateMasternodeModal = ref(false);
+
+function openCreateMasternodeModal() {
+    const needed = cChainParams.current.collateralInSats - props.balance;
+    if (needed > 0) {
+        createAlert(
+            'warning',
+            tr(translation.ALERTS.MN_NOT_ENOUGH_COLLAT, [
+                { amount: needed / COIN },
+                { ticker: cChainParams.current.TICKER },
+            ])
+        );
+        return;
+    }
+    showCreateMasternodeModal = true;
+}
 
 /**
  * @type {{masternodes: import('vue').Ref<import('../masternode.js').default[]>}}
@@ -78,7 +96,13 @@ const { masternodes } = toRefs(props);
             style="height: 42px; width: 228px"
             data-toggle="modal"
             data-target="#createMasternodeModal"
-            @click="showCreateMasternodeModal = true"
+            :style="{
+                opacity:
+                    props.balance < cChainParams.current.collateralInSats
+                        ? 0.5
+                        : 1,
+            }"
+            @click="openCreateMasternodeModal()"
         >
             <span class="buttoni-text">
                 <span id="plus-icon3" class="plus-icon"></span>
