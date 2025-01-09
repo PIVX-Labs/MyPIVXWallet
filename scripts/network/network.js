@@ -105,6 +105,14 @@ export class Network {
         throw new Error('getShieldData must be implemented');
     }
 
+    async getSaplingOutput() {
+        throw new Error('getSaplingOutput must be implemented');
+    }
+
+    async getSaplingSpend() {
+        throw new Error('getSaplingSpend must be implemented');
+    }
+
     async getProposalVote(_proposalName, _collateralTxId, _outidx) {
         throw new Error('getProposalVote must be implemented');
     }
@@ -327,6 +335,32 @@ export class RPCNodeNetwork extends Network {
     async getShieldData(startBlock) {
         const res = await this.#fetchNode(
             `/getshielddata?startBlock=${startBlock}`
+        );
+        if (!res.ok) throw new Error('Invalid response');
+        return res;
+    }
+
+    #getSaplingParamsUrl() {
+        // Hack: sapling params is currently not hosted on the rpc subdomain, but
+        // the main domain.
+        // e.g.: Not rpc.duddino.com, but duddino.com/sapling-output.params
+        return this.strUrl
+            .replace('rpc.', '')
+            .replace('rpc2.', '')
+            .replace('/mainnet', '');
+    }
+
+    async getSaplingOutput() {
+        const res = await fetch(
+            `${this.#getSaplingParamsUrl()}/sapling-output.params`
+        );
+        if (!res.ok) throw new Error('Invalid response');
+        return res;
+    }
+
+    async getSaplingSpend() {
+        const res = await fetch(
+            `${this.#getSaplingParamsUrl()}/sapling-spend.params`
         );
         if (!res.ok) throw new Error('Invalid response');
         return res;
