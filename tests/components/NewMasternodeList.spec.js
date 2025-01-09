@@ -3,7 +3,7 @@ import { describe, it, expect, vi } from 'vitest';
 import MasternodeList from '../../scripts/masternode/NewMasternodeList.vue';
 import MasternodeRow from '../../scripts/masternode/MasternodeRow.vue';
 import CreateMasternodeModal from '../../scripts/masternode/CreateMasternodeModal.vue';
-
+import * as translation from '../../scripts/i18n.js';
 const mn = vi.fn((status, ip, lastSeen) => {
     return {
         getFullData() {
@@ -17,6 +17,15 @@ const mn = vi.fn((status, ip, lastSeen) => {
 });
 
 describe('NewMasternodeList tests', () => {
+    beforeEach(() => {
+        vi.spyOn(translation, 'tr').mockImplementation((message, variables) => {
+            return message + variables[0].MIN_PASS_LENGTH;
+        });
+        vi.spyOn(translation, 'ALERTS', 'get').mockReturnValue({
+            PASSWORD_TOO_SMALL: 'pass_too_small',
+            PASSWORD_DOESNT_MATCH: 'pass_doesnt_match',
+        });
+    });
     const defaultProps = {
         masternodes: [
             mn('ENABLED', '192.168.1.1', '5:45'),
@@ -40,7 +49,7 @@ describe('NewMasternodeList tests', () => {
     });
 
     it('disables the "Add Masternode" button if balance is insufficient', () => {
-        const insufficientBalanceProps = { ...defaultProps, balance: 120 };
+        const insufficientBalanceProps = { ...defaultProps, balance: 100 };
         const wrapper = mount(MasternodeList, {
             props: insufficientBalanceProps,
         });
