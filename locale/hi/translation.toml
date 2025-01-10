@@ -208,7 +208,7 @@ shieldAddress = "शील्ड एड्रेस" # Shield address
 cantShieldToExc = "यह एड्रेस शील्ड ट्रांसफर का समर्थन नहीं करता" # This address does not support shield transfers
 badSaplingRoot = "सिंक करते समय एक त्रुटि हुई। रिसिंकिंग कर रहे हैं स्क्रैच से(खराब सैपलिंग रूट)" # There was an error while syncing. Resyncing from scratch (Bad sapling root)
 creatingShieldTransaction = "क्रिएटिंग शील्ड ट्रांजेक्शन..." # Creating SHIELD transaction...
-immatureRewards = "" # Your staked coins have been stolen by PIVX LABS
+immatureRewards = "" # Part of your staked balance may be locked for 100 blocks as your reward matures.
 
 [ALERTS]
 INTERNAL_ERROR = "आंतरिक त्रुटि, कृपया कुछ समय बाद पुनः प्रयास करें" # Internal error, please try again later

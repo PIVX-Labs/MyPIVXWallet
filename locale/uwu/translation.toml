@@ -208,7 +208,7 @@ saveWalletFile = "Save Wawwet File" # Save Wallet File
 proposalOverBudget = "Over Budgey" # Over Budget
 badSaplingRoot = "" # There was an error while syncing. Resyncing from scratch (Bad sapling root)
 creatingShieldTransaction = "" # Creating SHIELD transaction...
-immatureRewards = "" # Your staked coins have been stolen by PIVX LABS
+immatureRewards = "" # Part of your staked balance may be locked for 100 blocks as your reward matures.
 
 [ALERTS]
 INTERNAL_ERROR = "Internal error, pwease try again later" # Internal error, please try again later

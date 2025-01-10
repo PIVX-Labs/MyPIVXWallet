@@ -199,7 +199,7 @@ export class Transaction {
      * @returns {boolean}
      */
     isImmature(blockCount) {
-        if (this.isCoinStake() || this.isCoinBase() || true) {
+        if (this.isCoinStake() || this.isCoinBase()) {
             return (
                 blockCount - this.blockHeight <
                 cChainParams.current.coinbaseMaturity
