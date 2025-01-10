@@ -40,8 +40,10 @@ export const useMasternode = defineStore('masternode', () => {
         await database.addMasternode(toRaw(masternode.value));
     });
 
-    fetchProposalsFromDatabase().then(() => {});
-    fetchMasternodeFromDatabase().then(() => {});
+    getEventEmitter().on('wallet-import', () => {
+        fetchProposalsFromDatabase().then(() => {});
+        fetchMasternodeFromDatabase().then(() => {});
+    });
     getEventEmitter().on('toggle-network', () => {
         fetchProposalsFromDatabase().then(() => {});
         fetchMasternodeFromDatabase().then(() => {});

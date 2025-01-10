@@ -30,6 +30,7 @@ PIVXShield.prototype.getLastSyncedBlock = vi.fn(() => {
 PIVXShield.prototype.getBalance = vi.fn(() => 40 * 10 ** 8);
 
 PIVXShield.prototype.getTxStatus = vi.fn(() => 1.0);
+PIVXShield.prototype.proverIsLoaded = vi.fn(() => true);
 /**
  * set up and sync a wallet
  * @param {MasterKey} masterKey - masterKey of the wallet

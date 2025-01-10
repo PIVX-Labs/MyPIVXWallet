@@ -48,6 +48,7 @@ import {
     DebugTopics,
 } from './debug.js';
 import { OrderedArray } from './ordered_array.js';
+import { SaplingParams } from './sapling_params.js';
 
 /**
  * Class Wallet, at the moment it is just a "realization" of Masterkey with a given nAccount
@@ -1257,12 +1258,20 @@ export class Wallet {
                 'trying to create a shield transaction without having shield enable'
             );
         }
+
+        if (!(await this.#shield.proverIsLoaded())) {
+            await this.#loadProver();
+        }
+
         const periodicFunction = new AsyncInterval(async () => {
             const percentage = (await this.#shield.getTxStatus()) * 100;
             getEventEmitter().emit(
                 'shield-transaction-creation-update',
                 percentage,
-                false
+                // state: 0 = loading shield params
+                //        1 = proving tx
+                //        2 = finished
+                1
             );
         }, 500);
 
@@ -1290,9 +1299,20 @@ export class Wallet {
             getEventEmitter().emit(
                 'shield-transaction-creation-update',
                 0.0,
-                true
+                // state: 0 = loading shield params
+                //        1 = proving tx
+                //        2 = finished
+                2
             );
         }
+    }
+
+    async #loadProver() {
+        const params = new SaplingParams(
+            getNetwork(),
+            await Database.getInstance()
+        );
+        await params.fetch(this.#shield);
     }
 
     /**
@@ -1359,6 +1379,7 @@ export class Wallet {
         }
         await this.#pushToHistoricalTx(transaction);
         getEventEmitter().emit('new-tx');
+        getEventEmitter().emit('balance-update');
     }
 
     /**
