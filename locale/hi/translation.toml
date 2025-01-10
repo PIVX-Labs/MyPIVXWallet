@@ -208,6 +208,7 @@ shieldAddress = "शील्ड एड्रेस" # Shield address
 cantShieldToExc = "यह एड्रेस शील्ड ट्रांसफर का समर्थन नहीं करता" # This address does not support shield transfers
 badSaplingRoot = "सिंक करते समय एक त्रुटि हुई। रिसिंकिंग कर रहे हैं स्क्रैच से(खराब सैपलिंग रूट)" # There was an error while syncing. Resyncing from scratch (Bad sapling root)
 creatingShieldTransaction = "क्रिएटिंग शील्ड ट्रांजेक्शन..." # Creating SHIELD transaction...
+immatureRewards = "" # Your staked coins have been stolen by PIVX LABS
 
 [ALERTS]
 INTERNAL_ERROR = "आंतरिक त्रुटि, कृपया कुछ समय बाद पुनः प्रयास करें" # Internal error, please try again later
@@ -225,7 +226,7 @@ QR_SCANNER_BAD_RECEIVER = "एक मान्य पेमेंट रिस�
 UNSUPPORTED_CHARACTER = "वर्ण '{char}' एड्रेसिस में समर्थित नहीं है! (Base58 संगत नहीं)" # The character '{char}' is unsupported in addresses! (Not Base58 compatible)
 UNSUPPORTED_WEBWORKERS = "इस ब्राउज़र में वेब वर्कर्स (मल्टी-थ्रेडेड JS) का समर्थन नहीं है, दुर्भाग्यवश आप वैनीटी वॉलेट नहीं बना सकते!" # This browser doesn't support Web Workers (multi-threaded JS), unfortunately you cannot generate Vanity wallets!
 INVALID_ADDRESS = "अवैध PIVX अमाउन्ट!" # <b>Invalid PIVX address!</b><br> {address}
-VALIDATE_AMOUNT_LOW = "न्यूनतम अमाउन्ट {minimumAmount} {coinTicker} है!" # <br>Minimum amount is {minimumAmount} {coinTicker}!
+VALIDATE_AMOUNT_LOW = "न्यूनतम अमाउन्ट {minimumAmount} {coinTicker} है!" # Minimum amount is {minimumAmount} {coinTicker}!
 VALIDATE_AMOUNT_DECIMAL = "{coinDecimal} दशमलव सीमा से अधिक" # {coinDecimal} decimal limit exceeded
 SUCCESS_STAKING_ADDR = "<b>स्टेकिंग एड्रेस सेट हो गया!</b><br>अब आगे बढ़ें और अनस्टेक करें!" # <b>Staking Address set!</b><br>Now go ahead and unstake!
 CONFIRM_UNSTAKE_H_WALLET = "<b>अपने अनस्टेक की कन्फर्म करें</b><br>अपने {strHardwareName} पर TX कन्फर्म करें" # <b>Confirm your Unstake</b><br>Confirm the TX on your {strHardwareName}
@@ -314,6 +315,7 @@ CONFIRM_POPUP_DELETE_ACCOUNT = "यह आपके सभी डेटा क�
 CONFIRM_POPUP_DELETE_ACCOUNT_TITLE = "क्या आप सुनिश्चित हैं?" # Are you sure?
 CONFIRM_LEDGER_TX = "कन्फर्म करें कि यह ट्रांजैक्शन आपके {hardwareWallet} पर जोड़े गए ट्रांजैक्शन से मेल खाता है" # Confirm this transaction matches the one on your {hardwareWallet}
 CONFIRM_LEDGER_TX_OUT = "आप {value} {ticker} को <div class=\"inline-address\">{address}</div> भेजेंगे" # You will send {value} {ticker} to <div class="inline-address">{address}</div>
-MISSING_FUNDS = "बैलेंस बहुत कम है! {sats} सैट्स की कमी है!" # Balance is too small! Missing {sats} sats!
+MISSING_FUNDS = "बैलेंस बहुत कम है! {sats} सैट्स की कमी है!" # <b>Balance is too small!</b> <br> Missing {sats} sats!
 MISSING_SHIELD = "इस वॉलेट में शील्ड सक्षम नहीं है!" # Shield is not enabled in this wallet!
 WALLET_HARDWARE_USB_UNSUPPORTED = "" # <b>Firefox doesn't support this!</b><br>Unfortunately, Firefox does not support hardware wallets
+MN_UNLOCK_WALLET = "" # Please import your <b> COLLATERAL WALLET</b> first.

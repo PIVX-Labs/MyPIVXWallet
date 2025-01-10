@@ -28,6 +28,7 @@ const props = defineProps({
     shieldBalance: Number,
     pendingShieldBalance: Number,
     immatureBalance: Number,
+    immatureColdBalance: Number,
     isHdWallet: Boolean,
     isViewOnly: Boolean,
     isEncrypted: Boolean,
@@ -45,6 +46,7 @@ const {
     shieldBalance,
     pendingShieldBalance,
     immatureBalance,
+    immatureColdBalance,
     isHdWallet,
     isViewOnly,
     isEncrypted,
@@ -102,6 +104,10 @@ const primaryImmatureBalanceStr = computed(() => {
 
     return nCoins.toFixed(displayDecimals.value) + strPrefix + ticker.value;
 });
+
+const showImmatureBalanceTip = computed(
+    () => immatureColdBalance.value > 0 && publicMode.value
+);
 
 const balanceValue = computed(() => {
     // Convert our primary balance to the user's currency
@@ -344,6 +350,15 @@ function restoreWallet() {
                             "
                             >{{ primaryImmatureBalanceStr }}</span
                         >
+                        <div
+                            v-if="showImmatureBalanceTip"
+                            class="immatureTooltip"
+                        >
+                            <i class="fa-solid fa-circle-info"></i>
+                            <span class="immatureTooltiptext">{{
+                                translation.immatureRewards
+                            }}</span>
+                        </div>
                     </div>
                 </div>
                 <div
@@ -575,3 +590,42 @@ function restoreWallet() {
         </center>
     </center>
 </template>
+<style>
+.immatureTooltip {
+    margin-left: 12px;
+}
+.immatureTooltip .immatureTooltiptext {
+    visibility: hidden;
+    width: 120px;
+    background-color: black;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px 0;
+    position: absolute;
+    z-index: 1;
+    top: 19%;
+    /* Start at 50% down the parent */
+    left: 70%;
+    /* Keep it on the right side of the parent */
+    transform: translateY(-50%);
+    /* Vertically center the tooltip */
+}
+
+.immatureTooltip .immatureTooltiptext::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    /* Center the arrow vertically */
+    right: 100%;
+    /* Position the arrow on the left edge of the tooltip */
+    transform: translateY(-50%);
+    border-width: 5px;
+    border-style: solid;
+    border-color: transparent black transparent transparent;
+}
+
+.immatureTooltip:hover .immatureTooltiptext {
+    visibility: visible;
+}
+</style>
