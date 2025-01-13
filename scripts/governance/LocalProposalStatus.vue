@@ -11,7 +11,7 @@ const props = defineProps({
 const { proposal, blockCount } = toRefs(props);
 
 const status = computed(() => {
-    if (!proposal.value.blockHeight) {
+    if (!proposal.value.blockHeight || proposal.value.blockHeight === -1) {
         // If we have no blockHeight, proposal fee is still confirming
         return translation.proposalFinalisationConfirming;
     }

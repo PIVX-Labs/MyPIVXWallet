@@ -58,7 +58,7 @@ watch(
     [blockCount, localProposals],
     async () => {
         for (const proposal of localProposals.value) {
-            if (!proposal.blockHeight) {
+            if (!proposal.blockHeight || proposal.blockHeight === -1) {
                 let tx;
                 try {
                     tx = await getNetwork().getTxInfo(proposal.txid);
@@ -74,8 +74,7 @@ watch(
                 cChainParams.current.proposalFeeConfirmRequirement
             ) {
                 // Proposal fee has the required amounts of confirms, stop watching and try to finalize
-                // TODO: remove propsal
-                finalizeProposal(proposal);
+                await finalizeProposal(proposal);
             }
         }
     },
@@ -188,12 +187,16 @@ async function createProposal(name, url, payments, monthlyPayment, address) {
 }
 async function finalizeProposal(proposal) {
     const { ok, err } = await Masternode.finalizeProposal(proposal);
+
     if (ok) {
-        createAlert('success', translation.PROPOSAL_FINALISED);
+        createAlert('success', ALERTS.PROPOSAL_FINALISED);
+        localProposals.value = localProposals.value.filter(
+            (p) => p.txid !== proposal.txid
+        );
     } else {
         createAlert(
             'warning',
-            translation.PROPOSAL_FINALISE_FAIL + '<br>' + sanitizeHTML(err)
+            ALERTS.PROPOSAL_FINALISE_FAIL + '<br>' + sanitizeHTML(err)
         );
     }
 }
