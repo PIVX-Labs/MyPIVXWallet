@@ -3,7 +3,7 @@
 </h2>
 
 <p align="center">
-  <a href="https://mypivxwallet.org/">Production</a> (Stable) | <a href="https://pivx-labs.github.io/MyPIVXWallet/">Bleeding-Edge</a> (Unstable)
+  <a href="https://mypivxwallet.org/">Production</a> (Stable) | <a href="https://cheery-moxie-4f1121.netlify.app/">Bleeding-Edge</a> (Unstable)
 </p>
 
 ---
