@@ -56,7 +56,7 @@ const emit = defineEmits(['finalizeProposal', 'deleteProposal']);
         <i class="fa-solid fa-angle-down"></i>
     </span>
     <button
-        v-if="status !== translation.proposalFinalisationReady"
+        v-if="status === translation.proposalFinalisationReady"
         data-testid="finalizeProposalButton"
         class="pivx-button-small"
         @click="emit('finalizeProposal')"
@@ -64,7 +64,6 @@ const emit = defineEmits(['finalizeProposal', 'deleteProposal']);
         <i class="fas fa-check"></i>
     </button>
     <button
-        data-testid="finalizeProposalButton"
         class="pivx-button-small"
         @click="showDeleteConfirmation = true"
     >
