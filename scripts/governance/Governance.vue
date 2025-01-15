@@ -73,7 +73,6 @@ watch(
                 blockCount.value - proposal.blockHeight >=
                 cChainParams.current.proposalFeeConfirmRequirement
             ) {
-                debugger;
                 // Proposal fee has the required amounts of confirms, stop watching and try to finalize
                 await finalizeProposal(proposal);
             }
