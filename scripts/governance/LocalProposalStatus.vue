@@ -63,10 +63,7 @@ const emit = defineEmits(['finalizeProposal', 'deleteProposal']);
     >
         <i class="fas fa-check"></i>
     </button>
-    <button
-        class="pivx-button-small"
-        @click="showDeleteConfirmation = true"
-    >
+    <button class="pivx-button-small" @click="showDeleteConfirmation = true">
         <i class="fas fa-trash"></i>
     </button>
 
