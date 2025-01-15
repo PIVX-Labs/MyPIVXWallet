@@ -73,6 +73,7 @@ watch(
                 blockCount.value - proposal.blockHeight >=
                 cChainParams.current.proposalFeeConfirmRequirement
             ) {
+                debugger;
                 // Proposal fee has the required amounts of confirms, stop watching and try to finalize
                 await finalizeProposal(proposal);
             }
@@ -190,15 +191,19 @@ async function finalizeProposal(proposal) {
 
     if (ok) {
         createAlert('success', ALERTS.PROPOSAL_FINALISED);
-        localProposals.value = localProposals.value.filter(
-            (p) => p.txid !== proposal.txid
-        );
+        deleteProposal(proposal);
     } else {
         createAlert(
             'warning',
             ALERTS.PROPOSAL_FINALISE_FAIL + '<br>' + sanitizeHTML(err)
         );
     }
+}
+
+function deleteProposal(proposal) {
+    localProposals.value = localProposals.value.filter(
+        (p) => p.txid !== proposal.txid
+    );
 }
 
 async function vote(proposal, voteCode) {
@@ -299,6 +304,7 @@ async function vote(proposal, voteCode) {
                 :price="price"
                 @vote="vote"
                 @finalizeProposal="(proposal) => finalizeProposal(proposal)"
+                @deleteProposal="(proposal) => deleteProposal(proposal)"
             />
         </div>
 

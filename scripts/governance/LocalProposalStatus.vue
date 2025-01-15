@@ -1,7 +1,8 @@
 <script setup>
 import { cChainParams } from '../chain_params';
 import { translation } from '../i18n';
-import { computed, toRefs } from 'vue';
+import { computed, toRefs, ref } from 'vue';
+import Modal from '../Modal.vue';
 
 const props = defineProps({
     proposal: Object,
@@ -9,6 +10,7 @@ const props = defineProps({
 });
 
 const { proposal, blockCount } = toRefs(props);
+const showDeleteConfirmation = ref(false);
 
 const status = computed(() => {
     if (!proposal.value.blockHeight || proposal.value.blockHeight === -1) {
@@ -33,7 +35,7 @@ const status = computed(() => {
         return translation.proposalFinalisationReady;
     }
 });
-const emit = defineEmits(['finalizeProposal']);
+const emit = defineEmits(['finalizeProposal', 'deleteProposal']);
 </script>
 <template>
     <span
@@ -54,11 +56,57 @@ const emit = defineEmits(['finalizeProposal']);
         <i class="fa-solid fa-angle-down"></i>
     </span>
     <button
-        v-if="status === translation.proposalFinalisationReady"
+        v-if="status !== translation.proposalFinalisationReady"
         data-testid="finalizeProposalButton"
         class="pivx-button-small"
         @click="emit('finalizeProposal')"
     >
         <i class="fas fa-check"></i>
     </button>
+    <button
+        data-testid="finalizeProposalButton"
+        class="pivx-button-small"
+        @click="showDeleteConfirmation = true"
+    >
+        <i class="fas fa-trash"></i>
+    </button>
+
+    <Teleport to="body">
+        <Modal :show="showDeleteConfirmation">
+            <template #header>
+                <h3
+                    class="modal-title"
+                    style="text-align: center; width: 100%; color: #8e21ff"
+                >
+                    {{ translation.deleteProposal }}
+                </h3>
+            </template>
+
+            <template #body>
+                {{ translation.deleteProposalBody }}
+            </template>
+            <template #footer>
+                <button
+                    data-i18n="popupConfirm"
+                    type="button"
+                    class="pivx-button-big"
+                    style="float: right"
+                    @click="
+                        emit('deleteProposal');
+                        showDeleteConfirmation = false;
+                    "
+                >
+                    Confirm
+                </button>
+                <button
+                    type="button"
+                    class="pivx-button-big-cancel"
+                    style="float: right"
+                    @click="showDeleteConfirmation = false"
+                >
+                    {{ translation.popupCancel }}
+                </button>
+            </template>
+        </Modal>
+    </Teleport>
 </template>

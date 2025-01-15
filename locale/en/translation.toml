@@ -208,6 +208,8 @@ saveWalletFile = "Save Wallet File" # Save Wallet File
 proposalOverBudget = "Over Budget" # Over Budget
 badSaplingRoot = "There was an error while syncing. Resyncing from scratch (Bad sapling root)" # There was an error while syncing. Resyncing from scratch (Bad sapling root)
 creatingShieldTransaction = "Creating SHIELD transaction..." # Creating SHIELD transaction...
+deleteProposal = "Delete Proposal" # Delete Proposal
+deleteProposalBody = "Are you sure you want to delete your proposal? Your collateral will be permanently lost." # Are you sure you want to delete your proposal? Your collateral will be permanently lost.
 
 [ALERTS]
 INTERNAL_ERROR = "Internal error, please try again later" # Internal error, please try again later
@@ -225,7 +227,7 @@ QR_SCANNER_BAD_RECEIVER = "is not a valid payment receiver" # is not a valid pay
 UNSUPPORTED_CHARACTER = "The character '{char}' is unsupported in addresses! (Not Base58 compatible)" # The character '{char}' is unsupported in addresses! (Not Base58 compatible)
 UNSUPPORTED_WEBWORKERS = "This browser doesn't support Web Workers (multi-threaded JS), unfortunately you cannot generate Vanity wallets!" # This browser doesn't support Web Workers (multi-threaded JS), unfortunately you cannot generate Vanity wallets!
 INVALID_ADDRESS = "<b>Invalid PIVX address!</b><br> {address}" # <b>Invalid PIVX address!</b><br> {address}
-VALIDATE_AMOUNT_LOW = "Minimum amount is {minimumAmount} {coinTicker}!" # <br>Minimum amount is {minimumAmount} {coinTicker}!
+VALIDATE_AMOUNT_LOW = "Minimum amount is {minimumAmount} {coinTicker}!" # Minimum amount is {minimumAmount} {coinTicker}!
 VALIDATE_AMOUNT_DECIMAL = "{coinDecimal} decimal limit exceeded" # {coinDecimal} decimal limit exceeded
 SUCCESS_STAKING_ADDR = "<b>Staking Address set!</b><br>Now go ahead and unstake!" # <b>Staking Address set!</b><br>Now go ahead and unstake!
 CONFIRM_UNSTAKE_H_WALLET = "<b>Confirm your Unstake</b><br>Confirm the TX on your {strHardwareName}" # <b>Confirm your Unstake</b><br>Confirm the TX on your {strHardwareName}
@@ -258,7 +260,7 @@ MN_BAD_IP = "The IP address is invalid!" # The IP address is invalid!
 MN_BAD_PRIVKEY = "The private key is invalid" # The private key is invalid
 MN_NOT_ENOUGH_COLLAT = "You need <b>{amount} more {ticker}</b> to create a Masternode!" # You need <b>{amount} more {ticker}</b> to create a Masternode!
 MN_ENOUGH_BUT_NO_COLLAT = "You have enough balance for a Masternode, but no valid collateral UTXO of {amount} {ticker}" # You have enough balance for a Masternode, but no valid collateral UTXO of {amount} {ticker}
-MN_UNLOCK_WALLET = "Please import your <b> COLLATERAL WALLET</b> first."
+MN_UNLOCK_WALLET = "Please import your <b> COLLATERAL WALLET</b> first." # Please import your <b> COLLATERAL WALLET</b> first.
 MN_COLLAT_NOT_SUITABLE = "This is not a suitable UTXO for a Masternode" # This is not a suitable UTXO for a Masternode
 MN_CANT_CONNECT = "Unable to connect to RPC node!" # Unable to connect to RPC node!
 CONTACTS_ENCRYPT_FIRST = "You need to hit \"{button}\" before you can use Contacts!" # You need to hit "{button}" before you can use Contacts!
@@ -317,4 +319,4 @@ CONFIRM_LEDGER_TX_OUT = "You will send {value} {ticker} to <div class=\"inline-a
 MISSING_SHIELD = "Shield is not enabled in this wallet!" # Shield is not enabled in this wallet!
 MN_START_FAILED = "" # <b>Masternode failed to start!</b>
 MN_RESTART_FAILED = "" # <b>Masternode failed to restart!</b>
-MISSING_FUNDS = "<b>Balance is too small!</b> <br> Missing {sats} sats!" # <b>Balance is too small!<b> <br> Missing {sats} sats!
+MISSING_FUNDS = "<b>Balance is too small!</b> <br> Missing {sats} sats!" # <b>Balance is too small!</b> <br> Missing {sats} sats!

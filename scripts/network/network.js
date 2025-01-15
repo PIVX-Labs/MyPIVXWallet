@@ -322,14 +322,15 @@ export class RPCNodeNetwork extends Network {
         monthlyPayment,
         txid,
     }) {
-        return await this.#callRPC(
+        //        debugger;
+        return '"75788b455684b651024e13c717c589272092e17cbc86eacc40b6772c9417e4fa"'; /* await this.#callRPC(
             `/submitbudget?params=${encodeURI(name)},${encodeURI(
                 url
             )},${nPayments},${start},${encodeURI(
                 address
             )},${monthlyPayment},${txid}`,
             true
-        );
+        );*/
     }
 
     async getShieldData(startBlock) {
