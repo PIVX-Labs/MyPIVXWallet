@@ -208,6 +208,8 @@ saveWalletFile = "" # Save Wallet File
 proposalOverBudget = "" # Over Budget
 badSaplingRoot = "" # There was an error while syncing. Resyncing from scratch (Bad sapling root)
 creatingShieldTransaction = "" # Creating SHIELD transaction...
+deleteProposal = "" # Delete Proposal
+deleteProposalBody = "" # Are you sure you want to delete your proposal? Your collateral will be permanently lost.
 
 [ALERTS]
 INTERNAL_ERROR = "Interna greška, molimo pokušajte ponovo kasnije" # Internal error, please try again later
@@ -225,7 +227,7 @@ QR_SCANNER_BAD_RECEIVER = "nije validan primalac plaćanja" # is not a valid pay
 UNSUPPORTED_CHARACTER = "Karakter '{char}' nije podržan u adresama! (Nije kompatibilan sa Base58)" # The character '{char}' is unsupported in addresses! (Not Base58 compatible)
 UNSUPPORTED_WEBWORKERS = "Ovaj pretraživač ne podržava Web Workers (višenitni JS), nažalost ne možete generisati Personalizovane novčanike!" # This browser doesn't support Web Workers (multi-threaded JS), unfortunately you cannot generate Vanity wallets!
 INVALID_ADDRESS = "<b>Neispravna PIVX adresa!</b><br> {address}" # <b>Invalid PIVX address!</b><br> {address}
-VALIDATE_AMOUNT_LOW = "Minimalni iznos je {minimumAmount} {coinTicker}!" # <br>Minimum amount is {minimumAmount} {coinTicker}!
+VALIDATE_AMOUNT_LOW = "Minimalni iznos je {minimumAmount} {coinTicker}!" # Minimum amount is {minimumAmount} {coinTicker}!
 VALIDATE_AMOUNT_DECIMAL = "{coinDecimal} decimalno prekoračenje" # {coinDecimal} decimal limit exceeded
 SUCCESS_STAKING_ADDR = "<b>Staking adresa je postavljena!</b><br>Sada možete unstake-ovati!" # <b>Staking Address set!</b><br>Now go ahead and unstake!
 CONFIRM_UNSTAKE_H_WALLET = "<b>Potvrdite vaše unstake-ovanje</b><br>Potvrdite TX na svom {strHardwareName}" # <b>Confirm your Unstake</b><br>Confirm the TX on your {strHardwareName}
@@ -313,7 +315,8 @@ WALLET_LOCKED = "Novčanik je uspešno zaključan!" # Wallet successfully Locked
 WALLET_UNLOCKED = "Novčanik je uspešno otključan!" # Wallet successfully Unlocked!
 CONFIRM_LEDGER_TX = "" # Confirm this transaction matches the one on your {hardwareWallet}
 CONFIRM_LEDGER_TX_OUT = "" # You will send {value} {ticker} to <div class="inline-address">{address}</div>
-MISSING_FUNDS = "" # Balance is too small! Missing {sats} sats!
+MISSING_FUNDS = "" # <b>Balance is too small!</b> <br> Missing {sats} sats!
 MISSING_SHIELD = "" # Shield is not enabled in this wallet!
 MN_START_FAILED = "" # <b>Masternode failed to start!</b>
 MN_RESTART_FAILED = "" # <b>Masternode failed to restart!</b>
+MN_UNLOCK_WALLET = "" # Please import your <b> COLLATERAL WALLET</b> first.

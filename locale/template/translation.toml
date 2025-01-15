@@ -232,6 +232,8 @@ shieldAddress = "Shield address"
 cantShieldToExc = "This address does not support shield transfers"
 badSaplingRoot = "There was an error while syncing. Resyncing from scratch (Bad sapling root)"
 creatingShieldTransaction = "Creating SHIELD transaction..."
+deleteProposal = "Delete Proposal"
+deleteProposalBody = "Are you sure you want to delete your proposal? Your collateral will be permanently lost."
 
 [ALERTS]
 INTERNAL_ERROR = "Internal error, please try again later"
