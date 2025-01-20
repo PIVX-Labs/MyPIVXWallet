@@ -37,10 +37,7 @@ watch(ownerAddress, async (ownerAddress) => {
 
 function submit() {
     const value = Math.round(parseFloat(amount.value) * COIN);
-
-    if (validateAmount(value)) {
-        emit('submit', value, ownerAddress.value);
-    }
+    emit('submit', value, ownerAddress.value);
 }
 
 function syncAmountCurrency() {
@@ -80,7 +77,8 @@ async function selectContact() {
                         <input
                             class="btn-group-input balanceInput"
                             style="padding-right: 0px; border-right: 0px"
-                            type="number"
+                            inputmode="decimal"
+                            onkeypress="return event.charCode >= 46 && event.charCode <= 57"
                             placeholder="0.00"
                             autocomplete="nope"
                             onkeydown="javascript: return event.keyCode == 69 ? false : true"
@@ -123,7 +121,8 @@ async function selectContact() {
                     <div class="input-group mb-3">
                         <input
                             class="btn-group-input balanceInput"
-                            type="text"
+                            inputmode="decimal"
+                            onkeypress="return event.charCode >= 46 && event.charCode <= 57"
                             placeholder="0.00"
                             autocomplete="nope"
                             onkeydown="javascript: return event.keyCode == 69 ? false : true"
