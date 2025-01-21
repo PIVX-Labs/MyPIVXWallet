@@ -355,7 +355,7 @@ function restoreWallet() {
                         >
                         <div
                             v-if="showImmatureBalanceIcon"
-                            class="immatureTooltip"
+                            class="immatureTooltip ptr"
                         >
                             <i
                                 class="fa-solid fa-circle-info"
