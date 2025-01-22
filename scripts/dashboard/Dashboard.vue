@@ -434,6 +434,7 @@ const {
     shieldBalance,
     pendingShieldBalance,
     immatureBalance,
+    immatureColdBalance,
     currency,
     price,
     isViewOnly,
@@ -955,6 +956,7 @@ defineExpose({
                         :shieldBalance="shieldBalance"
                         :pendingShieldBalance="pendingShieldBalance"
                         :immatureBalance="immatureBalance"
+                        :immatureColdBalance="immatureColdBalance"
                         :isHdWallet="wallet.isHD"
                         :isViewOnly="wallet.isViewOnly"
                         :isEncrypted="wallet.isEncrypted"

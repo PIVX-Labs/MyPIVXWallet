@@ -208,6 +208,7 @@ saveWalletFile = "Save Wallet File" # Save Wallet File
 proposalOverBudget = "Over Budget" # Over Budget
 badSaplingRoot = "There was an error while syncing. Resyncing from scratch (Bad sapling root)" # There was an error while syncing. Resyncing from scratch (Bad sapling root)
 creatingShieldTransaction = "Creating SHIELD transaction..." # Creating SHIELD transaction...
+immatureRewards = "Part of your staked balance may be locked for 100 blocks as your reward matures." # Part of your staked balance may be locked for 100 blocks as your reward matures.
 
 [ALERTS]
 INTERNAL_ERROR = "Internal error, please try again later" # Internal error, please try again later
@@ -225,7 +226,7 @@ QR_SCANNER_BAD_RECEIVER = "is not a valid payment receiver" # is not a valid pay
 UNSUPPORTED_CHARACTER = "The character '{char}' is unsupported in addresses! (Not Base58 compatible)" # The character '{char}' is unsupported in addresses! (Not Base58 compatible)
 UNSUPPORTED_WEBWORKERS = "This browser doesn't support Web Workers (multi-threaded JS), unfortunately you cannot generate Vanity wallets!" # This browser doesn't support Web Workers (multi-threaded JS), unfortunately you cannot generate Vanity wallets!
 INVALID_ADDRESS = "<b>Invalid PIVX address!</b><br> {address}" # <b>Invalid PIVX address!</b><br> {address}
-VALIDATE_AMOUNT_LOW = "Minimum amount is {minimumAmount} {coinTicker}!" # <br>Minimum amount is {minimumAmount} {coinTicker}!
+VALIDATE_AMOUNT_LOW = "Minimum amount is {minimumAmount} {coinTicker}!" # Minimum amount is {minimumAmount} {coinTicker}!
 VALIDATE_AMOUNT_DECIMAL = "{coinDecimal} decimal limit exceeded" # {coinDecimal} decimal limit exceeded
 SUCCESS_STAKING_ADDR = "<b>Staking Address set!</b><br>Now go ahead and unstake!" # <b>Staking Address set!</b><br>Now go ahead and unstake!
 CONFIRM_UNSTAKE_H_WALLET = "<b>Confirm your Unstake</b><br>Confirm the TX on your {strHardwareName}" # <b>Confirm your Unstake</b><br>Confirm the TX on your {strHardwareName}
@@ -319,3 +320,6 @@ MN_START_FAILED = " <b>Masternode failed to start!</b>"
 MN_RESTART_FAILED = " <b>Masternode failed to restart!</b>"
 LEDGER_TX_TOO_BIG = "Transaction length exceeds 9000 bytes"
 MISSING_FUNDS = "<b>Balance is too small!</b> <br> Missing {sats} sats!" # <b>Balance is too small!<b> <br> Missing {sats} sats!
+MN_START_FAILED = "<b>Masternode failed to start!</b>" # <b>Masternode failed to start!</b>
+MN_RESTART_FAILED = "<b>Masternode failed to restart!</b>" # <b>Masternode failed to restart!</b>
+MISSING_FUNDS = "<b>Balance is too small!</b> <br> Missing {sats} sats!" # <b>Balance is too small!</b> <br> Missing {sats} sats!
