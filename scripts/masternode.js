@@ -239,7 +239,7 @@ export default class Masternode {
             return hexToBytes(
                 await wallet
                     .getMasterKey()
-                    .getPublicKey(this.walletPrivateKeyPath)
+                    .getPublicKey(this.walletPrivateKeyPath, { verify: false })
             );
         } else {
             const walletPrivateKey = await this._getWalletPrivateKey();
