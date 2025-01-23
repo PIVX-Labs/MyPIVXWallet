@@ -318,8 +318,6 @@ WALLET_UNLOCKED = "Wallet successfully Unlocked!" # Wallet successfully Unlocked
 CONFIRM_LEDGER_TX = "Confirm this transaction matches the one on your {hardwareWallet}" # Confirm this transaction matches the one on your {hardwareWallet}
 CONFIRM_LEDGER_TX_OUT = "You will send {value} {ticker} to <div class=\"inline-address\">{address}</div>" # You will send {value} {ticker} to <div class="inline-address">{address}</div>
 MISSING_SHIELD = "Shield is not enabled in this wallet!" # Shield is not enabled in this wallet!
-MN_START_FAILED = "" # <b>Masternode failed to start!</b>
-MN_RESTART_FAILED = "" # <b>Masternode failed to restart!</b>
 MN_START_FAILED = " <b>Masternode failed to start!</b>" # <b>Masternode failed to start!</b>
 MN_RESTART_FAILED = " <b>Masternode failed to restart!</b>" # <b>Masternode failed to restart!</b>
 LEDGER_TX_TOO_BIG = "Transaction length exceeds 9000 bytes" # Transaction length exceeds 9000 bytes
