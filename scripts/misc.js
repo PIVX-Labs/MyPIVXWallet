@@ -310,15 +310,11 @@ export function sanitizeHTML(text) {
 
 /**
  * "Beautifies" a number with HTML, by displaying decimals in a lower opacity
- * @param {string} strNumber - The number in String form to beautify
+ * @param {string} strNumber - The number in String form to beautify. This can contain a currency too.
  * @param {string?} strDecFontSize - The optional font size to display decimals in
  * @returns {string} - A HTML string with beautified number handling
  */
-export function beautifyNumber(
-    strNumber,
-    strDecFontSize = '',
-    showFirstNumber = true
-) {
+export function beautifyNumber(strNumber, strDecFontSize = '') {
     if (typeof strNumber === 'number') strNumber = strNumber.toString();
 
     // Only run this for numbers with decimals
@@ -326,13 +322,24 @@ export function beautifyNumber(
         return parseInt(strNumber).toLocaleString('en-GB');
 
     // Split the number in to Full and Decimal parts
-    const arrNumParts = strNumber.split('.');
+    let arrNumParts = strNumber.split('.');
+
+    for (let i = 0; i < arrNumParts[0].length; i++) {
+        if (parseInt(arrNumParts[0][i])) {
+            // We have reached the end of the currency part
+            const currency = arrNumParts[0].slice(0, i);
+            let number = parseInt(arrNumParts[0].slice(i)).toLocaleString(
+                'en-gb'
+            );
+
+            arrNumParts[0] = [...currency, ...number].join('');
+            break;
+        }
+    }
 
     // Return a HTML that renders the decimal in a lower opacity
     const strFontSize = strDecFontSize ? 'font-size: ' + strDecFontSize : '';
-    return `${
-        showFirstNumber ? parseInt(arrNumParts[0]).toLocaleString('en-GB') : ''
-    }<span style="opacity: 0.55; ${strFontSize}">.${arrNumParts[1]}</span>`;
+    return `${arrNumParts[0]}<span style="opacity: 0.55; ${strFontSize}">.${arrNumParts[1]}</span>`;
 }
 
 /**

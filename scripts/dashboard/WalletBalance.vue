@@ -117,14 +117,7 @@ const balanceValue = computed(() => {
     const nCoins = (publicMode.value ? balance : shieldBalance).value / COIN;
     const { nValue, cLocale } = optimiseCurrencyLocale(nCoins * price.value);
 
-    cLocale.minimumFractionDigits = 0;
-    cLocale.maximumFractionDigits = 0;
-
-    return `${nValue.toLocaleString('en-gb', cLocale)}${beautifyNumber(
-        nValue.toFixed(2),
-        '13px',
-        false
-    )}`;
+    return `${beautifyNumber(nValue.toLocaleString('en-gb', cLocale), '13px')}`;
 });
 
 const ticker = computed(() => cChainParams.current.TICKER);
