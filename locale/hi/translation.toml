@@ -210,6 +210,7 @@ badSaplingRoot = "सिंक करते समय एक त्रुटि 
 creatingShieldTransaction = "क्रिएटिंग शील्ड ट्रांजेक्शन..." # Creating SHIELD transaction...
 deleteProposal = "" # Delete Proposal
 deleteProposalBody = "" # Are you sure you want to delete your proposal? Your collateral will be permanently lost.
+immatureRewards = "" # Part of your staked balance may be locked for 100 blocks as your reward matures.
 
 [ALERTS]
 INTERNAL_ERROR = "आंतरिक त्रुटि, कृपया कुछ समय बाद पुनः प्रयास करें" # Internal error, please try again later
@@ -320,3 +321,4 @@ MISSING_FUNDS = "बैलेंस बहुत कम है! {sats} सैट
 MISSING_SHIELD = "इस वॉलेट में शील्ड सक्षम नहीं है!" # Shield is not enabled in this wallet!
 WALLET_HARDWARE_USB_UNSUPPORTED = "" # <b>Firefox doesn't support this!</b><br>Unfortunately, Firefox does not support hardware wallets
 MN_UNLOCK_WALLET = "" # Please import your <b> COLLATERAL WALLET</b> first.
+LEDGER_TX_TOO_BIG = "" # Transaction length exceeds 9000 bytes

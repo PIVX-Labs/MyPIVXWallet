@@ -9,6 +9,7 @@ import { renderWalletBreakdown } from '../charting.js';
 import { guiRenderCurrentReceiveModal } from '../contacts-book';
 import { getNewAddress } from '../wallet.js';
 import LoadingBar from '../Loadingbar.vue';
+import Tip from '../Tip.vue';
 import { sleep } from '../utils.js';
 
 import iShieldLock from '../../assets/icons/icon_shield_lock_locked.svg';
@@ -28,6 +29,7 @@ const props = defineProps({
     shieldBalance: Number,
     pendingShieldBalance: Number,
     immatureBalance: Number,
+    immatureColdBalance: Number,
     isHdWallet: Boolean,
     isViewOnly: Boolean,
     isEncrypted: Boolean,
@@ -45,6 +47,7 @@ const {
     shieldBalance,
     pendingShieldBalance,
     immatureBalance,
+    immatureColdBalance,
     isHdWallet,
     isViewOnly,
     isEncrypted,
@@ -102,6 +105,12 @@ const primaryImmatureBalanceStr = computed(() => {
 
     return nCoins.toFixed(displayDecimals.value) + strPrefix + ticker.value;
 });
+
+const showImmatureBalanceIcon = computed(
+    () => immatureColdBalance.value > 0 && publicMode.value
+);
+
+const showImmatureBalanceTip = ref(false);
 
 const balanceValue = computed(() => {
     // Convert our primary balance to the user's currency
@@ -344,6 +353,21 @@ function restoreWallet() {
                             "
                             >{{ primaryImmatureBalanceStr }}</span
                         >
+                        <div
+                            v-if="showImmatureBalanceIcon"
+                            class="immatureTooltip ptr"
+                        >
+                            <i
+                                class="fa-solid fa-circle-info"
+                                @click="showImmatureBalanceTip = true"
+                            >
+                            </i>
+                        </div>
+                        <Tip
+                            :body="translation.immatureRewards"
+                            :show="showImmatureBalanceTip"
+                            @close="showImmatureBalanceTip = false"
+                        />
                     </div>
                 </div>
                 <div
@@ -575,3 +599,8 @@ function restoreWallet() {
         </center>
     </center>
 </template>
+<style>
+.immatureTooltip {
+    margin-left: 12px;
+}
+</style>

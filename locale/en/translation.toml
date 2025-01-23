@@ -210,6 +210,7 @@ badSaplingRoot = "There was an error while syncing. Resyncing from scratch (Bad 
 creatingShieldTransaction = "Creating SHIELD transaction..." # Creating SHIELD transaction...
 deleteProposal = "Delete Proposal" # Delete Proposal
 deleteProposalBody = "Are you sure you want to delete your proposal? Your collateral will be permanently lost." # Are you sure you want to delete your proposal? Your collateral will be permanently lost.
+immatureRewards = "Part of your staked balance may be locked for 100 blocks as your reward matures." # Part of your staked balance may be locked for 100 blocks as your reward matures.
 
 [ALERTS]
 INTERNAL_ERROR = "Internal error, please try again later" # Internal error, please try again later
@@ -319,4 +320,7 @@ CONFIRM_LEDGER_TX_OUT = "You will send {value} {ticker} to <div class=\"inline-a
 MISSING_SHIELD = "Shield is not enabled in this wallet!" # Shield is not enabled in this wallet!
 MN_START_FAILED = "" # <b>Masternode failed to start!</b>
 MN_RESTART_FAILED = "" # <b>Masternode failed to restart!</b>
+MN_START_FAILED = " <b>Masternode failed to start!</b>" # <b>Masternode failed to start!</b>
+MN_RESTART_FAILED = " <b>Masternode failed to restart!</b>" # <b>Masternode failed to restart!</b>
+LEDGER_TX_TOO_BIG = "Transaction length exceeds 9000 bytes" # Transaction length exceeds 9000 bytes
 MISSING_FUNDS = "<b>Balance is too small!</b> <br> Missing {sats} sats!" # <b>Balance is too small!</b> <br> Missing {sats} sats!
