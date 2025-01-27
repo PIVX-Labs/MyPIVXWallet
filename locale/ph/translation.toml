@@ -209,6 +209,8 @@ proposalOverBudget = "" # Over Budget
 badSaplingRoot = "" # There was an error while syncing. Resyncing from scratch (Bad sapling root)
 creatingShieldTransaction = "" # Creating SHIELD transaction...
 immatureRewards = "" # Part of your staked balance may be locked for 100 blocks as your reward matures.
+exportToCsv = "" # Export transactions
+exportToCsvBody = "" # Do you want to export your transactions as CSV?
 
 [ALERTS]
 INTERNAL_ERROR = "Internal error, Pakiusap uliting muli" # Internal error, please try again later

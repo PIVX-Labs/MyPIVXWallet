@@ -7,12 +7,12 @@ import { translation } from '../i18n.js';
 import { Database } from '../database.js';
 import { HistoricalTx, HistoricalTxType } from '../historical_tx.js';
 import { getNameOrAddress } from '../contacts-book.js';
-import { getEventEmitter } from '../event_bus';
 
 import iCheck from '../../assets/icons/icon-check.svg';
 import iHourglass from '../../assets/icons/icon-hourglass.svg';
 import { blockCount } from '../global.js';
 import { beautifyNumber } from '../misc.js';
+import TxExport from './TxExport.vue';
 
 const props = defineProps({
     title: String,
@@ -29,6 +29,7 @@ const network = useNetwork();
 function getActivityUrl(tx) {
     return network.explorerUrl + '/tx/' + tx.id;
 }
+
 const txMap = computed(() => {
     return {
         [HistoricalTxType.STAKE]: {
@@ -353,7 +354,9 @@ defineExpose({ update, reset, getTxCount, updateReward });
                                 <th scope="col" class="tx3">
                                     {{ translation.amount }}
                                 </th>
-                                <th scope="col" class="tx4 text-right"></th>
+                                <th scope="col" class="tx4 text-right">
+                                    <TxExport />
+                                </th>
                             </tr>
                         </thead>
                         <tbody>

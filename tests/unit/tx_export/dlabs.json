@@ -1,0 +1,2724 @@
+[
+    {
+        "type": 1,
+        "id": "3a0bf329b1e797be646e3126a11951edda48083b2ffccc1f3f3f4e3527a7d167",
+        "receivers": [
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "DNteBR964Mu5NxhYgpPyEZ7Rs2dzbdWFt4"
+        ],
+        "shieldReceivers": [],
+        "time": 1737921705,
+        "blockHeight": 4747678,
+        "amount": 4,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 1,
+        "id": "0e9aec36c74ba4dfb8efc8c9338cdc6acf3985dce70722074118443250392317",
+        "receivers": [
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "DHE1Z2rhwbwr6e3ofrUbPyN3M3EdpkTsRp"
+        ],
+        "shieldReceivers": [],
+        "time": 1737556155,
+        "blockHeight": 4741732,
+        "amount": 4,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 1,
+        "id": "7625693b6c59122f54c500e322dc25dba60fceec77aeb52e0e278906524da074",
+        "receivers": [
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "DJCcYCeNdBQki1AHXPJuiWHg9diFqCEx8g"
+        ],
+        "shieldReceivers": [],
+        "time": 1737097110,
+        "blockHeight": 4734257,
+        "amount": 4,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 5,
+        "id": "c8690ca4e2394355a127b056cba80b816866239238819f0a7e1479b94740ee86",
+        "receivers": ["DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"],
+        "shieldReceivers": [],
+        "time": 1736887965,
+        "blockHeight": 4730856,
+        "amount": -50.0000236,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 5,
+        "id": "9d0059ec722b81a69912013940c61c839ed48f01c720e4aa7f6aabd72d08062f",
+        "receivers": ["DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"],
+        "shieldReceivers": [],
+        "time": 1736875005,
+        "blockHeight": 4730651,
+        "amount": -50.0000236,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 3,
+        "id": "0d62f07400ce87a6e27fe8cc109846ad1b85e4c1b8ab6126428a3e7b7f4bb6f9",
+        "receivers": [
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1736874630,
+        "blockHeight": 4730643,
+        "amount": 101,
+        "shieldAmount": 0,
+        "isToSelf": true
+    },
+    {
+        "type": 1,
+        "id": "b495cbf68138a80d0ebb5e39974cfb76c70c73b9e96df437f83109da8f234052",
+        "receivers": [
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "DPJYLBbsZtyrbv9YcAb5gSARqeNmSYBvXo"
+        ],
+        "shieldReceivers": [],
+        "time": 1736271060,
+        "blockHeight": 4720827,
+        "amount": 4,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 5,
+        "id": "4a7edacef053e33ca0c9f96a1db0fbbfc787ab9814904bb2e251282123902aa9",
+        "receivers": ["DQzW1GirPL4RDszLpLqVFjHhATsYe7jEAp"],
+        "shieldReceivers": [],
+        "time": 1735755360,
+        "blockHeight": 4712444,
+        "amount": -999,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 3,
+        "id": "e2065734c7abdfb39581978ca4ebbabb726eabec3c9ea23d2eeaec14038b13fb",
+        "receivers": [
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1735755345,
+        "blockHeight": 4712443,
+        "amount": 999,
+        "shieldAmount": 0,
+        "isToSelf": true
+    },
+    {
+        "type": 2,
+        "id": "1f8b50fa366d192d5e7b373dfbb69708ffa7ee126feca0d693f0aaadb5c8fea1",
+        "receivers": [
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy"
+        ],
+        "shieldReceivers": [],
+        "time": 1735681620,
+        "blockHeight": 4711239,
+        "amount": 3249.9999481,
+        "shieldAmount": 0,
+        "isToSelf": true
+    },
+    {
+        "type": 1,
+        "id": "3cfccbc80e6480454bc96a40b1e573c9e1d1e0bbfa4247259e8ad63c1edca10f",
+        "receivers": [
+            "SWq7B8duK3rnoWK3BQU4xX3PoKhGv5BC1Q",
+            "DNCHQatVCun2zBkfhpTxrnrjyrhub5YZHH",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1735532100,
+        "blockHeight": 4708817,
+        "amount": 3250,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 5,
+        "id": "fc4435b93d1f36e01876cf91fef1f2fddc154303ca061747b6dc5dd8e75f4378",
+        "receivers": ["DMTF5iydLAjc7dEQAwVrvy3hPUV96tncz6"],
+        "shieldReceivers": [],
+        "time": 1732979790,
+        "blockHeight": 4667325,
+        "amount": -3250.0999431,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 5,
+        "id": "fdf1edc261554b8be5484d0f25f63f9438ef82899df6bdcd57262f2b95774363",
+        "receivers": [
+            "D8p4E6bewDjfhqH2Rytq7PAcbVw9hx98z3",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1732904370,
+        "blockHeight": 4666096,
+        "amount": -1000.0000376,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 1,
+        "id": "af17ed071e0973b96bdcf6dba584a9df67938ff04dbdba2a891895bca0382309",
+        "receivers": [
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "DPiVXPykDKQi3PLVbcfekKMXv1E1o3FxtA",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1732874205,
+        "blockHeight": 4665607,
+        "amount": 4250,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 5,
+        "id": "784fe46f811dcb05303f81b89815700a8ca55386c2f5c9cf554afeb246d80624",
+        "receivers": ["DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"],
+        "shieldReceivers": [],
+        "time": 1732196190,
+        "blockHeight": 4654587,
+        "amount": -0.0000193,
+        "shieldAmount": 0,
+        "isToSelf": true
+    },
+    {
+        "type": 4,
+        "id": "d6a71e4c56376725cc9e0a6a1554a73127bd9ca00a00b98d7f9b9366bc9fba66",
+        "receivers": ["DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"],
+        "shieldReceivers": [],
+        "time": 1732022580,
+        "blockHeight": 4651765,
+        "amount": 0.1,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 5,
+        "id": "3b15ba3d0c36943b640ed392a9b20722f58ed26284ba853b3bc58ea746ba0fcc",
+        "receivers": ["D5YfTGTX7bpNBSEtMV81GqpabbvUE15P53"],
+        "shieldReceivers": [],
+        "time": 1731628650,
+        "blockHeight": 4645365,
+        "amount": -1515.8993748,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 3,
+        "id": "a37b087f24573926ecc4dfd2fc2c8bcc9e2852043a45e68b993048617515bf19",
+        "receivers": ["DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"],
+        "shieldReceivers": [],
+        "time": 1731628650,
+        "blockHeight": 4645365,
+        "amount": 1016.8994998,
+        "shieldAmount": 0,
+        "isToSelf": true
+    },
+    {
+        "type": 5,
+        "id": "526db46e1877ac023f071a8df1f3896bde74d97ebd1890be8f51a61343f58b88",
+        "receivers": [
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1731595920,
+        "blockHeight": 4644831,
+        "amount": -0.0000227,
+        "shieldAmount": 0,
+        "isToSelf": true
+    },
+    {
+        "type": 5,
+        "id": "fb804c230f88c79d06f496e348ab48f62b82c03c9be36bf06daa3e8c491beb41",
+        "receivers": [
+            "DQzW1GirPL4RDszLpLqVFjHhATsYe7jEAp",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1731518220,
+        "blockHeight": 4643567,
+        "amount": -1.0000227,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 5,
+        "id": "7f03c832e4af601d5cdfdf4ab33bceb795dc8cf06749c8fa58c4151cc59d2885",
+        "receivers": [
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1731518160,
+        "blockHeight": 4643566,
+        "amount": -0.0000376,
+        "shieldAmount": 0,
+        "isToSelf": true
+    },
+    {
+        "type": 5,
+        "id": "e0ae8f91c695f83d15c8d98b4a207e831e5edfea497af81bfe12cdf8da4420ed",
+        "receivers": [
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1731518160,
+        "blockHeight": 4643566,
+        "amount": -0.0000227,
+        "shieldAmount": 0,
+        "isToSelf": true
+    },
+    {
+        "type": 1,
+        "id": "8ec1773412f2f323c8cd34364f5a6b73740430ec6872c181bdb37cd3fbda91e9",
+        "receivers": [
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "DPrDogJydjhCShCJ9hM7ERi8Wd2wnKFzYT"
+        ],
+        "shieldReceivers": [],
+        "time": 1731512190,
+        "blockHeight": 4643467,
+        "amount": 4,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 5,
+        "id": "f105fae60dad2fd9f201f222ba31dec54169a418738a426135a056b72463431b",
+        "receivers": ["DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"],
+        "shieldReceivers": [],
+        "time": 1731400440,
+        "blockHeight": 4641651,
+        "amount": -0.0000193,
+        "shieldAmount": 0,
+        "isToSelf": true
+    },
+    {
+        "type": 3,
+        "id": "d191b562b66616c58ec0fc778deb79dca5daa46cd43773e30836290fdac9ddb5",
+        "receivers": [
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1731400440,
+        "blockHeight": 4641651,
+        "amount": 500,
+        "shieldAmount": 0,
+        "isToSelf": true
+    },
+    {
+        "type": 5,
+        "id": "a940d086706e5ad0ce7e04abaa8d6454e1015af16f4782772a39ddf7254ef7bc",
+        "receivers": ["D6oYPFaw6acLZfBh3nt7LDC277SDLaPgDx"],
+        "shieldReceivers": [],
+        "time": 1731255855,
+        "blockHeight": 4639304,
+        "amount": -1501,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 3,
+        "id": "3d8952e84c1890ac6cfb9bfcf4e48a1af1d92c8b5d0b81d9b8e056a55d03ec70",
+        "receivers": [
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1731255825,
+        "blockHeight": 4639303,
+        "amount": 1501,
+        "shieldAmount": 0,
+        "isToSelf": true
+    },
+    {
+        "type": 5,
+        "id": "6226cec5b340fdbcebe7fc9667d4c1332fe3ec059446cc406011f9b3f4a3cbd0",
+        "receivers": ["DBHYjovav1BQBoQ6jfHTjB6UgCYvEoyqGm"],
+        "shieldReceivers": [],
+        "time": 1731200955,
+        "blockHeight": 4638416,
+        "amount": -1100,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 3,
+        "id": "621ea3dac91d08def909fa04691d290ce00f00e34aff5be87ba79732927a43fc",
+        "receivers": [
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1731200955,
+        "blockHeight": 4638416,
+        "amount": 1100,
+        "shieldAmount": 0,
+        "isToSelf": true
+    },
+    {
+        "type": 5,
+        "id": "b58c73109ca8b9154862bfb2095aaf531608eb7ad1df5b51a2f69bf7386368df",
+        "receivers": ["DBq5DCBFR55ePPq73pme4W4z6rZrgA827y"],
+        "shieldReceivers": [],
+        "time": 1731153240,
+        "blockHeight": 4637634,
+        "amount": -1001,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 3,
+        "id": "2b4bb8a0435ffda243eb8e1af15e7089c8271890638df71fd5c7e0314fa6129c",
+        "receivers": [
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1731153120,
+        "blockHeight": 4637632,
+        "amount": 1001,
+        "shieldAmount": 0,
+        "isToSelf": true
+    },
+    {
+        "type": 1,
+        "id": "1eeb7bff0b50753522508b2db9d5f39bbeaabe1ef82e9d4b62494b42cc0edfc8",
+        "receivers": [
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "DT8THcxaUgER9ifsfvTRFR1adxdjwZ5NE4"
+        ],
+        "shieldReceivers": [],
+        "time": 1731117315,
+        "blockHeight": 4637049,
+        "amount": 4,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 1,
+        "id": "d5216aed0b32dabeba9e4f27b6b90dcb697e2a6803dbeec0c98bb07c19630ef4",
+        "receivers": [
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "DNJUMJUVKNXAprYRYe9c8eq4RgB26Xdk9w"
+        ],
+        "shieldReceivers": [],
+        "time": 1730994465,
+        "blockHeight": 4635051,
+        "amount": 4,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 5,
+        "id": "777b3b763e8505b01b3f7a72bd87bfebadec397484ae40af25ccaac8e28f573e",
+        "receivers": ["DJYKS3wsnLhsqG5L1V3oPYZ36awaf2fFz4"],
+        "shieldReceivers": [],
+        "time": 1730988180,
+        "blockHeight": 4634946,
+        "amount": -780.26725822,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 2,
+        "id": "51cb518fa9519927032b0fc8b73dc7f629bf3779331b91bb26ee52b6ed537435",
+        "receivers": ["SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy"],
+        "shieldReceivers": [],
+        "time": 1730904810,
+        "blockHeight": 4633591,
+        "amount": 500,
+        "shieldAmount": 0,
+        "isToSelf": true
+    },
+    {
+        "type": 5,
+        "id": "8befe7fa939200b6181a4a6c1775c252df3bd205fff90a54d5f7da2e57164ca6",
+        "receivers": [
+            "D9m8Q9B9wKSKmaz5MmJVpLoomzErMWZ9dc",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1730737170,
+        "blockHeight": 4630867,
+        "amount": -10.0000227,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 5,
+        "id": "3a260f66dfff8980e5473b1a1fd02f1c0150cfedcfb2e4fab91b953e2f8bb4cf",
+        "receivers": [
+            "D9m8Q9B9wKSKmaz5MmJVpLoomzErMWZ9dc",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1730737005,
+        "blockHeight": 4630866,
+        "amount": -5.0000227,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 5,
+        "id": "c595bcd12fd38446c21af70712474042e5c9441d51295aa2ed61c6c629df3296",
+        "receivers": [
+            "D9m8Q9B9wKSKmaz5MmJVpLoomzErMWZ9dc",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1730736930,
+        "blockHeight": 4630864,
+        "amount": -2.0000227,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 1,
+        "id": "7de5846df111f6ada9fba2b0ec7240ec7380a4911411b54deab859ecd3c8a4e5",
+        "receivers": [
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "DL8t8G6xnxhHkwVChANEu4Ghnq4Z7z5eK8"
+        ],
+        "shieldReceivers": [],
+        "time": 1730548365,
+        "blockHeight": 4627794,
+        "amount": 4,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 1,
+        "id": "7ffeec165b1d2f046b77e35e6c165292026bdf6422883ac1b220c7cfef07c54d",
+        "receivers": [
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "DFo3z5QqiL4mmMvGJa788qg9iEBrAbmf7c"
+        ],
+        "shieldReceivers": [],
+        "time": 1730428380,
+        "blockHeight": 4625850,
+        "amount": 4,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 2,
+        "id": "9af29042f77cfc729852c343b673755750b89f93f360c7fde8965ed2a7034ba7",
+        "receivers": ["SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy"],
+        "shieldReceivers": [],
+        "time": 1730376135,
+        "blockHeight": 4624996,
+        "amount": 500,
+        "shieldAmount": 0,
+        "isToSelf": true
+    },
+    {
+        "type": 2,
+        "id": "103c2f55432357389f390960ce08f740771ca86d894053a2e0e6e16064b1e402",
+        "receivers": ["SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy"],
+        "shieldReceivers": [],
+        "time": 1730375640,
+        "blockHeight": 4624989,
+        "amount": 500,
+        "shieldAmount": 0,
+        "isToSelf": true
+    },
+    {
+        "type": 2,
+        "id": "ed9b41eff35e5cfbb65a61e917453e1c4b68563bc9c14a46c805507bdd45b70f",
+        "receivers": ["SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy"],
+        "shieldReceivers": [],
+        "time": 1730375640,
+        "blockHeight": 4624989,
+        "amount": 500,
+        "shieldAmount": 0,
+        "isToSelf": true
+    },
+    {
+        "type": 2,
+        "id": "67dd3016b738ede5b79a276b9ddca047969da90da8af9fb14f22051620f8689d",
+        "receivers": ["SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy"],
+        "shieldReceivers": [],
+        "time": 1730375640,
+        "blockHeight": 4624989,
+        "amount": 500,
+        "shieldAmount": 0,
+        "isToSelf": true
+    },
+    {
+        "type": 2,
+        "id": "59935184b5f6256cb86e4fc9541ffc6447b3fc27a2a14446907150a7f6d2f9e6",
+        "receivers": ["SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy"],
+        "shieldReceivers": [],
+        "time": 1730375640,
+        "blockHeight": 4624989,
+        "amount": 500,
+        "shieldAmount": 0,
+        "isToSelf": true
+    },
+    {
+        "type": 2,
+        "id": "c584d23f52b04000fa9be66bdd7d095752e0bdb2c5b5ebd27cb50ba9c67c7d52",
+        "receivers": ["SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy"],
+        "shieldReceivers": [],
+        "time": 1730375640,
+        "blockHeight": 4624989,
+        "amount": 500,
+        "shieldAmount": 0,
+        "isToSelf": true
+    },
+    {
+        "type": 1,
+        "id": "72afd8c2fe391147768fb646433ed735acf177518968960a73b6c75027310414",
+        "receivers": [
+            "DBvKHrcZcpzthMHum7kWVk9mMDwhtw5aT1",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1730216985,
+        "blockHeight": 4622407,
+        "amount": 4250,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 5,
+        "id": "e6d95cad315441f448bb34f6bc419d277d727d84d235ac209086731d3888daa2",
+        "receivers": [
+            "D8pLwcZbh21NMHLiAZoTARTpXEJt45B1mu",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1730103765,
+        "blockHeight": 4620569,
+        "amount": -52.83245898,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 3,
+        "id": "6afe196c4b4c40967248ebe7211153e85c9840c843e1c42f7b8bab8243062231",
+        "receivers": [
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1730103765,
+        "blockHeight": 4620569,
+        "amount": 100,
+        "shieldAmount": 0,
+        "isToSelf": true
+    },
+    {
+        "type": 1,
+        "id": "caa822f3453c857af1b3d050655c892248e423bb55975fe9d26e425d4eb4df97",
+        "receivers": [
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "DJtqxBW5QWrLsFLh4ZDqDEfWGRcEGUZtdt"
+        ],
+        "shieldReceivers": [],
+        "time": 1730086665,
+        "blockHeight": 4620291,
+        "amount": 4,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 5,
+        "id": "73accd5eef4be638ed37d644146853a047276775abac4dd5d1955f32ce2fdcd4",
+        "receivers": [
+            "DDS5v6mPqUN3rdzkp3268LV7TKjHCZqy8c",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1729861710,
+        "blockHeight": 4616639,
+        "amount": -575.0000227,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 3,
+        "id": "a241fa3258db963e2a72b1421843d87160112935898cceab8f09a5179bb2b480",
+        "receivers": [
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1729861665,
+        "blockHeight": 4616638,
+        "amount": 575.1,
+        "shieldAmount": 0,
+        "isToSelf": true
+    },
+    {
+        "type": 1,
+        "id": "a6513c7a3fe1e61d743b53eeb81c424216b10c548d792975f8041d534c1d328f",
+        "receivers": [
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "DRtiaNb2JYaVEc87ktjJrhDR62wSqkcFte"
+        ],
+        "shieldReceivers": [],
+        "time": 1729776465,
+        "blockHeight": 4615258,
+        "amount": 4,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 1,
+        "id": "2caa4d3591bda5da5ddc3f8ef86d62c6fbfce618723ec4caee51c565e096f1bd",
+        "receivers": [
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "DFy3AnUqiGQ1vzLZU5YBT66cNWnJYvLYzo"
+        ],
+        "shieldReceivers": [],
+        "time": 1729399275,
+        "blockHeight": 4609125,
+        "amount": 4,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 1,
+        "id": "f54f15c9f13b71acd1f15979f5d2ddefedbea896abf5edce29cef253df03677c",
+        "receivers": [
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "DCNn3t5oq6XwivL8Z3KG3zstqrzKDmGoKG"
+        ],
+        "shieldReceivers": [],
+        "time": 1728755100,
+        "blockHeight": 4598643,
+        "amount": 4,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 5,
+        "id": "582a62ef0950638f5d2f6b7065960cd33a7c11709d0d8dd40e03b445a2fd26be",
+        "receivers": ["DQHLhjiC1RHrX1HRH9Lwzc16iyhBdjyANr"],
+        "shieldReceivers": [],
+        "time": 1728660540,
+        "blockHeight": 4597105,
+        "amount": -1250.1,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 3,
+        "id": "d7c70af297e0b5e5f586ec02c2cd17e37d1c1ab73ea65116baffba7a598ce78f",
+        "receivers": [
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1728658620,
+        "blockHeight": 4597072,
+        "amount": 1250,
+        "shieldAmount": 0,
+        "isToSelf": true
+    },
+    {
+        "type": 4,
+        "id": "dbf21bd3f7dedf2a8339eb1c9d1fbc8430b85c0caa1f38b41bc4e84e390bb117",
+        "receivers": ["DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"],
+        "shieldReceivers": [],
+        "time": 1728634245,
+        "blockHeight": 4596675,
+        "amount": 0.1,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 1,
+        "id": "b3928fe52e67148e992ad988d384305069314c560a18b575e19393d2fff014c1",
+        "receivers": [
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "DTNGWVLM93vD7cpcpqq9SGCGX4AWvynSLH"
+        ],
+        "shieldReceivers": [],
+        "time": 1728343485,
+        "blockHeight": 4591947,
+        "amount": 4,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 1,
+        "id": "2febec1fb9bb8ae7a7e26be7fae5ab5ecf9f65a68314a405019c155a931d78a9",
+        "receivers": [
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "DK9JZVHvripUbYZFnWT1xC4Cyg4xmtcKGs"
+        ],
+        "shieldReceivers": [],
+        "time": 1728127365,
+        "blockHeight": 4588436,
+        "amount": 4,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 5,
+        "id": "7fa2d69abe59c0d36f3de80ac0dea89a1e7c6d358f7d3d14b6912cd0559b72ea",
+        "receivers": ["DLh3sFErwyiPRoDgkjrcaFiwU373xb6pC4"],
+        "shieldReceivers": [],
+        "time": 1728059310,
+        "blockHeight": 4587328,
+        "amount": -485.4827897,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 5,
+        "id": "b1fee06bb5ac8f91a974cfcb795781732c47c02abbdfa7ab8d03b748e436fbbe",
+        "receivers": [
+            "DB4AWXsAjdAAR4bhx5DxSJRSHWEZbc8R7p",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1728048810,
+        "blockHeight": 4587153,
+        "amount": -1.0000227,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 5,
+        "id": "584ef6c3339db98dbfba02c5f3be1ca38f9a15f4ef08e8c5c6bcc724d395f430",
+        "receivers": [
+            "DPFMBWPMKb3RAz2kPUXaWQZicYSGDddYWA",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1727974890,
+        "blockHeight": 4585952,
+        "amount": -263.5171876,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 3,
+        "id": "7ebed1b4b85cd10e5be29312cf43fe4787ffe37c959a371c4d147491ec9a82c2",
+        "receivers": [
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1727974890,
+        "blockHeight": 4585952,
+        "amount": 500,
+        "shieldAmount": 0,
+        "isToSelf": true
+    },
+    {
+        "type": 3,
+        "id": "5e4198c589bdbf8d2c1738b95ee62ff51143912d78c745822cc447950eb0c91c",
+        "receivers": [
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1727974890,
+        "blockHeight": 4585952,
+        "amount": 250,
+        "shieldAmount": 0,
+        "isToSelf": true
+    },
+    {
+        "type": 2,
+        "id": "5c0069c9e5a90336313b2c5f15bb1f5485c92e05160da15d3e7dd6c8aac9d9d9",
+        "receivers": ["SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy"],
+        "shieldReceivers": [],
+        "time": 1727899140,
+        "blockHeight": 4584726,
+        "amount": 4249.9999405,
+        "shieldAmount": 0,
+        "isToSelf": true
+    },
+    {
+        "type": 5,
+        "id": "163586261d25476a4ce637caf3eadf478a04a91ec8497760a35e478e47f4df9d",
+        "receivers": [
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1727730525,
+        "blockHeight": 4581982,
+        "amount": -0.0000227,
+        "shieldAmount": 0,
+        "isToSelf": true
+    },
+    {
+        "type": 1,
+        "id": "a57736446cc4c500eef1d3d90ad35fe47c3e8f7233d006541eef87774abbe200",
+        "receivers": [
+            "D5t1dQRgC995ijm3rbaFKRYzgQRwA1Sr2x",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1727560140,
+        "blockHeight": 4579213,
+        "amount": 4250,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 5,
+        "id": "6ddad258b464d443e64558571590f9de4e80cdf00f00c843a92a3e7a8f983c52",
+        "receivers": ["DHYYDV6sDwL8fUpMmcv2y6k9pHqAWJENST"],
+        "shieldReceivers": [],
+        "time": 1726778415,
+        "blockHeight": 4566500,
+        "amount": -746.9994577,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 5,
+        "id": "4d6cd2612d2eb5755f35ea02d69a1c07583dc10d197aeaaba6b4f775b6bd4a28",
+        "receivers": [
+            "DQzW1GirPL4RDszLpLqVFjHhATsYe7jEAp",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1726417935,
+        "blockHeight": 4560627,
+        "amount": -100.0000227,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 5,
+        "id": "5b46a92f312e28d6e383fb8fb48476b9fb7a31d714ae1049dd0c489f9c36a88f",
+        "receivers": [
+            "D6robLNBB7cWkWtp59Y5k7vf4h9C2VzqNF",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1725653055,
+        "blockHeight": 4548201,
+        "amount": -300.0000227,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 5,
+        "id": "c3c000f6cffb870cd3655835288c53a4b2e2cd504271b523c7bff5ce9c8564c6",
+        "receivers": [
+            "D5WAwQ7t1bPmFZaQLmXeDfCgVuXhfaNUia",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1725555075,
+        "blockHeight": 4546602,
+        "amount": -1500.0000376,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 3,
+        "id": "9f62ce447eca415bb8c059afc9f3c6971757e33ed9aedd3764b80e548453ce0b",
+        "receivers": ["DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"],
+        "shieldReceivers": [],
+        "time": 1725554865,
+        "blockHeight": 4546599,
+        "amount": 2645.9995634,
+        "shieldAmount": 0,
+        "isToSelf": true
+    },
+    {
+        "type": 5,
+        "id": "b546a401e5c8cbcbfb66a1198aef5769bc6b86abb63b913b9928df74557c372d",
+        "receivers": [
+            "DEsey2XYSQYi8gePWCWFSwm8RzEN3TfZ8v",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1725460260,
+        "blockHeight": 4545064,
+        "amount": -3500.0000227,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 3,
+        "id": "e2474fcda4752ea748007f073b5cb4270af0d6115d6579163ed391f6228252fc",
+        "receivers": [
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1725460245,
+        "blockHeight": 4545063,
+        "amount": 3501,
+        "shieldAmount": 0,
+        "isToSelf": true
+    },
+    {
+        "type": 5,
+        "id": "4f1faeec18dca46de89102abbd00138f8a3401f19025fafd095821ce8d39c6eb",
+        "receivers": ["DHprhha1VTkzM9zQmqft58gPmNRhCfkM4t"],
+        "shieldReceivers": [],
+        "time": 1725389085,
+        "blockHeight": 4543916,
+        "amount": -106,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 3,
+        "id": "0f875462fefb95f2e11268943a965c33952f4e633d82ab91dc57c4b56967d168",
+        "receivers": [
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1725389085,
+        "blockHeight": 4543916,
+        "amount": 106,
+        "shieldAmount": 0,
+        "isToSelf": true
+    },
+    {
+        "type": 5,
+        "id": "f09ae1ddb75a8c0841c81e49f36d9522dfc606eaba130cc00908764aefeb0dcd",
+        "receivers": ["DHprhha1VTkzM9zQmqft58gPmNRhCfkM4t"],
+        "shieldReceivers": [],
+        "time": 1725376650,
+        "blockHeight": 4543712,
+        "amount": -101,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 3,
+        "id": "37cc3ef0edbe108100e6a94d1f3a4314764824c456330a923519b71080cff224",
+        "receivers": [
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1725376575,
+        "blockHeight": 4543711,
+        "amount": 101,
+        "shieldAmount": 0,
+        "isToSelf": true
+    },
+    {
+        "type": 5,
+        "id": "a065d9919299a3be566bb161afcce8ef77dbf25d6af77c6179aacf97a30b6df6",
+        "receivers": ["DPf384q7JeVAWEBepYYtPdCssexoev55Rx"],
+        "shieldReceivers": [],
+        "time": 1725298650,
+        "blockHeight": 4542443,
+        "amount": -100,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 3,
+        "id": "0ac71b388b7cca65d99b1810e0403fd7e5ffe76ad82f6c0ed635624985987f8e",
+        "receivers": [
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1725298650,
+        "blockHeight": 4542443,
+        "amount": 100,
+        "shieldAmount": 0,
+        "isToSelf": true
+    },
+    {
+        "type": 5,
+        "id": "5eeab694677ab14fcac3d742a26e96db62eb0be69e66be619f0f2b2034976ff2",
+        "receivers": ["DLAoq6SDuXQXWeRsGhnfUDYSoWNVGUjnek"],
+        "shieldReceivers": [],
+        "time": 1725297885,
+        "blockHeight": 4542427,
+        "amount": -1050,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 3,
+        "id": "112cc19f6283ada609ad18d26bc52ebb74161753b6102e3d679a282f870dbfc7",
+        "receivers": [
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1725297885,
+        "blockHeight": 4542427,
+        "amount": 1050,
+        "shieldAmount": 0,
+        "isToSelf": true
+    },
+    {
+        "type": 1,
+        "id": "0a25a55173e59e7733ab3c976bed1d1c71c168569116d47c93531b54fe0484c6",
+        "receivers": [
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "D8bEcSUki2vy9JCC4N57Wi9PKgEdzqaRq9"
+        ],
+        "shieldReceivers": [],
+        "time": 1725269850,
+        "blockHeight": 4541973,
+        "amount": 4,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 2,
+        "id": "c308d9ddeb4d3e481e767e5d824978c44a82b8b0b7120bc6f6631909b5729613",
+        "receivers": ["SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy"],
+        "shieldReceivers": [],
+        "time": 1725219615,
+        "blockHeight": 4541157,
+        "amount": 7499.9999178,
+        "shieldAmount": 0,
+        "isToSelf": true
+    },
+    {
+        "type": 5,
+        "id": "700e03206d680cc65f3afb2c5db3ef1940e07892156464751ef8fa354a62ced1",
+        "receivers": [
+            "DP7Vf5uzrkYu8k3VQqdegJrLmR1pwdp7np",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1724946660,
+        "blockHeight": 4536714,
+        "amount": -700.0000227,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 5,
+        "id": "aab33f759859bd6808b9eb32803fa9b8c3e5f24726fe311db9949febc9d20ad4",
+        "receivers": [
+            "D9AbTjZo6crnKmRjSqB4W6EnjLXZvoYVzu",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1724942775,
+        "blockHeight": 4536651,
+        "amount": -1500.0000227,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 1,
+        "id": "bed59e6e190e94f5791ef452a385c78b22d74de8f8167a9ff3b9a862af2b3157",
+        "receivers": [
+            "STx39nArrm6fRBuo1QGm76Aax9YURGCiYi",
+            "DCmZNW2nCnAYaFEdUsTEYbZ7YyLpTs6fn9",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1724903145,
+        "blockHeight": 4536006,
+        "amount": 7500,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 1,
+        "id": "e3dab5cf2043be7bccd5b5b5135c379e7475fabdb22afe172cc0a297b100607d",
+        "receivers": [
+            "STx39nArrm6fRBuo1QGm76Aax9YURGCiYi",
+            "DTEM1YakbijNKwUGebiJPAGShKBiG22ipM",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1724902710,
+        "blockHeight": 4536001,
+        "amount": 2200,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 5,
+        "id": "2b34571f2fa023eb22973cdb97e7b8f0735c79af98257129f7772df857d9bd96",
+        "receivers": ["DQzW1GirPL4RDszLpLqVFjHhATsYe7jEAp"],
+        "shieldReceivers": [],
+        "time": 1723634940,
+        "blockHeight": 4515391,
+        "amount": -149.9997343,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 5,
+        "id": "c3a2174ba569a7be87513d95c2bd0323e29887670ee34f7a055c0ddde7367064",
+        "receivers": [
+            "DLNq1jimenU9ATMwtDXiXeDjeZV9fw5SLT",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1723189350,
+        "blockHeight": 4508152,
+        "amount": -700.0000227,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 5,
+        "id": "675061a94f8322e82e07c8891abf17f4920cfb24b68cc03d581f90d7cedaf8a4",
+        "receivers": [
+            "D8FruxWpWRQmkMndFDhMR62h9N7x9GLdJf",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1722704910,
+        "blockHeight": 4500277,
+        "amount": -1100.0000376,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 3,
+        "id": "600e4a83dba6f8a59a07935f223ec01a8a37bcd3023559d75f3702a6d075b8a1",
+        "receivers": ["DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"],
+        "shieldReceivers": [],
+        "time": 1722704865,
+        "blockHeight": 4500276,
+        "amount": 999.9999658,
+        "shieldAmount": 0,
+        "isToSelf": true
+    },
+    {
+        "type": 5,
+        "id": "edacfea5e80a83d07b9995059f2b3312ba6f58a947f879b82b367e504a883c6b",
+        "receivers": [
+            "DQHajggqx1XXZPWuchWBB5jS4pmiT3LNJN",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1722283485,
+        "blockHeight": 4493422,
+        "amount": -6240.0000376,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 5,
+        "id": "97fac2c852fe0224a73cd9fca8df9e193280b4857edcd511dde8fe5d570acc34",
+        "receivers": [
+            "DQHajggqx1XXZPWuchWBB5jS4pmiT3LNJN",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1722283245,
+        "blockHeight": 4493419,
+        "amount": -10.0000227,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 2,
+        "id": "574b944147f84723a7a8cb43895c4b6c0a6e47fd38028cedebda43cc9c60f7b9",
+        "receivers": ["SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy"],
+        "shieldReceivers": [],
+        "time": 1722270165,
+        "blockHeight": 4493206,
+        "amount": 500,
+        "shieldAmount": 0,
+        "isToSelf": true
+    },
+    {
+        "type": 2,
+        "id": "bdd854de77a894466128ee324cde597a7ebf201df702384b69f26c3cca198ba1",
+        "receivers": ["SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy"],
+        "shieldReceivers": [],
+        "time": 1722270015,
+        "blockHeight": 4493205,
+        "amount": 500,
+        "shieldAmount": 0,
+        "isToSelf": true
+    },
+    {
+        "type": 5,
+        "id": "2e26752a92847e40f3db0b6df6253cfd039b585ab6e8df73ef0c7ce2cb36e375",
+        "receivers": [
+            "DQzW1GirPL4RDszLpLqVFjHhATsYe7jEAp",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1722260550,
+        "blockHeight": 4493050,
+        "amount": -1000.0000227,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 5,
+        "id": "96a00e84f89813f798bac2811755f300b51cddff46d6aac5399e68618f62adc3",
+        "receivers": [
+            "D7joLLupgtyYkRz9yAWov6FMLjEbjPkmsk",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1722259350,
+        "blockHeight": 4493026,
+        "amount": -11750.0000376,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 1,
+        "id": "32b4aaf91399d156004f496b44dacf0ca5b8848ab0fa20e2406654ddabb5e072",
+        "receivers": [
+            "DJwSL5SQ5xRecFcRtzGrUJMsJhaeB1shhT",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1722246150,
+        "blockHeight": 4492817,
+        "amount": 6250,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 1,
+        "id": "a37b57ef645ff3a1ee886556691f443f16024af30b057336a4e815400341faa4",
+        "receivers": [
+            "Sd6Y44HdZQWGQK1mg15mugBcip18kB1XP8",
+            "DCUkii2xcTBSmU6BR6eS6FWwq4cYfxDQzs",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1722245445,
+        "blockHeight": 4492805,
+        "amount": 12500,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 1,
+        "id": "2c375b2bbd013c590dc40e29e0b991634a3efd38c42e45549bef46d708b6bd52",
+        "receivers": [
+            "DDU6BCfxp2eGdQ5AuoyL4QQo6D4abms5qg",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1722245250,
+        "blockHeight": 4492800,
+        "amount": 2200,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 5,
+        "id": "7a7f448c31986ae4067678bb5b0a4ec457992f351d974fb639149c6b79ffe8ec",
+        "receivers": ["DURpVc5BCELy1eRTc2gCrT43hvVquQTdHr"],
+        "shieldReceivers": [],
+        "time": 1721761260,
+        "blockHeight": 4484939,
+        "amount": -202.58123477,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 5,
+        "id": "1dabbf46a3ccbb2e39a0c36a06bf8be37ade4ed897147441d2a66a89d744a42a",
+        "receivers": [
+            "D8FruxWpWRQmkMndFDhMR62h9N7x9GLdJf",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1721730555,
+        "blockHeight": 4484432,
+        "amount": -500.0000376,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 3,
+        "id": "c82507f240fec5f61afe0d3d63f27351fe52d8fd03a480d75720aad9fbeb76fe",
+        "receivers": ["DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"],
+        "shieldReceivers": [],
+        "time": 1721730390,
+        "blockHeight": 4484428,
+        "amount": 553.58131777,
+        "shieldAmount": 0,
+        "isToSelf": true
+    },
+    {
+        "type": 5,
+        "id": "0d36bbda45c42ce7530d1eb70e011525d2816fd135956d3e200444fe02cec274",
+        "receivers": [
+            "D9HDmWHuKTZVwLQZUGcfn3Nit4Ueg6JGqo",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1721580345,
+        "blockHeight": 4481993,
+        "amount": -300.0000227,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 1,
+        "id": "f3bcb5e530fcf220e95513a700f0507c877d9c98993b679ae78a61532af83feb",
+        "receivers": [
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "D9Qd8NpZNjR7iW2DoVuj7MUYnwDGpfazuV"
+        ],
+        "shieldReceivers": [],
+        "time": 1721362350,
+        "blockHeight": 4478449,
+        "amount": 4,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 5,
+        "id": "660adb29caf921c0d4e3488d2e5c8077f0886bec481c433ec4660b5e16f7da1f",
+        "receivers": [
+            "DQzW1GirPL4RDszLpLqVFjHhATsYe7jEAp",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1721319405,
+        "blockHeight": 4477750,
+        "amount": -51.0000227,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 3,
+        "id": "4194e08a6f0f3deae55e8217c834768cae92739d261fc9aae8e8de8df6bbee14",
+        "receivers": [
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1721319405,
+        "blockHeight": 4477750,
+        "amount": 500,
+        "shieldAmount": 0,
+        "isToSelf": true
+    },
+    {
+        "type": 1,
+        "id": "f6eb8d8b4a6f4589b79e3b4f185051e1185c022f572b5ae6bfc1803335b192ca",
+        "receivers": [
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "DPFpbyvYM7zWhZdv3Bw1AJRFsUGQufiyU4"
+        ],
+        "shieldReceivers": [],
+        "time": 1720916430,
+        "blockHeight": 4471200,
+        "amount": 4,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 5,
+        "id": "2bce2413b567386d1a15a1173ea2d4db6795d2fd7de4583e42f34fdf2cf9f131",
+        "receivers": ["DHQvLMG8f2Zou84CKG3km2FPEf9Ywgcq1r"],
+        "shieldReceivers": [],
+        "time": 1720813800,
+        "blockHeight": 4469541,
+        "amount": -148.17343916,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 5,
+        "id": "d93b3ee72f8af75db2890a93c5004d594be44fe2369a2ebad85be2a39d90ccb4",
+        "receivers": [
+            "DQzW1GirPL4RDszLpLqVFjHhATsYe7jEAp",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1720712235,
+        "blockHeight": 4467885,
+        "amount": -50.0000227,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 5,
+        "id": "1bfeee49e7dbe253e542c87a687addea97e8a202a54d51e5169d6648fed3adf8",
+        "receivers": [
+            "DQzW1GirPL4RDszLpLqVFjHhATsYe7jEAp",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1720621410,
+        "blockHeight": 4466403,
+        "amount": -50.0000227,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 5,
+        "id": "a33b5df5310bc347be1e7ccea137a29fec70848f6839df50ab7e83f7735706ad",
+        "receivers": [
+            "DJ383Gi8Y4BYZs728HQr5prdbRF2kwVEmf",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1720541400,
+        "blockHeight": 4465105,
+        "amount": -1251.82651534,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 3,
+        "id": "9361493522b6a3bce1b68d09dea13a360550c1c77b31bd8d7efdd7b6cebe7a70",
+        "receivers": [
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1720541280,
+        "blockHeight": 4465102,
+        "amount": 1499.9999999,
+        "shieldAmount": 0,
+        "isToSelf": true
+    },
+    {
+        "type": 1,
+        "id": "4b9aa89bb41711abd4b9d4b89af259126f5a6d86d5cfc0ef51d631943d6c2dd4",
+        "receivers": [
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "D7MpnczJ8rVyMfuwCjii1Z8pZPSbChZuqP"
+        ],
+        "shieldReceivers": [],
+        "time": 1720503165,
+        "blockHeight": 4464481,
+        "amount": 4,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 1,
+        "id": "05e9dc5a50f6667cb4a67f26f8c2111928c45dd3c3d0d7e55c397f3720d58e53",
+        "receivers": [
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "DJRcYs3ktboPM9eZt3dipeuRLBHKgT1X83"
+        ],
+        "shieldReceivers": [],
+        "time": 1720448655,
+        "blockHeight": 4463591,
+        "amount": 4,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 1,
+        "id": "16fe5dd8db22cdfe7d63991a2dd1c5225b69a0eb5aed6e629f911060a2f4fb03",
+        "receivers": [
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "DJWgc6hCfTUEn5aGYpXBdGU2jKnMpJzWcA"
+        ],
+        "shieldReceivers": [],
+        "time": 1720010130,
+        "blockHeight": 4456461,
+        "amount": 4,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 2,
+        "id": "58a0d8f16cd969fe4257433c8203a82ef505973a30f4501d0771873aa8539880",
+        "receivers": ["SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy"],
+        "shieldReceivers": [],
+        "time": 1719783075,
+        "blockHeight": 4452760,
+        "amount": 2533.58144717,
+        "shieldAmount": 0,
+        "isToSelf": true
+    },
+    {
+        "type": 4,
+        "id": "069a9fde2061dfe1d9b5696c9970ee0bbc478b5000bf11ff546db142dc893524",
+        "receivers": [
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "DQzW1GirPL4RDszLpLqVFjHhATsYe7jEAp",
+            "DJ7m4WY7CSxiH2Ru9Dp7JqRKwwcFvB6QLU"
+        ],
+        "shieldReceivers": [],
+        "time": 1719782670,
+        "blockHeight": 4452755,
+        "amount": 0.2544,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 4,
+        "id": "cf0c872147af82c71fde49e190e7779697592b97928615ef50073bc19de9e7d9",
+        "receivers": [
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "DQzW1GirPL4RDszLpLqVFjHhATsYe7jEAp",
+            "DJ7m4WY7CSxiH2Ru9Dp7JqRKwwcFvB6QLU"
+        ],
+        "shieldReceivers": [],
+        "time": 1719708855,
+        "blockHeight": 4451564,
+        "amount": 1.065,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 1,
+        "id": "81606a206f501d9627ee5a4c7ce7f558855231ead2446ae756642f9d653e1b11",
+        "receivers": [
+            "SiSfDVoD6r2ks3dtERLeZu7ta1sQUe6Raq",
+            "D7BYdVXu5rGKbiTkegzgeAmwGHQNbvRmA7",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1719588450,
+        "blockHeight": 4449602,
+        "amount": 2200,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 4,
+        "id": "6c1b42dd488f1a9a526a13ef338a3a3f44e4d5cdfa174fbc70f4e2ef26ee8546",
+        "receivers": [
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "DQzW1GirPL4RDszLpLqVFjHhATsYe7jEAp",
+            "DJ7m4WY7CSxiH2Ru9Dp7JqRKwwcFvB6QLU"
+        ],
+        "shieldReceivers": [],
+        "time": 1719533640,
+        "blockHeight": 4448711,
+        "amount": 2.0886,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 4,
+        "id": "51e157e8e2998d63e35dadadfae437e5a700a43f8ac7904ae0cd4cf57fb06903",
+        "receivers": [
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "DQzW1GirPL4RDszLpLqVFjHhATsYe7jEAp",
+            "DJ7m4WY7CSxiH2Ru9Dp7JqRKwwcFvB6QLU"
+        ],
+        "shieldReceivers": [],
+        "time": 1719529920,
+        "blockHeight": 4448653,
+        "amount": 1.9459,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 4,
+        "id": "6c394b530e04cedc2f008cdb66229cc06d361476a90ad56a8c947ed1d16537b5",
+        "receivers": [
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "DQzW1GirPL4RDszLpLqVFjHhATsYe7jEAp",
+            "DJ7m4WY7CSxiH2Ru9Dp7JqRKwwcFvB6QLU"
+        ],
+        "shieldReceivers": [],
+        "time": 1719508410,
+        "blockHeight": 4448304,
+        "amount": 0.49345,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 4,
+        "id": "0c62feb035e4abb40f66223928c05e52685bfc882f189b81047c0b111c445640",
+        "receivers": [
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "DQzW1GirPL4RDszLpLqVFjHhATsYe7jEAp",
+            "DJ7m4WY7CSxiH2Ru9Dp7JqRKwwcFvB6QLU"
+        ],
+        "shieldReceivers": [],
+        "time": 1719480915,
+        "blockHeight": 4447853,
+        "amount": 10.34935,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 4,
+        "id": "759af982ac1a33fd8c8b5e440a0f050d78053c25f03707c4296e1cfcf4b9ac15",
+        "receivers": [
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "DQzW1GirPL4RDszLpLqVFjHhATsYe7jEAp",
+            "DJ7m4WY7CSxiH2Ru9Dp7JqRKwwcFvB6QLU"
+        ],
+        "shieldReceivers": [],
+        "time": 1719467190,
+        "blockHeight": 4447636,
+        "amount": 0.65155,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 4,
+        "id": "f251a51b358ec81899be3765d5cbe54f12064a67fb56e3985a695b5500365d63",
+        "receivers": [
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "DQzW1GirPL4RDszLpLqVFjHhATsYe7jEAp",
+            "DJ7m4WY7CSxiH2Ru9Dp7JqRKwwcFvB6QLU"
+        ],
+        "shieldReceivers": [],
+        "time": 1719449085,
+        "blockHeight": 4447340,
+        "amount": 1.0551,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 4,
+        "id": "58de1ae222797164509078b26ecc5fd0c9792384759df3331301b5a4be11a739",
+        "receivers": [
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "DQzW1GirPL4RDszLpLqVFjHhATsYe7jEAp",
+            "DJ7m4WY7CSxiH2Ru9Dp7JqRKwwcFvB6QLU"
+        ],
+        "shieldReceivers": [],
+        "time": 1719420165,
+        "blockHeight": 4446872,
+        "amount": 0.64485,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 4,
+        "id": "644ff6dec27c4afcd6b3dd60bc8b97e01324acfab44a3ba75ebe896637fa56f1",
+        "receivers": [
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "DQzW1GirPL4RDszLpLqVFjHhATsYe7jEAp",
+            "DJ7m4WY7CSxiH2Ru9Dp7JqRKwwcFvB6QLU"
+        ],
+        "shieldReceivers": [],
+        "time": 1719397155,
+        "blockHeight": 4446494,
+        "amount": 0.64745,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 4,
+        "id": "7af19ee7d90a5293ab121b63e8a59c3a665d3e55acb891af1dfb38729b85f191",
+        "receivers": [
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "DQzW1GirPL4RDszLpLqVFjHhATsYe7jEAp",
+            "DJ7m4WY7CSxiH2Ru9Dp7JqRKwwcFvB6QLU"
+        ],
+        "shieldReceivers": [],
+        "time": 1719346560,
+        "blockHeight": 4445676,
+        "amount": 6.27455,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 4,
+        "id": "cd04b993fd338b60f7ae6471b602a03c10938ed8dca2afe7a7cd3a3a5392cf66",
+        "receivers": [
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "DQzW1GirPL4RDszLpLqVFjHhATsYe7jEAp",
+            "DJ7m4WY7CSxiH2Ru9Dp7JqRKwwcFvB6QLU"
+        ],
+        "shieldReceivers": [],
+        "time": 1719269130,
+        "blockHeight": 4444416,
+        "amount": 1.46,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 4,
+        "id": "fb00b4e4a72f0eef7f1c19f4dd31ac85709f3e2f043d57307c9b7674c0cf984a",
+        "receivers": [
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "DQzW1GirPL4RDszLpLqVFjHhATsYe7jEAp",
+            "DJ7m4WY7CSxiH2Ru9Dp7JqRKwwcFvB6QLU"
+        ],
+        "shieldReceivers": [],
+        "time": 1719244245,
+        "blockHeight": 4444010,
+        "amount": 0.10255,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 5,
+        "id": "3dd5536dc603120ff9c85867dba3c4d50e2d38e2a8e815022dd2e019c756a610",
+        "receivers": [
+            "D9AbTjZo6crnKmRjSqB4W6EnjLXZvoYVzu",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1719243750,
+        "blockHeight": 4444000,
+        "amount": -21.0000227,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 4,
+        "id": "855319ac0a10555a1537f7d89d4437cbb9a2af594be893ee4e9c59cdd4dce307",
+        "receivers": [
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "DQzW1GirPL4RDszLpLqVFjHhATsYe7jEAp",
+            "DJ7m4WY7CSxiH2Ru9Dp7JqRKwwcFvB6QLU"
+        ],
+        "shieldReceivers": [],
+        "time": 1719239760,
+        "blockHeight": 4443934,
+        "amount": 0.2579,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 4,
+        "id": "73654eee2db7d07cb3e4e46c38dac99a0119e71b0e552f16458e5517ad4bfd93",
+        "receivers": [
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "DQzW1GirPL4RDszLpLqVFjHhATsYe7jEAp",
+            "DJ7m4WY7CSxiH2Ru9Dp7JqRKwwcFvB6QLU"
+        ],
+        "shieldReceivers": [],
+        "time": 1719239460,
+        "blockHeight": 4443931,
+        "amount": 1.29345,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 4,
+        "id": "6bac3ee8237014c654ffba3dc9792a86b76a42e16da77897666a08f0b1d018e6",
+        "receivers": [
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "DQzW1GirPL4RDszLpLqVFjHhATsYe7jEAp",
+            "DJ7m4WY7CSxiH2Ru9Dp7JqRKwwcFvB6QLU"
+        ],
+        "shieldReceivers": [],
+        "time": 1719228420,
+        "blockHeight": 4443753,
+        "amount": 4.0129,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 4,
+        "id": "78b25d95a20cf9aa587a1e6b64887477486c6ab9bbf47d14a58d84eeff275992",
+        "receivers": [
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "DQzW1GirPL4RDszLpLqVFjHhATsYe7jEAp",
+            "DJ7m4WY7CSxiH2Ru9Dp7JqRKwwcFvB6QLU"
+        ],
+        "shieldReceivers": [],
+        "time": 1719216105,
+        "blockHeight": 4443552,
+        "amount": 0.27655,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 4,
+        "id": "250ad1d3e4005a741443920dcb53b6e7d091ed2c7c2ab5ab840f1e298bd896a6",
+        "receivers": [
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "DQzW1GirPL4RDszLpLqVFjHhATsYe7jEAp",
+            "DJ7m4WY7CSxiH2Ru9Dp7JqRKwwcFvB6QLU"
+        ],
+        "shieldReceivers": [],
+        "time": 1719199320,
+        "blockHeight": 4443281,
+        "amount": 2.14535,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 4,
+        "id": "a3b0e5cad83a19b5c2f09a1756e42d4898f7896181e4db01329cf37d91bf0b55",
+        "receivers": [
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "DQzW1GirPL4RDszLpLqVFjHhATsYe7jEAp",
+            "DJ7m4WY7CSxiH2Ru9Dp7JqRKwwcFvB6QLU"
+        ],
+        "shieldReceivers": [],
+        "time": 1719138945,
+        "blockHeight": 4442299,
+        "amount": 1.03795,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 4,
+        "id": "98c843a926337349b1e2d062d76e25c9b1fe102e48e03ab543c7c2c5a07c92ce",
+        "receivers": [
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "DQzW1GirPL4RDszLpLqVFjHhATsYe7jEAp",
+            "DJ7m4WY7CSxiH2Ru9Dp7JqRKwwcFvB6QLU"
+        ],
+        "shieldReceivers": [],
+        "time": 1719042165,
+        "blockHeight": 4440724,
+        "amount": 2.584,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 4,
+        "id": "b1e3811ef09f8e7b71e61fdeb05200228468155080c6e1db69c06ae24e69c110",
+        "receivers": [
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "DQzW1GirPL4RDszLpLqVFjHhATsYe7jEAp",
+            "DJ7m4WY7CSxiH2Ru9Dp7JqRKwwcFvB6QLU"
+        ],
+        "shieldReceivers": [],
+        "time": 1719037395,
+        "blockHeight": 4440642,
+        "amount": 1.2755,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 4,
+        "id": "fbbe75b16863a66192fad65619028e33fd569ce4dcc0dde6a8deba4034b4c93d",
+        "receivers": [
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "DQzW1GirPL4RDszLpLqVFjHhATsYe7jEAp",
+            "DJ7m4WY7CSxiH2Ru9Dp7JqRKwwcFvB6QLU"
+        ],
+        "shieldReceivers": [],
+        "time": 1719037215,
+        "blockHeight": 4440639,
+        "amount": 5.10195,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 4,
+        "id": "cecf301c8a3b22a7aeb0330488a077fbba9b219d119d0528ff62e6cb2b0c1a02",
+        "receivers": [
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "DQzW1GirPL4RDszLpLqVFjHhATsYe7jEAp",
+            "DJ7m4WY7CSxiH2Ru9Dp7JqRKwwcFvB6QLU"
+        ],
+        "shieldReceivers": [],
+        "time": 1718994975,
+        "blockHeight": 4439952,
+        "amount": 0.62535,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 4,
+        "id": "b6c0ded1f61b6e3262fffe51ba27a4e8f229f27678c51eff0a5a06e76ba1e796",
+        "receivers": [
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "DQzW1GirPL4RDszLpLqVFjHhATsYe7jEAp",
+            "DJ7m4WY7CSxiH2Ru9Dp7JqRKwwcFvB6QLU"
+        ],
+        "shieldReceivers": [],
+        "time": 1718961510,
+        "blockHeight": 4439411,
+        "amount": 0.50155,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 4,
+        "id": "5618b8197e76a52cd0bf54985e6bfd9534fa5ec035446373e1bf3e7598ceb777",
+        "receivers": [
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "DQzW1GirPL4RDszLpLqVFjHhATsYe7jEAp",
+            "DJ7m4WY7CSxiH2Ru9Dp7JqRKwwcFvB6QLU"
+        ],
+        "shieldReceivers": [],
+        "time": 1718961300,
+        "blockHeight": 4439407,
+        "amount": 0.5025,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 4,
+        "id": "736b3bfd809b9933f6eaf795a2595ce40fbf36589cdedf0c2ae168b12f5b3209",
+        "receivers": [
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "DQzW1GirPL4RDszLpLqVFjHhATsYe7jEAp",
+            "DJ7m4WY7CSxiH2Ru9Dp7JqRKwwcFvB6QLU"
+        ],
+        "shieldReceivers": [],
+        "time": 1718961030,
+        "blockHeight": 4439400,
+        "amount": 1.2568,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 4,
+        "id": "1bf8141415dda35ffdab7005b306b75160a8f7231805ff5e882aa40eb982aa45",
+        "receivers": [
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "DQzW1GirPL4RDszLpLqVFjHhATsYe7jEAp",
+            "DJ7m4WY7CSxiH2Ru9Dp7JqRKwwcFvB6QLU"
+        ],
+        "shieldReceivers": [],
+        "time": 1718921790,
+        "blockHeight": 4438768,
+        "amount": 0.3085,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 4,
+        "id": "2d2066e95a4e608611fc9a530f4e28c5f644296756a0d2a2f0d063fa7fd25e92",
+        "receivers": [
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "DQzW1GirPL4RDszLpLqVFjHhATsYe7jEAp",
+            "DJ7m4WY7CSxiH2Ru9Dp7JqRKwwcFvB6QLU"
+        ],
+        "shieldReceivers": [],
+        "time": 1718891520,
+        "blockHeight": 4438273,
+        "amount": 0.08855,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 4,
+        "id": "440ad428eced12e4d2435cc49358e47528c5db012d255edaa7b5952ec70d4916",
+        "receivers": [
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "DQzW1GirPL4RDszLpLqVFjHhATsYe7jEAp",
+            "DJ7m4WY7CSxiH2Ru9Dp7JqRKwwcFvB6QLU"
+        ],
+        "shieldReceivers": [],
+        "time": 1718879430,
+        "blockHeight": 4438075,
+        "amount": 0.0877,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 5,
+        "id": "a9a5a1403096bb1d7ff63201f64d655b3cf784284fcbb51440db6e5ef81e95c9",
+        "receivers": [
+            "D9AbTjZo6crnKmRjSqB4W6EnjLXZvoYVzu",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1718879025,
+        "blockHeight": 4438065,
+        "amount": -15.0001419,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 4,
+        "id": "f1aaf956d9928ce99134fecc708d7b2b6cb69950444cbc4cc804d23b6db26b7a",
+        "receivers": ["DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"],
+        "shieldReceivers": [],
+        "time": 1718845800,
+        "blockHeight": 4437526,
+        "amount": 15.30105,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 4,
+        "id": "0e8f4b70563b818c272353f848e898da3beae66a851f0fef407892cae36cd6f7",
+        "receivers": [
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "DQzW1GirPL4RDszLpLqVFjHhATsYe7jEAp",
+            "DJ7m4WY7CSxiH2Ru9Dp7JqRKwwcFvB6QLU"
+        ],
+        "shieldReceivers": [],
+        "time": 1718844555,
+        "blockHeight": 4437512,
+        "amount": 0.59725,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 4,
+        "id": "fe29b479f5e909fd7f5a0b463830e20e2dc1d1a8186c81a62a83b385255aaf58",
+        "receivers": [
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "DQzW1GirPL4RDszLpLqVFjHhATsYe7jEAp",
+            "DJ7m4WY7CSxiH2Ru9Dp7JqRKwwcFvB6QLU"
+        ],
+        "shieldReceivers": [],
+        "time": 1718841225,
+        "blockHeight": 4437457,
+        "amount": 0.04815,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 5,
+        "id": "f27bb2bbc28dd7123d30db502dfda65fd92f20677a570d53e893df2a52aa6229",
+        "receivers": [
+            "DS2VyM99CDJvQpYatsBJrh3HGNn1P9AEPH",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1718840730,
+        "blockHeight": 4437448,
+        "amount": -25.0000227,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 4,
+        "id": "69a2ab84587bdfd22a5931dbd2ef815c87bd0436afd68036b8758ad447816d76",
+        "receivers": [
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "DQzW1GirPL4RDszLpLqVFjHhATsYe7jEAp",
+            "DCbsdfFcMPnEN8krw865G7LShg4LhtSCt1"
+        ],
+        "shieldReceivers": [],
+        "time": 1718834400,
+        "blockHeight": 4437340,
+        "amount": 0.192,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 4,
+        "id": "63c3993c3be2ca980fafdb8e37d1b4aa7cacd66803ab8fd1694871ab570d7711",
+        "receivers": [
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "DQzW1GirPL4RDszLpLqVFjHhATsYe7jEAp",
+            "DCbsdfFcMPnEN8krw865G7LShg4LhtSCt1"
+        ],
+        "shieldReceivers": [],
+        "time": 1718834070,
+        "blockHeight": 4437336,
+        "amount": 0.19155,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 4,
+        "id": "2655c3ee0af1b0e6e072ecc652fe7494178004251b73f31fb9bc97021208032d",
+        "receivers": [
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "DQzW1GirPL4RDszLpLqVFjHhATsYe7jEAp",
+            "DCbsdfFcMPnEN8krw865G7LShg4LhtSCt1"
+        ],
+        "shieldReceivers": [],
+        "time": 1718833725,
+        "blockHeight": 4437331,
+        "amount": 0.19155,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 4,
+        "id": "d68746158ab56d8bd333e3b62dc3c600f853c45d670638dc2e1fad8de69dbf7e",
+        "receivers": [
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "DQzW1GirPL4RDszLpLqVFjHhATsYe7jEAp",
+            "DCbsdfFcMPnEN8krw865G7LShg4LhtSCt1"
+        ],
+        "shieldReceivers": [],
+        "time": 1718833380,
+        "blockHeight": 4437323,
+        "amount": 0.1911,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 4,
+        "id": "0a3b0b1148940afcad1c338fb1eeacce8617586d72b0675fe3574635123e313b",
+        "receivers": [
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "DQzW1GirPL4RDszLpLqVFjHhATsYe7jEAp",
+            "DCbsdfFcMPnEN8krw865G7LShg4LhtSCt1"
+        ],
+        "shieldReceivers": [],
+        "time": 1718831880,
+        "blockHeight": 4437301,
+        "amount": 0.19185,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 4,
+        "id": "9762098dd7c4af4f57c8b216d9d7954af1a6f29cff9a87b9649135a520431d9b",
+        "receivers": [
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "DQzW1GirPL4RDszLpLqVFjHhATsYe7jEAp",
+            "DCbsdfFcMPnEN8krw865G7LShg4LhtSCt1"
+        ],
+        "shieldReceivers": [],
+        "time": 1718831295,
+        "blockHeight": 4437295,
+        "amount": 0.19195,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 4,
+        "id": "66b9d73f5b4ec048f175dca5e970d8c6a775a27bb564f6bbf0fac043de1bbc3d",
+        "receivers": [
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "DQzW1GirPL4RDszLpLqVFjHhATsYe7jEAp",
+            "DCbsdfFcMPnEN8krw865G7LShg4LhtSCt1"
+        ],
+        "shieldReceivers": [],
+        "time": 1718830860,
+        "blockHeight": 4437283,
+        "amount": 0.19225,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 4,
+        "id": "1947d4349f87a6aa9099ddde00e903a0c93c17bf06454a5a6656c2ce6242938d",
+        "receivers": [
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "DQzW1GirPL4RDszLpLqVFjHhATsYe7jEAp",
+            "DCbsdfFcMPnEN8krw865G7LShg4LhtSCt1"
+        ],
+        "shieldReceivers": [],
+        "time": 1718826495,
+        "blockHeight": 4437215,
+        "amount": 0.0984,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 5,
+        "id": "daf370caf433a45f6a73d1962f0091495c1f0a0dd3e253f14a8effce73bdfdde",
+        "receivers": [
+            "D9SKW2aPwg4EYA6nXTHzcFDGr6GiKvZp18",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1718807955,
+        "blockHeight": 4436912,
+        "amount": -9.5900227,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 5,
+        "id": "39f7ad2a6c805b0cf0c2f1142df5bfa1395fe39f64faa99cf1cdc04da299264e",
+        "receivers": [
+            "D7maJSGq3A8hkjmFky5GssEsqjXiJwgpyb",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1718555715,
+        "blockHeight": 4432810,
+        "amount": -81.1400227,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 5,
+        "id": "feb9a62875f6036aa43c651caf537db16afa0242705542b9030740cf4beddd76",
+        "receivers": [
+            "DCw1wt4jPR46skjc9RzB9gLwNBURwGvsEw",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1718396445,
+        "blockHeight": 4430225,
+        "amount": -106.3500227,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 5,
+        "id": "c469ea660c93339c7c712328099e4c532bd9b786a447049f1003958e130950d8",
+        "receivers": [
+            "D5pvbWiZ9zesSETh4JYM5dY7UdrYmtiZ2v",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1718362725,
+        "blockHeight": 4429672,
+        "amount": -108.9587927,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 5,
+        "id": "5bb35db6cfce1fc52a169f539b61c4777763b746fd7be19d2f96c166d67cc8da",
+        "receivers": [
+            "DFKv78iXqabKttsxoMJqtsB6csc5e7S5QG",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1718297070,
+        "blockHeight": 4428600,
+        "amount": -207.2200227,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 5,
+        "id": "3993b5e22c8d2db2260d265def355a1bfd182c9f3a93aebdf63ea132b8177ec4",
+        "receivers": [
+            "DEagXCFwBLD6fF8mJwo6hW7ZMLcMb3Uh3e",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1718213265,
+        "blockHeight": 4427244,
+        "amount": -197.3000227,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 5,
+        "id": "e5be39bfc6cc1a07f41571986d807df578425de5ed382262b22114c0012d855e",
+        "receivers": [
+            "DQv23Nxm4xhKcTUJwh8HcjvHyYDnKqFtx5",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1718192550,
+        "blockHeight": 4426903,
+        "amount": -102.4700376,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 5,
+        "id": "3e4e564c4cc5a0a62516c7e7a42f90f20204962150e5d19593cbbc9602fe4b3e",
+        "receivers": [
+            "DDZ9x9fT1g2S6nE2LcAHc8UExgXhAWYVe6",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1718132805,
+        "blockHeight": 4425938,
+        "amount": -104.0000227,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 3,
+        "id": "5b8ae0fc6bc83b557038693282922106ebec1fbd08cfd619a3ddefa3ba472687",
+        "receivers": ["DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"],
+        "shieldReceivers": [],
+        "time": 1718132730,
+        "blockHeight": 4425935,
+        "amount": 63.39999917,
+        "shieldAmount": 0,
+        "isToSelf": true
+    },
+    {
+        "type": 5,
+        "id": "ffbd0abbd01772d19fa9f46bb560fbf672c61da33a90769f4e63cfa3da0b66c5",
+        "receivers": [
+            "DM85X2waG4P1pQsLn64yj1bXiYBDLBgntL",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1718124300,
+        "blockHeight": 4425793,
+        "amount": -105.3000376,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 3,
+        "id": "8230835e9475dac865856bfd0135b05a496fb76df18d4247d0b73ff9acc42235",
+        "receivers": [
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1718124300,
+        "blockHeight": 4425793,
+        "amount": 1200,
+        "shieldAmount": 0,
+        "isToSelf": true
+    },
+    {
+        "type": 1,
+        "id": "2444721e1de36559f2ebb6b1f1cf6a6bf3586c8c57b31d85b51eceb040d734c3",
+        "receivers": [
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "D9wNzeZcFyiCKzHJ283K1htgErct9DcM1W"
+        ],
+        "shieldReceivers": [],
+        "time": 1718108175,
+        "blockHeight": 4425534,
+        "amount": 4,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 5,
+        "id": "b7e756c1663b0165753c1774f56c20b1e5e7d408228d2e866a32c02ff9739ed9",
+        "receivers": [
+            "DB7TZyVhor5qVjUpXuw4nQagaJcT2o9nns",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1717859400,
+        "blockHeight": 4421485,
+        "amount": -126.5151367,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 1,
+        "id": "b1bcabbf5c68f2982c6229ad0dce599155911b5eb98963402e426772b67620fb",
+        "receivers": [
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "DMjVrS3HmpCpLdZpzqpkKPXnUCxkzEw72H"
+        ],
+        "shieldReceivers": [],
+        "time": 1717679235,
+        "blockHeight": 4418556,
+        "amount": 4,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 1,
+        "id": "f76f3c39fa93814bcc555586908112a0918f259512c96bd7f1c488178fa4cc38",
+        "receivers": [
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "DNZsTNxAJtb9iJadyQ6bnExtGLVPEDJGP2"
+        ],
+        "shieldReceivers": [],
+        "time": 1717624845,
+        "blockHeight": 4417675,
+        "amount": 4,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 5,
+        "id": "0786859da7e0b890d78265d20052179a572b61e5bc5947e4d94adfecfeb66be3",
+        "receivers": [
+            "D7eP3RFAb63kJTof55DxKbwAUSrPeZUxwY",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1717274535,
+        "blockHeight": 4411987,
+        "amount": -36.7500376,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 3,
+        "id": "886bf8260396b943892dee2590faa79b5ab91516c896057c7a0dffcbe4a4e9c7",
+        "receivers": [
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1717274415,
+        "blockHeight": 4411984,
+        "amount": 250,
+        "shieldAmount": 0,
+        "isToSelf": true
+    },
+    {
+        "type": 1,
+        "id": "0cca10547c4a3d008a288205f11ef5e2ce1a1bcaeb060edd0a2075f1df9a1287",
+        "receivers": [
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "DEf61rwYaxDxBqWTJuYvTBLej4jcyNJZYf"
+        ],
+        "shieldReceivers": [],
+        "time": 1717048680,
+        "blockHeight": 4408311,
+        "amount": 4,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 5,
+        "id": "f40430d1332bc8af204d09e5d27949f1d01243964377514526a4fc42964ec200",
+        "receivers": [
+            "DJs2fG4AA8N2htVAtzh2yX9Xxn9B9y9oxz",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1716967860,
+        "blockHeight": 4406994,
+        "amount": -5000.0000227,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 3,
+        "id": "71d39f2ebdf59ab3f377a7e6f693ae750a5ef29714975541514ca3c2d2ac5324",
+        "receivers": [
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1716967560,
+        "blockHeight": 4406988,
+        "amount": 5001,
+        "shieldAmount": 0,
+        "isToSelf": true
+    },
+    {
+        "type": 2,
+        "id": "132cd44b7f46f843e68f85e349af822db3f1fa5d190166b47656318b8d753e2e",
+        "receivers": ["SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy"],
+        "shieldReceivers": [],
+        "time": 1716938835,
+        "blockHeight": 4406531,
+        "amount": 6498.40012417,
+        "shieldAmount": 0,
+        "isToSelf": true
+    },
+    {
+        "type": 1,
+        "id": "ee3741cd57ab2de61a2ecf0d4841678e018569bfcfa2d36ab7cfbdd420060bb9",
+        "receivers": [
+            "DHeAEi81w7odMvtoDN18qBBApinaaepNXm",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1716931680,
+        "blockHeight": 4406411,
+        "amount": 5000,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 1,
+        "id": "053c668d7c996bb6155259d79a93a0237c362a0fd22463c942431d55cd78c131",
+        "receivers": [
+            "DSa3d1FeeuwPBv74N7P5WWbnQmnVbQg2mj",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1716931500,
+        "blockHeight": 4406406,
+        "amount": 1250,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 5,
+        "id": "d9d04ff847d332cf5ca5e75ada3318c9c2c6a2964dea0ed6b24307d4a2f77189",
+        "receivers": [
+            "DFKoxxqLbb5xDRKzGS35TjcVbfJfhb9652",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1716504060,
+        "blockHeight": 4399460,
+        "amount": -750.0000376,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 3,
+        "id": "b8fea7376ea5a49edf504c97e054d42440cc7324a66452574f6f393c5177f832",
+        "receivers": ["DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"],
+        "shieldReceivers": [],
+        "time": 1716503835,
+        "blockHeight": 4399457,
+        "amount": 510.9994938,
+        "shieldAmount": 0,
+        "isToSelf": true
+    },
+    {
+        "type": 5,
+        "id": "ed226aaaed6ae964d165a7376df60cf071371d7a3e413355532f9b2731299f27",
+        "receivers": [
+            "DSccfHvXjJTn8g6vjGK5A9JiUpmB9qnCj3",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1716493245,
+        "blockHeight": 4399280,
+        "amount": -192.5800376,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 3,
+        "id": "15505972358d1d2eda72447b4f47bad47aa20f756a9725cc5ac6c2b79bf9e1f1",
+        "receivers": [
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1716493245,
+        "blockHeight": 4399280,
+        "amount": 490,
+        "shieldAmount": 0,
+        "isToSelf": true
+    },
+    {
+        "type": 5,
+        "id": "33feb711916bba4cc5bdae54ba25ceb36d627c2e8da9a971066223a5346e9136",
+        "receivers": [
+            "D6fdujndayiuveenJh83adDcNoKqgKBXHS",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1716463095,
+        "blockHeight": 4398789,
+        "amount": -187.6900525,
+        "shieldAmount": 0,
+        "isToSelf": false
+    },
+    {
+        "type": 3,
+        "id": "01968433da4c70563ce89d5e55267fdde922edf1b6c0f1d55b142e4423a454e5",
+        "receivers": [
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb",
+            "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1716462870,
+        "blockHeight": 4398784,
+        "amount": 241,
+        "shieldAmount": 0,
+        "isToSelf": true
+    },
+    {
+        "type": 5,
+        "id": "12ced7138cd510bb02e80611ab1387be9b23a6c61d4e519f3854740a7aba0f75",
+        "receivers": [
+            "D9ej1HkxzxXUafgafQJTG3mRAmWbVwRr2F",
+            "DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb"
+        ],
+        "shieldReceivers": [],
+        "time": 1716402465,
+        "blockHeight": 4397802,
+        "amount": -93.2800227,
+        "shieldAmount": 0,
+        "isToSelf": false
+    }
+]
