@@ -27,7 +27,10 @@ function exportToCsv() {
 </script>
 
 <template>
-    <i class="fa-solid fa-file-csv" @click="showConfirmationModal = true"></i>
+    <i
+        class="fa-solid fa-file-csv cur-pointer"
+        @click="showConfirmationModal = true"
+    ></i>
     <Teleport to="body">
         <Modal :show="showConfirmationModal">
             <template #header>
