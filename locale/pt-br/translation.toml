@@ -89,6 +89,7 @@ masternodeDeleteConfirmation = "" # Are you sure you want to delete your mastern
 masternodeRestartTitle = "" # Restart Masternode
 masternodeDeleteTitle = "" # Delete Masternode
 votedMultiMn = "" # Voted with {successfulVotes} out of {totalVotes} masternodes
+immatureRewards = "" # Part of your staked balance may be locked for 100 blocks as your reward matures.
 
 [ALERTS]
 STAKE_ADDR_SET = "<b>Endereço de Cold Staking definido!</b><br>Ao fazer Stake no futuro este endereço irá ser usado." # <b>Cold Address set!</b><br>Future stakes will use this address.
@@ -136,3 +137,4 @@ MISSING_SHIELD = "" # Shield is not enabled in this wallet!
 MN_START_FAILED = "" # <b>Masternode failed to start!</b>
 MN_RESTART_FAILED = "" # <b>Masternode failed to restart!</b>
 MN_UNLOCK_WALLET = "" # Please import your <b> COLLATERAL WALLET</b> first.
+LEDGER_TX_TOO_BIG = "" # Transaction length exceeds 9000 bytes

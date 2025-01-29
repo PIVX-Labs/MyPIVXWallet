@@ -1461,6 +1461,10 @@ export class Wallet {
         return this.#mempool.getColdBalance(blockCount);
     }
 
+    get immatureColdBalance() {
+        return this.#mempool.getImmatureColdBalance(blockCount);
+    }
+
     /**
      * Utility function to get the UTXO from an outpoint
      * @param {COutpoint} outpoint
