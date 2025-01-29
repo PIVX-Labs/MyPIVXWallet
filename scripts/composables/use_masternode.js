@@ -11,12 +11,12 @@ export const useMasternode = defineStore('masternode', () => {
     const localProposals = ref([]);
     watch(
         localProposals,
-        async () => {
+        async (localProposals) => {
             const database = await Database.getInstance();
             const account = await database.getAccount();
             if (account) {
-                account.localProposals = toRaw(localProposals.value);
-                await database.updateAccount(account);
+                account.localProposals = toRaw(localProposals);
+                await database.updateAccount(account, true);
             }
         },
         {

@@ -208,6 +208,8 @@ saveWalletFile = "Save Wawwet File" # Save Wallet File
 proposalOverBudget = "Over Budgey" # Over Budget
 badSaplingRoot = "" # There was an error while syncing. Resyncing from scratch (Bad sapling root)
 creatingShieldTransaction = "" # Creating SHIELD transaction...
+deleteProposal = "" # Delete Proposal
+deleteProposalBody = "" # Are you sure you want to delete your proposal? Your collateral will be permanently lost.
 immatureRewards = "" # Part of your staked balance may be locked for 100 blocks as your reward matures.
 
 [ALERTS]

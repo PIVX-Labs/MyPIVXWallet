@@ -1,7 +1,7 @@
 <script setup>
 import MobileProposalRow from './MobileProposalRow.vue';
 import ProposalRow from './ProposalRow.vue';
-import { toRefs, computed, ref } from 'vue';
+import { toRefs, ref } from 'vue';
 
 import { ProposalValidator } from './status';
 import { COIN } from '../chain_params';
@@ -22,7 +22,7 @@ const { proposals, localProposals, masternodeCount, strCurrency, price } =
 const getProposalValidator = () => new ProposalValidator(masternodeCount.value);
 const wallet = useWallet();
 
-const emit = defineEmits(['finalizeProposal', 'vote']);
+const emit = defineEmits(['finalizeProposal', 'vote', 'deleteProposal']);
 
 /**
  * @param{localProposal} Local proposal to convert
@@ -96,6 +96,7 @@ function openOrCloseRow(i) {
                     :proposalValidator="getProposalValidator()"
                     :blockCount="wallet.blockCount"
                     @click="openOrCloseRow(i)"
+                    @deleteProposal="emit('deleteProposal', proposal)"
                     @finalizeProposal="emit('finalizeProposal', proposal)"
                 />
                 <MobileProposalRow
@@ -104,6 +105,7 @@ function openOrCloseRow(i) {
                     :price="price"
                     :localProposal="true"
                     :strCurrency="strCurrency"
+                    @deleteProposal="emit('deleteProposal', proposal)"
                     @finalizeProposal="emit('finalizeProposal', proposal)"
                 />
             </template>
