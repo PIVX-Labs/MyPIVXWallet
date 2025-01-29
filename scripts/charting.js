@@ -93,10 +93,11 @@ async function getWalletDataset() {
         });
     }
 
-    const masternode = await (await Database.getInstance()).getMasternode();
+    const masternodes = await (await Database.getInstance()).getMasternodes();
+    let masternodeValue = 0;
 
     // Masternode (Locked)
-    if (masternode) {
+    for (const masternode of masternodes) {
         if (
             wallet.isCoinLocked(
                 new COutpoint({
@@ -105,13 +106,15 @@ async function getWalletDataset() {
                 })
             )
         ) {
-            arrBreakdown.push({
-                type: 'Masternode',
-                balance: cChainParams.current.collateralInSats / COIN,
-                colour: 'rgba(19, 13, 30, 1)',
-            });
+            masternodeValue += cChainParams.current.collateralInSats / COIN;
         }
     }
+    if (masternodeValue !== 0)
+        arrBreakdown.push({
+            type: 'Masternodes',
+            balance: masternodeValue,
+            colour: 'rgba(19, 13, 30, 1)',
+        });
     return arrBreakdown;
 }
 
