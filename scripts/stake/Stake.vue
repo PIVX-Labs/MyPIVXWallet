@@ -126,7 +126,7 @@ async function unstake(value) {
         value,
         {
             useDelegatedInputs: true,
-            delegateChange: true,
+            delegateChange: !wallet.isHardwareWallet,
             changeDelegationAddress: coldStakingAddress.value,
         }
     );
