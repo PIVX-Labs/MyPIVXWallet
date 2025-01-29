@@ -36,7 +36,8 @@ export async function createAndSendTransaction({
     });
     if (!wallet.isHardwareWallet()) await wallet.sign(tx);
     else {
-        await ledgerSignTransaction(wallet, tx);
+        const res = await ledgerSignTransaction(wallet, tx);
+        if (!res) return;
     }
     const res = await getNetwork().sendTransaction(tx.serialize());
     if (res) {

@@ -70,6 +70,7 @@ export const useWallet = defineStore('wallet', () => {
     const coldBalance = ref(0);
     const pendingShieldBalance = ref(0);
     const immatureBalance = ref(0);
+    const immatureColdBalance = ref(0);
     const currency = ref('USD');
     const price = ref(0.0);
     const sync = async () => {
@@ -152,6 +153,7 @@ export const useWallet = defineStore('wallet', () => {
     getEventEmitter().on('balance-update', async () => {
         balance.value = wallet.balance;
         immatureBalance.value = wallet.immatureBalance;
+        immatureColdBalance.value = wallet.immatureColdBalance;
         shieldBalance.value = await wallet.getShieldBalance();
         pendingShieldBalance.value = await wallet.getPendingShieldBalance();
         coldBalance.value = wallet.coldBalance;
@@ -192,6 +194,7 @@ export const useWallet = defineStore('wallet', () => {
         shieldBalance,
         pendingShieldBalance,
         immatureBalance,
+        immatureColdBalance,
         currency,
         price,
         sync,

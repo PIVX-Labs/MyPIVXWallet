@@ -91,7 +91,6 @@ async function destroyMasternode() {
  * @param {import('../transaction.js').UTXO} utxo - Masternode utxo. Must be of exactly `cChainParams.current.collateralInSats` of value
  */
 function importMasternode(privateKey, ip, utxo) {
-    console.log(privateKey, ip, utxo);
     const address = parseIpAddress(ip);
     if (!address) {
         createAlert('warning', ALERTS.MN_BAD_IP, 5000);

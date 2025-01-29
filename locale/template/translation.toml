@@ -232,6 +232,7 @@ shieldAddress = "Shield address"
 cantShieldToExc = "This address does not support shield transfers"
 badSaplingRoot = "There was an error while syncing. Resyncing from scratch (Bad sapling root)"
 creatingShieldTransaction = "Creating SHIELD transaction..."
+immatureRewards = "Part of your staked balance may be locked for 100 blocks as your reward matures."
 
 [ALERTS]
 INTERNAL_ERROR = "Internal error, please try again later"
@@ -340,5 +341,6 @@ CONFIRM_POPUP_DELETE_ACCOUNT = 'This will delete all your data, including master
 CONFIRM_POPUP_DELETE_ACCOUNT_TITLE = 'Are you sure?'
 CONFIRM_LEDGER_TX = 'Confirm this transaction matches the one on your {hardwareWallet}'
 CONFIRM_LEDGER_TX_OUT = 'You will send {value} {ticker} to <div class="inline-address">{address}</div>'
+LEDGER_TX_TOO_BIG = 'Transaction length exceeds 9000 bytes'
 MISSING_FUNDS = '<b>Balance is too small!</b> <br> Missing {sats} sats!'
 MISSING_SHIELD = "Shield is not enabled in this wallet!"

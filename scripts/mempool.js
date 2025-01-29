@@ -28,6 +28,7 @@ export class Mempool {
         balance: new CachableBalance(),
         coldBalance: new CachableBalance(),
         immatureBalance: new CachableBalance(),
+        immatureColdBalance: new CachableBalance(),
     };
 
     /**
@@ -288,6 +289,22 @@ export class Mempool {
                 this.#balanceInternal(OutpointState.OURS, blockCount, true) -
                 this.getBalance(blockCount) -
                 this.getColdBalance(blockCount)
+            );
+        });
+    }
+
+    /**
+     * @param {number} blockCount - chain height
+     * @returns {number} immature cold stake balance
+     */
+    getImmatureColdBalance(blockCount) {
+        return this.#balances.immatureColdBalance.getOrUpdateInvalid(() => {
+            return (
+                this.#balanceInternal(
+                    OutpointState.OURS | OutpointState.P2CS,
+                    blockCount,
+                    true
+                ) - this.getColdBalance()
             );
         });
     }

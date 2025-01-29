@@ -208,6 +208,7 @@ saveWalletFile = "" # Save Wallet File
 proposalOverBudget = "" # Over Budget
 badSaplingRoot = "" # There was an error while syncing. Resyncing from scratch (Bad sapling root)
 creatingShieldTransaction = "" # Creating SHIELD transaction...
+immatureRewards = "" # Part of your staked balance may be locked for 100 blocks as your reward matures.
 
 [ALERTS]
 INTERNAL_ERROR = "Internal error, Pakiusap uliting muli" # Internal error, please try again later
@@ -224,7 +225,7 @@ INVALID_AMOUNT = "<b>Ang halaga ay hindi wasto!</b><br>" # <b>Invalid amount!</b
 TX_SENT = "Ang transaksyon ay naipadala!" # Transaction sent!
 TX_FAILED = "Nabigo ang Transaksyon" # Transaction Failed!
 QR_SCANNER_BAD_RECEIVER = "ay hindi wastong tanggapan ng bayad " # is not a valid payment receiver
-VALIDATE_AMOUNT_LOW = "Ang pinakamababang halaga ay {minimumAmount} {coinTicker}!" # <br>Minimum amount is {minimumAmount} {coinTicker}!
+VALIDATE_AMOUNT_LOW = "Ang pinakamababang halaga ay {minimumAmount} {coinTicker}!" # Minimum amount is {minimumAmount} {coinTicker}!
 VALIDATE_AMOUNT_DECIMAL = "{coinDecimal} Ang limitasyon sa decimal ay lumagpas" # {coinDecimal} decimal limit exceeded
 SUCCESS_STAKING_ADDR = "Nakatakda na ang Staking address!</b><br> Pumunta ka na ngayon at mag unstake" # <b>Staking Address set!</b><br>Now go ahead and unstake!
 STAKE_ADDR_SET = "Nakatakda na ang Cold Address!</b><br>Gagamitin ang address na to sa mga susunod na stakes" # <b>Cold Address set!</b><br>Future stakes will use this address.
@@ -313,7 +314,9 @@ WALLET_LOCKED = "" # Wallet successfully Locked!
 WALLET_UNLOCKED = "" # Wallet successfully Unlocked!
 CONFIRM_LEDGER_TX = "" # Confirm this transaction matches the one on your {hardwareWallet}
 CONFIRM_LEDGER_TX_OUT = "" # You will send {value} {ticker} to <div class="inline-address">{address}</div>
-MISSING_FUNDS = "" # Balance is too small! Missing {sats} sats!
+MISSING_FUNDS = "" # <b>Balance is too small!</b> <br> Missing {sats} sats!
 MISSING_SHIELD = "" # Shield is not enabled in this wallet!
 MN_START_FAILED = "" # <b>Masternode failed to start!</b>
 MN_RESTART_FAILED = "" # <b>Masternode failed to restart!</b>
+MN_UNLOCK_WALLET = "" # Please import your <b> COLLATERAL WALLET</b> first.
+LEDGER_TX_TOO_BIG = "" # Transaction length exceeds 9000 bytes
