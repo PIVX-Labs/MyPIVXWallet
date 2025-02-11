@@ -325,3 +325,4 @@ MN_START_FAILED = "" # <b>Masternode failed to start!</b>
 MN_RESTART_FAILED = "" # <b>Masternode failed to restart!</b>
 MN_UNLOCK_WALLET = "" # Please import your <b> COLLATERAL WALLET</b> first.
 LEDGER_TX_TOO_BIG = "" # Transaction length exceeds 9000 bytes
+MASTERNODE_CONFIRM_L = "" # Confirm the start message signature on your Ledger

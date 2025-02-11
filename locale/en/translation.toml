@@ -325,3 +325,4 @@ MN_START_FAILED = " <b>Masternode failed to start!</b>" # <b>Masternode failed t
 MN_RESTART_FAILED = " <b>Masternode failed to restart!</b>" # <b>Masternode failed to restart!</b>
 LEDGER_TX_TOO_BIG = "Transaction length exceeds 9000 bytes" # Transaction length exceeds 9000 bytes
 MISSING_FUNDS = "<b>Balance is too small!</b> <br> Missing {sats} sats!" # <b>Balance is too small!</b> <br> Missing {sats} sats!
+MASTERNODE_CONFIRM_L = "Confirm the start message signature on your Ledger" # Confirm the start message signature on your Ledger

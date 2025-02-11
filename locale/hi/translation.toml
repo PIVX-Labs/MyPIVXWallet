@@ -325,3 +325,4 @@ MISSING_SHIELD = "इस वॉलेट में शील्ड सक्ष�
 WALLET_HARDWARE_USB_UNSUPPORTED = "" # <b>Firefox doesn't support this!</b><br>Unfortunately, Firefox does not support hardware wallets
 MN_UNLOCK_WALLET = "" # Please import your <b> COLLATERAL WALLET</b> first.
 LEDGER_TX_TOO_BIG = "" # Transaction length exceeds 9000 bytes
+MASTERNODE_CONFIRM_L = "" # Confirm the start message signature on your Ledger

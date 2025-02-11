@@ -12,6 +12,8 @@ import base32 from 'base32';
 import { isStandardAddress } from './misc.js';
 import { getNetwork } from './network/network_manager.js';
 import { debugError, DebugTopics } from './debug.js';
+import { createAlert } from './alerts/alert';
+import { ALERTS } from './i18n';
 
 /**
  * Construct a Masternode
@@ -191,6 +193,7 @@ export default class Masternode {
         });
 
         if (wallet.isHardwareWallet()) {
+            createAlert('info', ALERTS.MASTERNODE_CONFIRM_L, 5000);
             const { r, s, v } = await cHardwareWallet.signMessage(
                 this.walletPrivateKeyPath,
                 bytesToHex(toSign)
