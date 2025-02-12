@@ -208,6 +208,11 @@ saveWalletFile = "Save Wallet File" # Save Wallet File
 proposalOverBudget = "Over Budget" # Over Budget
 badSaplingRoot = "There was an error while syncing. Resyncing from scratch (Bad sapling root)" # There was an error while syncing. Resyncing from scratch (Bad sapling root)
 creatingShieldTransaction = "Creating SHIELD transaction..." # Creating SHIELD transaction...
+masternodeRestartConfirmation = "Are you sure you want to restart your masternode?" # Are you sure you want to restart your masternode?
+masternodeDeleteConfirmation = "Are you sure you want to delete your masternode?" # Are you sure you want to delete your masternode?
+masternodeRestartTitle = "Restart Masternode" # Restart Masternode
+masternodeDeleteTitle = "Delete Masternode" # Delete Masternode
+votedMultiMn = "Voted with {successfulVotes} out of {totalVotes} masternodes" # Voted with {successfulVotes} out of {totalVotes} masternodes
 immatureRewards = "Part of your staked balance may be locked for 100 blocks as your reward matures." # Part of your staked balance may be locked for 100 blocks as your reward matures.
 
 [ALERTS]
@@ -320,3 +325,4 @@ MN_START_FAILED = " <b>Masternode failed to start!</b>" # <b>Masternode failed t
 MN_RESTART_FAILED = " <b>Masternode failed to restart!</b>" # <b>Masternode failed to restart!</b>
 LEDGER_TX_TOO_BIG = "Transaction length exceeds 9000 bytes" # Transaction length exceeds 9000 bytes
 MISSING_FUNDS = "<b>Balance is too small!</b> <br> Missing {sats} sats!" # <b>Balance is too small!</b> <br> Missing {sats} sats!
+MASTERNODE_CONFIRM_L = "Confirm the start message signature on your Ledger" # Confirm the start message signature on your Ledger
