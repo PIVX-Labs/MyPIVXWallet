@@ -41,103 +41,137 @@ export class LedgerController {
         return LedgerController.#instance;
     }
 
+    #queue = [];
+
     /**
      * Add a command to the queue
      * @param {()=>Promise<void>} fn
      */
     async #sendCommand(fn) {
-        await this.#setupConnection();
-        try {
-            return await fn();
-        } catch (e) {
-            if (e.message.includes('denied by the user')) {
-                // User denied an operation
-                return null;
-            }
-
-            // If there's no device, nudge the user to plug it in.
-            if (e.message.toLowerCase().includes('no device selected')) {
-                createAlert('info', ALERTS.WALLET_NO_HARDWARE, 10000);
-                return null;
-            }
-
-            // If the device is unplugged, or connection lost through other means (such as spontanious device explosion)
-            if (e.message.includes("Failed to execute 'transferIn'")) {
-                createAlert(
-                    'info',
-                    tr(ALERTS.WALLET_HARDWARE_CONNECTION_LOST, [
-                        {
-                            hardwareWallet: this.#hardwareName,
-                        },
-                    ]),
-                    10000
-                );
-                return null;
-            }
-
-            // If the ledger is busy, just nudge the user.
-            if (e.message.includes('is busy')) {
-                createAlert(
-                    'info',
-                    tr(ALERTS.WALLET_HARDWARE_BUSY, [
-                        {
-                            hardwareWallet: this.#hardwareName,
-                        },
-                    ]),
-                    7500
-                );
-                return null;
-            }
-
-            // This is when the OS denies access to the WebUSB
-            // It's likely caused by faulty udev rules on linux
-            if (
-                e instanceof DOMException &&
-                e.message.match(/access denied/i)
-            ) {
-                if (navigator.userAgent.toLowerCase().includes('linux')) {
-                    createAlert('warning', ALERTS.WALLET_HARDWARE_UDEV, 5500);
-                } else {
-                    createAlert(
-                        'warning',
-                        ALERTS.WALLET_HARDWARE_NO_ACCESS,
-                        5500
-                    );
+        const command = async () => {
+            await this.#setupConnection();
+            try {
+                return await fn();
+            } catch (e) {
+                if (e.message.includes('denied by the user')) {
+                    // User denied an operation
+                    return null;
                 }
 
-                debugError(DebugTopics.LEDGER, e);
-                return;
-            }
+                // If there's no device, nudge the user to plug it in.
+                if (e.message.toLowerCase().includes('no device selected')) {
+                    createAlert('info', ALERTS.WALLET_NO_HARDWARE, 10000);
+                    return null;
+                }
 
-            // Check if this is an expected error
-            if (
-                !e.statusCode ||
-                !LedgerController.LEDGER_ERRS.has(e.statusCode)
-            ) {
-                debugError(DebugTopics.LEDGER, e);
-                debugError(
-                    DebugTopics.LEDGER,
-                    'MISSING LEDGER ERROR-CODE TRANSLATION! - Please report this below error on our GitHub so we can handle it more nicely!'
+                // If the device is unplugged, or connection lost through other means (such as spontanious device explosion)
+                if (e.message.includes("Failed to execute 'transferIn'")) {
+                    createAlert(
+                        'info',
+                        tr(ALERTS.WALLET_HARDWARE_CONNECTION_LOST, [
+                            {
+                                hardwareWallet: this.#hardwareName,
+                            },
+                        ]),
+                        10000
+                    );
+                    return null;
+                }
+
+                // If the ledger is busy, just nudge the user.
+                if (e.message.includes('is busy')) {
+                    createAlert(
+                        'info',
+                        tr(ALERTS.WALLET_HARDWARE_BUSY, [
+                            {
+                                hardwareWallet: this.#hardwareName,
+                            },
+                        ]),
+                        7500
+                    );
+                    return null;
+                }
+
+                // This is when the OS denies access to the WebUSB
+                // It's likely caused by faulty udev rules on linux
+                if (
+                    e instanceof DOMException &&
+                    e.message.match(/access denied/i)
+                ) {
+                    if (navigator.userAgent.toLowerCase().includes('linux')) {
+                        createAlert(
+                            'warning',
+                            ALERTS.WALLET_HARDWARE_UDEV,
+                            5500
+                        );
+                    } else {
+                        createAlert(
+                            'warning',
+                            ALERTS.WALLET_HARDWARE_NO_ACCESS,
+                            5500
+                        );
+                    }
+
+                    debugError(DebugTopics.LEDGER, e);
+                    return;
+                }
+
+                // Check if this is an expected error
+                if (
+                    !e.statusCode ||
+                    !LedgerController.LEDGER_ERRS.has(e.statusCode)
+                ) {
+                    debugError(DebugTopics.LEDGER, e);
+                    debugError(
+                        DebugTopics.LEDGER,
+                        'MISSING LEDGER ERROR-CODE TRANSLATION! - Please report this below error on our GitHub so we can handle it more nicely!'
+                    );
+                    throw e;
+                }
+
+                // Translate the error to a user-friendly string (if possible)
+                createAlert(
+                    'warning',
+                    tr(ALERTS.WALLET_HARDWARE_ERROR, [
+                        {
+                            hardwareWallet: this.#hardwareName,
+                        },
+                        {
+                            error: LedgerController.LEDGER_ERRS.get(
+                                e.statusCode
+                            ),
+                        },
+                    ]),
+                    5500
                 );
+
                 throw e;
             }
+        };
 
-            // Translate the error to a user-friendly string (if possible)
-            createAlert(
-                'warning',
-                tr(ALERTS.WALLET_HARDWARE_ERROR, [
-                    {
-                        hardwareWallet: this.#hardwareName,
-                    },
-                    {
-                        error: LedgerController.LEDGER_ERRS.get(e.statusCode),
-                    },
-                ]),
-                5500
-            );
+        // Wait for our turn in the queue
+        await new Promise((res, _) => {
+            this.#queue.push(res);
+            if (this.#queue.length === 1) {
+                // if no one is waiting on the queue
+                // we can proceed
+                // We need to push ourselves, even if no one is in line
+                // to make it work a bit like a lock
+                res();
+            }
+        });
 
-            throw e;
+        // If the promise got resolved, we're at the top of the queue
+        let res;
+        try {
+            res = await command();
+        } finally {
+            // Remove ourselves from the queue
+            this.#queue.shift();
+            // Resolve the next in line
+            if (this.#queue[0]) this.#queue[0]();
         }
+        return res;
     }
 
     /**
