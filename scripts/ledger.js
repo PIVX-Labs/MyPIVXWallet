@@ -44,9 +44,8 @@ export class LedgerController {
     /**
      * Add a command to the queue
      * @param {()=>Promise<void>} fn
-     * @param {{title: string, html: string}} popupOptions - Options for the confirm popup.
      */
-    async #sendCommand(fn, { title, html } = {}) {
+    async #sendCommand(fn) {
         await this.#setupConnection();
         try {
             return await fn();
