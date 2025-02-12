@@ -12,8 +12,8 @@ import base32 from 'base32';
 import { isStandardAddress } from './misc.js';
 import { getNetwork } from './network/network_manager.js';
 import { debugError, DebugTopics } from './debug.js';
-import { createAlert } from './alerts/alert';
-import { ALERTS } from './i18n';
+import { createAlert } from './alerts/alert.js';
+import { ALERTS } from './i18n.js';
 
 /**
  * Construct a Masternode
