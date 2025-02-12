@@ -1,7 +1,7 @@
 import { cChainParams, COIN } from './chain_params.js';
 import { wallet } from './wallet.js';
 import { parseWIF, deriveAddress } from './encoding.js';
-import { cHardwareWallet } from './ledger.js';
+import { LedgerController } from './ledger.js';
 import { dSHA256, bytesToHex, hexToBytes } from './utils.js';
 import { Buffer } from 'buffer';
 import { Address6 } from 'ip-address';
@@ -191,10 +191,11 @@ export default class Masternode {
         });
 
         if (wallet.isHardwareWallet()) {
-            const { r, s, v } = await cHardwareWallet.signMessage(
-                this.walletPrivateKeyPath,
-                bytesToHex(toSign)
-            );
+            const { r, s, v } =
+                await LedgerController.getInstance().signMessage(
+                    this.walletPrivateKeyPath,
+                    bytesToHex(toSign)
+                );
             return [v + 31, ...hexToBytes(r), ...hexToBytes(s)];
         } else {
             const padding = '\x18DarkNet Signed Message:\n'
