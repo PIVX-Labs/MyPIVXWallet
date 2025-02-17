@@ -191,6 +191,7 @@ async function finalizeProposal(proposal) {
     if (ok) {
         createAlert('success', ALERTS.PROPOSAL_FINALISED);
         deleteProposal(proposal);
+        await fetchProposals();
     } else {
         createAlert(
             'warning',
