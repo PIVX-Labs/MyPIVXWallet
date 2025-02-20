@@ -22,7 +22,7 @@ import {
     reverseAndSwapEndianess,
     sleep,
 } from './utils.js';
-import { strHardwareName } from './ledger.js';
+import { LedgerController } from './ledger.js';
 import { OutpointState, Mempool } from './mempool.js';
 import { getEventEmitter } from './event_bus.js';
 import { lockableFunction } from './lock.js';
@@ -1600,6 +1600,8 @@ export async function getNewAddress({
 }
 
 function createAddressConfirmation(address) {
-    return `${translation.popupHardwareAddrCheck} ${strHardwareName}.
+    return `${
+        translation.popupHardwareAddrCheck
+    } ${LedgerController.getInstance().getHardwareName()}.
               <div class="seed-phrase">${address}</div>`;
 }
