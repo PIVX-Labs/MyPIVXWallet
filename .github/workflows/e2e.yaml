@@ -24,6 +24,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Set up credentials
+        env:
+          LFS_USERNAME: ${{secrets.LFS_USERNAME}}
+          LFS_PASSWORD: ${{secrets.LFS_PASSWORD}}
+        run: |
+          git config --global credential.helper store
+          echo "https://$LFS_USERNAME:$LFS_PASSWORD@mpw-git.duddino.com" > ~/.git-credentials
       - name: Check out Git repository
         uses: actions/checkout@v4
         with:
