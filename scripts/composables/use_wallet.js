@@ -1,9 +1,13 @@
 import { getEventEmitter } from '../event_bus.js';
-import { hasEncryptedWallet, wallet } from '../wallet.js';
+import {
+    hasEncryptedWallet,
+    wallet,
+    getNewAddress as guiGetNewAddress,
+} from '../wallet.js';
 import { ref, computed } from 'vue';
 import { fPublicMode, strCurrency, togglePublicMode } from '../settings.js';
 import { cOracle } from '../prices.js';
-import { ledgerSignTransaction } from '../ledger.js';
+import { LedgerController } from '../ledger.js';
 import { defineStore } from 'pinia';
 import { lockableFunction } from '../lock.js';
 import { blockCount as rawBlockCount } from '../global.js';
@@ -85,10 +89,22 @@ export const useWallet = defineStore('wallet', () => {
     });
     const createAndSendTransaction = lockableFunction(
         async (network, address, value, opts) => {
-            const tx = wallet.createTransaction(address, value, opts);
+            let tx;
             if (wallet.isHardwareWallet()) {
-                await ledgerSignTransaction(wallet, tx);
+                const [changeAddress] = await guiGetNewAddress({
+                    verify: true,
+                    nReceiving: 0,
+                });
+                tx = wallet.createTransaction(address, value, {
+                    ...opts,
+                    changeAddress,
+                });
+                await LedgerController.getInstance().signTransaction(
+                    wallet,
+                    tx
+                );
             } else {
+                tx = wallet.createTransaction(address, value, opts);
                 await wallet.sign(tx);
             }
             const res = await network.sendTransaction(tx.serialize());
