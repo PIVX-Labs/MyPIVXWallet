@@ -5,9 +5,11 @@ This patch primarily resolves many of the inconveniences with Shield, Governance
 - Added a live progress bar to Shield Params download.
 - Outgoing Shield Txs now reflect in-balance immediately.
 - Added a tooltip to clarify Immature Stakes.
+- Added a 'queue' to Ledger comms for improved stability.
 
 # Bug Fixes
 - Fixed various Proposal Submission issues.
+- Fixed Ledger attempting to delegate 'unstake' change.
 - Added ability to delete prev. "stuck" proposals.
 - Fixed MN collaterals failing to lock.
 - Fixed currency rounding causing slightly-off Fiat values.
