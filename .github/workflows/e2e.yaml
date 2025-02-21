@@ -34,9 +34,7 @@ jobs:
           LFS_USERNAME: ${{secrets.LFS_USERNAME}}
           LFS_PASSWORD: ${{secrets.LFS_PASSWORD}}
         run: |
-          git config --global credential.helper store
-          echo "https://$LFS_USERNAME:$LFS_PASSWORD@mpw-git.duddino.com" > ~/.git-credentials
-          cat ~/.git-credentials
+          git submodule set-url cypress/fixtures/e2e  "https://$LFS_USERNAME:$LFS_PASSWORD@mpw-git.duddino.com"
           git submodule update --init --recursive
       - name: Set up Node.js
         uses: actions/setup-node@v4
