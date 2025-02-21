@@ -24,19 +24,19 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Set up credentials
+      - name: Check out Git repository
+        uses: actions/checkout@v4
+        with:
+          submodules: 'false'
+          lfs: 'true'
+      - name: Fetch lfs
         env:
           LFS_USERNAME: ${{secrets.LFS_USERNAME}}
           LFS_PASSWORD: ${{secrets.LFS_PASSWORD}}
         run: |
           git config --global credential.helper store
           echo "https://$LFS_USERNAME:$LFS_PASSWORD@mpw-git.duddino.com" > ~/.git-credentials
-      - name: Check out Git repository
-        uses: actions/checkout@v4
-        with:
-          submodules: 'true'
-          lfs: 'true'
-
+          git submodule update --init --recursive
       - name: Set up Node.js
         uses: actions/setup-node@v4
 
