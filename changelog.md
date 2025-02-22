@@ -19,6 +19,7 @@ This patch primarily resolves many of the inconveniences with Shield, Governance
 - Fixed old alerts re-appearing.
 - Fixed excess Ledger Import errors.
 - Fixed inaccurate Stake amount alerts.
+- Fixed incorrect icon metadata tag.
 
 # v2.1 - Feature Update
 This upgrade contains huge Shield Improvements; a 10-30x faster Shield Sync (device-dependent) and full Shield Activity support.
