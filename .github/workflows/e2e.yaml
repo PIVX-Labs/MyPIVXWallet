@@ -31,8 +31,8 @@ jobs:
           lfs: 'false'
       - name: Fetch lfs
         env:
-          LFS_USERNAME: ${{secrets.LFS_USERNAME}}
-          LFS_PASSWORD: 'duddino'
+          LFS_USERNAME: 'Duddino'
+          LFS_PASSWORD: ${{ secrets.LFS_PASSWORD }}
         run: |
           git submodule set-url cypress/fixtures/e2e "https://$LFS_USERNAME:$LFS_PASSWORD@mpw-git.duddino.com/Duddino/MPW-playbacks.git"
           git submodule update --init --recursive
