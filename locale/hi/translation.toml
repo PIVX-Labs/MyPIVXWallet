@@ -211,6 +211,15 @@ creatingShieldTransaction = "क्रिएटिंग शील्ड ट्�
 deleteProposal = "" # Delete Proposal
 deleteProposalBody = "" # Are you sure you want to delete your proposal? Your collateral will be permanently lost.
 immatureRewards = "" # Part of your staked balance may be locked for 100 blocks as your reward matures.
+formValidationMaxLength = "" # Maximum length allowed: {length}
+formValidationMinLength = "" # Minimum length allowed: {length}
+formValidationOther = "" # Form validation error
+formValidationString = "" # The string contains invalid characters
+formValidationUrl = "" # The URL is invalid
+formValidationAddress = "" # The address provided is invalid
+formValidationMin = "" # The minimum value is: {value}
+formValidationMax = "" # The maximum value is: {value}
+formValidationInvalidNumber = "" # Invalid Number
 
 [ALERTS]
 INTERNAL_ERROR = "आंतरिक त्रुटि, कृपया कुछ समय बाद पुनः प्रयास करें" # Internal error, please try again later
