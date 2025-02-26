@@ -65,6 +65,7 @@ const transferDescription = ref('');
 const transferAmount = ref('');
 const showRestoreWallet = ref(false);
 const restoreWalletReason = ref('');
+const importLock = ref(false);
 watch(showExportModal, async (showExportModal) => {
     if (showExportModal) {
         keyToBackup.value = await wallet.getKeyToBackup();
@@ -88,79 +89,83 @@ async function importWallet({
     password = '',
     blockCount = 4_200_000,
 }) {
-    /**
-     * @type{ParsedSecret?}
-     */
-    let parsedSecret;
-    if (type === 'hardware') {
-        if (!navigator.usb) {
-            createAlert(
-                'warning',
-                ALERTS.WALLET_HARDWARE_USB_UNSUPPORTED,
-                7500
-            );
-            return false;
-        }
-        try {
-            parsedSecret = new ParsedSecret(
-                secret
-                    ? HardwareWalletMasterKey.fromXPub(secret)
-                    : await HardwareWalletMasterKey.create()
-            );
-        } catch (e) {
-            // The user has already been notified in `ledger.js`
-            debugError(DebugTopics.LEDGER, e);
-            return;
-        }
-
-        createAlert(
-            'info',
-            tr(ALERTS.WALLET_HARDWARE_WALLET, [
-                {
-                    hardwareWallet:
-                        LedgerController.getInstance().getHardwareName(),
-                },
-            ]),
-            12500
-        );
-    } else {
-        parsedSecret = await ParsedSecret.parse(
-            secret,
-            password,
-            advancedMode.value
-        );
-    }
-    if (parsedSecret) {
-        await wallet.setMasterKey({ mk: parsedSecret.masterKey });
-        if (parsedSecret.shield) {
-            await parsedSecret.shield.reloadFromCheckpoint(blockCount);
-        }
-        wallet.setShield(parsedSecret.shield);
-
-        if (needsToEncrypt.value) showEncryptModal.value = true;
-        if (wallet.isHardwareWallet) {
-            // Save the xpub without needing encryption if it's ledger
-            const database = await Database.getInstance();
-            const account = new Account({
-                publicKey: wallet.getKeyToExport(),
-                isHardware: true,
-            });
-            if (await database.getAccount()) {
-                await database.updateAccount(account);
-            } else {
-                await database.addAccount(account);
+    try {
+        /**
+         * @type{ParsedSecret?}
+         */
+        let parsedSecret;
+        if (type === 'hardware') {
+            if (!navigator.usb) {
+                createAlert(
+                    'warning',
+                    ALERTS.WALLET_HARDWARE_USB_UNSUPPORTED,
+                    7500
+                );
+                return false;
             }
+            try {
+                parsedSecret = new ParsedSecret(
+                    secret
+                        ? HardwareWalletMasterKey.fromXPub(secret)
+                        : await HardwareWalletMasterKey.create()
+                );
+            } catch (e) {
+                // The user has already been notified in `ledger.js`
+                debugError(DebugTopics.LEDGER, e);
+                return;
+            }
+
+            createAlert(
+                'info',
+                tr(ALERTS.WALLET_HARDWARE_WALLET, [
+                    {
+                        hardwareWallet:
+                            LedgerController.getInstance().getHardwareName(),
+                    },
+                ]),
+                12500
+            );
+        } else {
+            parsedSecret = await ParsedSecret.parse(
+                secret,
+                password,
+                advancedMode.value
+            );
+        }
+        if (parsedSecret) {
+            await wallet.setMasterKey({ mk: parsedSecret.masterKey });
+            if (parsedSecret.shield) {
+                await parsedSecret.shield.reloadFromCheckpoint(blockCount);
+            }
+            wallet.setShield(parsedSecret.shield);
+
+            if (needsToEncrypt.value) showEncryptModal.value = true;
+            if (wallet.isHardwareWallet) {
+                // Save the xpub without needing encryption if it's ledger
+                const database = await Database.getInstance();
+                const account = new Account({
+                    publicKey: wallet.getKeyToExport(),
+                    isHardware: true,
+                });
+                if (await database.getAccount()) {
+                    await database.updateAccount(account);
+                } else {
+                    await database.addAccount(account);
+                }
+            }
+
+            // Start syncing in the background
+            wallet.sync().then(() => {
+                createAlert('success', translation.syncStatusFinished, 12500);
+            });
+            getEventEmitter().emit('wallet-import');
+            return true;
         }
 
-        // Start syncing in the background
-        wallet.sync().then(() => {
-            createAlert('success', translation.syncStatusFinished, 12500);
-        });
-        getEventEmitter().emit('wallet-import');
-        return true;
+        return false;
+    } finally {
+        importLock.value = false;
     }
-
-    return false;
 }
 
 /**
@@ -515,6 +520,7 @@ defineExpose({
             <Login
                 v-show="!wallet.isImported"
                 :advancedMode="advancedMode"
+                v-model:importLock="importLock"
                 @import-wallet="importWallet"
             />
 

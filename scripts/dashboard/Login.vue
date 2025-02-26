@@ -1,12 +1,11 @@
 <script setup>
-import pLogo from '../../assets/p_logo.svg';
 import ledgerWallet from '../../assets/icons/icon-ledger-wallet.svg';
 import VanityGen from './VanityGen.vue';
 import CreateWallet from './CreateWallet.vue';
 import AccessWallet from './AccessWallet.vue';
-import { watch, toRefs } from 'vue';
+import { toRefs, ref } from 'vue';
 
-defineEmits(['import-wallet']);
+const emit = defineEmits(['import-wallet']);
 
 const isUSBSupported = !!navigator.usb;
 
@@ -14,6 +13,14 @@ const props = defineProps({
     advancedMode: Boolean,
 });
 const { advancedMode } = toRefs(props);
+const importLock = defineModel('importLock');
+
+function importWallet(importObj) {
+    if (!importLock.value) {
+        importLock.value = true;
+        emit('import-wallet', importObj);
+    }
+}
 </script>
 
 <template>
@@ -22,20 +29,21 @@ const { advancedMode } = toRefs(props);
             :advanced-mode="advancedMode"
             @import-wallet="
                 (mnemonic, password, blockCount) =>
-                    $emit('import-wallet', {
+                    importWallet({
                         type: 'hd',
                         secret: mnemonic,
                         password,
                         blockCount,
                     })
             "
+            :import-lock="importLock"
         />
 
         <br />
 
         <VanityGen
             @import-wallet="
-                (wif) => $emit('import-wallet', { type: 'legacy', secret: wif })
+                (wif) => importWallet({ type: 'legacy', secret: wif })
             "
         />
 
@@ -45,7 +53,7 @@ const { advancedMode } = toRefs(props);
                 id="generateHardwareWallet"
                 class="dashboard-item dashboard-display"
                 :style="{ opacity: isUSBSupported ? 1 : 0.5 }"
-                @click="$emit('import-wallet', { type: 'hardware' })"
+                @click="importWallet({ type: 'hardware' })"
                 data-testid="hardwareWalletBtn"
             >
                 <div class="coinstat-icon" v-html="ledgerWallet"></div>
@@ -68,7 +76,7 @@ const { advancedMode } = toRefs(props);
             :advancedMode="advancedMode"
             @import-wallet="
                 (secret, password) =>
-                    $emit('import-wallet', { type: 'hd', secret, password })
+                    importWallet({ type: 'hd', secret, password })
             "
         />
     </div>
