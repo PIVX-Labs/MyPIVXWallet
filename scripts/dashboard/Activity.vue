@@ -82,21 +82,21 @@ function txSelfMap(amount, shieldAmount) {
             content:
                 shieldAmount == 0
                     ? translation.activitySentTo
-                    : 'Shield sent to self',
+                    : translation.shieldSentToSelf,
             amount: Math.abs(shieldAmount + amount),
         };
     } else if (shieldAmount > 0) {
         return {
             icon: 'fa-shield',
             colour: 'white',
-            content: 'Shielding',
+            content: translation.shielding,
             amount: shieldAmount,
         };
     } else if (shieldAmount < 0) {
         return {
             icon: 'fa-shield',
             colour: 'white',
-            content: 'De-Shielding',
+            content: translation.deShielding,
             amount: amount,
         };
     }

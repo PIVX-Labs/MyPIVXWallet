@@ -223,6 +223,9 @@ cancel = "" # Cancel
 proposalName = "" # Proposal name
 proposalUrl = "" # Proposal URL
 proposalFee = "" # Proposal Submission Fee
+shieldSendToSelf = "" # Shield sent to self
+shielding = "" # Shielding
+deShielding = "" # De-Shielding
 
 [ALERTS]
 INTERNAL_ERROR = "Interner Fehler, bitte versuche es später erneut" # Internal error, please try again later
