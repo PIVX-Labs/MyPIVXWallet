@@ -222,6 +222,7 @@ giftCode = "" # Gift Code
 cancel = "" # Cancel
 proposalName = "" # Proposal name
 proposalUrl = "" # Proposal URL
+proposalFee = "" # Proposal Submission Fee
 
 [ALERTS]
 INTERNAL_ERROR = "Interne fout, probeer het later opnieuw" # Internal error, please try again later

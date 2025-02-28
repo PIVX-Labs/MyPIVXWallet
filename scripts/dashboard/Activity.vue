@@ -59,7 +59,7 @@ const txMap = computed(() => {
         [HistoricalTxType.PROPOSAL_FEE]: {
             icon: 'fa-minus',
             colour: '#f93c4c',
-            content: 'Proposal Submission Fee',
+            content: translation.proposalFee,
         },
         [HistoricalTxType.UNKNOWN]: {
             icon: 'fa-question',
