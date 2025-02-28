@@ -320,11 +320,13 @@ defineExpose({ update, reset, getTxCount, updateReward });
                     margin-top: 20px;
                 "
             >
-                <span
-                    style="font-size: 24px"
-                    :data-i18n="rewards ? 'rewardHistory' : 'activity'"
-                    >{{ title }}</span
-                >
+                <span style="font-size: 24px"
+                    >{{
+                        rewards
+                            ? translation.rewardHistory
+                            : translation.activity
+                    }}
+                </span>
                 <span
                     style="font-size: 20px"
                     class="rewardsBadge"

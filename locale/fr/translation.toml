@@ -211,6 +211,17 @@ creatingShieldTransaction = "" # Creating SHIELD transaction...
 deleteProposal = "" # Delete Proposal
 deleteProposalBody = "" # Are you sure you want to delete your proposal? Your collateral will be permanently lost.
 immatureRewards = "" # Part of your staked balance may be locked for 100 blocks as your reward matures.
+syncingShield = "" # Syncing shield ({progress}MB/{total}MB)
+currentMode = "" # Now in {mode} Mode
+switchTo = "" # Switch to {mode}
+publicMode = "" # Public
+privateMode = "" # Private
+balance = "" # Balance
+explorer = "" # Explorer
+giftCode = "" # Gift Code
+cancel = "" # Cancel
+proposalName = "" # Proposal name
+proposalUrl = "" # Proposal URL
 
 [ALERTS]
 INTERNAL_ERROR = "Erreur interne, veuillez réessayer plus tard" # Internal error, please try again later

@@ -55,7 +55,7 @@ watch(advancedMode, () => (address.value = ''));
                         font-weight: 500;
                     "
                 >
-                    Proposal name
+                    {{ translation.proposalName }}
                 </p>
                 <input
                     data-testid="proposalTitle"
@@ -73,7 +73,7 @@ watch(advancedMode, () => (address.value = ''));
                         font-weight: 500;
                     "
                 >
-                    URL
+                    {{ translation.proposalUrl }}
                 </p>
                 <input
                     data-testid="proposalUrl"
@@ -91,7 +91,7 @@ watch(advancedMode, () => (address.value = ''));
                         font-weight: 500;
                     "
                 >
-                    Duration in cycles
+                    {{ translation.popupProposalDuration }}
                 </p>
                 <input
                     type="number"
@@ -111,7 +111,8 @@ watch(advancedMode, () => (address.value = ''));
                         font-weight: 500;
                     "
                 >
-                    {{ cChainParams.current.TICKER }} per cycle
+                    {{ cChainParams.current.TICKER }}
+                    {{ translation.popupProposalPerCycle }}
                 </p>
                 <input
                     type="number"
@@ -136,7 +137,7 @@ watch(advancedMode, () => (address.value = ''));
                             font-weight: 500;
                         "
                     >
-                        Proposal Address
+                        {{ translation.popupProposalAddress }}
                     </p>
                     <input
                         data-testid="proposalAddress"
