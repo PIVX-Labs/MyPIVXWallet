@@ -10,7 +10,8 @@ on:
     - "*.md"
     - LICENSE
     - "*.yaml"
-  pull_request:
+  pull_request_target:
+    types: [labeled]
     branches:
       - master
     paths-ignore:
@@ -22,6 +23,7 @@ jobs:
   e2e:
     name: Run e2e tests
     runs-on: ubuntu-latest
+    if: contains(github.event.pull_request.labels.*.name, 'safe-to-e2e-test') || github.ref == 'refs/heads/master'
 
     steps:
       - name: Check out Git repository
