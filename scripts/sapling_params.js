@@ -76,7 +76,7 @@ export class SaplingParams {
                 if (done) break;
             }
 
-            stream.bytes = await request.bytes();
+            stream.bytes = new Uint8Array(await request.arrayBuffer());
         }
         await shield.loadSaplingProverWithBytes(
             streams[0].bytes,
