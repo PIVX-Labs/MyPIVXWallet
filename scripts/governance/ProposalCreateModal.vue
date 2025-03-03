@@ -14,10 +14,10 @@ const props = defineProps({
 });
 const { advancedMode } = toRefs(props);
 const emit = defineEmits(['close', 'create']);
- const data = reactive({});
+const data = reactive({});
 const showConfirmation = ref(false);
 function submit() {
-	showConfirmation.value = false;
+    showConfirmation.value = false;
     emit(
         'create',
         data.proposalTitle,
@@ -287,7 +287,7 @@ const isSafeStr = /^[a-z0-9 .,;\-_/:?@()]+$/i;
     font-size: 1rem;
     font-weight: 500;
 }
- .proposalConfirmContainer {
-     margin-bottom: 10px;
- }
+.proposalConfirmContainer {
+    margin-bottom: 10px;
+}
 </style>
