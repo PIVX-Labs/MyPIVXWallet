@@ -5,7 +5,7 @@ import Input from '../form/Input.vue';
 import NumericInput from '../form/NumericInput.vue';
 import { translation } from '../i18n.js';
 import { COIN, cChainParams } from '../chain_params';
-import { toRefs } from 'vue';
+import { toRefs, ref, reactive } from 'vue';
 import { isStandardAddress } from '../misc';
 
 const props = defineProps({
@@ -14,7 +14,10 @@ const props = defineProps({
 });
 const { advancedMode } = toRefs(props);
 const emit = defineEmits(['close', 'create']);
-function submit(data) {
+ const data = reactive({});
+const showConfirmation = ref(false);
+function submit() {
+	showConfirmation.value = false;
     emit(
         'create',
         data.proposalTitle,
@@ -23,6 +26,17 @@ function submit(data) {
         data.proposalPayment,
         data.proposalAddress
     );
+}
+
+function createConfirmationScreen(d) {
+    data.proposalTitle = d.proposalTitle;
+    data.proposalUrl = d.proposalUrl;
+    data.proposalCycles = d.proposalCycles;
+    data.proposalPayment = d.proposalPayment;
+    data.proposalAddress = d.proposalAddress;
+    console.log(d);
+    console.log(data);
+    showConfirmation.value = true;
 }
 
 const isSafeStr = /^[a-z0-9 .,;\-_/:?@()]+$/i;
@@ -47,7 +61,7 @@ const isSafeStr = /^[a-z0-9 .,;\-_/:?@()]+$/i;
             >
         </template>
         <template #body>
-            <Form @submit="submit">
+            <Form @submit="createConfirmationScreen">
                 <template #default>
                     <p
                         style="
@@ -197,4 +211,83 @@ const isSafeStr = /^[a-z0-9 .,;\-_/:?@()]+$/i;
             </button>
         </template>
     </Modal>
+
+    <Modal :show="showConfirmation">
+        <template #header>
+            <h4>{{ translation.proposalConfirm }}</h4>
+        </template>
+        <template #body>
+            <div class="proposalConfirmContainer">
+                <p class="proposalConfirmLabel">Proposal name</p>
+                <code class="proposalConfirmText">{{
+                    data.proposalTitle
+                }}</code>
+            </div>
+            <div class="proposalConfirmContainer">
+                <p class="proposalConfirmLabel">URL</p>
+                <code class="proposalConfirmText">{{ data.proposalUrl }}</code>
+            </div>
+            <div>
+                <p class="proposalConfirmLabel">Duration in cycles</p>
+                <code class="proposalConfirmText">{{
+                    data.proposalCycles
+                }}</code>
+            </div>
+
+            <div class="proposalConfirmContainer">
+                <p class="proposalConfirmLabel">
+                    {{ cChainParams.current.TICKER }} per cycle
+                </p>
+                <code class="proposalConfirmText"
+                    >{{ data.proposalPayment }}
+                </code>
+            </div>
+            <div class="proposalConfirmContainer">
+                <p class="proposalConfirmLabel">
+                    {{ translation.proposalTotal }}
+                </p>
+                <code class="proposalConfirmText"
+                    >{{ data.proposalPayment * data.proposalCycles }}
+                </code>
+            </div>
+            <div v-if="data.proposalAddress" class="proposalConfirmContainer">
+                <p class="proposalConfirmLabel">Proposal Address</p>
+                <code class="proposalConfirmText"
+                    >{{ data.proposalAddress }}
+                </code>
+            </div>
+        </template>
+        <template #footer>
+            <button
+                type="button"
+                class="pivx-button-big"
+                style="float: right"
+                data-testid="proposalSubmit"
+                @click="submit()"
+            >
+                {{ translation.popupConfirm }}
+            </button>
+
+            <button
+                type="button"
+                class="pivx-button-big-cancel"
+                style="float: left"
+                data-testid="proposalCancel"
+                @click="showConfirmation = false"
+            >
+                {{ translation.popupCancel }}
+            </button>
+        </template>
+    </Modal>
 </template>
+<style>
+.proposalConfirmLabel {
+    margin-bottom: 0px;
+    color: #af9cc6;
+    font-size: 1rem;
+    font-weight: 500;
+}
+ .proposalConfirmContainer {
+     margin-bottom: 10px;
+ }
+</style>
