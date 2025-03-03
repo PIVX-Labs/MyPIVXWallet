@@ -87,6 +87,15 @@ creatingShieldTransaction = "" # Creating SHIELD transaction...
 deleteProposal = "" # Delete Proposal
 deleteProposalBody = "" # Are you sure you want to delete your proposal? Your collateral will be permanently lost.
 immatureRewards = "" # Part of your staked balance may be locked for 100 blocks as your reward matures.
+formValidationMaxLength = "" # Maximum length allowed: {length}
+formValidationMinLength = "" # Minimum length allowed: {length}
+formValidationOther = "" # Form validation error
+formValidationString = "" # The string contains invalid characters
+formValidationUrl = "" # The URL is invalid
+formValidationAddress = "" # The address provided is invalid
+formValidationMin = "" # The minimum value is: {value}
+formValidationMax = "" # The maximum value is: {value}
+formValidationInvalidNumber = "" # Invalid Number
 
 [ALERTS]
 STAKE_ADDR_SET = "<b>Endereço de Cold Staking definido!</b><br>Ao fazer Stake no futuro este endereço irá ser usado." # <b>Cold Address set!</b><br>Future stakes will use this address.
