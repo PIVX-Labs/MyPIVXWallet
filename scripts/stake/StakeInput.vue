@@ -148,7 +148,7 @@ async function selectContact() {
             </div>
 
             <div v-if="showOwnerAddress">
-                <label data-i18n="ownerAddress">(Optional) Owner Address</label
+                <label>{{ translation.ownerAddress }}</label
                 ><br />
 
                 <div class="input-group mb-3">
@@ -158,7 +158,7 @@ async function selectContact() {
                         style="font-family: monospace"
                         type="text"
                         v-model="ownerAddress"
-                        placeholder="(Optional) Owner Address"
+                        :placeholder="translation.ownerAddress"
                         autocomplete="nope"
                         :style="{ color: ownerAddressColor }"
                     />
@@ -183,7 +183,7 @@ async function selectContact() {
                             data-testid="closeButton"
                         >
                             <span class="buttoni-text">
-                                {{ translation.cancel }} Cancel
+                                {{ translation.cancel }}
                             </span>
                         </button>
                     </div>

@@ -545,23 +545,28 @@ defineExpose({
                             </span>
                         </div>
                         <div class="messMessage" id="publicPrivateText">
-                            <span class="messTop"
-                                >Now in
-                                <span
-                                    v-html="
-                                        wallet.publicMode ? 'Public' : 'Private'
-                                    "
-                                ></span>
-                                Mode</span
-                            >
-                            <span class="messBot"
-                                >Switch to
-                                <span
-                                    v-html="
-                                        wallet.publicMode ? 'Private' : 'Public'
-                                    "
-                                ></span
-                            ></span>
+                            <span class="messTop">
+                                {{
+                                    tr(translation.currentMode, [
+                                        {
+                                            mode: wallet.publicMode
+                                                ? translation.publicMode
+                                                : translation.privateMode,
+                                        },
+                                    ])
+                                }}
+                            </span>
+                            <span class="messBot">
+                                {{
+                                    tr(translation.switchTo, [
+                                        {
+                                            mode: wallet.publicMode
+                                                ? translation.privateMode
+                                                : translation.publicMode,
+                                        },
+                                    ])
+                                }}
+                            </span>
                         </div>
                     </div>
                 </center>
