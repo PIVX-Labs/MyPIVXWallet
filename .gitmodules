@@ -1,3 +1,3 @@
 [submodule "cypress/fixtures/e2e"]
 	path = cypress/fixtures/e2e
-	url = https://mpw-git.duddino.com/Duddino/MPW-playbacks.git
+	url = https://github.com/PIVX-Labs/MPW-playbacks.git

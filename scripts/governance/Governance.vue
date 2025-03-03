@@ -20,7 +20,7 @@ import { useMasternode } from '../composables/use_masternode';
 import { useAlerts } from '../composables/use_alerts.js';
 const { createAlert } = useAlerts();
 
-const showCreateProposalModal = ref(false);
+const showCreateProposalModal = ref(true);
 
 const wallet = useWallet();
 const settings = useSettings();
