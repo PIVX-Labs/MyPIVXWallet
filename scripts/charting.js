@@ -11,7 +11,7 @@ import { cChainParams, COIN } from './chain_params.js';
 import { doms } from './global.js';
 import { Database } from './database.js';
 import { translation } from './i18n.js';
-import { wallet } from './wallet.js';
+import { activeWallet } from './wallet.js';
 import { COutpoint } from './transaction.js';
 import { beautifyNumber } from './misc.js';
 
@@ -46,7 +46,7 @@ async function getWalletDataset() {
     const arrBreakdown = [];
 
     // Public (Available)
-    const spendable_bal = wallet.balance;
+    const spendable_bal = activeWallet.balance;
     if (spendable_bal > 0) {
         arrBreakdown.push({
             type: translation.chartPublicAvailable,
@@ -56,7 +56,7 @@ async function getWalletDataset() {
     }
 
     // Shielded (Available spendable)
-    const shield_spendable = await wallet.getShieldBalance();
+    const shield_spendable = await activeWallet.getShieldBalance();
     if (shield_spendable > 0) {
         arrBreakdown.push({
             type: 'Shield Available',
@@ -66,7 +66,7 @@ async function getWalletDataset() {
     }
 
     // Shielded (Pending i.e still unspendable)
-    const shield_pending = await wallet.getPendingShieldBalance();
+    const shield_pending = await activeWallet.getPendingShieldBalance();
     if (shield_pending > 0) {
         arrBreakdown.push({
             type: 'Shield Pending',
@@ -75,7 +75,7 @@ async function getWalletDataset() {
         });
     }
 
-    const immature_bal = wallet.immatureBalance;
+    const immature_bal = activeWallet.immatureBalance;
     if (immature_bal > 0) {
         arrBreakdown.push({
             type: translation.chartImmatureBalance,
@@ -84,7 +84,7 @@ async function getWalletDataset() {
         });
     }
     // Staking (Locked)
-    const spendable_cold_bal = wallet.coldBalance;
+    const spendable_cold_bal = activeWallet.coldBalance;
     if (spendable_cold_bal > 0) {
         arrBreakdown.push({
             type: 'Staking',
@@ -98,7 +98,7 @@ async function getWalletDataset() {
     // Masternode (Locked)
     if (masternode) {
         if (
-            wallet.isCoinLocked(
+            activeWallet.isCoinLocked(
                 new COutpoint({
                     txid: masternode.collateralTxId,
                     n: masternode.outidx,

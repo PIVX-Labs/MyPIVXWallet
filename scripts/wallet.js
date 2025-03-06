@@ -140,7 +140,12 @@ export class Wallet {
         return hTx1.blockHeight >= hTx2.blockHeight;
     });
 
-    constructor({ nAccount, masterKey, shield, mempool = new Mempool() }) {
+    constructor({
+        nAccount = 0,
+        masterKey,
+        shield,
+        mempool = new Mempool(),
+    } = {}) {
         this.#nAccount = nAccount;
         this.#mempool = mempool;
         this.#masterKey = masterKey;
@@ -862,7 +867,7 @@ export class Wallet {
         try {
             const network = getNetwork();
             const req = await network.getShieldData(
-                wallet.#shield.getLastSyncedBlock() + 1
+                this.#shield.getLastSyncedBlock() + 1
             );
             if (!req.ok) throw new Error("Couldn't sync shield");
             const reader = new Reader(req);
@@ -1490,7 +1495,16 @@ export class Wallet {
 /**
  * @type{Wallet}
  */
-export const wallet = new Wallet({ nAccount: 0 }); // For now we are using only the 0-th account, (TODO: update once account system is done)
+export let activeWallet = new Wallet({ nAccount: 0 }); // For now we are using only the 0-th account, (TODO: update once account system is done)
+
+export function setWallet(w) {
+    activeWallet = w;
+}
+
+/**
+ * @type{Wallet[]} array of loaded wallets.
+ */
+export const wallets = [activeWallet];
 
 /**
  * Clean a Seed Phrase string and verify it's integrity
@@ -1576,13 +1590,13 @@ export async function getNewAddress({
     shield = false,
     nReceiving = 0,
 } = {}) {
-    const [address, path] = wallet.getNewAddress(nReceiving);
-    if (verify && wallet.isHardwareWallet()) {
+    const [address, path] = activeWallet.getNewAddress(nReceiving);
+    if (verify && activeWallet.isHardwareWallet()) {
         // Generate address to present to the user without asking to verify
         const confAddress = await confirmPopup({
             title: ALERTS.CONFIRM_POPUP_VERIFY_ADDR,
             html: createAddressConfirmation(address),
-            resolvePromise: wallet.getMasterKey().verifyAddress(path),
+            resolvePromise: activeWallet.getMasterKey().verifyAddress(path),
         });
         if (address !== confAddress) {
             throw new Error('User did not verify address');

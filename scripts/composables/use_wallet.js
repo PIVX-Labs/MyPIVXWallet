@@ -1,14 +1,15 @@
 import { getEventEmitter } from '../event_bus.js';
 import {
     hasEncryptedWallet,
-    wallet,
     getNewAddress as guiGetNewAddress,
+    wallets,
+    setWallet,
 } from '../wallet.js';
-import { ref, computed } from 'vue';
+import { ref, computed, toRaw, watch } from 'vue';
 import { fPublicMode, strCurrency, togglePublicMode } from '../settings.js';
 import { cOracle } from '../prices.js';
 import { LedgerController } from '../ledger.js';
-import { defineStore } from 'pinia';
+import { defineStore, storeToRefs } from 'pinia';
 import { lockableFunction } from '../lock.js';
 import { blockCount as rawBlockCount } from '../global.js';
 import { doms } from '../global.js';
@@ -17,17 +18,9 @@ import {
     cReceiveType,
     guiToggleReceiveType,
 } from '../contacts-book.js';
+import { reactive } from 'vue';
 
-/**
- * This is the middle ground between vue and the wallet class
- * It makes sure that everything is up to date and provides
- * a reactive interface to it
- */
-export const useWallet = defineStore('wallet', () => {
-    // Eventually we want to create a new wallet
-    // For now we'll just import the existing one
-    // const wallet = new Wallet();
-
+function addWallet(wallet) {
     const isImported = ref(wallet.isLoaded());
     const isViewOnly = ref(wallet.isViewOnly());
     const isSynced = ref(wallet.isSynced);
@@ -38,8 +31,7 @@ export const useWallet = defineStore('wallet', () => {
     const getNewAddress = (nReceiving) => wallet.getNewAddress(nReceiving);
     const blockCount = ref(0);
 
-    const setMasterKey = async ({ mk, extsk }) => {
-        await wallet.setMasterKey({ mk, extsk });
+    const updateWallet = async () => {
         isImported.value = wallet.isLoaded();
         isHardwareWallet.value = wallet.isHardwareWallet();
         isHD.value = wallet.isHD();
@@ -47,6 +39,14 @@ export const useWallet = defineStore('wallet', () => {
         isEncrypted.value = await hasEncryptedWallet();
         isSynced.value = wallet.isSynced;
     };
+    const setMasterKey = async ({ mk, extsk }) => {
+        await wallet.setMasterKey({ mk, extsk });
+        await updateWallet();
+    };
+    watch(wallet, async () => {
+        await updateWallet();
+    });
+
     const setExtsk = async (extsk) => {
         await wallet.setExtsk(extsk);
     };
@@ -222,4 +222,50 @@ export const useWallet = defineStore('wallet', () => {
         lockCoin,
         unlockCoin,
     };
+}
+
+export const useWallets = defineStore('wallets', () => {
+    /**
+     * @type{import('vue').Ref<import('../wallet.js').Wallet[]>}
+     */
+    const walletsArray = ref(
+        wallets.map((w) => {
+            return addWallet(w);
+        })
+    );
+
+    return {
+        wallets: walletsArray,
+        addWallet: (w) => {
+            // TODO: check that wallet is not already added
+            setWallet(w);
+
+            walletsArray.value = [...walletsArray.value, addWallet(w)];
+        },
+        removeWallet: (w) => {
+            const i = walletsArray.value.findIndex(
+                (wallet) => wallet.getKeyToExport() === w.getKeyToExport()
+            );
+            if (i === -1) return false;
+            walletsArray.value.splice(i, 1);
+            return true;
+        },
+    };
+});
+
+/**
+ * This is the middle ground between vue and the wallet class
+ * It makes sure that everything is up to date and provides
+ * a reactive interface to it
+ */
+export const useWalletino = defineStore('wallet', () => {
+    const w = useWallets();
+    const activeWallet = ref({ ...w.wallets[0] });
+
+    watch(w, () => {
+        const wallet = wallets.at(-1);
+        activeWallet.value = wallet;
+    });
+
+    return { activeWallet };
 });

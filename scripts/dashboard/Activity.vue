@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
 import { useNetwork } from '../composables/use_network.js';
-import { wallet } from '../wallet.js';
+import { activeWallet } from '../wallet.js';
 import { cChainParams } from '../chain_params.js';
 import { translation } from '../i18n.js';
 import { Database } from '../database.js';
@@ -105,7 +105,7 @@ function txSelfMap(amount, shieldAmount) {
 function updateReward() {
     if (!props.rewards) return;
     let res = 0;
-    for (const tx of wallet.getHistoricalTxs()) {
+    for (const tx of activeWallet.getHistoricalTxs()) {
         if (tx.type !== HistoricalTxType.STAKE) continue;
         res += tx.amount;
     }
@@ -114,7 +114,7 @@ function updateReward() {
 
 async function update(txToAdd = 0) {
     // Return if wallet is not synced yet
-    if (!wallet.isSynced) {
+    if (!activeWallet.isSynced) {
         return;
     }
 
@@ -128,7 +128,7 @@ async function update(txToAdd = 0) {
     // If there are less than 10 txs loaded, append rather than update the list
     if (txCount < 10 && txToAdd == 0) txToAdd = 10;
 
-    const historicalTxs = wallet.getHistoricalTxs();
+    const historicalTxs = activeWallet.getHistoricalTxs();
 
     let i = 0;
     let found = 0;
@@ -226,7 +226,7 @@ async function parseTXs(arrTXs) {
                 amountToShow = descriptor.amount;
             } else {
                 let arrAddresses = cTx.receivers
-                    .map((addr) => [wallet.isOwnAddress(addr), addr])
+                    .map((addr) => [activeWallet.isOwnAddress(addr), addr])
                     .filter(([isOwnAddress, _]) => {
                         return cTx.type === HistoricalTxType.RECEIVED
                             ? isOwnAddress

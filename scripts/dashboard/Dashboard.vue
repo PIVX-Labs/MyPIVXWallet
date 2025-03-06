@@ -33,17 +33,20 @@ import { getNetwork } from '../network/network_manager.js';
 import { LedgerController } from '../ledger';
 import { guiAddContactPrompt } from '../contacts-book';
 import { scanQRCode } from '../scanner';
-import { useWallet } from '../composables/use_wallet.js';
+import { useWallet, useWallets } from '../composables/use_wallet.js';
+import { setWallet, Wallet } from '../wallet.js';
 import { useSettings } from '../composables/use_settings.js';
 import pLogo from '../../assets/p_logo.svg';
 import pShieldLogo from '../../assets/icons/icon_shield_pivx.svg';
 import pIconCamera from '../../assets/icons/icon-camera.svg';
+import SelectWallet from './SelectWallet.vue';
 import { ParsedSecret } from '../parsed_secret.js';
 import { storeToRefs } from 'pinia';
 import { Account } from '../accounts';
 import { useAlerts } from '../composables/use_alerts.js';
 const { createAlert } = useAlerts();
 const wallet = useWallet();
+const wallets = useWallets();
 const activity = ref(null);
 
 const needsToEncrypt = computed(() => {
@@ -80,7 +83,7 @@ watch(showExportModal, async (showExportModal) => {
  * @param {Object} o - Options
  * @param {'legacy'|'hd'|'hardware'} o.type - type of import
  * @param {string} o.secret
- * @param {nubmer?} [o.blockCount] Creation block count. Defaults to 4_200_000
+ * @param {number?} [o.blockCount] Creation block count. Defaults to 4_200_000
  * @param {string} [o.password]
  */
 async function importWallet({
@@ -90,6 +93,8 @@ async function importWallet({
     blockCount = 4_200_000,
 }) {
     try {
+        const wallet = new Wallet();
+        setWallet(wallet);
         /**
          * @type{ParsedSecret?}
          */
@@ -153,6 +158,7 @@ async function importWallet({
                     await database.addAccount(account);
                 }
             }
+            wallets.addWallet(wallet);
 
             // Start syncing in the background
             wallet.sync().then(() => {
@@ -523,6 +529,7 @@ defineExpose({
                 v-model:importLock="importLock"
                 @import-wallet="importWallet"
             />
+            <SelectWallet />
 
             <br />
 

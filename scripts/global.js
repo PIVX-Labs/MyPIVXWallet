@@ -1,6 +1,6 @@
 import { TransactionBuilder } from './transaction_builder.js';
 import { ALERTS, start as i18nStart, translation } from './i18n.js';
-import { wallet, hasEncryptedWallet, Wallet } from './wallet.js';
+import { activeWallet, hasEncryptedWallet, Wallet } from './wallet.js';
 import { getNetwork } from './network/network_manager.js';
 import { start as settingsStart, strCurrency } from './settings.js';
 import { createAlert } from './alerts/alert.js';
@@ -433,7 +433,7 @@ export async function accessOrImportWallet() {
 
 /** Update the log out button to match the current wallet state */
 export function updateLogOutButton() {
-    doms.domLogOutContainer.style.display = wallet.isLoaded()
+    doms.domLogOutContainer.style.display = activeWallet.isLoaded()
         ? 'block'
         : 'none';
 }
@@ -449,7 +449,7 @@ export async function sweepAddress(arrUTXOs, sweepingMasterKey, nFixedFee) {
     const txBuilder = TransactionBuilder.create().addUTXOs(arrUTXOs);
 
     const outputValue = txBuilder.valueIn - (nFixedFee || txBuilder.getFee());
-    const address = wallet.getNewChangeAddress();
+    const address = activeWallet.getNewChangeAddress();
     const tx = txBuilder
         .addOutput({
             address,
