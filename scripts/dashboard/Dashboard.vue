@@ -46,16 +46,17 @@ import { Account } from '../accounts';
 import { useAlerts } from '../composables/use_alerts.js';
 const { createAlert } = useAlerts();
 const wallets = useWallets();
-const activeWallet = wallets.activeWallet;
-console.log(wallets.wallets);
-watch(() => wallets.activeWallet, console.log(wallets.activeWallet));
+const { activeWallet } = storeToRefs(wallets);
+
 const activity = ref(null);
 
 const needsToEncrypt = computed(() => {
-    if (activeWallet.isHardwareWallet) {
+    if (activeWallet.value.isHardwareWallet) {
         return false;
     } else {
-        return !activeWallet.isViewOnly && !activeWallet.isEncrypted;
+        return (
+            !activeWallet.value.isViewOnly && !activeWallet.value.isEncrypted
+        );
     }
 });
 const showTransferMenu = ref(false);
@@ -73,7 +74,7 @@ const restoreWalletReason = ref('');
 const importLock = ref(false);
 watch(showExportModal, async (showExportModal) => {
     if (showExportModal) {
-        keyToBackup.value = await activeWallet.getKeyToBackup();
+        keyToBackup.value = await activeWallet.value.getKeyToBackup();
     } else {
         // Wipe key to backup, just in case
         keyToBackup.value = '';
@@ -96,7 +97,8 @@ async function importWallet({
 }) {
     try {
         const wallet = new Wallet();
-        setWallet(wallet);
+        wallets.addWallet(wallet);
+
         /**
          * @type{ParsedSecret?}
          */
@@ -140,18 +142,20 @@ async function importWallet({
             );
         }
         if (parsedSecret) {
-            await activeWallet.setMasterKey({ mk: parsedSecret.masterKey });
+            await activeWallet.value.setMasterKey({
+                mk: parsedSecret.masterKey,
+            });
             if (parsedSecret.shield) {
                 await parsedSecret.shield.reloadFromCheckpoint(blockCount);
             }
-            activeWallet.setShield(parsedSecret.shield);
+            activeWallet.value.setShield(parsedSecret.shield);
 
             if (needsToEncrypt.value) showEncryptModal.value = true;
-            if (activeWallet.isHardwareWallet) {
+            if (activeWallet.value.isHardwareWallet) {
                 // Save the xpub without needing encryption if it's ledger
                 const database = await Database.getInstance();
                 const account = new Account({
-                    publicKey: activeWallet.getKeyToExport(),
+                    publicKey: activeWallet.value.getKeyToExport(),
                     isHardware: true,
                 });
                 if (await database.getAccount()) {
@@ -160,10 +164,9 @@ async function importWallet({
                     await database.addAccount(account);
                 }
             }
-            wallets.addWallet(wallet);
 
             // Start syncing in the background
-            activeWallet.sync().then(() => {
+            activeWallet.value.sync().then(() => {
                 createAlert('success', translation.syncStatusFinished, 12500);
             });
             getEventEmitter().emit('wallet-import');
@@ -182,13 +185,13 @@ async function importWallet({
  * @param {string} [currentPassword] - Current password with which the wallet is encrypted with, if any
  */
 async function encryptWallet(password, currentPassword = '') {
-    if (activeWallet.isEncrypted) {
-        if (!(await activeWallet.checkDecryptPassword(currentPassword))) {
+    if (activeWallet.value.isEncrypted) {
+        if (!(await activeWallet.value.checkDecryptPassword(currentPassword))) {
             createAlert('warning', ALERTS.INCORRECT_PASSWORD, 6000);
             return false;
         }
     }
-    const res = await activeWallet.encrypt(password);
+    const res = await activeWallet.value.encrypt(password);
     if (res) {
         createAlert('success', ALERTS.NEW_PASSWORD_SUCCESS, 5500);
         doms.domChangePasswordContainer.classList.remove('d-none');
@@ -196,8 +199,8 @@ async function encryptWallet(password, currentPassword = '') {
 }
 
 async function restoreWallet(strReason) {
-    if (!activeWallet.isEncrypted) return false;
-    if (activeWallet.isHardwareWallet) return true;
+    if (!activeWallet.value.isEncrypted) return false;
+    if (activeWallet.value.isHardwareWallet) return true;
     showRestoreWallet.value = true;
     return await new Promise((res) => {
         watch(
@@ -215,7 +218,7 @@ async function restoreWallet(strReason) {
  * Lock the wallet by deleting masterkey private data, after user confirmation
  */
 async function displayLockWalletModal() {
-    const isEncrypted = activeWallet.isEncrypted;
+    const isEncrypted = activeWallet.value.isEncrypted;
     const title = isEncrypted
         ? translation.popupWalletLock
         : translation.popupWalletWipe;
@@ -239,7 +242,7 @@ async function displayLockWalletModal() {
  * Lock the wallet by deleting masterkey private data
  */
 function lockWallet() {
-    activeWallet.wipePrivateData();
+    activeWallet.value.wipePrivateData();
     createAlert('success', ALERTS.WALLET_LOCKED, 1500);
 }
 
@@ -250,12 +253,12 @@ function lockWallet() {
  */
 async function send(address, amount, useShieldInputs) {
     // Ensure a wallet is unlocked
-    if (activeWallet.isViewOnly && !activeWallet.isHardwareWallet) {
+    if (activeWallet.value.isViewOnly && !activeWallet.value.isHardwareWallet) {
         if (
             !(await restoreWallet(
                 tr(ALERTS.WALLET_UNLOCK_IMPORT, [
                     {
-                        unlock: activeWallet.isEncrypted
+                        unlock: activeWallet.value.isEncrypted
                             ? 'unlock '
                             : 'import/create',
                     },
@@ -266,12 +269,12 @@ async function send(address, amount, useShieldInputs) {
     }
 
     // Ensure wallet is synced
-    if (!activeWallet.isSynced) {
+    if (!activeWallet.value.isSynced) {
         return createAlert('warning', `${ALERTS.WALLET_NOT_SYNCED}`, 3000);
     }
 
     // Make sure we are not already creating a (shield) tx
-    if (activeWallet.isCreatingTransaction()) {
+    if (activeWallet.value.isCreatingTransaction()) {
         return createAlert(
             'warning',
             'Already creating a transaction! please wait for it to finish'
@@ -294,7 +297,7 @@ async function send(address, amount, useShieldInputs) {
     if (cContact) address = cContact.pubkey;
 
     // Make sure wallet has shield enabled
-    if (!activeWallet.hasShield) {
+    if (!activeWallet.value.hasShield) {
         if (useShieldInputs || isShieldAddress(address)) {
             return createAlert('warning', ALERTS.MISSING_SHIELD);
         }
@@ -357,8 +360,8 @@ async function send(address, amount, useShieldInputs) {
     const nValue = Math.round(amount * COIN);
     if (!validateAmount(nValue)) return;
     const availableBalance = useShieldInputs
-        ? activeWallet.shieldBalance
-        : activeWallet.balance;
+        ? activeWallet.value.shieldBalance
+        : activeWallet.value.balance;
     if (nValue > availableBalance) {
         createAlert(
             'warning',
@@ -374,7 +377,7 @@ async function send(address, amount, useShieldInputs) {
 
     // Create and send the TX
     try {
-        await activeWallet.createAndSendTransaction(
+        await activeWallet.value.createAndSendTransaction(
             getNetwork(),
             address,
             nValue,
@@ -387,7 +390,7 @@ async function send(address, amount, useShieldInputs) {
         createAlert('warning', e);
     } finally {
         if (autoLockWallet.value) {
-            if (activeWallet.isEncrypted) {
+            if (activeWallet.value.isEncrypted) {
                 lockWallet();
             } else {
                 await displayLockWalletModal();
@@ -401,7 +404,7 @@ async function send(address, amount, useShieldInputs) {
  */
 function getMaxBalance(useShieldInputs) {
     const coinSatoshi = useShieldInputs
-        ? activeWallet.shieldBalance
+        ? activeWallet.value.shieldBalance
         : activeW.balance;
     transferAmount.value = coinSatoshi / COIN;
 }
@@ -409,12 +412,12 @@ function getMaxBalance(useShieldInputs) {
 async function importFromDatabase() {
     const database = await Database.getInstance();
     const account = await database.getAccount();
-    await activeWallet.setMasterKey({ mk: null });
+    await activeWallet.value.setMasterKey({ mk: null });
     activity.value?.reset();
     getEventEmitter().emit('reset-activity');
     if (account?.isHardware) {
         await importWallet({ type: 'hardware', secret: account.publicKey });
-    } else if (activeWallet.isEncrypted) {
+    } else if (activeWallet.value.isEncrypted) {
         await importWallet({ type: 'hd', secret: account.publicKey });
     }
 
@@ -431,7 +434,7 @@ onMounted(async () => {
     await start();
     await importFromDatabase();
 
-    if (activeWallet.isEncrypted) {
+    if (activeWallet.value.isEncrypted) {
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.has('addcontact')) {
             await handleContactRequest(urlParams);
@@ -462,7 +465,7 @@ const {
     price,
     isViewOnly,
     hasShield,
-} = storeToRefs(activeWallet);
+} = storeToRefs(activeWallet.value);
 
 getEventEmitter().on('sync-status', (status) => {
     if (status === 'stop') activity?.value?.update();

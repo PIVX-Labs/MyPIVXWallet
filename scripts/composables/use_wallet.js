@@ -245,9 +245,10 @@ export const useWallets = defineStore('wallets', () => {
         addWallet: (w) => {
             // TODO: check that wallet is not already added
             setWallet(w);
+            const newWallet = addWallet(w);
 
-            walletsArray.value = [...walletsArray.value, addWallet(w)];
-            activeWallet.value = walletsArray.value.at(-1);
+            walletsArray.value = [...walletsArray.value, newWallet];
+            activeWallet.value = newWallet;
         },
         removeWallet: (w) => {
             const i = walletsArray.value.findIndex(
