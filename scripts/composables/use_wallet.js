@@ -234,13 +234,20 @@ export const useWallets = defineStore('wallets', () => {
         })
     );
 
+    /**
+     * @type{import('vue').Ref<import('../wallet.js').Wallet>}
+     */
+    const activeWallet = ref(walletsArray.value[0]);
+
     return {
         wallets: walletsArray,
+        activeWallet,
         addWallet: (w) => {
             // TODO: check that wallet is not already added
             setWallet(w);
 
             walletsArray.value = [...walletsArray.value, addWallet(w)];
+            activeWallet.value = walletsArray.value.at(-1);
         },
         removeWallet: (w) => {
             const i = walletsArray.value.findIndex(
@@ -251,21 +258,4 @@ export const useWallets = defineStore('wallets', () => {
             return true;
         },
     };
-});
-
-/**
- * This is the middle ground between vue and the wallet class
- * It makes sure that everything is up to date and provides
- * a reactive interface to it
- */
-export const useWalletino = defineStore('wallet', () => {
-    const w = useWallets();
-    const activeWallet = ref({ ...w.wallets[0] });
-
-    watch(w, () => {
-        const wallet = wallets.at(-1);
-        activeWallet.value = wallet;
-    });
-
-    return { activeWallet };
 });

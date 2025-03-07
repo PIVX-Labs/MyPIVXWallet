@@ -2,7 +2,7 @@
 import { COIN, cChainParams } from '../chain_params';
 import { watch, ref, computed, onMounted } from 'vue';
 import { ProposalValidator } from './status';
-import { useWallet } from '../composables/use_wallet';
+import { useWallets } from '../composables/use_wallet';
 import Masternode from '../masternode.js';
 import ProposalsTable from './ProposalsTable.vue';
 import RestoreWallet from '../dashboard/RestoreWallet.vue';
@@ -22,7 +22,7 @@ const { createAlert } = useAlerts();
 
 const showCreateProposalModal = ref(true);
 
-const wallet = useWallet();
+const { activeWallet: wallet } = useWallets();
 const settings = useSettings();
 const { localProposals, masternode } = storeToRefs(useMasternode());
 const { advancedMode } = storeToRefs(settings);

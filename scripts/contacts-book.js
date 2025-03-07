@@ -12,7 +12,7 @@ import {
 } from './misc.js';
 import { scanQRCode } from './scanner.js';
 import { activeWallet, hasEncryptedWallet } from './wallet.js';
-import { useWallet } from './composables/use_wallet.js';
+import { useWallets } from './composables/use_wallet.js';
 import pIconCopy from '../assets/icons/icon-copy.svg';
 import pIconCamera from '../assets/icons/icon-camera.svg';
 import pIconBin from '../assets/icons/icon-bin.svg';
@@ -431,7 +431,7 @@ function renderAddress(strAddress) {
         domQR.hidden = true;
     }
 
-    const cWallet = useWallet();
+    const { activeWallet: cWallet } = useWallets();
     doms.domModalQrLabel.innerHTML =
         // SanitizeHTML shouldn't be necessary, but let's keep it just in case
         sanitizeHTML(strAddress) +
@@ -509,7 +509,7 @@ function findNextAvailableType(startType, availableTypes) {
  * @param {number?} nForceType - Optionally force the Receive Type
  */
 export async function guiToggleReceiveType(nForceType = null) {
-    const walletUse = useWallet();
+    const { activeWallet: walletUse } = useWallets();
 
     // Figure out which Types can be used with this wallet
     const availableTypes = [RECEIVE_TYPES.CONTACT];

@@ -1,7 +1,7 @@
 <script setup>
 import { COIN, cChainParams } from '../chain_params';
 import { useSettings } from '../composables/use_settings';
-import { useWallet } from '../composables/use_wallet';
+import { useWallets } from '../composables/use_wallet';
 import Activity from '../dashboard/Activity.vue';
 import RestoreWallet from '../dashboard/RestoreWallet.vue';
 import { Database } from '../database';
@@ -16,7 +16,7 @@ import { ALERTS, tr } from '../i18n';
 import { useAlerts } from '../composables/use_alerts.js';
 import { validateAmount } from '../legacy.js';
 const { createAlert } = useAlerts();
-const wallet = useWallet();
+const { activeWallet: wallet } = useWallets();
 const { balance, coldBalance, price, currency, isViewOnly } =
     storeToRefs(wallet);
 const { advancedMode, displayDecimals } = storeToRefs(useSettings());
