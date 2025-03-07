@@ -211,6 +211,8 @@ creatingShieldTransaction = "क्रिएटिंग शील्ड ट्�
 deleteProposal = "" # Delete Proposal
 deleteProposalBody = "" # Are you sure you want to delete your proposal? Your collateral will be permanently lost.
 immatureRewards = "" # Part of your staked balance may be locked for 100 blocks as your reward matures.
+exportToCsv = "" # Export transactions
+exportToCsvBody = "" # Do you want to export your transactions as CSV?
 
 [ALERTS]
 INTERNAL_ERROR = "आंतरिक त्रुटि, कृपया कुछ समय बाद पुनः प्रयास करें" # Internal error, please try again later
