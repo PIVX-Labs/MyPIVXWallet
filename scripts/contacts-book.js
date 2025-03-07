@@ -294,7 +294,7 @@ function getUserContactClick() {
  */
 export async function promptForContact() {
     const cDB = await Database.getInstance();
-    const cAccount = await cDB.getAccount();
+    const cAccount = await cDB.getAccount(activeWallet.getKeyToExport());
     if (!cAccount || (cAccount.contacts && cAccount.contacts.length === 0))
         return createAlert('warning', ALERTS.CONTACTS_YOU_HAVE_NONE, 2500);
     return renderContacts(cAccount, true);
@@ -317,7 +317,7 @@ export async function guiSelectContact(domInput) {
  */
 export async function guiRenderContacts() {
     const cDB = await Database.getInstance();
-    const cAccount = await cDB.getAccount();
+    const cAccount = await cDB.getAccount(activeWallet.getKeyToExport());
 
     if (!cAccount || !cAccount.contacts) {
         return createAlert(
@@ -350,7 +350,7 @@ export async function setAccountContactName(account, name) {
 async function renderContactModal() {
     // Fetch Contact info from the current Account
     const cDB = await Database.getInstance();
-    const cAccount = await cDB.getAccount();
+    const cAccount = await cDB.getAccount(activeWallet.getKeyToExport());
 
     // Check that a local Contact name was set
     if (cAccount?.name) {
@@ -609,7 +609,7 @@ export async function guiAddContact() {
 
     // Fetch the current Account
     const cDB = await Database.getInstance();
-    const cAccount = await cDB.getAccount();
+    const cAccount = await cDB.getAccount(activeWallet.getKeyToExport());
 
     // Check this Contact isn't already saved, either fully or partially
     const cContactByName = cAccount.getContactBy({ name: strName });
@@ -700,7 +700,7 @@ export async function guiAddContactPrompt(
     }
 
     const cDB = await Database.getInstance();
-    const cAccount = await cDB.getAccount();
+    const cAccount = await cDB.getAccount(activeWallet.getKeyToExport());
 
     // Check this Contact isn't already saved, either fully or partially
     const cContactByName = cAccount.getContactBy({ name: strName });
@@ -783,7 +783,7 @@ export async function guiAddContactPrompt(
 export async function guiEditContactNamePrompt(nIndex) {
     // Fetch the desired Contact to edit
     const cDB = await Database.getInstance();
-    const cAccount = await cDB.getAccount();
+    const cAccount = await cDB.getAccount(activeWallet.getKeyToExport());
     const cContact = cAccount.contacts[nIndex];
 
     // Render an 'Add to Contacts' UI
@@ -846,7 +846,7 @@ export async function guiEditContactNamePrompt(nIndex) {
  */
 export async function guiAddContactImage(nIndex) {
     const cDB = await Database.getInstance();
-    const cAccount = await cDB.getAccount();
+    const cAccount = await cDB.getAccount(activeWallet.getKeyToExport());
     const cContact = cAccount.contacts[nIndex];
 
     // Prompt for the image
@@ -914,7 +914,7 @@ export async function guiAddContactQRPrompt() {
 export async function guiRemoveContact(index) {
     // Fetch the current Account
     const cDB = await Database.getInstance();
-    const cAccount = await cDB.getAccount();
+    const cAccount = await cDB.getAccount(activeWallet.getKeyToExport());
 
     // Fetch the Contact
     const cContact = cAccount.contacts[index];
@@ -961,7 +961,7 @@ export async function guiSetAccountName(strDOM) {
 
     // Fetch the current Account
     const cDB = await Database.getInstance();
-    const cAccount = await cDB.getAccount();
+    const cAccount = await cDB.getAccount(activeWallet.getKeyToExport());
 
     // Set the account's name
     await setAccountContactName(cAccount, strNewName);
@@ -982,7 +982,7 @@ export async function getAddressColor(address) {
 
     // Fetch the current Account
     const cDB = await Database.getInstance();
-    const cAccount = await cDB.getAccount();
+    const cAccount = await cDB.getAccount(activeWallet.getKeyToExport());
 
     // Check if this is a Contact
     const cContact = cAccount?.getContactBy({
@@ -1033,7 +1033,8 @@ export function getNameOrAddress(cAccount, address) {
 export async function localContactToURI(account, pubkey) {
     // Fetch the current Account
     const cDB = await Database.getInstance();
-    const cAccount = account || (await cDB.getAccount());
+    const cAccount =
+        account || (await cDB.getAccount(activeWallet.getKeyToExport()));
 
     // Use the given pubkey; but if none is passed, we'll derive our loaded Public Key
     let strPubkey = pubkey || '';

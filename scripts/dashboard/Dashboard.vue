@@ -50,6 +50,8 @@ const { activeWallet } = storeToRefs(wallets);
 
 const activity = ref(null);
 
+const showLogin = computed(() => true);
+
 const needsToEncrypt = computed(() => {
     if (activeWallet.value.isHardwareWallet) {
         return false;
@@ -158,7 +160,7 @@ async function importWallet({
                     publicKey: activeWallet.value.getKeyToExport(),
                     isHardware: true,
                 });
-                if (await database.getAccount()) {
+                if (await database.getAccount(wallet.getKeyToExport())) {
                     await database.updateAccount(account);
                 } else {
                     await database.addAccount(account);
@@ -286,7 +288,7 @@ async function send(address, amount, useShieldInputs) {
 
     // Check for any contacts that match the input
     const cDB = await Database.getInstance();
-    const cAccount = await cDB.getAccount();
+    const cAccount = await cDB.getAccount(activeWallet.value.getKeyToExport());
 
     // If we have an Account, then check our Contacts for anything matching too
     const cContact = cAccount?.getContactBy({
@@ -411,17 +413,21 @@ function getMaxBalance(useShieldInputs) {
 
 async function importFromDatabase() {
     const database = await Database.getInstance();
-    const account = await database.getAccount();
-    await activeWallet.value.setMasterKey({ mk: null });
-    activity.value?.reset();
-    getEventEmitter().emit('reset-activity');
-    if (account?.isHardware) {
-        await importWallet({ type: 'hardware', secret: account.publicKey });
-    } else if (activeWallet.value.isEncrypted) {
-        await importWallet({ type: 'hd', secret: account.publicKey });
-    }
+    const accounts = await database.getAccounts();
+    console.log(accounts);
+    // @fail Maybe this shouldn't be Dashboard's responsibility
+    for (const account of accounts) {
+        //	     await activeWallet.value.setMasterKey({ mk: null });
+        activity.value?.reset();
+        getEventEmitter().emit('reset-activity');
+        if (account?.isHardware) {
+            await importWallet({ type: 'hardware', secret: account.publicKey });
+        } else if (activeWallet.value.isEncrypted) {
+            await importWallet({ type: 'hd', secret: account.publicKey });
+        }
 
-    updateLogOutButton();
+        updateLogOutButton();
+    }
 }
 
 getEventEmitter().on('toggle-network', async () => {
@@ -536,11 +542,12 @@ defineExpose({
     <div id="keypair" class="tabcontent">
         <div class="row m-0">
             <Login
-                v-show="!activeWallet.isImported"
+                v-show="showLogin"
                 :advancedMode="advancedMode"
                 v-model:importLock="importLock"
                 @import-wallet="importWallet"
             />
+
             <SelectWallet />
 
             <br />

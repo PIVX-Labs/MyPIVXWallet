@@ -174,7 +174,7 @@ async function parseTXs(arrTXs) {
         year: '2-digit',
     };
     const cDB = await Database.getInstance();
-    const cAccount = await cDB.getAccount();
+    const cAccount = await cDB.getAccount(activeWallet.getKeyToExport());
 
     const cDate = new Date();
     for (const cTx of arrTXs) {

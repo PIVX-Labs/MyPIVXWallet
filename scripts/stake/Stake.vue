@@ -16,7 +16,7 @@ import { ALERTS, tr } from '../i18n';
 import { useAlerts } from '../composables/use_alerts.js';
 import { validateAmount } from '../legacy.js';
 const { createAlert } = useAlerts();
-const { activeWallet: wallet } = useWallets();
+const { activeWallet: wallet } = storeToRefs(useWallets());
 const { balance, coldBalance, price, currency, isViewOnly } =
     storeToRefs(wallet);
 const { advancedMode, displayDecimals } = storeToRefs(useSettings());
@@ -31,7 +31,7 @@ const activity = ref(null);
 async function updateColdStakingAddress() {
     const db = await Database.getInstance();
     coldStakingAddress.value =
-        (await db.getAccount())?.coldAddress ||
+        (await db.getAccount(wallet.value.getKeyToExport()))?.coldAddress ||
         cChainParams.current.defaultColdStakingAddress;
 }
 getEventEmitter().on('toggle-network', updateColdStakingAddress);
@@ -45,7 +45,7 @@ onMounted(updateColdStakingAddress);
 
 watch(coldStakingAddress, async (coldStakingAddress) => {
     const db = await Database.getInstance();
-    const cAccount = await db.getAccount();
+    const cAccount = await db.getAccount(wallet.value.getKeyToExport());
     if (!cAccount) return;
 
     // Save to DB (allowDeletion enabled to allow for resetting the Cold Address)
@@ -59,17 +59,17 @@ async function stake(value, ownerAddress) {
     }
 
     // Don't allow attempts to stake using Ledger
-    if (wallet.isHardwareWallet) {
+    if (wallet.value.isHardwareWallet) {
         createAlert('warning', ALERTS.STAKING_LEDGER_NO_SUPPORT, 5000);
         return;
     }
 
     // Ensure the wallet is unlocked
-    if (wallet.isViewOnly && !(await restoreWallet())) {
+    if (wallet.value.isViewOnly && !(await restoreWallet())) {
         return;
     }
 
-    const availableBalance = wallet.balance;
+    const availableBalance = wallet.value.balance;
     if (value > availableBalance) {
         createAlert(
             'warning',
@@ -80,7 +80,7 @@ async function stake(value, ownerAddress) {
 
     // Prepare the Owner address
     const cDB = await Database.getInstance();
-    const cAccount = await cDB.getAccount();
+    const cAccount = await cDB.getAccount(wallet.value.getKeyToExport());
     const returnAddress =
         cAccount?.getContactBy({
             name: ownerAddress,
@@ -88,7 +88,7 @@ async function stake(value, ownerAddress) {
         })?.pubkey || ownerAddress;
 
     // Create the delegation
-    const res = await wallet.createAndSendTransaction(
+    const res = await wallet.value.createAndSendTransaction(
         getNetwork(),
         coldStakingAddress.value,
         value,
@@ -103,14 +103,14 @@ async function stake(value, ownerAddress) {
 async function unstake(value) {
     // Ensure the wallet is unlocked
     if (
-        !wallet.isHardwareWallet &&
-        wallet.isViewOnly &&
+        !wallet.value.isHardwareWallet &&
+        wallet.value.isViewOnly &&
         !(await restoreWallet())
     ) {
         return;
     }
 
-    const availableBalance = wallet.coldBalance;
+    const availableBalance = wallet.value.coldBalance;
     if (value > availableBalance) {
         createAlert(
             'warning',
@@ -120,13 +120,13 @@ async function unstake(value) {
     }
 
     // Create the delegation redeem transaction (unstake)
-    const res = await wallet.createAndSendTransaction(
+    const res = await wallet.value.createAndSendTransaction(
         getNetwork(),
-        wallet.getNewChangeAddress(),
+        wallet.value.getNewChangeAddress(),
         value,
         {
             useDelegatedInputs: true,
-            delegateChange: !wallet.isHardwareWallet,
+            delegateChange: !wallet.value.isHardwareWallet,
             changeDelegationAddress: coldStakingAddress.value,
         }
     );
@@ -134,8 +134,8 @@ async function unstake(value) {
 }
 
 async function restoreWallet(strReason) {
-    if (!wallet.isEncrypted) return false;
-    if (wallet.isHardwareWallet) return true;
+    if (!wallet.value.isEncrypted) return false;
+    if (wallet.value.isHardwareWallet) return true;
     showRestoreWallet.value = true;
     return await new Promise((res) => {
         watch(

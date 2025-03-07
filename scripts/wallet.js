@@ -198,7 +198,7 @@ export class Wallet {
     async getColdStakingAddress() {
         // Check if we have an Account with custom Cold Staking settings
         const cDB = await Database.getInstance();
-        const cAccount = await cDB.getAccount();
+        const cAccount = await cDB.getAccount(this.getKeyToExport());
 
         // If there's an account with a Cold Address, return it, otherwise return the default
         return (
@@ -367,7 +367,9 @@ export class Wallet {
     async checkDecryptPassword(strPassword) {
         // Check if there's any encrypted WIF available
         const database = await Database.getInstance();
-        const { encWif: strEncWIF } = await database.getAccount();
+        const { encWif: strEncWIF } = await database.getAccount(
+            this.getKeyToExport()
+        );
         if (!strEncWIF || strEncWIF.length < 1) return false;
 
         const strDecWIF = await decrypt(strEncWIF, strPassword);
@@ -400,7 +402,7 @@ export class Wallet {
 
         // Incase of a "Change Password", we check if an Account already exists
         const database = await Database.getInstance();
-        if (await database.getAccount()) {
+        if (await database.getAccount(this.getKeyToExport())) {
             // Update the existing Account (new encWif) in the DB
             await database.updateAccount(cAccount);
         } else {
@@ -534,7 +536,9 @@ export class Wallet {
      */
     async getKeyToBackup() {
         if (await hasEncryptedWallet()) {
-            const account = await (await Database.getInstance()).getAccount();
+            const account = await (
+                await Database.getInstance()
+            ).getAccount(this.getKeyToExport());
             return account.encWif;
         }
         return this.#getKeyToEncrypt();
@@ -1064,7 +1068,7 @@ export class Wallet {
      */
     async #saveShieldOnDisk() {
         const cDB = await Database.getInstance();
-        const cAccount = await cDB.getAccount();
+        const cAccount = await cDB.getAccount(this.getKeyToExport());
         // If the account has not been created yet (for example no encryption) return
         if (!cAccount) {
             return;
@@ -1080,7 +1084,7 @@ export class Wallet {
             return;
         }
         const cDB = await Database.getInstance();
-        const cAccount = await cDB.getAccount();
+        const cAccount = await cDB.getAccount(this.getKeyToExport());
         // If the account has not been created yet or there is no shield data return
         if (!cAccount || cAccount.shieldData === '') {
             return;
@@ -1481,7 +1485,11 @@ export class Wallet {
 
     async #loadFromDisk() {
         const db = await Database.getInstance();
-        if ((await db.getAccount())?.publicKey !== this.getKeyToExport()) {
+        // @fail This should be redundant
+        if (
+            (await db.getAccount(this.getKeyToExport()))?.publicKey !==
+            this.getKeyToExport()
+        ) {
             await db.removeAllTxs();
             return;
         }
@@ -1580,7 +1588,7 @@ export async function cleanAndVerifySeedPhrase(
  */
 export async function hasEncryptedWallet() {
     const database = await Database.getInstance();
-    const account = await database.getAccount();
+    const account = await database.getAccount(activeWallet.getKeyToExport());
     return !!account?.encWif;
 }
 
