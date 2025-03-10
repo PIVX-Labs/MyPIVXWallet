@@ -765,7 +765,7 @@ export class Wallet {
         let shieldCredit = 0;
         let shieldDebit = 0;
         let arrShieldReceivers = [];
-        if (!tx.hasShieldData || !wallet.hasShield()) {
+        if (!tx.hasShieldData || !this.hasShield()) {
             return { shieldCredit, shieldDebit, arrShieldReceivers };
         }
 
@@ -1373,7 +1373,7 @@ export class Wallet {
         }
 
         if (transaction.hasShieldData) {
-            await wallet.#shield?.finalizeTransaction(transaction.txid);
+            await this.#shield?.finalizeTransaction(transaction.txid);
         }
 
         if (!skipDatabase) {
@@ -1441,7 +1441,7 @@ export class Wallet {
      * @param {import('./transaction.js').Transaction} transaction
      */
     discardTransaction(transaction) {
-        wallet.#shield?.discardTransaction(transaction.txid);
+        this.#shield?.discardTransaction(transaction.txid);
     }
 
     /**

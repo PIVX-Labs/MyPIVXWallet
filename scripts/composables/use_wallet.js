@@ -244,6 +244,8 @@ export const useWallets = defineStore('wallets', () => {
         activeWallet,
         addWallet: (w) => {
             // TODO: check that wallet is not already added
+            wallets.push(w);
+
             setWallet(w);
             const newWallet = addWallet(w);
 
@@ -257,6 +259,18 @@ export const useWallets = defineStore('wallets', () => {
             if (i === -1) return false;
             walletsArray.value.splice(i, 1);
             return true;
+        },
+        selectWallet: (w) => {
+            const i = walletsArray.value.findIndex(
+                (wallet) => wallet.getKeyToExport() === w.getKeyToExport()
+            );
+            if (i === -1) throw new Error('Selected invalid wallet');
+            console.log(toRaw(walletsArray.value));
+            console.log(wallets);
+
+            setWallet(wallets[i]);
+            activeWallet.value = walletsArray.value[i];
+            console.log(activeWallet.value);
         },
     };
 });
