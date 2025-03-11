@@ -5,7 +5,7 @@ import Input from '../form/Input.vue';
 import NumericInput from '../form/NumericInput.vue';
 import { translation } from '../i18n.js';
 import { COIN, cChainParams } from '../chain_params';
-import { toRefs, ref, reactive } from 'vue';
+import { toRefs, ref, reactive, watch } from 'vue';
 import { isStandardAddress } from '../misc';
 
 const props = defineProps({
@@ -16,15 +16,17 @@ const { advancedMode } = toRefs(props);
 const emit = defineEmits(['close', 'create']);
 const data = reactive({});
 const showConfirmation = ref(false);
+
 function submit() {
     showConfirmation.value = false;
+
     emit(
         'create',
         data.proposalTitle,
         data.proposalUrl,
         data.proposalCycles,
         data.proposalPayment,
-        data.proposalAddress
+        advancedMode.value ? data.proposalAddress : undefined
     );
 }
 
@@ -34,8 +36,6 @@ function createConfirmationScreen(d) {
     data.proposalCycles = d.proposalCycles;
     data.proposalPayment = d.proposalPayment;
     data.proposalAddress = d.proposalAddress;
-    console.log(d);
-    console.log(data);
     showConfirmation.value = true;
 }
 
@@ -262,7 +262,7 @@ const isSafeStr = /^[a-z0-9 .,;\-_/:?@()]+$/i;
                 type="button"
                 class="pivx-button-big"
                 style="float: right"
-                data-testid="proposalSubmit"
+                data-testid="proposalConfirmSubmit"
                 @click="submit()"
             >
                 {{ translation.popupConfirm }}
