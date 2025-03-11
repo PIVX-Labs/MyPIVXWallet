@@ -24,7 +24,7 @@ import {
 } from './utils.js';
 import { LedgerController } from './ledger.js';
 import { OutpointState, Mempool } from './mempool.js';
-import { getEventEmitter } from './event_bus.js';
+import { EventEmitterWrapper, getEventEmitter } from './event_bus.js';
 import { lockableFunction } from './lock.js';
 import {
     isP2CS,
@@ -126,6 +126,8 @@ export class Wallet {
      * @type {number}
      */
     #lastProcessedBlock = 0;
+
+    #eventEmitter = new EventEmitterWrapper();
     /**
      * Array of historical txs, ordered by block height
      * @type OrderedArray<HistoricalTx>
@@ -143,6 +145,9 @@ export class Wallet {
     constructor({ nAccount, masterKey, shield, mempool = new Mempool() }) {
         this.#nAccount = nAccount;
         this.#mempool = mempool;
+        this.#mempool.setEmitter(() => {
+            this.#eventEmitter.emit('balance-update');
+        });
         this.#masterKey = masterKey;
         this.#shield = shield;
         this.#iterChains((chain) => {
@@ -796,8 +801,8 @@ export class Wallet {
         }
         // While syncing the wallet ( DB read + network sync) disable the event balance-update
         // This is done to avoid a huge spam of event.
-        getEventEmitter().disableEvent('balance-update');
-        getEventEmitter().disableEvent('new-tx');
+        this.#eventEmitter.disableEvent('balance-update');
+        this.#eventEmitter.disableEvent('new-tx');
 
         await this.#loadShieldFromDisk();
         await this.#loadFromDisk();
@@ -819,10 +824,10 @@ export class Wallet {
         this.#updateCurrentAddress();
 
         // Update both activities post sync
-        getEventEmitter().enableEvent('balance-update');
-        getEventEmitter().enableEvent('new-tx');
-        getEventEmitter().emit('balance-update');
-        getEventEmitter().emit('new-tx');
+        this.#eventEmitter.enableEvent('balance-update');
+        this.#eventEmitter.enableEvent('new-tx');
+        this.#eventEmitter.emit('balance-update');
+        this.#eventEmitter.emit('new-tx');
     });
 
     async #transparentSync() {
@@ -835,7 +840,7 @@ export class Wallet {
         // Compute the total pages and iterate through them until we've synced everything
         const totalPages = await cNet.getNumPages(nStartHeight, addr);
         for (let i = totalPages; i > 0; i--) {
-            getEventEmitter().emit(
+            this.#eventEmitter.emit(
                 'transparent-sync-status-update',
                 i,
                 totalPages,
@@ -848,7 +853,7 @@ export class Wallet {
                 await this.addTransaction(tx, tx.blockHeight === -1);
             }
         }
-        getEventEmitter().emit('transparent-sync-status-update', '', '', true);
+        this.#eventEmitter.emit('transparent-sync-status-update', '', '', true);
     }
 
     /**
@@ -871,7 +876,7 @@ export class Wallet {
             let txs = [];
             const length = reader.contentLength;
             /** @type {Uint8Array} Array of bytes that we are processing **/
-            getEventEmitter().emit(
+            this.#eventEmitter.emit(
                 'shield-sync-status-update',
                 0,
                 length,
@@ -906,7 +911,7 @@ export class Wallet {
                 handleBlocksTime += performance.now() - start;
                 blocksArray = [];
                 // Emit status update
-                getEventEmitter().emit(
+                this.#eventEmitter.emit(
                     'shield-sync-status-update',
                     reader.readBytes,
                     length,
@@ -959,7 +964,7 @@ export class Wallet {
             await this.#checkShieldSaplingRoot(networkSaplingRoot);
         this.#isSynced = true;
 
-        getEventEmitter().emit('shield-sync-status-update', 0, 0, true);
+        this.#eventEmitter.emit('shield-sync-status-update', 0, 0, true);
     }
 
     /**
@@ -990,14 +995,14 @@ export class Wallet {
     }
 
     #subscribeToNetworkEvents() {
-        getEventEmitter().on('new-block', async (block) => {
+        this.#eventEmitter.on('new-block', async (block) => {
             if (this.#isSynced) {
                 await this.#getLatestBlocks(block);
                 // Invalidate the balance cache to keep immature balance updated
                 this.#mempool.invalidateBalanceCache();
                 // Emit a new-tx signal to update the Activity.
                 // Otherwise, unconfirmed txs would not get updated
-                getEventEmitter().emit('new-tx');
+                this.#eventEmitter.emit('new-tx');
             }
         });
     }
@@ -1082,7 +1087,7 @@ export class Wallet {
         }
         const loadRes = await PIVXShield.load(cAccount.shieldData);
         this.#shield = loadRes.pivxShield;
-        getEventEmitter().emit('shield-loaded-from-disk');
+        this.#eventEmitter.emit('shield-loaded-from-disk');
         // Load operation was not successful!
         // Provided data are not compatible with the latest PIVX shield version.
         // Resetting the shield object is required
@@ -1265,7 +1270,7 @@ export class Wallet {
 
         const periodicFunction = new AsyncInterval(async () => {
             const percentage = (await this.#shield.getTxStatus()) * 100;
-            getEventEmitter().emit(
+            this.#eventEmitter.emit(
                 'shield-transaction-creation-update',
                 percentage,
                 // state: 0 = loading shield params
@@ -1296,7 +1301,7 @@ export class Wallet {
             throw e;
         } finally {
             await periodicFunction.clearInterval();
-            getEventEmitter().emit(
+            this.#eventEmitter.emit(
                 'shield-transaction-creation-update',
                 0.0,
                 // state: 0 = loading shield params
@@ -1312,7 +1317,12 @@ export class Wallet {
             getNetwork(),
             await Database.getInstance()
         );
-        await params.fetch(this.#shield);
+        await params.fetch(this.#shield, (...args) => {
+            this.#eventEmitter.emit(
+                'shield-transaction-creation-update',
+                ...args
+            );
+        });
     }
 
     /**
@@ -1378,8 +1388,8 @@ export class Wallet {
             this.#updateCurrentAddress();
         }
         await this.#pushToHistoricalTx(transaction);
-        getEventEmitter().emit('new-tx');
-        getEventEmitter().emit('balance-update');
+        this.#eventEmitter.emit('new-tx');
+        this.#eventEmitter.emit('balance-update');
     }
 
     /**
@@ -1484,6 +1494,30 @@ export class Wallet {
         for (const tx of txs) {
             await this.addTransaction(tx, true);
         }
+    }
+
+    onNewTx(fun) {
+        return this.#eventEmitter.on('new-tx', fun);
+    }
+
+    onBalanceUpdate(fun) {
+        return this.#eventEmitter.on('balance-update', fun);
+    }
+
+    onTransparentSyncStatusUpdate(fun) {
+        return this.#eventEmitter.on('transparent-sync-status-update', fun);
+    }
+
+    onShieldSyncStatusUpdate(fun) {
+        return this.#eventEmitter.on('shield-sync-status-update', fun);
+    }
+
+    onShieldLoadedFromDisk(fun) {
+        return this.#eventEmitter.on('shield-loaded-from-disk', fun);
+    }
+
+    onShieldTransactionCreationUpdate(fun) {
+        return this.#eventEmitter.on('shield-transaction-creation-update', fun);
     }
 }
 
