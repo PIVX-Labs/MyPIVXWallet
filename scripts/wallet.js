@@ -995,7 +995,7 @@ export class Wallet {
     }
 
     #subscribeToNetworkEvents() {
-        this.#eventEmitter.on('new-block', async (block) => {
+        getEventEmitter().on('new-block', async (block) => {
             if (this.#isSynced) {
                 await this.#getLatestBlocks(block);
                 // Invalidate the balance cache to keep immature balance updated
