@@ -19,6 +19,7 @@ import {
     guiToggleReceiveType,
 } from '../contacts-book.js';
 import { reactive } from 'vue';
+import { readonly } from 'vue';
 
 function addWallet(wallet) {
     const isImported = ref(wallet.isLoaded());
@@ -241,7 +242,7 @@ export const useWallets = defineStore('wallets', () => {
 
     return {
         wallets: walletsArray,
-        activeWallet,
+        activeWallet: readonly(activeWallet),
         addWallet: (w) => {
             // TODO: check that wallet is not already added
             wallets.push(w);
