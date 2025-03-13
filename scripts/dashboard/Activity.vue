@@ -7,7 +7,6 @@ import { translation } from '../i18n.js';
 import { Database } from '../database.js';
 import { HistoricalTx, HistoricalTxType } from '../historical_tx.js';
 import { getNameOrAddress } from '../contacts-book.js';
-import { getEventEmitter } from '../event_bus';
 
 import iCheck from '../../assets/icons/icon-check.svg';
 import iHourglass from '../../assets/icons/icon-hourglass.svg';

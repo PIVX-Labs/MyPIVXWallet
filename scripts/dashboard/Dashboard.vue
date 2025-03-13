@@ -477,7 +477,7 @@ getEventEmitter().on('sync-status', (status) => {
     if (status === 'stop') activity?.value?.update();
 });
 
-getEventEmitter().on('new-tx', () => {
+wallet.onNewTx(() => {
     activity?.value?.update();
 });
 

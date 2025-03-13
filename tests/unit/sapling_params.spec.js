@@ -49,7 +49,7 @@ describe('SaplingParams', () => {
                 headers: {
                     get: vi.fn(() => '4'),
                 },
-                bytes: vi.fn(() =>
+                arrayBuffer: vi.fn(() =>
                     Promise.resolve(new Uint8Array([1, 2, 3, 4]))
                 ),
             };
