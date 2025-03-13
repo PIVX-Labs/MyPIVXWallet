@@ -471,15 +471,24 @@ const {
     price,
     isViewOnly,
     hasShield,
-} = storeToRefs(activeWallet.value);
+} = valuesToComputed(activeWallet);
+
+function valuesToComputed(ref) {
+    return Object.fromEntries(
+        Object.keys(ref.value).map((key) => [
+            key,
+            computed(() => ref.value?.[key]),
+        ])
+    );
+}
 
 getEventEmitter().on('sync-status', (status) => {
     if (status === 'stop') activity?.value?.update();
 });
 
-wallet.onNewTx(() => {
-    activity?.value?.update();
-});
+//wallet.onNewTx(() => {
+//    activity?.value?.update();
+//});
 
 function changePassword() {
     showEncryptModal.value = true;

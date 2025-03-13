@@ -268,10 +268,10 @@ export const useWallets = defineStore('wallets', () => {
             wallets.push(w);
 
             setWallet(w);
-            const newWallet = addWallet(w);
+            const newWallet = reactive(addWallet(w));
 
-            walletsArray.value = [...walletsArray.value, newWallet];
             activeWallet.value = newWallet;
+            walletsArray.value = [...walletsArray.value, newWallet];
         },
         removeWallet: (w) => {
             const i = walletsArray.value.findIndex(
@@ -286,12 +286,9 @@ export const useWallets = defineStore('wallets', () => {
                 (wallet) => wallet.getKeyToExport() === w.getKeyToExport()
             );
             if (i === -1) throw new Error('Selected invalid wallet');
-            console.log(toRaw(walletsArray.value));
-            console.log(wallets);
 
             setWallet(wallets[i]);
             activeWallet.value = walletsArray.value[i];
-            console.log(activeWallet.value);
         },
     };
 });
