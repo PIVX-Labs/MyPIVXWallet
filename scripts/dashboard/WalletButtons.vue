@@ -7,10 +7,10 @@ import pCompass from '../../assets/icons/icon-compass.svg';
 import pAddressBook from '../../assets/icons/icon-address-book.svg';
 import pGift from '../../assets/icons/icon-gift.svg';
 import { useNetwork } from '../composables/use_network.js';
-import { useWallet } from '../composables/use_wallet.js';
+import { useWallets } from '../composables/use_wallet.js';
 import { getBlockbookUrl } from '../utils.js';
 
-const wallet = useWallet();
+const { activeWallet: wallet } = useWallets();
 const network = useNetwork();
 
 function getWalletUrl() {

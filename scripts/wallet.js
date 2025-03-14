@@ -142,7 +142,12 @@ export class Wallet {
         return hTx1.blockHeight >= hTx2.blockHeight;
     });
 
-    constructor({ nAccount, masterKey, shield, mempool = new Mempool() }) {
+    constructor({
+        nAccount = 0,
+        masterKey,
+        shield,
+        mempool = new Mempool(),
+    } = {}) {
         this.#nAccount = nAccount;
         this.#mempool = mempool;
         this.#mempool.setEmitter(() => {
@@ -198,7 +203,7 @@ export class Wallet {
     async getColdStakingAddress() {
         // Check if we have an Account with custom Cold Staking settings
         const cDB = await Database.getInstance();
-        const cAccount = await cDB.getAccount();
+        const cAccount = await cDB.getAccount(this.getKeyToExport());
 
         // If there's an account with a Cold Address, return it, otherwise return the default
         return (
@@ -367,7 +372,9 @@ export class Wallet {
     async checkDecryptPassword(strPassword) {
         // Check if there's any encrypted WIF available
         const database = await Database.getInstance();
-        const { encWif: strEncWIF } = await database.getAccount();
+        const { encWif: strEncWIF } = await database.getAccount(
+            this.getKeyToExport()
+        );
         if (!strEncWIF || strEncWIF.length < 1) return false;
 
         const strDecWIF = await decrypt(strEncWIF, strPassword);
@@ -400,7 +407,7 @@ export class Wallet {
 
         // Incase of a "Change Password", we check if an Account already exists
         const database = await Database.getInstance();
-        if (await database.getAccount()) {
+        if (await database.getAccount(this.getKeyToExport())) {
             // Update the existing Account (new encWif) in the DB
             await database.updateAccount(cAccount);
         } else {
@@ -534,7 +541,9 @@ export class Wallet {
      */
     async getKeyToBackup() {
         if (await hasEncryptedWallet()) {
-            const account = await (await Database.getInstance()).getAccount();
+            const account = await (
+                await Database.getInstance()
+            ).getAccount(this.getKeyToExport());
             return account.encWif;
         }
         return this.#getKeyToEncrypt();
@@ -761,7 +770,7 @@ export class Wallet {
         let shieldCredit = 0;
         let shieldDebit = 0;
         let arrShieldReceivers = [];
-        if (!tx.hasShieldData || !wallet.hasShield()) {
+        if (!tx.hasShieldData || !this.hasShield()) {
             return { shieldCredit, shieldDebit, arrShieldReceivers };
         }
 
@@ -867,7 +876,7 @@ export class Wallet {
         try {
             const network = getNetwork();
             const req = await network.getShieldData(
-                wallet.#shield.getLastSyncedBlock() + 1
+                this.#shield.getLastSyncedBlock() + 1
             );
             if (!req.ok) throw new Error("Couldn't sync shield");
             const reader = new Reader(req);
@@ -1064,7 +1073,7 @@ export class Wallet {
      */
     async #saveShieldOnDisk() {
         const cDB = await Database.getInstance();
-        const cAccount = await cDB.getAccount();
+        const cAccount = await cDB.getAccount(this.getKeyToExport());
         // If the account has not been created yet (for example no encryption) return
         if (!cAccount) {
             return;
@@ -1080,7 +1089,7 @@ export class Wallet {
             return;
         }
         const cDB = await Database.getInstance();
-        const cAccount = await cDB.getAccount();
+        const cAccount = await cDB.getAccount(this.getKeyToExport());
         // If the account has not been created yet or there is no shield data return
         if (!cAccount || cAccount.shieldData === '') {
             return;
@@ -1374,7 +1383,7 @@ export class Wallet {
         }
 
         if (transaction.hasShieldData) {
-            await wallet.#shield?.finalizeTransaction(transaction.txid);
+            await this.#shield?.finalizeTransaction(transaction.txid);
         }
 
         if (!skipDatabase) {
@@ -1442,7 +1451,7 @@ export class Wallet {
      * @param {import('./transaction.js').Transaction} transaction
      */
     discardTransaction(transaction) {
-        wallet.#shield?.discardTransaction(transaction.txid);
+        this.#shield?.discardTransaction(transaction.txid);
     }
 
     /**
@@ -1486,7 +1495,11 @@ export class Wallet {
 
     async #loadFromDisk() {
         const db = await Database.getInstance();
-        if ((await db.getAccount())?.publicKey !== this.getKeyToExport()) {
+        // @fail This should be redundant
+        if (
+            (await db.getAccount(this.getKeyToExport()))?.publicKey !==
+            this.getKeyToExport()
+        ) {
             await db.removeAllTxs();
             return;
         }
@@ -1524,7 +1537,20 @@ export class Wallet {
 /**
  * @type{Wallet}
  */
-export const wallet = new Wallet({ nAccount: 0 }); // For now we are using only the 0-th account, (TODO: update once account system is done)
+export let activeWallet = new Wallet({ nAccount: 0 }); // For now we are using only the 0-th account, (TODO: update once account system is done)
+
+export function setWallet(w) {
+    activeWallet = w;
+}
+
+/**
+ * @type{Wallet[]} array of loaded wallets.
+ */
+export const wallets = [activeWallet];
+/**
+ * @type{import('./vault.js').Vault[]} array of loaded vaults
+ */
+export const vaults = [];
 
 /**
  * Clean a Seed Phrase string and verify it's integrity
@@ -1600,7 +1626,7 @@ export async function cleanAndVerifySeedPhrase(
  */
 export async function hasEncryptedWallet() {
     const database = await Database.getInstance();
-    const account = await database.getAccount();
+    const account = await database.getAccount(activeWallet.getKeyToExport());
     return !!account?.encWif;
 }
 
@@ -1610,13 +1636,13 @@ export async function getNewAddress({
     shield = false,
     nReceiving = 0,
 } = {}) {
-    const [address, path] = wallet.getNewAddress(nReceiving);
-    if (verify && wallet.isHardwareWallet()) {
+    const [address, path] = activeWallet.getNewAddress(nReceiving);
+    if (verify && activeWallet.isHardwareWallet()) {
         // Generate address to present to the user without asking to verify
         const confAddress = await confirmPopup({
             title: ALERTS.CONFIRM_POPUP_VERIFY_ADDR,
             html: createAddressConfirmation(address),
-            resolvePromise: wallet.getMasterKey().verifyAddress(path),
+            resolvePromise: activeWallet.getMasterKey().verifyAddress(path),
         });
         if (address !== confAddress) {
             throw new Error('User did not verify address');
