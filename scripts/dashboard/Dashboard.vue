@@ -471,10 +471,10 @@ async function openSendQRScanner() {
             showTransferMenu.value = true;
             return;
         }
-        const cBIP32Req = parseBIP21Request(data);
-        if (cBIP32Req) {
-            transferAddress.value = cBIP32Req.address;
-            transferAmount.value = cBIP32Req.amount ?? 0;
+        const cBIP21Req = parseBIP21Request(data);
+        if (cBIP21Req) {
+            transferAddress.value = cBIP21Req.address;
+            transferAmount.value = cBIP21Req.options?.amount ?? 0;
             showTransferMenu.value = true;
             return;
         }
