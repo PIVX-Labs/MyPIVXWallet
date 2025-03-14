@@ -4,12 +4,13 @@ import {
     getNewAddress as guiGetNewAddress,
     wallets,
     setWallet,
+    vaults as rawVaults,
 } from '../wallet.js';
-import { ref, computed, toRaw, watch } from 'vue';
+import { ref, computed, toRaw, watch, reactive } from 'vue';
 import { fPublicMode, strCurrency, togglePublicMode } from '../settings.js';
 import { cOracle } from '../prices.js';
 import { LedgerController } from '../ledger.js';
-import { defineStore, storeToRefs } from 'pinia';
+import { defineStore } from 'pinia';
 import { lockableFunction } from '../lock.js';
 import { blockCount as rawBlockCount } from '../global.js';
 import { doms } from '../global.js';
@@ -18,7 +19,6 @@ import {
     cReceiveType,
     guiToggleReceiveType,
 } from '../contacts-book.js';
-import { reactive } from 'vue';
 import { readonly } from 'vue';
 
 function addWallet(wallet) {
@@ -168,6 +168,7 @@ function addWallet(wallet) {
     });
 
     wallet.onBalanceUpdate(async () => {
+	console.log(wallet.balance);
         balance.value = wallet.balance;
         immatureBalance.value = wallet.immatureBalance;
         immatureColdBalance.value = wallet.immatureColdBalance;
@@ -245,6 +246,29 @@ function addWallet(wallet) {
     };
 }
 
+/**
+ * @param{import('../vault.js').Vault} v
+ */
+function addVault(v) {
+    const wallets = ref([]);
+    
+    return {
+	wallets,
+	canGenerateMore() {
+	    return v.canGenerateMore();
+	},
+	addWallet(account) {
+	    const w = v.getWallet(account);
+	    const wallet = reactive(addWallet(w));
+	    wallets.value = [...wallets.value, wallet]
+	    return wallet;
+	},
+	forgetWallet(account) {
+	    //TODO
+	},
+    }
+}
+
 export const useWallets = defineStore('wallets', () => {
     /**
      * @type{import('vue').Ref<import('../wallet.js').Wallet[]>}
@@ -255,6 +279,8 @@ export const useWallets = defineStore('wallets', () => {
         })
     );
 
+    const vaults = ref([])
+
     /**
      * @type{import('vue').Ref<import('../wallet.js').Wallet>}
      */
@@ -262,8 +288,10 @@ export const useWallets = defineStore('wallets', () => {
 
     return {
         wallets: walletsArray,
+	vaults: readonly(vaults),
         activeWallet: readonly(activeWallet),
         addWallet: (w) => {
+	    throw new Error("No longer relevant");
             // TODO: check that wallet is not already added
             wallets.push(w);
 
@@ -273,22 +301,35 @@ export const useWallets = defineStore('wallets', () => {
             activeWallet.value = newWallet;
             walletsArray.value = [...walletsArray.value, newWallet];
         },
-        removeWallet: (w) => {
-            const i = walletsArray.value.findIndex(
-                (wallet) => wallet.getKeyToExport() === w.getKeyToExport()
+	addVault: (v) => {
+	    const vault = addVault(v);
+	    rawVaults.push(v);
+	    
+	    vaults.value.push(vault);
+	    const wallet = vault.addWallet(0);
+	    setWallet(v.getWallet(0))
+	    activeWallet.value = wallet;
+	},
+	removeWallet: (w) => {
+	    const i = walletsArray.value.findIndex(
+		(wallet) => wallet.getKeyToExport() === w.getKeyToExport()
             );
             if (i === -1) return false;
             walletsArray.value.splice(i, 1);
             return true;
         },
         selectWallet: (w) => {
-            const i = walletsArray.value.findIndex(
-                (wallet) => wallet.getKeyToExport() === w.getKeyToExport()
-            );
-            if (i === -1) throw new Error('Selected invalid wallet');
+	    let i;
+	    let j;
+	    for (i = 0; i < vaults.value.length; i++) {
+		j = vaults.value[i].wallets.findIndex((wallet) => wallet.getKeyToExport() === w.getKeyToExport())
+		if (j !== -1) break;
+	    }
 
-            setWallet(wallets[i]);
-            activeWallet.value = walletsArray.value[i];
+            if (i === -1 || j === -1) throw new Error('Selected invalid wallet');
+
+            setWallet(rawVaults[i].getWallet(j));
+            activeWallet.value = vaults.value[i].wallets[j]
         },
     };
 });

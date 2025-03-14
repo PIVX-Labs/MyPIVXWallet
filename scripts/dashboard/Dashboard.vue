@@ -44,6 +44,7 @@ import { ParsedSecret } from '../parsed_secret.js';
 import { storeToRefs } from 'pinia';
 import { Account } from '../accounts';
 import { useAlerts } from '../composables/use_alerts.js';
+import { Vault } from '../vault';
 const { createAlert } = useAlerts();
 const wallets = useWallets();
 const { activeWallet } = storeToRefs(wallets);
@@ -97,10 +98,7 @@ async function importWallet({
     password = '',
     blockCount = 4_200_000,
 }) {
-    try {
-        const wallet = new Wallet();
-        wallets.addWallet(wallet);
-
+     try {
         /**
          * @type{ParsedSecret?}
          */
@@ -143,17 +141,17 @@ async function importWallet({
                 advancedMode.value
             );
         }
-        if (parsedSecret) {
-            await activeWallet.value.setMasterKey({
-                mk: parsedSecret.masterKey,
-            });
-            if (parsedSecret.shield) {
-                await parsedSecret.shield.reloadFromCheckpoint(blockCount);
-            }
-            activeWallet.value.setShield(parsedSecret.shield);
+         if (parsedSecret) {
+	     if (parsedSecret.shield) {
+                 await parsedSecret.shield.reloadFromCheckpoint(blockCount);
+	     }
+	     wallets.addVault(
+		 new Vault(parsedSecret.masterKey, parsedSecret.shield)
+	     );
 
-            if (needsToEncrypt.value) showEncryptModal.value = true;
-            if (activeWallet.value.isHardwareWallet) {
+             if (needsToEncrypt.value) showEncryptModal.value = true;
+	     // @fail need to change this
+            if (activeWallet.value.isHardwareWallet && false) {
                 // Save the xpub without needing encryption if it's ledger
                 const database = await Database.getInstance();
                 const account = new Account({

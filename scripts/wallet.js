@@ -1547,6 +1547,10 @@ export function setWallet(w) {
  * @type{Wallet[]} array of loaded wallets.
  */
 export const wallets = [activeWallet];
+/**
+ * @type{import('./vault.js').Vault[]} array of loaded vaults
+ */
+export const vaults = [];
 
 /**
  * Clean a Seed Phrase string and verify it's integrity
