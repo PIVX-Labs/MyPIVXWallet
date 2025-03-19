@@ -212,50 +212,69 @@ const isSafeStr = /^[a-z0-9 .,;\-_/:?@()]+$/i;
         </template>
     </Modal>
 
-    <Modal :show="showConfirmation">
+    <Modal :show="showConfirmation" :centered="true">
         <template #header>
             <h4>{{ translation.proposalConfirm }}</h4>
         </template>
         <template #body>
-            <div class="proposalConfirmContainer">
-                <p class="proposalConfirmLabel">Proposal name</p>
-                <code class="proposalConfirmText">{{
-                    data.proposalTitle
-                }}</code>
-            </div>
-            <div class="proposalConfirmContainer">
-                <p class="proposalConfirmLabel">URL</p>
-                <code class="proposalConfirmText">{{ data.proposalUrl }}</code>
-            </div>
-            <div>
-                <p class="proposalConfirmLabel">Duration in cycles</p>
-                <code class="proposalConfirmText">{{
-                    data.proposalCycles
-                }}</code>
+            <div class="row">
+                <div class="col-6">
+                    <div class="proposalConfirmContainer">
+                        <p class="proposalConfirmLabel">Proposal name</p>
+                        <code class="proposalConfirmText">{{ data.proposalTitle }}</code>
+                    </div>
+                </div>
+
+                <div class="col-6">
+                    <div>
+                        <p class="proposalConfirmLabel">Duration in cycles</p>
+                        <code class="proposalConfirmText">{{
+                            data.proposalCycles
+                        }}</code>
+                    </div>
+                </div>
+
+                <div class="col-6">
+                    <div class="proposalConfirmContainer">
+                        <p class="proposalConfirmLabel">
+                            {{ cChainParams.current.TICKER }} per cycle
+                        </p>
+                        <code class="proposalConfirmText"
+                            >{{ data.proposalPayment }} {{ cChainParams.current.TICKER }}
+                        </code>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="proposalConfirmContainer">
+                        <p class="proposalConfirmLabel">
+                            {{ translation.proposalTotal }}
+                        </p>
+                        <code class="proposalConfirmText"
+                            >{{ data.proposalPayment * data.proposalCycles }} {{ cChainParams.current.TICKER }}
+                        </code>
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <div class="proposalConfirmContainer">
+                        <p class="proposalConfirmLabel">URL</p>
+                        <div class="proposalConfirmText link"><a :href="data.proposalUrl">{{ data.proposalUrl }}</a></div>
+                    </div>
+                </div>
+                
+                
+
+                <div class="col-12">
+                    <div v-if="data.proposalAddress" class="proposalConfirmContainer">
+                        <p class="proposalConfirmLabel">Proposal Address</p>
+                        <code class="proposalConfirmText"
+                            >{{ data.proposalAddress }}
+                        </code>
+                    </div>
+                </div>
             </div>
 
-            <div class="proposalConfirmContainer">
-                <p class="proposalConfirmLabel">
-                    {{ cChainParams.current.TICKER }} per cycle
-                </p>
-                <code class="proposalConfirmText"
-                    >{{ data.proposalPayment }}
-                </code>
-            </div>
-            <div class="proposalConfirmContainer">
-                <p class="proposalConfirmLabel">
-                    {{ translation.proposalTotal }}
-                </p>
-                <code class="proposalConfirmText"
-                    >{{ data.proposalPayment * data.proposalCycles }}
-                </code>
-            </div>
-            <div v-if="data.proposalAddress" class="proposalConfirmContainer">
-                <p class="proposalConfirmLabel">Proposal Address</p>
-                <code class="proposalConfirmText"
-                    >{{ data.proposalAddress }}
-                </code>
-            </div>
+            
         </template>
         <template #footer>
             <button
@@ -289,5 +308,33 @@ const isSafeStr = /^[a-z0-9 .,;\-_/:?@()]+$/i;
 }
 .proposalConfirmContainer {
     margin-bottom: 10px;
+}
+
+.proposalConfirmText {
+    background-color: #0000003d;
+    padding: 1px 5px 2px 5px;
+    border-radius: 5px;
+}
+
+.proposalConfirmText.link {
+    background-color: #0000003d;
+    padding: 1px 5px 2px 5px;
+    border-radius: 5px;
+    width: fit-content;
+    word-break: break-all;
+}
+
+.proposalConfirmText.link a {
+    color:#9221ff;
+    font-size: 87.5%;
+    font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace!important;
+}
+
+.proposalConfirmText.link a:hover {
+    text-decoration:underline!important;
+}
+
+code {
+    color:#E9DEFF;
 }
 </style>
