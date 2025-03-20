@@ -14,9 +14,9 @@ vi.stubGlobal(
 );
 
 describe('ProposalCreateModal component tests', () => {
-    it.todo('hides address input when advanced mode is false', async () => {
+    it('hides address input when advanced mode is false', async () => {
         const wrapper = mount(ProposalCreateModal, {
-            props: { advancedMode: true },
+            props: { advancedMode: true, show: true },
             global: {
                 stubs: {
                     teleport: true, // Stubs out <teleport> completely
@@ -34,7 +34,7 @@ describe('ProposalCreateModal component tests', () => {
 
     it('submits correctly', async () => {
         const wrapper = mount(ProposalCreateModal, {
-            props: { advancedMode: true, isTest: true },
+            props: { advancedMode: true, isTest: true, show: true },
         });
         const proposalTitle = wrapper.find('[data-testid="proposalTitle"]');
         await proposalTitle.setValue('Proposal Title');
