@@ -11,8 +11,9 @@ import { isStandardAddress } from '../misc';
 const props = defineProps({
     advancedMode: Boolean,
     isTest: Boolean,
+    show: Boolean,
 });
-const { advancedMode } = toRefs(props);
+const { advancedMode, show } = toRefs(props);
 const emit = defineEmits(['close', 'create']);
 const data = reactive({});
 const showConfirmation = ref(false);
@@ -43,7 +44,7 @@ const isSafeStr = /^[a-z0-9 .,;\-_/:?@()]+$/i;
 </script>
 
 <template>
-    <Modal :show="true">
+    <Modal :show="show">
         <template #header>
             <h4>{{ translation.popupCreateProposal }}</h4>
             <span
