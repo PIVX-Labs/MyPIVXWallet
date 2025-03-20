@@ -16,7 +16,7 @@ vi.stubGlobal(
 describe('ProposalCreateModal component tests', () => {
     it('hides address input when advanced mode is false', async () => {
         const wrapper = mount(ProposalCreateModal, {
-            props: { advancedMode: true },
+            props: { advancedMode: true, show: true },
             global: {
                 stubs: {
                     teleport: true, // Stubs out <teleport> completely
@@ -34,7 +34,7 @@ describe('ProposalCreateModal component tests', () => {
 
     it('submits correctly', async () => {
         const wrapper = mount(ProposalCreateModal, {
-            props: { advancedMode: true, isTest: true },
+            props: { advancedMode: true, isTest: true, show: true },
         });
         const proposalTitle = wrapper.find('[data-testid="proposalTitle"]');
         await proposalTitle.setValue('Proposal Title');
@@ -52,6 +52,11 @@ describe('ProposalCreateModal component tests', () => {
         expect(wrapper.emitted().create).toBeUndefined();
         await address.setValue('DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb');
         await proposalSubmit.trigger('click');
+        // Confirm the submission
+        await wrapper
+            .find('[data-testid="proposalConfirmSubmit"]')
+            .trigger('click');
+
         expect(wrapper.emitted().create).toStrictEqual([
             [
                 'Proposal Title',
@@ -64,6 +69,10 @@ describe('ProposalCreateModal component tests', () => {
         await wrapper.setProps({ advancedMode: false });
 
         await proposalSubmit.trigger('click');
+        // Confirm the submission
+        await wrapper
+            .find('[data-testid="proposalConfirmSubmit"]')
+            .trigger('click');
         // When advanced mode is toggled off, address should reset
         expect(wrapper.emitted().create.at(-1)).toStrictEqual([
             'Proposal Title',

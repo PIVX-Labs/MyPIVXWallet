@@ -220,6 +220,8 @@ formValidationAddress = "The address provided is invalid" # The address provided
 formValidationMin = "The minimum value is: {value}" # The minimum value is: {value}
 formValidationMax = "The maximum value is: {value}" # The maximum value is: {value}
 formValidationInvalidNumber = "Invalid Number" # Invalid Number
+proposalTotal = "For a total of" # For a total of
+proposalConfirm = "Confirm your proposal" # Confirm your proposal
 
 [ALERTS]
 INTERNAL_ERROR = "Internal error, please try again later" # Internal error, please try again later

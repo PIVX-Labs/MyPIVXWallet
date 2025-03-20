@@ -244,6 +244,8 @@ formValidationString = "The string contains invalid characters"
 formValidationUrl = "The URL is invalid"
 formValidationAddress = "The address provided is invalid"
 formValidationInvalidNumber = "Invalid Number"
+proposalTotal = "For a total of"
+proposalConfirm = "Confirm your proposal"
 
 [ALERTS]
 INTERNAL_ERROR = "Internal error, please try again later"

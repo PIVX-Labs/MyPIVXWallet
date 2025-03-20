@@ -2,6 +2,7 @@
 const props = defineProps({
     show: Boolean,
     modalClass: String,
+    centered: Boolean,
 });
 </script>
 
@@ -25,7 +26,8 @@ const props = defineProps({
                         <slot name="header"></slot>
                     </div>
                     <div
-                        class="modal-body center-text"
+                        class="modal-body"
+                        :class="{ 'center-text': !centered }"
                         style="padding-bottom: 8px; overflow: auto"
                     >
                         <slot name="body"></slot>
