@@ -12,15 +12,16 @@ function select(wallet) {
 </script>
 
 <template>
-	AAAAAAAAAA AAAAAAAAAA AAAAAAAAAA AAAAAAAAAA AAAAAAAAAA
-	<button @click="emit('addWallet')">Add More</button>
-	<div v-for="vault of wallets.vaults">
-	    VAULT HERE:
-		<div v-for="wallet of vault.wallets">
-		    {{ wallet.getKeyToExport() + '\n' }}
-		    <button @click="select(wallet)">SELECT</button>
-		</div>
-		<button @click="vault.addWallet(vault.wallets.length + 1)"> ADD WALLET </button>
-
-	</div>
+    AAAAAAAAAA AAAAAAAAAA AAAAAAAAAA AAAAAAAAAA AAAAAAAAAA
+    <button @click="emit('addWallet')">Add More</button>
+    <div v-for="vault of wallets.vaults">
+        VAULT HERE:
+        <div v-for="wallet of vault.wallets">
+            {{ wallet.getKeyToExport() + '\n' }}
+            <button @click="select(wallet)">SELECT</button>
+        </div>
+        <button @click="vault.addWallet(vault.wallets.length + 1)">
+            ADD WALLET
+        </button>
+    </div>
 </template>

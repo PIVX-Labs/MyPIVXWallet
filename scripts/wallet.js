@@ -153,7 +153,7 @@ export class Wallet {
         this.#mempool.setEmitter(() => {
             this.#eventEmitter.emit('balance-update');
         });
-        this.#masterKey = masterKey;
+        this.setMasterKey({ mk: masterKey, nAccount });
         this.#shield = shield;
         this.#iterChains((chain) => {
             this.#highestUsedIndices.set(chain, 0);
@@ -846,6 +846,7 @@ export class Wallet {
         let nStartHeight = Math.max(
             ...this.#mempool.getTransactions().map((tx) => tx.blockHeight)
         );
+        nStartHeight = 0;
         // Compute the total pages and iterate through them until we've synced everything
         const totalPages = await cNet.getNumPages(nStartHeight, addr);
         for (let i = totalPages; i > 0; i--) {
@@ -858,6 +859,7 @@ export class Wallet {
 
             // Fetch this page of transactions
             const iPageTxs = await cNet.getTxPage(nStartHeight, addr, i);
+
             for (const tx of iPageTxs.reverse()) {
                 await this.addTransaction(tx, tx.blockHeight === -1);
             }
@@ -1370,6 +1372,7 @@ export class Wallet {
         for (const out of transaction.vout) {
             this.#updateHighestUsedIndex(out);
             const status = this.#getScriptType(out.script);
+
             if (status & OutpointState.OURS) {
                 this.#mempool.addOutpointStatus(
                     new COutpoint({
@@ -1503,7 +1506,9 @@ export class Wallet {
             await db.removeAllTxs();
             return;
         }
-        const txs = await db.getTxs();
+        // @fail
+        const txs = []; //await db.getTxs();
+        console.log(txs);
         for (const tx of txs) {
             await this.addTransaction(tx, true);
         }

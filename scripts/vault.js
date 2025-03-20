@@ -13,23 +13,24 @@ export class Vault {
      * @type{import('./wallet.js').Wallet[]}
      */
     #wallets = [];
-    
+
     /**
      * @param {import('./masterkey.js').MasterKey}
      */
     constructor(masterKey) {
-	this.#masterKey = masterKey;
+        this.#masterKey = masterKey;
     }
 
     /**
      * @returns {boolean} whether or not it can generate more wallets
      */
     canGenerateMore() {
-	console.log(this.#masterKey);
-	// If it's an xpub, it's already tied to an account since MPW
-	// only export account xpubs
-	const isXpub = this.#masterKey.isViewOnly && !this.#masterKey.isHardwareWallet
-	return this.#masterKey.isHD && !isXpub;
+        console.log(this.#masterKey);
+        // If it's an xpub, it's already tied to an account since MPW
+        // only export account xpubs
+        const isXpub =
+            this.#masterKey.isViewOnly && !this.#masterKey.isHardwareWallet;
+        return this.#masterKey.isHD && !isXpub;
     }
 
     /**
@@ -38,36 +39,34 @@ export class Vault {
      * Vault::forgetWallet can be called if the reference is no longer needed
      */
     getWallet(account) {
-	// @fail
-	if (this.canGenerateMore() || true) {
-	    if (this.#wallets[account]) return this.#wallets[account];
-	    const wallet = new Wallet({
-		nAccount: account,
-		masterKey: this.#masterKey,
-		shield: null, // TODO: add shield
-	    })
-	    this.#wallets[account] = wallet;
-	    return wallet;
-
-	} else {
-	    throw new Error("Not implemented");
-	}
+        // @fail
+        if (this.canGenerateMore() || true) {
+            if (this.#wallets[account]) return this.#wallets[account];
+            const wallet = new Wallet({
+                nAccount: account,
+                masterKey: this.#masterKey,
+                shield: null, // TODO: add shield
+            });
+            this.#wallets[account] = wallet;
+            return wallet;
+        } else {
+            throw new Error('Not implemented');
+        }
     }
-    
-	/**
-	 * Forgets associated wallet
-	 * @param {number} account - Account number, ignored if Vault::canGenerateMore returns false
-	 * @returns {void}
-	 */
+
+    /**
+     * Forgets associated wallet
+     * @param {number} account - Account number, ignored if Vault::canGenerateMore returns false
+     * @returns {void}
+     */
     forgetWallet(account) {
-	if (this.canGenerateMore())
-	    delete this.#wallets[account];
+        if (this.canGenerateMore()) delete this.#wallets[account];
     }
 
     /**
      * @returns {import('./wallet.js').Wallet[]} Array of cached wallets
      */
     getWallets() {
-	return this.#wallets;
+        return this.#wallets;
     }
 }

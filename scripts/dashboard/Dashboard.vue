@@ -98,7 +98,8 @@ async function importWallet({
     password = '',
     blockCount = 4_200_000,
 }) {
-     try {
+    console.log('Importing');
+    try {
         /**
          * @type{ParsedSecret?}
          */
@@ -141,16 +142,16 @@ async function importWallet({
                 advancedMode.value
             );
         }
-         if (parsedSecret) {
-	     if (parsedSecret.shield) {
-                 await parsedSecret.shield.reloadFromCheckpoint(blockCount);
-	     }
-	     wallets.addVault(
-		 new Vault(parsedSecret.masterKey, parsedSecret.shield)
-	     );
+        if (parsedSecret) {
+            if (parsedSecret.shield) {
+                await parsedSecret.shield.reloadFromCheckpoint(blockCount);
+            }
+            wallets.addVault(
+                new Vault(parsedSecret.masterKey, parsedSecret.shield)
+            );
 
-             if (needsToEncrypt.value) showEncryptModal.value = true;
-	     // @fail need to change this
+            if (needsToEncrypt.value) showEncryptModal.value = true;
+            // @fail need to change this
             if (activeWallet.value.isHardwareWallet && false) {
                 // Save the xpub without needing encryption if it's ledger
                 const database = await Database.getInstance();
@@ -158,7 +159,11 @@ async function importWallet({
                     publicKey: activeWallet.value.getKeyToExport(),
                     isHardware: true,
                 });
-                if (await database.getAccount(wallet.getKeyToExport())) {
+                if (
+                    await database.getAccount(
+                        activeWallet.value.getKeyToExport()
+                    )
+                ) {
                     await database.updateAccount(account);
                 } else {
                     await database.addAccount(account);
@@ -405,7 +410,7 @@ async function send(address, amount, useShieldInputs) {
 function getMaxBalance(useShieldInputs) {
     const coinSatoshi = useShieldInputs
         ? activeWallet.value.shieldBalance
-        : activeW.balance;
+        : activeWallet.value.balance;
     transferAmount.value = coinSatoshi / COIN;
 }
 
@@ -420,7 +425,7 @@ async function importFromDatabase() {
         getEventEmitter().emit('reset-activity');
         if (account?.isHardware) {
             await importWallet({ type: 'hardware', secret: account.publicKey });
-        } else if (activeWallet.value.isEncrypted) {
+        } else {
             await importWallet({ type: 'hd', secret: account.publicKey });
         }
 
