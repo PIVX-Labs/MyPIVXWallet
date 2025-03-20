@@ -2,7 +2,7 @@
 const props = defineProps({
     show: Boolean,
     modalClass: String,
-    centered: Boolean
+    centered: Boolean,
 });
 </script>
 

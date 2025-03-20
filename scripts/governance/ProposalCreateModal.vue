@@ -221,7 +221,9 @@ const isSafeStr = /^[a-z0-9 .,;\-_/:?@()]+$/i;
                 <div class="col-6">
                     <div class="proposalConfirmContainer">
                         <p class="proposalConfirmLabel">Proposal name</p>
-                        <code class="proposalConfirmText">{{ data.proposalTitle }}</code>
+                        <code class="proposalConfirmText">{{
+                            data.proposalTitle
+                        }}</code>
                     </div>
                 </div>
 
@@ -240,7 +242,8 @@ const isSafeStr = /^[a-z0-9 .,;\-_/:?@()]+$/i;
                             {{ cChainParams.current.TICKER }} per cycle
                         </p>
                         <code class="proposalConfirmText"
-                            >{{ data.proposalPayment }} {{ cChainParams.current.TICKER }}
+                            >{{ data.proposalPayment }}
+                            {{ cChainParams.current.TICKER }}
                         </code>
                     </div>
                 </div>
@@ -250,7 +253,8 @@ const isSafeStr = /^[a-z0-9 .,;\-_/:?@()]+$/i;
                             {{ translation.proposalTotal }}
                         </p>
                         <code class="proposalConfirmText"
-                            >{{ data.proposalPayment * data.proposalCycles }} {{ cChainParams.current.TICKER }}
+                            >{{ data.proposalPayment * data.proposalCycles }}
+                            {{ cChainParams.current.TICKER }}
                         </code>
                     </div>
                 </div>
@@ -258,14 +262,19 @@ const isSafeStr = /^[a-z0-9 .,;\-_/:?@()]+$/i;
                 <div class="col-12">
                     <div class="proposalConfirmContainer">
                         <p class="proposalConfirmLabel">URL</p>
-                        <div class="proposalConfirmText link"><a :href="data.proposalUrl">{{ data.proposalUrl }}</a></div>
+                        <div class="proposalConfirmText link">
+                            <a :href="data.proposalUrl">{{
+                                data.proposalUrl
+                            }}</a>
+                        </div>
                     </div>
                 </div>
-                
-                
 
                 <div class="col-12">
-                    <div v-if="data.proposalAddress" class="proposalConfirmContainer">
+                    <div
+                        v-if="data.proposalAddress"
+                        class="proposalConfirmContainer"
+                    >
                         <p class="proposalConfirmLabel">Proposal Address</p>
                         <code class="proposalConfirmText"
                             >{{ data.proposalAddress }}
@@ -273,8 +282,6 @@ const isSafeStr = /^[a-z0-9 .,;\-_/:?@()]+$/i;
                     </div>
                 </div>
             </div>
-
-            
         </template>
         <template #footer>
             <button
@@ -325,16 +332,17 @@ const isSafeStr = /^[a-z0-9 .,;\-_/:?@()]+$/i;
 }
 
 .proposalConfirmText.link a {
-    color:#9221ff;
+    color: #9221ff;
     font-size: 87.5%;
-    font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace!important;
+    font-family: SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono',
+        'Courier New', monospace !important;
 }
 
 .proposalConfirmText.link a:hover {
-    text-decoration:underline!important;
+    text-decoration: underline !important;
 }
 
 code {
-    color:#E9DEFF;
+    color: #e9deff;
 }
 </style>
