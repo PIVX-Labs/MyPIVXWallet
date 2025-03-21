@@ -252,6 +252,7 @@ export class Wallet {
         const isNewAcc =
             mk?.getKeyToExport(nAccount) !==
             this.#masterKey?.getKeyToExport(this.#nAccount);
+        console.log(mk?.getKeyToExport(nAccount));
         this.#masterKey = mk;
         this.#nAccount = nAccount;
         if (extsk) await this.setExtsk(extsk);

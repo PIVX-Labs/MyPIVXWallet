@@ -9,6 +9,8 @@ const emit = defineEmits(['addWallet']);
 function select(wallet) {
     wallets.selectWallet(wallet);
 }
+
+function addWallet() {}
 </script>
 
 <template>

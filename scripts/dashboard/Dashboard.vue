@@ -98,7 +98,7 @@ async function importWallet({
     password = '',
     blockCount = 4_200_000,
 }) {
-     console.log('Importing');
+    console.log('Importing');
     try {
         /**
          * @type{ParsedSecret?}
@@ -416,10 +416,10 @@ function getMaxBalance(useShieldInputs) {
 
 async function importFromDatabase() {
     const database = await Database.getInstance();
-    const accounts = await database.getAccounts();
-    console.log(accounts);
+    const vaults = await database.getVaults();
     // @fail Maybe this shouldn't be Dashboard's responsibility
-    for (const account of accounts) {
+    for (const vault of vaults) {
+        const account = await database.getAccounts(vault);
         //	     await activeWallet.value.setMasterKey({ mk: null });
         activity.value?.reset();
         getEventEmitter().emit('reset-activity');
@@ -531,6 +531,7 @@ async function openSendQRScanner() {
             7500
         );
     }
+    34;
 }
 
 async function handleContactRequest(urlParams) {

@@ -1,3 +1,5 @@
+import { PIVXShield } from 'pivx-shield';
+import { HdMasterKey } from './masterkey.js';
 import { Wallet } from './wallet.js';
 
 /**
@@ -18,48 +20,42 @@ export class Vault {
      * @type{import('./wallet.js').Wallet[]}
      */
     #wallets = [];
-    
-    /**
-     * @param {import('./masterkey.js').MasterKey} masterKey
-     * @param {import('pivx-shield').PIVXShield} shield
-     */
-    constructor(masterKey, shield) {
-	this.#masterKey = masterKey;
-	this.#shield = shield;
-	console.log(shield)
-    }
 
     /**
-     * @returns {boolean} whether or not it can generate more wallets
+     * @fail, need to take in an array of masterKeys and shields
      */
-    canGenerateMore() {
-        console.log(this.#masterKey);
-        // If it's an xpub, it's already tied to an account since MPW
-        // only export account xpubs
-        const isXpub =
-            this.#masterKey.isViewOnly && !this.#masterKey.isHardwareWallet;
-        return this.#masterKey.isHD && !isXpub;
+    constructor({ masterKey, shield }) {
+        this.#masterKey = masterKey;
+        this.#shield = shield;
     }
-
     /**
      * @param {number} account - Account number, ignored if Vault::canGenerateMore returns false
+     * @param {Uint8Array} seed - Seed, must be present if we're trying to generate a new wallet
      * @returns {import('./wallet.js').Wallet} a reference of a wallet. The creation is lazy.
      * Vault::forgetWallet can be called if the reference is no longer needed
      */
-    getWallet(account) {
-        // @fail
-        if (this.canGenerateMore() || true) {
-            if (this.#wallets[account]) return this.#wallets[account];
-            const wallet = new Wallet({
-                nAccount: account,
-                masterKey: this.#masterKey,
-                shield: this.#shield,
-            });
-            this.#wallets[account] = wallet;
-            return wallet;
-        } else {
-            throw new Error('Not implemented');
-        }
+    async getWallet(account, seed) {
+        if (this.#wallets[account]) return this.#wallets[account];
+        if (!seed)
+            throw new Error(
+                'Trying to generate a new wallet, but no seed present'
+            );
+        const wallet = new Wallet({
+            nAccount: account,
+            masterKey: new HdMasterKey({ seed }),
+            shield: await PIVXShield.create({
+                seed,
+                // hardcoded value considering the last checkpoint, this is good both for mainnet and testnet
+                // TODO: take the wallet creation height in input from users
+                blockHeight: 4200000,
+                coinType: cChainParams.current.BIP44_TYPE,
+                // TODO: Change account index once account system is made
+                accountIndex: account,
+                loadSaplingData: false,
+            }),
+        });
+        this.#wallets[account] = wallet;
+        return wallet;
     }
 
     /**
@@ -68,7 +64,7 @@ export class Vault {
      * @returns {void}
      */
     forgetWallet(account) {
-        if (this.canGenerateMore()) delete this.#wallets[account];
+        delete this.#wallets[account];
     }
 
     /**

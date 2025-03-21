@@ -256,8 +256,8 @@ function addVault(v) {
         canGenerateMore() {
             return v.canGenerateMore();
         },
-        addWallet(account) {
-            const w = v.getWallet(account);
+        addWallet(account, seed) {
+            const w = v.getWallet(account, seed);
             const wallet = reactive(addWallet(w));
             wallets.value = [...wallets.value, wallet];
             return wallet;

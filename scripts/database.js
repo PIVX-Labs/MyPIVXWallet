@@ -330,6 +330,21 @@ export class Database {
         return res;
     }
 
+    async getVaults() {
+        const store = this.#db
+            .transaction('vaults', 'readonly')
+            .objectStore('vaults');
+        const vaults = await store.getAll();
+        return vaults;
+    }
+
+    async addVault(vault) {
+        const store = this.#db
+            .transaction('vaults', 'readwrite')
+            .objectStore('vaults');
+        await store.add(vault);
+    }
+
     /**
      * @returns {Promise<Masternode?>} the masternode stored in the db
      */
@@ -504,6 +519,7 @@ export class Database {
                     db.createObjectStore('shieldParams');
                 }
                 if (oldVersion < 8) {
+                    db.createObjectStore('vaults');
                     async () => {
                         // @fail REVIEW NOTE: THIS IS DANGEROUS
                         // Test this thoroughly or users may lose their accounts
@@ -511,6 +527,11 @@ export class Database {
                         const account = await store.get('account');
                         await store.delete('account');
                         await store.add(account, account.publickKey);
+                        const vaults = transaction.objectStore('vault');
+                        await vaults.add({
+                            encryptedSecret: account.encWif,
+                            encExtsk: account.encExtsk,
+                        });
                     };
                 }
             },
