@@ -98,7 +98,7 @@ async function importWallet({
     password = '',
     blockCount = 4_200_000,
 }) {
-    console.log('Importing');
+     console.log('Importing');
     try {
         /**
          * @type{ParsedSecret?}

@@ -287,8 +287,8 @@ export const useWallets = defineStore('wallets', () => {
 
     return {
         wallets: walletsArray,
-        vaults: readonly(vaults),
-        activeWallet: readonly(activeWallet),
+        vaults: vaults,
+        activeWallet: activeWallet,
         addWallet: (w) => {
             throw new Error('No longer relevant');
             // TODO: check that wallet is not already added

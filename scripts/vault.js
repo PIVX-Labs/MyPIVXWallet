@@ -9,16 +9,24 @@ export class Vault {
      * @type {import('./masterkey.js').MasterKey}
      */
     #masterKey;
+
+    /**
+     * @type {import('pivx-shield').PIVXShield}
+     */
+    #shield;
     /**
      * @type{import('./wallet.js').Wallet[]}
      */
     #wallets = [];
-
+    
     /**
-     * @param {import('./masterkey.js').MasterKey}
+     * @param {import('./masterkey.js').MasterKey} masterKey
+     * @param {import('pivx-shield').PIVXShield} shield
      */
-    constructor(masterKey) {
-        this.#masterKey = masterKey;
+    constructor(masterKey, shield) {
+	this.#masterKey = masterKey;
+	this.#shield = shield;
+	console.log(shield)
     }
 
     /**
@@ -45,7 +53,7 @@ export class Vault {
             const wallet = new Wallet({
                 nAccount: account,
                 masterKey: this.#masterKey,
-                shield: null, // TODO: add shield
+                shield: this.#shield,
             });
             this.#wallets[account] = wallet;
             return wallet;
