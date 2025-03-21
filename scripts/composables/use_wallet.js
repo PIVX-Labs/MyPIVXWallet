@@ -1,10 +1,12 @@
 import { getEventEmitter } from '../event_bus.js';
 import {
     hasEncryptedWallet,
-    wallet,
     getNewAddress as guiGetNewAddress,
+    wallets,
+    setWallet,
+    vaults as rawVaults,
 } from '../wallet.js';
-import { ref, computed } from 'vue';
+import { ref, computed, toRaw, watch, reactive } from 'vue';
 import { fPublicMode, strCurrency, togglePublicMode } from '../settings.js';
 import { cOracle } from '../prices.js';
 import { LedgerController } from '../ledger.js';
@@ -17,17 +19,9 @@ import {
     cReceiveType,
     guiToggleReceiveType,
 } from '../contacts-book.js';
+import { readonly } from 'vue';
 
-/**
- * This is the middle ground between vue and the wallet class
- * It makes sure that everything is up to date and provides
- * a reactive interface to it
- */
-export const useWallet = defineStore('wallet', () => {
-    // Eventually we want to create a new wallet
-    // For now we'll just import the existing one
-    // const wallet = new Wallet();
-
+function addWallet(wallet) {
     const isImported = ref(wallet.isLoaded());
     const isViewOnly = ref(wallet.isViewOnly());
     const isSynced = ref(wallet.isSynced);
@@ -38,8 +32,7 @@ export const useWallet = defineStore('wallet', () => {
     const getNewAddress = (nReceiving) => wallet.getNewAddress(nReceiving);
     const blockCount = ref(0);
 
-    const setMasterKey = async ({ mk, extsk }) => {
-        await wallet.setMasterKey({ mk, extsk });
+    const updateWallet = async () => {
         isImported.value = wallet.isLoaded();
         isHardwareWallet.value = wallet.isHardwareWallet();
         isHD.value = wallet.isHD();
@@ -47,6 +40,14 @@ export const useWallet = defineStore('wallet', () => {
         isEncrypted.value = await hasEncryptedWallet();
         isSynced.value = wallet.isSynced;
     };
+    const setMasterKey = async ({ mk, extsk }) => {
+        await wallet.setMasterKey({ mk, extsk });
+        await updateWallet();
+    };
+    watch(wallet, async () => {
+        await updateWallet();
+    });
+
     const setExtsk = async (extsk) => {
         await wallet.setExtsk(extsk);
     };
@@ -241,5 +242,96 @@ export const useWallet = defineStore('wallet', () => {
         onTransparentSyncStatusUpdate,
         onShieldSyncStatusUpdate,
         onShieldTransactionCreationUpdate,
+    };
+}
+
+/**
+ * @param{import('../vault.js').Vault} v
+ */
+function addVault(v) {
+    const wallets = ref([]);
+
+    return {
+        wallets,
+        canGenerateMore() {
+            return v.canGenerateMore();
+        },
+        addWallet(account, seed) {
+            const w = v.getWallet(account, seed);
+            const wallet = reactive(addWallet(w));
+            wallets.value = [...wallets.value, wallet];
+            return wallet;
+        },
+        forgetWallet(account) {
+            //TODO
+        },
+    };
+}
+
+export const useWallets = defineStore('wallets', () => {
+    /**
+     * @type{import('vue').Ref<import('../wallet.js').Wallet[]>}
+     */
+    const walletsArray = ref(
+        wallets.map((w) => {
+            return addWallet(w);
+        })
+    );
+
+    const vaults = ref([]);
+
+    /**
+     * @type{import('vue').Ref<import('../wallet.js').Wallet>}
+     */
+    const activeWallet = ref(walletsArray.value[0]);
+
+    return {
+        wallets: walletsArray,
+        vaults: vaults,
+        activeWallet: activeWallet,
+        addWallet: (w) => {
+            throw new Error('No longer relevant');
+            // TODO: check that wallet is not already added
+            wallets.push(w);
+
+            setWallet(w);
+            const newWallet = reactive(addWallet(w));
+
+            activeWallet.value = newWallet;
+            walletsArray.value = [...walletsArray.value, newWallet];
+        },
+        addVault: (v) => {
+            const vault = addVault(v);
+            rawVaults.push(v);
+
+            vaults.value.push(vault);
+            const wallet = vault.addWallet(0);
+            setWallet(v.getWallet(0));
+            activeWallet.value = wallet;
+        },
+        removeWallet: (w) => {
+            const i = walletsArray.value.findIndex(
+                (wallet) => wallet.getKeyToExport() === w.getKeyToExport()
+            );
+            if (i === -1) return false;
+            walletsArray.value.splice(i, 1);
+            return true;
+        },
+        selectWallet: (w) => {
+            let i;
+            let j;
+            for (i = 0; i < vaults.value.length; i++) {
+                j = vaults.value[i].wallets.findIndex(
+                    (wallet) => wallet.getKeyToExport() === w.getKeyToExport()
+                );
+                if (j !== -1) break;
+            }
+
+            if (i === -1 || j === -1)
+                throw new Error('Selected invalid wallet');
+
+            setWallet(rawVaults[i].getWallet(j));
+            activeWallet.value = vaults.value[i].wallets[j];
+        },
     };
 });

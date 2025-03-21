@@ -1,9 +1,9 @@
 <script setup>
 import { cChainParams, COIN } from '../chain_params.js';
 import { translation, tr } from '../i18n';
-import { ref, computed, toRefs } from 'vue';
+import { ref, computed, toRefs, watch } from 'vue';
 import { beautifyNumber } from '../misc';
-import { useWallet } from '../composables/use_wallet';
+import { useWallets } from '../composables/use_wallet';
 import { optimiseCurrencyLocale } from '../global';
 import { renderWalletBreakdown } from '../charting.js';
 import { guiRenderCurrentReceiveModal } from '../contacts-book';
@@ -61,7 +61,7 @@ const {
     publicMode,
 } = toRefs(props);
 
-const wallet = useWallet();
+const wallets = useWallets();
 
 // Transparent sync status
 const transparentSyncing = ref(false);
@@ -131,46 +131,69 @@ const emit = defineEmits([
     'restoreWallet',
 ]);
 
-wallet.onTransparentSyncStatusUpdate((i, totalPages, finished) => {
-    const str = tr(translation.syncStatusHistoryProgress, [
-        { current: totalPages - i + 1 },
-        { total: totalPages },
-    ]);
-    const progress = ((totalPages - i) / totalPages) * 100;
-    syncTStr.value = str;
-    percentage.value = progress;
-    transparentSyncing.value = !finished;
-});
+let listeners = [];
 
-wallet.onShieldSyncStatusUpdate((bytes, totalBytes, finished) => {
-    percentage.value = Math.round((100 * bytes) / totalBytes);
-    const mb = bytes / 1_000_000;
-    const totalMb = totalBytes / 1_000_000;
-    shieldSyncingStr.value = `Syncing Shield (${mb.toFixed(
-        1
-    )}MB/${totalMb.toFixed(1)}MB)`;
-    shieldSyncing.value = !finished;
-});
+watch(
+    () => wallets.activeWallet,
+    () => {
+        const wallet = wallets.activeWallet;
 
-wallet.onShieldTransactionCreationUpdate(
-    // state: 0 = loading shield params
-    //        1 = proving tx
-    //        2 = finished
-    async (percentage, state) => {
-        if (state === 0) {
-            txCreationStr.value = translation.syncLoadingSaplingProver;
-        } else {
-            txCreationStr.value = translation.creatingShieldTransaction;
+        for (const listener of listeners) {
+            listener();
         }
+        listeners = [];
+        listeners.push(
+            wallet.onTransparentSyncStatusUpdate((i, totalPages, finished) => {
+                const str = tr(translation.syncStatusHistoryProgress, [
+                    { current: totalPages - i + 1 },
+                    { total: totalPages },
+                ]);
+                const progress = ((totalPages - i) / totalPages) * 100;
+                syncTStr.value = str;
+                percentage.value = progress;
+                transparentSyncing.value = !finished;
+            })
+        );
 
-        // If it just finished sleep for 1 second before making everything invisible
-        if (state === 2) {
-            txPercentageCreation.value = 100.0;
-            await sleep(1000);
-        }
-        isCreatingTx.value = state !== 2;
-        txPercentageCreation.value = percentage;
-    }
+        listeners.push(
+            wallet.onShieldSyncStatusUpdate((bytes, totalBytes, finished) => {
+                percentage.value = Math.round((100 * bytes) / totalBytes);
+                const mb = bytes / 1_000_000;
+                const totalMb = totalBytes / 1_000_000;
+                shieldSyncingStr.value = `Syncing Shield (${mb.toFixed(
+                    1
+                )}MB/${totalMb.toFixed(1)}MB)`;
+                shieldSyncing.value = !finished;
+            })
+        );
+
+        listeners.push(
+            wallet.onShieldTransactionCreationUpdate(
+                // state: 0 = loading shield params
+                //        1 = proving tx
+                //        2 = finished
+                async (percentage, state) => {
+                    if (state === 0) {
+                        txCreationStr.value =
+                            translation.syncLoadingSaplingProver;
+                    } else {
+                        txCreationStr.value =
+                            translation.creatingShieldTransaction;
+                    }
+
+                    // If it just finished sleep for 1 second before making everything invisible
+                    if (state === 2) {
+                        txPercentageCreation.value = 100.0;
+                        await sleep(1000);
+                    }
+                    isCreatingTx.value = state !== 2;
+                    txPercentageCreation.value = percentage;
+                }
+            )
+        );
+    },
+    () => {},
+    { immediate: true }
 );
 
 function displayLockWalletModal() {

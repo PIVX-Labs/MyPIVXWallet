@@ -43,7 +43,7 @@ async function importWif(wif, extsk) {
 
 async function submit() {
     const db = await Database.getInstance();
-    const account = await db.getAccount();
+    const account = await db.getAccount(wallet.value.getKeyToExport());
     const wif = await decrypt(account.encWif, password.value);
     const extsk = await decrypt(account.encExtsk, password.value);
     if (wif) {
