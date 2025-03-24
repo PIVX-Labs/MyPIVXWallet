@@ -48,7 +48,7 @@ import { Vault } from '../vault';
 import { toRaw } from 'vue';
 const { createAlert } = useAlerts();
 const wallets = useWallets();
-const { activeWallet } = storeToRefs(wallets);
+const { activeWallet, activeVault } = storeToRefs(wallets);
 
 const activity = ref(null);
 
@@ -99,7 +99,6 @@ async function importWallet({
     password = '',
     blockCount = 4_200_000,
 }) {
-    console.log('Importing');
     try {
         /**
          * @type{ParsedSecret?}
@@ -151,19 +150,20 @@ async function importWallet({
                 new Vault({
                     masterKey: parsedSecret.masterKey,
                     shield: parsedSecret.shield,
+                    seed: parsedSecret.seed,
                 })
             );
-            console.log(toRaw(activeWallet.value.getKeyToBackup()));
 
             if (needsToEncrypt.value) showEncryptModal.value = true;
             // @fail need to change this
             if (activeWallet.value.isHardwareWallet && false) {
-                // Save the xpub without needing encryption if it's ledger
                 const database = await Database.getInstance();
+                // Save the xpub without needing encryption if it's ledger
                 const account = new Account({
                     publicKey: activeWallet.value.getKeyToExport(),
                     isHardware: true,
                 });
+
                 if (
                     await database.getAccount(
                         activeWallet.value.getKeyToExport()
@@ -190,18 +190,18 @@ async function importWallet({
 }
 
 /**
- * Encrypt wallet
+ * Encrypt wallet (actually vault)
  * @param {string} password - Password to encrypt wallet with
  * @param {string} [currentPassword] - Current password with which the wallet is encrypted with, if any
  */
 async function encryptWallet(password, currentPassword = '') {
     if (activeWallet.value.isEncrypted) {
-        if (!(await activeWallet.value.checkDecryptPassword(currentPassword))) {
+        if (!(await activeVault.value.checkDecryptPassword(currentPassword))) {
             createAlert('warning', ALERTS.INCORRECT_PASSWORD, 6000);
             return false;
         }
     }
-    const res = await activeWallet.value.encrypt(password);
+    const res = activeVault.value.encrypt(password);
     if (res) {
         createAlert('success', ALERTS.NEW_PASSWORD_SUCCESS, 5500);
         doms.domChangePasswordContainer.classList.remove('d-none');
@@ -422,18 +422,22 @@ function getMaxBalance(useShieldInputs) {
 async function importFromDatabase() {
     const database = await Database.getInstance();
     const vaults = await database.getVaults();
+    console.log(vaults);
     // @fail Maybe this shouldn't be Dashboard's responsibility
     for (const vault of vaults) {
-        const account = await database.getAccounts(vault);
-        //	     await activeWallet.value.setMasterKey({ mk: null });
-        activity.value?.reset();
-        getEventEmitter().emit('reset-activity');
-        if (account?.isHardware) {
-            await importWallet({ type: 'hardware', secret: account.publicKey });
-        } else {
-            await importWallet({ type: 'hd', secret: account.publicKey });
+        for (const wallet of vault.wallets) {
+            const account = await database.getAccount(wallet);
+            activity.value?.reset();
+            getEventEmitter().emit('reset-activity');
+            if (account?.isHardware) {
+                await importWallet({
+                    type: 'hardware',
+                    secret: account.publicKey,
+                });
+            } else {
+                await importWallet({ type: 'hd', secret: account.publicKey });
+            }
         }
-
         updateLogOutButton();
     }
 }

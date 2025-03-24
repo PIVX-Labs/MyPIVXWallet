@@ -19,7 +19,8 @@ import {
     cReceiveType,
     guiToggleReceiveType,
 } from '../contacts-book.js';
-import { readonly } from 'vue';
+import { Database } from '../database.js';
+import { encrypt } from '../aes-gcm.js';
 
 function addWallet(wallet) {
     const isImported = ref(wallet.isLoaded());
@@ -58,6 +59,7 @@ function addWallet(wallet) {
     const getNewChangeAddress = () => wallet.getNewChangeAddress();
     const isHardwareWallet = ref(wallet.isHardwareWallet());
     const isHD = ref(wallet.isHD());
+    // @fail remvoe
     const checkDecryptPassword = async (passwd) =>
         await wallet.checkDecryptPassword(passwd);
 
@@ -65,6 +67,7 @@ function addWallet(wallet) {
         isEncrypted.value = r;
     });
 
+    // @fail remove
     const encrypt = async (passwd) => {
         const res = await wallet.encrypt(passwd);
         isEncrypted.value = await hasEncryptedWallet();
@@ -265,6 +268,24 @@ function addVault(v) {
         forgetWallet(account) {
             //TODO
         },
+        async encrypt(password) {
+            // @fail, needs to be more robust
+            const database = await Database.getInstance();
+            const secretToExport = v.getSecretToExport();
+            if (!secretToExport)
+                throw new Error("Can't encrypt a public vault");
+            const encryptedSecret = await encrypt(secretToExport, password);
+            if (!encryptedSecret) return false;
+            await database.addVault({
+                encryptedSecret,
+                wallets: wallets.value.map((w) => w.getKeyToExport()),
+                // @fail change
+                isSeeded: true,
+            });
+            for (const wallet of wallets.value) {
+                wallet.encrypt(password);
+            }
+        },
     };
 }
 
@@ -284,11 +305,13 @@ export const useWallets = defineStore('wallets', () => {
      * @type{import('vue').Ref<import('../wallet.js').Wallet>}
      */
     const activeWallet = ref(walletsArray.value[0]);
+    const activeVault = ref(null);
 
     return {
         wallets: walletsArray,
         vaults: vaults,
         activeWallet: activeWallet,
+        activeVault,
         addWallet: (w) => {
             throw new Error('No longer relevant');
             // TODO: check that wallet is not already added
@@ -333,6 +356,7 @@ export const useWallets = defineStore('wallets', () => {
 
             setWallet(await rawVaults[i].getWallet(j));
             activeWallet.value = vaults.value[i].wallets[j];
+            activeVault.value = vaults.value[i];
         },
     };
 });

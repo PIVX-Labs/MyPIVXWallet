@@ -342,7 +342,8 @@ export class Database {
         const store = this.#db
             .transaction('vaults', 'readwrite')
             .objectStore('vaults');
-        await store.add(vault);
+
+        await store.add(vault, vault.encryptedSecret);
     }
 
     /**
