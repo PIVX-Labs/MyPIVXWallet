@@ -45,6 +45,7 @@ import { storeToRefs } from 'pinia';
 import { Account } from '../accounts';
 import { useAlerts } from '../composables/use_alerts.js';
 import { Vault } from '../vault';
+import { toRaw } from 'vue';
 const { createAlert } = useAlerts();
 const wallets = useWallets();
 const { activeWallet } = storeToRefs(wallets);
@@ -146,9 +147,13 @@ async function importWallet({
             if (parsedSecret.shield) {
                 await parsedSecret.shield.reloadFromCheckpoint(blockCount);
             }
-            wallets.addVault(
-                new Vault(parsedSecret.masterKey, parsedSecret.shield)
+            await wallets.addVault(
+                new Vault({
+                    masterKey: parsedSecret.masterKey,
+                    shield: parsedSecret.shield,
+                })
             );
+            console.log(toRaw(activeWallet.value.getKeyToBackup()));
 
             if (needsToEncrypt.value) showEncryptModal.value = true;
             // @fail need to change this

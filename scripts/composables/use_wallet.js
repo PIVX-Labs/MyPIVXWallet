@@ -256,8 +256,8 @@ function addVault(v) {
         canGenerateMore() {
             return v.canGenerateMore();
         },
-        addWallet(account, seed) {
-            const w = v.getWallet(account, seed);
+        async addWallet(account, seed) {
+            const w = await v.getWallet(account, seed);
             const wallet = reactive(addWallet(w));
             wallets.value = [...wallets.value, wallet];
             return wallet;
@@ -300,13 +300,14 @@ export const useWallets = defineStore('wallets', () => {
             activeWallet.value = newWallet;
             walletsArray.value = [...walletsArray.value, newWallet];
         },
-        addVault: (v) => {
+        addVault: async (v) => {
             const vault = addVault(v);
             rawVaults.push(v);
 
             vaults.value.push(vault);
-            const wallet = vault.addWallet(0);
-            setWallet(v.getWallet(0));
+            const wallet = await vault.addWallet(0);
+            setWallet(await v.getWallet(0));
+            console.log(await v.getWallet(0));
             activeWallet.value = wallet;
         },
         removeWallet: (w) => {
@@ -317,7 +318,7 @@ export const useWallets = defineStore('wallets', () => {
             walletsArray.value.splice(i, 1);
             return true;
         },
-        selectWallet: (w) => {
+        selectWallet: async (w) => {
             let i;
             let j;
             for (i = 0; i < vaults.value.length; i++) {
@@ -330,7 +331,7 @@ export const useWallets = defineStore('wallets', () => {
             if (i === -1 || j === -1)
                 throw new Error('Selected invalid wallet');
 
-            setWallet(rawVaults[i].getWallet(j));
+            setWallet(await rawVaults[i].getWallet(j));
             activeWallet.value = vaults.value[i].wallets[j];
         },
     };

@@ -8,15 +8,6 @@ import { Wallet } from './wallet.js';
  */
 export class Vault {
     /**
-     * @type {import('./masterkey.js').MasterKey}
-     */
-    #masterKey;
-
-    /**
-     * @type {import('pivx-shield').PIVXShield}
-     */
-    #shield;
-    /**
      * @type{import('./wallet.js').Wallet[]}
      */
     #wallets = [];
@@ -25,13 +16,18 @@ export class Vault {
      * @fail, need to take in an array of masterKeys and shields
      */
     constructor({ masterKey, shield }) {
-        this.#masterKey = masterKey;
-        this.#shield = shield;
+        this.#wallets.push(
+            new Wallet({
+                nAccount: 0,
+                masterKey,
+                shield,
+            })
+        );
     }
     /**
      * @param {number} account - Account number, ignored if Vault::canGenerateMore returns false
      * @param {Uint8Array} seed - Seed, must be present if we're trying to generate a new wallet
-     * @returns {import('./wallet.js').Wallet} a reference of a wallet. The creation is lazy.
+     * @returns {Promise<import('./wallet.js').Wallet>} a reference of a wallet. The creation is lazy.
      * Vault::forgetWallet can be called if the reference is no longer needed
      */
     async getWallet(account, seed) {
