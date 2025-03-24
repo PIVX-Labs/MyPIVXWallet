@@ -85,6 +85,11 @@ watch(showExportModal, async (showExportModal) => {
     }
 });
 
+watch(activeWallet, () => {
+    if (!activeWallet.value.isSynced && !activeWallet.value.isSyncing)
+        activeWallet.value.sync();
+});
+
 /**
  * Import a wallet, this function MUST be called only at start or when switching network
  * @param {Object} o - Options
@@ -425,19 +430,21 @@ async function importFromDatabase() {
     console.log(vaults);
     // @fail Maybe this shouldn't be Dashboard's responsibility
     for (const vault of vaults) {
+        const ws = [];
+        let i = 0;
         for (const wallet of vault.wallets) {
             const account = await database.getAccount(wallet);
-            activity.value?.reset();
-            getEventEmitter().emit('reset-activity');
-            if (account?.isHardware) {
-                await importWallet({
-                    type: 'hardware',
-                    secret: account.publicKey,
-                });
-            } else {
-                await importWallet({ type: 'hd', secret: account.publicKey });
-            }
+            const p = await ParsedSecret.parse(account.publicKey);
+            ws.push(new Wallet({ nAccount: ++i, masterKey: p.masterKey }));
         }
+        const v = new Vault({
+            wallets: ws,
+        });
+
+        await wallets.addVault(v);
+
+        activity.value?.reset();
+        getEventEmitter().emit('reset-activity');
         updateLogOutButton();
     }
 }

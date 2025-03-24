@@ -7,6 +7,7 @@ import { Database } from '../database.js';
 import { decrypt } from '../aes-gcm';
 import { ParsedSecret } from '../parsed_secret';
 import { useAlerts } from '../composables/use_alerts.js';
+import { useWallets } from '../composables/use_wallet.js';
 
 const { createAlert } = useAlerts();
 
@@ -15,6 +16,8 @@ const props = defineProps({
     reason: String,
     wallet: Object,
 });
+const wallets = useWallets();
+
 const { show, reason, wallet } = toRefs(props);
 const emit = defineEmits(['close', 'import']);
 const password = ref('');
@@ -43,6 +46,8 @@ async function importWif(wif, extsk) {
 
 async function submit() {
     const db = await Database.getInstance();
+    wallets.activeVault.decrypt(password.value);
+    /*const db = await Database.getInstance();
     const account = await db.getAccount(wallet.value.getKeyToExport());
     const wif = await decrypt(account.encWif, password.value);
     const extsk = await decrypt(account.encExtsk, password.value);
@@ -51,7 +56,7 @@ async function submit() {
         emit('import', wif, extsk);
     } else {
         createAlert('warning', ALERTS.INVALID_PASSWORD);
-    }
+    }*/
 }
 
 function close() {

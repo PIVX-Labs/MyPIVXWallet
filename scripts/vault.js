@@ -20,15 +20,20 @@ export class Vault {
     /**
      * @fail, need to take in an array of masterKeys and shields
      */
-    constructor({ masterKey, shield, seed }) {
-        this.#wallets.push(
-            new Wallet({
-                nAccount: 0,
-                masterKey,
-                shield,
-            })
-        );
-        this.setSeed(seed);
+    constructor({ masterKey, shield, seed, wallets }) {
+        if (masterKey) {
+            this.#wallets.push(
+                new Wallet({
+                    nAccount: 0,
+                    masterKey,
+                    shield,
+                })
+            );
+        }
+        if (seed) {
+            this.setSeed(seed);
+        }
+        if (wallets) this.#wallets = wallets;
     }
     /**
      * @param {number} account - Account number, ignored if Vault::canGenerateMore returns false

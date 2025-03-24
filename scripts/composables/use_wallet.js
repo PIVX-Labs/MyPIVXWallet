@@ -20,7 +20,7 @@ import {
     guiToggleReceiveType,
 } from '../contacts-book.js';
 import { Database } from '../database.js';
-import { encrypt } from '../aes-gcm.js';
+import { decrypt, encrypt, buff_to_base64, base64_to_buf } from '../aes-gcm.js';
 
 function addWallet(wallet) {
     const isImported = ref(wallet.isLoaded());
@@ -253,6 +253,7 @@ function addWallet(wallet) {
  */
 function addVault(v) {
     const wallets = ref([]);
+    //    const isEncrypted = ref(v.get)
 
     return {
         wallets,
@@ -274,7 +275,10 @@ function addVault(v) {
             const secretToExport = v.getSecretToExport();
             if (!secretToExport)
                 throw new Error("Can't encrypt a public vault");
-            const encryptedSecret = await encrypt(secretToExport, password);
+            const encryptedSecret = await encrypt(
+                buff_to_base64(secretToExport),
+                password
+            );
             if (!encryptedSecret) return false;
             await database.addVault({
                 encryptedSecret,
@@ -285,6 +289,18 @@ function addVault(v) {
             for (const wallet of wallets.value) {
                 wallet.encrypt(password);
             }
+        },
+        async decrypt(password) {
+            const database = await Database.getInstance();
+            const key = (await v.getWallet(0)).getKeyToExport();
+            const { encryptedSecret } = (await database.getVaults()).find(
+                (vdb) => vdb.wallets[0] === key
+            );
+            const seed = await decrypt(encryptedSecret, password);
+            if (!seed) return false;
+            console.log(seed);
+            v.setSeed(base64_to_buf(seed));
+            return true;
         },
     };
 }
@@ -305,6 +321,9 @@ export const useWallets = defineStore('wallets', () => {
      * @type{import('vue').Ref<import('../wallet.js').Wallet>}
      */
     const activeWallet = ref(walletsArray.value[0]);
+    /**
+     * @type{import('vue').Ref<Vault>}
+     */
     const activeVault = ref(null);
 
     return {
@@ -328,10 +347,11 @@ export const useWallets = defineStore('wallets', () => {
             rawVaults.push(v);
 
             vaults.value.push(vault);
-            const wallet = await vault.addWallet(0);
-            setWallet(await v.getWallet(0));
-            console.log(await v.getWallet(0));
-            activeWallet.value = wallet;
+            for (let i = 0; i < v.getWallets().length; i++) {
+                const wallet = await vault.addWallet(i);
+                setWallet(await v.getWallet(i));
+                activeWallet.value = wallet;
+            }
         },
         removeWallet: (w) => {
             const i = walletsArray.value.findIndex(
