@@ -1,4 +1,4 @@
-import { PIVXShield } from 'pivx-shield';
+ùimport { PIVXShield } from 'pivx-shield';
 import { HdMasterKey } from './masterkey.js';
 import { Wallet } from './wallet.js';
 import { cChainParams } from './chain_params.js';

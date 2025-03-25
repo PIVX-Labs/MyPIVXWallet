@@ -19,10 +19,20 @@ function addWallet() {}
     <div v-for="vault of wallets.vaults">
         VAULT HERE:
         <div v-for="wallet of vault.wallets">
-            {{ wallet.getKeyToExport() + '\n' }}
+            <span
+                :style="{
+                    color:
+                        wallet.getKeyToExport() ===
+                        wallets.activeWallet.getKeyToExport()
+                            ? 'green'
+                            : 'red',
+                }"
+            >
+                {{ wallet.getKeyToExport() + '\n' }}
+            </span>
             <button @click="select(wallet)">SELECT</button>
         </div>
-        <button @click="vault.addWallet(vault.wallets.length + 1)">
+        <button @click="vault.addWallet(vault.wallets.length)">
             ADD WALLET
         </button>
     </div>

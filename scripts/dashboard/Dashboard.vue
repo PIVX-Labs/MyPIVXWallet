@@ -84,11 +84,6 @@ watch(showExportModal, async (showExportModal) => {
     }
 });
 
-watch(activeWallet, () => {
-    if (!activeWallet.value.isSynced && !activeWallet.value.isSyncing)
-        activeWallet.value.sync();
-});
-
 /**
  * Import a wallet, this function MUST be called only at start or when switching network
  * @param {Object} o - Options

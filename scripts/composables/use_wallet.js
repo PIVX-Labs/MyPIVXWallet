@@ -265,6 +265,7 @@ function addVault(v) {
             const w = await v.getWallet(account, seed);
             const wallet = reactive(addWallet(w));
             wallets.value = [...wallets.value, wallet];
+            wallet.sync().then(() => {});
             return wallet;
         },
         forgetWallet(account) {

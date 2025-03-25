@@ -825,7 +825,7 @@ export class Wallet {
         await this.#transparentSync();
         if (this.hasShield()) {
             debugTimerStart(DebugTopics.WALLET, 'syncShield');
-            //            await this.#syncShield();
+            await this.#syncShield();
             debugTimerEnd(DebugTopics.WALLET, 'syncShield');
         }
         this.#isSynced = true;
@@ -869,6 +869,8 @@ export class Wallet {
         }
         this.#eventEmitter.emit('transparent-sync-status-update', '', '', true);
     }
+
+    lock = false;
 
     /**
      * Initial block and prover sync for the shield object

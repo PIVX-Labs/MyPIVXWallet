@@ -77,6 +77,26 @@ const isCreatingTx = ref(false);
 const txPercentageCreation = ref(0.0);
 const txCreationStr = ref('Creating SHIELD transaction...');
 
+function resetSyncing() {
+    // Transparent sync status
+    transparentSyncing.value = false;
+    percentage.value = 0.0;
+    syncTStr.value = '';
+
+    // Shield sync status
+    shieldSyncing.value = false;
+    shieldSyncingStr.value = '';
+
+    // Shield transaction creation
+    isCreatingTx.value = false;
+    txPercentageCreation.value = 0.0;
+    txCreationStr.value = 'Creating SHIELD transaction...';
+}
+
+watch([() => wallets.activeVault, () => wallets.activeWallet], () => {
+    resetSyncing();
+});
+
 const primaryBalanceStr = computed(() => {
     // Get the primary balance, depending on the user's mode
     const nCoins = (publicMode.value ? balance : shieldBalance).value / COIN;
