@@ -85,6 +85,10 @@ export class Vault {
         this.#seed = seed;
     }
 
+    isSeeded() {
+        return !!this.#seed;
+    }
+
     wipePrivateData() {
         this.#seed = null;
         for (const wallet of this.#wallets) {

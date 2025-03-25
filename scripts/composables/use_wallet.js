@@ -253,6 +253,7 @@ function addWallet(wallet) {
  */
 function addVault(v) {
     const wallets = ref([]);
+    const isLocked = ref(v.isSeeded());
     //    const isEncrypted = ref(v.get)
 
     return {
@@ -289,6 +290,7 @@ function addVault(v) {
             for (const wallet of wallets.value) {
                 wallet.encrypt(password);
             }
+            isLocked.value = v.isSeeded();
         },
         async decrypt(password) {
             const database = await Database.getInstance();
@@ -298,10 +300,11 @@ function addVault(v) {
             );
             const seed = await decrypt(encryptedSecret, password);
             if (!seed) return false;
-            console.log(seed);
             v.setSeed(base64_to_buf(seed));
+            isLocked.value = v.isSeeded();
             return true;
         },
+        isLocked,
     };
 }
 

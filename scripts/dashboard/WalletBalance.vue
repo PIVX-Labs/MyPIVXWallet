@@ -216,7 +216,7 @@ function restoreWallet() {
                     <h3 class="noselect balance-title">
                         <span
                             class="reload"
-                            v-if="isViewOnly && isEncrypted && isImported"
+                            v-if="wallets.activeVault?.isLocked"
                             @click="restoreWallet()"
                         >
                             <span
@@ -226,7 +226,7 @@ function restoreWallet() {
                         </span>
                         <span
                             class="reload"
-                            v-if="!isViewOnly && !needsToEncrypt && isImported"
+                            v-if="!wallets.activeVault?.isLocked"
                             @click="displayLockWalletModal()"
                         >
                             <span

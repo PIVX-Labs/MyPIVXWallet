@@ -58,9 +58,8 @@ const needsToEncrypt = computed(() => {
     if (activeWallet.value.isHardwareWallet) {
         return false;
     } else {
-        return (
-            !activeWallet.value.isViewOnly && !activeWallet.value.isEncrypted
-        );
+        return activeVault?.value?.isLocked;
+        //!activeWallet.value.isViewOnly && !activeWallet.value.isEncrypted
     }
 });
 const showTransferMenu = ref(false);
@@ -1025,7 +1024,7 @@ defineExpose({
                     @open="showEncryptModal = true"
                     :showModal="showEncryptModal"
                     :showBox="needsToEncrypt"
-                    :isEncrypt="activeWallet.isEncrypted"
+                    :isEncrypt="true"
                 />
                 <div class="row p-0">
                     <!-- Balance in PIVX & USD-->

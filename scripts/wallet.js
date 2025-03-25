@@ -809,6 +809,8 @@ export class Wallet {
         if (this.#isSynced) {
             throw new Error('Attempting to sync when already synced');
         }
+        console.log('SYNCING ' + this.getKeyToExport());
+
         // While syncing the wallet ( DB read + network sync) disable the event balance-update
         // This is done to avoid a huge spam of event.
         this.#eventEmitter.disableEvent('balance-update');
@@ -823,7 +825,7 @@ export class Wallet {
         await this.#transparentSync();
         if (this.hasShield()) {
             debugTimerStart(DebugTopics.WALLET, 'syncShield');
-            await this.#syncShield();
+            //            await this.#syncShield();
             debugTimerEnd(DebugTopics.WALLET, 'syncShield');
         }
         this.#isSynced = true;
