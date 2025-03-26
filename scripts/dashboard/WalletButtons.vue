@@ -1,6 +1,8 @@
 <script setup>
 import { renderWalletBreakdown } from '../charting.js';
 import { guiRenderContacts } from '../contacts-book';
+import { watch, ref } from 'vue';
+import { storeToRefs } from 'pinia';
 
 import pStats from '../../assets/icons/icon-stats-circle.svg';
 import pCompass from '../../assets/icons/icon-compass.svg';
@@ -10,12 +12,23 @@ import { useNetwork } from '../composables/use_network.js';
 import { useWallets } from '../composables/use_wallet.js';
 import { getBlockbookUrl } from '../utils.js';
 
-const { activeWallet: wallet } = useWallets();
+const { activeWallet } = storeToRefs(useWallets());
 const network = useNetwork();
+const walletUrl = ref('');
 
-function getWalletUrl() {
-    return getBlockbookUrl(network.explorerUrl, wallet.getKeyToExport());
-}
+watch(
+    [activeWallet, network],
+    () => {
+        console.log('Updating');
+        walletUrl.value = getBlockbookUrl(
+            network.explorerUrl,
+            activeWallet.value.getKeyToExport()
+        );
+    },
+    {
+        immediate: true,
+    }
+);
 </script>
 
 <template>
@@ -31,7 +44,7 @@ function getWalletUrl() {
                 <span style="color: #eddaffc7">Balance</span>
             </div>
             <div class="col-3 p-0 cur-pointer">
-                <a :href="getWalletUrl()" target="_blank">
+                <a :href="walletUrl" target="_blank">
                     <span class="dashboardActionIcon" v-html="pCompass"></span
                     ><br />
                     <span style="color: #eddaffc7">Explorer</span>
@@ -39,10 +52,12 @@ function getWalletUrl() {
             </div>
             <div
                 class="col-3 p-0 cur-pointer"
-                :style="{ opacity: wallet.isEncrypted ? 1 : 0.5 }"
+                :style="{ opacity: activeWallet.isEncrypted ? 1 : 0.5 }"
                 @click="guiRenderContacts()"
-                :data-toggle="wallet.isEncrypted ? 'modal' : null"
-                :data-target="wallet.isEncrypted ? '#contactsModal' : null"
+                :data-toggle="activeWallet.isEncrypted ? 'modal' : null"
+                :data-target="
+                    activeWallet.isEncrypted ? '#contactsModal' : null
+                "
             >
                 <span class="dashboardActionIcon" v-html="pAddressBook"></span
                 ><br />
