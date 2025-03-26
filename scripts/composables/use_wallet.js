@@ -368,6 +368,7 @@ export const useWallets = defineStore('wallets', () => {
                 setWallet(await v.getWallet(i));
                 activeWallet.value = wallet;
             }
+            activeVault.value = vault;
         },
         removeWallet: (w) => {
             const i = walletsArray.value.findIndex(

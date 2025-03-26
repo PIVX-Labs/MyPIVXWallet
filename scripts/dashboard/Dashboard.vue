@@ -198,7 +198,7 @@ async function importWallet({
  * @param {string} [currentPassword] - Current password with which the wallet is encrypted with, if any
  */
 async function encryptWallet(password, currentPassword = '') {
-    if (activeWallet.value.isEncrypted) {
+    if (activeVault.isEncrypted) {
         if (!(await activeVault.value.checkDecryptPassword(currentPassword))) {
             createAlert('warning', ALERTS.INCORRECT_PASSWORD, 6000);
             return false;
@@ -212,7 +212,7 @@ async function encryptWallet(password, currentPassword = '') {
 }
 
 async function restoreWallet(strReason) {
-    if (!activeWallet.value.isEncrypted) return false;
+    if (!activeVault.value.isEncrypted) return false;
     if (activeWallet.value.isHardwareWallet) return true;
     showRestoreWallet.value = true;
     return await new Promise((res) => {
@@ -231,7 +231,7 @@ async function restoreWallet(strReason) {
  * Lock the wallet by deleting masterkey private data, after user confirmation
  */
 async function displayLockWalletModal() {
-    const isEncrypted = activeWallet.value.isEncrypted;
+    const isEncrypted = activeVault.value.isEncrypted;
     const title = isEncrypted
         ? translation.popupWalletLock
         : translation.popupWalletWipe;
@@ -271,7 +271,7 @@ async function send(address, amount, useShieldInputs) {
             !(await restoreWallet(
                 tr(ALERTS.WALLET_UNLOCK_IMPORT, [
                     {
-                        unlock: activeWallet.value.isEncrypted
+                        unlock: activeVault.value.isEncrypted
                             ? 'unlock '
                             : 'import/create',
                     },
@@ -403,7 +403,7 @@ async function send(address, amount, useShieldInputs) {
         createAlert('warning', e);
     } finally {
         if (autoLockWallet.value) {
-            if (activeWallet.value.isEncrypted) {
+            if (activeVault.value.isEncrypted) {
                 lockWallet();
             } else {
                 await displayLockWalletModal();
@@ -457,7 +457,7 @@ onMounted(async () => {
     await start();
     await importFromDatabase();
 
-    if (activeWallet.value.isEncrypted) {
+    if (activeVault.value.isEncrypted) {
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.has('addcontact')) {
             await handleContactRequest(urlParams);
@@ -1003,7 +1003,7 @@ defineExpose({
             <ExportPrivKey
                 :show="showExportModal"
                 :privateKey="keyToBackup"
-                :isJSON="hasShield && !activeWallet.isEncrypted"
+                :isJSON="hasShield && !activeVault?.isEncrypted"
                 @close="showExportModal = false"
             />
             <!-- WALLET FEATURES -->
@@ -1014,7 +1014,7 @@ defineExpose({
                     @open="showEncryptModal = true"
                     :showModal="showEncryptModal"
                     :showBox="needsToEncrypt"
-                    :isEncrypt="true"
+                    :isEncrypt="activeVault?.isEncrypted ?? false"
                 />
                 <div class="row p-0">
                     <!-- Balance in PIVX & USD-->
@@ -1026,7 +1026,7 @@ defineExpose({
                         :immatureColdBalance="immatureColdBalance"
                         :isHdWallet="activeWallet.isHD"
                         :isViewOnly="activeWallet.isViewOnly"
-                        :isEncrypted="activeWallet.isEncrypted"
+                        :isEncrypted="activeVault?.isEncrypted ?? false"
                         :isImported="activeWallet.isImported"
                         :needsToEncrypt="needsToEncrypt"
                         @displayLockWalletModal="displayLockWalletModal()"
