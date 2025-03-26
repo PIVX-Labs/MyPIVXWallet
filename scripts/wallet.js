@@ -810,6 +810,11 @@ export class Wallet {
             throw new Error('Attempting to sync when already synced');
         }
         console.log('SYNCING ' + this.getKeyToExport());
+        if (
+            this.getKeyToExport() ===
+            'xpub6CKRnGxzF2Ln6ECB9bfL81HZvgY7RyHrqAyU4YwNpGeHWyvVarpst1ofiTfdkVAiDoNzrfvgb7fghBfAKHB7dTYjGcmx92pr4T3DUynWWEF'
+        )
+            debugger;
 
         // While syncing the wallet ( DB read + network sync) disable the event balance-update
         // This is done to avoid a huge spam of event.

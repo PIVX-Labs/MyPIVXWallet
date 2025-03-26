@@ -331,7 +331,6 @@ export const useWallets = defineStore('wallets', () => {
     const activeVault = ref(null);
 
     return {
-        wallets: walletsArray,
         vaults: vaults,
         activeWallet: activeWallet,
         activeVault,

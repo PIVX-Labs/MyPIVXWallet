@@ -236,7 +236,7 @@ function restoreWallet() {
                     <h3 class="noselect balance-title">
                         <span
                             class="reload"
-                            v-if="wallets.activeVault?.isLocked"
+                            v-if="!wallets.activeVault?.isLocked"
                             @click="restoreWallet()"
                         >
                             <span
@@ -246,7 +246,7 @@ function restoreWallet() {
                         </span>
                         <span
                             class="reload"
-                            v-if="!wallets.activeVault?.isLocked"
+                            v-if="wallets.activeVault?.isLocked"
                             @click="displayLockWalletModal()"
                         >
                             <span

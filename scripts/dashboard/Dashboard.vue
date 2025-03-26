@@ -46,6 +46,7 @@ import { Account } from '../accounts';
 import { useAlerts } from '../composables/use_alerts.js';
 import { Vault } from '../vault';
 import { toRaw } from 'vue';
+import { valuesToComputed } from '../utils.js';
 const { createAlert } = useAlerts();
 const wallets = useWallets();
 const { activeWallet, activeVault } = storeToRefs(wallets);
@@ -485,15 +486,6 @@ const {
     isViewOnly,
     hasShield,
 } = valuesToComputed(activeWallet);
-
-function valuesToComputed(ref) {
-    return Object.fromEntries(
-        Object.keys(ref.value).map((key) => [
-            key,
-            computed(() => ref.value?.[key]),
-        ])
-    );
-}
 
 getEventEmitter().on('sync-status', (status) => {
     if (status === 'stop') activity?.value?.update();

@@ -114,7 +114,7 @@ export class HdMasterKey extends MasterKey {
         if (seed) this._hdKey = HDKey.fromMasterSeed(seed);
         if (xpriv) this._hdKey = HDKey.fromExtendedKey(xpriv);
         if (xpub) this._hdKey = HDKey.fromExtendedKey(xpub);
-        this._isViewOnly = false; //!!xpub;
+        this._isViewOnly = !!xpub;
         if (!this._hdKey)
             throw new Error('All of seed, xpriv and xpub are undefined');
         this._isHD = true;
@@ -167,7 +167,6 @@ export class HdMasterKey extends MasterKey {
     }
     getKeyToExport(nAccount) {
         if (this._isViewOnly) return this._hdKey.publicExtendedKey;
-        debugger;
         // We need the xpub to point at the account level
         return this._hdKey.derive(
             this.getDerivationPath(nAccount, 0, 0)

@@ -15,10 +15,11 @@ import { storeToRefs } from 'pinia';
 import { ALERTS, tr } from '../i18n';
 import { useAlerts } from '../composables/use_alerts.js';
 import { validateAmount } from '../legacy.js';
+import { valuesToComputed } from '../utils.js';
 const { createAlert } = useAlerts();
 const { activeWallet: wallet } = storeToRefs(useWallets());
 const { balance, coldBalance, price, currency, isViewOnly } =
-    storeToRefs(wallet);
+    valuesToComputed(wallet);
 const { advancedMode, displayDecimals } = storeToRefs(useSettings());
 const showUnstake = ref(false);
 const showStake = ref(false);
