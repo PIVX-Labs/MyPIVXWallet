@@ -59,8 +59,11 @@ const needsToEncrypt = computed(() => {
     if (activeWallet.value.isHardwareWallet) {
         return false;
     } else {
-        return activeVault?.value?.isLocked;
-        //!activeWallet.value.isViewOnly && !activeWallet.value.isEncrypted
+        return (
+            (!activeVault.value?.isViewOnly &&
+                !activeVault.value?.isEncrypted) ??
+            false
+        );
     }
 });
 const showTransferMenu = ref(false);

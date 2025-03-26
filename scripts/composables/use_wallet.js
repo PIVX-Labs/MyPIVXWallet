@@ -253,8 +253,19 @@ function addWallet(wallet) {
  */
 function addVault(v) {
     const wallets = ref([]);
-    const isLocked = ref(v.isSeeded());
-    //    const isEncrypted = ref(v.get)
+
+    const isSeeded = ref(v.isSeeded());
+    const isEncrypted = ref(false);
+    (async () => {
+        const database = await Database.getInstance();
+        await database.getVaults();
+        const key = (await v.getWallet(0)).getKeyToExport();
+        isEncrypted.value = (await database.getVaults()).some(
+            (vdb) => vdb.wallets[0] === key
+        );
+    })();
+    // @fail if this is not different that isSeeded, just init it with that
+    const isViewOnly = computed(() => !isSeeded.value);
 
     return {
         wallets,
@@ -291,7 +302,8 @@ function addVault(v) {
             for (const wallet of wallets.value) {
                 wallet.encrypt(password);
             }
-            isLocked.value = v.isSeeded();
+            isEncrypted.value = true;
+            isSeeded.value = v.isSeeded();
         },
         async decrypt(password) {
             const database = await Database.getInstance();
@@ -302,10 +314,11 @@ function addVault(v) {
             const seed = await decrypt(encryptedSecret, password);
             if (!seed) return false;
             v.setSeed(base64_to_buf(seed));
-            isLocked.value = v.isSeeded();
+            isSeeded.value = v.isSeeded();
             return true;
         },
-        isLocked,
+        isViewOnly,
+        isEncrypted,
     };
 }
 

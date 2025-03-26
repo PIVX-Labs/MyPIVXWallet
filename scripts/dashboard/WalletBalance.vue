@@ -233,10 +233,13 @@ function restoreWallet() {
                     class="col-6 d-flex dcWallet-topLeftMenu"
                     style="justify-content: flex-start"
                 >
-                    <h3 class="noselect balance-title">
+                    <h3
+                        class="noselect balance-title"
+                        v-if="wallets.activeVault?.isEncrypted"
+                    >
                         <span
                             class="reload"
-                            v-if="!wallets.activeVault?.isLocked"
+                            v-if="wallets.activeVault?.isViewOnly"
                             @click="restoreWallet()"
                         >
                             <span
@@ -246,7 +249,7 @@ function restoreWallet() {
                         </span>
                         <span
                             class="reload"
-                            v-if="wallets.activeVault?.isLocked"
+                            v-else
                             @click="displayLockWalletModal()"
                         >
                             <span
