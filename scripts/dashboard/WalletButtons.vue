@@ -12,7 +12,7 @@ import { useNetwork } from '../composables/use_network.js';
 import { useWallets } from '../composables/use_wallet.js';
 import { getBlockbookUrl } from '../utils.js';
 
-const { activeWallet } = storeToRefs(useWallets());
+const { activeWallet, activeVault } = storeToRefs(useWallets());
 const network = useNetwork();
 const walletUrl = ref('');
 
@@ -52,11 +52,11 @@ watch(
             </div>
             <div
                 class="col-3 p-0 cur-pointer"
-                :style="{ opacity: activeWallet.isEncrypted ? 1 : 0.5 }"
+                :style="{ opacity: activeVault?.isEncrypted ? 1 : 0.5 }"
                 @click="guiRenderContacts()"
-                :data-toggle="activeWallet.isEncrypted ? 'modal' : null"
+                :data-toggle="activeVault?.isEncrypted ? 'modal' : null"
                 :data-target="
-                    activeWallet.isEncrypted ? '#contactsModal' : null
+                    activeVault?.isEncrypted ? '#contactsModal' : null
                 "
             >
                 <span class="dashboardActionIcon" v-html="pAddressBook"></span
