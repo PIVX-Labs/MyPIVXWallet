@@ -254,18 +254,16 @@ function addVault(v) {
     const isEncrypted = ref(false);
     (async () => {
         const database = await Database.getInstance();
-        await database.getVaults();
-        const key = (await v.getWallet(0)).getKeyToExport();
-        isEncrypted.value = (await database.getVaults()).some(
-            (vdb) => vdb.wallets[0] === key
-        );
+        isEncrypted.value = !!(await database.getVault(
+            v.getDefaultKeyToExport()
+        ));
     })();
     // @fail if this is not different that isSeeded, just init it with that
     const isViewOnly = computed(() => !isSeeded.value);
     const checkDecryptPassword = async (password) => {
         const db = await Database.getInstance();
-        const { encryptedSecret } = (await db.getVaults()).find(
-            (vdb) => vdb.wallets[0] === key
+        const { encryptedSecret } = await db.getVault(
+            v.getDefaultKeyToExport()
         );
         return !!(await decrypt(encryptedSecret, password));
     };
@@ -316,9 +314,8 @@ function addVault(v) {
         },
         async decrypt(password) {
             const database = await Database.getInstance();
-            const key = (await v.getWallet(0)).getKeyToExport();
-            const { encryptedSecret } = (await database.getVaults()).find(
-                (vdb) => vdb.wallets[0] === key
+            const { encryptedSecret } = await database.getVault(
+                v.getDefaultKeyToExport()
             );
             const seed = await decrypt(encryptedSecret, password);
             if (!seed) return false;

@@ -338,6 +338,13 @@ export class Database {
         return vaults;
     }
 
+    async getVault(key) {
+        const store = this.#db
+            .transaction('vaults', 'readonly')
+            .objectStore('vaults');
+        return await store.get(key);
+    }
+
     async addVault(vault) {
         const store = this.#db
             .transaction('vaults', 'readwrite')
