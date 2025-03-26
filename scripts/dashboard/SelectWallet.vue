@@ -32,7 +32,10 @@ function addWallet() {}
             </span>
             <button @click="select(wallet)">SELECT</button>
         </div>
-        <button @click="vault.addWallet(vault.wallets.length)">
+        <button
+            @click="vault.addWallet(vault.wallets.length)"
+            v-if="vault.isSeeded"
+        >
             ADD WALLET
         </button>
     </div>

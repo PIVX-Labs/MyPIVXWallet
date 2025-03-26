@@ -59,9 +59,6 @@ function addWallet(wallet) {
     const getNewChangeAddress = () => wallet.getNewChangeAddress();
     const isHardwareWallet = ref(wallet.isHardwareWallet());
     const isHD = ref(wallet.isHD());
-    // @fail remvoe
-    const checkDecryptPassword = async (passwd) =>
-        await wallet.checkDecryptPassword(passwd);
 
     hasEncryptedWallet().then((r) => {
         isEncrypted.value = r;
@@ -215,7 +212,6 @@ function addWallet(wallet) {
         setExtsk,
         setShield,
         isHardwareWallet,
-        checkDecryptPassword,
         encrypt,
         getNewAddress,
         getNewChangeAddress,
@@ -266,6 +262,13 @@ function addVault(v) {
     })();
     // @fail if this is not different that isSeeded, just init it with that
     const isViewOnly = computed(() => !isSeeded.value);
+    const checkDecryptPassword = async (password) => {
+        const db = await Database.getInstance();
+        const { encryptedSecret } = (await db.getVaults()).find(
+            (vdb) => vdb.wallets[0] === key
+        );
+        return !!(await decrypt(encryptedSecret, password));
+    };
 
     return {
         wallets,
@@ -319,6 +322,8 @@ function addVault(v) {
         },
         isViewOnly,
         isEncrypted,
+        isSeeded,
+        checkDecryptPassword,
     };
 }
 

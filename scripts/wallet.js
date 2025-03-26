@@ -366,23 +366,6 @@ export class Wallet {
     }
 
     /**
-     * Check if the current encrypted keyToBackup can be decrypted with the given password
-     * @param {string} strPassword
-     * @return {Promise<boolean>}
-     */
-    async checkDecryptPassword(strPassword) {
-        // Check if there's any encrypted WIF available
-        const database = await Database.getInstance();
-        const { encWif: strEncWIF } = await database.getAccount(
-            this.getKeyToExport()
-        );
-        if (!strEncWIF || strEncWIF.length < 1) return false;
-
-        const strDecWIF = await decrypt(strEncWIF, strPassword);
-        return !!strDecWIF;
-    }
-
-    /**
      * Encrypt the keyToBackup with a given password
      * @param {string} strPassword
      * @returns {Promise<boolean>}
