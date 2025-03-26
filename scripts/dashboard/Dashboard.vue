@@ -457,7 +457,7 @@ onMounted(async () => {
     await start();
     await importFromDatabase();
 
-    if (activeVault.value.isEncrypted) {
+    if (activeVault.value?.isEncrypted) {
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.has('addcontact')) {
             await handleContactRequest(urlParams);

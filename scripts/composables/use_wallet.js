@@ -280,6 +280,11 @@ function addVault(v) {
             const wallet = reactive(addWallet(w));
             wallets.value = [...wallets.value, wallet];
             wallet.sync().then(() => {});
+            const database = await Database.getInstance();
+            await database.addXpubToVault(
+                v.getDefaultKeyToExport(),
+                wallet.getKeyToExport()
+            );
             return wallet;
         },
         forgetWallet(account) {
@@ -298,6 +303,7 @@ function addVault(v) {
             if (!encryptedSecret) return false;
             await database.addVault({
                 encryptedSecret,
+                defaultKeyToExport: v.getDefaultKeyToExport(),
                 wallets: wallets.value.map((w) => w.getKeyToExport()),
                 // @fail change
                 isSeeded: true,
@@ -352,17 +358,6 @@ export const useWallets = defineStore('wallets', () => {
         vaults: vaults,
         activeWallet: activeWallet,
         activeVault,
-        addWallet: (w) => {
-            throw new Error('No longer relevant');
-            // TODO: check that wallet is not already added
-            wallets.push(w);
-
-            setWallet(w);
-            const newWallet = reactive(addWallet(w));
-
-            activeWallet.value = newWallet;
-            walletsArray.value = [...walletsArray.value, newWallet];
-        },
         addVault: async (v) => {
             const vault = addVault(v);
             rawVaults.push(v);

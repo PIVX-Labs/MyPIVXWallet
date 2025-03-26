@@ -66,6 +66,20 @@ export class Vault {
     }
 
     /**
+     * @returns {import('./wallet.js').Wallet} Default Wallet. Guaranteed to exist.
+     */
+    getDefaultWallet() {
+        return this.#wallets[0];
+    }
+
+    /**
+     * @returns {string} Default Key to export. Guaranteed to exist.
+     */
+    getDefaultKeyToExport() {
+        return this.getDefaultWallet().getKeyToExport();
+    }
+
+    /**
      * Forgets associated wallet
      * @param {number} account - Account number, ignored if Vault::canGenerateMore returns false
      * @returns {void}

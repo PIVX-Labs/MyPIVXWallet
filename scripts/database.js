@@ -343,7 +343,23 @@ export class Database {
             .transaction('vaults', 'readwrite')
             .objectStore('vaults');
 
-        await store.add(vault, vault.encryptedSecret);
+        await store.add(vault, vault.defaultKeyToExport);
+    }
+
+    async addXpubToVault(key, xpub) {
+        const store = this.#db
+            .transaction('vaults', 'readwrite')
+            .objectStore('vaults');
+        const vault = await store.get(key);
+        if (!vault) return;
+        if (vault.wallets.some((x) => x === xpub)) return;
+        await store.put(
+            {
+                ...vault,
+                wallets: [...vault.wallets, xpub],
+            },
+            key
+        );
     }
 
     /**
