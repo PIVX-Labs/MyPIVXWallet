@@ -305,8 +305,7 @@ function addVault(v) {
                 encryptedSecret,
                 defaultKeyToExport: v.getDefaultKeyToExport(),
                 wallets: wallets.value.map((w) => w.getKeyToExport()),
-                // @fail change
-                isSeeded: true,
+                isSeeded: v.isSeeded(),
             });
             for (const wallet of wallets.value) {
                 wallet.encrypt(password);

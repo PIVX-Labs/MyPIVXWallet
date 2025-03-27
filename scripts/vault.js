@@ -17,9 +17,6 @@ export class Vault {
      */
     #seed;
 
-    /**
-     * @fail, need to take in an array of masterKeys and shields
-     */
     constructor({ masterKey, shield, seed, wallets }) {
         if (masterKey) {
             this.#wallets.push(

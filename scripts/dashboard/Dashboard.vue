@@ -159,7 +159,7 @@ async function importWallet({
 
             if (needsToEncrypt.value) showEncryptModal.value = true;
             // @fail need to change this
-            if (activeWallet.value.isHardwareWallet && false) {
+            if (activeWallet.value.isHardwareWallet) {
                 const database = await Database.getInstance();
                 // Save the xpub without needing encryption if it's ledger
                 const account = new Account({
