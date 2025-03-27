@@ -6,14 +6,13 @@ import {
     setWallet,
     vaults as rawVaults,
 } from '../wallet.js';
-import { ref, computed, toRaw, watch, reactive } from 'vue';
-import { fPublicMode, strCurrency, togglePublicMode } from '../settings.js';
+import { ref, computed, watch, reactive } from 'vue';
+import { fPublicMode, strCurrency } from '../settings.js';
 import { cOracle } from '../prices.js';
 import { LedgerController } from '../ledger.js';
 import { defineStore } from 'pinia';
 import { lockableFunction } from '../lock.js';
 import { blockCount as rawBlockCount } from '../global.js';
-import { doms } from '../global.js';
 import {
     RECEIVE_TYPES,
     cReceiveType,
@@ -21,8 +20,10 @@ import {
 } from '../contacts-book.js';
 import { Database } from '../database.js';
 import { decrypt, encrypt, buff_to_base64, base64_to_buf } from '../aes-gcm.js';
+import { usePrivacy } from './use_privacy.js';
 
 function addWallet(wallet) {
+    const privacy = usePrivacy();
     const isImported = ref(wallet.isLoaded());
     const isViewOnly = ref(wallet.isViewOnly());
     const isSynced = ref(wallet.isSynced);
@@ -119,20 +120,17 @@ function addWallet(wallet) {
         }
     );
 
-    const _publicMode = ref(true);
     // Public/Private Mode will be loaded from disk after 'import-wallet' is emitted
     const publicMode = computed({
         get() {
             // If the wallet is not shield capable, always return true
             if (!hasShield.value) return true;
-            return _publicMode.value;
+            return privacy.publicMode;
         },
 
         set(newValue) {
-            _publicMode.value = newValue;
-            const publicMode = _publicMode.value;
-            doms.domNavbar.classList.toggle('active', !publicMode);
-            doms.domLightBackground.style.opacity = publicMode ? '1' : '0';
+            privacy.publicMode = newValue;
+            const p = publicMode.value;
             // Depending on our Receive type, flip to the opposite type.
             // i.e: from `address` to `shield`, `shield contact` to `address`, etc
             // This reduces steps for someone trying to grab their opposite-type address, which is the primary reason to mode-toggle.
@@ -143,12 +141,9 @@ function addWallet(wallet) {
             ];
             if (arrFlipTypes.includes(cReceiveType)) {
                 guiToggleReceiveType(
-                    publicMode ? RECEIVE_TYPES.ADDRESS : RECEIVE_TYPES.SHIELD
+                    p ? RECEIVE_TYPES.ADDRESS : RECEIVE_TYPES.SHIELD
                 );
             }
-
-            // Save the mode state to DB
-            togglePublicMode(publicMode);
         },
     });
 
