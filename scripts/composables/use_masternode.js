@@ -15,7 +15,9 @@ export const useMasternode = defineStore('masternode', () => {
         localProposals,
         async (localProposals) => {
             const database = await Database.getInstance();
-            const account = await database.getAccount(wallets.activeWallet.getKeyToExport());
+            const account = await database.getAccount(
+                wallets.activeWallet.getKeyToExport()
+            );
             if (account) {
                 account.localProposals = toRaw(localProposals);
                 await database.updateAccount(account, true);
@@ -28,7 +30,9 @@ export const useMasternode = defineStore('masternode', () => {
     );
     const fetchProposalsFromDatabase = async () => {
         const database = await Database.getInstance();
-	const account = await database.getAccount(wallets.activeWallet.getKeyToExport());
+        const account = await database.getAccount(
+            wallets.activeWallet.getKeyToExport()
+        );
         localProposals.value = account?.localProposals ?? [];
     };
 
