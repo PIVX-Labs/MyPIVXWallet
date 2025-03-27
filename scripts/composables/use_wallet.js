@@ -219,6 +219,7 @@ function addWallet(wallet) {
             wallet.wipePrivateData();
             isViewOnly.value = wallet.isViewOnly();
         },
+        save: () => wallet.save(),
         isCreatingTransaction,
         isHD,
         balance,
@@ -283,6 +284,7 @@ function addVault(v) {
                 v.getDefaultKeyToExport(),
                 wallet.getKeyToExport()
             );
+            await wallet.save();
             return wallet;
         },
         forgetWallet(account) {

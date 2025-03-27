@@ -365,6 +365,29 @@ export class Wallet {
         return !!this.#masterKey;
     }
 
+    async save() {
+        let shieldData = '';
+        if (this.#shield) {
+            shieldData = this.#shield.save();
+        }
+
+        // Prepare to Add/Update an account in the DB
+        const cAccount = new Account({
+            publicKey: this.getKeyToExport(),
+            shieldData: shieldData,
+        });
+
+        // Incase of a "Change Password", we check if an Account already exists
+        const database = await Database.getInstance();
+        if (await database.getAccount(this.getKeyToExport())) {
+            // Update the existing Account (new encWif) in the DB
+            await database.updateAccount(cAccount);
+        } else {
+            // Add the new Account to the DB
+            await database.addAccount(cAccount);
+        }
+    }
+
     /**
      * Encrypt the keyToBackup with a given password
      * @param {string} strPassword
