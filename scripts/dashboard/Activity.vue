@@ -12,6 +12,7 @@ import iCheck from '../../assets/icons/icon-check.svg';
 import iHourglass from '../../assets/icons/icon-hourglass.svg';
 import { blockCount } from '../global.js';
 import { beautifyNumber } from '../misc.js';
+import { useWallets } from '../composables/use_wallet';
 
 const props = defineProps({
     title: String,
@@ -25,6 +26,7 @@ const isHistorySynced = ref(false);
 const rewardAmount = ref(0);
 const ticker = computed(() => cChainParams.current.TICKER);
 const network = useNetwork();
+const wallets = useWallets();
 function getActivityUrl(tx) {
     return network.explorerUrl + '/tx/' + tx.id;
 }
@@ -148,7 +150,7 @@ async function update(txToAdd = 0) {
     updating.value = false;
 }
 
-watch(translation, async () => await update());
+watch([translation, () => wallets.activeWallet], async () => await update());
 
 /**
  * Parse tx to list syntax
