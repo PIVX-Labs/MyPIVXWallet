@@ -290,9 +290,24 @@ function addVault(v) {
         forgetWallet(account) {
             //TODO
         },
+        async save({ encryptedSecret, isHardware = false }) {
+            const database = await Database.getInstance();
+
+            await database.addVault({
+                encryptedSecret,
+                isHardware,
+                defaultKeyToExport: v.getDefaultKeyToExport(),
+                wallets: wallets.value.map((w) => w.getKeyToExport()),
+                isSeeded: v.isSeeded(),
+            });
+            for (const wallet of wallets.value) {
+                await wallet.save();
+            }
+            isEncrypted.value = true;
+            isSeeded.value = v.isSeeded();
+        },
         async encrypt(password) {
             // @fail, needs to be more robust
-            const database = await Database.getInstance();
             const secretToExport = v.getSecretToExport();
             if (!secretToExport)
                 throw new Error("Can't encrypt a public vault");
@@ -301,17 +316,7 @@ function addVault(v) {
                 password
             );
             if (!encryptedSecret) return false;
-            await database.addVault({
-                encryptedSecret,
-                defaultKeyToExport: v.getDefaultKeyToExport(),
-                wallets: wallets.value.map((w) => w.getKeyToExport()),
-                isSeeded: v.isSeeded(),
-            });
-            for (const wallet of wallets.value) {
-                wallet.encrypt(password);
-            }
-            isEncrypted.value = true;
-            isSeeded.value = v.isSeeded();
+            this.save({ encryptedSecret });
         },
         async decrypt(password) {
             const database = await Database.getInstance();
@@ -333,6 +338,7 @@ function addVault(v) {
         isEncrypted,
         isSeeded,
         checkDecryptPassword,
+        isHardware: computed(() => wallets.value[0]?.isHardwareWallet ?? false),
     };
 }
 
@@ -372,6 +378,7 @@ export const useWallets = defineStore('wallets', () => {
                 activeWallet.value = wallet;
             }
             activeVault.value = vault;
+            return vault;
         },
         removeWallet: (w) => {
             const i = walletsArray.value.findIndex(

@@ -34,7 +34,7 @@ function addWallet() {}
         </div>
         <button
             @click="vault.addWallet(vault.wallets.length)"
-            v-if="vault.isSeeded"
+            v-if="vault.isSeeded || vault.isHardware"
         >
             ADD WALLET
         </button>

@@ -149,7 +149,7 @@ async function importWallet({
             if (parsedSecret.shield) {
                 await parsedSecret.shield.reloadFromCheckpoint(blockCount);
             }
-            await wallets.addVault(
+            const vault = await wallets.addVault(
                 new Vault({
                     masterKey: parsedSecret.masterKey,
                     shield: parsedSecret.shield,
@@ -159,23 +159,8 @@ async function importWallet({
 
             if (needsToEncrypt.value) showEncryptModal.value = true;
             // @fail need to change this
-            if (activeWallet.value.isHardwareWallet) {
-                const database = await Database.getInstance();
-                // Save the xpub without needing encryption if it's ledger
-                const account = new Account({
-                    publicKey: activeWallet.value.getKeyToExport(),
-                    isHardware: true,
-                });
-
-                if (
-                    await database.getAccount(
-                        activeWallet.value.getKeyToExport()
-                    )
-                ) {
-                    await database.updateAccount(account);
-                } else {
-                    await database.addAccount(account);
-                }
+            if (vault.isHardware.value) {
+                await vault.save({ isHardware: true });
             }
 
             // Start syncing in the background
@@ -425,7 +410,6 @@ function getMaxBalance(useShieldInputs) {
 async function importFromDatabase() {
     const database = await Database.getInstance();
     const vaults = await database.getVaults();
-    console.log(vaults);
     // @fail Maybe this shouldn't be Dashboard's responsibility
     for (const vault of vaults) {
         const ws = [];
@@ -433,7 +417,10 @@ async function importFromDatabase() {
         for (const wallet of vault.wallets) {
             const account = await database.getAccount(wallet);
             const p = await ParsedSecret.parse(account.publicKey);
-            ws.push(new Wallet({ nAccount: i++, masterKey: p.masterKey }));
+            const masterKey = vault.isHardware
+                ? HardwareWalletMasterKey.fromXPub(account.publicKey)
+                : p.masterKey;
+            ws.push(new Wallet({ nAccount: i++, masterKey }));
         }
         const v = new Vault({
             wallets: ws,

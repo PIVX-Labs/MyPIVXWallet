@@ -1,5 +1,5 @@
 import { PIVXShield } from 'pivx-shield';
-import { HdMasterKey } from './masterkey.js';
+import { HardwareWalletMasterKey, HdMasterKey } from './masterkey.js';
 import { Wallet } from './wallet.js';
 import { cChainParams } from './chain_params.js';
 
@@ -32,6 +32,16 @@ export class Vault {
         }
         if (wallets) this.#wallets = wallets;
     }
+
+    async #getHardwareWallet(account) {
+        const wallet = new Wallet({
+            nAccount: account,
+            masterKey: await HardwareWalletMasterKey.create(account),
+        });
+        this.#wallets[account] = wallet;
+        return wallet;
+    }
+
     /**
      * @param {number} account - Account number, ignored if Vault::canGenerateMore returns false
      * @param {Uint8Array} seed - Seed, must be present if we're trying to generate a new wallet
@@ -40,6 +50,8 @@ export class Vault {
      */
     async getWallet(account) {
         if (this.#wallets[account]) return this.#wallets[account];
+        if (this.getDefaultWallet().isHardwareWallet())
+            return this.#getHardwareWallet(account);
         if (!this.#seed)
             throw new Error(
                 'Trying to generate a new wallet, but no seed present'
