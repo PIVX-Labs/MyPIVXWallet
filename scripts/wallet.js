@@ -1,6 +1,5 @@
 import { validateMnemonic } from 'bip39';
 import { Reader } from './reader.js';
-import { decrypt } from './aes-gcm.js';
 import { bytesToNum, parseWIF } from './encoding.js';
 import { beforeUnloadListener, blockCount } from './global.js';
 import { getNetwork } from './network/network_manager.js';
@@ -49,6 +48,7 @@ import {
 } from './debug.js';
 import { OrderedArray } from './ordered_array.js';
 import { SaplingParams } from './sapling_params.js';
+import { HdMasterKey, MasterKey } from './masterkey.js';
 
 /**
  * Class Wallet, at the moment it is just a "realization" of Masterkey with a given nAccount
@@ -249,10 +249,15 @@ export class Wallet {
      * @param {string} [o.extsk] - The extended spending key
      */
     async setMasterKey({ mk, nAccount = 0, extsk }) {
+        debugger;
+        console.log(
+            `i come from the moon${mk?.getKeyToExport(
+                nAccount
+            )} ${this.#masterKey?.getKeyToExport(this.#nAccount)}`
+        );
         const isNewAcc =
             mk?.getKeyToExport(nAccount) !==
             this.#masterKey?.getKeyToExport(this.#nAccount);
-        console.log(mk?.getKeyToExport(nAccount));
         this.#masterKey = mk;
         this.#nAccount = nAccount;
         if (extsk) await this.setExtsk(extsk);
@@ -262,6 +267,18 @@ export class Wallet {
                 this.#loadAddresses(chain);
             });
         }
+    }
+
+    async loadSeed(seed, coinType = cChainParams.current.BIP44_TYPE) {
+        debugger;
+        await this.setMasterKey({
+            mk: new HdMasterKey({
+                seed,
+            }),
+            nAccount: this.nAccount,
+        });
+
+        await this.#shield?.loadSeed(seed, coinType, this.nAccount);
     }
 
     /**
@@ -815,13 +832,6 @@ export class Wallet {
         if (this.#isSynced) {
             throw new Error('Attempting to sync when already synced');
         }
-        console.log('SYNCING ' + this.getKeyToExport());
-        if (
-            this.getKeyToExport() ===
-            'xpub6CKRnGxzF2Ln6ECB9bfL81HZvgY7RyHrqAyU4YwNpGeHWyvVarpst1ofiTfdkVAiDoNzrfvgb7fghBfAKHB7dTYjGcmx92pr4T3DUynWWEF'
-        )
-            debugger;
-
         // While syncing the wallet ( DB read + network sync) disable the event balance-update
         // This is done to avoid a huge spam of event.
         this.#eventEmitter.disableEvent('balance-update');

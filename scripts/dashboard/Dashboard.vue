@@ -266,7 +266,7 @@ function lockWallet() {
  */
 async function send(address, amount, useShieldInputs) {
     // Ensure a wallet is unlocked
-    if (activeWallet.value.isViewOnly && !activeWallet.value.isHardwareWallet) {
+    if (activeVault.value.isViewOnly && !activeWallet.value.isHardwareWallet) {
         if (
             !(await restoreWallet(
                 tr(ALERTS.WALLET_UNLOCK_IMPORT, [
@@ -433,7 +433,7 @@ async function importFromDatabase() {
         for (const wallet of vault.wallets) {
             const account = await database.getAccount(wallet);
             const p = await ParsedSecret.parse(account.publicKey);
-            ws.push(new Wallet({ nAccount: ++i, masterKey: p.masterKey }));
+            ws.push(new Wallet({ nAccount: i++, masterKey: p.masterKey }));
         }
         const v = new Vault({
             wallets: ws,

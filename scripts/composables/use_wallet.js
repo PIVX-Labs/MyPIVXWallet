@@ -319,10 +319,15 @@ function addVault(v) {
             const { encryptedSecret } = await database.getVault(
                 v.getDefaultKeyToExport()
             );
-            const seed = await decrypt(encryptedSecret, password);
-            if (!seed) return false;
-            v.setSeed(base64_to_buf(seed));
+            const encSeed = await decrypt(encryptedSecret, password);
+            if (!encSeed) return false;
+            const seed = base64_to_buf(encSeed);
+            v.setSeed(seed);
+
             isSeeded.value = v.isSeeded();
+            for (const wallet of v.getWallets()) {
+                await wallet.loadSeed(seed);
+            }
             return true;
         },
         isViewOnly,
