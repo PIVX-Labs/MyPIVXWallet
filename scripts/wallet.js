@@ -48,7 +48,7 @@ import {
 } from './debug.js';
 import { OrderedArray } from './ordered_array.js';
 import { SaplingParams } from './sapling_params.js';
-import { HdMasterKey, MasterKey } from './masterkey.js';
+import { HdMasterKey } from './masterkey.js';
 
 /**
  * Class Wallet, at the moment it is just a "realization" of Masterkey with a given nAccount
@@ -1384,11 +1384,6 @@ export class Wallet {
      * @param {import('./transaction.js').Transaction} transaction
      */
     async addTransaction(transaction, skipDatabase = false) {
-        if (
-            transaction.txid ===
-            '257a39e10905338400594730fb1ab1ab02e538e896512b20909e6004a4ab6dc8'
-        )
-            debugger;
         const tx = this.#mempool.getTransaction(transaction.txid);
         this.#mempool.addTransaction(transaction);
         let i = 0;
@@ -1523,12 +1518,6 @@ export class Wallet {
         const db = await Database.getInstance();
         const txs = await db.getTxs(this.getKeyToExport());
         for (const tx of txs) {
-            if (
-                tx.txid ===
-                '257a39e10905338400594730fb1ab1ab02e538e896512b20909e6004a4ab6dc8'
-            )
-                debugger;
-            console.log(tx.txid);
             await this.addTransaction(tx, true);
         }
     }

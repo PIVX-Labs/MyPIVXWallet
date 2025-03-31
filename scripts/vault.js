@@ -106,8 +106,6 @@ export class Vault {
 
     setSeed(seed) {
         this.#seed = seed;
-        for (const wallet of this.getWallets()) {
-        }
     }
 
     isSeeded() {

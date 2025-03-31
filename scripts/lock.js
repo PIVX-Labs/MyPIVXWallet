@@ -13,7 +13,6 @@ export const lockableFunction = (f) => {
                 lock = true;
                 return await f(...args);
             }
-            console.log('LOCKED');
         } finally {
             lock = false;
         }

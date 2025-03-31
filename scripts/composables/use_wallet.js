@@ -278,9 +278,6 @@ function addVault(v) {
             await wallet.save();
             return wallet;
         },
-        forgetWallet(account) {
-            //TODO
-        },
         async save({ encryptedSecret, isHardware = false }) {
             const database = await Database.getInstance();
 
@@ -393,14 +390,12 @@ export const useWallets = defineStore('wallets', () => {
             return vault;
         },
         removeVault: async (v) => {
-            debugger;
             const database = await Database.getInstance();
             await database.removeVault(v.defaultKeyToExport);
             vaults.value = vaults.value.filter(
                 (vault) => vault.defaultKeyToExport !== v.defaultKeyToExport
             );
             if (activeVault.value.defaultKeyToExport === v.defaultKeyToExport) {
-                debugger;
                 selectWallet(vaults.value[0]?.wallets[0] || null);
             }
         },
