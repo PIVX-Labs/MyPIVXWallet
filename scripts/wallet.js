@@ -249,11 +249,6 @@ export class Wallet {
      * @param {string} [o.extsk] - The extended spending key
      */
     async setMasterKey({ mk, nAccount = 0, extsk }) {
-        console.log(
-            `i come from the moon${mk?.getKeyToExport(
-                nAccount
-            )} ${this.#masterKey?.getKeyToExport(this.#nAccount)}`
-        );
         const isNewAcc =
             mk?.getKeyToExport(nAccount) !==
             this.#masterKey?.getKeyToExport(this.#nAccount);
@@ -868,7 +863,6 @@ export class Wallet {
         let nStartHeight = Math.max(
             ...this.#mempool.getTransactions().map((tx) => tx.blockHeight)
         );
-        nStartHeight = 0;
         // Compute the total pages and iterate through them until we've synced everything
         const totalPages = await cNet.getNumPages(nStartHeight, addr);
         for (let i = totalPages; i > 0; i--) {
@@ -1390,6 +1384,11 @@ export class Wallet {
      * @param {import('./transaction.js').Transaction} transaction
      */
     async addTransaction(transaction, skipDatabase = false) {
+        if (
+            transaction.txid ===
+            '257a39e10905338400594730fb1ab1ab02e538e896512b20909e6004a4ab6dc8'
+        )
+            debugger;
         const tx = this.#mempool.getTransaction(transaction.txid);
         this.#mempool.addTransaction(transaction);
         let i = 0;
@@ -1415,7 +1414,7 @@ export class Wallet {
 
         if (!skipDatabase) {
             const db = await Database.getInstance();
-            await db.storeTx(transaction);
+            await db.storeTx(transaction, this.getKeyToExport());
         }
         if (tx) {
             this.#historicalTxs.remove((hTx) => hTx.id === tx.txid);
@@ -1522,18 +1521,14 @@ export class Wallet {
 
     async #loadFromDisk() {
         const db = await Database.getInstance();
-        // @fail This should be redundant
-        if (
-            (await db.getAccount(this.getKeyToExport()))?.publicKey !==
-            this.getKeyToExport()
-        ) {
-            await db.removeAllTxs();
-            return;
-        }
-        // @fail
-        const txs = []; //await db.getTxs();
-        console.log(txs);
+        const txs = await db.getTxs(this.getKeyToExport());
         for (const tx of txs) {
+            if (
+                tx.txid ===
+                '257a39e10905338400594730fb1ab1ab02e538e896512b20909e6004a4ab6dc8'
+            )
+                debugger;
+            console.log(tx.txid);
             await this.addTransaction(tx, true);
         }
     }

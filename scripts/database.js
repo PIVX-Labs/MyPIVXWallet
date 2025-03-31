@@ -65,23 +65,14 @@ export class Database {
      * Store a tx inside the database
      * @param {Transaction} tx
      */
-    async storeTx(tx) {
-        if (!tx) throw new Error('Cannot store undefined');
+    async storeTx(tx, xpub) {
         const store = this.#db
             .transaction('txs', 'readwrite')
-            .objectStore('txs');
-        await store.put(tx.__original, tx.txid);
-    }
-
-    /**
-     * Remove a tx from the database
-     * @param {String} txid - transaction id
-     */
-    async removeTx(txid) {
-        const store = this.#db
-            .transaction('txs', 'readwrite')
-            .objectStore('txs');
-        await store.delete(txid);
+            .objectStore(`txs`);
+        await store.put(
+            { ...tx.__original, xpub, __original: null, txid: tx.txid },
+            `${tx.txid}/${xpub}`
+        );
     }
 
     /**
@@ -402,18 +393,18 @@ export class Database {
      * Get all txs from the database
      * @returns {Promise<Transaction[]>}
      */
-    async getTxs() {
+    async getTxs(xpub) {
         const store = this.#db
             .transaction('txs', 'readonly')
             .objectStore('txs');
 
         // We'll manually cursor iterate to merge the Index (TXID) with it's components
-        const cursor = await store.openCursor();
+        const index = store.index('xpub');
+        const cursor = await index.openCursor(xpub);
         const txs = [];
         while (cursor) {
             if (!cursor.value) break;
             // Append the TXID from the Index key
-            cursor.value.txid = cursor.key;
             txs.push(cursor.value);
             try {
                 await cursor.continue();
@@ -550,6 +541,10 @@ export class Database {
                     db.createObjectStore('shieldParams');
                 }
                 if (oldVersion < 8) {
+                    db.deleteObjectStore('txs');
+                    const store = db.createObjectStore('txs');
+                    store.createIndex('xpub', 'xpub', { unique: false });
+
                     db.createObjectStore('vaults');
                     async () => {
                         // @fail REVIEW NOTE: THIS IS DANGEROUS
