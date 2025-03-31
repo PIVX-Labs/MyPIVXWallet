@@ -121,6 +121,10 @@ export class Vault {
         }
     }
 
+    isViewOnly() {
+        return this.getDefaultWallet().isViewOnly();
+    }
+
     getSecretToExport() {
         // Either return the seed, or the key to export
         // if this is a seedless vault

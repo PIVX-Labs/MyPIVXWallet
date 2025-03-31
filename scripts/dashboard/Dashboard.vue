@@ -158,7 +158,6 @@ async function importWallet({
             );
 
             if (needsToEncrypt.value) showEncryptModal.value = true;
-            // @fail need to change this
             if (vault.isHardware.value) {
                 await vault.save({ isHardware: true });
             }

@@ -256,7 +256,7 @@ function addVault(v) {
         ));
     })();
     // @fail if this is not different that isSeeded, just init it with that
-    const isViewOnly = computed(() => !isSeeded.value);
+    const isViewOnly = ref(v.isViewOnly());
     const defaultKeyToExport = ref(v.getDefaultKeyToExport());
     const checkDecryptPassword = async (password) => {
         const db = await Database.getInstance();
