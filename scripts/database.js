@@ -353,6 +353,13 @@ export class Database {
         await store.add(vault, vault.defaultKeyToExport);
     }
 
+    async removeVault(key) {
+        const store = this.#db
+            .transaction('vaults', 'readwrite')
+            .objectStore('vaults');
+        await store.delete(key);
+    }
+
     async addXpubToVault(key, xpub) {
         const store = this.#db
             .transaction('vaults', 'readwrite')

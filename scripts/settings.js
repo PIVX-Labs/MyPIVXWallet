@@ -20,6 +20,7 @@ import { getEventEmitter } from './event_bus.js';
 import countries from 'country-locale-map/countries.json';
 import { getNetwork } from './network/network_manager.js';
 import { getRandomElement } from './utils.js';
+import { useWallets } from './composables/use_wallet.js';
 
 // --- Default Settings
 /** A mode that emits verbose console info for internal MPW operations */
@@ -355,10 +356,10 @@ export async function logOut() {
     `,
     });
     if (!fContinue) return;
-    const database = await Database.getInstance();
-    await database.removeAccount({ publicKey: null });
+    const wallets = useWallets();
 
-    getEventEmitter().emit('toggle-network');
+    await wallets.removeVault(wallets.activeVault);
+
     updateLogOutButton();
     createAlert('success', translation.accountDeleted, 3000);
 }

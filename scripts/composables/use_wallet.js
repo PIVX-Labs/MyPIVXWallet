@@ -5,6 +5,7 @@ import {
     wallets,
     setWallet,
     vaults as rawVaults,
+    Wallet,
 } from '../wallet.js';
 import { ref, computed, watch, reactive } from 'vue';
 import { fPublicMode, strCurrency } from '../settings.js';
@@ -256,6 +257,7 @@ function addVault(v) {
     })();
     // @fail if this is not different that isSeeded, just init it with that
     const isViewOnly = computed(() => !isSeeded.value);
+    const defaultKeyToExport = ref(v.getDefaultKeyToExport());
     const checkDecryptPassword = async (password) => {
         const db = await Database.getInstance();
         const { encryptedSecret } = await db.getVault(
@@ -266,6 +268,7 @@ function addVault(v) {
 
     return {
         wallets,
+        defaultKeyToExport,
         canGenerateMore() {
             return v.canGenerateMore();
         },
@@ -358,11 +361,34 @@ export const useWallets = defineStore('wallets', () => {
      */
     const activeVault = ref(null);
 
+    const selectWallet = async (w) => {
+        let i;
+        let j = -1;
+        for (i = 0; i < vaults.value.length; i++) {
+            j = vaults.value[i].wallets.findIndex(
+                (wallet) => wallet.getKeyToExport() === w.getKeyToExport()
+            );
+            if (j !== -1) break;
+        }
+
+        if (i === -1 || j === -1) {
+            const emptyWallet = new Wallet({ nAccount: 0 });
+            setWallet(emptyWallet);
+            activeWallet.value = addWallet(emptyWallet);
+            return;
+        }
+
+        setWallet(await rawVaults[i].getWallet(j));
+        activeWallet.value = vaults.value[i].wallets[j];
+        activeVault.value = vaults.value[i];
+    };
+
     return {
         vaults: vaults,
         activeWallet: activeWallet,
         activeVault,
         addVault: async (v) => {
+            // @fail maybe add to db?
             const vault = addVault(v);
             rawVaults.push(v);
 
@@ -375,30 +401,18 @@ export const useWallets = defineStore('wallets', () => {
             activeVault.value = vault;
             return vault;
         },
-        removeWallet: (w) => {
-            const i = walletsArray.value.findIndex(
-                (wallet) => wallet.getKeyToExport() === w.getKeyToExport()
+        removeVault: async (v) => {
+            debugger;
+            const database = await Database.getInstance();
+            await database.removeVault(v.defaultKeyToExport);
+            vaults.value = vaults.value.filter(
+                (vault) => vault.defaultKeyToExport !== v.defaultKeyToExport
             );
-            if (i === -1) return false;
-            walletsArray.value.splice(i, 1);
-            return true;
-        },
-        selectWallet: async (w) => {
-            let i;
-            let j;
-            for (i = 0; i < vaults.value.length; i++) {
-                j = vaults.value[i].wallets.findIndex(
-                    (wallet) => wallet.getKeyToExport() === w.getKeyToExport()
-                );
-                if (j !== -1) break;
+            if (activeVault.value.defaultKeyToExport === v.defaultKeyToExport) {
+                debugger;
+                selectWallet(vaults.value[0]?.wallets[0] || null);
             }
-
-            if (i === -1 || j === -1)
-                throw new Error('Selected invalid wallet');
-
-            setWallet(await rawVaults[i].getWallet(j));
-            activeWallet.value = vaults.value[i].wallets[j];
-            activeVault.value = vaults.value[i];
         },
+        selectWallet,
     };
 });

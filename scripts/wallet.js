@@ -249,7 +249,6 @@ export class Wallet {
      * @param {string} [o.extsk] - The extended spending key
      */
     async setMasterKey({ mk, nAccount = 0, extsk }) {
-        debugger;
         console.log(
             `i come from the moon${mk?.getKeyToExport(
                 nAccount
@@ -270,7 +269,6 @@ export class Wallet {
     }
 
     async loadSeed(seed, coinType = cChainParams.current.BIP44_TYPE) {
-        debugger;
         await this.setMasterKey({
             mk: new HdMasterKey({
                 seed,
