@@ -409,7 +409,6 @@ function getMaxBalance(useShieldInputs) {
 async function importFromDatabase() {
     const database = await Database.getInstance();
     const vaults = await database.getVaults();
-    // @fail Maybe this shouldn't be Dashboard's responsibility
     for (const vault of vaults) {
         const ws = [];
         let i = 0;

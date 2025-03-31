@@ -66,12 +66,6 @@ function addWallet(wallet) {
         isEncrypted.value = r;
     });
 
-    // @fail remove
-    const encrypt = async (passwd) => {
-        const res = await wallet.encrypt(passwd);
-        isEncrypted.value = await hasEncryptedWallet();
-        return res;
-    };
     const balance = ref(0);
     const shieldBalance = ref(0);
     const coldBalance = ref(0);
@@ -208,7 +202,6 @@ function addWallet(wallet) {
         setExtsk,
         setShield,
         isHardwareWallet,
-        encrypt,
         getNewAddress,
         getNewChangeAddress,
         wipePrivateData: () => {
@@ -255,7 +248,7 @@ function addVault(v) {
             v.getDefaultKeyToExport()
         ));
     })();
-    // @fail if this is not different that isSeeded, just init it with that
+
     const isViewOnly = ref(v.isViewOnly());
     const defaultKeyToExport = ref(v.getDefaultKeyToExport());
     const checkDecryptPassword = async (password) => {
@@ -305,7 +298,6 @@ function addVault(v) {
             isSeeded.value = v.isSeeded();
         },
         async encrypt(password) {
-            // @fail, needs to be more robust
             const secretToExport = v.getSecretToExport();
             if (!secretToExport)
                 throw new Error("Can't encrypt a public vault");
@@ -388,7 +380,6 @@ export const useWallets = defineStore('wallets', () => {
         activeWallet: activeWallet,
         activeVault,
         addVault: async (v) => {
-            // @fail maybe add to db?
             const vault = addVault(v);
             rawVaults.push(v);
 
