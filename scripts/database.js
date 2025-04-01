@@ -142,6 +142,11 @@ export class Database {
             cDBAccount[strKey] = account[strKey];
         }
 
+        const oldAccount = await this.getAccount(cDBAccount.publicKey);
+        if (oldAccount) {
+            throw new Error('Account already exists.');
+        }
+
         const store = this.#db
             .transaction('accounts', 'readwrite')
             .objectStore('accounts');

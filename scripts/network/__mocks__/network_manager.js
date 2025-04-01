@@ -2,10 +2,6 @@ import { vi } from 'vitest';
 import { Transaction } from '../../transaction.js';
 import { DebugTopics, debugWarn } from '../../debug.js';
 
-export const getNetwork = vi.fn(() => {
-    return globalNetwork;
-});
-
 class TestNetwork {
     // initial blockHeight
     #blockHeight = 1504903;
@@ -157,3 +153,7 @@ let globalNetwork = new TestNetwork();
 export function resetNetwork() {
     globalNetwork = new TestNetwork();
 }
+
+export const getNetwork = vi.fn(() => {
+    return globalNetwork;
+});

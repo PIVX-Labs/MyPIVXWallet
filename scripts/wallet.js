@@ -247,14 +247,15 @@ export class Wallet {
      * @param {import('./masterkey.js').MasterKey} o.mk - The new Master Key
      * @param {number} [o.nAccount] - The account number
      * @param {string} [o.extsk] - The extended spending key
+     * @returns {Promise<void> | void} Only a promise is extsk is set
      */
-    async setMasterKey({ mk, nAccount = 0, extsk }) {
+    setMasterKey({ mk, nAccount = 0, extsk }) {
         const isNewAcc =
             mk?.getKeyToExport(nAccount) !==
             this.#masterKey?.getKeyToExport(this.#nAccount);
         this.#masterKey = mk;
         this.#nAccount = nAccount;
-        if (extsk) await this.setExtsk(extsk);
+        if (extsk) return this.setExtsk(extsk);
         if (isNewAcc) {
             this.reset();
             this.#iterChains((chain) => {
