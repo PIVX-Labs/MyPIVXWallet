@@ -154,6 +154,7 @@ async function importWallet({
                     masterKey: parsedSecret.masterKey,
                     shield: parsedSecret.shield,
                     seed: parsedSecret.seed,
+                    label: `${parsedSecret.masterKey.getKeyToExport(0)}`,
                 })
             );
 
@@ -422,6 +423,7 @@ async function importFromDatabase() {
         }
         const v = new Vault({
             wallets: ws,
+            label: vault.label,
         });
 
         await wallets.addVault(v);

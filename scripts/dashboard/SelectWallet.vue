@@ -17,7 +17,7 @@ function addWallet() {}
     AAAAAAAAAA AAAAAAAAAA AAAAAAAAAA AAAAAAAAAA AAAAAAAAAA
     <button @click="emit('addWallet')">Add More</button>
     <div v-for="vault of wallets.vaults">
-        VAULT HERE:
+        VAULT {{ vault.label }}:
         <div v-for="wallet of vault.wallets">
             <span
                 :style="{

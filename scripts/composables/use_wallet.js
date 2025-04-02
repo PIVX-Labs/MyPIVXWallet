@@ -251,6 +251,7 @@ function addVault(v) {
 
     const isViewOnly = ref(v.isViewOnly());
     const defaultKeyToExport = ref(v.getDefaultKeyToExport());
+    const label = ref(v.label);
     const checkDecryptPassword = async (password) => {
         const db = await Database.getInstance();
         const { encryptedSecret } = await db.getVault(
@@ -262,6 +263,7 @@ function addVault(v) {
     return {
         wallets,
         defaultKeyToExport,
+        label,
         canGenerateMore() {
             return v.canGenerateMore();
         },
@@ -287,6 +289,7 @@ function addVault(v) {
                 defaultKeyToExport: v.getDefaultKeyToExport(),
                 wallets: wallets.value.map((w) => w.getKeyToExport()),
                 isSeeded: v.isSeeded(),
+                label: v.label,
             });
             for (const wallet of wallets.value) {
                 await wallet.save();

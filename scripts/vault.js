@@ -17,7 +17,12 @@ export class Vault {
      */
     #seed;
 
-    constructor({ masterKey, shield, seed, wallets }) {
+    /**
+     * @type{string}
+     */
+    label;
+
+    constructor({ masterKey, shield, seed, wallets, label }) {
         if (masterKey) {
             this.#wallets.push(
                 new Wallet({
@@ -31,6 +36,7 @@ export class Vault {
             this.setSeed(seed);
         }
         if (wallets) this.#wallets = wallets;
+        this.label = label;
     }
 
     async #getHardwareWallet(account) {
