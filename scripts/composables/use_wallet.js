@@ -306,7 +306,7 @@ function addVault(v) {
                 password
             );
             if (!encryptedSecret) return false;
-            this.save({ encryptedSecret });
+            await this.save({ encryptedSecret });
         },
         async decrypt(password) {
             const database = await Database.getInstance();
