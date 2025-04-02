@@ -1,10 +1,8 @@
 <script setup>
-import pLogo from '../../assets/p_logo.svg';
 import Modal from '../Modal.vue';
 import { generateMnemonic } from 'bip39';
 import { translation } from '../i18n.js';
 import { ref, watch, toRefs } from 'vue';
-import { useWallet } from '../composables/use_wallet.js';
 import newWalletIcon from '../../assets/icons/icon-new-wallet.svg';
 import Password from '../Password.vue';
 import { getNetwork } from '../network/network_manager.js';

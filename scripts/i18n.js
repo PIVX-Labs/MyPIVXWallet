@@ -1,7 +1,7 @@
 import template from '../locale/template/translation.toml';
 import { Database } from './database.js';
 import { setTranslation } from './settings.js';
-import { wallet } from './wallet.js';
+import { activeWallet } from './wallet.js';
 import { cReceiveType, guiToggleReceiveType } from './contacts-book.js';
 import { reactive } from 'vue';
 import { negotiateLanguages } from '@fluent/langneg';
@@ -123,7 +123,7 @@ export async function switchTranslation(langName) {
 
         // Translate any dynamic elements necessary
         ALERTS = translation['ALERTS'];
-        if (wallet.isLoaded()) {
+        if (activeWallet.isLoaded()) {
             await guiToggleReceiveType(cReceiveType);
         }
         return true;

@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
 import { useNetwork } from '../composables/use_network.js';
-import { wallet } from '../wallet.js';
+import { activeWallet } from '../wallet.js';
 import { cChainParams } from '../chain_params.js';
 import { translation } from '../i18n.js';
 import { Database } from '../database.js';
@@ -12,6 +12,7 @@ import iCheck from '../../assets/icons/icon-check.svg';
 import iHourglass from '../../assets/icons/icon-hourglass.svg';
 import { blockCount } from '../global.js';
 import { beautifyNumber } from '../misc.js';
+import { useWallets } from '../composables/use_wallet';
 
 const props = defineProps({
     title: String,
@@ -25,6 +26,7 @@ const isHistorySynced = ref(false);
 const rewardAmount = ref(0);
 const ticker = computed(() => cChainParams.current.TICKER);
 const network = useNetwork();
+const wallets = useWallets();
 function getActivityUrl(tx) {
     return network.explorerUrl + '/tx/' + tx.id;
 }
@@ -104,7 +106,7 @@ function txSelfMap(amount, shieldAmount) {
 function updateReward() {
     if (!props.rewards) return;
     let res = 0;
-    for (const tx of wallet.getHistoricalTxs()) {
+    for (const tx of activeWallet.getHistoricalTxs()) {
         if (tx.type !== HistoricalTxType.STAKE) continue;
         res += tx.amount;
     }
@@ -113,7 +115,7 @@ function updateReward() {
 
 async function update(txToAdd = 0) {
     // Return if wallet is not synced yet
-    if (!wallet.isSynced) {
+    if (!activeWallet.isSynced) {
         return;
     }
 
@@ -127,7 +129,7 @@ async function update(txToAdd = 0) {
     // If there are less than 10 txs loaded, append rather than update the list
     if (txCount < 10 && txToAdd == 0) txToAdd = 10;
 
-    const historicalTxs = wallet.getHistoricalTxs();
+    const historicalTxs = activeWallet.getHistoricalTxs();
 
     let i = 0;
     let found = 0;
@@ -148,7 +150,7 @@ async function update(txToAdd = 0) {
     updating.value = false;
 }
 
-watch(translation, async () => await update());
+watch([translation, () => wallets.activeWallet], async () => await update());
 
 /**
  * Parse tx to list syntax
@@ -173,7 +175,7 @@ async function parseTXs(arrTXs) {
         year: '2-digit',
     };
     const cDB = await Database.getInstance();
-    const cAccount = await cDB.getAccount();
+    const cAccount = await cDB.getAccount(activeWallet.getKeyToExport());
 
     const cDate = new Date();
     for (const cTx of arrTXs) {
@@ -225,7 +227,7 @@ async function parseTXs(arrTXs) {
                 amountToShow = descriptor.amount;
             } else {
                 let arrAddresses = cTx.receivers
-                    .map((addr) => [wallet.isOwnAddress(addr), addr])
+                    .map((addr) => [activeWallet.isOwnAddress(addr), addr])
                     .filter(([isOwnAddress, _]) => {
                         return cTx.type === HistoricalTxType.RECEIVED
                             ? isOwnAddress

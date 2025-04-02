@@ -1,33 +1,30 @@
 import { getEventEmitter } from '../event_bus.js';
 import {
     hasEncryptedWallet,
-    wallet,
     getNewAddress as guiGetNewAddress,
+    wallets,
+    setWallet,
+    vaults as rawVaults,
+    Wallet,
 } from '../wallet.js';
-import { ref, computed } from 'vue';
-import { fPublicMode, strCurrency, togglePublicMode } from '../settings.js';
+import { ref, computed, watch, reactive } from 'vue';
+import { fPublicMode, strCurrency } from '../settings.js';
 import { cOracle } from '../prices.js';
 import { LedgerController } from '../ledger.js';
 import { defineStore } from 'pinia';
 import { lockableFunction } from '../lock.js';
 import { blockCount as rawBlockCount } from '../global.js';
-import { doms } from '../global.js';
 import {
     RECEIVE_TYPES,
     cReceiveType,
     guiToggleReceiveType,
 } from '../contacts-book.js';
+import { Database } from '../database.js';
+import { decrypt, encrypt, buff_to_base64, base64_to_buf } from '../aes-gcm.js';
+import { usePrivacy } from './use_privacy.js';
 
-/**
- * This is the middle ground between vue and the wallet class
- * It makes sure that everything is up to date and provides
- * a reactive interface to it
- */
-export const useWallet = defineStore('wallet', () => {
-    // Eventually we want to create a new wallet
-    // For now we'll just import the existing one
-    // const wallet = new Wallet();
-
+function addWallet(wallet) {
+    const privacy = usePrivacy();
     const isImported = ref(wallet.isLoaded());
     const isViewOnly = ref(wallet.isViewOnly());
     const isSynced = ref(wallet.isSynced);
@@ -38,8 +35,7 @@ export const useWallet = defineStore('wallet', () => {
     const getNewAddress = (nReceiving) => wallet.getNewAddress(nReceiving);
     const blockCount = ref(0);
 
-    const setMasterKey = async ({ mk, extsk }) => {
-        await wallet.setMasterKey({ mk, extsk });
+    const updateWallet = async () => {
         isImported.value = wallet.isLoaded();
         isHardwareWallet.value = wallet.isHardwareWallet();
         isHD.value = wallet.isHD();
@@ -47,6 +43,14 @@ export const useWallet = defineStore('wallet', () => {
         isEncrypted.value = await hasEncryptedWallet();
         isSynced.value = wallet.isSynced;
     };
+    const setMasterKey = async ({ mk, extsk }) => {
+        await wallet.setMasterKey({ mk, extsk });
+        await updateWallet();
+    };
+    watch(wallet, async () => {
+        await updateWallet();
+    });
+
     const setExtsk = async (extsk) => {
         await wallet.setExtsk(extsk);
     };
@@ -57,18 +61,11 @@ export const useWallet = defineStore('wallet', () => {
     const getNewChangeAddress = () => wallet.getNewChangeAddress();
     const isHardwareWallet = ref(wallet.isHardwareWallet());
     const isHD = ref(wallet.isHD());
-    const checkDecryptPassword = async (passwd) =>
-        await wallet.checkDecryptPassword(passwd);
 
     hasEncryptedWallet().then((r) => {
         isEncrypted.value = r;
     });
 
-    const encrypt = async (passwd) => {
-        const res = await wallet.encrypt(passwd);
-        isEncrypted.value = await hasEncryptedWallet();
-        return res;
-    };
     const balance = ref(0);
     const shieldBalance = ref(0);
     const coldBalance = ref(0);
@@ -118,20 +115,17 @@ export const useWallet = defineStore('wallet', () => {
         }
     );
 
-    const _publicMode = ref(true);
     // Public/Private Mode will be loaded from disk after 'import-wallet' is emitted
     const publicMode = computed({
         get() {
             // If the wallet is not shield capable, always return true
             if (!hasShield.value) return true;
-            return _publicMode.value;
+            return privacy.publicMode;
         },
 
         set(newValue) {
-            _publicMode.value = newValue;
-            const publicMode = _publicMode.value;
-            doms.domNavbar.classList.toggle('active', !publicMode);
-            doms.domLightBackground.style.opacity = publicMode ? '1' : '0';
+            privacy.publicMode = newValue;
+            const p = publicMode.value;
             // Depending on our Receive type, flip to the opposite type.
             // i.e: from `address` to `shield`, `shield contact` to `address`, etc
             // This reduces steps for someone trying to grab their opposite-type address, which is the primary reason to mode-toggle.
@@ -142,12 +136,9 @@ export const useWallet = defineStore('wallet', () => {
             ];
             if (arrFlipTypes.includes(cReceiveType)) {
                 guiToggleReceiveType(
-                    publicMode ? RECEIVE_TYPES.ADDRESS : RECEIVE_TYPES.SHIELD
+                    p ? RECEIVE_TYPES.ADDRESS : RECEIVE_TYPES.SHIELD
                 );
             }
-
-            // Save the mode state to DB
-            togglePublicMode(publicMode);
         },
     });
 
@@ -211,14 +202,13 @@ export const useWallet = defineStore('wallet', () => {
         setExtsk,
         setShield,
         isHardwareWallet,
-        checkDecryptPassword,
-        encrypt,
         getNewAddress,
         getNewChangeAddress,
         wipePrivateData: () => {
             wallet.wipePrivateData();
             isViewOnly.value = wallet.isViewOnly();
         },
+        save: () => wallet.save(),
         isCreatingTransaction,
         isHD,
         balance,
@@ -241,5 +231,185 @@ export const useWallet = defineStore('wallet', () => {
         onTransparentSyncStatusUpdate,
         onShieldSyncStatusUpdate,
         onShieldTransactionCreationUpdate,
+    };
+}
+
+/**
+ * @param{import('../vault.js').Vault} v
+ */
+function addVault(v) {
+    const wallets = ref([]);
+
+    const isSeeded = ref(v.isSeeded());
+    const isEncrypted = ref(false);
+    (async () => {
+        const database = await Database.getInstance();
+        isEncrypted.value = !!(await database.getVault(
+            v.getDefaultKeyToExport()
+        ));
+    })();
+
+    const isViewOnly = ref(v.isViewOnly());
+    const defaultKeyToExport = ref(v.getDefaultKeyToExport());
+    const label = ref(v.label);
+    const checkDecryptPassword = async (password) => {
+        const db = await Database.getInstance();
+        const { encryptedSecret } = await db.getVault(
+            v.getDefaultKeyToExport()
+        );
+        return !!(await decrypt(encryptedSecret, password));
+    };
+
+    return {
+        wallets,
+        defaultKeyToExport,
+        label,
+        canGenerateMore() {
+            return v.canGenerateMore();
+        },
+        async addWallet(account, seed) {
+            const w = await v.getWallet(account, seed);
+            const wallet = reactive(addWallet(w));
+            wallets.value = [...wallets.value, wallet];
+            wallet.sync().then(() => {});
+            const database = await Database.getInstance();
+            await database.addXpubToVault(
+                v.getDefaultKeyToExport(),
+                wallet.getKeyToExport()
+            );
+            await wallet.save();
+            return wallet;
+        },
+        async save({ encryptedSecret, isHardware = false }) {
+            const database = await Database.getInstance();
+
+            await database.addVault({
+                encryptedSecret,
+                isHardware,
+                defaultKeyToExport: v.getDefaultKeyToExport(),
+                wallets: wallets.value.map((w) => w.getKeyToExport()),
+                isSeeded: v.isSeeded(),
+                label: v.label,
+            });
+            for (const wallet of wallets.value) {
+                await wallet.save();
+            }
+            isEncrypted.value = true;
+            isSeeded.value = v.isSeeded();
+        },
+        async encrypt(password) {
+            const secretToExport = v.getSecretToExport();
+            if (!secretToExport)
+                throw new Error("Can't encrypt a public vault");
+            const encryptedSecret = await encrypt(
+                buff_to_base64(secretToExport),
+                password
+            );
+            if (!encryptedSecret) return false;
+            await this.save({ encryptedSecret });
+        },
+        async decrypt(password) {
+            const database = await Database.getInstance();
+            const { encryptedSecret } = await database.getVault(
+                v.getDefaultKeyToExport()
+            );
+            const encSeed = await decrypt(encryptedSecret, password);
+            if (!encSeed) return false;
+            const seed = base64_to_buf(encSeed);
+            v.setSeed(seed);
+
+            isSeeded.value = v.isSeeded();
+            for (const wallet of v.getWallets()) {
+                await wallet.loadSeed(seed);
+            }
+            return true;
+        },
+        isViewOnly,
+        isEncrypted,
+        isSeeded,
+        checkDecryptPassword,
+        isHardware: computed(() => wallets.value[0]?.isHardwareWallet ?? false),
+    };
+}
+
+export const useWallets = defineStore('wallets', () => {
+    /**
+     * @type{import('vue').Ref<import('../wallet.js').Wallet[]>}
+     */
+    const walletsArray = ref(
+        wallets.map((w) => {
+            return addWallet(w);
+        })
+    );
+
+    const vaults = ref([]);
+
+    /**
+     * @type{import('vue').Ref<import('../wallet.js').Wallet>}
+     */
+    const activeWallet = ref(walletsArray.value[0]);
+    /**
+     * @type{import('vue').Ref<Vault>}
+     */
+    const activeVault = ref(null);
+
+    const selectWallet = async (w) => {
+        let i;
+        let j = -1;
+        for (i = 0; i < vaults.value.length; i++) {
+            j = vaults.value[i].wallets.findIndex(
+                (wallet) => wallet.getKeyToExport() === w.getKeyToExport()
+            );
+            if (j !== -1) break;
+        }
+
+        if (i === -1 || j === -1) {
+            const emptyWallet = new Wallet({ nAccount: 0 });
+            setWallet(emptyWallet);
+            activeWallet.value = addWallet(emptyWallet);
+            return;
+        }
+
+        setWallet(await rawVaults[i].getWallet(j));
+        activeWallet.value = vaults.value[i].wallets[j];
+        activeVault.value = vaults.value[i];
+    };
+
+    return {
+        vaults: vaults,
+        activeWallet: activeWallet,
+        activeVault,
+        addVault: async (v) => {
+            const vault = addVault(v);
+            rawVaults.push(v);
+            const i = vaults.value.findIndex(
+                (other) =>
+                    other.defaultKeyToExport === v.getDefaultKeyToExport()
+            );
+            if (i !== -1) {
+                // Replace old vault, so we can seed unseeded vaults
+                vaults.value[i] = vault;
+            } else {
+                vaults.value.push(vault);
+            }
+            for (let i = 0; i < v.getWallets().length; i++) {
+                const wallet = await vault.addWallet(i);
+                setWallet(await v.getWallet(i));
+                activeWallet.value = wallet;
+            }
+            activeVault.value = vault;
+            return vault;
+        },
+        removeVault: async (v) => {
+            const database = await Database.getInstance();
+            await database.removeVault(v.defaultKeyToExport);
+            vaults.value = vaults.value.filter(
+                (vault) => vault.defaultKeyToExport !== v.defaultKeyToExport
+            );
+            if (activeVault.value.defaultKeyToExport === v.defaultKeyToExport) {
+                selectWallet(vaults.value[0]?.wallets[0] || null);
+            }
+        },
+        selectWallet,
     };
 });
