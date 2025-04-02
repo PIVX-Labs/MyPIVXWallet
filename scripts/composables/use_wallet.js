@@ -382,8 +382,16 @@ export const useWallets = defineStore('wallets', () => {
         addVault: async (v) => {
             const vault = addVault(v);
             rawVaults.push(v);
-
-            vaults.value.push(vault);
+            const i = vaults.value.findIndex(
+                (other) =>
+                    other.defaultKeyToExport === v.getDefaultKeyToExport()
+            );
+            if (i !== -1) {
+                // Replace old vault, so we can seed unseeded vaults
+                vaults.value[i] = vault;
+            } else {
+                vaults.value.push(vault);
+            }
             for (let i = 0; i < v.getWallets().length; i++) {
                 const wallet = await vault.addWallet(i);
                 setWallet(await v.getWallet(i));
