@@ -866,8 +866,10 @@ export class Wallet {
 
         try {
             const network = getNetwork();
+            await this.#shield.reloadFromCheckpoint(4_200_000);
             const shieldSyncer = await BinaryShieldSyncer.create(
                 network,
+                await Database.getInstance(),
                 this.#shield.getLastSyncedBlock()
             );
 
@@ -1075,7 +1077,7 @@ export class Wallet {
 
     async #resetShield() {
         // TODO: take the wallet creation height in input from users
-        await this.#shield.reloadFromCheckpoint(4200000);
+        await this.#shield.reloadFromCheckpoint(4_200_000);
         await this.#saveShieldOnDisk();
     }
 
