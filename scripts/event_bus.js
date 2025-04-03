@@ -4,7 +4,7 @@ import { EventEmitter } from 'events';
  * Wrapper class around EventEmitter that allow to enable/disable specific events.
  * By defaults all events are enabled, and can be disabled by calling disableEvent
  */
-class EventEmitterWrapper {
+export class EventEmitterWrapper {
     /** @type{EventEmitter} */
     #internalEmitter;
     /**
@@ -16,8 +16,16 @@ class EventEmitterWrapper {
         this.#internalEmitter = new EventEmitter();
     }
 
+    /**
+     * @param {string} eventName
+     * @param {Function} listener
+     * @returns {()=>void} A function that removes the attached listener when called
+     */
     on(eventName, listener) {
-        this.#internalEmitter.on(eventName, listener);
+        const a = this.#internalEmitter.on(eventName, listener);
+        return () => {
+            a.removeListener(eventName, listener);
+        };
     }
 
     emit(eventName, ...args) {
