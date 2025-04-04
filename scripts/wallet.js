@@ -866,7 +866,6 @@ export class Wallet {
 
         try {
             const network = getNetwork();
-            await this.#shield.reloadFromCheckpoint(4_200_000);
             const shieldSyncer = await BinaryShieldSyncer.create(
                 network,
                 await Database.getInstance(),
@@ -1028,6 +1027,12 @@ export class Wallet {
             this.#isSynced = false;
             await this.#transparentSync();
             await this.#syncShield();
+            const db = await Database.getInstance();
+            // Reset shield sync data, it might be corrupted
+            await db.setShieldSyncData({
+                shieldData: null,
+                lastSyncedBlock: null,
+            });
             return false;
         }
         return true;
