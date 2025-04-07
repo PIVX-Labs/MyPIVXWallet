@@ -8,7 +8,7 @@ import { cChainParams, COIN, COIN_DECIMALS } from './chain_params.js';
 import { generateMasternodePrivkey, confirmPopup } from './misc.js';
 import { Database } from './database.js';
 import { getNetwork } from './network/network_manager.js';
-import { ledgerSignTransaction } from './ledger.js';
+import { LedgerController } from './ledger.js';
 import { createAlert } from './alerts/alert.js';
 
 /**
@@ -36,7 +36,10 @@ export async function createAndSendTransaction({
     });
     if (!wallet.isHardwareWallet()) await wallet.sign(tx);
     else {
-        const res = await ledgerSignTransaction(wallet, tx);
+        const res = await LedgerController.getInstance().signTransaction(
+            wallet,
+            tx
+        );
         if (!res) return;
     }
     const res = await getNetwork().sendTransaction(tx.serialize());

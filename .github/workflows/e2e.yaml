@@ -10,7 +10,8 @@ on:
     - "*.md"
     - LICENSE
     - "*.yaml"
-  pull_request:
+  pull_request_target:
+    types: [labeled]
     branches:
       - master
     paths-ignore:
@@ -22,14 +23,21 @@ jobs:
   e2e:
     name: Run e2e tests
     runs-on: ubuntu-latest
+    if: contains(github.event.pull_request.labels.*.name, 'safe-to-e2e-test') || github.ref == 'refs/heads/master'
 
     steps:
       - name: Check out Git repository
         uses: actions/checkout@v4
         with:
-          submodules: 'true'
-          lfs: 'true'
-
+          submodules: 'false'
+          lfs: 'false'
+      - name: Fetch lfs
+        env:
+          LFS_USERNAME: 'Duddino'
+          LFS_PASSWORD: ${{ secrets.LFS_PASSWORD }}
+        run: |
+          git submodule set-url cypress/fixtures/e2e "https://$LFS_USERNAME:$LFS_PASSWORD@mpw-git.duddino.com/Duddino/MPW-playbacks.git"
+          git submodule update --init --recursive
       - name: Set up Node.js
         uses: actions/setup-node@v4
 

@@ -20,7 +20,7 @@ import { useMasternode } from '../composables/use_masternode';
 import { useAlerts } from '../composables/use_alerts.js';
 const { createAlert } = useAlerts();
 
-const showCreateProposalModal = ref(false);
+const showCreateProposalModal = ref(true);
 
 const wallet = useWallet();
 const settings = useSettings();
@@ -58,7 +58,7 @@ watch(
     [blockCount, localProposals],
     async () => {
         for (const proposal of localProposals.value) {
-            if (!proposal.blockHeight) {
+            if (!proposal.blockHeight || proposal.blockHeight === -1) {
                 let tx;
                 try {
                     tx = await getNetwork().getTxInfo(proposal.txid);
@@ -74,8 +74,7 @@ watch(
                 cChainParams.current.proposalFeeConfirmRequirement
             ) {
                 // Proposal fee has the required amounts of confirms, stop watching and try to finalize
-                // TODO: remove propsal
-                finalizeProposal(proposal);
+                await finalizeProposal(proposal);
             }
         }
     },
@@ -188,14 +187,23 @@ async function createProposal(name, url, payments, monthlyPayment, address) {
 }
 async function finalizeProposal(proposal) {
     const { ok, err } = await Masternode.finalizeProposal(proposal);
+
     if (ok) {
-        createAlert('success', translation.PROPOSAL_FINALISED);
+        createAlert('success', ALERTS.PROPOSAL_FINALISED);
+        deleteProposal(proposal);
+        await fetchProposals();
     } else {
         createAlert(
             'warning',
-            translation.PROPOSAL_FINALISE_FAIL + '<br>' + sanitizeHTML(err)
+            ALERTS.PROPOSAL_FINALISE_FAIL + '<br>' + sanitizeHTML(err)
         );
     }
+}
+
+function deleteProposal(proposal) {
+    localProposals.value = localProposals.value.filter(
+        (p) => p.txid !== proposal.txid
+    );
 }
 
 async function vote(proposal, voteCode) {
@@ -306,6 +314,7 @@ async function vote(proposal, voteCode) {
                 :price="price"
                 @vote="vote"
                 @finalizeProposal="(proposal) => finalizeProposal(proposal)"
+                @deleteProposal="(proposal) => deleteProposal(proposal)"
             />
         </div>
 

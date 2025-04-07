@@ -28,7 +28,12 @@ const {
     proposalValidator,
     blockCount,
 } = toRefs(props);
-const emit = defineEmits(['click', 'finalizeProposal', 'vote']);
+const emit = defineEmits([
+    'click',
+    'finalizeProposal',
+    'vote',
+    'deleteProposal',
+]);
 const showConfirmVoteModal = ref(false);
 const selectedVoteCode = ref(0);
 function vote(voteCode) {
@@ -51,6 +56,7 @@ function vote(voteCode) {
                 :proposal="proposal"
                 :blockCount="blockCount"
                 @finalizeProposal="emit('finalizeProposal')"
+                @deleteProposal="emit('deleteProposal')"
             />
         </td>
         <td style="vertical-align: middle">

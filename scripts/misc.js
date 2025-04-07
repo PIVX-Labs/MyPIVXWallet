@@ -258,7 +258,6 @@ export function isXPub(strXPub) {
 /**
  * Attempt to safely parse a BIP21 Payment Request
  * @param {string} strReq - BIP21 Payment Request string
- * @returns {object | false}
  */
 export function parseBIP21Request(strReq) {
     // Format should match: pivx:addr[?amount=x&label=x]

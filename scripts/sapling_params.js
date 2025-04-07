@@ -39,7 +39,7 @@ export class SaplingParams {
     /**
      * @param {import('pivx-shield').PIVXShield} shield
      */
-    async fetch(shield) {
+    async fetch(shield, emitter = () => {}) {
         if (await this.#getFromDatabase(shield)) return;
         const streams = [
             {
@@ -64,8 +64,7 @@ export class SaplingParams {
                 const { done, value } = await reader.read();
                 if (value) {
                     percentage += (100 * ratio * value.length) / totalBytes;
-                    getEventEmitter().emit(
-                        'shield-transaction-creation-update',
+                    emitter(
                         percentage,
                         // state: 0 = loading shield params
                         //        1 = proving tx
@@ -76,7 +75,7 @@ export class SaplingParams {
                 if (done) break;
             }
 
-            stream.bytes = await request.bytes();
+            stream.bytes = new Uint8Array(await request.arrayBuffer());
         }
         await shield.loadSaplingProverWithBytes(
             streams[0].bytes,
