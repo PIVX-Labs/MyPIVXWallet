@@ -198,11 +198,11 @@ export class Wallet {
     async getColdStakingAddress() {
         // Check if we have an Account with custom Cold Staking settings
         const cDB = await Database.getInstance();
-        const cAccount = await cDB.getAccount();
+        const settings = await cDB.getSettings();
 
         // If there's an account with a Cold Address, return it, otherwise return the default
         return (
-            cAccount?.coldAddress ||
+            settings?.coldAddress ||
             cChainParams.current.defaultColdStakingAddress
         );
     }
