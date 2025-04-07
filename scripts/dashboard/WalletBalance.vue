@@ -142,18 +142,16 @@ wallet.onTransparentSyncStatusUpdate((i, totalPages, finished) => {
     transparentSyncing.value = !finished;
 });
 
- wallet.onShieldSyncStatusUpdate((bytes, totalBytes, finished) => {
-     
-     percentage.value = Math.round((100 * bytes) / totalBytes);
-     const mb = bytes / 1_000_000;
-     const totalMb = totalBytes / 1_000_000;
-     shieldSyncingStr.value = tr(translation.syncingShield, [
-         { progress: mb.toFixed(1) },
-         { total: totalMb.toFixed(1) },
-     ]);
-     shieldSyncing.value = !finished;
- });
- 
+wallet.onShieldSyncStatusUpdate((bytes, totalBytes, finished) => {
+    percentage.value = Math.round((100 * bytes) / totalBytes);
+    const mb = bytes / 1_000_000;
+    const totalMb = totalBytes / 1_000_000;
+    shieldSyncingStr.value = tr(translation.syncingShield, [
+        { progress: mb.toFixed(1) },
+        { total: totalMb.toFixed(1) },
+    ]);
+    shieldSyncing.value = !finished;
+});
 
 wallet.onShieldTransactionCreationUpdate(
     // state: 0 = loading shield params

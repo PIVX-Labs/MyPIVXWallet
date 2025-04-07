@@ -81,7 +81,7 @@ function txSelfMap(amount, shieldAmount) {
             content:
                 shieldAmount == 0
                     ? translation.activitySentTo
-                    : translation.shieldSentToSelf,
+                    : translation.shieldSendToSelf,
             amount: Math.abs(shieldAmount + amount),
         };
     } else if (shieldAmount > 0) {

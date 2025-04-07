@@ -29,47 +29,65 @@ const isSafeStr = /^[a-z0-9 .,;\-_/:?@()]+$/i;
 </script>
 
 <template>
-	<Modal :show="true">
-		<template #header>
-			<h4>{{ translation.popupCreateProposal }}</h4>
-			<span style="
+    <Modal :show="true">
+        <template #header>
+            <h4>{{ translation.popupCreateProposal }}</h4>
+            <span
+                style="
                     color: #af9cc6;
                     font-size: 1rem;
                     margin-bottom: 23px;
                     display: block;
-                ">{{ translation.popupCreateProposalCost }}
-				<b>{{ cChainParams.current.proposalFee / COIN }}
-					{{ cChainParams.current.TICKER }}</b></span>
-		</template>
-		<template #body>
-			<Form @submit="submit">
-				<template #default>
-					<p style="
+                "
+                >{{ translation.popupCreateProposalCost }}
+                <b
+                    >{{ cChainParams.current.proposalFee / COIN }}
+                    {{ cChainParams.current.TICKER }}</b
+                ></span
+            >
+        </template>
+        <template #body>
+            <Form @submit="submit">
+                <template #default>
+                    <p
+                        style="
                             margin-bottom: 12px;
                             color: #af9cc6;
                             font-size: 1rem;
                             font-weight: 500;
-                        ">
-					    {{ translation.popupProposalName }}
-					</p>
-					<Input name="proposalTitle" data-testid="proposalTitle" :max-length="20"
-					       :placeholder="translation.popupProposalName" :validation-function="
+                        "
+                    >
+                        {{ translation.popupProposalName }}
+                    </p>
+                    <Input
+                        name="proposalTitle"
+                        data-testid="proposalTitle"
+                        :max-length="20"
+                        :placeholder="translation.popupProposalName"
+                        :validation-function="
                             (value) => {
                                 if (!isSafeStr.test(value))
                                     return translation.formValidationString;
                                 return true;
                             }
-                        " />
-					<p style="
+                        "
+                    />
+                    <p
+                        style="
                             margin-bottom: 12px;
                             color: #af9cc6;
                             font-size: 1rem;
                             font-weight: 500;
-                        ">
-						URL
-					</p>
-					<Input name="proposalUrl" data-testid="proposalUrl" :max-length="64"
-						placeholder="https://forum.pivx.org/..." :validation-function="
+                        "
+                    >
+                        {{ translation.proposalUrl }}
+                    </p>
+                    <Input
+                        name="proposalUrl"
+                        data-testid="proposalUrl"
+                        :max-length="64"
+                        placeholder="https://forum.pivx.org/..."
+                        :validation-function="
                             (value) => {
                                 if (!isSafeStr.test(value))
                                     return translation.formValidationString;
@@ -81,39 +99,59 @@ const isSafeStr = /^[a-z0-9 .,;\-_/:?@()]+$/i;
                                     return translation.formValidationUrl;
                                 return true;
                             }
-                        " />
-					<p style="
+                        "
+                    />
+                    <p
+                        style="
                             margin-bottom: 12px;
                             color: #af9cc6;
                             font-size: 1rem;
                             font-weight: 500;
-                        ">
-						Duration in cycles
-					</p>
-					<NumericInput name="proposalCycles" data-testid="proposalCycles" :min="1"
-						:max="cChainParams.current.maxPaymentCycles" :placeholder="translation.popupProposalDuration" />
+                        "
+                    >
+                        {{ translation.popupProposalDuration }}
+                    </p>
+                    <NumericInput
+                        name="proposalCycles"
+                        data-testid="proposalCycles"
+                        :min="1"
+                        :max="cChainParams.current.maxPaymentCycles"
+                        :placeholder="translation.popupProposalDuration"
+                    />
 
-					<p style="
+                    <p
+                        style="
                             margin-bottom: 12px;
                             color: #af9cc6;
                             font-size: 1rem;
                             font-weight: 500;
-                        ">
-						{{ cChainParams.current.TICKER }} per cycle
-					</p>
-					<NumericInput name="proposalPayment" data-testid="proposalPayment" min="10"
-						:max="cChainParams.current.maxPayment / COIN"
-						:placeholder="`${cChainParams.current.TICKER} ${translation.popupProposalPerCycle}`" />
-					<span v-show="advancedMode">
-						<p style="
+                        "
+                    >
+                        {{ cChainParams.current.TICKER }}
+                        {{ translation.popupProposalPerCycle }}
+                    </p>
+                    <NumericInput
+                        name="proposalPayment"
+                        data-testid="proposalPayment"
+                        min="10"
+                        :max="cChainParams.current.maxPayment / COIN"
+                        :placeholder="`${cChainParams.current.TICKER} ${translation.popupProposalPerCycle}`"
+                    />
+                    <span v-show="advancedMode">
+                        <p
+                            style="
                                 margin-bottom: 12px;
                                 color: #af9cc6;
                                 font-size: 1rem;
                                 font-weight: 500;
-                            ">
-							Proposal Address
-						</p>
-						<Input name="proposalAddress" data-testid="proposalAddress" :validation-function="
+                            "
+                        >
+                            {{ translation.popupProposalAddress }}
+                        </p>
+                        <Input
+                            name="proposalAddress"
+                            data-testid="proposalAddress"
+                            :validation-function="
                                 (value) => {
                                     if (
                                         value.length !== 0 &&
@@ -122,26 +160,42 @@ const isSafeStr = /^[a-z0-9 .,;\-_/:?@()]+$/i;
                                         return translation.formValidationAddress;
                                     return true;
                                 }
-                            " :disabled="!advancedMode" />
-					</span>
-				</template>
+                            "
+                            :disabled="!advancedMode"
+                        />
+                    </span>
+                </template>
 
-				<template #button="slotProps">
-					<Teleport :disabled="props.isTest" defer to=".create-proposal-button-container">
-						<button type="button" class="pivx-button-big" style="float: right" data-testid="proposalSubmit"
-							@click="slotProps.onSubmit()">
-							{{ translation.popupConfirm }}
-						</button>
-					</Teleport>
-				</template>
-			</Form>
-		</template>
-		<template #footer>
-			<div class="create-proposal-button-container"></div>
-			<button type="button" class="pivx-button-big-cancel" style="float: left" data-testid="proposalCancel"
-				@click="emit('close')">
-				{{ translation.popupCancel }}
-			</button>
-		</template>
-	</Modal>
+                <template #button="slotProps">
+                    <Teleport
+                        :disabled="props.isTest"
+                        defer
+                        to=".create-proposal-button-container"
+                    >
+                        <button
+                            type="button"
+                            class="pivx-button-big"
+                            style="float: right"
+                            data-testid="proposalSubmit"
+                            @click="slotProps.onSubmit()"
+                        >
+                            {{ translation.popupConfirm }}
+                        </button>
+                    </Teleport>
+                </template>
+            </Form>
+        </template>
+        <template #footer>
+            <div class="create-proposal-button-container"></div>
+            <button
+                type="button"
+                class="pivx-button-big-cancel"
+                style="float: left"
+                data-testid="proposalCancel"
+                @click="emit('close')"
+            >
+                {{ translation.popupCancel }}
+            </button>
+        </template>
+    </Modal>
 </template>
