@@ -226,6 +226,15 @@ proposalFee = "" # Proposal Submission Fee
 shieldSendToSelf = "" # Shield sent to self
 shielding = "" # Shielding
 deShielding = "" # De-Shielding
+formValidationMaxLength = "" # Maximum length allowed: {length}
+formValidationMinLength = "" # Minimum length allowed: {length}
+formValidationOther = "" # Form validation error
+formValidationString = "" # The string contains invalid characters
+formValidationUrl = "" # The URL is invalid
+formValidationAddress = "" # The address provided is invalid
+formValidationMin = "" # The minimum value is: {value}
+formValidationMax = "" # The maximum value is: {value}
+formValidationInvalidNumber = "" # Invalid Number
 
 [ALERTS]
 INTERNAL_ERROR = "Internal error, Pakiusap uliting muli" # Internal error, please try again later
