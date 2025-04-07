@@ -264,9 +264,12 @@ const isSafeStr = /^[a-z0-9 .,;\-_/:?@()]+$/i;
                     <div class="proposalConfirmContainer">
                         <p class="proposalConfirmLabel">URL</p>
                         <div class="proposalConfirmText link">
-                            <a :href="data.proposalUrl">{{
-                                data.proposalUrl
-                            }}</a>
+                            <a
+                                :href="data.proposalUrl"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                >{{ data.proposalUrl }}</a
+                            >
                         </div>
                     </div>
                 </div>
