@@ -208,6 +208,11 @@ shieldAddress = "शील्ड एड्रेस" # Shield address
 cantShieldToExc = "यह एड्रेस शील्ड ट्रांसफर का समर्थन नहीं करता" # This address does not support shield transfers
 badSaplingRoot = "सिंक करते समय एक त्रुटि हुई। रिसिंकिंग कर रहे हैं स्क्रैच से(खराब सैपलिंग रूट)" # There was an error while syncing. Resyncing from scratch (Bad sapling root)
 creatingShieldTransaction = "क्रिएटिंग शील्ड ट्रांजेक्शन..." # Creating SHIELD transaction...
+masternodeRestartConfirmation = "" # Are you sure you want to restart your masternode?
+masternodeDeleteConfirmation = "" # Are you sure you want to delete your masternode?
+masternodeRestartTitle = "" # Restart Masternode
+masternodeDeleteTitle = "" # Delete Masternode
+votedMultiMn = "" # Voted with {successfulVotes} out of {totalVotes} masternodes
 deleteProposal = "" # Delete Proposal
 deleteProposalBody = "" # Are you sure you want to delete your proposal? Your collateral will be permanently lost.
 immatureRewards = "" # Part of your staked balance may be locked for 100 blocks as your reward matures.
@@ -235,6 +240,8 @@ formValidationAddress = "" # The address provided is invalid
 formValidationMin = "" # The minimum value is: {value}
 formValidationMax = "" # The maximum value is: {value}
 formValidationInvalidNumber = "" # Invalid Number
+proposalTotal = "" # For a total of
+proposalConfirm = "" # Confirm your proposal
 
 [ALERTS]
 INTERNAL_ERROR = "आंतरिक त्रुटि, कृपया कुछ समय बाद पुनः प्रयास करें" # Internal error, please try again later
@@ -346,3 +353,4 @@ MISSING_SHIELD = "इस वॉलेट में शील्ड सक्ष�
 WALLET_HARDWARE_USB_UNSUPPORTED = "" # <b>Firefox doesn't support this!</b><br>Unfortunately, Firefox does not support hardware wallets
 MN_UNLOCK_WALLET = "" # Please import your <b> COLLATERAL WALLET</b> first.
 LEDGER_TX_TOO_BIG = "" # Transaction length exceeds 9000 bytes
+MASTERNODE_CONFIRM_L = "" # Confirm the start message signature on your Ledger

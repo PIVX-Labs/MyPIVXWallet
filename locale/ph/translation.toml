@@ -208,6 +208,11 @@ saveWalletFile = "" # Save Wallet File
 proposalOverBudget = "" # Over Budget
 badSaplingRoot = "" # There was an error while syncing. Resyncing from scratch (Bad sapling root)
 creatingShieldTransaction = "" # Creating SHIELD transaction...
+masternodeRestartConfirmation = "" # Are you sure you want to restart your masternode?
+masternodeDeleteConfirmation = "" # Are you sure you want to delete your masternode?
+masternodeRestartTitle = "" # Restart Masternode
+masternodeDeleteTitle = "" # Delete Masternode
+votedMultiMn = "" # Voted with {successfulVotes} out of {totalVotes} masternodes
 deleteProposal = "" # Delete Proposal
 deleteProposalBody = "" # Are you sure you want to delete your proposal? Your collateral will be permanently lost.
 immatureRewards = "" # Part of your staked balance may be locked for 100 blocks as your reward matures.
@@ -235,6 +240,8 @@ formValidationAddress = "" # The address provided is invalid
 formValidationMin = "" # The minimum value is: {value}
 formValidationMax = "" # The maximum value is: {value}
 formValidationInvalidNumber = "" # Invalid Number
+proposalTotal = "" # For a total of
+proposalConfirm = "" # Confirm your proposal
 
 [ALERTS]
 INTERNAL_ERROR = "Internal error, Pakiusap uliting muli" # Internal error, please try again later
@@ -346,3 +353,4 @@ MN_START_FAILED = "" # <b>Masternode failed to start!</b>
 MN_RESTART_FAILED = "" # <b>Masternode failed to restart!</b>
 MN_UNLOCK_WALLET = "" # Please import your <b> COLLATERAL WALLET</b> first.
 LEDGER_TX_TOO_BIG = "" # Transaction length exceeds 9000 bytes
+MASTERNODE_CONFIRM_L = "" # Confirm the start message signature on your Ledger

@@ -97,22 +97,38 @@ describe('database tests', () => {
 
     it('stores masternodes correctly', async () => {
         const db = await Database.create('test');
-        // Masternode should be null by default
-        expect(await db.getMasternode()).toBe(null);
-        let masternode = new Masternode({
+        // Masternode array should be empty by default
+        expect(await db.getMasternodes()).toHaveLength(0);
+        const masternode = new Masternode({
             collateralTxId: 'mntxid',
+            mnPrivateKey: '1',
         });
         await db.addMasternode(masternode);
-        expect(await db.getMasternode()).toStrictEqual(masternode);
-        masternode = new Masternode({
+        expect(await db.getMasternodes()).toStrictEqual([masternode]);
+        const masternode2 = new Masternode({
             collateralTxId: 'mntxid2',
+            mnPrivateKey: '2',
         });
-        // Subsequent calls to `addMasternode` should overwrite it.
-        await db.addMasternode(masternode);
-        expect(await db.getMasternode()).toStrictEqual(masternode);
-        // Check that it removes mn correectly
-        await db.removeMasternode();
-        expect(await db.getMasternode()).toBe(null);
+        // Subsequent calls to `addMasternode` should add the new mn.
+        await db.addMasternode(masternode2);
+        expect(await db.getMasternodes()).toStrictEqual([
+            masternode,
+            masternode2,
+        ]);
+        // If mn private key is the same, it should replace the old one
+        const masternode3 = new Masternode({
+            collateralTxId: 'mntxid3',
+            mnPrivateKey: '2',
+        });
+        // Subsequent calls to `addMasternode` should add the new mn.
+        await db.addMasternode(masternode3);
+        expect(await db.getMasternodes()).toStrictEqual([
+            masternode,
+            masternode3,
+        ]);
+        // Check that it removes mn correctly
+        await db.removeMasternode(masternode);
+        expect(await db.getMasternodes()).toStrictEqual([masternode3]);
     });
 
     it('stores promos correctly', async () => {

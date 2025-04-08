@@ -5,9 +5,9 @@ import { getEventEmitter } from '../event_bus.js';
 
 export const useMasternode = defineStore('masternode', () => {
     /**
-     * @type{import('vue').Ref<import('../masternode.js').default?>}
+     * @type{import('vue').Ref<import('../masternode.js').default[]?>}
      */
-    const masternode = ref(null);
+    const masternodes = ref([]);
     const localProposals = ref([]);
     watch(
         localProposals,
@@ -32,13 +32,43 @@ export const useMasternode = defineStore('masternode', () => {
 
     const fetchMasternodeFromDatabase = async () => {
         const database = await Database.getInstance();
-        masternode.value = await database.getMasternode();
+        masternodes.value = await database.getMasternodes();
     };
 
-    watch(masternode, async () => {
-        const database = await Database.getInstance();
-        await database.addMasternode(toRaw(masternode.value));
-    });
+    watch(
+        masternodes,
+        async () => {
+            const database = await Database.getInstance();
+            // Ideally we would avoid this db read,
+            // but since adding and removing an array is a relatively rare occurrance
+            // This shouldn't be much of a problem
+            const storedMns = await database.getMasternodes();
+
+            const hasMn = (mn, array) => {
+                return array
+                    .map((arrayMn) => arrayMn.mnPrivateKey)
+                    .includes(mn.mnPrivateKey);
+            };
+
+            const toAdd = masternodes.value.filter(
+                (mn) => !hasMn(mn, storedMns)
+            );
+            const toRemove = storedMns.filter(
+                (storedMn) => !hasMn(storedMn, masternodes.value)
+            );
+
+            for (const mn of toAdd) {
+                await database.addMasternode(toRaw(mn));
+            }
+
+            for (const mn of toRemove) {
+                await database.removeMasternode(toRaw(mn));
+            }
+        },
+        {
+            deep: true,
+        }
+    );
 
     getEventEmitter().on('wallet-import', () => {
         fetchProposalsFromDatabase().then(() => {});
@@ -48,5 +78,5 @@ export const useMasternode = defineStore('masternode', () => {
         fetchProposalsFromDatabase().then(() => {});
         fetchMasternodeFromDatabase().then(() => {});
     });
-    return { masternode, localProposals };
+    return { masternodes, localProposals };
 });

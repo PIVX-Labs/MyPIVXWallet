@@ -1,8 +1,7 @@
 <script setup>
 import { useMasternode } from '../composables/use_masternode.js';
 import { storeToRefs } from 'pinia';
-import CreateMasternode from './CreateMasternode.vue';
-import MasternodeController from './MasternodeController.vue';
+import NewMasternodeList from './NewMasternodeList.vue';
 import { useWallet } from '../composables/use_wallet';
 import Masternode from '../masternode.js';
 import RestoreWallet from '../dashboard/RestoreWallet.vue';
@@ -18,9 +17,9 @@ import { COutpoint } from '../transaction.js';
 const { createAlert } = useAlerts();
 
 /**
- * @type{{masternode: import('vue').Ref<import('../masternode.js').default?>}}
+ * @type{{masternodes: import('vue').Ref<import('../masternode.js').default[]>}}
  */
-const { masternode } = storeToRefs(useMasternode());
+const { masternodes } = storeToRefs(useMasternode());
 const wallet = useWallet();
 const { isSynced, balance, isViewOnly, isHardwareWallet } = storeToRefs(wallet);
 const showRestoreWallet = ref(false);
@@ -29,20 +28,23 @@ const masternodePrivKey = ref('');
 // Array of possible masternode UTXOs
 const possibleUTXOs = ref(wallet.getMasternodeUTXOs());
 
-watch(masternode, (masternode, oldValue) => {
-    if (oldValue?.collateralTxId) {
-        wallet.unlockCoin(
-            new COutpoint({ txid: oldValue.collateralTxId, n: oldValue.outidx })
-        );
+watch(masternodes, (masternodes, oldValue) => {
+    for (const oldMn of oldValue) {
+        if (oldMn?.collateralTxId) {
+            wallet.unlockCoin(
+                new COutpoint({ txid: oldMn.collateralTxId, n: oldMn.outidx })
+            );
+        }
     }
-
-    if (masternode?.collateralTxId) {
-        wallet.lockCoin(
-            new COutpoint({
-                txid: masternode.collateralTxId,
-                n: masternode.outidx,
-            })
-        );
+    for (const masternode of masternodes) {
+        if (masternode?.collateralTxId) {
+            wallet.lockCoin(
+                new COutpoint({
+                    txid: masternode.collateralTxId,
+                    n: masternode.outidx,
+                })
+            );
+        }
     }
 });
 function updatePossibleUTXOs() {
@@ -62,7 +64,7 @@ watch(isSynced, () => {
  * Start a Masternode via a signed network broadcast
  * @param {boolean} fRestart - Whether this is a Restart or a first Start
  */
-async function startMasternode(fRestart = false) {
+async function startMasternode(mn, fRestart = false) {
     if (
         !isHardwareWallet.value &&
         isViewOnly.value &&
@@ -70,7 +72,7 @@ async function startMasternode(fRestart = false) {
     ) {
         return;
     }
-    if (await masternode.value.start()) {
+    if (await mn.start()) {
         const strMsg = fRestart ? ALERTS.MN_RESTARTED : ALERTS.MN_STARTED;
         createAlert('success', strMsg, 4000);
     } else {
@@ -81,8 +83,12 @@ async function startMasternode(fRestart = false) {
     }
 }
 
-async function destroyMasternode() {
-    masternode.value = null;
+async function destroyMasternode(mn) {
+    console.log('HIIII');
+    // TODO: Only delete 1
+    masternodes.value = masternodes.value.filter(
+        (masternode) => masternode.mnPrivateKey !== mn.mnPrivateKey
+    );
 }
 
 /**
@@ -100,13 +106,15 @@ function importMasternode(privateKey, ip, utxo) {
         createAlert('warning', ALERTS.MN_BAD_PRIVKEY, 5000);
         return;
     }
-    masternode.value = new Masternode({
-        walletPrivateKeyPath: wallet.getPath(utxo.script),
-        mnPrivateKey: privateKey,
-        collateralTxId: utxo.outpoint.txid,
-        outidx: utxo.outpoint.n,
-        addr: address,
-    });
+    masternodes.value.push(
+        new Masternode({
+            walletPrivateKeyPath: wallet.getPath(utxo.script),
+            mnPrivateKey: privateKey,
+            collateralTxId: utxo.outpoint.txid,
+            outidx: utxo.outpoint.n,
+            addr: address,
+        })
+    );
 }
 
 async function restoreWallet() {
@@ -129,6 +137,7 @@ async function createMasternode({ isVPS }) {
     // Ensure wallet is unlocked
     if (!isHardwareWallet.value && isViewOnly.value && !(await restoreWallet()))
         return;
+    console.log(cChainParams.current.collateralInSats);
     const [address] = wallet.getNewAddress(1);
     const res = await wallet.createAndSendTransaction(
         getNetwork(),
@@ -156,8 +165,9 @@ function openShowPrivKeyModal() {
         :wallet="wallet"
         @close="showRestoreWallet = false"
     />
+    <!--
     <CreateMasternode
-        v-if="!masternode"
+        v-if="!masternodes.length"
         :synced="isSynced"
         :balance="balance"
         :possibleUTXOs="possibleUTXOs"
@@ -165,10 +175,21 @@ function openShowPrivKeyModal() {
         @importMasternode="importMasternode"
     />
     <MasternodeController
-        v-if="masternode"
-        :masternode="masternode"
+        v-if="masternodes.length"
+        :masternode="masternodes[0]"
         @start="({ restart }) => startMasternode(restart)"
         @destroy="destroyMasternode"
+	 /> -->
+
+    <NewMasternodeList
+        :masternodes="masternodes"
+        :possibleUTXOs="possibleUTXOs"
+        :balance="balance"
+        :synced="isSynced"
+        @restartMasternode="(mn) => startMasternode(mn)"
+        @deleteMasternode="(mn) => destroyMasternode(mn)"
+        @createMasternode="createMasternode"
+        @importMasternode="importMasternode"
     />
     <Modal :show="showMasternodePrivateKey">
         <template #header>
