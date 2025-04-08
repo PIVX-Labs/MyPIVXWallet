@@ -242,6 +242,7 @@ formValidationMax = "The maximum value is: {value}" # The maximum value is: {val
 formValidationInvalidNumber = "Invalid Number" # Invalid Number
 proposalTotal = "For a total of" # For a total of
 proposalConfirm = "Confirm your proposal" # Confirm your proposal
+popupProposalAddress2 = "Proposal Address" # Proposal Address
 
 [ALERTS]
 INTERNAL_ERROR = "Internal error, please try again later" # Internal error, please try again later

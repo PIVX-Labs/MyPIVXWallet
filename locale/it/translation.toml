@@ -242,6 +242,7 @@ masternodeRestartTitle = "Riavvia il masternode" # Restart Masternode
 masternodeDeleteConfirmation = "Sei sicuro di voler eliminare il tuo masternode?" # Are you sure you want to delete your masternode?
 masternodeDeleteTitle = "Elimina il masternode" # Delete Masternode
 votedMultiMn = "Votato con {successfulVotes} masternode su {totalVotes}" # Voted with {successfulVotes} out of {totalVotes} masternodes
+popupProposalAddress2 = "Address della proposta" # Proposal Address
 
 [ALERTS]
 INTERNAL_ERROR = "Errore interno, rirova più tardi" # Internal error, please try again later

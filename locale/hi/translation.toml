@@ -242,6 +242,7 @@ formValidationMax = "" # The maximum value is: {value}
 formValidationInvalidNumber = "" # Invalid Number
 proposalTotal = "" # For a total of
 proposalConfirm = "" # Confirm your proposal
+popupProposalAddress2 = "" # Proposal Address
 
 [ALERTS]
 INTERNAL_ERROR = "आंतरिक त्रुटि, कृपया कुछ समय बाद पुनः प्रयास करें" # Internal error, please try again later

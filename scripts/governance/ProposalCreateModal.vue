@@ -280,7 +280,9 @@ const isSafeStr = /^[a-z0-9 .,;\-_/:?@()]+$/i;
                         v-if="data.proposalAddress"
                         class="proposalConfirmContainer"
                     >
-                        <p class="proposalConfirmLabel">Proposal Address</p>
+                        <p class="proposalConfirmLabel">
+                            {{ translation.popupProposalAddress2 }}
+                        </p>
                         <code class="proposalConfirmText"
                             >{{ data.proposalAddress }}
                         </code>
