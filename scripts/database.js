@@ -19,10 +19,11 @@ export class Database {
      * Version 5 = Tx shield data (#295)
      * Version 6 = Filter unconfirmed txs (#415)
      * Version 7 = Store shield params in indexed db (#511)
-     * Version 8 = Store shield syncing data in indexed db (#543)
+     * Version 8 = Multi MNs (#517)
+     * Version 9 = Store shield syncing data in indexed db (#543)
      * @type {number}
      */
-    static version = 8;
+    static version = 9;
 
     /**
      * @type{import('idb').IDBPDatabase}
@@ -41,24 +42,22 @@ export class Database {
     /**
      * Add masternode to the database
      * @param {Masternode} masternode
-     * @param {Masterkey} _masterKey - Masterkey associated to the masternode. Currently unused
      */
-    async addMasternode(masternode, _masterKey) {
+    async addMasternode(masternode) {
         const store = this.#db
             .transaction('masternodes', 'readwrite')
             .objectStore('masternodes');
-        // For now the key is 'masternode' since we don't support multiple masternodes
-        await store.put(masternode, 'masternode');
+        await store.put(masternode);
     }
     /**
      * Removes a masternode
-     * @param {Masterkey} _masterKey - Masterkey associated to the masternode. Currently unused
+     * @param {Masternode} mn - Masternode to delete
      */
-    async removeMasternode(_masterKey) {
+    async removeMasternode(mn) {
         const store = this.#db
             .transaction('masternodes', 'readwrite')
             .objectStore('masternodes');
-        await store.delete('masternode');
+        await store.delete(mn.mnPrivateKey);
     }
 
     /**
@@ -302,14 +301,14 @@ export class Database {
     }
 
     /**
-     * @returns {Promise<Masternode?>} the masternode stored in the db
+     * @returns {Promise<Masternode[]>} the masternodes stored in the db
      */
-    async getMasternode(_masterKey) {
+    async getMasternodes() {
         const store = this.#db
             .transaction('masternodes', 'readonly')
             .objectStore('masternodes');
-        const mnData = await store.get('masternode');
-        return !mnData ? null : new Masternode(mnData);
+        const mns = await store.getAll();
+        return mns.map((mn) => new Masternode(mn));
     }
 
     /**
@@ -476,6 +475,20 @@ export class Database {
                 }
                 if (oldVersion < 8) {
                     db.createObjectStore('shieldSyncData');
+                }
+                if (oldVersion < 9) {
+                    (async () => {
+                        const store = transaction.objectStore('masternodes');
+                        const mn = await store.get('masternode');
+
+                        db.deleteObjectStore('masternodes');
+                        const newStore = db.createObjectStore('masternodes', {
+                            keyPath: 'mnPrivateKey',
+                        });
+                        if (mn) {
+                            await newStore.add(mn);
+                        }
+                    })();
                 }
             },
             blocking: () => {

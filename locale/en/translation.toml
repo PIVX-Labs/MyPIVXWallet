@@ -208,6 +208,11 @@ saveWalletFile = "Save Wallet File" # Save Wallet File
 proposalOverBudget = "Over Budget" # Over Budget
 badSaplingRoot = "There was an error while syncing. Resyncing from scratch (Bad sapling root)" # There was an error while syncing. Resyncing from scratch (Bad sapling root)
 creatingShieldTransaction = "Creating SHIELD transaction..." # Creating SHIELD transaction...
+masternodeRestartConfirmation = "Are you sure you want to restart your masternode?" # Are you sure you want to restart your masternode?
+masternodeDeleteConfirmation = "Are you sure you want to delete your masternode?" # Are you sure you want to delete your masternode?
+masternodeRestartTitle = "Restart Masternode" # Restart Masternode
+masternodeDeleteTitle = "Delete Masternode" # Delete Masternode
+votedMultiMn = "Voted with {successfulVotes} out of {totalVotes} masternodes" # Voted with {successfulVotes} out of {totalVotes} masternodes
 deleteProposal = "Delete Proposal" # Delete Proposal
 deleteProposalBody = "Are you sure you want to delete your proposal? Your collateral will be permanently lost." # Are you sure you want to delete your proposal? Your collateral will be permanently lost.
 immatureRewards = "Part of your staked balance may be locked for 100 blocks as your reward matures." # Part of your staked balance may be locked for 100 blocks as your reward matures.
@@ -220,6 +225,8 @@ formValidationAddress = "The address provided is invalid" # The address provided
 formValidationMin = "The minimum value is: {value}" # The minimum value is: {value}
 formValidationMax = "The maximum value is: {value}" # The maximum value is: {value}
 formValidationInvalidNumber = "Invalid Number" # Invalid Number
+proposalTotal = "For a total of" # For a total of
+proposalConfirm = "Confirm your proposal" # Confirm your proposal
 
 [ALERTS]
 INTERNAL_ERROR = "Internal error, please try again later" # Internal error, please try again later
@@ -331,3 +338,4 @@ MN_START_FAILED = " <b>Masternode failed to start!</b>" # <b>Masternode failed t
 MN_RESTART_FAILED = " <b>Masternode failed to restart!</b>" # <b>Masternode failed to restart!</b>
 LEDGER_TX_TOO_BIG = "Transaction length exceeds 9000 bytes" # Transaction length exceeds 9000 bytes
 MISSING_FUNDS = "<b>Balance is too small!</b> <br> Missing {sats} sats!" # <b>Balance is too small!</b> <br> Missing {sats} sats!
+MASTERNODE_CONFIRM_L = "Confirm the start message signature on your Ledger" # Confirm the start message signature on your Ledger
