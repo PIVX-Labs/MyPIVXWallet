@@ -48,7 +48,11 @@ const { masternodes } = toRefs(props);
     <!-- New Masternode list -->
     <div class="dcWallet-activity">
         <h4 class="mnTopConfigured">
-            {{ masternodes.length }} Masternodes Configured
+            {{
+                tr(translation.masternodeConfigured, [
+                    { length: masternodes.length },
+                ])
+            }}
         </h4>
 
         <div class="scrollTable">
@@ -58,9 +62,15 @@ const { masternodes } = toRefs(props);
                 >
                     <thead>
                         <tr>
-                            <th scope="col" style="width: 400px">Status</th>
-                            <th scope="col" style="width: 400px">IP Address</th>
-                            <th scope="col" style="width: 400px">Last Seen</th>
+                            <th scope="col" style="width: 400px">
+                                {{ translation.govTableStatus }}
+                            </th>
+                            <th scope="col" style="width: 400px">
+                                {{ translation.ipAddress }}
+                            </th>
+                            <th scope="col" style="width: 400px">
+                                {{ translation.lastSeen }}
+                            </th>
                             <th scope="col" style="width: 400px"></th>
                         </tr>
                     </thead>
@@ -107,8 +117,8 @@ const { masternodes } = toRefs(props);
         >
             <span class="buttoni-text">
                 <span id="plus-icon3" class="plus-icon"></span>
-                Add Masternode</span
-            >
+                {{ translation.addMasternode }}
+            </span>
         </button>
     </div>
 
