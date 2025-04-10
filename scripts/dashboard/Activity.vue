@@ -60,7 +60,7 @@ const txMap = computed(() => {
         [HistoricalTxType.PROPOSAL_FEE]: {
             icon: 'fa-minus',
             colour: '#f93c4c',
-            content: 'Proposal Submission Fee',
+            content: translation.proposalFee,
         },
         [HistoricalTxType.UNKNOWN]: {
             icon: 'fa-question',
@@ -83,21 +83,21 @@ function txSelfMap(amount, shieldAmount) {
             content:
                 shieldAmount == 0
                     ? translation.activitySentTo
-                    : 'Shield sent to self',
+                    : translation.shieldSendToSelf,
             amount: Math.abs(shieldAmount + amount),
         };
     } else if (shieldAmount > 0) {
         return {
             icon: 'fa-shield',
             colour: 'white',
-            content: 'Shielding',
+            content: translation.shielding,
             amount: shieldAmount,
         };
     } else if (shieldAmount < 0) {
         return {
             icon: 'fa-shield',
             colour: 'white',
-            content: 'De-Shielding',
+            content: translation.deShielding,
             amount: amount,
         };
     }
@@ -321,11 +321,13 @@ defineExpose({ update, reset, getTxCount, updateReward });
                     margin-top: 20px;
                 "
             >
-                <span
-                    style="font-size: 24px"
-                    :data-i18n="rewards ? 'rewardHistory' : 'activity'"
-                    >{{ title }}</span
-                >
+                <span style="font-size: 24px"
+                    >{{
+                        rewards
+                            ? translation.rewardHistory
+                            : translation.activity
+                    }}
+                </span>
                 <span
                     style="font-size: 20px"
                     class="rewardsBadge"

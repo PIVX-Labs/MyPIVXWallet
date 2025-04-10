@@ -16,9 +16,9 @@ const passphrase = ref('');
 
 const props = defineProps({
     advancedMode: Boolean,
+    importLock: Boolean,
 });
-const { advancedMode } = toRefs(props);
-const wallet = useWallet();
+const { advancedMode, importLock } = toRefs(props);
 
 async function informUserOfMnemonic() {
     return await new Promise((res, _) => {
@@ -33,6 +33,7 @@ async function informUserOfMnemonic() {
 }
 
 async function generateWallet() {
+    if (importLock.value) return;
     mnemonic.value = generateMnemonic();
     const network = getNetwork();
 

@@ -21,6 +21,10 @@
         "no-constant-condition": "off",
         "@typescript-eslint/no-empty-function": "off",
         "no-console": "error",
-        "eqeqeq": ["error", "smart"]
+        "eqeqeq": ["error", "smart"],
+        "no-warning-comments": [
+            "error",
+            { "terms": ["fail"], "location": "anywhere" }
+        ]
     }
 }

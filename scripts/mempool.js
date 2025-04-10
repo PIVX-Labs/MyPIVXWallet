@@ -1,4 +1,3 @@
-import { getEventEmitter } from './event_bus.js';
 import { COutpoint, UTXO } from './transaction.js';
 
 export const OutpointState = {
@@ -30,6 +29,22 @@ export class Mempool {
         immatureBalance: new CachableBalance(),
         immatureColdBalance: new CachableBalance(),
     };
+
+    /**
+     * @type{Function}
+     */
+    #emitter;
+
+    /**
+     * @param {Function} emitter - Calling this function emits the balance-update event
+     */
+    constructor(emitter = () => {}) {
+        this.#emitter = emitter;
+    }
+
+    setEmitter(emitter) {
+        this.#emitter = emitter;
+    }
 
     /**
      * Add a transaction to the mempool
@@ -238,7 +253,7 @@ export class Mempool {
         this.#balances.immatureBalance.invalidate();
         this.#balances.balance.invalidate();
         this.#balances.coldBalance.invalidate();
-        getEventEmitter().emit('balance-update');
+        this.#emitter();
     }
 
     /**

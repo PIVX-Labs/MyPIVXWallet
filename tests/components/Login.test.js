@@ -22,6 +22,7 @@ describe('Login tests', () => {
         expect(createWalletComponent.isVisible()).toBeTruthy();
         expect(createWalletComponent.props()).toStrictEqual({
             advancedMode: false,
+            importLock: undefined,
         });
         // We can just emit the event: CreateWallet has already been unit tested!
         createWalletComponent.vm.$emit('import-wallet', 'mySecret', '');
@@ -51,6 +52,7 @@ describe('Login tests', () => {
         expect(createWalletComponent.isVisible()).toBeTruthy();
         expect(createWalletComponent.props()).toStrictEqual({
             advancedMode: true,
+            importLock: undefined,
         });
         // We can just emit the event: CreateWallet has already been unit tested!
         createWalletComponent.vm.$emit('import-wallet', 'mySecret', 'myPass');

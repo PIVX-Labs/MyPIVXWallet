@@ -90,6 +90,10 @@ export class Settings {
      * @type {Boolean} The user's transaction mode, `true` for public, `false` for private
      */
     publicMode;
+
+    /** @type {String} The Cold Address that this account delegates to. */
+    coldAddress = '';
+
     constructor({
         explorer,
         node,
@@ -100,6 +104,7 @@ export class Settings {
         advancedMode = false,
         autoLockWallet = false,
         publicMode = true,
+        coldAddress = '',
     } = {}) {
         this.explorer = explorer;
         this.node = node;
@@ -110,6 +115,7 @@ export class Settings {
         this.advancedMode = advancedMode;
         this.autoLockWallet = autoLockWallet;
         this.publicMode = publicMode;
+        this.coldAddress = coldAddress;
     }
 }
 

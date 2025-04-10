@@ -3,7 +3,7 @@ import { cChainParams, COIN } from '../chain_params.js';
 import { translation, tr } from '../i18n';
 import { ref, computed, toRefs } from 'vue';
 import { beautifyNumber } from '../misc';
-import { getEventEmitter } from '../event_bus';
+import { useWallet } from '../composables/use_wallet';
 import { optimiseCurrencyLocale } from '../global';
 import { renderWalletBreakdown } from '../charting.js';
 import { guiRenderCurrentReceiveModal } from '../contacts-book';
@@ -60,6 +60,8 @@ const {
     shieldEnabled,
     publicMode,
 } = toRefs(props);
+
+const wallet = useWallet();
 
 // Transparent sync status
 const transparentSyncing = ref(false);
@@ -129,35 +131,29 @@ const emit = defineEmits([
     'restoreWallet',
 ]);
 
-getEventEmitter().on(
-    'transparent-sync-status-update',
-    (i, totalPages, finished) => {
-        const str = tr(translation.syncStatusHistoryProgress, [
-            { current: totalPages - i + 1 },
-            { total: totalPages },
-        ]);
-        const progress = ((totalPages - i) / totalPages) * 100;
-        syncTStr.value = str;
-        percentage.value = progress;
-        transparentSyncing.value = !finished;
-    }
-);
+wallet.onTransparentSyncStatusUpdate((i, totalPages, finished) => {
+    const str = tr(translation.syncStatusHistoryProgress, [
+        { current: totalPages - i + 1 },
+        { total: totalPages },
+    ]);
+    const progress = ((totalPages - i) / totalPages) * 100;
+    syncTStr.value = str;
+    percentage.value = progress;
+    transparentSyncing.value = !finished;
+});
 
-getEventEmitter().on(
-    'shield-sync-status-update',
-    (bytes, totalBytes, finished) => {
-        percentage.value = Math.round((100 * bytes) / totalBytes);
-        const mb = bytes / 1_000_000;
-        const totalMb = totalBytes / 1_000_000;
-        shieldSyncingStr.value = `Syncing Shield (${mb.toFixed(
-            1
-        )}MB/${totalMb.toFixed(1)}MB)`;
-        shieldSyncing.value = !finished;
-    }
-);
+wallet.onShieldSyncStatusUpdate((bytes, totalBytes, finished) => {
+    percentage.value = Math.round((100 * bytes) / totalBytes);
+    const mb = bytes / 1_000_000;
+    const totalMb = totalBytes / 1_000_000;
+    shieldSyncingStr.value = tr(translation.syncingShield, [
+        { progress: mb.toFixed(1) },
+        { total: totalMb.toFixed(1) },
+    ]);
+    shieldSyncing.value = !finished;
+});
 
-getEventEmitter().on(
-    'shield-transaction-creation-update',
+wallet.onShieldTransactionCreationUpdate(
     // state: 0 = loading shield params
     //        1 = proving tx
     //        2 = finished

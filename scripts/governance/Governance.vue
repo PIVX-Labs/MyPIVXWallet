@@ -24,7 +24,7 @@ const showCreateProposalModal = ref(false);
 
 const wallet = useWallet();
 const settings = useSettings();
-const { localProposals, masternode } = storeToRefs(useMasternode());
+const { localProposals, masternodes } = storeToRefs(useMasternode());
 const { advancedMode } = storeToRefs(settings);
 const {
     blockCount,
@@ -58,7 +58,7 @@ watch(
     [blockCount, localProposals],
     async () => {
         for (const proposal of localProposals.value) {
-            if (!proposal.blockHeight) {
+            if (!proposal.blockHeight || proposal.blockHeight === -1) {
                 let tx;
                 try {
                     tx = await getNetwork().getTxInfo(proposal.txid);
@@ -74,8 +74,7 @@ watch(
                 cChainParams.current.proposalFeeConfirmRequirement
             ) {
                 // Proposal fee has the required amounts of confirms, stop watching and try to finalize
-                // TODO: remove propsal
-                finalizeProposal(proposal);
+                await finalizeProposal(proposal);
             }
         }
     },
@@ -188,27 +187,40 @@ async function createProposal(name, url, payments, monthlyPayment, address) {
 }
 async function finalizeProposal(proposal) {
     const { ok, err } = await Masternode.finalizeProposal(proposal);
+
     if (ok) {
-        createAlert('success', translation.PROPOSAL_FINALISED);
+        createAlert('success', ALERTS.PROPOSAL_FINALISED);
+        deleteProposal(proposal);
+        await fetchProposals();
     } else {
         createAlert(
             'warning',
-            translation.PROPOSAL_FINALISE_FAIL + '<br>' + sanitizeHTML(err)
+            ALERTS.PROPOSAL_FINALISE_FAIL + '<br>' + sanitizeHTML(err)
         );
     }
 }
 
+function deleteProposal(proposal) {
+    localProposals.value = localProposals.value.filter(
+        (p) => p.txid !== proposal.txid
+    );
+}
+
 async function vote(proposal, voteCode) {
-    if (masternode.value) {
-        if ((await masternode.value.getStatus()) !== 'ENABLED') {
-            createAlert('warning', ALERTS.MN_NOT_ENABLED, 6000);
-            return;
+    let successfulVotes = 0;
+    if (!masternodes.value.length) {
+        createAlert(ALERTS.MN_ACCESS_BEFORE_VOTE, 6000);
+        return;
+    }
+    for (const mn of masternodes.value) {
+        if ((await mn.getStatus()) !== 'ENABLED') {
+            continue;
         }
-        const result = await masternode.value.vote(proposal.Hash, voteCode);
+        const result = await mn.vote(proposal.Hash, voteCode);
         if (result.includes('Voted successfully')) {
             // Good vote
-            masternode.value.storeVote(proposal.Hash.toString(), voteCode);
-            createAlert('success', ALERTS.VOTE_SUBMITTED, 6000);
+            mn.storeVote(proposal.Hash.toString(), voteCode);
+            successfulVotes++;
         } else if (result.includes('Error voting :')) {
             // If you already voted return an alert
             createAlert('warning', ALERTS.VOTED_ALREADY, 6000);
@@ -220,15 +232,21 @@ async function vote(proposal, voteCode) {
             console.error(result);
             createAlert('warning', ALERTS.INTERNAL_ERROR, 6000);
         }
-    } else {
-        createAlert('warning', ALERTS.MN_ACCESS_BEFORE_VOTE, 6000);
     }
+    createAlert(
+        successfulVotes === 0 ? 'warning' : 'success',
+        tr(translation.votedMultiMn, [
+            { successfulVotes },
+            { totalVotes: masternodes.value.length },
+        ]),
+        6000
+    );
 }
 </script>
 
 <template>
     <ProposalCreateModal
-        v-show="showCreateProposalModal"
+        :show="showCreateProposalModal"
         :advancedMode="advancedMode"
         @close="showCreateProposalModal = false"
         @create="createProposal"
@@ -296,6 +314,7 @@ async function vote(proposal, voteCode) {
                 :price="price"
                 @vote="vote"
                 @finalizeProposal="(proposal) => finalizeProposal(proposal)"
+                @deleteProposal="(proposal) => deleteProposal(proposal)"
             />
         </div>
 

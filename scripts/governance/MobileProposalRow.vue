@@ -9,7 +9,7 @@ const props = defineProps({
     strCurrency: String,
 });
 const { proposal, price, strCurrency } = toRefs(props);
-const emit = defineEmits(['vote']);
+const emit = defineEmits(['vote', 'deleteProposal']);
 </script>
 
 <template>
@@ -28,7 +28,10 @@ const emit = defineEmits(['vote']);
             <hr class="governHr" />
             <MobileProposalVotes :proposal="proposal" />
             <hr class="governHr" />
-            <MobileProposalVote @vote="(...args) => emit('vote', ...args)" />
+            <MobileProposalVote
+                @vote="(...args) => emit('vote', ...args)"
+                @deleteProposal="emit('deleteProposal')"
+            />
         </td>
     </tr>
 </template>

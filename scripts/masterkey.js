@@ -1,6 +1,6 @@
 import HDKey from 'hdkey';
 import { bytesToHex } from './utils.js';
-import { getHardwareWalletKeys } from './ledger.js';
+import { LedgerController } from './ledger.js';
 import { cChainParams } from './chain_params.js';
 
 import { deriveAddress, generateOrEncodePrivkey } from './encoding.js';
@@ -209,7 +209,11 @@ export class HardwareWalletMasterKey extends HdMasterKey {
             .split('/')
             .slice(0, 4)
             .join('/');
-        const xpub = await getHardwareWalletKeys(path, true, false);
+        const xpub = await LedgerController.getInstance().getHardwareWalletKeys(
+            path,
+            true,
+            false
+        );
         if (!xpub) throw new Error('Failed to get hardware wallet keys.');
         HardwareWalletMasterKey.#initializing = true;
         const mk = new HardwareWalletMasterKey(xpub);
@@ -226,7 +230,12 @@ export class HardwareWalletMasterKey extends HdMasterKey {
 
     async getPublicKey(path, { verify } = {}) {
         return deriveAddress({
-            publicKey: await getHardwareWalletKeys(path, false, verify),
+            publicKey:
+                await LedgerController.getInstance().getHardwareWalletKeys(
+                    path,
+                    false,
+                    verify
+                ),
             output: 'COMPRESSED_HEX',
         });
     }
@@ -241,7 +250,8 @@ export class HardwareWalletMasterKey extends HdMasterKey {
      * @returns {Promise<string?>} address or null if the user rejected the verification
      */
     async verifyAddress(path) {
-        const publicKey = await getHardwareWalletKeys(path);
+        const publicKey =
+            await LedgerController.getInstance().getHardwareWalletKeys(path);
 
         return deriveAddress({ publicKey });
     }

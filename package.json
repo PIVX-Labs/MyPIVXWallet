@@ -1,6 +1,6 @@
 {
     "name": "mypivxwallet",
-    "version": "2.1.1",
+    "version": "2.1.2",
     "description": "Wallet for PIVX",
     "main": "scripts/index.js",
     "type": "module",
