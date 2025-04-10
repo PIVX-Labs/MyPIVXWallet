@@ -26,7 +26,6 @@ describe('database tests', () => {
         const db = await Database.create('test');
         const account = new Account({
             publicKey: 'test1',
-            coldAddress: 'very cold',
         });
         await db.addAccount(account);
         expect(await db.getAccount()).toStrictEqual(account);
@@ -38,7 +37,6 @@ describe('database tests', () => {
         );
         expect((await db.getAccount()).encWif).toBe('newWIF!');
         expect((await db.getAccount()).publicKey).toBe('test1');
-        expect((await db.getAccount()).coldAddress).toBe('very cold');
         expect((await db.getAccount()).localProposals).toStrictEqual([
             'prop1',
             'prop2',

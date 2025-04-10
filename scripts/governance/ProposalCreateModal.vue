@@ -72,7 +72,7 @@ const isSafeStr = /^[a-z0-9 .,;\-_/:?@()]+$/i;
                             font-weight: 500;
                         "
                     >
-                        Proposal name
+                        {{ translation.popupProposalName }}
                     </p>
                     <Input
                         name="proposalTitle"
@@ -95,7 +95,7 @@ const isSafeStr = /^[a-z0-9 .,;\-_/:?@()]+$/i;
                             font-weight: 500;
                         "
                     >
-                        URL
+                        {{ translation.proposalUrl }}
                     </p>
                     <Input
                         name="proposalUrl"
@@ -124,7 +124,7 @@ const isSafeStr = /^[a-z0-9 .,;\-_/:?@()]+$/i;
                             font-weight: 500;
                         "
                     >
-                        Duration in cycles
+                        {{ translation.popupProposalDuration }}
                     </p>
                     <NumericInput
                         name="proposalCycles"
@@ -142,7 +142,8 @@ const isSafeStr = /^[a-z0-9 .,;\-_/:?@()]+$/i;
                             font-weight: 500;
                         "
                     >
-                        {{ cChainParams.current.TICKER }} per cycle
+                        {{ cChainParams.current.TICKER }}
+                        {{ translation.popupProposalPerCycle }}
                     </p>
                     <NumericInput
                         name="proposalPayment"
@@ -160,7 +161,7 @@ const isSafeStr = /^[a-z0-9 .,;\-_/:?@()]+$/i;
                                 font-weight: 500;
                             "
                         >
-                            Proposal Address
+                            {{ translation.popupProposalAddress }}
                         </p>
                         <Input
                             name="proposalAddress"
@@ -279,7 +280,9 @@ const isSafeStr = /^[a-z0-9 .,;\-_/:?@()]+$/i;
                         v-if="data.proposalAddress"
                         class="proposalConfirmContainer"
                     >
-                        <p class="proposalConfirmLabel">Proposal Address</p>
+                        <p class="proposalConfirmLabel">
+                            {{ translation.popupProposalAddress2 }}
+                        </p>
                         <code class="proposalConfirmText"
                             >{{ data.proposalAddress }}
                         </code>

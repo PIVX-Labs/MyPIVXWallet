@@ -53,6 +53,22 @@ function getClassByStatus(status) {
             return 'missingBadge';
     }
 }
+
+function translateStatus(status) {
+    switch (status) {
+        case 'ENABLED':
+            return translation.masternodeStatusEnabled;
+        case 'PRE_ENABLED':
+            return translation.masternodeStatusPreEnabled;
+        case 'MISSING':
+            return translation.masternodeStatusMissing;
+        case 'EXPIRED':
+            return translation.masternodeStatusExpired;
+        default:
+            // Fall back to raw status
+            return status;
+    }
+}
 </script>
 
 <template>
@@ -61,7 +77,7 @@ function getClassByStatus(status) {
             <span
                 class="masternodeBadges"
                 :class="{ [getClassByStatus(info.status)]: true }"
-                >{{ info.status }}</span
+                >{{ translateStatus(info.status) }}</span
             >
         </td>
         <td>

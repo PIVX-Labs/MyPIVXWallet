@@ -19,7 +19,11 @@ const mn = vi.fn((status, ip, lastSeen) => {
 describe('NewMasternodeList tests', () => {
     beforeEach(() => {
         vi.spyOn(translation, 'tr').mockImplementation((message, variables) => {
-            return message + variables[0].MIN_PASS_LENGTH;
+            if (variables[0].MIN_PASS_LENGTH) {
+                return message + variables[0].MIN_PASS_LENGTH;
+            } else {
+                return variables[0].length;
+            }
         });
         vi.spyOn(translation, 'ALERTS', 'get').mockReturnValue({
             PASSWORD_TOO_SMALL: 'pass_too_small',
@@ -43,9 +47,7 @@ describe('NewMasternodeList tests', () => {
 
     it('displays the correct masternode count in the header', () => {
         const wrapper = mount(MasternodeList, { props: defaultProps });
-        expect(wrapper.find('.mnTopConfigured').text()).toContain(
-            '2 Masternodes Configured'
-        );
+        expect(wrapper.find('.mnTopConfigured').text()).toContain('2');
     });
 
     it('disables the "Add Masternode" button if balance is insufficient', () => {

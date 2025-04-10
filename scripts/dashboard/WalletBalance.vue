@@ -146,9 +146,10 @@ wallet.onShieldSyncStatusUpdate((bytes, totalBytes, finished) => {
     percentage.value = Math.round((100 * bytes) / totalBytes);
     const mb = bytes / 1_000_000;
     const totalMb = totalBytes / 1_000_000;
-    shieldSyncingStr.value = `Syncing Shield (${mb.toFixed(
-        1
-    )}MB/${totalMb.toFixed(1)}MB)`;
+    shieldSyncingStr.value = tr(translation.syncingShield, [
+        { progress: mb.toFixed(1) },
+        { total: totalMb.toFixed(1) },
+    ]);
     shieldSyncing.value = !finished;
 });
 
