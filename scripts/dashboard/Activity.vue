@@ -294,8 +294,7 @@ const rewardsText = computed(() => {
 
 watch(
     () => wallet.historicalTxs,
-    async (_, oldTxs) => {
-        // Don't add txs if there were already some
+    async () => {
         await update();
         updateReward();
     }
