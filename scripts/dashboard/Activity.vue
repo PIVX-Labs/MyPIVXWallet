@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
 import { useNetwork } from '../composables/use_network.js';
-import { wallet } from '../wallet.js';
+import { useWallet } from '../composables/use_wallet.js';
 import { cChainParams } from '../chain_params.js';
 import { translation } from '../i18n.js';
 import { Database } from '../database.js';
@@ -13,6 +13,8 @@ import iHourglass from '../../assets/icons/icon-hourglass.svg';
 import { blockCount } from '../global.js';
 import { beautifyNumber } from '../misc.js';
 import TxExport from './TxExport.vue';
+
+const wallet = useWallet();
 
 const props = defineProps({
     title: String,
@@ -106,7 +108,7 @@ function txSelfMap(amount, shieldAmount) {
 function updateReward() {
     if (!props.rewards) return;
     let res = 0;
-    for (const tx of wallet.getHistoricalTxs()) {
+    for (const tx of wallet.historicalTxs) {
         if (tx.type !== HistoricalTxType.STAKE) continue;
         res += tx.amount;
     }
@@ -114,11 +116,6 @@ function updateReward() {
 }
 
 async function update(txToAdd = 0) {
-    // Return if wallet is not synced yet
-    if (!wallet.isSynced) {
-        return;
-    }
-
     // Prevent the user from spamming refreshes
     if (updating.value) return;
     let newTxs = [];
@@ -129,7 +126,7 @@ async function update(txToAdd = 0) {
     // If there are less than 10 txs loaded, append rather than update the list
     if (txCount < 10 && txToAdd == 0) txToAdd = 10;
 
-    const historicalTxs = wallet.getHistoricalTxs();
+    const historicalTxs = wallet.historicalTxs;
 
     let i = 0;
     let found = 0;
@@ -150,7 +147,10 @@ async function update(txToAdd = 0) {
     updating.value = false;
 }
 
-watch(translation, async () => await update());
+watch(translation, async () => {
+    await update();
+    updateReward();
+});
 
 /**
  * Parse tx to list syntax
@@ -292,20 +292,14 @@ const rewardsText = computed(() => {
     return `${strBal} <span style="font-size:15px; opacity: 0.55;">${ticker.value}</span>`;
 });
 
-function reset() {
-    txs.value = [];
-    txCount = 0;
-    rewardAmount.value = 0;
-    update(0);
-}
-
-function getTxCount() {
-    return txCount;
-}
-
-onMounted(() => update());
-
-defineExpose({ update, reset, getTxCount, updateReward });
+watch(
+    () => wallet.historicalTxs,
+    async (_, oldTxs) => {
+        // Don't add txs if there were already some
+        await update();
+        updateReward();
+    }
+);
 </script>
 
 <template>
