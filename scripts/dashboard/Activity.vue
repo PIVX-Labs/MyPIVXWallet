@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
 import { useNetwork } from '../composables/use_network.js';
-import { wallet } from '../wallet.js';
+import { useWallet } from '../composables/use_wallet.js';
 import { cChainParams } from '../chain_params.js';
 import { translation } from '../i18n.js';
 import { Database } from '../database.js';
@@ -13,6 +13,9 @@ import iHourglass from '../../assets/icons/icon-hourglass.svg';
 import { blockCount } from '../global.js';
 import { beautifyNumber } from '../misc.js';
 import TxExport from './TxExport.vue';
+import { timeToDate } from '../utils.js';
+
+const wallet = useWallet();
 
 const props = defineProps({
     title: String,
@@ -106,7 +109,7 @@ function txSelfMap(amount, shieldAmount) {
 function updateReward() {
     if (!props.rewards) return;
     let res = 0;
-    for (const tx of wallet.getHistoricalTxs()) {
+    for (const tx of wallet.historicalTxs) {
         if (tx.type !== HistoricalTxType.STAKE) continue;
         res += tx.amount;
     }
@@ -114,11 +117,6 @@ function updateReward() {
 }
 
 async function update(txToAdd = 0) {
-    // Return if wallet is not synced yet
-    if (!wallet.isSynced) {
-        return;
-    }
-
     // Prevent the user from spamming refreshes
     if (updating.value) return;
     let newTxs = [];
@@ -129,7 +127,7 @@ async function update(txToAdd = 0) {
     // If there are less than 10 txs loaded, append rather than update the list
     if (txCount < 10 && txToAdd == 0) txToAdd = 10;
 
-    const historicalTxs = wallet.getHistoricalTxs();
+    const historicalTxs = wallet.historicalTxs;
 
     let i = 0;
     let found = 0;
@@ -150,7 +148,10 @@ async function update(txToAdd = 0) {
     updating.value = false;
 }
 
-watch(translation, async () => await update());
+watch(translation, async () => {
+    await update();
+    updateReward();
+});
 
 /**
  * Parse tx to list syntax
@@ -159,50 +160,12 @@ watch(translation, async () => await update());
 async function parseTXs(arrTXs) {
     const newTxs = [];
 
-    // Prepare time formatting
-    const timeOptions = {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true,
-    };
-    const dateOptions = {
-        month: 'short',
-        day: 'numeric',
-    };
-    const yearOptions = {
-        month: 'short',
-        day: 'numeric',
-        year: '2-digit',
-    };
     const cDB = await Database.getInstance();
     const cAccount = await cDB.getAccount();
 
-    const cDate = new Date();
     for (const cTx of arrTXs) {
-        const cTxDate = new Date(cTx.time * 1000);
-
         // Unconfirmed Txs are simply 'Pending'
-        let strDate = 'Pending';
-        if (cTx.blockHeight !== -1) {
-            // Check if it was today (same day, month and year)
-            const fToday =
-                cTxDate.getDate() === cDate.getDate() &&
-                cTxDate.getMonth() === cDate.getMonth() &&
-                cTxDate.getFullYear() === cDate.getFullYear();
-
-            // Figure out the most convenient time display for this Tx
-            if (fToday) {
-                // TXs made today are displayed by time (02:13 pm)
-                strDate = cTxDate.toLocaleTimeString(undefined, timeOptions);
-            } else if (cTxDate.getFullYear() === cDate.getFullYear()) {
-                // TXs older than today are displayed by short date (18 Nov)
-                strDate = cTxDate.toLocaleDateString(undefined, dateOptions);
-            } else {
-                // TXs in previous years are displayed by their short date and year (18 Nov 2023)
-                strDate = cTxDate.toLocaleDateString(undefined, yearOptions);
-            }
-        }
-
+        const strDate = timeToDate(cTx.time);
         let amountToShow = Math.abs(cTx.amount + cTx.shieldAmount);
 
         // Coinbase Transactions (rewards) require coinbaseMaturity confs
@@ -292,20 +255,13 @@ const rewardsText = computed(() => {
     return `${strBal} <span style="font-size:15px; opacity: 0.55;">${ticker.value}</span>`;
 });
 
-function reset() {
-    txs.value = [];
-    txCount = 0;
-    rewardAmount.value = 0;
-    update(0);
-}
-
-function getTxCount() {
-    return txCount;
-}
-
-onMounted(() => update());
-
-defineExpose({ update, reset, getTxCount, updateReward });
+watch(
+    () => wallet.historicalTxs,
+    async () => {
+        await update();
+        updateReward();
+    }
+);
 </script>
 
 <template>
