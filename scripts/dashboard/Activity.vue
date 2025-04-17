@@ -179,6 +179,7 @@ async function parseTXs(arrTXs) {
 
     const cDate = new Date();
     for (const cTx of arrTXs) {
+        console.log(cTx.shieldReceivers);
         const cTxDate = new Date(cTx.time * 1000);
 
         // Unconfirmed Txs are simply 'Pending'
@@ -235,7 +236,9 @@ async function parseTXs(arrTXs) {
                     })
                     .map(([_, addr]) => getNameOrAddress(cAccount, addr));
                 if (cTx.type == HistoricalTxType.RECEIVED) {
-                    arrAddresses = arrAddresses.concat(cTx.shieldReceivers);
+                    arrAddresses = arrAddresses.concat(
+                        cTx.shieldReceivers.map((s) => s.recipient)
+                    );
                 }
                 who =
                     [
