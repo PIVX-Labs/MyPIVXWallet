@@ -179,8 +179,10 @@ async function parseTXs(arrTXs) {
 
     const cDate = new Date();
     for (const cTx of arrTXs) {
-        console.log(cTx.shieldReceivers);
         const cTxDate = new Date(cTx.time * 1000);
+        const memos = cTx.shieldReceivers
+            .map((s) => s.memo)
+            .filter((s) => s.length);
 
         // Unconfirmed Txs are simply 'Pending'
         let strDate = 'Pending';
@@ -284,6 +286,7 @@ async function parseTXs(arrTXs) {
             confirmed: fConfirmed,
             icon,
             colour,
+            memos,
         });
     }
 
@@ -415,6 +418,7 @@ defineExpose({ update, reset, getTxCount, updateReward });
                                 </td>
                                 <td class="text-right pr-10px align-middle">
                                     <span
+                                        v-if="!tx.memos.length"
                                         class="badge mb-0"
                                         :class="{
                                             'badge-purple': tx.confirmed,
@@ -431,6 +435,12 @@ defineExpose({ update, reset, getTxCount, updateReward });
                                             v-else
                                             v-html="iHourglass"
                                         ></span>
+                                    </span>
+                                    <span v-else>
+                                        <i
+                                            class="fa-solid fa-envelope"
+                                            @click="console.log(tx.memos)"
+                                        ></i>
                                     </span>
                                 </td>
                             </tr>

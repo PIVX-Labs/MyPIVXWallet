@@ -19,7 +19,7 @@ const emit = defineEmits([
 ]);
 // Amount of PIVs to send in the selected currency (e.g. USD)
 const amountCurrency = ref('');
- const color = ref('');
+const color = ref('');
 
 const props = defineProps({
     show: Boolean,
@@ -31,14 +31,14 @@ const props = defineProps({
     publicMode: Boolean,
 });
 
- const address = defineModel('address');
- const memo = ref('');
+const address = defineModel('address');
+const memo = ref('');
 
 const isSendingToShield = computed(() => isShieldAddress(address.value));
 
 watch(address, (value) =>
     getAddressColor(value).then((c) => (color.value = `${c} !important`))
- );
+);
 
 watch(
     () => props.price,
@@ -64,9 +64,9 @@ function send() {
             sanitizeHTML(address.value),
             amount.value,
             !props.publicMode,
-	    memo.value,
+            memo.value
         );
-	memo.value = '';
+        memo.value = '';
     }
 }
 
@@ -240,12 +240,13 @@ async function selectContact() {
             </div>
 
             <div v-if="isSendingToShield">
-                <label>{{translation.shieldMessage}}</label><br />
+                <label>{{ translation.shieldMessage }}</label
+                ><br />
 
                 <textarea
                     style="padding-top: 11px; height: 110px"
-		    v-model="memo"
-		    :maxlength="512"
+                    v-model="memo"
+                    :maxlength="512"
                     :placeholder="translation.shieldMessageDesc"
                 ></textarea>
             </div>
