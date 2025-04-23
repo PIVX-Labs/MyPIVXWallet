@@ -12,7 +12,7 @@ import iCheck from '../../assets/icons/icon-check.svg';
 import iHourglass from '../../assets/icons/icon-hourglass.svg';
 import { blockCount } from '../global.js';
 import { beautifyNumber } from '../misc.js';
-import TxExport from './TxExport.vue';
+import TxDetails from './TxDetails.vue';
 
 const props = defineProps({
     title: String,
@@ -20,6 +20,7 @@ const props = defineProps({
 });
 
 const txs = ref([]);
+const selectedTx = ref(null);
 let txCount = 0;
 const updating = ref(false);
 const isHistorySynced = ref(false);
@@ -368,7 +369,7 @@ defineExpose({ update, reset, getTxCount, updateReward });
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="tx in txs">
+                            <tr v-for="tx in txs" @click="selectedTx = tx">
                                 <td
                                     class="align-middle pr-10px"
                                     style="font-size: 12px"
@@ -468,4 +469,5 @@ defineExpose({ update, reset, getTxCount, updateReward });
             </div>
         </div>
     </center>
+    <TxDetails :selectedTx="selectedTx" @close="selectedTx = null" />
 </template>
