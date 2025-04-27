@@ -35,6 +35,13 @@ function toggleMultiwallet() {
         }, 1);
     }
 }
+
+/**
+ * Select a specific wallet
+ */
+function select(wallet) {
+    wallets.selectWallet(wallet);
+}
 </script>
 
 <template>
@@ -65,7 +72,7 @@ function toggleMultiwallet() {
                         <button class="pivx-button-small" style="padding: 0px; height: 25px; width: 25px; margin-left: 11px; font-size: 20px !important;">+</button>
                     </div>
                 </div>
-                <div v-for="wallet of vault.wallets" class="walletsItem">
+                <div v-for="wallet of vault.wallets" @click="select(wallet)" class="walletsItem">
                     <span>Wallet</span>
                     <div class="walletsAmount">
                         <span v-html="wallet.balance"></span> <span class="walletsTicker">PIV</span>
