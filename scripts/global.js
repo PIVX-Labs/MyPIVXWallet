@@ -20,6 +20,7 @@ import { cOracle } from './prices.js';
 
 import pIconCheck from '../assets/icons/icon-check.svg';
 import SideNavbar from './SideNavbar.vue';
+import MultiWallet from './dashboard/MultiWallet.vue';
 import { AsyncInterval } from './async_interval.js';
 import { useNetwork } from './composables/use_network.js';
 
@@ -43,6 +44,7 @@ createApp(Stake).use(pinia).mount('#StakingTab');
 createApp(MasternodeComponent).use(pinia).mount('#Masternode');
 createApp(Governance).use(pinia).mount('#Governance');
 createApp(SideNavbar).use(pinia).mount('#SideNavbar');
+createApp(MultiWallet).use(pinia).mount('#MultiWallet');
 createApp(Alerts).use(pinia).mount('#Alerts');
 
 export async function start() {

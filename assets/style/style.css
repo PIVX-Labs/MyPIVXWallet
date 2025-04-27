@@ -2465,6 +2465,7 @@ a {
 .navbar-nav .nav-item span {
     cursor: pointer;
     margin-left: 3px;
+    font-size: 14px;
     margin-right: 3px;
     transition: all .2s ease-in-out;
     text-transform: uppercase;
@@ -3879,7 +3880,6 @@ select.form-control option {
     display: flex;
     width: calc(100% - 80px);
     justify-content: center;
-    margin-right: 80px;
 }
 
 .modal.show {
@@ -4113,8 +4113,10 @@ textarea::placeholder {
     .navBarActions {
         flex-direction: row;
         height: 45px;
+        width: 45px;
         display: flex;
         align-items: center;
+        justify-content: center;
     }
 
     .navBarActions .nav-item .nav-link {
@@ -4298,4 +4300,145 @@ textarea::placeholder {
     .mobileVote .pivx-button-outline {
         margin-right:7px;
     }
+}
+
+.multiWalletBtn {
+    border-radius:100px;
+    background: linear-gradient(#32135C 0 0) padding-box, linear-gradient(to top, #771DF3, #9631F4) border-box;
+    border: 3px solid transparent;
+    height:50px;
+    width:200px;
+    cursor: pointer;
+    z-index:10;
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.multiWalletBtn .multiWalletContent {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-left: 16px;
+    padding-right: 16px;
+    width:100%;
+}
+
+@media (max-width: 992px) {
+    .multiWalletBtn .multiWalletContent {
+        display:none;
+    }
+    .multiWalletBtn {
+        width:50px;
+    }
+}
+
+.multiWalletBtn .walletsRight {
+    display: flex;
+    align-items: center;
+}
+
+.multiWalletBtn .walletsRight .walletsArrow {
+    transition:all .2s ease-in-out;
+}
+
+.multiWalletBtn .walletsRight .walletsArrow.rotate {
+    transform: rotateX(180deg);
+}
+
+.multiWalletBtn .walletsRight i {
+    margin-left: 8px;
+}
+
+.multiWalletBtn .walletsName {
+    opacity:80%;
+}
+
+.multiWalletBtn .walletsAmount,
+.multiWalletList .walletsItem .walletsAmount {
+    background-color: #220940;
+    color: #9221FF;
+    font-size: 15px;
+    border-radius: 5px;
+    padding: 2px 8px 3px 9px;
+    font-weight: 600;
+}
+
+.multiWalletBtn .walletsAmount .walletsTicker,
+.multiWalletList .walletsItem .walletsAmount .walletsTicker {
+    font-size:13px;
+    color:#b27fe2;
+    opacity: 70%;
+}
+
+.multiWalletList {
+    position: absolute;
+    top: 25px;
+    z-index:9;
+    width: 100%;
+    background-color:#221239;
+    border:1px solid #9421FF;
+    border-bottom-left-radius: 23px;
+    border-bottom-right-radius: 23px;
+    padding-left: 14px;
+    padding-right: 14px;
+    padding-bottom: 14px;
+    padding-top: 40px;
+    display:none;
+    opacity:0;
+    transition:all .2s ease-in-out;
+}
+
+.multiWalletList.opened {
+    display:block;
+}
+
+.multiWalletList .walletsItem {
+    display: flex;
+    justify-content: space-between;
+    padding-top:5px;
+    padding-bottom:5px;
+    padding-left: 9px;
+}
+
+@media (max-width: 992px) {
+    .newNavBar {
+        display: flex;
+        position: absolute;
+        right: 0px;
+        top: 70px;
+        background-color: #221239;
+        border-radius: 10px;
+        border: 1px solid #9421FF;
+        padding: 11px 16px;
+        text-align: center;
+    }
+
+    .multiWalletList {
+        top:70px;
+        border-radius: 10px;
+        width:275px;
+        right:-45px;
+        padding-top: 14px;
+    }
+
+    .multiWalletBtn {
+        height:45px;
+        width:45px;
+        margin-right:10px;
+    }
+
+    .multiWalletBtn .multiWalletIcon {
+        display:block!important;
+    }
+}
+
+@media (min-width:992px) {
+    .collapse:not(.show) {
+        display: flex!important;
+    }
+}
+
+.multiWalletBtn .multiWalletIcon {
+    display:none;
 }
