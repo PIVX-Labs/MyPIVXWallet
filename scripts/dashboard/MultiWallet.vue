@@ -77,7 +77,7 @@ function select(wallet) {
                 </div>
             </div>
             <div class="multiWalletIcon">
-                <span class="checkIcon" v-html="iWalletPlus"></span>
+                <span class="switchWalletIcon" v-html="iWalletPlus"></span>
             </div>
         </div>
         <div
@@ -137,7 +137,7 @@ function select(wallet) {
                 >
                     <span>Wallet</span>
                     <div class="walletsAmount">
-                        <span>{{ wallet.balance }}</span>
+                        <span style="margin-right:5px;">{{ wallet.balance }}</span>
                         <span class="walletsTicker">PIV</span>
                     </div>
                 </div>

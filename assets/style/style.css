@@ -1231,6 +1231,12 @@ progress[value]::-moz-progress-bar {
     fill: #fffeff;
 }
 
+.switchWalletIcon svg {
+    height: 18px;
+    max-height: 18px;
+    fill: #E9DEFF;
+}
+
 .shieldBalanceLogo svg {
     display: block;
     width: auto;
@@ -4427,10 +4433,14 @@ textarea::placeholder {
         height:45px;
         width:45px;
         margin-right:10px;
+        display: flex;
+        justify-content: center;
     }
 
     .multiWalletBtn .multiWalletIcon {
         display:block!important;
+        position: absolute;
+        left: 10px;
     }
 }
 
