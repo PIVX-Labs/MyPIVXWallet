@@ -65,7 +65,7 @@ function select(wallet) {
                 <div class="walletsName">Core 1</div>
                 <div class="walletsRight">
                     <div class="walletsAmount">
-                        <span>{{ totalBalance }}</span>
+                        <span style="margin-right:5px;">{{ totalBalance }}</span>
                         <span class="walletsTicker">PIV</span>
                     </div>
                     <i
