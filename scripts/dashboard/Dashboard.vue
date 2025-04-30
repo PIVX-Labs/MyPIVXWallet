@@ -47,6 +47,7 @@ import { useAlerts } from '../composables/use_alerts.js';
 import { Vault } from '../vault';
 import { toRaw } from 'vue';
 import { valuesToComputed } from '../utils.js';
+import { PIVXShield } from 'pivx-shield';
 const { createAlert } = useAlerts();
 const wallets = useWallets();
 const { activeWallet, activeVault } = storeToRefs(wallets);
@@ -419,7 +420,16 @@ async function importFromDatabase() {
             const masterKey = vault.isHardware
                 ? HardwareWalletMasterKey.fromXPub(account.publicKey)
                 : p.masterKey;
-            ws.push(new Wallet({ nAccount: i++, masterKey }));
+            let shield;
+            if (account.shieldData) {
+                const { pivxShield, success } = await PIVXShield.load(
+                    account.shieldData
+                );
+                if (!success)
+                    createAlert('warning', 'Failed to load shield!', 3000);
+                shield = pivxShield;
+            }
+            ws.push(new Wallet({ nAccount: i++, masterKey, shield }));
         }
         const v = new Vault({
             wallets: ws,

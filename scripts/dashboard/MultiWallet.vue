@@ -3,6 +3,7 @@ import { useWallets } from '../composables/use_wallet.js';
 import { computed, ref, toRefs, watch } from 'vue';
 
 import iWalletPlus from '../../assets/icons/icon-wallet-plus.svg';
+import { COIN } from '../chain_params';
 
 const wallets = useWallets();
 
@@ -22,7 +23,8 @@ const totalBalance = computed(() => {
         return (
             sum +
             vault.wallets.reduce(
-                (wSum, wallet) => wSum + Number(wallet.balance),
+                (wSum, wallet) =>
+                    wSum + (wallet.balance + wallet.shieldBalance) / COIN,
                 0
             )
         );
