@@ -587,27 +587,28 @@ defineExpose({
                             </span>
                         </div>
                         <div class="messMessage" id="publicPrivateText">
-                            <span class="messTop"
-                                >Now in
-                                <span
-                                    v-html="
-                                        activeWallet.publicMode
-                                            ? 'Public'
-                                            : 'Private'
-                                    "
-                                ></span>
-                                Mode</span
-                            >
-                            <span class="messBot"
-                                >Switch to
-                                <span
-                                    v-html="
-                                        activeWallet.publicMode
-                                            ? 'Private'
-                                            : 'Public'
-                                    "
-                                ></span
-                            ></span>
+                            <span class="messTop">
+                                {{
+                                    tr(translation.currentMode, [
+                                        {
+                                            mode: activeWallet.publicMode
+                                                ? translation.publicMode
+                                                : translation.privateMode,
+                                        },
+                                    ])
+                                }}
+                            </span>
+                            <span class="messBot">
+                                {{
+                                    tr(translation.switchTo, [
+                                        {
+                                            mode: activeWallet.publicMode
+                                                ? translation.privateMode
+                                                : translation.publicMode,
+                                        },
+                                    ])
+                                }}
+                            </span>
                         </div>
                     </div>
                 </center>

@@ -65,7 +65,9 @@ function select(wallet) {
                 <div class="walletsName">Core 1</div>
                 <div class="walletsRight">
                     <div class="walletsAmount">
-                        <span style="margin-right:5px;">{{ totalBalance }}</span>
+                        <span style="margin-right: 5px">{{
+                            totalBalance
+                        }}</span>
                         <span class="walletsTicker">PIV</span>
                     </div>
                     <i
@@ -137,7 +139,9 @@ function select(wallet) {
                 >
                     <span>Wallet</span>
                     <div class="walletsAmount">
-                        <span style="margin-right:5px;">{{ wallet.balance }}</span>
+                        <span style="margin-right: 5px">{{
+                            wallet.balance
+                        }}</span>
                         <span class="walletsTicker">PIV</span>
                     </div>
                 </div>

@@ -5,31 +5,46 @@ import Input from '../form/Input.vue';
 import NumericInput from '../form/NumericInput.vue';
 import { translation } from '../i18n.js';
 import { COIN, cChainParams } from '../chain_params';
-import { toRefs } from 'vue';
+import { toRefs, ref, reactive, watch } from 'vue';
 import { isStandardAddress } from '../misc';
 
 const props = defineProps({
     advancedMode: Boolean,
     isTest: Boolean,
+    show: Boolean,
 });
-const { advancedMode } = toRefs(props);
+const { advancedMode, show } = toRefs(props);
 const emit = defineEmits(['close', 'create']);
-function submit(data) {
+const data = reactive({});
+const showConfirmation = ref(false);
+
+function submit() {
+    showConfirmation.value = false;
+
     emit(
         'create',
         data.proposalTitle,
         data.proposalUrl,
         data.proposalCycles,
         data.proposalPayment,
-        data.proposalAddress
+        advancedMode.value ? data.proposalAddress : undefined
     );
+}
+
+function createConfirmationScreen(d) {
+    data.proposalTitle = d.proposalTitle;
+    data.proposalUrl = d.proposalUrl;
+    data.proposalCycles = d.proposalCycles;
+    data.proposalPayment = d.proposalPayment;
+    data.proposalAddress = d.proposalAddress;
+    showConfirmation.value = true;
 }
 
 const isSafeStr = /^[a-z0-9 .,;\-_/:?@()]+$/i;
 </script>
 
 <template>
-    <Modal :show="true">
+    <Modal :show="show">
         <template #header>
             <h4>{{ translation.popupCreateProposal }}</h4>
             <span
@@ -47,7 +62,7 @@ const isSafeStr = /^[a-z0-9 .,;\-_/:?@()]+$/i;
             >
         </template>
         <template #body>
-            <Form @submit="submit">
+            <Form @submit="createConfirmationScreen">
                 <template #default>
                     <p
                         style="
@@ -57,7 +72,7 @@ const isSafeStr = /^[a-z0-9 .,;\-_/:?@()]+$/i;
                             font-weight: 500;
                         "
                     >
-                        Proposal name
+                        {{ translation.popupProposalName }}
                     </p>
                     <Input
                         name="proposalTitle"
@@ -80,7 +95,7 @@ const isSafeStr = /^[a-z0-9 .,;\-_/:?@()]+$/i;
                             font-weight: 500;
                         "
                     >
-                        URL
+                        {{ translation.proposalUrl }}
                     </p>
                     <Input
                         name="proposalUrl"
@@ -109,7 +124,7 @@ const isSafeStr = /^[a-z0-9 .,;\-_/:?@()]+$/i;
                             font-weight: 500;
                         "
                     >
-                        Duration in cycles
+                        {{ translation.popupProposalDuration }}
                     </p>
                     <NumericInput
                         name="proposalCycles"
@@ -127,7 +142,8 @@ const isSafeStr = /^[a-z0-9 .,;\-_/:?@()]+$/i;
                             font-weight: 500;
                         "
                     >
-                        {{ cChainParams.current.TICKER }} per cycle
+                        {{ cChainParams.current.TICKER }}
+                        {{ translation.popupProposalPerCycle }}
                     </p>
                     <NumericInput
                         name="proposalPayment"
@@ -145,7 +161,7 @@ const isSafeStr = /^[a-z0-9 .,;\-_/:?@()]+$/i;
                                 font-weight: 500;
                             "
                         >
-                            Proposal Address
+                            {{ translation.popupProposalAddress }}
                         </p>
                         <Input
                             name="proposalAddress"
@@ -197,4 +213,143 @@ const isSafeStr = /^[a-z0-9 .,;\-_/:?@()]+$/i;
             </button>
         </template>
     </Modal>
+
+    <Modal :show="showConfirmation" :centered="true">
+        <template #header>
+            <h4>{{ translation.proposalConfirm }}</h4>
+        </template>
+        <template #body>
+            <div class="row">
+                <div class="col-6">
+                    <div class="proposalConfirmContainer">
+                        <p class="proposalConfirmLabel">Proposal name</p>
+                        <code class="proposalConfirmText">{{
+                            data.proposalTitle
+                        }}</code>
+                    </div>
+                </div>
+
+                <div class="col-6">
+                    <div>
+                        <p class="proposalConfirmLabel">Duration in cycles</p>
+                        <code class="proposalConfirmText">{{
+                            data.proposalCycles
+                        }}</code>
+                    </div>
+                </div>
+
+                <div class="col-6">
+                    <div class="proposalConfirmContainer">
+                        <p class="proposalConfirmLabel">
+                            {{ cChainParams.current.TICKER }} per cycle
+                        </p>
+                        <code class="proposalConfirmText"
+                            >{{ data.proposalPayment }}
+                            {{ cChainParams.current.TICKER }}
+                        </code>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="proposalConfirmContainer">
+                        <p class="proposalConfirmLabel">
+                            {{ translation.proposalTotal }}
+                        </p>
+                        <code class="proposalConfirmText"
+                            >{{ data.proposalPayment * data.proposalCycles }}
+                            {{ cChainParams.current.TICKER }}
+                        </code>
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <div class="proposalConfirmContainer">
+                        <p class="proposalConfirmLabel">URL</p>
+                        <div class="proposalConfirmText link">
+                            <a
+                                :href="data.proposalUrl"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                >{{ data.proposalUrl }}</a
+                            >
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <div
+                        v-if="data.proposalAddress"
+                        class="proposalConfirmContainer"
+                    >
+                        <p class="proposalConfirmLabel">
+                            {{ translation.popupProposalAddress2 }}
+                        </p>
+                        <code class="proposalConfirmText"
+                            >{{ data.proposalAddress }}
+                        </code>
+                    </div>
+                </div>
+            </div>
+        </template>
+        <template #footer>
+            <button
+                type="button"
+                class="pivx-button-big"
+                style="float: right"
+                data-testid="proposalConfirmSubmit"
+                @click="submit()"
+            >
+                {{ translation.popupConfirm }}
+            </button>
+
+            <button
+                type="button"
+                class="pivx-button-big-cancel"
+                style="float: left"
+                data-testid="proposalCancel"
+                @click="showConfirmation = false"
+            >
+                {{ translation.popupCancel }}
+            </button>
+        </template>
+    </Modal>
 </template>
+<style>
+.proposalConfirmLabel {
+    margin-bottom: 0px;
+    color: #af9cc6;
+    font-size: 1rem;
+    font-weight: 500;
+}
+.proposalConfirmContainer {
+    margin-bottom: 10px;
+}
+
+.proposalConfirmText {
+    background-color: #0000003d;
+    padding: 1px 5px 2px 5px;
+    border-radius: 5px;
+}
+
+.proposalConfirmText.link {
+    background-color: #0000003d;
+    padding: 1px 5px 2px 5px;
+    border-radius: 5px;
+    width: fit-content;
+    word-break: break-all;
+}
+
+.proposalConfirmText.link a {
+    color: #9221ff;
+    font-size: 87.5%;
+    font-family: SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono',
+        'Courier New', monospace !important;
+}
+
+.proposalConfirmText.link a:hover {
+    text-decoration: underline !important;
+}
+
+code {
+    color: #e9deff;
+}
+</style>

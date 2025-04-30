@@ -32,7 +32,7 @@ const activity = ref(null);
 async function updateColdStakingAddress() {
     const db = await Database.getInstance();
     coldStakingAddress.value =
-        (await db.getAccount(wallet.value.getKeyToExport()))?.coldAddress ||
+        (await db.getSettings())?.coldAddress ||
         cChainParams.current.defaultColdStakingAddress;
 }
 getEventEmitter().on('toggle-network', updateColdStakingAddress);
@@ -46,12 +46,11 @@ onMounted(updateColdStakingAddress);
 
 watch(coldStakingAddress, async (coldStakingAddress) => {
     const db = await Database.getInstance();
-    const cAccount = await db.getAccount(wallet.value.getKeyToExport());
-    if (!cAccount) return;
+    const settings = await db.getSettings();
 
     // Save to DB (allowDeletion enabled to allow for resetting the Cold Address)
-    cAccount.coldAddress = coldStakingAddress;
-    await db.updateAccount(cAccount, true);
+    settings.coldAddress = coldStakingAddress;
+    await db.setSettings(settings, true);
 });
 async function stake(value, ownerAddress) {
     // Ensure the stake value meets the minimum delegation size

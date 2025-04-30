@@ -12,6 +12,8 @@ import base32 from 'base32';
 import { isStandardAddress } from './misc.js';
 import { getNetwork } from './network/network_manager.js';
 import { debugError, DebugTopics } from './debug.js';
+import { createAlert } from './alerts/alert.js';
+import { ALERTS } from './i18n.js';
 
 /**
  * Construct a Masternode
@@ -193,6 +195,7 @@ export default class Masternode {
         });
 
         if (activeWallet.isHardwareWallet()) {
+            createAlert('info', ALERTS.MASTERNODE_CONFIRM_L, 5000);
             const { r, s, v } =
                 await LedgerController.getInstance().signMessage(
                     this.walletPrivateKeyPath,
@@ -242,7 +245,7 @@ export default class Masternode {
             return hexToBytes(
                 await activeWallet
                     .getMasterKey()
-                    .getPublicKey(this.walletPrivateKeyPath)
+                    .getPublicKey(this.walletPrivateKeyPath, { verify: false })
             );
         } else {
             const walletPrivateKey = await this._getWalletPrivateKey();

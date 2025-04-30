@@ -1,6 +1,5 @@
 import { validateMnemonic } from 'bip39';
-import { Reader } from './reader.js';
-import { bytesToNum, parseWIF } from './encoding.js';
+import { parseWIF } from './encoding.js';
 import { beforeUnloadListener, blockCount } from './global.js';
 import { getNetwork } from './network/network_manager.js';
 import { MAX_ACCOUNT_GAP } from './chain_params.js';
@@ -49,6 +48,7 @@ import {
 import { OrderedArray } from './ordered_array.js';
 import { SaplingParams } from './sapling_params.js';
 import { HdMasterKey } from './masterkey.js';
+import { BinaryShieldSyncer } from './shield_syncer.js';
 
 /**
  * Class Wallet, at the moment it is just a "realization" of Masterkey with a given nAccount
@@ -203,11 +203,11 @@ export class Wallet {
     async getColdStakingAddress() {
         // Check if we have an Account with custom Cold Staking settings
         const cDB = await Database.getInstance();
-        const cAccount = await cDB.getAccount(this.getKeyToExport());
+        const settings = await cDB.getSettings();
 
         // If there's an account with a Cold Address, return it, otherwise return the default
         return (
-            cAccount?.coldAddress ||
+            settings?.coldAddress ||
             cChainParams.current.defaultColdStakingAddress
         );
     }
@@ -896,15 +896,14 @@ export class Wallet {
 
         try {
             const network = getNetwork();
-            const req = await network.getShieldData(
-                this.#shield.getLastSyncedBlock() + 1
+            const shieldSyncer = await BinaryShieldSyncer.create(
+                network,
+                await Database.getInstance(),
+                this.#shield.getLastSyncedBlock()
             );
-            if (!req.ok) throw new Error("Couldn't sync shield");
-            const reader = new Reader(req);
 
             /** @type{string[]} Array of txs in the current block */
-            let txs = [];
-            const length = reader.contentLength;
+            const length = shieldSyncer.getLength();
             /** @type {Uint8Array} Array of bytes that we are processing **/
             this.#eventEmitter.emit(
                 'shield-sync-status-update',
@@ -917,9 +916,8 @@ export class Wallet {
              * Array of blocks ready to pass to the shield library
              * @type {{txs: string[]; height: number; time: number}[]}
              */
-            let blocksArray = [];
             let handleBlocksTime = 0;
-            const handleAllBlocks = async () => {
+            const handleAllBlocks = async (blocksArray) => {
                 const start = performance.now();
                 // Process the current batch of blocks before starting to parse the next one
                 if (blocksArray.length) {
@@ -939,44 +937,19 @@ export class Wallet {
                     }
                 }
                 handleBlocksTime += performance.now() - start;
-                blocksArray = [];
                 // Emit status update
                 this.#eventEmitter.emit(
                     'shield-sync-status-update',
-                    reader.readBytes,
+                    shieldSyncer.getReadBytes(),
                     length,
                     false
                 );
             };
             while (true) {
-                const packetLengthBytes = await reader.read(4);
-                if (!packetLengthBytes) break;
-                const packetLength = Number(bytesToNum(packetLengthBytes));
-
-                const bytes = await reader.read(packetLength);
-                if (!bytes) throw new Error('Stream was cut short');
-                if (bytes[0] === 0x5d) {
-                    const height = Number(bytesToNum(bytes.slice(1, 5)));
-                    const time = Number(bytesToNum(bytes.slice(5, 9)));
-
-                    blocksArray.push({ txs, height, time });
-                    txs = [];
-                } else if (bytes[0] === 0x03) {
-                    // 0x03 is the tx version. We should only get v3 transactions
-                    const hex = bytesToHex(bytes);
-                    txs.push({
-                        hex,
-                        txid: Transaction.getTxidFromHex(hex),
-                    });
-                } else {
-                    // This is neither a block or a tx.
-                    throw new Error('Failed to parse shield binary');
-                }
-                if (blocksArray.length >= 10) {
-                    await handleAllBlocks();
-                }
+                const blocks = await shieldSyncer.getNextBlocks();
+                if (blocks === null) break;
+                await handleAllBlocks(blocks);
             }
-            await handleAllBlocks();
             debugLog(
                 DebugTopics.WALLET,
                 `syncShield rust internal ${handleBlocksTime} ms`
@@ -1084,6 +1057,12 @@ export class Wallet {
             this.#isSynced = false;
             await this.#transparentSync();
             await this.#syncShield();
+            const db = await Database.getInstance();
+            // Reset shield sync data, it might be corrupted
+            await db.setShieldSyncData({
+                shieldData: null,
+                lastSyncedBlock: null,
+            });
             return false;
         }
         return true;
@@ -1133,7 +1112,7 @@ export class Wallet {
 
     async #resetShield() {
         // TODO: take the wallet creation height in input from users
-        await this.#shield.reloadFromCheckpoint(4200000);
+        await this.#shield.reloadFromCheckpoint(4_200_000);
         await this.#saveShieldOnDisk();
     }
 

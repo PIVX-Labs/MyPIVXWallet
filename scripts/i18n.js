@@ -150,6 +150,7 @@ export async function switchTranslation(langName) {
  * tr("test {x}" [{x: "this"}])
  */
 export function tr(message, variables) {
+    if (!message) return '';
     variables.forEach((element) => {
         message = message.replaceAll(
             '{' + Object.keys(element)[0] + '}',

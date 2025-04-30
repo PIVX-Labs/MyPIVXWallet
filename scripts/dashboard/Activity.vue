@@ -13,6 +13,7 @@ import iHourglass from '../../assets/icons/icon-hourglass.svg';
 import { blockCount } from '../global.js';
 import { beautifyNumber } from '../misc.js';
 import { useWallets } from '../composables/use_wallet';
+import TxExport from './TxExport.vue';
 
 const props = defineProps({
     title: String,
@@ -30,6 +31,7 @@ const wallets = useWallets();
 function getActivityUrl(tx) {
     return network.explorerUrl + '/tx/' + tx.id;
 }
+
 const txMap = computed(() => {
     return {
         [HistoricalTxType.STAKE]: {
@@ -60,7 +62,7 @@ const txMap = computed(() => {
         [HistoricalTxType.PROPOSAL_FEE]: {
             icon: 'fa-minus',
             colour: '#f93c4c',
-            content: 'Proposal Submission Fee',
+            content: translation.proposalFee,
         },
         [HistoricalTxType.UNKNOWN]: {
             icon: 'fa-question',
@@ -83,21 +85,21 @@ function txSelfMap(amount, shieldAmount) {
             content:
                 shieldAmount == 0
                     ? translation.activitySentTo
-                    : 'Shield sent to self',
+                    : translation.shieldSendToSelf,
             amount: Math.abs(shieldAmount + amount),
         };
     } else if (shieldAmount > 0) {
         return {
             icon: 'fa-shield',
             colour: 'white',
-            content: 'Shielding',
+            content: translation.shielding,
             amount: shieldAmount,
         };
     } else if (shieldAmount < 0) {
         return {
             icon: 'fa-shield',
             colour: 'white',
-            content: 'De-Shielding',
+            content: translation.deShielding,
             amount: amount,
         };
     }
@@ -321,11 +323,13 @@ defineExpose({ update, reset, getTxCount, updateReward });
                     margin-top: 20px;
                 "
             >
-                <span
-                    style="font-size: 24px"
-                    :data-i18n="rewards ? 'rewardHistory' : 'activity'"
-                    >{{ title }}</span
-                >
+                <span style="font-size: 24px"
+                    >{{
+                        rewards
+                            ? translation.rewardHistory
+                            : translation.activity
+                    }}
+                </span>
                 <span
                     style="font-size: 20px"
                     class="rewardsBadge"
@@ -354,7 +358,9 @@ defineExpose({ update, reset, getTxCount, updateReward });
                                 <th scope="col" class="tx3">
                                     {{ translation.amount }}
                                 </th>
-                                <th scope="col" class="tx4 text-right"></th>
+                                <th scope="col" class="tx4 text-right">
+                                    <TxExport />
+                                </th>
                             </tr>
                         </thead>
                         <tbody>

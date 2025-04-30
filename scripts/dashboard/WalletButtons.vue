@@ -11,6 +11,7 @@ import pGift from '../../assets/icons/icon-gift.svg';
 import { useNetwork } from '../composables/use_network.js';
 import { useWallets } from '../composables/use_wallet.js';
 import { getBlockbookUrl } from '../utils.js';
+import { translation } from '../i18n.js';
 
 const { activeWallet, activeVault } = storeToRefs(useWallets());
 const network = useNetwork();
@@ -41,13 +42,15 @@ watch(
                 data-target="#walletBreakdownModal"
             >
                 <span class="dashboardActionIcon" v-html="pStats"></span><br />
-                <span style="color: #eddaffc7">Balance</span>
+                <span style="color: #eddaffc7">{{ translation.balance }}</span>
             </div>
             <div class="col-3 p-0 cur-pointer">
                 <a :href="walletUrl" target="_blank">
                     <span class="dashboardActionIcon" v-html="pCompass"></span
                     ><br />
-                    <span style="color: #eddaffc7">Explorer</span>
+                    <span style="color: #eddaffc7">{{
+                        translation.explorer
+                    }}</span>
                 </a>
             </div>
             <div
@@ -61,7 +64,7 @@ watch(
             >
                 <span class="dashboardActionIcon" v-html="pAddressBook"></span
                 ><br />
-                <span style="color: #eddaffc7">Contacts</span>
+                <span style="color: #eddaffc7">{{ translation.contacts }}</span>
             </div>
             <div
                 class="col-3 p-0 cur-pointer"
@@ -69,7 +72,7 @@ watch(
                 data-target="#redeemCodeModal"
             >
                 <span class="dashboardActionIcon" v-html="pGift"></span><br />
-                <span style="color: #eddaffc7">Gift Code</span>
+                <span style="color: #eddaffc7">{{ translation.giftCode }}</span>
             </div>
         </div>
     </center>

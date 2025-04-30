@@ -147,6 +147,7 @@ function addWallet(wallet) {
     const getPath = (script) => wallet.getPath(script);
     const lockCoin = (out) => wallet.lockCoin(out);
     const unlockCoin = (out) => wallet.unlockCoin(out);
+    const getHistoricalTxs = () => wallet.getHistoricalTxs();
 
     getEventEmitter().on('toggle-network', async () => {
         isEncrypted.value = await hasEncryptedWallet();
@@ -227,6 +228,7 @@ function addWallet(wallet) {
         blockCount,
         lockCoin,
         unlockCoin,
+        getHistoricalTxs,
         onNewTx,
         onTransparentSyncStatusUpdate,
         onShieldSyncStatusUpdate,
