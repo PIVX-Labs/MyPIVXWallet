@@ -823,7 +823,6 @@ export class Wallet {
         return this.#historicalTxs.get();
     }
     sync = lockableFunction(async () => {
-        debugger;
         if (this.#isSynced) {
             throw new Error('Attempting to sync when already synced');
         }
