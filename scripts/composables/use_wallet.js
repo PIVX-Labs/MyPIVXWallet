@@ -273,7 +273,7 @@ function addVault(v) {
             const w = await v.getWallet(account, seed);
             const wallet = reactive(addWallet(w));
             wallets.value = [...wallets.value, wallet];
-            wallet.sync().then(() => {});
+            //wallet.sync().then(() => {});
             const database = await Database.getInstance();
             await database.addXpubToVault(
                 v.getDefaultKeyToExport(),

@@ -213,7 +213,6 @@ watch(
             )
         );
     },
-    () => {},
     { immediate: true }
 );
 
