@@ -48,7 +48,7 @@ export class BinaryShieldSyncer extends ShieldSyncer {
                 }
 
                 if (height <= this.#startFrom) {
-		    txs = [];
+                    txs = [];
                     continue;
                 }
                 this.#startFrom = Number.NEGATIVE_INFINITY;
