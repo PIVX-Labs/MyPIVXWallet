@@ -1278,7 +1278,7 @@ export class Wallet {
                 useShieldInputs: transaction.vin.length === 0,
                 utxos: this.#getUTXOsForShield(value),
                 transparentChangeAddress: this.getNewChangeAddress(),
-                memo: transaction.shieldOutput[0].memo,
+                memo: transaction.shieldOutput[0]?.memo,
             });
             return transaction.fromHex(hex);
         } catch (e) {
