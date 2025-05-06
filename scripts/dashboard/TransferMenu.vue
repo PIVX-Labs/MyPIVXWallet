@@ -281,7 +281,7 @@ async function selectContact() {
                             data-testid="closeButton"
                         >
                             <span class="buttoni-text">
-                                {{ translation.cancel }} Cancel
+                                {{ translation.cancel }}
                             </span>
                         </button>
                     </div>
