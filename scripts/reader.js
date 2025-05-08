@@ -120,7 +120,6 @@ export class Reader {
             );
             this.#i += discaredBytes;
             byteLength -= discaredBytes;
-            console.log(byteLength);
             if (byteLength === 0) {
                 this.#awaiter = null;
                 return;

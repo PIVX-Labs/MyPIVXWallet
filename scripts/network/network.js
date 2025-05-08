@@ -105,7 +105,7 @@ export class Network {
         throw new Error('getShieldData must be implemented');
     }
 
-    async getShieldDataLength(initialBlock, endBlock) {
+    async getShieldDataLength(_initialBlock, _endBlock) {
         throw new Error('getShieldDataLength must be implemented');
     }
 
