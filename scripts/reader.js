@@ -106,4 +106,35 @@ export class Reader {
             });
         }
     }
+
+    /**
+     * Discards bytes, but updates `readBytes` in real time instead of the end
+     * @param {number} byteLength
+     */
+    async discard(byteLength) {
+        if (this.#awaiter) throw new Error('Reading more than once');
+        while (true) {
+            const discaredBytes = Math.min(
+                this.#maxBytes - this.#i,
+                byteLength
+            );
+            this.#i += discaredBytes;
+            byteLength -= discaredBytes;
+            console.log(byteLength);
+            if (byteLength === 0) {
+                this.#awaiter = null;
+                return;
+            }
+            // No more byte to return
+            if (this.#done) return;
+            // If we didn't respond, wait for the next batch of bytes, then try again
+            await new Promise((res) => {
+                this.#awaiter = res;
+            });
+        }
+    }
+
+    isBusy() {
+        return !!this.#awaiter;
+    }
 }

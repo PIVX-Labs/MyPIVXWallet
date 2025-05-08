@@ -1,7 +1,8 @@
 import { Reader } from './reader.js';
 import { bytesToNum } from './encoding.js';
-import { bytesToHex } from './utils.js';
+import { bytesToHex, sleep } from './utils.js';
 import { Transaction } from './transaction.js';
+import { cChainParams } from './chain_params.js';
 
 class ShieldSyncer {
     /**
@@ -25,12 +26,17 @@ export class BinaryShieldSyncer extends ShieldSyncer {
 
     #lastSyncedBlock = 0;
 
-    #startFrom = 0;
+    #skippedBytes = 0;
 
     async getNextBlocks() {
+        // If we are not ready (i.e. we're still downloading data before our first synced block)
+        // sleep for a bit, then return to the caller so it can update the UI
+        if (this.#reader.isBusy()) {
+            await sleep(200);
+            return [];
+        }
         let txs = [];
         const blocksArray = [];
-        let count = 0;
         while (blocksArray.length <= 10) {
             const packetLengthBytes = await this.#reader.read(4);
             if (!packetLengthBytes) break;
@@ -40,19 +46,6 @@ export class BinaryShieldSyncer extends ShieldSyncer {
             if (!bytes) throw new Error('Stream was cut short');
             if (bytes[0] === 0x5d) {
                 const height = Number(bytesToNum(bytes.slice(1, 5)));
-                count++;
-                if (count === 250) {
-                    count = 0;
-                    // if we get to 250 blocks, give the UI a chance to reload, to avoid MPW "hanging"
-                    await new Promise(requestAnimationFrame);
-                }
-
-                if (height <= this.#startFrom) {
-                    txs = [];
-                    continue;
-                }
-                this.#startFrom = Number.NEGATIVE_INFINITY;
-
                 this.#lastSyncedBlock = height;
                 const time = Number(bytesToNum(bytes.slice(5, 9)));
 
@@ -102,6 +95,10 @@ export class BinaryShieldSyncer extends ShieldSyncer {
         const { lastSyncedBlock, shieldData } =
             await database.getShieldSyncData();
         const req = await network.getShieldData(lastSyncedBlock + 1);
+        const skipBytes = await network.getShieldDataLength(
+            cChainParams.current.defaultStartingShieldBlock + 1,
+            startFrom
+        );
         const reqCopy = req.clone();
 
         if (!req.ok) throw new Error("Couldn't sync shield");
@@ -110,15 +107,20 @@ export class BinaryShieldSyncer extends ShieldSyncer {
         instance.#lastSyncedBlock = lastSyncedBlock;
         instance.#database = database;
         instance.#reader = new Reader(req, shieldData);
-        instance.#startFrom = startFrom;
+        // skip the inital bytes
+        instance.#reader.discard(skipBytes).then(() => {});
+        // If we haven't downloaded the shield data don't treat it as skipped
+        // Otherwise we may get a stuck loading bar
+        instance.#skippedBytes = Math.min(skipBytes, shieldData.length);
+
         return instance;
     }
 
     getLength() {
-        return this.#reader.contentLength;
+        return this.#reader.contentLength - this.#skippedBytes;
     }
 
     getReadBytes() {
-        return this.#reader.readBytes;
+        return this.#reader.readBytes - this.#skippedBytes;
     }
 }
