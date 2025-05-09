@@ -369,7 +369,10 @@ defineExpose({ update, reset, getTxCount, updateReward });
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="tx in txs" @click="selectedTx = tx">
+                            <tr
+                                v-for="tx in txs"
+                                @click="tx.memos.length && (selectedTx = tx)"
+                            >
                                 <td
                                     class="align-middle pr-10px"
                                     style="font-size: 12px"
@@ -383,6 +386,7 @@ defineExpose({ update, reset, getTxCount, updateReward });
                                         :href="getActivityUrl(tx)"
                                         target="_blank"
                                         rel="noopener noreferrer"
+                                        @click.stop
                                     >
                                         <code
                                             class="wallet-code text-center active ptr"
@@ -438,10 +442,7 @@ defineExpose({ update, reset, getTxCount, updateReward });
                                         ></span>
                                     </span>
                                     <span v-else>
-                                        <i
-                                            class="fa-solid fa-envelope"
-                                            @click="console.log(tx.memos)"
-                                        ></i>
+                                        <i class="fa-solid fa-envelope"></i>
                                     </span>
                                 </td>
                             </tr>
