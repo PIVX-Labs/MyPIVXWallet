@@ -1,8 +1,10 @@
+[build.environment]
+GIT_LFS_SKIP_SMUDGE = "1"
+GIT_LFS_ENABLED=false
+
 [[headers]]
   for = "/*"
   [headers.values]
     Cross-Origin-Embedder-Policy = "require-corp"
     Cross-Origin-Opener-Policy = "same-origin"
-[build.environment]
-  GIT_LFS_SKIP_SMUDGE = "1"
-  GIT_LFS_ENABLED=false
+
