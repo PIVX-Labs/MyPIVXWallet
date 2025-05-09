@@ -8,10 +8,12 @@ const osType = os.platform();
 let command;
 if (osType.match(/aix|darwin|freebsd|linux|openbsd|sunos|android/)) {
     command =
-        'test -f chain_params.json || cp chain_params.prod.json chain_params.json';
+        'test -f chain_params.json || cp chain_params.prod.json chain_params.json;';
+    command += '\ntest -f .gitmodules || cp .gitmodules.ignore .gitmodules';
 } else if (osType.match(/win32/)) {
     command =
-        'if not exist chain_params.json copy chain_params.prod.json chain_params.json';
+        'if not exist chain_params.json copy chain_params.prod.json chain_params.json;';
+    command += '\nif not exist .gitmodules copy .gitmodules.ignore .gitmodules';
 } else {
     console.error('Unsupported operating system');
     process.exit(1);
