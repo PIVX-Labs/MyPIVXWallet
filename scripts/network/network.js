@@ -35,6 +35,10 @@ import { Transaction } from '../transaction.js';
  *
  */
 export class Network {
+    /**
+     * @type{boolean}
+     */
+    isRpc;
     constructor() {
         if (this.constructor === Network) {
             throw new Error('Initializing virtual class');
@@ -152,6 +156,7 @@ export class RPCNodeNetwork extends Network {
          * @public
          */
         this.strUrl = strUrl;
+        this.isRpc = true;
     }
     /**
      * A Fetch wrapper which uses the current Node's base URL
@@ -381,6 +386,7 @@ export class ExplorerNetwork extends Network {
          * @public
          */
         this.strUrl = strUrl;
+        this.isRpc = false;
     }
 
     /**

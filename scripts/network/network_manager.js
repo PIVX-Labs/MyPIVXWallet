@@ -56,6 +56,42 @@ class NetworkManager {
         } else {
             this.#currentExplorer = found;
         }
+
+        getEventEmitter().emit(
+            isRPC ? 'rpc_changed' : 'explorer_changed',
+            strUrl
+        );
+    }
+
+    /**
+     * Changes RPC and explorer to next one
+     * To be called in case of an error believed to be a network one
+     * e.g. wrong sapling root
+     */
+    rotateNetworks() {
+        const currentExplorerIndex = this.#networks.findIndex(
+            (n) => n === this.#currentExplorer
+        );
+        const currentNodeIndex = this.#networks.findIndex(
+            (n) => n === this.#currentNode
+        );
+        const indices = [currentExplorerIndex, currentNodeIndex];
+        for (let j = 0; j < indices.length; j++) {
+            for (let i = 1; i < this.#networks.length; i++) {
+                const isRpc = j === 1;
+                const index = indices[j];
+                const tryNetwork =
+                    this.#networks[(index + i) % this.#networks.length];
+                if (tryNetwork.isRpc === isRpc) {
+                    if (isRpc) {
+                        this.#currentNode = tryNetwork;
+                    } else {
+                        this.#currentExplorer = tryNetwork;
+                    }
+                    break;
+                }
+            }
+        }
     }
 
     /**
