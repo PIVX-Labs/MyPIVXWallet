@@ -3,3 +3,5 @@
   [headers.values]
     Cross-Origin-Embedder-Policy = "require-corp"
     Cross-Origin-Opener-Policy = "same-origin"
+[build.environment]
+  GIT_LFS_SKIP_SMUDGE = "1"
