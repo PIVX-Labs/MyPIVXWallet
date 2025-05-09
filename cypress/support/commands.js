@@ -75,6 +75,7 @@ Cypress.Commands.add('toggleAdvancedMode', () => {
 });
 Cypress.Commands.add('deleteWallet', () => {
     cy.goToTab('settings');
+    cy.log('Deleting wallet');
     cy.get('[data-testid="deleteWalletButton"]').click();
     cy.get('[data-i18n="popupConfirm"]').click();
 });
@@ -95,5 +96,9 @@ Cypress.Commands.add('togglePrivateMode', () => {
 Cypress.Commands.add('waitForSync', () => {
     cy.contains('[data-testid="alerts"]', 'Sync Finished!', {
         timeout: 1000 * 60 * 5,
+    });
+    // Close all alerts so we don't get any false positives when running the command again
+    cy.get('[data-testid="alertCloseButton"]').each(($el) => {
+        cy.wrap($el).click();
     });
 });

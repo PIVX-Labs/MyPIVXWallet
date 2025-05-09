@@ -47,7 +47,8 @@ export class BinaryShieldSyncer extends ShieldSyncer {
                     await new Promise(requestAnimationFrame);
                 }
 
-                if (height < this.#startFrom) {
+                if (height <= this.#startFrom) {
+                    txs = [];
                     continue;
                 }
                 this.#startFrom = Number.NEGATIVE_INFINITY;

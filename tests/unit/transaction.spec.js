@@ -6,10 +6,10 @@ import {
     COutpoint,
 } from '../../scripts/transaction.js';
 import { hexToBytes } from '../../scripts/utils.js';
-import testVector from './transaction.test.json';
+import testVectorRaw from './transaction.test.json';
 import * as encoding from '../../scripts/encoding.js';
 
-testVector = testVector.map(([tx, txid, hex, wif]) => [
+const testVector = testVectorRaw.map(([tx, txid, hex, wif]) => [
     new Transaction({
         version: tx.version,
         vin: tx.vin.map(
