@@ -112,7 +112,6 @@ settingsDecimals = "Balans Decimals:" # Balance Decimals:
 settingsExplorer = "Kies een verkenner:" # Choose an explorer:
 settingsLanguage = "Kies een taal:" # Choose a Language:
 settingsPivxNode = "Kies een PIVX-knooppunt:" # Choose a PIVX node:
-settingsAutoSelectNet = "Automatisch selecteren van verkenner en knooppunten" # Auto-select Explorers and Nodes
 settingsToggleDebug = "Debugmodus" # Debug Mode
 settingsToggleTestnet = "Testnet-modus" # Testnet Mode
 settingsToggleAdvancedMode = "Geavanceerde modus" # Advanced Mode
