@@ -31,6 +31,8 @@ jobs:
         with:
           submodules: 'false'
           lfs: 'false'
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
       - name: Fetch lfs
         env:
           LFS_USERNAME: 'Duddino'
