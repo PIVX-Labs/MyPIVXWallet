@@ -36,8 +36,7 @@ jobs:
           LFS_USERNAME: 'Duddino'
           LFS_PASSWORD: ${{ secrets.LFS_PASSWORD }}
         run: |
-          git submodule set-url cypress/fixtures/e2e "https://$LFS_USERNAME:$LFS_PASSWORD@mpw-git.duddino.com/Duddino/MPW-playbacks.git"
-          git submodule update --init --recursive
+          cypress/fixtures/init_fixtures.sh
       - name: Set up Node.js
         uses: actions/setup-node@v4
 
