@@ -142,7 +142,7 @@ function select(wallet) {
                     <span>Wallet</span>
                     <div class="walletsAmount">
                         <span style="margin-right: 5px">{{
-                            wallet.balance
+                            wallet.balance / COIN
                         }}</span>
                         <span class="walletsTicker">PIV</span>
                     </div>
