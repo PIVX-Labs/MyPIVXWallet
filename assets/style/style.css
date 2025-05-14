@@ -4453,3 +4453,27 @@ textarea::placeholder {
 .multiWalletBtn .multiWalletIcon {
     display:none;
 }
+
+.privateKeysBadgeWrapper {
+    margin-left:5px;
+    margin-right:5px;
+    font-size: 14px;
+    margin-top: 6px;
+}
+
+.privateKeysBadgeWrapper .privateKeysBadge {
+    background-color:#431180;
+    border:1px solid #5d11b7;
+    border-radius:5px;
+    color:#dec9f8;
+    padding:2px 11px 3px 11px;
+}
+
+.filterBlur {
+    filter: blur(4px);
+    transition:all .125s ease-in-out;
+}
+
+.filterBlur:hover {
+    filter: blur(0px)!important;
+}
