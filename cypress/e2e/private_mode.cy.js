@@ -5,7 +5,7 @@ describe('public/private mode tests', () => {
         }).as('sync');
         cy.intercept('GET', 'https://rpc.duddino.com/mainnet/getblockcount', {
             statusCode: 200,
-            body: 4669846,
+            body: 4895886,
         });
         cy.clearDb();
         cy.visit('/');
@@ -30,6 +30,7 @@ describe('public/private mode tests', () => {
         // We should be in private mode here
         cy.get('[data-testid="shieldModePrefix"]').should('exist');
         cy.deleteWallet();
+        //	    cy.deleteWallet();
         // When importing a non shield capable wallet, we should be in public mode
         cy.importWallet('DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb');
         cy.waitForSync();
