@@ -1,12 +1,14 @@
 <script setup>
 import pLogo from '../../assets/p_logo.svg';
 import vanityWalletIcon from '../../assets/icons/icon-vanity-wallet.svg';
+import CreateVanityModal$1 from './import_modals/CreateVanityModal.vue';
 import { ALERTS, translation, tr } from '../i18n.js';
 import { ref, computed, watch, nextTick } from 'vue';
 import { cChainParams } from '../chain_params.js';
 import { MAP_B58 } from '../misc.js';
 import { useAlerts } from '../composables/use_alerts.js';
 import { debugLog, DebugTopics } from '../debug.js';
+import CreateVanityModal from './import_modals/CreateVanityModal.vue';
 
 const { createAlert } = useAlerts();
 const addressPrefix = ref('');
@@ -192,4 +194,5 @@ function showAddressPrefix() {
             </button>
         </div>
     </div>
+    <CreateVanityModal />
 </template>

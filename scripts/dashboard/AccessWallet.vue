@@ -1,6 +1,7 @@
 <script setup>
 import loginIcon from '../../assets/icons/icon-my-wallet.svg';
 import importIcon from '../../assets/icons/icon-import.svg';
+import AccessWalletModal from './import_modals/AccessWalletModal.vue';
 import { ref, watch, toRefs } from 'vue';
 import { translation } from '../i18n.js';
 import { isBase64 } from '../misc';
@@ -113,4 +114,5 @@ function importWallet() {
             <!-- // IMPORT WALLET -->
         </div>
     </div>
+    <AccessWalletModal />
 </template>

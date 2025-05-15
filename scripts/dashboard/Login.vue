@@ -3,6 +3,7 @@ import ledgerWallet from '../../assets/icons/icon-ledger-wallet.svg';
 import VanityGen from './VanityGen.vue';
 import CreateWallet from './CreateWallet.vue';
 import AccessWallet from './AccessWallet.vue';
+import ImportLedgerModal from './import_modals/ImportLedgerModal.vue';
 import { toRefs, ref } from 'vue';
 
 const emit = defineEmits(['import-wallet']);
@@ -79,5 +80,6 @@ function importWallet(importObj) {
                     importWallet({ type: 'hd', secret, password })
             "
         />
+        <ImportLedgerModal />
     </div>
 </template>

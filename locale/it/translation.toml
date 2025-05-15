@@ -234,6 +234,16 @@ masternodeStatusMissing = "MANCANTE" # MISSING
 masternodeStatusExpired = "SCADUTO" # EXPIRED
 exportToCsv = "Esporta le transazioni" # Export transactions
 exportToCsvBody = "Vuoi esportare le transazioni in formato CSV?" # Do you want to export your transactions as CSV?
+accessWallet = "" # Access Wallet
+accessPivxLedgerWallet = "" # Access PIVX Ledger Wallet
+customWalletName = "" # Custom wallet name
+maxEightChars = "" # (max. 8 characters)
+importPivxWallet = "" # Import a PIVX wallet using a Private Key, xpriv, or Seed Phrase.
+seedPhraseXpriv = "" # Seed Phrase, XPriv or WIF Private Key
+createANewPivxWallet = "" # Create a new PIVX Wallet
+createANewVanityWallet = "" # Create a Vanity PIVX Wallet
+walletsStart = "" # <b>Note:</b> addresses will always start with:
+wroteItDown = "" # Wrote it down
 
 [ALERTS]
 INTERNAL_ERROR = "Errore interno, rirova più tardi" # Internal error, please try again later

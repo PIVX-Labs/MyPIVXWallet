@@ -1,10 +1,9 @@
 <script setup>
-import Modal from '../Modal.vue';
 import { generateMnemonic } from 'bip39';
 import { translation } from '../i18n.js';
 import { ref, watch, toRefs } from 'vue';
 import newWalletIcon from '../../assets/icons/icon-new-wallet.svg';
-import Password from '../Password.vue';
+import CreateWalletModal from './import_modals/CreateWalletModal.vue';
 import { getNetwork } from '../network/network_manager.js';
 
 const emit = defineEmits(['importWallet']);
@@ -67,58 +66,5 @@ async function generateWallet() {
             </div>
         </div>
     </div>
-    <Teleport to="body">
-        <modal :show="showModal" @close="showModal = false">
-            <template #body>
-                <p class="modal-label"></p>
-                <div class="auto-fit">
-                    <span v-html="translation.thisIsYourSeed"></span>
-                    <b>
-                        <div
-                            translate="no"
-                            class="seed-phrase noselect notranslate"
-                        >
-                            {{ mnemonic }}
-                        </div>
-                    </b>
-                    <br />
-                    <span v-html="translation.writeDownSeed"></span>
-                    <br />
-                    <span v-html="translation.doNotShareWarning"> </span>
-                    <br />
-                    <b> {{ translation.doNotShare }} </b>
-                    <br />
-                    <br />
-                    <a
-                        href="https://www.ledger.com/blog/how-to-protect-your-seed-phrase"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                    >
-                        <i v-html="translation.digitalStoreNotAdvised"></i>
-                    </a>
-                    <br />
-                    <div v-if="advancedMode">
-                        <br />
-                        <Password
-                            v-model:password="passphrase"
-                            testid="passPhrase"
-                            :placeholder="translation.optionalPassphrase"
-                        />
-                    </div>
-                </div>
-            </template>
-            <template #footer>
-                <center>
-                    <button
-                        type="button"
-                        class="pivx-button-big"
-                        @click="showModal = false"
-                        data-testid="seedphraseModal"
-                    >
-                        {{ translation.writtenDown }}
-                    </button>
-                </center>
-            </template>
-        </modal>
-    </Teleport>
+    <CreateWalletModal />
 </template>
