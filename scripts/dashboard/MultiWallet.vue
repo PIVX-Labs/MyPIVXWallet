@@ -176,7 +176,7 @@ function select(wallet) {
             </div>
         </div>
     </div>
-    
+
     <Modal :show="showAccessLedger" modalClass="exportKeysModalColor">
         <template #header>
             <h5 class="modal-title modal-title-new">
@@ -184,17 +184,31 @@ function select(wallet) {
             </h5>
         </template>
         <template #body>
-            <div style="color:#a49bb5;">
+            <div style="color: #a49bb5">
                 <center>
-                    <div style="color:#c4becf!important">
-                        Use your Ledger Hardware wallet with MPW's familiar interface.<br><br>
-                        Compatible hardware wallet will be automatically found if it's plugged in and unlocked.<br><br>
+                    <div style="color: #c4becf !important">
+                        Use your Ledger Hardware wallet with MPW's familiar
+                        interface.<br /><br />
+                        Compatible hardware wallet will be automatically found
+                        if it's plugged in and unlocked.<br /><br />
                     </div>
                 </center>
 
-                <div style="text-align:left">
-                    <span style="margin-bottom: 3px; font-size: 15px; display: block; margin-left: 6px; margin-top: 6px;">Custom wallet name <span style="color:#a082d9;">(max. 8 characters)</span></span>
-                    <input type="text">
+                <div style="text-align: left">
+                    <span
+                        style="
+                            margin-bottom: 3px;
+                            font-size: 15px;
+                            display: block;
+                            margin-left: 6px;
+                            margin-top: 6px;
+                        "
+                        >Custom wallet name
+                        <span style="color: #a082d9"
+                            >(max. 8 characters)</span
+                        ></span
+                    >
+                    <input type="text" />
                 </div>
             </div>
         </template>
@@ -213,9 +227,7 @@ function select(wallet) {
                     @click="blur = !blur"
                     data-testid="blurBtn"
                 >
-                    <span class="buttoni-text">
-                        Access Wallet
-                    </span>
+                    <span class="buttoni-text"> Access Wallet </span>
                 </button>
             </center>
         </template>
@@ -228,19 +240,40 @@ function select(wallet) {
             </h5>
         </template>
         <template #body>
-            <div style="color:#a49bb5;">
+            <div style="color: #a49bb5">
                 <center>
-                    <div style="color:#c4becf!important">
-                        Import a PIVX wallet using a Private Key, xpriv, or Seed Phrase.<br><br>
+                    <div style="color: #c4becf !important">
+                        Import a PIVX wallet using a Private Key, xpriv, or Seed
+                        Phrase.<br /><br />
                     </div>
                 </center>
 
-                <div style="text-align:left">
-                    <span style="margin-bottom: 3px; font-size: 15px; display: block; margin-left: 6px;">Seed Phrase, XPriv or WIF Private Key</span>
-                    <input type="text">
+                <div style="text-align: left">
+                    <span
+                        style="
+                            margin-bottom: 3px;
+                            font-size: 15px;
+                            display: block;
+                            margin-left: 6px;
+                        "
+                        >Seed Phrase, XPriv or WIF Private Key</span
+                    >
+                    <input type="text" />
 
-                    <span style="margin-bottom: 3px; font-size: 15px; display: block; margin-left: 6px; margin-top: 6px;">Custom wallet name <span style="color:#a082d9;">(max. 8 characters)</span></span>
-                    <input type="text">
+                    <span
+                        style="
+                            margin-bottom: 3px;
+                            font-size: 15px;
+                            display: block;
+                            margin-left: 6px;
+                            margin-top: 6px;
+                        "
+                        >Custom wallet name
+                        <span style="color: #a082d9"
+                            >(max. 8 characters)</span
+                        ></span
+                    >
+                    <input type="text" />
                 </div>
             </div>
         </template>
@@ -259,9 +292,7 @@ function select(wallet) {
                     @click="blur = !blur"
                     data-testid="blurBtn"
                 >
-                    <span class="buttoni-text">
-                        Access Wallet
-                    </span>
+                    <span class="buttoni-text"> Access Wallet </span>
                 </button>
             </center>
         </template>
@@ -274,20 +305,44 @@ function select(wallet) {
             </h5>
         </template>
         <template #body>
-            <div style="color:#a49bb5;">
+            <div style="color: #a49bb5">
                 <center>
-                    <div style="color:#c4becf!important">
-                        Create a wallet with a custom prefix, this can take a long time!<br>
-                        <u><b>Note:</b> addresses will always start with: <b>D</b></u><br><br>
+                    <div style="color: #c4becf !important">
+                        Create a wallet with a custom prefix, this can take a
+                        long time!<br />
+                        <u
+                            ><b>Note:</b> addresses will always start with:
+                            <b>D</b></u
+                        ><br /><br />
                     </div>
                 </center>
 
-                <div style="text-align:left">
-                    <span style="margin-bottom: 3px; font-size: 15px; display: block; margin-left: 6px;">Address prefix</span>
-                    <input type="text">
+                <div style="text-align: left">
+                    <span
+                        style="
+                            margin-bottom: 3px;
+                            font-size: 15px;
+                            display: block;
+                            margin-left: 6px;
+                        "
+                        >Address prefix</span
+                    >
+                    <input type="text" />
 
-                    <span style="margin-bottom: 3px; font-size: 15px; display: block; margin-left: 6px; margin-top: 6px;">Custom wallet name <span style="color:#a082d9;">(max. 8 characters)</span></span>
-                    <input type="text">
+                    <span
+                        style="
+                            margin-bottom: 3px;
+                            font-size: 15px;
+                            display: block;
+                            margin-left: 6px;
+                            margin-top: 6px;
+                        "
+                        >Custom wallet name
+                        <span style="color: #a082d9"
+                            >(max. 8 characters)</span
+                        ></span
+                    >
+                    <input type="text" />
                 </div>
             </div>
         </template>
@@ -306,9 +361,7 @@ function select(wallet) {
                     @click="blur = !blur"
                     data-testid="blurBtn"
                 >
-                    <span class="buttoni-text">
-                        Create Wallet
-                    </span>
+                    <span class="buttoni-text"> Create Wallet </span>
                 </button>
             </center>
         </template>
@@ -321,79 +374,125 @@ function select(wallet) {
             </h5>
         </template>
         <template #body>
-            <div style="color:#a49bb5;">
+            <div style="color: #a49bb5">
                 <center>
-                    <div style="color:#c4becf!important">
-                        This is your seed phrase, <b>write it down somewhere.<br>
-                        <u>You'll only see this once!</u></b><br><br>
+                    <div style="color: #c4becf !important">
+                        This is your seed phrase,
+                        <b
+                            >write it down somewhere.<br />
+                            <u>You'll only see this once!</u></b
+                        ><br /><br />
                     </div>
                 </center>
 
-                <div style="display: flex; justify-content: center; flex-wrap: wrap;">
+                <div
+                    style="
+                        display: flex;
+                        justify-content: center;
+                        flex-wrap: wrap;
+                    "
+                >
                     <div class="privateKeysBadgeWrapper">
-                        1<br>
-                        <div class="privateKeysBadge"><span class="filterBlur">somewhere</span></div>
+                        1<br />
+                        <div class="privateKeysBadge">
+                            <span class="filterBlur">somewhere</span>
+                        </div>
                     </div>
-                    
-                    <div class="privateKeysBadgeWrapper">
-                        2<br>
-                        <div class="privateKeysBadge"><span class="filterBlur">test</span></div>
-                    </div>
-                    
-                    <div class="privateKeysBadgeWrapper">
-                        3<br>
-                        <div class="privateKeysBadge"><span class="filterBlur">test</span></div>
-                    </div>
-                    
-                    <div class="privateKeysBadgeWrapper">
-                        4<br>
-                        <div class="privateKeysBadge"><span class="filterBlur">test</span></div>
-                    </div>
-                    
-                    <div class="privateKeysBadgeWrapper">
-                        5<br>
-                        <div class="privateKeysBadge"><span class="filterBlur">test</span></div>
-                    </div>
-                    
-                    <div class="privateKeysBadgeWrapper">
-                        6<br>
-                        <div class="privateKeysBadge"><span class="filterBlur">test</span></div>
-                    </div>
-                    
-                    <div class="privateKeysBadgeWrapper">
-                        7<br>
-                        <div class="privateKeysBadge"><span class="filterBlur">test</span></div>
-                    </div>
-                    
-                    <div class="privateKeysBadgeWrapper">
-                        8<br>
-                        <div class="privateKeysBadge"><span class="filterBlur">test</span></div>
-                    </div>
-                    
-                    <div class="privateKeysBadgeWrapper">
-                        9<br>
-                        <div class="privateKeysBadge"><span class="filterBlur">test</span></div>
-                    </div>
-                    
-                    <div class="privateKeysBadgeWrapper">
-                        10<br>
-                        <div class="privateKeysBadge"><span class="filterBlur">test</span></div>
-                    </div>
-                    
-                    <div class="privateKeysBadgeWrapper">
-                        11<br>
-                        <div class="privateKeysBadge"><span class="filterBlur">test</span></div>
-                    </div>
-                    
-                    <div class="privateKeysBadgeWrapper">
-                        12<br>
-                        <div class="privateKeysBadge"><span class="filterBlur">test</span></div>
-                    </div>
-                </div><br>
 
-                <div style="text-align:left;">
-                    <span style="margin-bottom: 3px; font-size: 15px; display: block; margin-left: 6px; margin-top: 6px;">Custom wallet name <span style="color:#a082d9;">(max. 8 characters)</span></span>
-                    <input type="text" style="margin-bottom: 0px;">
+                    <div class="privateKeysBadgeWrapper">
+                        2<br />
+                        <div class="privateKeysBadge">
+                            <span class="filterBlur">test</span>
+                        </div>
+                    </div>
+
+                    <div class="privateKeysBadgeWrapper">
+                        3<br />
+                        <div class="privateKeysBadge">
+                            <span class="filterBlur">test</span>
+                        </div>
+                    </div>
+
+                    <div class="privateKeysBadgeWrapper">
+                        4<br />
+                        <div class="privateKeysBadge">
+                            <span class="filterBlur">test</span>
+                        </div>
+                    </div>
+
+                    <div class="privateKeysBadgeWrapper">
+                        5<br />
+                        <div class="privateKeysBadge">
+                            <span class="filterBlur">test</span>
+                        </div>
+                    </div>
+
+                    <div class="privateKeysBadgeWrapper">
+                        6<br />
+                        <div class="privateKeysBadge">
+                            <span class="filterBlur">test</span>
+                        </div>
+                    </div>
+
+                    <div class="privateKeysBadgeWrapper">
+                        7<br />
+                        <div class="privateKeysBadge">
+                            <span class="filterBlur">test</span>
+                        </div>
+                    </div>
+
+                    <div class="privateKeysBadgeWrapper">
+                        8<br />
+                        <div class="privateKeysBadge">
+                            <span class="filterBlur">test</span>
+                        </div>
+                    </div>
+
+                    <div class="privateKeysBadgeWrapper">
+                        9<br />
+                        <div class="privateKeysBadge">
+                            <span class="filterBlur">test</span>
+                        </div>
+                    </div>
+
+                    <div class="privateKeysBadgeWrapper">
+                        10<br />
+                        <div class="privateKeysBadge">
+                            <span class="filterBlur">test</span>
+                        </div>
+                    </div>
+
+                    <div class="privateKeysBadgeWrapper">
+                        11<br />
+                        <div class="privateKeysBadge">
+                            <span class="filterBlur">test</span>
+                        </div>
+                    </div>
+
+                    <div class="privateKeysBadgeWrapper">
+                        12<br />
+                        <div class="privateKeysBadge">
+                            <span class="filterBlur">test</span>
+                        </div>
+                    </div>
+                </div>
+                <br />
+
+                <div style="text-align: left">
+                    <span
+                        style="
+                            margin-bottom: 3px;
+                            font-size: 15px;
+                            display: block;
+                            margin-left: 6px;
+                            margin-top: 6px;
+                        "
+                        >Custom wallet name
+                        <span style="color: #a082d9"
+                            >(max. 8 characters)</span
+                        ></span
+                    >
+                    <input type="text" style="margin-bottom: 0px" />
                 </div>
             </div>
         </template>
@@ -412,9 +511,7 @@ function select(wallet) {
                     @click="blur = !blur"
                     data-testid="blurBtn"
                 >
-                    <span class="buttoni-text">
-                        Wrote it down
-                    </span>
+                    <span class="buttoni-text"> Wrote it down </span>
                 </button>
             </center>
         </template>

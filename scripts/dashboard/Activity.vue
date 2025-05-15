@@ -1,7 +1,6 @@
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { useNetwork } from '../composables/use_network.js';
-import { activeWallet } from '../wallet.js';
 import { cChainParams } from '../chain_params.js';
 import { translation } from '../i18n.js';
 import { Database } from '../database.js';
@@ -15,6 +14,8 @@ import { beautifyNumber } from '../misc.js';
 import { useWallets } from '../composables/use_wallet';
 import TxExport from './TxExport.vue';
 
+const wallet = useWallets();
+
 const props = defineProps({
     title: String,
     rewards: Boolean,
@@ -27,7 +28,7 @@ const isHistorySynced = ref(false);
 const rewardAmount = ref(0);
 const ticker = computed(() => cChainParams.current.TICKER);
 const network = useNetwork();
-const wallets = useWallets();
+const { activeWallet } = useWallets();
 function getActivityUrl(tx) {
     return network.explorerUrl + '/tx/' + tx.id;
 }
@@ -108,7 +109,7 @@ function txSelfMap(amount, shieldAmount) {
 function updateReward() {
     if (!props.rewards) return;
     let res = 0;
-    for (const tx of activeWallet.getHistoricalTxs()) {
+    for (const tx of activeWallet.value.historicalTxs) {
         if (tx.type !== HistoricalTxType.STAKE) continue;
         res += tx.amount;
     }
@@ -116,13 +117,9 @@ function updateReward() {
 }
 
 async function update(txToAdd = 0) {
-    // Return if wallet is not synced yet
-    if (!activeWallet.isSynced) {
-        return;
-    }
-
     // Prevent the user from spamming refreshes
     if (updating.value) return;
+    isHistorySynced.value = false;
     let newTxs = [];
 
     // Set the updating animation
@@ -131,7 +128,7 @@ async function update(txToAdd = 0) {
     // If there are less than 10 txs loaded, append rather than update the list
     if (txCount < 10 && txToAdd == 0) txToAdd = 10;
 
-    const historicalTxs = activeWallet.getHistoricalTxs();
+    const historicalTxs = activeWallet.value.historicalTxs;
 
     let i = 0;
     let found = 0;
@@ -152,7 +149,10 @@ async function update(txToAdd = 0) {
     updating.value = false;
 }
 
-watch([translation, () => wallets.activeWallet], async () => await update());
+watch(translation, async () => {
+    await update();
+    updateReward();
+});
 
 /**
  * Parse tx to list syntax
@@ -177,7 +177,7 @@ async function parseTXs(arrTXs) {
         year: '2-digit',
     };
     const cDB = await Database.getInstance();
-    const cAccount = await cDB.getAccount(activeWallet.getKeyToExport());
+    const cAccount = await cDB.getAccount(activeWallet.value.getKeyToExport());
 
     const cDate = new Date();
     for (const cTx of arrTXs) {
@@ -229,7 +229,10 @@ async function parseTXs(arrTXs) {
                 amountToShow = descriptor.amount;
             } else {
                 let arrAddresses = cTx.receivers
-                    .map((addr) => [activeWallet.isOwnAddress(addr), addr])
+                    .map((addr) => [
+                        activeWallet.value.isOwnAddress(addr),
+                        addr,
+                    ])
                     .filter(([isOwnAddress, _]) => {
                         return cTx.type === HistoricalTxType.RECEIVED
                             ? isOwnAddress
@@ -294,20 +297,13 @@ const rewardsText = computed(() => {
     return `${strBal} <span style="font-size:15px; opacity: 0.55;">${ticker.value}</span>`;
 });
 
-function reset() {
-    txs.value = [];
-    txCount = 0;
-    rewardAmount.value = 0;
-    update(0);
-}
-
-function getTxCount() {
-    return txCount;
-}
-
-onMounted(() => update());
-
-defineExpose({ update, reset, getTxCount, updateReward });
+watch(
+    () => wallet.historicalTxs,
+    async () => {
+        await update();
+        updateReward();
+    }
+);
 </script>
 
 <template>

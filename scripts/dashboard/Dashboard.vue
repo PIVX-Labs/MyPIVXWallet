@@ -49,10 +49,9 @@ import { toRaw } from 'vue';
 import { valuesToComputed } from '../utils.js';
 import { PIVXShield } from 'pivx-shield';
 const { createAlert } = useAlerts();
+
 const wallets = useWallets();
 const { activeWallet, activeVault } = storeToRefs(wallets);
-
-const activity = ref(null);
 
 const showLogin = computed(() => true);
 
@@ -438,7 +437,6 @@ async function importFromDatabase() {
 
         await wallets.addVault(v);
 
-        activity.value?.reset();
         getEventEmitter().emit('reset-activity');
         updateLogOutButton();
     }
@@ -486,14 +484,6 @@ const {
     isViewOnly,
     hasShield,
 } = valuesToComputed(activeWallet);
-
-getEventEmitter().on('sync-status', (status) => {
-    if (status === 'stop') activity?.value?.update();
-});
-
-//wallet.onNewTx(() => {
-//    activity?.value?.update();
-//});
 
 function changePassword() {
     showEncryptModal.value = true;
@@ -1042,7 +1032,6 @@ defineExpose({
                     />
                     <WalletButtons class="col-12 p-0 md-5" />
                     <Activity
-                        ref="activity"
                         class="col-12 p-0 mb-5"
                         title="Activity"
                         :rewards="false"

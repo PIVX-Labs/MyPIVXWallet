@@ -147,8 +147,17 @@ function addWallet(wallet) {
     const getPath = (script) => wallet.getPath(script);
     const lockCoin = (out) => wallet.lockCoin(out);
     const unlockCoin = (out) => wallet.unlockCoin(out);
-    const getHistoricalTxs = () => wallet.getHistoricalTxs();
 
+    const historicalTxs = ref([]);
+
+    getEventEmitter().on('sync-status', (status) => {
+        if (status === 'stop') {
+            historicalTxs.value = wallet.getHistoricalTxs();
+        }
+    });
+    wallet.onNewTx(() => {
+        historicalTxs.value = [...wallet.getHistoricalTxs()];
+    });
     getEventEmitter().on('toggle-network', async () => {
         isEncrypted.value = await hasEncryptedWallet();
         blockCount.value = rawBlockCount;
@@ -156,6 +165,7 @@ function addWallet(wallet) {
 
     getEventEmitter().on('wallet-import', async () => {
         publicMode.value = fPublicMode;
+        historicalTxs.value = [];
     });
 
     wallet.onBalanceUpdate(async () => {
@@ -210,6 +220,7 @@ function addWallet(wallet) {
             isViewOnly.value = wallet.isViewOnly();
         },
         save: () => wallet.save(),
+        isOwnAddress: () => wallet.isOwnAddress(),
         isCreatingTransaction,
         isHD,
         balance,
@@ -228,7 +239,7 @@ function addWallet(wallet) {
         blockCount,
         lockCoin,
         unlockCoin,
-        getHistoricalTxs,
+        historicalTxs,
         onNewTx,
         onTransparentSyncStatusUpdate,
         onShieldSyncStatusUpdate,
