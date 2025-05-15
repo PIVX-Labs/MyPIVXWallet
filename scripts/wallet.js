@@ -868,6 +868,7 @@ export class Wallet {
             const network = getNetwork();
             const shieldSyncer = await BinaryShieldSyncer.create(
                 network,
+                await Database.getInstance(),
                 this.#shield.getLastSyncedBlock()
             );
 
@@ -1026,6 +1027,12 @@ export class Wallet {
             this.#isSynced = false;
             await this.#transparentSync();
             await this.#syncShield();
+            const db = await Database.getInstance();
+            // Reset shield sync data, it might be corrupted
+            await db.setShieldSyncData({
+                shieldData: null,
+                lastSyncedBlock: null,
+            });
             return false;
         }
         return true;
@@ -1075,7 +1082,7 @@ export class Wallet {
 
     async #resetShield() {
         // TODO: take the wallet creation height in input from users
-        await this.#shield.reloadFromCheckpoint(4200000);
+        await this.#shield.reloadFromCheckpoint(4_200_000);
         await this.#saveShieldOnDisk();
     }
 

@@ -20,9 +20,10 @@ export class Database {
      * Version 6 = Filter unconfirmed txs (#415)
      * Version 7 = Store shield params in indexed db (#511)
      * Version 8 = Multi MNs (#517)
+     * Version 9 = Store shield syncing data in indexed db (#543)
      * @type {number}
      */
-    static version = 8;
+    static version = 9;
 
     /**
      * @type{import('idb').IDBPDatabase}
@@ -473,6 +474,9 @@ export class Database {
                     db.createObjectStore('shieldParams');
                 }
                 if (oldVersion < 8) {
+                    db.createObjectStore('shieldSyncData');
+                }
+                if (oldVersion < 9) {
                     (async () => {
                         const store = transaction.objectStore('masternodes');
                         const mn = await store.get('masternode');
@@ -525,6 +529,30 @@ export class Database {
             .objectStore('shieldParams');
         await store.put(saplingOutput, 'saplingOutput');
         await store.put(saplingSpend, 'saplingSpend');
+    }
+
+    /**
+     * @returns {Promise<{lastSyncedBlock: number, shieldData: Uint8Array}>}
+     */
+    async getShieldSyncData() {
+        const store = this.#db
+            .transaction('shieldSyncData', 'readonly')
+            .objectStore('shieldSyncData');
+        const lastSyncedBlock = (await store.get('lastSyncedBlock')) ?? 4190531;
+        const shieldData =
+            (await store.get('shieldData')) ?? new Uint8Array([]);
+        return {
+            lastSyncedBlock,
+            shieldData,
+        };
+    }
+
+    async setShieldSyncData({ shieldData, lastSyncedBlock }) {
+        const store = this.#db
+            .transaction('shieldSyncData', 'readwrite')
+            .objectStore('shieldSyncData');
+        await store.put(lastSyncedBlock, 'lastSyncedBlock');
+        await store.put(shieldData, 'shieldData');
     }
 
     /**

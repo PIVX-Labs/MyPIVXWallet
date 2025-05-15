@@ -17,6 +17,8 @@ import { timeToDate } from '../utils.js';
 
 const wallet = useWallet();
 
+const wallet = useWallet();
+
 const props = defineProps({
     title: String,
     rewards: Boolean,
@@ -119,6 +121,7 @@ function updateReward() {
 async function update(txToAdd = 0) {
     // Prevent the user from spamming refreshes
     if (updating.value) return;
+    isHistorySynced.value = false;
     let newTxs = [];
 
     // Set the updating animation

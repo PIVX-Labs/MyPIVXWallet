@@ -23,14 +23,22 @@ export class Reader {
         return this.#i;
     }
     /**
-     * @param
+     * @param {Uint8Array|null} [prefix] Bytes to prefix, if any
      */
-    constructor(req) {
+    constructor(req, prefix = null) {
+        const prefixLength = prefix?.length ?? 0;
         this.#availableBytes = new Uint8Array(
-            req.headers?.get('Content-Length') ||
-                req.headers?.get('X-Content-Length') ||
-                1024
+            Number(
+                req.headers?.get('Content-Length') ||
+                    req.headers?.get('X-Content-Length') ||
+                    1024
+            ) + prefixLength
         );
+
+        if (prefix) {
+            this.#appendBytes(prefix);
+        }
+
         const stream = req.body.getReader();
         (async () => {
             while (true) {
