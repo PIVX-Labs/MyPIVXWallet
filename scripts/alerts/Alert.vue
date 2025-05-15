@@ -49,6 +49,7 @@ const icon = computed(() => {
             <button
                 :class="actionName ? 'notifyButtonFirst' : ''"
                 class="btn btn-notification-close"
+                data-testid="alertCloseButton"
                 @click="$emit('hideAlert')"
             >
                 CLOSE
