@@ -256,6 +256,7 @@ describe('Wallet transaction tests', () => {
                     {
                         address: addr,
                         value: 0.05 * 10 ** 8,
+                        memo: '',
                     },
                 ],
                 version: 3,
@@ -325,6 +326,7 @@ describe('Wallet transaction tests', () => {
                     {
                         address: addr,
                         value: 0.05 * 10 ** 8,
+                        memo: '',
                     },
                 ],
             })
