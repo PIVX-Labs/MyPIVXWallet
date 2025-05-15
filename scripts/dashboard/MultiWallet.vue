@@ -17,7 +17,7 @@ const blur = ref(true);
 const showAccessLedger = ref(false);
 const showAccessWallet = ref(false);
 const showCreateVanity = ref(false);
-const showCreateWallet = ref(true);
+const showCreateWallet = ref(false);
 
 const props = defineProps({
     advancedMode: Boolean,

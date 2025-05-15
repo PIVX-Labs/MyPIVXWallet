@@ -13,8 +13,7 @@ import { blockCount } from '../global.js';
 import { beautifyNumber } from '../misc.js';
 import { useWallets } from '../composables/use_wallet';
 import TxExport from './TxExport.vue';
-
-const wallet = useWallets();
+import { storeToRefs } from 'pinia';
 
 const props = defineProps({
     title: String,
@@ -28,7 +27,7 @@ const isHistorySynced = ref(false);
 const rewardAmount = ref(0);
 const ticker = computed(() => cChainParams.current.TICKER);
 const network = useNetwork();
-const { activeWallet } = useWallets();
+const { activeWallet } = storeToRefs(useWallets());
 function getActivityUrl(tx) {
     return network.explorerUrl + '/tx/' + tx.id;
 }
@@ -107,6 +106,7 @@ function txSelfMap(amount, shieldAmount) {
 }
 
 function updateReward() {
+    if (!activeWallet.value) return;
     if (!props.rewards) return;
     let res = 0;
     for (const tx of activeWallet.value.historicalTxs) {
@@ -117,6 +117,7 @@ function updateReward() {
 }
 
 async function update(txToAdd = 0) {
+    if (!activeWallet.value) return;
     // Prevent the user from spamming refreshes
     if (updating.value) return;
     isHistorySynced.value = false;
@@ -298,7 +299,7 @@ const rewardsText = computed(() => {
 });
 
 watch(
-    () => wallet.historicalTxs,
+    () => activeWallet.value.historicalTxs,
     async () => {
         await update();
         updateReward();
