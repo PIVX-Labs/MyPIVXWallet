@@ -1,28 +1,25 @@
 <script setup>
 import { useWallets } from '../composables/use_wallet.js';
-import Modal from '../Modal.vue';
-import { translation } from '../i18n.js';
 
 import { computed, ref, toRefs, watch } from 'vue';
 
 import iWalletPlus from '../../assets/icons/icon-wallet-plus.svg';
 import { COIN } from '../chain_params';
+import { storeToRefs } from 'pinia';
+import { useSettings } from '../composables/use_settings';
 
 const wallets = useWallets();
 
 const isMultiWalletOpen = ref(false);
 const multiWalletOpenedClass = ref(false);
 const multiWalletOpacity = ref(false);
-const blur = ref(true);
-const showCreateVanity = ref(false);
-const showCreateWallet = ref(false);
 
 const props = defineProps({
     advancedMode: Boolean,
     importLock: Boolean,
 });
 
-const { importLock } = toRefs(props);
+const { showLogin } = storeToRefs(useSettings());
 
 const totalBalance = computed(() => {
     return wallets.vaults.reduce((sum, vault) => {
@@ -166,7 +163,10 @@ function select(wallet) {
             >
                 <button
                     class="pivx-button-big"
-                    @click="generateWallet"
+                    @click="
+                        showLogin = true;
+                        isMultiWalletOpen = false;
+                    "
                     style="padding: 11px 12px; width: 100%"
                 >
                     + ADD ACCOUNT
