@@ -6,6 +6,7 @@
  */
 export const lockableFunction = (f) => {
     let lock = false;
+
     const g = async (...args) => {
         try {
             if (!lock) {

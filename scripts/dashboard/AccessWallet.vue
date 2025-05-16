@@ -1,6 +1,7 @@
 <script setup>
 import loginIcon from '../../assets/icons/icon-my-wallet.svg';
 import importIcon from '../../assets/icons/icon-import.svg';
+import AccessWalletModal from './import_modals/AccessWalletModal.vue';
 import { ref, watch, toRefs } from 'vue';
 import { translation } from '../i18n.js';
 import { isBase64 } from '../misc';
@@ -25,6 +26,8 @@ const secret = ref('');
  * Can be bip32 password or our own encryption
  */
 const password = ref('');
+
+const label = ref('');
 
 watch([secret, advancedMode], ([secret, advancedMode]) => {
     // If it cointains spaces, it's likely a bip39 seed
@@ -54,11 +57,18 @@ watch(showPassword, (showPassword) => {
 });
 const emit = defineEmits(['import-wallet']);
 function importWallet() {
-    emit('import-wallet', secret.value, password.value);
-    // Clear the input fields
-    secret.value = '';
-    password.value = '';
+    emit('import-wallet', secret.value, password.value, label.value);
+    showInput.value = false;
 }
+
+watch(showInput, (showInput) => {
+    if (!showInput) {
+        // Clear the input fields
+        secret.value = '';
+        password.value = '';
+        label.value = '';
+    }
+});
 </script>
 
 <template>
@@ -79,38 +89,17 @@ function importWallet() {
                     {{ translation.dCardFourDesc }}
                 </p>
             </div>
-
-            <!-- IMPORT WALLET -->
-            <input class="hide-element" type="text" id="clipboard" />
-            <div v-show="showInput">
-                <input
-                    v-model="secret"
-                    :type="cloakSecret ? 'password' : 'text'"
-                    placeholder="Seed Phrase, XPriv or WIF Private Key"
-                    data-testid="secretInp"
-                />
-                <input
-                    v-show="showPassword"
-                    v-model="password"
-                    type="password"
-                    :placeholder="passwordPlaceholder"
-                    data-testid="passwordInp"
-                />
-                <button
-                    class="pivx-button-big"
-                    @click="importWallet()"
-                    data-testid="importWalletButton"
-                >
-                    <span
-                        class="buttoni-icon goToWalletIco"
-                        v-html="importIcon"
-                    ></span>
-                    <span class="buttoni-text" data-i18n="dCardFourButtonI"
-                        >Import</span
-                    >
-                </button>
-            </div>
-            <!-- // IMPORT WALLET -->
         </div>
     </div>
+    <AccessWalletModal
+        :show="showInput"
+        :show-password-field="showPassword"
+        :password-placeholder="passwordPlaceholder"
+        :cloakSecret="cloakSecret"
+        @close="showInput = false"
+        @submit="importWallet()"
+        v-model:value="secret"
+        v-model:password="password"
+        v-model:label="label"
+    />
 </template>

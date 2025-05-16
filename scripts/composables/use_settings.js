@@ -18,6 +18,7 @@ export const useSettings = defineStore('settings', () => {
     const autoLockWallet = ref(false);
     const debug = ref(rawDebug);
     const isTestnet = ref(cChainParams.current === cChainParams.testnet);
+    const showLogin = ref(false);
 
     const { ignoreUpdates: ignoreTestnetWatch } = watchIgnorable(
         isTestnet,
@@ -59,5 +60,6 @@ export const useSettings = defineStore('settings', () => {
         autoLockWallet,
         debug,
         isTestnet,
+        showLogin,
     };
 });
