@@ -244,6 +244,7 @@ createANewPivxWallet = "" # Create a new PIVX Wallet
 createANewVanityWallet = "" # Create a Vanity PIVX Wallet
 walletsStart = "" # <b>Note:</b> addresses will always start with:
 wroteItDown = "" # Wrote it down
+stop = "" # Stop
 
 [ALERTS]
 INTERNAL_ERROR = "Błąd wewnętrzny, spróbuj ponownie później" # Internal error, please try again later

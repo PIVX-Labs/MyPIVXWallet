@@ -1,7 +1,6 @@
 <script setup>
 import pLogo from '../../assets/p_logo.svg';
 import vanityWalletIcon from '../../assets/icons/icon-vanity-wallet.svg';
-import CreateVanityModal$1 from './import_modals/CreateVanityModal.vue';
 import { ALERTS, translation, tr } from '../i18n.js';
 import { ref, computed, watch, nextTick } from 'vue';
 import { cChainParams } from '../chain_params.js';
@@ -12,17 +11,14 @@ import CreateVanityModal from './import_modals/CreateVanityModal.vue';
 
 const { createAlert } = useAlerts();
 const addressPrefix = ref('');
-const addressPrefixElement = ref({});
 const isGenerating = ref(false);
 const addressPrefixShow = ref(false);
 const attempts = ref(0);
+const label = ref('');
 /**
  * @type {Worker[]}
  */
 const arrWorkers = [];
-const prefixNetwork = computed(() =>
-    cChainParams.current.PUBKEY_PREFIX.join(' or ')
-);
 
 const emit = defineEmits(['import-wallet']);
 
@@ -38,6 +34,14 @@ watch(addressPrefix, (newValue, oldValue) => {
         }
     }
 });
+
+function closeModal() {
+    if (isGenerating.value) {
+        stop();
+    } else {
+        addressPrefixShow.value = false;
+    }
+}
 
 function stop() {
     while (arrWorkers.length) {
@@ -88,7 +92,8 @@ function generate() {
             attempts.value++;
             if (data.pub.substr(1, prefix.length).toLowerCase() === prefix) {
                 try {
-                    emit('import-wallet', data.priv);
+                    addressPrefixShow.value = false;
+                    emit('import-wallet', data.priv, label.value);
                     debugLog(
                         DebugTopics.VANITY_GEN,
                         `VANITY: Found an address after ${attempts.value} attempts!`
@@ -105,10 +110,12 @@ function generate() {
     }
 }
 
-function showAddressPrefix() {
-    addressPrefixShow.value = true;
-    nextTick(() => addressPrefixElement.value.focus());
-}
+watch(addressPrefixShow, () => {
+    if (!addressPrefixShow.value) {
+        addressPrefix.value = '';
+        label.value = '';
+    }
+});
 </script>
 
 <style>
@@ -126,7 +133,7 @@ function showAddressPrefix() {
     <div class="col-12 col-md-6 col-xl-3 p-2">
         <div
             class="dashboard-item dashboard-display"
-            @click="showAddressPrefix()"
+            @click="addressPrefixShow = true"
             data-testid="vanityWalletButton"
         >
             <div class="coinstat-icon" v-html="vanityWalletIcon"></div>
@@ -141,58 +148,15 @@ function showAddressPrefix() {
                     time!
                 </p>
             </div>
-
-            <Transition>
-                <input
-                    v-show="addressPrefixShow"
-                    v-model="addressPrefix"
-                    :disabled="isGenerating"
-                    ref="addressPrefixElement"
-                    class="center-text"
-                    type="text"
-                    data-i18n="vanityPrefixInput"
-                    placeholder="Address Prefix"
-                    maxlength="5"
-                    data-testid="prefixInput"
-                />
-            </Transition>
-
-            <span
-                style="
-                    border: 2px solid rgb(80, 23, 151);
-                    background: rgba(72, 15, 133, 0.49);
-                    border-radius: 9px;
-                    padding: 5px 13px;
-                    margin-top: 2px;
-                    margin-bottom: 8px;
-                    font-family: monospace !important;
-                    font-size: 15px;
-                    width: 100%;
-                "
-                v-if="isGenerating"
-            >
-                Searched {{ attempts.toLocaleString('en-gb') }} keys
-            </span>
-
-            <button
-                v-if="addressPrefixShow"
-                @click="isGenerating ? stop() : generate()"
-                class="pivx-button-big"
-                data-testid="generateBtn"
-            >
-                <span class="buttoni-icon" v-html="pLogo"> </span>
-
-                <span class="buttoni-text">
-                    <span v-if="isGenerating">
-                        <!-- TODO: translate this string -->
-                        STOP
-                    </span>
-                    <span v-else>
-                        {{ translation.dCardTwoButton }}
-                    </span>
-                </span>
-            </button>
         </div>
     </div>
-    <CreateVanityModal />
+    <CreateVanityModal
+        :isGenerating="isGenerating"
+        :attempts="attempts"
+        :show="addressPrefixShow"
+        v-model:label="label"
+        v-model:addressPrefix="addressPrefix"
+        @submit="generate()"
+        @close="closeModal()"
+    />
 </template>

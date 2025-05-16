@@ -1,13 +1,19 @@
 <script setup>
-import { ref } from 'vue';
 import Modal from '../../Modal.vue';
 import { translation } from '../../i18n';
 import { cChainParams } from '../../chain_params';
 
-const show = ref(false);
+const label = defineModel('label');
+const addressPrefix = defineModel('addressPrefix');
+const props = defineProps({
+    isGenerating: Boolean,
+    attempts: Number,
+    show: Boolean,
+});
+const emit = defineEmits(['close', 'submit']);
 </script>
 <template>
-    <Modal :show="show" modalClass="exportKeysModalColor">
+    <Modal :show="props.show" modalClass="exportKeysModalColor">
         <template #header>
             <h5 class="modal-title modal-title-new">
                 {{ translation.createANewVanityWallet }}
@@ -18,11 +24,11 @@ const show = ref(false);
                 <center>
                     <div style="color: #c4becf !important">
                         {{ translation.dCardTwoDesc }} <br />
-                        <u
-                            ><div v-html="translation.walletsStart"></div>
+                        <u>
+                            <div v-html="translation.walletsStart"></div>
                             <b>{{
                                 cChainParams.current.PUBKEY_PREFIX.join(' or ')
-                            }}</b></u
+                            }}</b> </u
                         ><br /><br />
                     </div>
                 </center>
@@ -37,7 +43,11 @@ const show = ref(false);
                         "
                         >{{ translation.vanityPrefixInput }}</span
                     >
-                    <input type="text" />
+                    <input
+                        type="text"
+                        v-model="addressPrefix"
+                        :disabled="props.isGenerating"
+                    />
 
                     <span
                         style="
@@ -52,9 +62,30 @@ const show = ref(false);
                             translation.maxEightChars
                         }}</span></span
                     >
-                    <input type="text" />
+                    <input
+                        type="text"
+                        :disabled="props.isGenerating"
+                        v-model="label"
+                    />
                 </div>
             </div>
+
+            <span
+                style="
+                    border: 2px solid rgb(80, 23, 151);
+                    background: rgba(72, 15, 133, 0.49);
+                    border-radius: 9px;
+                    padding: 5px 13px;
+                    margin-top: 2px;
+                    margin-bottom: 8px;
+                    font-family: monospace !important;
+                    font-size: 15px;
+                    width: 100%;
+                "
+                v-if="props.isGenerating"
+            >
+                Searched {{ props.attempts.toLocaleString('en-gb') }} keys
+            </span>
         </template>
         <template #footer>
             <center>
@@ -62,11 +93,15 @@ const show = ref(false);
                     type="button"
                     class="pivx-button-big-cancel"
                     data-testid="closeBtn"
-                    @click="close()"
+                    @click="emit('close')"
                 >
-                    {{ translation.popupCancel }}
+                    {{
+                        isGenerating
+                            ? translation.stop
+                            : translation.popupCancel
+                    }}
                 </button>
-                <button class="pivx-button-big">
+                <button class="pivx-button-big" @click="emit('submit')">
                     <span class="buttoni-text"> Create Wallet </span>
                 </button>
             </center>
