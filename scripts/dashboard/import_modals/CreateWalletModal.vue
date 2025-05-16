@@ -1,16 +1,25 @@
 <script setup>
-import { ref } from 'vue';
 import Modal from '../../Modal.vue';
 import { translation } from '../../i18n.js';
 
-const show = ref(false);
-const seed = ref('test test test test aerojaer aerjaepri jaerpaej rpaer');
+const props = defineProps({
+    seed: String,
+    show: Boolean,
+    advancedMode: Boolean,
+});
+const emit = defineEmits(['submit', 'close']);
+const passphrase = defineModel('passphrase');
+const label = defineModel('label');
 
-function close() {}
-function submit() {}
+function close() {
+    emit('close');
+}
+function submit() {
+    emit('submit');
+}
 </script>
 <template>
-    <Modal :show="show" modalClass="exportKeysModalColor">
+    <Modal :show="props.show" modalClass="exportKeysModalColor">
         <template #header>
             <h5 class="modal-title modal-title-new">
                 {{ translation.createANewPivxWallet }}
@@ -38,7 +47,7 @@ function submit() {}
                 >
                     <div
                         class="privateKeysBadgeWrapper"
-                        v-for="(word, i) of seed.split(' ')"
+                        v-for="(word, i) of props.seed.split(' ')"
                     >
                         {{ i }} <br />
                         <div class="privateKeysBadge">
@@ -62,7 +71,30 @@ function submit() {}
                             translation.maxEightChars
                         }}</span></span
                     >
-                    <input type="text" style="margin-bottom: 0px" />
+                    <input
+                        type="text"
+                        style="margin-bottom: 0px"
+                        v-model="label"
+                    />
+                </div>
+                <br v-if="advancedMode" />
+
+                <div style="text-align: left" v-if="advancedMode">
+                    <span
+                        style="
+                            margin-bottom: 3px;
+                            font-size: 15px;
+                            display: block;
+                            margin-left: 6px;
+                            margin-top: 6px;
+                        "
+                        >{{ translation.optionalPassphrase }}
+                    </span>
+                    <input
+                        type="text"
+                        style="margin-bottom: 0px"
+                        v-model="passphrase"
+                    />
                 </div>
             </div>
         </template>

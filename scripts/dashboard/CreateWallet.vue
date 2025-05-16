@@ -10,6 +10,7 @@ const emit = defineEmits(['importWallet']);
 const showModal = ref(false);
 const mnemonic = ref('');
 const passphrase = ref('');
+const label = ref('');
 
 const props = defineProps({
     advancedMode: Boolean,
@@ -17,33 +18,29 @@ const props = defineProps({
 });
 const { advancedMode, importLock } = toRefs(props);
 
-async function informUserOfMnemonic() {
-    return await new Promise((res, _) => {
-        showModal.value = true;
-        const unwatch = watch(showModal, () => {
-            if (!showModal.value) {
-                unwatch();
-                res(passphrase.value);
-            }
-        });
-    });
-}
-
-async function generateWallet() {
-    if (importLock.value) return;
-    mnemonic.value = generateMnemonic();
+watch(showModal, () => {
+    if (!showModal.value) {
+        // Erase mnemonic and passphrase from memory, just in case
+        mnemonic.value = '';
+        passphrase.value = '';
+    }
+});
+async function createWallet() {
     const network = getNetwork();
-
-    await informUserOfMnemonic();
     emit(
         'importWallet',
         mnemonic.value,
         passphrase.value,
+        label.value,
         await network.getBlockCount()
     );
-    // Erase mnemonic and passphrase from memory, just in case
-    mnemonic.value = '';
-    passphrase.value = '';
+    showModal.value = false;
+}
+
+function generateWallet() {
+    if (importLock.value) return;
+    mnemonic.value = generateMnemonic();
+    showModal.value = true;
 }
 </script>
 
@@ -66,5 +63,13 @@ async function generateWallet() {
             </div>
         </div>
     </div>
-    <CreateWalletModal />
+    <CreateWalletModal
+        :show="showModal"
+        :seed="mnemonic"
+        @close="showModal = false"
+        @submit="createWallet()"
+        :advanced-mode="advancedMode"
+        v-model:passphrase="passphrase"
+        v-model:label="label"
+    />
 </template>
