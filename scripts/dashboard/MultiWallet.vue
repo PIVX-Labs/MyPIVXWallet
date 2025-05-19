@@ -11,6 +11,7 @@ const wallets = useWallets();
 const isMultiWalletOpen = ref(false);
 const multiWalletOpenedClass = ref(false);
 const multiWalletOpacity = ref(false);
+const settings = useSettings();
 
 const props = defineProps({
     advancedMode: Boolean,
@@ -55,6 +56,10 @@ watch(isMultiWalletOpen, (newValue) => {
 function select(wallet) {
     wallets.selectWallet(wallet);
 }
+
+function formatBalance(balance) {
+    return balance.toFixed(settings.displayDecimals);
+}
 </script>
 
 <template>
@@ -69,7 +74,7 @@ function select(wallet) {
                 <div class="walletsRight">
                     <div class="walletsAmount">
                         <span style="margin-right: 5px">{{
-                            totalBalance
+                            formatBalance(totalBalance)
                         }}</span>
                         <span class="walletsTicker">PIV</span>
                     </div>
@@ -148,7 +153,9 @@ function select(wallet) {
                     <span>{{ vault.label }} {{ i }}</span>
                     <div class="walletsAmount">
                         <span style="margin-right: 5px">{{
-                            (wallet.balance + wallet.shieldBalance) / COIN
+                            formatBalance(
+                                (wallet.balance + wallet.shieldBalance) / COIN
+                            )
                         }}</span>
                         <span class="walletsTicker">PIV</span>
                     </div>
