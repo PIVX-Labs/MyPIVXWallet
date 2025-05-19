@@ -312,7 +312,7 @@ function addVault(v) {
             isSeeded.value = v.isSeeded();
         },
         async encrypt(password) {
-            let secretToExport = v.getSecretToExport();
+            const secretToExport = v.getSecretToExport();
             if (!secretToExport)
                 throw new Error("Can't encrypt a public vault");
             if (typeof secretToExport === 'string') {
@@ -323,8 +323,6 @@ function addVault(v) {
                 });
                 return;
             }
-            secretToExport = buff_to_base64(secretToExport);
-
             const encryptedSecret = await encrypt(
                 buff_to_base64(secretToExport),
                 password
