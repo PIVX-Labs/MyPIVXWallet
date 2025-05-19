@@ -37,7 +37,7 @@ watch(showLedgerModal, () => {
         <CreateWallet
             :advanced-mode="advancedMode"
             @import-wallet="
-                (mnemonic, password, blockCount, label) =>
+                (mnemonic, password, label, blockCount) =>
                     importWallet({
                         type: 'hd',
                         secret: mnemonic,

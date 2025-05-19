@@ -1,9 +1,7 @@
 <script setup>
-import { useWallets } from '../composables/use_wallet.js';
-
-import { computed, ref, toRefs, watch } from 'vue';
-
 import iWalletPlus from '../../assets/icons/icon-wallet-plus.svg';
+import { useWallets } from '../composables/use_wallet.js';
+import { computed, ref, watch } from 'vue';
 import { COIN } from '../chain_params';
 import { storeToRefs } from 'pinia';
 import { useSettings } from '../composables/use_settings';
@@ -67,7 +65,7 @@ function select(wallet) {
             @click="isMultiWalletOpen = !isMultiWalletOpen"
         >
             <div class="multiWalletContent">
-                <div class="walletsName">Core 1</div>
+                <div class="walletsName">{{ wallets.activeVault?.label }}</div>
                 <div class="walletsRight">
                     <div class="walletsAmount">
                         <span style="margin-right: 5px">{{
@@ -117,7 +115,9 @@ function select(wallet) {
                     ></span>
                     <div>
                         <button
+                            v-if="vault.canGenerateMore()"
                             class="pivx-button-small"
+                            @click="vault.addWallet(vault.wallets.length)"
                             style="
                                 padding: 0px;
                                 height: 25px;
@@ -131,8 +131,11 @@ function select(wallet) {
                     </div>
                 </div>
                 <div
-                    v-for="wallet of vault.wallets"
-                    @click="select(wallet)"
+                    v-for="(wallet, i) of vault.wallets"
+                    @click="
+                        select(wallet);
+                        showLogin = false;
+                    "
                     class="walletsItem"
                     :style="{
                         color:
@@ -142,10 +145,10 @@ function select(wallet) {
                                 : '',
                     }"
                 >
-                    <span>Wallet</span>
+                    <span>{{ vault.label }} {{ i }}</span>
                     <div class="walletsAmount">
                         <span style="margin-right: 5px">{{
-                            wallet.balance / COIN
+                            (wallet.balance + wallet.shieldBalance) / COIN
                         }}</span>
                         <span class="walletsTicker">PIV</span>
                     </div>

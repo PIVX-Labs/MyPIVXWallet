@@ -106,6 +106,7 @@ async function importWallet({
     type,
     secret,
     password = '',
+    label,
     blockCount = 4_200_000,
 }) {
     try {
@@ -156,12 +157,17 @@ async function importWallet({
                 await parsedSecret.shield.reloadFromCheckpoint(blockCount);
             }
             showLogin.value = false;
+            console.log(label);
             const vault = await wallets.addVault(
                 new Vault({
                     masterKey: parsedSecret.masterKey,
                     shield: parsedSecret.shield,
                     seed: parsedSecret.seed,
-                    label: `${parsedSecret.masterKey.getKeyToExport(0)}`,
+                    label:
+                        label?.trim() ||
+                        parsedSecret.masterKey
+                            .getKeyToExport(0)
+                            .substring(0, 8),
                 })
             );
 

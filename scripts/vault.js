@@ -135,4 +135,8 @@ export class Vault {
         if (this.#seed) return this.#seed;
         return this.#wallets[0].getKeyToExport();
     }
+
+    canGenerateMore() {
+        return !!this.#seed;
+    }
 }
