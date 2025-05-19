@@ -22,6 +22,7 @@ import {
 import { Database } from '../database.js';
 import { decrypt, encrypt, buff_to_base64, base64_to_buf } from '../aes-gcm.js';
 import { usePrivacy } from './use_privacy.js';
+import { ParsedSecret } from '../parsed_secret.js';
 
 function addWallet(wallet) {
     const privacy = usePrivacy();
@@ -219,7 +220,7 @@ function addWallet(wallet) {
             wallet.wipePrivateData();
             isViewOnly.value = wallet.isViewOnly();
         },
-        save: () => wallet.save(),
+        save: (encWif) => wallet.save(encWif),
         isOwnAddress: () => wallet.isOwnAddress(),
         isCreatingTransaction,
         isHD,
@@ -293,7 +294,7 @@ function addVault(v) {
             await wallet.save();
             return wallet;
         },
-        async save({ encryptedSecret, isHardware = false }) {
+        async save({ encryptedSecret, encWif, isHardware = false }) {
             const database = await Database.getInstance();
 
             await database.addVault({
@@ -305,15 +306,25 @@ function addVault(v) {
                 label: v.label,
             });
             for (const wallet of wallets.value) {
-                await wallet.save();
+                await wallet.save(encWif);
             }
             isEncrypted.value = true;
             isSeeded.value = v.isSeeded();
         },
         async encrypt(password) {
-            const secretToExport = v.getSecretToExport();
+            let secretToExport = v.getSecretToExport();
             if (!secretToExport)
                 throw new Error("Can't encrypt a public vault");
+            if (typeof secretToExport === 'string') {
+                // If this is not a seeded vault, save without seed
+                await this.save({
+                    encryptedSecret: null,
+                    encWif: await encrypt(secretToExport, password),
+                });
+                return;
+            }
+            secretToExport = buff_to_base64(secretToExport);
+
             const encryptedSecret = await encrypt(
                 buff_to_base64(secretToExport),
                 password
@@ -326,16 +337,35 @@ function addVault(v) {
             const { encryptedSecret } = await database.getVault(
                 v.getDefaultKeyToExport()
             );
-            const encSeed = await decrypt(encryptedSecret, password);
-            if (!encSeed) return false;
-            const seed = base64_to_buf(encSeed);
-            v.setSeed(seed);
+            if (encryptedSecret) {
+                const encSeed = await decrypt(encryptedSecret, password);
+                if (!encSeed) return false;
 
-            isSeeded.value = v.isSeeded();
-            for (const wallet of v.getWallets()) {
-                await wallet.loadSeed(seed);
+                const seed = base64_to_buf(encSeed);
+                v.setSeed(seed);
+
+                isSeeded.value = v.isSeeded();
+                for (const wallet of v.getWallets()) {
+                    await wallet.loadSeed(seed);
+                }
+                return true;
+            } else {
+                for (const wallet of v.getWallets()) {
+                    console.log(wallet.getKeyToExport());
+                    console.log(wallet);
+                    const { encWif, encExtsk } = await database.getAccount(
+                        wallet.getKeyToExport()
+                    );
+                    const wif = await decrypt(encWif, password);
+                    if (!wif) return false;
+                    const extsk = encExtsk
+                        ? await decrypt(encExtsk, password)
+                        : null;
+                    const secret = await ParsedSecret.parse(wif);
+                    await wallet.setMasterKey({ mk: secret.masterKey, extsk });
+                    return true;
+                }
             }
-            return true;
         },
         isViewOnly,
         isEncrypted,

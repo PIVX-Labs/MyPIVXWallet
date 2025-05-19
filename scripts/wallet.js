@@ -376,7 +376,7 @@ export class Wallet {
         return !!this.#masterKey;
     }
 
-    async save() {
+    async save(encWif) {
         let shieldData = '';
         if (this.#shield) {
             shieldData = this.#shield.save();
@@ -386,7 +386,9 @@ export class Wallet {
         const cAccount = new Account({
             publicKey: this.getKeyToExport(),
             shieldData: shieldData,
+            encWif: encWif,
         });
+        if (!cAccount.encWif) delete cAccount.encWif;
 
         // Incase of a "Change Password", we check if an Account already exists
         const database = await Database.getInstance();
@@ -655,7 +657,7 @@ export class Wallet {
         }
     }
 
-    // Avoid calculating over and over the same getAddressFromHash by saving the result in a map
+    // Avoid calculating over and over the same getAddressFromHash by saveing the result in a map
     #getAddressFromHashCache(pkh_hex, type) {
         if (!this.#knownPKH.has(pkh_hex)) {
             this.#knownPKH.set(
