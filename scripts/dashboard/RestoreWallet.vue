@@ -45,18 +45,12 @@ async function importWif(wif, extsk) {
 }
 
 async function submit() {
-    const db = await Database.getInstance();
-    wallets.activeVault.decrypt(password.value);
-    /*const db = await Database.getInstance();
-    const account = await db.getAccount(wallet.value.getKeyToExport());
-    const wif = await decrypt(account.encWif, password.value);
-    const extsk = await decrypt(account.encExtsk, password.value);
-    if (wif) {
-        await importWif(wif, extsk);
-        emit('import', wif, extsk);
+    const result = await wallets.activeVault.decrypt(password.value);
+    if (!result) {
+        createAlert('warning', translation.ALERTS.INVALID_PASSWORD, 5000);
     } else {
-        createAlert('warning', ALERTS.INVALID_PASSWORD);
-    }*/
+        close();
+    }
 }
 
 function close() {
