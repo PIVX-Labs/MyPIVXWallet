@@ -2,10 +2,7 @@
 import { nextTick, ref, toRefs, watch } from 'vue';
 import Modal from '../Modal.vue';
 import Password from '../Password.vue';
-import { ALERTS, translation } from '../i18n.js';
-import { Database } from '../database.js';
-import { decrypt } from '../aes-gcm';
-import { ParsedSecret } from '../parsed_secret';
+import { translation } from '../i18n.js';
 import { useAlerts } from '../composables/use_alerts.js';
 import { useWallets } from '../composables/use_wallet.js';
 
@@ -18,7 +15,7 @@ const props = defineProps({
 });
 const wallets = useWallets();
 
-const { show, reason, wallet } = toRefs(props);
+const { show, reason } = toRefs(props);
 const emit = defineEmits(['close', 'import']);
 const password = ref('');
 const passwordInput = ref(null);
@@ -29,20 +26,6 @@ watch(show, (show) => {
     });
     if (!show) password.value = '';
 });
-
-async function importWif(wif, extsk) {
-    const secret = await ParsedSecret.parse(wif);
-    if (secret.masterKey) {
-        await wallet.value.setMasterKey({ mk: secret.masterKey, extsk });
-        if (wallet.value.hasShield && !extsk) {
-            createAlert(
-                'warning',
-                'Could not decrypt sk even if password is correct, please contact a developer'
-            );
-        }
-        createAlert('success', ALERTS.WALLET_UNLOCKED, 1500);
-    }
-}
 
 async function submit() {
     const result = await wallets.activeVault.decrypt(password.value);
