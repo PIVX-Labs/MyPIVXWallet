@@ -1,10 +1,11 @@
 <script setup>
 import iWalletPlus from '../../assets/icons/icon-wallet-plus.svg';
 import { useWallets } from '../composables/use_wallet.js';
-import { computed, ref, watch } from 'vue';
+import { computed, ref, watch, nextTick } from 'vue';
 import { COIN } from '../chain_params';
 import { storeToRefs } from 'pinia';
 import { useSettings } from '../composables/use_settings';
+import { sleep } from '../utils';
 
 const wallets = useWallets();
 
@@ -32,6 +33,21 @@ const totalBalance = computed(() => {
         );
     }, 0);
 });
+
+const vClickOutside = {
+    beforeMount(el, binding) {
+        el.__clickOutsideHandler__ = (event) => {
+            if (!(el === event.target || el.contains(event.target))) {
+                binding.value(event);
+            }
+        };
+        document.addEventListener('click', el.__clickOutsideHandler__);
+    },
+    unmounted(el) {
+        document.removeEventListener('click', el.__clickOutsideHandler__);
+        el.__clickOutsideHandler__ = null;
+    },
+};
 
 /**
  * Toggle multiwallet chooser
@@ -67,7 +83,13 @@ function formatBalance(balance) {
         <div
             id="MultiWalletSwitcher"
             class="multiWalletBtn"
-            @click="isMultiWalletOpen = !isMultiWalletOpen"
+            @click="
+                if (!isMultiWalletOpen) {
+                    sleep(1).then(() => {
+                        isMultiWalletOpen = true;
+                    });
+                }
+            "
         >
             <div class="multiWalletContent">
                 <div class="walletsName">{{ wallets.activeVault?.label }}</div>
@@ -95,6 +117,13 @@ function formatBalance(balance) {
             class="multiWalletList"
             :class="{ opened: multiWalletOpenedClass }"
             :style="{ opacity: multiWalletOpacity ? 1 : 0 }"
+            v-click-outside="
+                () => {
+                    if (isMultiWalletOpen) {
+                        isMultiWalletOpen = false;
+                    }
+                }
+            "
         >
             <div v-for="vault of wallets.vaults" style="padding-bottom: 10px">
                 <div style="display: flex; align-items: center">
