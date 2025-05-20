@@ -377,22 +377,23 @@ export class Wallet {
     }
 
     async save(encWif) {
+        const database = await Database.getInstance();
+
         let shieldData = '';
         if (this.#shield) {
             shieldData = this.#shield.save();
         }
+        const oldAccount = await database.getAccount(this.getKeyToExport());
 
         // Prepare to Add/Update an account in the DB
         const cAccount = new Account({
             publicKey: this.getKeyToExport(),
             shieldData: shieldData,
-            encWif: encWif,
+            encWif: encWif || oldAccount?.encWif || '',
         });
-        if (!cAccount.encWif) delete cAccount.encWif;
 
         // Incase of a "Change Password", we check if an Account already exists
-        const database = await Database.getInstance();
-        if (await database.getAccount(this.getKeyToExport())) {
+        if (oldAccount) {
             // Update the existing Account (new encWif) in the DB
             await database.updateAccount(cAccount);
         } else {
