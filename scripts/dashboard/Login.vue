@@ -98,7 +98,7 @@ watch(showLedgerModal, () => {
             @close="showLedgerModal = false"
             :show="showLedgerModal"
             :isSupported="isUSBSupported"
-            v-label="ledgerLabel"
+            v-model:label="ledgerLabel"
         />
     </div>
 </template>

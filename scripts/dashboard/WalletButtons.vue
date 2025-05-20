@@ -20,7 +20,6 @@ const walletUrl = ref('');
 watch(
     [activeWallet, network],
     () => {
-        console.log('Updating');
         walletUrl.value = getBlockbookUrl(
             network.explorerUrl,
             activeWallet.value.getKeyToExport()
