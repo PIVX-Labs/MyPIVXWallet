@@ -6,13 +6,16 @@ import { COIN } from '../chain_params';
 import { storeToRefs } from 'pinia';
 import { useSettings } from '../composables/use_settings';
 import { sleep } from '../utils';
+import RestoreWallet from './RestoreWallet.vue';
 
 const wallets = useWallets();
+const { activeWallet, activeVault } = storeToRefs(wallets);
 
 const isMultiWalletOpen = ref(false);
 const multiWalletOpenedClass = ref(false);
 const multiWalletOpacity = ref(false);
 const settings = useSettings();
+const showRestoreWallet = ref(false);
 
 const props = defineProps({
     advancedMode: Boolean,
@@ -75,6 +78,29 @@ function select(wallet) {
 
 function formatBalance(balance) {
     return balance.toFixed(settings.displayDecimals);
+}
+
+async function addWallet(vault) {
+    if (activeVault.value.isViewOnly && !activeWallet.value.isHardwareWallet) {
+        if (!(await restoreWallet())) return false;
+    }
+    vault.addWallet(vault.wallets.length);
+}
+
+async function restoreWallet() {
+    if (!activeVault.value.isEncrypted) return false;
+    if (activeWallet.value.isHardwareWallet) return true;
+    showRestoreWallet.value = true;
+    return await new Promise((res) => {
+        watch(
+            [showRestoreWallet, () => activeVault.value.isViewOnly],
+            () => {
+                showRestoreWallet.value = false;
+                res(!activeVault.value.isViewOnly);
+            },
+            { once: true }
+        );
+    });
 }
 </script>
 
@@ -149,9 +175,9 @@ function formatBalance(balance) {
                     ></span>
                     <div>
                         <button
-                            v-if="vault.canGenerateMore()"
+                            v-if="vault.canGenerateMore"
                             class="pivx-button-small"
-                            @click="vault.addWallet(vault.wallets.length)"
+                            @click="addWallet(vault)"
                             style="
                                 padding: 0px;
                                 height: 25px;
@@ -213,4 +239,9 @@ function formatBalance(balance) {
             </div>
         </div>
     </div>
+    <RestoreWallet
+        :show="showRestoreWallet"
+        :wallet="activeWallet"
+        @close="showRestoreWallet = false"
+    />
 </template>

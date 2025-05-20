@@ -240,6 +240,10 @@ function addWallet(wallet) {
         blockCount,
         lockCoin,
         unlockCoin,
+        loadSeed: async (seed) => {
+            await wallet.loadSeed(seed);
+            await updateWallet();
+        },
         historicalTxs,
         onNewTx,
         onTransparentSyncStatusUpdate,
@@ -273,14 +277,20 @@ function addVault(v) {
         );
         return !!(await decrypt(encryptedSecret, password));
     };
+    const canGenerateMore = ref(v.canGenerateMore());
+    (async () => {
+        const database = await Database.getInstance();
+        const { encryptedSecret } = await database.getVault(
+            v.getDefaultKeyToExport()
+        );
+        canGenerateMore.value = v.canGenerateMore() || !!encryptedSecret;
+    })();
 
     return {
         wallets,
         defaultKeyToExport,
         label,
-        canGenerateMore() {
-            return v.canGenerateMore();
-        },
+        canGenerateMore,
         async addWallet(account, seed) {
             const w = await v.getWallet(account, seed);
             const wallet = reactive(addWallet(w));
@@ -310,6 +320,7 @@ function addVault(v) {
             }
             isEncrypted.value = true;
             isSeeded.value = v.isSeeded();
+            if (encryptedSecret) canGenerateMore.value = true;
         },
         async encrypt(password) {
             const secretToExport = v.getSecretToExport();
@@ -343,14 +354,13 @@ function addVault(v) {
                 v.setSeed(seed);
 
                 isSeeded.value = v.isSeeded();
-                for (const wallet of v.getWallets()) {
+                for (const wallet of wallets.value) {
                     await wallet.loadSeed(seed);
                 }
+                isViewOnly.value = v.isViewOnly();
                 return true;
             } else {
-                for (const wallet of v.getWallets()) {
-                    console.log(wallet.getKeyToExport());
-                    console.log(wallet);
+                for (const wallet of wallets.value) {
                     const { encWif, encExtsk } = await database.getAccount(
                         wallet.getKeyToExport()
                     );
@@ -361,6 +371,7 @@ function addVault(v) {
                         : null;
                     const secret = await ParsedSecret.parse(wif);
                     await wallet.setMasterKey({ mk: secret.masterKey, extsk });
+                    isViewOnly.value = v.isViewOnly();
                     return true;
                 }
             }
