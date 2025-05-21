@@ -21,7 +21,11 @@ function close() {
 </script>
 
 <template>
-    <Modal :show="props.show" modalClass="exportKeysModalColor">
+    <Modal
+        v-show="props.show"
+        :show="props.show"
+        modalClass="exportKeysModalColor"
+    >
         <template #header>
             <h5 class="modal-title modal-title-new">
                 {{ translation.accessWallet }}
@@ -48,6 +52,7 @@ function close() {
                     <input
                         :type="cloakSecret ? 'password' : 'text'"
                         v-model="value"
+                        data-testid="secretInp"
                         type="text"
                     />
 
@@ -61,7 +66,11 @@ function close() {
                             "
                             >{{ props.passwordPlaceholder }}</span
                         >
-                        <input v-model="password" type="text" />
+                        <input
+                            v-model="password"
+                            data-testid="passwordInp"
+                            type="text"
+                        />
                     </template>
 
                     <span
@@ -77,7 +86,11 @@ function close() {
                             translation.maxEightChars
                         }}</span></span
                     >
-                    <input v-model="label" type="text" />
+                    <input
+                        v-model="label"
+                        data-testid="labelInput"
+                        type="text"
+                    />
                 </div>
             </div>
         </template>
@@ -91,7 +104,11 @@ function close() {
                 >
                     {{ translation.popupCancel }}
                 </button>
-                <button class="pivx-button-big" @click="submit()">
+                <button
+                    class="pivx-button-big"
+                    data-testid="importWalletButton"
+                    @click="submit()"
+                >
                     <span class="buttoni-text">
                         {{ translation.accessWallet }}
                     </span>
