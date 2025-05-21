@@ -426,6 +426,7 @@ export const useWallets = defineStore('wallets', () => {
         if (i === -1 || j === -1) {
             const emptyWallet = new Wallet({ nAccount: 0 });
             setWallet(emptyWallet);
+            activeVault.value = null;
             activeWallet.value = addWallet(emptyWallet);
             return;
         }
