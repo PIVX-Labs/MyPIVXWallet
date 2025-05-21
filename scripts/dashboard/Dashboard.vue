@@ -157,7 +157,6 @@ async function importWallet({
                 await parsedSecret.shield.reloadFromCheckpoint(blockCount);
             }
             showLogin.value = false;
-            console.log(label);
             const vault = await wallets.addVault(
                 new Vault({
                     masterKey: parsedSecret.masterKey,
@@ -452,6 +451,11 @@ async function importFromDatabase() {
 
         getEventEmitter().emit('reset-activity');
         updateLogOutButton();
+    }
+    if (wallets.vaults.length === 0) {
+        showLogin.value = true;
+    } else {
+        showLogin.value = false;
     }
 }
 
