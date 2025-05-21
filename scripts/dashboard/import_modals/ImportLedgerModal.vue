@@ -42,7 +42,7 @@ const emit = defineEmits(['submit', 'close']);
                             translation.maxEightChars
                         }}</span></span
                     >
-                    <input v-model="label" type="text" />
+                    <input v-model="label" data-testid="label" type="text" />
                     <div
                         :style="{ color: 'red' }"
                         v-if="!isSupported"
@@ -67,6 +67,7 @@ const emit = defineEmits(['submit', 'close']);
                     class="pivx-button-big"
                     :disabled="!isSupported"
                     :style="{ opacity: isSupported ? 1 : 0.5 }"
+                    data-testid="accessHardwareWallet"
                     @click="emit('submit')"
                 >
                     <span class="buttoni-text">
