@@ -58,7 +58,6 @@ function generate() {
     if (typeof Worker === 'undefined')
         return createAlert('error', ALERTS.UNSUPPORTED_WEBWORKERS, 7500);
     if (addressPrefix.value.length === 0) {
-        addressPrefixElement.value.focus();
         return;
     }
 

@@ -46,6 +46,7 @@ const emit = defineEmits(['close', 'submit']);
                     <input
                         type="text"
                         v-model="addressPrefix"
+                        data-testid="prefixInput"
                         :disabled="props.isGenerating"
                     />
 
@@ -65,6 +66,7 @@ const emit = defineEmits(['close', 'submit']);
                     <input
                         type="text"
                         :disabled="props.isGenerating"
+                        data-testid="label"
                         v-model="label"
                     />
                 </div>
@@ -101,7 +103,11 @@ const emit = defineEmits(['close', 'submit']);
                             : translation.popupCancel
                     }}
                 </button>
-                <button class="pivx-button-big" @click="emit('submit')">
+                <button
+                    class="pivx-button-big"
+                    data-testid="generateBtn"
+                    @click="emit('submit')"
+                >
                     <span class="buttoni-text"> Create Wallet </span>
                 </button>
             </center>
