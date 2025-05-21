@@ -1,8 +1,8 @@
 <script setup>
 import { useMasternode } from '../composables/use_masternode.js';
 import { storeToRefs } from 'pinia';
+import { useWallets } from '../composables/use_wallet';
 import NewMasternodeList from './NewMasternodeList.vue';
-import { useWallet } from '../composables/use_wallet';
 import Masternode from '../masternode.js';
 import RestoreWallet from '../dashboard/RestoreWallet.vue';
 import { cChainParams } from '../chain_params';
@@ -20,7 +20,7 @@ const { createAlert } = useAlerts();
  * @type{{masternodes: import('vue').Ref<import('../masternode.js').default[]>}}
  */
 const { masternodes } = storeToRefs(useMasternode());
-const wallet = useWallet();
+const { activeWallet: wallet } = useWallets();
 const { isSynced, balance, isViewOnly, isHardwareWallet } = storeToRefs(wallet);
 const showRestoreWallet = ref(false);
 const showMasternodePrivateKey = ref(false);

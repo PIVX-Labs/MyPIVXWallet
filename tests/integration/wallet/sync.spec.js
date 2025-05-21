@@ -14,6 +14,7 @@ import { refreshChainData } from '../../../scripts/global.js';
 import { COIN } from '../../../scripts/chain_params.js';
 import { flushPromises } from '@vue/test-utils';
 import { HistoricalTxType } from '../../../scripts/historical_tx.js';
+import { Database } from '../../../scripts/database.js';
 
 vi.mock('../../../scripts/network/network_manager.js');
 
@@ -59,12 +60,15 @@ describe('Wallet sync tests', () => {
     let walletLegacy;
     beforeEach(async () => {
         resetNetwork();
+        const instance = await Database.getInstance();
+        instance.close();
+
+        vi.stubGlobal('indexedDB', new IDBFactory());
         // Update the global variable blockCount
         await refreshChainData();
         walletHD = await setUpHDMainnetWallet(false);
         walletLegacy = await setUpLegacyMainnetWallet();
         // Reset indexedDB before each test
-        vi.stubGlobal('indexedDB', new IDBFactory());
     });
 
     it('Basic 2 wallets sync test', async () => {
