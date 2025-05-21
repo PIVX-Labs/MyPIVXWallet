@@ -26,7 +26,7 @@ function submit() {
             </h5>
         </template>
         <template #body>
-            <div style="color: #a49bb5">
+            <div style="color: #a49bb5" data-testid="seedphraseModal">
                 <center>
                     <div style="color: #c4becf !important">
                         {{ translation.thisIsYourSeed }}
@@ -74,6 +74,7 @@ function submit() {
                     <input
                         type="text"
                         style="margin-bottom: 0px"
+                        data-testid="labelInput"
                         v-model="label"
                     />
                 </div>
@@ -92,6 +93,7 @@ function submit() {
                     </span>
                     <input
                         type="text"
+                        data-testid="passPhrase"
                         style="margin-bottom: 0px"
                         v-model="passphrase"
                     />
@@ -109,7 +111,11 @@ function submit() {
                     {{ translation.popupCancel }}
                 </button>
                 <button class="pivx-button-big">
-                    <span @click="submit()" class="buttoni-text">
+                    <span
+                        @click="submit()"
+                        data-testid="wroteSeedphraseDown"
+                        aclass="buttoni-text"
+                    >
                         {{ translation.wroteItDown }}
                     </span>
                 </button>
