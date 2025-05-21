@@ -253,7 +253,7 @@ async function displayLockWalletModal() {
  * Lock the wallet by deleting masterkey private data
  */
 function lockWallet() {
-    activeWallet.value.wipePrivateData();
+    activeVault.value.wipePrivateData();
     createAlert('success', ALERTS.WALLET_LOCKED, 1500);
 }
 

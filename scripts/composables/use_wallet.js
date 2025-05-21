@@ -285,12 +285,20 @@ function addVault(v) {
         );
         canGenerateMore.value = v.canGenerateMore() || !!encryptedSecret;
     })();
+    const wipePrivateData = () => {
+        v.wipePrivateData();
+        for (const wallet of wallets.value) {
+            wallet.wipePrivateData();
+        }
+        isViewOnly.value = true;
+    };
 
     return {
         wallets,
         defaultKeyToExport,
         label,
         canGenerateMore,
+        wipePrivateData,
         async addWallet(account, seed) {
             const w = await v.getWallet(account, seed);
             const wallet = reactive(addWallet(w));
