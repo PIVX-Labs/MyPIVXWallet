@@ -99,7 +99,10 @@ export class Reader {
             }
 
             // There are no more bytes to await, so we can return null
-            if (this.#done) return null;
+            if (this.#done) {
+                this.#awaiter = null;
+                return null;
+            }
             // If we didn't respond, wait for the next batch of bytes, then try again
             await new Promise((res) => {
                 this.#awaiter = res;
@@ -120,12 +123,10 @@ export class Reader {
             );
             this.#i += discaredBytes;
             byteLength -= discaredBytes;
-            if (byteLength === 0) {
+            if (byteLength === 0 || this.#done) {
                 this.#awaiter = null;
                 return;
             }
-            // No more byte to return
-            if (this.#done) return;
             // If we didn't respond, wait for the next batch of bytes, then try again
             await new Promise((res) => {
                 this.#awaiter = res;
