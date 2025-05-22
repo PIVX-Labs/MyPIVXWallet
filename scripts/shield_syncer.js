@@ -22,8 +22,6 @@ export class BinaryShieldSyncer extends ShieldSyncer {
      */
     #database;
 
-    #reqCopy;
-
     #lastSyncedBlock = 0;
 
     #skippedBytes = 0;
@@ -71,11 +69,9 @@ export class BinaryShieldSyncer extends ShieldSyncer {
     }
 
     async #save() {
-        const bytes = new Uint8Array(await this.#reqCopy.arrayBuffer());
-        const { shieldData } = await this.#database.getShieldSyncData();
         await this.#database.setShieldSyncData({
             lastSyncedBlock: this.#lastSyncedBlock,
-            shieldData: new Uint8Array([...shieldData, ...bytes]),
+            shieldData: new Uint8Array([...this.#reader.getReadBuffer()]),
         });
     }
 
@@ -97,13 +93,11 @@ export class BinaryShieldSyncer extends ShieldSyncer {
         const req = await network.getShieldData(lastSyncedBlock + 1);
         const skipBytes = await network.getShieldDataLength(
             cChainParams.current.defaultStartingShieldBlock + 1,
-            startFrom
+            startFrom + 1
         );
-        const reqCopy = req.clone();
 
         if (!req.ok) throw new Error("Couldn't sync shield");
         const instance = new BinaryShieldSyncer();
-        instance.#reqCopy = reqCopy;
         instance.#lastSyncedBlock = lastSyncedBlock;
         instance.#database = database;
         instance.#reader = new Reader(req, shieldData);

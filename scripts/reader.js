@@ -133,6 +133,10 @@ export class Reader {
         }
     }
 
+    getReadBuffer() {
+        return this.#availableBytes.subarray(0, this.#i);
+    }
+
     isBusy() {
         return !!this.#awaiter;
     }
