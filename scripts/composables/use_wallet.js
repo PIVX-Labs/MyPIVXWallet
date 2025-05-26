@@ -135,7 +135,7 @@ function addWallet(wallet) {
                 RECEIVE_TYPES.ADDRESS,
                 RECEIVE_TYPES.SHIELD,
             ];
-            if (arrFlipTypes.includes(cReceiveType)) {
+            if (arrFlipTypes.includes(cReceiveType) && isImported.value) {
                 guiToggleReceiveType(
                     p ? RECEIVE_TYPES.ADDRESS : RECEIVE_TYPES.SHIELD
                 );
