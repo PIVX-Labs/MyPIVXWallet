@@ -116,6 +116,7 @@ async function restoreWallet() {
                     });
                 }
             "
+            v-if="wallets.vaults.length"
         >
             <div class="multiWalletContent">
                 <div class="walletsName">{{ wallets.activeVault?.label }}</div>
