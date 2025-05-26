@@ -32,7 +32,6 @@ const { balance, isViewOnly, isSynced, isHardwareWallet } =
     valuesToComputed(wallet);
 
 watch(masternodes, (masternodes, oldValue) => {
-    debugger;
     for (const vault of vaults.value) {
         for (const wallet of vault.wallets) {
             for (const oldMn of oldValue) {
