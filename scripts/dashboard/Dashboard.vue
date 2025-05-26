@@ -452,6 +452,7 @@ async function importFromDatabase() {
         getEventEmitter().emit('reset-activity');
         updateLogOutButton();
     }
+    getEventEmitter().emit('wallet-import');
     if (wallets.vaults.length === 0) {
         showLogin.value = true;
     } else {
