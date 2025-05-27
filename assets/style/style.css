@@ -1045,15 +1045,11 @@ progress[value]::-moz-progress-bar {
     padding: 15px 10px;
 }
 
-.home-hero {
-    /*background: radial-gradient(45vw 80% at 90% 40%, rgba(162, 50, 255, .3), rgba(44, 11, 76, 0) 95%), linear-gradient(90deg, rgba(44, 11, 76, .9), rgba(80, 15, 131, .5) 60%, rgba(44, 11, 76, .9)), linear-gradient(35deg, rgba(44, 11, 76, .3), rgba(80, 15, 131, .3) 37%, rgba(44, 11, 76, .3) 0, rgba(80, 15, 131, .3) 76%, rgba(44, 11, 76, .3) 0, rgba(80, 15, 131, .3)), linear-gradient(90deg, #2c0b4c, #500f83 60%, #2c0b4c);*/
-    background: linear-gradient(135deg, #271a40 0%, #1b0e2e 15%, #1a122d 15%, #201431 37%, #1a1529 37%, #221237 59%, #1d112d 59%, #1d1030 81%, #181225 81%, #281c41 100%);
+.background {
+    background-size: cover;
+    background-position: bottom center;
     background-attachment: fixed;
-}
-
-.home-hero-dark {
-    background: linear-gradient(135deg, #1D1231 0%, #050308 15%, #0E081A 15%, #0F0A1C 37%, #120D20 37%, #0B0914 59%, #100C1E 59%, #0C0717 81%, #120920 81%, #120920 100%);
-    background-attachment: fixed;
+    background-image: url('../blurry-colorful-background.jpg');
 }
 
 .title-section {
@@ -4133,15 +4129,6 @@ textarea::placeholder {
 
 .tooltip {
     z-index: 5000;
-}
-
-.gradientBackground {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    transition: all 0.250s ease-in-out;
 }
 
 .navbar::after {
