@@ -234,6 +234,7 @@ masternodeStatusEnabled = "" # ENABLED
 masternodeStatusPreEnabled = "" # PRE_ENABLED
 masternodeStatusMissing = "" # MISSING
 masternodeStatusExpired = "" # EXPIRED
+failedToConnect = "" # Failed to connect to the PIVX node. Check your internet connection.
 
 [ALERTS]
 INTERNAL_ERROR = "आंतरिक त्रुटि, कृपया कुछ समय बाद पुनः प्रयास करें" # Internal error, please try again later

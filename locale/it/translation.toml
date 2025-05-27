@@ -234,6 +234,7 @@ masternodeStatusMissing = "MANCANTE" # MISSING
 masternodeStatusExpired = "SCADUTO" # EXPIRED
 exportToCsv = "Esporta le transazioni" # Export transactions
 exportToCsvBody = "Vuoi esportare le transazioni in formato CSV?" # Do you want to export your transactions as CSV?
+failedToConnect = "" # Failed to connect to the PIVX node. Check your internet connection.
 
 [ALERTS]
 INTERNAL_ERROR = "Errore interno, rirova più tardi" # Internal error, please try again later
