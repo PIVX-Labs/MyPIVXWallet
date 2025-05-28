@@ -131,7 +131,9 @@ export const useWallet = defineStore('wallet', () => {
             _publicMode.value = newValue;
             const publicMode = _publicMode.value;
             doms.domNavbar.classList.toggle('active', !publicMode);
-            doms.domLightBackground.style.opacity = publicMode ? '1' : '0';
+            doms.domPageContainer.classList = [
+                publicMode ? 'background-public' : 'background-private',
+            ];
             // Depending on our Receive type, flip to the opposite type.
             // i.e: from `address` to `shield`, `shield contact` to `address`, etc
             // This reduces steps for someone trying to grab their opposite-type address, which is the primary reason to mode-toggle.

@@ -1045,11 +1045,18 @@ progress[value]::-moz-progress-bar {
     padding: 15px 10px;
 }
 
-.background {
+.background-public {
     background-size: cover;
     background-position: bottom center;
     background-attachment: fixed;
-    background-image: url('../blurry-colorful-background.jpg');
+    background-image: url('../public_background.jpg');
+}
+
+.background-private {
+    background-size: cover;
+    background-position: bottom center;
+    background-attachment: fixed;
+    background-image: url('../private_background.jpg');
 }
 
 .title-section {
