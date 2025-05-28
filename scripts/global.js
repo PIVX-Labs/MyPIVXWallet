@@ -572,6 +572,15 @@ export function switchSettings(page) {
     btn.classList.add('active');
 }
 
+export async function resync() {
+    if (wallet.isSynced) {
+        createAlert('info', translation.resyncing);
+        await wallet.resync();
+    } else {
+        createAlert('warning', translation.cannotResync);
+    }
+}
+
 function errorHandler(e) {
     const message = `<b>${translation.unhandledException}</b><br>${sanitizeHTML(
         e.message || e.reason

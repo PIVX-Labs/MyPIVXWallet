@@ -234,6 +234,10 @@ masternodeStatusMissing = "MANCANTE" # MISSING
 masternodeStatusExpired = "SCADUTO" # EXPIRED
 exportToCsv = "Esporta le transazioni" # Export transactions
 exportToCsvBody = "Vuoi esportare le transazioni in formato CSV?" # Do you want to export your transactions as CSV?
+resyncWalletButton = "" # Resync wallet
+resyncWalletDesc = "" # Resync your wallet from scratch.
+cannotResync = "" # The wallet is not synced, cannot resync.
+resyncing = "" # Resyncing wallet
 
 [ALERTS]
 INTERNAL_ERROR = "Errore interno, rirova più tardi" # Internal error, please try again later

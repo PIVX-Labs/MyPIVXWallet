@@ -234,6 +234,10 @@ masternodeStatusEnabled = "" # ENABLED
 masternodeStatusPreEnabled = "" # PRE_ENABLED
 masternodeStatusMissing = "" # MISSING
 masternodeStatusExpired = "" # EXPIRED
+resyncWalletButton = "" # Resync wallet
+resyncWalletDesc = "" # Resync your wallet from scratch.
+cannotResync = "" # The wallet is not synced, cannot resync.
+resyncing = "" # Resyncing wallet
 
 [ALERTS]
 INTERNAL_ERROR = "Błąd wewnętrzny, spróbuj ponownie później" # Internal error, please try again later
