@@ -1030,10 +1030,16 @@ export class Wallet {
 
     async resync() {
         this.#mempool = new Mempool();
-        await this.#resetShield();
+        if (this.hasShield()) {
+            await this.#resetShield();
+        }
+
         this.#isSynced = false;
         await this.#transparentSync();
-        await this.#syncShield();
+        if (this.hasShield()) {
+            await this.#syncShield();
+        }
+
         const db = await Database.getInstance();
         // Reset shield sync data, it might be corrupted
         await db.setShieldSyncData({
