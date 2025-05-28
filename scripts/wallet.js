@@ -1022,20 +1022,24 @@ export class Wallet {
         // If explorer sapling root is different from ours, there must be a sync error
         if (saplingRoot !== networkSaplingRoot) {
             createAlert('warning', translation.badSaplingRoot, 5000);
-            this.#mempool = new Mempool();
-            await this.#resetShield();
-            this.#isSynced = false;
-            await this.#transparentSync();
-            await this.#syncShield();
-            const db = await Database.getInstance();
-            // Reset shield sync data, it might be corrupted
-            await db.setShieldSyncData({
-                shieldData: null,
-                lastSyncedBlock: null,
-            });
+            await this.resync();
             return false;
         }
         return true;
+    }
+
+    async resync() {
+        this.#mempool = new Mempool();
+        await this.#resetShield();
+        this.#isSynced = false;
+        await this.#transparentSync();
+        await this.#syncShield();
+        const db = await Database.getInstance();
+        // Reset shield sync data, it might be corrupted
+        await db.setShieldSyncData({
+            shieldData: null,
+            lastSyncedBlock: null,
+        });
     }
 
     /**
