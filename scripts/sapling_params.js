@@ -1,4 +1,3 @@
-import { getEventEmitter } from './event_bus.js';
 /**
  * Manages fetching, caching and loading bar updates of sapling params
  */
