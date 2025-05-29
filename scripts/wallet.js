@@ -1054,6 +1054,11 @@ export class Wallet {
         );
         // If explorer sapling root is different from ours, there must be a sync error
         if (saplingRoot !== networkSaplingRoot) {
+            // Reset shield sync data, it might be corrupted
+            await db.setShieldSyncData({
+                shieldData: null,
+                lastSyncedBlock: null,
+            });
             createAlert('warning', translation.badSaplingRoot, 5000);
             this.#mempool = new Mempool();
             await this.#resetShield();
@@ -1061,11 +1066,7 @@ export class Wallet {
             await this.#transparentSync();
             await this.#syncShield();
             const db = await Database.getInstance();
-            // Reset shield sync data, it might be corrupted
-            await db.setShieldSyncData({
-                shieldData: null,
-                lastSyncedBlock: null,
-            });
+
             return false;
         }
         return true;
