@@ -202,9 +202,9 @@ export async function start() {
     subscribeToNetworkEvents();
     // Make sure we know the correct number of blocks
     try {
-	await refreshChainData();
+        await refreshChainData();
     } catch (e) {
-	createAlert('warning', translation.failedToConnect, 10_000)
+        createAlert('warning', translation.failedToConnect, 10_000);
     }
     // Load the price manager
     cOracle.load();

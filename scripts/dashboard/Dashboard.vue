@@ -409,7 +409,7 @@ getEventEmitter().on('toggle-network', async () => {
     doms.domDashboard.click();
 });
 
- onMounted(async () => {
+onMounted(async () => {
     await start();
     await importFromDatabase();
 
