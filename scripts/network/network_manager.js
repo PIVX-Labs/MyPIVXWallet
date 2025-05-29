@@ -273,6 +273,16 @@ class NetworkManager {
         return await this.#retryWrapper('getShieldData', true, 0, initialBlock);
     }
 
+    async getShieldDataLength(startBlock, endBlock) {
+        return await this.#retryWrapper(
+            'getShieldDataLength',
+            true,
+            0,
+            startBlock,
+            endBlock
+        );
+    }
+
     async getSaplingOutput() {
         return await this.#retryWrapper('getSaplingOutput', true, 0);
     }
