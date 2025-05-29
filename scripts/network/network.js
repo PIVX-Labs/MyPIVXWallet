@@ -109,6 +109,10 @@ export class Network {
         throw new Error('getShieldData must be implemented');
     }
 
+    async getShieldDataLength(_initialBlock, _endBlock) {
+        throw new Error('getShieldDataLength must be implemented');
+    }
+
     async getSaplingOutput() {
         throw new Error('getSaplingOutput must be implemented');
     }
@@ -343,6 +347,14 @@ export class RPCNodeNetwork extends Network {
         );
         if (!res.ok) throw new Error('Invalid response');
         return res;
+    }
+
+    async getShieldDataLength(startBlock, endBlock) {
+        const res = await this.#fetchNode(
+            `/getshielddatalength?startBlock=${startBlock}&endBlock=${endBlock}`
+        );
+        if (!res.ok) throw new Error('Invalid response');
+        return Number.parseInt(await res.text());
     }
 
     #getSaplingParamsUrl() {
