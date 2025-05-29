@@ -1025,14 +1025,19 @@ export class Wallet {
             this.#mempool = new Mempool();
             await this.#resetShield();
             this.#isSynced = false;
-            await this.#transparentSync();
-            await this.#syncShield();
             const db = await Database.getInstance();
             // Reset shield sync data, it might be corrupted
             await db.setShieldSyncData({
                 shieldData: null,
                 lastSyncedBlock: null,
             });
+
+            // Try to rotate networks to see if another RPC/explorer has the correct data
+            getNetwork().rotateNetworks();
+
+            await this.#transparentSync();
+            await this.#syncShield();
+
             return false;
         }
         return true;
