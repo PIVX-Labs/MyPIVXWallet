@@ -4313,7 +4313,6 @@ textarea::placeholder {
     background: linear-gradient(#32135C 0 0) padding-box, linear-gradient(to top, #771DF3, #9631F4) border-box;
     border: 3px solid transparent;
     height:50px;
-    width:200px;
     cursor: pointer;
     z-index:10;
     position: relative;
@@ -4328,6 +4327,7 @@ textarea::placeholder {
     padding-left: 16px;
     padding-right: 16px;
     width:100%;
+    gap: 7px;
 }
 
 @media (max-width: 992px) {
