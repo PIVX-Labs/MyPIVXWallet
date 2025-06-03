@@ -159,6 +159,7 @@ async function restoreWallet() {
                             text-transform: uppercase;
                             color: #9221ff;
                             font-size: 13px;
+                            text-wrap: nowrap;
                         "
                         >{{
                             vault.label.length >= 13
