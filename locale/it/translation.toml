@@ -234,6 +234,23 @@ masternodeStatusMissing = "MANCANTE" # MISSING
 masternodeStatusExpired = "SCADUTO" # EXPIRED
 exportToCsv = "Esporta le transazioni" # Export transactions
 exportToCsvBody = "Vuoi esportare le transazioni in formato CSV?" # Do you want to export your transactions as CSV?
+votingGroupListTitle = "" # Masternode Voting Groups
+group = "" # Group
+mnNumber = "" # # of mns
+weight = "" # Weight
+actions = "" # Actions
+all = "" # All
+createGroup = "" # Create New Group
+groupName = "" # Group Name
+groupNamePlaceholder = "" # e.g. Self hosted MNs
+selectMasternodeBy = "" # Select Masternodes By:
+selectMasternodeAuto = "" # Auto: Number of MNs
+selectMasternodeManual = "" # Manual Selection
+selectMasternodeNumber = "" # Number of Masternodes
+selectMasternodes = "" # Select Masternodes
+selectedMasternodes = "" # Selected MNs:
+voteWeight = "" # Vote Weight:
+saveGroup = "" # Save Group
 
 [ALERTS]
 INTERNAL_ERROR = "Errore interno, rirova più tardi" # Internal error, please try again later

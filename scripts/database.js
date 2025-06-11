@@ -21,9 +21,10 @@ export class Database {
      * Version 7 = Store shield params in indexed db (#511)
      * Version 8 = Multi MNs (#517)
      * Version 9 = Store shield syncing data in indexed db (#543)
+     * Version 10 = voting groups (???) @fail fill this
      * @type {number}
      */
-    static version = 9;
+    static version = 10;
 
     /**
      * @type{import('idb').IDBPDatabase}
@@ -490,6 +491,9 @@ export class Database {
                         }
                     })();
                 }
+		if (oldVersion < 10) {
+		    db.createObjectStore('groups');
+		}
             },
             blocking: () => {
                 // Another instance is waiting to upgrade, and we're preventing it
@@ -572,5 +576,21 @@ export class Database {
         }
 
         return this.#instances.get(name);
+    }
+
+    async addGroup(group) {
+
+    }
+
+    async removeGroup(group) {
+
+    }
+
+    async getGroups(group) {
+	
+    }
+
+    async getGroupKeys() {
+	
     }
 }

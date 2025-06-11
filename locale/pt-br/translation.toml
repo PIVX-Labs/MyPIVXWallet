@@ -121,6 +121,23 @@ masternodeStatusEnabled = "" # ENABLED
 masternodeStatusPreEnabled = "" # PRE_ENABLED
 masternodeStatusMissing = "" # MISSING
 masternodeStatusExpired = "" # EXPIRED
+votingGroupListTitle = "" # Masternode Voting Groups
+group = "" # Group
+mnNumber = "" # # of mns
+weight = "" # Weight
+actions = "" # Actions
+all = "" # All
+createGroup = "" # Create New Group
+groupName = "" # Group Name
+groupNamePlaceholder = "" # e.g. Self hosted MNs
+selectMasternodeBy = "" # Select Masternodes By:
+selectMasternodeAuto = "" # Auto: Number of MNs
+selectMasternodeManual = "" # Manual Selection
+selectMasternodeNumber = "" # Number of Masternodes
+selectMasternodes = "" # Select Masternodes
+selectedMasternodes = "" # Selected MNs:
+voteWeight = "" # Vote Weight:
+saveGroup = "" # Save Group
 
 [ALERTS]
 STAKE_ADDR_SET = "<b>Endereço de Cold Staking definido!</b><br>Ao fazer Stake no futuro este endereço irá ser usado." # <b>Cold Address set!</b><br>Future stakes will use this address.

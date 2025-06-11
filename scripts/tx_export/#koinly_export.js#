@@ -1,0 +1,54 @@
+import { TxExport } from './tx_export.js';
+import { HistoricalTxType } from '../historical_tx.js';
+
+export class KoinlyExport extends TxExport {
+    getCsv() {
+        const res = [['TYPE', 'CATEGORY', 'TRANSACTION DATE', 'FROM CURRENCY', 'FROM AMOUNT', 'TO CURRENCY', 'TO AMOUNT', 'FEE CURRENCY', 'FEE AMOUNT', 'NOTES', 'ORIGINAL ID']];
+        this.transactions.forEach((t) => {
+            const type = this.getLabel(t.type);
+			if (type !== 'SKIP')
+				res.push([
+				    this.getLabel(t.type),
+				    t.type === HistoricalTxType.STAKE ? (t.amount === 4 || t.amount === 6 ? 'Staking' : 'General_Income') : 'fuck',
+				    this.convertToUTCDateTime(t.time * 1000),
+				    'PIVX',
+				    t.amount,
+				    '',
+				    '',
+				    '',
+				    '',
+				    '',
+				    t.id,
+				]);
+		});
+        return this.arrayToCsv(res);
+    }
+
+    getLabel(type) {
+        switch (type) {
+            case HistoricalTxType.STAKE:
+                return 'Incoming';
+            case HistoricalTxType.DELEGATION:
+            case HistoricalTxType.UNDELEGATION:
+                return 'SKIP';
+            case HistoricalTxType.SENT:
+            case HistoricalTxType.PROPOSAL_FEE:
+                return 'SKIP';
+            case HistoricalTxType.RECEIVED:
+                return 'Incoming';
+            case HistoricalTxType.UNKNOWN:
+            default:
+                return 'UNKNOWN';
+        }
+    }
+
+    convertToUTCDateTime(time) {
+        const date = new Date(time);
+        const year = date.getUTCFullYear();
+        const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+        const day = String(date.getUTCDate()).padStart(2, '0');
+        const hours = String(date.getUTCHours()).padStart(2, '0');
+        const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+        return `${year}-${month}-${day} ${hours}:${minutes} UTC`;
+    }
+}
