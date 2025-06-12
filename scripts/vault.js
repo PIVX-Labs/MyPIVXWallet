@@ -133,7 +133,7 @@ export class Vault {
         // Either return the seed, or the key to export
         // if this is a seedless vault
         if (this.#seed) return this.#seed;
-        return this.#wallets[0].getKeyToExport();
+        return this.#wallets[0].getKeyToEncrypt();
     }
 
     canGenerateMore() {

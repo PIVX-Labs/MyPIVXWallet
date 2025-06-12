@@ -409,7 +409,7 @@ export class Wallet {
      */
     async encrypt(strPassword) {
         // Encrypt the wallet WIF with AES-GCM and a user-chosen password - suitable for browser storage
-        let strEncWIF = await encrypt(this.#getKeyToEncrypt(), strPassword);
+        let strEncWIF = await encrypt(this.getKeyToEncrypt(), strPassword);
         let strEncExtsk = '';
         let shieldData = '';
         if (this.#shield) {
@@ -567,13 +567,13 @@ export class Wallet {
             ).getAccount(this.getKeyToExport());
             return account.encWif;
         }
-        return this.#getKeyToEncrypt();
+        return this.getKeyToEncrypt();
     }
 
     /**
      * @returns key to encrypt
      */
-    #getKeyToEncrypt() {
+    getKeyToEncrypt() {
         return JSON.stringify({
             mk: this.getMasterKey()?.keyToBackup,
             shield: this.#shield?.extsk,

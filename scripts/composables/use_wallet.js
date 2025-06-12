@@ -379,6 +379,8 @@ function addVault(v) {
                         : null;
                     const secret = await ParsedSecret.parse(wif);
                     await wallet.setMasterKey({ mk: secret.masterKey, extsk });
+                    if (!extsk && secret.shield)
+                        await wallet.setShield(secret.shield);
                     isViewOnly.value = v.isViewOnly();
                     return true;
                 }
