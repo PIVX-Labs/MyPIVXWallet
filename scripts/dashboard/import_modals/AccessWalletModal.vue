@@ -69,7 +69,7 @@ function close() {
                         <input
                             v-model="password"
                             data-testid="passwordInp"
-                            type="text"
+                            type="password"
                         />
                     </template>
 
