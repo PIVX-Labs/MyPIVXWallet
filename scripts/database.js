@@ -8,6 +8,7 @@ import { PromoWallet } from './promos.js';
 import { Account } from './accounts.js';
 import { COutpoint, CTxIn, CTxOut, Transaction } from './transaction.js';
 import { debugError, debugLog, DebugTopics } from './debug.js';
+import { Group } from './group.js';
 
 export class Database {
     /**
@@ -491,9 +492,9 @@ export class Database {
                         }
                     })();
                 }
-		if (oldVersion < 10) {
-		    db.createObjectStore('groups');
-		}
+                if (oldVersion < 10) {
+                    db.createObjectStore('groups');
+                }
             },
             blocking: () => {
                 // Another instance is waiting to upgrade, and we're preventing it
@@ -579,18 +580,21 @@ export class Database {
     }
 
     async addGroup(group) {
-
+        const store = this.#db
+            .transaction('groups', 'readwrite')
+            .objectStore('groups');
+        await store.put(group, group.name);
     }
 
-    async removeGroup(group) {
+    async removeGroup(group) {}
 
-    }
-
-    async getGroups(group) {
-	
-    }
-
-    async getGroupKeys() {
-	
+    /**
+     * @return {Promise<Group[]>}
+     */
+    async getGroups() {
+        const store = this.#db
+            .transaction('groups', 'readonly')
+            .objectStore('groups');
+        return (await store.getAll()).map((g) => new Group({ ...g }));
     }
 }

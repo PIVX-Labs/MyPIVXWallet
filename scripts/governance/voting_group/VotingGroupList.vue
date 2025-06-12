@@ -1,20 +1,15 @@
 <script setup>
 import { ref, watch } from 'vue';
- import Modal from '../../Modal.vue';
- import CreateVotingGroup from './CreatingVotingGroup.vue'
- import { translation } from '../../i18n';
+import Modal from '../../Modal.vue';
+import CreateVotingGroup from './CreatingVotingGroup.vue';
+import { translation } from '../../i18n';
+import { useGroups } from '../../composables/use_groups';
+import { storeToRefs } from 'pinia';
 const props = defineProps({
     masternodes: Array,
- });
+});
 const showCreateVotingGroup = ref(false);
-const groups = [
-    {
-        title: "all",
-        mnNumber: props.masternodes.length,
-        voteWeigth: 1,
-        allowEdit: true,
-    },
-];
+const { groups, selectedGroup } = storeToRefs(useGroups());
 
 const selectedMasternodes = defineModel('selectedMasternodes', { default: [] });
 watch(
@@ -50,17 +45,24 @@ const emit = defineEmits(['close']);
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="group in groups" :key="group.title">
-                        <td class="px-4 py-2 font-medium">{{ group.title }}</td>
+                    <tr v-for="group in groups" :key="group.name">
+                        <td class="px-4 py-2 font-medium">{{ group.name }}</td>
                         <td class="px-4 py-2 text-center">
-                            {{ group.mnNumber }}
+                            {{ group.mnNumber() }}
                         </td>
                         <td class="px-4 py-2 text-center">
-                            {{ (group.voteWeigth * 100).toFixed(0) }}%
+                            {{
+                                (
+                                    (group.mnNumber() /
+                                        props.masternodes.length) *
+                                    100
+                                ).toFixed(0)
+                            }}%
                         </td>
                         <td class="px-4 py-2 text-center">
                             <button
                                 class="bg-blue-600 text-white text-sm px-3 py-1 rounded hover:bg-blue-700"
+				@click="selectedGroup = group; emit('close')"
                             >
                                 Vote
                             </button>
@@ -77,13 +79,17 @@ const emit = defineEmits(['close']);
 
             <button
                 class="mt-4 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-		@click="showCreateVotingGroup = true"
+                @click="showCreateVotingGroup = true"
             >
-                ➕ Create New Group
+                Create New Group
             </button>
         </template>
     </Modal>
-    <CreateVotingGroup @close="showCreateVotingGroup = false" :show="showCreateVotingGroup" />
+    <CreateVotingGroup
+        @close="showCreateVotingGroup = false"
+        :masternodes="masternodes"
+        :show="showCreateVotingGroup"
+    />
 </template>
 <style>
 .masternode-item {

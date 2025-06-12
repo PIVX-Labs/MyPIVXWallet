@@ -19,12 +19,14 @@ import { useSettings } from '../composables/use_settings';
 import { getNetwork } from '../network/network_manager.js';
 import { useMasternode } from '../composables/use_masternode';
 import { useAlerts } from '../composables/use_alerts.js';
+import { useGroups } from '../composables/use_groups';
 const { createAlert } = useAlerts();
 
 const showCreateProposalModal = ref(false);
 
 const wallet = useWallet();
-const settings = useSettings();
+ const settings = useSettings();
+const { selectedGroup } = storeToRefs(useGroups());
 const { localProposals, masternodes } = storeToRefs(useMasternode());
 const { advancedMode } = storeToRefs(settings);
 const {
@@ -210,12 +212,16 @@ function deleteProposal(proposal) {
 }
 
 async function vote(proposal, voteCode) {
-    let successfulVotes = 0;
-    if (!masternodes.value.length) {
-        createAlert(ALERTS.MN_ACCESS_BEFORE_VOTE, 6000);
+     let successfulVotes = 0;
+	debugger;
+     const votingMns = selectedGroup.value.masternodes.map(
+	 m=>masternodes.value.find(m1=>m1.mnPrivateKey === m)
+     );
+    if (!votingMns.length) {
+        createAlert('warning', ALERTS.MN_ACCESS_BEFORE_VOTE, 6000);
         return;
     }
-    for (const mn of masternodes.value) {
+    for (const mn of votingMns) {
         if ((await mn.getStatus()) !== 'ENABLED') {
             continue;
         }
@@ -240,7 +246,7 @@ async function vote(proposal, voteCode) {
         successfulVotes === 0 ? 'warning' : 'success',
         tr(translation.votedMultiMn, [
             { successfulVotes },
-            { totalVotes: masternodes.value.length },
+            { totalVotes: votingMns.length },
         ]),
         6000
     );

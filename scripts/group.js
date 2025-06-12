@@ -6,9 +6,13 @@ export class Group {
     masternodes;
 
     editable;
-	constructor({name, mastenodes = [], editable = false}) {
-	    this.name = name;
-	    this.masternodes = masternodes;
-		this.editable = editable;
+    constructor({ name, masternodes = [], editable = false }) {
+        this.name = name;
+        this.masternodes = masternodes;
+        this.editable = editable;
+    }
+
+    mnNumber() {
+        return this.masternodes.length;
     }
 }
