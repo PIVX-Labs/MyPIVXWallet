@@ -5,15 +5,15 @@ import Modal from '../../Modal.vue';
 import { Database } from '../../database';
 import { useGroups } from '../../composables/use_groups.js';
 import { Group } from '../../group';
+import { toRaw } from 'vue';
 
 const emit = defineEmits(['close']);
 const { addGroup } = useGroups();
 
 const props = defineProps({
     masternodes: Array,
+    availableMasternodes: Array,
 });
-
-const availableMasternodes = ref(props.masternodes);
 
 const groupName = ref('');
 const mode = ref('count');
@@ -24,10 +24,17 @@ const selectedMasternodes = computed(() => {
     if (mode.value === 'manual') {
         return selectedMNs.value;
     } else {
-        return availableMasternodes.value
-            .slice(0, mnCount.value);
+        return props.availableMasternodes.slice(0, mnCount.value);
     }
 });
+
+function close() {
+    groupName.value = '';
+    mode.value = 'count';
+    selectedMNs.value = [];
+    mnCount.value = 1;
+    emit('close');
+}
 
 const voteWeightPercent = computed(() => {
     if (props.masternodes.length === 0) return 0;
@@ -46,11 +53,11 @@ async function saveGroup() {
     await addGroup(
         new Group({
             name: groupName.value,
-            masternodes: selectedMasternodes.value.map((m) => m.mnPrivateKey),
+            masternodes: toRaw(selectedMasternodes.value),
             editable: true,
         })
     );
-    emit('close');
+    close();
 }
 </script>
 
@@ -58,7 +65,7 @@ async function saveGroup() {
     <Modal :show="true">
         <template #header>
             {{ translation.createGroup }}
-            <div @click="emit('close')">CLOSE</div>
+            <div @click="close()">CLOSE</div>
         </template>
         <template #body>
             <div class="p-4 max-w-3xl mx-auto space-y-6 flex flex-column">
@@ -97,7 +104,7 @@ async function saveGroup() {
                     <input
                         type="number"
                         min="1"
-                        :max="availableMasternodes.length"
+                        :max="props.availableMasternodes.length"
                         v-model.number="mnCount"
                         class="w-full border border-gray-300 rounded px-3 py-2"
                     />
@@ -111,7 +118,7 @@ async function saveGroup() {
                         class="grid grid-cols-2 gap-2 max-h-60 overflow-y-auto border border-gray-200 p-2 rounded"
                     >
                         <div
-                            v-for="mn in availableMasternodes"
+                            v-for="mn in props.availableMasternodes"
                             :key="mn.addr"
                             class="flex items-center gap-2"
                         >
@@ -119,7 +126,7 @@ async function saveGroup() {
                                 type="checkbox"
                                 :id="mn.addr"
                                 v-model="selectedMNs"
-                                :value="mn.addr"
+                                :value="mn.mnPrivateKey"
                             />
                             <label :for="mn.addr" class="text-sm font-mono">{{
                                 mn.addr

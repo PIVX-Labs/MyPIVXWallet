@@ -6,6 +6,9 @@ import { Group } from '../group.js';
 import { useMasternode } from './use_masternode.js';
 
 export const useGroups = defineStore('groups', () => {
+    /**
+     * @type {Group[]}
+     */
     const groups = ref([]);
     /**
      * @type {import('vue').Ref<Group> | null}
@@ -23,33 +26,44 @@ export const useGroups = defineStore('groups', () => {
             }),
             ...(await db.getGroups()),
         ];
-	selectedGroup.value = groups.value[0];
+        selectedGroup.value = groups.value[0];
     }
 
-    watch(masternodes, () => {
-	cleanGroups();
-	loadGroups();
-    }, {immediate: true})
-    
+    watch(
+        masternodes,
+        () => {
+            cleanGroups();
+            loadGroups();
+        },
+        { immediate: true }
+    );
+
     // Remove deleted mns from groups (TODO)
     function cleanGroups(groups) {}
 
     async function addGroup(group) {
         const database = await Database.getInstance();
-        groups.value.push(group);
+        groups.value = [...groups.value, group];
         await database.addGroup(group);
     }
 
     async function removeGroup(group) {
         const database = await Database.getInstance();
         await database.removeGroup(group);
-        groups.value = await database.getGroups();
+        groups.value = [
+            new Group({
+                name: 'All',
+                masternodes: masternodes.value.map((m) => m.mnPrivateKey),
+                editable: false,
+            }),
+            ...(await database.getGroups()),
+        ];
     }
 
     return {
         groups: readonly(groups),
         addGroup,
         removeGroup,
-	selectedGroup,
+        selectedGroup,
     };
 });

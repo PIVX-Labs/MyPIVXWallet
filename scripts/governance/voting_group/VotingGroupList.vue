@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
 import Modal from '../../Modal.vue';
 import CreateVotingGroup from './CreatingVotingGroup.vue';
 import { translation } from '../../i18n';
@@ -8,8 +8,23 @@ import { storeToRefs } from 'pinia';
 const props = defineProps({
     masternodes: Array,
 });
+
 const showCreateVotingGroup = ref(false);
 const { groups, selectedGroup } = storeToRefs(useGroups());
+const availableMasternodes = computed(() => {
+    const map = new Map();
+    debugger;
+    for (const mn of props.masternodes) {
+        map.set(mn.mnPrivateKey, mn);
+    }
+    // Slice 1 to remove the `All` group
+    for (const group of groups.value.slice(1)) {
+        for (const mnKey of group.masternodes) {
+            map.delete(mnKey);
+        }
+    }
+    return Array.from(map.values());
+});
 
 const selectedMasternodes = defineModel('selectedMasternodes', { default: [] });
 watch(
@@ -59,16 +74,19 @@ const emit = defineEmits(['close']);
                                 ).toFixed(0)
                             }}%
                         </td>
-                        <td class="px-4 py-2 text-center">
+                        <td class="px-4 py-2 text-center flex">
                             <button
                                 class="bg-blue-600 text-white text-sm px-3 py-1 rounded hover:bg-blue-700"
-				@click="selectedGroup = group; emit('close')"
+                                @click="
+                                    selectedGroup = group;
+                                    emit('close');
+                                "
                             >
                                 Vote
                             </button>
                             <button
-                                v-if="group.allowEdit"
-                                class="ml-2 bg-gray-300 text-sm px-3 py-1 rounded hover:bg-gray-400"
+                                v-if="group.editable"
+                                class="ml-2 bg-gray-300 text-white text-sm px-3 py-1 rounded hover:bg-gray-400"
                             >
                                 Edit
                             </button>
@@ -80,6 +98,7 @@ const emit = defineEmits(['close']);
             <button
                 class="mt-4 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
                 @click="showCreateVotingGroup = true"
+                v-if="availableMasternodes.length"
             >
                 Create New Group
             </button>
@@ -88,6 +107,7 @@ const emit = defineEmits(['close']);
     <CreateVotingGroup
         @close="showCreateVotingGroup = false"
         :masternodes="masternodes"
+        :available-masternodes="availableMasternodes"
         :show="showCreateVotingGroup"
     />
 </template>
