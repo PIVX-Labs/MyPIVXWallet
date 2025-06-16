@@ -280,9 +280,9 @@ function addVault(v) {
     const canGenerateMore = ref(v.canGenerateMore());
     (async () => {
         const database = await Database.getInstance();
-        const encryptedSecret = await database.getVault(
-            v.getDefaultKeyToExport()
-        )?.encryptesSecret;
+        const encryptedSecret = (
+            await database.getVault(v.getDefaultKeyToExport())
+        )?.encryptedSecret;
         canGenerateMore.value = v.canGenerateMore() || !!encryptedSecret;
     })();
     const wipePrivateData = () => {
