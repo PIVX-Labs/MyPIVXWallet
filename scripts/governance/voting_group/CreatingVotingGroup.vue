@@ -6,9 +6,10 @@ import { Database } from '../../database';
 import { useGroups } from '../../composables/use_groups.js';
 import { Group } from '../../group';
 import { toRaw } from 'vue';
+import { createAlert } from '../../alerts/alert';
 
 const emit = defineEmits(['close']);
-const { addGroup } = useGroups();
+const { addGroup, groups } = useGroups();
 
 const props = defineProps({
     masternodes: Array,
@@ -47,14 +48,20 @@ const voteWeightPercent = computed(() => {
 });
 
 async function saveGroup() {
-    if (!groupName.value.trim()) {
-        alert('Group name is required');
+    const sanitizedName = groupName.value.trim();
+    if (!sanitizedName) {
+        createAlert('warning', 'Group name is required', 5000);
+        return;
+    }
+
+    if (groups.map((g) => g.name).includes(sanitizedName)) {
+        createAlert('warning', 'Group name already exists', 5000);
         return;
     }
 
     await addGroup(
         new Group({
-            name: groupName.value,
+            name: sanitizedName,
             masternodes: toRaw(selectedMasternodes.value.map((m) => toRaw(m))),
             editable: true,
         })

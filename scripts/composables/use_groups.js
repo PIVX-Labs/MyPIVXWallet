@@ -41,10 +41,12 @@ export const useGroups = defineStore('groups', () => {
     );
 
     watch(groups, () => {
-	if (!groups.value.map(g => g.name).includes(selectedGroup.value.name)) {
-	    // Default to "All" group when group is removed
-	    selectedGroup.value = groups.value[0]
-	}
+        if (
+            !groups.value.map((g) => g.name).includes(selectedGroup.value.name)
+        ) {
+            // Default to "All" group when group is removed
+            selectedGroup.value = groups.value[0];
+        }
     });
 
     function cleanGroups() {
