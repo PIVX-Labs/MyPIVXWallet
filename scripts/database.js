@@ -586,7 +586,12 @@ export class Database {
         await store.put(group, group.name);
     }
 
-    async removeGroup(group) {}
+    async removeGroup(group) {
+        const store = this.#db
+            .transaction('groups', 'readwrite')
+            .objectStore('groups');
+        await store.delete(group.name);
+    }
 
     /**
      * @return {Promise<Group[]>}

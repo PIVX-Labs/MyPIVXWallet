@@ -24,7 +24,9 @@ const selectedMasternodes = computed(() => {
     if (mode.value === 'manual') {
         return selectedMNs.value;
     } else {
-        return props.availableMasternodes.slice(0, mnCount.value);
+        return props.availableMasternodes
+            .slice(0, mnCount.value)
+            .map((m) => m.mnPrivateKey);
     }
 });
 
@@ -53,7 +55,7 @@ async function saveGroup() {
     await addGroup(
         new Group({
             name: groupName.value,
-            masternodes: toRaw(selectedMasternodes.value),
+            masternodes: toRaw(selectedMasternodes.value.map((m) => toRaw(m))),
             editable: true,
         })
     );

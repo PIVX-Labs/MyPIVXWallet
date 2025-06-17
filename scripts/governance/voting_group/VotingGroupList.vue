@@ -5,15 +5,20 @@ import CreateVotingGroup from './CreatingVotingGroup.vue';
 import { translation } from '../../i18n';
 import { useGroups } from '../../composables/use_groups';
 import { storeToRefs } from 'pinia';
+import EditVotingGroup from './EditVotingGroup.vue';
+
 const props = defineProps({
     masternodes: Array,
 });
 
 const showCreateVotingGroup = ref(false);
-const { groups, selectedGroup } = storeToRefs(useGroups());
+const groupToBeEdited = ref(null);
+const groupStore = useGroups();
+const { removeGroup, addGroup } = groupStore;
+const { groups, selectedGroup } = storeToRefs(groupStore);
 const availableMasternodes = computed(() => {
-    const map = new Map();
     debugger;
+    const map = new Map();
     for (const mn of props.masternodes) {
         map.set(mn.mnPrivateKey, mn);
     }
@@ -33,6 +38,18 @@ watch(
         selectedMasternodes.value = props.masternodes;
     }
 );
+
+/**
+ * @param {import('../../group.js').Group} group
+ */
+async function editGroup(group) {
+    await removeGroup(groupToBeEdited.value);
+    // Delete group if there are no more selected mns
+    if (group.masternodes.length) {
+        await addGroup(group);
+    }
+    groupToBeEdited.value = null;
+}
 const emit = defineEmits(['close']);
 </script>
 <template>
@@ -87,6 +104,7 @@ const emit = defineEmits(['close']);
                             <button
                                 v-if="group.editable"
                                 class="ml-2 bg-gray-300 text-white text-sm px-3 py-1 rounded hover:bg-gray-400"
+                                @click="groupToBeEdited = group"
                             >
                                 Edit
                             </button>
@@ -109,6 +127,12 @@ const emit = defineEmits(['close']);
         :masternodes="masternodes"
         :available-masternodes="availableMasternodes"
         :show="showCreateVotingGroup"
+    />
+    <EditVotingGroup
+        :show="!!groupToBeEdited"
+        :groupToBeEdited="groupToBeEdited"
+        :availableMasternodes="availableMasternodes"
+        @close="editGroup"
     />
 </template>
 <style>
