@@ -1,4 +1,4 @@
-import { ref, watch } from 'vue';
+import { ref, watch, triggerRef, reactive } from 'vue';
 import { defineStore, storeToRefs } from 'pinia';
 import { Database } from '../database.js';
 import { readonly } from 'vue';
@@ -7,7 +7,7 @@ import { useMasternode } from './use_masternode.js';
 
 export const useGroups = defineStore('groups', () => {
     /**
-     * @type {Group[]}
+     * @type {import('vue').Ref<Group[]>}
      */
     const groups = ref([]);
     /**
@@ -19,31 +19,41 @@ export const useGroups = defineStore('groups', () => {
     async function loadGroups() {
         const db = await Database.getInstance();
         groups.value = [
-            new Group({
-                name: 'All',
-                masternodes: masternodes.value.map((m) => m.mnPrivateKey),
-                editable: false,
-            }),
-            ...(await db.getGroups()),
+            reactive(
+                new Group({
+                    name: 'All',
+                    masternodes: masternodes.value.map((m) => m.mnPrivateKey),
+                    editable: false,
+                })
+            ),
+            ...(await db.getGroups()).map((g) => reactive(g)),
         ];
         selectedGroup.value = groups.value[0];
     }
 
     watch(
         masternodes,
-        () => {
+        async () => {
+            await loadGroups();
             cleanGroups();
-            loadGroups();
         },
-        { immediate: true }
+        { immediate: true, deep: true }
     );
 
-    // Remove deleted mns from groups (TODO)
-    function cleanGroups(groups) {}
+    function cleanGroups() {
+        for (const group of groups.value.slice(1)) {
+            group.masternodes = group.masternodes.filter((privateKey) =>
+                masternodes.value
+                    .map((m) => m.mnPrivateKey)
+                    .includes(privateKey)
+            );
+        }
+        triggerRef(groups);
+    }
 
     async function addGroup(group) {
         const database = await Database.getInstance();
-        groups.value = [...groups.value, group];
+        groups.value = [...groups.value, reactive(group)];
         await database.addGroup(group);
     }
 
@@ -51,13 +61,16 @@ export const useGroups = defineStore('groups', () => {
         const database = await Database.getInstance();
         await database.removeGroup(group);
         groups.value = [
-            new Group({
-                name: 'All',
-                masternodes: masternodes.value.map((m) => m.mnPrivateKey),
-                editable: false,
-            }),
-            ...(await database.getGroups()),
+            reactive(
+                new Group({
+                    name: 'All',
+                    masternodes: masternodes.value.map((m) => m.mnPrivateKey),
+                    editable: false,
+                })
+            ),
+            ...(await database.getGroups()).map((g) => reactive(g)),
         ];
+        cleanGroups();
     }
 
     return {

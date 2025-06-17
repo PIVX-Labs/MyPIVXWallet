@@ -17,7 +17,6 @@ const groupStore = useGroups();
 const { removeGroup, addGroup } = groupStore;
 const { groups, selectedGroup } = storeToRefs(groupStore);
 const availableMasternodes = computed(() => {
-    debugger;
     const map = new Map();
     for (const mn of props.masternodes) {
         map.set(mn.mnPrivateKey, mn);

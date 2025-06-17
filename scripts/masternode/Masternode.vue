@@ -84,7 +84,6 @@ async function startMasternode(mn, fRestart = false) {
 }
 
 async function destroyMasternode(mn) {
-    console.log('HIIII');
     // TODO: Only delete 1
     masternodes.value = masternodes.value.filter(
         (masternode) => masternode.mnPrivateKey !== mn.mnPrivateKey
@@ -137,7 +136,6 @@ async function createMasternode({ isVPS }) {
     // Ensure wallet is unlocked
     if (!isHardwareWallet.value && isViewOnly.value && !(await restoreWallet()))
         return;
-    console.log(cChainParams.current.collateralInSats);
     const [address] = wallet.getNewAddress(1);
     const res = await wallet.createAndSendTransaction(
         getNetwork(),

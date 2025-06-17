@@ -2,7 +2,6 @@
 import { ref, watch } from 'vue';
 import Modal from '../../Modal.vue';
 import { translation } from '../../i18n.js';
-import { computed } from 'vue';
 import { useMasternode } from '../../composables/use_masternode';
 import { Group } from '../../group';
 const props = defineProps({
@@ -25,6 +24,8 @@ function close() {
             editable: true,
         })
     );
+    groupName.value = '';
+    selectedMNs.value = [];
 }
 watch([() => props.groupToBeEdited, () => props.availableMasternodes], () => {
     if (!props.groupToBeEdited) return;
