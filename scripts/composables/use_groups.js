@@ -40,6 +40,13 @@ export const useGroups = defineStore('groups', () => {
         { immediate: true, deep: true }
     );
 
+    watch(groups, () => {
+	if (!groups.value.map(g => g.name).includes(selectedGroup.value.name)) {
+	    // Default to "All" group when group is removed
+	    selectedGroup.value = groups.value[0]
+	}
+    });
+
     function cleanGroups() {
         for (const group of groups.value.slice(1)) {
             group.masternodes = group.masternodes.filter((privateKey) =>
