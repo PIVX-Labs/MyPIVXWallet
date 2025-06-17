@@ -22,7 +22,7 @@ export class Database {
      * Version 7 = Store shield params in indexed db (#511)
      * Version 8 = Multi MNs (#517)
      * Version 9 = Store shield syncing data in indexed db (#543)
-     * Version 10 = voting groups (???) @fail fill this
+     * Version 10 = voting groups (#565)
      * @type {number}
      */
     static version = 10;
