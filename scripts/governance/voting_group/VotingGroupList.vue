@@ -1,11 +1,12 @@
 <script setup>
-import { ref, watch, computed } from 'vue';
+import { ref, watch, computed, toRaw } from 'vue';
 import Modal from '../../Modal.vue';
 import CreateVotingGroup from './CreatingVotingGroup.vue';
 import { translation } from '../../i18n';
 import { useGroups } from '../../composables/use_groups';
 import { storeToRefs } from 'pinia';
 import EditVotingGroup from './EditVotingGroup.vue';
+import { createAlert } from '../../alerts/alert';
 
 const props = defineProps({
     masternodes: Array,
@@ -43,6 +44,11 @@ watch(
  */
 async function editGroup(group) {
     await removeGroup(groupToBeEdited.value);
+    if (groups.value.map((g) => g.name).includes(group.name)) {
+        createAlert('warning', 'Group name already exists', 5000);
+        await addGroup(toRaw(groupToBeEdited.value));
+        return;
+    }
     // Delete group if there are no more selected mns
     if (group.masternodes.length) {
         await addGroup(group);
