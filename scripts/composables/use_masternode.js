@@ -2,8 +2,10 @@ import { ref, watch, toRaw } from 'vue';
 import { defineStore } from 'pinia';
 import { Database } from '../database.js';
 import { getEventEmitter } from '../event_bus.js';
+import { useWallets } from './use_wallet.js';
 
 export const useMasternode = defineStore('masternode', () => {
+    const wallets = useWallets();
     /**
      * @type{import('vue').Ref<import('../masternode.js').default[]?>}
      */
@@ -13,7 +15,9 @@ export const useMasternode = defineStore('masternode', () => {
         localProposals,
         async (localProposals) => {
             const database = await Database.getInstance();
-            const account = await database.getAccount();
+            const account = await database.getAccount(
+                wallets.activeWallet.getKeyToExport()
+            );
             if (account) {
                 account.localProposals = toRaw(localProposals);
                 await database.updateAccount(account, true);
@@ -26,7 +30,9 @@ export const useMasternode = defineStore('masternode', () => {
     );
     const fetchProposalsFromDatabase = async () => {
         const database = await Database.getInstance();
-        const account = await database.getAccount();
+        const account = await database.getAccount(
+            wallets.activeWallet.getKeyToExport()
+        );
         localProposals.value = account?.localProposals ?? [];
     };
 

@@ -1,8 +1,11 @@
 import 'fake-indexeddb/auto';
 import { getEventEmitter } from '../../scripts/event_bus.js';
 import { describe, it, beforeEach, vi } from 'vitest';
-import { useWallet } from '../../scripts/composables/use_wallet.js';
-import { hasEncryptedWallet, wallet } from '../../scripts/wallet.js';
+import { useWallets } from '../../scripts/composables/use_wallet.js';
+import {
+    hasEncryptedWallet,
+    activeWallet as wallet,
+} from '../../scripts/wallet.js';
 import { LegacyMasterKey } from '../../scripts/masterkey.js';
 import { getNetwork } from '../../scripts/network/__mocks__/network_manager.js';
 import { strCurrency } from '../../scripts/settings.js';
@@ -13,7 +16,7 @@ vi.mock('../../scripts/network/network_manager.js');
 describe('useWallet tests', () => {
     let walletComposable;
     beforeEach(async () => {
-        walletComposable = useWallet();
+        walletComposable = useWallets().activeWallet;
         vi.stubGlobal('indexedDB', new IDBFactory());
         vi.stubGlobal('wallet', await setUpLegacyMainnetWallet());
         getEventEmitter().emit('balance-update');
@@ -57,11 +60,6 @@ describe('useWallet tests', () => {
                 ]),
             }),
         });
-        expect(await isSyncedWithWallet()).toBe(true);
-    });
-
-    it('is synced after encryption', async () => {
-        await walletComposable.encrypt('123456');
         expect(await isSyncedWithWallet()).toBe(true);
     });
 

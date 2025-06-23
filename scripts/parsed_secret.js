@@ -16,9 +16,11 @@ export class ParsedSecret {
      * @type {PIVXShield} shield - Shield object associated with the secret. Only provided if the secret contains a seed
      */
     shield;
-    constructor(masterKey, shield = null) {
+    seed;
+    constructor(masterKey, shield = null, seed = null) {
         this.masterKey = masterKey;
         this.shield = shield;
+        this.seed = seed;
     }
 
     /**
@@ -78,7 +80,8 @@ export class ParsedSecret {
                         new HdMasterKey({
                             seed,
                         }),
-                        pivxShield
+                        pivxShield,
+                        seed
                     );
                 },
             },

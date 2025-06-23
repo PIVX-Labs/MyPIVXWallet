@@ -23,7 +23,7 @@ describe('create wallet tests', () => {
                 .findAll('[data-testid=seedphraseModal]')
         ).toHaveLength(0);
         const genWalletButton = wrapper.find('[data-testid=generateWallet]');
-        expect(genWalletButton.isVisible).toBeTruthy();
+        expect(genWalletButton.isVisible()).toBeTruthy();
         await genWalletButton.trigger('click');
 
         // The click generated a seedphrase modal
@@ -35,10 +35,25 @@ describe('create wallet tests', () => {
             wrapper.findComponent(Modal).findAll('[data-testid=passPhrase]')
         ).toHaveLength(0);
         expect(seedphraseModals).toHaveLength(1);
-        const seedphrase = wrapper.findComponent(Modal).text();
+        // Remove digits since they aren't part of the seedphrase
+        const seedphrase = wrapper
+            .findComponent(Modal)
+            .text()
+            .replace(/\d/g, '')
+            .trim();
         // We must have 12 words in the seedphrase
         expect(seedphrase.split(' ')).toHaveLength(12);
-        await seedphraseModals[0].trigger('click');
+        const labelInput = wrapper
+            .findComponent(Modal)
+            .find('[data-testid="labelInput"]');
+        // Fill label input
+        labelInput.element.value = 'mywallet';
+        await labelInput.trigger('input');
+
+        await wrapper
+            .findComponent(Modal)
+            .find('[data-testid="wroteSeedphraseDown"]')
+            .trigger('click');
         // Which now disappeared again
         expect(
             wrapper
@@ -50,7 +65,7 @@ describe('create wallet tests', () => {
         expect(wrapper.emitted('importWallet')).toHaveLength(1);
         // We emitted exactly the seedphrase with empty passphrase
         expect(wrapper.emitted('importWallet')).toStrictEqual([
-            [seedphrase, '', 1504903],
+            [seedphrase, '', 'mywallet', 1504903],
         ]);
     });
     it('Generates wallet advanced mode', async () => {
@@ -81,7 +96,11 @@ describe('create wallet tests', () => {
             wrapper.findComponent(Modal).findAll('[data-testid=passPhrase]')
         ).toHaveLength(1);
         expect(seedphraseModals).toHaveLength(1);
-        const seedphrase = wrapper.findComponent(Modal).text();
+        const seedphrase = wrapper
+            .findComponent(Modal)
+            .text()
+            .replace(/\d/g, '')
+            .trim();
         // We must have 12 words in the seedphrase
         expect(seedphrase.split(' ')).toHaveLength(12);
         // Select a pass phrase
@@ -91,7 +110,10 @@ describe('create wallet tests', () => {
         expect(passPhrase.element.value).toBe('');
         passPhrase.element.value = 'panleone';
         passPhrase.trigger('input');
-        await seedphraseModals[0].trigger('click');
+        await wrapper
+            .findComponent(Modal)
+            .find('[data-testid="wroteSeedphraseDown"]')
+            .trigger('click');
         // Which now disappeared again
         expect(
             wrapper
@@ -104,7 +126,7 @@ describe('create wallet tests', () => {
         expect(wrapper.emitted('importWallet')).toHaveLength(1);
         // We emitted exactly the seedphrase with empty passphrase
         expect(wrapper.emitted('importWallet')).toStrictEqual([
-            [seedphrase, 'panleone', 1504903],
+            [seedphrase, 'panleone', '', 1504903],
         ]);
     });
 });
