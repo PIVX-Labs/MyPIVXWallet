@@ -8,6 +8,7 @@ import { PromoWallet } from './promos.js';
 import { Account } from './accounts.js';
 import { COutpoint, CTxIn, CTxOut, Transaction } from './transaction.js';
 import { debugError, debugLog, DebugTopics } from './debug.js';
+import { Group } from './group.js';
 
 export class Database {
     /**
@@ -21,9 +22,10 @@ export class Database {
      * Version 7 = Store shield params in indexed db (#511)
      * Version 8 = Multi MNs (#517)
      * Version 9 = Store shield syncing data in indexed db (#543)
+     * Version 10 = voting groups (#565)
      * @type {number}
      */
-    static version = 9;
+    static version = 10;
 
     /**
      * @type{import('idb').IDBPDatabase}
@@ -490,6 +492,9 @@ export class Database {
                         }
                     })();
                 }
+                if (oldVersion < 10) {
+                    db.createObjectStore('groups');
+                }
             },
             blocking: () => {
                 // Another instance is waiting to upgrade, and we're preventing it
@@ -572,5 +577,29 @@ export class Database {
         }
 
         return this.#instances.get(name);
+    }
+
+    async addGroup(group) {
+        const store = this.#db
+            .transaction('groups', 'readwrite')
+            .objectStore('groups');
+        await store.put(group, group.name);
+    }
+
+    async removeGroup(group) {
+        const store = this.#db
+            .transaction('groups', 'readwrite')
+            .objectStore('groups');
+        await store.delete(group.name);
+    }
+
+    /**
+     * @return {Promise<Group[]>}
+     */
+    async getGroups() {
+        const store = this.#db
+            .transaction('groups', 'readonly')
+            .objectStore('groups');
+        return (await store.getAll()).map((g) => new Group({ ...g }));
     }
 }

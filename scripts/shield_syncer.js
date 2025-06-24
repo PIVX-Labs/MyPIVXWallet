@@ -93,7 +93,7 @@ export class BinaryShieldSyncer extends ShieldSyncer {
         const req = await network.getShieldData(lastSyncedBlock + 1);
         const skipBytes = await network.getShieldDataLength(
             cChainParams.current.defaultStartingShieldBlock + 1,
-            startFrom + 1
+            startFrom + 3
         );
 
         if (!req.ok) throw new Error("Couldn't sync shield");
