@@ -45,7 +45,7 @@ watch(
 async function editGroup(group) {
     await removeGroup(groupToBeEdited.value);
     if (groups.value.map((g) => g.name).includes(group.name)) {
-        createAlert('warning', 'Group name already exists', 5000);
+        createAlert('warning', translation.groupNameExists, 5000);
         await addGroup(toRaw(groupToBeEdited.value));
         return;
     }
@@ -104,14 +104,14 @@ const emit = defineEmits(['close']);
                                     emit('close');
                                 "
                             >
-                                Vote
+                                {{ translation.groupBtnVote }}
                             </button>
                             <button
                                 v-if="group.editable"
                                 class="ml-2 bg-gray-300 text-white text-sm px-3 py-1 rounded hover:bg-gray-400"
                                 @click="groupToBeEdited = group"
                             >
-                                Edit
+                                {{ translation.groupBtnEdit }}
                             </button>
                         </td>
                     </tr>
@@ -123,7 +123,7 @@ const emit = defineEmits(['close']);
                 @click="showCreateVotingGroup = true"
                 v-if="availableMasternodes.length"
             >
-                Create New Group
+                {{ translation.createGroup }}
             </button>
         </template>
     </Modal>

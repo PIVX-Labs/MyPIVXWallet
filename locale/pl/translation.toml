@@ -251,6 +251,10 @@ selectMasternodes = "" # Select Masternodes
 selectedMasternodes = "" # Selected MNs:
 voteWeight = "" # Vote Weight:
 saveGroup = "" # Save Group
+groupNameRequired = "" # Group name is required
+groupNameExists = "" # Group name already exists
+groupBtnVote = "" # Vote
+groupBtnEdit = "" # Edit
 
 [ALERTS]
 INTERNAL_ERROR = "Błąd wewnętrzny, spróbuj ponownie później" # Internal error, please try again later

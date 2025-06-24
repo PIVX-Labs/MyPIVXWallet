@@ -1,8 +1,7 @@
 <script setup>
 import { translation } from '../../i18n.js';
-import { computed, ref, watch } from 'vue';
+import { computed, ref } from 'vue';
 import Modal from '../../Modal.vue';
-import { Database } from '../../database';
 import { useGroups } from '../../composables/use_groups.js';
 import { Group } from '../../group';
 import { toRaw } from 'vue';
@@ -50,12 +49,12 @@ const voteWeightPercent = computed(() => {
 async function saveGroup() {
     const sanitizedName = groupName.value.trim();
     if (!sanitizedName) {
-        createAlert('warning', 'Group name is required', 5000);
+        createAlert('warning', translation.groupNameRequired, 5000);
         return;
     }
 
     if (groups.map((g) => g.name).includes(sanitizedName)) {
-        createAlert('warning', 'Group name already exists', 5000);
+        createAlert('warning', translation.groupNameExists, 5000);
         return;
     }
 
