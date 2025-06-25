@@ -234,6 +234,8 @@ masternodeStatusMissing = "MANCANTE" # MISSING
 masternodeStatusExpired = "SCADUTO" # EXPIRED
 exportToCsv = "Esporta le transazioni" # Export transactions
 exportToCsvBody = "Vuoi esportare le transazioni in formato CSV?" # Do you want to export your transactions as CSV?
+transactionNeedsAddress = "L'input dell'address è vuoto" # The address field is empty
+transactionNeedsAmount = "La quantità è invalida" # The amount is invalid
 
 [ALERTS]
 INTERNAL_ERROR = "Errore interno, rirova più tardi" # Internal error, please try again later
