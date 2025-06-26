@@ -35,7 +35,7 @@ onMounted(() => {
         .getElementById('masternodeTab')
         .addEventListener('click', () => updateMnData(masternode.value));
 });
-watch(masternode, updateMnData, { immediate: true });
+watch(masternode, updateMnData, { immediate: true, deep: true });
 watch(info, (info) => {
     if (info.status === 'MISSING') {
         createAlert('warning', ALERTS.MN_OFFLINE_STARTING, 6000);
