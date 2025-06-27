@@ -777,7 +777,10 @@ export class Wallet {
         );
         for (const note of myOutputNotes) {
             shieldCredit += note.value;
-            arrShieldReceivers.push(note.recipient);
+            arrShieldReceivers.push({
+                recipient: note.recipient,
+                memo: note.memo,
+            });
         }
         return { shieldCredit, shieldDebit, arrShieldReceivers };
     }
@@ -1117,6 +1120,7 @@ export class Wallet {
      * @param {string?} [opts.changeDelegationAddress] - Which address to use as change when `useDelegatedInputs` is set to true.
      *     Only changes >= 1 PIV can be delegated
      * @param {boolean} [opts.isProposal] - Whether or not this is a proposal transaction
+     * @param {string} [opts.memo] - Shield memo. Ignored if it's a not sending to shield
      */
     createTransaction(
         address,
@@ -1131,6 +1135,7 @@ export class Wallet {
             subtractFeeFromAmt = true,
             changeAddress = '',
             returnAddress = '',
+            memo = '',
         } = {}
     ) {
         let balance;
@@ -1183,6 +1188,7 @@ export class Wallet {
             transactionBuilder.addOutput({
                 address,
                 value,
+                memo,
             });
         }
 
@@ -1277,6 +1283,7 @@ export class Wallet {
                 useShieldInputs: transaction.vin.length === 0,
                 utxos: this.#getUTXOsForShield(value),
                 transparentChangeAddress: this.getNewChangeAddress(),
+                memo: transaction.shieldOutput[0]?.memo,
             });
             return transaction.fromHex(hex);
         } catch (e) {
@@ -1284,7 +1291,7 @@ export class Wallet {
             await sleep(500);
             throw e;
         } finally {
-            await periodicFunction.clearInterval();
+            periodicFunction.clearInterval();
             this.#eventEmitter.emit(
                 'shield-transaction-creation-update',
                 0.0,
