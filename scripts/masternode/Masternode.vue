@@ -28,25 +28,33 @@ const masternodePrivKey = ref('');
 // Array of possible masternode UTXOs
 const possibleUTXOs = ref(wallet.getMasternodeUTXOs());
 
-watch(masternodes, (masternodes, oldValue) => {
-    for (const oldMn of oldValue) {
-        if (oldMn?.collateralTxId) {
-            wallet.unlockCoin(
-                new COutpoint({ txid: oldMn.collateralTxId, n: oldMn.outidx })
-            );
+watch(
+    masternodes,
+    (masternodes, oldValue) => {
+        for (const oldMn of oldValue) {
+            if (oldMn?.collateralTxId) {
+                wallet.unlockCoin(
+                    new COutpoint({
+                        txid: oldMn.collateralTxId,
+                        n: oldMn.outidx,
+                    })
+                );
+            }
         }
-    }
-    for (const masternode of masternodes) {
-        if (masternode?.collateralTxId) {
-            wallet.lockCoin(
-                new COutpoint({
-                    txid: masternode.collateralTxId,
-                    n: masternode.outidx,
-                })
-            );
+        for (const masternode of masternodes) {
+            if (masternode?.collateralTxId) {
+                wallet.lockCoin(
+                    new COutpoint({
+                        txid: masternode.collateralTxId,
+                        n: masternode.outidx,
+                    })
+                );
+            }
         }
-    }
-});
+        updatePossibleUTXOs();
+    },
+    { deep: true }
+);
 function updatePossibleUTXOs() {
     possibleUTXOs.value = wallet.getMasternodeUTXOs();
 }
@@ -84,7 +92,6 @@ async function startMasternode(mn, fRestart = false) {
 }
 
 async function destroyMasternode(mn) {
-    console.log('HIIII');
     // TODO: Only delete 1
     masternodes.value = masternodes.value.filter(
         (masternode) => masternode.mnPrivateKey !== mn.mnPrivateKey
@@ -137,7 +144,6 @@ async function createMasternode({ isVPS }) {
     // Ensure wallet is unlocked
     if (!isHardwareWallet.value && isViewOnly.value && !(await restoreWallet()))
         return;
-    console.log(cChainParams.current.collateralInSats);
     const [address] = wallet.getNewAddress(1);
     const res = await wallet.createAndSendTransaction(
         getNetwork(),
