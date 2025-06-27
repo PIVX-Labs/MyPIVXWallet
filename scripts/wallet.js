@@ -891,7 +891,11 @@ export class Wallet {
                 const start = performance.now();
                 // Process the current batch of blocks before starting to parse the next one
                 if (blocksArray.length) {
-                    const ownTxs = await this.#shield.handleBlocks(blocksArray);
+                    const ownTxs = await this.#shield.handleBlocks(
+                        blocksArray.filter(
+                            (b) => b.height > this.#shield.getLastSyncedBlock()
+                        )
+                    );
                     // TODO: slow! slow! slow!
                     if (ownTxs.length > 0) {
                         for (const block of blocksArray) {
@@ -1022,17 +1026,18 @@ export class Wallet {
         // If explorer sapling root is different from ours, there must be a sync error
         if (saplingRoot !== networkSaplingRoot) {
             createAlert('warning', translation.badSaplingRoot, 5000);
-            this.#mempool = new Mempool();
-            await this.#resetShield();
-            this.#isSynced = false;
-            await this.#transparentSync();
-            await this.#syncShield();
             const db = await Database.getInstance();
             // Reset shield sync data, it might be corrupted
             await db.setShieldSyncData({
                 shieldData: null,
                 lastSyncedBlock: null,
             });
+            this.#mempool = new Mempool();
+            await this.#resetShield();
+            this.#isSynced = false;
+            await this.#transparentSync();
+            await this.#syncShield();
+
             return false;
         }
         return true;

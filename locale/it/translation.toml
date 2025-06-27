@@ -234,6 +234,8 @@ masternodeStatusExpired = "SCADUTO" # EXPIRED
 exportToCsv = "Esporta le transazioni" # Export transactions
 exportToCsvBody = "Vuoi esportare le transazioni in formato CSV?" # Do you want to export your transactions as CSV?
 popupSeedPhraseBadNote = "<b>Questa Seed Phrase sembra non essere valida (il checksum non corrisponde).<br> Potrebbe contenere un errore di battitura,</b> oppure essere stata generata in modo non convenzionale. Vuoi comunque continuare?" # <b>This Seed Phrase appears to be invalid (The checksum doesn't match). <br> It might have a typo, </b> or it could’ve been created in an unusual way. Do you still want to continue?
+transactionNeedsAddress = "L'input dell'address è vuoto" # The address field is empty
+transactionNeedsAmount = "La quantità è invalida" # The amount is invalid
 
 [ALERTS]
 INTERNAL_ERROR = "Errore interno, rirova più tardi" # Internal error, please try again later

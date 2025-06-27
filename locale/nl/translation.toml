@@ -234,6 +234,8 @@ masternodeStatusPreEnabled = "" # PRE_ENABLED
 masternodeStatusMissing = "" # MISSING
 masternodeStatusExpired = "" # EXPIRED
 popupSeedPhraseBadNote = "" # <b>This Seed Phrase appears to be invalid (The checksum doesn't match). <br> It might have a typo, </b> or it could’ve been created in an unusual way. Do you still want to continue?
+transactionNeedsAddress = "" # The address field is empty
+transactionNeedsAmount = "" # The amount is invalid
 
 [ALERTS]
 INTERNAL_ERROR = "Interne fout, probeer het later opnieuw" # Internal error, please try again later
