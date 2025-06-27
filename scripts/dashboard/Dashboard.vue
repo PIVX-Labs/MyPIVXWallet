@@ -44,7 +44,6 @@ import { Account } from '../accounts';
 import { useAlerts } from '../composables/use_alerts.js';
 const { createAlert } = useAlerts();
 const wallet = useWallet();
-const activity = ref(null);
 
 const needsToEncrypt = computed(() => {
     if (wallet.isHardwareWallet) {
@@ -80,7 +79,7 @@ watch(showExportModal, async (showExportModal) => {
  * @param {Object} o - Options
  * @param {'legacy'|'hd'|'hardware'} o.type - type of import
  * @param {string} o.secret
- * @param {nubmer?} [o.blockCount] Creation block count. Defaults to 4_200_000
+ * @param {number?} [o.blockCount] Creation block count. Defaults to 4_200_000
  * @param {string} [o.password]
  */
 async function importWallet({
@@ -126,11 +125,15 @@ async function importWallet({
                 12500
             );
         } else {
-            parsedSecret = await ParsedSecret.parse(
-                secret,
-                password,
-                advancedMode.value
-            );
+            try {
+                parsedSecret = await ParsedSecret.parse(
+                    secret,
+                    password,
+                    advancedMode.value
+                );
+            } catch (e) {
+                createAlert('warning', e.message, 8000);
+            }
         }
         if (parsedSecret) {
             await wallet.setMasterKey({ mk: parsedSecret.masterKey });
@@ -396,8 +399,6 @@ async function importFromDatabase() {
     const database = await Database.getInstance();
     const account = await database.getAccount();
     await wallet.setMasterKey({ mk: null });
-    activity.value?.reset();
-    getEventEmitter().emit('reset-activity');
     if (account?.isHardware) {
         await importWallet({ type: 'hardware', secret: account.publicKey });
     } else if (wallet.isEncrypted) {
@@ -449,14 +450,6 @@ const {
     isViewOnly,
     hasShield,
 } = storeToRefs(wallet);
-
-getEventEmitter().on('sync-status', (status) => {
-    if (status === 'stop') activity?.value?.update();
-});
-
-wallet.onNewTx(() => {
-    activity?.value?.update();
-});
 
 function changePassword() {
     showEncryptModal.value = true;
@@ -992,7 +985,6 @@ defineExpose({
                     />
                     <WalletButtons class="col-12 p-0 md-5" />
                     <Activity
-                        ref="activity"
                         class="col-12 p-0 mb-5"
                         title="Activity"
                         :rewards="false"

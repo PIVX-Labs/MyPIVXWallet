@@ -9,8 +9,7 @@ const wallet = useWallet();
 const showConfirmationModal = ref(false);
 
 function exportToCsv() {
-    console.log(JSON.stringify(wallet.getHistoricalTxs()));
-    const koinlyExport = new KoinlyExport(wallet.getHistoricalTxs());
+    const koinlyExport = new KoinlyExport(wallet.historicalTxs);
     const csvBlob = new Blob([koinlyExport.getCsv()], { type: 'text/csv' });
 
     const csvURL = URL.createObjectURL(csvBlob);

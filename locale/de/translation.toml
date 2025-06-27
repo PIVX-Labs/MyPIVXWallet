@@ -236,6 +236,8 @@ masternodeStatusMissing = "" # MISSING
 masternodeStatusExpired = "" # EXPIRED
 shieldMessage = "" # Shield Message
 shieldMessageDesc = "" # Max. 512 characters
+transactionNeedsAddress = "" # The address field is empty
+transactionNeedsAmount = "" # The amount is invalid
 
 [ALERTS]
 INTERNAL_ERROR = "Interner Fehler, bitte versuche es später erneut" # Internal error, please try again later

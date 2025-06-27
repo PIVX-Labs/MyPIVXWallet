@@ -99,11 +99,46 @@ export class Reader {
             }
 
             // There are no more bytes to await, so we can return null
-            if (this.#done) return null;
+            if (this.#done) {
+                this.#awaiter = null;
+                return null;
+            }
             // If we didn't respond, wait for the next batch of bytes, then try again
             await new Promise((res) => {
                 this.#awaiter = res;
             });
         }
+    }
+
+    /**
+     * Discards bytes, but updates `readBytes` in real time instead of the end
+     * @param {number} byteLength
+     */
+    async discard(byteLength) {
+        if (this.#awaiter) throw new Error('Reading more than once');
+        while (true) {
+            const discaredBytes = Math.min(
+                this.#maxBytes - this.#i,
+                byteLength
+            );
+            this.#i += discaredBytes;
+            byteLength -= discaredBytes;
+            if (byteLength === 0 || this.#done) {
+                this.#awaiter = null;
+                return;
+            }
+            // If we didn't respond, wait for the next batch of bytes, then try again
+            await new Promise((res) => {
+                this.#awaiter = res;
+            });
+        }
+    }
+
+    getReadBuffer() {
+        return this.#availableBytes.subarray(0, this.#i);
+    }
+
+    isBusy() {
+        return !!this.#awaiter;
     }
 }
