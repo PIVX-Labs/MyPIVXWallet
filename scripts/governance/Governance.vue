@@ -320,27 +320,30 @@ async function vote(proposal, voteCode) {
 
         <hr />
         <br />
-        <h3
-            data-i18n="contestedProposalsTitle"
-            style="width: 100%; text-align: center"
-        >
-            Contested Proposals
-        </h3>
-        <p
-            data-i18n="contestedProposalsDesc"
-            style="width: 100%; text-align: center"
-        >
-            These are proposals that received an overwhelming amount of
-            downvotes, making it likely spam or a highly contestable proposal.
-        </p>
-        <br />
-        <ProposalsTable
-            :proposals="contestedProposals"
-            :masternodeCount="masternodeCount"
-            :strCurrency="strCurrency"
-            :price="price"
-            @vote="vote"
-        />
+        <span v-if="contestedProposals.length">
+            <h3
+                data-i18n="contestedProposalsTitle"
+                style="width: 100%; text-align: center"
+            >
+                Contested Proposals
+            </h3>
+            <p
+                data-i18n="contestedProposalsDesc"
+                style="width: 100%; text-align: center"
+            >
+                These are proposals that received an overwhelming amount of
+                downvotes, making it likely spam or a highly contestable
+                proposal.
+            </p>
+            <br />
+            <ProposalsTable
+                :proposals="contestedProposals"
+                :masternodeCount="masternodeCount"
+                :strCurrency="strCurrency"
+                :price="price"
+                @vote="vote"
+            />
+        </span>
     </div>
     <RestoreWallet
         :show="showRestoreWallet"
