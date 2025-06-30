@@ -354,6 +354,7 @@ function addVault(v) {
             const { encryptedSecret } = await database.getVault(
                 v.getDefaultKeyToExport()
             );
+            debugger;
             if (encryptedSecret) {
                 const encSeed = await decrypt(encryptedSecret, password);
                 if (!encSeed) return false;

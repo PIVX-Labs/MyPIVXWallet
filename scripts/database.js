@@ -516,33 +516,13 @@ export class Database {
                 if (oldVersion <= 1) {
                     db.createObjectStore('promos');
                 }
-                if (oldVersion <= 2) {
-                    db.createObjectStore('txs');
-                }
-                if (oldVersion < 5) {
-                    // Recreate tx db due to transaction class changes
-                    db.deleteObjectStore('txs');
-                    db.createObjectStore('txs');
-                }
-
-                if (oldVersion < 6) {
-                    // Delete all txs with -1 as blockHeight (unconfirmed)
-                    (async () => {
-                        const store = transaction.objectStore('txs');
-                        let cursor = await store.openCursor();
-                        while (cursor) {
-                            if (!cursor.value) break;
-                            if (cursor.value.blockHeight === -1) {
-                                await cursor.delete();
-                            }
-                            try {
-                                cursor = await cursor.continue();
-                            } catch {
-                                break;
-                            }
-                        }
-                    })();
-                }
+                /**
+                 * `if (oldVersion < 2,5,6)` no longer needed, since we're deleting and recreating the
+                 * `txs` database in version 10.
+                 * version 2 used to create the txs db
+                 * version 5 used to delete and create it again to force a resync
+                 * version 6 used to delete unconfirmed txs
+                 */
                 if (oldVersion < 7) {
                     db.createObjectStore('shieldParams');
                 }
@@ -564,24 +544,34 @@ export class Database {
                     })();
                 }
                 if (oldVersion < 10) {
-                    db.deleteObjectStore('txs');
+                    if (db.objectStoreNames.contains('txs'))
+                        db.deleteObjectStore('txs');
                     const store = db.createObjectStore('txs');
                     store.createIndex('xpub', 'xpub', { unique: false });
 
                     db.createObjectStore('vaults');
-                    async () => {
+                    (async () => {
                         // @fail REVIEW NOTE: THIS IS DANGEROUS
                         // Test this thoroughly or users may lose their accounts
-                        const store = transaction.objectStore('account');
+                        const store = transaction.objectStore('accounts');
                         const account = await store.get('account');
-                        await store.delete('account');
-                        await store.add(account, account.publickKey);
-                        const vaults = transaction.objectStore('vault');
-                        await vaults.add({
-                            encryptedSecret: account.encWif,
-                            encExtsk: account.encExtsk,
-                        });
-                    };
+                        if (account) {
+                            await store.add(account, account.publicKey);
+                            const vaults = transaction.objectStore('vaults');
+
+                            await vaults.add(
+                                {
+                                    encExtsk: account.encExtsk,
+                                    isHardware: account.isHardware,
+                                    isSeeded: false,
+                                    defaultKeyToExport: account.publicKey,
+                                    wallets: [account.publicKey],
+                                    label: account.publicKey.substr(0, 6),
+                                },
+                                account.publicKey
+                            );
+                        }
+                    })();
                 }
             },
             blocking: () => {
