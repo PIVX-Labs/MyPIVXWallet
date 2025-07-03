@@ -551,8 +551,6 @@ export class Database {
 
                     db.createObjectStore('vaults');
                     (async () => {
-                        // @fail REVIEW NOTE: THIS IS DANGEROUS
-                        // Test this thoroughly or users may lose their accounts
                         const store = transaction.objectStore('accounts');
                         const account = await store.get('account');
                         if (account) {
