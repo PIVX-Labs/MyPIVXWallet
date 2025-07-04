@@ -1,5 +1,4 @@
 import { validateMnemonic } from 'bip39';
-import { decrypt } from './aes-gcm.js';
 import { parseWIF } from './encoding.js';
 import { beforeUnloadListener, blockCount } from './global.js';
 import { getNetwork } from './network/network_manager.js';
@@ -48,6 +47,7 @@ import {
 } from './debug.js';
 import { OrderedArray } from './ordered_array.js';
 import { SaplingParams } from './sapling_params.js';
+import { HdMasterKey } from './masterkey.js';
 import { BinaryShieldSyncer } from './shield_syncer.js';
 
 /**
@@ -142,13 +142,18 @@ export class Wallet {
         return hTx1.blockHeight >= hTx2.blockHeight;
     });
 
-    constructor({ nAccount, masterKey, shield, mempool = new Mempool() }) {
+    constructor({
+        nAccount = 0,
+        masterKey,
+        shield,
+        mempool = new Mempool(),
+    } = {}) {
         this.#nAccount = nAccount;
         this.#mempool = mempool;
         this.#mempool.setEmitter(() => {
             this.#eventEmitter.emit('balance-update');
         });
-        this.#masterKey = masterKey;
+        this.setMasterKey({ mk: masterKey, nAccount });
         this.#shield = shield;
         this.#iterChains((chain) => {
             this.#highestUsedIndices.set(chain, 0);
@@ -242,20 +247,32 @@ export class Wallet {
      * @param {import('./masterkey.js').MasterKey} o.mk - The new Master Key
      * @param {number} [o.nAccount] - The account number
      * @param {string} [o.extsk] - The extended spending key
+     * @returns {Promise<void> | void} Only a promise is extsk is set
      */
-    async setMasterKey({ mk, nAccount = 0, extsk }) {
+    setMasterKey({ mk, nAccount = 0, extsk }) {
         const isNewAcc =
             mk?.getKeyToExport(nAccount) !==
             this.#masterKey?.getKeyToExport(this.#nAccount);
         this.#masterKey = mk;
         this.#nAccount = nAccount;
-        if (extsk) await this.setExtsk(extsk);
+        if (extsk) return this.setExtsk(extsk);
         if (isNewAcc) {
             this.reset();
             this.#iterChains((chain) => {
                 this.#loadAddresses(chain);
             });
         }
+    }
+
+    async loadSeed(seed, coinType = cChainParams.current.BIP44_TYPE) {
+        await this.setMasterKey({
+            mk: new HdMasterKey({
+                seed,
+            }),
+            nAccount: this.nAccount,
+        });
+
+        await this.#shield?.loadSeed(seed, coinType, this.nAccount);
     }
 
     /**
@@ -359,19 +376,30 @@ export class Wallet {
         return !!this.#masterKey;
     }
 
-    /**
-     * Check if the current encrypted keyToBackup can be decrypted with the given password
-     * @param {string} strPassword
-     * @return {Promise<boolean>}
-     */
-    async checkDecryptPassword(strPassword) {
-        // Check if there's any encrypted WIF available
+    async save(encWif) {
         const database = await Database.getInstance();
-        const { encWif: strEncWIF } = await database.getAccount();
-        if (!strEncWIF || strEncWIF.length < 1) return false;
 
-        const strDecWIF = await decrypt(strEncWIF, strPassword);
-        return !!strDecWIF;
+        let shieldData = '';
+        if (this.#shield) {
+            shieldData = this.#shield.save();
+        }
+        const oldAccount = await database.getAccount(this.getKeyToExport());
+
+        // Prepare to Add/Update an account in the DB
+        const cAccount = new Account({
+            publicKey: this.getKeyToExport(),
+            shieldData: shieldData,
+            encWif: encWif || oldAccount?.encWif || '',
+        });
+
+        // Incase of a "Change Password", we check if an Account already exists
+        if (oldAccount) {
+            // Update the existing Account (new encWif) in the DB
+            await database.updateAccount(cAccount);
+        } else {
+            // Add the new Account to the DB
+            await database.addAccount(cAccount);
+        }
     }
 
     /**
@@ -381,7 +409,7 @@ export class Wallet {
      */
     async encrypt(strPassword) {
         // Encrypt the wallet WIF with AES-GCM and a user-chosen password - suitable for browser storage
-        let strEncWIF = await encrypt(this.#getKeyToEncrypt(), strPassword);
+        let strEncWIF = await encrypt(this.getKeyToEncrypt(), strPassword);
         let strEncExtsk = '';
         let shieldData = '';
         if (this.#shield) {
@@ -400,7 +428,7 @@ export class Wallet {
 
         // Incase of a "Change Password", we check if an Account already exists
         const database = await Database.getInstance();
-        if (await database.getAccount()) {
+        if (await database.getAccount(this.getKeyToExport())) {
             // Update the existing Account (new encWif) in the DB
             await database.updateAccount(cAccount);
         } else {
@@ -534,16 +562,18 @@ export class Wallet {
      */
     async getKeyToBackup() {
         if (await hasEncryptedWallet()) {
-            const account = await (await Database.getInstance()).getAccount();
+            const account = await (
+                await Database.getInstance()
+            ).getAccount(this.getKeyToExport());
             return account.encWif;
         }
-        return this.#getKeyToEncrypt();
+        return this.getKeyToEncrypt();
     }
 
     /**
      * @returns key to encrypt
      */
-    #getKeyToEncrypt() {
+    getKeyToEncrypt() {
         return JSON.stringify({
             mk: this.getMasterKey()?.keyToBackup,
             shield: this.#shield?.extsk,
@@ -628,7 +658,7 @@ export class Wallet {
         }
     }
 
-    // Avoid calculating over and over the same getAddressFromHash by saving the result in a map
+    // Avoid calculating over and over the same getAddressFromHash by saveing the result in a map
     #getAddressFromHashCache(pkh_hex, type) {
         if (!this.#knownPKH.has(pkh_hex)) {
             this.#knownPKH.set(
@@ -761,7 +791,7 @@ export class Wallet {
         let shieldCredit = 0;
         let shieldDebit = 0;
         let arrShieldReceivers = [];
-        if (!tx.hasShieldData || !wallet.hasShield()) {
+        if (!tx.hasShieldData || !this.hasShield()) {
             return { shieldCredit, shieldDebit, arrShieldReceivers };
         }
 
@@ -849,12 +879,15 @@ export class Wallet {
 
             // Fetch this page of transactions
             const iPageTxs = await cNet.getTxPage(nStartHeight, addr, i);
+
             for (const tx of iPageTxs.reverse()) {
                 await this.addTransaction(tx, tx.blockHeight === -1);
             }
         }
         this.#eventEmitter.emit('transparent-sync-status-update', '', '', true);
     }
+
+    lock = false;
 
     /**
      * Initial block and prover sync for the shield object
@@ -1025,13 +1058,15 @@ export class Wallet {
         );
         // If explorer sapling root is different from ours, there must be a sync error
         if (saplingRoot !== networkSaplingRoot) {
-            createAlert('warning', translation.badSaplingRoot, 5000);
             const db = await Database.getInstance();
+
             // Reset shield sync data, it might be corrupted
             await db.setShieldSyncData({
                 shieldData: null,
                 lastSyncedBlock: null,
             });
+            createAlert('warning', translation.badSaplingRoot, 5000);
+
             this.#mempool = new Mempool();
             await this.#resetShield();
             this.#isSynced = false;
@@ -1048,7 +1083,7 @@ export class Wallet {
      */
     async #saveShieldOnDisk() {
         const cDB = await Database.getInstance();
-        const cAccount = await cDB.getAccount();
+        const cAccount = await cDB.getAccount(this.getKeyToExport());
         // If the account has not been created yet (for example no encryption) return
         if (!cAccount) {
             return;
@@ -1064,7 +1099,7 @@ export class Wallet {
             return;
         }
         const cDB = await Database.getInstance();
-        const cAccount = await cDB.getAccount();
+        const cAccount = await cDB.getAccount(this.getKeyToExport());
         // If the account has not been created yet or there is no shield data return
         if (!cAccount || cAccount.shieldData === '') {
             return;
@@ -1345,6 +1380,7 @@ export class Wallet {
         for (const out of transaction.vout) {
             this.#updateHighestUsedIndex(out);
             const status = this.#getScriptType(out.script);
+
             if (status & OutpointState.OURS) {
                 this.#mempool.addOutpointStatus(
                     new COutpoint({
@@ -1358,12 +1394,12 @@ export class Wallet {
         }
 
         if (transaction.hasShieldData) {
-            await wallet.#shield?.finalizeTransaction(transaction.txid);
+            await this.#shield?.finalizeTransaction(transaction.txid);
         }
 
         if (!skipDatabase) {
             const db = await Database.getInstance();
-            await db.storeTx(transaction);
+            await db.storeTx(transaction, this.getKeyToExport());
         }
         if (tx) {
             this.#historicalTxs.remove((hTx) => hTx.id === tx.txid);
@@ -1426,7 +1462,7 @@ export class Wallet {
      * @param {import('./transaction.js').Transaction} transaction
      */
     discardTransaction(transaction) {
-        wallet.#shield?.discardTransaction(transaction.txid);
+        this.#shield?.discardTransaction(transaction.txid);
     }
 
     /**
@@ -1470,11 +1506,7 @@ export class Wallet {
 
     async #loadFromDisk() {
         const db = await Database.getInstance();
-        if ((await db.getAccount())?.publicKey !== this.getKeyToExport()) {
-            await db.removeAllTxs();
-            return;
-        }
-        const txs = await db.getTxs();
+        const txs = await db.getTxs(this.getKeyToExport());
         for (const tx of txs) {
             await this.addTransaction(tx, true);
         }
@@ -1508,7 +1540,20 @@ export class Wallet {
 /**
  * @type{Wallet}
  */
-export const wallet = new Wallet({ nAccount: 0 }); // For now we are using only the 0-th account, (TODO: update once account system is done)
+export let activeWallet = new Wallet({ nAccount: 0 }); // For now we are using only the 0-th account, (TODO: update once account system is done)
+
+export function setWallet(w) {
+    activeWallet = w;
+}
+
+/**
+ * @type{Wallet[]} array of loaded wallets.
+ */
+export const wallets = [activeWallet];
+/**
+ * @type{import('./vault.js').Vault[]} array of loaded vaults
+ */
+export const vaults = [];
 
 /**
  * Clean a Seed Phrase string and verify it's integrity
@@ -1584,7 +1629,7 @@ export async function cleanAndVerifySeedPhrase(
  */
 export async function hasEncryptedWallet() {
     const database = await Database.getInstance();
-    const account = await database.getAccount();
+    const account = await database.getAccount(activeWallet.getKeyToExport());
     return !!account?.encWif;
 }
 
@@ -1594,13 +1639,13 @@ export async function getNewAddress({
     shield = false,
     nReceiving = 0,
 } = {}) {
-    const [address, path] = wallet.getNewAddress(nReceiving);
-    if (verify && wallet.isHardwareWallet()) {
+    const [address, path] = activeWallet.getNewAddress(nReceiving);
+    if (verify && activeWallet.isHardwareWallet()) {
         // Generate address to present to the user without asking to verify
         const confAddress = await confirmPopup({
             title: ALERTS.CONFIRM_POPUP_VERIFY_ADDR,
             html: createAddressConfirmation(address),
-            resolvePromise: wallet.getMasterKey().verifyAddress(path),
+            resolvePromise: activeWallet.getMasterKey().verifyAddress(path),
         });
         if (address !== confAddress) {
             throw new Error('User did not verify address');

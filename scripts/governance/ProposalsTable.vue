@@ -5,7 +5,7 @@ import { toRefs, ref } from 'vue';
 
 import { ProposalValidator } from './status';
 import { COIN } from '../chain_params';
-import { useWallet } from '../composables/use_wallet';
+import { useWallets } from '../composables/use_wallet';
 const props = defineProps({
     proposals: Array,
     localProposals: {
@@ -20,7 +20,7 @@ const { proposals, localProposals, masternodeCount, strCurrency, price } =
     toRefs(props);
 // this is a method rather than a computed property so it updates each re-render
 const getProposalValidator = () => new ProposalValidator(masternodeCount.value);
-const wallet = useWallet();
+const { activeWallet: wallet } = useWallets();
 
 const emit = defineEmits(['finalizeProposal', 'vote', 'deleteProposal']);
 

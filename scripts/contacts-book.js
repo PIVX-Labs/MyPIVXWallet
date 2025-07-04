@@ -11,8 +11,8 @@ import {
     sanitizeHTML,
 } from './misc.js';
 import { scanQRCode } from './scanner.js';
-import { wallet, hasEncryptedWallet } from './wallet.js';
-import { useWallet } from './composables/use_wallet.js';
+import { activeWallet, hasEncryptedWallet } from './wallet.js';
+import { useWallets } from './composables/use_wallet.js';
 import pIconCopy from '../assets/icons/icon-copy.svg';
 import pIconCamera from '../assets/icons/icon-camera.svg';
 import pIconBin from '../assets/icons/icon-bin.svg';
@@ -294,7 +294,7 @@ function getUserContactClick() {
  */
 export async function promptForContact() {
     const cDB = await Database.getInstance();
-    const cAccount = await cDB.getAccount();
+    const cAccount = await cDB.getAccount(activeWallet.getKeyToExport());
     if (!cAccount || (cAccount.contacts && cAccount.contacts.length === 0))
         return createAlert('warning', ALERTS.CONTACTS_YOU_HAVE_NONE, 2500);
     return renderContacts(cAccount, true);
@@ -317,7 +317,7 @@ export async function guiSelectContact(domInput) {
  */
 export async function guiRenderContacts() {
     const cDB = await Database.getInstance();
-    const cAccount = await cDB.getAccount();
+    const cAccount = await cDB.getAccount(activeWallet.getKeyToExport());
 
     if (!cAccount || !cAccount.contacts) {
         return createAlert(
@@ -350,14 +350,14 @@ export async function setAccountContactName(account, name) {
 async function renderContactModal() {
     // Fetch Contact info from the current Account
     const cDB = await Database.getInstance();
-    const cAccount = await cDB.getAccount();
+    const cAccount = await cDB.getAccount(activeWallet.getKeyToExport());
 
     // Check that a local Contact name was set
     if (cAccount?.name) {
         // Use rotated Shield, otherwise we'll fallback to our current public address
-        const strSharedKey = wallet.hasShield()
-            ? await wallet.getNewShieldAddress()
-            : wallet.getCurrentAddress();
+        const strSharedKey = activeWallet.hasShield()
+            ? await activeWallet.getNewShieldAddress()
+            : activeWallet.getCurrentAddress();
 
         // Construct the Contact Share URI
         const strContactURI = await localContactToURI(cAccount, strSharedKey);
@@ -366,7 +366,7 @@ async function renderContactModal() {
         doms.domModalQrLabel.innerHTML = `${translation.shareContactURL}<i onclick="MPW.localContactToClipboard(event)" id="guiAddressCopy" class="pColor" style="position: absolute; right: 27px; margin-top: -1px; cursor: pointer; width: 20px;">${pIconCopy}</i>`;
 
         // We'll render a short informational text (for Public addresses), alongside a QR below for Contact scanning
-        const strInfo = wallet.hasShield()
+        const strInfo = activeWallet.hasShield()
             ? ''
             : `<p>${translation.onlyShareContactPrivately}</p>`;
         doms.domModalQR.innerHTML =
@@ -381,9 +381,9 @@ async function renderContactModal() {
         document.getElementById('clipboard').value = strSharedKey;
     } else {
         // Get our current wallet address
-        const strSharedKey = wallet.hasShield()
-            ? await wallet.getNewShieldAddress()
-            : wallet.getCurrentAddress();
+        const strSharedKey = activeWallet.hasShield()
+            ? await activeWallet.getNewShieldAddress()
+            : activeWallet.getCurrentAddress();
 
         // Update the QR Label (we'll show the address here for now, user can set Contact "Name" optionally later)
         doms.domModalQrLabel.innerHTML =
@@ -431,7 +431,7 @@ function renderAddress(strAddress) {
         domQR.hidden = true;
     }
 
-    const cWallet = useWallet();
+    const { activeWallet: cWallet } = useWallets();
     doms.domModalQrLabel.innerHTML =
         // SanitizeHTML shouldn't be necessary, but let's keep it just in case
         sanitizeHTML(strAddress) +
@@ -462,13 +462,13 @@ export async function guiRenderReceiveModal(
             await renderContactModal();
             break;
         case RECEIVE_TYPES.ADDRESS:
-            renderAddress(wallet.getCurrentAddress());
+            renderAddress(activeWallet.getCurrentAddress());
             break;
         case RECEIVE_TYPES.SHIELD:
-            renderAddress(await wallet.getNewShieldAddress());
+            renderAddress(await activeWallet.getNewShieldAddress());
             break;
         case RECEIVE_TYPES.XPUB:
-            renderAddress(wallet.getXPub());
+            renderAddress(activeWallet.getXPub());
             break;
     }
 }
@@ -509,7 +509,7 @@ function findNextAvailableType(startType, availableTypes) {
  * @param {number?} nForceType - Optionally force the Receive Type
  */
 export async function guiToggleReceiveType(nForceType = null) {
-    const walletUse = useWallet();
+    const { activeWallet: walletUse } = useWallets();
 
     // Figure out which Types can be used with this wallet
     const availableTypes = [RECEIVE_TYPES.CONTACT];
@@ -518,11 +518,11 @@ export async function guiToggleReceiveType(nForceType = null) {
     if (walletUse.publicMode) {
         availableTypes.push(RECEIVE_TYPES.ADDRESS);
 
-        if (wallet.isHD()) {
+        if (activeWallet.isHD()) {
             availableTypes.push(RECEIVE_TYPES.XPUB);
         }
     } else {
-        if (wallet.hasShield()) {
+        if (activeWallet.hasShield()) {
             availableTypes.push(RECEIVE_TYPES.SHIELD);
         }
     }
@@ -587,9 +587,9 @@ export async function guiAddContact() {
         );
     // Ensure we're not adding our own XPub
     if (isXPub(strAddr)) {
-        if (wallet.isHD()) {
+        if (activeWallet.isHD()) {
             // Compare the XPub against our own
-            const fOurs = strAddr === wallet.getXPub();
+            const fOurs = strAddr === activeWallet.getXPub();
             if (fOurs) {
                 createAlert(
                     'warning',
@@ -601,7 +601,7 @@ export async function guiAddContact() {
         }
     } else {
         // Ensure we're not adding (one of) our own address(es)
-        if (wallet.isOwnAddress(strAddr)) {
+        if (activeWallet.isOwnAddress(strAddr)) {
             createAlert('warning', ALERTS.CONTACTS_CANNOT_ADD_YOURSELF, 3500);
             return false;
         }
@@ -609,7 +609,7 @@ export async function guiAddContact() {
 
     // Fetch the current Account
     const cDB = await Database.getInstance();
-    const cAccount = await cDB.getAccount();
+    const cAccount = await cDB.getAccount(activeWallet.getKeyToExport());
 
     // Check this Contact isn't already saved, either fully or partially
     const cContactByName = cAccount.getContactBy({ name: strName });
@@ -679,9 +679,9 @@ export async function guiAddContactPrompt(
 
     // Ensure we're not adding our own XPub
     if (isXPub(strPubkey)) {
-        if (wallet.isHD()) {
+        if (activeWallet.isHD()) {
             // Compare the XPub against our own
-            const fOurs = strPubkey === (await wallet.getXPub());
+            const fOurs = strPubkey === (await activeWallet.getXPub());
             if (fOurs) {
                 createAlert(
                     'warning',
@@ -693,14 +693,14 @@ export async function guiAddContactPrompt(
         }
     } else {
         // Ensure we're not adding (one of) our own address(es)
-        if (wallet.isOwnAddress(strPubkey)) {
+        if (activeWallet.isOwnAddress(strPubkey)) {
             createAlert('warning', ALERTS.CONTACTS_CANNOT_ADD_YOURSELF, 3500);
             return false;
         }
     }
 
     const cDB = await Database.getInstance();
-    const cAccount = await cDB.getAccount();
+    const cAccount = await cDB.getAccount(activeWallet.getKeyToExport());
 
     // Check this Contact isn't already saved, either fully or partially
     const cContactByName = cAccount.getContactBy({ name: strName });
@@ -783,7 +783,7 @@ export async function guiAddContactPrompt(
 export async function guiEditContactNamePrompt(nIndex) {
     // Fetch the desired Contact to edit
     const cDB = await Database.getInstance();
-    const cAccount = await cDB.getAccount();
+    const cAccount = await cDB.getAccount(activeWallet.getKeyToExport());
     const cContact = cAccount.contacts[nIndex];
 
     // Render an 'Add to Contacts' UI
@@ -846,7 +846,7 @@ export async function guiEditContactNamePrompt(nIndex) {
  */
 export async function guiAddContactImage(nIndex) {
     const cDB = await Database.getInstance();
-    const cAccount = await cDB.getAccount();
+    const cAccount = await cDB.getAccount(activeWallet.getKeyToExport());
     const cContact = cAccount.contacts[nIndex];
 
     // Prompt for the image
@@ -914,7 +914,7 @@ export async function guiAddContactQRPrompt() {
 export async function guiRemoveContact(index) {
     // Fetch the current Account
     const cDB = await Database.getInstance();
-    const cAccount = await cDB.getAccount();
+    const cAccount = await cDB.getAccount(activeWallet.getKeyToExport());
 
     // Fetch the Contact
     const cContact = cAccount.contacts[index];
@@ -961,7 +961,7 @@ export async function guiSetAccountName(strDOM) {
 
     // Fetch the current Account
     const cDB = await Database.getInstance();
-    const cAccount = await cDB.getAccount();
+    const cAccount = await cDB.getAccount(activeWallet.getKeyToExport());
 
     // Set the account's name
     await setAccountContactName(cAccount, strNewName);
@@ -982,7 +982,7 @@ export async function getAddressColor(address) {
 
     // Fetch the current Account
     const cDB = await Database.getInstance();
-    const cAccount = await cDB.getAccount();
+    const cAccount = await cDB.getAccount(activeWallet.getKeyToExport());
 
     // Check if this is a Contact
     const cContact = cAccount?.getContactBy({
@@ -1033,16 +1033,17 @@ export function getNameOrAddress(cAccount, address) {
 export async function localContactToURI(account, pubkey) {
     // Fetch the current Account
     const cDB = await Database.getInstance();
-    const cAccount = account || (await cDB.getAccount());
+    const cAccount =
+        account || (await cDB.getAccount(activeWallet.getKeyToExport()));
 
     // Use the given pubkey; but if none is passed, we'll derive our loaded Public Key
     let strPubkey = pubkey || '';
 
     // Use rotated Shield, otherwise we'll fallback to our single address
     if (!strPubkey)
-        strPubkey = wallet.hasShield()
-            ? await wallet.getNewShieldAddress()
-            : wallet.getCurrentAddress();
+        strPubkey = activeWallet.hasShield()
+            ? await activeWallet.getNewShieldAddress()
+            : activeWallet.getCurrentAddress();
 
     // Construct the Contact URI Root
     const strURL = window.location.origin + window.location.pathname;

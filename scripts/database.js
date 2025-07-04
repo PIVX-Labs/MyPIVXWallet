@@ -20,10 +20,12 @@ export class Database {
      * Version 6 = Filter unconfirmed txs (#415)
      * Version 7 = Store shield params in indexed db (#511)
      * Version 8 = Multi MNs (#517)
-     * Version 9 = Store shield syncing data in indexed db (#543)
+    * Version 9 = Store shield syncing data in indexed db (#543)
+    * Version 10 = Multi account system (#542)
+    
      * @type {number}
      */
-    static version = 9;
+    static version = 10;
 
     /**
      * @type{import('idb').IDBPDatabase}
@@ -64,23 +66,14 @@ export class Database {
      * Store a tx inside the database
      * @param {Transaction} tx
      */
-    async storeTx(tx) {
-        if (!tx) throw new Error('Cannot store undefined');
+    async storeTx(tx, xpub) {
         const store = this.#db
             .transaction('txs', 'readwrite')
-            .objectStore('txs');
-        await store.put(tx.__original, tx.txid);
-    }
-
-    /**
-     * Remove a tx from the database
-     * @param {String} txid - transaction id
-     */
-    async removeTx(txid) {
-        const store = this.#db
-            .transaction('txs', 'readwrite')
-            .objectStore('txs');
-        await store.delete(txid);
+            .objectStore(`txs`);
+        await store.put(
+            { ...tx.__original, xpub, __original: null, txid: tx.txid },
+            `${tx.txid}/${xpub}`
+        );
     }
 
     /**
@@ -150,18 +143,16 @@ export class Database {
             cDBAccount[strKey] = account[strKey];
         }
 
+        const oldAccount = await this.getAccount(cDBAccount.publicKey);
+        if (oldAccount) {
+            throw new Error('Account already exists.');
+        }
+
         const store = this.#db
             .transaction('accounts', 'readwrite')
             .objectStore('accounts');
 
-        // Check this account isn't already added (by pubkey once multi-account)
-        if (await store.get('account'))
-            throw new Error(
-                'DB: Ran addAccount() when account already exists!'
-            );
-
-        // When the account system is going to be added, the key is gonna be the publicKey
-        await store.put(cDBAccount, 'account');
+        await store.put(cDBAccount, account.publicKey);
     }
 
     /**
@@ -196,7 +187,7 @@ export class Database {
         }
 
         // Fetch the DB account
-        const cDBAccount = await this.getAccount();
+        const cDBAccount = await this.getAccount(account.publicKey);
 
         // If none exists; we should throw an error, as there's no reason for MPW to call `updateAccount` before an account was added using `addAccount`
         // Note: This is mainly to force "good standards" in which we don't lazily use `updateAccount` to create NEW accounts.
@@ -243,7 +234,7 @@ export class Database {
             .transaction('accounts', 'readwrite')
             .objectStore('accounts');
         // When the account system is going to be added, the key is gonna be the publicKey
-        await store.put(cDBAccount, 'account');
+        await store.put(cDBAccount, cDBAccount.publicKey);
     }
 
     /**
@@ -251,12 +242,12 @@ export class Database {
      * @param {Object} o
      * @param {String} o.publicKey - Public key associated to the account.
      */
-    async removeAccount({ publicKey: _publicKey }) {
+    async removeAccount({ publicKey }) {
         const store = this.#db
             .transaction('accounts', 'readwrite')
             .objectStore('accounts');
         // When the account system is going to be added, the key is gonna be the publicKey
-        await store.delete('account');
+        await store.delete(publicKey);
     }
 
     /**
@@ -265,11 +256,13 @@ export class Database {
      * This also will apply new keys from MPW updates automatically, and check high-level type safety.
      * @returns {Promise<Account?>}
      */
-    async getAccount() {
+    async getAccount(key) {
+        //        if (!key) throw new Error('UNAEUOHROUAHOUHAEOURHAOUHRNOU');
+        if (!key) return null;
         const store = this.#db
             .transaction('accounts', 'readonly')
             .objectStore('accounts');
-        const cDBAccount = await store.get('account');
+        const cDBAccount = await store.get(key);
 
         // If there's no DB Account, we'll return null early
         if (!cDBAccount) return null;
@@ -300,6 +293,86 @@ export class Database {
         return cAccount;
     }
 
+    async getAccounts() {
+        const store = this.#db
+            .transaction('accounts', 'readonly')
+            .objectStore('accounts');
+        const accounts = await store.getAll();
+        const res = [];
+        for (const account of accounts) {
+            // We'll generate an Account Class for up-to-date keys, then layer the 'new' type-checked properties on it one-by-one
+            const cAccount = new Account();
+            for (const strKey of Object.keys(cAccount)) {
+                // If the key is missing: this is fine, `cAccount` will auto-fill it with the default blank Account Class type and value
+                if (!Object.prototype.hasOwnProperty.call(account, strKey))
+                    continue;
+
+                // Ensure the Type is correct for the Key against the Account class (with instanceof to also check Class validity)
+                if (!isSameType(account[strKey], cAccount[strKey])) {
+                    debugError(
+                        DebugTopics.DATABASE,
+                        'DB: getAccount() key "' +
+                            strKey +
+                            '" does NOT match the correct class type, likely bad data saved, please report!'
+                    );
+                    continue;
+                }
+
+                // Overlay the 'DB' keys on top of the Class Instance keys
+                cAccount[strKey] = account[strKey];
+            }
+            res.push(cAccount);
+        }
+
+        return res;
+    }
+
+    async getVaults() {
+        const store = this.#db
+            .transaction('vaults', 'readonly')
+            .objectStore('vaults');
+        const vaults = await store.getAll();
+        return vaults;
+    }
+
+    async getVault(key) {
+        const store = this.#db
+            .transaction('vaults', 'readonly')
+            .objectStore('vaults');
+        return await store.get(key);
+    }
+
+    async addVault(vault) {
+        const store = this.#db
+            .transaction('vaults', 'readwrite')
+            .objectStore('vaults');
+
+        await store.add(vault, vault.defaultKeyToExport);
+    }
+
+    async removeVault(key) {
+        const store = this.#db
+            .transaction('vaults', 'readwrite')
+            .objectStore('vaults');
+        await store.delete(key);
+    }
+
+    async addXpubToVault(key, xpub) {
+        const store = this.#db
+            .transaction('vaults', 'readwrite')
+            .objectStore('vaults');
+        const vault = await store.get(key);
+        if (!vault) return;
+        if (vault.wallets.some((x) => x === xpub)) return;
+        await store.put(
+            {
+                ...vault,
+                wallets: [...vault.wallets, xpub],
+            },
+            key
+        );
+    }
+
     /**
      * @returns {Promise<Masternode[]>} the masternodes stored in the db
      */
@@ -326,18 +399,18 @@ export class Database {
      * Get all txs from the database
      * @returns {Promise<Transaction[]>}
      */
-    async getTxs() {
+    async getTxs(xpub) {
         const store = this.#db
             .transaction('txs', 'readonly')
             .objectStore('txs');
 
         // We'll manually cursor iterate to merge the Index (TXID) with it's components
-        const cursor = await store.openCursor();
+        const index = store.index('xpub');
+        const cursor = await index.openCursor(xpub);
         const txs = [];
         while (cursor) {
             if (!cursor.value) break;
             // Append the TXID from the Index key
-            cursor.value.txid = cursor.key;
             txs.push(cursor.value);
             try {
                 await cursor.continue();
@@ -443,33 +516,13 @@ export class Database {
                 if (oldVersion <= 1) {
                     db.createObjectStore('promos');
                 }
-                if (oldVersion <= 2) {
-                    db.createObjectStore('txs');
-                }
-                if (oldVersion < 5) {
-                    // Recreate tx db due to transaction class changes
-                    db.deleteObjectStore('txs');
-                    db.createObjectStore('txs');
-                }
-
-                if (oldVersion < 6) {
-                    // Delete all txs with -1 as blockHeight (unconfirmed)
-                    (async () => {
-                        const store = transaction.objectStore('txs');
-                        let cursor = await store.openCursor();
-                        while (cursor) {
-                            if (!cursor.value) break;
-                            if (cursor.value.blockHeight === -1) {
-                                await cursor.delete();
-                            }
-                            try {
-                                cursor = await cursor.continue();
-                            } catch {
-                                break;
-                            }
-                        }
-                    })();
-                }
+                /**
+                 * `if (oldVersion < 2,5,6)` no longer needed, since we're deleting and recreating the
+                 * `txs` database in version 10.
+                 * version 2 used to create the txs db
+                 * version 5 used to delete and create it again to force a resync
+                 * version 6 used to delete unconfirmed txs
+                 */
                 if (oldVersion < 7) {
                     db.createObjectStore('shieldParams');
                 }
@@ -487,6 +540,34 @@ export class Database {
                         });
                         if (mn) {
                             await newStore.add(mn);
+                        }
+                    })();
+                }
+                if (oldVersion < 10) {
+                    if (db.objectStoreNames.contains('txs'))
+                        db.deleteObjectStore('txs');
+                    const store = db.createObjectStore('txs');
+                    store.createIndex('xpub', 'xpub', { unique: false });
+
+                    db.createObjectStore('vaults');
+                    (async () => {
+                        const store = transaction.objectStore('accounts');
+                        const account = await store.get('account');
+                        if (account) {
+                            await store.add(account, account.publicKey);
+                            const vaults = transaction.objectStore('vaults');
+
+                            await vaults.add(
+                                {
+                                    encExtsk: account.encExtsk,
+                                    isHardware: account.isHardware,
+                                    isSeeded: false,
+                                    defaultKeyToExport: account.publicKey,
+                                    wallets: [account.publicKey],
+                                    label: account.publicKey.substr(0, 6),
+                                },
+                                account.publicKey
+                            );
                         }
                     })();
                 }

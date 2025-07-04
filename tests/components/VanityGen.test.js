@@ -5,6 +5,7 @@ import VanityGen from '../../scripts/dashboard/VanityGen.vue';
 import { vi, it, describe } from 'vitest';
 import * as translation from '../../scripts/i18n.js';
 import { AlertController } from '../../scripts/alerts/alert.js';
+import Modal from '../../scripts/Modal.vue';
 
 describe('VanityGen tests', () => {
     beforeEach(() => {
@@ -29,7 +30,9 @@ describe('VanityGen tests', () => {
             '[data-testid=vanityWalletButton]'
         );
         await vanityWalletButton.trigger('click');
-        const generateBtn = wrapper.find('[data-testid=generateBtn]');
+        const generateBtn = wrapper
+            .findComponent(Modal)
+            .find('[data-testid=generateBtn]');
         await generateBtn.trigger('click');
         await nextTick();
         // We don't have a valid webworker
@@ -70,8 +73,21 @@ describe('VanityGen tests', () => {
             '[data-testid=vanityWalletButton]'
         );
         await vanityWalletButton.trigger('click');
-        const generateBtn = wrapper.find('[data-testid=generateBtn]');
-        const prefixInput = wrapper.find('[data-testid=prefixInput]');
+        const generateBtn = wrapper
+            .findComponent(Modal)
+            .find('[data-testid=generateBtn]');
+        const prefixInput = wrapper
+            .findComponent(Modal)
+            .find('[data-testid=prefixInput]');
+        const labelInput = wrapper
+            .findComponent(Modal)
+            .find('[data-testid=label]');
+        const stopButton = wrapper
+            .findComponent(Modal)
+            .find('[data-testid="closeBtn"]');
+
+        labelInput.element.value = 'mywallet';
+        await labelInput.trigger('input');
 
         //click and now the prefix input box should be visible
         await generateBtn.trigger('click');
@@ -117,7 +133,7 @@ describe('VanityGen tests', () => {
         expect(generateBtn.isVisible()).toBeTruthy();
         expect(prefixInput.element.disabled).toBe(true);
         // ok... prefix was too long it will never finish! stop the execution
-        await generateBtn.trigger('click');
+        await stopButton.trigger('click');
         await nextTick();
         expect(prefixInput.element.disabled).toBe(false);
         expect(wrapper.emitted('import-wallet')).toBeUndefined();
@@ -131,6 +147,9 @@ describe('VanityGen tests', () => {
         // We found an address! Verify that the result is the expected (mocked in this case) one
         const res = new Uint8Array([50, 60, 70]);
         expect(wrapper.emitted('import-wallet')).toHaveLength(1);
-        expect(wrapper.emitted('import-wallet')[0]).toStrictEqual([res]);
+        expect(wrapper.emitted('import-wallet')[0]).toStrictEqual([
+            res,
+            'mywallet',
+        ]);
     });
 });

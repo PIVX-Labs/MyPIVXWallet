@@ -3,16 +3,19 @@ import ledgerWallet from '../../assets/icons/icon-ledger-wallet.svg';
 import VanityGen from './VanityGen.vue';
 import CreateWallet from './CreateWallet.vue';
 import AccessWallet from './AccessWallet.vue';
-import { toRefs, ref } from 'vue';
+import ImportLedgerModal from './import_modals/ImportLedgerModal.vue';
+import { toRefs, ref, watch } from 'vue';
 
 const emit = defineEmits(['import-wallet']);
 
 const isUSBSupported = !!navigator.usb;
+const ledgerLabel = ref('');
 
 const props = defineProps({
     advancedMode: Boolean,
 });
 const { advancedMode } = toRefs(props);
+const showLedgerModal = ref(false);
 const importLock = defineModel('importLock');
 
 function importWallet(importObj) {
@@ -21,6 +24,12 @@ function importWallet(importObj) {
         emit('import-wallet', importObj);
     }
 }
+
+watch(showLedgerModal, () => {
+    if (!showLedgerModal.value) {
+        ledgerLabel.value = '';
+    }
+});
 </script>
 
 <template>
@@ -28,12 +37,13 @@ function importWallet(importObj) {
         <CreateWallet
             :advanced-mode="advancedMode"
             @import-wallet="
-                (mnemonic, password, blockCount) =>
+                (mnemonic, password, label, blockCount) =>
                     importWallet({
                         type: 'hd',
                         secret: mnemonic,
                         password,
                         blockCount,
+                        label,
                     })
             "
             :import-lock="importLock"
@@ -43,7 +53,8 @@ function importWallet(importObj) {
 
         <VanityGen
             @import-wallet="
-                (wif) => importWallet({ type: 'legacy', secret: wif })
+                (wif, label) =>
+                    importWallet({ type: 'legacy', secret: wif, label })
             "
         />
 
@@ -53,7 +64,7 @@ function importWallet(importObj) {
                 id="generateHardwareWallet"
                 class="dashboard-item dashboard-display"
                 :style="{ opacity: isUSBSupported ? 1 : 0.5 }"
-                @click="importWallet({ type: 'hardware' })"
+                @click="showLedgerModal = true"
                 data-testid="hardwareWalletBtn"
             >
                 <div class="coinstat-icon" v-html="ledgerWallet"></div>
@@ -75,9 +86,19 @@ function importWallet(importObj) {
         <AccessWallet
             :advancedMode="advancedMode"
             @import-wallet="
-                (secret, password) =>
-                    importWallet({ type: 'hd', secret, password })
+                (secret, password, label) =>
+                    importWallet({ type: 'hd', secret, password, label })
             "
+        />
+        <ImportLedgerModal
+            @submit="
+                importWallet({ type: 'hardware', label: ledgerLabel });
+                showLedgerModal = false;
+            "
+            @close="showLedgerModal = false"
+            :show="showLedgerModal"
+            :isSupported="isUSBSupported"
+            v-model:label="ledgerLabel"
         />
     </div>
 </template>

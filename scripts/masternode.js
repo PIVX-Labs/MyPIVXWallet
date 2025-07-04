@@ -1,5 +1,5 @@
 import { cChainParams, COIN } from './chain_params.js';
-import { wallet } from './wallet.js';
+import { activeWallet } from './wallet.js';
 import { parseWIF, deriveAddress } from './encoding.js';
 import { LedgerController } from './ledger.js';
 import { dSHA256, bytesToHex, hexToBytes } from './utils.js';
@@ -43,7 +43,9 @@ export default class Masternode {
     static sessionVotes = [];
 
     async _getWalletPrivateKey() {
-        return wallet.getMasterKey().getPrivateKey(this.walletPrivateKeyPath);
+        return activeWallet
+            .getMasterKey()
+            .getPrivateKey(this.walletPrivateKeyPath);
     }
 
     /**
@@ -192,7 +194,7 @@ export default class Masternode {
             sigTime,
         });
 
-        if (wallet.isHardwareWallet()) {
+        if (activeWallet.isHardwareWallet()) {
             createAlert('info', ALERTS.MASTERNODE_CONFIRM_L, 5000);
             const { r, s, v } =
                 await LedgerController.getInstance().signMessage(
@@ -239,9 +241,9 @@ export default class Masternode {
     }
 
     async getWalletPublicKey() {
-        if (wallet.isHardwareWallet()) {
+        if (activeWallet.isHardwareWallet()) {
             return hexToBytes(
-                await wallet
+                await activeWallet
                     .getMasterKey()
                     .getPublicKey(this.walletPrivateKeyPath, { verify: false })
             );
