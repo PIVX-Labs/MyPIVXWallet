@@ -146,11 +146,15 @@ async function importWallet({
                 12500
             );
         } else {
-            parsedSecret = await ParsedSecret.parse(
-                secret,
-                password,
-                advancedMode.value
-            );
+            try {
+                parsedSecret = await ParsedSecret.parse(
+                    secret,
+                    password,
+                    advancedMode.value
+                );
+            } catch (e) {
+                createAlert('warning', e.message, 8000);
+            }
         }
         if (parsedSecret) {
             if (parsedSecret.shield) {
