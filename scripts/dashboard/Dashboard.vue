@@ -33,29 +33,49 @@ import { getNetwork } from '../network/network_manager.js';
 import { LedgerController } from '../ledger';
 import { guiAddContactPrompt } from '../contacts-book';
 import { scanQRCode } from '../scanner';
-import { useWallet } from '../composables/use_wallet.js';
+import { useWallets } from '../composables/use_wallet.js';
+import { setWallet, Wallet } from '../wallet.js';
 import { useSettings } from '../composables/use_settings.js';
 import pLogo from '../../assets/p_logo.svg';
 import pShieldLogo from '../../assets/icons/icon_shield_pivx.svg';
 import pIconCamera from '../../assets/icons/icon-camera.svg';
 import { ParsedSecret } from '../parsed_secret.js';
 import { storeToRefs } from 'pinia';
-import { Account } from '../accounts';
 import { useAlerts } from '../composables/use_alerts.js';
+import { Vault } from '../vault';
+import { valuesToComputed } from '../utils.js';
+import { PIVXShield } from 'pivx-shield';
 const { createAlert } = useAlerts();
-const wallet = useWallet();
+
+const wallets = useWallets();
+const { activeWallet, activeVault } = storeToRefs(wallets);
 
 const needsToEncrypt = computed(() => {
-    if (wallet.isHardwareWallet) {
+    if (activeWallet.value.isHardwareWallet) {
         return false;
     } else {
-        return !wallet.isViewOnly && !wallet.isEncrypted;
+        return (
+            (!activeVault.value?.isViewOnly &&
+                !activeVault.value?.isEncrypted) ??
+            false
+        );
     }
 });
 const showTransferMenu = ref(false);
-const { advancedMode, displayDecimals, autoLockWallet } = storeToRefs(
-    useSettings()
+const { advancedMode, displayDecimals, autoLockWallet, showLogin } =
+    storeToRefs(useSettings());
+watch(
+    () => wallets.vaults,
+    () => {
+        if (wallets.vaults.length === 0) {
+            showLogin.value = true;
+        } else {
+            showLogin.value = false;
+        }
+    },
+    { immediate: true }
 );
+
 const showExportModal = ref(false);
 const showEncryptModal = ref(false);
 const keyToBackup = ref('');
@@ -67,7 +87,7 @@ const restoreWalletReason = ref('');
 const importLock = ref(false);
 watch(showExportModal, async (showExportModal) => {
     if (showExportModal) {
-        keyToBackup.value = await wallet.getKeyToBackup();
+        keyToBackup.value = await activeWallet.value.getKeyToBackup();
     } else {
         // Wipe key to backup, just in case
         keyToBackup.value = '';
@@ -79,13 +99,14 @@ watch(showExportModal, async (showExportModal) => {
  * @param {Object} o - Options
  * @param {'legacy'|'hd'|'hardware'} o.type - type of import
  * @param {string} o.secret
- * @param {nubmer?} [o.blockCount] Creation block count. Defaults to 4_200_000
+ * @param {number?} [o.blockCount] Creation block count. Defaults to 4_200_000
  * @param {string} [o.password]
  */
 async function importWallet({
     type,
     secret,
     password = '',
+    label,
     blockCount = 4_200_000,
 }) {
     try {
@@ -125,36 +146,41 @@ async function importWallet({
                 12500
             );
         } else {
-            parsedSecret = await ParsedSecret.parse(
-                secret,
-                password,
-                advancedMode.value
-            );
+            try {
+                parsedSecret = await ParsedSecret.parse(
+                    secret,
+                    password,
+                    advancedMode.value
+                );
+            } catch (e) {
+                createAlert('warning', e.message, 8000);
+            }
         }
         if (parsedSecret) {
-            await wallet.setMasterKey({ mk: parsedSecret.masterKey });
             if (parsedSecret.shield) {
                 await parsedSecret.shield.reloadFromCheckpoint(blockCount);
             }
-            wallet.setShield(parsedSecret.shield);
+            showLogin.value = false;
+            const vault = await wallets.addVault(
+                new Vault({
+                    masterKey: parsedSecret.masterKey,
+                    shield: parsedSecret.shield,
+                    seed: parsedSecret.seed,
+                    label:
+                        label?.trim() ||
+                        parsedSecret.masterKey
+                            .getKeyToExport(0)
+                            .substring(0, 8),
+                })
+            );
 
             if (needsToEncrypt.value) showEncryptModal.value = true;
-            if (wallet.isHardwareWallet) {
-                // Save the xpub without needing encryption if it's ledger
-                const database = await Database.getInstance();
-                const account = new Account({
-                    publicKey: wallet.getKeyToExport(),
-                    isHardware: true,
-                });
-                if (await database.getAccount()) {
-                    await database.updateAccount(account);
-                } else {
-                    await database.addAccount(account);
-                }
+            if (vault.isHardware.value) {
+                await vault.save({ isHardware: true });
             }
 
             // Start syncing in the background
-            wallet.sync().then(() => {
+            activeWallet.value.sync().then(() => {
                 createAlert('success', translation.syncStatusFinished, 12500);
             });
             getEventEmitter().emit('wallet-import');
@@ -168,18 +194,18 @@ async function importWallet({
 }
 
 /**
- * Encrypt wallet
+ * Encrypt wallet (actually vault)
  * @param {string} password - Password to encrypt wallet with
  * @param {string} [currentPassword] - Current password with which the wallet is encrypted with, if any
  */
 async function encryptWallet(password, currentPassword = '') {
-    if (wallet.isEncrypted) {
-        if (!(await wallet.checkDecryptPassword(currentPassword))) {
+    if (activeVault.isEncrypted) {
+        if (!(await activeVault.value.checkDecryptPassword(currentPassword))) {
             createAlert('warning', ALERTS.INCORRECT_PASSWORD, 6000);
             return false;
         }
     }
-    const res = await wallet.encrypt(password);
+    const res = activeVault.value.encrypt(password);
     if (res) {
         createAlert('success', ALERTS.NEW_PASSWORD_SUCCESS, 5500);
         doms.domChangePasswordContainer.classList.remove('d-none');
@@ -187,8 +213,8 @@ async function encryptWallet(password, currentPassword = '') {
 }
 
 async function restoreWallet(strReason) {
-    if (!wallet.isEncrypted) return false;
-    if (wallet.isHardwareWallet) return true;
+    if (!activeVault.value.isEncrypted) return false;
+    if (activeWallet.value.isHardwareWallet) return true;
     showRestoreWallet.value = true;
     return await new Promise((res) => {
         watch(
@@ -206,7 +232,7 @@ async function restoreWallet(strReason) {
  * Lock the wallet by deleting masterkey private data, after user confirmation
  */
 async function displayLockWalletModal() {
-    const isEncrypted = wallet.isEncrypted;
+    const isEncrypted = activeVault.value.isEncrypted;
     const title = isEncrypted
         ? translation.popupWalletLock
         : translation.popupWalletWipe;
@@ -230,7 +256,7 @@ async function displayLockWalletModal() {
  * Lock the wallet by deleting masterkey private data
  */
 function lockWallet() {
-    wallet.wipePrivateData();
+    activeVault.value.wipePrivateData();
     createAlert('success', ALERTS.WALLET_LOCKED, 1500);
 }
 
@@ -241,12 +267,12 @@ function lockWallet() {
  */
 async function send(address, amount, useShieldInputs) {
     // Ensure a wallet is unlocked
-    if (wallet.isViewOnly && !wallet.isHardwareWallet) {
+    if (activeVault.value.isViewOnly && !activeWallet.value.isHardwareWallet) {
         if (
             !(await restoreWallet(
                 tr(ALERTS.WALLET_UNLOCK_IMPORT, [
                     {
-                        unlock: wallet.isEncrypted
+                        unlock: activeVault.value.isEncrypted
                             ? 'unlock '
                             : 'import/create',
                     },
@@ -257,12 +283,12 @@ async function send(address, amount, useShieldInputs) {
     }
 
     // Ensure wallet is synced
-    if (!wallet.isSynced) {
+    if (!activeWallet.value.isSynced) {
         return createAlert('warning', `${ALERTS.WALLET_NOT_SYNCED}`, 3000);
     }
 
     // Make sure we are not already creating a (shield) tx
-    if (wallet.isCreatingTransaction()) {
+    if (activeWallet.value.isCreatingTransaction()) {
         return createAlert(
             'warning',
             'Already creating a transaction! please wait for it to finish'
@@ -274,7 +300,7 @@ async function send(address, amount, useShieldInputs) {
 
     // Check for any contacts that match the input
     const cDB = await Database.getInstance();
-    const cAccount = await cDB.getAccount();
+    const cAccount = await cDB.getAccount(activeWallet.value.getKeyToExport());
 
     // If we have an Account, then check our Contacts for anything matching too
     const cContact = cAccount?.getContactBy({
@@ -285,7 +311,7 @@ async function send(address, amount, useShieldInputs) {
     if (cContact) address = cContact.pubkey;
 
     // Make sure wallet has shield enabled
-    if (!wallet.hasShield) {
+    if (!activeWallet.value.hasShield) {
         if (useShieldInputs || isShieldAddress(address)) {
             return createAlert('warning', ALERTS.MISSING_SHIELD);
         }
@@ -348,8 +374,8 @@ async function send(address, amount, useShieldInputs) {
     const nValue = Math.round(amount * COIN);
     if (!validateAmount(nValue)) return;
     const availableBalance = useShieldInputs
-        ? wallet.shieldBalance
-        : wallet.balance;
+        ? activeWallet.value.shieldBalance
+        : activeWallet.value.balance;
     if (nValue > availableBalance) {
         createAlert(
             'warning',
@@ -365,15 +391,20 @@ async function send(address, amount, useShieldInputs) {
 
     // Create and send the TX
     try {
-        await wallet.createAndSendTransaction(getNetwork(), address, nValue, {
-            useShieldInputs,
-        });
+        await activeWallet.value.createAndSendTransaction(
+            getNetwork(),
+            address,
+            nValue,
+            {
+                useShieldInputs,
+            }
+        );
     } catch (e) {
         console.error(e);
         createAlert('warning', e);
     } finally {
         if (autoLockWallet.value) {
-            if (wallet.isEncrypted) {
+            if (activeVault.value.isEncrypted) {
                 lockWallet();
             } else {
                 await displayLockWalletModal();
@@ -386,21 +417,51 @@ async function send(address, amount, useShieldInputs) {
  * @param {boolean} useShieldInputs - whether max balance is from shield or transparent pivs
  */
 function getMaxBalance(useShieldInputs) {
-    const coinSatoshi = useShieldInputs ? wallet.shieldBalance : wallet.balance;
+    const coinSatoshi = useShieldInputs
+        ? activeWallet.value.shieldBalance
+        : activeWallet.value.balance;
     transferAmount.value = coinSatoshi / COIN;
 }
 
 async function importFromDatabase() {
     const database = await Database.getInstance();
-    const account = await database.getAccount();
-    await wallet.setMasterKey({ mk: null });
-    if (account?.isHardware) {
-        await importWallet({ type: 'hardware', secret: account.publicKey });
-    } else if (wallet.isEncrypted) {
-        await importWallet({ type: 'hd', secret: account.publicKey });
-    }
+    const vaults = await database.getVaults();
+    for (const vault of vaults) {
+        const ws = [];
+        let i = 0;
+        for (const wallet of vault.wallets) {
+            const account = await database.getAccount(wallet);
+            const p = await ParsedSecret.parse(account.publicKey);
+            const masterKey = vault.isHardware
+                ? HardwareWalletMasterKey.fromXPub(account.publicKey)
+                : p.masterKey;
+            let shield;
+            if (account.shieldData) {
+                const { pivxShield, success } = await PIVXShield.load(
+                    account.shieldData
+                );
+                if (!success)
+                    createAlert('warning', 'Failed to load shield!', 3000);
+                shield = pivxShield;
+            }
+            ws.push(new Wallet({ nAccount: i++, masterKey, shield }));
+        }
+        const v = new Vault({
+            wallets: ws,
+            label: vault.label,
+        });
 
-    updateLogOutButton();
+        await wallets.addVault(v);
+
+        getEventEmitter().emit('reset-activity');
+        updateLogOutButton();
+    }
+    getEventEmitter().emit('wallet-import');
+    if (wallets.vaults.length === 0) {
+        showLogin.value = true;
+    } else {
+        showLogin.value = false;
+    }
 }
 
 getEventEmitter().on('toggle-network', async () => {
@@ -413,7 +474,7 @@ onMounted(async () => {
     await start();
     await importFromDatabase();
 
-    if (wallet.isEncrypted) {
+    if (activeVault.value?.isEncrypted) {
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.has('addcontact')) {
             await handleContactRequest(urlParams);
@@ -444,7 +505,7 @@ const {
     price,
     isViewOnly,
     hasShield,
-} = storeToRefs(wallet);
+} = valuesToComputed(activeWallet);
 
 function changePassword() {
     showEncryptModal.value = true;
@@ -485,6 +546,7 @@ async function openSendQRScanner() {
             7500
         );
     }
+    34;
 }
 
 async function handleContactRequest(urlParams) {
@@ -508,503 +570,539 @@ defineExpose({
     <div id="keypair" class="tabcontent">
         <div class="row m-0">
             <Login
-                v-show="!wallet.isImported"
+                v-show="showLogin"
                 :advancedMode="advancedMode"
                 v-model:importLock="importLock"
                 @import-wallet="importWallet"
             />
 
-            <br />
+            <div v-show="!showLogin">
+                <br />
 
-            <!-- Switch to Public/Private -->
-            <div class="col-12 p-0" v-show="wallet.isImported && hasShield">
-                <center>
-                    <div
-                        :class="{
-                            'dcWallet-warningMessage-dark': wallet.publicMode,
-                        }"
-                        class="dcWallet-warningMessage"
-                        id="warningMessage"
-                        @click="wallet.publicMode = !wallet.publicMode"
-                    >
-                        <div class="messLogo">
-                            <span
-                                class="buttoni-icon publicSwitchIcon"
-                                v-html="wallet.publicMode ? pLogo : pShieldLogo"
-                            >
-                            </span>
-                        </div>
-                        <div class="messMessage" id="publicPrivateText">
-                            <span class="messTop">
-                                {{
-                                    tr(translation.currentMode, [
-                                        {
-                                            mode: wallet.publicMode
-                                                ? translation.publicMode
-                                                : translation.privateMode,
-                                        },
-                                    ])
-                                }}
-                            </span>
-                            <span class="messBot">
-                                {{
-                                    tr(translation.switchTo, [
-                                        {
-                                            mode: wallet.publicMode
-                                                ? translation.privateMode
-                                                : translation.publicMode,
-                                        },
-                                    ])
-                                }}
-                            </span>
-                        </div>
-                    </div>
-                </center>
-            </div>
-
-            <!-- Redeem Code (PIVX Promos) -->
-            <div
-                class="modal"
-                id="redeemCodeModal"
-                tabindex="-1"
-                role="dialog"
-                aria-hidden="true"
-                data-backdrop="static"
-                data-keyboard="false"
-            >
+                <!-- Switch to Public/Private -->
                 <div
-                    class="modal-dialog modal-dialog-centered max-w-600"
-                    role="document"
+                    class="col-12 p-0"
+                    v-show="activeWallet.isImported && hasShield"
                 >
-                    <div class="modal-content exportKeysModalColor">
-                        <div style="position: relative; top: -54px; left: -1px">
-                            <ul class="settingsMenu redeemMenu">
-                                <li
-                                    data-i18n="redeem"
-                                    style="width: 50%; text-align: center"
-                                    onclick="MPW.setPromoMode(true)"
-                                    id="redeemCodeModeRedeem"
-                                    class="active"
-                                >
-                                    Redeem
-                                </li>
-                                <li
-                                    data-i18n="create"
-                                    style="width: 50%; text-align: center"
-                                    onclick="MPW.setPromoMode(false)"
-                                    id="redeemCodeModeCreate"
-                                >
-                                    Create
-                                </li>
-                            </ul>
-                        </div>
+                    <center>
                         <div
-                            class="modal-header"
-                            id="redeemCodeModalHeader"
-                            style="margin-top: -40px"
-                        >
-                            <h3
-                                class="modal-title"
-                                id="redeemCodeModalTitle"
-                                style="
-                                    text-align: center;
-                                    width: 100%;
-                                    color: #8e21ff;
-                                    margin-top: 0px;
-                                "
-                            >
-                                Redeem Code
-                            </h3>
-                        </div>
-                        <div
-                            class="modal-body center-text"
-                            style="padding-top: 0px; padding-bottom: 0px"
-                        >
-                            <center>
-                                <p
-                                    style="
-                                        color: #af9cc6;
-                                        font-size: 15px;
-                                        width: 250px;
-                                        font-family: Montserrat !important;
-                                    "
-                                >
-                                    PIVX Promos
-                                    {{ translation.pivxPromos }}
-                                </p>
-                                <div id="redeemCodeUse">
-                                    <div id="redeemCodeInputBox">
-                                        <input
-                                            class="btn-input mono center-text"
-                                            type="text"
-                                            id="redeemCodeInput"
-                                            :placeholder="
-                                                translation.redeemInput
-                                            "
-                                            style="text-align: left"
-                                            autocomplete="nope"
-                                        />
-                                    </div>
-                                    <center>
-                                        <div
-                                            id="redeemCodeGiftIconBox"
-                                            style="display: none"
-                                        >
-                                            <br />
-                                            <br />
-                                            <i
-                                                id="redeemCodeGiftIcon"
-                                                onclick="MPW.sweepPromoCode();"
-                                                class="fa-solid fa-gift fa-2xl"
-                                                style="
-                                                    color: #813d9c;
-                                                    font-size: 4em;
-                                                "
-                                            ></i>
-                                        </div>
-
-                                        <div
-                                            id="redeemCodeDiv"
-                                            style="
-                                                margin-top: 50px;
-                                                display: none;
-                                                font-size: 15px;
-                                                background-color: rgb(
-                                                    58,
-                                                    12,
-                                                    96
-                                                );
-                                                border: 1px solid
-                                                    rgb(159, 0, 249);
-                                                padding: 8px 15px 10px;
-                                                border-radius: 10px;
-                                                color: rgb(211, 190, 229);
-                                                width: 310px;
-                                                text-align: left;
-                                                margin-bottom: 20px;
-                                            "
-                                        >
-                                            <div
-                                                style="
-                                                    width: 48px;
-                                                    height: 38px;
-                                                    background-color: rgb(
-                                                        49,
-                                                        11,
-                                                        81
-                                                    );
-                                                    margin-right: 9px;
-                                                    border-radius: 9px;
-                                                    display: flex;
-                                                    justify-content: center;
-                                                    align-items: center;
-                                                    font-size: 20px;
-                                                "
-                                            >
-                                                <i
-                                                    class="fas fa-spinner spinningLoading"
-                                                ></i>
-                                            </div>
-                                            <div style="width: 100%">
-                                                <div id="redeemCodeETA">
-                                                    Calculating...
-                                                </div>
-                                                <div
-                                                    div=""
-                                                    class="progress"
-                                                    style="
-                                                        max-width: 310px;
-                                                        border: 1px solid
-                                                            rgb(147, 46, 205);
-                                                        border-radius: 4px;
-                                                        background-color: rgb(
-                                                            43,
-                                                            0,
-                                                            58
-                                                        );
-                                                    "
-                                                >
-                                                    <div
-                                                        class="progress-bar progress-bar-striped progress-bar-animated"
-                                                        role="progressbar"
-                                                        id="redeemCodeProgress"
-                                                        aria-valuenow="42"
-                                                        aria-valuemin="0"
-                                                        aria-valuemax="100"
-                                                        style="
-                                                            width: 42% !important;
-                                                        "
-                                                    ></div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <progress
-                                            min="0"
-                                            max="100"
-                                            value="50"
-                                            style="display: none"
-                                        ></progress>
-                                    </center>
-                                </div>
-                                <div
-                                    id="redeemCodeCreate"
-                                    style="display: none"
-                                >
-                                    <input
-                                        class="btn-input mono center-text"
-                                        style="
-                                            border-top-right-radius: 9px;
-                                            border-bottom-right-radius: 9px;
-                                        "
-                                        type="text"
-                                        id="redeemCodeCreateInput"
-                                        :placeholder="translation.createName"
-                                        autocomplete="nope"
-                                    />
-                                    <input
-                                        class="btn-input mono center-text"
-                                        id="redeemCodeCreateAmountInput"
-                                        style="
-                                            border-top-right-radius: 9px;
-                                            border-bottom-right-radius: 9px;
-                                        "
-                                        type="text"
-                                        :placeholder="translation.createAmount"
-                                        autocomplete="nope"
-                                    />
-                                    <div
-                                        class="table-promo d-none"
-                                        id="promo-table"
-                                    >
-                                        <br />
-                                        <table
-                                            class="table table-responsive table-sm stakingTx table-mobile-scroll"
-                                        >
-                                            <thead style="border: 0px">
-                                                <tr>
-                                                    <td
-                                                        style="
-                                                            width: 100px;
-                                                            border-top: 0px;
-                                                            border-bottom: 1px
-                                                                solid #534270;
-                                                        "
-                                                        class="text-center"
-                                                    >
-                                                        <b> Promo Code </b>
-                                                    </td>
-                                                    <td
-                                                        style="
-                                                            width: 100px;
-                                                            border-top: 0px;
-                                                            border-bottom: 1px
-                                                                solid #534270;
-                                                        "
-                                                        class="text-center"
-                                                    >
-                                                        <b>
-                                                            {{
-                                                                cChainParams
-                                                                    .current
-                                                                    .TICKER
-                                                            }}
-                                                        </b>
-                                                    </td>
-                                                    <td
-                                                        style="
-                                                            border-top: 0px;
-                                                            border-bottom: 1px
-                                                                solid #534270;
-                                                        "
-                                                        class="text-center"
-                                                    >
-                                                        <i
-                                                            onclick="MPW.promosToCSV()"
-                                                            class="fa-solid fa-lg fa-file-csv ptr"
-                                                        ></i>
-                                                    </td>
-                                                </tr>
-                                            </thead>
-                                            <tbody
-                                                id="redeemCodeCreatePendingList"
-                                                style="
-                                                    text-align: center;
-                                                    vertical-align: middle;
-                                                "
-                                            ></tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </center>
-                        </div>
-                        <div class="modal-footer" id="redeemCodeModalButtons">
-                            <div id="redeemCameraBtn">
-                                <button
-                                    class="pivx-button-small-cancel"
-                                    style="
-                                        float: left;
-                                        height: 49px;
-                                        width: 49px;
-                                        padding-left: 12px;
-                                    "
-                                    onclick="MPW.openPromoQRScanner()"
-                                >
-                                    <span
-                                        class="buttoni-text cameraIcon"
-                                        v-html="pIconCamera"
-                                    >
-                                    </span>
-                                </button>
-                            </div>
-
-                            <button
-                                type="button"
-                                onclick="MPW.promoConfirm()"
-                                id="redeemCodeModalConfirmButton"
-                                class="pivx-button-big"
-                                style="float: right"
-                            >
-                                Redeem
-                            </button>
-
-                            <button
-                                type="button"
-                                class="pivx-button-big-cancel"
-                                id="redeemCodeModalConfirmButton"
-                                style="float: right"
-                                data-dismiss="modal"
-                                aria-label="Close"
-                            >
-                                {{ translation.popupClose }}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <!-- // Redeem Code (PIVX Promos) -->
-
-            <!-- Contacts Modal -->
-            <div
-                class="modal"
-                id="contactsModal"
-                tabindex="-1"
-                role="dialog"
-                aria-hidden="true"
-                data-backdrop="static"
-                data-keyboard="false"
-            >
-                <div
-                    class="modal-dialog modal-dialog-centered max-w-450"
-                    role="document"
-                >
-                    <div class="modal-content exportKeysModalColor">
-                        <div class="modal-header" id="contactsModalHeader">
-                            <h3
-                                class="modal-title"
-                                id="contactsModalTitle"
-                                style="
-                                    text-align: center;
-                                    width: 100%;
-                                    color: #d5adff;
-                                "
-                            >
-                                {{ translation.contacts }}
-                            </h3>
-                        </div>
-                        <div class="modal-body px-0">
-                            <div id="contactsList" class="contactsList"></div>
-                        </div>
-                        <div
-                            class="modal-footer"
-                            style="
-                                display: flex;
-                                justify-content: center;
-                                padding-top: 0px;
+                            :class="{
+                                'dcWallet-warningMessage-dark':
+                                    activeWallet.publicMode,
+                            }"
+                            class="dcWallet-warningMessage"
+                            id="warningMessage"
+                            @click="
+                                activeWallet.publicMode =
+                                    !activeWallet.publicMode
                             "
                         >
-                            <button
-                                type="button"
-                                class="pivx-button-big-cancel"
-                                aria-label="Close"
-                                data-dismiss="modal"
-                                data-i18n="popupClose"
+                            <div class="messLogo">
+                                <span
+                                    class="buttoni-icon publicSwitchIcon"
+                                    v-html="
+                                        activeWallet.publicMode
+                                            ? pLogo
+                                            : pShieldLogo
+                                    "
+                                >
+                                </span>
+                            </div>
+                            <div class="messMessage" id="publicPrivateText">
+                                <span class="messTop">
+                                    {{
+                                        tr(translation.currentMode, [
+                                            {
+                                                mode: activeWallet.publicMode
+                                                    ? translation.publicMode
+                                                    : translation.privateMode,
+                                            },
+                                        ])
+                                    }}
+                                </span>
+                                <span class="messBot">
+                                    {{
+                                        tr(translation.switchTo, [
+                                            {
+                                                mode: activeWallet.publicMode
+                                                    ? translation.privateMode
+                                                    : translation.publicMode,
+                                            },
+                                        ])
+                                    }}
+                                </span>
+                            </div>
+                        </div>
+                    </center>
+                </div>
+
+                <!-- Redeem Code (PIVX Promos) -->
+                <div
+                    class="modal"
+                    id="redeemCodeModal"
+                    tabindex="-1"
+                    role="dialog"
+                    aria-hidden="true"
+                    data-backdrop="static"
+                    data-keyboard="false"
+                >
+                    <div
+                        class="modal-dialog modal-dialog-centered max-w-600"
+                        role="document"
+                    >
+                        <div class="modal-content exportKeysModalColor">
+                            <div
+                                style="
+                                    position: relative;
+                                    top: -54px;
+                                    left: -1px;
+                                "
                             >
-                                {{ translation.popupClose }}
-                            </button>
+                                <ul class="settingsMenu redeemMenu">
+                                    <li
+                                        data-i18n="redeem"
+                                        style="width: 50%; text-align: center"
+                                        onclick="MPW.setPromoMode(true)"
+                                        id="redeemCodeModeRedeem"
+                                        class="active"
+                                    >
+                                        Redeem
+                                    </li>
+                                    <li
+                                        data-i18n="create"
+                                        style="width: 50%; text-align: center"
+                                        onclick="MPW.setPromoMode(false)"
+                                        id="redeemCodeModeCreate"
+                                    >
+                                        Create
+                                    </li>
+                                </ul>
+                            </div>
+                            <div
+                                class="modal-header"
+                                id="redeemCodeModalHeader"
+                                style="margin-top: -40px"
+                            >
+                                <h3
+                                    class="modal-title"
+                                    id="redeemCodeModalTitle"
+                                    style="
+                                        text-align: center;
+                                        width: 100%;
+                                        color: #8e21ff;
+                                        margin-top: 0px;
+                                    "
+                                >
+                                    Redeem Code
+                                </h3>
+                            </div>
+                            <div
+                                class="modal-body center-text"
+                                style="padding-top: 0px; padding-bottom: 0px"
+                            >
+                                <center>
+                                    <p
+                                        style="
+                                            color: #af9cc6;
+                                            font-size: 15px;
+                                            width: 250px;
+                                            font-family: Montserrat !important;
+                                        "
+                                    >
+                                        PIVX Promos
+                                        {{ translation.pivxPromos }}
+                                    </p>
+                                    <div id="redeemCodeUse">
+                                        <div id="redeemCodeInputBox">
+                                            <input
+                                                class="btn-input mono center-text"
+                                                type="text"
+                                                id="redeemCodeInput"
+                                                :placeholder="
+                                                    translation.redeemInput
+                                                "
+                                                style="text-align: left"
+                                                autocomplete="nope"
+                                            />
+                                        </div>
+                                        <center>
+                                            <div
+                                                id="redeemCodeGiftIconBox"
+                                                style="display: none"
+                                            >
+                                                <br />
+                                                <br />
+                                                <i
+                                                    id="redeemCodeGiftIcon"
+                                                    onclick="MPW.sweepPromoCode();"
+                                                    class="fa-solid fa-gift fa-2xl"
+                                                    style="
+                                                        color: #813d9c;
+                                                        font-size: 4em;
+                                                    "
+                                                ></i>
+                                            </div>
+
+                                            <div
+                                                id="redeemCodeDiv"
+                                                style="
+                                                    margin-top: 50px;
+                                                    display: none;
+                                                    font-size: 15px;
+                                                    background-color: rgb(
+                                                        58,
+                                                        12,
+                                                        96
+                                                    );
+                                                    border: 1px solid
+                                                        rgb(159, 0, 249);
+                                                    padding: 8px 15px 10px;
+                                                    border-radius: 10px;
+                                                    color: rgb(211, 190, 229);
+                                                    width: 310px;
+                                                    text-align: left;
+                                                    margin-bottom: 20px;
+                                                "
+                                            >
+                                                <div
+                                                    style="
+                                                        width: 48px;
+                                                        height: 38px;
+                                                        background-color: rgb(
+                                                            49,
+                                                            11,
+                                                            81
+                                                        );
+                                                        margin-right: 9px;
+                                                        border-radius: 9px;
+                                                        display: flex;
+                                                        justify-content: center;
+                                                        align-items: center;
+                                                        font-size: 20px;
+                                                    "
+                                                >
+                                                    <i
+                                                        class="fas fa-spinner spinningLoading"
+                                                    ></i>
+                                                </div>
+                                                <div style="width: 100%">
+                                                    <div id="redeemCodeETA">
+                                                        Calculating...
+                                                    </div>
+                                                    <div
+                                                        div=""
+                                                        class="progress"
+                                                        style="
+                                                            max-width: 310px;
+                                                            border: 1px solid
+                                                                rgb(
+                                                                    147,
+                                                                    46,
+                                                                    205
+                                                                );
+                                                            border-radius: 4px;
+                                                            background-color: rgb(
+                                                                43,
+                                                                0,
+                                                                58
+                                                            );
+                                                        "
+                                                    >
+                                                        <div
+                                                            class="progress-bar progress-bar-striped progress-bar-animated"
+                                                            role="progressbar"
+                                                            id="redeemCodeProgress"
+                                                            aria-valuenow="42"
+                                                            aria-valuemin="0"
+                                                            aria-valuemax="100"
+                                                            style="
+                                                                width: 42% !important;
+                                                            "
+                                                        ></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <progress
+                                                min="0"
+                                                max="100"
+                                                value="50"
+                                                style="display: none"
+                                            ></progress>
+                                        </center>
+                                    </div>
+                                    <div
+                                        id="redeemCodeCreate"
+                                        style="display: none"
+                                    >
+                                        <input
+                                            class="btn-input mono center-text"
+                                            style="
+                                                border-top-right-radius: 9px;
+                                                border-bottom-right-radius: 9px;
+                                            "
+                                            type="text"
+                                            id="redeemCodeCreateInput"
+                                            :placeholder="
+                                                translation.createName
+                                            "
+                                            autocomplete="nope"
+                                        />
+                                        <input
+                                            class="btn-input mono center-text"
+                                            id="redeemCodeCreateAmountInput"
+                                            style="
+                                                border-top-right-radius: 9px;
+                                                border-bottom-right-radius: 9px;
+                                            "
+                                            type="text"
+                                            :placeholder="
+                                                translation.createAmount
+                                            "
+                                            autocomplete="nope"
+                                        />
+                                        <div
+                                            class="table-promo d-none"
+                                            id="promo-table"
+                                        >
+                                            <br />
+                                            <table
+                                                class="table table-responsive table-sm stakingTx table-mobile-scroll"
+                                            >
+                                                <thead style="border: 0px">
+                                                    <tr>
+                                                        <td
+                                                            style="
+                                                                width: 100px;
+                                                                border-top: 0px;
+                                                                border-bottom: 1px
+                                                                    solid
+                                                                    #534270;
+                                                            "
+                                                            class="text-center"
+                                                        >
+                                                            <b> Promo Code </b>
+                                                        </td>
+                                                        <td
+                                                            style="
+                                                                width: 100px;
+                                                                border-top: 0px;
+                                                                border-bottom: 1px
+                                                                    solid
+                                                                    #534270;
+                                                            "
+                                                            class="text-center"
+                                                        >
+                                                            <b>
+                                                                {{
+                                                                    cChainParams
+                                                                        .current
+                                                                        .TICKER
+                                                                }}
+                                                            </b>
+                                                        </td>
+                                                        <td
+                                                            style="
+                                                                border-top: 0px;
+                                                                border-bottom: 1px
+                                                                    solid
+                                                                    #534270;
+                                                            "
+                                                            class="text-center"
+                                                        >
+                                                            <i
+                                                                onclick="MPW.promosToCSV()"
+                                                                class="fa-solid fa-lg fa-file-csv ptr"
+                                                            ></i>
+                                                        </td>
+                                                    </tr>
+                                                </thead>
+                                                <tbody
+                                                    id="redeemCodeCreatePendingList"
+                                                    style="
+                                                        text-align: center;
+                                                        vertical-align: middle;
+                                                    "
+                                                ></tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </center>
+                            </div>
+                            <div
+                                class="modal-footer"
+                                id="redeemCodeModalButtons"
+                            >
+                                <div id="redeemCameraBtn">
+                                    <button
+                                        class="pivx-button-small-cancel"
+                                        style="
+                                            float: left;
+                                            height: 49px;
+                                            width: 49px;
+                                            padding-left: 12px;
+                                        "
+                                        onclick="MPW.openPromoQRScanner()"
+                                    >
+                                        <span
+                                            class="buttoni-text cameraIcon"
+                                            v-html="pIconCamera"
+                                        >
+                                        </span>
+                                    </button>
+                                </div>
+
+                                <button
+                                    type="button"
+                                    onclick="MPW.promoConfirm()"
+                                    id="redeemCodeModalConfirmButton"
+                                    class="pivx-button-big"
+                                    style="float: right"
+                                >
+                                    Redeem
+                                </button>
+
+                                <button
+                                    type="button"
+                                    class="pivx-button-big-cancel"
+                                    id="redeemCodeModalConfirmButton"
+                                    style="float: right"
+                                    data-dismiss="modal"
+                                    aria-label="Close"
+                                >
+                                    {{ translation.popupClose }}
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            <!-- // Contacts Modal -->
-            <ExportPrivKey
-                :show="showExportModal"
-                :privateKey="keyToBackup"
-                :isJSON="hasShield && !wallet.isEncrypted"
-                @close="showExportModal = false"
-            />
-            <!-- WALLET FEATURES -->
-            <div v-if="wallet.isImported">
-                <GenKeyWarning
-                    @onEncrypt="encryptWallet"
-                    @close="showEncryptModal = false"
-                    @open="showEncryptModal = true"
-                    :showModal="showEncryptModal"
-                    :showBox="needsToEncrypt"
-                    :isEncrypt="wallet.isEncrypted"
+                <!-- // Redeem Code (PIVX Promos) -->
+
+                <!-- Contacts Modal -->
+                <div
+                    class="modal"
+                    id="contactsModal"
+                    tabindex="-1"
+                    role="dialog"
+                    aria-hidden="true"
+                    data-backdrop="static"
+                    data-keyboard="false"
+                >
+                    <div
+                        class="modal-dialog modal-dialog-centered max-w-450"
+                        role="document"
+                    >
+                        <div class="modal-content exportKeysModalColor">
+                            <div class="modal-header" id="contactsModalHeader">
+                                <h3
+                                    class="modal-title"
+                                    id="contactsModalTitle"
+                                    style="
+                                        text-align: center;
+                                        width: 100%;
+                                        color: #d5adff;
+                                    "
+                                >
+                                    {{ translation.contacts }}
+                                </h3>
+                            </div>
+                            <div class="modal-body px-0">
+                                <div
+                                    id="contactsList"
+                                    class="contactsList"
+                                ></div>
+                            </div>
+                            <div
+                                class="modal-footer"
+                                style="
+                                    display: flex;
+                                    justify-content: center;
+                                    padding-top: 0px;
+                                "
+                            >
+                                <button
+                                    type="button"
+                                    class="pivx-button-big-cancel"
+                                    aria-label="Close"
+                                    data-dismiss="modal"
+                                    data-i18n="popupClose"
+                                >
+                                    {{ translation.popupClose }}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- // Contacts Modal -->
+                <ExportPrivKey
+                    :show="showExportModal"
+                    :privateKey="keyToBackup"
+                    :isJSON="hasShield && !activeVault?.isEncrypted"
+                    @close="showExportModal = false"
                 />
-                <div class="row p-0">
-                    <!-- Balance in PIVX & USD-->
-                    <WalletBalance
-                        :balance="balance"
-                        :shieldBalance="shieldBalance"
-                        :pendingShieldBalance="pendingShieldBalance"
-                        :immatureBalance="immatureBalance"
-                        :immatureColdBalance="immatureColdBalance"
-                        :isHdWallet="wallet.isHD"
-                        :isViewOnly="wallet.isViewOnly"
-                        :isEncrypted="wallet.isEncrypted"
-                        :isImported="wallet.isImported"
-                        :needsToEncrypt="needsToEncrypt"
-                        @displayLockWalletModal="displayLockWalletModal()"
-                        @restoreWallet="restoreWallet()"
-                        :isHardwareWallet="wallet.isHardwareWallet"
-                        :currency="currency"
-                        :price="price"
-                        :displayDecimals="displayDecimals"
-                        :shieldEnabled="hasShield"
-                        @send="showTransferMenu = true"
-                        @exportPrivKeyOpen="showExportModal = true"
-                        :publicMode="wallet.publicMode"
-                        class="col-12 p-0 mb-2"
+                <!-- WALLET FEATURES -->
+                <div v-if="activeWallet.isImported">
+                    <GenKeyWarning
+                        @onEncrypt="encryptWallet"
+                        @close="showEncryptModal = false"
+                        @open="showEncryptModal = true"
+                        :showModal="showEncryptModal"
+                        :showBox="needsToEncrypt"
+                        :isEncrypt="activeVault?.isEncrypted ?? false"
                     />
-                    <WalletButtons class="col-12 p-0 md-5" />
-                    <Activity
-                        class="col-12 p-0 mb-5"
-                        title="Activity"
-                        :rewards="false"
-                    />
+                    <div class="row p-0">
+                        <!-- Balance in PIVX & USD-->
+                        <WalletBalance
+                            :balance="balance"
+                            :shieldBalance="shieldBalance"
+                            :pendingShieldBalance="pendingShieldBalance"
+                            :immatureBalance="immatureBalance"
+                            :immatureColdBalance="immatureColdBalance"
+                            :isHdWallet="activeWallet.isHD"
+                            :isViewOnly="activeWallet.isViewOnly"
+                            :isEncrypted="activeVault?.isEncrypted ?? false"
+                            :isImported="activeWallet.isImported"
+                            :needsToEncrypt="needsToEncrypt"
+                            @displayLockWalletModal="displayLockWalletModal()"
+                            @restoreWallet="restoreWallet()"
+                            :isHardwareWallet="activeWallet.isHardwareWallet"
+                            :currency="currency"
+                            :price="price"
+                            :displayDecimals="displayDecimals"
+                            :shieldEnabled="hasShield"
+                            @send="showTransferMenu = true"
+                            @exportPrivKeyOpen="showExportModal = true"
+                            :publicMode="activeWallet.publicMode"
+                            class="col-12 p-0 mb-2"
+                        />
+                        <WalletButtons class="col-12 p-0 md-5" />
+                        <Activity
+                            class="col-12 p-0 mb-5"
+                            title="Activity"
+                            :rewards="false"
+                        />
+                    </div>
                 </div>
             </div>
+            <TransferMenu
+                :show="showTransferMenu"
+                :publicMode="activeWallet.publicMode"
+                :price="price"
+                :currency="currency"
+                v-model:amount="transferAmount"
+                :desc="transferDescription"
+                v-model:address="transferAddress"
+                @openQrScan="openSendQRScanner()"
+                @close="showTransferMenu = false"
+                @send="send"
+                @max-balance="getMaxBalance"
+            />
         </div>
-        <TransferMenu
-            :show="showTransferMenu"
-            :publicMode="wallet.publicMode"
-            :price="price"
-            :currency="currency"
-            v-model:amount="transferAmount"
-            :desc="transferDescription"
-            v-model:address="transferAddress"
-            @openQrScan="openSendQRScanner()"
-            @close="showTransferMenu = false"
-            @send="send"
-            @max-balance="getMaxBalance"
-        />
     </div>
     <RestoreWallet
         :show="showRestoreWallet"
         :reason="restoreWalletReason"
-        :wallet="wallet"
+        :wallet="activeWallet"
         @close="showRestoreWallet = false"
     />
 </template>

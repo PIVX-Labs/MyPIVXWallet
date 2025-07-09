@@ -1,18 +1,16 @@
 <script setup>
-import pLogo from '../../assets/p_logo.svg';
-import Modal from '../Modal.vue';
 import { generateMnemonic } from 'bip39';
 import { translation } from '../i18n.js';
 import { ref, watch, toRefs } from 'vue';
-import { useWallet } from '../composables/use_wallet.js';
 import newWalletIcon from '../../assets/icons/icon-new-wallet.svg';
-import Password from '../Password.vue';
+import CreateWalletModal from './import_modals/CreateWalletModal.vue';
 import { getNetwork } from '../network/network_manager.js';
 
 const emit = defineEmits(['importWallet']);
 const showModal = ref(false);
 const mnemonic = ref('');
 const passphrase = ref('');
+const label = ref('');
 
 const props = defineProps({
     advancedMode: Boolean,
@@ -20,33 +18,29 @@ const props = defineProps({
 });
 const { advancedMode, importLock } = toRefs(props);
 
-async function informUserOfMnemonic() {
-    return await new Promise((res, _) => {
-        showModal.value = true;
-        const unwatch = watch(showModal, () => {
-            if (!showModal.value) {
-                unwatch();
-                res(passphrase.value);
-            }
-        });
-    });
-}
-
-async function generateWallet() {
-    if (importLock.value) return;
-    mnemonic.value = generateMnemonic();
+watch(showModal, () => {
+    if (!showModal.value) {
+        // Erase mnemonic and passphrase from memory, just in case
+        mnemonic.value = '';
+        passphrase.value = '';
+    }
+});
+async function createWallet() {
     const network = getNetwork();
-
-    await informUserOfMnemonic();
     emit(
         'importWallet',
         mnemonic.value,
         passphrase.value,
+        label.value,
         await network.getBlockCount()
     );
-    // Erase mnemonic and passphrase from memory, just in case
-    mnemonic.value = '';
-    passphrase.value = '';
+    showModal.value = false;
+}
+
+function generateWallet() {
+    if (importLock.value) return;
+    mnemonic.value = generateMnemonic();
+    showModal.value = true;
 }
 </script>
 
@@ -69,58 +63,13 @@ async function generateWallet() {
             </div>
         </div>
     </div>
-    <Teleport to="body">
-        <modal :show="showModal" @close="showModal = false">
-            <template #body>
-                <p class="modal-label"></p>
-                <div class="auto-fit">
-                    <span v-html="translation.thisIsYourSeed"></span>
-                    <b>
-                        <div
-                            translate="no"
-                            class="seed-phrase noselect notranslate"
-                        >
-                            {{ mnemonic }}
-                        </div>
-                    </b>
-                    <br />
-                    <span v-html="translation.writeDownSeed"></span>
-                    <br />
-                    <span v-html="translation.doNotShareWarning"> </span>
-                    <br />
-                    <b> {{ translation.doNotShare }} </b>
-                    <br />
-                    <br />
-                    <a
-                        href="https://www.ledger.com/blog/how-to-protect-your-seed-phrase"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                    >
-                        <i v-html="translation.digitalStoreNotAdvised"></i>
-                    </a>
-                    <br />
-                    <div v-if="advancedMode">
-                        <br />
-                        <Password
-                            v-model:password="passphrase"
-                            testid="passPhrase"
-                            :placeholder="translation.optionalPassphrase"
-                        />
-                    </div>
-                </div>
-            </template>
-            <template #footer>
-                <center>
-                    <button
-                        type="button"
-                        class="pivx-button-big"
-                        @click="showModal = false"
-                        data-testid="seedphraseModal"
-                    >
-                        {{ translation.writtenDown }}
-                    </button>
-                </center>
-            </template>
-        </modal>
-    </Teleport>
+    <CreateWalletModal
+        :show="showModal"
+        :seed="mnemonic"
+        @close="showModal = false"
+        @submit="createWallet()"
+        :advanced-mode="advancedMode"
+        v-model:passphrase="passphrase"
+        v-model:label="label"
+    />
 </template>
