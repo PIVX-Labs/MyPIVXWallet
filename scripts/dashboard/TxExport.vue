@@ -1,15 +1,15 @@
 <script setup>
-import { useWallet } from '../composables/use_wallet';
+import { useWallets } from '../composables/use_wallet';
 import Modal from '../Modal.vue';
 import { KoinlyExport } from '../tx_export/koinly_export.js';
 import { ref } from 'vue';
 import { translation } from '../i18n.js';
 
-const wallet = useWallet();
+const { activeWallet: wallet } = useWallets();
 const showConfirmationModal = ref(false);
 
 function exportToCsv() {
-    const koinlyExport = new KoinlyExport(wallet.historicalTxs);
+    const koinlyExport = new KoinlyExport(wallet.value.historicalTxs);
     const csvBlob = new Blob([koinlyExport.getCsv()], { type: 'text/csv' });
 
     const csvURL = URL.createObjectURL(csvBlob);
