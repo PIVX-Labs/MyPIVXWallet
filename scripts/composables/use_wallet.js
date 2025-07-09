@@ -467,6 +467,11 @@ export const useWallets = defineStore('wallets', () => {
         removeVault: async (v) => {
             const database = await Database.getInstance();
             await database.removeVault(v.defaultKeyToExport);
+            for (const wallet of v.wallets) {
+                await database.removeAccount({
+                    publicKey: wallet.getKeyToExport(),
+                });
+            }
             vaults.value = vaults.value.filter(
                 (vault) => vault.defaultKeyToExport !== v.defaultKeyToExport
             );
