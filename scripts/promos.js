@@ -633,7 +633,7 @@ export async function sweepPromoCode() {
             ' ' +
             cChainParams.current.TICKER +
             '!</b>';
-        resetRedeemPromo(15);
+        resetRedeemPromo(5);
     } else {
         // Most likely; this TX was claimed very recently and a mempool conflict occurred
         doms.domRedeemCodeResults.innerHTML =
