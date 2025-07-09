@@ -8,7 +8,7 @@ import { getNetwork } from './network/network_manager.js';
 import { scanQRCode } from './scanner.js';
 import { createAndSendTransaction } from './legacy.js';
 import { UTXO, COutpoint } from './transaction.js';
-import { wallet } from './wallet.js';
+import { activeWallet } from './wallet.js';
 import { LegacyMasterKey } from './masterkey.js';
 import { deriveAddress } from './encoding.js';
 import { getP2PKHScript } from './script.js';
@@ -268,7 +268,10 @@ export async function createPromoCode(strCode, nAmount, fAddRandomness = true) {
         (a, b) => a + b.amount * COIN,
         0
     );
-    if (wallet.balance - nReservedBalance < nAmount * COIN + PROMO_FEE * 2) {
+    if (
+        activeWallet.balance - nReservedBalance <
+        nAmount * COIN + PROMO_FEE * 2
+    ) {
         return createAlert(
             'warning',
             tr(ALERTS.PROMO_NOT_ENOUGH, [
@@ -489,7 +492,7 @@ export async function updatePromoCreationTick(fRecursive = false) {
             const strAddress = deriveAddress({ pkBytes: cThread.thread.key });
 
             // Ensure the wallet is unlocked
-            if (wallet.isViewOnly()) {
+            if (activeWallet.isViewOnly()) {
                 $('#redeemCodeModal').modal('hide');
                 if (await restoreWallet(translation.walletUnlockPromo)) {
                     // Unlocked! Re-show the promo UI and continue
@@ -502,7 +505,7 @@ export async function updatePromoCreationTick(fRecursive = false) {
             }
 
             // Send the fill transaction if unlocked
-            if (!wallet.isViewOnly() || wallet.isHardwareWallet()) {
+            if (!activeWallet.isViewOnly() || activeWallet.isHardwareWallet()) {
                 const res = await createAndSendTransaction({
                     address: strAddress,
                     amount: Math.round(cThread.amount * COIN + PROMO_FEE),

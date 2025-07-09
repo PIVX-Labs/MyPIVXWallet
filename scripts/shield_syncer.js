@@ -71,7 +71,7 @@ export class BinaryShieldSyncer extends ShieldSyncer {
     async #save() {
         await this.#database.setShieldSyncData({
             lastSyncedBlock: this.#lastSyncedBlock,
-            shieldData: new Uint8Array([...this.#reader.getReadBuffer()]),
+            shieldData: this.#reader.getReadBuffer(),
         });
     }
 
