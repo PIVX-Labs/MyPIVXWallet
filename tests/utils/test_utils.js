@@ -39,8 +39,7 @@ PIVXShield.prototype.proverIsLoaded = vi.fn(() => true);
  */
 async function setUpWallet(masterKey, includeShield) {
     const mempool = new Mempool();
-    const wallet = new Wallet({ nAccount: 0, isMainWallet: false, mempool });
-    await wallet.setMasterKey({ mk: masterKey });
+    const wallet = new Wallet({ nAccount: 0, mempool, masterKey });
     await wallet.sync();
     if (includeShield) {
         // TODO: shield sync is a bit problematic and a better plan to mock it is needed
