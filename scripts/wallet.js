@@ -1065,6 +1065,9 @@ export class Wallet {
                 shieldData: null,
                 lastSyncedBlock: null,
             });
+            // Try to rotate networks to see if another RPC/explorer has the correct data
+            getNetwork().rotateNetworks();
+
             createAlert('warning', translation.badSaplingRoot, 5000);
 
             this.#mempool = new Mempool();
