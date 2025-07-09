@@ -575,9 +575,9 @@ export function switchSettings(page) {
 }
 
 export async function resync() {
-    if (wallet.isSynced) {
+    if (activeWallet.isSynced) {
         createAlert('info', translation.resyncing);
-        await wallet.resync();
+        await activeWallet.resync();
     } else {
         createAlert('warning', translation.cannotResync);
     }
