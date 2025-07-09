@@ -7,6 +7,7 @@ import { sanitizeHTML } from '../misc';
 import BottomPopup from '../BottomPopup.vue';
 import qrIcon from '../../assets/icons/icon-qr-code.svg';
 import addressbookIcon from '../../assets/icons/icon-address-book.svg';
+import { createAlert } from '../alerts/alert.js';
 
 const emit = defineEmits([
     'send',
@@ -54,13 +55,16 @@ watch(amount, () => syncAmountCurrency());
 function send() {
     // TODO: Maybe in the future do one of those cool animation that set the
     // Input red
-    if (address.value && amount.value)
-        emit(
-            'send',
-            sanitizeHTML(address.value),
-            amount.value,
-            !props.publicMode
-        );
+    if (!address.value) {
+        createAlert('warning', translation.transactionNeedsAddress, 5000);
+        return;
+    }
+    if (!amount.value) {
+        createAlert('warning', translation.transactionNeedsAmount, 5000);
+        return;
+    }
+
+    emit('send', sanitizeHTML(address.value), amount.value, !props.publicMode);
 }
 
 function syncAmountCurrency() {
