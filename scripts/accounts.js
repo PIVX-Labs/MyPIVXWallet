@@ -7,12 +7,14 @@ export class Account {
      * @param {Object} accountData - The account data.
      * @param {String} accountData.publicKey - The public key.
      * @param {String} [accountData.encWif] - The encrypted WIF.
+     * @param {String} [accountData.encSeed] - The encrypted Seed.
      * @param {Array<Object>} [accountData.localProposals] - The local proposals.
      * @param {Array<import('./contact-book.js').Contact>} [accountData.contacts] - The Contacts saved in this account.
      * @param {String} [accountData.name] - The Contact Name of the account.
      * @param {String} [accountData.shieldData] - Shield data necessary to load shielding
      * @param {String} [accountData.encExtsk] - Encrypted extended spending key
      * @param {boolean} [accountData.isHardware] - Whether this is a hardware wallet
+     * @param {string} [accountData.vaultKey] - Key of a vault.
      */
     constructor(accountData) {
         // Keys take the Constructor as priority, but if missing, default to their "Type" in empty form for type-safety
@@ -24,6 +26,7 @@ export class Account {
         this.shieldData = accountData?.shieldData || '';
         this.encExtsk = accountData?.encExtsk || '';
         this.isHardware = accountData?.isHardware || false;
+        this.vaultKey = accountData?.vaultKey || '';
     }
 
     /** @type {String} The public key. */
