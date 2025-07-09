@@ -23,21 +23,23 @@ describe('database tests', () => {
         return vi.unstubAllGlobals;
     });
     it('stores account correctly', async () => {
+        const publicKey = 'test1';
         const db = await Database.create('test');
         const account = new Account({
-            publicKey: 'test1',
+            publicKey,
         });
         await db.addAccount(account);
-        expect(await db.getAccount()).toStrictEqual(account);
+        expect(await db.getAccount(publicKey)).toStrictEqual(account);
         await db.updateAccount(
             new Account({
+                publicKey,
                 encWif: 'newWIF!',
                 localProposals: ['prop1', 'prop2'],
             })
         );
-        expect((await db.getAccount()).encWif).toBe('newWIF!');
-        expect((await db.getAccount()).publicKey).toBe('test1');
-        expect((await db.getAccount()).localProposals).toStrictEqual([
+        expect((await db.getAccount(publicKey)).encWif).toBe('newWIF!');
+        expect((await db.getAccount(publicKey)).publicKey).toBe('test1');
+        expect((await db.getAccount(publicKey)).localProposals).toStrictEqual([
             'prop1',
             'prop2',
         ]);
@@ -45,11 +47,12 @@ describe('database tests', () => {
         // Setting localProposals as empty doesn't overwrite the array
         await db.updateAccount(
             new Account({
+                publicKey,
                 encWif: 'newWIF2!',
                 localProposals: [],
             })
         );
-        expect((await db.getAccount()).localProposals).toStrictEqual([
+        expect((await db.getAccount(publicKey)).localProposals).toStrictEqual([
             'prop1',
             'prop2',
         ]);
@@ -57,16 +60,17 @@ describe('database tests', () => {
         // Unless `allowDeletion` is set to true
         await db.updateAccount(
             new Account({
+                publicKey,
                 encWif: 'newWIF2!',
                 localProposals: [],
             }),
             true
         );
-        expect((await db.getAccount()).localProposals).toHaveLength(0);
+        expect((await db.getAccount(publicKey)).localProposals).toHaveLength(0);
 
-        await db.removeAccount({ publicKey: 'test1' });
+        await db.removeAccount({ publicKey });
 
-        expect(await db.getAccount()).toBeNull();
+        expect(await db.getAccount(publicKey)).toBeNull();
     });
 
     it('stores transaction correctly', async () => {
@@ -75,22 +79,26 @@ describe('database tests', () => {
             '01000000019e07debe5a00f18f9343b270dc7d408c3116e605dd937eb432e1cab23ea407fa010000006d483045022100e4ecab97c5c733c9d883046653045fa269031a89812921ae2bb956e063b911d9022053413e4c8e0aae5ac580bbd6c9a3eb08222ecb0ab6821a96d3389872a304ec3a01015121025559a792b8805da7f5d61237a45d7e70c9b3133a176e755e7e90514e37673720ffffffff03000000000000000000900a44e8100000003376a97b63d114490254a35e71df73197db35a8d4c5f50068cd1f26714f250ed27afc2f51164c67501471a52661cd8f62f6888ac0046c323000000001976a914074610f922bee2ec55dc15a1e335e8ca9cec991388ac00000000',
             '01000000010000000000000000000000000000000000000000000000000000000000000000ffffffff05038bce3f00ffffffff0100000000000000000000000000',
         ].map((h) => Transaction.fromHex(h));
+        const xpub = 'xpubtest';
         const db = await Database.create('test');
         for (const tx of transactions) {
-            await db.storeTx(tx);
+            await db.storeTx(tx, xpub);
         }
         expect(
-            (await db.getTxs()).sort((a, b) => a.txid.localeCompare(b.txid))
+            (await db.getTxs(xpub)).sort((a, b) => a.txid.localeCompare(b.txid))
         ).toStrictEqual(
             transactions.sort((a, b) => a.txid.localeCompare(b.txid))
         );
         // If we store a tx multiple times, it won't repeat the transaction
         await db.storeTx(transactions[0]);
         expect(
-            (await db.getTxs()).sort((a, b) => a.txid.localeCompare(b.txid))
+            (await db.getTxs(xpub)).sort((a, b) => a.txid.localeCompare(b.txid))
         ).toStrictEqual(
             transactions.sort((a, b) => a.txid.localeCompare(b.txid))
         );
+
+        // If we get another xpub, it should be empty
+        expect(await db.getTxs('otherxpub')).toHaveLength(0);
     });
 
     it('stores masternodes correctly', async () => {
@@ -191,8 +199,10 @@ describe('database tests', () => {
 
     it('throws when calling addAccount twice', async () => {
         const db = await Database.create('test');
-        const account = new Account();
-        db.addAccount(account);
+        const account = new Account({
+            publicKey: 'test1',
+        });
+        await db.addAccount(account);
         expect(() => db.addAccount(account)).rejects.toThrow(
             /account already exists/i
         );
@@ -214,18 +224,19 @@ describe('database tests', () => {
     });
 
     it('is isolated between different instances', async () => {
+        const publicKey = 'test1';
         const db = await Database.create('test');
         const db2 = await Database.create('test2');
         // Initially, both accounts are null
-        expect(await db.getAccount()).toBe(null);
-        expect(await db2.getAccount()).toBe(null);
+        expect(await db.getAccount(publicKey)).toBe(null);
+        expect(await db2.getAccount(publicKey)).toBe(null);
         const account = new Account({
             publicKey: 'test1',
         });
         // Let's add an account to the first db
         await db.addAccount(account);
         // First DB has the account, the second one is undefined
-        expect((await db.getAccount())?.publicKey).toBe('test1');
-        expect((await db2.getAccount())?.publicKey).toBeUndefined();
+        expect((await db.getAccount(publicKey))?.publicKey).toBe('test1');
+        expect((await db2.getAccount(publicKey))?.publicKey).toBeUndefined();
     });
 });

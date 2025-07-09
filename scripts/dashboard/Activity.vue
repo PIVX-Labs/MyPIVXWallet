@@ -1,7 +1,6 @@
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { useNetwork } from '../composables/use_network.js';
-import { useWallet } from '../composables/use_wallet.js';
 import { cChainParams } from '../chain_params.js';
 import { translation } from '../i18n.js';
 import { Database } from '../database.js';
@@ -12,12 +11,10 @@ import iCheck from '../../assets/icons/icon-check.svg';
 import iHourglass from '../../assets/icons/icon-hourglass.svg';
 import { blockCount } from '../global.js';
 import { beautifyNumber } from '../misc.js';
+import { useWallets } from '../composables/use_wallet';
 import TxExport from './TxExport.vue';
 import { timeToDate } from '../utils.js';
-
-const wallet = useWallet();
-
-const wallet = useWallet();
+import { storeToRefs } from 'pinia';
 
 const props = defineProps({
     title: String,
@@ -31,6 +28,7 @@ const isHistorySynced = ref(false);
 const rewardAmount = ref(0);
 const ticker = computed(() => cChainParams.current.TICKER);
 const network = useNetwork();
+const { activeWallet } = storeToRefs(useWallets());
 function getActivityUrl(tx) {
     return network.explorerUrl + '/tx/' + tx.id;
 }
@@ -109,9 +107,10 @@ function txSelfMap(amount, shieldAmount) {
 }
 
 function updateReward() {
+    if (!activeWallet.value) return;
     if (!props.rewards) return;
     let res = 0;
-    for (const tx of wallet.historicalTxs) {
+    for (const tx of activeWallet.value.historicalTxs) {
         if (tx.type !== HistoricalTxType.STAKE) continue;
         res += tx.amount;
     }
@@ -119,6 +118,7 @@ function updateReward() {
 }
 
 async function update(txToAdd = 0) {
+    if (!activeWallet.value) return;
     // Prevent the user from spamming refreshes
     if (updating.value) return;
     isHistorySynced.value = false;
@@ -130,7 +130,7 @@ async function update(txToAdd = 0) {
     // If there are less than 10 txs loaded, append rather than update the list
     if (txCount < 10 && txToAdd == 0) txToAdd = 10;
 
-    const historicalTxs = wallet.historicalTxs;
+    const historicalTxs = activeWallet.value.historicalTxs;
 
     let i = 0;
     let found = 0;
@@ -164,7 +164,7 @@ async function parseTXs(arrTXs) {
     const newTxs = [];
 
     const cDB = await Database.getInstance();
-    const cAccount = await cDB.getAccount();
+    const cAccount = await cDB.getAccount(activeWallet.value.getKeyToExport());
 
     for (const cTx of arrTXs) {
         // Unconfirmed Txs are simply 'Pending'
@@ -193,7 +193,10 @@ async function parseTXs(arrTXs) {
                 amountToShow = descriptor.amount;
             } else {
                 let arrAddresses = cTx.receivers
-                    .map((addr) => [wallet.isOwnAddress(addr), addr])
+                    .map((addr) => [
+                        activeWallet.value.isOwnAddress(addr),
+                        addr,
+                    ])
                     .filter(([isOwnAddress, _]) => {
                         return cTx.type === HistoricalTxType.RECEIVED
                             ? isOwnAddress
@@ -259,7 +262,7 @@ const rewardsText = computed(() => {
 });
 
 watch(
-    () => wallet.historicalTxs,
+    () => activeWallet.value.historicalTxs,
     async () => {
         await update();
         updateReward();

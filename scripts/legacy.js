@@ -3,7 +3,7 @@
 
 import { ALERTS, translation, tr } from './i18n.js';
 import { doms, restoreWallet } from './global.js';
-import { wallet, getNewAddress } from './wallet.js';
+import { activeWallet, getNewAddress } from './wallet.js';
 import { cChainParams, COIN, COIN_DECIMALS } from './chain_params.js';
 import { generateMasternodePrivkey, confirmPopup } from './misc.js';
 import { Database } from './database.js';
@@ -25,7 +25,7 @@ export async function createAndSendTransaction({
     changeAddress = '',
     delegationOwnerAddress,
 }) {
-    const tx = wallet.createTransaction(address, amount, {
+    const tx = activeWallet.createTransaction(address, amount, {
         isDelegation,
         useDelegatedInputs,
         delegateChange,
@@ -34,20 +34,20 @@ export async function createAndSendTransaction({
         changeAddress,
         returnAddress: delegationOwnerAddress,
     });
-    if (!wallet.isHardwareWallet()) await wallet.sign(tx);
+    if (!activeWallet.isHardwareWallet()) await activeWallet.sign(tx);
     else {
         const res = await LedgerController.getInstance().signTransaction(
-            wallet,
+            activeWallet,
             tx
         );
         if (!res) return;
     }
     const res = await getNetwork().sendTransaction(tx.serialize());
     if (res) {
-        await wallet.addTransaction(tx);
+        await activeWallet.addTransaction(tx);
         return { ok: true, txid: tx.txid };
     }
-    wallet.discardTransaction(tx);
+    activeWallet.discardTransaction(tx);
     return { ok: false };
 }
 
@@ -57,14 +57,14 @@ export async function createAndSendTransaction({
 export async function createMasternode() {
     // Ensure the wallet is unlocked
     if (
-        wallet.isViewOnly() &&
+        activeWallet.isViewOnly() &&
         !(await restoreWallet(translation.walletUnlockCreateMN))
     )
         return;
 
     // Generate the Masternode collateral
     const [address] = await getNewAddress({
-        verify: wallet.isHardwareWallet(),
+        verify: activeWallet.isHardwareWallet(),
         nReceiving: 1,
     });
     const result = await createAndSendTransaction({

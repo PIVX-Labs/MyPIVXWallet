@@ -16,9 +16,11 @@ export class ParsedSecret {
      * @type {PIVXShield} shield - Shield object associated with the secret. Only provided if the secret contains a seed
      */
     shield;
-    constructor(masterKey, shield = null) {
+    seed;
+    constructor(masterKey, shield = null, seed = null) {
         this.masterKey = masterKey;
         this.shield = shield;
+        this.seed = seed;
     }
 
     /**
@@ -67,7 +69,8 @@ export class ParsedSecret {
                         seed,
                         // hardcoded value considering the last checkpoint, this is good both for mainnet and testnet
                         // TODO: take the wallet creation height in input from users
-                        blockHeight: 4200000,
+                        blockHeight:
+                            cChainParams.current.defaultStartingShieldBlock,
                         coinType: cChainParams.current.BIP44_TYPE,
                         // TODO: Change account index once account system is made
                         accountIndex: 0,
@@ -77,7 +80,8 @@ export class ParsedSecret {
                         new HdMasterKey({
                             seed,
                         }),
-                        pivxShield
+                        pivxShield,
+                        seed
                     );
                 },
             },
