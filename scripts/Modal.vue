@@ -3,6 +3,7 @@ const props = defineProps({
     show: Boolean,
     modalClass: String,
     centered: Boolean,
+    width: Number,
 });
 </script>
 
@@ -17,7 +18,11 @@ const props = defineProps({
         "
     >
         <div v-if="show" class="modal-mask black-text">
-            <div class="modal-dialog" role="document">
+            <div
+                class="modal-dialog"
+                :style="{ width: props.width && `${props.width}px` }"
+                role="document"
+            >
                 <div
                     class="modal-content exportKeysModalColor"
                     :class="modalClass"

@@ -10,6 +10,7 @@ import Flipdown from './Flipdown.vue';
 import ProposalCreateModal from './ProposalCreateModal.vue';
 import MonthlyBudget from './MonthlyBudget.vue';
 import BudgetAllocated from './BudgetAllocated.vue';
+import VotingGroupList from './voting_group/VotingGroupList.vue';
 import { hasEncryptedWallet } from '../wallet';
 import { sanitizeHTML } from '../misc';
 import { ALERTS, tr, translation } from '../i18n';
@@ -18,12 +19,14 @@ import { useSettings } from '../composables/use_settings';
 import { getNetwork } from '../network/network_manager.js';
 import { useMasternode } from '../composables/use_masternode';
 import { useAlerts } from '../composables/use_alerts.js';
+import { useGroups } from '../composables/use_groups';
 const { createAlert } = useAlerts();
 
 const showCreateProposalModal = ref(false);
 
 const { activeWallet: wallet } = useWallets();
 const settings = useSettings();
+const { selectedGroup } = storeToRefs(useGroups());
 const { localProposals, masternodes } = storeToRefs(useMasternode());
 const { advancedMode } = storeToRefs(settings);
 const {
@@ -34,8 +37,10 @@ const {
 } = storeToRefs(wallet);
 const proposals = ref([]);
 const contestedProposals = ref([]);
+const showSelectMasternode = ref(false);
 const nextSuperBlock = ref(0);
 const masternodeCount = ref(1);
+const selectedMasternodes = ref([]);
 const allocatedBudget = computed(() => {
     const proposalValidator = new ProposalValidator(masternodeCount.value);
 
@@ -208,11 +213,14 @@ function deleteProposal(proposal) {
 
 async function vote(proposal, voteCode) {
     let successfulVotes = 0;
-    if (!masternodes.value.length) {
-        createAlert(ALERTS.MN_ACCESS_BEFORE_VOTE, 6000);
+    const votingMns = selectedGroup.value.masternodes.map((m) =>
+        masternodes.value.find((m1) => m1.mnPrivateKey === m)
+    );
+    if (!votingMns.length) {
+        createAlert('warning', ALERTS.MN_ACCESS_BEFORE_VOTE, 6000);
         return;
     }
-    for (const mn of masternodes.value) {
+    for (const mn of votingMns) {
         if ((await mn.getStatus()) !== 'ENABLED') {
             continue;
         }
@@ -237,7 +245,7 @@ async function vote(proposal, voteCode) {
         successfulVotes === 0 ? 'warning' : 'success',
         tr(translation.votedMultiMn, [
             { successfulVotes },
-            { totalVotes: masternodes.value.length },
+            { totalVotes: votingMns.length },
         ]),
         6000
     );
@@ -301,8 +309,20 @@ async function vote(proposal, voteCode) {
             </div>
         </div>
 
-        <div class="pivx-button-small governAdd" @click="openCreateProposal()">
-            <i class="fas fa-plus"></i>
+        <div class="buttons-container">
+            <div
+                class="pivx-button-small govern-add"
+                @click="showSelectMasternode = true"
+                v-if="masternodes.length || true"
+            >
+                <i class="fas fa-pen"></i>
+            </div>
+            <div
+                class="pivx-button-small govern-add"
+                @click="openCreateProposal()"
+            >
+                <i class="fas fa-plus"></i>
+            </div>
         </div>
 
         <div class="dcWallet-activity" style="padding: 16px">
@@ -348,4 +368,25 @@ async function vote(proposal, voteCode) {
         :wallet="wallet"
         @close="showRestoreWallet = false"
     />
+
+    <VotingGroupList
+        :masternodes="masternodes"
+        v-if="showSelectMasternode"
+        v-model:selectedMasternodes="selectedMasternodes"
+        @close="showSelectMasternode = false"
+    />
 </template>
+<style>
+.buttons-container {
+    display: flex;
+    position: absolute;
+    right: 0px;
+    margin-top: 6px;
+}
+
+.govern-add {
+    width: 31px;
+    padding: 7px 10px;
+    margin-top: 6px;
+}
+</style>
