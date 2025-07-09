@@ -86,6 +86,7 @@ export async function start() {
         ),
         domRedeemCodeGiftIcon: document.getElementById('redeemCodeGiftIcon'),
         domRedeemCodeETA: document.getElementById('redeemCodeETA'),
+        domRedeemCodeResults: document.getElementById('redeemCodeResults'),
         domRedeemCodeProgress: document.getElementById('redeemCodeProgress'),
         domRedeemCodeInputBox: document.getElementById('redeemCodeInputBox'),
         domRedeemCodeInput: document.getElementById('redeemCodeInput'),
