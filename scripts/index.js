@@ -20,6 +20,7 @@ export {
     playMusic,
     doms,
     switchSettings,
+    resync,
 } from './global.js';
 export { getNewAddress } from './wallet.js';
 export {
