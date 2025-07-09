@@ -4,7 +4,7 @@ import {
     dashboard,
     refreshChainData,
 } from './global.js';
-import { wallet, hasEncryptedWallet } from './wallet.js';
+import { activeWallet, hasEncryptedWallet } from './wallet.js';
 import { cChainParams } from './chain_params.js';
 import { confirmPopup } from './misc.js';
 import {
@@ -20,6 +20,7 @@ import { getEventEmitter } from './event_bus.js';
 import countries from 'country-locale-map/countries.json';
 import { getNetwork } from './network/network_manager.js';
 import { getRandomElement } from './utils.js';
+import { useWallets } from './composables/use_wallet.js';
 
 // --- Default Settings
 /** A mode that emits verbose console info for internal MPW operations */
@@ -327,7 +328,7 @@ async function fillCurrencySelect(mapCurrencies) {
  * Log out from the current wallet
  */
 export async function logOut() {
-    if (wallet.isSyncing) {
+    if (activeWallet.isSyncing) {
         createAlert('warning', `${ALERTS.WALLET_NOT_SYNCED}`, 3000);
         return;
     }
@@ -348,10 +349,10 @@ export async function logOut() {
     `,
     });
     if (!fContinue) return;
-    const database = await Database.getInstance();
-    await database.removeAccount({ publicKey: null });
+    const wallets = useWallets();
 
-    getEventEmitter().emit('toggle-network');
+    await wallets.removeVault(wallets.activeVault);
+
     updateLogOutButton();
     createAlert('success', translation.accountDeleted, 3000);
 }
@@ -362,7 +363,7 @@ export async function logOut() {
 export async function toggleTestnet(
     wantTestnet = !cChainParams.current.isTestnet
 ) {
-    if (wallet.isLoaded() && !wallet.isSynced) {
+    if (activeWallet.isLoaded() && !activeWallet.isSynced) {
         createAlert('warning', `${ALERTS.WALLET_NOT_SYNCED}`, 3000);
         doms.domTestnetToggler.checked = cChainParams.current.isTestnet;
         return;
@@ -370,7 +371,7 @@ export async function toggleTestnet(
     const cNextNetwork = wantTestnet ? cChainParams.testnet : cChainParams.main;
 
     // If the current wallet is not saved, we'll ask the user for confirmation, since they'll lose their wallet if they switch with an unsaved wallet!
-    if (wallet.isLoaded() && !(await hasEncryptedWallet())) {
+    if (activeWallet.isLoaded() && !(await hasEncryptedWallet())) {
         const fContinue = await confirmPopup({
             title: tr(translation.netSwitchUnsavedWarningTitle, [
                 { network: cChainParams.current.name },
