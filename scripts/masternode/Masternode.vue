@@ -1,8 +1,8 @@
 <script setup>
 import { useMasternode } from '../composables/use_masternode.js';
 import { storeToRefs } from 'pinia';
+import { useWallets } from '../composables/use_wallet';
 import NewMasternodeList from './NewMasternodeList.vue';
-import { useWallet } from '../composables/use_wallet';
 import Masternode from '../masternode.js';
 import RestoreWallet from '../dashboard/RestoreWallet.vue';
 import { cChainParams } from '../chain_params';
@@ -13,6 +13,7 @@ import { translation, ALERTS } from '../i18n.js';
 import { generateMasternodePrivkey, parseIpAddress } from '../misc';
 import { useAlerts } from '../composables/use_alerts.js';
 import { COutpoint } from '../transaction.js';
+import { valuesToComputed } from '../utils.js';
 
 const { createAlert } = useAlerts();
 
@@ -20,35 +21,44 @@ const { createAlert } = useAlerts();
  * @type{{masternodes: import('vue').Ref<import('../masternode.js').default[]>}}
  */
 const { masternodes } = storeToRefs(useMasternode());
-const wallet = useWallet();
-const { isSynced, balance, isViewOnly, isHardwareWallet } = storeToRefs(wallet);
+const { activeWallet: wallet, activeVault, vaults } = storeToRefs(useWallets());
 const showRestoreWallet = ref(false);
 const showMasternodePrivateKey = ref(false);
 const masternodePrivKey = ref('');
 // Array of possible masternode UTXOs
-const possibleUTXOs = ref(wallet.getMasternodeUTXOs());
+const possibleUTXOs = ref(wallet.value.getMasternodeUTXOs());
+
+const { balance, isViewOnly, isSynced, isHardwareWallet } =
+    valuesToComputed(wallet);
 
 watch(masternodes, (masternodes, oldValue) => {
-    for (const oldMn of oldValue) {
-        if (oldMn?.collateralTxId) {
-            wallet.unlockCoin(
-                new COutpoint({ txid: oldMn.collateralTxId, n: oldMn.outidx })
-            );
-        }
-    }
-    for (const masternode of masternodes) {
-        if (masternode?.collateralTxId) {
-            wallet.lockCoin(
-                new COutpoint({
-                    txid: masternode.collateralTxId,
-                    n: masternode.outidx,
-                })
-            );
+    for (const vault of vaults.value) {
+        for (const wallet of vault.wallets) {
+            for (const oldMn of oldValue) {
+                if (oldMn?.collateralTxId) {
+                    wallet.unlockCoin(
+                        new COutpoint({
+                            txid: oldMn.collateralTxId,
+                            n: oldMn.outidx,
+                        })
+                    );
+                }
+            }
+            for (const masternode of masternodes) {
+                if (masternode?.collateralTxId) {
+                    wallet.lockCoin(
+                        new COutpoint({
+                            txid: masternode.collateralTxId,
+                            n: masternode.outidx,
+                        })
+                    );
+                }
+            }
         }
     }
 });
 function updatePossibleUTXOs() {
-    possibleUTXOs.value = wallet.getMasternodeUTXOs();
+    possibleUTXOs.value = wallet.value.getMasternodeUTXOs();
 }
 
 onMounted(() => {
@@ -108,7 +118,7 @@ function importMasternode(privateKey, ip, utxo) {
     }
     masternodes.value.push(
         new Masternode({
-            walletPrivateKeyPath: wallet.getPath(utxo.script),
+            walletPrivateKeyPath: wallet.value.getPath(utxo.script),
             mnPrivateKey: privateKey,
             collateralTxId: utxo.outpoint.txid,
             outidx: utxo.outpoint.n,
@@ -118,8 +128,8 @@ function importMasternode(privateKey, ip, utxo) {
 }
 
 async function restoreWallet() {
-    if (!wallet.isEncrypted) return false;
-    if (wallet.isHardwareWallet) return true;
+    if (!activeVault.value.isEncrypted) return false;
+    if (wallet.value.isHardwareWallet) return true;
     showRestoreWallet.value = true;
     return await new Promise((res) => {
         watch(
@@ -138,8 +148,8 @@ async function createMasternode({ isVPS }) {
     if (!isHardwareWallet.value && isViewOnly.value && !(await restoreWallet()))
         return;
     console.log(cChainParams.current.collateralInSats);
-    const [address] = wallet.getNewAddress(1);
-    const res = await wallet.createAndSendTransaction(
+    const [address] = wallet.value.getNewAddress(1);
+    const res = await wallet.value.createAndSendTransaction(
         getNetwork(),
         address,
         cChainParams.current.collateralInSats

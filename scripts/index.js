@@ -22,7 +22,7 @@ export {
     switchSettings,
     resync,
 } from './global.js';
-export { wallet, getNewAddress } from './wallet.js';
+export { getNewAddress } from './wallet.js';
 export {
     logOut,
     toggleTestnet,
