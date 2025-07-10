@@ -1062,7 +1062,7 @@ export class Wallet {
             await this.#shield.getSaplingRoot()
         );
         // If explorer sapling root is different from ours, there must be a sync error
-        if (saplingRoot === networkSaplingRoot) {
+        if (saplingRoot !== networkSaplingRoot) {
             const db = await Database.getInstance();
 
             // Reset shield sync data, it might be corrupted
