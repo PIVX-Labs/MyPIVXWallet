@@ -142,12 +142,17 @@ export class Wallet {
         return hTx1.blockHeight >= hTx2.blockHeight;
     });
 
+    createdBlock;
+
     constructor({
         nAccount = 0,
         masterKey,
         shield,
         mempool = new Mempool(),
+        createdBlock = cChainParams.current.defaultStartingShieldBlock,
     } = {}) {
+        this.createdBlock = createdBlock;
+
         this.#nAccount = nAccount;
         this.#mempool = mempool;
         this.#mempool.setEmitter(() => {
@@ -1057,7 +1062,7 @@ export class Wallet {
             await this.#shield.getSaplingRoot()
         );
         // If explorer sapling root is different from ours, there must be a sync error
-        if (saplingRoot !== networkSaplingRoot) {
+        if (saplingRoot === networkSaplingRoot) {
             const db = await Database.getInstance();
 
             // Reset shield sync data, it might be corrupted
@@ -1121,8 +1126,7 @@ export class Wallet {
     }
 
     async #resetShield() {
-        // TODO: take the wallet creation height in input from users
-        await this.#shield.reloadFromCheckpoint(4_200_000);
+        await this.#shield.reloadFromCheckpoint(this.createdBlock);
         await this.#saveShieldOnDisk();
     }
 

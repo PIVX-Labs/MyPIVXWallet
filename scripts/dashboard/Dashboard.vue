@@ -107,7 +107,7 @@ async function importWallet({
     secret,
     password = '',
     label,
-    blockCount = 4_200_000,
+    blockCount = cChainParams.current.defaultStartingShieldBlock,
 }) {
     try {
         /**
@@ -166,6 +166,7 @@ async function importWallet({
                     masterKey: parsedSecret.masterKey,
                     shield: parsedSecret.shield,
                     seed: parsedSecret.seed,
+                    createdBlock: blockCount,
                     label:
                         label?.trim() ||
                         parsedSecret.masterKey
@@ -444,11 +445,19 @@ async function importFromDatabase() {
                     createAlert('warning', 'Failed to load shield!', 3000);
                 shield = pivxShield;
             }
-            ws.push(new Wallet({ nAccount: i++, masterKey, shield }));
+            ws.push(
+                new Wallet({
+                    nAccount: i++,
+                    masterKey,
+                    shield,
+                    createdBlock: vault.createdBlock,
+                })
+            );
         }
         const v = new Vault({
             wallets: ws,
             label: vault.label,
+            createdBlock: vault.createdBlock,
         });
 
         await wallets.addVault(v);

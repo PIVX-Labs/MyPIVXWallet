@@ -20,9 +20,8 @@ export class Database {
      * Version 6 = Filter unconfirmed txs (#415)
      * Version 7 = Store shield params in indexed db (#511)
      * Version 8 = Multi MNs (#517)
-    * Version 9 = Store shield syncing data in indexed db (#543)
-    * Version 10 = Multi account system (#542)
-    
+     * Version 9 = Store shield syncing data in indexed db (#543)
+     * Version 10 = Multi account system (#542)
      * @type {number}
      */
     static version = 10;
