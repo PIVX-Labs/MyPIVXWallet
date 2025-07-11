@@ -6,7 +6,7 @@ export class HistoricalTx {
      * @param {HistoricalTxType} type - The type of transaction.
      * @param {string} id - The transaction ID.
      * @param {Array<string>} receivers - The list of 'output addresses'.
-     * @param {Array<string>} shieldReceivers - The list of decrypted 'shield output addresses'.
+     * @param {Array<{recipient: string, memo: string}>} shieldReceivers - The list of decrypted 'shield output addresses'.
      * @param {number} time - The block time of the transaction.
      * @param {number} blockHeight - The block height of the transaction.
      * @param {number} amount - The transparent amount transacted, in coins.
