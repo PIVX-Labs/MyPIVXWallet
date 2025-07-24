@@ -120,6 +120,7 @@ masternodeStatusEnabled = "" # ENABLED
 masternodeStatusPreEnabled = "" # PRE_ENABLED
 masternodeStatusMissing = "" # MISSING
 masternodeStatusExpired = "" # EXPIRED
+failedToConnect = "" # Failed to connect to the PIVX node. Check your internet connection.
 accessWallet = "" # Access Wallet
 accessPivxLedgerWallet = "" # Access PIVX Ledger Wallet
 customWalletName = "" # Custom wallet name
