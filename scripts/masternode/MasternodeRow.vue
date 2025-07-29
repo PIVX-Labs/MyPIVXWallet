@@ -90,10 +90,10 @@ function translateStatus(status) {
         <td>
             <span class="mnLastSeen">{{ info.lastSeen }}</span>
         </td>
-        <td class="text-right" style="padding: 0px; padding-top: 11px">
+        <td class="text-right">
             <button
                 class="pivx-button-small"
-                style="height: 43px; width: 43px; padding-left: 13px"
+                style="height: 38px; width: 38px; padding-left: 10px;"
                 @click="showRestartConfirmation = true"
             >
                 <span class="buttoni-text">
@@ -102,7 +102,7 @@ function translateStatus(status) {
             </button>
             <button
                 class="pivx-button-small"
-                style="height: 43px; width: 43px; padding-left: 13px"
+                style="height: 38px; width: 38px; padding-left: 10px;"
                 @click="showDeleteConfirmation = true"
             >
                 <span class="buttoni-text">
