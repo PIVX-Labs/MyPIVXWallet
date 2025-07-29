@@ -128,6 +128,7 @@ describe('Transaction builder tests', () => {
                 address:
                     'ps1kw7d704cpvy4f5e5usk3xhykytxnjfk872fpty7ct6znvmdepsxq4s90p9a3arg0qg8tzjk7vkn',
                 value: 1000,
+                memo: 'Super secret memo',
             })
             .build();
         expect(tx).toStrictEqual(
@@ -138,6 +139,7 @@ describe('Transaction builder tests', () => {
                         address:
                             'ps1kw7d704cpvy4f5e5usk3xhykytxnjfk872fpty7ct6znvmdepsxq4s90p9a3arg0qg8tzjk7vkn',
                         value: 1000,
+                        memo: 'Super secret memo',
                     },
                 ],
             })
@@ -190,6 +192,7 @@ describe('Transaction builder tests', () => {
                         address:
                             'ps1kw7d704cpvy4f5e5usk3xhykytxnjfk872fpty7ct6znvmdepsxq4s90p9a3arg0qg8tzjk7vkn',
                         value: 1000,
+                        memo: '',
                     },
                 ],
                 vin: [
