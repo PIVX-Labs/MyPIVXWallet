@@ -187,7 +187,7 @@ async function parseTXs(arrTXs) {
         const cTxDate = new Date(cTx.time * 1000);
         const memos = cTx.shieldReceivers
             .map((s) => s.memo)
-            .filter((s) => s.length);
+            .filter((s) => s && s.length > 0);
 
         // Unconfirmed Txs are simply 'Pending'
         let strDate = 'Pending';
