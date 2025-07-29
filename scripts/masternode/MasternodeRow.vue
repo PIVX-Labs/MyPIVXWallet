@@ -93,7 +93,7 @@ function translateStatus(status) {
         <td class="text-right">
             <button
                 class="pivx-button-small"
-                style="height: 38px; width: 38px; padding-left: 10px;"
+                style="height: 38px; width: 38px; padding-left: 10px"
                 @click="showRestartConfirmation = true"
             >
                 <span class="buttoni-text">
@@ -102,7 +102,7 @@ function translateStatus(status) {
             </button>
             <button
                 class="pivx-button-small"
-                style="height: 38px; width: 38px; padding-left: 10px;"
+                style="height: 38px; width: 38px; padding-left: 10px"
                 @click="showDeleteConfirmation = true"
             >
                 <span class="buttoni-text">
