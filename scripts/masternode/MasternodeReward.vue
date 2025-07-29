@@ -56,7 +56,6 @@ function getActivityUrl(tx) {
                         <th scope="col" class="tx3">
                             {{ translation.amount }}
                         </th>
-                        <th scope="col" class="tx4"></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -85,6 +84,10 @@ function getActivityUrl(tx) {
                             </td>
 
                             <td>
+                                <i
+                                    class="fa-solid fa-gift"
+                                    style="padding-right: 5px; color: white"
+                                ></i>
                                 <span
                                     v-html="
                                         beautifyNumber(

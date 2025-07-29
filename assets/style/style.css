@@ -2881,6 +2881,7 @@ input {
     padding: 9px 20px 9px;
     border-bottom: 1px solid #ffffff1f;
     border-top: 0px;
+    align-content: center;
 }
 
 .stakingTx tbody tr {
