@@ -5,6 +5,7 @@ import CreateMasternodeModal from './CreateMasternodeModal.vue';
 import { cChainParams, COIN } from '../chain_params';
 import { createAlert } from '../alerts/alert';
 import { tr, translation } from '../i18n';
+import MasternodeReward from './MasternodeReward.vue';
 // New masternode list for multi-masternode.
 // Currently unused. It will be implemented in a subsequent PR
 const props = defineProps({
@@ -134,39 +135,5 @@ const { masternodes } = toRefs(props);
         :show="showCreateMasternodeModal"
     />
 
-    <!-- TODO: Implement mn reward history here -->
-    <div class="dcWallet-activity" v-if="false">
-        <span
-            style="
-                color: rgb(233, 222, 255);
-                display: flex;
-                justify-content: center;
-                margin-bottom: 24px;
-                margin-top: 20px;
-            "
-        >
-            <span data-i18n="rewardHistory" style="font-size: 24px"
-                >Reward History</span
-            >
-            <span class="rewardsBadge" style="font-size: 20px">
-                0<span style="opacity: 0.55; font-size: 15px">.00</span>
-                <span style="font-size: 15px; opacity: 0.55">tPIV</span>
-            </span>
-        </span>
-        <div class="scrollTable">
-            <table
-                class="table table-responsive table-sm stakingTx table-mobile-scroll"
-            >
-                <thead>
-                    <tr>
-                        <th scope="col" class="tx1">Time</th>
-                        <th scope="col" class="tx2">ID</th>
-                        <th scope="col" class="tx3">Amount</th>
-                        <th scope="col" class="tx4"></th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-        </div>
-    </div>
+    <MasternodeReward />
 </template>
