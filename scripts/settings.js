@@ -216,6 +216,14 @@ function subscribeToNetworkEvents() {
     getEventEmitter().on('currency-loaded', async (mapCurrencies) => {
         await fillCurrencySelect(mapCurrencies);
     });
+    getEventEmitter().on('explorer_changed', (url) => {
+        // Update the selector UI
+        doms.domExplorerSelect.value = url;
+    });
+    getEventEmitter().on('rpc_changed', (url) => {
+        // Update the selector UI
+        doms.domNodeSelect.value = url;
+    });
 }
 
 // --- Settings Functions
@@ -224,9 +232,6 @@ export async function setExplorer(explorer, fSilent = false) {
     await database.setSettings({ explorer: explorer.url });
     getNetwork().setNetwork(explorer.url, false);
 
-    // Update the selector UI
-    doms.domExplorerSelect.value = explorer.url;
-
     if (!fSilent) {
         createAlert(
             'success',
@@ -234,16 +239,12 @@ export async function setExplorer(explorer, fSilent = false) {
             2250
         );
     }
-    getEventEmitter().emit('explorer_changed', explorer.url);
 }
 
 export async function setNode(node, fSilent = false) {
     getNetwork().setNetwork(node.url, true);
     const database = await Database.getInstance();
     database.setSettings({ node: node.url });
-
-    // Update the selector UI
-    doms.domNodeSelect.value = node.url;
 
     if (!fSilent)
         createAlert(
