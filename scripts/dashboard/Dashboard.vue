@@ -450,14 +450,18 @@ async function importFromDatabase() {
                     nAccount: i++,
                     masterKey,
                     shield,
-                    createdBlock: vault.createdBlock,
+                    createdBlock:
+                        vault.createdBlock ||
+                        cChainParams.current.defaultStartingShieldBlock,
                 })
             );
         }
         const v = new Vault({
             wallets: ws,
             label: vault.label,
-            createdBlock: vault.createdBlock,
+            createdBlock:
+                vault.createdBlock ||
+                cChainParams.current.defaultStartingShieldBlock,
         });
 
         await wallets.addVault(v);
