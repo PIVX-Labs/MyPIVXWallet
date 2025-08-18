@@ -369,6 +369,10 @@ progress[value]::-moz-progress-bar {
     justify-content: center;
 }
 
+.flex {
+    display: flex !important;
+}
+
 .placeholderCenter::placeholder {
     text-align: center!important;
 }
@@ -3564,15 +3568,6 @@ select.form-control option {
 
 .governHr {
     border-top: 1px solid #a7a7a72b;
-}
-
-.governAdd {
-    position: absolute;
-    right: 0px;
-    height: 31px;
-    width: 31px;
-    padding: 7px 10px;
-    margin-top: 6px;
 }
 
 .fs-13 {
