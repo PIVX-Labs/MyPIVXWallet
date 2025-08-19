@@ -22,7 +22,7 @@ const { createAlert } = useAlerts();
 
 const showCreateProposalModal = ref(false);
 
-const { activeWallet: wallet } = useWallets();
+const { activeWallet: wallet, activeVault } = useWallets();
 const settings = useSettings();
 const { localProposals, masternodes } = storeToRefs(useMasternode());
 const { advancedMode } = storeToRefs(settings);
@@ -82,7 +82,7 @@ watch(
 );
 
 async function restoreWallet(strReason) {
-    if (!wallet.isEncrypted) return false;
+    if (!activeVault.isEncrypted) return false;
     if (wallet.isHardwareWallet) return true;
     showRestoreWallet.value = true;
     return await new Promise((res) => {
@@ -122,10 +122,6 @@ onMounted(() => {
 });
 
 async function openCreateProposal() {
-    // Must have a wallet
-    if (!wallet.isImported) {
-        return createAlert('warning', ALERTS.PROPOSAL_IMPORT_FIRST, 4500);
-    }
     // Wallet must be encrypted
     if (!(await hasEncryptedWallet())) {
         return createAlert(
@@ -185,6 +181,7 @@ async function createProposal(name, url, payments, monthlyPayment, address) {
         showCreateProposalModal.value = false;
     }
 }
+
 async function finalizeProposal(proposal) {
     const { ok, err } = await Masternode.finalizeProposal(proposal);
 
