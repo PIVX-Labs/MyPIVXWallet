@@ -1,6 +1,5 @@
 import { getEventEmitter } from '../event_bus.js';
 import {
-    hasEncryptedWallet,
     getNewAddress as guiGetNewAddress,
     wallets,
     setWallet,
