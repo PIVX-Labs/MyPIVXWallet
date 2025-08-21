@@ -1,13 +1,31 @@
 describe('Wallet balance tests', () => {
     beforeEach(() => {
+        const mockedNow = new Date(2025, 8, 6);
         cy.clearDb();
-        const now = new Date(2024, 11, 5);
-        cy.clock(now);
+
         cy.playback('GET', /address/, {
             toBeCalledAtLeast: 4,
             matching: { ignores: ['hostname', 'port'] },
         }).as('sync');
-        cy.visit('/');
+        cy.visit('/', {
+            onBeforeLoad(win) {
+                const RealDate = win.Date;
+
+                // Stub Date constructor
+                cy.stub(win, 'Date').callsFake((...args) => {
+                    if (args.length) {
+                        return new RealDate(...args); // if called with args, behave normally
+                    }
+                    return mockedNow; // no args -> return fake date
+                });
+
+                // Fix prototype so instanceof checks work
+                win.Date.prototype = RealDate.prototype;
+
+                // Stub Date.now separately
+                win.Date.now = () => mockedNow.getTime();
+            },
+        });
         cy.waitForLoading().should('be.visible');
         cy.setExplorer(0);
         cy.goToTab('dashboard');

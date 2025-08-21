@@ -42,6 +42,7 @@ Cypress.Commands.add('createVanityWallet', (prefix, password) => {
     cy.encryptWallet(password);
 });
 Cypress.Commands.add('importWallet', (key, password) => {
+    cy.goToTab('dashboard');
     cy.get('[data-testid="accWalletButton"]').click();
     cy.get('[data-testid="secretInp"]').should('be.visible').type(key);
     if (password)

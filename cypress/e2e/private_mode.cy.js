@@ -3,9 +3,10 @@ describe('public/private mode tests', () => {
         cy.playback('GET', /(xpub|address|getshielddata|duddino|block)/, {
             matching: { ignores: ['hostname', 'port'] },
         }).as('sync');
-        cy.intercept('GET', 'https://rpc.duddino.com/mainnet/getblockcount', {
+
+        cy.intercept('GET', 'https://rpc2.duddino.com/mainnet/getblockcount', {
             statusCode: 200,
-            body: 4895886,
+            body: 5043559,
         });
         cy.clearDb();
         cy.visit('/');

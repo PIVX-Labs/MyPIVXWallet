@@ -105,7 +105,7 @@ watch(showExportModal, async (showExportModal) => {
  * @param {Object} o - Options
  * @param {'legacy'|'hd'|'hardware'} o.type - type of import
  * @param {string} o.secret
- * @param {number?} [o.blockCount] Creation block count. Defaults to 4_200_000
+ * @param {number?} [o.blockCount] Creation block count. Defaults to `cChainParams.current.defaultStartingShieldBlock`
  * @param {string} [o.password]
  */
 async function importWallet({
@@ -113,7 +113,7 @@ async function importWallet({
     secret,
     password = '',
     label,
-    blockCount = 4_200_000,
+    blockCount = cChainParams.current.defaultStartingShieldBlock,
 }) {
     try {
         /**
