@@ -233,6 +233,7 @@ masternodeStatusEnabled = "ENABLED" # ENABLED
 masternodeStatusPreEnabled = "PRE_ENABLED" # PRE_ENABLED
 masternodeStatusMissing = "MISSING" # MISSING
 masternodeStatusExpired = "EXPIRED" # EXPIRED
+failedToConnect = "Failed to connect to the PIVX node. Check your internet connection." # Failed to connect to the PIVX node. Check your internet connection.
 resyncWalletButton = "Resync wallet" # Resync wallet
 resyncWalletDesc = "Resync your wallet from scratch." # Resync your wallet from scratch.
 cannotResync = "The wallet is not synced, cannot resync." # The wallet is not synced, cannot resync.

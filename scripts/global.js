@@ -204,7 +204,11 @@ export async function start() {
     await settingsStart();
     subscribeToNetworkEvents();
     // Make sure we know the correct number of blocks
-    await refreshChainData();
+    try {
+        await refreshChainData();
+    } catch (e) {
+        createAlert('warning', translation.failedToConnect, 10_000);
+    }
     // Load the price manager
     cOracle.load();
     new AsyncInterval(async () => {
