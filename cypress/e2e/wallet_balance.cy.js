@@ -1,7 +1,6 @@
 describe('Wallet balance tests', () => {
     beforeEach(() => {
         const mockedNow = new Date(2025, 8, 6);
-        cy.clearDb();
 
         cy.playback('GET', /address/, {
             toBeCalledAtLeast: 4,
@@ -26,6 +25,8 @@ describe('Wallet balance tests', () => {
                 win.Date.now = () => mockedNow.getTime();
             },
         });
+        cy.clearDb();
+
         cy.waitForLoading().should('be.visible');
         cy.setExplorer(0);
         cy.goToTab('dashboard');

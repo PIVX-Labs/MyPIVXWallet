@@ -6,10 +6,11 @@ describe('public/private mode tests', () => {
 
         cy.intercept('GET', 'https://rpc2.duddino.com/mainnet/getblockcount', {
             statusCode: 200,
-            body: 5043559,
+            body: 5043608,
         });
-        cy.clearDb();
         cy.visit('/');
+        cy.clearDb();
+
         cy.waitForLoading().should('be.visible');
 
         cy.goToTab('dashboard');
