@@ -50,6 +50,12 @@ const { createAlert } = useAlerts();
 const wallets = useWallets();
 const { activeWallet, activeVault } = storeToRefs(wallets);
 
+watch(activeWallet, async (currentWallet) => {
+    const success = await currentWallet.sync();
+    if (success && activeWallet.value === currentWallet)
+        createAlert('success', translation.syncStatusFinished, 12500);
+});
+
 const needsToEncrypt = computed(() => {
     if (activeWallet.value.isHardwareWallet) {
         return false;
@@ -99,7 +105,7 @@ watch(showExportModal, async (showExportModal) => {
  * @param {Object} o - Options
  * @param {'legacy'|'hd'|'hardware'} o.type - type of import
  * @param {string} o.secret
- * @param {number?} [o.blockCount] Creation block count. Defaults to 4_200_000
+ * @param {number?} [o.blockCount] Creation block count. Defaults to `cChainParams.current.defaultStartingShieldBlock`
  * @param {string} [o.password]
  */
 async function importWallet({
@@ -107,7 +113,7 @@ async function importWallet({
     secret,
     password = '',
     label,
-    blockCount = 4_200_000,
+    blockCount = cChainParams.current.defaultStartingShieldBlock,
 }) {
     try {
         /**
@@ -180,9 +186,7 @@ async function importWallet({
             }
 
             // Start syncing in the background
-            activeWallet.value.sync().then(() => {
-                createAlert('success', translation.syncStatusFinished, 12500);
-            });
+            activeWallet.value.sync();
             getEventEmitter().emit('wallet-import');
             return true;
         }
