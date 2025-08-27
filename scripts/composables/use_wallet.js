@@ -330,6 +330,20 @@ function addVault(v) {
             isSeeded.value = v.isSeeded();
             if (encryptedSecret) canGenerateMore.value = true;
         },
+        async getSecretToBackup() {
+            const database = await Database.getInstance();
+            const { encryptedSecret } = (await database.getVault(
+                v.getDefaultKeyToExport()
+            )) ?? { encryptedSecret: null };
+            if (encryptedSecret) return encryptedSecret;
+            // vault was not encrypted, return raw seed
+            const secret = v.getSecretToExport();
+            if (typeof v.getSecretToExport() === 'string') {
+                return secret;
+            } else {
+                return buff_to_base64(secret);
+            }
+        },
         async encrypt(password) {
             const secretToExport = v.getSecretToExport();
             if (!secretToExport)
