@@ -62,8 +62,8 @@ export class ParsedSecret {
                 f: async (s, p) => ParsedSecret.parse(await decrypt(s, p)),
             },
             {
-                // If it's base64, but it's less than 128, it's likely a seed
-                test: (s) => isBase64(s),
+                // If it's base64, and the length is 88 (64 decoded), it's likely a seed
+                test: (s) => isBase64(s) && s.length === 88,
                 f: (s) =>
                     ParsedSecret.createParsedSecretBySeed(base64_to_buf(s)),
             },
