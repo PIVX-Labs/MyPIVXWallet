@@ -19,7 +19,7 @@
             { "name": "Duddino", "url": "https://explorer.duddino.com" }
         ],
         "Nodes": [
-            { "name": "Duddino", "url": "https://rpc.duddino.com/mainnet" }
+            { "name": "Duddino2", "url": "https://rpc2.duddino.com/mainnet" }
         ],
         "Consensus": {},
         "coinbaseMaturity": 100,
@@ -30,7 +30,7 @@
         "maxPayment": 43200000000000,
         "defaultColdStakingAddress": "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
         "stakeSplitTarget": 50000000000,
-        "defaultStartingShieldBlock": 4190531
+        "defaultStartingShieldBlock": 4834646
     },
     "testnet": {
         "name": "testnet",

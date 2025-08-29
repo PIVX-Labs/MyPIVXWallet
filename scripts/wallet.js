@@ -826,9 +826,7 @@ export class Wallet {
         return this.#historicalTxs.get();
     }
     sync = lockableFunction(async () => {
-        if (this.#isSynced) {
-            throw new Error('Attempting to sync when already synced');
-        }
+        if (!this.#masterKey || this.#isSynced) return false;
         // While syncing the wallet ( DB read + network sync) disable the event balance-update
         // This is done to avoid a huge spam of event.
         this.#eventEmitter.disableEvent('balance-update');
@@ -858,6 +856,7 @@ export class Wallet {
         this.#eventEmitter.enableEvent('new-tx');
         this.#eventEmitter.emit('balance-update');
         this.#eventEmitter.emit('new-tx');
+        return true;
     });
 
     async #transparentSync() {
@@ -1127,7 +1126,9 @@ export class Wallet {
 
     async #resetShield() {
         // TODO: take the wallet creation height in input from users
-        await this.#shield.reloadFromCheckpoint(4_200_000);
+        await this.#shield.reloadFromCheckpoint(
+            cChainParams.current.defaultStartingShieldBlock
+        );
         await this.#saveShieldOnDisk();
     }
 
