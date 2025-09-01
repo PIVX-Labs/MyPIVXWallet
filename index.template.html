@@ -254,8 +254,21 @@
                         <label data-i18n="settingsToggleAdvancedMode" class="custom-control-label" for="advancedModeToggler">Advanced Mode</label>
                         <p style="margin-top: 5px; color:#7C659D!important;"><i class="fa-solid fa-triangle-exclamation" style="margin-right: 5px;"></i><span data-i18n="settingsToggleAdvancedModeSubtext">This unlocks deeper functionality and customisation, but may be overwhelming and potentially dangerous for unexperienced users!</p>
                       </div>
-
-                      
+		      
+		      <div>
+			  <hr>
+			  <label for="resync-button" data-i18n="resyncWalletDesc"></label>
+			  <br>
+			  <button id="resync-button" class="pivx-button-small"
+				  style="height: 42px; width: 185px; margin: 0px; margin-top: 2px;"
+				  onclick="MPW.resync()">
+			      <span class="buttoni-text">
+				  <i class="fa-solid fa-arrows-rotate del-wallet-icon"></i>
+				  <span data-i18n="resyncWalletButton"> </span>
+			      </span>
+			  </button>
+		      </div>
+		      
                       <div id="logOut-container">
                         <hr>
 
@@ -268,9 +281,8 @@
                           </span>
                         </button>
                       </div>
-
                     </div>
-
+		    
                     <div id="settingsDisplay" class="d-none settingsContent">
                       <label for="currency" data-i18n="settingsCurrency">Choose a display currency:</label>
                       <br />
