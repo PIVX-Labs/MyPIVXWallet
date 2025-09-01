@@ -699,7 +699,7 @@ defineExpose({
                             </div>
                             <div
                                 class="modal-body center-text"
-                                style="padding-top: 0px; padding-bottom: 0px"
+                                style="padding-top: 0px; padding-bottom: 24px"
                             >
                                 <center>
                                     <p
@@ -745,6 +745,11 @@ defineExpose({
                                             </div>
 
                                             <div
+                                                id="redeemCodeResults"
+                                                style="opacity: 75%"
+                                            ></div>
+
+                                            <div
                                                 id="redeemCodeDiv"
                                                 style="
                                                     margin-top: 50px;
@@ -762,7 +767,6 @@ defineExpose({
                                                     color: rgb(211, 190, 229);
                                                     width: 310px;
                                                     text-align: left;
-                                                    margin-bottom: 20px;
                                                 "
                                             >
                                                 <div
