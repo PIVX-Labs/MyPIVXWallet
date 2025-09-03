@@ -135,14 +135,14 @@ export class TransactionBuilder {
      * @param {{address: string, value: number}}
      * @returns {TransactionBuilder}
      */
-    #addShieldOutput({ address, value }) {
+    #addShieldOutput({ address, value, memo }) {
         this.#transaction.version = SAPLING_TX_VERSION;
         // We don't know how to create shieldData, so we create
         // a dummy object so we can pass it later to the Shield library
         // upon signing.
         // This is similar to how we temporarely use the UTXO script instead
         // of the scriptSig because we don't know how to sign it
-        this.#transaction.shieldOutput.push({ address, value });
+        this.#transaction.shieldOutput.push({ address, value, memo });
         return this;
     }
 
@@ -203,13 +203,13 @@ export class TransactionBuilder {
     }
 
     /**
-     * Adds an output to the transaction
-     * @param {{address: string, value: number, isChange: boolean}}
+     * Adds an output to the transaction. Memo is isngored if it's not a shield output
+     * @param {{address: string, value: number, isChange: boolean, memo: string | null}}
      * @returns {TransactionBuilder}
      */
-    addOutput({ address, value, isChange = false }) {
+    addOutput({ address, value, isChange = false, memo = '' }) {
         if (isShieldAddress(address)) {
-            this.#addShieldOutput({ address, value });
+            this.#addShieldOutput({ address, value, memo });
         } else if (isExchangeAddress(address)) {
             this.#addExchangeOutput({ address, value });
         } else {
