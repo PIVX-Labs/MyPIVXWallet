@@ -204,7 +204,11 @@ export async function start() {
     await settingsStart();
     subscribeToNetworkEvents();
     // Make sure we know the correct number of blocks
-    await refreshChainData();
+    try {
+        await refreshChainData();
+    } catch (e) {
+        createAlert('warning', translation.failedToConnect, 10_000);
+    }
     // Load the price manager
     cOracle.load();
     new AsyncInterval(async () => {
@@ -573,6 +577,15 @@ export function switchSettings(page) {
     // Show selected section and make its button active
     section.classList.remove('d-none');
     btn.classList.add('active');
+}
+
+export async function resync() {
+    if (activeWallet.isSynced) {
+        createAlert('info', translation.resyncing);
+        await activeWallet.resync();
+    } else {
+        createAlert('warning', translation.cannotResync);
+    }
 }
 
 function errorHandler(e) {
