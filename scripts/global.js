@@ -136,7 +136,6 @@ export async function start() {
         domCurrencySelect: document.getElementById('currency'),
         domExplorerSelect: document.getElementById('explorer'),
         domNodeSelect: document.getElementById('node'),
-        domAutoSwitchToggle: document.getElementById('autoSwitchToggler'),
         domTranslationSelect: document.getElementById('translation'),
         domDisplayDecimalsSlider: document.getElementById('displayDecimals'),
         domDisplayDecimalsSliderDisplay:

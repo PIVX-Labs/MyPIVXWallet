@@ -105,7 +105,6 @@ settingsDecimals = "Cifre decimali del saldo:" # Balance Decimals:
 settingsExplorer = "Scegli un explorer:" # Choose an explorer:
 settingsLanguage = "Scegli una lingua" # Choose a Language:
 settingsPivxNode = "Scegli un nodo PIVX" # Choose a PIVX node:
-settingsAutoSelectNet = "Auto selezione dell'Explorer e del nodo " # Auto-select Explorers and Nodes
 settingsToggleDebug = "Modalità Debug" # Debug Mode
 settingsToggleTestnet = "Modalità testnet" # Testnet Mode
 netSwitchUnsavedWarningTitle = "Il tuo wallet {network} non è salvato!" # Your {network} wallet isn't saved!
