@@ -76,11 +76,12 @@ function addWallet(wallet) {
     const currency = ref('USD');
     const price = ref(0.0);
     const sync = async () => {
-        await wallet.sync();
+        const result = await wallet.sync();
         balance.value = wallet.balance;
         shieldBalance.value = await wallet.getShieldBalance();
         pendingShieldBalance.value = await wallet.getPendingShieldBalance();
         isSynced.value = wallet.isSynced;
+        return result;
     };
     wallet.onShieldLoadedFromDisk(() => {
         hasShield.value = wallet.hasShield();
