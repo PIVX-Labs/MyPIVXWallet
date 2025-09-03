@@ -43,8 +43,6 @@ function getDefaultCurrency() {
     );
 }
 
-/** A mode which allows MPW to automatically select it's data sources */
-export let fAutoSwitch = true;
 /** The decimals to display for the wallet balance */
 export let nDisplayDecimals = 2;
 /** A mode which configures MPW towards Advanced users, with low-level feature access and less restrictions (Potentially dangerous) */
@@ -63,10 +61,6 @@ export class Settings {
      * @type {String} Node url to use
      */
     node;
-    /**
-     * @type {Boolean} The Auto-Switch mode state
-     */
-    autoswitch;
     /**
      * @type {String} translation to use
      */
@@ -98,7 +92,6 @@ export class Settings {
     constructor({
         explorer,
         node,
-        autoswitch = true,
         translation = '',
         displayCurrency = getDefaultCurrency(),
         displayDecimals = nDisplayDecimals,
@@ -109,7 +102,6 @@ export class Settings {
     } = {}) {
         this.explorer = explorer;
         this.node = node;
-        this.autoswitch = autoswitch;
         this.translation = translation;
         this.displayCurrency = displayCurrency;
         this.displayDecimals = displayDecimals;
@@ -170,7 +162,6 @@ export async function start() {
 
     // Fetch settings from Database
     const {
-        autoswitch,
         displayCurrency,
         displayDecimals,
         advancedMode,
@@ -187,10 +178,6 @@ export async function start() {
     configureAutoLockWallet();
 
     // Set any Toggles to their default or DB state
-    // Network Auto-Switch
-    fAutoSwitch = autoswitch;
-    doms.domAutoSwitchToggle.checked = fAutoSwitch;
-
     // Advanced Mode
     fAdvancedMode = advancedMode;
     doms.domAdvancedModeToggler.checked = fAdvancedMode;
@@ -428,17 +415,6 @@ export async function toggleTestnet(
 export function toggleDebug(newValue = !debug) {
     debug = newValue;
     getEventEmitter().emit('toggle-debug', debug);
-}
-
-/**
- * Toggle the Auto-Switch mode at runtime and in DB
- */
-export async function toggleAutoSwitch() {
-    fAutoSwitch = !fAutoSwitch;
-
-    // Update the setting in the DB
-    const database = await Database.getInstance();
-    await database.setSettings({ autoswitch: fAutoSwitch });
 }
 
 async function fillExplorerSelect() {

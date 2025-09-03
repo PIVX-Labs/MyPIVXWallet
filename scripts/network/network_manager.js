@@ -1,6 +1,5 @@
 import { ExplorerNetwork, RPCNodeNetwork } from './network.js';
 import { cChainParams } from '../chain_params.js';
-import { fAutoSwitch } from '../settings.js';
 import { debugLog, DebugTopics, debugWarn } from '../debug.js';
 import { sleep } from '../utils.js';
 import { getEventEmitter } from '../event_bus.js';
@@ -130,8 +129,8 @@ class NetworkManager {
                         ' with error ' +
                         error
                 );
-                // If allowed, switch instances
-                if (!fAutoSwitch || attempts === nMaxTries) {
+                // Switch instances
+                if (attempts === nMaxTries) {
                     throw error;
                 }
                 await sleep(retryTimeout);
