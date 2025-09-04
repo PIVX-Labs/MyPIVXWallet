@@ -591,6 +591,8 @@ function errorHandler(e) {
     const message = `<b>${translation.unhandledException}</b><br>${sanitizeHTML(
         e.message || e.reason
     )}`;
+    // Don't display extension errors
+    if (e.filename.includes('extension')) return;
     try {
         createAlert('warning', message);
     } catch (_) {
