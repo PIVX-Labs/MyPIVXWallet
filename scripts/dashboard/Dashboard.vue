@@ -266,7 +266,7 @@ function lockWallet() {
  * @param {string} address - Address or contact to send to
  * @param {number} amount - Amount of PIVs to send
  */
-async function send(address, amount, useShieldInputs) {
+async function send(address, amount, useShieldInputs, memo) {
     // Ensure a wallet is unlocked
     if (activeVault.value.isViewOnly && !activeWallet.value.isHardwareWallet) {
         if (
@@ -398,6 +398,7 @@ async function send(address, amount, useShieldInputs) {
             nValue,
             {
                 useShieldInputs,
+                memo,
             }
         );
     } catch (e) {
