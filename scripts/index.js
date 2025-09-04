@@ -27,7 +27,6 @@ export {
     logOut,
     toggleTestnet,
     toggleDebug,
-    toggleAutoSwitch,
     toggleAdvancedMode,
     toggleAutoLockWallet,
     changePassword,
