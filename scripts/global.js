@@ -86,6 +86,7 @@ export async function start() {
         ),
         domRedeemCodeGiftIcon: document.getElementById('redeemCodeGiftIcon'),
         domRedeemCodeETA: document.getElementById('redeemCodeETA'),
+        domRedeemCodeResults: document.getElementById('redeemCodeResults'),
         domRedeemCodeProgress: document.getElementById('redeemCodeProgress'),
         domRedeemCodeInputBox: document.getElementById('redeemCodeInputBox'),
         domRedeemCodeInput: document.getElementById('redeemCodeInput'),
@@ -135,7 +136,6 @@ export async function start() {
         domCurrencySelect: document.getElementById('currency'),
         domExplorerSelect: document.getElementById('explorer'),
         domNodeSelect: document.getElementById('node'),
-        domAutoSwitchToggle: document.getElementById('autoSwitchToggler'),
         domTranslationSelect: document.getElementById('translation'),
         domDisplayDecimalsSlider: document.getElementById('displayDecimals'),
         domDisplayDecimalsSliderDisplay:
@@ -204,7 +204,11 @@ export async function start() {
     await settingsStart();
     subscribeToNetworkEvents();
     // Make sure we know the correct number of blocks
-    await refreshChainData();
+    try {
+        await refreshChainData();
+    } catch (e) {
+        createAlert('warning', translation.failedToConnect, 10_000);
+    }
     // Load the price manager
     cOracle.load();
     new AsyncInterval(async () => {
@@ -575,10 +579,21 @@ export function switchSettings(page) {
     btn.classList.add('active');
 }
 
+export async function resync() {
+    if (activeWallet.isSynced) {
+        createAlert('info', translation.resyncing);
+        await activeWallet.resync();
+    } else {
+        createAlert('warning', translation.cannotResync);
+    }
+}
+
 function errorHandler(e) {
     const message = `<b>${translation.unhandledException}</b><br>${sanitizeHTML(
         e.message || e.reason
     )}`;
+    // Don't display extension errors
+    if (e.filename.includes('extension')) return;
     try {
         createAlert('warning', message);
     } catch (_) {

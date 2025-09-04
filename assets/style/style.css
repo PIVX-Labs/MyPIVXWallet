@@ -4041,27 +4041,27 @@ textarea::placeholder {
 }
 
 .masternodeBadges {
-    color: #000;
+    color: #f4f3f7;
     font-weight: 600;
     padding: 5px 11px 5px 11px;
     border-radius: 6px;
+    font-size:12px;
 }
 
-.enabledBadge {
-    background-color:#5FA800;
+.masternodeBadges.enabledBadge {
+    background-color:#51a151;
 }
 
-.preEnabledBadge {
-    background-color:#A49DB2;
+.masternodeBadges.preEnabledBadge {
+    background-color:#878291;
 }
 
-.missingBadge {
-    background-color:#FF1D1D;
+.masternodeBadges.missingBadge {
+    background-color:#c9554f;
 }
 
 .masternodeTable tbody tr td {
-    padding-top: 25px;
-    padding-bottom: 25px;
+    align-content: center;
 }
 
 .cameraIcon svg {
