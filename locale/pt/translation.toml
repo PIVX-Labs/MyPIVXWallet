@@ -61,7 +61,6 @@ settingsCurrency = "Escolha uma moeda de exibição:" # Choose a display currenc
 settingsExplorer = "Escolha um explorador:" # Choose an explorer:
 settingsLanguage = "Escolha um Idioma:" # Choose a Language:
 settingsPivxNode = "Escolha um node PIVX:" # Choose a PIVX node:
-settingsAutoSelectNet = "Seleção automática de Exploradores e Nodes" # Auto-select Explorers and Nodes
 settingsToggleDebug = "Modo de depuração" # Debug Mode
 settingsToggleTestnet = "Modo Testnet" # Testnet Mode
 settingsToggleAdvancedMode = "Modo avançado" # Advanced Mode
