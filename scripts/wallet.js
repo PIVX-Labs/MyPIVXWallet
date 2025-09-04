@@ -807,7 +807,10 @@ export class Wallet {
         );
         for (const note of myOutputNotes) {
             shieldCredit += note.value;
-            arrShieldReceivers.push(note.recipient);
+            arrShieldReceivers.push({
+                recipient: note.recipient,
+                memo: note.memo,
+            });
         }
         return { shieldCredit, shieldDebit, arrShieldReceivers };
     }
@@ -1058,24 +1061,29 @@ export class Wallet {
         );
         // If explorer sapling root is different from ours, there must be a sync error
         if (saplingRoot !== networkSaplingRoot) {
-            const db = await Database.getInstance();
-
-            // Reset shield sync data, it might be corrupted
-            await db.setShieldSyncData({
-                shieldData: null,
-                lastSyncedBlock: null,
-            });
             createAlert('warning', translation.badSaplingRoot, 5000);
-
-            this.#mempool = new Mempool();
-            await this.#resetShield();
-            this.#isSynced = false;
-            await this.#transparentSync();
-            await this.#syncShield();
-
             return false;
         }
         return true;
+    }
+
+    async resync() {
+        const db = await Database.getInstance();
+        // Reset shield sync data, it might be corrupted
+        await db.setShieldSyncData({
+            shieldData: null,
+            lastSyncedBlock: null,
+        });
+        this.#mempool = new Mempool();
+        if (this.hasShield()) {
+            await this.#resetShield();
+        }
+
+        this.#isSynced = false;
+        await this.#transparentSync();
+        if (this.hasShield()) {
+            await this.#syncShield();
+        }
     }
 
     /**
@@ -1152,6 +1160,7 @@ export class Wallet {
      * @param {string?} [opts.changeDelegationAddress] - Which address to use as change when `useDelegatedInputs` is set to true.
      *     Only changes >= 1 PIV can be delegated
      * @param {boolean} [opts.isProposal] - Whether or not this is a proposal transaction
+     * @param {string} [opts.memo] - Shield memo. Ignored if it's a not sending to shield
      */
     createTransaction(
         address,
@@ -1166,6 +1175,7 @@ export class Wallet {
             subtractFeeFromAmt = true,
             changeAddress = '',
             returnAddress = '',
+            memo = '',
         } = {}
     ) {
         let balance;
@@ -1218,6 +1228,7 @@ export class Wallet {
             transactionBuilder.addOutput({
                 address,
                 value,
+                memo,
             });
         }
 
@@ -1312,6 +1323,7 @@ export class Wallet {
                 useShieldInputs: transaction.vin.length === 0,
                 utxos: this.#getUTXOsForShield(value),
                 transparentChangeAddress: this.getNewChangeAddress(),
+                memo: transaction.shieldOutput[0]?.memo,
             });
             return transaction.fromHex(hex);
         } catch (e) {
@@ -1319,7 +1331,7 @@ export class Wallet {
             await sleep(500);
             throw e;
         } finally {
-            await periodicFunction.clearInterval();
+            periodicFunction.clearInterval();
             this.#eventEmitter.emit(
                 'shield-transaction-creation-update',
                 0.0,

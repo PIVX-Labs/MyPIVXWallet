@@ -265,7 +265,7 @@ function lockWallet() {
  * @param {string} address - Address or contact to send to
  * @param {number} amount - Amount of PIVs to send
  */
-async function send(address, amount, useShieldInputs) {
+async function send(address, amount, useShieldInputs, memo) {
     // Ensure a wallet is unlocked
     if (activeVault.value.isViewOnly && !activeWallet.value.isHardwareWallet) {
         if (
@@ -397,6 +397,7 @@ async function send(address, amount, useShieldInputs) {
             nValue,
             {
                 useShieldInputs,
+                memo,
             }
         );
     } catch (e) {
@@ -698,7 +699,7 @@ defineExpose({
                             </div>
                             <div
                                 class="modal-body center-text"
-                                style="padding-top: 0px; padding-bottom: 0px"
+                                style="padding-top: 0px; padding-bottom: 24px"
                             >
                                 <center>
                                     <p
@@ -744,6 +745,11 @@ defineExpose({
                                             </div>
 
                                             <div
+                                                id="redeemCodeResults"
+                                                style="opacity: 75%"
+                                            ></div>
+
+                                            <div
                                                 id="redeemCodeDiv"
                                                 style="
                                                     margin-top: 50px;
@@ -761,7 +767,6 @@ defineExpose({
                                                     color: rgb(211, 190, 229);
                                                     width: 310px;
                                                     text-align: left;
-                                                    margin-bottom: 20px;
                                                 "
                                             >
                                                 <div

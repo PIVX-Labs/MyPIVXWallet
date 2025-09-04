@@ -16,6 +16,7 @@
         "MASTERNODE_PORT": 51472,
         "SHIELD_PREFIX": "ps",
         "Explorers": [
+            { "name": "PIVX Labs", "url": "https://explorer.pivxla.bz" },
             { "name": "Duddino", "url": "https://explorer.duddino.com" },
             { "name": "Duddino (2)", "url": "https://explorer2.duddino.com" },
             { "name": "zkBitcoin", "url": "https://zkbitcoin.com" }

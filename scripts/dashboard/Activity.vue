@@ -11,6 +11,7 @@ import iCheck from '../../assets/icons/icon-check.svg';
 import iHourglass from '../../assets/icons/icon-hourglass.svg';
 import { blockCount } from '../global.js';
 import { beautifyNumber } from '../misc.js';
+import TxDetails from './TxDetails.vue';
 import { useWallets } from '../composables/use_wallet';
 import TxExport from './TxExport.vue';
 import { timeToDate } from '../utils.js';
@@ -22,6 +23,7 @@ const props = defineProps({
 });
 
 const txs = ref([]);
+const selectedTx = ref(null);
 let txCount = 0;
 const updating = ref(false);
 const isHistorySynced = ref(false);
@@ -167,6 +169,10 @@ async function parseTXs(arrTXs) {
     const cAccount = await cDB.getAccount(activeWallet.value.getKeyToExport());
 
     for (const cTx of arrTXs) {
+        const memos = cTx.shieldReceivers
+            .map((s) => s.memo)
+            .filter((s) => s && s.length > 0);
+
         // Unconfirmed Txs are simply 'Pending'
         const strDate = timeToDate(cTx.time);
         let amountToShow = Math.abs(cTx.amount + cTx.shieldAmount);
@@ -204,7 +210,9 @@ async function parseTXs(arrTXs) {
                     })
                     .map(([_, addr]) => getNameOrAddress(cAccount, addr));
                 if (cTx.type == HistoricalTxType.RECEIVED) {
-                    arrAddresses = arrAddresses.concat(cTx.shieldReceivers);
+                    arrAddresses = arrAddresses.concat(
+                        cTx.shieldReceivers.map((s) => s.recipient)
+                    );
                 }
                 who =
                     [
@@ -250,6 +258,7 @@ async function parseTXs(arrTXs) {
             confirmed: fConfirmed,
             icon,
             colour,
+            memos,
         });
     }
 
@@ -324,7 +333,10 @@ watch(
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="tx in txs">
+                            <tr
+                                v-for="tx in txs"
+                                @click="tx.memos.length && (selectedTx = tx)"
+                            >
                                 <td
                                     class="align-middle pr-10px"
                                     style="font-size: 12px"
@@ -338,6 +350,7 @@ watch(
                                         :href="getActivityUrl(tx)"
                                         target="_blank"
                                         rel="noopener noreferrer"
+                                        @click.stop
                                     >
                                         <code
                                             class="wallet-code text-center active ptr"
@@ -374,6 +387,7 @@ watch(
                                 </td>
                                 <td class="text-right pr-10px align-middle">
                                     <span
+                                        v-if="!tx.memos.length"
                                         class="badge mb-0"
                                         :class="{
                                             'badge-purple': tx.confirmed,
@@ -390,6 +404,9 @@ watch(
                                             v-else
                                             v-html="iHourglass"
                                         ></span>
+                                    </span>
+                                    <span v-else>
+                                        <i class="fa-solid fa-envelope"></i>
                                     </span>
                                 </td>
                             </tr>
@@ -417,4 +434,5 @@ watch(
             </div>
         </div>
     </center>
+    <TxDetails :selectedTx="selectedTx" @close="selectedTx = null" />
 </template>
