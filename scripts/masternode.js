@@ -567,6 +567,7 @@ export default class Masternode {
         }
 
         if (
+            !Number.isInteger(nPayments) ||
             nPayments < 1 ||
             nPayments > cChainParams.current.maxPaymentCycles
         ) {
@@ -574,6 +575,7 @@ export default class Masternode {
         }
 
         if (
+            !Number.isInteger(monthlyPayment) ||
             monthlyPayment < 10 * COIN ||
             monthlyPayment * nPayments > cChainParams.current.maxPayment
         ) {
