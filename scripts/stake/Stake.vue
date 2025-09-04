@@ -17,7 +17,7 @@ import { useAlerts } from '../composables/use_alerts.js';
 import { validateAmount } from '../legacy.js';
 import { valuesToComputed } from '../utils.js';
 const { createAlert } = useAlerts();
-const { activeWallet: wallet } = storeToRefs(useWallets());
+const { activeWallet: wallet, activeVault } = storeToRefs(useWallets());
 const { balance, coldBalance, price, currency, isViewOnly } =
     valuesToComputed(wallet);
 const { advancedMode, displayDecimals } = storeToRefs(useSettings());
@@ -128,7 +128,7 @@ async function unstake(value) {
 }
 
 async function restoreWallet(strReason) {
-    if (!wallet.value.isEncrypted) return false;
+    if (!activeVault.value.isEncrypted) return false;
     if (wallet.value.isHardwareWallet) return true;
     showRestoreWallet.value = true;
     return await new Promise((res) => {

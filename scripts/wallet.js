@@ -49,6 +49,7 @@ import { OrderedArray } from './ordered_array.js';
 import { SaplingParams } from './sapling_params.js';
 import { HdMasterKey } from './masterkey.js';
 import { BinaryShieldSyncer } from './shield_syncer.js';
+import { useWallets } from './composables/use_wallet.js';
 
 /**
  * Class Wallet, at the moment it is just a "realization" of Masterkey with a given nAccount
@@ -1640,9 +1641,8 @@ export async function cleanAndVerifySeedPhrase(
  * @returns {Promise<boolean>} If the wallet has an encrypted database backup
  */
 export async function hasEncryptedWallet() {
-    const database = await Database.getInstance();
-    const account = await database.getAccount(activeWallet.getKeyToExport());
-    return !!account?.encWif;
+    const { activeVault } = useWallets();
+    return activeVault?.isEncrypted ?? false;
 }
 
 export async function getNewAddress({

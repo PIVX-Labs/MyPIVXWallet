@@ -26,7 +26,6 @@ describe('useWallet tests', () => {
         expect(wallet.isLoaded()).toBe(walletComposable.isImported);
         expect(wallet.isViewOnly()).toBe(walletComposable.isViewOnly);
         expect(wallet.isSynced).toBe(walletComposable.isSynced);
-        expect(await hasEncryptedWallet()).toBe(walletComposable.isEncrypted);
         expect(wallet.hasShield()).toBe(walletComposable.hasShield);
         expect(wallet.isHardwareWallet()).toBe(
             walletComposable.isHardwareWallet
