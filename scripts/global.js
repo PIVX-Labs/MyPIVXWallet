@@ -150,6 +150,7 @@ export async function start() {
         domAdvancedModeToggler: document.getElementById('advancedModeToggler'),
         domAutoLockModeToggler: document.getElementById('autoLockModeToggler'),
         domRedeemCameraBtn: document.getElementById('redeemCameraBtn'),
+        domPageContainer: document.getElementById('page-container'),
     };
 
     // Set Copyright year on footer
