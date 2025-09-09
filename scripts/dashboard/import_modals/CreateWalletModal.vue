@@ -51,7 +51,7 @@ function submit() {
                     >
                         {{ i }} <br />
                         <div class="privateKeysBadge">
-                            <span class="filterBlur">{{ word }}</span>
+                            <span>{{ word }}</span>
                         </div>
                     </div>
                 </div>
