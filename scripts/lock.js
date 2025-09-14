@@ -5,18 +5,16 @@
  * @returns {T & { isLocked: () => bool }}
  */
 export const lockableFunction = (f) => {
-    let lock = false;
+    let promise = null;
 
     const g = async (...args) => {
-        try {
-            if (!lock) {
-                lock = true;
-                return await f(...args);
-            }
-        } finally {
-            lock = false;
+        if (!promise) {
+            promise = f(...args).finally(() => {
+                promise = null;
+            });
         }
+        return await promise;
     };
-    g.isLocked = () => lock;
+    g.isLocked = () => !!promise;
     return g;
 };
