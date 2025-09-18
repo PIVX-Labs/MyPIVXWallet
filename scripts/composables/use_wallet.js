@@ -451,7 +451,6 @@ export const useWallets = defineStore('wallets', () => {
                     other.defaultKeyToExport === v.getDefaultKeyToExport()
             );
             if (i !== -1) {
-                console.log('Replacing old vault');
                 // Replace old vault, so we can seed unseeded vaults
                 vaults.value[i] = vault;
                 rawVaults[i] = v;
