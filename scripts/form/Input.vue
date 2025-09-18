@@ -56,7 +56,7 @@ watch(
                 isErrorSafeHtml.value = false;
                 if (typeof res === 'string') {
                     error.value = res;
-                } else if (res.isSafeHtml && res.error) {
+                } else if (res?.isSafeHtml && res?.error) {
                     error.value = res.error;
                     isErrorSafeHtml.value = true;
                 }
