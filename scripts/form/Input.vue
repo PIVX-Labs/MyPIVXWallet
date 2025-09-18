@@ -17,6 +17,7 @@ const props = defineProps({
 
 const value = ref('');
 const error = ref('');
+const isErrorSafeHtml = ref(false);
 const validationFunction = () => {
     if (props.maxLength && value.value.length > props.maxLength)
         return tr(translation.formValidationMaxLength, [
@@ -52,7 +53,13 @@ watch(
             value: value.value,
             validationFunction: () => {
                 const res = validationFunction();
-                if (res !== true) error.value = res;
+                isErrorSafeHtml.value = false;
+                if (typeof res === 'string') {
+                    error.value = res;
+                } else if (res.isSafeHtml && res.error) {
+                    error.value = res.error;
+                    isErrorSafeHtml.value = true;
+                }
                 return res;
             },
         };
@@ -87,7 +94,10 @@ watch(
         :data-testid="props['dataTestid']"
     />
     <div class="validation-summary">
-        {{ error }}
+        <span v-if="!isErrorSafeHtml">
+            {{ error }}
+        </span>
+        <span v-html="error" v-else> </span>
     </div>
 </template>
 
