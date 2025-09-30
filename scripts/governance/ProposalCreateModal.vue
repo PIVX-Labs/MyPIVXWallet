@@ -3,10 +3,10 @@ import Modal from '../Modal.vue';
 import Form from '../form/Form.vue';
 import Input from '../form/Input.vue';
 import NumericInput from '../form/NumericInput.vue';
-import { translation } from '../i18n.js';
+import { translation, tr } from '../i18n.js';
 import { COIN, cChainParams } from '../chain_params';
 import { toRefs, ref, reactive, watch } from 'vue';
-import { isStandardAddress } from '../misc';
+import { isStandardAddress, sanitizeHTML } from '../misc';
 
 const props = defineProps({
     advancedMode: Boolean,
@@ -40,7 +40,20 @@ function createConfirmationScreen(d) {
     showConfirmation.value = true;
 }
 
-const isSafeStr = /^[a-z0-9 .,;\-_/:?@()]+$/i;
+/**
+ * @param {string} str
+ */
+function isValidStr(str) {
+    const forbiddenChars = str.match(/[^a-z0-9 .,;\-_/:?@()]/i);
+    if (!forbiddenChars) return true;
+
+    return {
+        isSafeHtml: true,
+        error: tr(translation.formValidationString, [
+            { char: sanitizeHTML(forbiddenChars[0]) },
+        ]),
+    };
+}
 </script>
 
 <template>
@@ -81,9 +94,7 @@ const isSafeStr = /^[a-z0-9 .,;\-_/:?@()]+$/i;
                         :placeholder="translation.popupProposalName"
                         :validation-function="
                             (value) => {
-                                if (!isSafeStr.test(value))
-                                    return translation.formValidationString;
-                                return true;
+                                return isValidStr(value);
                             }
                         "
                     />
@@ -104,8 +115,10 @@ const isSafeStr = /^[a-z0-9 .,;\-_/:?@()]+$/i;
                         placeholder="https://forum.pivx.org/..."
                         :validation-function="
                             (value) => {
-                                if (!isSafeStr.test(value))
-                                    return translation.formValidationString;
+                                const isValid = isValidStr(value);
+                                if (isValid !== true) {
+                                    return isValid;
+                                }
                                 if (
                                     !/^(https?):\/\/[^\s/$.?#][^\s]*[^\s/.]\.[^\s/.][^\s]*[^\s.]$/.test(
                                         value
