@@ -386,13 +386,13 @@ progress[value]::-moz-progress-bar {
 
 #page-container {
     position: relative;
-    min-height: calc(100vh - 75px);
+    min-height: calc(100vh);
 }
 
 #content-wrap {
     padding-bottom: 4rem;
     /* Footer height */
-    margin-top: 75px;
+    padding-top: 75px;
 }
 
 @media (max-width: 768px) {
@@ -814,11 +814,14 @@ progress[value]::-moz-progress-bar {
 }
 
 .navbarSpecial {
-    background: linear-gradient(90deg, #1a122d, #211138);
-    box-shadow: 0 0px 15px 3px #0e071a;
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
     position: fixed;
     width: 100%;
     min-height: 77px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    z-index: 1000;
 }
 
 /* New styling */
@@ -4184,7 +4187,7 @@ textarea::placeholder {
     left: 0;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, #1A122D, #150927)!important;
+    background: rgba(0, 0, 0, 0.2)!important;
     opacity: 0;
     z-index:-10;
     transition: opacity 0.125s ease-in-out;
