@@ -34,7 +34,6 @@ function submit() {
                         <br />
                         <span v-html="translation.doNotShateWarning"></span>
                         <br />
-                        <br />
                     </div>
                 </center>
 
