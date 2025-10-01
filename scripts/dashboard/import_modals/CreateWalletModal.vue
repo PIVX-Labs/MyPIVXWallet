@@ -34,7 +34,6 @@ function submit() {
                         <br />
                         <span v-html="translation.doNotShateWarning"></span>
                         <br />
-                        <br />
                     </div>
                 </center>
 
@@ -51,7 +50,7 @@ function submit() {
                     >
                         {{ i }} <br />
                         <div class="privateKeysBadge">
-                            <span class="filterBlur">{{ word }}</span>
+                            <span>{{ word }}</span>
                         </div>
                     </div>
                 </div>
