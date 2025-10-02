@@ -34,7 +34,7 @@ import { LedgerController } from '../ledger';
 import { guiAddContactPrompt } from '../contacts-book';
 import { scanQRCode } from '../scanner';
 import { useWallets } from '../composables/use_wallet.js';
-import { setWallet, Wallet } from '../wallet.js';
+import { Wallet } from '../wallet.js';
 import { useSettings } from '../composables/use_settings.js';
 import pLogo from '../../assets/p_logo.svg';
 import pShieldLogo from '../../assets/icons/icon_shield_pivx.svg';
