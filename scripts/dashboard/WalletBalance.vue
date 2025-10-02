@@ -5,7 +5,6 @@ import { ref, computed, toRefs, watch } from 'vue';
 import { beautifyNumber } from '../misc';
 import { useWallets } from '../composables/use_wallet';
 import { optimiseCurrencyLocale } from '../global';
-import { renderWalletBreakdown } from '../charting.js';
 import { guiRenderCurrentReceiveModal } from '../contacts-book';
 import { getNewAddress } from '../wallet.js';
 import LoadingBar from '../Loadingbar.vue';
@@ -23,6 +22,7 @@ import pUnlocked from '../../assets/icons/icon-lock-unlocked.svg';
 import pExport from '../../assets/icons/icon-export.svg';
 import pShieldCheck from '../../assets/icons/icon-shield-check.svg';
 import pRefresh from '../../assets/icons/icon-refresh.svg';
+import WalletBreakdown from './WalletBreakdown.vue';
 
 const props = defineProps({
     balance: Number,
@@ -49,10 +49,6 @@ const {
     immatureBalance,
     immatureColdBalance,
     isHdWallet,
-    isViewOnly,
-    isEncrypted,
-    isImported,
-    needsToEncrypt,
     isHardwareWallet,
     currency,
     price,
@@ -76,6 +72,7 @@ const shieldSyncingStr = ref('');
 const isCreatingTx = ref(false);
 const txPercentageCreation = ref(0.0);
 const txCreationStr = ref('Creating SHIELD transaction...');
+const showWalletBreakdown = ref(true);
 
 function resetSyncing() {
     // Transparent sync status
@@ -227,6 +224,11 @@ function restoreWallet() {
 
 <template>
     <center>
+        <WalletBreakdown
+            v-if="showWalletBreakdown"
+            @close="showWalletBreakdown = false"
+        />
+
         <div class="dcWallet-balances mb-4">
             <div class="row lessBot p-0">
                 <div
@@ -422,7 +424,7 @@ function restoreWallet() {
                         class="ptr"
                         data-toggle="modal"
                         data-target="#walletBreakdownModal"
-                        @click="renderWalletBreakdown()"
+                        @click="showWalletBreakdown = true"
                     >
                         <span
                             class="logo-pivBal"
