@@ -245,7 +245,6 @@ export class Database {
         const store = this.#db
             .transaction('accounts', 'readwrite')
             .objectStore('accounts');
-        // When the account system is going to be added, the key is gonna be the publicKey
         await store.delete(publicKey);
     }
 
