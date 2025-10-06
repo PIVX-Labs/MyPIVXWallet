@@ -517,6 +517,7 @@ export class ExplorerNetwork extends Network {
             method: 'post',
             body: hex,
         });
+        if (!req.ok) throw new Error(await req.json());
         return await req.json();
     }
 

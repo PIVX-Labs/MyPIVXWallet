@@ -22,7 +22,7 @@ const { createAlert } = useAlerts();
 
 const showCreateProposalModal = ref(false);
 
-const { activeWallet: wallet } = useWallets();
+const { activeWallet: wallet, activeVault } = storeToRefs(useWallets());
 const settings = useSettings();
 const { localProposals, masternodes } = storeToRefs(useMasternode());
 const { advancedMode } = storeToRefs(settings);
@@ -31,7 +31,7 @@ const {
     currency: strCurrency,
     price,
     isViewOnly,
-} = storeToRefs(wallet);
+} = storeToRefs(wallet.value);
 const proposals = ref([]);
 const contestedProposals = ref([]);
 const nextSuperBlock = ref(0);
@@ -82,8 +82,8 @@ watch(
 );
 
 async function restoreWallet(strReason) {
-    if (!wallet.isEncrypted) return false;
-    if (wallet.isHardwareWallet) return true;
+    if (!activeVault.value.isEncrypted) return false;
+    if (wallet.value.isHardwareWallet) return true;
     showRestoreWallet.value = true;
     return await new Promise((res) => {
         watch(
@@ -123,7 +123,7 @@ onMounted(() => {
 
 async function openCreateProposal() {
     // Must have a wallet
-    if (!wallet.isImported) {
+    if (!wallet.value.isImported) {
         return createAlert('warning', ALERTS.PROPOSAL_IMPORT_FIRST, 4500);
     }
     // Wallet must be encrypted
@@ -136,20 +136,20 @@ async function openCreateProposal() {
             4500
         );
     }
-    // Ensure the wallet is unlocked
-    if (wallet.isViewOnly && !(await restoreWallet())) {
-        return;
-    }
     // Must have enough funds
-    if (wallet.balance * COIN < cChainParams.current.proposalFee) {
+    if (wallet.value.balance * COIN < cChainParams.current.proposalFee) {
         return createAlert('warning', ALERTS.PROPOSAL_NOT_ENOUGH_FUNDS, 4500);
+    }
+    // Ensure the wallet is unlocked
+    if (wallet.value.isViewOnly && !(await restoreWallet())) {
+        return;
     }
 
     showCreateProposalModal.value = true;
 }
 
 async function createProposal(name, url, payments, monthlyPayment, address) {
-    address = address || wallet.getNewAddress(1)[0];
+    address = address || wallet.value.getNewAddress(1)[0];
     const start = await getNetwork().getNextSuperblock();
     const proposal = {
         name,
@@ -169,7 +169,7 @@ async function createProposal(name, url, payments, monthlyPayment, address) {
         return;
     }
     const hash = Masternode.createProposalHash(proposal);
-    const txid = await wallet.createAndSendTransaction(
+    const txid = await wallet.value.createAndSendTransaction(
         getNetwork(),
         hash,
         cChainParams.current.proposalFee,
@@ -185,6 +185,7 @@ async function createProposal(name, url, payments, monthlyPayment, address) {
         showCreateProposalModal.value = false;
     }
 }
+
 async function finalizeProposal(proposal) {
     const { ok, err } = await Masternode.finalizeProposal(proposal);
 
@@ -320,27 +321,30 @@ async function vote(proposal, voteCode) {
 
         <hr />
         <br />
-        <h3
-            data-i18n="contestedProposalsTitle"
-            style="width: 100%; text-align: center"
-        >
-            Contested Proposals
-        </h3>
-        <p
-            data-i18n="contestedProposalsDesc"
-            style="width: 100%; text-align: center"
-        >
-            These are proposals that received an overwhelming amount of
-            downvotes, making it likely spam or a highly contestable proposal.
-        </p>
-        <br />
-        <ProposalsTable
-            :proposals="contestedProposals"
-            :masternodeCount="masternodeCount"
-            :strCurrency="strCurrency"
-            :price="price"
-            @vote="vote"
-        />
+        <span v-if="contestedProposals.length">
+            <h3
+                data-i18n="contestedProposalsTitle"
+                style="width: 100%; text-align: center"
+            >
+                Contested Proposals
+            </h3>
+            <p
+                data-i18n="contestedProposalsDesc"
+                style="width: 100%; text-align: center"
+            >
+                These are proposals that received an overwhelming amount of
+                downvotes, making it likely spam or a highly contestable
+                proposal.
+            </p>
+            <br />
+            <ProposalsTable
+                :proposals="contestedProposals"
+                :masternodeCount="masternodeCount"
+                :strCurrency="strCurrency"
+                :price="price"
+                @vote="vote"
+            />
+        </span>
     </div>
     <RestoreWallet
         :show="showRestoreWallet"
