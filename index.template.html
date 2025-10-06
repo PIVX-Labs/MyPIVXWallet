@@ -40,7 +40,7 @@
 
   <body>
       <input class="hide-element" type="text" id="clipboard">
-    <div id="page-container">
+    <div id="page-container" class="background-public">
       <div class="home-hero-dark gradientBackground"></div>
       <div id="page-container-light" class="home-hero gradientBackground" style="opacity:1;"></div>
       <div id="content-wrap">
@@ -212,11 +212,6 @@
 
                       <br />
 
-                      <div class="custom-control custom-switch" style="margin-bottom:15px;">
-                        <input type="checkbox" class="custom-control-input" id="autoSwitchToggler" onclick="MPW.toggleAutoSwitch()">
-                        <label data-i18n="settingsAutoSelectNet" class="custom-control-label" for="autoSwitchToggler">Auto-select Explorers and Nodes</label>
-                      </div>
-
                       <hr>
                       <div id="changePassword-container" class="d-none">
                         <label for="UNKNOWN" data-i18n="TODOTXT">Change your wallet's password</label>
@@ -326,11 +321,11 @@
       Alert
     -->
       <div class="alertPositioning" id="Alerts"></div>
-      <footer id="foot" style="padding-bottom: 32px;">
+      <footer id="foot" style="padding-bottom: 19px;">
         <div class="footer container">
           
-          <div class="row" style="margin:0px;">
-            <div class="col-8 footFlexMob" style="color:#7C659E;">
+          <div class="row" style="margin:0px; width: 100%;">
+            <div class="col-12 col-md-8 footFlexMob" style="color:#7C659E;">
               <div class="w-50-mob">
                 <span id="version" class="ptr" onclick="MPW.renderChangelog();"></span> - © MIT <span id="copyrightYear">2024</span>
               </div>
@@ -340,7 +335,7 @@
               </div>
             </div>
 
-            <div class="col-4 footer-icons text-right">
+            <div class="col-12 col-md-4 footer-icons text-right">
               <a href="https://github.com/PIVX-Labs/MyPIVXWallet" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-github"></i></a>
               <a href="https://discord.gg/zTScGaGtgv" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-discord"></i></a>
               <a href="https://medium.com/@pivx-labs" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-medium"></i></a>

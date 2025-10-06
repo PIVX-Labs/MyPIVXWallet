@@ -136,7 +136,6 @@ export async function start() {
         domCurrencySelect: document.getElementById('currency'),
         domExplorerSelect: document.getElementById('explorer'),
         domNodeSelect: document.getElementById('node'),
-        domAutoSwitchToggle: document.getElementById('autoSwitchToggler'),
         domTranslationSelect: document.getElementById('translation'),
         domDisplayDecimalsSlider: document.getElementById('displayDecimals'),
         domDisplayDecimalsSliderDisplay:
@@ -151,6 +150,7 @@ export async function start() {
         domAdvancedModeToggler: document.getElementById('advancedModeToggler'),
         domAutoLockModeToggler: document.getElementById('autoLockModeToggler'),
         domRedeemCameraBtn: document.getElementById('redeemCameraBtn'),
+        domPageContainer: document.getElementById('page-container'),
     };
 
     // Set Copyright year on footer
@@ -592,6 +592,8 @@ function errorHandler(e) {
     const message = `<b>${translation.unhandledException}</b><br>${sanitizeHTML(
         e.message || e.reason
     )}`;
+    // Don't display extension errors
+    if (e?.filename?.includes('extension')) return;
     try {
         createAlert('warning', message);
     } catch (_) {

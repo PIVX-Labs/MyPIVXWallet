@@ -70,7 +70,7 @@ describe('transfer menu tests', () => {
         expect(wrapper.emitted('send')).toBeUndefined();
         await wrapper.find('[data-testid=sendButton]').trigger('click');
         expect(wrapper.emitted('send')).toStrictEqual([
-            ['DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bc', '60', false],
+            ['DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bc', '60', false, ''],
         ]);
     });
 });
