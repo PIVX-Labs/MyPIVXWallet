@@ -49,6 +49,7 @@ import { OrderedArray } from './ordered_array.js';
 import { SaplingParams } from './sapling_params.js';
 import { HdMasterKey } from './masterkey.js';
 import { BinaryShieldSyncer } from './shield_syncer.js';
+import { useWallets } from './composables/use_wallet.js';
 
 /**
  * Class Wallet, at the moment it is just a "realization" of Masterkey with a given nAccount
@@ -807,7 +808,10 @@ export class Wallet {
         );
         for (const note of myOutputNotes) {
             shieldCredit += note.value;
-            arrShieldReceivers.push(note.recipient);
+            arrShieldReceivers.push({
+                recipient: note.recipient,
+                memo: note.memo,
+            });
         }
         return { shieldCredit, shieldDebit, arrShieldReceivers };
     }
@@ -1157,6 +1161,7 @@ export class Wallet {
      * @param {string?} [opts.changeDelegationAddress] - Which address to use as change when `useDelegatedInputs` is set to true.
      *     Only changes >= 1 PIV can be delegated
      * @param {boolean} [opts.isProposal] - Whether or not this is a proposal transaction
+     * @param {string} [opts.memo] - Shield memo. Ignored if it's a not sending to shield
      */
     createTransaction(
         address,
@@ -1171,6 +1176,7 @@ export class Wallet {
             subtractFeeFromAmt = true,
             changeAddress = '',
             returnAddress = '',
+            memo = '',
         } = {}
     ) {
         let balance;
@@ -1223,6 +1229,7 @@ export class Wallet {
             transactionBuilder.addOutput({
                 address,
                 value,
+                memo,
             });
         }
 
@@ -1317,6 +1324,7 @@ export class Wallet {
                 useShieldInputs: transaction.vin.length === 0,
                 utxos: this.#getUTXOsForShield(value),
                 transparentChangeAddress: this.getNewChangeAddress(),
+                memo: transaction.shieldOutput[0]?.memo,
             });
             return transaction.fromHex(hex);
         } catch (e) {
@@ -1324,7 +1332,7 @@ export class Wallet {
             await sleep(500);
             throw e;
         } finally {
-            await periodicFunction.clearInterval();
+            periodicFunction.clearInterval();
             this.#eventEmitter.emit(
                 'shield-transaction-creation-update',
                 0.0,
@@ -1633,9 +1641,8 @@ export async function cleanAndVerifySeedPhrase(
  * @returns {Promise<boolean>} If the wallet has an encrypted database backup
  */
 export async function hasEncryptedWallet() {
-    const database = await Database.getInstance();
-    const account = await database.getAccount(activeWallet.getKeyToExport());
-    return !!account?.encWif;
+    const { activeVault } = useWallets();
+    return activeVault?.isEncrypted ?? false;
 }
 
 export async function getNewAddress({
