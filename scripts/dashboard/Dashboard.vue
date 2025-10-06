@@ -7,6 +7,7 @@ import GenKeyWarning from './GenKeyWarning.vue';
 import TransferMenu from './TransferMenu.vue';
 import ExportPrivKey from './ExportPrivKey.vue';
 import RestoreWallet from './RestoreWallet.vue';
+import WalletBreakdown from './WalletBreakdown.vue';
 import {
     isExchangeAddress,
     isShieldAddress,
@@ -78,6 +79,7 @@ watch(
 
 const showExportModal = ref(false);
 const showEncryptModal = ref(false);
+const showWalletBreakdown = ref(false);
 const keyToBackup = ref('');
 const transferAddress = ref('');
 const transferDescription = ref('');
@@ -1077,10 +1079,14 @@ defineExpose({
                             :shieldEnabled="hasShield"
                             @send="showTransferMenu = true"
                             @exportPrivKeyOpen="showExportModal = true"
+                            @showWalletBreakdown="showWalletBreakdown = true"
                             :publicMode="activeWallet.publicMode"
                             class="col-12 p-0 mb-2"
                         />
-                        <WalletButtons class="col-12 p-0 md-5" />
+                        <WalletButtons
+                            @showWalletBreakdown="showWalletBreakdown = true"
+                            class="col-12 p-0 md-5"
+                        />
                         <Activity
                             class="col-12 p-0 mb-5"
                             title="Activity"
@@ -1109,5 +1115,9 @@ defineExpose({
         :reason="restoreWalletReason"
         :wallet="activeWallet"
         @close="showRestoreWallet = false"
+    />
+    <WalletBreakdown
+        v-if="showWalletBreakdown"
+        @close="showWalletBreakdown = false"
     />
 </template>

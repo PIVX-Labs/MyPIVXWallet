@@ -211,7 +211,7 @@ onMounted(async () => {
     setInterval(async () => {
         arrBreakdown.value = await getWalletDataset();
         await generateWalletBreakdown(arrBreakdown.value);
-        renderWalletBreakdown();
+        await renderWalletBreakdown();
     }, 5000);
 });
 </script>

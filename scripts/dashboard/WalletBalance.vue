@@ -22,7 +22,6 @@ import pUnlocked from '../../assets/icons/icon-lock-unlocked.svg';
 import pExport from '../../assets/icons/icon-export.svg';
 import pShieldCheck from '../../assets/icons/icon-shield-check.svg';
 import pRefresh from '../../assets/icons/icon-refresh.svg';
-import WalletBreakdown from './WalletBreakdown.vue';
 
 const props = defineProps({
     balance: Number,
@@ -146,6 +145,7 @@ const emit = defineEmits([
     'exportPrivKeyOpen',
     'displayLockWalletModal',
     'restoreWallet',
+    'showWalletBreakdown',
 ]);
 
 let listeners = [];
@@ -224,11 +224,6 @@ function restoreWallet() {
 
 <template>
     <center>
-        <WalletBreakdown
-            v-if="showWalletBreakdown"
-            @close="showWalletBreakdown = false"
-        />
-
         <div class="dcWallet-balances mb-4">
             <div class="row lessBot p-0">
                 <div
@@ -424,7 +419,7 @@ function restoreWallet() {
                         class="ptr"
                         data-toggle="modal"
                         data-target="#walletBreakdownModal"
-                        @click="showWalletBreakdown = true"
+                        @click="emit('showWalletBreakdown')"
                     >
                         <span
                             class="logo-pivBal"
