@@ -150,6 +150,7 @@ export async function start() {
         domAdvancedModeToggler: document.getElementById('advancedModeToggler'),
         domAutoLockModeToggler: document.getElementById('autoLockModeToggler'),
         domRedeemCameraBtn: document.getElementById('redeemCameraBtn'),
+        domPageContainer: document.getElementById('page-container'),
     };
 
     // Set Copyright year on footer
@@ -592,7 +593,7 @@ function errorHandler(e) {
         e.message || e.reason
     )}`;
     // Don't display extension errors
-    if (e.filename.includes('extension')) return;
+    if (e?.filename?.includes('extension')) return;
     try {
         createAlert('warning', message);
     } catch (_) {
