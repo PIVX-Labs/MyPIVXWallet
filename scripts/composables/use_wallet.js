@@ -313,6 +313,7 @@ function addVault(v) {
                 wallets: wallets.value.map((w) => w.getKeyToExport()),
                 isSeeded: v.isSeeded(),
                 label: v.label,
+                createdBlock: v.createdBlock,
             });
             for (const wallet of wallets.value) {
                 await wallet.save(encWif);
