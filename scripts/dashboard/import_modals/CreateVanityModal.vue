@@ -65,6 +65,7 @@ const emit = defineEmits(['close', 'submit']);
                     >
                     <input
                         type="text"
+                        maxlength="8"
                         :disabled="props.isGenerating"
                         data-testid="label"
                         v-model="label"
