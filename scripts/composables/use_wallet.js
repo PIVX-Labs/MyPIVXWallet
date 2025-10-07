@@ -469,6 +469,7 @@ export const useWallets = defineStore('wallets', () => {
             const database = await Database.getInstance();
             await database.removeVault(v.defaultKeyToExport);
             for (const wallet of v.wallets) {
+                await database.removeTxByXpub(wallet.getKeyToExport());
                 await database.removeAccount({
                     publicKey: wallet.getKeyToExport(),
                 });
