@@ -14,6 +14,7 @@ import { beautifyNumber } from '../misc.js';
 import TxDetails from './TxDetails.vue';
 import { useWallets } from '../composables/use_wallet';
 import TxExport from './TxExport.vue';
+import { timeToDate } from '../utils.js';
 import { storeToRefs } from 'pinia';
 
 const props = defineProps({
@@ -164,53 +165,16 @@ watch(translation, async () => {
 async function parseTXs(arrTXs) {
     const newTxs = [];
 
-    // Prepare time formatting
-    const timeOptions = {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true,
-    };
-    const dateOptions = {
-        month: 'short',
-        day: 'numeric',
-    };
-    const yearOptions = {
-        month: 'short',
-        day: 'numeric',
-        year: '2-digit',
-    };
     const cDB = await Database.getInstance();
     const cAccount = await cDB.getAccount(activeWallet.value.getKeyToExport());
 
-    const cDate = new Date();
     for (const cTx of arrTXs) {
-        const cTxDate = new Date(cTx.time * 1000);
         const memos = cTx.shieldReceivers
             .map((s) => s.memo)
             .filter((s) => s && s.length > 0);
 
         // Unconfirmed Txs are simply 'Pending'
-        let strDate = 'Pending';
-        if (cTx.blockHeight !== -1) {
-            // Check if it was today (same day, month and year)
-            const fToday =
-                cTxDate.getDate() === cDate.getDate() &&
-                cTxDate.getMonth() === cDate.getMonth() &&
-                cTxDate.getFullYear() === cDate.getFullYear();
-
-            // Figure out the most convenient time display for this Tx
-            if (fToday) {
-                // TXs made today are displayed by time (02:13 pm)
-                strDate = cTxDate.toLocaleTimeString(undefined, timeOptions);
-            } else if (cTxDate.getFullYear() === cDate.getFullYear()) {
-                // TXs older than today are displayed by short date (18 Nov)
-                strDate = cTxDate.toLocaleDateString(undefined, dateOptions);
-            } else {
-                // TXs in previous years are displayed by their short date and year (18 Nov 2023)
-                strDate = cTxDate.toLocaleDateString(undefined, yearOptions);
-            }
-        }
-
+        const strDate = timeToDate(cTx.time);
         let amountToShow = Math.abs(cTx.amount + cTx.shieldAmount);
 
         // Coinbase Transactions (rewards) require coinbaseMaturity confs
