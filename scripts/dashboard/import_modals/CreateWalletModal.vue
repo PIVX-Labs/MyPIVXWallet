@@ -92,6 +92,7 @@ function submit() {
                     </span>
                     <input
                         type="text"
+                        maxlength="8"
                         data-testid="passPhrase"
                         style="margin-bottom: 0px"
                         v-model="passphrase"

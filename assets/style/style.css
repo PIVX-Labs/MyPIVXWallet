@@ -4471,6 +4471,7 @@ textarea::placeholder {
 }
 
 .multiWalletBtn .walletsName {
+    width: 100px;
     opacity:80%;
 }
 
