@@ -168,12 +168,9 @@ async function importWallet({
                     masterKey: parsedSecret.masterKey,
                     shield: parsedSecret.shield,
                     seed: parsedSecret.seed,
-                    label:
-                        label?.trim() ||
-                        parsedSecret.masterKey
-                            .getKeyToExport(0)
-                            .substring(0, 8),
-                })
+                    label: label?.trim(),
+                }),
+                parsedSecret.masterKey.getKeyToExport(0).substring(0, 8)
             );
 
             if (needsToEncrypt.value) showEncryptModal.value = true;

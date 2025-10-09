@@ -1,6 +1,5 @@
 import { getEventEmitter } from '../event_bus.js';
 import {
-    hasEncryptedWallet,
     getNewAddress as guiGetNewAddress,
     wallets,
     setWallet,
@@ -31,7 +30,6 @@ function addWallet(wallet) {
     const isSynced = ref(wallet.isSynced);
     const getKeyToBackup = async () => await wallet.getKeyToBackup();
     const getKeyToExport = () => wallet.getKeyToExport();
-    const isEncrypted = ref(true);
     const hasShield = ref(wallet.hasShield());
     const getNewAddress = (nReceiving) => wallet.getNewAddress(nReceiving);
     const blockCount = ref(0);
@@ -41,7 +39,6 @@ function addWallet(wallet) {
         isHardwareWallet.value = wallet.isHardwareWallet();
         isHD.value = wallet.isHD();
         isViewOnly.value = wallet.isViewOnly();
-        isEncrypted.value = await hasEncryptedWallet();
         isSynced.value = wallet.isSynced;
     };
     const setMasterKey = async ({ mk, extsk }) => {
@@ -62,10 +59,6 @@ function addWallet(wallet) {
     const getNewChangeAddress = () => wallet.getNewChangeAddress();
     const isHardwareWallet = ref(wallet.isHardwareWallet());
     const isHD = ref(wallet.isHD());
-
-    hasEncryptedWallet().then((r) => {
-        isEncrypted.value = r;
-    });
 
     const balance = ref(0);
     const shieldBalance = ref(0);
@@ -160,7 +153,6 @@ function addWallet(wallet) {
         historicalTxs.value = [...wallet.getHistoricalTxs()];
     });
     getEventEmitter().on('toggle-network', async () => {
-        isEncrypted.value = await hasEncryptedWallet();
         blockCount.value = rawBlockCount;
     });
 
@@ -206,7 +198,6 @@ function addWallet(wallet) {
         publicMode,
         isImported,
         isViewOnly,
-        isEncrypted,
         isSynced,
         getKeyToBackup,
         getKeyToExport,
@@ -443,18 +434,28 @@ export const useWallets = defineStore('wallets', () => {
         vaults: vaults,
         activeWallet: activeWallet,
         activeVault,
-        addVault: async (v) => {
+        addVault: async (v, backupLabel) => {
             const vault = addVault(v);
-            rawVaults.push(v);
+
             const i = vaults.value.findIndex(
                 (other) =>
                     other.defaultKeyToExport === v.getDefaultKeyToExport()
             );
             if (i !== -1) {
+                if (!v.label) {
+                    vault.label.value = vaults.value[i].label;
+                    v.label = rawVaults[i].label;
+                }
                 // Replace old vault, so we can seed unseeded vaults
                 vaults.value[i] = vault;
+                rawVaults[i] = v;
             } else {
                 vaults.value.push(vault);
+                rawVaults.push(v);
+            }
+            if (!vault.label.value) {
+                vault.label.value = backupLabel;
+                v.label = backupLabel;
             }
             for (let i = 0; i < v.getWallets().length; i++) {
                 const wallet = await vault.addWallet(i);
@@ -468,6 +469,7 @@ export const useWallets = defineStore('wallets', () => {
             const database = await Database.getInstance();
             await database.removeVault(v.defaultKeyToExport);
             for (const wallet of v.wallets) {
+                await database.removeTxByXpub(wallet.getKeyToExport());
                 await database.removeAccount({
                     publicKey: wallet.getKeyToExport(),
                 });

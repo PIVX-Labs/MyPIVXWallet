@@ -18,13 +18,11 @@
         "Explorers": [
             { "name": "PIVX Labs", "url": "https://explorer.pivxla.bz" },
             { "name": "Duddino", "url": "https://explorer.duddino.com" },
-            { "name": "Duddino (2)", "url": "https://explorer2.duddino.com" },
             { "name": "zkBitcoin", "url": "https://zkbitcoin.com" }
         ],
         "Nodes": [
             { "name": "PIVX Labs", "url": "https://rpc.pivxla.bz/mainnet" },
-            { "name": "Duddino", "url": "https://rpc.duddino.com/mainnet" },
-            { "name": "Duddino (2)", "url": "https://rpc2.duddino.com/mainnet" }
+            { "name": "Duddino", "url": "https://rpc.duddino.com/mainnet" }
         ],
         "Consensus": {},
         "coinbaseMaturity": 100,
@@ -35,6 +33,7 @@
         "maxPayment": 43200000000000,
         "defaultColdStakingAddress": "SdgQDpS8jDRJDX8yK8m9KnTMarsE84zdsy",
         "stakeSplitTarget": 50000000000,
+        "mnReward": 600000000,
         "defaultStartingShieldBlock": 4190531
     },
     "testnet": {
@@ -69,6 +68,7 @@
         "maxPayment": 144000000000,
         "defaultColdStakingAddress": "WmNziUEPyhnUkiVdfsiNX93H6rSJnios44",
         "stakeSplitTarget": 50000000000,
+        "mnReward": 600000000,
         "defaultStartingShieldBlock": 1503537
     }
 }
