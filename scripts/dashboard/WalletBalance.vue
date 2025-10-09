@@ -5,7 +5,6 @@ import { ref, computed, toRefs, watch } from 'vue';
 import { beautifyNumber } from '../misc';
 import { useWallets } from '../composables/use_wallet';
 import { optimiseCurrencyLocale } from '../global';
-import { renderWalletBreakdown } from '../charting.js';
 import { guiRenderCurrentReceiveModal } from '../contacts-book';
 import { getNewAddress } from '../wallet.js';
 import LoadingBar from '../Loadingbar.vue';
@@ -49,10 +48,6 @@ const {
     immatureBalance,
     immatureColdBalance,
     isHdWallet,
-    isViewOnly,
-    isEncrypted,
-    isImported,
-    needsToEncrypt,
     isHardwareWallet,
     currency,
     price,
@@ -76,6 +71,7 @@ const shieldSyncingStr = ref('');
 const isCreatingTx = ref(false);
 const txPercentageCreation = ref(0.0);
 const txCreationStr = ref('Creating SHIELD transaction...');
+const showWalletBreakdown = ref(true);
 
 function resetSyncing() {
     // Transparent sync status
@@ -149,6 +145,7 @@ const emit = defineEmits([
     'exportPrivKeyOpen',
     'displayLockWalletModal',
     'restoreWallet',
+    'showWalletBreakdown',
 ]);
 
 let listeners = [];
@@ -422,7 +419,7 @@ function restoreWallet() {
                         class="ptr"
                         data-toggle="modal"
                         data-target="#walletBreakdownModal"
-                        @click="renderWalletBreakdown()"
+                        @click="emit('showWalletBreakdown')"
                     >
                         <span
                             class="logo-pivBal"
