@@ -7,7 +7,6 @@ import { isColdAddress } from '../misc';
 import { useAlerts } from '../composables/use_alerts.js';
 import { COIN, cChainParams } from '../chain_params';
 import { beautifyNumber } from '../misc';
-import { renderWalletBreakdown } from '../charting.js';
 
 import pLogo from '../../assets/p_logo.svg';
 import logo from '../../assets/pivx.png';
@@ -114,12 +113,7 @@ function submit() {
                             style="height: 60px; margin-top: 14px"
                         />
                     </div>
-                    <span
-                        class="ptr"
-                        data-toggle="modal"
-                        data-target="#walletBreakdownModal"
-                        @click="renderWalletBreakdown()"
-                    >
+                    <span class="ptr">
                         <span class="logo-pivBal" v-html="pLogo"></span>
                         <span
                             class="dcWallet-pivxBalance"
