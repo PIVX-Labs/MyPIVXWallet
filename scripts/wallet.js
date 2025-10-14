@@ -8,7 +8,7 @@ import { COutpoint, Transaction } from './transaction.js';
 import { confirmPopup, isShieldAddress } from './misc.js';
 import { cChainParams } from './chain_params.js';
 import { COIN } from './chain_params.js';
-import { ALERTS, translation } from './i18n.js';
+import { ALERTS, tr, translation } from './i18n.js';
 import { encrypt } from './aes-gcm.js';
 import { Database } from './database.js';
 import { RECEIVE_TYPES } from './contacts-book.js';
@@ -1650,13 +1650,14 @@ export async function getNewAddress({
     verify = false,
     shield = false,
     nReceiving = 0,
+    isForChange = false,
 } = {}) {
     const [address, path] = activeWallet.getNewAddress(nReceiving);
     if (verify && activeWallet.isHardwareWallet()) {
         // Generate address to present to the user without asking to verify
         const confAddress = await confirmPopup({
             title: ALERTS.CONFIRM_POPUP_VERIFY_ADDR,
-            html: createAddressConfirmation(address),
+            html: createAddressConfirmation(address, isForChange),
             resolvePromise: activeWallet.getMasterKey().verifyAddress(path),
         });
         if (address !== confAddress) {
@@ -1674,9 +1675,11 @@ export async function getNewAddress({
     return [address, path];
 }
 
-function createAddressConfirmation(address) {
-    return `${
-        translation.popupHardwareAddrCheck
-    } ${LedgerController.getInstance().getHardwareName()}.
-              <div class="seed-phrase">${address}</div>`;
+function createAddressConfirmation(address, isForChange = false) {
+    return `${tr(translation.popupHardwareAddrCheck, [
+        { device: LedgerController.getInstance().getHardwareName() },
+    ])}
+              <div class="seed-phrase">${address}</div>
+<br />
+	${isForChange ? translation.popupHardwareAddrIsUsedForChange : ''}`;
 }

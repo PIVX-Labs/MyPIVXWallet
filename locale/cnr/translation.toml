@@ -152,7 +152,6 @@ popupProposalAddress = "Adresa predloga (Opcionalno)" # Proposal Address (Option
 popupProposalDuration = "Trajanje u ciklusima" # Duration in cycles
 popupProposalPerCycle = "po ciklusu" # per cycle
 popupProposalEncryptFirst = "Morate pritisnuti „{button}“ pre nego što možete kreirati predloge!" # You need to hit "{button}" before you can create proposals!
-popupHardwareAddrCheck = "Molimo vas da potvrdite da je ovo adresa koju vidite na svom" # Please confirm this is the address you see on your
 proposalFinalisationConfirming = "Potvrđivanje..." # Confirming...
 proposalFinalisationRemaining = "preostalo" # remaining
 proposalFinalisationExpired = "Predlog je istekao" # Proposal Expired
@@ -253,6 +252,8 @@ stop = "" # Stop
 popupSeedPhraseBadNote = "" # <b>This Seed Phrase appears to be invalid <br> (The checksum doesn't match). <br> It might have a typo, </b> or it could’ve been created in an unusual way. Do you still want to continue?
 transactionNeedsAddress = "" # The address field is empty
 transactionNeedsAmount = "" # The amount is invalid
+popupHardwareAddrIsUsedForChange = "" # This address will receive the change (unused funds) from your transaction.
+popupHardwareAddrCheck = "" # Verify that the address shown on this popup matches the one displayed on your <b>{device}</b> device. <br/> This confirms the address really belongs to your wallet and hasn’t been tampered with.
 
 [ALERTS]
 INTERNAL_ERROR = "Interna greška, molimo pokušajte ponovo kasnije" # Internal error, please try again later
