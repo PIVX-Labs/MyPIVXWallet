@@ -7,6 +7,7 @@ import { storeToRefs } from 'pinia';
 import { useSettings } from '../composables/use_settings';
 import { sleep } from '../utils';
 import RestoreWallet from './RestoreWallet.vue';
+import PlusIcon from '../../assets/icons/icon-plus.svg';
 
 const wallets = useWallets();
 const { activeWallet, activeVault } = storeToRefs(wallets);
@@ -161,12 +162,16 @@ async function restoreWallet() {
                             font-size: 13px;
                             text-wrap: nowrap;
                         "
-                        >{{
-                            vault.label.length >= 13
-                                ? vault.label.slice(0, 13) + '...'
-                                : vault.label
-                        }}</span
                     >
+                        <strong>
+                            {{
+                                vault.label.length >= 13
+                                    ? vault.label.slice(0, 13) + '...'
+                                    : vault.label
+                            }}
+                        </strong></span
+                    >
+
                     <span
                         style="
                             border-top: 1px solid #9221ff;
@@ -175,47 +180,50 @@ async function restoreWallet() {
                             margin-left: 13px;
                         "
                     ></span>
-                    <div>
-                        <button
-                            v-if="vault.canGenerateMore"
-                            class="pivx-button-small"
-                            @click="addWallet(vault)"
-                            style="
-                                padding: 0px;
-                                height: 25px;
-                                width: 25px;
-                                margin-left: 11px;
-                                font-size: 20px !important;
-                            "
-                        >
-                            +
-                        </button>
-                    </div>
                 </div>
                 <div
-                    v-for="(wallet, i) of vault.wallets"
-                    @click="
-                        select(wallet);
-                        showLogin = false;
+                    style="
+                        display: flex;
+                        flex-direction: column;
+                           justify-content: center;
+			   gap: 10px;
                     "
-                    class="walletsItem"
-                    :style="{
-                        color:
-                            wallet.getKeyToExport() ===
-                            wallets.activeWallet.getKeyToExport()
-                                ? '#9221FF'
-                                : '',
-                    }"
                 >
-                    <span>{{ vault.label }} {{ i }}</span>
-                    <div class="walletsAmount">
-                        <span style="margin-right: 5px">{{
-                            formatBalance(
-                                (wallet.balance + wallet.shieldBalance) / COIN
-                            )
-                        }}</span>
-                        <span class="walletsTicker">PIV</span>
+                    <div
+                        v-for="(wallet, i) of vault.wallets"
+                        @click="
+                            select(wallet);
+                            showLogin = false;
+                        "
+                        class="walletsItem walletContainer"
+                        :class="{
+                            walletSelected:
+                                wallet.getKeyToExport() ===
+                                wallets.activeWallet.getKeyToExport(),
+                        }"
+                    >
+                        <span>
+                            <strong>{{ vault.label }} {{ i }} </strong></span
+                        >
+                        <div class="walletsAmount">
+                            <span style="margin-right: 5px">{{
+                                formatBalance(
+                                    (wallet.balance + wallet.shieldBalance) /
+                                        COIN
+                                )
+                            }}</span>
+                            <span class="walletsTicker">PIV</span>
+                        </div>
                     </div>
+                        <button
+                            v-if="vault.canGenerateMore"
+                            class="pivx-button"
+                            @click="addWallet(vault)"
+                            style="padding: 6px; background: none; display: flex; flex-direction: row; align-items: center; max-width: 150px; align-self: center; padding-left: 0.5rem;"
+                        >
+                            <span class="plus-icon red-icon" v-html="PlusIcon" style="margin-bottom: 2px;"></span>
+                            <strong style="font-size: 0.8rem; margin-left: 4px; margin-right: 4px;">ADD ACCOUNT</strong>
+                        </button>
                 </div>
             </div>
             <hr
@@ -236,7 +244,7 @@ async function restoreWallet() {
                     "
                     style="padding: 11px 12px; width: 100%"
                 >
-                    + ADD ACCOUNT
+                    + ADD NEW WALLET
                 </button>
             </div>
         </div>
@@ -247,3 +255,17 @@ async function restoreWallet() {
         @close="showRestoreWallet = false"
     />
 </template>
+<style>
+.walletContainer {
+    display: flex;
+    align-items: center;
+}
+.walletSelected {
+    color: #9221ff;
+    outline: 1px solid #9221ff;
+    border-radius: 9px;
+ }
+.red-icon svg path {
+    fill: #9221ff !important;
+ }
+</style>
