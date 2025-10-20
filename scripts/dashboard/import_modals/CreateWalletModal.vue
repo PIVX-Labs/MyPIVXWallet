@@ -110,9 +110,8 @@ function submit() {
                 >
                     {{ translation.popupCancel }}
                 </button>
-                <button class="pivx-button-big">
+                <button class="pivx-button-big" @click="submit()">
                     <span
-                        @click="submit()"
                         data-testid="wroteSeedphraseDown"
                         aclass="buttoni-text"
                     >
