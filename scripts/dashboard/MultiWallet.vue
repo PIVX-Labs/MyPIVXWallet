@@ -185,8 +185,8 @@ async function restoreWallet() {
                     style="
                         display: flex;
                         flex-direction: column;
-                           justify-content: center;
-			   gap: 10px;
+                        justify-content: center;
+                        gap: 10px;
                     "
                 >
                     <div
@@ -215,15 +215,35 @@ async function restoreWallet() {
                             <span class="walletsTicker">PIV</span>
                         </div>
                     </div>
-                        <button
-                            v-if="vault.canGenerateMore"
-                            class="pivx-button"
-                            @click="addWallet(vault)"
-                            style="padding: 6px; background: none; display: flex; flex-direction: row; align-items: center; max-width: 150px; align-self: center; padding-left: 0.5rem;"
+                    <button
+                        v-if="vault.canGenerateMore"
+                        class="pivx-button"
+                        @click="addWallet(vault)"
+                        style="
+                            padding: 6px;
+                            background: none;
+                            display: flex;
+                            flex-direction: row;
+                            align-items: center;
+                            max-width: 150px;
+                            align-self: center;
+                            padding-left: 0.5rem;
+                        "
+                    >
+                        <span
+                            class="plus-icon red-icon"
+                            v-html="PlusIcon"
+                            style="margin-bottom: 2px"
+                        ></span>
+                        <strong
+                            style="
+                                font-size: 0.8rem;
+                                margin-left: 4px;
+                                margin-right: 4px;
+                            "
+                            >ADD ACCOUNT</strong
                         >
-                            <span class="plus-icon red-icon" v-html="PlusIcon" style="margin-bottom: 2px;"></span>
-                            <strong style="font-size: 0.8rem; margin-left: 4px; margin-right: 4px;">ADD ACCOUNT</strong>
-                        </button>
+                    </button>
                 </div>
             </div>
             <hr
@@ -264,8 +284,8 @@ async function restoreWallet() {
     color: #9221ff;
     outline: 1px solid #9221ff;
     border-radius: 9px;
- }
+}
 .red-icon svg path {
     fill: #9221ff !important;
- }
+}
 </style>
