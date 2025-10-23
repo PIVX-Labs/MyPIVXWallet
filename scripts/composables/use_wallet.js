@@ -45,9 +45,6 @@ function addWallet(wallet) {
         await wallet.setMasterKey({ mk, extsk });
         await updateWallet();
     };
-    watch(wallet, async () => {
-        await updateWallet();
-    });
 
     const setExtsk = async (extsk) => {
         await wallet.setExtsk(extsk);

@@ -1079,7 +1079,6 @@ defineExpose({
                         />
                         <WalletButtons class="col-12 p-0 md-5" />
                         <Activity
-                            class="col-12 p-0 mb-5"
                             title="Activity"
                             :rewards="false"
                         />
