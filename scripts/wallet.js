@@ -1063,6 +1063,7 @@ export class Wallet {
         // If explorer sapling root is different from ours, there must be a sync error
         if (saplingRoot !== networkSaplingRoot) {
             createAlert('warning', translation.badSaplingRoot, 5000);
+            this.resync();
             return false;
         }
         return true;
