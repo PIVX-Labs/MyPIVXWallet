@@ -137,6 +137,6 @@ export class Vault {
     }
 
     canGenerateMore() {
-        return !!this.#seed;
+        return !!this.#seed || this.getDefaultWallet().isHardwareWallet();
     }
 }
