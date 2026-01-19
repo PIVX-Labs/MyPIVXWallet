@@ -212,7 +212,7 @@ function addWallet(wallet) {
             isViewOnly.value = wallet.isViewOnly();
         },
         save: (encWif) => wallet.save(encWif),
-        isOwnAddress: () => wallet.isOwnAddress(),
+        isOwnAddress: (addr) => wallet.isOwnAddress(addr),
         isCreatingTransaction,
         isHD,
         balance,
