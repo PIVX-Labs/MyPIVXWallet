@@ -1,5 +1,4 @@
 <script setup>
-import { renderWalletBreakdown } from '../charting.js';
 import { guiRenderContacts } from '../contacts-book';
 import { watch, ref } from 'vue';
 import { storeToRefs } from 'pinia';
@@ -16,6 +15,7 @@ import { translation } from '../i18n.js';
 const { activeWallet, activeVault } = storeToRefs(useWallets());
 const network = useNetwork();
 const walletUrl = ref('');
+const emit = defineEmits('showWalletBreakdown');
 
 watch(
     [activeWallet, network],
@@ -36,9 +36,7 @@ watch(
         <div class="row mb-5" style="max-width: 310px; font-size: 13px">
             <div
                 class="col-3 p-0 cur-pointer"
-                @click="renderWalletBreakdown()"
-                data-toggle="modal"
-                data-target="#walletBreakdownModal"
+                @click="emit('showWalletBreakdown')"
             >
                 <span class="dashboardActionIcon" v-html="pStats"></span><br />
                 <span style="color: #eddaffc7">{{ translation.balance }}</span>

@@ -2,6 +2,7 @@
 const props = defineProps({
     show: Boolean,
     modalClass: String,
+    headerClass: String,
     centered: Boolean,
 });
 </script>
@@ -22,7 +23,11 @@ const props = defineProps({
                     class="modal-content exportKeysModalColor"
                     :class="modalClass"
                 >
-                    <div class="modal-header" v-if="!!$slots.header">
+                    <div
+                        class="modal-header"
+                        v-if="!!$slots.header"
+                        :class="headerClass"
+                    >
                         <slot name="header"></slot>
                     </div>
                     <div

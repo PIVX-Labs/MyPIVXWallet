@@ -7,6 +7,7 @@ import GenKeyWarning from './GenKeyWarning.vue';
 import TransferMenu from './TransferMenu.vue';
 import ExportPrivKey from './ExportPrivKey.vue';
 import RestoreWallet from './RestoreWallet.vue';
+import WalletBreakdown from './WalletBreakdown.vue';
 import {
     isExchangeAddress,
     isShieldAddress,
@@ -34,7 +35,7 @@ import { LedgerController } from '../ledger';
 import { guiAddContactPrompt } from '../contacts-book';
 import { scanQRCode } from '../scanner';
 import { useWallets } from '../composables/use_wallet.js';
-import { setWallet, Wallet } from '../wallet.js';
+import { Wallet } from '../wallet.js';
 import { useSettings } from '../composables/use_settings.js';
 import pLogo from '../../assets/p_logo.svg';
 import pShieldLogo from '../../assets/icons/icon_shield_pivx.svg';
@@ -78,6 +79,7 @@ watch(
 
 const showExportModal = ref(false);
 const showEncryptModal = ref(false);
+const showWalletBreakdown = ref(false);
 const keyToBackup = ref('');
 const transferAddress = ref('');
 const transferDescription = ref('');
@@ -1074,10 +1076,14 @@ defineExpose({
                             :shieldEnabled="hasShield"
                             @send="showTransferMenu = true"
                             @exportPrivKeyOpen="showExportModal = true"
+                            @showWalletBreakdown="showWalletBreakdown = true"
                             :publicMode="activeWallet.publicMode"
                             class="col-12 p-0 mb-2"
                         />
-                        <WalletButtons class="col-12 p-0 md-5" />
+                        <WalletButtons
+                            @showWalletBreakdown="showWalletBreakdown = true"
+                            class="col-12 p-0 md-5"
+                        />
                         <Activity
                             class="col-12 p-0 mb-5"
                             title="Activity"
@@ -1106,5 +1112,9 @@ defineExpose({
         :reason="restoreWalletReason"
         :wallet="activeWallet"
         @close="showRestoreWallet = false"
+    />
+    <WalletBreakdown
+        v-if="showWalletBreakdown"
+        @close="showWalletBreakdown = false"
     />
 </template>

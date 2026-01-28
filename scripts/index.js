@@ -53,7 +53,6 @@ export {
     guiAddContactImage,
     localContactToClipboard,
 } from './contacts-book.js';
-export { renderWalletBreakdown } from './charting.js';
 export { hexToBytes, bytesToHex, dSHA256 } from './utils.js';
 
 import Masternode from './masternode.js';
