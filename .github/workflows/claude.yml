@@ -1,0 +1,81 @@
+name: Claude Code
+
+on:
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+  pull_request:
+    types: [opened, ready_for_review]
+  issues:
+    types: [opened, assigned]
+  pull_request_review:
+    types: [submitted]
+
+jobs:
+  claude:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      id-token: write
+      actions: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+
+      - name: Run Claude Code
+        id: claude
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          track_progress: true
+          claude_args: |
+            --model claude-opus-4-5-20251101
+          prompt: |
+            Perform an exhaustive, deep review of this pull request.
+
+            ## Analysis Depth
+            - Trace every code path introduced or modified
+            - Examine how changes interact with existing code across the entire codebase
+            - Consider all edge cases, race conditions, and failure modes
+            - Analyze security implications thoroughly (injection, XSS, authentication, cryptographic concerns)
+
+            ## Bug Verification Protocol
+            CRITICAL: Before reporting ANY potential bug, you MUST:
+            1. Read and understand ALL related code files, not just the changed lines
+            2. Trace the full execution flow from entry point to completion
+            3. Check if existing code already handles the case you're concerned about
+            4. Verify your assumptions by examining actual usage patterns in the codebase
+            5. Consider whether the behavior is intentional based on project context
+            6. Only report if you have HIGH CONFIDENCE after this verification
+
+            Do NOT report speculative issues. If uncertain, investigate deeper rather than flagging a false alarm.
+
+            ## Review Focus
+            - Logic correctness and algorithmic soundness
+            - State management and data flow integrity
+            - Error handling completeness
+            - Resource management (memory, connections, handles)
+            - Concurrency safety
+            - API contract adherence
+            - Performance implications at scale
+
+            ## Feedback Format
+            When providing feedback, ALWAYS include:
+            1. A concise explanation of the issue or improvement opportunity
+            2. A code snippet showing the suggested fix or improvement
+            3. Brief reasoning for why the change is beneficial
+
+            Use GitHub's suggestion syntax for inline code changes:
+            ```suggestion
+            // improved code here
+            ```
+
+            This allows the PR author to apply your suggestions directly with one click.
+
+            Quality over quantity - every comment should be valuable, verified, and actionable with concrete code.

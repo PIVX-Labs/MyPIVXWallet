@@ -45,9 +45,6 @@ function addWallet(wallet) {
         await wallet.setMasterKey({ mk, extsk });
         await updateWallet();
     };
-    watch(wallet, async () => {
-        await updateWallet();
-    });
 
     const setExtsk = async (extsk) => {
         await wallet.setExtsk(extsk);
@@ -212,7 +209,7 @@ function addWallet(wallet) {
             isViewOnly.value = wallet.isViewOnly();
         },
         save: (encWif) => wallet.save(encWif),
-        isOwnAddress: () => wallet.isOwnAddress(),
+        isOwnAddress: (addr) => wallet.isOwnAddress(addr),
         isCreatingTransaction,
         isHD,
         balance,
