@@ -1073,6 +1073,7 @@ export class Wallet {
             getNetwork().rotateNetworks();
 
             createAlert('warning', translation.badSaplingRoot, 5000);
+            this.resync();
             return false;
         }
         return true;
