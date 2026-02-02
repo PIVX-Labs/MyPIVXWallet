@@ -50,6 +50,12 @@ const { createAlert } = useAlerts();
 const wallets = useWallets();
 const { activeWallet, activeVault } = storeToRefs(wallets);
 
+watch(activeWallet, async (currentWallet) => {
+    const success = await currentWallet.sync();
+    if (success && activeWallet.value === currentWallet)
+        createAlert('success', translation.syncStatusFinished, 12500);
+});
+
 const needsToEncrypt = computed(() => {
     if (activeWallet.value.isHardwareWallet) {
         return false;
@@ -177,9 +183,7 @@ async function importWallet({
             }
 
             // Start syncing in the background
-            activeWallet.value.sync().then(() => {
-                createAlert('success', translation.syncStatusFinished, 12500);
-            });
+            activeWallet.value.sync();
             getEventEmitter().emit('wallet-import');
             return true;
         }
