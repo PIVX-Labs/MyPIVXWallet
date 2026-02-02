@@ -231,7 +231,7 @@ async function restoreWallet() {
                         "
                     >
                         <span
-                            class="plus-icon red-icon"
+                            class="plus-icon purple-icon"
                             v-html="PlusIcon"
                             style="margin-bottom: 2px"
                         ></span>
@@ -285,7 +285,7 @@ async function restoreWallet() {
     outline: 1px solid #9221ff;
     border-radius: 9px;
 }
-.red-icon svg path {
+.purple-icon svg path {
     fill: #9221ff !important;
 }
 </style>
