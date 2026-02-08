@@ -76,7 +76,7 @@ export class Database {
     }
 
     /**
-     * Add Promo Code to the database for tracking and management
+     * Add Giftcode to the database for tracking and management
      * @param {PromoWallet} promo
      */
     async addPromo(promo) {
@@ -87,8 +87,8 @@ export class Database {
         await store.put(promo, promo.code);
     }
     /**
-     * Removes a Promo Code from the Promo management system
-     * @param {string} promoCode - the promo code to remove
+     * Removes a Giftcode from the Promo management system
+     * @param {string} promoCode - the giftcode to remove
      */
     async removePromo(promoCode) {
         const store = this.#db
@@ -383,7 +383,7 @@ export class Database {
     }
 
     /**
-     * @returns {Promise<Array<PromoWallet>>} all Promo Codes stored in the db
+     * @returns {Promise<Array<PromoWallet>>} all Giftcodes stored in the db
      */
     async getAllPromos() {
         const store = this.#db
