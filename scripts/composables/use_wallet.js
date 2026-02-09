@@ -329,7 +329,7 @@ function addVault(v) {
             if (encryptedSecret) return encryptedSecret;
             // vault was not encrypted, return raw seed
             const secret = v.getSecretToExport();
-            if (typeof v.getSecretToExport() === 'string') {
+            if (typeof secret === 'string') {
                 return secret;
             } else {
                 return buff_to_base64(secret);
