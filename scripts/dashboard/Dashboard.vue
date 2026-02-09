@@ -638,7 +638,7 @@ defineExpose({
                     </center>
                 </div>
 
-                <!-- Redeem Code (PIVX Promos) -->
+                <!-- Redeem Code (PIVX Giftcodes) -->
                 <div
                     class="modal"
                     id="redeemCodeModal"
@@ -707,11 +707,11 @@ defineExpose({
                                         style="
                                             color: #af9cc6;
                                             font-size: 15px;
-                                            width: 250px;
+                                            width: 275px;
                                             font-family: Montserrat !important;
                                         "
                                     >
-                                        PIVX Promos
+                                        PIVX Giftcodes
                                         {{ translation.pivxPromos }}
                                     </p>
                                     <div id="redeemCodeUse">
@@ -887,7 +887,7 @@ defineExpose({
                                                             "
                                                             class="text-center"
                                                         >
-                                                            <b> Promo Code </b>
+                                                            <b> Giftcode </b>
                                                         </td>
                                                         <td
                                                             style="
@@ -982,7 +982,7 @@ defineExpose({
                         </div>
                     </div>
                 </div>
-                <!-- // Redeem Code (PIVX Promos) -->
+                <!-- // Redeem Code (PIVX Giftcodes) -->
 
                 <!-- Contacts Modal -->
                 <div

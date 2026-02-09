@@ -1,6 +1,6 @@
 import { PromoCode } from 'pivx-promos';
 
-// Listen for the caller giving the 'Promo Code' to derive
+// Listen for the caller giving the 'Giftcode' to derive
 onmessage = async function (evt) {
     const code = new PromoCode(evt.data);
 
