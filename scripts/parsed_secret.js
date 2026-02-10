@@ -4,7 +4,7 @@ import { cChainParams } from './chain_params.js';
 import { LegacyMasterKey, HdMasterKey } from './masterkey.js';
 import { PIVXShield } from 'pivx-shield';
 import { mnemonicToSeed } from 'bip39';
-import { decrypt } from './aes-gcm.js';
+import { base64_to_buf, decrypt } from './aes-gcm.js';
 import { isBase64 } from './misc.js';
 
 export class ParsedSecret {
@@ -24,6 +24,29 @@ export class ParsedSecret {
     }
 
     /**
+     * @param {Uint8Array} seed
+     */
+    static async createParsedSecretBySeed(seed) {
+        const pivxShield = await PIVXShield.create({
+            seed,
+            // hardcoded value considering the last checkpoint, this is good both for mainnet and testnet
+            // TODO: take the wallet creation height in input from users
+            blockHeight: cChainParams.current.defaultStartingShieldBlock,
+            coinType: cChainParams.current.BIP44_TYPE,
+            // TODO: Change account index once account system is made
+            accountIndex: 0,
+            loadSaplingData: false,
+        });
+        return new ParsedSecret(
+            new HdMasterKey({
+                seed,
+            }),
+            pivxShield,
+            seed
+        );
+    }
+
+    /**
      * Parses whatever the secret is to a MasterKey
      * @param {string|number[]|Uint8Array} secret
      * @returns {Promise<ParsedSecret?>}
@@ -37,6 +60,12 @@ export class ParsedSecret {
             {
                 test: (s) => isBase64(s) && s.length >= 128,
                 f: async (s, p) => ParsedSecret.parse(await decrypt(s, p)),
+            },
+            {
+                // If it's base64, and the length is 88 (64 decoded), it's likely a seed
+                test: (s) => isBase64(s) && s.length === 88,
+                f: (s) =>
+                    ParsedSecret.createParsedSecretBySeed(base64_to_buf(s)),
             },
             {
                 test: (s) => s.startsWith('xprv'),
@@ -65,24 +94,7 @@ export class ParsedSecret {
                     );
                     if (!ok) throw new Error(msg);
                     const seed = await mnemonicToSeed(phrase, password);
-                    const pivxShield = await PIVXShield.create({
-                        seed,
-                        // hardcoded value considering the last checkpoint, this is good both for mainnet and testnet
-                        // TODO: take the wallet creation height in input from users
-                        blockHeight:
-                            cChainParams.current.defaultStartingShieldBlock,
-                        coinType: cChainParams.current.BIP44_TYPE,
-                        // TODO: Change account index once account system is made
-                        accountIndex: 0,
-                        loadSaplingData: false,
-                    });
-                    return new ParsedSecret(
-                        new HdMasterKey({
-                            seed,
-                        }),
-                        pivxShield,
-                        seed
-                    );
+                    return await ParsedSecret.createParsedSecretBySeed(seed);
                 },
             },
             {
