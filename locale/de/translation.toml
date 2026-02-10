@@ -146,7 +146,6 @@ popupProposalAddress = "Adresse des Antrags (Optional)" # Proposal Address (Opti
 popupProposalDuration = "Dauer in Zyklen" # Duration in cycles
 popupProposalPerCycle = "pro Zyklus" # per cycle
 popupProposalEncryptFirst = "Du musst den \"{button}\" drücken bevor du einen Antrag erstellen kannst!" # You need to hit "{button}" before you can create proposals!
-popupHardwareAddrCheck = "Bitte bestätige die Adresse auf deinem" # Please confirm this is the address you see on your
 proposalFinalisationConfirming = "Bestätige..." # Confirming...
 proposalFinalisationRemaining = "Verbleibend" # remaining
 proposalFinalisationExpired = "Antrag ausgelaufen" # Proposal Expired
@@ -253,6 +252,8 @@ stop = "" # Stop
 popupSeedPhraseBadNote = "" # <b>This Seed Phrase appears to be invalid <br> (The checksum doesn't match). <br> It might have a typo, </b> or it could’ve been created in an unusual way. Do you still want to continue?
 transactionNeedsAddress = "" # The address field is empty
 transactionNeedsAmount = "" # The amount is invalid
+popupHardwareAddrIsUsedForChange = "" # This address will receive the change (unused funds) from your transaction.
+popupHardwareAddrCheck = "" # Verify that the address shown on this popup matches the one displayed on your <b>{device}</b> device. <br/> This confirms the address really belongs to your wallet and hasn’t been tampered with.
 
 [ALERTS]
 INTERNAL_ERROR = "Interner Fehler, bitte versuche es später erneut" # Internal error, please try again later
