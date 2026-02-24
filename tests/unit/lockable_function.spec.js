@@ -6,13 +6,14 @@ describe('Lockable function tests', () => {
     let test_function;
     const sleep_time = 1000;
     beforeEach(() => {
+        let counter = 0;
         test_function = lockableFunction(async (str_input) => {
             await sleep(sleep_time);
-            return str_input;
+            return `${str_input}-${counter++}`;
         });
     });
     it('Lockable function returns the correct value', async () => {
-        expect(await test_function('test_locks')).toBe('test_locks');
+        expect(await test_function('test_locks')).toBe('test_locks-0');
     });
     it('Lockable function gives the correct value for the lock', async () => {
         // At the beginning there is no lock
@@ -26,7 +27,13 @@ describe('Lockable function tests', () => {
         expect(test_function.isLocked()).toBeFalsy();
     });
     it("Calling when locked doesn't make the function run twice", async () => {
-        test_function('test_locks');
-        expect(await test_function('test_locks')).toBeUndefined();
+        const result = test_function('test_locks');
+        const result2 = test_function('test_locks');
+        expect(await Promise.all([result, result2])).toStrictEqual([
+            'test_locks-0',
+            'test_locks-0',
+        ]);
+        const result3 = await test_function('test_locks');
+        expect(result3).toBe('test_locks-1');
     });
 });

@@ -45,9 +45,6 @@ function addWallet(wallet) {
         await wallet.setMasterKey({ mk, extsk });
         await updateWallet();
     };
-    watch(wallet, async () => {
-        await updateWallet();
-    });
 
     const setExtsk = async (extsk) => {
         await wallet.setExtsk(extsk);
@@ -69,11 +66,12 @@ function addWallet(wallet) {
     const currency = ref('USD');
     const price = ref(0.0);
     const sync = async () => {
-        await wallet.sync();
+        const result = await wallet.sync();
         balance.value = wallet.balance;
         shieldBalance.value = await wallet.getShieldBalance();
         pendingShieldBalance.value = await wallet.getPendingShieldBalance();
         isSynced.value = wallet.isSynced;
+        return result;
     };
     wallet.onShieldLoadedFromDisk(() => {
         hasShield.value = wallet.hasShield();
@@ -212,7 +210,7 @@ function addWallet(wallet) {
             isViewOnly.value = wallet.isViewOnly();
         },
         save: (encWif) => wallet.save(encWif),
-        isOwnAddress: () => wallet.isOwnAddress(),
+        isOwnAddress: (addr) => wallet.isOwnAddress(addr),
         isCreatingTransaction,
         isHD,
         balance,
@@ -435,18 +433,28 @@ export const useWallets = defineStore('wallets', () => {
         vaults: vaults,
         activeWallet: activeWallet,
         activeVault,
-        addVault: async (v) => {
+        addVault: async (v, backupLabel) => {
             const vault = addVault(v);
-            rawVaults.push(v);
+
             const i = vaults.value.findIndex(
                 (other) =>
                     other.defaultKeyToExport === v.getDefaultKeyToExport()
             );
             if (i !== -1) {
+                if (!v.label) {
+                    vault.label.value = vaults.value[i].label;
+                    v.label = rawVaults[i].label;
+                }
                 // Replace old vault, so we can seed unseeded vaults
                 vaults.value[i] = vault;
+                rawVaults[i] = v;
             } else {
                 vaults.value.push(vault);
+                rawVaults.push(v);
+            }
+            if (!vault.label.value) {
+                vault.label.value = backupLabel;
+                v.label = backupLabel;
             }
             for (let i = 0; i < v.getWallets().length; i++) {
                 const wallet = await vault.addWallet(i);
@@ -460,6 +468,7 @@ export const useWallets = defineStore('wallets', () => {
             const database = await Database.getInstance();
             await database.removeVault(v.defaultKeyToExport);
             for (const wallet of v.wallets) {
+                await database.removeTxByXpub(wallet.getKeyToExport());
                 await database.removeAccount({
                     publicKey: wallet.getKeyToExport(),
                 });

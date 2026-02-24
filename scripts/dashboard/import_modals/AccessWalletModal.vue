@@ -88,6 +88,7 @@ function close() {
                     >
                     <input
                         v-model="label"
+                        maxlength="8"
                         data-testid="labelInput"
                         type="text"
                     />

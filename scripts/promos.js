@@ -18,14 +18,14 @@ import { useNetwork } from './composables/use_network.js';
 import pIconGift from '../assets/icons/icon-gift.svg';
 import pIconGiftOpen from '../assets/icons/icon-gift-opened.svg';
 
-/** The fee in Sats to use for Creating or Redeeming PIVX Promos */
+/** The fee in Sats to use for Creating or Redeeming PIVX Giftcodes */
 export const PROMO_FEE = 10000;
 
 /** The maximum length of a rendered code before cutting off with a unicode ellipsis (…) */
 const MAX_CODE_RENDER_LENGTH = 10;
 
 /**
- * The global storage for temporary Promo Code wallets, this is used for sweeping funds
+ * The global storage for temporary Giftcode wallets, this is used for sweeping funds
  * @type {PromoWallet}
  */
 export let cPromoWallet = null;
@@ -33,20 +33,20 @@ export let cPromoWallet = null;
 export class PromoWallet {
     /**
      * @param {object} data - An object containing the PromoWallet data
-     * @param {string} data.code - The human-readable Promo Code
-     * @param {string} data.address - The public key associated with the Promo Code
-     * @param {Uint8Array} data.pkBytes - The private key bytes derived from the Promo Code
+     * @param {string} data.code - The human-readable Giftcode
+     * @param {string} data.address - The public key associated with the Giftcode
+     * @param {Uint8Array} data.pkBytes - The private key bytes derived from the Giftcode
      * @param {Date|number} data.time - The Date or timestamp the code was created
-     * @param {Array<object>} data.utxos - UTXOs associated with the Promo Code
+     * @param {Array<object>} data.utxos - UTXOs associated with the Giftcode
      */
     constructor({ code, address, pkBytes, utxos, time }) {
-        /** @type {string} The human-readable Promo Code */
+        /** @type {string} The human-readable Giftcode */
         this.code = code;
-        /** @type {string} The public key associated with the Promo Code */
+        /** @type {string} The public key associated with the Giftcode */
         this.address = address;
-        /** @type {Uint8Array} The private key bytes derived from the Promo Code */
+        /** @type {Uint8Array} The private key bytes derived from the Giftcode */
         this.pkBytes = pkBytes;
-        /** @type {Array<UTXO>} UTXOs associated with the Promo Code */
+        /** @type {Array<UTXO>} UTXOs associated with the Giftcode */
         this.utxos = utxos;
         /** @type {Date|number} The Date or timestamp the code was created */
         this.time = time instanceof Date ? time : new Date(time);
@@ -59,7 +59,7 @@ export class PromoWallet {
     fLock = false;
 
     /**
-     * Synchronise UTXOs and return the balance of the Promo Code
+     * Synchronise UTXOs and return the balance of the Giftcode
      * @param {boolean} - Whether to use UTXO Cache, or sync from network
      * @returns {Promise<number>} - The Promo Wallet balance in sats
      */
@@ -83,7 +83,7 @@ export class PromoWallet {
         if (!fFull && this.fLock) return this.utxos;
         this.fLock = true;
 
-        // If we don't have it, derive the public key from the promo code's WIF
+        // If we don't have it, derive the public key from the giftcode's WIF
         if (!this.address) {
             this.address = deriveAddress({ pkBytes: this.pkBytes });
         }
@@ -118,7 +118,7 @@ export class PromoWallet {
 let fPromoRedeem = true;
 
 /**
- * Sets the mode of the PIVX Promos UI
+ * Sets the mode of the PIVX Giftcodes UI
  * @param {boolean} fMode - `true` to redeem, `false` to create
  */
 export async function setPromoMode(fMode) {
@@ -223,9 +223,9 @@ const arrPromoCreationThreads = [];
 let fPromoIntervalStarted = false;
 
 /**
- * Create a new 'PIVX Promos' code with a webworker
- * @param {string} strCode - The Promo Code to create
- * @param {number} nAmount - The Promo Code amount in coins
+ * Create a new 'PIVX Giftcodes' code with a webworker
+ * @param {string} strCode - The Giftcode to create
+ * @param {number} nAmount - The Giftcode amount in coins
  * @param {boolean} fAddRandomness - Whether to append Randomness to the code
  */
 export async function createPromoCode(strCode, nAmount, fAddRandomness = true) {
@@ -309,7 +309,7 @@ export async function createPromoCode(strCode, nAmount, fAddRandomness = true) {
         end_state: '',
     };
 
-    // Inject the promo code in to the thread context
+    // Inject the giftcode in to the thread context
     cThread.thread.code = strFinalCode;
 
     // Setup it's internal update function
@@ -366,7 +366,7 @@ export async function deletePromoCode(strCode) {
 let arrPromoCodes = [];
 
 /**
- * Render locally-saved Promo Codes in the created list
+ * Render locally-saved Giftcodes in the created list
  * @type {Promise<RenderedPromoPair>} - The code count and HTML pair
  */
 export async function renderSavedPromos() {
@@ -452,11 +452,11 @@ export async function renderSavedPromos() {
     return { codes: arrCodes.length, html: strHTML };
 }
 
-/** Export and download all PIVX Promos data in to a CSV format */
+/** Export and download all PIVX Giftcodes data in to a CSV format */
 export async function promosToCSV() {
     const arrCSV = [
         // Titles
-        ['Promo Code', 'PIV (Remaining)', 'Funding Address'],
+        ['Giftcode', 'PIV (Remaining)', 'Funding Address'],
         // Content
     ];
 
@@ -473,7 +473,7 @@ export async function promosToCSV() {
     const cCSV = arrayToCSV(arrCSV);
 
     // Download it
-    downloadBlob(cCSV, 'promos.csv', 'text/csv;charset=utf-8;');
+    downloadBlob(cCSV, 'giftcodes.csv', 'text/csv;charset=utf-8;');
 }
 
 /**
@@ -608,7 +608,7 @@ export async function updatePromoCreationTick(fRecursive = false) {
  * A sweep wrapper that handles the Promo UI after the sweep completes
  */
 export async function sweepPromoCode() {
-    // Only allow clicking if there's a promo code loaded in memory
+    // Only allow clicking if there's a giftcode loaded in memory
     if (!cPromoWallet) return false;
 
     // Convert the Promo Wallet in to a LegacyMasterkey
@@ -647,7 +647,7 @@ export async function sweepPromoCode() {
 }
 
 /**
- * Resets the 'Redeem' promo code system back to it's default state
+ * Resets the 'Redeem' giftcode system back to it's default state
  * @param {number} nSeconds - The seconds to wait until the full reset
  */
 export function resetRedeemPromo(nSeconds = 5) {
@@ -674,16 +674,16 @@ export function resetRedeemPromo(nSeconds = 5) {
 }
 
 /**
- * @type {Worker?} - The thread used for the PIVX Promos redeem process
+ * @type {Worker?} - The thread used for the PIVX Giftcodes redeem process
  */
 export let promoThread = null;
 
 /**
- * Derive a 'PIVX Promos' code with a webworker
- * @param {string} strCode - The Promo Code to derive
+ * Derive a 'PIVX Giftcodes' code with a webworker
+ * @param {string} strCode - The Giftcode to derive
  */
 export async function redeemPromoCode(strCode) {
-    // Ensure a Promo Code is not already being redeemed
+    // Ensure a Giftcode is not already being redeemed
     if (promoThread) return;
 
     // Create a new thread
@@ -751,12 +751,12 @@ export async function redeemPromoCode(strCode) {
         }
     };
 
-    // Send our 'Promo Code' to be derived on a separate thread, allowing a faster and non-blocking derivation
+    // Send our 'Giftcode' to be derived on a separate thread, allowing a faster and non-blocking derivation
     promoThread.postMessage(strCode);
 }
 
 /**
- * Prompt a QR scan for a PIVX Promos code
+ * Prompt a QR scan for a PIVX Giftcodes code
  */
 export async function openPromoQRScanner() {
     const cScan = await scanQRCode();

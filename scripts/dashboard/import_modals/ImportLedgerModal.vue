@@ -42,7 +42,12 @@ const emit = defineEmits(['submit', 'close']);
                             translation.maxEightChars
                         }}</span></span
                     >
-                    <input v-model="label" data-testid="label" type="text" />
+                    <input
+                        v-model="label"
+                        maxlength="8"
+                        data-testid="label"
+                        type="text"
+                    />
                     <div
                         :style="{ color: 'red' }"
                         v-if="!isSupported"

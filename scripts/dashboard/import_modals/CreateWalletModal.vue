@@ -92,6 +92,7 @@ function submit() {
                     </span>
                     <input
                         type="text"
+                        maxlength="8"
                         data-testid="passPhrase"
                         style="margin-bottom: 0px"
                         v-model="passphrase"
@@ -109,9 +110,8 @@ function submit() {
                 >
                     {{ translation.popupCancel }}
                 </button>
-                <button class="pivx-button-big">
+                <button class="pivx-button-big" @click="submit()">
                     <span
-                        @click="submit()"
                         data-testid="wroteSeedphraseDown"
                         aclass="buttoni-text"
                     >

@@ -50,6 +50,12 @@ const { createAlert } = useAlerts();
 const wallets = useWallets();
 const { activeWallet, activeVault } = storeToRefs(wallets);
 
+watch(activeWallet, async (currentWallet) => {
+    const success = await currentWallet.sync();
+    if (success && activeWallet.value === currentWallet)
+        createAlert('success', translation.syncStatusFinished, 12500);
+});
+
 const needsToEncrypt = computed(() => {
     if (activeWallet.value.isHardwareWallet) {
         return false;
@@ -167,12 +173,9 @@ async function importWallet({
                     shield: parsedSecret.shield,
                     seed: parsedSecret.seed,
                     createdBlock: blockCount,
-                    label:
-                        label?.trim() ||
-                        parsedSecret.masterKey
-                            .getKeyToExport(0)
-                            .substring(0, 8),
-                })
+                    label: label?.trim(),
+                }),
+                parsedSecret.masterKey.getKeyToExport(0).substring(0, 8)
             );
 
             if (needsToEncrypt.value) showEncryptModal.value = true;
@@ -181,9 +184,7 @@ async function importWallet({
             }
 
             // Start syncing in the background
-            activeWallet.value.sync().then(() => {
-                createAlert('success', translation.syncStatusFinished, 12500);
-            });
+            activeWallet.value.sync();
             getEventEmitter().emit('wallet-import');
             return true;
         }
@@ -650,7 +651,7 @@ defineExpose({
                     </center>
                 </div>
 
-                <!-- Redeem Code (PIVX Promos) -->
+                <!-- Redeem Code (PIVX Giftcodes) -->
                 <div
                     class="modal"
                     id="redeemCodeModal"
@@ -719,11 +720,11 @@ defineExpose({
                                         style="
                                             color: #af9cc6;
                                             font-size: 15px;
-                                            width: 250px;
+                                            width: 275px;
                                             font-family: Montserrat !important;
                                         "
                                     >
-                                        PIVX Promos
+                                        PIVX Giftcodes
                                         {{ translation.pivxPromos }}
                                     </p>
                                     <div id="redeemCodeUse">
@@ -899,7 +900,7 @@ defineExpose({
                                                             "
                                                             class="text-center"
                                                         >
-                                                            <b> Promo Code </b>
+                                                            <b> Giftcode </b>
                                                         </td>
                                                         <td
                                                             style="
@@ -994,7 +995,7 @@ defineExpose({
                         </div>
                     </div>
                 </div>
-                <!-- // Redeem Code (PIVX Promos) -->
+                <!-- // Redeem Code (PIVX Giftcodes) -->
 
                 <!-- Contacts Modal -->
                 <div
@@ -1094,11 +1095,7 @@ defineExpose({
                             class="col-12 p-0 mb-2"
                         />
                         <WalletButtons class="col-12 p-0 md-5" />
-                        <Activity
-                            class="col-12 p-0 mb-5"
-                            title="Activity"
-                            :rewards="false"
-                        />
+                        <Activity title="Activity" :rewards="false" />
                     </div>
                 </div>
             </div>

@@ -835,9 +835,7 @@ export class Wallet {
         return this.#historicalTxs.get();
     }
     sync = lockableFunction(async () => {
-        if (this.#isSynced) {
-            throw new Error('Attempting to sync when already synced');
-        }
+        if (!this.#masterKey || this.#isSynced) return false;
         // While syncing the wallet ( DB read + network sync) disable the event balance-update
         // This is done to avoid a huge spam of event.
         this.#eventEmitter.disableEvent('balance-update');
@@ -867,6 +865,7 @@ export class Wallet {
         this.#eventEmitter.enableEvent('new-tx');
         this.#eventEmitter.emit('balance-update');
         this.#eventEmitter.emit('new-tx');
+        return true;
     });
 
     async #transparentSync() {
@@ -1067,7 +1066,18 @@ export class Wallet {
         );
         // If explorer sapling root is different from ours, there must be a sync error
         if (saplingRoot !== networkSaplingRoot) {
+            const db = await Database.getInstance();
+
+            // Reset shield sync data, it might be corrupted
+            await db.setShieldSyncData({
+                shieldData: null,
+                lastSyncedBlock: null,
+            });
+            // Try to rotate networks to see if another RPC/explorer has the correct data
+            getNetwork().rotateNetworks();
+
             createAlert('warning', translation.badSaplingRoot, 5000);
+            this.resync();
             return false;
         }
         return true;

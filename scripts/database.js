@@ -76,7 +76,7 @@ export class Database {
     }
 
     /**
-     * Add Promo Code to the database for tracking and management
+     * Add Giftcode to the database for tracking and management
      * @param {PromoWallet} promo
      */
     async addPromo(promo) {
@@ -87,8 +87,8 @@ export class Database {
         await store.put(promo, promo.code);
     }
     /**
-     * Removes a Promo Code from the Promo management system
-     * @param {string} promoCode - the promo code to remove
+     * Removes a Giftcode from the Promo management system
+     * @param {string} promoCode - the giftcode to remove
      */
     async removePromo(promoCode) {
         const store = this.#db
@@ -245,7 +245,6 @@ export class Database {
         const store = this.#db
             .transaction('accounts', 'readwrite')
             .objectStore('accounts');
-        // When the account system is going to be added, the key is gonna be the publicKey
         await store.delete(publicKey);
     }
 
@@ -384,7 +383,7 @@ export class Database {
     }
 
     /**
-     * @returns {Promise<Array<PromoWallet>>} all Promo Codes stored in the db
+     * @returns {Promise<Array<PromoWallet>>} all Giftcodes stored in the db
      */
     async getAllPromos() {
         const store = this.#db
@@ -464,6 +463,17 @@ export class Database {
             .transaction('txs', 'readwrite')
             .objectStore('txs');
         await store.clear();
+    }
+
+    async removeTxByXpub(xpub) {
+        const tx = this.#db.transaction('txs', 'readwrite');
+        const index = tx.store.index('xpub');
+
+        let cursor = await index.openCursor(IDBKeyRange.only(xpub));
+        while (cursor) {
+            await cursor.delete();
+            cursor = await cursor.continue();
+        }
     }
 
     /**
