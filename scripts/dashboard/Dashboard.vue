@@ -268,7 +268,7 @@ function lockWallet() {
  */
 async function send(address, amount, useShieldInputs, memo) {
     // Ensure a wallet is unlocked
-    if (activeVault.value.isViewOnly && !activeWallet.value.isHardwareWallet) {
+    /*if (activeVault.value.isViewOnly && !activeWallet.value.isHardwareWallet) {
         if (
             !(await restoreWallet(
                 tr(ALERTS.WALLET_UNLOCK_IMPORT, [
@@ -281,7 +281,7 @@ async function send(address, amount, useShieldInputs, memo) {
             ))
         )
             return;
-    }
+    }*/
 
     // Ensure wallet is synced
     if (!activeWallet.value.isSynced) {
