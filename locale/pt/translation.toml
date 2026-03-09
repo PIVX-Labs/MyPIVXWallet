@@ -89,7 +89,6 @@ popupCreateProposalCost = "Custo" # Cost
 popupProposalName = "Título da Proposta" # Proposal Name
 popupProposalDuration = "Duração em ciclos" # Duration in cycles
 popupProposalPerCycle = "por ciclo" # per cycle
-popupHardwareAddrCheck = "Confirme se este é o seu endereço que você vê" # Please confirm this is the address you see on your
 proposalFinalisationConfirming = "A Confirmar" # Confirming...
 proposalFinalisationRemaining = "restante" # remaining
 proposalFinalisationExpired = "Proposta Expirada" # Proposal Expired
