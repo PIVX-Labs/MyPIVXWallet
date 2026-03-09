@@ -6,8 +6,6 @@ import { downloadBlob } from '../misc';
 import pIconExport from '../../assets/icons/icon-export.svg';
 const props = defineProps({
     privateKey: String,
-    // Note: isJSON should probably be temporary, maybe we have a "Wallet Type" enum that determines the export UI?
-    isJSON: Boolean,
     show: Boolean,
 });
 const blur = ref(true);
@@ -15,10 +13,17 @@ const blur = ref(true);
 const emit = defineEmits(['close']);
 
 function downloadWalletFile() {
+    let isJSON = false;
+    try {
+        JSON.parse(props.privateKey);
+        isJSON = true;
+    } catch {
+        isJSON = false;
+    }
     downloadBlob(
         props.privateKey,
-        'wallet.json',
-        'application/json;charset=utf-8;'
+        isJSON ? 'wallet.json' : 'wallet.txt',
+        `${isJSON ? application / json : 'text/plain'};charset=utf-8;`
     );
 }
 
@@ -69,7 +74,6 @@ function close() {
                         </span>
                     </button>
                     <button
-                        v-if="isJSON"
                         class="pivx-button-big"
                         @click="downloadWalletFile()"
                     >
