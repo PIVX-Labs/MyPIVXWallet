@@ -23,7 +23,7 @@ function downloadWalletFile() {
     downloadBlob(
         props.privateKey,
         isJSON ? 'wallet.json' : 'wallet.txt',
-        `${isJSON ? application / json : 'text/plain'};charset=utf-8;`
+        `${isJSON ? 'application/json' : 'text/plain'};charset=utf-8;`
     );
 }
 
