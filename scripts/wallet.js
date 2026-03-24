@@ -1177,6 +1177,7 @@ export class Wallet {
             changeAddress = '',
             returnAddress = '',
             memo = '',
+            time = new Date(),
         } = {}
     ) {
         let balance;
@@ -1276,6 +1277,7 @@ export class Wallet {
                 }
             }
         }
+        transactionBuilder.setTime(time);
         return transactionBuilder.build();
     }
 

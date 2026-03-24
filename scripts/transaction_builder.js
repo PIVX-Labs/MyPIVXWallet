@@ -284,6 +284,10 @@ export class TransactionBuilder {
         }
     }
 
+    setTime(time) {
+        this.#transaction.blockTime = time.getTime() / 1000;
+    }
+
     build() {
         const tx = this.#transaction;
         if (tx && !tx.vin.length) {
