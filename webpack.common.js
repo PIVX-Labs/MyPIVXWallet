@@ -116,6 +116,7 @@ export default {
             $: 'jquery',
             jQuery: 'jquery',
             'window.jQuery': 'jquery',
+            process: 'process/browser',
         }),
         // Make the Changelog available globally
         new webpack.DefinePlugin({

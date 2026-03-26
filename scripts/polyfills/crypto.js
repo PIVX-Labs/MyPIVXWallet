@@ -2,6 +2,7 @@
 import { sha256 } from '@noble/hashes/sha256';
 import { sha512 } from '@noble/hashes/sha512';
 import { sha1 } from '@noble/hashes/sha1';
+import { ripemd160 } from '@noble/hashes/ripemd160';
 import { hmac } from '@noble/hashes/hmac';
 import { randomBytes as nobleRandomBytes } from '@noble/hashes/utils';
 import { Buffer } from 'buffer';
@@ -32,6 +33,9 @@ export const createHash = (hash, options) => {
             break;
         case 'sha1':
             fun = sha1;
+            break;
+        case 'rmd160':
+            fun = ripemd160;
             break;
         default:
             throw new Error('Unfilled polyfill');
