@@ -300,6 +300,8 @@ describe('Wallet transaction tests', () => {
             0.05 * 10 ** 8,
             { useShieldInputs: true }
         );
+        // Reset blocktime for tests
+        tx.blockTime = -1;
         expect(tx).toStrictEqual(
             new Transaction({
                 version: 3,
@@ -319,6 +321,8 @@ describe('Wallet transaction tests', () => {
         const tx = wallet.createTransaction(addr, 0.05 * 10 ** 8, {
             useShieldInputs: true,
         });
+        // Reset blocktime for tests
+        tx.blockTime = -1;
         expect(tx).toStrictEqual(
             new Transaction({
                 version: 3,

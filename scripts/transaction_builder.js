@@ -285,7 +285,7 @@ export class TransactionBuilder {
     }
 
     setTime(time) {
-        this.#transaction.blockTime = time.getTime() / 1000;
+        this.#transaction.blockTime = Math.floor(time.getTime() / 1000);
     }
 
     build() {
