@@ -4,12 +4,13 @@ import { translation } from '../i18n.js';
 
 const props = defineProps({
     validationFunction: Function,
+    showSubmitButton: Boolean,
 });
 const formData = reactive({});
 const error = ref('');
 provide('formData', formData);
 
-const emit = defineEmits(['submit']);
+const emit = defineEmits(['submit', 'cancel']);
 const submitForm = () => {
     const res = {};
     error.value = '';
@@ -31,10 +32,14 @@ const submitForm = () => {
 </script>
 
 <template>
-    <form @submit.prevent="submitForm">
+    <form @submit.prevent="submitForm" @keyup.esc="emit('cancel')">
         {{ error }}
         <slot> </slot>
-        <slot name="button" :onSubmit="() => submitForm()">
+        <slot
+            name="button"
+            :onSubmit="() => submitForm()"
+            v-if="showSubmitButton"
+        >
             <button
                 type="button"
                 class="pivx-button-big"

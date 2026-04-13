@@ -5,6 +5,8 @@ import Password from '../Password.vue';
 import { translation } from '../i18n.js';
 import { useAlerts } from '../composables/use_alerts.js';
 import { useWallets } from '../composables/use_wallet.js';
+import Form from '../form/Form.vue';
+import Input from '../form/Input.vue';
 
 const { createAlert } = useAlerts();
 
@@ -54,8 +56,19 @@ function close() {
             </template>
 
             <template #body>
+                <Form
+                    @submit="submit()"
+                    @cancel="close()"
+                    :show-submit-button="false"
+                >
+                    <template #default>
+                        <Password
+                            v-model:password="password"
+                            ref="passwordInput"
+                        />
+                    </template>
+                </Form>
                 <p style="opacity: 0.75" v-if="!!reason">{{ reason }}</p>
-                <Password v-model:password="password" ref="passwordInput" />
             </template>
             <template #footer>
                 <button

@@ -75,7 +75,7 @@ function isValidStr(str) {
             >
         </template>
         <template #body>
-            <Form @submit="createConfirmationScreen">
+            <Form @submit="createConfirmationScreen" @cancel="emit('close')">
                 <template #default>
                     <p
                         style="
