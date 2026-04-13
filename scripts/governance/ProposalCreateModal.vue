@@ -75,7 +75,11 @@ function isValidStr(str) {
             >
         </template>
         <template #body>
-            <Form @submit="createConfirmationScreen" @cancel="emit('close')">
+            <Form
+                @submit="createConfirmationScreen"
+                @cancel="emit('close')"
+                :show-submit-button="true"
+            >
                 <template #default>
                     <p
                         style="
@@ -201,7 +205,7 @@ function isValidStr(str) {
                         to=".create-proposal-button-container"
                     >
                         <button
-                            type="button"
+                            type="submit"
                             class="pivx-button-big"
                             style="float: right"
                             data-testid="proposalSubmit"
