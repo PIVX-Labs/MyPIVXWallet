@@ -25,7 +25,8 @@ export default {
     entry: './scripts/index.js',
     output: {
         path: path.resolve(__dirname, './dist'),
-        filename: './mpw.js',
+        filename: 'mpw.[contenthash].js',
+        chunkFilename: '[name].[contenthash].js',
         library: 'MPW',
         libraryTarget: 'var',
         clean: true,
@@ -110,7 +111,7 @@ export default {
             includeAliases: ['stream', 'process', 'Buffer'],
         }),
         // Prevents non styled flashing on load
-        new MiniCssExtractPlugin(),
+        new MiniCssExtractPlugin({ filename: '[name].[contenthash].css' }),
         // Make jquery available globally
         new webpack.ProvidePlugin({
             $: 'jquery',
