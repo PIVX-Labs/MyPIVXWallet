@@ -35,7 +35,7 @@ export class BinaryShieldSyncer extends ShieldSyncer {
         }
         let txs = [];
         const blocksArray = [];
-        while (blocksArray.length <= 10) {
+        while (blocksArray.length <= 200) {
             const packetLengthBytes = await this.#reader.read(4);
             if (!packetLengthBytes) break;
             const packetLength = Number(bytesToNum(packetLengthBytes));
