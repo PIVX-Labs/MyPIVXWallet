@@ -918,36 +918,52 @@ export class Wallet {
                 false
             );
 
-            /**
-             * Array of blocks ready to pass to the shield library
-             * @type {{txs: string[]; height: number; time: number}[]}
-             */
+            // Sync benchmark counters — only surfaced via debugLog (WALLET
+            // topic). Enable with `MPW.toggleDebug(true)` in the console.
+            const syncStart = performance.now();
             let handleBlocksTime = 0;
+            let totalBlocks = 0;
+            let totalTxs = 0;
+            let batchCount = 0;
+            let isCompactSync = false;
             const handleAllBlocks = async (blocksArray) => {
                 const start = performance.now();
-                // Process the current batch of blocks before starting to parse the next one
                 if (blocksArray.length) {
-                    const ownTxs = await this.#shield.handleBlocks(
-                        blocksArray.filter(
-                            (b) => b.height > this.#shield.getLastSyncedBlock()
-                        )
+                    const filtered = blocksArray.filter(
+                        (b) => b.height > this.#shield.getLastSyncedBlock()
                     );
-                    // TODO: slow! slow! slow!
-                    if (ownTxs.length > 0) {
-                        for (const block of blocksArray) {
-                            for (const tx of block.txs) {
-                                if (ownTxs.includes(tx.hex)) {
-                                    const parsed = Transaction.fromHex(tx.hex);
-                                    parsed.blockTime = block.time;
-                                    parsed.blockHeight = block.height;
-                                    await this.addTransaction(parsed);
+                    if (filtered.length > 0 && filtered[0].compact) {
+                        // Compact (0x04) stream: notes and nullifiers are
+                        // decrypted directly from pre-extracted output fields.
+                        // There is no full tx hex, so no per-tx history is
+                        // reconstructed here (balance/notes are unaffected).
+                        isCompactSync = true;
+                        await this.#shield.handleBlocksCompact(filtered);
+                    } else if (filtered.length > 0) {
+                        const ownTxs = await this.#shield.handleBlocks(filtered);
+                        if (ownTxs.length > 0) {
+                            for (const block of blocksArray) {
+                                for (const tx of block.txs) {
+                                    if (ownTxs.includes(tx.hex)) {
+                                        const parsed = Transaction.fromHex(
+                                            tx.hex
+                                        );
+                                        parsed.blockTime = block.time;
+                                        parsed.blockHeight = block.height;
+                                        await this.addTransaction(parsed);
+                                    }
                                 }
                             }
                         }
                     }
+                    totalBlocks += blocksArray.length;
+                    totalTxs += blocksArray.reduce(
+                        (s, b) => s + b.txs.length,
+                        0
+                    );
+                    batchCount++;
                 }
                 handleBlocksTime += performance.now() - start;
-                // Emit status update
                 this.#eventEmitter.emit(
                     'shield-sync-status-update',
                     shieldSyncer.getReadBytes(),
@@ -955,14 +971,52 @@ export class Wallet {
                     false
                 );
             };
-            while (true) {
-                const blocks = await shieldSyncer.getNextBlocks();
-                if (blocks === null) break;
-                await handleAllBlocks(blocks);
+            // Pipeline the download against processing: prefetch the next
+            // batch (main-thread network read + parse) while the shield worker
+            // processes the current one. getNextBlocks() and handleAllBlocks()
+            // touch disjoint state (the reader/parser vs the worker), and
+            // batches are still applied in order, so the commitment tree stays
+            // correct — we just stop waiting on the network between batches.
+            // Wall time drops toward max(download, processing) instead of their
+            // sum. Only one getNextBlocks() is ever in flight: the prefetch
+            // always resolves (awaited as `blocks`) before the next is started.
+            let nextBlocks = shieldSyncer.getNextBlocks();
+            try {
+                while (true) {
+                    const blocks = await nextBlocks;
+                    if (blocks === null) break;
+                    nextBlocks = shieldSyncer.getNextBlocks();
+                    // If handleAllBlocks() throws (e.g. worker error), the
+                    // in-flight prefetch would otherwise become an unhandled
+                    // rejection. Attach a no-op catch so it can't; its real
+                    // error is still observed when awaited next iteration, or
+                    // drained in the finally below.
+                    nextBlocks.catch(() => {});
+                    await handleAllBlocks(blocks);
+                }
+            } finally {
+                // Settle any in-flight prefetch before unwinding (normal or error).
+                await nextBlocks.catch(() => {});
             }
+            const totalTime = performance.now() - syncStart;
+            // Decompose total into its three real costs:
+            //   download = wall time blocked waiting for network bytes
+            //   parse    = CPU turning packets into block/tx objects
+            //   wasm     = time inside the shield worker (decrypt + tree build)
+            // download overlaps wasm (the reader streams in the background), so
+            // these don't sum to total — but they isolate processing from the
+            // network so a slow download can't masquerade as slow processing.
+            const downloadMs = shieldSyncer.getReadWaitMs();
+            const parseMs = shieldSyncer.getParseMs();
             debugLog(
                 DebugTopics.WALLET,
-                `syncShield rust internal ${handleBlocksTime} ms`
+                `shield sync — format=${isCompactSync ? 'compact(0x04)' : 'pivx(0x03)'} ` +
+                    `total=${(totalTime / 1000).toFixed(2)}s ` +
+                    `download(wait)=${(downloadMs / 1000).toFixed(2)}s ` +
+                    `parse=${(parseMs / 1000).toFixed(2)}s ` +
+                    `wasm=${(handleBlocksTime / 1000).toFixed(2)}s ` +
+                    `data=${(shieldSyncer.getReadBytes() / 1048576).toFixed(2)}MB ` +
+                    `blocks=${totalBlocks} txs=${totalTxs} batches=${batchCount}`
             );
             // At this point it should be safe to assume that shield is ready to use
             await this.#saveShieldOnDisk();
