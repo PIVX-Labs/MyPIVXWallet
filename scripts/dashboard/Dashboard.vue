@@ -93,7 +93,7 @@ const restoreWalletReason = ref('');
 const importLock = ref(false);
 watch(showExportModal, async (showExportModal) => {
     if (showExportModal) {
-        keyToBackup.value = await activeWallet.value.getKeyToBackup();
+        keyToBackup.value = await activeVault.value.getSecretToBackup();
     } else {
         // Wipe key to backup, just in case
         keyToBackup.value = '';
@@ -1043,7 +1043,6 @@ defineExpose({
                 <ExportPrivKey
                     :show="showExportModal"
                     :privateKey="keyToBackup"
-                    :isJSON="hasShield && !activeVault?.isEncrypted"
                     @close="showExportModal = false"
                 />
                 <!-- WALLET FEATURES -->
