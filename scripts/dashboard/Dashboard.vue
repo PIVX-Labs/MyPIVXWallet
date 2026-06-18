@@ -91,8 +91,12 @@ const transferAmount = ref('');
 const showRestoreWallet = ref(false);
 const restoreWalletReason = ref('');
 const importLock = ref(false);
-watch(showExportModal, async (showExportModal) => {
-    if (showExportModal) {
+watch(showExportModal, async () => {
+    if (showExportModal.value) {
+        if (isViewOnly.value && !(await restoreWallet())) {
+            showExportModal.value = false;
+            return;
+        }
         keyToBackup.value = await activeWallet.value.getKeyToBackup();
     } else {
         // Wipe key to backup, just in case

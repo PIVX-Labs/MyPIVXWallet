@@ -566,7 +566,7 @@ export class Wallet {
             const account = await (
                 await Database.getInstance()
             ).getAccount(this.getKeyToExport());
-            return account.encWif;
+            if (account?.encWif) return account.encWif;
         }
         return this.getKeyToEncrypt();
     }
