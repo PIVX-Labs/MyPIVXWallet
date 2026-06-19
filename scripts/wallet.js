@@ -1187,6 +1187,7 @@ export class Wallet {
             changeAddress = '',
             returnAddress = '',
             memo = '',
+            time = new Date(),
         } = {}
     ) {
         let balance;
@@ -1286,6 +1287,7 @@ export class Wallet {
                 }
             }
         }
+        transactionBuilder.setTime(time);
         return transactionBuilder.build();
     }
 
@@ -1420,7 +1422,12 @@ export class Wallet {
             await this.#shield?.finalizeTransaction(transaction.txid);
         }
 
-        if (!skipDatabase) {
+        if (
+            !skipDatabase &&
+            transaction.blockHeight !== -1 &&
+            this.#lastProcessedBlock - transaction.blockHeight >
+                cChainParams.current.confirmsForSaving
+        ) {
             const db = await Database.getInstance();
             await db.storeTx(transaction, this.getKeyToExport());
         }
