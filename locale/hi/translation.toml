@@ -159,7 +159,6 @@ popupProposalAddress = "प्रपोजल ऐड्रेस (वैकल�
 popupProposalDuration = "चक्रों में अवधि" # Duration in cycles
 popupProposalPerCycle = "प्रति चक्र" # per cycle
 popupProposalEncryptFirst = "आपको प्रपोजल बनाने से पहले \"{button}\" पर क्लिक करना होगा!" # You need to hit "{button}" before you can create proposals!
-popupHardwareAddrCheck = "कृपया कन्फर्म करें कि यह वही एड्रेस है जो आप देख रहे हैं" # Please confirm this is the address you see on your
 proposalFinalisationConfirming = "कन्फर्मिंग..." # Confirming...
 proposalFinalisationRemaining = "रिमेइनिंग" # remaining
 proposalFinalisationExpired = "प्रपोजल एक्सपायर्ड" # Proposal Expired
@@ -253,6 +252,8 @@ stop = "" # Stop
 popupSeedPhraseBadNote = "" # <b>This Seed Phrase appears to be invalid <br> (The checksum doesn't match). <br> It might have a typo, </b> or it could’ve been created in an unusual way. Do you still want to continue?
 transactionNeedsAddress = "" # The address field is empty
 transactionNeedsAmount = "" # The amount is invalid
+popupHardwareAddrIsUsedForChange = "" # This address will receive the change (unused funds) from your transaction.
+popupHardwareAddrCheck = "" # Verify that the address shown on this popup matches the one displayed on your <b>{device}</b> device. <br/> This confirms the address really belongs to your wallet and hasn’t been tampered with.
 
 [ALERTS]
 INTERNAL_ERROR = "आंतरिक त्रुटि, कृपया कुछ समय बाद पुनः प्रयास करें" # Internal error, please try again later

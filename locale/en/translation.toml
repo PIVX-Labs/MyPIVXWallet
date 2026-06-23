@@ -152,7 +152,6 @@ popupProposalAddress = "Proposal Address (Optional)" # Proposal Address (Optiona
 popupProposalDuration = "Duration in cycles" # Duration in cycles
 popupProposalPerCycle = "per cycle" # per cycle
 popupProposalEncryptFirst = "You need to hit \"{button}\" before you can create proposals!" # You need to hit "{button}" before you can create proposals!
-popupHardwareAddrCheck = "Please confirm this is the address you see on your" # Please confirm this is the address you see on your
 proposalFinalisationConfirming = "Confirming..." # Confirming...
 proposalFinalisationRemaining = "remaining" # remaining
 proposalFinalisationExpired = "Proposal Expired" # Proposal Expired
@@ -253,6 +252,8 @@ stop = "Stop" # Stop
 popupSeedPhraseBadNote = "<b>This Seed Phrase appears to be invalid <br> (The checksum doesn't match). <br> It might have a typo, </b> or it could’ve been created in an unusual way. Do you still want to continue?" # <b>This Seed Phrase appears to be invalid <br> (The checksum doesn't match). <br> It might have a typo, </b> or it could’ve been created in an unusual way. Do you still want to continue?
 transactionNeedsAddress = "The address field is empty" # The address field is empty
 transactionNeedsAmount = "The amount is invalid" # The amount is invalid
+popupHardwareAddrIsUsedForChange = "This address will receive the change (unused funds) from your transaction." # This address will receive the change (unused funds) from your transaction.
+popupHardwareAddrCheck = "Verify that the address shown on this popup matches the one displayed on your <b>{device}</b> device. <br/> This confirms the address really belongs to your wallet and hasn’t been tampered with." # Verify that the address shown on this popup matches the one displayed on your <b>{device}</b> device. <br/> This confirms the address really belongs to your wallet and hasn’t been tampered with.
 
 [ALERTS]
 INTERNAL_ERROR = "Internal error, please try again later" # Internal error, please try again later

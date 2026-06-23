@@ -83,6 +83,7 @@ function addWallet(wallet) {
                 const [changeAddress] = await guiGetNewAddress({
                     verify: true,
                     nReceiving: 0,
+                    isForChange: true,
                 });
                 tx = wallet.createTransaction(address, value, {
                     ...opts,

@@ -150,7 +150,6 @@ popupProposalAddress = "Address ng Proposal (Optional)" # Proposal Address (Opti
 popupProposalDuration = "Duration in cycles" # Duration in cycles
 popupProposalPerCycle = "per cycles" # per cycle
 popupProposalEncryptFirst = "Kailangan mong pindutin ang \"{button}\" bago ka gumawa ng proposals!" # You need to hit "{button}" before you can create proposals!
-popupHardwareAddrCheck = "Pakiusap kumpirmahin na ito ang address na nakikita mo sa iyong" # Please confirm this is the address you see on your
 proposalFinalisationConfirming = "Kinukumpirma..." # Confirming...
 proposalFinalisationRemaining = "natitira" # remaining
 proposalFinalisationExpired = "Proposal expired" # Proposal Expired
@@ -253,6 +252,8 @@ stop = "" # Stop
 popupSeedPhraseBadNote = "" # <b>This Seed Phrase appears to be invalid <br> (The checksum doesn't match). <br> It might have a typo, </b> or it could’ve been created in an unusual way. Do you still want to continue?
 transactionNeedsAddress = "" # The address field is empty
 transactionNeedsAmount = "" # The amount is invalid
+popupHardwareAddrIsUsedForChange = "" # This address will receive the change (unused funds) from your transaction.
+popupHardwareAddrCheck = "" # Verify that the address shown on this popup matches the one displayed on your <b>{device}</b> device. <br/> This confirms the address really belongs to your wallet and hasn’t been tampered with.
 
 [ALERTS]
 INTERNAL_ERROR = "Internal error, Pakiusap uliting muli" # Internal error, please try again later
