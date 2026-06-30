@@ -1101,7 +1101,7 @@ defineExpose({
                 :currency="currency"
                 v-model:amount="transferAmount"
                 :desc="transferDescription"
-                :memo="transferMemo"
+                v-model:memo="transferMemo"
                 v-model:address="transferAddress"
                 @openQrScan="openSendQRScanner()"
                 @close="showTransferMenu = false"
