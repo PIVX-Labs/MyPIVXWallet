@@ -29,7 +29,6 @@ const props = defineProps({
     amount: String,
     desc: String,
     address: String,
-    memo: String,
     publicMode: Boolean,
 });
 
