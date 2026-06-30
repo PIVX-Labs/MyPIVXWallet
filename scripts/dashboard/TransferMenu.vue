@@ -33,7 +33,7 @@ const props = defineProps({
 });
 
 const address = defineModel('address');
-//const memo = ref('');
+const memo = defineModel('memo')
 
 const isSendingToShield = computed(() => isShieldAddress(address.value));
 
