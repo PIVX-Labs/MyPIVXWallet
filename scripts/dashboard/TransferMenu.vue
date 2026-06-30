@@ -254,7 +254,7 @@ async function selectContact() {
                     style="padding-top: 11px; height: 110px"
                     :maxlength="512"
                     :placeholder="translation.shieldMessageDesc"
-                    :value="memo"
+v-model="memo"
                 ></textarea>
             </div>
 
