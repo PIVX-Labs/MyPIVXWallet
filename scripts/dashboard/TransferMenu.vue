@@ -33,7 +33,7 @@ const props = defineProps({
 });
 
 const address = defineModel('address');
-const memo = defineModel('memo');
+const memo = defineModel('memo', { default: '' });
 
 const isSendingToShield = computed(() => isShieldAddress(address.value));
 
