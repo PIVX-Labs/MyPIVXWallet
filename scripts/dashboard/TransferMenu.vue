@@ -33,7 +33,7 @@ const props = defineProps({
 });
 
 const address = defineModel('address');
-const memo = ref('');
+const memo = defineModel('memo', { default: '' });
 
 const isSendingToShield = computed(() => isShieldAddress(address.value));
 
@@ -252,9 +252,9 @@ async function selectContact() {
 
                 <textarea
                     style="padding-top: 11px; height: 110px"
-                    v-model="memo"
                     :maxlength="512"
                     :placeholder="translation.shieldMessageDesc"
+                    v-model="memo"
                 ></textarea>
             </div>
 
