@@ -1272,7 +1272,7 @@ export class Wallet {
                             fee / COIN
                         } more ${
                             cChainParams.current.TICKER
-                        }s to pay for cover for the change `
+                        }s to cover for the change`
                     );
                 }
                 transactionBuilder.equallySubtractAmt(Math.abs(changeValue));
