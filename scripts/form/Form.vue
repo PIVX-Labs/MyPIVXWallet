@@ -32,7 +32,11 @@ const submitForm = () => {
 </script>
 
 <template>
-    <form @submit.prevent="submitForm" @keyup.esc="emit('cancel')">
+    <form
+        @submit.prevent="submitForm"
+        @keyup.esc="emit('cancel')"
+        @keyup.enter="!showSubmitButton && emit('submit')"
+    >
         {{ error }}
         <slot> </slot>
         <slot
