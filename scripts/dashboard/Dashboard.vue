@@ -485,7 +485,9 @@ onMounted(async () => {
         if (urlParams.has('addcontact')) {
             await handleContactRequest(urlParams);
         } else if (urlParams.has('pay')) {
-            transferAddress.value = urlParams.get('pay') ?? '';
+            transferAddress.value = urlParams.get('payYourself')
+                ? activeWallet.value.getNewChangeAddress()
+                : urlParams.get('pay') ?? '';
             transferDescription.value = urlParams.get('desc') ?? '';
             transferAmount.value = parseFloat(urlParams.get('amount')) || '';
             showTransferMenu.value = true;
