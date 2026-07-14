@@ -34,7 +34,7 @@ const error = computed(() => {
 const emit = defineEmits(['createMasternode', 'importMasternode', 'close']);
 const selection = ref();
 function createMasternode() {
-    emit('createMasternode', { isVPS: selection.value === 'VPS' });
+    emit('createMasternode', { selection: selection.value });
     emit('close');
 }
 
@@ -104,6 +104,10 @@ function importMasternode() {
                                         <option value="Third Party">
                                             Third Party (a masternode server ran
                                             by someone else)
+                                        </option>
+                                        <option value="mnManager">
+                                            Download a config file for PIVX
+                                            masternode manager.
                                         </option>
                                     </select>
                                     <br />
