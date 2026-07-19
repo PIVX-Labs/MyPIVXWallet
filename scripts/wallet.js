@@ -1266,6 +1266,15 @@ export class Wallet {
                 if (!subtractFeeFromAmt) {
                     throw new Error('Not enough balance');
                 }
+                if (isDelegation && transactionBuilder.valueOut - fee < COIN) {
+                    throw new Error(
+                        `You can't stake less than one PIV, you need ${
+                            fee / COIN
+                        } more ${
+                            cChainParams.current.TICKER
+                        }s to cover for the change`
+                    );
+                }
                 transactionBuilder.equallySubtractAmt(Math.abs(changeValue));
             } else if (changeValue > 0) {
                 // TransactionBuilder will internally add the change only if it is not dust
