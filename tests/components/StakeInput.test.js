@@ -57,7 +57,7 @@ describe('stake balance tests', () => {
     it('Unstakes correctly', async () => {
         const wrapper = mountSI('60');
         expect(wrapper.emitted('submit')).toBeUndefined();
-        await wrapper.find('[data-testid=sendButton]').trigger('click');
+        await wrapper.find('[data-testid=sendButton]').trigger('submit');
         expect(wrapper.emitted('submit')).toStrictEqual([[60 * 10 ** 8, '']]);
     });
 });

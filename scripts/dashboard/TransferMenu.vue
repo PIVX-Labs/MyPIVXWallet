@@ -9,6 +9,7 @@ import qrIcon from '../../assets/icons/icon-qr-code.svg';
 import addressbookIcon from '../../assets/icons/icon-address-book.svg';
 import { computed } from 'vue';
 import { createAlert } from '../alerts/alert.js';
+import Form from '../form/Form.vue';
 
 const emit = defineEmits([
     'send',
@@ -101,222 +102,229 @@ async function selectContact() {
 <template>
     <BottomPopup :title="translation.send" :show="show" @close="$emit('close')">
         <div class="transferBody">
-            <label>{{ translation.address }}</label
-            ><br />
-
-            <div class="input-group mb-3">
-                <input
-                    class="btn-group-input"
-                    style="font-family: monospace"
-                    :style="{ color }"
-                    type="text"
-                    :placeholder="translation.receivingAddress"
-                    v-model="address"
-                    autocomplete="nope"
-                />
-                <div class="input-group-append tranferModal">
-                    <span
-                        class="input-group-text ptr buttonj-icon"
-                        style="padding-left: 7px; padding-right: 12px"
-                        @click="$emit('openQrScan')"
-                        v-html="qrIcon"
-                    >
-                    </span>
-                    <span
-                        class="input-group-text ptr buttonj-icon"
-                        style="padding-left: 7px; padding-right: 12px"
-                        @click="selectContact()"
-                        v-html="addressbookIcon"
-                    >
-                    </span>
-                </div>
-            </div>
-
-            <div style="display: none">
-                <label
-                    ><span>{{ translation.paymentRequestMessage }}</span></label
+            <Form
+                @submit="send()"
+                @cancel="emit('close')"
+                :show-submit-button="false"
+            >
+                <label>{{ translation.address }}</label
                 ><br />
-                <div class="input-group">
+
+                <div class="input-group mb-3">
                     <input
-                        class="btn-input"
+                        class="btn-group-input"
                         style="font-family: monospace"
+                        :style="{ color }"
                         type="text"
-                        disabled
-                        placeholder="Payment Request Description"
+                        :placeholder="translation.receivingAddress"
+                        v-model="address"
                         autocomplete="nope"
                     />
-                </div>
-            </div>
-
-            <label>{{ translation.amount }}</label
-            ><br />
-
-            <div class="row">
-                <div class="col-12">
-                    <div class="input-group mb-3">
-                        <input
-                            class="btn-group-input balanceInput"
-                            style="padding-right: 0px; border-right: 0px"
-                            type="number"
-                            placeholder="0.00"
-                            autocomplete="nope"
-                            onkeypress="return event.charCode >= 46 && event.charCode <= 57"
-                            inputmode="decimal"
-                            onkeydown="javascript: return event.keyCode == 69 ? false : true"
-                            data-testid="amount"
-                            @input="syncAmountCurrency"
-                            v-model="amount"
-                        />
-                        <div class="input-group-append">
-                            <span
-                                class="input-group-text"
-                                style="
-                                    background-color: #e9deff;
-                                    color: #af9cc6;
-                                    border: 2px solid #af9cc6;
-                                    border-left: 0px;
-                                "
-                            >
-                                PIVX
-                            </span>
-                            <span
-                                class="input-group-text p-0"
-                                style="
-                                    cursor: pointer;
-                                    background-color: #7f20ff;
-                                    border: 2px solid #af9cc6;
-                                    color: #e9deff;
-                                    font-weight: 700;
-                                    padding: 0px 10px 0px 10px !important;
-                                "
-                                @click="$emit('max-balance', !publicMode)"
-                            >
-                                {{ translation.sendAmountCoinsMax }}
-                            </span>
-                        </div>
+                    <div class="input-group-append tranferModal">
+                        <span
+                            class="input-group-text ptr buttonj-icon"
+                            style="padding-left: 7px; padding-right: 12px"
+                            @click="$emit('openQrScan')"
+                            v-html="qrIcon"
+                        >
+                        </span>
+                        <span
+                            class="input-group-text ptr buttonj-icon"
+                            style="padding-left: 7px; padding-right: 12px"
+                            @click="selectContact()"
+                            v-html="addressbookIcon"
+                        >
+                        </span>
                     </div>
                 </div>
 
-                <div class="col-12">
-                    <div class="input-group mb-3">
+                <div style="display: none">
+                    <label
+                        ><span>{{
+                            translation.paymentRequestMessage
+                        }}</span></label
+                    ><br />
+                    <div class="input-group">
                         <input
-                            class="btn-group-input balanceInput"
+                            class="btn-input"
+                            style="font-family: monospace"
                             type="text"
-                            placeholder="0.00"
+                            disabled
+                            placeholder="Payment Request Description"
                             autocomplete="nope"
-                            onkeypress="return event.charCode >= 46 && event.charCode <= 57"
-                            inputmode="decimal"
-                            onkeydown="javascript: return event.keyCode == 69 ? false : true"
-                            data-testid="amountCurrency"
-                            @input="syncAmount"
-                            v-model="amountCurrency"
-                            style="border-right: 0px"
                         />
-                        <div class="input-group-append">
-                            <span
-                                class="input-group-text pl-0"
-                                style="
-                                    background-color: #e9deff;
-                                    color: #af9cc6;
-                                    border: 2px solid #af9cc6;
-                                    border-left: 0px;
-                                "
-                                >{{ currency }}</span
-                            >
-                        </div>
-                    </div>
-                    <div v-if="desc && desc.length > 0">
-                        <label
-                            ><span>{{
-                                translation.paymentRequestMessage
-                            }}</span></label
-                        ><br />
-                        <div class="input-group">
-                            <input
-                                class="btn-input"
-                                style="font-family: monospace"
-                                type="text"
-                                disabled
-                                placeholder="Payment Request Description"
-                                autocomplete="nope"
-                                :value="desc"
-                            />
-                        </div>
                     </div>
                 </div>
-            </div>
 
-            <div v-if="isSendingToShield">
-                <label>{{ translation.shieldMessage }}</label
+                <label>{{ translation.amount }}</label
                 ><br />
-
-                <textarea
-                    style="padding-top: 11px; height: 110px"
-                    :maxlength="512"
-                    :placeholder="translation.shieldMessageDesc"
-                    v-model="memo"
-                ></textarea>
-            </div>
-
-            <div v-if="false">
-                <label
-                    ><span>{{ translation.fee }}</span></label
-                ><br />
-
-                <div class="row text-center">
-                    <div class="col-4 pr-1">
-                        <div class="feeButton">
-                            Low<br />
-                            9 sat/B
-                        </div>
-                    </div>
-
-                    <div class="col-4 pl-2 pr-2">
-                        <div class="feeButton feeButtonSelected">
-                            Medium<br />
-                            11 sat/B
-                        </div>
-                    </div>
-
-                    <div class="col-4 pl-1">
-                        <div class="feeButton">
-                            High<br />
-                            14 sat/B
-                        </div>
-                    </div>
-                </div>
-                <br />
-            </div>
-
-            <div class="pb-2">
                 <div class="row">
-                    <div class="col-6">
-                        <button
-                            class="pivx-button-small-cancel"
-                            style="height: 42px; width: 97px"
-                            @click="$emit('close')"
-                            data-testid="closeButton"
-                        >
-                            <span class="buttoni-text">
-                                {{ translation.cancel }}
-                            </span>
-                        </button>
+                    <div class="col-12">
+                        <div class="input-group mb-3">
+                            <input
+                                class="btn-group-input balanceInput"
+                                style="padding-right: 0px; border-right: 0px"
+                                type="number"
+                                placeholder="0.00"
+                                autocomplete="nope"
+                                onkeypress="return (event.charCode >= 46 && event.charCode <= 57) || event.charCode === 13"
+                                inputmode="decimal"
+                                onkeydown="javascript: return event.keyCode == 69 ? false : true"
+                                data-testid="amount"
+                                @input="syncAmountCurrency"
+                                v-model="amount"
+                            />
+                            <div class="input-group-append">
+                                <span
+                                    class="input-group-text"
+                                    style="
+                                        background-color: #e9deff;
+                                        color: #af9cc6;
+                                        border: 2px solid #af9cc6;
+                                        border-left: 0px;
+                                    "
+                                >
+                                    PIVX
+                                </span>
+                                <span
+                                    class="input-group-text p-0"
+                                    style="
+                                        cursor: pointer;
+                                        background-color: #7f20ff;
+                                        border: 2px solid #af9cc6;
+                                        color: #e9deff;
+                                        font-weight: 700;
+                                        padding: 0px 10px 0px 10px !important;
+                                    "
+                                    @click="$emit('max-balance', !publicMode)"
+                                >
+                                    {{ translation.sendAmountCoinsMax }}
+                                </span>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="col-6 text-right">
-                        <button
-                            class="pivx-button-small"
-                            style="height: 42px; width: 97px"
-                            @click="send()"
-                            data-testid="sendButton"
-                        >
-                            <span class="buttoni-text">
-                                {{ translation.send }}
-                            </span>
-                        </button>
+                    <div class="col-12">
+                        <div class="input-group mb-3">
+                            <input
+                                class="btn-group-input balanceInput"
+                                type="text"
+                                placeholder="0.00"
+                                autocomplete="nope"
+                                onkeypress="return (event.charCode >= 46 && event.charCode <= 57)  || event.charCode === 13"
+                                inputmode="decimal"
+                                onkeydown="javascript: return event.keyCode == 69 ? false : true"
+                                data-testid="amountCurrency"
+                                @input="syncAmount"
+                                v-model="amountCurrency"
+                                style="border-right: 0px"
+                            />
+                            <div class="input-group-append">
+                                <span
+                                    class="input-group-text pl-0"
+                                    style="
+                                        background-color: #e9deff;
+                                        color: #af9cc6;
+                                        border: 2px solid #af9cc6;
+                                        border-left: 0px;
+                                    "
+                                    >{{ currency }}</span
+                                >
+                            </div>
+                        </div>
+                        <div v-if="desc && desc.length > 0">
+                            <label
+                                ><span>{{
+                                    translation.paymentRequestMessage
+                                }}</span></label
+                            ><br />
+                            <div class="input-group">
+                                <input
+                                    class="btn-input"
+                                    style="font-family: monospace"
+                                    type="text"
+                                    disabled
+                                    placeholder="Payment Request Description"
+                                    autocomplete="nope"
+                                    :value="desc"
+                                />
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
+
+                <div v-if="isSendingToShield">
+                    <label>{{ translation.shieldMessage }}</label
+                    ><br />
+
+                    <textarea
+                        style="padding-top: 11px; height: 110px"
+                        v-model="memo"
+                        :maxlength="512"
+                        :placeholder="translation.shieldMessageDesc"
+                    ></textarea>
+                </div>
+
+                <div v-if="false">
+                    <label
+                        ><span>{{ translation.fee }}</span></label
+                    ><br />
+
+                    <div class="row text-center">
+                        <div class="col-4 pr-1">
+                            <div class="feeButton">
+                                Low<br />
+                                9 sat/B
+                            </div>
+                        </div>
+
+                        <div class="col-4 pl-2 pr-2">
+                            <div class="feeButton feeButtonSelected">
+                                Medium<br />
+                                11 sat/B
+                            </div>
+                        </div>
+
+                        <div class="col-4 pl-1">
+                            <div class="feeButton">
+                                High<br />
+                                14 sat/B
+                            </div>
+                        </div>
+                    </div>
+                    <br />
+                </div>
+
+                <div class="pb-2">
+                    <div class="row">
+                        <div class="col-6">
+                            <button
+                                type="button"
+                                class="pivx-button-small-cancel"
+                                style="height: 42px; width: 97px"
+                                @click="$emit('close')"
+                                data-testid="closeButton"
+                            >
+                                <span class="buttoni-text">
+                                    {{ translation.cancel }}
+                                </span>
+                            </button>
+                        </div>
+
+                        <div class="col-6 text-right">
+                            <button
+                                class="pivx-button-small"
+                                style="height: 42px; width: 97px"
+                                data-testid="sendButton"
+                            >
+                                <span class="buttoni-text">
+                                    {{ translation.send }}
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </Form>
         </div>
     </BottomPopup>
 </template>
