@@ -165,6 +165,7 @@ async function selectContact() {
                                 class="btn-group-input balanceInput"
                                 style="padding-right: 0px; border-right: 0px"
                                 type="number"
+                                step="any"
                                 placeholder="0.00"
                                 autocomplete="nope"
                                 onkeypress="return (event.charCode >= 46 && event.charCode <= 57) || event.charCode === 13"
