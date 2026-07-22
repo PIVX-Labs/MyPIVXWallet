@@ -124,6 +124,9 @@ export class Network {
     async getProposalVote(_proposalName, _collateralTxId, _outidx) {
         throw new Error('getProposalVote must be implemented');
     }
+    async listMasternodes() {
+        throw new Error('listMasternodes must be implemented');
+    }
 
     async voteProposal(
         _collateralTxId,
@@ -245,6 +248,10 @@ export class RPCNodeNetwork extends Network {
         return (
             await this.#callRPC(`/listmasternodes?params=${collateralTxId}`)
         ).filter((m) => m.outidx === outidx);
+    }
+
+    async listMasternodes() {
+        return await this.#callRPC(`/listmasternodes`);
     }
 
     async getMasternodeCount() {
