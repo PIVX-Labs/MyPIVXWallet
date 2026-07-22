@@ -109,7 +109,7 @@ export class Network {
         throw new Error('getShieldData must be implemented');
     }
 
-    async getShieldDataLength(_initialBlock, _endBlock) {
+    async getShieldDataLength(_initialBlock, _endBlock, _options) {
         throw new Error('getShieldDataLength must be implemented');
     }
 
@@ -341,17 +341,16 @@ export class RPCNodeNetwork extends Network {
         );
     }
 
-    async getShieldData(startBlock) {
-        const res = await this.#fetchNode(
-            `/getshielddata?startBlock=${startBlock}`
-        );
+    async getShieldData(startBlock, { format = 'compact' } = {}) {
+        const url = `/getshielddata?startBlock=${startBlock}&format=${format}`;
+        const res = await this.#fetchNode(url);
         if (!res.ok) throw new Error('Invalid response');
         return res;
     }
 
-    async getShieldDataLength(startBlock, endBlock) {
+    async getShieldDataLength(startBlock, endBlock, { format = 'compact' } = {}) {
         const res = await this.#fetchNode(
-            `/getshielddatalength?startBlock=${startBlock}&endBlock=${endBlock}`
+            `/getshielddatalength?startBlock=${startBlock}&endBlock=${endBlock}&format=${format}`
         );
         if (!res.ok) throw new Error('Invalid response');
         return Number.parseInt(await res.text());
