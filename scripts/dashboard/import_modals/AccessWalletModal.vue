@@ -1,6 +1,8 @@
 <script setup>
 import { translation } from '../../i18n';
 import Modal from '../../Modal.vue';
+import { SENSITIVE_INPUT_ATTRS } from '../../dom_security.js';
+import { ref, watch } from 'vue';
 
 const value = defineModel('value');
 const label = defineModel('label');
@@ -9,8 +11,22 @@ const props = defineProps({
     show: Boolean,
     showPasswordField: Boolean,
     passwordPlaceholder: String,
-    cloakSecret: Boolean,
 });
+
+/**
+ * The secret is masked by default; the user opts in to revealing it to check
+ * for typos. It must not default to cleartext, since the value is usually a
+ * BIP39 mnemonic or a private key.
+ */
+const revealSecret = ref(false);
+
+// Never leave the field revealed for the next time the modal is opened
+watch(
+    () => props.show,
+    (show) => {
+        if (!show) revealSecret.value = false;
+    }
+);
 const emit = defineEmits(['submit', 'close']);
 function submit() {
     emit('submit');
@@ -49,12 +65,32 @@ function close() {
                         "
                         >{{ translation.seedPhraseXpriv }}</span
                     >
-                    <input
-                        :type="cloakSecret ? 'password' : 'text'"
-                        v-model="value"
-                        data-testid="secretInp"
-                        type="text"
-                    />
+                    <div class="input-group">
+                        <input
+                            :type="revealSecret ? 'text' : 'password'"
+                            v-model="value"
+                            data-testid="secretInp"
+                            style="
+                                width: 90%;
+                                border-top-right-radius: 0;
+                                border-bottom-right-radius: 0;
+                            "
+                            v-bind="SENSITIVE_INPUT_ATTRS"
+                        />
+                        <span
+                            @click="revealSecret = !revealSecret"
+                            class="input-group-toggle input-group-text p-0"
+                            style="height: 100%"
+                            data-testid="revealSecretBtn"
+                        >
+                            <i
+                                :class="
+                                    'fa-solid fa-' +
+                                    (revealSecret ? 'eye' : 'eye-slash')
+                                "
+                            ></i>
+                        </span>
+                    </div>
 
                     <template v-if="props.showPasswordField">
                         <span
@@ -70,6 +106,7 @@ function close() {
                             v-model="password"
                             data-testid="passwordInp"
                             type="password"
+                            v-bind="SENSITIVE_INPUT_ATTRS"
                         />
                     </template>
 
@@ -91,6 +128,7 @@ function close() {
                         maxlength="8"
                         data-testid="labelInput"
                         type="text"
+                        v-bind="SENSITIVE_INPUT_ATTRS"
                     />
                 </div>
             </div>

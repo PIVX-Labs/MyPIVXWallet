@@ -52,8 +52,8 @@ describe('access wallet tests', () => {
         secretInp().element.value = 'dog pig';
         await secretInp().trigger('input');
         await nextTick();
-        // bip 39 (there is a space), secret is now visible
-        expect(secretInp().attributes('type')).toBe('text');
+        // bip 39 (there is a space): the secret must stay masked
+        expect(secretInp().attributes('type')).toBe('password');
         // + no advanced mode, so passwordInp is still invisible
         expect(passwordInp().exists()).toBeFalsy();
         // Input a label
@@ -124,7 +124,7 @@ describe('access wallet tests', () => {
         secretInp().element.value = 'dog pig';
         await secretInp().trigger('input');
         await nextTick();
-        expect(secretInp().attributes('type')).toBe('text');
+        expect(secretInp().attributes('type')).toBe('password');
         // Finally the password field appeared!
         expect(passwordInp().isVisible()).toBeTruthy();
         passwordInp().element.value = 'myPass';
@@ -145,7 +145,7 @@ describe('access wallet tests', () => {
         secretInp().element.value = 'dog pig';
         await secretInp().trigger('input');
         await nextTick();
-        expect(secretInp().attributes('type')).toBe('text');
+        expect(secretInp().attributes('type')).toBe('password');
         expect(passwordInp().isVisible()).toBeTruthy();
         passwordInp().element.value = 'myPass';
         await passwordInp().trigger('input');
