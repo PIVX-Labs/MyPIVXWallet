@@ -1,4 +1,5 @@
 <script setup>
+import { SENSITIVE_INPUT_ATTRS } from '../dom_security.js';
 import { nextTick, ref, toRefs, watch } from 'vue';
 import { translation } from '../i18n';
 import BottomPopup from '../BottomPopup.vue';
@@ -82,7 +83,7 @@ async function selectContact() {
                                 inputmode="decimal"
                                 onkeypress="return (event.charCode >= 46 && event.charCode <= 57) || event.charCode === 13"
                                 placeholder="0.00"
-                                autocomplete="nope"
+                                v-bind="SENSITIVE_INPUT_ATTRS"
                                 onkeydown="javascript: return event.keyCode == 69 ? false : true"
                                 data-testid="amount"
                                 @input="$nextTick(syncAmountCurrency)"
@@ -126,7 +127,7 @@ async function selectContact() {
                                 inputmode="decimal"
                                 onkeypress="return (event.charCode >= 46 && event.charCode <= 57) || event.charCode === 13"
                                 placeholder="0.00"
-                                autocomplete="nope"
+                                v-bind="SENSITIVE_INPUT_ATTRS"
                                 onkeydown="javascript: return event.keyCode == 69 ? false : true"
                                 data-testid="amountCurrency"
                                 @input="syncAmount"
@@ -161,7 +162,7 @@ async function selectContact() {
                             type="text"
                             v-model="ownerAddress"
                             :placeholder="translation.ownerAddress"
-                            autocomplete="nope"
+                            v-bind="SENSITIVE_INPUT_ATTRS"
                             :style="{ color: ownerAddressColor }"
                         />
                         <div class="input-group-append">

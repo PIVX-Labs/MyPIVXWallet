@@ -1,6 +1,7 @@
 <script setup>
 import { translation } from './i18n.js';
 import { ref } from 'vue';
+import { SENSITIVE_INPUT_ATTRS } from './dom_security.js';
 
 const props = defineProps({
     showToggle: {
@@ -44,6 +45,7 @@ defineExpose({ focus });
                     : 'width: 100%;'
             } font-family: monospace;`"
             :data-testid="testid || null"
+            v-bind="SENSITIVE_INPUT_ATTRS"
         />
         <span
             v-if="showToggle"

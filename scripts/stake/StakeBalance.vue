@@ -1,4 +1,5 @@
 <script setup>
+import { SENSITIVE_INPUT_ATTRS } from '../dom_security.js';
 import { computed, defineEmits, ref, toRefs, watch, nextTick } from 'vue';
 import { optimiseCurrencyLocale } from '../global.js';
 import { translation, ALERTS } from '../i18n.js';
@@ -226,6 +227,7 @@ function submit() {
                     data-testid="csAddrInput"
                     v-model="csAddrInternal"
                     style="text-align: center"
+                    v-bind="SENSITIVE_INPUT_ATTRS"
                 />
             </template>
             <template #footer>

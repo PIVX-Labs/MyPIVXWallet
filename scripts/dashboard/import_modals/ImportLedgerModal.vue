@@ -1,4 +1,5 @@
 <script setup>
+import { SENSITIVE_INPUT_ATTRS } from '../../dom_security.js';
 import { translation } from '../../i18n.js';
 import Modal from '../../Modal.vue';
 
@@ -47,6 +48,7 @@ const emit = defineEmits(['submit', 'close']);
                         maxlength="8"
                         data-testid="label"
                         type="text"
+                        v-bind="SENSITIVE_INPUT_ATTRS"
                     />
                     <div
                         :style="{ color: 'red' }"

@@ -1,4 +1,5 @@
 <script setup>
+import { SENSITIVE_INPUT_ATTRS } from '../dom_security.js';
 import { translation } from '../i18n.js';
 import { ref, watch } from 'vue';
 import { getAddressColor } from '../contacts-book';
@@ -118,7 +119,7 @@ async function selectContact() {
                         type="text"
                         :placeholder="translation.receivingAddress"
                         v-model="address"
-                        autocomplete="nope"
+                        v-bind="SENSITIVE_INPUT_ATTRS"
                     />
                     <div class="input-group-append tranferModal">
                         <span
@@ -151,7 +152,7 @@ async function selectContact() {
                             type="text"
                             disabled
                             placeholder="Payment Request Description"
-                            autocomplete="nope"
+                            v-bind="SENSITIVE_INPUT_ATTRS"
                         />
                     </div>
                 </div>
@@ -167,7 +168,7 @@ async function selectContact() {
                                 type="number"
                                 step="any"
                                 placeholder="0.00"
-                                autocomplete="nope"
+                                v-bind="SENSITIVE_INPUT_ATTRS"
                                 onkeypress="return (event.charCode >= 46 && event.charCode <= 57) || event.charCode === 13"
                                 inputmode="decimal"
                                 onkeydown="javascript: return event.keyCode == 69 ? false : true"
@@ -211,7 +212,7 @@ async function selectContact() {
                                 class="btn-group-input balanceInput"
                                 type="text"
                                 placeholder="0.00"
-                                autocomplete="nope"
+                                v-bind="SENSITIVE_INPUT_ATTRS"
                                 onkeypress="return (event.charCode >= 46 && event.charCode <= 57)  || event.charCode === 13"
                                 inputmode="decimal"
                                 onkeydown="javascript: return event.keyCode == 69 ? false : true"
@@ -246,7 +247,7 @@ async function selectContact() {
                                     type="text"
                                     disabled
                                     placeholder="Payment Request Description"
-                                    autocomplete="nope"
+                                    v-bind="SENSITIVE_INPUT_ATTRS"
                                     :value="desc"
                                 />
                             </div>

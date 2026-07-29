@@ -33,6 +33,7 @@ const submitForm = () => {
 
 <template>
     <form
+        autocomplete="off"
         @submit.prevent="submitForm"
         @keyup.esc="emit('cancel')"
         @keyup.enter="!showSubmitButton && emit('submit')"
