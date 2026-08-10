@@ -11,6 +11,7 @@ export class Account {
      * @param {Array<Object>} [accountData.localProposals] - The local proposals.
      * @param {Array<import('./contact-book.js').Contact>} [accountData.contacts] - The Contacts saved in this account.
      * @param {String} [accountData.name] - The Contact Name of the account.
+     * @param {String} [accountData.label] - The user-chosen display label for this sub-account.
      * @param {String} [accountData.shieldData] - Shield data necessary to load shielding
      * @param {String} [accountData.encExtsk] - Encrypted extended spending key
      * @param {boolean} [accountData.isHardware] - Whether this is a hardware wallet
@@ -23,6 +24,7 @@ export class Account {
         this.localProposals = accountData?.localProposals || [];
         this.contacts = accountData?.contacts || [];
         this.name = accountData?.name || '';
+        this.label = accountData?.label || '';
         this.shieldData = accountData?.shieldData || '';
         this.encExtsk = accountData?.encExtsk || '';
         this.isHardware = accountData?.isHardware || false;
@@ -43,6 +45,9 @@ export class Account {
 
     /** @type {String} The Contact Name of the account. */
     name = '';
+
+    /** @type {String} The user-chosen display label for this sub-account. */
+    label = '';
 
     /** @type {String} Shield data necessary to load shielding */
     shieldData = '';

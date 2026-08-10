@@ -68,7 +68,7 @@ describe('transfer menu tests', () => {
     it('Sends transaction correctly', async () => {
         const wrapper = mountTM('60', 'DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bc');
         expect(wrapper.emitted('send')).toBeUndefined();
-        await wrapper.find('[data-testid=sendButton]').trigger('click');
+        await wrapper.find('[data-testid=sendButton]').trigger('submit');
         expect(wrapper.emitted('send')).toStrictEqual([
             ['DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bc', '60', false, ''],
         ]);

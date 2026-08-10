@@ -16,6 +16,7 @@ import { ALERTS, tr } from '../i18n';
 import { useAlerts } from '../composables/use_alerts.js';
 import { validateAmount } from '../legacy.js';
 import { valuesToComputed } from '../utils.js';
+import { isColdAddress, isStandardAddress } from '../misc.js';
 const { createAlert } = useAlerts();
 const { activeWallet: wallet, activeVault } = storeToRefs(useWallets());
 const { balance, coldBalance, price, currency, isViewOnly } =
@@ -80,6 +81,23 @@ async function stake(value, ownerAddress) {
             name: ownerAddress,
             pubkey: ownerAddress,
         })?.pubkey || ownerAddress;
+
+    if (returnAddress) {
+        // Empty return addresses are automatically filled by MPW
+        if (isColdAddress(returnAddress)) {
+            createAlert('warning', ALERTS.INVALID_STAKE_ADDRESS, 7500);
+            return;
+        }
+
+        if (!isStandardAddress(returnAddress)) {
+            createAlert(
+                'warning',
+                tr(ALERTS.INVALID_ADDRESS, [{ address: returnAddress }]),
+                7500
+            );
+            return;
+        }
+    }
 
     // Create the delegation
     const res = await wallet.value.createAndSendTransaction(

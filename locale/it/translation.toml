@@ -365,3 +365,4 @@ MN_RESTART_FAILED = "<b>Il masternode non è si è riavviato correttamente!</b>"
 MN_UNLOCK_WALLET = "Per favore, importa il tuo <b>WALLET COLLATERALE</b> prima." # Please import your <b> COLLATERAL WALLET</b> first.
 LEDGER_TX_TOO_BIG = "La lunghezza della transazione supera i 9000 byte" # Transaction length exceeds 9000 bytes
 MASTERNODE_CONFIRM_L = "Conferma la firma del messaggio di avvio sul tuo ledger" # Confirm the start message signature on your Ledger
+INVALID_STAKE_ADDRESS = "" # This field does not accept cold addresses. Open the settings for cold staking by clicking the cog icon to set a delegation address.

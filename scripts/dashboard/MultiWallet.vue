@@ -77,6 +77,26 @@ function select(wallet) {
     wallets.selectWallet(wallet);
 }
 
+// Inline sub-account label editing — tracks which account (by export key) is open
+const editingKey = ref(null);
+const editingLabel = ref('');
+
+function startEditLabel(wallet) {
+    editingKey.value = wallet.getKeyToExport();
+    editingLabel.value = wallet.label || '';
+}
+
+async function saveLabel(wallet) {
+    // The editor closes before persisting, so the trailing blur is a no-op
+    if (editingKey.value !== wallet.getKeyToExport()) return;
+    editingKey.value = null;
+    await wallet.setLabel(editingLabel.value);
+}
+
+function cancelEditLabel() {
+    editingKey.value = null;
+}
+
 function formatBalance(balance) {
     return balance.toFixed(settings.displayDecimals);
 }
@@ -202,9 +222,32 @@ async function restoreWallet() {
                                 wallets.activeWallet.getKeyToExport(),
                         }"
                     >
-                        <span>
-                            <strong>{{ vault.label }} {{ i }} </strong></span
-                        >
+                        <span class="accountLabel">
+                            <template
+                                v-if="editingKey === wallet.getKeyToExport()"
+                            >
+                                <input
+                                    :ref="(el) => el && el.focus()"
+                                    v-model="editingLabel"
+                                    class="accountLabelInput"
+                                    :placeholder="`${vault.label} ${i}`"
+                                    maxlength="24"
+                                    @click.stop
+                                    @keydown.enter.prevent="saveLabel(wallet)"
+                                    @keydown.esc.prevent="cancelEditLabel()"
+                                    @blur="saveLabel(wallet)"
+                                />
+                            </template>
+                            <template v-else>
+                                <i
+                                    class="fa-solid fa-pencil accountEditIcon"
+                                    @click.stop="startEditLabel(wallet)"
+                                ></i>
+                                <strong>{{
+                                    wallet.label || `${vault.label} ${i}`
+                                }}</strong>
+                            </template>
+                        </span>
                         <div class="walletsAmount">
                             <span style="margin-right: 5px">{{
                                 formatBalance(
@@ -279,6 +322,53 @@ async function restoreWallet() {
 .walletContainer {
     display: flex;
     align-items: center;
+}
+.accountLabel {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+}
+.accountEditIcon {
+    cursor: pointer;
+    margin-right: 8px;
+    font-size: 0.8em;
+    opacity: 0.5;
+    transition: opacity 0.15s ease-in-out;
+}
+.accountEditIcon:hover {
+    opacity: 1;
+    color: #9221ff;
+}
+/* Seamless inline editor — overrides the global `input` rule (which forces a
+   light background, monospace font, fixed 43px height and margins). Scoped under
+   .multiWalletList + !important so it matches the static account name exactly. */
+.multiWalletList .accountLabelInput {
+    background: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    outline: none !important;
+    box-shadow: none !important;
+    color: inherit !important;
+    font-family: Montserrat, sans-serif !important;
+    font-size: inherit !important;
+    font-weight: 700 !important;
+    line-height: inherit;
+    height: auto !important;
+    width: auto;
+    min-width: 0;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+.multiWalletList .accountLabelInput:focus-visible {
+    outline: none !important;
+    border: none !important;
+}
+/* Dim, same-size ghost of the account name (overrides the bright global placeholder) */
+.multiWalletList .accountLabelInput::placeholder {
+    color: inherit !important;
+    opacity: 0.3 !important;
+    font-size: inherit !important;
+    font-weight: inherit !important;
 }
 .walletSelected {
     color: #9221ff;

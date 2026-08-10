@@ -365,3 +365,4 @@ MN_RESTART_FAILED = "" # <b>Masternode failed to restart!</b>
 MN_UNLOCK_WALLET = "" # Please import your <b> COLLATERAL WALLET</b> first.
 LEDGER_TX_TOO_BIG = "" # Transaction length exceeds 9000 bytes
 MASTERNODE_CONFIRM_L = "" # Confirm the start message signature on your Ledger
+INVALID_STAKE_ADDRESS = "" # This field does not accept cold addresses. Open the settings for cold staking by clicking the cog icon to set a delegation address.

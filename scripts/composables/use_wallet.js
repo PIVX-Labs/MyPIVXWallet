@@ -34,6 +34,25 @@ function addWallet(wallet) {
     const getNewAddress = (nReceiving) => wallet.getNewAddress(nReceiving);
     const blockCount = ref(0);
 
+    // The user-chosen display label for this sub-account (empty = default numbered name).
+    // Stored on the Account DB record, keyed by this wallet's export key.
+    const label = ref('');
+    (async () => {
+        const database = await Database.getInstance();
+        const account = await database.getAccount(wallet.getKeyToExport());
+        if (account?.label) label.value = account.label;
+    })();
+    const setLabel = async (newLabel) => {
+        const trimmed = (newLabel ?? '').trim();
+        const database = await Database.getInstance();
+        const account = await database.getAccount(wallet.getKeyToExport());
+        if (!account) return;
+        account.label = trimmed;
+        // allowDeletion lets the user clear the label back to the default numbered name
+        await database.updateAccount(account, true);
+        label.value = trimmed;
+    };
+
     const updateWallet = async () => {
         isImported.value = wallet.isLoaded();
         isHardwareWallet.value = wallet.isHardwareWallet();
@@ -234,6 +253,8 @@ function addWallet(wallet) {
             await updateWallet();
         },
         historicalTxs,
+        label,
+        setLabel,
         onNewTx,
         onTransparentSyncStatusUpdate,
         onShieldSyncStatusUpdate,

@@ -365,3 +365,4 @@ MN_RESTART_FAILED = " <b>Masternode failed to restart!</b>" # <b>Masternode fail
 LEDGER_TX_TOO_BIG = "Transaction length exceeds 9000 bytes" # Transaction length exceeds 9000 bytes
 MISSING_FUNDS = "<b>Balance is too small!</b> <br> Missing {sats} sats!" # <b>Balance is too small!</b> <br> Missing {sats} sats!
 MASTERNODE_CONFIRM_L = "Confirm the start message signature on your Ledger" # Confirm the start message signature on your Ledger
+INVALID_STAKE_ADDRESS = "This field does not accept cold addresses. Open the settings for cold staking by clicking the cog icon to set a delegation address." # This field does not accept cold addresses. Open the settings for cold staking by clicking the cog icon to set a delegation address.
