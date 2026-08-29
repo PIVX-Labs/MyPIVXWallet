@@ -152,7 +152,6 @@ popupProposalAddress = "Voorsteladres (Optioneel)" # Proposal Address (Optional)
 popupProposalDuration = "Duur in cycli" # Duration in cycles
 popupProposalPerCycle = "per cyclus" # per cycle
 popupProposalEncryptFirst = "Je moet \"{button}\" indrukken voordat je voorstellen kunt maken!" # You need to hit "{button}" before you can create proposals!
-popupHardwareAddrCheck = "Bevestig alstublieft dat dit het adres is dat je ziet op je" # Please confirm this is the address you see on your
 proposalFinalisationConfirming = "Bevestigen..." # Confirming...
 proposalFinalisationRemaining = "resterend" # remaining
 proposalFinalisationExpired = "Voorstel verlopen" # Proposal Expired
@@ -253,6 +252,8 @@ stop = "" # Stop
 popupSeedPhraseBadNote = "" # <b>This Seed Phrase appears to be invalid <br> (The checksum doesn't match). <br> It might have a typo, </b> or it could’ve been created in an unusual way. Do you still want to continue?
 transactionNeedsAddress = "" # The address field is empty
 transactionNeedsAmount = "" # The amount is invalid
+popupHardwareAddrIsUsedForChange = "" # This address will receive the change (unused funds) from your transaction.
+popupHardwareAddrCheck = "" # Verify that the address shown on this popup matches the one displayed on your <b>{device}</b> device. <br/> This confirms the address really belongs to your wallet and hasn’t been tampered with.
 
 [ALERTS]
 INTERNAL_ERROR = "Interne fout, probeer het later opnieuw" # Internal error, please try again later
