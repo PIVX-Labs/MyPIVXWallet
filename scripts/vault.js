@@ -22,7 +22,21 @@ export class Vault {
      */
     label;
 
-    constructor({ masterKey, shield, seed, wallets, label }) {
+    /**
+     * @type {number} Creation block of the vault.
+     * Defaults to `cChainParams::defaultStartingShieldBlock` if unknown
+     */
+    createdBlock;
+
+    constructor({
+        masterKey,
+        shield,
+        seed,
+        wallets,
+        label,
+        createdBlock = cChainParams.current.defaultStartingShieldBlock,
+    }) {
+        this.createdBlock = createdBlock;
         if (masterKey) {
             this.#wallets.push(
                 new Wallet({
@@ -69,12 +83,13 @@ export class Vault {
                 seed: this.#seed,
                 // hardcoded value considering the last checkpoint, this is good both for mainnet and testnet
                 // TODO: take the wallet creation height in input from users
-                blockHeight: 4200000,
+                blockHeight: this.createdBlock,
                 coinType: cChainParams.current.BIP44_TYPE,
                 // TODO: Change account index once account system is made
                 accountIndex: account,
                 loadSaplingData: false,
             }),
+            createdBlock: this.createdBlock,
         });
         this.#wallets[account] = wallet;
         return wallet;
