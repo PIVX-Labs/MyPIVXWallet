@@ -855,6 +855,8 @@ export class Wallet {
         // Finally avoid address re-use by updating the map #addressIndices
         this.#updateCurrentAddress();
 
+        this.#setUTXOPriority();
+
         // Update both activities post sync
         this.#eventEmitter.enableEvent('balance-update');
         this.#eventEmitter.enableEvent('new-tx');
@@ -862,6 +864,17 @@ export class Wallet {
         this.#eventEmitter.emit('new-tx');
         return true;
     });
+
+    async #setUTXOPriority() {
+        const network = getNetwork();
+        const ownMasternodes = (await network.listMasternodes()).filter(
+            (m) => m.status === 'ENABLED' && this.isOwnAddress(m.addr)
+        );
+        for (const ownMn of ownMasternodes) {
+            // Set priority to -1, so MPW is less likely to spend active masternodes
+            this.#mempool.setPriority(ownMn.txhash, -1);
+        }
+    }
 
     async #transparentSync() {
         if (!this.isLoaded() || this.#isSynced) return;

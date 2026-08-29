@@ -99,6 +99,7 @@ class TestNetwork {
         this.#nextBlock.reset();
         this.#nextBlock.blockHeight = this.#blockHeight + 1;
     }
+    listMasternodes = vi.fn(() => []);
 }
 
 /**

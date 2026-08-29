@@ -15,10 +15,10 @@ export class Mempool {
     #outpointStatus = new Map();
 
     /**
-     * Maps txid -> Transaction
-     * @type{Map<string, import('./transaction.js').Transaction>}
+     * An array containing a map of txid -> Transaction, indexed by priority
+     * @type{Map<string, import('./transaction.js').Transaction>[]}
      */
-    #txmap = new Map();
+    #txmaps = [new Map()];
 
     /**
      * Object containing balances of the wallet
@@ -46,13 +46,20 @@ export class Mempool {
         this.#emitter = emitter;
     }
 
+    #getTxmapByPriority(priority = 0) {
+        if (!this.#txmaps[priority]) {
+            this.#txmaps[priority] = new Map();
+        }
+        return this.#txmaps[priority];
+    }
+
     /**
      * Add a transaction to the mempool
      * And mark the input as spent.
      * @param {import('./transaction.js').Transaction} tx
      */
-    addTransaction(tx) {
-        this.#txmap.set(tx.txid, tx);
+    addTransaction(tx, priority = 0) {
+        this.#getTxmapByPriority(priority).set(tx.txid, tx);
         for (const input of tx.vin) {
             this.setSpent(input.outpoint);
         }
@@ -98,6 +105,24 @@ export class Mempool {
     }
 
     /**
+     * Sets the priority of an outpoint, so that it will have precedence when
+     * attempting to createa a transaction. Higher priorities will be attempted
+     * to be spent earlier. The default priority is 0.
+     */
+    setPriority(txid, priority = 0) {
+        let tx;
+        for (const txmap of this.#txmaps) {
+            tx = txmap.get(txid);
+            if (tx) {
+                break;
+            }
+        }
+        if (tx) {
+            this.#getTxmapByPriority(priority).set(tx);
+        }
+    }
+
+    /**
      * Mark an outpoint as spent
      * @param {COutpoint} outpoint
      */
@@ -119,7 +144,9 @@ export class Mempool {
      * @returns {UTXO?}
      */
     outpointToUTXO(outpoint) {
-        const tx = this.#txmap.get(outpoint.txid);
+        const tx = this.#txmaps
+            .find((txmap) => txmap.get(outpoint.txid))
+            .get(outpoint.txid);
         if (!tx) return null;
         return new UTXO({
             outpoint,
@@ -177,16 +204,18 @@ export class Mempool {
      * @returns {T}
      */
     loopSpendableBalance(requirement, initialValue, fn) {
-        for (const tx of this.#txmap.values()) {
-            for (const [index, vout] of tx.vout.entries()) {
-                const status = this.getOutpointStatus(
-                    new COutpoint({ txid: tx.txid, n: index })
-                );
-                if (status & (OutpointState.SPENT | OutpointState.LOCKED)) {
-                    continue;
-                }
-                if ((status & requirement) === requirement) {
-                    initialValue = fn(tx, vout, initialValue);
+        for (const txmap of this.#txmaps.reverse()) {
+            for (const tx of txmap.values()) {
+                for (const [index, vout] of tx.vout.entries()) {
+                    const status = this.getOutpointStatus(
+                        new COutpoint({ txid: tx.txid, n: index })
+                    );
+                    if (status & (OutpointState.SPENT | OutpointState.LOCKED)) {
+                        continue;
+                    }
+                    if ((status & requirement) === requirement) {
+                        initialValue = fn(tx, vout, initialValue);
+                    }
                 }
             }
         }
@@ -260,7 +289,7 @@ export class Mempool {
      * @returns {import('./transaction.js').Transaction[]} a list of all transactions
      */
     getTransactions() {
-        return Array.from(this.#txmap.values());
+        return this.#txmaps.flatMap((txmap) => Array.from(txmap.values()));
     }
 
     /**
@@ -268,7 +297,11 @@ export class Mempool {
      * @returns {import('./transaction.js').Transaction | undefined}
      */
     getTransaction(txid) {
-        return this.#txmap.get(txid);
+        for (const txmap of this.#txmaps) {
+            const tx = txmap.get(txid);
+            if (tx) return tx;
+        }
+        return null;
     }
 
     /**

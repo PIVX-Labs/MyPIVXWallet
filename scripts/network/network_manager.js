@@ -238,6 +238,10 @@ class NetworkManager {
         );
     }
 
+    async listMasternodes() {
+        return await this.#retryWrapper('listMasternodes', true);
+    }
+
     async getMasternodeCount() {
         return await this.#retryWrapper('getMasternodeCount', true, 0);
     }
