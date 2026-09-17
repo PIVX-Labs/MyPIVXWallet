@@ -1,19 +1,17 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, onUnmounted } from 'vue';
 import { Database } from '../database.js';
 import { createAlert } from '../alerts/alert.js';
-import { isShieldAddress } from '../misc.js';
+import { isShieldAddress, sanitizeHTML } from '../misc.js';
 import {
-    fetchCurrentBlockHeight,
     fetchEVMRoot,
     fetchIndexerRoot,
-    fetchRootInfo,
+    getEVMNetwork,
+    getEvmRpcList,
     verifyRootValidityOnContract,
     verifySmtProof,
-    MAX_ROOT_LAG_BLOCKS,
 } from '../utils.pins.js';
 import { ALERTS, translation, tr } from '../i18n.js';
-import { cChainParams } from '../chain_params.js';
 import { debugError, DebugTopics } from '../debug.js';
 
 // Events we can emit
@@ -31,21 +29,54 @@ const pendingSendParams = ref(null);
 
 let syncModalInterval = null;
 
+/** How long an untrusted string may be before it is cut short for display. */
+const MAX_ERROR_CHARS = 200;
+
+/** How often the sync modal asks whether the indexer has caught up. */
+const SYNC_POLL_MS = 15000;
+
 /**
- * The EVM endpoints to try, best first.
+ * Everything the resolver needs, resolved fresh from settings and chain params.
  *
- * The user's chosen endpoint leads, then every other endpoint configured for the
- * same chain as a fallback. One rate limited or unreachable node must not take name
- * resolution down when spares are sitting in the chain params.
+ * The contract address deliberately comes from chain params and never from the stored
+ * settings row. It is a protocol constant with no UI behind it, and `setSettings`
+ * writes back the whole settings object, so a row written once would outrank the
+ * shipped value for good - including after a contract redeployment, which is precisely
+ * when the shipped value is the one that matters. Ignoring the stored copy is also the
+ * migration: nothing has to be rewritten in IndexedDB for a new address to take effect.
  */
-function getEvmRpcList(strConfiguredRpc, nChainId) {
-    const network = (cChainParams.current.EVMNetworks || []).find(
-        (n) => n.chainId === nChainId
-    );
-    const arrSpares = network?.rpcs || [];
-    return [strConfiguredRpc, ...arrSpares].filter(
-        (url, i, arr) => url && arr.indexOf(url) === i
-    );
+async function loadResolverConfig() {
+    const database = await Database.getInstance();
+    const { nameResolvingApi, evmRpc, evmNetworkId } =
+        await database.getSettings();
+
+    const objNetwork = getEVMNetwork(evmNetworkId);
+    if (!objNetwork) {
+        throw new Error('No EVM network is configured for name resolving');
+    }
+
+    return {
+        apiEndpoint: nameResolvingApi || 'https://indexer.pivx.name',
+        evmRpcList: getEvmRpcList(evmRpc, objNetwork),
+        evmContractAddress: objNetwork.contractAddress,
+    };
+}
+
+/**
+ * Untrusted text on its way to an alert.
+ *
+ * Alert bodies are rendered with `v-html` (see `Alert.vue`), so anything an indexer put
+ * in an error field would otherwise be markup running in the wallet's own origin. The
+ * length cap is part of the same job: the field is attacker-sized as well as
+ * attacker-chosen.
+ */
+function safeErrMsg(e) {
+    const strMsg = typeof e === 'string' ? e : e?.message || String(e);
+    const strCut =
+        strMsg.length > MAX_ERROR_CHARS
+            ? `${strMsg.slice(0, MAX_ERROR_CHARS)}...`
+            : strMsg;
+    return sanitizeHTML(strCut);
 }
 
 async function resolveDomainName(apiEndpoint, domain) {
@@ -86,28 +117,31 @@ async function resolveDomainName(apiEndpoint, domain) {
     throw new Error('Invalid response format from indexer');
 }
 
-async function getPivxNameRoots(
-    apiEndpoint,
-    strDomain,
-    evmRpc,
-    evmContractAddress
-) {
-    let resolveData = null;
-    let isNotFound = false;
-    let indexerRoot = null;
-
-    // Kick the chain read off first so it overlaps the resolve instead of following
-    // it. Attach a catch immediately: an unhandled rejection here would surface as a
-    // global error before the await below ever sees it.
-    const evmRootPromise = fetchEVMRoot(evmRpc, evmContractAddress);
+/**
+ * The two roots, read together: what the indexer says the tree is, and what the chain
+ * attests to.
+ *
+ * The chain read is kicked off first so it overlaps the resolve rather than following
+ * it. The catch is attached immediately: an unhandled rejection here would surface as a
+ * global error before the await below ever saw it.
+ */
+async function fetchRootsAndResolve(objConfig, strDomain) {
+    const evmRootPromise = fetchEVMRoot(
+        objConfig.evmRpcList,
+        objConfig.evmContractAddress
+    );
     evmRootPromise.catch(() => {});
 
+    let resolveData = null;
+    let isNotFound = false;
+    let strIndexerRoot = null;
+
     try {
-        const res = await resolveDomainName(apiEndpoint, strDomain);
+        const res = await resolveDomainName(objConfig.apiEndpoint, strDomain);
         isNotFound = res.isNotFound;
         if (!isNotFound) {
             resolveData = res.resolveData;
-            indexerRoot = resolveData.smt_root;
+            strIndexerRoot = String(resolveData.smt_root || '').toLowerCase();
         }
     } catch (e) {
         if (e.message === 'Domain not found') {
@@ -117,31 +151,25 @@ async function getPivxNameRoots(
         }
     }
 
-    const evmRoot = await evmRootPromise;
+    const strChainRoot = await evmRootPromise;
 
-    // Only needed when the name is missing: with no resolve response there is no
-    // root to compare, and we still have to tell "the indexer is behind" from
-    // "this name genuinely does not exist".
+    // Only needed when the name is missing: with no resolve response there is no root
+    // to compare, and "the indexer is behind" still has to be told apart from "this
+    // name genuinely does not exist".
     if (isNotFound) {
-        indexerRoot = await fetchIndexerRoot(apiEndpoint);
+        strIndexerRoot = await fetchIndexerRoot(objConfig.apiEndpoint);
     }
 
-    const rootsMatch =
-        !!evmRoot &&
-        !!indexerRoot &&
-        evmRoot.toLowerCase() === indexerRoot.toLowerCase();
-
-    return { rootsMatch, evmRoot, indexerRoot, isNotFound, resolveData };
+    return { strIndexerRoot, strChainRoot, isNotFound, resolveData };
 }
 
 /**
- * Last gate before a send: the response must be complete, and its proof must fold to a
- * root the chain vouched for.
+ * Last gate before a send: the response must be complete, and its proof must fold to
+ * the root the chain attests to right now.
  *
- * `strTrustedRoot` is always a root read from the anchor contract - either its current
- * root, or a historical one the contract confirmed AND that is recent enough to still
- * describe the registry (see `establishTrustedRoot`). It is never the root the indexer
- * declared in the same breath as the proof.
+ * `strTrustedRoot` is always the anchor contract's current root. It is never the root
+ * the indexer declared alongside the proof, and never a historical root either - see
+ * the note on `armSyncDelay` for why an older anchored root is no longer good enough.
  */
 function verifyResolvedDetails(strDomain, resolveData, strTrustedRoot) {
     if (!resolveData) return false;
@@ -186,9 +214,10 @@ function verifyResolvedDetails(strDomain, resolveData, strTrustedRoot) {
 }
 
 /**
- * Show the "this root was never anchored" wall and make sure nothing can be sent.
+ * The indexer is serving a tree the contract has never accepted. Nothing about that has
+ * a benign reading, so there is no way forward from this modal.
  */
-function blockOnUnanchoredRoot() {
+function showUnanchoredRootWall() {
     stopSyncModalPolling();
     pendingSendParams.value = null; // Clear to prevent any send
     showSyncModal.value = true;
@@ -199,185 +228,114 @@ function blockOnUnanchoredRoot() {
 }
 
 /**
- * Show the "this root is real but far too old to act on" wall.
+ * The indexer is behind: it is serving a root the contract did accept, just not the one
+ * it currently attests to.
  *
- * Kept separate from the unanchored case on purpose: one says the indexer invented a
- * tree, the other says the indexer is serving a tree that genuinely existed but has
- * since been superseded - which is what a replayed proof looks like from here.
+ * There is no "send anyway" here. An earlier revision bounded how far behind the root
+ * could be and let the user override inside that bound, but the two heights involved
+ * are checkpoint heights, so the lag is not a clock - it is 0 while the two agree and a
+ * whole checkpoint stride the moment they do not. Any bound expressed in blocks is
+ * therefore a bet on how often batches get proved, and it fails closed on the registry
+ * rather than on an attacker. Waiting for the indexer to catch up costs a few minutes
+ * and needs no such bet, so that is what this does.
  */
-function blockOnStaleRoot(nLag) {
-    stopSyncModalPolling();
-    pendingSendParams.value = null;
+function armSyncDelay(objConfig, strDomain, params, fNotFound) {
+    pendingSendParams.value = params;
     showSyncModal.value = true;
-    syncModalState.value = 'invalid_root';
-    syncModalTitle.value = translation.pinsTitleRootTooOld;
-    syncModalText.value = tr(translation.pinsTextRootTooOld, [{ nLag }]);
-    syncModalCancelText.value = translation.pinsBtnClose;
-}
 
-/**
- * Ask the contract about the root the indexer is serving, and answer with how far
- * behind the tip it is.
- *
- * Returns `null` - after putting the appropriate wall on screen - when the root was
- * never anchored at all. A number means the root is genuinely part of the contract's
- * history; how much lag is acceptable is the caller's decision, because the answer
- * differs between "warn the user" and "let the user send".
- */
-async function measureRootLag(evmRpcList, evmContractAddress, indexerRoot) {
-    const { fIsValid, nBlockHeight } = await fetchRootInfo(
-        evmRpcList,
-        evmContractAddress,
-        indexerRoot
-    );
-    if (!fIsValid) {
-        blockOnUnanchoredRoot();
-        return null;
+    if (fNotFound) {
+        syncModalState.value = 'not_found';
+        syncModalTitle.value = translation.pinsTitleSyncDelayNotFound;
+        syncModalText.value = translation.pinsTextSyncDelayNotFound;
+    } else {
+        syncModalState.value = 'warning';
+        syncModalTitle.value = translation.pinsTitleSyncDelay;
+        syncModalText.value = translation.pinsTextSyncDelayWait;
     }
+    syncModalCancelText.value = translation.pinsBtnCancel;
 
-    const nTipHeight = await fetchCurrentBlockHeight(
-        evmRpcList,
-        evmContractAddress
-    );
-    // Heights are PIVX block heights on both sides, so the difference is a lag in
-    // PIVX blocks - roughly a minute each.
-    return Math.max(0, nTipHeight - nBlockHeight);
-}
-
-/**
- * Decide, at the moment of sending, which root this proof may be folded against.
- *
- * The contract's current root is the ideal answer. When the indexer is behind, the
- * root it serves is acceptable only if the contract confirms it AND it is recent
- * enough that a replay of some long superseded state cannot hide inside the lag. Both
- * questions are asked here rather than reused from whenever the modal happened to be
- * put on screen: between those two moments the chain can have moved, the indexer can
- * have been swapped, and the user may have left the dialog open for hours.
- *
- * @returns {Promise<string|null>} the root to verify against, or null if the user has
- *                                 already been shown why nothing will be sent
- */
-async function establishTrustedRoot(
-    evmRpcList,
-    evmContractAddress,
-    indexerRoot
-) {
-    if (!indexerRoot) return null;
-    const strIndexerRoot = String(indexerRoot).replace(/^0x/, '').toLowerCase();
-
-    const strChainRoot = await fetchEVMRoot(evmRpcList, evmContractAddress);
-    if (strChainRoot === strIndexerRoot) return strChainRoot;
-
-    const nLag = await measureRootLag(
-        evmRpcList,
-        evmContractAddress,
-        strIndexerRoot
-    );
-    if (nLag === null) return null;
-    if (nLag > MAX_ROOT_LAG_BLOCKS) {
-        blockOnStaleRoot(nLag);
-        return null;
-    }
-    return strIndexerRoot;
-}
-
-/**
- * The cheap tripwire used while polling: is this root one the contract ever accepted?
- *
- * Deliberately only the boolean read here, not the full lag measurement. This runs on
- * a timer against public RPC endpoints, and the staleness question is asked where it
- * changes an outcome - when the warning is raised, and again when the user confirms -
- * rather than every few seconds.
- */
-async function verifyAndHandleRootValidity(
-    evmRpc,
-    evmContractAddress,
-    indexerRoot
-) {
-    const isRootValid = await verifyRootValidityOnContract(
-        evmRpc,
-        evmContractAddress,
-        indexerRoot
-    );
-    if (!isRootValid) {
-        blockOnUnanchoredRoot();
-        return false;
-    }
-    return true;
+    startSyncModalPolling(objConfig, strDomain);
 }
 
 function handleCriticalError(e, isRetry = false) {
     const errMsg = e.message || String(e);
+    const strLower = errMsg.toLowerCase();
     const isNetworkError =
-        errMsg.toLowerCase().includes('fetch') ||
-        errMsg.toLowerCase().includes('networkerror') ||
-        errMsg.toLowerCase().includes('timeout') ||
-        errMsg.toLowerCase().includes('conn');
-    if (!isNetworkError) {
+        strLower.includes('fetch') ||
+        strLower.includes('networkerror') ||
+        strLower.includes('timeout') ||
+        strLower.includes('conn');
+
+    // A quorum that cannot be reached is not the indexer's doing, and saying so points
+    // people at the wrong component. It is still fatal to the attempt: without agreeing
+    // endpoints there is no chain state to verify against.
+    const isRpcQuorumError =
+        strLower.includes('disagree') ||
+        strLower.includes('endpoints to agree');
+
+    if (!isNetworkError || isRpcQuorumError) {
         stopSyncModalPolling();
         pendingSendParams.value = null;
         showSyncModal.value = true;
         syncModalState.value = 'invalid_root';
-        syncModalTitle.value = translation.pinsTitleIndexerError;
-        syncModalText.value = tr(translation.pinsTextIndexerError, [
-            { errMsg },
-        ]);
+        syncModalTitle.value = isRpcQuorumError
+            ? translation.pinsTitleRpcError
+            : translation.pinsTitleIndexerError;
+        syncModalText.value = tr(
+            isRpcQuorumError
+                ? translation.pinsTextRpcError
+                : translation.pinsTextIndexerError,
+            [{ errMsg }]
+        );
         syncModalCancelText.value = translation.pinsBtnClose;
         return true;
     }
 
     if (isRetry) {
-        createAlert('warning', tr(ALERTS.PINS_SYNC_FAILED, [{ errMsg }]), 3000);
+        createAlert(
+            'warning',
+            tr(ALERTS.PINS_SYNC_FAILED, [{ errMsg: safeErrMsg(e) }]),
+            3000
+        );
     }
     return false;
 }
 
-function startSyncModalPolling(
-    apiEndpoint,
-    strDomain,
-    evmRpcList,
-    evmContractAddress
-) {
+/**
+ * While the modal is up, ask one cheap question on a timer: have the two roots met?
+ *
+ * Only the two roots. The resolve and the contract's validity read are not repeated
+ * here - they decided which modal to show, and they will be run again in full the
+ * moment the answer changes or the user acts. A tick costs one indexer request and one
+ * quorum'd contract read.
+ */
+function startSyncModalPolling(objConfig, strDomain) {
     stopSyncModalPolling();
     syncModalIsPolling.value = true;
 
     syncModalInterval = setInterval(async () => {
         try {
-            const { rootsMatch, indexerRoot, isNotFound, resolveData } =
-                await getPivxNameRoots(
-                    apiEndpoint,
-                    strDomain,
-                    evmRpcList,
-                    evmContractAddress
-                );
+            const [strIndexerRoot, strChainRoot] = await Promise.all([
+                fetchIndexerRoot(objConfig.apiEndpoint),
+                fetchEVMRoot(
+                    objConfig.evmRpcList,
+                    objConfig.evmContractAddress
+                ),
+            ]);
+            if (strIndexerRoot !== strChainRoot) return;
 
-            // SECURITY CHECK: Verify if the indexer's root exists historically on the contract
-            const isRootValid = await verifyAndHandleRootValidity(
-                evmRpcList,
-                evmContractAddress,
-                indexerRoot
+            stopSyncModalPolling();
+            // Caught up. Run the whole thing again, this time to completion, so the
+            // "resolved" the modal is about to claim is one that actually verified.
+            const params = pendingSendParams.value;
+            if (!params) return;
+            await runResolution(
+                params.originalDomain,
+                params.amount,
+                params.useShieldInputs,
+                params.memo,
+                false
             );
-            if (!isRootValid) return;
-
-            if (rootsMatch) {
-                stopSyncModalPolling();
-
-                if (!isNotFound && resolveData && resolveData.target_address) {
-                    if (pendingSendParams.value) {
-                        pendingSendParams.value.address =
-                            resolveData.target_address;
-                        pendingSendParams.value.resolveData = resolveData;
-                    }
-                    syncModalState.value = 'synced';
-                    syncModalTitle.value = translation.pinsTitleSynced;
-                    syncModalText.value = translation.pinsTextSynced;
-                    syncModalConfirmText.value = translation.pinsBtnSend;
-                } else {
-                    syncModalState.value = 'not_found_synced_error';
-                    syncModalTitle.value = translation.pinsTitleNotFound;
-                    syncModalText.value = translation.pinsTextNotFound;
-                }
-            }
         } catch (e) {
             debugError(
                 DebugTopics.NET,
@@ -386,9 +344,7 @@ function startSyncModalPolling(
             );
             handleCriticalError(e);
         }
-        // 10s, not 5: every tick now costs two agreeing endpoints per contract read,
-        // and public BSC endpoints rate limit on per-second concurrency.
-    }, 10000);
+    }, SYNC_POLL_MS);
 }
 
 function stopSyncModalPolling() {
@@ -396,6 +352,132 @@ function stopSyncModalPolling() {
     if (syncModalInterval) {
         clearInterval(syncModalInterval);
         syncModalInterval = null;
+    }
+}
+
+// Dashboard mounts this once and never tears it down today, but a timer that outlives
+// its component is the kind of thing that only becomes a bug once somebody moves it.
+onUnmounted(stopSyncModalPolling);
+
+/**
+ * The one path that can spend.
+ *
+ * Every entry point goes through here - the first attempt, Retry, the confirmation, and
+ * the poller - so the decision to send is made in exactly one place, always from state
+ * read in that same pass. Nothing is carried over from when a modal was put on screen:
+ * a dialog can sit open for hours, and the chain does not wait.
+ *
+ * @param {boolean} fEmit - true when the user has asked to send; false when the point
+ *                          is only to confirm the name resolves cleanly and let them
+ *                          press Send themselves.
+ */
+async function runResolution(strDomain, amount, useShieldInputs, memo, fEmit) {
+    const objConfig = await loadResolverConfig();
+    const { strIndexerRoot, strChainRoot, isNotFound, resolveData } =
+        await fetchRootsAndResolve(objConfig, strDomain);
+
+    if (!strChainRoot)
+        throw new Error('Could not read the anchor contract root');
+
+    if (strIndexerRoot !== strChainRoot) {
+        // Is this an indexer that is behind, or one describing a tree that never
+        // existed? Only the contract can say.
+        const fAnchored = await verifyRootValidityOnContract(
+            objConfig.evmRpcList,
+            objConfig.evmContractAddress,
+            strIndexerRoot
+        );
+        if (!fAnchored) {
+            showUnanchoredRootWall();
+            return;
+        }
+        armSyncDelay(
+            objConfig,
+            strDomain,
+            {
+                amount,
+                useShieldInputs,
+                memo,
+                originalDomain: strDomain,
+            },
+            isNotFound || !resolveData
+        );
+        return;
+    }
+
+    // Roots agree, so the chain's current root is the one to verify against.
+    if (isNotFound || !resolveData || !resolveData.target_address) {
+        stopSyncModalPolling();
+        showSyncModal.value = false;
+        pendingSendParams.value = null;
+        createAlert(
+            'warning',
+            tr(ALERTS.PINS_NOT_FOUND, [{ strDomain }]),
+            5000
+        );
+        return;
+    }
+
+    if (!verifyResolvedDetails(strDomain, resolveData, strChainRoot)) {
+        stopSyncModalPolling();
+        showSyncModal.value = false;
+        pendingSendParams.value = null;
+        return;
+    }
+
+    if (!fEmit) {
+        // Verified, but the user is not here - they chose to wait. Hand them a button
+        // rather than spending on their behalf.
+        pendingSendParams.value = {
+            amount,
+            useShieldInputs,
+            memo,
+            originalDomain: strDomain,
+        };
+        showSyncModal.value = true;
+        syncModalState.value = 'synced';
+        syncModalTitle.value = translation.pinsTitleSynced;
+        syncModalText.value = translation.pinsTextSynced;
+        syncModalConfirmText.value = translation.pinsBtnSend;
+        syncModalCancelText.value = translation.pinsBtnCancel;
+        return;
+    }
+
+    stopSyncModalPolling();
+    showSyncModal.value = false;
+    pendingSendParams.value = null;
+    // Send to the address the verified leaf commits to, never to a field carried
+    // alongside it.
+    emit('send', {
+        address: resolveData.target_address,
+        amount,
+        useShieldInputs,
+        memo,
+    });
+}
+
+async function retrySyncModalResolution() {
+    if (!showSyncModal.value || syncModalState.value !== 'not_found') return;
+    const params = pendingSendParams.value;
+    if (!params) return;
+
+    stopSyncModalPolling();
+    const checkingAlert = createAlert('info', ALERTS.PINS_CHECKING_SYNC, 5000);
+    try {
+        await runResolution(
+            params.originalDomain,
+            params.amount,
+            params.useShieldInputs,
+            params.memo,
+            true
+        );
+        if (checkingAlert) checkingAlert.close();
+        if (syncModalState.value === 'not_found' && showSyncModal.value) {
+            createAlert('warning', ALERTS.PINS_SYNCING_WAIT, 3000);
+        }
+    } catch (e) {
+        if (checkingAlert) checkingAlert.close();
+        handleCriticalError(e, true);
     }
 }
 
@@ -408,142 +490,30 @@ function closeSyncModal(confirm) {
         return;
     }
 
-    // "Send anyway" is a decision taken now, so the chain is asked now. The modal may
-    // have been open for a long time, and the checks that put it on screen say nothing
-    // about the state of the world at the moment the button was pressed.
+    // Confirming is a decision taken now, so everything is re-derived now.
     confirmPendingSend();
 }
 
-/**
- * Re-establish the chain binding, then send.
- *
- * Everything that could make this send unsafe is re-derived from the contract here:
- * which root is current, whether the indexer's root is anchored at all, and how far
- * behind it is. Only then is the proof folded - against that root, never against the
- * one the indexer shipped alongside it.
- */
 async function confirmPendingSend() {
     const params = pendingSendParams.value;
     pendingSendParams.value = null;
-    if (!params || !params.resolveData) return;
-
-    const { amount, useShieldInputs, memo, originalDomain, resolveData } =
-        params;
+    if (!params) return;
 
     try {
-        const database = await Database.getInstance();
-        const { evmRpc, evmContractAddress, evmNetworkId } =
-            await database.getSettings();
-        const evmRpcList = getEvmRpcList(evmRpc, evmNetworkId);
-
-        const strTrustedRoot = await establishTrustedRoot(
-            evmRpcList,
-            evmContractAddress,
-            resolveData.smt_root
+        await runResolution(
+            params.originalDomain,
+            params.amount,
+            params.useShieldInputs,
+            params.memo,
+            true
         );
-        // A null answer has already explained itself on screen.
-        if (!strTrustedRoot) return;
-
-        if (
-            verifyResolvedDetails(originalDomain, resolveData, strTrustedRoot)
-        ) {
-            // Send to the address the verified leaf commits to, never to a field
-            // carried along separately.
-            emit('send', {
-                address: resolveData.target_address,
-                amount,
-                useShieldInputs,
-                memo,
-            });
-        }
     } catch (e) {
         debugError(DebugTopics.NET, 'Name service confirmation error:', e);
         createAlert(
             'warning',
-            tr(ALERTS.PINS_RESOLVE_FAILED, [{ errMsg: e.message || e }]),
+            tr(ALERTS.PINS_RESOLVE_FAILED, [{ errMsg: safeErrMsg(e) }]),
             5000
         );
-    }
-}
-
-async function retrySyncModalResolution() {
-    if (!showSyncModal.value || syncModalState.value !== 'not_found') return;
-
-    const database = await Database.getInstance();
-    const { nameResolvingApi, evmRpc, evmContractAddress, evmNetworkId } =
-        await database.getSettings();
-    const apiEndpoint = nameResolvingApi || 'https://indexer.pivx.name';
-    const evmRpcList = getEvmRpcList(evmRpc, evmNetworkId);
-
-    stopSyncModalPolling();
-
-    const checkingAlert = createAlert(
-        'info',
-        translation.pinsCheckingSync,
-        5000
-    );
-    try {
-        const { rootsMatch, evmRoot, indexerRoot, isNotFound, resolveData } =
-            await getPivxNameRoots(
-                apiEndpoint,
-                pendingSendParams.value.originalDomain,
-                evmRpcList,
-                evmContractAddress
-            );
-
-        // SECURITY CHECK: Verify if the indexer's root exists historically on the contract
-        const isRootValid = await verifyAndHandleRootValidity(
-            evmRpcList,
-            evmContractAddress,
-            indexerRoot
-        );
-        if (!isRootValid) {
-            if (checkingAlert) checkingAlert.close();
-            return;
-        }
-
-        if (checkingAlert) checkingAlert.close();
-        if (rootsMatch) {
-            stopSyncModalPolling();
-            if (!isNotFound && resolveData) {
-                showSyncModal.value = false;
-                if (
-                    verifyResolvedDetails(
-                        pendingSendParams.value.originalDomain,
-                        resolveData,
-                        evmRoot
-                    )
-                ) {
-                    emit('send', {
-                        address: resolveData.target_address,
-                        amount: pendingSendParams.value.amount,
-                        useShieldInputs:
-                            pendingSendParams.value.useShieldInputs,
-                        memo: pendingSendParams.value.memo,
-                    });
-                }
-            } else {
-                showSyncModal.value = false;
-                createAlert(
-                    'warning',
-                    tr(ALERTS.PINS_NOT_FOUND, [
-                        { strDomain: pendingSendParams.value.originalDomain },
-                    ]),
-                    5000
-                );
-            }
-        } else {
-            createAlert('warning', translation.pinsSyncingWait, 3000);
-            startSyncModalPolling(
-                apiEndpoint,
-                pendingSendParams.value.originalDomain,
-                evmRpcList,
-                evmContractAddress
-            );
-        }
-    } catch (e) {
-        if (checkingAlert) checkingAlert.close();
-        handleCriticalError(e, true);
     }
 }
 
@@ -556,111 +526,14 @@ async function resolveAndVerify(domain, amount, useShieldInputs, memo) {
     );
 
     try {
-        const database = await Database.getInstance();
-        const { nameResolvingApi, evmRpc, evmContractAddress, evmNetworkId } =
-            await database.getSettings();
-        const apiEndpoint = nameResolvingApi || 'https://indexer.pivx.name';
-        // Pass the whole list from here on: every EVM call may rotate through it.
-        const evmRpcList = getEvmRpcList(evmRpc, evmNetworkId);
-
-        // 1. Fetch roots and resolved data
-        const { rootsMatch, evmRoot, indexerRoot, isNotFound, resolveData } =
-            await getPivxNameRoots(
-                apiEndpoint,
-                strDomain,
-                evmRpcList,
-                evmContractAddress
-            );
-
+        await runResolution(strDomain, amount, useShieldInputs, memo, true);
         if (resolvingAlert) resolvingAlert.close();
-
-        if (!rootsMatch) {
-            // The indexer is serving a different tree than the chain. Two questions
-            // decide whether that is a lagging indexer or a replayed history: was this
-            // root ever anchored, and how far back does it sit?
-            const nLag = await measureRootLag(
-                evmRpcList,
-                evmContractAddress,
-                indexerRoot
-            );
-            if (nLag === null) return;
-            if (nLag > MAX_ROOT_LAG_BLOCKS) {
-                blockOnStaleRoot(nLag);
-                return;
-            }
-
-            // Roots mismatch! Keep send params for resumption
-            pendingSendParams.value = {
-                address: isNotFound ? '' : resolveData.target_address,
-                amount,
-                useShieldInputs,
-                memo,
-                originalDomain: strDomain,
-                resolveData: isNotFound ? null : resolveData,
-            };
-
-            if (!isNotFound && resolveData && resolveData.target_address) {
-                // State A: Domain Resolved (Roots Mismatch)
-                showSyncModal.value = true;
-                syncModalState.value = 'warning';
-                syncModalTitle.value = translation.pinsTitleSyncDelay;
-                // State exactly how far behind the indexer is: "a few minutes" is a
-                // guess, and it is the number the user is really deciding on.
-                syncModalText.value = `${
-                    translation.pinsTextSyncDelayResolved
-                } ${tr(translation.pinsTextSyncDelayLag, [{ nLag }])}`;
-                syncModalConfirmText.value = translation.pinsBtnSendAnyway;
-                syncModalCancelText.value = translation.pinsBtnCancel;
-
-                startSyncModalPolling(
-                    apiEndpoint,
-                    strDomain,
-                    evmRpcList,
-                    evmContractAddress
-                );
-            } else {
-                // State B: Domain Not Found (Roots Mismatch)
-                showSyncModal.value = true;
-                syncModalState.value = 'not_found';
-                syncModalTitle.value = translation.pinsTitleSyncDelayNotFound;
-                syncModalText.value = translation.pinsTextSyncDelayNotFound;
-                syncModalCancelText.value = translation.pinsBtnCancel;
-
-                startSyncModalPolling(
-                    apiEndpoint,
-                    strDomain,
-                    evmRpcList,
-                    evmContractAddress
-                );
-            }
-            return;
-        }
-
-        // Roots matched! Check if resolved target was found
-        if (isNotFound || !resolveData || !resolveData.target_address) {
-            return createAlert(
-                'warning',
-                tr(ALERTS.PINS_NOT_FOUND, [{ strDomain }]),
-                5000
-            );
-        }
-
-        // Run cryptographic verification before sending! The roots matched, so the
-        // root the proof is folded against is the contract's own current root.
-        if (verifyResolvedDetails(strDomain, resolveData, evmRoot)) {
-            emit('send', {
-                address: resolveData.target_address,
-                amount,
-                useShieldInputs,
-                memo,
-            });
-        }
     } catch (e) {
         if (resolvingAlert) resolvingAlert.close();
         debugError(DebugTopics.NET, 'Name service resolution error:', e);
         createAlert(
             'warning',
-            tr(ALERTS.PINS_RESOLVE_FAILED, [{ errMsg: e.message || e }]),
+            tr(ALERTS.PINS_RESOLVE_FAILED, [{ errMsg: safeErrMsg(e) }]),
             5000
         );
     }
@@ -742,10 +615,7 @@ defineExpose({
                     style="padding-top: 0; display: flex; gap: 10px"
                 >
                     <button
-                        v-if="
-                            syncModalState === 'warning' ||
-                            syncModalState === 'synced'
-                        "
+                        v-if="syncModalState === 'synced'"
                         type="button"
                         class="pivx-button-big"
                         style="width: 150px; margin: 0"

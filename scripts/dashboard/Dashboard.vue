@@ -301,19 +301,6 @@ async function send(address, amount, useShieldInputs, memo) {
             return;
     }
 
-    // Ensure wallet is synced
-    if (!activeWallet.value.isSynced) {
-        return createAlert('warning', `${ALERTS.WALLET_NOT_SYNCED}`, 3000);
-    }
-
-    // Make sure we are not already creating a (shield) tx
-    if (activeWallet.value.isCreatingTransaction()) {
-        return createAlert(
-            'warning',
-            'Already creating a transaction! please wait for it to finish'
-        );
-    }
-
     // Sanity check the receiver
     address = address.trim();
 
@@ -336,6 +323,30 @@ async function send(address, amount, useShieldInputs, memo) {
 }
 
 async function executeSend(address, amount, useShieldInputs, memo) {
+    // Wallet state is checked here rather than in `send`, because this is where every
+    // send path converges. The name service path leaves `send` early and comes back
+    // through `onPinsSend` after a resolve, several network round trips later, so a
+    // check made up there would be a check made at some arbitrary earlier moment.
+    //
+    // The transaction lock matters most. `lockableFunction` does not queue: a second
+    // call made while the lock is held throws its own arguments away and awaits the
+    // first call's promise, so a name-service send landing on a held lock would
+    // resolve happily with an unrelated transaction's result and never pay anyone.
+    // Nothing would surface - there is no error for `executeSend` to catch.
+
+    // Ensure wallet is synced
+    if (!activeWallet.value.isSynced) {
+        return createAlert('warning', `${ALERTS.WALLET_NOT_SYNCED}`, 3000);
+    }
+
+    // Make sure we are not already creating a (shield) tx
+    if (activeWallet.value.isCreatingTransaction()) {
+        return createAlert(
+            'warning',
+            'Already creating a transaction! please wait for it to finish'
+        );
+    }
+
     // Check for any contacts that match the input
     const cDB = await Database.getInstance();
     const cAccount = await cDB.getAccount(activeWallet.value.getKeyToExport());

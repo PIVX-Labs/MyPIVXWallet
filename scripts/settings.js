@@ -20,6 +20,7 @@ import { getEventEmitter } from './event_bus.js';
 import countries from 'country-locale-map/countries.json';
 import { getNetwork } from './network/network_manager.js';
 import { getRandomElement } from './utils.js';
+import { getEVMNetwork } from './utils.pins.js';
 import { useWallets } from './composables/use_wallet.js';
 
 // --- Default Settings
@@ -97,10 +98,6 @@ export class Settings {
      * @type {String} EVM RPC URL
      */
     evmRpc;
-    /**
-     * @type {String} EVM Contract Address
-     */
-    evmContractAddress;
 
     /** @type {String} The Cold Address that this account delegates to. */
     coldAddress = '';
@@ -120,8 +117,6 @@ export class Settings {
         evmNetworkId = cChainParams.current.EVMNetworks?.[0]?.chainId || 56,
         evmRpc = cChainParams.current.EVMNetworks?.[0]?.rpcs?.[0] ||
             'https://bsc-dataseed.bnbchain.org',
-        evmContractAddress = cChainParams.current.EVMNetworks?.[0]
-            ?.contractAddress || '0x25c7ab6e524a67a9571ac4f02c266658c4e620cb',
     } = {}) {
         this.explorer = explorer;
         this.node = node;
@@ -135,7 +130,6 @@ export class Settings {
         this.nameResolvingApi = nameResolvingApi;
         this.evmNetworkId = evmNetworkId;
         this.evmRpc = evmRpc;
-        this.evmContractAddress = evmContractAddress;
     }
 }
 
@@ -303,19 +297,20 @@ export async function setNameResolvingApi(apiUrl, fSilent = false) {
 export async function setEvmNetworkId(networkId, fSilent = false) {
     const database = await Database.getInstance();
 
-    // Find contract and default RPC for the selected EVM network
-    const network = cChainParams.current.EVMNetworks?.find(
-        (n) => n.chainId === networkId
-    );
+    // Find the default RPC for the selected EVM network. The contract address is
+    // deliberately NOT stored: it is a protocol constant with no UI behind it, and
+    // `setSettings` writes the whole settings object back, so a copy saved here would
+    // outrank chain params forever - including after a redeployment, which is exactly
+    // when chain params are the value that should win. It is read from
+    // `getEVMNetwork()` at the point of use instead.
+    const network = getEVMNetwork(networkId);
     if (!network) return;
 
     const newRpc = network.rpcs[0] || '';
-    const newContractAddress = network.contractAddress || '';
 
     await database.setSettings({
         evmNetworkId: networkId,
         evmRpc: newRpc,
-        evmContractAddress: newContractAddress,
     });
 
     // Update the RPC select dropdown in settings page
@@ -578,6 +573,7 @@ async function fillNodeSelect() {
 
 async function fillNameResolvingApiSelect() {
     const select = document.getElementById('nameResolvingApi');
+    if (!select) return;
     while (select.options.length > 0) {
         select.remove(0);
     }
@@ -614,7 +610,8 @@ async function fillEvmNetworkSelect() {
     }
     const database = await Database.getInstance();
     const { evmNetworkId } = await database.getSettings();
-    select.value = evmNetworkId || (networks[0] ? networks[0].chainId : 421614);
+    // Fall back to the first configured network, never to a hardcoded chain id.
+    select.value = getEVMNetwork(evmNetworkId)?.chainId ?? '';
 }
 
 async function fillEvmRpcSelect(networkId) {
@@ -625,9 +622,7 @@ async function fillEvmRpcSelect(networkId) {
     }
 
     // Find selected network
-    const network = cChainParams.current.EVMNetworks?.find(
-        (n) => n.chainId === networkId
-    );
+    const network = getEVMNetwork(networkId);
     const rpcs = network ? network.rpcs : [];
     for (const rpc of rpcs) {
         const opt = document.createElement('option');

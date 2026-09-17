@@ -3,8 +3,8 @@ import {
     verifySmtProof,
     fetchEVMRoot,
     fetchIndexerRoot,
-    fetchRootInfo,
-    fetchCurrentBlockHeight,
+    getEVMNetwork,
+    getEvmRpcList,
     verifyRootValidityOnContract,
     isStrictShieldAddress,
     evmCall,
@@ -12,11 +12,11 @@ import {
     isPIVXNameTLD,
     PIVXNameTLDs,
     MIN_RPC_AGREEMENT,
-    MAX_ROOT_LAG_BLOCKS,
 } from '../../scripts/utils.pins.js';
 import { mount } from '@vue/test-utils';
 import PiNS from '../../scripts/dashboard/PiNS.vue';
 import { Database } from '../../scripts/database.js';
+import { AlertController } from '../../scripts/alerts/alert.js';
 
 vi.mock('../../scripts/i18n.js', () => {
     const translation = {
@@ -29,19 +29,17 @@ vi.mock('../../scripts/i18n.js', () => {
         pinsTitleNotFound: 'Not Found',
         pinsTextNotFound: 'Not found.',
         pinsTitleSyncDelay: 'Sync Delay',
-        pinsTextSyncDelayResolved: 'Sync delay.',
         pinsTitleSyncDelayNotFound: 'Sync Delay Not Found',
         pinsTextSyncDelayNotFound: 'Sync delay not found.',
         pinsTitleIndexerError: 'Indexer Error',
         pinsTextIndexerError: 'Error: {errMsg}',
         pinsBtnClose: 'Close',
         pinsBtnSend: 'Send',
-        pinsBtnSendAnyway: 'Send anyway',
         pinsBtnCancel: 'Cancel',
         pinsBtnRetry: 'Retry',
-        pinsTitleRootTooOld: 'Outdated Indexer State',
-        pinsTextRootTooOld: 'Root is {nLag} blocks behind, blocked.',
-        pinsTextSyncDelayLag: 'Behind by {nLag} blocks.',
+        pinsTextSyncDelayWait: 'Syncing, sending is paused.',
+        pinsTitleRpcError: 'Blockchain Connection Error',
+        pinsTextRpcError: 'RPC problem: {errMsg}',
     };
     const ALERTS = {
         PINS_RESOLVING_DOMAIN: 'Resolving {strDomain}...',
@@ -597,7 +595,7 @@ describe('EVM and Indexer Root Checking', () => {
             }),
         });
 
-        const root = await fetchEVMRoot('https://rpc-url', '0xcontract');
+        const root = await fetchEVMRoot('https://rpc-url', '0xcontract', 1);
         expect(root).toBe(
             '7fbe8f29f7278db7a665de4f1255927b40b648b43e55b34bb3e0405edb5e7d12'
         );
@@ -663,7 +661,8 @@ describe('EVM and Indexer Root Checking', () => {
         const valid = await verifyRootValidityOnContract(
             'https://rpc-url',
             '0xcontract',
-            LIVE_VECTOR.smt_root
+            LIVE_VECTOR.smt_root,
+            1
         );
         expect(valid).toBe(true);
         expect(fetch).toHaveBeenCalledWith(
@@ -687,7 +686,8 @@ describe('EVM and Indexer Root Checking', () => {
             await verifyRootValidityOnContract(
                 'https://rpc-url',
                 '0xcontract',
-                LIVE_VECTOR.smt_root
+                LIVE_VECTOR.smt_root,
+                1
             )
         ).toBe(false);
     });
@@ -707,21 +707,28 @@ describe('EVM and Indexer Root Checking', () => {
             await verifyRootValidityOnContract(
                 'https://rpc-url',
                 '0xcontract',
-                LIVE_VECTOR.smt_root
+                LIVE_VECTOR.smt_root,
+                1
             )
         ).toBe(false);
     });
 });
 
 describe('PiNS.vue Component', () => {
+    let nAlertsBefore = 0;
+
     beforeEach(async () => {
         vi.useFakeTimers();
+        nAlertsBefore = AlertController.getInstance().getAlerts().length;
         vi.stubGlobal('fetch', vi.fn());
         vi.spyOn(Database, 'getInstance').mockResolvedValue({
             getSettings: async () => ({
                 nameResolvingApi: 'https://indexer.pivx.name',
-                evmRpc: 'https://evm-rpc.pivx.name',
-                evmContractAddress: '0xcontract',
+                // deliberately not one of the endpoints chain params declares: a stored
+                // RPC that has fallen out of the list must not lead, or take the
+                // endpoint list - and the quorum with it - down to one
+                evmRpc: 'https://stale-rpc.example',
+                evmNetworkId: 56,
             }),
         });
     });
@@ -737,14 +744,7 @@ describe('PiNS.vue Component', () => {
      * starts the chain read and the resolve concurrently, so ordering is not a
      * stable thing to assert on.
      */
-    function routeFetch({
-        resolve,
-        indexerRoot,
-        evmRoot,
-        rootValid,
-        rootHeight = 1000,
-        tipHeight = 1000,
-    }) {
+    function routeFetch({ resolve, indexerRoot, evmRoot, rootValid }) {
         fetch.mockImplementation(async (url, opts) => {
             const body = opts?.body ? JSON.parse(opts.body) : null;
             if (String(url).includes('/v1.0/resolve/')) {
@@ -772,38 +772,44 @@ describe('PiNS.vue Component', () => {
                     }),
                 };
             }
-            // verifyRootValidity(bytes32) -> (bool isValid, uint32 blockHeight)
-            if (data.startsWith('0xc7179944')) {
-                return {
-                    ok: true,
-                    json: async () => ({
-                        result:
-                            '0x' +
-                            (rootValid ? '1' : '0').padStart(64, '0') +
-                            rootHeight.toString(16).padStart(64, '0'),
-                    }),
-                };
-            }
-            // currentBlockHeight()
-            if (data.startsWith('0x367bf2f9')) {
-                return {
-                    ok: true,
-                    json: async () => ({
-                        result: '0x' + tipHeight.toString(16).padStart(64, '0'),
-                    }),
-                };
-            }
             throw new Error('unexpected fetch: ' + url + ' ' + data);
         });
     }
+
+    /** Alerts raised by this test only; the controller is a process-wide singleton. */
+    function newAlerts() {
+        return AlertController.getInstance()
+            .getAlerts()
+            .slice(nAlertsBefore)
+            .map((a) => String(a.message));
+    }
+
+    const OTHER_ROOT =
+        '1111000000000000000000000000000000000000000000000000000000000000';
+
+    it('sends when the indexer and the contract agree on the root', async () => {
+        routeFetch({
+            resolve: { response: LIVE_VECTOR },
+            indexerRoot: LIVE_VECTOR.smt_root,
+            evmRoot: LIVE_VECTOR.smt_root,
+            rootValid: true,
+        });
+
+        const wrapper = mount(PiNS);
+        await wrapper.vm.resolveAndVerify('alexxiy.pivx', 1, false, '');
+        await vi.runOnlyPendingTimersAsync();
+
+        expect(wrapper.emitted('send')?.[0]?.[0]?.address).toBe(
+            LIVE_VECTOR.target_address
+        );
+    });
 
     it('shows the security warning and stops polling when the indexer root is unknown to the contract', async () => {
         routeFetch({
             resolve: { error: { error_message: 'Domain not found' } },
             indexerRoot:
                 '2222000000000000000000000000000000000000000000000000000000000000',
-            evmRoot:
-                '1111000000000000000000000000000000000000000000000000000000000000',
+            evmRoot: OTHER_ROOT,
             rootValid: false,
         });
 
@@ -818,39 +824,16 @@ describe('PiNS.vue Component', () => {
     });
 
     /**
-     * The replay the review describes: a hostile indexer serves a proof under a root
-     * that really was anchored once - back when it controlled the name - so
-     * `isRootValid` says yes forever. What it cannot fake is how old that root is.
+     * A root the contract accepted but has since moved past. The indexer is behind, and
+     * the only thing on offer is waiting: there is no button that sends against a root
+     * the chain no longer attests to, whether it is one checkpoint old or a year old.
      */
-    it('refuses a root that is anchored but far behind the tip', async () => {
+    it('offers no way to send while the indexer is behind', async () => {
         routeFetch({
             resolve: { response: LIVE_VECTOR },
             indexerRoot: LIVE_VECTOR.smt_root,
-            evmRoot:
-                '1111000000000000000000000000000000000000000000000000000000000000',
+            evmRoot: OTHER_ROOT,
             rootValid: true,
-            rootHeight: 1000,
-            tipHeight: 1000 + MAX_ROOT_LAG_BLOCKS + 1,
-        });
-
-        const wrapper = mount(PiNS);
-        await wrapper.vm.resolveAndVerify('alexxiy.pivx', 1, false, '');
-        await vi.runOnlyPendingTimersAsync();
-
-        expect(wrapper.vm.syncModalTitle).toBe('Outdated Indexer State');
-        expect(wrapper.vm.pendingSendParams).toBe(null);
-        expect(wrapper.emitted('send')).toBeUndefined();
-    });
-
-    it('offers "send anyway" when the lag is small, and states it', async () => {
-        routeFetch({
-            resolve: { response: LIVE_VECTOR },
-            indexerRoot: LIVE_VECTOR.smt_root,
-            evmRoot:
-                '1111000000000000000000000000000000000000000000000000000000000000',
-            rootValid: true,
-            rootHeight: 1000,
-            tipHeight: 1003,
         });
 
         const wrapper = mount(PiNS);
@@ -858,24 +841,19 @@ describe('PiNS.vue Component', () => {
         await vi.runOnlyPendingTimersAsync();
 
         expect(wrapper.vm.syncModalState).toBe('warning');
-        expect(wrapper.vm.syncModalText).toContain('Behind by 3 blocks.');
-        expect(wrapper.vm.pendingSendParams).not.toBe(null);
+        expect(wrapper.vm.syncModalIsPolling).toBe(true);
+        expect(wrapper.emitted('send')).toBeUndefined();
+        // the confirm button is bound to the synced state only
+        const buttons = wrapper.findAll('button');
+        expect(buttons.some((b) => b.text() === 'Send anyway')).toBe(false);
     });
 
-    /**
-     * Confirming is a decision taken now, so the chain is asked now. If the root went
-     * stale while the dialog sat open, the confirmation must not go through on the
-     * strength of the check that put the dialog on screen.
-     */
-    it('re-checks the chain when "send anyway" is pressed, not just when shown', async () => {
+    it('flips to synced once the indexer catches up, and sends on confirmation', async () => {
         routeFetch({
             resolve: { response: LIVE_VECTOR },
             indexerRoot: LIVE_VECTOR.smt_root,
-            evmRoot:
-                '1111000000000000000000000000000000000000000000000000000000000000',
+            evmRoot: OTHER_ROOT,
             rootValid: true,
-            rootHeight: 1000,
-            tipHeight: 1003,
         });
 
         const wrapper = mount(PiNS);
@@ -883,45 +861,135 @@ describe('PiNS.vue Component', () => {
         await vi.runOnlyPendingTimersAsync();
         expect(wrapper.vm.syncModalState).toBe('warning');
 
-        // the chain moves on while the modal is open: the same root is now ancient
+        // the indexer catches up: the chain now reports the root it was serving
         routeFetch({
             resolve: { response: LIVE_VECTOR },
             indexerRoot: LIVE_VECTOR.smt_root,
-            evmRoot:
-                '1111000000000000000000000000000000000000000000000000000000000000',
+            evmRoot: LIVE_VECTOR.smt_root,
             rootValid: true,
-            rootHeight: 1000,
-            tipHeight: 1000 + MAX_ROOT_LAG_BLOCKS + 5,
         });
-
-        wrapper.vm.closeSyncModal(true);
+        await vi.advanceTimersByTimeAsync(15000);
         await vi.runOnlyPendingTimersAsync();
 
+        expect(wrapper.vm.syncModalState).toBe('synced');
+        // still nothing sent without the user saying so
         expect(wrapper.emitted('send')).toBeUndefined();
-        expect(wrapper.vm.syncModalTitle).toBe('Outdated Indexer State');
-    });
-
-    it('sends when the confirmation still checks out', async () => {
-        routeFetch({
-            resolve: { response: LIVE_VECTOR },
-            indexerRoot: LIVE_VECTOR.smt_root,
-            evmRoot:
-                '1111000000000000000000000000000000000000000000000000000000000000',
-            rootValid: true,
-            rootHeight: 1000,
-            tipHeight: 1003,
-        });
-
-        const wrapper = mount(PiNS);
-        await wrapper.vm.resolveAndVerify('alexxiy.pivx', 1, false, '');
-        await vi.runOnlyPendingTimersAsync();
 
         wrapper.vm.closeSyncModal(true);
         await vi.runOnlyPendingTimersAsync();
-
         expect(wrapper.emitted('send')?.[0]?.[0]?.address).toBe(
             LIVE_VECTOR.target_address
         );
+    });
+
+    /**
+     * Confirming re-derives everything. If the chain moved while the dialog sat open,
+     * the confirmation must not go through on the strength of the check that put the
+     * dialog there.
+     */
+    it('re-checks the chain on confirmation rather than reusing the earlier check', async () => {
+        routeFetch({
+            resolve: { response: LIVE_VECTOR },
+            indexerRoot: LIVE_VECTOR.smt_root,
+            evmRoot: LIVE_VECTOR.smt_root,
+            rootValid: true,
+        });
+
+        const wrapper = mount(PiNS);
+        await wrapper.vm.resolveAndVerify('alexxiy.pivx', 1, false, '');
+        await vi.runOnlyPendingTimersAsync();
+        // reached the synced state through the happy path and already sent once
+        expect(wrapper.emitted('send')).toHaveLength(1);
+
+        // now arm a pending send by hand and move the chain underneath it
+        wrapper.vm.pendingSendParams = {
+            amount: 1,
+            useShieldInputs: false,
+            memo: '',
+            originalDomain: 'alexxiy.pivx',
+        };
+        routeFetch({
+            resolve: { response: LIVE_VECTOR },
+            indexerRoot: LIVE_VECTOR.smt_root,
+            evmRoot: OTHER_ROOT,
+            rootValid: true,
+        });
+
+        wrapper.vm.closeSyncModal(true);
+        await vi.runOnlyPendingTimersAsync();
+
+        // no second send: the roots no longer agree, so it is back to waiting
+        expect(wrapper.emitted('send')).toHaveLength(1);
+        expect(wrapper.vm.syncModalState).toBe('warning');
+    });
+
+    /**
+     * The indexer picks the text of its own error messages, and alert bodies are
+     * rendered with v-html. Anything it sends has to arrive as text, not as markup.
+     */
+    it('escapes indexer-supplied error text before it reaches an alert', async () => {
+        const strPayload =
+            '<img src=x onerror="window.__pwned=1">' +
+            '<script>alert(1)</script>';
+        routeFetch({
+            resolve: { error: { error_message: strPayload } },
+            indexerRoot: LIVE_VECTOR.smt_root,
+            evmRoot: LIVE_VECTOR.smt_root,
+            rootValid: true,
+        });
+
+        const wrapper = mount(PiNS);
+        await wrapper.vm.resolveAndVerify('alexxiy.pivx', 1, false, '');
+        await vi.runOnlyPendingTimersAsync();
+
+        const strAll = newAlerts().join(' ');
+        expect(strAll).toContain('Resolve failed');
+        // the payload is present, but only as text
+        expect(strAll).not.toContain('<img');
+        expect(strAll).not.toContain('<script');
+        expect(strAll).toContain('&lt;img');
+    });
+
+    it('caps the length of an indexer-supplied error', async () => {
+        routeFetch({
+            resolve: { error: { error_message: 'A'.repeat(5000) } },
+            indexerRoot: LIVE_VECTOR.smt_root,
+            evmRoot: LIVE_VECTOR.smt_root,
+            rootValid: true,
+        });
+
+        const wrapper = mount(PiNS);
+        await wrapper.vm.resolveAndVerify('alexxiy.pivx', 1, false, '');
+        await vi.runOnlyPendingTimersAsync();
+
+        const strAll = newAlerts().join(' ');
+        expect(strAll.length).toBeLessThan(1000);
+    });
+
+    /**
+     * Both of these used to read `translation.pinsCheckingSync` and
+     * `translation.pinsSyncingWait`, which exist under ALERTS and nowhere else, so the
+     * user was shown the word "undefined".
+     */
+    it('shows real strings on the retry path', async () => {
+        routeFetch({
+            resolve: { error: { error_message: 'Domain not found' } },
+            indexerRoot: LIVE_VECTOR.smt_root,
+            evmRoot: OTHER_ROOT,
+            rootValid: true,
+        });
+
+        const wrapper = mount(PiNS);
+        await wrapper.vm.resolveAndVerify('alexxiy.pivx', 1, false, '');
+        await vi.runOnlyPendingTimersAsync();
+        expect(wrapper.vm.syncModalState).toBe('not_found');
+
+        await wrapper.vm.retrySyncModalResolution();
+        await vi.runOnlyPendingTimersAsync();
+
+        const arrMessages = newAlerts();
+        expect(arrMessages.some((m) => m.includes('undefined'))).toBe(false);
+        expect(arrMessages).toContain('Checking sync...');
     });
 
     it('never calls /v1.0/info', async () => {
@@ -938,6 +1006,66 @@ describe('PiNS.vue Component', () => {
 
         const called = fetch.mock.calls.map((c) => String(c[0]));
         expect(called.some((u) => u.includes('/v1.0/info'))).toBe(false);
+    });
+
+    // The contract address must come from chain params, never from the settings row:
+    // `setSettings` writes the whole object back, so a stored copy would outlive any
+    // redeployment.
+    it('reads the contract address from chain params, not from stored settings', async () => {
+        routeFetch({
+            resolve: { response: LIVE_VECTOR },
+            indexerRoot: LIVE_VECTOR.smt_root,
+            evmRoot: LIVE_VECTOR.smt_root,
+            rootValid: true,
+        });
+
+        const wrapper = mount(PiNS);
+        await wrapper.vm.resolveAndVerify('alexxiy.pivx', 1, false, '');
+        await vi.runOnlyPendingTimersAsync();
+
+        const strExpected = getEVMNetwork(56).contractAddress;
+        const arrTargets = fetch.mock.calls
+            .filter((c) => c[1]?.body?.includes('eth_call'))
+            .map((c) => JSON.parse(c[1].body).params[0].to);
+        expect(arrTargets.length).toBeGreaterThan(0);
+        for (const strTo of arrTargets) expect(strTo).toBe(strExpected);
+    });
+});
+
+describe('endpoint selection', () => {
+    it('keeps the configured endpoint first while it is still declared', () => {
+        const net = getEVMNetwork(56);
+        const arrList = getEvmRpcList(net.rpcs[2], net);
+        expect(arrList[0]).toBe(net.rpcs[2]);
+        expect(arrList).toHaveLength(net.rpcs.length);
+    });
+
+    it('drops a stored endpoint that chain params no longer declare', () => {
+        const net = getEVMNetwork(56);
+        const arrList = getEvmRpcList('https://stale-rpc.example', net);
+        expect(arrList).toEqual(net.rpcs);
+    });
+
+    // A stale chain id used to collapse the list to the single stored RPC, taking the
+    // quorum down to one without saying anything.
+    it('falls back to a configured network for an unknown chain id', () => {
+        expect(getEVMNetwork(999999)).toBe(getEVMNetwork(56));
+        expect(
+            getEvmRpcList('https://stale-rpc.example', getEVMNetwork(999999))
+        ).not.toHaveLength(0);
+    });
+
+    it('ships enough independent endpoints to reach the quorum', () => {
+        const net = getEVMNetwork(56);
+        expect(net.rpcs.length).toBeGreaterThanOrEqual(MIN_RPC_AGREEMENT);
+        // distinct operators, not four spellings of one
+        const arrHosts = net.rpcs.map((u) => {
+            const strHost = new URL(u).hostname.split('.');
+            return strHost.slice(-2).join('.');
+        });
+        expect(new Set(arrHosts).size).toBeGreaterThanOrEqual(
+            MIN_RPC_AGREEMENT
+        );
     });
 });
 
@@ -1117,14 +1245,15 @@ describe('EVM RPC quorum', () => {
         ).rejects.toThrow(/failed/);
     });
 
-    // A user who deliberately configured one endpoint has no second opinion to be had;
-    // asking the same node twice would be theatre, not a quorum.
-    it('falls back to one endpoint when only one is configured', async () => {
+    // Silently verifying on one endpoint because the list happened to be short is the
+    // state an attacker wants, and it was reachable by accident. Refusing is the only
+    // honest answer: the check cannot be made.
+    it('refuses to run on fewer endpoints than the quorum needs', async () => {
         fetch.mockResolvedValue(answer('1'));
         await expect(
             evmCall('https://rpc-only', '0xcontract', '0xfdab463d', 2)
-        ).resolves.toBeTruthy();
-        expect(fetch).toHaveBeenCalledTimes(1);
+        ).rejects.toThrow(/independent EVM RPC endpoints/);
+        expect(fetch).not.toHaveBeenCalled();
     });
 
     it('reads the root and the validity flag under quorum by default', async () => {

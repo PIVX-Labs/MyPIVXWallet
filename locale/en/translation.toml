@@ -264,7 +264,6 @@ pinsTextSynced = "The indexer is synced, ready and the name has been successfull
 pinsTitleNotFound = "❌ Domain Not Found" # ❌ Domain Not Found
 pinsTextNotFound = "This domain name does not exist. Please check the spelling." # This domain name does not exist. Please check the spelling.
 pinsTitleSyncDelay = "⚠️ Indexer Sync Delay" # ⚠️ Indexer Sync Delay
-pinsTextSyncDelayResolved = "The Name Service is currently syncing with the latest state from PIVX blockchain. If the owner changed this domain's target address in the last 10-20 minutes, funds might go to the old address." # The Name Service is currently syncing with the latest state from PIVX blockchain. If the owner changed this domain's target address in the last 10-20 minutes, funds might go to the old address.
 pinsTitleSyncDelayNotFound = "🔍 Indexer Sync Delay" # 🔍 Indexer Sync Delay
 pinsTextSyncDelayNotFound = "The Name Service is currently syncing with the latest state from PIVX blockchain, and this domain name was not found. If it was registered very recently, it might be syncing at the moment." # The Name Service is currently syncing with the latest state from PIVX blockchain, and this domain name was not found. If it was registered very recently, it might be syncing at the moment.
 pinsTitleIndexerError = "⚠️ Indexer Error" # ⚠️ Indexer Error
@@ -272,12 +271,11 @@ pinsTextIndexerError = "The Name Service indexer returned an error: {errMsg}" # 
 pinsPolling = "Polling indexer status (roots checking)..." # Polling indexer status (roots checking)...
 pinsBtnClose = "Close" # Close
 pinsBtnSend = "Send" # Send
-pinsBtnSendAnyway = "Send anyway" # Send anyway
 pinsBtnCancel = "Cancel" # Cancel
 pinsBtnRetry = "Retry" # Retry
-pinsTitleRootTooOld = "⚠️ Outdated Indexer State" # ⚠️ Outdated Indexer State
-pinsTextRootTooOld = "The Name Service indexer is serving a state root that is {nLag} PIVX blocks behind the blockchain. A root this old cannot be trusted to describe the current owner of this name, so sending is blocked." # The Name Service indexer is serving a state root that is {nLag} PIVX blocks behind the blockchain. A root this old cannot be trusted to describe the current owner of this name, so sending is blocked.
-pinsTextSyncDelayLag = "The indexer's state root is {nLag} PIVX blocks behind (roughly one minute per block)." # The indexer's state root is {nLag} PIVX blocks behind (roughly one minute per block).
+pinsTextSyncDelayWait = "The Name Service is currently syncing with the latest state from the PIVX blockchain. Sending to this name is paused until it catches up, which usually takes a few minutes." # The Name Service is currently syncing with the latest state from the PIVX blockchain. Sending to this name is paused until it catches up, which usually takes a few minutes.
+pinsTitleRpcError = "⚠️ Blockchain Connection Error" # ⚠️ Blockchain Connection Error
+pinsTextRpcError = "The wallet could not get agreeing answers from enough blockchain RPC endpoints to verify this name: {errMsg}" # The wallet could not get agreeing answers from enough blockchain RPC endpoints to verify this name: {errMsg}
 
 [ALERTS]
 INTERNAL_ERROR = "Internal error, please try again later" # Internal error, please try again later

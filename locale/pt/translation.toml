@@ -117,7 +117,6 @@ pinsTextSynced = "O indexador está sincronizado, pronto e o nome foi resolvido 
 pinsTitleNotFound = "❌ Domínio não encontrado" # ❌ Domain Not Found
 pinsTextNotFound = "Este nome de domínio não existe. Por favor, verifique a ortografia." # This domain name does not exist. Please check the spelling.
 pinsTitleSyncDelay = "⚠️ Atraso de Sincronização do Indexador" # ⚠️ Indexer Sync Delay
-pinsTextSyncDelayResolved = "O Name Service está atualmente a sincronizar com o estado mais recente da blockchain PIVX. Se o proprietário alterou o endereço de destino deste domínio nos últimos 10-20 minutos, os fundos poderão ir para o endereço antigo." # The Name Service is currently syncing with the latest state from PIVX blockchain. If the owner changed this domain's target address in the last 10-20 minutes, funds might go to the old address.
 pinsTitleSyncDelayNotFound = "🔍 Atraso de Sincronização do Indexador" # 🔍 Indexer Sync Delay
 pinsTextSyncDelayNotFound = "O Name Service está atualmente a sincronizar com o estado mais recente da blockchain PIVX, e este nome de domínio não foi encontrado. Se foi registrado muito recentemente, pode estar a sincronizar neste momento." # The Name Service is currently syncing with the latest state from PIVX blockchain, and this domain name was not found. If it was registered very recently, it might be syncing at the moment.
 pinsTitleIndexerError = "⚠️ Erro do Indexador" # ⚠️ Indexer Error
@@ -125,7 +124,6 @@ pinsTextIndexerError = "O indexador de Name Service retornou um erro: {errMsg}" 
 pinsPolling = "Verificando o estado do indexador..." # Polling indexer status (roots checking)...
 pinsBtnClose = "Fechar" # Close
 pinsBtnSend = "Enviar" # Send
-pinsBtnSendAnyway = "Enviar mesmo assim" # Send anyway
 pinsBtnCancel = "Cancelar" # Cancel
 pinsBtnRetry = "Repetir" # Retry
 

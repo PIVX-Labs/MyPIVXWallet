@@ -47,17 +47,44 @@ const SAPLING_PAYLOAD_LEN = 43;
 export const MIN_RPC_AGREEMENT = 2;
 
 /**
- * How far behind the contract's tip an indexer root may be and still back a send, in
- * PIVX blocks.
+ * The EVM network configuration for a stored chain id.
  *
- * `isRootValid` answers "was this root ever anchored", with no notion of when: a root
- * from a year ago passes exactly as happily as the current one. That is the whole
- * gap a replayed historical proof walks through - an indexer that once controlled a
- * name serving the proof from that era. PIVX targets one block a minute, so 60 blocks
- * is about an hour: comfortably more than a genuinely lagging indexer needs, far less
- * than the window a replay wants.
+ * Falls back to the first configured network when the id matches nothing. A stored id
+ * that no longer names a configured network is stale state, not a configuration: it is
+ * how the endpoint list used to collapse to a single stored RPC - and the quorum with
+ * it - long after chain params had moved on. Chain params are the authority here.
+ *
+ * @param {number} nChainId
+ * @returns {object|null}
  */
-export const MAX_ROOT_LAG_BLOCKS = 60;
+export function getEVMNetwork(nChainId) {
+    const arrNetworks = cChainParams.current.EVMNetworks || [];
+    return (
+        arrNetworks.find((n) => n.chainId === nChainId) ||
+        arrNetworks[0] ||
+        null
+    );
+}
+
+/**
+ * The endpoints to try for a network, best first.
+ *
+ * The user's chosen endpoint leads, but only while it is still one the network declares.
+ * The same chain params carry the contract address and the endpoints that are supposed
+ * to serve it, so an endpoint that has dropped out of that list is not something to keep
+ * asking first - it is a leftover.
+ *
+ * @param {string} strConfiguredRpc
+ * @param {object} objNetwork - as returned by `getEVMNetwork`
+ * @returns {string[]}
+ */
+export function getEvmRpcList(strConfiguredRpc, objNetwork) {
+    const arrSpares = objNetwork?.rpcs || [];
+    const arrOrdered = arrSpares.includes(strConfiguredRpc)
+        ? [strConfiguredRpc, ...arrSpares]
+        : [...arrSpares];
+    return arrOrdered.filter((url, i, arr) => url && arr.indexOf(url) === i);
+}
 
 /**
  * Check if a domain string ends with one of the supported PIVX TLDs
@@ -403,8 +430,8 @@ export const EMPTY_ROOT = bytesToHex(EMPTY_NODE);
  * @param {string|string[]} rpcUrls - endpoints to try, in order
  * @param {string} contractAddress
  * @param {string} strData - abi-encoded calldata, 0x-prefixed
- * @param {number} nMinAgree - endpoints that must return the same word; capped at the
- *                             number actually configured
+ * @param {number} nMinAgree - endpoints that must return the same word; the call throws
+ *                             rather than proceeding if fewer are configured
  * @returns {Promise<string>} the raw result word(s), 0x-prefixed
  */
 export async function evmCall(
@@ -418,10 +445,17 @@ export async function evmCall(
     );
     if (!arrRpcs.length) throw new Error('No EVM RPC endpoint configured');
 
-    // A user who configured a single endpoint gets failover semantics; there is no
-    // second opinion to be had, and inventing one by asking the same node twice would
-    // be theatre.
-    const nQuorum = Math.max(1, Math.min(nMinAgree, arrRpcs.length));
+    // Refuse rather than quietly drop to whatever is available. Silently verifying on
+    // one endpoint because the list happened to be short is exactly the state an
+    // attacker wants, and it is reachable by accident - a stale stored chain id used to
+    // collapse the list to a single RPC. If there are not enough independent endpoints
+    // to ask, the honest answer is that the check cannot be made.
+    if (arrRpcs.length < nMinAgree) {
+        throw new Error(
+            `Name resolving needs ${nMinAgree} independent EVM RPC endpoints to agree, but only ${arrRpcs.length} is configured for this network`
+        );
+    }
+    const nQuorum = nMinAgree;
 
     const payload = {
         jsonrpc: '2.0',
@@ -582,77 +616,4 @@ export async function verifyRootValidityOnContract(
     // isRootValid returns a single ABI word: 0 for false, 1 for true. A zero here is
     // a real answer from a healthy endpoint, never a reason to ask a different one.
     return BigInt(hexResult) !== 0n;
-}
-
-/**
- * Ask the contract when a root was accepted, not merely whether it ever was.
- *
- * `isRootValid` is a timeless yes/no, which is exactly the property a replay wants: a
- * root the contract accepted long ago still answers yes today. `verifyRootValidity`
- * returns the PIVX block height that root covers alongside the flag, and comparing it
- * with `currentBlockHeight()` turns "this was real at some point" into "this is at most
- * N blocks behind", which is a statement a user can actually act on.
- *
- * Read under quorum for the same reason as the root itself: a single endpoint must not
- * be able to certify staleness away.
- *
- * @param {string|string[]} rpcUrls
- * @param {string} contractAddress
- * @param {string} smtRoot
- * @param {number} nMinAgree
- * @returns {Promise<{fIsValid: boolean, nBlockHeight: number}>}
- */
-export async function fetchRootInfo(
-    rpcUrls,
-    contractAddress,
-    smtRoot,
-    nMinAgree = MIN_RPC_AGREEMENT
-) {
-    if (!smtRoot) return { fIsValid: false, nBlockHeight: 0 };
-    // c7179944 is the selector for verifyRootValidity(bytes32)
-    const cleanRoot = smtRoot.replace(/^0x/, '').toLowerCase();
-    const hexResult = await evmCall(
-        rpcUrls,
-        contractAddress,
-        `0xc7179944${cleanRoot.padStart(64, '0')}`,
-        nMinAgree
-    );
-
-    // Two ABI words: (bool isValid, uint32 blockHeight). Reading them as one number
-    // would answer "valid" for any root with a recorded height, whatever the flag says.
-    const strClean = hexResult.replace(/^0x/, '');
-    if (strClean.length < 128) {
-        throw new Error('verifyRootValidity returned a short answer');
-    }
-    return {
-        fIsValid: BigInt(`0x${strClean.slice(0, 64)}`) !== 0n,
-        nBlockHeight: Number(BigInt(`0x${strClean.slice(64, 128)}`)),
-    };
-}
-
-/**
- * The PIVX block height the contract's current root covers.
- *
- * Note this is a height on the PIVX chain, not on the EVM chain the contract lives on:
- * it is the `end_block_height` of the last batch committed, which is what makes it
- * directly comparable with the height reported for any historical root.
- *
- * @param {string|string[]} rpcUrls
- * @param {string} contractAddress
- * @param {number} nMinAgree
- * @returns {Promise<number>}
- */
-export async function fetchCurrentBlockHeight(
-    rpcUrls,
-    contractAddress,
-    nMinAgree = MIN_RPC_AGREEMENT
-) {
-    // 367bf2f9 is the selector for currentBlockHeight()
-    const hexResult = await evmCall(
-        rpcUrls,
-        contractAddress,
-        '0x367bf2f9',
-        nMinAgree
-    );
-    return Number(BigInt(hexResult));
 }
