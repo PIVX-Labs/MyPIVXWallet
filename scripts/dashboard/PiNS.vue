@@ -5,9 +5,12 @@ import { createAlert } from '../alerts/alert.js';
 import { isShieldAddress, sanitizeHTML } from '../misc.js';
 import {
     fetchEVMRoot,
+    fetchFromIndexer,
     fetchIndexerRoot,
     getEVMNetwork,
     getEvmRpcList,
+    IndexerUnreachableError,
+    RpcQuorumError,
     verifyRootValidityOnContract,
     verifySmtProof,
 } from '../utils.pins.js';
@@ -71,16 +74,22 @@ async function loadResolverConfig() {
  * attacker-chosen.
  */
 function safeErrMsg(e) {
+    return sanitizeHTML(capErrMsg(e));
+}
+
+/**
+ * Untrusted text cut to a displayable length, for places that escape it themselves -
+ * the sync modal is `{{ }}` throughout, so escaping here as well would show entities.
+ */
+function capErrMsg(e) {
     const strMsg = typeof e === 'string' ? e : e?.message || String(e);
-    const strCut =
-        strMsg.length > MAX_ERROR_CHARS
-            ? `${strMsg.slice(0, MAX_ERROR_CHARS)}...`
-            : strMsg;
-    return sanitizeHTML(strCut);
+    return strMsg.length > MAX_ERROR_CHARS
+        ? `${strMsg.slice(0, MAX_ERROR_CHARS)}...`
+        : strMsg;
 }
 
 async function resolveDomainName(apiEndpoint, domain) {
-    const res = await fetch(
+    const res = await fetchFromIndexer(
         `${apiEndpoint.replace(/\/$/, '')}/v1.0/resolve/${domain}`,
         {
             method: 'POST',
@@ -258,22 +267,21 @@ function armSyncDelay(objConfig, strDomain, params, fNotFound) {
 }
 
 function handleCriticalError(e, isRetry = false) {
-    const errMsg = e.message || String(e);
-    const strLower = errMsg.toLowerCase();
-    const isNetworkError =
-        strLower.includes('fetch') ||
-        strLower.includes('networkerror') ||
-        strLower.includes('timeout') ||
-        strLower.includes('conn');
+    const errMsg = capErrMsg(e);
 
+    // Decided by type, never by the text. Much of that text is the indexer's or an
+    // endpoint's own, and matching on it would let the untrusted side choose which
+    // component takes the blame and whether the poller keeps going.
+    //
     // A quorum that cannot be reached is not the indexer's doing, and saying so points
-    // people at the wrong component. It is still fatal to the attempt: without agreeing
-    // endpoints there is no chain state to verify against.
-    const isRpcQuorumError =
-        strLower.includes('disagree') ||
-        strLower.includes('endpoints to agree');
+    // people at the wrong component. Endpoints that answered and disagreed are fatal to
+    // the attempt: without agreeing endpoints there is no chain state to verify against.
+    const isRpcQuorumError = e instanceof RpcQuorumError;
+    const isTransient =
+        e instanceof IndexerUnreachableError ||
+        (isRpcQuorumError && e.isTransient);
 
-    if (!isNetworkError || isRpcQuorumError) {
+    if (!isTransient) {
         stopSyncModalPolling();
         pendingSendParams.value = null;
         showSyncModal.value = true;
@@ -456,6 +464,11 @@ async function runResolution(strDomain, amount, useShieldInputs, memo, fEmit) {
     });
 }
 
+/**
+ * A tick of the poller, on demand - and like the poller it never spends. The button
+ * says Retry, not Send, so a name that verifies on this attempt lands on the synced
+ * dialog and its Send button rather than paying on the click that asked to look again.
+ */
 async function retrySyncModalResolution() {
     if (!showSyncModal.value || syncModalState.value !== 'not_found') return;
     const params = pendingSendParams.value;
@@ -469,7 +482,7 @@ async function retrySyncModalResolution() {
             params.amount,
             params.useShieldInputs,
             params.memo,
-            true
+            false
         );
         if (checkingAlert) checkingAlert.close();
         if (syncModalState.value === 'not_found' && showSyncModal.value) {

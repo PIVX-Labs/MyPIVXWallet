@@ -41,10 +41,63 @@ const SAPLING_PAYLOAD_LEN = 43;
  *
  * When fewer endpoints than this are reachable the read fails rather than falling back
  * to one answer - a contract read is only consulted on paths where refusing to send is
- * the safe outcome. The quorum shrinks only when the user has deliberately configured
- * fewer endpoints than this, where there is no second opinion to be had.
+ * the safe outcome. Nor does the quorum shrink to fit a short list: a network with
+ * fewer endpoints configured than this is refused outright (see `evmCall`).
  */
 export const MIN_RPC_AGREEMENT = 2;
+
+/**
+ * A contract read that could not be settled under quorum.
+ *
+ * A type rather than a message, because callers decide from it which component to
+ * blame and whether waiting can help, and the message is not ours to rely on - the
+ * reason it carries is an endpoint's own error text.
+ *
+ * `isTransient` is true when too few endpoints answered, which a later attempt may
+ * well fix. It is false when they answered and disagreed, or when there are too few
+ * configured for a quorum ever to be reached: waiting changes neither.
+ */
+export class RpcQuorumError extends Error {
+    /**
+     * @param {string} strMessage
+     * @param {boolean} isTransient
+     */
+    constructor(strMessage, isTransient) {
+        super(strMessage);
+        this.name = 'RpcQuorumError';
+        this.isTransient = isTransient;
+    }
+}
+
+/**
+ * The indexer gave no answer at all, as opposed to an answer saying something is wrong.
+ *
+ * Only this is worth waiting out. It is a type because the browser's own wording for it
+ * differs per engine, and any wording matched on text could equally be produced by an
+ * indexer choosing its error message to look like one.
+ */
+export class IndexerUnreachableError extends Error {
+    constructor(strMessage) {
+        super(strMessage);
+        this.name = 'IndexerUnreachableError';
+    }
+}
+
+/**
+ * `fetch` against the indexer, with a failure to get any response turned into
+ * `IndexerUnreachableError`. Everything after a response arrives is left to the caller.
+ * @param {...any} args - exactly what `fetch` takes, passed through untouched
+ * @returns {Promise<Response>}
+ */
+export async function fetchFromIndexer(...args) {
+    try {
+        return await fetch(...args);
+    } catch (e) {
+        throw new IndexerUnreachableError(
+            `Could not reach the indexer: ${e?.message || e}`
+        );
+    }
+}
 
 /**
  * The EVM network configuration for a stored chain id.
@@ -443,7 +496,9 @@ export async function evmCall(
     const arrRpcs = (Array.isArray(rpcUrls) ? rpcUrls : [rpcUrls]).filter(
         (url, i, arr) => url && arr.indexOf(url) === i
     );
-    if (!arrRpcs.length) throw new Error('No EVM RPC endpoint configured');
+    if (!arrRpcs.length) {
+        throw new RpcQuorumError('No EVM RPC endpoint configured', false);
+    }
 
     // Refuse rather than quietly drop to whatever is available. Silently verifying on
     // one endpoint because the list happened to be short is exactly the state an
@@ -451,8 +506,9 @@ export async function evmCall(
     // collapse the list to a single RPC. If there are not enough independent endpoints
     // to ask, the honest answer is that the check cannot be made.
     if (arrRpcs.length < nMinAgree) {
-        throw new Error(
-            `Name resolving needs ${nMinAgree} independent EVM RPC endpoints to agree, but only ${arrRpcs.length} is configured for this network`
+        throw new RpcQuorumError(
+            `Name resolving needs ${nMinAgree} independent EVM RPC endpoints to agree, but only ${arrRpcs.length} is configured for this network`,
+            false
         );
     }
     const nQuorum = nMinAgree;
@@ -510,15 +566,23 @@ export async function evmCall(
     }
 
     if (mapAnswers.size > 1) {
-        throw new Error(
-            `EVM RPC endpoints disagree: ${mapAnswers.size} different answers, none reached ${nQuorum}`
+        throw new RpcQuorumError(
+            `EVM RPC endpoints disagree: ${mapAnswers.size} different answers, none reached ${nQuorum}`,
+            false
         );
     }
 
-    throw new Error(
-        `All ${arrRpcs.length} EVM RPC endpoint(s) failed, last error: ${
+    // Not necessarily a total outage: some endpoints may have answered, just too few to
+    // count. Say how many, so nobody goes looking for a dead network that is not dead.
+    let nAnswered = 0;
+    for (const nSeen of mapAnswers.values()) nAnswered += nSeen;
+    throw new RpcQuorumError(
+        `${nAnswered} of ${
+            arrRpcs.length
+        } EVM RPC endpoint(s) answered, ${nQuorum} must agree; last error: ${
             lastError?.message || lastError
-        }`
+        }`,
+        true
     );
 }
 
@@ -561,7 +625,9 @@ export async function fetchEVMRoot(
  * @returns {Promise<string>} the root, lowercase hex, no 0x prefix
  */
 export async function fetchIndexerRoot(apiEndpoint) {
-    const res = await fetch(`${apiEndpoint.replace(/\/$/, '')}/v1.0/getRoot`);
+    const res = await fetchFromIndexer(
+        `${apiEndpoint.replace(/\/$/, '')}/v1.0/getRoot`
+    );
     if (!res.ok) {
         throw new Error(`Indexer getRoot responded with status ${res.status}`);
     }

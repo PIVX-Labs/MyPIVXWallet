@@ -102,7 +102,8 @@ function onPinsSend(payload) {
         payload.address,
         payload.amount,
         payload.useShieldInputs,
-        payload.memo
+        payload.memo,
+        true
     );
 }
 watch(showExportModal, async () => {
@@ -301,6 +302,11 @@ async function send(address, amount, useShieldInputs, memo) {
             return;
     }
 
+    // A cheap early copy of the check `executeSend` makes for real. Without it a wallet
+    // that cannot send would still resolve a name first - shipping it to the indexer
+    // and reading the chain under quorum - only to refuse afterwards.
+    if (!isWalletReadyToSend()) return;
+
     // Sanity check the receiver
     address = address.trim();
 
@@ -322,42 +328,76 @@ async function send(address, amount, useShieldInputs, memo) {
     await executeSend(address, amount, useShieldInputs, memo);
 }
 
-async function executeSend(address, amount, useShieldInputs, memo) {
-    // Wallet state is checked here rather than in `send`, because this is where every
-    // send path converges. The name service path leaves `send` early and comes back
-    // through `onPinsSend` after a resolve, several network round trips later, so a
-    // check made up there would be a check made at some arbitrary earlier moment.
+/**
+ * Whether the wallet is in a state to send at all, alerting the user when it is not.
+ * @returns {boolean}
+ */
+function isWalletReadyToSend() {
+    // Ensure wallet is synced
+    if (!activeWallet.value.isSynced) {
+        createAlert('warning', `${ALERTS.WALLET_NOT_SYNCED}`, 3000);
+        return false;
+    }
+
+    // Make sure we are not already creating a (shield) tx
+    if (activeWallet.value.isCreatingTransaction()) {
+        createAlert(
+            'warning',
+            'Already creating a transaction! please wait for it to finish'
+        );
+        return false;
+    }
+
+    return true;
+}
+
+/**
+ * @param {string} address - Address or contact to send to
+ * @param {number} amount - Amount of PIVs to send
+ * @param {boolean} useShieldInputs
+ * @param {string} memo
+ * @param {boolean} [isVerifiedName] - true when `address` is what a PIVX.name proof
+ *                                     verified; it is then never looked up as a contact
+ */
+async function executeSend(
+    address,
+    amount,
+    useShieldInputs,
+    memo,
+    isVerifiedName = false
+) {
+    // Wallet state is checked here as well as in `send`, because this is where every
+    // send path converges, and this is the check that counts. The name service path
+    // leaves `send` early and comes back through `onPinsSend` after a resolve, several
+    // network round trips later, so the check made up there is a check made at some
+    // arbitrary earlier moment.
     //
     // The transaction lock matters most. `lockableFunction` does not queue: a second
     // call made while the lock is held throws its own arguments away and awaits the
     // first call's promise, so a name-service send landing on a held lock would
     // resolve happily with an unrelated transaction's result and never pay anyone.
     // Nothing would surface - there is no error for `executeSend` to catch.
+    if (!isWalletReadyToSend()) return;
 
-    // Ensure wallet is synced
-    if (!activeWallet.value.isSynced) {
-        return createAlert('warning', `${ALERTS.WALLET_NOT_SYNCED}`, 3000);
-    }
-
-    // Make sure we are not already creating a (shield) tx
-    if (activeWallet.value.isCreatingTransaction()) {
-        return createAlert(
-            'warning',
-            'Already creating a transaction! please wait for it to finish'
+    // The registry, not the contacts book, decides what a name points to. A verified
+    // address looked up as a contact label could only ever be swapped for one nobody
+    // verified, and what stops such a contact existing today - the 32 character cap
+    // on contact names - was never put there for this.
+    if (!isVerifiedName) {
+        // Check for any contacts that match the input
+        const cDB = await Database.getInstance();
+        const cAccount = await cDB.getAccount(
+            activeWallet.value.getKeyToExport()
         );
+
+        // If we have an Account, then check our Contacts for anything matching too
+        const cContact = cAccount?.getContactBy({
+            name: address,
+            pubkey: address,
+        });
+        // If a Contact were found, we use it's Pubkey
+        if (cContact) address = cContact.pubkey;
     }
-
-    // Check for any contacts that match the input
-    const cDB = await Database.getInstance();
-    const cAccount = await cDB.getAccount(activeWallet.value.getKeyToExport());
-
-    // If we have an Account, then check our Contacts for anything matching too
-    const cContact = cAccount?.getContactBy({
-        name: address,
-        pubkey: address,
-    });
-    // If a Contact were found, we use it's Pubkey
-    if (cContact) address = cContact.pubkey;
 
     // Make sure wallet has shield enabled
     if (!activeWallet.value.hasShield) {

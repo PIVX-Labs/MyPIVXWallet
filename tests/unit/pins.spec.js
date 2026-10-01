@@ -12,6 +12,8 @@ import {
     isPIVXNameTLD,
     PIVXNameTLDs,
     MIN_RPC_AGREEMENT,
+    RpcQuorumError,
+    IndexerUnreachableError,
 } from '../../scripts/utils.pins.js';
 import { mount } from '@vue/test-utils';
 import PiNS from '../../scripts/dashboard/PiNS.vue';
@@ -992,6 +994,112 @@ describe('PiNS.vue Component', () => {
         expect(arrMessages).toContain('Checking sync...');
     });
 
+    /** Puts the component on the "name not found yet" dialog, where Retry lives. */
+    async function mountOnNotFoundDialog() {
+        routeFetch({
+            resolve: { error: { error_message: 'Domain not found' } },
+            indexerRoot: LIVE_VECTOR.smt_root,
+            evmRoot: OTHER_ROOT,
+            rootValid: true,
+        });
+        const wrapper = mount(PiNS);
+        await wrapper.vm.resolveAndVerify('alexxiy.pivx', 1, false, '');
+        await vi.runOnlyPendingTimersAsync();
+        expect(wrapper.vm.syncModalState).toBe('not_found');
+        return wrapper;
+    }
+
+    /**
+     * Retry is a tick of the poller on demand, and the poller never spends. The button
+     * says Retry, so a name that verifies on that click lands on the synced dialog and
+     * waits for Send.
+     */
+    it('does not spend on Retry, even when the name now verifies', async () => {
+        const wrapper = await mountOnNotFoundDialog();
+
+        routeFetch({
+            resolve: { response: LIVE_VECTOR },
+            indexerRoot: LIVE_VECTOR.smt_root,
+            evmRoot: LIVE_VECTOR.smt_root,
+            rootValid: true,
+        });
+        await wrapper.vm.retrySyncModalResolution();
+        await vi.runOnlyPendingTimersAsync();
+
+        expect(wrapper.emitted('send')).toBeUndefined();
+        expect(wrapper.vm.syncModalState).toBe('synced');
+
+        wrapper.vm.closeSyncModal(true);
+        await vi.runOnlyPendingTimersAsync();
+        expect(wrapper.emitted('send')?.[0]?.[0]?.address).toBe(
+            LIVE_VECTOR.target_address
+        );
+    });
+
+    /**
+     * The indexer chooses its own error text. Wording that looks like an RPC fault, or
+     * like a dropped connection, must not move the blame or keep the poller going.
+     */
+    it('does not let indexer error text pick the component to blame', async () => {
+        for (const strMsg of [
+            'EVM RPC endpoints disagree',
+            'Failed to fetch',
+            'NetworkError, timeout, connection reset',
+        ]) {
+            const wrapper = await mountOnNotFoundDialog();
+            routeFetch({
+                resolve: { error: { error_message: strMsg } },
+                indexerRoot: LIVE_VECTOR.smt_root,
+                evmRoot: LIVE_VECTOR.smt_root,
+                rootValid: true,
+            });
+            await wrapper.vm.retrySyncModalResolution();
+            await vi.runOnlyPendingTimersAsync();
+
+            expect(wrapper.vm.syncModalTitle).toBe('Indexer Error');
+            expect(wrapper.vm.syncModalIsPolling).toBe(false);
+            expect(wrapper.vm.pendingSendParams).toBe(null);
+            wrapper.unmount();
+        }
+    });
+
+    it('waits out an indexer that cannot be reached at all', async () => {
+        const wrapper = await mountOnNotFoundDialog();
+        fetch.mockImplementation(async (url) => {
+            if (String(url).includes('indexer.pivx.name')) {
+                throw new TypeError('Failed to fetch');
+            }
+            return {
+                ok: true,
+                json: async () => ({ result: '0x' + OTHER_ROOT }),
+            };
+        });
+        await wrapper.vm.retrySyncModalResolution();
+        await vi.runOnlyPendingTimersAsync();
+
+        // still the waiting dialog, with the failure reported rather than made fatal
+        expect(wrapper.vm.syncModalState).toBe('not_found');
+        expect(wrapper.vm.pendingSendParams).not.toBe(null);
+        expect(newAlerts().some((m) => m.startsWith('Sync failed:'))).toBe(
+            true
+        );
+    });
+
+    it('caps the length of an indexer error shown in the dialog', async () => {
+        const wrapper = await mountOnNotFoundDialog();
+        routeFetch({
+            resolve: { error: { error_message: 'A'.repeat(5000) } },
+            indexerRoot: LIVE_VECTOR.smt_root,
+            evmRoot: LIVE_VECTOR.smt_root,
+            rootValid: true,
+        });
+        await wrapper.vm.retrySyncModalResolution();
+        await vi.runOnlyPendingTimersAsync();
+
+        expect(wrapper.vm.syncModalTitle).toBe('Indexer Error');
+        expect(wrapper.vm.syncModalText.length).toBeLessThan(1000);
+    });
+
     it('never calls /v1.0/info', async () => {
         routeFetch({
             resolve: { response: LIVE_VECTOR },
@@ -1141,7 +1249,7 @@ describe('EVM RPC rotation', () => {
     it('throws only after every endpoint has failed, naming the last reason', async () => {
         fetch.mockRejectedValue(new Error('boom'));
         await expect(evmCall(RPCS, '0xcontract', '0xfdab463d')).rejects.toThrow(
-            /All 3 EVM RPC endpoint\(s\) failed.*boom/
+            /0 of 3 EVM RPC endpoint\(s\) answered.*boom/
         );
         expect(fetch).toHaveBeenCalledTimes(3);
     });
@@ -1156,7 +1264,7 @@ describe('EVM RPC rotation', () => {
         fetch.mockRejectedValue(new Error('boom'));
         await expect(
             evmCall(['https://rpc-a', 'https://rpc-a'], '0xcontract', '0x00')
-        ).rejects.toThrow(/All 1 EVM RPC endpoint/);
+        ).rejects.toThrow(/0 of 1 EVM RPC endpoint/);
         expect(fetch).toHaveBeenCalledTimes(1);
     });
 
@@ -1242,7 +1350,45 @@ describe('EVM RPC quorum', () => {
             .mockRejectedValue(new Error('down'));
         await expect(
             evmCall(RPCS, '0xcontract', '0xfdab463d', 2)
-        ).rejects.toThrow(/failed/);
+        ).rejects.toThrow(
+            /1 of 3 EVM RPC endpoint\(s\) answered, 2 must agree/
+        );
+    });
+
+    /**
+     * Callers decide from the error which component to blame and whether waiting can
+     * help. Too few answers is worth waiting out; a disagreement, or a list too short
+     * for any quorum, is not.
+     */
+    it('types its failures, and only too few answers is transient', async () => {
+        fetch
+            .mockResolvedValueOnce(answer('1'))
+            .mockRejectedValue(new Error('down'));
+        const eFew = await evmCall(RPCS, '0xcontract', '0x00', 2).catch(
+            (e) => e
+        );
+        expect(eFew).toBeInstanceOf(RpcQuorumError);
+        expect(eFew.isTransient).toBe(true);
+
+        fetch.mockReset();
+        fetch
+            .mockResolvedValueOnce(answer('1'))
+            .mockResolvedValueOnce(answer('2'))
+            .mockResolvedValueOnce(answer('3'));
+        const eSplit = await evmCall(RPCS, '0xcontract', '0x00', 2).catch(
+            (e) => e
+        );
+        expect(eSplit).toBeInstanceOf(RpcQuorumError);
+        expect(eSplit.isTransient).toBe(false);
+
+        const eShort = await evmCall(
+            'https://rpc-only',
+            '0xcontract',
+            '0x00',
+            2
+        ).catch((e) => e);
+        expect(eShort).toBeInstanceOf(RpcQuorumError);
+        expect(eShort.isTransient).toBe(false);
     });
 
     // Silently verifying on one endpoint because the list happened to be short is the
