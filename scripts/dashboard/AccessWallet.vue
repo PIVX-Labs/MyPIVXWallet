@@ -76,6 +76,9 @@ watch(showInput, (showInput) => {
         <div
             class="dashboard-item dashboard-display"
             @click="showInput = true"
+            @keydown.enter.prevent="showInput = true"
+            tabindex="0"
+            role="button"
             data-testid="accWalletButton"
         >
             <div class="coinstat-icon" v-html="loginIcon"></div>

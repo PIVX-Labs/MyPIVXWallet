@@ -65,12 +65,15 @@ watch(showLedgerModal, () => {
                 class="dashboard-item dashboard-display"
                 :style="{ opacity: isUSBSupported ? 1 : 0.5 }"
                 @click="showLedgerModal = true"
+                @keydown.enter.prevent="showLedgerModal = true"
+                tabindex="0"
+                role="button"
                 data-testid="hardwareWalletBtn"
             >
                 <div class="coinstat-icon" v-html="ledgerWallet"></div>
 
                 <div class="col-md-12 dashboard-title">
-                    <h3 class="pivx-bold-title" style="font-size: 25px">
+                    <h3 class="pivx-bold-title-smaller">
                         <span data-i18n="dCardThreeTitle">Access your</span>
                         <div data-i18n="dCardThreeSubTitle">Ledger Wallet</div>
                     </h3>

@@ -228,6 +228,15 @@ export async function start() {
     });
     fIsLoaded = true;
 
+    // The navbar tabs are <span>s, so give keyboard users Enter/Space activation
+    for (const domLink of doms.arrDomScreenLinks) {
+        domLink.addEventListener('keydown', (e) => {
+            if (e.key !== 'Enter' && e.key !== ' ') return;
+            e.preventDefault();
+            domLink.click();
+        });
+    }
+
     // If we haven't already (due to having no wallet, etc), display the Dashboard
     doms.domDashboard.click();
 }

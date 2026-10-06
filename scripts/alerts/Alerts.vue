@@ -20,6 +20,7 @@ watch(alerts, () => {
                 message: `${previousAlert.message}`,
                 show,
                 count,
+                remaining: timeout,
                 actionName: previousAlert.actionName,
                 actionFunc: previousAlert.actionFunc,
                 // Store original message so we can use it as key.
@@ -72,6 +73,9 @@ function runAction(cAlert) {
                 :level="alert.value.level"
                 :notificationCount="alert.value.count"
                 :actionName="alert.value.actionName"
+                :timeout="alert.value.timeout"
+                :remaining="alert.value.remaining"
+                :created="alert.value.created"
                 @hideAlert="alert.value.original.show = false"
                 @runAction="runAction(alert.value)"
             />
@@ -80,12 +84,34 @@ function runAction(cAlert) {
 </template>
 
 <style>
-.alert-enter-active,
-.alert-leave-active {
-    transition: all 0.5s ease;
+.alert-enter-active {
+    transition: opacity var(--mpw-dur-base) ease,
+        transform var(--mpw-dur-slow) var(--mpw-ease-out);
 }
-.alert-enter-from,
+.alert-leave-active {
+    transition: opacity var(--mpw-dur-base) ease,
+        transform var(--mpw-dur-base) ease-in;
+    /* Take leaving toasts out of the flow so the rest glide up smoothly */
+    position: absolute;
+    width: 100%;
+}
+.alert-move {
+    transition: transform var(--mpw-dur-slow) var(--mpw-ease-out);
+}
+.alert-enter-from {
+    opacity: 0;
+    transform: translateX(40px) scale(0.98);
+}
 .alert-leave-to {
     opacity: 0;
+    transform: translateX(24px) scale(0.96);
+}
+@media (max-width: 576px) {
+    .alert-enter-from {
+        transform: translateY(-16px) scale(0.98);
+    }
+    .alert-leave-to {
+        transform: translateY(-8px) scale(0.96);
+    }
 }
 </style>

@@ -1,6 +1,6 @@
 <script setup>
 import { translation } from '../i18n.js';
-import { ref, watch } from 'vue';
+import { ref, watch, nextTick } from 'vue';
 import { getAddressColor } from '../contacts-book';
 import { promptForContact } from '../contacts-book';
 import { isShieldAddress, sanitizeHTML } from '../misc';
@@ -8,7 +8,6 @@ import BottomPopup from '../BottomPopup.vue';
 import qrIcon from '../../assets/icons/icon-qr-code.svg';
 import addressbookIcon from '../../assets/icons/icon-address-book.svg';
 import { computed } from 'vue';
-import { createAlert } from '../alerts/alert.js';
 import Form from '../form/Form.vue';
 
 const emit = defineEmits([
@@ -31,6 +30,10 @@ const props = defineProps({
     desc: String,
     address: String,
     publicMode: Boolean,
+    // 'idle' | 'sending' | 'sent'
+    sendState: { type: String, default: 'idle' },
+    // Validation errors from the parent, e.g. { address: 'Invalid address' }
+    errors: { type: Object, default: () => ({}) },
 });
 
 const address = defineModel('address');
@@ -57,15 +60,55 @@ const amount = defineModel('amount', {
 
 watch(amount, () => syncAmountCurrency());
 
+// Field errors caught locally (empty fields), shown inline under the input
+const localErrors = ref({ address: '', amount: '' });
+const addressError = computed(
+    () => localErrors.value.address || props.errors.address || ''
+);
+const amountError = computed(
+    () => localErrors.value.amount || props.errors.amount || ''
+);
+watch(
+    () => props.show,
+    (show) => {
+        if (show) localErrors.value = { address: '', amount: '' };
+    }
+);
+watch(address, () => (localErrors.value.address = ''));
+watch(amount, () => (localErrors.value.amount = ''));
+
+const addressGroup = ref(null);
+const amountGroup = ref(null);
+
+/** Replay the shake animation on a field group */
+function shake(el) {
+    if (!el) return;
+    el.classList.remove('shake');
+    // Force a reflow so the animation restarts even if it just ran
+    void el.offsetWidth;
+    el.classList.add('shake');
+}
+
+// Shake whichever field the parent flagged after a failed send
+watch(
+    () => props.errors,
+    async (errors) => {
+        await nextTick();
+        if (errors.address) shake(addressGroup.value);
+        else if (errors.amount) shake(amountGroup.value);
+    }
+);
+
 function send() {
-    // TODO: Maybe in the future do one of those cool animation that set the
-    // Input red
+    if (props.sendState !== 'idle') return;
     if (!address.value) {
-        createAlert('warning', translation.transactionNeedsAddress, 5000);
+        localErrors.value.address = translation.transactionNeedsAddress;
+        shake(addressGroup.value);
         return;
     }
     if (!amount.value) {
-        createAlert('warning', translation.transactionNeedsAmount, 5000);
+        localErrors.value.amount = translation.transactionNeedsAmount;
+        shake(amountGroup.value);
         return;
     }
 
@@ -110,9 +153,14 @@ async function selectContact() {
                 <label>{{ translation.address }}</label
                 ><br />
 
-                <div class="input-group mb-3">
+                <div
+                    class="input-group"
+                    :class="addressError ? 'mb-2' : 'mb-3'"
+                    ref="addressGroup"
+                >
                     <input
                         class="btn-group-input"
+                        :class="{ 'input-invalid': addressError }"
                         style="font-family: monospace"
                         :style="{ color }"
                         type="text"
@@ -138,6 +186,17 @@ async function selectContact() {
                     </div>
                 </div>
 
+                <Transition name="field-error">
+                    <div
+                        v-if="addressError"
+                        class="field-error"
+                        role="alert"
+                        data-testid="addressError"
+                    >
+                        {{ addressError }}
+                    </div>
+                </Transition>
+
                 <div style="display: none">
                     <label
                         ><span>{{
@@ -160,9 +219,14 @@ async function selectContact() {
                 ><br />
                 <div class="row">
                     <div class="col-12">
-                        <div class="input-group mb-3">
+                        <div
+                            class="input-group"
+                            :class="amountError ? 'mb-2' : 'mb-3'"
+                            ref="amountGroup"
+                        >
                             <input
                                 class="btn-group-input balanceInput"
+                                :class="{ 'input-invalid': amountError }"
                                 style="padding-right: 0px; border-right: 0px"
                                 type="number"
                                 step="any"
@@ -176,33 +240,27 @@ async function selectContact() {
                                 v-model="amount"
                             />
                             <div class="input-group-append">
-                                <span
-                                    class="input-group-text"
-                                    style="
-                                        background-color: #e9deff;
-                                        color: #af9cc6;
-                                        border: 2px solid #af9cc6;
-                                        border-left: 0px;
-                                    "
-                                >
+                                <span class="input-group-text input-addon">
                                     PIVX
                                 </span>
                                 <span
-                                    class="input-group-text p-0"
-                                    style="
-                                        cursor: pointer;
-                                        background-color: #7f20ff;
-                                        border: 2px solid #af9cc6;
-                                        color: #e9deff;
-                                        font-weight: 700;
-                                        padding: 0px 10px 0px 10px !important;
-                                    "
+                                    class="input-group-text input-addon-action"
                                     @click="$emit('max-balance', !publicMode)"
                                 >
                                     {{ translation.sendAmountCoinsMax }}
                                 </span>
                             </div>
                         </div>
+                        <Transition name="field-error">
+                            <div
+                                v-if="amountError"
+                                class="field-error"
+                                role="alert"
+                                data-testid="amountError"
+                            >
+                                {{ amountError }}
+                            </div>
+                        </Transition>
                     </div>
 
                     <div class="col-12">
@@ -222,13 +280,7 @@ async function selectContact() {
                             />
                             <div class="input-group-append">
                                 <span
-                                    class="input-group-text pl-0"
-                                    style="
-                                        background-color: #e9deff;
-                                        color: #af9cc6;
-                                        border: 2px solid #af9cc6;
-                                        border-left: 0px;
-                                    "
+                                    class="input-group-text input-addon pl-0"
                                     >{{ currency }}</span
                                 >
                             </div>
@@ -303,6 +355,7 @@ async function selectContact() {
                                 type="button"
                                 class="pivx-button-small-cancel"
                                 style="height: 42px; width: 97px"
+                                :disabled="sendState !== 'idle'"
                                 @click="$emit('close')"
                                 data-testid="closeButton"
                             >
@@ -314,13 +367,39 @@ async function selectContact() {
 
                         <div class="col-6 text-right">
                             <button
-                                class="pivx-button-small"
-                                style="height: 42px; width: 97px"
+                                class="pivx-button-small send-button"
+                                :class="'send-button-' + sendState"
+                                :disabled="sendState !== 'idle'"
+                                :aria-busy="sendState === 'sending'"
                                 data-testid="sendButton"
                             >
-                                <span class="buttoni-text">
-                                    {{ translation.send }}
-                                </span>
+                                <Transition name="send-label" mode="out-in">
+                                    <span
+                                        v-if="sendState === 'sending'"
+                                        key="sending"
+                                        class="buttoni-text"
+                                    >
+                                        <i
+                                            class="fas fa-circle-notch fa-spin"
+                                        ></i>
+                                        {{ translation.sendingTransaction }}
+                                    </span>
+                                    <span
+                                        v-else-if="sendState === 'sent'"
+                                        key="sent"
+                                        class="buttoni-text"
+                                    >
+                                        <i class="fas fa-check send-check"></i>
+                                        {{ translation.transactionSentShort }}
+                                    </span>
+                                    <span
+                                        v-else
+                                        key="idle"
+                                        class="buttoni-text"
+                                    >
+                                        {{ translation.send }}
+                                    </span>
+                                </Transition>
                             </button>
                         </div>
                     </div>
@@ -331,6 +410,66 @@ async function selectContact() {
 </template>
 
 <style>
+.send-button {
+    height: 42px;
+    min-width: 97px;
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+    white-space: nowrap;
+}
+
+.send-button .buttoni-text {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.send-button:disabled.send-button-sending {
+    opacity: 0.85;
+    cursor: progress;
+    filter: none;
+}
+
+.send-button.send-button-sent,
+.send-button:disabled.send-button-sent {
+    opacity: 1;
+    filter: none;
+    background-image: linear-gradient(183deg, #3fae3f, #2b8a2b);
+    box-shadow: 0 8px 24px -8px rgba(92, 255, 92, 0.6);
+}
+
+.send-check {
+    animation: mpw-pop var(--mpw-dur-slow) var(--mpw-ease-spring);
+}
+
+.send-label-enter-active,
+.send-label-leave-active {
+    transition: opacity var(--mpw-dur-fast) ease,
+        transform var(--mpw-dur-fast) ease;
+}
+
+.send-label-enter-from {
+    opacity: 0;
+    transform: translateY(4px);
+}
+
+.send-label-leave-to {
+    opacity: 0;
+    transform: translateY(-4px);
+}
+
+.field-error-enter-active,
+.field-error-leave-active {
+    transition: opacity var(--mpw-dur-base) ease,
+        transform var(--mpw-dur-base) var(--mpw-ease-out);
+}
+
+.field-error-enter-from,
+.field-error-leave-to {
+    opacity: 0;
+    transform: translateY(-4px);
+}
+
 .transferAnimation {
     transform: translate3d(0, 390px, 0);
 }

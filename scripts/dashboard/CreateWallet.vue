@@ -49,6 +49,9 @@ function generateWallet() {
         <div
             class="dashboard-item dashboard-display"
             @click="generateWallet()"
+            @keydown.enter.prevent="generateWallet()"
+            tabindex="0"
+            role="button"
             data-testid="generateWallet"
         >
             <div class="coinstat-icon" v-html="newWalletIcon"></div>

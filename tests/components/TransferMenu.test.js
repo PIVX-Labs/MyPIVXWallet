@@ -3,8 +3,10 @@ import { mount } from '@vue/test-utils';
 import { nextTick } from 'vue';
 import { expect, describe, vi } from 'vitest';
 import TransferMenu from '../../scripts/dashboard/TransferMenu.vue';
+
+vi.mock('../../scripts/i18n.js');
 const price = 0.4;
-const mountTM = (amount = '123', address = '') => {
+const mountTM = (amount = '123', address = '', extraProps = {}) => {
     const wrapper = mount(TransferMenu, {
         props: {
             show: true,
@@ -12,6 +14,7 @@ const mountTM = (amount = '123', address = '') => {
             currency: 'USD',
             amount,
             address,
+            ...extraProps,
 
             'onUpdate:amount': (e) => wrapper.setProps({ amount: e }),
             publicMode: true,
@@ -72,5 +75,42 @@ describe('transfer menu tests', () => {
         expect(wrapper.emitted('send')).toStrictEqual([
             ['DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bc', '60', false, ''],
         ]);
+    });
+
+    it('Shows an inline error instead of sending with an empty address', async () => {
+        const wrapper = mountTM('60', '');
+        expect(wrapper.find('[data-testid=addressError]').exists()).toBe(false);
+        await wrapper.find('[data-testid=sendButton]').trigger('submit');
+        expect(wrapper.emitted('send')).toBeUndefined();
+        expect(wrapper.find('[data-testid=addressError]').exists()).toBe(true);
+    });
+
+    it('Shows an inline error instead of sending with an empty amount', async () => {
+        const wrapper = mountTM('', 'DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bc');
+        await wrapper.find('[data-testid=sendButton]').trigger('submit');
+        expect(wrapper.emitted('send')).toBeUndefined();
+        expect(wrapper.find('[data-testid=amountError]').exists()).toBe(true);
+    });
+
+    it('Renders errors passed in by the parent', async () => {
+        const wrapper = mountTM('60', 'DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bc', {
+            errors: { address: 'Invalid PIVX address!' },
+        });
+        expect(wrapper.find('[data-testid=addressError]').text()).toBe(
+            'Invalid PIVX address!'
+        );
+    });
+
+    it('Locks the form while a transaction is sending', async () => {
+        const wrapper = mountTM('60', 'DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bc', {
+            sendState: 'sending',
+        });
+        const sendButton = wrapper.find('[data-testid=sendButton]');
+        expect(sendButton.attributes('disabled')).toBeDefined();
+        expect(
+            wrapper.find('[data-testid=closeButton]').attributes('disabled')
+        ).toBeDefined();
+        await sendButton.trigger('submit');
+        expect(wrapper.emitted('send')).toBeUndefined();
     });
 });
