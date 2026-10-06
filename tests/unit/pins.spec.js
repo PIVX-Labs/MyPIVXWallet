@@ -14,11 +14,18 @@ import {
     MIN_RPC_AGREEMENT,
     RpcQuorumError,
     IndexerUnreachableError,
+    FETCH_TIMEOUT_MS,
+    getNameResolverUrl,
+    parseIndexerRoot,
 } from '../../scripts/utils.pins.js';
 import { mount } from '@vue/test-utils';
 import PiNS from '../../scripts/dashboard/PiNS.vue';
 import { Database } from '../../scripts/database.js';
-import { AlertController } from '../../scripts/alerts/alert.js';
+import {
+    AlertController,
+    createAlert,
+    createClosableAlert,
+} from '../../scripts/alerts/alert.js';
 
 vi.mock('../../scripts/i18n.js', () => {
     const translation = {
@@ -42,6 +49,9 @@ vi.mock('../../scripts/i18n.js', () => {
         pinsTextSyncDelayWait: 'Syncing, sending is paused.',
         pinsTitleRpcError: 'Blockchain Connection Error',
         pinsTextRpcError: 'RPC problem: {errMsg}',
+        name: 'Name',
+        address: 'Address',
+        amount: 'Amount',
     };
     const ALERTS = {
         PINS_RESOLVING_DOMAIN: 'Resolving {strDomain}...',
@@ -55,6 +65,8 @@ vi.mock('../../scripts/i18n.js', () => {
         PINS_INVALID_SHIELD: 'Invalid shield',
         PINS_NAME_MISMATCH: 'Name mismatch',
         PINS_NOT_FOUND: 'Not found',
+        PINS_ADDRESS_CHANGED: '{strDomain} moved',
+        PINS_CONTACT_COLLISION: '{strName} collides',
     };
     return {
         translation,
@@ -637,8 +649,27 @@ describe('EVM and Indexer Root Checking', () => {
             '7fbe8f29f7278db7a665de4f1255927b40b648b43e55b34bb3e0405edb5e7d12'
         );
         expect(fetch).toHaveBeenCalledWith(
-            'https://indexer.pivx.name/v1.0/getRoot'
+            'https://indexer.pivx.name/v1.0/getRoot',
+            expect.objectContaining({ signal: expect.any(AbortSignal) })
         );
+    });
+
+    /**
+     * Checked where it arrives. Passed on, a malformed root would become malformed
+     * `isRootValid` calldata, the endpoints would refuse it, and the RPC layer would
+     * take the blame for the indexer's answer.
+     */
+    it('rejects a malformed root from the indexer', async () => {
+        for (const strBad of ['zz'.repeat(32), 'ab'.repeat(33), '1234', '']) {
+            fetch.mockResolvedValueOnce({
+                ok: true,
+                json: async () => ({ response: strBad }),
+            });
+            await expect(
+                fetchIndexerRoot('https://indexer.pivx.name')
+            ).rejects.toThrow(/malformed root|Invalid response/);
+        }
+        expect(parseIndexerRoot('0x' + 'AB'.repeat(32))).toBe('ab'.repeat(32));
     });
 
     it('rejects a getRoot answer that is not a bare string', async () => {
@@ -1100,6 +1131,167 @@ describe('PiNS.vue Component', () => {
         expect(wrapper.vm.syncModalText.length).toBeLessThan(1000);
     });
 
+    /**
+     * `send()` does not await the resolve and nothing closes the menu until it is over,
+     * so a second click used to start a second resolution - and, once the first
+     * transaction released its lock, a second payment.
+     */
+    it('ignores a second send while one is still resolving', async () => {
+        routeFetch({
+            resolve: { response: LIVE_VECTOR },
+            indexerRoot: LIVE_VECTOR.smt_root,
+            evmRoot: LIVE_VECTOR.smt_root,
+            rootValid: true,
+        });
+
+        const wrapper = mount(PiNS);
+        const p1 = wrapper.vm.resolveAndVerify('alexxiy.pivx', 1, false, '');
+        const p2 = wrapper.vm.resolveAndVerify('alexxiy.pivx', 1, false, '');
+        await Promise.all([p1, p2]);
+        await vi.runOnlyPendingTimersAsync();
+
+        expect(wrapper.emitted('send')).toHaveLength(1);
+        // the second click is ignored outright - it never even reaches the indexer.
+        // (Were it to run, the attempt counter would still let only one of the two pay.)
+        const nResolves = fetch.mock.calls.filter((c) =>
+            String(c[0]).includes('/v1.0/resolve/')
+        ).length;
+        expect(nResolves).toBe(1);
+
+        // and a later, separate send is not blocked by the first
+        await wrapper.vm.resolveAndVerify('alexxiy.pivx', 1, false, '');
+        expect(wrapper.emitted('send')).toHaveLength(2);
+    });
+
+    it('does not pay for an attempt cancelled mid-resolve', async () => {
+        routeFetch({
+            resolve: { response: LIVE_VECTOR },
+            indexerRoot: LIVE_VECTOR.smt_root,
+            evmRoot: LIVE_VECTOR.smt_root,
+            rootValid: true,
+        });
+
+        const wrapper = mount(PiNS);
+        const p = wrapper.vm.resolveAndVerify('alexxiy.pivx', 1, false, '');
+        wrapper.vm.cancel(); // the menu closed, or the wallet changed
+        await p;
+        await vi.runOnlyPendingTimersAsync();
+
+        expect(wrapper.emitted('send')).toBeUndefined();
+        expect(wrapper.vm.showSyncModal).toBe(false);
+    });
+
+    it('drops a waiting dialog on cancel, poller included', async () => {
+        routeFetch({
+            resolve: { response: LIVE_VECTOR },
+            indexerRoot: LIVE_VECTOR.smt_root,
+            evmRoot: OTHER_ROOT,
+            rootValid: true,
+        });
+
+        const wrapper = mount(PiNS);
+        await wrapper.vm.resolveAndVerify('alexxiy.pivx', 1, false, '');
+        await vi.runOnlyPendingTimersAsync();
+        expect(wrapper.vm.syncModalIsPolling).toBe(true);
+
+        wrapper.vm.cancel();
+        // the indexer catches up after the user has left
+        routeFetch({
+            resolve: { response: LIVE_VECTOR },
+            indexerRoot: LIVE_VECTOR.smt_root,
+            evmRoot: LIVE_VECTOR.smt_root,
+            rootValid: true,
+        });
+        await vi.advanceTimersByTimeAsync(15000);
+        await vi.runOnlyPendingTimersAsync();
+
+        expect(wrapper.vm.showSyncModal).toBe(false);
+        expect(wrapper.vm.syncModalIsPolling).toBe(false);
+        expect(wrapper.emitted('send')).toBeUndefined();
+    });
+
+    /** Reaches the synced dialog the way a user does: wait, then the indexer catches up. */
+    async function mountOnSyncedDialog() {
+        routeFetch({
+            resolve: { response: LIVE_VECTOR },
+            indexerRoot: LIVE_VECTOR.smt_root,
+            evmRoot: OTHER_ROOT,
+            rootValid: true,
+        });
+        const wrapper = mount(PiNS);
+        await wrapper.vm.resolveAndVerify('alexxiy.pivx', 1.5, false, '');
+        await vi.runOnlyPendingTimersAsync();
+        routeFetch({
+            resolve: { response: LIVE_VECTOR },
+            indexerRoot: LIVE_VECTOR.smt_root,
+            evmRoot: LIVE_VECTOR.smt_root,
+            rootValid: true,
+        });
+        await vi.advanceTimersByTimeAsync(15000);
+        await vi.runOnlyPendingTimersAsync();
+        expect(wrapper.vm.syncModalState).toBe('synced');
+        return wrapper;
+    }
+
+    it('shows the name, the verified address and the amount it is asking about', async () => {
+        const wrapper = await mountOnSyncedDialog();
+        const strText = wrapper.text();
+        expect(strText).toContain('alexxiy.pivx');
+        expect(strText).toContain(LIVE_VECTOR.target_address);
+        expect(strText).toContain('1.5');
+    });
+
+    /**
+     * What the user confirmed is what gets paid. If the record moved while the dialog
+     * sat open, the new address is shown and confirmed again rather than paid unseen.
+     */
+    it('does not pay an address other than the one the dialog showed', async () => {
+        const wrapper = await mountOnSyncedDialog();
+        wrapper.vm.pendingSendParams = {
+            ...wrapper.vm.pendingSendParams,
+            strAddress: 'ps1-the-address-the-user-was-shown',
+        };
+
+        wrapper.vm.closeSyncModal(true);
+        await vi.runOnlyPendingTimersAsync();
+
+        expect(wrapper.emitted('send')).toBeUndefined();
+        expect(wrapper.vm.syncModalState).toBe('synced');
+        expect(wrapper.vm.pendingSendParams.strAddress).toBe(
+            LIVE_VECTOR.target_address
+        );
+        expect(newAlerts()).toContain('alexxiy.pivx moved');
+
+        // confirming what is now on screen goes through
+        wrapper.vm.closeSyncModal(true);
+        await vi.runOnlyPendingTimersAsync();
+        expect(wrapper.emitted('send')?.[0]?.[0]?.address).toBe(
+            LIVE_VECTOR.target_address
+        );
+    });
+
+    it('never puts a malformed indexer root into contract calldata', async () => {
+        routeFetch({
+            resolve: {
+                response: { ...LIVE_VECTOR, smt_root: 'zz'.repeat(40) },
+            },
+            indexerRoot: LIVE_VECTOR.smt_root,
+            evmRoot: LIVE_VECTOR.smt_root,
+            rootValid: true,
+        });
+
+        const wrapper = mount(PiNS);
+        await wrapper.vm.resolveAndVerify('alexxiy.pivx', 1, false, '');
+        await vi.runOnlyPendingTimersAsync();
+
+        const arrCalldata = fetch.mock.calls.map(
+            (c) => JSON.parse(c[1]?.body || '{}')?.params?.[0]?.data || ''
+        );
+        expect(arrCalldata.some((d) => d.startsWith('0x30ef41b4'))).toBe(false);
+        expect(newAlerts().join(' ')).toContain('malformed root');
+        expect(wrapper.emitted('send')).toBeUndefined();
+    });
+
     it('never calls /v1.0/info', async () => {
         routeFetch({
             resolve: { response: LIVE_VECTOR },
@@ -1141,6 +1333,16 @@ describe('PiNS.vue Component', () => {
 });
 
 describe('endpoint selection', () => {
+    it('keeps a stored indexer only while chain params still declare it', () => {
+        const strDeclared = 'https://indexer.pivx.name';
+        expect(getNameResolverUrl(strDeclared)).toBe(strDeclared);
+        // a row written before the indexer moved must not pin the old host forever
+        expect(getNameResolverUrl('https://old-indexer.example')).toBe(
+            strDeclared
+        );
+        expect(getNameResolverUrl(undefined)).toBe(strDeclared);
+    });
+
     it('keeps the configured endpoint first while it is still declared', () => {
         const net = getEVMNetwork(56);
         const arrList = getEvmRpcList(net.rpcs[2], net);
@@ -1187,6 +1389,57 @@ describe('EVM RPC rotation', () => {
     afterEach(() => {
         vi.restoreAllMocks();
         vi.unstubAllGlobals();
+    });
+
+    /**
+     * An endpoint that accepts the request and never answers used to stall the resolve
+     * for good. It now costs `FETCH_TIMEOUT_MS`, and rotation carries on past it.
+     */
+    it('gives up on an endpoint that never answers, and rotates past it', async () => {
+        vi.useFakeTimers();
+        try {
+            fetch.mockImplementation((url, { signal }) =>
+                url === 'https://rpc-a'
+                    ? new Promise((_, reject) =>
+                          signal.addEventListener('abort', () =>
+                              reject(new DOMException('aborted', 'AbortError'))
+                          )
+                      )
+                    : Promise.resolve({ ok: true, json: async () => OK })
+            );
+            const p = evmCall(RPCS, '0xcontract', '0xfdab463d');
+            await vi.advanceTimersByTimeAsync(FETCH_TIMEOUT_MS);
+            await expect(p).resolves.toBe(OK.result);
+            expect(fetch.mock.calls.map((c) => c[0])).toEqual([
+                'https://rpc-a',
+                'https://rpc-b',
+            ]);
+        } finally {
+            vi.useRealTimers();
+        }
+    });
+
+    it('reports a silent indexer as unreachable, which is worth waiting out', async () => {
+        vi.useFakeTimers();
+        try {
+            fetch.mockImplementation(
+                (url, { signal }) =>
+                    new Promise((_, reject) =>
+                        signal.addEventListener('abort', () =>
+                            reject(new DOMException('aborted', 'AbortError'))
+                        )
+                    )
+            );
+            const p = fetchIndexerRoot('https://indexer.pivx.name').catch(
+                (e) => e
+            );
+            await vi.advanceTimersByTimeAsync(FETCH_TIMEOUT_MS);
+            const e = await p;
+            expect(e).toBeInstanceOf(IndexerUnreachableError);
+            expect(e.message).toMatch(/within 10s/);
+        } finally {
+            vi.useRealTimers();
+        }
     });
 
     it('uses the first endpoint when it answers, and does not touch the others', async () => {
@@ -1410,5 +1663,24 @@ describe('EVM RPC quorum', () => {
             LIVE_VECTOR.smt_root
         );
         expect(fetch).toHaveBeenCalledTimes(MIN_RPC_AGREEMENT);
+    });
+});
+
+/**
+ * `createAlert` returns nothing, as it does on master. Plenty of callers
+ * `return createAlert(...)` from functions whose own callers read any truthy result as
+ * success: `promptForContact` on an empty book would hand an Alert object to the
+ * address field. Only the name service needs the alert back, and asks for it by name.
+ */
+describe('alert return values', () => {
+    it('createAlert returns nothing', () => {
+        expect(createAlert('info', 'x', 1)).toBeUndefined();
+    });
+
+    it('createClosableAlert hands back an alert that can be closed', () => {
+        const alert = createClosableAlert('info', 'closable', 1000);
+        expect(alert.show).toBe(true);
+        alert.close();
+        expect(alert.show).toBe(false);
     });
 });

@@ -20,7 +20,7 @@ import { getEventEmitter } from './event_bus.js';
 import countries from 'country-locale-map/countries.json';
 import { getNetwork } from './network/network_manager.js';
 import { getRandomElement } from './utils.js';
-import { getEVMNetwork } from './utils.pins.js';
+import { getEVMNetwork, getNameResolverUrl } from './utils.pins.js';
 import { useWallets } from './composables/use_wallet.js';
 
 // --- Default Settings
@@ -590,9 +590,9 @@ async function fillNameResolvingApiSelect() {
     }
     const database = await Database.getInstance();
     const { nameResolvingApi: strSettingApi } = await database.getSettings();
-    select.value =
-        strSettingApi ||
-        (resolvers[0] ? resolvers[0].url : 'https://indexer.pivx.name');
+    // The same reconciliation the resolver applies, so the select shows the indexer
+    // that will actually be asked rather than a stored one chain params have dropped
+    select.value = getNameResolverUrl(strSettingApi) || '';
 }
 
 async function fillEvmNetworkSelect() {

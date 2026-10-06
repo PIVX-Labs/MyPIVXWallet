@@ -97,6 +97,15 @@ const importLock = ref(false);
 
 const pinsRef = ref(null);
 
+// A name send still resolving, or waiting on a dialog, belongs to the menu it was
+// started from and the wallet it was started in. Leaving either drops it: closing the
+// menu reads as "never mind", and after a wallet switch `executeSend` would pay from
+// the new wallet rather than the one the user was in.
+watch(showTransferMenu, (fShow) => {
+    if (!fShow) pinsRef.value?.cancel();
+});
+watch(activeWallet, () => pinsRef.value?.cancel());
+
 function onPinsSend(payload) {
     executeSend(
         payload.address,
@@ -312,6 +321,38 @@ async function send(address, amount, useShieldInputs, memo) {
 
     // Check if the recipient is a domain name with one of the supported TLDs
     if (isPIVXNameTLD(address)) {
+        // Contacts can carry name-shaped labels: they predate the name service, and
+        // the contact picker fills in the label, not the address. When such a label is
+        // also a name anyone can register, the two readings may be different parties -
+        // a private nickname someone else has since registered, or a label planted by
+        // a contact link to shadow a real name - and neither can be preferred safely,
+        // so refuse and say why. A label nobody can register is simply a contact.
+        const cDB = await Database.getInstance();
+        const cAccount = await cDB.getAccount(
+            activeWallet.value.getKeyToExport()
+        );
+        const strLower = address.toLowerCase();
+        const cContact = cAccount?.contacts?.find(
+            (c) => c.label?.toLowerCase() === strLower
+        );
+        if (cContact) {
+            if (isPIVXName(address)) {
+                return createAlert(
+                    'warning',
+                    tr(ALERTS.PINS_CONTACT_COLLISION, [
+                        { strName: sanitizeHTML(address) },
+                    ]),
+                    10000
+                );
+            }
+            return await executeSend(
+                cContact.pubkey,
+                amount,
+                useShieldInputs,
+                memo
+            );
+        }
+
         if (!isPIVXName(address)) {
             return createAlert(
                 'warning',

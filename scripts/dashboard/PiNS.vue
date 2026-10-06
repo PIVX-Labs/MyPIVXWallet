@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onUnmounted } from 'vue';
 import { Database } from '../database.js';
-import { createAlert } from '../alerts/alert.js';
+import { createAlert, createClosableAlert } from '../alerts/alert.js';
 import { isShieldAddress, sanitizeHTML } from '../misc.js';
 import {
     fetchEVMRoot,
@@ -9,13 +9,16 @@ import {
     fetchIndexerRoot,
     getEVMNetwork,
     getEvmRpcList,
+    getNameResolverUrl,
     IndexerUnreachableError,
+    parseIndexerRoot,
     RpcQuorumError,
     verifyRootValidityOnContract,
     verifySmtProof,
 } from '../utils.pins.js';
 import { ALERTS, translation, tr } from '../i18n.js';
 import { debugError, DebugTopics } from '../debug.js';
+import { cChainParams } from '../chain_params.js';
 
 // Events we can emit
 const emit = defineEmits(['send']);
@@ -29,8 +32,17 @@ const syncModalConfirmText = ref('');
 const syncModalCancelText = ref('');
 const syncModalIsPolling = ref(false);
 const pendingSendParams = ref(null);
+/** True while a send attempt is being resolved; another Send click is ignored. */
+const isResolving = ref(false);
 
 let syncModalInterval = null;
+
+/**
+ * Which send attempt is the current one. Bumped by every new attempt and by `cancel`,
+ * and checked after every await on the way to a send: an attempt the user has walked
+ * away from - menu closed, wallet switched - can neither pay nor open a dialog.
+ */
+let nAttempt = 0;
 
 /** How long an untrusted string may be before it is cut short for display. */
 const MAX_ERROR_CHARS = 200;
@@ -47,6 +59,8 @@ const SYNC_POLL_MS = 15000;
  * shipped value for good - including after a contract redeployment, which is precisely
  * when the shipped value is the one that matters. Ignoring the stored copy is also the
  * migration: nothing has to be rewritten in IndexedDB for a new address to take effect.
+ * The indexer URL does have a UI, so the stored choice is kept - but only while chain
+ * params still declare it (see `getNameResolverUrl`).
  */
 async function loadResolverConfig() {
     const database = await Database.getInstance();
@@ -57,9 +71,13 @@ async function loadResolverConfig() {
     if (!objNetwork) {
         throw new Error('No EVM network is configured for name resolving');
     }
+    const strApiEndpoint = getNameResolverUrl(nameResolvingApi);
+    if (!strApiEndpoint) {
+        throw new Error('No name resolver is configured for this network');
+    }
 
     return {
-        apiEndpoint: nameResolvingApi || 'https://indexer.pivx.name',
+        apiEndpoint: strApiEndpoint,
         evmRpcList: getEvmRpcList(evmRpc, objNetwork),
         evmContractAddress: objNetwork.contractAddress,
     };
@@ -89,7 +107,8 @@ function capErrMsg(e) {
 }
 
 async function resolveDomainName(apiEndpoint, domain) {
-    const res = await fetchFromIndexer(
+    // `json` is null for a response that is not JSON
+    const { ok, status, json } = await fetchFromIndexer(
         `${apiEndpoint.replace(/\/$/, '')}/v1.0/resolve/${domain}`,
         {
             method: 'POST',
@@ -100,13 +119,6 @@ async function resolveDomainName(apiEndpoint, domain) {
         }
     );
 
-    let json = null;
-    try {
-        json = await res.json();
-    } catch (e) {
-        // Not a JSON response
-    }
-
     if (json && json.error) {
         const errMsg = json.error.error_message;
         if (errMsg === 'Domain not found') {
@@ -115,8 +127,8 @@ async function resolveDomainName(apiEndpoint, domain) {
         throw new Error(errMsg);
     }
 
-    if (!res.ok) {
-        throw new Error(`Indexer responded with status ${res.status}`);
+    if (!ok) {
+        throw new Error(`Indexer responded with status ${status}`);
     }
 
     if (json && json.response) {
@@ -150,7 +162,7 @@ async function fetchRootsAndResolve(objConfig, strDomain) {
         isNotFound = res.isNotFound;
         if (!isNotFound) {
             resolveData = res.resolveData;
-            strIndexerRoot = String(resolveData.smt_root || '').toLowerCase();
+            strIndexerRoot = parseIndexerRoot(resolveData.smt_root);
         }
     } catch (e) {
         if (e.message === 'Domain not found') {
@@ -322,6 +334,7 @@ function startSyncModalPolling(objConfig, strDomain) {
     syncModalIsPolling.value = true;
 
     syncModalInterval = setInterval(async () => {
+        const nMine = nAttempt;
         try {
             const [strIndexerRoot, strChainRoot] = await Promise.all([
                 fetchIndexerRoot(objConfig.apiEndpoint),
@@ -350,7 +363,7 @@ function startSyncModalPolling(objConfig, strDomain) {
                 'Sync modal background check error:',
                 e
             );
-            handleCriticalError(e);
+            if (nMine === nAttempt) handleCriticalError(e);
         }
     }, SYNC_POLL_MS);
 }
@@ -378,11 +391,22 @@ onUnmounted(stopSyncModalPolling);
  * @param {boolean} fEmit - true when the user has asked to send; false when the point
  *                          is only to confirm the name resolves cleanly and let them
  *                          press Send themselves.
+ * @param {string?} [strConfirmedAddress] - the address the user was shown and confirmed;
+ *                          the send goes ahead only if the name still resolves to it.
  */
-async function runResolution(strDomain, amount, useShieldInputs, memo, fEmit) {
+async function runResolution(
+    strDomain,
+    amount,
+    useShieldInputs,
+    memo,
+    fEmit,
+    strConfirmedAddress = null
+) {
+    const nMine = nAttempt;
     const objConfig = await loadResolverConfig();
     const { strIndexerRoot, strChainRoot, isNotFound, resolveData } =
         await fetchRootsAndResolve(objConfig, strDomain);
+    if (nMine !== nAttempt) return;
 
     if (!strChainRoot)
         throw new Error('Could not read the anchor contract root');
@@ -395,6 +419,7 @@ async function runResolution(strDomain, amount, useShieldInputs, memo, fEmit) {
             objConfig.evmContractAddress,
             strIndexerRoot
         );
+        if (nMine !== nAttempt) return;
         if (!fAnchored) {
             showUnanchoredRootWall();
             return;
@@ -433,14 +458,31 @@ async function runResolution(strDomain, amount, useShieldInputs, memo, fEmit) {
         return;
     }
 
-    if (!fEmit) {
+    const strVerifiedAddress = resolveData.target_address;
+    const fConfirmedSomethingElse =
+        strConfirmedAddress !== null &&
+        strConfirmedAddress !== strVerifiedAddress;
+
+    if (!fEmit || fConfirmedSomethingElse) {
         // Verified, but the user is not here - they chose to wait. Hand them a button
         // rather than spending on their behalf.
+        //
+        // Or they confirmed an address the name no longer points to: the record
+        // changed while the dialog was open. What they agreed to is not what would be
+        // paid, so show them the new one and ask again.
+        if (fConfirmedSomethingElse) {
+            createAlert(
+                'warning',
+                tr(ALERTS.PINS_ADDRESS_CHANGED, [{ strDomain }]),
+                7500
+            );
+        }
         pendingSendParams.value = {
             amount,
             useShieldInputs,
             memo,
             originalDomain: strDomain,
+            strAddress: strVerifiedAddress,
         };
         showSyncModal.value = true;
         syncModalState.value = 'synced';
@@ -457,7 +499,7 @@ async function runResolution(strDomain, amount, useShieldInputs, memo, fEmit) {
     // Send to the address the verified leaf commits to, never to a field carried
     // alongside it.
     emit('send', {
-        address: resolveData.target_address,
+        address: strVerifiedAddress,
         amount,
         useShieldInputs,
         memo,
@@ -475,7 +517,12 @@ async function retrySyncModalResolution() {
     if (!params) return;
 
     stopSyncModalPolling();
-    const checkingAlert = createAlert('info', ALERTS.PINS_CHECKING_SYNC, 5000);
+    const nMine = nAttempt;
+    const checkingAlert = createClosableAlert(
+        'info',
+        ALERTS.PINS_CHECKING_SYNC,
+        5000
+    );
     try {
         await runResolution(
             params.originalDomain,
@@ -490,7 +537,7 @@ async function retrySyncModalResolution() {
         }
     } catch (e) {
         if (checkingAlert) checkingAlert.close();
-        handleCriticalError(e, true);
+        if (nMine === nAttempt) handleCriticalError(e, true);
     }
 }
 
@@ -513,12 +560,15 @@ async function confirmPendingSend() {
     if (!params) return;
 
     try {
+        // Only to the address the dialog showed: if the name has moved since, the
+        // dialog comes back with the new one instead of paying it unseen.
         await runResolution(
             params.originalDomain,
             params.amount,
             params.useShieldInputs,
             params.memo,
-            true
+            true,
+            params.strAddress
         );
     } catch (e) {
         debugError(DebugTopics.NET, 'Name service confirmation error:', e);
@@ -531,8 +581,16 @@ async function confirmPendingSend() {
 }
 
 async function resolveAndVerify(domain, amount, useShieldInputs, memo) {
+    // One attempt at a time. `send` does not await this, and nothing closes the
+    // transfer menu until the resolve is over, so a second click would otherwise start
+    // a second resolution - and once the first transaction had finished building and
+    // released its lock, a second payment to the same name.
+    if (isResolving.value || showSyncModal.value) return;
+    isResolving.value = true;
+    const nMine = ++nAttempt;
+
     const strDomain = domain.toLowerCase();
-    const resolvingAlert = createAlert(
+    const resolvingAlert = createClosableAlert(
         'info',
         tr(ALERTS.PINS_RESOLVING_DOMAIN, [{ strDomain }]),
         10000
@@ -544,17 +602,36 @@ async function resolveAndVerify(domain, amount, useShieldInputs, memo) {
     } catch (e) {
         if (resolvingAlert) resolvingAlert.close();
         debugError(DebugTopics.NET, 'Name service resolution error:', e);
-        createAlert(
-            'warning',
-            tr(ALERTS.PINS_RESOLVE_FAILED, [{ errMsg: safeErrMsg(e) }]),
-            5000
-        );
+        if (nMine === nAttempt) {
+            createAlert(
+                'warning',
+                tr(ALERTS.PINS_RESOLVE_FAILED, [{ errMsg: safeErrMsg(e) }]),
+                5000
+            );
+        }
+    } finally {
+        // A cancelled attempt has already handed the flag to whatever came next
+        if (nMine === nAttempt) isResolving.value = false;
     }
+}
+
+/**
+ * Drop the current attempt, wherever it is: mid-resolve, waiting on the indexer, or on
+ * the confirmation dialog. Called when the user leaves the send - closing the transfer
+ * menu, or switching to another wallet, which would otherwise be the one that pays.
+ */
+function cancel() {
+    nAttempt++;
+    isResolving.value = false;
+    stopSyncModalPolling();
+    showSyncModal.value = false;
+    pendingSendParams.value = null;
 }
 
 // Expose public API
 defineExpose({
     resolveAndVerify,
+    cancel,
 });
 </script>
 
@@ -605,6 +682,29 @@ defineExpose({
                     "
                 >
                     <p>{{ syncModalText }}</p>
+                    <!-- What Send will pay, exactly: the only human check in the flow -->
+                    <dl
+                        v-if="syncModalState === 'synced' && pendingSendParams"
+                        class="text-left mt-3 mb-0"
+                        style="font-size: 0.85rem"
+                    >
+                        <dt>{{ translation.name }}</dt>
+                        <dd>{{ pendingSendParams.originalDomain }}</dd>
+                        <dt>{{ translation.address }}</dt>
+                        <dd
+                            style="
+                                word-break: break-all;
+                                font-family: monospace;
+                            "
+                        >
+                            {{ pendingSendParams.strAddress }}
+                        </dd>
+                        <dt>{{ translation.amount }}</dt>
+                        <dd class="mb-0">
+                            {{ pendingSendParams.amount }}
+                            {{ cChainParams.current.TICKER }}
+                        </dd>
+                    </dl>
                     <div
                         v-if="syncModalIsPolling"
                         class="mt-3 d-flex align-items-center justify-content-center"

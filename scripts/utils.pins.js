@@ -83,20 +83,109 @@ export class IndexerUnreachableError extends Error {
     }
 }
 
+/** How long one request - headers and body - may take before it counts as failed. */
+export const FETCH_TIMEOUT_MS = 10000;
+
 /**
- * `fetch` against the indexer, with a failure to get any response turned into
- * `IndexerUnreachableError`. Everything after a response arrives is left to the caller.
- * @param {...any} args - exactly what `fetch` takes, passed through untouched
- * @returns {Promise<Response>}
+ * One HTTP request that answers within `FETCH_TIMEOUT_MS` or fails.
+ *
+ * Without a deadline a single endpoint that accepts the connection and never answers
+ * stalls a resolve for good, and `evmCall` never gets to rotate past it. The body is
+ * read under the same deadline: headers followed by silence is just as stuck.
+ *
+ * @param {string} strUrl
+ * @param {RequestInit} [objOptions]
+ * @returns {Promise<{ok: boolean, status: number, statusText: string, json: any}>}
+ *          `json` is null when the body is not JSON, so callers can still report the
+ *          status they got
  */
-export async function fetchFromIndexer(...args) {
+export async function fetchJsonWithTimeout(strUrl, objOptions = {}) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
     try {
-        return await fetch(...args);
+        const res = await fetch(strUrl, {
+            ...objOptions,
+            signal: controller.signal,
+        });
+        let json = null;
+        try {
+            json = await res.json();
+        } catch (e) {
+            // Not a JSON response - unless the deadline is what interrupted it
+            if (controller.signal.aborted) throw e;
+        }
+        return {
+            ok: res.ok,
+            status: res.status,
+            statusText: res.statusText,
+            json,
+        };
+    } catch (e) {
+        if (controller.signal.aborted) {
+            throw new Error(
+                `No answer from ${new URL(strUrl).host} within ${
+                    FETCH_TIMEOUT_MS / 1000
+                }s`
+            );
+        }
+        throw e;
+    } finally {
+        clearTimeout(timer);
+    }
+}
+
+/**
+ * `fetchJsonWithTimeout` against the indexer, with a failure to get any answer at all -
+ * no connection, or no reply before the deadline - turned into
+ * `IndexerUnreachableError`. What an answer says is left to the caller.
+ * @param {string} strUrl
+ * @param {RequestInit} [objOptions]
+ */
+export async function fetchFromIndexer(strUrl, objOptions) {
+    try {
+        return await fetchJsonWithTimeout(strUrl, objOptions);
     } catch (e) {
         throw new IndexerUnreachableError(
             `Could not reach the indexer: ${e?.message || e}`
         );
     }
+}
+
+/**
+ * A root as the indexer reports it, checked and normalised to the form the chain root
+ * is compared in: 64 lowercase hex characters, no prefix.
+ *
+ * Checked where it arrives, so a malformed value is reported as the indexer's fault
+ * instead of travelling on into `isRootValid` calldata, where the endpoints would reject
+ * it and the blame would land on the RPC layer.
+ * @param {unknown} root
+ * @returns {string}
+ */
+export function parseIndexerRoot(root) {
+    const strRoot = String(root ?? '')
+        .replace(/^0x/i, '')
+        .toLowerCase();
+    if (!/^[0-9a-f]{64}$/.test(strRoot)) {
+        throw new Error('The indexer returned a malformed root');
+    }
+    return strRoot;
+}
+
+/**
+ * The indexer to ask, reconciled against chain params the same way RPC endpoints are.
+ *
+ * `Settings` writes its defaults into the stored row, so the stored URL is usually just
+ * whatever the first resolver was when the row was created. Taken at face value it
+ * would outlive a move of the indexer for good. A stored URL is honoured only while
+ * chain params still declare it - which is every URL the settings select can produce.
+ * @param {string} strConfigured
+ * @returns {string|null}
+ */
+export function getNameResolverUrl(strConfigured) {
+    const arrUrls = (cChainParams.current.NameResolvers || []).map(
+        (r) => r.url
+    );
+    return arrUrls.includes(strConfigured) ? strConfigured : arrUrls[0] || null;
 }
 
 /**
@@ -530,7 +619,7 @@ export async function evmCall(
     const mapAnswers = new Map();
     for (const rpcUrl of arrRpcs) {
         try {
-            const response = await fetch(rpcUrl, {
+            const response = await fetchJsonWithTimeout(rpcUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -544,7 +633,8 @@ export async function evmCall(
                 );
             }
 
-            const data = await response.json();
+            const data = response.json;
+            if (!data) throw new Error('EVM RPC returned a non-JSON answer');
             if (data.error) {
                 throw new Error(`EVM RPC error: ${data.error.message}`);
             }
@@ -631,12 +721,12 @@ export async function fetchIndexerRoot(apiEndpoint) {
     if (!res.ok) {
         throw new Error(`Indexer getRoot responded with status ${res.status}`);
     }
-    const data = await res.json();
+    const data = res.json;
     // getRoot answers with the root as a bare string, not an object.
     if (!data || typeof data.response !== 'string' || !data.response) {
         throw new Error('Invalid response from indexer getRoot');
     }
-    return data.response.toLowerCase();
+    return parseIndexerRoot(data.response);
 }
 
 /**

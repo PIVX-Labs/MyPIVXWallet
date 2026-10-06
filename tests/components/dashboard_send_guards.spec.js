@@ -1,6 +1,7 @@
 import 'fake-indexeddb/auto';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { mount } from '@vue/test-utils';
+import { nextTick } from 'vue';
 import { createPinia, setActivePinia } from 'pinia';
 import { lockableFunction } from '../../scripts/lock.js';
 import { AlertController } from '../../scripts/alerts/alert.js';
@@ -20,7 +21,24 @@ import { Account } from '../../scripts/accounts.js';
  * happily with an unrelated transaction's result, pay nobody, and raise no error for
  * anything to catch.
  */
-const h = vi.hoisted(() => ({ wallet: null }));
+const h = vi.hoisted(() => ({ wallet: null, resolve: null, cancel: null }));
+
+// The name service itself is covered in pins.spec.js. Here only the Dashboard's side
+// of the contract matters: whether it starts a resolve, and whether it cancels one.
+vi.mock('../../scripts/dashboard/PiNS.vue', async () => {
+    const { defineComponent } = await import('vue');
+    return {
+        default: defineComponent({
+            setup(_, { expose }) {
+                expose({
+                    resolveAndVerify: (...args) => h.resolve(...args),
+                    cancel: () => h.cancel(),
+                });
+                return () => null;
+            },
+        }),
+    };
+});
 
 vi.mock('../../scripts/global.js', () => ({
     start: vi.fn(),
@@ -56,11 +74,14 @@ describe('Dashboard wallet-state guards on the name service path', () => {
         setActivePinia(createPinia());
         nAlertsBefore = AlertController.getInstance().getAlerts().length;
 
+        h.resolve = vi.fn();
+        h.cancel = vi.fn();
         fnBuilder = vi.fn(
             () => new Promise((resolve) => setTimeout(() => resolve({}), 50))
         );
         const createAndSendTransaction = lockableFunction(fnBuilder);
         h.wallet = {
+            sync: async () => true,
             isSynced: true,
             hasShield: true,
             getKeyToExport: () => 'xpub',
@@ -147,14 +168,68 @@ describe('Dashboard wallet-state guards on the name service path', () => {
     it('does not resolve a name for a wallet that cannot send', async () => {
         h.wallet.isSynced = false;
         const wrapper = await mountDashboard();
-        vi.stubGlobal('fetch', vi.fn());
 
         await wrapper.vm.send('victim.pivx', 1, false, '');
-        // resolution is not awaited by send(), so give it the chance to start
-        await new Promise((resolve) => setTimeout(resolve, 100));
 
         expect(newAlerts().length).toBeGreaterThan(0);
-        expect(fetch).not.toHaveBeenCalled();
+        expect(h.resolve).not.toHaveBeenCalled();
+    });
+
+    it('hands a plain name to the name service', async () => {
+        const wrapper = await mountDashboard();
+        withContacts([]);
+
+        await wrapper.vm.send('victim.pivx', 1, false, '');
+
+        expect(h.resolve).toHaveBeenCalledWith('victim.pivx', 1, false, '');
+    });
+
+    /**
+     * The contact picker fills in labels, and contacts predate the name service. A
+     * private nickname like `dad.pivx` that a stranger has since registered must not
+     * quietly pay the stranger - and a label planted by a contact link must not
+     * quietly shadow a real name either. Neither reading is safe, so neither is taken.
+     */
+    it('refuses a contact label that is also a registrable name', async () => {
+        const wrapper = await mountDashboard();
+        withContacts([{ label: 'Dad.pivx', pubkey: OTHER_ADDRESS }]);
+
+        await wrapper.vm.send('dad.pivx', 1, false, '');
+
+        expect(newAlerts().length).toBeGreaterThan(0);
+        expect(h.resolve).not.toHaveBeenCalled();
+        expect(builtFor()).not.toContain(OTHER_ADDRESS);
+    });
+
+    it('treats a name-shaped label nobody can register as a plain contact', async () => {
+        const wrapper = await mountDashboard();
+        withContacts([{ label: 'my dad.pivx', pubkey: OTHER_ADDRESS }]);
+
+        await wrapper.vm.send('my dad.pivx', 1, false, '');
+
+        expect(h.resolve).not.toHaveBeenCalled();
+        expect(builtFor()).toContain(OTHER_ADDRESS);
+    });
+
+    it('cancels a name send when the transfer menu closes', async () => {
+        const wrapper = await mountDashboard();
+        wrapper.vm.showTransferMenu = true;
+        await nextTick();
+        expect(h.cancel).not.toHaveBeenCalled();
+
+        wrapper.vm.showTransferMenu = false;
+        await nextTick();
+        expect(h.cancel).toHaveBeenCalled();
+    });
+
+    it('cancels a name send when the active wallet changes', async () => {
+        await mountDashboard();
+        const { useWallets } = await import(
+            '../../scripts/composables/use_wallet.js'
+        );
+        useWallets().activeWallet = { ...h.wallet };
+        await nextTick();
+        expect(h.cancel).toHaveBeenCalled();
     });
 
     /**
