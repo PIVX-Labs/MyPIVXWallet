@@ -7,19 +7,20 @@ defineEmits(['close']);
 </script>
 
 <template>
-    <div v-show="show" class="v-mask">
-        <Transition name="bottomPopup">
-            <div v-show="show" class="exportKeysModalColor bottomPopup">
-                <div class="bottomPopupHeader" style="justify-content: center">
-                    <div class="sendHeaderoText">{{ title }}</div>
-                </div>
-
-                <div class="popupBody">
-                    <slot> </slot>
-                </div>
+    <Transition name="bottomPopupMask">
+        <div v-show="show" class="v-mask" @click.self="$emit('close')"></div>
+    </Transition>
+    <Transition name="bottomPopup">
+        <div v-show="show" class="exportKeysModalColor bottomPopup">
+            <div class="bottomPopupHeader" style="justify-content: center">
+                <div class="sendHeaderoText">{{ title }}</div>
             </div>
-        </Transition>
-    </div>
+
+            <div class="popupBody">
+                <slot> </slot>
+            </div>
+        </div>
+    </Transition>
 </template>
 
 <style>
@@ -30,9 +31,8 @@ defineEmits(['close']);
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    transition: opacity 0.3s ease;
+    background-color: rgba(10, 4, 22, 0.6);
+    backdrop-filter: blur(3px);
 }
 .bottomPopup {
     width: calc(100% - 30px);
@@ -40,12 +40,13 @@ defineEmits(['close']);
     left: 15px;
     bottom: 0px;
     z-index: 1050;
-    border-top-left-radius: 10px;
-    border-top-right-radius: 10px;
+    border-top-left-radius: var(--mpw-radius-lg);
+    border-top-right-radius: var(--mpw-radius-lg);
     min-height: 155px;
-    transition: 0.4s;
     font-size: 15px;
     border: 1px solid #42117e;
+    border-bottom: 0;
+    box-shadow: 0 -18px 50px -20px rgba(146, 33, 255, 0.45);
 }
 @media (min-width: 768px) {
     .bottomPopup {
@@ -54,9 +55,27 @@ defineEmits(['close']);
     }
 }
 
+.bottomPopupMask-enter-active,
+.bottomPopupMask-leave-active {
+    transition: opacity var(--mpw-dur-slow) ease;
+}
+.bottomPopupMask-enter-from,
+.bottomPopupMask-leave-to {
+    opacity: 0;
+}
+
+.bottomPopup-enter-active {
+    transition: transform 420ms var(--mpw-ease-out),
+        opacity var(--mpw-dur-base) ease;
+}
+.bottomPopup-leave-active {
+    transition: transform var(--mpw-dur-slow) cubic-bezier(0.4, 0, 1, 1),
+        opacity var(--mpw-dur-slow) ease;
+}
 .bottomPopup-enter-from,
 .bottomPopup-leave-to {
-    transform: translateY(200%);
+    transform: translateY(100%);
+    opacity: 0.4;
 }
 
 .bottomPopup .bottomPopupHeader {
@@ -77,9 +96,6 @@ defineEmits(['close']);
     width: 100%;
 }
 
-.bottomPopup-enter-active .bottomPopup-leave-active {
-    transition: all 0.3 ease;
-}
 .bottomPopupExit {
     position: absolute;
     right: 15px;

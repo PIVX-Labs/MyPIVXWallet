@@ -94,11 +94,14 @@ Cypress.Commands.add('togglePrivateMode', () => {
 });
 
 Cypress.Commands.add('waitForSync', () => {
-    cy.contains('[data-testid="alerts"]', 'Sync Finished!', {
+    // The balance card exposes the active wallet's sync state
+    cy.get('[data-testid="walletBalance"][data-synced="true"]', {
         timeout: 1000 * 60 * 5,
-    });
-    // Close all alerts so we don't get any false positives when running the command again
-    cy.get('[data-testid="alertCloseButton"]').each(($el) => {
-        cy.wrap($el).click();
+    }).should('be.visible');
+    // Close any open alerts so they don't cover elements in later steps
+    cy.get('body').then(($body) => {
+        $body
+            .find('[data-testid="alertCloseButton"]')
+            .each((_, el) => el.click());
     });
 });

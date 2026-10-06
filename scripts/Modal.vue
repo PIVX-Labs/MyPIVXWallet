@@ -7,15 +7,7 @@ const props = defineProps({
 </script>
 
 <template>
-    <Transition
-        name="modal"
-        style="
-            display: flex;
-            justify-content: center;
-            z-index: 2000;
-            background-color: #201436db;
-        "
-    >
+    <Transition name="modal">
         <div v-if="show" class="modal-mask black-text">
             <div class="modal-dialog" role="document">
                 <div
@@ -44,40 +36,41 @@ const props = defineProps({
 <style>
 .modal-mask {
     position: fixed;
-    z-index: 9998;
+    z-index: 2000;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: #201436db;
+    backdrop-filter: blur(3px);
     display: flex;
-    transition: opacity 0.3s ease;
+    justify-content: center;
 }
 
-.modal-enter-from {
-    opacity: 0;
+.modal-enter-active,
+.modal-leave-active {
+    transition: opacity var(--mpw-dur-slow) var(--mpw-ease-out);
 }
 
+.modal-enter-active .modal-dialog,
+.modal-leave-active .modal-dialog {
+    transition: transform var(--mpw-dur-slow) var(--mpw-ease-out);
+}
+
+.modal-enter-from,
 .modal-leave-to {
     opacity: 0;
 }
 
-.modal-enter-from .modal-container,
-.modal-leave-to .modal-container {
-    -webkit-transform: scale(1.1);
-    transform: scale(1.1);
-}
-.black-text {
-    color: black;
-}
-input,
-select,
-textarea {
-    color: #000000;
+.modal-enter-from .modal-dialog {
+    transform: translateY(14px) scale(0.96);
 }
 
-textarea:focus,
-input:focus {
-    color: #000000;
+.modal-leave-to .modal-dialog {
+    transform: translateY(6px) scale(0.98);
+}
+
+.black-text {
+    color: black;
 }
 </style>

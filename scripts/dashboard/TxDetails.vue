@@ -1,4 +1,5 @@
 <script setup>
+import { ref, watch } from 'vue';
 import { HistoricalTx } from '../historical_tx';
 import Modal from '../Modal.vue';
 
@@ -6,10 +7,19 @@ const props = defineProps({
     selectedTx: HistoricalTx,
 });
 const emit = defineEmits(['close']);
+
+// Keep the last tx around so the modal can animate out with its content
+const shownTx = ref(null);
+watch(
+    () => props.selectedTx,
+    (tx) => {
+        if (tx) shownTx.value = tx;
+    }
+);
 </script>
 
 <template>
-    <Modal :show="props.selectedTx" v-if="props.selectedTx">
+    <Modal :show="!!props.selectedTx">
         <template #header>
             <div class="memo-header">
                 <h4 class="memo-title">
@@ -29,15 +39,9 @@ const emit = defineEmits(['close']);
         </template>
         <template #body>
             <div class="memo-container">
-                <div
-                    v-if="
-                        props.selectedTx.memos &&
-                        props.selectedTx.memos.length > 0
-                    "
-                    class="memo-content"
-                >
+                <div v-if="shownTx?.memos?.length > 0" class="memo-content">
                     <div class="memo-text">
-                        {{ props.selectedTx.memos.join('\n') }}
+                        {{ shownTx.memos.join('\n') }}
                     </div>
                 </div>
                 <div v-else class="memo-empty">

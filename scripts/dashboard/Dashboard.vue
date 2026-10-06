@@ -43,17 +43,32 @@ import { ParsedSecret } from '../parsed_secret.js';
 import { storeToRefs } from 'pinia';
 import { useAlerts } from '../composables/use_alerts.js';
 import { Vault } from '../vault';
-import { valuesToComputed } from '../utils.js';
+import { valuesToComputed, sleep } from '../utils.js';
 import { PIVXShield } from 'pivx-shield';
 const { createAlert } = useAlerts();
 
 const wallets = useWallets();
 const { activeWallet, activeVault } = storeToRefs(wallets);
 
+// Sync state for the balance card: a skeleton while syncing, then a brief
+// 'synced' pill instead of a toast (which got noisy on every account switch)
+const isSyncing = ref(false);
+const justSynced = ref(false);
+let justSyncedTimer = null;
 watch(activeWallet, async (currentWallet) => {
-    const success = await currentWallet.sync();
-    if (success && activeWallet.value === currentWallet)
-        createAlert('success', translation.syncStatusFinished, 12500);
+    isSyncing.value = true;
+    justSynced.value = false;
+    clearTimeout(justSyncedTimer);
+    let success = false;
+    try {
+        success = await currentWallet.sync();
+    } finally {
+        if (activeWallet.value === currentWallet) isSyncing.value = false;
+    }
+    if (success && activeWallet.value === currentWallet) {
+        justSynced.value = true;
+        justSyncedTimer = setTimeout(() => (justSynced.value = false), 2600);
+    }
 });
 
 const needsToEncrypt = computed(() => {
@@ -68,6 +83,32 @@ const needsToEncrypt = computed(() => {
     }
 });
 const showTransferMenu = ref(false);
+// Send sheet state: 'idle' | 'sending' | 'sent'
+const sendState = ref('idle');
+// Inline validation errors shown under the send sheet's fields
+const transferErrors = ref({});
+
+/**
+ * Turn an alert string (which may contain markup) into plain inline text
+ * @param {string} html
+ */
+function toPlainText(html) {
+    return html
+        .replace(/<br\s*\/?>/gi, ' ')
+        .replace(/<[^>]+>/g, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+watch(showTransferMenu, (show) => {
+    if (show) transferErrors.value = {};
+});
+
+function closeTransferMenu() {
+    // Don't let the sheet vanish while a transaction is in flight
+    if (sendState.value === 'sending') return;
+    showTransferMenu.value = false;
+}
 const { advancedMode, displayDecimals, autoLockWallet, showLogin } =
     storeToRefs(useSettings());
 watch(
@@ -89,6 +130,15 @@ const transferAddress = ref('');
 const transferDescription = ref('');
 const transferMemo = ref('');
 const transferAmount = ref('');
+// Clear a field's inline error as soon as the user edits it
+watch(transferAddress, () => {
+    if (transferErrors.value.address)
+        transferErrors.value = { ...transferErrors.value, address: '' };
+});
+watch(transferAmount, () => {
+    if (transferErrors.value.amount)
+        transferErrors.value = { ...transferErrors.value, amount: '' };
+});
 const showRestoreWallet = ref(false);
 const restoreWalletReason = ref('');
 const importLock = ref(false);
@@ -359,18 +409,11 @@ async function send(address, amount, useShieldInputs, memo) {
 
     // Check if the Receiver Address is a valid P2PKH address
     // or shield address
-    if (!isValidPIVXAddress(address))
-        return createAlert(
-            'warning',
-            tr(ALERTS.INVALID_ADDRESS, [{ address }]),
-            2500
-        );
-    if (isColdAddress(address)) {
-        return createAlert(
-            'warning',
-            tr(ALERTS.INVALID_ADDRESS, [{ address }]),
-            2500
-        );
+    if (!isValidPIVXAddress(address) || isColdAddress(address)) {
+        transferErrors.value = {
+            address: toPlainText(tr(ALERTS.INVALID_ADDRESS, [{ address: '' }])),
+        };
+        return;
     }
     if (isExchangeAddress(address) && useShieldInputs) {
         return createAlert('warning', translation.cantShieldToExc, 2500);
@@ -383,22 +426,20 @@ async function send(address, amount, useShieldInputs, memo) {
         ? activeWallet.value.shieldBalance
         : activeWallet.value.balance;
     if (nValue > availableBalance) {
-        createAlert(
-            'warning',
-            tr(ALERTS.MISSING_FUNDS, [{ sats: nValue - availableBalance }])
-        );
+        transferErrors.value = {
+            amount: toPlainText(
+                tr(ALERTS.MISSING_FUNDS, [{ sats: nValue - availableBalance }])
+            ),
+        };
         return;
     }
-    // Close the send screen and clear inputs
-    showTransferMenu.value = false;
-    transferAddress.value = '';
-    transferDescription.value = '';
-    transferMemo.value = '';
-    transferAmount.value = '';
+    transferErrors.value = {};
 
-    // Create and send the TX
+    // Keep the send sheet open with a progress state while the TX is built
+    sendState.value = 'sending';
+    let sent = false;
     try {
-        await activeWallet.value.createAndSendTransaction(
+        sent = !!(await activeWallet.value.createAndSendTransaction(
             getNetwork(),
             address,
             nValue,
@@ -406,11 +447,27 @@ async function send(address, amount, useShieldInputs, memo) {
                 useShieldInputs,
                 memo,
             }
-        );
+        ));
     } catch (e) {
         console.error(e);
         createAlert('warning', e);
+    }
+
+    try {
+        if (sent) {
+            // Let the success state register before closing the sheet
+            sendState.value = 'sent';
+            await sleep(1100);
+            showTransferMenu.value = false;
+            transferAddress.value = '';
+            transferDescription.value = '';
+            transferMemo.value = '';
+            transferAmount.value = '';
+            // Reset once the sheet has slid away
+            await sleep(400);
+        }
     } finally {
+        sendState.value = 'idle';
         if (autoLockWallet.value) {
             if (activeVault.value.isEncrypted) {
                 lockWallet();
@@ -648,7 +705,7 @@ defineExpose({
 
                 <!-- Redeem Code (PIVX Giftcodes) -->
                 <div
-                    class="modal"
+                    class="modal fade"
                     id="redeemCodeModal"
                     tabindex="-1"
                     role="dialog"
@@ -994,7 +1051,7 @@ defineExpose({
 
                 <!-- Contacts Modal -->
                 <div
-                    class="modal"
+                    class="modal fade"
                     id="contactsModal"
                     tabindex="-1"
                     role="dialog"
@@ -1087,6 +1144,8 @@ defineExpose({
                             @send="showTransferMenu = true"
                             @exportPrivKeyOpen="showExportModal = true"
                             :publicMode="activeWallet.publicMode"
+                            :syncing="isSyncing"
+                            :justSynced="justSynced"
                             class="col-12 p-0 mb-2"
                         />
                         <WalletButtons class="col-12 p-0 md-5" />
@@ -1103,8 +1162,10 @@ defineExpose({
                 :desc="transferDescription"
                 v-model:memo="transferMemo"
                 v-model:address="transferAddress"
+                :sendState="sendState"
+                :errors="transferErrors"
                 @openQrScan="openSendQRScanner()"
-                @close="showTransferMenu = false"
+                @close="closeTransferMenu()"
                 @send="send"
                 @max-balance="getMaxBalance"
             />

@@ -6,9 +6,15 @@ const props = defineProps({
     level: String,
     notificationCount: Number,
     actionName: String,
+    // Total lifetime of the alert, in ms
+    timeout: Number,
+    // Time left before the alert expires, in ms
+    remaining: Number,
+    // Creation time of the newest folded alert; restarts the timer bar
+    created: Number,
 });
 
-const { message, level } = toRefs(props);
+const { message, level, timeout, remaining } = toRefs(props);
 
 const icon = computed(() => {
     switch (level.value) {
@@ -22,45 +28,49 @@ const icon = computed(() => {
             throw new Error('Invalid type');
     }
 });
+
+const progressStyle = computed(() => ({
+    '--from': Math.min(1, remaining.value / timeout.value),
+    animationDuration: `${remaining.value}ms`,
+}));
 </script>
 
 <template>
     <div
         class="notifyWrapper"
         :class="{ [level]: true }"
-        :style="{ opacity: 1 }"
+        :role="level === 'warning' ? 'alert' : 'status'"
         data-testid="alert"
     >
         <div class="notifyBadgeCount" v-if="notificationCount > 1">
             {{ notificationCount }}
         </div>
-        <div style="display: inline-flex; align-items: stretch">
+        <div class="notifyMain">
             <div class="notifyIcon" :class="{ ['notify-' + level]: true }">
-                <i class="fas fa-xl" :class="{ [icon]: true }"> </i>
+                <i class="fas" :class="{ [icon]: true }"> </i>
             </div>
             <div class="notifyText" v-html="message"></div>
-        </div>
-        <div
-            style="display: flex"
-            :style="
-                actionName ? 'flex-direction: row' : 'flex-direction: column'
-            "
-        >
             <button
-                :class="actionName ? 'notifyButtonFirst' : ''"
-                class="btn btn-notification-close"
+                class="notifyClose"
+                aria-label="Close"
                 data-testid="alertCloseButton"
                 @click="$emit('hideAlert')"
             >
-                CLOSE
-            </button>
-            <button
-                v-if="actionName"
-                class="btn btn-notification-action notifyButtonSecond"
-                @click="$emit('runAction')"
-            >
-                {{ actionName }}
+                <i class="fa-solid fa-xmark"></i>
             </button>
         </div>
+        <button
+            v-if="actionName"
+            class="notifyAction"
+            @click="$emit('runAction')"
+        >
+            {{ actionName }}
+        </button>
+        <div
+            v-if="timeout > 0 && remaining > 0"
+            class="notifyProgress"
+            :key="created"
+            :style="progressStyle"
+        ></div>
     </div>
 </template>

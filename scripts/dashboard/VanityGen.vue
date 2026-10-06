@@ -133,12 +133,15 @@ watch(addressPrefixShow, () => {
         <div
             class="dashboard-item dashboard-display"
             @click="addressPrefixShow = true"
+            @keydown.enter.prevent="addressPrefixShow = true"
+            tabindex="0"
+            role="button"
             data-testid="vanityWalletButton"
         >
             <div class="coinstat-icon" v-html="vanityWalletIcon"></div>
 
             <div class="col-md-12 dashboard-title">
-                <h3 class="pivx-bold-title" style="font-size: 25px">
+                <h3 class="pivx-bold-title-smaller">
                     <span data-i18n="dCardTwoTitle">Create a new</span>
                     <div data-i18n="dCardTwoSubTitle">Vanity Wallet</div>
                 </h3>

@@ -89,28 +89,12 @@ async function selectContact() {
                                 v-model="amount"
                             />
                             <div class="input-group-append">
-                                <span
-                                    class="input-group-text"
-                                    style="
-                                        background-color: #e9deff;
-                                        color: #af9cc6;
-                                        border: 2px solid #af9cc6;
-                                        border-left: 0px;
-                                    "
-                                >
+                                <span class="input-group-text input-addon">
                                     PIVX
                                 </span>
                                 <span
-                                    class="input-group-text p-0"
+                                    class="input-group-text input-addon-action"
                                     data-i18n="sendAmountCoinsMax"
-                                    style="
-                                        cursor: pointer;
-                                        background-color: #7f20ff;
-                                        border: 2px solid #af9cc6;
-                                        color: #e9deff;
-                                        font-weight: 700;
-                                        padding: 0px 10px 0px 10px !important;
-                                    "
                                     @click="maxBalance()"
                                 >
                                     {{ translation.sendAmountCoinsMax }}
@@ -135,13 +119,7 @@ async function selectContact() {
                             />
                             <div class="input-group-append">
                                 <span
-                                    class="input-group-text pl-0"
-                                    style="
-                                        background-color: #e9deff;
-                                        color: #af9cc6;
-                                        border: 2px solid #af9cc6;
-                                        border-left: 0px;
-                                    "
+                                    class="input-group-text input-addon pl-0"
                                     >{{ currency }}</span
                                 >
                             </div>
