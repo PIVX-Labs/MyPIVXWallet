@@ -146,7 +146,8 @@ export function createAlert(type, message, timeout, actionName, actionFunc) {
  *
  * A separate function because `createAlert` must keep returning nothing: plenty of call
  * sites `return createAlert(...)` from functions whose callers read any truthy result as
- * success - `promptForContact` would hand an Alert object to the address field.
+ * success - `promptForContact` would hand an Alert object to the address field, and a
+ * failed `guiAddContactPrompt` would read as "added" to `guiAddContactQRPrompt`.
  * @param {'success'|'info'|'warning'} type - The alert level
  * @param {string} message - The message to relay to the user
  * @param {number?} [timeout] - The time in `ms` until the alert expires

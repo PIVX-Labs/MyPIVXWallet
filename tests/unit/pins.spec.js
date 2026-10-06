@@ -1669,8 +1669,10 @@ describe('EVM RPC quorum', () => {
 /**
  * `createAlert` returns nothing, as it does on master. Plenty of callers
  * `return createAlert(...)` from functions whose own callers read any truthy result as
- * success: `promptForContact` on an empty book would hand an Alert object to the
- * address field. Only the name service needs the alert back, and asks for it by name.
+ * success: a failed `guiAddContactPrompt` would read as "added" to
+ * `guiAddContactQRPrompt`, and `promptForContact` on an empty book would hand an Alert
+ * object to the address field. Only the name service needs the alert back, and asks for
+ * it by name.
  */
 describe('alert return values', () => {
     it('createAlert returns nothing', () => {

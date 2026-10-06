@@ -256,7 +256,6 @@ transactionNeedsAmount = "" # The amount is invalid
 pinsTitleSecurityWarning = "⚠️ Advertencia de seguridad" # ⚠️ Security Warning
 pinsTextSecurityWarning = "El indexador de Name Service devolvió una raíz de estado que nunca ha sido registrada en la blockchain. El envío de fondos está bloqueado por razones de seguridad." # The Name Service indexer returned a state root that has never been registered on the blockchain. Sending funds is blocked for security reasons.
 pinsTitleSynced = "✓ Sincronizado y Resuelto" # ✓ Synced & Resolved
-pinsTextSynced = "El indexador está sincronizado, listo y el nombre se ha resuelto con éxito. Es seguro enviar sus fondos." # The indexer is synced, ready and the name has been successfully resolved. You are safe to send your funds.
 pinsTitleNotFound = "❌ Dominio no encontrado" # ❌ Domain Not Found
 pinsTextNotFound = "Este nombre de dominio no existe. Por favor, compruebe la ortografía." # This domain name does not exist. Please check the spelling.
 pinsTitleSyncDelay = "⚠️ Retraso de sincronización del indexador" # ⚠️ Indexer Sync Delay

@@ -256,7 +256,6 @@ transactionNeedsAmount = "" # The amount is invalid
 pinsTitleSecurityWarning = "⚠️ Babala sa Seguridad" # ⚠️ Security Warning
 pinsTextSecurityWarning = "Ang indexer ng Name Service ay nagbalik ng state root na hindi kailanman nairehistro sa blockchain. Naka-block ang pagpapadala ng mga pondo para sa mga dahilan ng seguridad." # The Name Service indexer returned a state root that has never been registered on the blockchain. Sending funds is blocked for security reasons.
 pinsTitleSynced = "✓ Naka-sync at Nareserba" # ✓ Synced & Resolved
-pinsTextSynced = "Ang indexer ay naka-sync, handa at ang pangalan ay matagumpay na nalutas. Ligtas mong maipadala ang iyong mga pondo." # The indexer is synced, ready and the name has been successfully resolved. You are safe to send your funds.
 pinsTitleNotFound = "❌ Hindi Nahanap ang Domain" # ❌ Domain Not Found
 pinsTextNotFound = "Ang pangalan ng domain na ito ay hindi umiiral. Mangyaring suriin ang baybay." # This domain name does not exist. Please check the spelling.
 pinsTitleSyncDelay = "⚠️ Pagkaantala ng Sync sa Indexer" # ⚠️ Indexer Sync Delay

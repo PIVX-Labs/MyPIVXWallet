@@ -256,7 +256,6 @@ transactionNeedsAmount = "" # The amount is invalid
 pinsTitleSecurityWarning = "⚠️ Secuwity Wawning" # ⚠️ Security Warning
 pinsTextSecurityWarning = "The Name Sewvice indexew wetuwned a state woot that has nevew been wegistewed on the bwockchain. Sending funds is bwocked fow secuwity weasons, baka!" # The Name Service indexer returned a state root that has never been registered on the blockchain. Sending funds is blocked for security reasons.
 pinsTitleSynced = "✓ Synced & Wesolved! OwO" # ✓ Synced & Resolved
-pinsTextSynced = "The indexew is synced, weady and da name has been successfuwwy wesolved. You are safe tew send ur monies! ♥" # The indexer is synced, ready and the name has been successfully resolved. You are safe to send your funds.
 pinsTitleNotFound = "❌ Domain Nawt Found" # ❌ Domain Not Found
 pinsTextNotFound = "Dis domain name does nawt exist, nyaa~ Pwease check ur spewwing!" # This domain name does not exist. Please check the spelling.
 pinsTitleSyncDelay = "⚠️ Indexew Sync Deway" # ⚠️ Indexer Sync Delay

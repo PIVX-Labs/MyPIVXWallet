@@ -256,7 +256,6 @@ transactionNeedsAmount = "" # The amount is invalid
 pinsTitleSecurityWarning = "⚠️ Veiligheidswaarschuwing" # ⚠️ Security Warning
 pinsTextSecurityWarning = "De Name Service indexeerder heeft een status root geretourneerd die nooit op de blockchain is geregistreerd. Het verzenden van fondsen is om veiligheidsredenen geblokkeerd." # The Name Service indexer returned a state root that has never been registered on the blockchain. Sending funds is blocked for security reasons.
 pinsTitleSynced = "✓ Gesynchroniseerd & Opgelost" # ✓ Synced & Resolved
-pinsTextSynced = "De indexeerder is gesynchroniseerd, klaar en de naam is succesvol opgelost. U kunt uw fondsen veilig verzenden." # The indexer is synced, ready and the name has been successfully resolved. You are safe to send your funds.
 pinsTitleNotFound = "❌ Domein niet gevonden" # ❌ Domain Not Found
 pinsTextNotFound = "Deze domeinnaam bestaat niet. Controleer de spelling." # This domain name does not exist. Please check the spelling.
 pinsTitleSyncDelay = "⚠️ Synchronisatievertraging Indexeerder" # ⚠️ Indexer Sync Delay

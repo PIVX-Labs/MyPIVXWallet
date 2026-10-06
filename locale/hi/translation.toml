@@ -256,7 +256,6 @@ transactionNeedsAmount = "" # The amount is invalid
 pinsTitleSecurityWarning = "⚠️ सुरक्षा चेतावनी" # ⚠️ Security Warning
 pinsTextSecurityWarning = "नेम सर्विस इंडेक्सर ने एक स्टेट रूट लौटाया है जो ब्लॉकचेन पर कभी पंजीकृत नहीं हुआ है। सुरक्षा कारणों से धन भेजना अवरुद्ध है।" # The Name Service indexer returned a state root that has never been registered on the blockchain. Sending funds is blocked for security reasons.
 pinsTitleSynced = "✓ सिंक किया गया और हल किया गया" # ✓ Synced & Resolved
-pinsTextSynced = "इंडेक्सर सिंक हो गया है, तैयार है और नाम सफलतापूर्वक हल हो गया है। आप अपना धन सुरक्षित रूप से भेज सकते हैं।" # The indexer is synced, ready and the name has been successfully resolved. You are safe to send your funds.
 pinsTitleNotFound = "❌ डोमेन नहीं मिला" # ❌ Domain Not Found
 pinsTextNotFound = "यह डोमेन नाम मौजूद नहीं है। कृपया वर्तनी की जाँच करें।" # This domain name does not exist. Please check the spelling.
 pinsTitleSyncDelay = "⚠️ इंडेक्सर सिंक देरी" # ⚠️ Indexer Sync Delay

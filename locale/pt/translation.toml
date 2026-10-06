@@ -113,7 +113,6 @@ activityReceivedWith = "Recebido com {s}" # Received with {s}
 pinsTitleSecurityWarning = "⚠️ Aviso de Segurança" # ⚠️ Security Warning
 pinsTextSecurityWarning = "O indexador de Name Service retornou uma raiz de estado que nunca foi registrada na blockchain. O envio de fundos está bloqueado por motivos de segurança." # The Name Service indexer returned a state root that has never been registered on the blockchain. Sending funds is blocked for security reasons.
 pinsTitleSynced = "✓ Sincronizado e Resolvido" # ✓ Synced & Resolved
-pinsTextSynced = "O indexador está sincronizado, pronto e o nome foi resolvido com sucesso. Você pode enviar seus fundos com segurança." # The indexer is synced, ready and the name has been successfully resolved. You are safe to send your funds.
 pinsTitleNotFound = "❌ Domínio não encontrado" # ❌ Domain Not Found
 pinsTextNotFound = "Este nome de domínio não existe. Por favor, verifique a ortografia." # This domain name does not exist. Please check the spelling.
 pinsTitleSyncDelay = "⚠️ Atraso de Sincronização do Indexador" # ⚠️ Indexer Sync Delay
