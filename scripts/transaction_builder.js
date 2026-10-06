@@ -286,6 +286,10 @@ export class TransactionBuilder {
 
     build() {
         const tx = this.#transaction;
+        if (tx?.blockTime === -1) {
+            tx.blockTime = Math.round(Date.now() / 1000);
+        }
+
         if (tx && !tx.vin.length) {
             // If the tx doesn't have any clear inputs,
             // it must be a shield transaction
