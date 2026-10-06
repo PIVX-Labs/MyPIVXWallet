@@ -210,7 +210,7 @@ function deleteProposal(proposal) {
 async function vote(proposal, voteCode) {
     let successfulVotes = 0;
     if (!masternodes.value.length) {
-        createAlert(ALERTS.MN_ACCESS_BEFORE_VOTE, 6000);
+        createAlert('warning', ALERTS.MN_ACCESS_BEFORE_VOTE, 6000);
         return;
     }
     for (const mn of masternodes.value) {

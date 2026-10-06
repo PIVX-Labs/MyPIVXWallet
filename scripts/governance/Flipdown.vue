@@ -1,5 +1,5 @@
 <script setup>
-import { watch, toRefs, ref, nextTick } from 'vue';
+import { watch, toRefs, ref, nextTick, onUnmounted } from 'vue';
 import { FlipDown } from '../flipdown.js';
 import { v4 as uuid } from 'uuid';
 const props = defineProps({
@@ -12,8 +12,10 @@ const flipDownElement = ref(null);
 watch(
     timeStamp,
     () => {
-        if (flipDownElement.value) flipDownElement.value.innerHTML = '';
         nextTick(() => {
+            // Stop the previous clock before rebuilding, or its interval leaks
+            flipDown.value?.stop();
+            if (flipDownElement.value) flipDownElement.value.innerHTML = '';
             flipDown.value = new FlipDown(
                 parseInt(timeStamp.value),
                 uniqueId.value
@@ -22,6 +24,7 @@ watch(
     },
     { immediate: true }
 );
+onUnmounted(() => flipDown.value?.stop());
 </script>
 
 <template>

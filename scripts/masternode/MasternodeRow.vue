@@ -24,10 +24,14 @@ const info = ref({});
 
 async function updateMnData(mn) {
     const { status, lastseen } = await mn.getFullData();
+    const lastSeenDate = new Date(lastseen);
     info.value = {
         status: status,
         addr: mn.addr,
-        lastSeen: new Date(lastseen).toLocaleTimeString() || 'Unknown',
+        lastSeen:
+            lastseen && !isNaN(lastSeenDate.getTime())
+                ? lastSeenDate.toLocaleTimeString()
+                : 'Unknown',
     };
 }
 onMounted(() => {
@@ -76,7 +80,7 @@ function translateStatus(status) {
         <td>
             <span
                 class="masternodeBadges"
-                :class="{ [getClassByStatus(info.status)]: true }"
+                :class="{ [getClassByStatus(info.status)]: !!info.status }"
                 >{{ translateStatus(info.status) }}</span
             >
         </td>

@@ -49,12 +49,12 @@ function localProposalToRPC(localProposal) {
     };
 }
 /**
- * @type{import('vue').Ref<number?>} Index of the row opened on mobile mode. Null if nothing is open
+ * @type{import('vue').Ref<string?>} Key (`local-<txid>` or `net-<hash>`) of the row opened on mobile mode. Null if nothing is open
  */
 const opened = ref(null);
 
-function openOrCloseRow(i) {
-    opened.value = opened.value === i ? null : i;
+function openOrCloseRow(key) {
+    opened.value = opened.value === key ? null : key;
 }
 </script>
 <template>
@@ -86,7 +86,7 @@ function openOrCloseRow(i) {
             id="proposalsTableBody"
             style="text-align: center; vertical-align: middle"
         >
-            <template v-for="(proposal, i) of localProposals">
+            <template v-for="proposal of localProposals">
                 <ProposalRow
                     :proposal="localProposalToRPC(proposal)"
                     :masternodeCount="masternodeCount"
@@ -95,12 +95,12 @@ function openOrCloseRow(i) {
                     :localProposal="true"
                     :proposalValidator="getProposalValidator()"
                     :blockCount="wallet.blockCount"
-                    @click="openOrCloseRow(i)"
+                    @click="openOrCloseRow(`local-${proposal.txid}`)"
                     @deleteProposal="emit('deleteProposal', proposal)"
                     @finalizeProposal="emit('finalizeProposal', proposal)"
                 />
                 <MobileProposalRow
-                    v-if="opened == i"
+                    v-if="opened === `local-${proposal.txid}`"
                     :proposal="localProposalToRPC(proposal)"
                     :price="price"
                     :localProposal="true"
@@ -109,18 +109,18 @@ function openOrCloseRow(i) {
                     @finalizeProposal="emit('finalizeProposal', proposal)"
                 />
             </template>
-            <template v-for="(proposal, i) of proposals">
+            <template v-for="proposal of proposals">
                 <ProposalRow
                     :proposal="proposal"
                     :masternodeCount="masternodeCount"
                     :strCurrency="strCurrency"
                     :price="price"
                     :proposalValidator="getProposalValidator()"
-                    @click="openOrCloseRow(i)"
+                    @click="openOrCloseRow(`net-${proposal.Hash}`)"
                     @vote="(code) => emit('vote', proposal, code)"
                 />
                 <MobileProposalRow
-                    v-if="opened == i"
+                    v-if="opened === `net-${proposal.Hash}`"
                     :proposal="proposal"
                     :price="price"
                     :strCurrency="strCurrency"

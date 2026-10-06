@@ -91,6 +91,15 @@ export class FlipDown {
     }
 
     /**
+     * @name stop
+     * @description Stop the countdown and clear its interval
+     **/
+    stop() {
+        clearInterval(this.countdown);
+        this.countdown = null;
+    }
+
+    /**
      * @name ifEnded
      * @description Call a function once the countdown ends
      * @author PButcher
