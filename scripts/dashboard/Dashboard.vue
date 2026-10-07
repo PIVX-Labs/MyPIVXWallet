@@ -1,4 +1,5 @@
 <script setup>
+import { SENSITIVE_INPUT_ATTRS } from '../dom_security.js';
 import Login from './Login.vue';
 import WalletBalance from './WalletBalance.vue';
 import WalletButtons from './WalletButtons.vue';
@@ -732,7 +733,7 @@ defineExpose({
                                                     translation.redeemInput
                                                 "
                                                 style="text-align: left"
-                                                autocomplete="nope"
+                                                v-bind="SENSITIVE_INPUT_ATTRS"
                                             />
                                         </div>
                                         <center>
@@ -860,7 +861,7 @@ defineExpose({
                                             :placeholder="
                                                 translation.createName
                                             "
-                                            autocomplete="nope"
+                                            v-bind="SENSITIVE_INPUT_ATTRS"
                                         />
                                         <input
                                             class="btn-input mono center-text"
@@ -873,7 +874,7 @@ defineExpose({
                                             :placeholder="
                                                 translation.createAmount
                                             "
-                                            autocomplete="nope"
+                                            v-bind="SENSITIVE_INPUT_ATTRS"
                                         />
                                         <div
                                             class="table-promo d-none"

@@ -1,4 +1,5 @@
 import { Buffer } from 'buffer';
+import { SENSITIVE_INPUT_ATTRS_HTML } from './dom_security.js';
 import { Database } from './database.js';
 import { doms, toClipboard } from './global.js';
 import { ALERTS, tr, translation } from './i18n.js';
@@ -107,8 +108,8 @@ export async function renderContacts(account, fPrompt = false) {
         strHTML += `
             <div class="shadowInnerCard" style="font-family: 'Montserrat'; text-align: start; margin: 0px 15px; border-radius: 10px; border: 1px solid #42117e; background-color: #25183d; padding: 13px 13px; margin-bottom: 28px;">
                 <label style="color:#af9cc6; font-size: 15px; font-weight: 500; margin-bottom: 17px;">Add new contact</label>
-                <input id="contactsNameInput" style="margin-bottom:17px;" placeholder="${translation.name}" autocomplete="nope">
-                <input id="contactsAddressInput" style="margin-bottom:17px;" placeholder="${translation.addressOrXPub}" autocomplete="nope">
+                <input id="contactsNameInput" style="margin-bottom:17px;" placeholder="${translation.name}" ${SENSITIVE_INPUT_ATTRS_HTML}>
+                <input id="contactsAddressInput" style="margin-bottom:17px;" placeholder="${translation.addressOrXPub}" ${SENSITIVE_INPUT_ATTRS_HTML}>
 
                 <div class="row">
                     <div class="col-6">
@@ -397,7 +398,7 @@ async function renderContactModal() {
             doms.domModalQR.innerHTML = `
                 <b style="margin-bottom: 9px; display: block; font-size: 16px; color:#af9cc6; font-weight: 500;">${translation.setupYourContact}</b>
                 <p style="font-size: 14px; color:#827592; font-weight: 500;">${translation.receiveWithContact}</p>
-                <input id="setContactName" class="placeholderCenter" placeholder="${translation.username}" style="text-align: center;"></input>
+                <input id="setContactName" class="placeholderCenter" placeholder="${translation.username}" style="text-align: center;" ${SENSITIVE_INPUT_ATTRS_HTML}></input>
                 <button class="pivx-button-small-cancel" style="height: 42px; width: 167px;" onclick="MPW.guiSetAccountName('setContactName')"><span class="buttoni-text">${translation.createContact}</span></button>`;
         } else {
             doms.domModalQR.innerHTML = `
@@ -788,7 +789,7 @@ export async function guiEditContactNamePrompt(nIndex) {
 
     // Render an 'Add to Contacts' UI
     const strHTML = `
-        <input type="text" id="contactsNewNameInput" style="text-align: center;" placeholder="${translation.newName}">
+        <input type="text" id="contactsNewNameInput" style="text-align: center;" placeholder="${translation.newName}" ${SENSITIVE_INPUT_ATTRS_HTML}>
     `;
 
     // Hook the Contact Prompt to the Popup UI, which resolves when the user has interacted with the Contact Prompt

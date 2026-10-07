@@ -8,7 +8,6 @@ import { isBase64 } from '../misc';
 
 const showInput = ref(false);
 const showPassword = ref(false);
-const cloakSecret = ref(true);
 const passwordPlaceholder = ref(translation.password);
 
 const props = defineProps({
@@ -45,8 +44,6 @@ watch([secret, advancedMode], ([secret, advancedMode]) => {
         showPassword.value = false;
     }
 
-    // If it's a mnemonic phrase, don't hide the pasword
-    cloakSecret.value = !fContainsSpaces;
     passwordPlaceholder.value = fContainsSpaces
         ? translation.optionalPassphrase
         : translation.password;
@@ -95,7 +92,6 @@ watch(showInput, (showInput) => {
         :show="showInput"
         :show-password-field="showPassword"
         :password-placeholder="passwordPlaceholder"
-        :cloakSecret="cloakSecret"
         @close="showInput = false"
         @submit="importWallet()"
         v-model:value="secret"

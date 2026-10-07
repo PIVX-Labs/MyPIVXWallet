@@ -1,4 +1,5 @@
 <script setup>
+import { SENSITIVE_INPUT_ATTRS } from '../../dom_security.js';
 import Modal from '../../Modal.vue';
 import { translation } from '../../i18n';
 import { cChainParams } from '../../chain_params';
@@ -48,6 +49,7 @@ const emit = defineEmits(['close', 'submit']);
                         v-model="addressPrefix"
                         data-testid="prefixInput"
                         :disabled="props.isGenerating"
+                        v-bind="SENSITIVE_INPUT_ATTRS"
                     />
 
                     <span
@@ -69,6 +71,7 @@ const emit = defineEmits(['close', 'submit']);
                         :disabled="props.isGenerating"
                         data-testid="label"
                         v-model="label"
+                        v-bind="SENSITIVE_INPUT_ATTRS"
                     />
                 </div>
             </div>

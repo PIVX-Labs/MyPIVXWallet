@@ -1,4 +1,5 @@
 <script setup>
+import { SENSITIVE_INPUT_ATTRS } from '../../dom_security.js';
 import Modal from '../../Modal.vue';
 import { translation } from '../../i18n.js';
 
@@ -75,6 +76,7 @@ function submit() {
                         style="margin-bottom: 0px"
                         data-testid="labelInput"
                         v-model="label"
+                        v-bind="SENSITIVE_INPUT_ATTRS"
                     />
                 </div>
                 <br v-if="advancedMode" />
@@ -96,6 +98,7 @@ function submit() {
                         data-testid="passPhrase"
                         style="margin-bottom: 0px"
                         v-model="passphrase"
+                        v-bind="SENSITIVE_INPUT_ATTRS"
                     />
                 </div>
             </div>

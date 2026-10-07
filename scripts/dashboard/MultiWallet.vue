@@ -1,4 +1,5 @@
 <script setup>
+import { SENSITIVE_INPUT_ATTRS } from '../dom_security.js';
 import iWalletPlus from '../../assets/icons/icon-wallet-plus.svg';
 import { useWallets } from '../composables/use_wallet.js';
 import { computed, ref, watch, nextTick } from 'vue';
@@ -236,6 +237,7 @@ async function restoreWallet() {
                                     @keydown.enter.prevent="saveLabel(wallet)"
                                     @keydown.esc.prevent="cancelEditLabel()"
                                     @blur="saveLabel(wallet)"
+                                    v-bind="SENSITIVE_INPUT_ATTRS"
                                 />
                             </template>
                             <template v-else>

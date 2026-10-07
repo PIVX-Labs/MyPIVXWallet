@@ -1,4 +1,5 @@
 <script setup>
+import { SENSITIVE_INPUT_ATTRS } from '../dom_security.js';
 import { toRefs, computed, ref } from 'vue';
 import { tr, translation } from '../i18n.js';
 import { COIN, cChainParams } from '../chain_params';
@@ -129,12 +130,14 @@ function importMasternode() {
                                     v-model="privateKey"
                                     placeholder="Masternode Private Key"
                                     data-testid="importPrivateKey"
+                                    v-bind="SENSITIVE_INPUT_ATTRS"
                                 />
                                 <input
                                     type="text"
                                     v-model="ip"
                                     placeholder="Masternode ip address"
                                     data-testid="importIpAddress"
+                                    v-bind="SENSITIVE_INPUT_ATTRS"
                                 />
                                 <select
                                     style="display: block"
@@ -220,12 +223,14 @@ function importMasternode() {
                                 v-model="privateKey"
                                 placeholder="Masternode Private Key"
                                 data-testid="importPrivateKey"
+                                v-bind="SENSITIVE_INPUT_ATTRS"
                             />
                             <input
                                 type="text"
                                 v-model="ip"
                                 placeholder="Masternode ip address"
                                 data-testid="importIpAddress"
+                                v-bind="SENSITIVE_INPUT_ATTRS"
                             />
                             <select
                                 style="display: block"

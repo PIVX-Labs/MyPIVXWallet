@@ -1,6 +1,7 @@
 <script setup>
 import { ref, inject, watch, toRaw } from 'vue';
 import { tr, translation } from '../i18n.js';
+import { SENSITIVE_INPUT_ATTRS } from '../dom_security.js';
 
 const props = defineProps({
     name: String,
@@ -92,6 +93,7 @@ watch(
         :min="props.min"
         :disabled="props.disabled"
         :data-testid="props['dataTestid']"
+        v-bind="SENSITIVE_INPUT_ATTRS"
     />
     <div class="validation-summary">
         <span v-if="!isErrorSafeHtml">
