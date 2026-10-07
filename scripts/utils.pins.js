@@ -344,9 +344,6 @@ export function isStrictShieldAddress(strAddress) {
  * u64 range is refused before it reaches the hash.
  */
 function isU64(value) {
-    if (typeof value === 'bigint') {
-        return value >= 0n && value <= 0xffffffffffffffffn;
-    }
     if (typeof value === 'number') {
         return Number.isSafeInteger(value) && value >= 0;
     }
@@ -362,8 +359,8 @@ function isU64(value) {
  * @param {string} strDomain - lowercased domain
  * @param {string} strPubkeyHex - 32-byte owner pubkey, hex
  * @param {string} strTargetAddress - the shield address the name points at
- * @param {bigint|number|string} price
- * @param {bigint|number|string} nonce
+ * @param {number|string} price
+ * @param {number|string} nonce
  */
 function hashLeaf(strDomain, strPubkeyHex, strTargetAddress, price, nonce) {
     return sha256(
@@ -562,27 +559,29 @@ export const EMPTY_ROOT = bytesToHex(EMPTY_NODE);
  * other endpoints until one disagreed would turn "this root is invalid" into "keep
  * asking until somebody says yes".
  *
- * With `nMinAgree` above 1 the rotation becomes a quorum: identical answers are tallied
- * and the first answer to reach the threshold is returned, so a single endpoint - the
- * one a MITM happens to hold - can no longer decide on its own what the chain says.
+ * The rotation is a quorum: identical answers are tallied and the first answer to reach
+ * `nMinAgree` is returned, so a single endpoint - the one a MITM happens to hold -
+ * cannot decide on its own what the chain says. `nMinAgree` defaults to the quorum, so
+ * a caller that wants anything weaker has to ask for it by name.
  * Endpoints that disagree are not a reason to keep asking until the desired answer
  * turns up: if nothing reaches the threshold the call throws, and every caller treats
  * a throw as "do not send".
  *
- * @param {string|string[]} rpcUrls - endpoints to try, in order
+ * @param {string[]} rpcUrls - endpoints to try, in order
  * @param {string} contractAddress
  * @param {string} strData - abi-encoded calldata, 0x-prefixed
- * @param {number} nMinAgree - endpoints that must return the same word; the call throws
- *                             rather than proceeding if fewer are configured
+ * @param {number} [nMinAgree] - endpoints that must return the same word; the call
+ *                               throws rather than proceeding if fewer are configured
  * @returns {Promise<string>} the raw result word(s), 0x-prefixed
  */
 export async function evmCall(
     rpcUrls,
     contractAddress,
     strData,
-    nMinAgree = 1
+    nMinAgree = MIN_RPC_AGREEMENT
 ) {
-    const arrRpcs = (Array.isArray(rpcUrls) ? rpcUrls : [rpcUrls]).filter(
+    // A duplicate is one endpoint asked twice, so it must not count towards the quorum
+    const arrRpcs = rpcUrls.filter(
         (url, i, arr) => url && arr.indexOf(url) === i
     );
     if (!arrRpcs.length) {
@@ -683,23 +682,13 @@ export async function evmCall(
  * quorum: one endpoint's word for what the current root is would otherwise be enough
  * to point the whole verification at a tree of somebody else's choosing.
  *
- * @param {string|string[]} rpcUrls
+ * @param {string[]} rpcUrls
  * @param {string} contractAddress
- * @param {number} nMinAgree
  * @returns {Promise<string>} the root, lowercase hex, no 0x prefix
  */
-export async function fetchEVMRoot(
-    rpcUrls,
-    contractAddress,
-    nMinAgree = MIN_RPC_AGREEMENT
-) {
+export async function fetchEVMRoot(rpcUrls, contractAddress) {
     // 0xfdab463d is the selector for currentRoot()
-    const hexResult = await evmCall(
-        rpcUrls,
-        contractAddress,
-        '0xfdab463d',
-        nMinAgree
-    );
+    const hexResult = await evmCall(rpcUrls, contractAddress, '0xfdab463d');
     return hexResult.replace(/^0x/, '').toLowerCase();
 }
 
@@ -742,22 +731,21 @@ export async function fetchIndexerRoot(apiEndpoint) {
  * rollback - both of which make any proof folding to it worthless. There is no benign
  * reading of it.
  *
- * Uses isRootValid(bytes32) rather than the public rootHistory(bytes32) getter: that
- * getter now returns a (uint32 blockHeight, bool isValid) struct, so a caller reading
- * the whole return as one number would answer "valid" for any root with a recorded
- * block height, whatever the flag says.
+ * Uses isRootValid(bytes32), the contract's own answer to exactly this question, rather
+ * than reading root records: the deployed contract's rootHistory(bytes32) getter returns
+ * a (uint32 blockHeight, bool isValid) struct that a one-word read would misreport as
+ * "valid" for any root with a height, and the redeployed contract keeps those records
+ * private.
  *
- * @param {string|string[]} rpcUrls
+ * @param {string[]} rpcUrls
  * @param {string} contractAddress
  * @param {string} smtRoot
- * @param {number} nMinAgree
  * @returns {Promise<boolean>}
  */
 export async function verifyRootValidityOnContract(
     rpcUrls,
     contractAddress,
-    smtRoot,
-    nMinAgree = MIN_RPC_AGREEMENT
+    smtRoot
 ) {
     if (!smtRoot) return false;
     // 30ef41b4 is the selector for isRootValid(bytes32)
@@ -765,8 +753,7 @@ export async function verifyRootValidityOnContract(
     const hexResult = await evmCall(
         rpcUrls,
         contractAddress,
-        `0x30ef41b4${cleanRoot.padStart(64, '0')}`,
-        nMinAgree
+        `0x30ef41b4${cleanRoot.padStart(64, '0')}`
     );
 
     // isRootValid returns a single ABI word: 0 for false, 1 for true. A zero here is

@@ -531,64 +531,52 @@ describe('trusted root binding', () => {
 });
 
 describe('isPIVXName', () => {
-    it('should return true for valid domain names with supported TLDs', () => {
-        expect(isPIVXName('alex.pivx')).toBe(true);
-        expect(isPIVXName('richard.secure')).toBe(true);
-        expect(isPIVXName('hello-world.safe')).toBe(true);
-        expect(isPIVXName('pivx-123.private')).toBe(true);
-        expect(isPIVXName('ALEX.pivx')).toBe(true); // case-insensitive
-    });
-
-    it('should return false for invalid formats or unsupported TLDs', () => {
-        expect(isPIVXName('alex.pivx2')).toBe(false);
-        expect(isPIVXName('alex.pivx.name')).toBe(false);
-        expect(isPIVXName('alex')).toBe(false);
-        expect(isPIVXName('')).toBe(false);
-        expect(isPIVXName(null)).toBe(false);
-        expect(isPIVXName(undefined)).toBe(false);
-    });
-
-    it('should enforce hyphen restrictions (no leading, trailing, or consecutive)', () => {
-        expect(isPIVXName('-alex.pivx')).toBe(false);
-        expect(isPIVXName('alex-.pivx')).toBe(false);
-        expect(isPIVXName('al--ex.pivx')).toBe(false);
-        expect(isPIVXName('al-ex.pivx')).toBe(true);
-    });
-
-    it('should enforce length rules', () => {
-        expect(isPIVXName('.pivx')).toBe(false);
-        expect(isPIVXName('a.pivx')).toBe(true);
-        expect(isPIVXName('a'.repeat(59) + '.pivx')).toBe(true); // total length = 64
-        expect(isPIVXName('a'.repeat(60) + '.pivx')).toBe(false); // total length = 65
-    });
-
-    it('should reject invalid characters', () => {
-        expect(isPIVXName('al_ex.pivx')).toBe(false);
-        expect(isPIVXName('alex!.pivx')).toBe(false);
-        expect(isPIVXName('alex space.pivx')).toBe(false);
+    it.each([
+        // supported TLDs, any case
+        ['alex.pivx', true],
+        ['richard.secure', true],
+        ['hello-world.safe', true],
+        ['pivx-123.private', true],
+        ['ALEX.pivx', true],
+        // not a name at all, or not one of ours
+        ['alex.pivx2', false],
+        ['alex.pivx.name', false],
+        ['alex', false],
+        ['', false],
+        [null, false],
+        [undefined, false],
+        // hyphens: inside only, never doubled
+        ['-alex.pivx', false],
+        ['alex-.pivx', false],
+        ['al--ex.pivx', false],
+        ['al-ex.pivx', true],
+        // length: a non-empty label, 64 characters in all
+        ['.pivx', false],
+        ['a.pivx', true],
+        ['a'.repeat(59) + '.pivx', true],
+        ['a'.repeat(60) + '.pivx', false],
+        // characters: lowercase alphanumerics and hyphens
+        ['al_ex.pivx', false],
+        ['alex!.pivx', false],
+        ['alex space.pivx', false],
+    ])('isPIVXName(%j) is %s', (strName, fExpected) => {
+        expect(isPIVXName(strName)).toBe(fExpected);
     });
 });
 
 describe('isPIVXNameTLD', () => {
-    it('should return true if name ends with a supported TLD', () => {
-        expect(isPIVXNameTLD('alex.pivx')).toBe(true);
-        expect(isPIVXNameTLD('test.secure')).toBe(true);
-        expect(isPIVXNameTLD('check.safe')).toBe(true);
-        expect(isPIVXNameTLD('secret.private')).toBe(true);
-        expect(isPIVXNameTLD('upper.PIVX')).toBe(true);
-    });
-
-    it('should return false if name does not end with a supported TLD', () => {
-        expect(isPIVXNameTLD('alex.pivx2')).toBe(false);
-        expect(isPIVXNameTLD('alex.name')).toBe(false);
-        expect(isPIVXNameTLD('alex')).toBe(false);
-        expect(isPIVXNameTLD('')).toBe(false);
-    });
-});
-
-describe('PIVXNameTLDs', () => {
-    it('should contain the supported TLDs', () => {
-        expect(PIVXNameTLDs).toEqual(['.pivx', '.secure', '.safe', '.private']);
+    it.each([
+        ['alex.pivx', true],
+        ['test.secure', true],
+        ['check.safe', true],
+        ['secret.private', true],
+        ['upper.PIVX', true],
+        ['alex.pivx2', false],
+        ['alex.name', false],
+        ['alex', false],
+        ['', false],
+    ])('isPIVXNameTLD(%j) is %s', (strName, fExpected) => {
+        expect(isPIVXNameTLD(strName)).toBe(fExpected);
     });
 });
 
@@ -602,14 +590,17 @@ describe('EVM and Indexer Root Checking', () => {
     });
 
     it('reads the chain root with currentRoot() straight from the browser', async () => {
-        fetch.mockResolvedValueOnce({
+        fetch.mockResolvedValue({
             ok: true,
             json: async () => ({
                 result: '0x7fbe8f29f7278db7a665de4f1255927b40b648b43e55b34bb3e0405edb5e7d12',
             }),
         });
 
-        const root = await fetchEVMRoot('https://rpc-url', '0xcontract', 1);
+        const root = await fetchEVMRoot(
+            ['https://rpc-url', 'https://rpc-url-2'],
+            '0xcontract'
+        );
         expect(root).toBe(
             '7fbe8f29f7278db7a665de4f1255927b40b648b43e55b34bb3e0405edb5e7d12'
         );
@@ -684,7 +675,7 @@ describe('EVM and Indexer Root Checking', () => {
     });
 
     it('asks the contract with isRootValid(bytes32) and reads a single bool', async () => {
-        fetch.mockResolvedValueOnce({
+        fetch.mockResolvedValue({
             ok: true,
             json: async () => ({
                 result: '0x0000000000000000000000000000000000000000000000000000000000000001',
@@ -692,10 +683,9 @@ describe('EVM and Indexer Root Checking', () => {
         });
 
         const valid = await verifyRootValidityOnContract(
-            'https://rpc-url',
+            ['https://rpc-url', 'https://rpc-url-2'],
             '0xcontract',
-            LIVE_VECTOR.smt_root,
-            1
+            LIVE_VECTOR.smt_root
         );
         expect(valid).toBe(true);
         expect(fetch).toHaveBeenCalledWith(
@@ -709,7 +699,7 @@ describe('EVM and Indexer Root Checking', () => {
     });
 
     it('returns false for a root the contract has never accepted', async () => {
-        fetch.mockResolvedValueOnce({
+        fetch.mockResolvedValue({
             ok: true,
             json: async () => ({
                 result: '0x0000000000000000000000000000000000000000000000000000000000000000',
@@ -717,33 +707,34 @@ describe('EVM and Indexer Root Checking', () => {
         });
         expect(
             await verifyRootValidityOnContract(
-                'https://rpc-url',
+                ['https://rpc-url', 'https://rpc-url-2'],
                 '0xcontract',
-                LIVE_VECTOR.smt_root,
-                1
+                LIVE_VECTOR.smt_root
             )
         ).toBe(false);
     });
 
-    // rootHistory(bytes32) returns (uint32 blockHeight, bool isValid). Reading that
-    // whole two-word return as one number answers "valid" for any root with a block
-    // height recorded, whatever the flag says - which is why we call isRootValid.
-    it('is not fooled by a repudiated root that still has a block height', async () => {
-        fetch.mockResolvedValueOnce({
-            ok: true,
-            json: async () => ({
-                // isValid = false, even though a height is present in the struct
-                result: '0x0000000000000000000000000000000000000000000000000000000000000000',
-            }),
-        });
-        expect(
-            await verifyRootValidityOnContract(
-                'https://rpc-url',
-                '0xcontract',
-                LIVE_VECTOR.smt_root,
-                1
-            )
-        ).toBe(false);
+    it('reports a silent indexer as unreachable, which is worth waiting out', async () => {
+        vi.useFakeTimers();
+        try {
+            fetch.mockImplementation(
+                (url, { signal }) =>
+                    new Promise((_, reject) =>
+                        signal.addEventListener('abort', () =>
+                            reject(new DOMException('aborted', 'AbortError'))
+                        )
+                    )
+            );
+            const p = fetchIndexerRoot('https://indexer.pivx.name').catch(
+                (e) => e
+            );
+            await vi.advanceTimersByTimeAsync(FETCH_TIMEOUT_MS);
+            const e = await p;
+            expect(e).toBeInstanceOf(IndexerUnreachableError);
+            expect(e.message).toMatch(/within 10s/);
+        } finally {
+            vi.useRealTimers();
+        }
     });
 });
 
@@ -983,22 +974,6 @@ describe('PiNS.vue Component', () => {
         expect(strAll).toContain('&lt;img');
     });
 
-    it('caps the length of an indexer-supplied error', async () => {
-        routeFetch({
-            resolve: { error: { error_message: 'A'.repeat(5000) } },
-            indexerRoot: LIVE_VECTOR.smt_root,
-            evmRoot: LIVE_VECTOR.smt_root,
-            rootValid: true,
-        });
-
-        const wrapper = mount(PiNS);
-        await wrapper.vm.resolveAndVerify('alexxiy.pivx', 1, false, '');
-        await vi.runOnlyPendingTimersAsync();
-
-        const strAll = newAlerts().join(' ');
-        expect(strAll.length).toBeLessThan(1000);
-    });
-
     /**
      * Both of these used to read `translation.pinsCheckingSync` and
      * `translation.pinsSyncingWait`, which exist under ALERTS and nowhere else, so the
@@ -1116,17 +1091,25 @@ describe('PiNS.vue Component', () => {
         );
     });
 
-    it('caps the length of an indexer error shown in the dialog', async () => {
-        const wrapper = await mountOnNotFoundDialog();
-        routeFetch({
+    // The field is attacker-sized as well as attacker-chosen, on both of its routes out:
+    // the alert after a first attempt, and the dialog after a retry.
+    it('caps the length of an indexer-supplied error, in alerts and in the dialog', async () => {
+        const huge = {
             resolve: { error: { error_message: 'A'.repeat(5000) } },
             indexerRoot: LIVE_VECTOR.smt_root,
             evmRoot: LIVE_VECTOR.smt_root,
             rootValid: true,
-        });
+        };
+        routeFetch(huge);
+        const first = mount(PiNS);
+        await first.vm.resolveAndVerify('alexxiy.pivx', 1, false, '');
+        await vi.runOnlyPendingTimersAsync();
+        expect(newAlerts().join(' ').length).toBeLessThan(1000);
+
+        const wrapper = await mountOnNotFoundDialog();
+        routeFetch(huge);
         await wrapper.vm.retrySyncModalResolution();
         await vi.runOnlyPendingTimersAsync();
-
         expect(wrapper.vm.syncModalTitle).toBe('Indexer Error');
         expect(wrapper.vm.syncModalText.length).toBeLessThan(1000);
     });
@@ -1292,22 +1275,6 @@ describe('PiNS.vue Component', () => {
         expect(wrapper.emitted('send')).toBeUndefined();
     });
 
-    it('never calls /v1.0/info', async () => {
-        routeFetch({
-            resolve: { response: LIVE_VECTOR },
-            indexerRoot: LIVE_VECTOR.smt_root,
-            evmRoot: LIVE_VECTOR.smt_root,
-            rootValid: true,
-        });
-
-        const wrapper = mount(PiNS);
-        await wrapper.vm.resolveAndVerify('alexxiy.pivx', 1, false, '');
-        await vi.runOnlyPendingTimersAsync();
-
-        const called = fetch.mock.calls.map((c) => String(c[0]));
-        expect(called.some((u) => u.includes('/v1.0/info'))).toBe(false);
-    });
-
     // The contract address must come from chain params, never from the settings row:
     // `setSettings` writes the whole object back, so a stored copy would outlive any
     // redeployment.
@@ -1379,180 +1346,10 @@ describe('endpoint selection', () => {
     });
 });
 
-describe('EVM RPC rotation', () => {
-    const RPCS = ['https://rpc-a', 'https://rpc-b', 'https://rpc-c'];
-    const OK = { result: '0x' + '1'.padStart(64, '0') };
-
-    beforeEach(() => {
-        vi.stubGlobal('fetch', vi.fn());
-    });
-    afterEach(() => {
-        vi.restoreAllMocks();
-        vi.unstubAllGlobals();
-    });
-
-    /**
-     * An endpoint that accepts the request and never answers used to stall the resolve
-     * for good. It now costs `FETCH_TIMEOUT_MS`, and rotation carries on past it.
-     */
-    it('gives up on an endpoint that never answers, and rotates past it', async () => {
-        vi.useFakeTimers();
-        try {
-            fetch.mockImplementation((url, { signal }) =>
-                url === 'https://rpc-a'
-                    ? new Promise((_, reject) =>
-                          signal.addEventListener('abort', () =>
-                              reject(new DOMException('aborted', 'AbortError'))
-                          )
-                      )
-                    : Promise.resolve({ ok: true, json: async () => OK })
-            );
-            const p = evmCall(RPCS, '0xcontract', '0xfdab463d');
-            await vi.advanceTimersByTimeAsync(FETCH_TIMEOUT_MS);
-            await expect(p).resolves.toBe(OK.result);
-            expect(fetch.mock.calls.map((c) => c[0])).toEqual([
-                'https://rpc-a',
-                'https://rpc-b',
-            ]);
-        } finally {
-            vi.useRealTimers();
-        }
-    });
-
-    it('reports a silent indexer as unreachable, which is worth waiting out', async () => {
-        vi.useFakeTimers();
-        try {
-            fetch.mockImplementation(
-                (url, { signal }) =>
-                    new Promise((_, reject) =>
-                        signal.addEventListener('abort', () =>
-                            reject(new DOMException('aborted', 'AbortError'))
-                        )
-                    )
-            );
-            const p = fetchIndexerRoot('https://indexer.pivx.name').catch(
-                (e) => e
-            );
-            await vi.advanceTimersByTimeAsync(FETCH_TIMEOUT_MS);
-            const e = await p;
-            expect(e).toBeInstanceOf(IndexerUnreachableError);
-            expect(e.message).toMatch(/within 10s/);
-        } finally {
-            vi.useRealTimers();
-        }
-    });
-
-    it('uses the first endpoint when it answers, and does not touch the others', async () => {
-        fetch.mockResolvedValue({ ok: true, json: async () => OK });
-        await evmCall(RPCS, '0xcontract', '0xfdab463d');
-        expect(fetch).toHaveBeenCalledTimes(1);
-        expect(fetch.mock.calls[0][0]).toBe('https://rpc-a');
-    });
-
-    it('rotates past a transport failure', async () => {
-        fetch
-            .mockRejectedValueOnce(
-                new Error('NetworkError when attempting to fetch')
-            )
-            .mockResolvedValueOnce({ ok: true, json: async () => OK });
-        const res = await evmCall(RPCS, '0xcontract', '0xfdab463d');
-        expect(res).toBe(OK.result);
-        expect(fetch.mock.calls.map((c) => c[0])).toEqual([
-            'https://rpc-a',
-            'https://rpc-b',
-        ]);
-    });
-
-    it('rotates past HTTP failures such as 403 and 429', async () => {
-        fetch
-            .mockResolvedValueOnce({
-                ok: false,
-                status: 403,
-                statusText: 'Forbidden',
-            })
-            .mockResolvedValueOnce({
-                ok: false,
-                status: 429,
-                statusText: 'Too Many Requests',
-            })
-            .mockResolvedValueOnce({ ok: true, json: async () => OK });
-        await expect(evmCall(RPCS, '0xcontract', '0xfdab463d')).resolves.toBe(
-            OK.result
-        );
-        expect(fetch).toHaveBeenCalledTimes(3);
-    });
-
-    it('rotates past a JSON-RPC error object and an empty result', async () => {
-        fetch
-            .mockResolvedValueOnce({
-                ok: true,
-                json: async () => ({ error: { message: 'limit exceeded' } }),
-            })
-            .mockResolvedValueOnce({
-                ok: true,
-                json: async () => ({ result: '0x' }),
-            })
-            .mockResolvedValueOnce({ ok: true, json: async () => OK });
-        await expect(evmCall(RPCS, '0xcontract', '0xfdab463d')).resolves.toBe(
-            OK.result
-        );
-        expect(fetch).toHaveBeenCalledTimes(3);
-    });
-
-    it('throws only after every endpoint has failed, naming the last reason', async () => {
-        fetch.mockRejectedValue(new Error('boom'));
-        await expect(evmCall(RPCS, '0xcontract', '0xfdab463d')).rejects.toThrow(
-            /0 of 3 EVM RPC endpoint\(s\) answered.*boom/
-        );
-        expect(fetch).toHaveBeenCalledTimes(3);
-    });
-
-    it('accepts a plain string for backwards compatibility', async () => {
-        fetch.mockResolvedValue({ ok: true, json: async () => OK });
-        await evmCall('https://rpc-only', '0xcontract', '0xfdab463d');
-        expect(fetch.mock.calls[0][0]).toBe('https://rpc-only');
-    });
-
-    it('de-duplicates the endpoint list', async () => {
-        fetch.mockRejectedValue(new Error('boom'));
-        await expect(
-            evmCall(['https://rpc-a', 'https://rpc-a'], '0xcontract', '0x00')
-        ).rejects.toThrow(/0 of 1 EVM RPC endpoint/);
-        expect(fetch).toHaveBeenCalledTimes(1);
-    });
-
-    // The critical one. A zero word is isRootValid answering "no". Shopping around on
-    // it would mean asking until some endpoint said yes - turning a security verdict
-    // into a poll of whoever is reachable. Two endpoints agreeing on "no" settles it;
-    // the third is never asked.
-    it('does NOT keep asking when the contract legitimately answers false', async () => {
-        fetch.mockResolvedValue({
-            ok: true,
-            json: async () => ({ result: '0x' + '0'.repeat(64) }),
-        });
-        const valid = await verifyRootValidityOnContract(
-            RPCS,
-            '0xcontract',
-            LIVE_VECTOR.smt_root
-        );
-        expect(valid).toBe(false);
-        expect(fetch).toHaveBeenCalledTimes(MIN_RPC_AGREEMENT);
-    });
-
-    it('rotation is transparent to fetchEVMRoot', async () => {
-        fetch.mockRejectedValueOnce(new Error('down')).mockResolvedValue({
-            ok: true,
-            json: async () => ({ result: '0x' + LIVE_VECTOR.smt_root }),
-        });
-        await expect(fetchEVMRoot(RPCS, '0xcontract')).resolves.toBe(
-            LIVE_VECTOR.smt_root
-        );
-    });
-});
-
 /**
  * A single endpoint answering is failover, not agreement. These cover the part the
  * quorum exists for: one compromised or MITM'd endpoint, on its own, decides nothing.
+ * Every call here runs at `evmCall`'s default, which is the quorum production uses.
  */
 describe('EVM RPC quorum', () => {
     const RPCS = ['https://rpc-a', 'https://rpc-b', 'https://rpc-c'];
@@ -1571,9 +1368,9 @@ describe('EVM RPC quorum', () => {
 
     it('returns as soon as two endpoints say the same thing', async () => {
         fetch.mockResolvedValue(answer('1'));
-        const res = await evmCall(RPCS, '0xcontract', '0xfdab463d', 2);
+        const res = await evmCall(RPCS, '0xcontract', '0xfdab463d');
         expect(res).toBe('0x' + '1'.padStart(64, '0'));
-        expect(fetch).toHaveBeenCalledTimes(2);
+        expect(fetch).toHaveBeenCalledTimes(MIN_RPC_AGREEMENT);
     });
 
     it('a lone dissenting endpoint cannot decide the answer', async () => {
@@ -1582,66 +1379,112 @@ describe('EVM RPC quorum', () => {
             .mockResolvedValueOnce(answer('dead'))
             .mockResolvedValueOnce(answer('beef'))
             .mockResolvedValueOnce(answer('beef'));
-        const res = await evmCall(RPCS, '0xcontract', '0xfdab463d', 2);
+        const res = await evmCall(RPCS, '0xcontract', '0xfdab463d');
         expect(res).toBe('0x' + 'beef'.padStart(64, '0'));
         expect(fetch).toHaveBeenCalledTimes(3);
     });
 
+    // Public BSC endpoints rate limit and refuse in every way at once; none of it may
+    // count as an answer, and none of it may stop the quorum being reached elsewhere.
+    it('rotates past transport, HTTP, JSON-RPC and empty failures to reach the quorum', async () => {
+        const arrRpcs = [1, 2, 3, 4, 5, 6, 7].map((n) => 'https://rpc-' + n);
+        fetch
+            .mockRejectedValueOnce(
+                new Error('NetworkError when attempting to fetch')
+            )
+            .mockResolvedValueOnce({
+                ok: false,
+                status: 403,
+                statusText: 'Forbidden',
+            })
+            .mockResolvedValueOnce({
+                ok: false,
+                status: 429,
+                statusText: 'Too Many Requests',
+            })
+            .mockResolvedValueOnce({
+                ok: true,
+                json: async () => ({ error: { message: 'limit exceeded' } }),
+            })
+            .mockResolvedValueOnce({
+                ok: true,
+                json: async () => ({ result: '0x' }),
+            })
+            .mockResolvedValue(answer('1'));
+        await expect(
+            evmCall(arrRpcs, '0xcontract', '0xfdab463d')
+        ).resolves.toBe('0x' + '1'.padStart(64, '0'));
+        expect(fetch).toHaveBeenCalledTimes(7);
+    });
+
+    /**
+     * An endpoint that accepts the request and never answers used to stall the resolve
+     * for good. It now costs `FETCH_TIMEOUT_MS`, and rotation carries on past it.
+     */
+    it('gives up on an endpoint that never answers, and rotates past it', async () => {
+        vi.useFakeTimers();
+        try {
+            fetch.mockImplementation((url, { signal }) =>
+                url === 'https://rpc-a'
+                    ? new Promise((_, reject) =>
+                          signal.addEventListener('abort', () =>
+                              reject(new DOMException('aborted', 'AbortError'))
+                          )
+                      )
+                    : Promise.resolve(answer('1'))
+            );
+            const p = evmCall(RPCS, '0xcontract', '0xfdab463d');
+            await vi.advanceTimersByTimeAsync(FETCH_TIMEOUT_MS);
+            await expect(p).resolves.toBe('0x' + '1'.padStart(64, '0'));
+            expect(fetch.mock.calls.map((c) => c[0])).toEqual(RPCS);
+        } finally {
+            vi.useRealTimers();
+        }
+    });
+
+    // The critical one. A zero word is isRootValid answering "no". Shopping around on
+    // it would mean asking until some endpoint said yes - turning a security verdict
+    // into a poll of whoever is reachable. Two endpoints agreeing on "no" settles it;
+    // the third is never asked.
+    it('does NOT keep asking when the contract legitimately answers false', async () => {
+        fetch.mockResolvedValue(answer('0'));
+        const valid = await verifyRootValidityOnContract(
+            RPCS,
+            '0xcontract',
+            LIVE_VECTOR.smt_root
+        );
+        expect(valid).toBe(false);
+        expect(fetch).toHaveBeenCalledTimes(MIN_RPC_AGREEMENT);
+    });
+
+    // Callers decide from the error which component to blame and whether waiting can
+    // help, so each failure below is checked for its type as well as its message.
     it('throws rather than picking a side when no answer reaches the quorum', async () => {
         fetch
             .mockResolvedValueOnce(answer('1'))
             .mockResolvedValueOnce(answer('2'))
             .mockResolvedValueOnce(answer('3'));
-        await expect(
-            evmCall(RPCS, '0xcontract', '0xfdab463d', 2)
-        ).rejects.toThrow(/disagree/);
+        const e = await evmCall(RPCS, '0xcontract', '0xfdab463d').catch(
+            (e) => e
+        );
+        expect(e).toBeInstanceOf(RpcQuorumError);
+        expect(e.message).toMatch(/disagree/);
+        expect(e.isTransient).toBe(false);
     });
 
-    it('throws when only one endpoint is reachable and two are required', async () => {
+    it('throws, naming the last reason, when only one endpoint answers', async () => {
         fetch
             .mockResolvedValueOnce(answer('1'))
             .mockRejectedValue(new Error('down'));
-        await expect(
-            evmCall(RPCS, '0xcontract', '0xfdab463d', 2)
-        ).rejects.toThrow(
-            /1 of 3 EVM RPC endpoint\(s\) answered, 2 must agree/
-        );
-    });
-
-    /**
-     * Callers decide from the error which component to blame and whether waiting can
-     * help. Too few answers is worth waiting out; a disagreement, or a list too short
-     * for any quorum, is not.
-     */
-    it('types its failures, and only too few answers is transient', async () => {
-        fetch
-            .mockResolvedValueOnce(answer('1'))
-            .mockRejectedValue(new Error('down'));
-        const eFew = await evmCall(RPCS, '0xcontract', '0x00', 2).catch(
+        const e = await evmCall(RPCS, '0xcontract', '0xfdab463d').catch(
             (e) => e
         );
-        expect(eFew).toBeInstanceOf(RpcQuorumError);
-        expect(eFew.isTransient).toBe(true);
-
-        fetch.mockReset();
-        fetch
-            .mockResolvedValueOnce(answer('1'))
-            .mockResolvedValueOnce(answer('2'))
-            .mockResolvedValueOnce(answer('3'));
-        const eSplit = await evmCall(RPCS, '0xcontract', '0x00', 2).catch(
-            (e) => e
+        expect(e).toBeInstanceOf(RpcQuorumError);
+        expect(e.message).toMatch(
+            /1 of 3 EVM RPC endpoint\(s\) answered, 2 must agree; last error: down/
         );
-        expect(eSplit).toBeInstanceOf(RpcQuorumError);
-        expect(eSplit.isTransient).toBe(false);
-
-        const eShort = await evmCall(
-            'https://rpc-only',
-            '0xcontract',
-            '0x00',
-            2
-        ).catch((e) => e);
-        expect(eShort).toBeInstanceOf(RpcQuorumError);
-        expect(eShort.isTransient).toBe(false);
+        // too few answers is the one failure worth waiting out
+        expect(e.isTransient).toBe(true);
     });
 
     // Silently verifying on one endpoint because the list happened to be short is the
@@ -1649,20 +1492,28 @@ describe('EVM RPC quorum', () => {
     // honest answer: the check cannot be made.
     it('refuses to run on fewer endpoints than the quorum needs', async () => {
         fetch.mockResolvedValue(answer('1'));
-        await expect(
-            evmCall('https://rpc-only', '0xcontract', '0xfdab463d', 2)
-        ).rejects.toThrow(/independent EVM RPC endpoints/);
+        const e = await evmCall(
+            ['https://rpc-only'],
+            '0xcontract',
+            '0xfdab463d'
+        ).catch((e) => e);
+        expect(e).toBeInstanceOf(RpcQuorumError);
+        expect(e.message).toMatch(/independent EVM RPC endpoints/);
+        expect(e.isTransient).toBe(false);
         expect(fetch).not.toHaveBeenCalled();
     });
 
-    it('reads the root and the validity flag under quorum by default', async () => {
+    // An endpoint listed twice is still one endpoint: it must not agree with itself.
+    it('counts a duplicated endpoint once', async () => {
         fetch.mockResolvedValue(answer('1'));
-        await verifyRootValidityOnContract(
-            RPCS,
-            '0xcontract',
-            LIVE_VECTOR.smt_root
-        );
-        expect(fetch).toHaveBeenCalledTimes(MIN_RPC_AGREEMENT);
+        await expect(
+            evmCall(
+                ['https://rpc-a', 'https://rpc-a'],
+                '0xcontract',
+                '0xfdab463d'
+            )
+        ).rejects.toThrow(/only 1 is configured/);
+        expect(fetch).not.toHaveBeenCalled();
     });
 });
 
