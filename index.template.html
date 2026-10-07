@@ -192,6 +192,7 @@
                     <ul class="settingsMenu">
                       <li data-i18n="wallet" onclick="MPW.switchSettings('wallet')" id="settingsWalletBtn" class="active">Wallet</li>
                       <li data-i18n="display" onclick="MPW.switchSettings('display')" id="settingsDisplayBtn">Display</li>
+                      <li data-i18n="nameResolving" onclick="MPW.switchSettings('nameResolving')" id="settingsNameResolvingBtn">PIVX Name Resolving</li>
                     </ul>
 
                     <div id="settingsWallet" class="settingsContent">
@@ -281,6 +282,30 @@
                           </span>
                         </button>
                       </div>
+                    </div>
+
+                    <div id="settingsNameResolving" class="settingsContent d-none">
+                      <label for="nameResolvingApi" data-i18n="settingsNameResolvingApi">Choose a Name Resolving API:</label>
+                      <br />
+                      <select id="nameResolvingApi" class="form-control" name="nameResolvingApi">
+                        <!-- Populated via JS at DOM load (settings.js) -->
+                      </select>
+
+                      <br />
+
+                      <label for="evmNetwork" data-i18n="settingsEvmNetwork">EVM Network:</label>
+                      <br />
+                      <select id="evmNetwork" class="form-control" name="evmNetwork">
+                        <!-- Populated via JS at DOM load (settings.js) -->
+                      </select>
+
+                      <br />
+
+                      <label for="evmRpc" data-i18n="settingsEvmRpc">EVM RPC URL:</label>
+                      <br />
+                      <select id="evmRpc" class="form-control" name="evmRpc">
+                        <!-- Populated via JS at DOM load (settings.js) -->
+                      </select>
                     </div>
 		    
                     <div id="settingsDisplay" class="d-none settingsContent">

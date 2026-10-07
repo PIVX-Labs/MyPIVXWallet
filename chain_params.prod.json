@@ -24,6 +24,23 @@
             { "name": "PIVX Labs", "url": "https://rpc.pivxla.bz/mainnet" },
             { "name": "Duddino", "url": "https://rpc.duddino.com/mainnet" }
         ],
+        "NameResolvers": [
+            { "name": "PIVX.name Indexer", "url": "https://indexer.pivx.name" }
+        ],
+        "EVMNetworks": [
+            {
+                "name": "Binance Smart Chain",
+                "chainId": 56,
+                "contractAddress": "0x25c7ab6e524a67a9571ac4f02c266658c4e620cb",
+                "rpcs": [
+                    "https://bsc-dataseed.bnbchain.org",
+                    "https://bsc-dataseed.defibit.io",
+                    "https://bsc-dataseed.ninicoin.io",
+                    "https://bsc-rpc.publicnode.com",
+                    "https://bsc-mainnet.public.blastapi.io"
+                ]
+            }
+        ],
         "Consensus": {},
         "coinbaseMaturity": 100,
         "budgetCycleBlocks": 43200,

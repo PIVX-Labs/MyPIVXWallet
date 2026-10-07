@@ -44,6 +44,12 @@ export class Alert {
         this.created = created;
         this.actionName = actionName;
         this.actionFunc = actionFunc;
+        this.show = true;
+    }
+
+    close() {
+        this.show = false;
+        AlertController.getInstance().notifySubscribers();
     }
 }
 
@@ -89,8 +95,12 @@ export class AlertController {
     addAlert(alert) {
         this.#alerts.push(alert);
         this.#alerts.splice(0, this.#alerts.length - 1000);
+        this.notifySubscribers(alert);
+    }
+
+    notifySubscribers(alert = null) {
         for (const sub of this.#subscribers) {
-            // Notify subscribers of the new alert
+            // Notify subscribers of the alert update
             sub(alert);
         }
     }
@@ -129,4 +139,22 @@ export function createAlert(type, message, timeout, actionName, actionFunc) {
         actionName,
         actionFunc
     );
+}
+
+/**
+ * Like `createAlert`, but hands the alert back so the caller can `close()` it early.
+ *
+ * A separate function because `createAlert` must keep returning nothing: plenty of call
+ * sites `return createAlert(...)` from functions whose callers read any truthy result as
+ * success - `promptForContact` would hand an Alert object to the address field, and a
+ * failed `guiAddContactPrompt` would read as "added" to `guiAddContactQRPrompt`.
+ * @param {'success'|'info'|'warning'} type - The alert level
+ * @param {string} message - The message to relay to the user
+ * @param {number?} [timeout] - The time in `ms` until the alert expires
+ * @returns {Alert}
+ */
+export function createClosableAlert(type, message, timeout = 10000) {
+    const alert = new Alert({ level: type, message, timeout });
+    AlertController.getInstance().addAlert(alert);
+    return alert;
 }

@@ -110,6 +110,21 @@ timeMinutes = "Minutos" # Minutes
 timeSeconds = "Segundos" # Seconds
 unhandledException = "Exceção não tratada" # Unhandled exception.
 activityReceivedWith = "Recebido com {s}" # Received with {s}
+pinsTitleSecurityWarning = "⚠️ Aviso de Segurança" # ⚠️ Security Warning
+pinsTextSecurityWarning = "O indexador de Name Service retornou uma raiz de estado que nunca foi registrada na blockchain. O envio de fundos está bloqueado por motivos de segurança." # The Name Service indexer returned a state root that has never been registered on the blockchain. Sending funds is blocked for security reasons.
+pinsTitleSynced = "✓ Sincronizado e Resolvido" # ✓ Synced & Resolved
+pinsTitleNotFound = "❌ Domínio não encontrado" # ❌ Domain Not Found
+pinsTextNotFound = "Este nome de domínio não existe. Por favor, verifique a ortografia." # This domain name does not exist. Please check the spelling.
+pinsTitleSyncDelay = "⚠️ Atraso de Sincronização do Indexador" # ⚠️ Indexer Sync Delay
+pinsTitleSyncDelayNotFound = "🔍 Atraso de Sincronização do Indexador" # 🔍 Indexer Sync Delay
+pinsTextSyncDelayNotFound = "O Name Service está atualmente a sincronizar com o estado mais recente da blockchain PIVX, e este nome de domínio não foi encontrado. Se foi registrado muito recentemente, pode estar a sincronizar neste momento." # The Name Service is currently syncing with the latest state from PIVX blockchain, and this domain name was not found. If it was registered very recently, it might be syncing at the moment.
+pinsTitleIndexerError = "⚠️ Erro do Indexador" # ⚠️ Indexer Error
+pinsTextIndexerError = "O indexador de Name Service retornou um erro: {errMsg}" # The Name Service indexer returned an error: {errMsg}
+pinsPolling = "Verificando o estado do indexador..." # Polling indexer status (roots checking)...
+pinsBtnClose = "Fechar" # Close
+pinsBtnSend = "Enviar" # Send
+pinsBtnCancel = "Cancelar" # Cancel
+pinsBtnRetry = "Repetir" # Retry
 
 [ALERTS]
 INTERNAL_ERROR = "Erro interno, por favor tente novamente mais tarde" # Internal error, please try again later
@@ -175,6 +190,20 @@ CONFIRM_POPUP_MN_P_KEY = "A chave privada do seu Masternode" # Your Masternode P
 CONFIRM_POPUP_MN_P_KEY_HTML = "<br> Guarde esta chave privada e copie-a para a sua configuração no VPS <br>" # <br> Save this private key and copy it to your VPS config <br>
 CONFIRM_POPUP_VERIFY_ADDR = "Verifique o seu endereço" # Verify your address
 APP_INSTALLED = "Aplicação instalada!" # App Installed!
+PINS_RESOLVING_DOMAIN = "Resolvendo o nome de domínio {strDomain}..." # Resolving domain name {strDomain}...
+PINS_CHECKING_SYNC = "Verificando o estado de sincronização..." # Checking sync status...
+PINS_SYNCING_WAIT = "O indexador ainda está a sincronizar, por favor aguarde..." # Indexer is still syncing, please wait...
+PINS_SYNC_FAILED = "Falha ao verificar o estado de sincronização: {errMsg}" # Failed to check sync status: {errMsg}
+PINS_RESOLVE_FAILED = "Falha ao resolver o nome de domínio: {errMsg}" # Failed to resolve domain name: {errMsg}
+PINS_INVALID_FORMAT = "Formato de nome de domínio inválido. O rótulo deve ter entre 1 e 64 caracteres, alfanuméricos em minúsculas + hifens (não no início, no fim ou consecutivos), terminando com um dos seguintes: {tlds}" # Invalid domain name format. Label must be 1-64 characters, lowercase alphanumeric + hyphens (no leading, trailing, or consecutive), ending with one of: {tlds}
+PINS_INCOMPLETE_METADATA = "Os metadados de resposta para o domínio {strDomain} estão incompletos ou são inválidos." # Domain name {strDomain} response metadata is incomplete or invalid.
+PINS_INVALID_PROOF = "A verificação criptográfica da resolução do nome falhou: a prova Merkle é inválida." # Cryptographic verification of the name resolution failed: Merkle proof is invalid.
+PINS_INVALID_SHIELD = "O endereço resolvido não é um endereço shield válido." # Resolved address is not a valid shield address.
+PINS_NAME_MISMATCH = "O nome resolvido não corresponde ao nome solicitado." # Resolved name does not match requested name.
+PINS_NOT_FOUND = "Não foi possível resolver o nome de domínio {strDomain}." # Domain name {strDomain} could not be resolved.
+PINS_SWITCHED_API = "Alterada API de Resolução de Nomes para {apiUrl}" # Switched Name Resolving API to {apiUrl}
+PINS_SWITCHED_EVM = "Alterada rede EVM para {netName}" # Switched EVM network to {netName}
+PINS_SWITCHED_RPC = "Alterado EVM RPC para {rpcUrl}" # Switched EVM RPC to {rpcUrl}
 
 [info]
 merged = true

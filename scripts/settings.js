@@ -20,6 +20,7 @@ import { getEventEmitter } from './event_bus.js';
 import countries from 'country-locale-map/countries.json';
 import { getNetwork } from './network/network_manager.js';
 import { getRandomElement } from './utils.js';
+import { getEVMNetwork, getNameResolverUrl } from './utils.pins.js';
 import { useWallets } from './composables/use_wallet.js';
 
 // --- Default Settings
@@ -85,6 +86,18 @@ export class Settings {
      * @type {Boolean} The user's transaction mode, `true` for public, `false` for private
      */
     publicMode;
+    /**
+     * @type {String} Name Resolving API url to use
+     */
+    nameResolvingApi;
+    /**
+     * @type {Number} EVM Network ID
+     */
+    evmNetworkId;
+    /**
+     * @type {String} EVM RPC URL
+     */
+    evmRpc;
 
     /** @type {String} The Cold Address that this account delegates to. */
     coldAddress = '';
@@ -99,6 +112,11 @@ export class Settings {
         autoLockWallet = false,
         publicMode = true,
         coldAddress = '',
+        nameResolvingApi = cChainParams.current.NameResolvers?.[0]?.url ||
+            'https://indexer.pivx.name',
+        evmNetworkId = cChainParams.current.EVMNetworks?.[0]?.chainId || 56,
+        evmRpc = cChainParams.current.EVMNetworks?.[0]?.rpcs?.[0] ||
+            'https://bsc-dataseed.bnbchain.org',
     } = {}) {
         this.explorer = explorer;
         this.node = node;
@@ -109,6 +127,9 @@ export class Settings {
         this.autoLockWallet = autoLockWallet;
         this.publicMode = publicMode;
         this.coldAddress = coldAddress;
+        this.nameResolvingApi = nameResolvingApi;
+        this.evmNetworkId = evmNetworkId;
+        this.evmRpc = evmRpc;
     }
 }
 
@@ -152,10 +173,27 @@ export async function start() {
         setTranslation(evt.target.value);
     };
 
+    // Hook up the 'nameResolvingApi' select UI
+    document.getElementById('nameResolvingApi').onchange = function (evt) {
+        setNameResolvingApi(evt.target.value);
+    };
+
+    // Hook up the 'evmNetwork' select UI
+    document.getElementById('evmNetwork').onchange = function (evt) {
+        setEvmNetworkId(Number(evt.target.value));
+    };
+
+    // Hook up the 'evmRpc' select UI
+    document.getElementById('evmRpc').onchange = function (evt) {
+        setEvmRpc(evt.target.value);
+    };
+
     await Promise.all([
         fillExplorerSelect(),
         fillNodeSelect(),
         fillTranslationSelect(),
+        fillNameResolvingApiSelect(),
+        fillEvmNetworkSelect(),
     ]);
 
     const database = await Database.getInstance();
@@ -167,7 +205,10 @@ export async function start() {
         advancedMode,
         autoLockWallet,
         publicMode,
+        evmNetworkId,
     } = await database.getSettings();
+
+    await fillEvmRpcSelect(evmNetworkId);
 
     // Transaction Mode (Public/Private)
     fPublicMode = publicMode;
@@ -239,6 +280,62 @@ export async function setNode(node, fSilent = false) {
             tr(ALERTS.SWITCHED_NODE, [{ node: node.name }]),
             2250
         );
+}
+
+export async function setNameResolvingApi(apiUrl, fSilent = false) {
+    const database = await Database.getInstance();
+    await database.setSettings({ nameResolvingApi: apiUrl });
+
+    if (!fSilent)
+        createAlert(
+            'success',
+            tr(ALERTS.PINS_SWITCHED_API, [{ apiUrl }]),
+            2250
+        );
+}
+
+export async function setEvmNetworkId(networkId, fSilent = false) {
+    const database = await Database.getInstance();
+
+    // Find the default RPC for the selected EVM network. The contract address is
+    // deliberately NOT stored: it is a protocol constant with no UI behind it, and
+    // `setSettings` writes the whole settings object back, so a copy saved here would
+    // outrank chain params forever - including after a redeployment, which is exactly
+    // when chain params are the value that should win. It is read from
+    // `getEVMNetwork()` at the point of use instead.
+    const network = getEVMNetwork(networkId);
+    if (!network) return;
+
+    const newRpc = network.rpcs[0] || '';
+
+    await database.setSettings({
+        evmNetworkId: networkId,
+        evmRpc: newRpc,
+    });
+
+    // Update the RPC select dropdown in settings page
+    await fillEvmRpcSelect(networkId);
+
+    if (!fSilent) {
+        createAlert(
+            'success',
+            tr(ALERTS.PINS_SWITCHED_EVM, [{ netName: network.name }]),
+            2250
+        );
+    }
+}
+
+export async function setEvmRpc(rpcUrl, fSilent = false) {
+    const database = await Database.getInstance();
+    await database.setSettings({ evmRpc: rpcUrl });
+
+    if (!fSilent) {
+        createAlert(
+            'success',
+            tr(ALERTS.PINS_SWITCHED_RPC, [{ rpcUrl }]),
+            2250
+        );
+    }
 }
 
 //TRANSLATION
@@ -472,6 +569,70 @@ async function fillNodeSelect() {
             firstNode,
         true
     );
+}
+
+async function fillNameResolvingApiSelect() {
+    const select = document.getElementById('nameResolvingApi');
+    if (!select) return;
+    while (select.options.length > 0) {
+        select.remove(0);
+    }
+    const resolvers = cChainParams.current.NameResolvers || [];
+    for (const api of resolvers) {
+        const opt = document.createElement('option');
+        opt.value = api.url;
+        opt.innerHTML =
+            api.name +
+            ' (' +
+            api.url.replace('https://', '').replace('http://', '') +
+            ')';
+        select.appendChild(opt);
+    }
+    const database = await Database.getInstance();
+    const { nameResolvingApi: strSettingApi } = await database.getSettings();
+    // The same reconciliation the resolver applies, so the select shows the indexer
+    // that will actually be asked rather than a stored one chain params have dropped
+    select.value = getNameResolverUrl(strSettingApi) || '';
+}
+
+async function fillEvmNetworkSelect() {
+    const select = document.getElementById('evmNetwork');
+    if (!select) return;
+    while (select.options.length > 0) {
+        select.remove(0);
+    }
+    const networks = cChainParams.current.EVMNetworks || [];
+    for (const net of networks) {
+        const opt = document.createElement('option');
+        opt.value = net.chainId;
+        opt.innerHTML = `${net.name} (${net.chainId})`;
+        select.appendChild(opt);
+    }
+    const database = await Database.getInstance();
+    const { evmNetworkId } = await database.getSettings();
+    // Fall back to the first configured network, never to a hardcoded chain id.
+    select.value = getEVMNetwork(evmNetworkId)?.chainId ?? '';
+}
+
+async function fillEvmRpcSelect(networkId) {
+    const select = document.getElementById('evmRpc');
+    if (!select) return;
+    while (select.options.length > 0) {
+        select.remove(0);
+    }
+
+    // Find selected network
+    const network = getEVMNetwork(networkId);
+    const rpcs = network ? network.rpcs : [];
+    for (const rpc of rpcs) {
+        const opt = document.createElement('option');
+        opt.value = rpc;
+        opt.innerHTML = rpc;
+        select.appendChild(opt);
+    }
+    const database = await Database.getInstance();
+    const { evmRpc } = await database.getSettings();
+    select.value = evmRpc || rpcs[0] || '';
 }
 
 /**
