@@ -993,6 +993,9 @@ export async function getAddressColor(address) {
         // Yep, nice!
         return 'green';
     }
+    if (activeWallet.isOwnAddress(address)) {
+        return 'purple';
+    }
     if (isValidPIVXAddress(address)) {
         // Yep!
         return 'green';
