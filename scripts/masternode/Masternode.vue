@@ -14,7 +14,7 @@ import { generateMasternodePrivkey, parseIpAddress } from '../misc';
 import { useAlerts } from '../composables/use_alerts.js';
 import { COutpoint } from '../transaction.js';
 import { valuesToComputed } from '../utils.js';
-
+import { downloadBlob } from '../misc';
 const { createAlert } = useAlerts();
 
 /**
@@ -147,7 +147,7 @@ async function restoreWallet() {
     });
 }
 
-async function createMasternode({ isVPS }) {
+async function createMasternode({ selection }) {
     // Ensure wallet is unlocked
     if (!isHardwareWallet.value && isViewOnly.value && !(await restoreWallet()))
         return;
@@ -161,9 +161,20 @@ async function createMasternode({ isVPS }) {
         createAlert('warning', translation.ALERTS.TRANSACTION_FAILED);
         return;
     }
-
-    if (isVPS) openShowPrivKeyModal();
+    if (selection === 'mnManager') downloadMnConfigFile(res);
+    if (selection === 'VPS') openShowPrivKeyModal();
     updatePossibleUTXOs();
+}
+
+function downloadMnConfigFile(txid) {
+    // Users can import this file to pivxMnManager and have
+    // The automatically VPS set up
+    // The txid should be the only thing needed to import
+    downloadBlob(
+        { txid },
+        `${txid}-config.json`,
+        'application/json;charset=utf-8;'
+    );
 }
 
 function openShowPrivKeyModal() {
