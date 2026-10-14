@@ -87,6 +87,16 @@ export class IndexerUnreachableError extends Error {
 export const FETCH_TIMEOUT_MS = 10000;
 
 /**
+ * How long to wait before asking the contract again about a root it did not recognise.
+ *
+ * Reads are pinned to a block (see `fetchEVMBlockNumber`), so an indexer that has
+ * already applied a checkpoint anchored after that block serves a root the contract
+ * does not know yet - as of that block. A few seconds later the endpoints are past the
+ * anchoring transaction and do know it. A fabricated root is unknown at every block.
+ */
+export const ROOT_RECHECK_MS = 5000;
+
+/**
  * One HTTP request that answers within `FETCH_TIMEOUT_MS` or fails.
  *
  * Without a deadline a single endpoint that accepts the connection and never answers
@@ -544,6 +554,148 @@ export function verifySmtProof(objResolve, strDomain, strTrustedRoot) {
 export const EMPTY_ROOT = bytesToHex(EMPTY_NODE);
 
 /**
+ * The endpoints a quorum'd read may ask: each one once, and enough of them.
+ *
+ * @param {string[]} rpcUrls
+ * @param {number} nMinAgree
+ * @returns {string[]}
+ */
+function quorumRpcs(rpcUrls, nMinAgree) {
+    // A duplicate is one endpoint asked twice, so it must not count towards the quorum
+    const arrRpcs = rpcUrls.filter(
+        (url, i, arr) => url && arr.indexOf(url) === i
+    );
+    if (!arrRpcs.length) {
+        throw new RpcQuorumError('No EVM RPC endpoint configured', false);
+    }
+
+    // Refuse rather than quietly drop to whatever is available. Silently verifying on
+    // one endpoint because the list happened to be short is exactly the state an
+    // attacker wants, and it is reachable by accident - a stale stored chain id used to
+    // collapse the list to a single RPC. If there are not enough independent endpoints
+    // to ask, the honest answer is that the check cannot be made.
+    if (arrRpcs.length < nMinAgree) {
+        throw new RpcQuorumError(
+            `Name resolving needs ${nMinAgree} independent EVM RPC endpoints to agree, but only ${arrRpcs.length} is configured for this network`,
+            false
+        );
+    }
+    return arrRpcs;
+}
+
+/**
+ * One JSON-RPC request to one endpoint, under the fetch deadline. Anything short of a
+ * usable `result` throws, for the caller to count as that endpoint failing.
+ *
+ * @param {string} rpcUrl
+ * @param {string} strMethod
+ * @param {any[]} arrParams
+ * @returns {Promise<any>} the `result` field
+ */
+async function evmRequest(rpcUrl, strMethod, arrParams) {
+    const response = await fetchJsonWithTimeout(rpcUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            jsonrpc: '2.0',
+            method: strMethod,
+            params: arrParams,
+            id: 1,
+        }),
+    });
+
+    if (!response.ok) {
+        throw new Error(
+            `Failed to fetch from EVM RPC: ${response.status} ${response.statusText}`
+        );
+    }
+
+    const data = response.json;
+    if (!data) throw new Error('EVM RPC returned a non-JSON answer');
+    if (data.error) {
+        throw new Error(`EVM RPC error: ${data.error.message}`);
+    }
+    if (!data.result || data.result === '0x') {
+        throw new Error('EVM RPC returned empty result');
+    }
+    return data.result;
+}
+
+/**
+ * The block every contract read of one attempt is pinned to.
+ *
+ * `'latest'` is each endpoint's own idea of the head, so endpoints agreeing at
+ * `'latest'` agree only about whatever each has seen. Two that are behind together
+ * report an old root, an indexer behind by the same amount serves that same root, and
+ * nothing looks stale: the proof folds, and a name that has since moved pays its old
+ * address. Pinned to one block, agreement is agreement about that block.
+ *
+ * The block has to be fresh by the quorum's standard, not by one endpoint's: taken from
+ * a stale endpoint, it would pin every read to the stale state. So every endpoint is
+ * asked, and the answer is the `nMinAgree`-th highest height reported. At least that
+ * many endpoints claim to have reached it, one lagging endpoint cannot hold it back,
+ * and one claiming a height from the future cannot push it beyond every honest node.
+ * An endpoint that has not reached it refuses the pinned read (`header not found`),
+ * and `evmCall` rotates past it like any other failure.
+ *
+ * The endpoints are asked in parallel, one request each, so the round costs the slowest
+ * answer - at worst the fetch deadline - rather than the sum of them.
+ *
+ * A block is good for one attempt only. Endpoints keep state for recent blocks alone -
+ * on BSC about a minute's worth - and a read pinned to an older one fails with `missing
+ * trie node`. So nothing holds on to it: every attempt, poller tick and confirmation
+ * asks again, and an attempt slow enough to outlive its block fails as transient.
+ *
+ * @param {string[]} rpcUrls
+ * @param {number} [nMinAgree] - endpoints that must have reached the block
+ * @returns {Promise<number>}
+ */
+export async function fetchEVMBlockNumber(
+    rpcUrls,
+    nMinAgree = MIN_RPC_AGREEMENT
+) {
+    const arrRpcs = quorumRpcs(rpcUrls, nMinAgree);
+
+    let lastError = null;
+    const arrHeights = [];
+    await Promise.all(
+        arrRpcs.map(async (rpcUrl) => {
+            try {
+                const hexHeight = await evmRequest(
+                    rpcUrl,
+                    'eth_blockNumber',
+                    []
+                );
+                // 13 hex digits keep the height inside Number's exact range
+                if (!/^0x[0-9a-f]{1,13}$/i.test(hexHeight)) {
+                    throw new Error(
+                        'EVM RPC returned a malformed block number'
+                    );
+                }
+                arrHeights.push(Number.parseInt(hexHeight.slice(2), 16));
+            } catch (e) {
+                lastError = e;
+            }
+        })
+    );
+
+    if (arrHeights.length < nMinAgree) {
+        throw new RpcQuorumError(
+            `${arrHeights.length} of ${
+                arrRpcs.length
+            } EVM RPC endpoint(s) reported a block height, ${nMinAgree} must; last error: ${
+                lastError?.message || lastError
+            }`,
+            true
+        );
+    }
+    arrHeights.sort((a, b) => b - a);
+    return arrHeights[nMinAgree - 1];
+}
+
+/**
  * Perform one eth_call, and do not believe it until `nMinAgree` endpoints have said
  * the same thing.
  *
@@ -567,9 +719,15 @@ export const EMPTY_ROOT = bytesToHex(EMPTY_NODE);
  * turns up: if nothing reaches the threshold the call throws, and every caller treats
  * a throw as "do not send".
  *
+ * Every read names the block it is about, from `fetchEVMBlockNumber`; see there for why
+ * `'latest'` is not good enough. There is no default, for the same reason there is no
+ * weaker default for the quorum: a caller that left it out would get the unsafe read
+ * without asking for it.
+ *
  * @param {string[]} rpcUrls - endpoints to try, in order
  * @param {string} contractAddress
  * @param {string} strData - abi-encoded calldata, 0x-prefixed
+ * @param {number} nBlock - the block to read at
  * @param {number} [nMinAgree] - endpoints that must return the same word; the call
  *                               throws rather than proceeding if fewer are configured
  * @returns {Promise<string>} the raw result word(s), 0x-prefixed
@@ -578,70 +736,28 @@ export async function evmCall(
     rpcUrls,
     contractAddress,
     strData,
+    nBlock,
     nMinAgree = MIN_RPC_AGREEMENT
 ) {
-    // A duplicate is one endpoint asked twice, so it must not count towards the quorum
-    const arrRpcs = rpcUrls.filter(
-        (url, i, arr) => url && arr.indexOf(url) === i
-    );
-    if (!arrRpcs.length) {
-        throw new RpcQuorumError('No EVM RPC endpoint configured', false);
+    if (!Number.isSafeInteger(nBlock) || nBlock < 0) {
+        throw new TypeError('evmCall needs the block number to read at');
     }
-
-    // Refuse rather than quietly drop to whatever is available. Silently verifying on
-    // one endpoint because the list happened to be short is exactly the state an
-    // attacker wants, and it is reachable by accident - a stale stored chain id used to
-    // collapse the list to a single RPC. If there are not enough independent endpoints
-    // to ask, the honest answer is that the check cannot be made.
-    if (arrRpcs.length < nMinAgree) {
-        throw new RpcQuorumError(
-            `Name resolving needs ${nMinAgree} independent EVM RPC endpoints to agree, but only ${arrRpcs.length} is configured for this network`,
-            false
-        );
-    }
+    const arrRpcs = quorumRpcs(rpcUrls, nMinAgree);
     const nQuorum = nMinAgree;
 
-    const payload = {
-        jsonrpc: '2.0',
-        method: 'eth_call',
-        params: [
-            {
-                to: contractAddress,
-                data: strData,
-            },
-            'latest',
-        ],
-        id: 1,
-    };
+    const arrParams = [
+        {
+            to: contractAddress,
+            data: strData,
+        },
+        '0x' + nBlock.toString(16),
+    ];
 
     let lastError = null;
     const mapAnswers = new Map();
     for (const rpcUrl of arrRpcs) {
         try {
-            const response = await fetchJsonWithTimeout(rpcUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(payload),
-            });
-
-            if (!response.ok) {
-                throw new Error(
-                    `Failed to fetch from EVM RPC: ${response.status} ${response.statusText}`
-                );
-            }
-
-            const data = response.json;
-            if (!data) throw new Error('EVM RPC returned a non-JSON answer');
-            if (data.error) {
-                throw new Error(`EVM RPC error: ${data.error.message}`);
-            }
-
-            const hexResult = data.result;
-            if (!hexResult || hexResult === '0x') {
-                throw new Error('EVM RPC returned empty result');
-            }
+            const hexResult = await evmRequest(rpcUrl, 'eth_call', arrParams);
 
             const strKey = hexResult.toLowerCase();
             const nSeen = (mapAnswers.get(strKey) || 0) + 1;
@@ -684,11 +800,17 @@ export async function evmCall(
  *
  * @param {string[]} rpcUrls
  * @param {string} contractAddress
+ * @param {number} nBlock - the attempt's block, from `fetchEVMBlockNumber`
  * @returns {Promise<string>} the root, lowercase hex, no 0x prefix
  */
-export async function fetchEVMRoot(rpcUrls, contractAddress) {
+export async function fetchEVMRoot(rpcUrls, contractAddress, nBlock) {
     // 0xfdab463d is the selector for currentRoot()
-    const hexResult = await evmCall(rpcUrls, contractAddress, '0xfdab463d');
+    const hexResult = await evmCall(
+        rpcUrls,
+        contractAddress,
+        '0xfdab463d',
+        nBlock
+    );
     return hexResult.replace(/^0x/, '').toLowerCase();
 }
 
@@ -731,21 +853,32 @@ export async function fetchIndexerRoot(apiEndpoint) {
  * rollback - both of which make any proof folding to it worthless. There is no benign
  * reading of it.
  *
+ * One caveat comes from reading at a fixed block: "in the contract's history" means as
+ * of `nBlock`, so an indexer that has already applied a checkpoint anchored after it
+ * reads as `false` too. `nBlock` is the newest block two endpoints have reached, which
+ * makes that an indexer ahead of all but one of them, in the seconds after an anchoring
+ * transaction. The error is towards refusing to send, never towards sending, and
+ * `runResolution` asks once more at a later block (`ROOT_RECHECK_MS`) before treating
+ * the root as never accepted.
+ *
  * Uses isRootValid(bytes32), the contract's own answer to exactly this question, rather
- * than reading root records: the deployed contract's rootHistory(bytes32) getter returns
- * a (uint32 blockHeight, bool isValid) struct that a one-word read would misreport as
- * "valid" for any root with a height, and the redeployed contract keeps those records
- * private.
+ * than reading root records: the deployed contract keeps those records private, since an
+ * entry exists for every root it ever accepted, rolled back or not. (The previous
+ * deployment's public rootHistory(bytes32) getter returned a (uint32 blockHeight, bool
+ * isValid) struct that a one-word read would have misreported as "valid" for any root
+ * with a height.)
  *
  * @param {string[]} rpcUrls
  * @param {string} contractAddress
  * @param {string} smtRoot
+ * @param {number} nBlock - the attempt's block, the one its root was read at
  * @returns {Promise<boolean>}
  */
 export async function verifyRootValidityOnContract(
     rpcUrls,
     contractAddress,
-    smtRoot
+    smtRoot,
+    nBlock
 ) {
     if (!smtRoot) return false;
     // 30ef41b4 is the selector for isRootValid(bytes32)
@@ -753,7 +886,8 @@ export async function verifyRootValidityOnContract(
     const hexResult = await evmCall(
         rpcUrls,
         contractAddress,
-        `0x30ef41b4${cleanRoot.padStart(64, '0')}`
+        `0x30ef41b4${cleanRoot.padStart(64, '0')}`,
+        nBlock
     );
 
     // isRootValid returns a single ABI word: 0 for false, 1 for true. A zero here is

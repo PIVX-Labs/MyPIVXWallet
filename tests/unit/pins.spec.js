@@ -1,6 +1,16 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import {
+    describe,
+    it,
+    expect,
+    vi,
+    beforeAll,
+    afterAll,
+    beforeEach,
+    afterEach,
+} from 'vitest';
 import {
     verifySmtProof,
+    fetchEVMBlockNumber,
     fetchEVMRoot,
     fetchIndexerRoot,
     getEVMNetwork,
@@ -15,6 +25,7 @@ import {
     RpcQuorumError,
     IndexerUnreachableError,
     FETCH_TIMEOUT_MS,
+    ROOT_RECHECK_MS,
     getNameResolverUrl,
     parseIndexerRoot,
 } from '../../scripts/utils.pins.js';
@@ -26,6 +37,10 @@ import {
     createAlert,
     createClosableAlert,
 } from '../../scripts/alerts/alert.js';
+import { cChainParams } from '../../scripts/chain_params.js';
+import prodParams from '../../chain_params.prod.json';
+import netlifyParams from '../../chain_params.netlify.json';
+import testParams from '../../chain_params.test.json';
 
 vi.mock('../../scripts/i18n.js', () => {
     const translation = {
@@ -104,11 +119,11 @@ const LIVE_VECTOR = Object.freeze({
     price: 0,
     nonce: 1786604913,
     smt_root:
-        '1bebbbf778b7c70d7f28af955d28c65165d9b52e2128efdcebdd6f695a773ceb',
+        '314f70fe112e800cd3a13a00776960eb74715702136a75f310b60d992d7d130b',
     merkle_proof: [
         'ce7b953670410e6a28bb669dbf36c92b3a1d3be8ad1053b9dfcf730049fe57ff',
         '8de7514f0d3a019a6cb017618c3c8f2774aaf063b47a0ed1fcc52e4a7080fa71',
-        '654cb451e501cb7461dd845404e9c5f7b5fc6f13b6c4763bd6c01f43d1ec50f9',
+        '48830e34174714ac8990c825d5f9b8751713207bf370b100c3e956cd16efc4cc',
     ],
     proof_depth: 3,
     proof_terminal: 'Occupied',
@@ -116,6 +131,48 @@ const LIVE_VECTOR = Object.freeze({
 
 /** A copy of the live vector with one field changed. */
 const tamper = (changes) => ({ ...LIVE_VECTOR, ...changes });
+
+/**
+ * The name service these tests resolve against: their own, not the checkout's.
+ *
+ * `chain_params.json` is whatever `postinstall` copied into place, which in CI is
+ * `chain_params.prod.json`, and mainnet ships with the name service switched off until
+ * the anchor contract is redeployed. Tests reading the shipped network would fail there,
+ * and pass or fail elsewhere depending on whose copy they ran against.
+ */
+const TEST_NAME_SERVICE = {
+    NameResolvers: [
+        { name: 'PIVX.name Indexer', url: 'https://indexer.pivx.name' },
+    ],
+    EVMNetworks: [
+        {
+            name: 'Binance Smart Chain',
+            chainId: 56,
+            contractAddress: '0xe21df741aab28c1916edb1718f18e62c08fab4bc',
+            rpcs: [
+                'https://bsc-dataseed.bnbchain.org',
+                'https://bsc-dataseed.defibit.io',
+                'https://bsc-dataseed.ninicoin.io',
+                'https://bsc-rpc.publicnode.com',
+                'https://bsc-mainnet.public.blastapi.io',
+            ],
+        },
+    ],
+};
+
+/** A block for contract reads that must name one, where which block is not under test. */
+const BLOCK = 0x1000;
+
+let objShippedNetwork = null;
+
+beforeAll(() => {
+    objShippedNetwork = cChainParams.current;
+    cChainParams.current = { ...objShippedNetwork, ...TEST_NAME_SERVICE };
+});
+
+afterAll(() => {
+    cChainParams.current = objShippedNetwork;
+});
 
 describe('verifySmtProof (compact SMT)', () => {
     it('verifies a real proof from the production indexer', () => {
@@ -599,7 +656,8 @@ describe('EVM and Indexer Root Checking', () => {
 
         const root = await fetchEVMRoot(
             ['https://rpc-url', 'https://rpc-url-2'],
-            '0xcontract'
+            '0xcontract',
+            BLOCK
         );
         expect(root).toBe(
             '7fbe8f29f7278db7a665de4f1255927b40b648b43e55b34bb3e0405edb5e7d12'
@@ -616,7 +674,7 @@ describe('EVM and Indexer Root Checking', () => {
                             to: '0xcontract',
                             data: '0xfdab463d', // currentRoot()
                         },
-                        'latest',
+                        '0x1000', // BLOCK, never 'latest'
                     ],
                     id: 1,
                 }),
@@ -685,7 +743,8 @@ describe('EVM and Indexer Root Checking', () => {
         const valid = await verifyRootValidityOnContract(
             ['https://rpc-url', 'https://rpc-url-2'],
             '0xcontract',
-            LIVE_VECTOR.smt_root
+            LIVE_VECTOR.smt_root,
+            BLOCK
         );
         expect(valid).toBe(true);
         expect(fetch).toHaveBeenCalledWith(
@@ -709,7 +768,8 @@ describe('EVM and Indexer Root Checking', () => {
             await verifyRootValidityOnContract(
                 ['https://rpc-url', 'https://rpc-url-2'],
                 '0xcontract',
-                LIVE_VECTOR.smt_root
+                LIVE_VECTOR.smt_root,
+                BLOCK
             )
         ).toBe(false);
     });
@@ -780,6 +840,12 @@ describe('PiNS.vue Component', () => {
                     json: async () => ({ response: indexerRoot }),
                 };
             }
+            if (body?.method === 'eth_blockNumber') {
+                return {
+                    ok: true,
+                    json: async () => ({ result: '0x' + BLOCK.toString(16) }),
+                };
+            }
             const data = body?.params?.[0]?.data ?? '';
             if (data.startsWith('0xfdab463d')) {
                 return {
@@ -838,13 +904,70 @@ describe('PiNS.vue Component', () => {
         });
 
         const wrapper = mount(PiNS);
-        await wrapper.vm.resolveAndVerify('alexxiy.pivx', 1, false, '');
+        const p = wrapper.vm.resolveAndVerify('alexxiy.pivx', 1, false, '');
+        await vi.advanceTimersByTimeAsync(ROOT_RECHECK_MS);
+        await p;
         await vi.runOnlyPendingTimersAsync();
 
         expect(wrapper.vm.syncModalState).toBe('invalid_root');
         expect(wrapper.vm.syncModalTitle).toBe('Security Warning');
         // no send may be armed once the root is rejected
         expect(wrapper.vm.pendingSendParams).toBe(null);
+        // and it was asked about twice, a re-check apart, before being called that
+        const nValidityReads = fetch.mock.calls.filter((c) =>
+            c[1]?.body?.includes('0x30ef41b4')
+        ).length;
+        expect(nValidityReads).toBe(2 * MIN_RPC_AGREEMENT);
+    });
+
+    /**
+     * The other side of pinning reads to a block: an indexer that has applied a
+     * checkpoint the endpoints have not reached yet serves a root unknown at that block.
+     * It gets a second look at a later block instead of the fabrication wall - but only
+     * for an attempt the user is still waiting on.
+     */
+    it('looks again at a later block before calling an unknown root fabricated', async () => {
+        // the endpoints reach the anchoring block within the re-check wait
+        let tStart = Date.now();
+        const nHead = () =>
+            Date.now() - tStart >= ROOT_RECHECK_MS ? 1001 : 1000;
+        const answer = (result) => ({ ok: true, json: async () => result });
+        fetch.mockImplementation(async (url, opts) => {
+            if (String(url).includes('/v1.0/resolve/')) {
+                return answer({ response: LIVE_VECTOR });
+            }
+            const body = JSON.parse(opts.body);
+            if (body.method === 'eth_blockNumber') {
+                return answer({ result: '0x' + nHead().toString(16) });
+            }
+            const fAnchored = parseInt(body.params[1], 16) >= 1001;
+            if (body.params[0].data.startsWith('0xfdab463d')) {
+                const strRoot = fAnchored ? LIVE_VECTOR.smt_root : OTHER_ROOT;
+                return answer({ result: '0x' + strRoot });
+            }
+            const strValid = fAnchored ? '1' : '0';
+            return answer({ result: '0x' + strValid.padStart(64, '0') });
+        });
+
+        // walked away from during the wait: nothing, not even a wall
+        const wrapper = mount(PiNS);
+        const p1 = wrapper.vm.resolveAndVerify('alexxiy.pivx', 1, false, '');
+        await vi.advanceTimersByTimeAsync(ROOT_RECHECK_MS - 1);
+        wrapper.vm.cancel();
+        await vi.advanceTimersByTimeAsync(1);
+        await p1;
+        expect(wrapper.emitted('send')).toBeUndefined();
+        expect(wrapper.vm.showSyncModal).toBe(false);
+
+        // still wanted: the second look finds the chain caught up, and it pays
+        tStart = Date.now();
+        const p2 = wrapper.vm.resolveAndVerify('alexxiy.pivx', 1, false, '');
+        await vi.advanceTimersByTimeAsync(ROOT_RECHECK_MS);
+        await p2;
+        expect(wrapper.vm.syncModalState).not.toBe('invalid_root');
+        expect(wrapper.emitted('send')?.[0]?.[0]?.address).toBe(
+            LIVE_VECTOR.target_address
+        );
     });
 
     /**
@@ -870,6 +993,53 @@ describe('PiNS.vue Component', () => {
         // the confirm button is bound to the synced state only
         const buttons = wrapper.findAll('button');
         expect(buttons.some((b) => b.text() === 'Send anyway')).toBe(false);
+    });
+
+    /**
+     * Two endpoints and the indexer all behind the same anchoring: at `latest` the pair
+     * agrees with the indexer and nothing looks stale. Pinned to the newest block two
+     * endpoints have reached, the lagging pair cannot answer, and the record the name
+     * has since left is not paid.
+     */
+    it('does not pay a record the chain has moved past, however many endpoints lag with the indexer', async () => {
+        const [nOld, nNew] = [1000, 1001];
+        const arrLagging = TEST_NAME_SERVICE.EVMNetworks[0].rpcs.slice(0, 2);
+        const answer = (result) => ({ ok: true, json: async () => result });
+        fetch.mockImplementation(async (url, opts) => {
+            if (String(url).includes('/v1.0/resolve/')) {
+                return answer({ response: LIVE_VECTOR });
+            }
+            const body = JSON.parse(opts.body);
+            const nHead = arrLagging.includes(url) ? nOld : nNew;
+            if (body.method === 'eth_blockNumber') {
+                return answer({ result: '0x' + nHead.toString(16) });
+            }
+            const strBlock = body.params[1];
+            const nAt = strBlock === 'latest' ? nHead : parseInt(strBlock, 16);
+            if (nAt > nHead) {
+                return answer({ error: { message: 'header not found' } });
+            }
+            const data = body.params[0].data;
+            if (data.startsWith('0xfdab463d')) {
+                const strRoot = nAt >= nNew ? OTHER_ROOT : LIVE_VECTOR.smt_root;
+                return answer({ result: '0x' + strRoot });
+            }
+            // the indexer's root is an older one, so still valid
+            return answer({ result: '0x' + '1'.padStart(64, '0') });
+        });
+
+        const wrapper = mount(PiNS);
+        await wrapper.vm.resolveAndVerify('alexxiy.pivx', 1, false, '');
+        await vi.runOnlyPendingTimersAsync();
+
+        expect(wrapper.emitted('send')).toBeUndefined();
+        expect(wrapper.vm.syncModalState).toBe('warning');
+        // every contract read was about that one block
+        const arrBlocks = fetch.mock.calls
+            .map((c) => JSON.parse(c[1]?.body || '{}'))
+            .filter((b) => b.method === 'eth_call')
+            .map((b) => b.params[1]);
+        expect(new Set(arrBlocks)).toEqual(new Set(['0x' + nNew.toString(16)]));
     });
 
     it('flips to synced once the indexer catches up, and sends on confirmation', async () => {
@@ -1071,13 +1241,18 @@ describe('PiNS.vue Component', () => {
 
     it('waits out an indexer that cannot be reached at all', async () => {
         const wrapper = await mountOnNotFoundDialog();
-        fetch.mockImplementation(async (url) => {
+        fetch.mockImplementation(async (url, opts) => {
             if (String(url).includes('indexer.pivx.name')) {
                 throw new TypeError('Failed to fetch');
             }
+            const fHeight = JSON.parse(opts.body).method === 'eth_blockNumber';
             return {
                 ok: true,
-                json: async () => ({ result: '0x' + OTHER_ROOT }),
+                json: async () => ({
+                    result: fHeight
+                        ? '0x' + BLOCK.toString(16)
+                        : '0x' + OTHER_ROOT,
+                }),
             };
         });
         await wrapper.vm.retrySyncModalResolution();
@@ -1297,6 +1472,35 @@ describe('PiNS.vue Component', () => {
         expect(arrTargets.length).toBeGreaterThan(0);
         for (const strTo of arrTargets) expect(strTo).toBe(strExpected);
     });
+
+    // How mainnet ships until the anchor contract is redeployed. The settings row here
+    // still names chain 56 and the indexer from when it was declared, and must not
+    // bring either back: no name leaves the wallet, and nothing is paid.
+    it('does nothing on a network that declares no name service', async () => {
+        routeFetch({
+            resolve: { response: LIVE_VECTOR },
+            indexerRoot: LIVE_VECTOR.smt_root,
+            evmRoot: LIVE_VECTOR.smt_root,
+            rootValid: true,
+        });
+        const objDeclared = cChainParams.current;
+        const objUndeclared = { ...objDeclared };
+        delete objUndeclared.NameResolvers;
+        delete objUndeclared.EVMNetworks;
+        cChainParams.current = objUndeclared;
+
+        try {
+            const wrapper = mount(PiNS);
+            await wrapper.vm.resolveAndVerify('alexxiy.pivx', 1, false, '');
+            await vi.runOnlyPendingTimersAsync();
+
+            expect(fetch).not.toHaveBeenCalled();
+            expect(newAlerts().join(' ')).toContain('Resolve failed');
+            expect(wrapper.emitted('send')).toBeUndefined();
+        } finally {
+            cChainParams.current = objDeclared;
+        }
+    });
 });
 
 describe('endpoint selection', () => {
@@ -1333,16 +1537,22 @@ describe('endpoint selection', () => {
     });
 
     it('ships enough independent endpoints to reach the quorum', () => {
-        const net = getEVMNetwork(56);
-        expect(net.rpcs.length).toBeGreaterThanOrEqual(MIN_RPC_AGREEMENT);
-        // distinct operators, not four spellings of one
-        const arrHosts = net.rpcs.map((u) => {
-            const strHost = new URL(u).hostname.split('.');
-            return strHost.slice(-2).join('.');
-        });
-        expect(new Set(arrHosts).size).toBeGreaterThanOrEqual(
-            MIN_RPC_AGREEMENT
-        );
+        // Every network any chain params file in the repo declares, wherever a build
+        // may pick it up - not the test network above
+        const arrShipped = [prodParams, netlifyParams, testParams]
+            .flatMap((objFile) => Object.values(objFile))
+            .flatMap((objChain) => objChain.EVMNetworks || []);
+        for (const net of arrShipped) {
+            expect(net.rpcs.length).toBeGreaterThanOrEqual(MIN_RPC_AGREEMENT);
+            // distinct operators, not four spellings of one
+            const arrHosts = net.rpcs.map((u) => {
+                const strHost = new URL(u).hostname.split('.');
+                return strHost.slice(-2).join('.');
+            });
+            expect(new Set(arrHosts).size).toBeGreaterThanOrEqual(
+                MIN_RPC_AGREEMENT
+            );
+        }
     });
 });
 
@@ -1368,9 +1578,61 @@ describe('EVM RPC quorum', () => {
 
     it('returns as soon as two endpoints say the same thing', async () => {
         fetch.mockResolvedValue(answer('1'));
-        const res = await evmCall(RPCS, '0xcontract', '0xfdab463d');
+        const res = await evmCall(RPCS, '0xcontract', '0xfdab463d', BLOCK);
         expect(res).toBe('0x' + '1'.padStart(64, '0'));
         expect(fetch).toHaveBeenCalledTimes(MIN_RPC_AGREEMENT);
+    });
+
+    // At `latest` each endpoint answers about its own head, so two agreeing need not be
+    // describing the same block. A read without a block is refused, not defaulted.
+    it('reads at the block it is given, and never at latest', async () => {
+        fetch.mockResolvedValue(answer('1'));
+        await evmCall(RPCS, '0xcontract', '0xfdab463d', 0x2a);
+        for (const c of fetch.mock.calls) {
+            expect(JSON.parse(c[1].body).params[1]).toBe('0x2a');
+        }
+
+        fetch.mockClear();
+        await expect(evmCall(RPCS, '0xcontract', '0xfdab463d')).rejects.toThrow(
+            /block number/
+        );
+        expect(fetch).not.toHaveBeenCalled();
+    });
+
+    /**
+     * The block every read is pinned to. Taken from one endpoint, a stale one would pin
+     * every read to its stale state; it is the height two endpoints have reached, so one
+     * lagging cannot hold it back, one claiming the future cannot push it out of reach,
+     * and one alone cannot set it.
+     */
+    it('pins reads to a height at least two endpoints have reached', async () => {
+        const height = (n) => ({
+            ok: true,
+            json: async () => ({ result: '0x' + n.toString(16) }),
+        });
+        const mapHeights = {
+            'https://rpc-stale': height(100),
+            'https://rpc-fresh': height(204),
+            'https://rpc-fresher': height(205),
+            'https://rpc-future': height(10 ** 12),
+            'https://rpc-junk': {
+                ok: true,
+                json: async () => ({ result: '0xzz' }),
+            },
+        };
+        const arrRpcs = Object.keys(mapHeights);
+        fetch.mockImplementation(async (url) => mapHeights[url]);
+        expect(await fetchEVMBlockNumber(arrRpcs)).toBe(205);
+
+        // one height alone is one endpoint's word for where the chain is
+        fetch.mockImplementation(async (url) =>
+            url === 'https://rpc-fresh'
+                ? height(204)
+                : { ok: false, status: 429, statusText: 'Too Many Requests' }
+        );
+        const e = await fetchEVMBlockNumber(arrRpcs).catch((e) => e);
+        expect(e).toBeInstanceOf(RpcQuorumError);
+        expect(e.isTransient).toBe(true);
     });
 
     it('a lone dissenting endpoint cannot decide the answer', async () => {
@@ -1379,7 +1641,7 @@ describe('EVM RPC quorum', () => {
             .mockResolvedValueOnce(answer('dead'))
             .mockResolvedValueOnce(answer('beef'))
             .mockResolvedValueOnce(answer('beef'));
-        const res = await evmCall(RPCS, '0xcontract', '0xfdab463d');
+        const res = await evmCall(RPCS, '0xcontract', '0xfdab463d', BLOCK);
         expect(res).toBe('0x' + 'beef'.padStart(64, '0'));
         expect(fetch).toHaveBeenCalledTimes(3);
     });
@@ -1412,7 +1674,7 @@ describe('EVM RPC quorum', () => {
             })
             .mockResolvedValue(answer('1'));
         await expect(
-            evmCall(arrRpcs, '0xcontract', '0xfdab463d')
+            evmCall(arrRpcs, '0xcontract', '0xfdab463d', BLOCK)
         ).resolves.toBe('0x' + '1'.padStart(64, '0'));
         expect(fetch).toHaveBeenCalledTimes(7);
     });
@@ -1433,7 +1695,7 @@ describe('EVM RPC quorum', () => {
                       )
                     : Promise.resolve(answer('1'))
             );
-            const p = evmCall(RPCS, '0xcontract', '0xfdab463d');
+            const p = evmCall(RPCS, '0xcontract', '0xfdab463d', BLOCK);
             await vi.advanceTimersByTimeAsync(FETCH_TIMEOUT_MS);
             await expect(p).resolves.toBe('0x' + '1'.padStart(64, '0'));
             expect(fetch.mock.calls.map((c) => c[0])).toEqual(RPCS);
@@ -1451,7 +1713,8 @@ describe('EVM RPC quorum', () => {
         const valid = await verifyRootValidityOnContract(
             RPCS,
             '0xcontract',
-            LIVE_VECTOR.smt_root
+            LIVE_VECTOR.smt_root,
+            BLOCK
         );
         expect(valid).toBe(false);
         expect(fetch).toHaveBeenCalledTimes(MIN_RPC_AGREEMENT);
@@ -1464,7 +1727,7 @@ describe('EVM RPC quorum', () => {
             .mockResolvedValueOnce(answer('1'))
             .mockResolvedValueOnce(answer('2'))
             .mockResolvedValueOnce(answer('3'));
-        const e = await evmCall(RPCS, '0xcontract', '0xfdab463d').catch(
+        const e = await evmCall(RPCS, '0xcontract', '0xfdab463d', BLOCK).catch(
             (e) => e
         );
         expect(e).toBeInstanceOf(RpcQuorumError);
@@ -1476,7 +1739,7 @@ describe('EVM RPC quorum', () => {
         fetch
             .mockResolvedValueOnce(answer('1'))
             .mockRejectedValue(new Error('down'));
-        const e = await evmCall(RPCS, '0xcontract', '0xfdab463d').catch(
+        const e = await evmCall(RPCS, '0xcontract', '0xfdab463d', BLOCK).catch(
             (e) => e
         );
         expect(e).toBeInstanceOf(RpcQuorumError);
@@ -1495,7 +1758,8 @@ describe('EVM RPC quorum', () => {
         const e = await evmCall(
             ['https://rpc-only'],
             '0xcontract',
-            '0xfdab463d'
+            '0xfdab463d',
+            BLOCK
         ).catch((e) => e);
         expect(e).toBeInstanceOf(RpcQuorumError);
         expect(e.message).toMatch(/independent EVM RPC endpoints/);
@@ -1510,7 +1774,8 @@ describe('EVM RPC quorum', () => {
             evmCall(
                 ['https://rpc-a', 'https://rpc-a'],
                 '0xcontract',
-                '0xfdab463d'
+                '0xfdab463d',
+                BLOCK
             )
         ).rejects.toThrow(/only 1 is configured/);
         expect(fetch).not.toHaveBeenCalled();

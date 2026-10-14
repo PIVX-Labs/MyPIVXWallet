@@ -3,7 +3,9 @@ import { ref, onUnmounted } from 'vue';
 import { Database } from '../database.js';
 import { createAlert, createClosableAlert } from '../alerts/alert.js';
 import { isShieldAddress, sanitizeHTML } from '../misc.js';
+import { sleep } from '../utils.js';
 import {
+    fetchEVMBlockNumber,
     fetchEVMRoot,
     fetchFromIndexer,
     fetchIndexerRoot,
@@ -12,6 +14,7 @@ import {
     getNameResolverUrl,
     IndexerUnreachableError,
     parseIndexerRoot,
+    ROOT_RECHECK_MS,
     RpcQuorumError,
     verifyRootValidityOnContract,
     verifySmtProof,
@@ -139,6 +142,24 @@ async function resolveDomainName(apiEndpoint, domain) {
 }
 
 /**
+ * The chain side of one attempt: a block, and the anchor contract's root at it.
+ *
+ * Any further contract read the attempt makes is pinned to the same block, so the root
+ * and the validity check describe one state of the chain, not whatever each endpoint
+ * happened to call latest when it was asked (see `fetchEVMBlockNumber`). The block is
+ * never carried past the attempt: the poller and a confirmation each start their own.
+ */
+async function fetchChainRoot(objConfig) {
+    const nBlock = await fetchEVMBlockNumber(objConfig.evmRpcList);
+    const strRoot = await fetchEVMRoot(
+        objConfig.evmRpcList,
+        objConfig.evmContractAddress,
+        nBlock
+    );
+    return { nBlock, strRoot };
+}
+
+/**
  * The two roots, read together: what the indexer says the tree is, and what the chain
  * attests to.
  *
@@ -147,11 +168,8 @@ async function resolveDomainName(apiEndpoint, domain) {
  * global error before the await below ever saw it.
  */
 async function fetchRootsAndResolve(objConfig, strDomain) {
-    const evmRootPromise = fetchEVMRoot(
-        objConfig.evmRpcList,
-        objConfig.evmContractAddress
-    );
-    evmRootPromise.catch(() => {});
+    const chainPromise = fetchChainRoot(objConfig);
+    chainPromise.catch(() => {});
 
     let resolveData = null;
     let isNotFound = false;
@@ -172,7 +190,7 @@ async function fetchRootsAndResolve(objConfig, strDomain) {
         }
     }
 
-    const strChainRoot = await evmRootPromise;
+    const { nBlock: nChainBlock, strRoot: strChainRoot } = await chainPromise;
 
     // Only needed when the name is missing: with no resolve response there is no root
     // to compare, and "the indexer is behind" still has to be told apart from "this
@@ -181,7 +199,13 @@ async function fetchRootsAndResolve(objConfig, strDomain) {
         strIndexerRoot = await fetchIndexerRoot(objConfig.apiEndpoint);
     }
 
-    return { strIndexerRoot, strChainRoot, isNotFound, resolveData };
+    return {
+        strIndexerRoot,
+        strChainRoot,
+        nChainBlock,
+        isNotFound,
+        resolveData,
+    };
 }
 
 /**
@@ -326,8 +350,8 @@ function handleCriticalError(e, isRetry = false) {
  *
  * Only the two roots. The resolve and the contract's validity read are not repeated
  * here - they decided which modal to show, and they will be run again in full the
- * moment the answer changes or the user acts. A tick costs one indexer request and one
- * quorum'd contract read.
+ * moment the answer changes or the user acts. A tick costs one indexer request, one
+ * block-height request per endpoint, and one quorum'd contract read.
  */
 function startSyncModalPolling(objConfig, strDomain) {
     stopSyncModalPolling();
@@ -336,13 +360,11 @@ function startSyncModalPolling(objConfig, strDomain) {
     syncModalInterval = setInterval(async () => {
         const nMine = nAttempt;
         try {
-            const [strIndexerRoot, strChainRoot] = await Promise.all([
-                fetchIndexerRoot(objConfig.apiEndpoint),
-                fetchEVMRoot(
-                    objConfig.evmRpcList,
-                    objConfig.evmContractAddress
-                ),
-            ]);
+            const [strIndexerRoot, { strRoot: strChainRoot }] =
+                await Promise.all([
+                    fetchIndexerRoot(objConfig.apiEndpoint),
+                    fetchChainRoot(objConfig),
+                ]);
             if (strIndexerRoot !== strChainRoot) return;
 
             stopSyncModalPolling();
@@ -393,6 +415,8 @@ onUnmounted(stopSyncModalPolling);
  *                          press Send themselves.
  * @param {string?} [strConfirmedAddress] - the address the user was shown and confirmed;
  *                          the send goes ahead only if the name still resolves to it.
+ * @param {boolean} [fRechecked] - true on the second pass, after the contract did not
+ *                          recognise the indexer's root; there is no third.
  */
 async function runResolution(
     strDomain,
@@ -400,12 +424,18 @@ async function runResolution(
     useShieldInputs,
     memo,
     fEmit,
-    strConfirmedAddress = null
+    strConfirmedAddress = null,
+    fRechecked = false
 ) {
     const nMine = nAttempt;
     const objConfig = await loadResolverConfig();
-    const { strIndexerRoot, strChainRoot, isNotFound, resolveData } =
-        await fetchRootsAndResolve(objConfig, strDomain);
+    const {
+        strIndexerRoot,
+        strChainRoot,
+        nChainBlock,
+        isNotFound,
+        resolveData,
+    } = await fetchRootsAndResolve(objConfig, strDomain);
     if (nMine !== nAttempt) return;
 
     if (!strChainRoot)
@@ -413,14 +443,33 @@ async function runResolution(
 
     if (strIndexerRoot !== strChainRoot) {
         // Is this an indexer that is behind, or one describing a tree that never
-        // existed? Only the contract can say.
+        // existed? Only the contract can say - asked at the block the root came from.
         const fAnchored = await verifyRootValidityOnContract(
             objConfig.evmRpcList,
             objConfig.evmContractAddress,
-            strIndexerRoot
+            strIndexerRoot,
+            nChainBlock
         );
         if (nMine !== nAttempt) return;
         if (!fAnchored) {
+            // Unknown at this block is not yet unknown for good: the indexer may have
+            // applied a checkpoint anchored after it (see `ROOT_RECHECK_MS`). Look once
+            // more, from scratch at a later block, before calling it a fabrication.
+            if (!fRechecked) {
+                await sleep(ROOT_RECHECK_MS);
+                // Checked here rather than left to the next pass: that pass reads the
+                // attempt number afresh, so a cancel during the wait would go unseen.
+                if (nMine !== nAttempt) return;
+                return runResolution(
+                    strDomain,
+                    amount,
+                    useShieldInputs,
+                    memo,
+                    fEmit,
+                    strConfirmedAddress,
+                    true
+                );
+            }
             showUnanchoredRootWall();
             return;
         }

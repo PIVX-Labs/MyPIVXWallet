@@ -36,7 +36,7 @@
             {
                 "name": "Binance Smart Chain",
                 "chainId": 56,
-                "contractAddress": "0x25c7ab6e524a67a9571ac4f02c266658c4e620cb",
+                "contractAddress": "0xe21df741aab28c1916edb1718f18e62c08fab4bc",
                 "rpcs": [
                     "https://bsc-dataseed.bnbchain.org",
                     "https://bsc-dataseed.defibit.io",

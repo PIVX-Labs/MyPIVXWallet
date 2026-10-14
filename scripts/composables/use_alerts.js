@@ -19,7 +19,7 @@ export const useAlerts = defineStore('alerts', () => {
      * @param {function?} actionFunc - The function to execute if the Action button is used
      */
     const createAlert = (type, message, timeout, actionName, actionFunc) => {
-        return alertController.createAlert(
+        alertController.createAlert(
             type,
             message,
             timeout,
