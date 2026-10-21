@@ -873,6 +873,7 @@ export async function fetchIndexerRoot(apiEndpoint) {
  * @param {string} smtRoot
  * @param {number} nBlock - the attempt's block, the one its root was read at
  * @returns {Promise<boolean>}
+ * @throws {RpcQuorumError} also when the endpoints agree on a word that is not a bool
  */
 export async function verifyRootValidityOnContract(
     rpcUrls,
@@ -892,5 +893,16 @@ export async function verifyRootValidityOnContract(
 
     // isRootValid returns a single ABI word: 0 for false, 1 for true. A zero here is
     // a real answer from a healthy endpoint, never a reason to ask a different one.
-    return BigInt(hexResult) !== 0n;
+    //
+    // Anything else is not a bool, and since the quorum agreed on it, it is what the
+    // configured address really answers: that address is not the anchor contract. Read
+    // as "non-zero means valid", such a contract would vouch for every root, so it is
+    // refused outright. Asking again would get the same word, hence not transient.
+    if (!/^0x[0-9a-f]{64}$/i.test(hexResult) || BigInt(hexResult) > 1n) {
+        throw new RpcQuorumError(
+            'The anchor contract answered isRootValid with something other than a bool',
+            false
+        );
+    }
+    return BigInt(hexResult) === 1n;
 }

@@ -774,6 +774,32 @@ describe('EVM and Indexer Root Checking', () => {
         ).toBe(false);
     });
 
+    // Two endpoints agreeing on a word that is not 0 or 1 means the configured address
+    // is not the anchor contract. Read as "non-zero is valid", it would vouch for any root.
+    it('refuses an isRootValid answer that is not an ABI bool', async () => {
+        for (const strBad of [
+            '0x' + '2'.padStart(64, '0'),
+            '0x' + 'f'.repeat(64),
+            '0x' + '1'.padStart(64, '0') + '00',
+            '0x01',
+            '0x' + 'zz'.padStart(64, '0'),
+        ]) {
+            fetch.mockResolvedValue({
+                ok: true,
+                json: async () => ({ result: strBad }),
+            });
+            const e = await verifyRootValidityOnContract(
+                ['https://rpc-url', 'https://rpc-url-2'],
+                '0xcontract',
+                LIVE_VECTOR.smt_root,
+                BLOCK
+            ).catch((e) => e);
+            expect(e).toBeInstanceOf(RpcQuorumError);
+            expect(e.message).toMatch(/other than a bool/);
+            expect(e.isTransient).toBe(false);
+        }
+    });
+
     it('reports a silent indexer as unreachable, which is worth waiting out', async () => {
         vi.useFakeTimers();
         try {

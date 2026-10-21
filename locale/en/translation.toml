@@ -258,7 +258,7 @@ popupSeedPhraseBadNote = "<b>This Seed Phrase appears to be invalid <br> (The ch
 transactionNeedsAddress = "The address field is empty" # The address field is empty
 transactionNeedsAmount = "The amount is invalid" # The amount is invalid
 pinsTitleSecurityWarning = "⚠️ Security Warning" # ⚠️ Security Warning
-pinsTextSecurityWarning = "The Name Service indexer returned a state root that has never been registered on the blockchain. Sending funds is blocked for security reasons." # The Name Service indexer returned a state root that has never been registered on the blockchain. Sending funds is blocked for security reasons.
+pinsTextSecurityWarning = "The Name Service indexer returned a state root that is not valid on the blockchain: it was never registered there, or it has since been rolled back. Sending funds is blocked for security reasons." # The Name Service indexer returned a state root that is not valid on the blockchain: it was never registered there, or it has since been rolled back. Sending funds is blocked for security reasons.
 pinsTitleSynced = "✓ Synced & Resolved" # ✓ Synced & Resolved
 pinsTextSynced = "The indexer has caught up and the name was verified against the chain. Check the name, address and amount below before you send." # The indexer has caught up and the name was verified against the chain. Check the name, address and amount below before you send.
 pinsTitleNotFound = "❌ Domain Not Found" # ❌ Domain Not Found
@@ -273,7 +273,7 @@ pinsBtnClose = "Close" # Close
 pinsBtnSend = "Send" # Send
 pinsBtnCancel = "Cancel" # Cancel
 pinsBtnRetry = "Retry" # Retry
-pinsTextSyncDelayWait = "The Name Service is currently syncing with the latest state from the PIVX blockchain. Sending to this name is paused until it catches up, which usually takes a few minutes." # The Name Service is currently syncing with the latest state from the PIVX blockchain. Sending to this name is paused until it catches up, which usually takes a few minutes.
+pinsTextSyncDelayWait = "The Name Service is currently syncing with the latest state from the PIVX blockchain. Sending to this name is paused until it catches up. This usually takes a few minutes, but can take longer while the indexer rebuilds its data." # The Name Service is currently syncing with the latest state from the PIVX blockchain. Sending to this name is paused until it catches up. This usually takes a few minutes, but can take longer while the indexer rebuilds its data.
 pinsTitleRpcError = "⚠️ Blockchain Connection Error" # ⚠️ Blockchain Connection Error
 pinsTextRpcError = "The wallet could not get agreeing answers from enough blockchain RPC endpoints to verify this name: {errMsg}" # The wallet could not get agreeing answers from enough blockchain RPC endpoints to verify this name: {errMsg}
 
