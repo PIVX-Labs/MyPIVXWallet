@@ -10,6 +10,7 @@ import {
     isXPub,
     sanitizeHTML,
 } from './misc.js';
+import { isPIVXName } from './utils.pins.js';
 import { scanQRCode } from './scanner.js';
 import { activeWallet, hasEncryptedWallet } from './wallet.js';
 import { useWallets } from './composables/use_wallet.js';
@@ -993,7 +994,7 @@ export async function getAddressColor(address) {
         // Yep, nice!
         return 'green';
     }
-    if (isValidPIVXAddress(address)) {
+    if (isValidPIVXAddress(address) || isPIVXName(address)) {
         // Yep!
         return 'green';
     } else {

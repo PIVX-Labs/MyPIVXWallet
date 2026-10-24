@@ -4,6 +4,7 @@ import { ref, watch } from 'vue';
 import { getAddressColor } from '../contacts-book';
 import { promptForContact } from '../contacts-book';
 import { isShieldAddress, sanitizeHTML } from '../misc';
+import { isPIVXName } from '../utils.pins.js';
 import BottomPopup from '../BottomPopup.vue';
 import qrIcon from '../../assets/icons/icon-qr-code.svg';
 import addressbookIcon from '../../assets/icons/icon-address-book.svg';
@@ -36,7 +37,10 @@ const props = defineProps({
 const address = defineModel('address');
 const memo = defineModel('memo', { default: '' });
 
-const isSendingToShield = computed(() => isShieldAddress(address.value));
+const isSendingToShield = computed(() => {
+    if (!address.value) return false;
+    return isShieldAddress(address.value) || isPIVXName(address.value);
+});
 
 watch(address, (value) =>
     getAddressColor(value).then((c) => (color.value = `${c} !important`))
