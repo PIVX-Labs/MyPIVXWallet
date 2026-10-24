@@ -48,8 +48,16 @@ describe('Wallet transaction tests', () => {
 
         // Reset indexedDB before each test
         vi.stubGlobal('indexedDB', new IDBFactory());
+
+        vi.useFakeTimers();
+        const date = new Date(2026, 1, 1);
+        vi.setSystemTime(date);
         return vi.unstubAllGlobals;
     });
+    afterEach(() => {
+        vi.useRealTimers();
+    });
+
     it('Creates a transaction correctly', async () => {
         const tx = wallet.createTransaction(
             'DLabsktzGMnsK5K9uRTMCF6NoYNY6ET4Bb',
@@ -260,6 +268,7 @@ describe('Wallet transaction tests', () => {
                     },
                 ],
                 version: 3,
+                blockTime: 1769904000,
             })
         );
     });
@@ -309,6 +318,7 @@ describe('Wallet transaction tests', () => {
                         value: 5000000,
                     }),
                 ],
+                blockTime: 1769904000,
             })
         );
     });
@@ -329,6 +339,7 @@ describe('Wallet transaction tests', () => {
                         memo: '',
                     },
                 ],
+                blockTime: 1769904000,
             })
         );
     });

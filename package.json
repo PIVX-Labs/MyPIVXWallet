@@ -39,6 +39,7 @@
     "devDependencies": {
         "@fluent/langneg": "^0.7.0",
         "@oreillymedia/cypress-playback": "^3.0.9",
+        "@sinonjs/fake-timers": "^15.4.0",
         "@typescript-eslint/eslint-plugin": "^5.48.0",
         "@typescript-eslint/parser": "^5.48.0",
         "@vitejs/plugin-vue": "^5.2.3",

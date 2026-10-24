@@ -1,4 +1,4 @@
-import { describe, it } from 'vitest';
+import { describe, it, vi } from 'vitest';
 import {
     COutpoint,
     CTxIn,
@@ -9,6 +9,16 @@ import {
 import { TransactionBuilder } from '../../scripts/transaction_builder.js';
 
 describe('Transaction builder tests', () => {
+    beforeEach(() => {
+        vi.useFakeTimers();
+        const date = new Date(2026, 1, 1);
+        vi.setSystemTime(date);
+    });
+
+    afterEach(() => {
+        vi.useRealTimers();
+    });
+
     it('Builds a transaction correctly', () => {
         const txBuilder = TransactionBuilder.create()
             .addUTXO(
@@ -75,7 +85,7 @@ describe('Transaction builder tests', () => {
                         value: 8,
                     }),
                 ],
-                blockTime: -1,
+                blockTime: 1769904000,
                 lockTime: 0,
                 shieldOutput: [],
             })
@@ -118,6 +128,7 @@ describe('Transaction builder tests', () => {
                         value: 1,
                     }),
                 ],
+                blockTime: 1769904000,
             })
         );
     });
@@ -142,6 +153,7 @@ describe('Transaction builder tests', () => {
                         memo: 'Super secret memo',
                     },
                 ],
+                blockTime: 1769904000,
             })
         );
     });
@@ -162,6 +174,7 @@ describe('Transaction builder tests', () => {
                         value: 3,
                     }),
                 ],
+                blockTime: 1769904000,
             })
         );
     });
@@ -204,6 +217,7 @@ describe('Transaction builder tests', () => {
                         scriptSig: 'script1',
                     }),
                 ],
+                blockTime: 1769904000,
             })
         );
     });
